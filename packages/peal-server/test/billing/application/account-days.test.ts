@@ -471,12 +471,36 @@ layer(DaysTest)("the account-days", (it) => {
         // As their connections counted them.
         yield* days.counted(from, Effect.succeed(2));
 
+        // Connected before the grace began, as billing counts them; the
+        // move, on the test's clock, at the instant it began.
+        const repository = yield* ChannelRepository;
+        const graceSince = yield* DateTime.now;
+        const sql = yield* SqlClient.SqlClient;
+
+        yield* sql`UPDATE channels.channels SET created_at = ${DateTime.toDateUtc(DateTime.subtract(graceSince, { days: 1 }))} WHERE workspace_id = ${from}`.pipe(
+          Effect.orDie
+        );
+
+        const countedBefore = (counts: ReadonlyMap<WorkspaceId, number>) =>
+          [...counts.values()].reduce((total, count) => total + count, 0);
+
+        const before = countedBefore(
+          yield* repository.countIn([from, to], graceSince)
+        );
+
         yield* moves.move({
           channelId: channel.id,
           from,
           inside: Effect.void,
           to,
         });
+
+        // The pool connected it as long ago after the move as before.
+        assert.strictEqual(before, 2);
+        assert.strictEqual(
+          countedBefore(yield* repository.countIn([from, to], graceSince)),
+          before
+        );
 
         const kept = yield* keptOf(home);
 

@@ -26,7 +26,7 @@
   (the caller decides who may: the workspace context's
   `MoveCustomerChannel`, a partner's customers): a new channel there with
   a new id (`movedChannel`: same account, scopes, token and status, no
-  label, `createdAt` now), its tokens re-bound to it (`rebindTokens`:
+  label, its `createdAt` kept: billing's counts before a grace read it), its tokens re-bound to it (`rebindTokens`:
   decrypted for the old id, encrypted for the new, `granted_by` and
   `token_owner` kept, which `credentials` reads), the platform asked
   nothing. Under the channel's lock, then one transaction: the caller's

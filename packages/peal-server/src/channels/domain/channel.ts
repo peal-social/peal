@@ -139,7 +139,9 @@ export const connectChannel = (
 /**
  * The channel as it goes to another workspace of its pool, at `now`: a
  * new channel there, `id`, with the same account, way in, scopes, token
- * and status, connected there now. Its name was the other workspace's,
+ * and status. It keeps when it was connected (`createdAt`): the pool has
+ * held the account since, and billing's counts of what was connected
+ * before a date (a grace) read it. Its name was the other workspace's,
  * and stays behind.
  */
 export const movedChannel = (
@@ -151,7 +153,7 @@ export const movedChannel = (
     accountId: channel.accountId,
     avatarUrl: channel.avatarUrl,
     connection: channel.connection,
-    createdAt: now,
+    createdAt: channel.createdAt,
     displayName: channel.displayName,
     handle: channel.handle,
     id: to.id,
