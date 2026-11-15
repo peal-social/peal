@@ -21,6 +21,7 @@ import {
   isOver,
   isPast,
   isPutOff,
+  notSentReasonOf,
   settleFollowUp,
   triggerFollowUp,
   waitFollowUp,
@@ -503,5 +504,68 @@ describe("a follow-up", () => {
     expect(
       Result.isFailure(cancelFollowUp(begun, "ruleEnded", later(3)))
     ).toBeTruthy();
+  });
+
+  it("is armed again when Peal holds it back, said apart from the platform putting it off", () => {
+    expect(
+      Result.getOrThrow(
+        settleFollowUp(sending(), { _tag: "heldBack" }, later(3))
+      ).status
+    ).toStrictEqual({
+      _tag: "armed",
+      heldBack: true,
+      notBefore: DateTime.add(later(3), { minutes: 10 }),
+      until: actsUntil(now),
+    });
+  });
+
+  it("is told to members when it fails, may be out, or expires for the platform, its channel or an approval", () => {
+    const begun = Result.getOrThrow(beginFollowUpCall(sending(), later(3)));
+
+    const settled = (outcome: Parameters<typeof settleFollowUp>[1]) =>
+      Result.getOrThrow(settleFollowUp(begun, outcome, later(3)));
+
+    const expiredFor = (reason: Parameters<typeof expireFollowUp>[1]) =>
+      Result.getOrThrow(expireFollowUp(armed(), reason, later(3)));
+
+    expect(
+      [
+        settled({
+          _tag: "refused",
+          failure: new BadRequest({ code: "unprocessable" }),
+        }),
+        settled({
+          _tag: "answered",
+          result: { _tag: "unconfirmed", reason: "noResponse" },
+        }),
+        expiredFor("windowEnded"),
+        expiredFor("notGranted"),
+        expiredFor("notApproved"),
+        expiredFor("belowThreshold"),
+        expiredFor("paused"),
+        expiredFor("dailyLimit"),
+        Result.getOrThrow(cancelFollowUp(armed(), "ruleEnded", later(3))),
+        settled({
+          _tag: "answered",
+          result: {
+            _tag: "published",
+            platformPostId: PlatformPostIdSchema.make("110"),
+          },
+        }),
+        armed(),
+      ].map(notSentReasonOf)
+    ).toStrictEqual([
+      Option.some("failed"),
+      Option.some("unconfirmed"),
+      Option.some("windowEnded"),
+      Option.some("notGranted"),
+      Option.some("notApproved"),
+      Option.none(),
+      Option.none(),
+      Option.none(),
+      Option.none(),
+      Option.none(),
+      Option.none(),
+    ]);
   });
 });

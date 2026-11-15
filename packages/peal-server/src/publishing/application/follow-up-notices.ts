@@ -9,9 +9,10 @@ import type { DatabaseError } from "#shared/application/database-error.ts";
 /**
  * Tells those who expect a follow-up rule to act that it did not, in the
  * transaction that records it: follow-ups that ended without going out
- * (`notSent`, once a rule and UTC day, with how many and why), and a rule
- * that ended by itself (`stopped`, once a rule). Nothing is told for an
- * end a member meant (`stopped` by a member, `completed`).
+ * (`notSent`, with how many and why: once a rule and UTC day, or `atOnce`
+ * for those that may be out, which ask for a check, keyed apart), and a
+ * rule that ended by itself (`stopped`, once a rule). Nothing is told for
+ * an end a member meant (`stopped` by a member, `completed`).
  */
 export class FollowUpNotices extends Context.Service<
   FollowUpNotices,
@@ -19,7 +20,8 @@ export class FollowUpNotices extends Context.Service<
     readonly notSent: (
       rule: FollowUpRule,
       followUps: readonly FollowUp[],
-      now: DateTime.Utc
+      now: DateTime.Utc,
+      atOnce: boolean
     ) => Effect.Effect<void, DatabaseError>;
     readonly stopped: (
       rule: FollowUpRule,

@@ -479,6 +479,15 @@ describe(recipientsOf, () => {
     ]);
   });
 
+  it("tell every member who may act that a rule's starter can no longer act, and the starter beside them", () => {
+    expect(
+      recipientsOf(events.FollowUpRuleStopped, Option.none(), members, {
+        everyoneWhoMayAct: true,
+        followers: [author],
+      })
+    ).toStrictEqual([author, follower, scheduler]);
+  });
+
   it("tell every member who may act about a channel, whatever they follow", () => {
     expect(
       recipientsOf(

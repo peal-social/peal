@@ -54,6 +54,7 @@ import {
   followUpCalls,
   followUpsAnswer,
   likesOf,
+  noticesFail,
   resetFollowUps,
   toldFollowUps,
 } from "#test/publishing/fakes/fake-follow-ups.ts";
@@ -1583,10 +1584,13 @@ describe("follow-up rules", () => {
             yield* runDue;
 
             yield* eventually(
-              "its follow-ups failed",
+              "its follow-ups ended",
               ruleNow(workspaceId, rule.rule.id).pipe(
                 Effect.map(({ followUps }) =>
-                  followUps.every(({ status }) => status._tag === "failed")
+                  followUps.every(
+                    ({ status }) =>
+                      status._tag === "failed" || status._tag === "unconfirmed"
+                  )
                 )
               )
             );
@@ -1612,6 +1616,31 @@ describe("follow-up rules", () => {
           yield* runDue;
           assert.deepStrictEqual(yield* toldFollowUps, [first]);
 
+          // Those that may be out are told at once, as they ask for a
+          // check: the others still wait.
+          yield* followUpsAnswer(() =>
+            Effect.succeed({ _tag: "unconfirmed", reason: "noResponse" })
+          );
+          yield* failing("Our autumn opening hours.");
+          yield* runDue;
+
+          const atOnce = (yield* toldFollowUps).slice(1);
+
+          assert.deepStrictEqual(
+            atOnce.map((one) =>
+              one._tag === "notSent"
+                ? [
+                    one.count,
+                    one.reasons,
+                    one.key.startsWith(
+                      `follow-ups-unconfirmed:${rule.rule.id}:`
+                    ),
+                  ]
+                : []
+            ),
+            [[2, ["unconfirmed"], true]]
+          );
+
           const now = yield* DateTime.now;
 
           yield* TestClock.setTime(
@@ -1628,6 +1657,7 @@ describe("follow-up rules", () => {
 
           assert.deepStrictEqual(yield* toldFollowUps, [
             first,
+            ...atOnce,
             {
               ...first,
               key: `follow-ups-not-sent:${rule.rule.id}:${next}`,
@@ -1636,7 +1666,120 @@ describe("follow-up rules", () => {
 
           // Each is told once.
           yield* runDue;
-          assert.strictEqual((yield* toldFollowUps).length, 2);
+          assert.strictEqual((yield* toldFollowUps).length, 3);
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "end a rule whose starter can no longer publish, and tell it once",
+    () =>
+      onServer(
+        Effect.gen(function* starterGone() {
+          const workspaceId = yield* freshWorkspace;
+          const mastodon = yield* connected(workspaceId, "mastodon");
+          const postId = yield* published(workspaceId, [mastodon]);
+          const [target] = yield* targetsOf(postId);
+
+          assert.isDefined(target);
+
+          const rule = yield* FollowUpRules.use((rules) =>
+            rules.start(actorIn(workspaceId), onPost(postId, { repost: false }))
+          );
+
+          yield* startersAre(() => ({ _tag: "gone" }));
+          yield* likesOf(target.id, 10);
+          yield* runDue;
+          yield* runDue;
+
+          const ended = yield* ruleNow(workspaceId, rule.rule.id);
+
+          assert.deepStrictEqual(
+            ended.rule.status._tag === "ended"
+              ? ended.rule.status.reason
+              : null,
+            "starterGone"
+          );
+          assert.deepStrictEqual(yield* toldFollowUps, [
+            {
+              _tag: "stopped",
+              key: `follow-up-rule:${rule.rule.id}:stopped`,
+              reason: "starterGone",
+              ruleId: rule.rule.id,
+            },
+          ]);
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "go on with the run when a rule's notice cannot be made, and tell it once it can",
+    () =>
+      onServer(
+        Effect.gen(function* isolated() {
+          const failingIn = yield* freshWorkspace;
+          const mastodon = yield* connected(failingIn, "mastodon");
+          const refused = yield* published(failingIn, [mastodon]);
+
+          const rule = yield* FollowUpRules.use((rules) =>
+            rules.start(actorIn(failingIn), onPost(refused, { repost: false }))
+          );
+
+          const [refusedTarget] = yield* targetsOf(refused);
+
+          assert.isDefined(refusedTarget);
+
+          yield* followUpsAnswer(() =>
+            Effect.fail(new BadRequest({ code: "unprocessable" }))
+          );
+          yield* likesOf(refusedTarget.id, 10);
+          yield* runDue;
+          yield* eventually(
+            "the follow-up failed",
+            ruleNow(failingIn, rule.rule.id).pipe(
+              Effect.map(({ followUps }) =>
+                followUps.every(({ status }) => status._tag === "failed")
+              )
+            )
+          );
+
+          // Another workspace's follow-up reaches its likes while the
+          // notices cannot be made.
+          const other = yield* freshWorkspace;
+          const otherChannel = yield* connected(other, "mastodon");
+          const postId = yield* published(other, [otherChannel]);
+
+          yield* FollowUpRules.use((rules) =>
+            rules.start(actorIn(other), onPost(postId, { repost: false }))
+          );
+
+          const [target] = yield* targetsOf(postId);
+
+          assert.isDefined(target);
+          yield* likesOf(target.id, 10);
+          yield* followUpsAnswer((request) =>
+            Effect.succeed({
+              _tag: "published",
+              platformPostId: PlatformPostIdSchema.make(
+                `reply-${request.followUpId}`
+              ),
+            })
+          );
+          yield* noticesFail(true);
+
+          const run = yield* runDue;
+
+          assert.strictEqual(run.triggered, 1);
+          assert.strictEqual(run.told, 0);
+
+          yield* noticesFail(false);
+          yield* runDue;
+          assert.deepStrictEqual(
+            (yield* toldFollowUps).map(({ ruleId }) => ruleId),
+            [rule.rule.id]
+          );
         })
       ),
     timeout

@@ -238,15 +238,36 @@ export const french: EmailCatalog = {
       "Vous recevez cet e-mail parce que vous avez lancé cette règle dans {workspaceName} sur Peal, ou y programmez des publications. Choisissez les notifications que vous recevez par e-mail dans vos préférences de notification.",
     subject: "Des relances ne sont pas parties",
   },
+  followUpNotSent: {
+    action: "Ouvrir les relances",
+    body: "Une relance d’une règle de {workspaceName} n’est pas partie : {reasons}. La règle, dans les relances de l’espace de travail, la montre et dit pourquoi.",
+    ignore:
+      "Vous recevez cet e-mail parce que vous avez lancé cette règle dans {workspaceName} sur Peal, ou y programmez des publications. Choisissez les notifications que vous recevez par e-mail dans vos préférences de notification.",
+    subject: "Une relance n’est pas partie",
+  },
   followUpNotSentReasons: {
-    failed: "la plateforme les a refusées",
-    notApproved:
-      "la règle attendait une approbation jusqu’à la fin de leurs sept jours",
-    notGranted: "leur canal n’a pas été reconnecté à temps",
-    unconfirmed:
-      "Peal n’a pas pu savoir si elles sont parties : vérifiez la plateforme, car Peal ne les renvoie jamais",
-    windowEnded:
-      "la plateforme les a repoussées jusqu’à la fin de leurs sept jours",
+    one: {
+      failed:
+        "elle a échoué, et la règle donne le code de la plateforme ou de Peal",
+      notApproved:
+        "la règle attendait une approbation jusqu’à la fin de ses sept jours",
+      notGranted: "son canal n’a pas été reconnecté à temps",
+      unconfirmed:
+        "Peal n’a pas pu savoir si elle est partie : vérifiez la plateforme, car Peal ne la renvoie jamais",
+      windowEnded:
+        "la plateforme l’a repoussée jusqu’à la fin de ses sept jours",
+    },
+    other: {
+      failed:
+        "elles ont échoué, et la règle donne pour chacune le code de la plateforme ou de Peal",
+      notApproved:
+        "la règle attendait une approbation jusqu’à la fin de leurs sept jours",
+      notGranted: "leur canal n’a pas été reconnecté à temps",
+      unconfirmed:
+        "Peal n’a pas pu savoir si elles sont parties : vérifiez la plateforme, car Peal ne les renvoie jamais",
+      windowEnded:
+        "la plateforme les a repoussées jusqu’à la fin de leurs sept jours",
+    },
   },
   reasonsJoint: " ; ",
   followUpRuleStopped: {

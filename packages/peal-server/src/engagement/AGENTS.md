@@ -393,7 +393,7 @@
   guidance), X, LinkedIn and YouTube are `notAllowed`, refused when the
   rule starts (`CommentRuleNotPossible`, each channel with its reason)
   and skipped at every run, whatever the inbox may do there. A channel
-  disconnected ends its rules `channelGone` (`EngagementRecords.channelGone`). Either end by itself (`channelGone`, and `starterGone`, which the run writes in a transaction under the rule's lock) tells `CommentRuleStopped` through `CommentRuleNotices` (`NotifiedCommentRuleNotices`, key `comment-rule:<id>:stopped`) in the transaction that ends it, so `DrizzleEngagementRecords` needs the port: tests give it `CommentRuleNotices.none`.
+  disconnected ends its rules `channelGone` (`EngagementRecords.channelGone`). Either end by itself (`channelGone`, and `starterGone`, which the run writes in a transaction under the rule's lock) tells `CommentRuleStopped` through `CommentRuleNotices` (`NotifiedCommentRuleNotices`, key `comment-rule:<id>:stopped`) in the transaction that ends it, to the starter for `channelGone`, to every member who may answer comments and the starter for `starterGone`, so `DrizzleEngagementRecords` needs the port: tests give it `CommentRuleNotices.none`.
   The account export holds the rules with the comments each looked at,
   by id.
   The approval policy does not apply, as it does not to a member's

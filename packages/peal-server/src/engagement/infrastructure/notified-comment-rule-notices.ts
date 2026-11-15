@@ -21,11 +21,18 @@ export const NotifiedCommentRuleNotices = Layer.effect(
       stopped: (rule, reason) =>
         notices
           .notify({
+            // A starter who can no longer answer follows the notice, and
+            // every member who may answer hears it: they are the ones to
+            // start the rule again.
             ...Option.match(rule.startedBy, {
               onNone: () => ({}),
-              onSome: (author) => ({ author }),
+              onSome: (starter) =>
+                reason === "starterGone"
+                  ? { followers: [starter] }
+                  : { author: starter },
             }),
             event: { _tag: "CommentRuleStopped", reason, ruleId: rule.id },
+            everyoneWhoMayAct: reason === "starterGone",
             key: `comment-rule:${rule.id}:stopped`,
             workspaceId: rule.workspaceId,
           })

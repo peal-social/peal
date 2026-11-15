@@ -81,7 +81,10 @@ const Likes = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0));
  */
 export const FollowUpStatusSchema = Schema.Union([
   Schema.TaggedStruct("armed", {
-    // Put off by the platform: not set out again before then.
+    // Held back by Peal, its rule unable to act when it was to go, rather
+    // than put off by the platform. Absent for the platform's.
+    heldBack: Schema.optionalKey(Schema.Boolean),
+    // Put off: not set out again before then.
     notBefore: Schema.optionalKey(Schema.DateTimeUtc),
     until: Schema.DateTimeUtc,
   }),
@@ -310,9 +313,13 @@ export const beginFollowUpCall = (
       )
     : refused(followUp, "begin");
 
-/** How a call ended: what the platform answered, or its refusal. */
+/**
+ * How a call ended: what the platform answered, or its refusal; or that
+ * Peal held it back before the call, its rule unable to act then.
+ */
 export type FollowUpCallOutcome =
   | { readonly _tag: "answered"; readonly result: PublishResult }
+  | { readonly _tag: "heldBack" }
   | { readonly _tag: "refused"; readonly failure: PublishFailure };
 
 // A refusal's code, as it is kept: the platform's own, never its words.
@@ -333,8 +340,9 @@ const isPassing = (failure: PublishFailure): boolean =>
 
 /**
  * The follow-up as its call ended, at `now`: a refusal that passes (the
- * platform unreachable, a rate limit) arms it again until its window ends,
- * as nothing went out; any other fails it.
+ * platform unreachable, a rate limit), or Peal holding it back, arms it
+ * again until its window ends, as nothing went out; any other refusal
+ * fails it.
  */
 export const settleFollowUp = (
   followUp: FollowUp,
@@ -349,6 +357,20 @@ export const settleFollowUp = (
 
   const { likes, triggeredAt, until } = status;
   const attemptedAt = Option.getOrElse(status.attemptedAt, () => now);
+
+  if (outcome._tag === "heldBack") {
+    return Result.succeed(
+      withStatus(followUp, {
+        _tag: "armed",
+        heldBack: true,
+        notBefore: DateTime.addDuration(
+          now,
+          putOffFor(followUp.attempt, Option.none())
+        ),
+        until,
+      })
+    );
+  }
 
   if (outcome._tag === "refused") {
     return Result.succeed(

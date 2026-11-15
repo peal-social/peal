@@ -109,7 +109,8 @@ describe("the follow-up rules' notices", () => {
               expired(2, "windowEnded"),
               expired(3, "notGranted"),
             ],
-            at
+            at,
+            false
           )
         );
 
@@ -122,6 +123,7 @@ describe("the follow-up rules' notices", () => {
               reasons: ["windowEnded", "notGranted"],
               ruleId: rule.id,
             },
+            everyoneWhoMayAct: false,
             key: `follow-ups-not-sent:${rule.id}:2026-07-08`,
             workspaceId,
           },
@@ -130,27 +132,61 @@ describe("the follow-up rules' notices", () => {
   );
 
   it.effect(
-    "tells a rule that stopped by itself once, and nothing for no follow-up",
+    "tells a rule whose starter can no longer act to everyone who may, the starter beside them, and nothing for no follow-up",
     () =>
       Effect.gen(function* stopped() {
         const requests = yield* told((notices) =>
           notices
             .stopped(rule, "starterGone")
-            .pipe(Effect.andThen(notices.notSent(rule, [], at)))
+            .pipe(Effect.andThen(notices.notSent(rule, [], at, false)))
         );
 
         assert.deepStrictEqual(requests, [
           {
-            author: starter,
             event: {
               _tag: "FollowUpRuleStopped",
               reason: "starterGone",
               ruleId: rule.id,
             },
+            everyoneWhoMayAct: true,
+            followers: [starter],
             key: `follow-up-rule:${rule.id}:stopped`,
             workspaceId,
           },
         ]);
+      })
+  );
+
+  it.effect("tells a rule whose channel left to its starter", () =>
+    Effect.gen(function* channelGone() {
+      const requests = yield* told((notices) =>
+        notices.stopped(rule, "channelGone")
+      );
+
+      assert.deepStrictEqual(
+        requests.map(({ author, everyoneWhoMayAct }) => [
+          author,
+          everyoneWhoMayAct,
+        ]),
+        [[starter, false]]
+      );
+    })
+  );
+
+  it.effect(
+    "keys those told at once apart from the day's, by the first of them",
+    () =>
+      Effect.gen(function* atOnce() {
+        const first = expired(4, "windowEnded");
+
+        const requests = yield* told((notices) =>
+          notices.notSent(rule, [first], at, true)
+        );
+
+        assert.deepStrictEqual(
+          requests.map(({ key }) => key),
+          [`follow-ups-unconfirmed:${rule.id}:${first.id}`]
+        );
       })
   );
 });

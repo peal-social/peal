@@ -573,6 +573,11 @@ export interface Hearing {
    * whoever asked for its approval, or wrote in its review.
    */
   readonly followers?: readonly UserId[] | undefined;
+  /**
+   * Whether every member who may act hears, beside the followers: a rule
+   * whose starter can no longer act is for the others to start again.
+   */
+  readonly everyoneWhoMayAct?: boolean | undefined;
 }
 
 /**
@@ -594,7 +599,7 @@ export const recipientsOf = (
   event: NoticeEvent,
   author: Option.Option<UserId>,
   members: readonly Candidate[],
-  { except, followers = [] }: Hearing = {}
+  { everyoneWhoMayAct = false, except, followers = [] }: Hearing = {}
 ): readonly UserId[] => {
   // An author who left the workspace hears nothing more of it; their post
   // is then told as one without an author.
@@ -615,6 +620,10 @@ export const recipientsOf = (
 
     if (!isAboutPost(event)) {
       return member.mayAct;
+    }
+
+    if (everyoneWhoMayAct) {
+      return member.mayAct || follows(member);
     }
 
     // Everyone who may approve is asked to.

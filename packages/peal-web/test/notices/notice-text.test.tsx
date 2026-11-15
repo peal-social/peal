@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime } from "effect";
-import { NextIntlClientProvider } from "next-intl";
+import { createTranslator, NextIntlClientProvider } from "next-intl";
 import type { NoticeEvent } from "peal-contract";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -47,6 +47,14 @@ const render = async (
     </NextIntlClientProvider>
   );
 };
+
+// A follow-up's reason a later server adds, as an older catalogue reads it.
+const laterReason = async (locale: "en" | "fr") =>
+  createTranslator({
+    locale,
+    messages: await loadMessages(locale),
+    namespace: "Notices",
+  })("followUpReason", { count: 2, reason: "aReasonAddedLater" });
 
 describe(useNoticeText, () => {
   it("says why a post failed, in English and in French", async () => {
@@ -184,7 +192,7 @@ describe(useNoticeText, () => {
     ): NoticeEvent => ({ _tag: "FollowUpsNotSent", count, reasons, ruleId });
 
     await expect(render("en", event(1, ["failed"]))).resolves.toContain(
-      `A follow-up of a rule of Studio Nord did not go out: the platform refused it. | Open the follow-ups | /app/${workspaceId}/settings/follow-ups?rule=${ruleId}`
+      `A follow-up of a rule of Studio Nord did not go out: it failed, and the rule shows why. | Open the follow-ups | /app/${workspaceId}/settings/follow-ups?rule=${ruleId}`
     );
     await expect(
       render("en", event(3, ["unconfirmed", "windowEnded"]))
@@ -192,11 +200,29 @@ describe(useNoticeText, () => {
       "3 follow-ups of a rule of Studio Nord did not go out: Peal could not tell whether they went out: check the platform, as Peal never sends them again; the platform put them off until their seven days ended."
     );
     await expect(render("fr", event(1, ["failed"]))).resolves.toContain(
-      "Une relance d’une règle de Studio Nord n’est pas partie : la plateforme l’a refusée. | Ouvrir les relances"
+      "Une relance d’une règle de Studio Nord n’est pas partie : elle a échoué, et la règle indique pourquoi. | Ouvrir les relances"
     );
     await expect(render("fr", event(2, ["windowEnded"]))).resolves.toContain(
       "2 relances d’une règle de Studio Nord ne sont pas parties : la plateforme les a repoussées jusqu’à la fin de leurs sept jours."
     );
+  });
+
+  it("says a follow-up waited for an approval, and words a reason it does not know without guessing", async () => {
+    const ruleId = "00000000-0000-7000-8000-00000000f001";
+
+    const event: NoticeEvent = {
+      _tag: "FollowUpsNotSent",
+      count: 2,
+      reasons: ["notApproved"],
+      ruleId,
+    };
+
+    await expect(render("en", event)).resolves.toContain(
+      "2 follow-ups of a rule of Studio Nord did not go out: the rule waited for an approval until their seven days ended."
+    );
+
+    await expect(laterReason("en")).resolves.toBe("for another reason");
+    await expect(laterReason("fr")).resolves.toBe("pour une autre raison");
   });
 
   it("says why a rule that acts by itself stopped, and opens its page", async () => {

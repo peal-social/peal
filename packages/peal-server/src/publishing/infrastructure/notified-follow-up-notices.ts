@@ -24,18 +24,23 @@ export const NotifiedFollowUpNotices = Layer.effect(
   Effect.gen(function* NotifiedFollowUpNotices() {
     const notices = yield* Notify;
 
+    // A starter who can no longer act follows the notice, and every member
+    // who may act hears it: they are the ones to start the rule again.
     const tell = (
       rule: FollowUpRule,
       event: NoticeRequest["event"],
-      key: string
+      key: string,
+      starterGone = false
     ) =>
       notices
         .notify({
           ...Option.match(rule.startedBy, {
             onNone: () => ({}),
-            onSome: (author) => ({ author }),
+            onSome: (starter) =>
+              starterGone ? { followers: [starter] } : { author: starter },
           }),
           event,
+          everyoneWhoMayAct: starterGone,
           key,
           workspaceId: rule.workspaceId,
         })
@@ -46,7 +51,7 @@ export const NotifiedFollowUpNotices = Layer.effect(
         );
 
     return FollowUpNotices.of({
-      notSent: (rule, followUps, now) =>
+      notSent: (rule, followUps, now, atOnce) =>
         followUps.length === 0
           ? Effect.void
           : tell(
@@ -57,13 +62,18 @@ export const NotifiedFollowUpNotices = Layer.effect(
                 reasons: notSentReasonsOf(followUps),
                 ruleId: rule.id,
               },
-              `follow-ups-not-sent:${rule.id}:${dayOf(now)}`
+              // Told at once, past the day's: keyed by the first of them,
+              // which no other notice of the rule names.
+              atOnce
+                ? `follow-ups-unconfirmed:${rule.id}:${followUps[0]?.id ?? ""}`
+                : `follow-ups-not-sent:${rule.id}:${dayOf(now)}`
             ),
       stopped: (rule, reason) =>
         tell(
           rule,
           { _tag: "FollowUpRuleStopped", reason, ruleId: rule.id },
-          `follow-up-rule:${rule.id}:stopped`
+          `follow-up-rule:${rule.id}:stopped`,
+          reason === "starterGone"
         ),
     });
   })

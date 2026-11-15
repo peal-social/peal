@@ -15,6 +15,7 @@ import { FollowedPosts } from "#engagement/application/ports/followed-posts.ts";
 import { ReplyJobs } from "#engagement/application/ports/reply-jobs.ts";
 import { RuleStarters } from "#engagement/application/ports/rule-starters.ts";
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
+import { CommentRuleIdSchema } from "#engagement/domain/comment-rule-id.ts";
 import {
   maxChannelRepliesPerDay,
   maxRuleRepliesPerDay,
@@ -86,6 +87,10 @@ const RecordedRuleNotices = Layer.succeed(
 
 // The workspaces whose rules' starters are gone, as a test says.
 const startersGone = Ref.makeUnsafe<ReadonlySet<WorkspaceId>>(new Set());
+
+// What happens, once, when a run next asks for a rule's starter: a
+// member's change made while the run goes.
+const meanwhile = Ref.makeUnsafe<Effect.Effect<void>>(Effect.void);
 
 // The replies' jobs started: a reply is journalled, never sent here.
 const started = Ref.makeUnsafe<readonly string[]>([]);
@@ -160,7 +165,9 @@ const rulesTestWith = <E, R>(store: Layer.Layer<CommentRuleStore, E, R>) =>
           RuleStarters,
           RuleStarters.of({
             of: (rule) =>
-              Ref.get(startersGone).pipe(
+              Ref.getAndSet(meanwhile, Effect.void).pipe(
+                Effect.flatten,
+                Effect.andThen(Ref.get(startersGone)),
                 Effect.map((gone) =>
                   gone.has(rule.workspaceId)
                     ? ({ _tag: "gone" } as const)
@@ -859,5 +866,194 @@ describe("comment rules", () => {
         );
       }).pipe(Effect.ensuring(forget(workspaceId)));
     }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live("wait for the channel's day held by another rule's run", () =>
+    Effect.gen(function* channelLocked() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const thread = yield* threadOn(workspaceId, "mastodon");
+        const rules = yield* CommentRules;
+
+        yield* rules.start(actorIn(workspaceId), {
+          keywords: ["price"],
+          reply: "On our site.",
+          scope: { _tag: "channel", channelId: thread.channelId },
+        });
+
+        yield* Effect.sleep("5 millis");
+        yield* received(thread, [{ author: 7, text: "price?" }]);
+
+        // Another rule's run holds the channel's day.
+        const otherRule = CommentRuleIdSchema.make(
+          "00000000-0000-7000-8000-00000000c0ff"
+        );
+
+        const held = yield* Deferred.make<boolean>();
+        const release = yield* Deferred.make<boolean>();
+        const { transaction } = yield* TransactionRunner;
+
+        const holder = yield* transaction(
+          CommentRuleStore.use((store) =>
+            store.claimReplyDay(otherRule, thread.channelId)
+          ).pipe(
+            Effect.andThen(Deferred.succeed(held, true)),
+            Effect.andThen(Deferred.await(release))
+          )
+        ).pipe(Effect.forkChild);
+
+        yield* Deferred.await(held);
+
+        const run = yield* rules.runDue.pipe(Effect.forkChild);
+
+        yield* Effect.sleep("300 millis");
+
+        const waited = run.pollUnsafe() === undefined;
+
+        yield* Deferred.succeed(release, true);
+        yield* Fiber.join(holder);
+
+        assert.isTrue(waited);
+        assert.strictEqual((yield* Fiber.join(run)).replied, 1);
+      }).pipe(Effect.ensuring(forget(workspaceId)));
+    }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live("count a channel's day with the replies another rule is making", () =>
+    Effect.gen(function* channelInFlight() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const thread = yield* threadOn(workspaceId, "mastodon");
+        const rules = yield* CommentRules;
+        const sql = yield* SqlClient.SqlClient;
+
+        const other = yield* rules.start(actorIn(workspaceId), {
+          keywords: ["hours"],
+          reply: "Nine to five.",
+          scope: { _tag: "post", postId: thread.postId },
+        });
+
+        // The channel's day, full but for one, and that one on its way.
+        const earlier = yield* received(
+          thread,
+          Array.from({ length: maxChannelRepliesPerDay }, (_, n) => ({
+            author: 300 + n,
+            text: `earlier ${String(n)}`,
+          }))
+        );
+
+        for (const [n, comment] of earlier.entries()) {
+          yield* sql`INSERT INTO engagement.comment_rule_matches (rule_id, comment_id, outcome, looked_at)
+            VALUES (${other.rule.id}, ${comment.id}, ${n === 0 ? "claimed" : "replied"}, now())`;
+        }
+
+        const rule = yield* rules.start(actorIn(workspaceId), {
+          keywords: ["price"],
+          reply: "On our site.",
+          scope: { _tag: "channel", channelId: thread.channelId },
+        });
+
+        yield* Effect.sleep("5 millis");
+        yield* received(thread, [{ author: 7, text: "price?" }]);
+
+        assert.strictEqual((yield* rules.runDue).replied, 0);
+        assert.deepStrictEqual(
+          (yield* rules.get(actorIn(workspaceId), rule.rule.id)).matches,
+          []
+        );
+      }).pipe(Effect.ensuring(forget(workspaceId)));
+    }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live("answer no more than the rule's day allows within one run", () =>
+    Effect.gen(function* ruleFullDuringRun() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const thread = yield* threadOn(workspaceId, "mastodon");
+        const rules = yield* CommentRules;
+        const sql = yield* SqlClient.SqlClient;
+
+        const rule = yield* rules.start(actorIn(workspaceId), {
+          keywords: ["price"],
+          reply: "On our site.",
+          scope: { _tag: "channel", channelId: thread.channelId },
+        });
+
+        yield* Effect.sleep("5 millis");
+
+        // The rule's day, full but for one.
+        const earlier = yield* received(
+          thread,
+          Array.from({ length: maxRuleRepliesPerDay - 1 }, (_, n) => ({
+            author: 400 + n,
+            text: `price ${String(n)}?`,
+          }))
+        );
+
+        for (const comment of earlier) {
+          yield* sql`INSERT INTO engagement.comment_rule_matches (rule_id, comment_id, outcome, looked_at)
+          VALUES (${rule.rule.id}, ${comment.id}, 'replied', now())`;
+        }
+
+        yield* received(thread, [
+          { author: 7, text: "price?" },
+          { author: 8, text: "the price?" },
+        ]);
+
+        assert.strictEqual((yield* rules.runDue).replied, 1);
+      }).pipe(Effect.ensuring(forget(workspaceId)));
+    }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live(
+    "leave a rule paused while the run asked for its starter, gone or not",
+    () =>
+      Effect.gen(function* pausedMeanwhile() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const thread = yield* threadOn(workspaceId, "mastodon");
+          const rules = yield* CommentRules;
+          const sql = yield* SqlClient.SqlClient;
+
+          const rule = yield* rules.start(actorIn(workspaceId), {
+            keywords: ["price"],
+            reply: "On our site.",
+            scope: { _tag: "channel", channelId: thread.channelId },
+          });
+
+          yield* Ref.update(
+            startersGone,
+            (gone) => new Set([...gone, workspaceId])
+          );
+          yield* Ref.set(
+            meanwhile,
+            sql`UPDATE engagement.comment_rules SET status = 'paused', status_at = now() WHERE id = ${rule.rule.id}`.pipe(
+              Effect.asVoid,
+              Effect.orDie
+            )
+          );
+
+          // Only this workspace's rule is asked about first.
+          const toldBefore = (yield* Ref.get(stoppedRules)).length;
+
+          yield* rules.runDue;
+
+          const after = yield* rules.get(actorIn(workspaceId), rule.rule.id);
+
+          assert.strictEqual(after.rule.status._tag, "paused");
+          assert.isFalse(
+            (yield* Ref.get(stoppedRules))
+              .slice(toldBefore)
+              .some(([id]) => id === rule.rule.id)
+          );
+        }).pipe(
+          Effect.ensuring(Ref.set(meanwhile, Effect.void)),
+          Effect.ensuring(forget(workspaceId))
+        );
+      }).pipe(Effect.provide(RulesTest))
   );
 });

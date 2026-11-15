@@ -282,13 +282,16 @@ export interface EmailCatalog {
   readonly recyclingEndReasons: Readonly<Record<RecyclingEndReason, string>>;
   /**
    * Follow-ups of a rule of `{workspaceName}` did not go out: `{count}` of
-   * them, for `{reasons}`, those of `followUpNotSentReasons` joined by
-   * `reasonsJoint`.
+   * them, for `{reasons}`, those of `followUpNotSentReasons.other` joined
+   * by `reasonsJoint`; one alone is `followUpNotSent`, with
+   * `followUpNotSentReasons.one`.
    */
   readonly followUpsNotSent: EmailMessages;
-  readonly followUpNotSentReasons: Readonly<
-    Record<FollowUpNotSentReason, string>
-  >;
+  readonly followUpNotSent: EmailMessages;
+  readonly followUpNotSentReasons: {
+    readonly one: Readonly<Record<FollowUpNotSentReason, string>>;
+    readonly other: Readonly<Record<FollowUpNotSentReason, string>>;
+  };
   readonly reasonsJoint: string;
   /**
    * A follow-up rule of `{workspaceName}` ended by itself, for `{reason}`,

@@ -7,6 +7,7 @@ import type { FollowUpRequest } from "#publishing/application/follow-up-publishe
 import { notSentReasonsOf } from "#publishing/domain/follow-up.ts";
 import type { FollowUpNotSentReason } from "#publishing/domain/follow-up.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
+import { DatabaseError } from "#shared/application/database-error.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
@@ -51,12 +52,28 @@ export type ToldFollowUp =
 
 const told = Ref.makeUnsafe<readonly ToldFollowUp[]>([]);
 
+// Whether telling fails, as the notifications' database would.
+const failing = Ref.makeUnsafe(false);
+
+/** Telling fails from now on (true), or works again (false). */
+export const noticesFail = (fail: boolean) => Ref.set(failing, fail);
+
+const unlessFailing = (effect: Effect.Effect<void>) =>
+  Ref.get(failing).pipe(
+    Effect.flatMap((fail) =>
+      fail
+        ? Effect.fail(new DatabaseError({ cause: "synthetic outage" }))
+        : effect
+    )
+  );
+
 /** No target has likes, no follow-up was carried out, each is published. */
 export const resetFollowUps = Effect.all([
   Ref.set(likes, new Map()),
   Ref.set(calls, []),
   Ref.set(answer, published),
   Ref.set(told, []),
+  Ref.set(failing, false),
 ]);
 
 /** What members were told of follow-up rules so far, in order. */
@@ -113,17 +130,21 @@ export const FakeFollowUpPublisher = Layer.succeed(
 export const FakeFollowUpNotices = Layer.succeed(
   FollowUpNotices,
   FollowUpNotices.of({
-    notSent: (rule, followUps, now) =>
-      Ref.update(told, (so): readonly ToldFollowUp[] => [
-        ...so,
-        {
-          _tag: "notSent",
-          count: followUps.length,
-          key: `follow-ups-not-sent:${rule.id}:${DateTime.formatIso(now).slice(0, 10)}`,
-          reasons: notSentReasonsOf(followUps),
-          ruleId: rule.id,
-        },
-      ]),
+    notSent: (rule, followUps, now, atOnce) =>
+      unlessFailing(
+        Ref.update(told, (so): readonly ToldFollowUp[] => [
+          ...so,
+          {
+            _tag: "notSent",
+            count: followUps.length,
+            key: atOnce
+              ? `follow-ups-unconfirmed:${rule.id}:${followUps[0]?.id ?? ""}`
+              : `follow-ups-not-sent:${rule.id}:${DateTime.formatIso(now).slice(0, 10)}`,
+            reasons: notSentReasonsOf(followUps),
+            ruleId: rule.id,
+          },
+        ])
+      ),
     stopped: (rule, reason) =>
       Ref.update(told, (so): readonly ToldFollowUp[] => [
         ...so,

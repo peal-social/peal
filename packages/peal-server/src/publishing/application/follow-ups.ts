@@ -142,8 +142,8 @@ const liveSince = (target: PostTarget): Option.Option<DateTime.Utc> =>
     ? Option.fromUndefinedOr(livePartsOf(target)[0]?.publishedAt)
     : Option.none();
 
-// Why a window passed without it going out.
-const expiryOf = (
+/** Why a window passed without it going out. */
+export const expiryOf = (
   { followUp, rule }: ArmedFollowUp,
   likes: Option.Option<number>,
   starterHeld: boolean
@@ -156,10 +156,12 @@ const expiryOf = (
     return "belowThreshold";
   }
 
-  // The platform put it off, and its window ended meanwhile.
+  // The platform put it off, and its window ended meanwhile; held back by
+  // Peal, it is what held it that is told.
   if (
     followUp.status._tag === "armed" &&
-    followUp.status.notBefore !== undefined
+    followUp.status.notBefore !== undefined &&
+    followUp.status.heldBack !== true
   ) {
     return "windowEnded";
   }
@@ -775,7 +777,8 @@ export class FollowUps extends Context.Service<
       // A rule's follow-ups that ended without going out, told to members
       // in a transaction of their own, under the rule's lock: all those
       // waiting together, once a UTC day at most; those that end after it
-      // wait for the next day. A run tells what ended before it started.
+      // wait for the next day, but those that may be out, told at once. A
+      // run tells what ended before it started.
       const tell = Effect.fn("FollowUps.tell")(function* tell(
         ruleId: FollowUpRuleId,
         workspaceId: WorkspaceId
@@ -787,19 +790,26 @@ export class FollowUps extends Context.Service<
           return false;
         }
 
-        const { followUps, lastTold } = yield* store.untold(ruleId);
+        const untold = yield* store.untold(ruleId);
 
-        if (
-          followUps.length === 0 ||
-          Option.exists(
-            lastTold,
-            (at) => !DateTime.isLessThan(at, DateTime.startOf(now, "day"))
-          )
-        ) {
+        const toldToday = Option.exists(
+          untold.lastTold,
+          (at) => !DateTime.isLessThan(at, DateTime.startOf(now, "day"))
+        );
+
+        // Past the day's notice, only those that may be out, as they ask
+        // the members to check the platform: the others wait.
+        const followUps = toldToday
+          ? untold.followUps.filter(
+              ({ status }) => status._tag === "unconfirmed"
+            )
+          : untold.followUps;
+
+        if (followUps.length === 0) {
           return false;
         }
 
-        yield* notices.notSent(rule.value, followUps, now);
+        yield* notices.notSent(rule.value, followUps, now, toldToday);
         yield* store.told(
           ruleId,
           followUps.map(({ id }) => id),
@@ -818,9 +828,18 @@ export class FollowUps extends Context.Service<
           const page = yield* store.untoldRules(after, armedPageSize);
 
           for (const { ruleId, workspaceId } of page) {
-            if (yield* transaction(tell(ruleId, workspaceId))) {
-              told += 1;
-            }
+            // A rule whose notice cannot be made is told at a later run;
+            // the others, and the rest of the run, go on.
+            const done = yield* transaction(tell(ruleId, workspaceId)).pipe(
+              Effect.catchTag("DatabaseError", (failure) =>
+                Effect.logWarning(
+                  "A follow-up rule's notice could not be made",
+                  failure
+                ).pipe(Effect.annotateLogs({ ruleId }), Effect.as(false))
+              )
+            );
+
+            told += done ? 1 : 0;
           }
 
           if (page.length < armedPageSize) {

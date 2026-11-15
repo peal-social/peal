@@ -73,11 +73,32 @@ describe(renderNoticeEmail, () => {
 
     expect(english.subject).toBe("Follow-ups did not go out");
     expect(english.text).toContain(
-      "A follow-up rule of Studio Nord has follow-ups that did not go out (3): the platform refused them; Peal could not tell whether they went out: check the platform, as Peal never sends them again."
+      "A follow-up rule of Studio Nord has follow-ups that did not go out (3): they failed, and the rule shows the platform’s or Peal’s code for each; Peal could not tell whether they went out: check the platform, as Peal never sends them again."
     );
     expect(french.subject).toBe("Des relances ne sont pas parties");
     expect(french.text).toContain(
-      "Une règle de relance de Studio Nord a des relances qui ne sont pas parties (3) : la plateforme les a refusées ; Peal n’a pas pu savoir si elles sont parties : vérifiez la plateforme, car Peal ne les renvoie jamais."
+      "Une règle de relance de Studio Nord a des relances qui ne sont pas parties (3) : elles ont échoué, et la règle donne pour chacune le code de la plateforme ou de Peal ; Peal n’a pas pu savoir si elles sont parties : vérifiez la plateforme, car Peal ne les renvoie jamais."
+    );
+  });
+
+  it("tells one follow-up that did not go out in the singular, in both languages", () => {
+    const event: NoticeEvent = {
+      _tag: "FollowUpsNotSent",
+      count: 1,
+      reasons: ["failed"],
+      ruleId,
+    };
+
+    const english = render(event, "en");
+    const french = render(event, "fr");
+
+    expect(english.subject).toBe("A follow-up did not go out");
+    expect(english.text).toContain(
+      "A follow-up of a rule of Studio Nord did not go out: it failed, and the rule shows the platform’s or Peal’s code."
+    );
+    expect(french.subject).toBe("Une relance n’est pas partie");
+    expect(french.text).toContain(
+      "Une relance d’une règle de Studio Nord n’est pas partie : elle a échoué, et la règle donne le code de la plateforme ou de Peal."
     );
   });
 

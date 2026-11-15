@@ -202,9 +202,7 @@ describe("the workspace's follow-up rules", () => {
       <FollowUpRuleView actions={null} rule={putOff} scope="On a post" />
     );
 
-    expect(english).toContain(
-      "The platform put it off: next try at Jul 7, 2026, 9:10 AM"
-    );
+    expect(english).toContain("Put off: next try at Jul 7, 2026, 9:10 AM");
 
     const french = await render(
       "fr",
@@ -216,7 +214,7 @@ describe("the workspace's follow-up rules", () => {
     );
 
     expect(french).toContain(
-      "La plateforme l’a repoussée : prochain essai le 7 juil. 2026, 09:10"
+      "Repoussée : prochain essai le 7 juil. 2026, 09:10"
     );
   });
 
