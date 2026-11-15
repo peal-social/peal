@@ -21,8 +21,10 @@ A self-hosted server offers a platform once you register an app for it on that p
 | [Pinterest](#pinterest)                     | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | Pinterest's Standard access                    |
 | [Google Business Profile](#google-business) | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | Google's access to the Business Profile APIs   |
 | [WordPress websites](#wordpress)            | None: each member gives their site's application password                                                            | Nothing to register                            |
+| [WordPress.com](#wordpress-com)             | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Nothing known to review                        |
+| [DEV and Hashnode](#devto-hashnode)         | None: each member gives a key of their own                                                                           | Nothing to register                            |
 
-For LinkedIn, X, YouTube, Pinterest and Google Business Profile, one of the two settings without the other stops the server at startup; without both, **Channels** does not offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
+For LinkedIn, X, YouTube, Pinterest, Google Business Profile and WordPress.com, one of the two settings without the other stops the server at startup; without both, **Channels** does not offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
 
 ### Token keys [#token-keys]
 
@@ -56,6 +58,9 @@ To publish an image or a video, the server reads it from the media store, whole,
 | YouTube                 | `oauth2.googleapis.com` and `www.googleapis.com`                                                                                                      | Videos in parts of 8 MiB, one held at a time                                                 |
 | Pinterest               | `api.pinterest.com` (or the Sandbox), and the address Pinterest names for each video, an object store's                                               | Videos sent as they are read, never held whole; images fetched by Pinterest                  |
 | Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` and `mybusiness.googleapis.com` | Photos fetched by Google from the media store                                                |
+| WordPress.com           | `public-api.wordpress.com`, whose API serves each site's core routes                                                                                  | Images read whole                                                                            |
+| DEV                     | `dev.to`                                                                                                                                              | Images read whole                                                                            |
+| Hashnode                | `gql-beta.hashnode.com`, and the upload address Hashnode gives for each image                                                                         | Images sent as they are read                                                                 |
 
 The platforms send people back to `PUBLIC_URL/connect/<platform>/callback`, through their browser. They never call the server themselves, apart from Bluesky reading Peal's client description, and Meta's data deletion requests.
 
@@ -497,3 +502,30 @@ Google fetches each photo from a link to the media store, valid for two hours: t
 ## WordPress websites [#wordpress]
 
 A WordPress site needs no app: a member connects it with its address, a user and an application password made on that user's profile page ([Websites and articles](/guides/channels/websites)), which the server keeps encrypted with `PEAL_TOKEN_KEYS`. Peal reaches the site's REST API over HTTPS on the default port, at public addresses only, redirects included: a site on your own network needs its host name, or address, in `PEAL_OUTBOUND_ALLOWED_HOSTS` ([Environment variables](/self-hosting/environment-variables#channels)). List only hosts you trust every member with: it is how a request could reach a service inside your network.
+
+## WordPress.com [#wordpress-com]
+
+A server connects sites on WordPress.com, and the Jetpack sites members reach there, once you register an application for it on WordPress.com. WordPress.com documents no review for one.
+
+<Steps>
+  <Step title="Create an application">
+    At `developer.wordpress.com/apps`, signed in with the WordPress.com account
+    that owns it, create an application of type **Web**, named after your
+    service, with your website's address and a description.
+  </Step>
+  <Step title="Add the redirect URL">
+    Give `PUBLIC_URL/connect/wordpress-com/callback` as its redirect URL, such
+    as `https://peal.example.com/connect/wordpress-com/callback`: WordPress.com
+    takes the exact address only.
+  </Step>
+  <Step title="Set the credentials">
+    Put the application's client ID in `WORDPRESS_COM_CLIENT_ID` and its client
+    secret in `WORDPRESS_COM_CLIENT_SECRET`.
+  </Step>
+</Steps>
+
+Members sign in on WordPress.com and pick one site. Peal asks for no scope: WordPress.com's default gives the application that one site, and Peal calls its core routes through `public-api.wordpress.com`, as it calls a WordPress site of its own. WordPress.com documents neither an expiry nor a refresh for these tokens: one it refuses marks the channel **Reconnect**.
+
+## DEV and Hashnode [#devto-hashnode]
+
+DEV and Hashnode need no app: a member connects an account with a key made there (an API key on DEV, a personal access token on Hashnode), which the server keeps encrypted with `PEAL_TOKEN_KEYS`. Hashnode answers its API only for a publication on its Pro plan, which the member pays on Hashnode.

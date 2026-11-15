@@ -353,6 +353,11 @@ be read, and their channels must be reconnected.
   `PUBLIC_URL/connect/pinterest/callback`. Until Pinterest grants the app
   Standard access, set `PINTEREST_SANDBOX=true`: Pins then go to Pinterest's
   Sandbox, where only their creator sees them, and which takes no video.
+- **WordPress.com** needs an application registered at
+  developer.wordpress.com/apps, of type Web, in `WORDPRESS_COM_CLIENT_ID`
+  and `WORDPRESS_COM_CLIENT_SECRET`, whose redirect is exactly
+  `PUBLIC_URL/connect/wordpress-com/callback`. DEV and Hashnode need no app:
+  members paste a key of their own.
 
 - **Google Business Profile** needs an OAuth client of the web application
   type in a Google Cloud project that Google gave access to the Business
@@ -561,6 +566,7 @@ In development, these are the ones you may want:
 | `PINTEREST_APP_ID`            | unset: Pinterest is not offered  | The Pinterest app's id, with `PINTEREST_APP_SECRET`                    |
 | `PINTEREST_SANDBOX`           | `false`                          | `true` sends Pinterest's calls to its Sandbox (Trial access)           |
 | `GOOGLE_BUSINESS_CLIENT_ID`   | unset: no Business Profile       | Its Google client's id, with `GOOGLE_BUSINESS_CLIENT_SECRET`           |
+| `WORDPRESS_COM_CLIENT_ID`     | unset: no WordPress.com          | The WordPress.com app's client id, with `WORDPRESS_COM_CLIENT_SECRET`  |
 | `PEAL_AI_PROVIDER`            | unset: no writing assistant      | `anthropic` or `openai-compatible`                                     |
 | `PEAL_AI_API_KEY`             | unset                            | The provider's key: required for Anthropic                             |
 | `PEAL_AI_BASE_URL`            | Anthropic's API                  | The API's base URL: required for an OpenAI-compatible server           |

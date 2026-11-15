@@ -12,11 +12,11 @@ Un [article](/guides/channels/websites#articles) part vers un site web, par son 
 
 Un article dont la réponse du site s’est perdue, et que Peal n’a pas pu y retrouver, finit `unconfirmed`, et aucun événement ne le dit : une intégration qui attend la fin d’un article lit son état dans l’API.
 
-| Champ       | Type           | Contenu                                                                            |
-| ----------- | -------------- | ---------------------------------------------------------------------------------- |
-| `articleId` | chaîne         | L’article                                                                          |
-| `channelId` | chaîne         | Le canal du site web                                                               |
-| `platform`  | chaîne ou null | Ce que fait tourner le site, comme `wordpress` ; null une fois le canal déconnecté |
+| Champ       | Type           | Contenu                                                                                                 |
+| ----------- | -------------- | ------------------------------------------------------------------------------------------------------- |
+| `articleId` | chaîne         | L’article                                                                                               |
+| `channelId` | chaîne         | Le canal du site web                                                                                    |
+| `platform`  | chaîne ou null | Où est le site : `wordpress`, `wordpressCom`, `devto` ou `hashnode` ; null une fois le canal déconnecté |
 
 ## article.published [#article-published]
 
