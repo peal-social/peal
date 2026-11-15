@@ -29,7 +29,7 @@ export interface FakeHashnodePublication {
   readonly id: string;
   /** The members of a team's publication, with their role there. */
   readonly members?: readonly {
-    readonly role: "CONTRIBUTOR" | "EDITOR" | "OWNER";
+    readonly role: string;
     readonly userId: string;
   }[];
   readonly ownerId: string;
@@ -132,6 +132,7 @@ const InputSchema = Schema.Struct({
 });
 
 const VariablesSchema = Schema.Struct({
+  after: Schema.optionalKey(Schema.NullOr(Schema.String)),
   host: Schema.optionalKey(Schema.String),
   id: Schema.optionalKey(Schema.String),
   input: Schema.optionalKey(InputSchema),
@@ -168,6 +169,27 @@ const noPro =
   "Publication does not have an active Pro plan. Upgrade to Pro to use the GraphQL API.";
 
 const hostOf = (url: string) => new URL(url).host;
+
+// A page of a publication's visible members, 100 at most, after the
+// cursor given, as a GraphQL connection.
+const membersPage = (
+  members: readonly { readonly role: string; readonly userId: string }[],
+  after: string | undefined
+) => {
+  const start = after === undefined ? 0 : Number(after);
+  const page = members.slice(start, start + 100);
+  const end = start + page.length;
+
+  return {
+    edges: page.map(({ role, userId }) => ({
+      node: { role, user: { id: userId } },
+    })),
+    pageInfo: {
+      endCursor: page.length === 0 ? null : String(end),
+      hasNextPage: end < members.length,
+    },
+  };
+};
 
 const nowOf = (clock: Clock.Clock) => () =>
   new Date(clock.currentTimeMillisUnsafe()).toISOString();
@@ -439,11 +461,10 @@ export const fakeHashnode = (options: FakeHashnodeOptions = {}) =>
             publication: {
               author: { id: publication.ownerId },
               id: publication.id,
-              members: {
-                edges: (publication.members ?? []).map(({ role, userId }) => ({
-                  node: { role, user: { id: userId } },
-                })),
-              },
+              members: membersPage(
+                publication.members ?? [],
+                request.variables.after ?? undefined
+              ),
               title: publication.title,
               url: publication.url,
             },

@@ -55,6 +55,10 @@ const FoundSchema = Schema.Struct({
             }),
           })
         ),
+        pageInfo: Schema.Struct({
+          endCursor: Schema.optionalKey(Schema.NullOr(Schema.String)),
+          hasNextPage: Schema.Boolean,
+        }),
       }),
     })
   ),
@@ -63,6 +67,9 @@ const FoundSchema = Schema.Struct({
 // The roles of a team's publication that publish: a contributor submits
 // drafts for review only.
 const publishingRoles: ReadonlySet<string> = new Set(["OWNER", "EDITOR"]);
+
+// The pages of members read at most, 100 each.
+const maxMemberPages = 20;
 
 const member = {
   name: "PealMember",
@@ -73,7 +80,7 @@ const member = {
 const publicationAt = {
   name: "PealPublication",
   query:
-    "query PealPublication($host: String!) { publication(host: $host) { id title url author { id } members(first: 100) { edges { node { role user { id } } } } } }",
+    "query PealPublication($host: String!, $after: String) { publication(host: $host) { id title url author { id } members(first: 100, after: $after) { edges { node { role user { id } } } pageInfo { hasNextPage endCursor } } } }",
 };
 
 const decodeAvatar = Schema.decodeUnknownOption(AvatarUrlSchema);
@@ -128,6 +135,55 @@ export const hashnodeVerifyKey = Effect.fnUntraced(function* hashnodeVerifyKey(
         )
       );
 
+  // The publication at `host`, which the member may publish to: their own,
+  // or a team's where they are an owner or an editor. A member the
+  // visible list leaves out (Hashnode hides members who chose to be
+  // private) is not refused: the first article says whether they may.
+  const publicationFor = Effect.fn("HashnodeKeyVerifier.publicationFor")(
+    function* publicationFor(signIn: SiteKeySignIn, host: string, me: string) {
+      let after: string | null = null;
+
+      for (let page = 1; page <= maxMemberPages; page += 1) {
+        const answer: typeof FoundSchema.Type = yield* ask(
+          signIn,
+          publicationAt,
+          { after, host },
+          FoundSchema
+        );
+
+        const { publication: found } = answer;
+
+        if (found === null) {
+          return yield* new SiteRefused({ reason: "publicationNotFound" });
+        }
+
+        if (found.author.id === me) {
+          return found;
+        }
+
+        const listed = found.members.edges.find(
+          ({ node }) => node.user.id === me
+        );
+
+        if (listed !== undefined) {
+          return yield* publishingRoles.has(listed.node.role.toUpperCase())
+            ? Effect.succeed(found)
+            : new SiteRefused({ reason: "cannotPublish" });
+        }
+
+        const { endCursor, hasNextPage } = found.members.pageInfo;
+
+        if (!hasNextPage || endCursor === null || endCursor === undefined) {
+          return found;
+        }
+
+        after = endCursor;
+      }
+
+      return yield* new PlatformUnavailable();
+    }
+  );
+
   return Effect.fn("HashnodeKeyVerifier.verify")(function* verify(
     signIn: SiteKeySignIn
   ) {
@@ -159,26 +215,7 @@ export const hashnodeVerifyKey = Effect.fnUntraced(function* hashnodeVerifyKey(
         // A team's publication the member writes for is not among theirs.
         return host === ""
           ? Effect.fail(new SiteRefused({ reason: "publicationNotFound" }))
-          : ask(signIn, publicationAt, { host }, FoundSchema).pipe(
-              Effect.flatMap(({ publication: found }) => {
-                if (found === null) {
-                  return Effect.fail(
-                    new SiteRefused({ reason: "publicationNotFound" })
-                  );
-                }
-
-                const mayPublish =
-                  found.author.id === me.id ||
-                  found.members.edges.some(
-                    ({ node }) =>
-                      node.user.id === me.id && publishingRoles.has(node.role)
-                  );
-
-                return mayPublish
-                  ? Effect.succeed(found)
-                  : Effect.fail(new SiteRefused({ reason: "cannotPublish" }));
-              })
-            );
+          : publicationFor(signIn, host, me.id);
       },
     });
 

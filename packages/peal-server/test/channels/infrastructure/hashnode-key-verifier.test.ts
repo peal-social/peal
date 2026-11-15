@@ -91,7 +91,7 @@ layer(Http)("checking a Hashnode token", (it) => {
   );
 
   it.effect(
-    "connects a team's publication only for its owners and editors",
+    "connects a team's publication for its editors, whatever the role's case, on any page",
     () =>
       Effect.gen(function* team() {
         const teamBlog = {
@@ -100,30 +100,52 @@ layer(Http)("checking a Hashnode token", (it) => {
           title: "A Team's Notes",
         };
 
-        const as = (role: "CONTRIBUTOR" | "EDITOR") => ({
+        const others = Array.from({ length: 150 }, (_, index) => ({
+          role: "CONTRIBUTOR",
+          userId: `64f00000000000000000${String(index).padStart(4, "0")}`,
+        }));
+
+        const as = (role: string) => ({
           publications: [
             gardenBlog,
-            { ...teamBlog, members: [{ role, userId: writerOnHashnode.id }] },
+            {
+              ...teamBlog,
+              members: [...others, { role, userId: writerOnHashnode.id }],
+            },
           ],
         });
 
+        for (const role of ["EDITOR", "editor", "Owner"]) {
+          const { site } = yield* verifyWith(
+            as(role),
+            "second.hashnode.example"
+          );
+
+          assert.strictEqual(site.accountId, teamBlog.id, role);
+        }
+
+        assert.deepStrictEqual(
+          yield* refusalOf(as("contributor"), "second.hashnode.example"),
+          new SiteRefused({ reason: "cannotPublish" })
+        );
+      })
+  );
+
+  it.effect(
+    "connects a team's publication that lists the member nowhere, as a private member",
+    () =>
+      Effect.gen(function* hidden() {
         const { site } = yield* verifyWith(
-          as("EDITOR"),
+          {
+            publications: [
+              gardenBlog,
+              { ...secondBlog, ownerId: "64f0000000000000000000c9" },
+            ],
+          },
           "second.hashnode.example"
         );
 
-        assert.strictEqual(site.accountId, teamBlog.id);
-        assert.deepStrictEqual(
-          yield* refusalOf(as("CONTRIBUTOR"), "second.hashnode.example"),
-          new SiteRefused({ reason: "cannotPublish" })
-        );
-        assert.deepStrictEqual(
-          yield* refusalOf(
-            { publications: [gardenBlog, teamBlog] },
-            "second.hashnode.example"
-          ),
-          new SiteRefused({ reason: "cannotPublish" })
-        );
+        assert.strictEqual(site.accountId, secondBlog.id);
       })
   );
 

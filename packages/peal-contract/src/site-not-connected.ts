@@ -11,8 +11,8 @@ import { errorEnvelope } from "./error-envelope.ts";
  * - `credentialsRefused`: the website refused the user name and the
  *   application password.
  * - `cannotPublish`: the website's user may not publish posts or upload
- *   files, which publishing articles needs; on Hashnode, the member is not
- *   an owner or an editor of the team's publication.
+ *   files, which publishing articles needs; on Hashnode, the team's
+ *   publication lists the member as a contributor.
  * - `otherWayIn`: the platform connects another way: a WordPress site by
  *   its address, user and application password (`connectSite`), a
  *   publishing platform by the member's key (`connectSiteWithKey`).
