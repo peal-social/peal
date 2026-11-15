@@ -38,6 +38,8 @@ peal_settings:
   # The platforms' sandbox apps: their ids here, their secrets in the vault.
   YOUTUBE_CLIENT_ID: 342335857798-t4h1dootm1813qo0pe8be46ahidqmo2g.apps.googleusercontent.com
   X_CLIENT_ID: aG1fSFFkWUF1OGJYM2ZZQktRbEk6MTpjaQ
+  # One WordPress.com app serves both environments, with both callbacks.
+  WORDPRESS_COM_CLIENT_ID: "153160"
   # X bills each read: the sandbox reads, but little.
   X_ANALYTICS: "true"
   X_ANALYTICS_DAILY_READS: "50"
