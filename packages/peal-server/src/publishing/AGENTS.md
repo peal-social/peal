@@ -292,7 +292,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   then a sanitiser that decodes entities, then Liquid over the HTML, so
   each `{` is Liquid's own text `{{ '{' }}`, only what Redcarpet
   un-escapes is escaped (not `$`), a hard break is two spaces, and a word
-  joiner follows each `@` (no mention). In both, a mark beside a letter
+  joiner follows an `@` Forem would mention (none after a word character, whose `@` is `&#64;`), `:` is escaped (no autolink) and a backtick is `&#96;` (out of Forem's code pass). In both, a mark beside a letter
   is HTML, a paragraph's leading spaces go, and two lists of a kind are
   an HTML comment apart. Titles go as plain text, which both escape. Each
   adapter keeps the journal's rules: files sent once (`article_files`, id
@@ -302,14 +302,15 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   and digits, and one of the title with another body is `several`),
   among drafts, published articles, or all for one scheduled there; every
   write to DEV in the process goes one at a time, a second apart (DEV
-  limits writes by address), a short `Retry-After` waited out in place;
+  limits writes by address; an upload holds the turn to its start only),
+  a short `Retry-After` waited out holding nothing;
   DEV deletes nothing (unpublishing sets `published` false) and refuses a
   `published_at` past, left out once gone by. Hashnode's is found among
   the latest posts or drafts (a draft's id `draft:<id>`); its reads may
   come from a cache, so `find` waits a minute past the earlier call; a
   commit answered with an undocumented code is looked for; it cannot
   publish at a time (`siteStatusNotTaken`) and refuses all without its
-  Pro plan (`platformRefusalCodes.sitePlanRequired`). What each site takes is
+  Pro plan (`platformRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
   `domain/site-rules.ts`, checked by `articleViolations` with the
   channel's rules. Tests set the fakes' addresses on
   `testDevToHosts`, `testHashnodeHosts`, `testWordPressComHosts`.

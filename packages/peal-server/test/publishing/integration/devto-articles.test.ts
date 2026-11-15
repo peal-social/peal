@@ -464,6 +464,11 @@ describe("an article on DEV", () => {
           );
 
           assert.strictEqual(stateOf(article), "unconfirmed");
+          // The member is told why: another article of that title is there.
+          assert.isTrue(
+            article.state._tag === "unconfirmed" &&
+              article.state.reason === "severalOnSite"
+          );
 
           yield* (yield* Articles).retry(actor, article.id);
 
@@ -480,6 +485,15 @@ describe("an article on DEV", () => {
             )
           );
 
+          const again = yield* ArticleStore.use((store) =>
+            store.get(article.id)
+          ).pipe(Effect.map(Option.getOrThrow));
+
+          assert.isTrue(
+            again.state._tag === "unconfirmed" &&
+              again.state.reason === "severalOnSite"
+          );
+
           assert.lengthOf(
             devto
               .requests()
@@ -491,6 +505,35 @@ describe("an article on DEV", () => {
           );
         })
       )
+  );
+
+  it.effect("tells a title of signs alone from another, by the signs", () =>
+    onArticles(
+      Effect.gen(function* signs() {
+        const { sent: article } = yield* sentToDevTo(
+          {
+            intercept: ({ method, path }) =>
+              method === "POST" && path === "/api/articles"
+                ? { body: { error: "boom", status: 502 }, status: 502 }
+                : undefined,
+          },
+          { title: "!!!" },
+          (fake) => {
+            fake.addArticle({
+              body_markdown: "Something else.",
+              published: true,
+              published_at: "2026-06-15T07:00:30.000Z",
+              title: "???",
+            });
+          }
+        );
+
+        assert.isTrue(
+          article.state._tag === "unconfirmed" &&
+            article.state.reason === "noResponse"
+        );
+      })
+    )
   );
 
   it.effect("finds a published article past the account's drafts", () =>

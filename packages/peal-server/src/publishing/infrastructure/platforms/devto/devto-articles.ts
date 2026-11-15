@@ -297,7 +297,12 @@ const listingOf = (draft: boolean, scheduled: boolean) => {
 // What of a title DEV keeps whatever it does to it: its letters and
 // digits. Forem's `normalize_title` makes a space of what it does not
 // allow, which is never a letter or a digit, and runs spaces together.
-const titleKey = (title: string) => title.replaceAll(/[^\p{L}\p{N}]/gu, "");
+// A title of signs alone keeps its signs, compared as written.
+const titleKey = (title: string) => {
+  const key = title.replaceAll(/[^\p{L}\p{N}]/gu, "");
+
+  return key === "" ? title.trim() : key;
+};
 
 const signed = (
   token: SiteToken,
@@ -605,7 +610,11 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
       Effect.map((search): PublishResult =>
         search._tag === "found"
           ? search.result
-          : { _tag: "unconfirmed", reason }
+          : {
+              _tag: "unconfirmed",
+              // Several posts the call may have made: the member is told so.
+              reason: search._tag === "several" ? "severalOnSite" : reason,
+            }
       ),
       Effect.catchTag(
         ["PlatformUnavailable", "RateLimited", "BadRequest", "MediaRejected"],

@@ -104,6 +104,8 @@ Un espace de travail au-delà de son offre, comme après son essai, n’envoie a
 
 Ce qui part est public. Peal n’envoie jamais un article deux fois : quand la réponse du site se perd, Peal cherche l’article parmi ceux de l’utilisateur, par son titre, et le prend quand un seul correspond ; quand il ne peut pas le dire, l’article est **À vérifier** : regardez sur le site, puis renvoyez-le seulement s’il n’y est pas. Renvoyé, Peal cherche d’abord cet article une fois de plus, parmi les articles de l’utilisateur de ce titre créés ou modifiés dans la journée qui a suivi le premier envoi, et le prend quand il en trouve exactement un ; quand il en trouve plusieurs, ou que le site refuse la recherche, l’article reste **À vérifier**.
 
+Quand le site a un autre article du même titre, que Peal ne peut pas distinguer de celui qu’il a envoyé, l’article le dit, et Peal ne le renvoie jamais de lui-même. Regardez sur le site : si l’article y est, il est en ligne et vous pouvez le laisser ; sinon, renommez ou supprimez l’autre article là-bas, puis renvoyez-le.
+
 ## Une fois sur le site [#on-site]
 
 - **Mettre à jour sur le site** renvoie le titre, le corps, l’extrait, les étiquettes, les catégories et l’image mise en avant sur l’article du site, aussitôt : une image mise en avant ou un extrait retirés dans Peal le sont là-bas. Le site garde son état et sa date. Les images que le site a déjà ne sont pas renvoyées.

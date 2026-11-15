@@ -254,6 +254,7 @@ export const UnconfirmedReasonSchema = Schema.Literals([
   "adapterFailure",
   "stillProcessing",
   "searchRefused",
+  "severalOnSite",
 ]).annotate({ identifier: "UnconfirmedReason" });
 
 export type UnconfirmedReason = typeof UnconfirmedReasonSchema.Type;

@@ -605,7 +605,11 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         Effect.map((search): PublishResult =>
           search._tag === "found"
             ? search.result
-            : { _tag: "unconfirmed", reason }
+            : {
+                _tag: "unconfirmed",
+                // Several posts the call may have made: the member is told so.
+                reason: search._tag === "several" ? "severalOnSite" : reason,
+              }
         ),
         // The search failed: whether it went out is not known.
         Effect.catchTag(

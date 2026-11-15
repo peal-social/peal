@@ -41,6 +41,10 @@ export const UnconfirmedReasonSchema = Schema.Literals([
   // The site refused the search for a post an earlier call may have made,
   // so whether it is there is not known.
   "searchRefused",
+  // The site holds more than one post the call may have made (another of
+  // the same title, written there), which no one can tell apart: Peal
+  // never sends it again while they are there.
+  "severalOnSite",
 ]);
 
 export type UnconfirmedReason = typeof UnconfirmedReasonSchema.Type;

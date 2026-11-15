@@ -443,6 +443,13 @@ export const ArticleEditor = ({
           </a>
         </p>
       ) : null}
+      {article?.state._tag === "unconfirmed" ? (
+        <p className="text-sm">
+          {article.state.reason === "severalOnSite"
+            ? t("toCheckSeveral")
+            : t("toCheckNote")}
+        </p>
+      ) : null}
       {article?.state._tag === "failed" ? (
         <p className="text-destructive text-sm">
           {article.state.code === "sitePlanRequired"

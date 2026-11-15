@@ -1803,7 +1803,7 @@
     "viewPost": "See it on {platform}",
     "failed": "It did not go out: {reason}",
     "unconfirmed": "Peal cannot tell whether it went out: {reason}. Check {platform} before you post it again, then say what you found.",
-    "unconfirmedReason": "{reason, select, noResponse {the platform did not answer} unreadableResponse {its answer could not be read} interrupted {the server stopped during the call} adapterFailure {Peal failed during the call} stillProcessing {the platform was still processing it when Peal stopped checking} searchRefused {the site refused Peal’s search for it} other {{reason}}}",
+    "unconfirmedReason": "{reason, select, noResponse {the platform did not answer} unreadableResponse {its answer could not be read} interrupted {the server stopped during the call} adapterFailure {Peal failed during the call} stillProcessing {the platform was still processing it when Peal stopped checking} searchRefused {the site refused Peal’s search for it} severalOnSite {the site holds another post of its title, which Peal cannot tell from it} other {{reason}}}",
     "cancelled": "It was cancelled before it went out.",
     "dropped": "This channel was taken off the post before it went out: the post went out on its other channels.",
     "pending": "It waits for its turn.",
@@ -3511,7 +3511,7 @@
       "disabledToReconnect": "Turned off, to reconnect"
     },
     "troubleStatus": "{status, select, failed {Failed} other {Unconfirmed}}",
-    "reason": "{reason, select, contentRejected {Content refused} channelDisconnected {Channel disconnected} channelDisabled {Channel turned off} mediaRemoved {Media deleted} mediaRejected {Media refused} missed {Missed} notPublished {Not found after a check} rateLimited {Rate limited} tokenExpired {Authorization stopped working} unavailable {Platform unreachable} appNotAudited {Private posts only, app not audited} quotaExceeded {Daily upload allowance spent} appBillingLimit {Server’s app not paid for} planLimit {Plan limit reached} partsNotSent {Later parts not sent} repliesNotAllowed {Replies refused by X} paymentMethodRequired {Payment method needed for X} xCeilingReached {X ceiling reached} paymentFailed {Payment failed, X not billed} perAccountPricingRequired {Per-account pricing needed for X} xThreadCut {Thread cut by X’s meter} noResponse {No answer} unreadableResponse {Unreadable answer} interrupted {Interrupted} adapterFailure {Failed during the call} stillProcessing {Still processing} searchRefused {Search refused by the site} other {{reason}}}",
+    "reason": "{reason, select, contentRejected {Content refused} channelDisconnected {Channel disconnected} channelDisabled {Channel turned off} mediaRemoved {Media deleted} mediaRejected {Media refused} missed {Missed} notPublished {Not found after a check} rateLimited {Rate limited} tokenExpired {Authorization stopped working} unavailable {Platform unreachable} appNotAudited {Private posts only, app not audited} quotaExceeded {Daily upload allowance spent} appBillingLimit {Server’s app not paid for} planLimit {Plan limit reached} partsNotSent {Later parts not sent} repliesNotAllowed {Replies refused by X} paymentMethodRequired {Payment method needed for X} xCeilingReached {X ceiling reached} paymentFailed {Payment failed, X not billed} perAccountPricingRequired {Per-account pricing needed for X} xThreadCut {Thread cut by X’s meter} noResponse {No answer} unreadableResponse {Unreadable answer} interrupted {Interrupted} adapterFailure {Failed during the call} stillProcessing {Still processing} searchRefused {Search refused by the site} severalOnSite {Several of its title on the site} other {{reason}}}",
     "requests": {
       "title": "Contract requests",
       "description": "Requests to cancel a contract or withdraw from one that the form could not apply by itself: no contract was found, or their sender has not followed the link emailed to them. Apply one to a workspace only once you know its sender holds that contract; it takes effect as of the date it was received, and the sender is told.",
@@ -4825,7 +4825,9 @@
       "linkHint": "Empty removes the link.",
       "linkApply": "Apply",
       "failedNote": "It did not go out ({code}). Fix what the site refused, then send it again.",
-      "failedPlanRequired": "Hashnode refused it: its API answers only for a publication on its Pro plan. Upgrade the publication on Hashnode, then send it again."
+      "failedPlanRequired": "Hashnode refused it: its API answers only for a publication on its Pro plan. Upgrade the publication on Hashnode, then send it again.",
+      "toCheckNote": "Peal cannot tell whether it reached the site: look there, and send it again only if it is not.",
+      "toCheckSeveral": "The site has another article of this title, which Peal cannot tell from this one, so it never sends this one again on its own. Look on the site: if this article is there, it is live, and you can leave it; if it is not, rename or delete the other article there, then send it again."
     }
   }
 }

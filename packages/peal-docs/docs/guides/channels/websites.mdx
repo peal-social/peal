@@ -103,6 +103,8 @@ A workspace over its plan, as after its trial, sends no article until it is back
 
 What goes out is public. Peal never sends an article twice: when the site's answer is lost, Peal looks for the post among the user's posts, by its title, and takes it when exactly one matches; when it cannot tell, the article is **To check**: look on the site, then send it again only if it is not there. Sent again, Peal first looks for that post once more, among the user's posts of its title made or changed within a day of the first send, and takes it when it finds exactly one; when it finds several, or the site refuses the search, the article stays **To check**.
 
+When the site holds another article of the same title, which Peal cannot tell from the one it sent, the article says so, and Peal never sends it again on its own. Look on the site: if the article is there, it is live, and you can leave it; if it is not, rename or delete the other article there, then send it again.
+
 ## Once it is on the site [#on-site]
 
 - **Update on the site** sends the title, body, excerpt, tags, categories and featured image again over the site's post, at once: a featured image or an excerpt removed in Peal is removed there. The site keeps its status and its date. Images the site has already are not sent again.

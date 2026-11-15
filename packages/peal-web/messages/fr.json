@@ -1803,7 +1803,7 @@
     "viewPost": "La voir sur {platform}",
     "failed": "Elle n’est pas partie : {reason}",
     "unconfirmed": "Peal ne sait pas si elle est partie : {reason}. Vérifiez sur {platform} avant de la republier, puis indiquez ce que vous avez trouvé.",
-    "unconfirmedReason": "{reason, select, noResponse {la plateforme n’a pas répondu} unreadableResponse {sa réponse n’a pas pu être lue} interrupted {le serveur s’est arrêté pendant l’envoi} adapterFailure {Peal a échoué pendant l’envoi} stillProcessing {la plateforme la traitait encore quand Peal a cessé de vérifier} searchRefused {le site a refusé que Peal la cherche} other {{reason}}}",
+    "unconfirmedReason": "{reason, select, noResponse {la plateforme n’a pas répondu} unreadableResponse {sa réponse n’a pas pu être lue} interrupted {le serveur s’est arrêté pendant l’envoi} adapterFailure {Peal a échoué pendant l’envoi} stillProcessing {la plateforme la traitait encore quand Peal a cessé de vérifier} searchRefused {le site a refusé que Peal la cherche} severalOnSite {le site a un autre article de ce titre, que Peal ne peut pas distinguer} other {{reason}}}",
     "cancelled": "Elle a été annulée avant de partir.",
     "dropped": "Ce canal a été retiré de la publication avant son départ : elle est partie sur ses autres canaux.",
     "pending": "Elle attend son tour.",
@@ -3511,7 +3511,7 @@
       "disabledToReconnect": "Désactivé, à reconnecter"
     },
     "troubleStatus": "{status, select, failed {Échec} other {Non confirmé}}",
-    "reason": "{reason, select, contentRejected {Contenu refusé} channelDisconnected {Canal déconnecté} channelDisabled {Canal désactivé} mediaRemoved {Média supprimé} mediaRejected {Média refusé} missed {Manquée} notPublished {Introuvable après vérification} rateLimited {Limite de débit} tokenExpired {Autorisation expirée} unavailable {Plateforme injoignable} appNotAudited {Publications privées seulement, application non auditée} quotaExceeded {Allocation quotidienne de mises en ligne épuisée} appBillingLimit {Application du serveur non réglée} planLimit {Limite de l’abonnement atteinte} partsNotSent {Suite non envoyée} repliesNotAllowed {Réponses refusées par X} paymentMethodRequired {Moyen de paiement requis pour X} xCeilingReached {Plafond X atteint} paymentFailed {Paiement en échec, X non facturé} perAccountPricingRequired {Tarif par compte requis pour X} xThreadCut {Fil coupé par le compteur de X} noResponse {Pas de réponse} unreadableResponse {Réponse illisible} interrupted {Interrompue} adapterFailure {Échec pendant l’appel} stillProcessing {Traitement en cours} searchRefused {Recherche refusée par le site} other {{reason}}}",
+    "reason": "{reason, select, contentRejected {Contenu refusé} channelDisconnected {Canal déconnecté} channelDisabled {Canal désactivé} mediaRemoved {Média supprimé} mediaRejected {Média refusé} missed {Manquée} notPublished {Introuvable après vérification} rateLimited {Limite de débit} tokenExpired {Autorisation expirée} unavailable {Plateforme injoignable} appNotAudited {Publications privées seulement, application non auditée} quotaExceeded {Allocation quotidienne de mises en ligne épuisée} appBillingLimit {Application du serveur non réglée} planLimit {Limite de l’abonnement atteinte} partsNotSent {Suite non envoyée} repliesNotAllowed {Réponses refusées par X} paymentMethodRequired {Moyen de paiement requis pour X} xCeilingReached {Plafond X atteint} paymentFailed {Paiement en échec, X non facturé} perAccountPricingRequired {Tarif par compte requis pour X} xThreadCut {Fil coupé par le compteur de X} noResponse {Pas de réponse} unreadableResponse {Réponse illisible} interrupted {Interrompue} adapterFailure {Échec pendant l’appel} stillProcessing {Traitement en cours} searchRefused {Recherche refusée par le site} severalOnSite {Plusieurs de ce titre sur le site} other {{reason}}}",
     "requests": {
       "title": "Demandes sur les contrats",
       "description": "Les demandes de résiliation ou de rétractation que le formulaire n’a pas pu appliquer seul : aucun contrat trouvé, ou leur auteur n’a pas suivi le lien reçu par e-mail. N’en appliquez une à un espace de travail qu’une fois certain que son auteur est titulaire de ce contrat ; elle prend effet à la date de sa réception, et son auteur en est informé.",
@@ -4825,7 +4825,9 @@
       "linkHint": "Vide enlève le lien.",
       "linkApply": "Appliquer",
       "failedNote": "Il n’est pas parti ({code}). Corrigez ce que le site a refusé, puis renvoyez-le.",
-      "failedPlanRequired": "Hashnode l’a refusé : son API ne répond que pour une publication en offre Pro. Passez la publication en Pro sur Hashnode, puis renvoyez-le."
+      "failedPlanRequired": "Hashnode l’a refusé : son API ne répond que pour une publication en offre Pro. Passez la publication en Pro sur Hashnode, puis renvoyez-le.",
+      "toCheckNote": "Peal ne peut pas savoir s’il a atteint le site : regardez-y, et renvoyez-le seulement s’il n’y est pas.",
+      "toCheckSeveral": "Le site a un autre article de ce titre, que Peal ne peut pas distinguer de celui-ci : il ne le renvoie donc jamais de lui-même. Regardez sur le site : si cet article y est, il est en ligne et vous pouvez le laisser ; sinon, renommez ou supprimez l’autre article là-bas, puis renvoyez-le."
     }
   }
 }

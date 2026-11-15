@@ -184,14 +184,15 @@ Once a member says what they found, a `post.published`, or a `post.failed` with 
 | `attemptedAt` | string         | When the attempt was made, as an instant in UTC                |
 | `reason`      | string         | Why Peal cannot tell, one of the codes below                   |
 
-| `reason`             | What happened                                                                      |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| `noResponse`         | The request may have reached the platform, and no answer came back.                |
-| `unreadableResponse` | An answer came back that Peal could not read.                                      |
-| `interrupted`        | The server stopped during the call, so whether it went out is not known.           |
-| `adapterFailure`     | Peal's own code failed during the call, after the request may have left.           |
-| `stillProcessing`    | The platform took the post and was still processing it when Peal stopped checking. |
-| `searchRefused`      | An article's site refused Peal's search for a post an earlier call may have made.  |
+| `reason`             | What happened                                                                                                                                                           |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `noResponse`         | The request may have reached the platform, and no answer came back.                                                                                                     |
+| `unreadableResponse` | An answer came back that Peal could not read.                                                                                                                           |
+| `interrupted`        | The server stopped during the call, so whether it went out is not known.                                                                                                |
+| `adapterFailure`     | Peal's own code failed during the call, after the request may have left.                                                                                                |
+| `stillProcessing`    | The platform took the post and was still processing it when Peal stopped checking.                                                                                      |
+| `searchRefused`      | An article's site refused Peal's search for a post an earlier call may have made.                                                                                       |
+| `severalOnSite`      | An article's site holds another post of its title, which Peal cannot tell from the one it may have made: look, then rename or remove the other before sending it again. |
 
 ```json title="post.unconfirmed"
 {
