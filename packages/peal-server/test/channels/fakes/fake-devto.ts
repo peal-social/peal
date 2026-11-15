@@ -64,6 +64,12 @@ export interface FakeDevToOptions {
   /** Whether DEV does what the request asks, then drops the connection. */
   readonly drop?: (request: FakeDevToRequest) => boolean;
   readonly users?: readonly FakeDevToUser[];
+  /**
+   * Whether DEV takes one write a second from the server, whatever key it
+   * carries, as Rack::Attack's `api_write_throttle` does by address: a
+   * second one within the second answers 429, `Retry-After: 1`.
+   */
+  readonly writesPerSecond?: boolean;
 }
 
 export interface FakeDevTo {
@@ -75,6 +81,8 @@ export interface FakeDevTo {
   /** The files uploaded, by the address DEV gave them. */
   readonly images: () => ReadonlyMap<string, Buffer>;
   readonly requests: () => readonly FakeDevToRequest[];
+  /** How many writes DEV refused for coming too soon. */
+  readonly throttled: () => number;
 }
 
 /** What a reader of DEV sees of an article's Markdown, and whether Liquid ran. */
@@ -119,6 +127,14 @@ export const readAsForem = (markdown: string): ForemReading => {
   });
 
   return { liveLiquid, text };
+};
+
+/** Another writer on DEV, whose key is synthetic. */
+export const neighbour: FakeDevToUser = {
+  id: 4343,
+  key: "synthetic-devto-key-neighbour",
+  name: "Synthetic Neighbour",
+  username: "synthetic_neighbour",
 };
 
 /** A writer on DEV, whose key is synthetic. */
@@ -184,7 +200,9 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
   Clock.clockWith((clock) =>
     Effect.acquireRelease(
       Effect.promise(async () => {
-        const users = options.users ?? [gardener];
+        const users = options.users ?? [gardener, neighbour];
+        let lastWrite: number | undefined;
+        let throttled = 0;
         const received: FakeDevToRequest[] = [];
         const articles = new Map<number, FakeDevToArticle>();
         const images = new Map<string, Buffer>();
@@ -463,6 +481,29 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
             return;
           }
 
+          const write = request.method !== "GET";
+
+          const tooSoon =
+            options.writesPerSecond === true &&
+            write &&
+            lastWrite !== undefined &&
+            now() - lastWrite < 1000;
+
+          if (tooSoon) {
+            throttled += 1;
+            send(response, {
+              body: { error: "Rate limit reached", status: 429 },
+              headers: { "retry-after": "1" },
+              status: 429,
+            });
+
+            return;
+          }
+
+          if (write) {
+            lastWrite = now();
+          }
+
           const answered = route(request, user);
 
           if (options.drop?.(request) === true) {
@@ -510,6 +551,7 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
           articles: () => [...articles.values()],
           images: () => new Map(images),
           requests: () => [...received],
+          throttled: () => throttled,
         };
 
         return { fake, server };

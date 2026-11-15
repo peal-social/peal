@@ -9,7 +9,11 @@ import { TestClock } from "effect/testing";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { Articles } from "#publishing/application/articles.ts";
-import { readAsForem } from "#test/channels/fakes/fake-devto.ts";
+import {
+  gardener,
+  neighbour,
+  readAsForem,
+} from "#test/channels/fakes/fake-devto.ts";
 import { freshWorkspace } from "#test/channels/support.ts";
 import { coverImage } from "#test/publishing/article-server.ts";
 import {
@@ -174,6 +178,36 @@ describe("an article on DEV", () => {
 
           assert.isTrue(before === undefined || at - before >= 1000);
         }
+      })
+    )
+  );
+
+  it.effect("spaces every write to DEV, whichever account it is for", () =>
+    onArticles(
+      Effect.gen(function* shared() {
+        const devto = yield* startDevTo({ writesPerSecond: true });
+        const articles = yield* Articles;
+        const sent = [];
+
+        for (const key of [gardener.key, neighbour.key]) {
+          const workspaceId = yield* freshWorkspace;
+          const channel = yield* devtoChannel(workspaceId, key);
+
+          sent.push(
+            yield* articles.create(
+              writer(workspaceId),
+              { channelId: channel.id, content: content({ categories: [] }) },
+              Option.some({ at: Option.none(), timeZone: zone })
+            )
+          );
+        }
+
+        yield* eventuallyLater(
+          "both are on DEV",
+          Effect.sync(() => devto.articles().length === 2)
+        );
+
+        assert.strictEqual(devto.throttled(), 0);
       })
     )
   );

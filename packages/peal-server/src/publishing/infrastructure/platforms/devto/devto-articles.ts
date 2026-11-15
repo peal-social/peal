@@ -1,4 +1,13 @@
-import { Clock, DateTime, Duration, Effect, Option, Ref, Schema } from "effect";
+import {
+  Clock,
+  DateTime,
+  Duration,
+  Effect,
+  Option,
+  Ref,
+  Schema,
+  Semaphore,
+} from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
@@ -71,6 +80,12 @@ const listingBytes = 32 * 1024 * 1024;
 
 // DEV's limit on writes with one key (Rack::Attack's, per second).
 const writeSpacing = Duration.millis(1100);
+
+// A refusal for coming too soon that asks to wait this long at most is
+// waited out in place, a few times; a longer one ends the attempt.
+const shortWaitLimit = Duration.seconds(5);
+
+const maxShortWaits = 3;
 
 // How far before the call a post made by it may say it was published:
 // DEV's clock and Peal's may differ; and how long after.
@@ -269,28 +284,59 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
 
   const uploads = yield* publicHttpClientWith({ timeout: uploadTimeout });
 
-  // When each channel's key last wrote, in this process: an article's
-  // writes are one channel's turn at a time, so this spaces them all.
-  const lastWrites = yield* Ref.make(new Map<string, number>());
+  // DEV takes one write a second from an address, whatever key it
+  // carries (Rack::Attack's `api_write_throttle`, counted as requests
+  // arrive): every write to DEV in the process goes one at a time, a
+  // second and a little after the one before ended.
+  const writes = yield* Semaphore.make(1);
+  const nextWrite = yield* Ref.make(0);
 
-  const spaced = <A, E, R>(token: SiteToken, write: Effect.Effect<A, E, R>) =>
+  const slot = Effect.gen(function* slot() {
+    const now = yield* Clock.currentTimeMillis;
+    const at = yield* Ref.get(nextWrite);
+
+    if (at > now) {
+      yield* Effect.sleep(Duration.millis(at - now));
+    }
+  });
+
+  const ended = Effect.gen(function* ended() {
+    const now = yield* Clock.currentTimeMillis;
+
+    yield* Ref.set(nextWrite, now + Duration.toMillis(writeSpacing));
+  });
+
+  // A write in its slot; one DEV refused for coming too soon, with a
+  // short `Retry-After`, waits it out and goes again (nothing was made).
+  const spaced = <E, R>(
+    write: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+  ) =>
     Effect.gen(function* spacedWrite() {
-      const now = yield* Clock.currentTimeMillis;
-      const last = (yield* Ref.get(lastWrites)).get(token.root);
-      const wait = Duration.toMillis(writeSpacing);
+      for (let tries = 1; ; tries += 1) {
+        yield* slot;
 
-      if (last !== undefined && now - last < wait) {
-        yield* Effect.sleep(Duration.millis(wait - (now - last)));
+        const response = yield* write.pipe(Effect.ensuring(ended));
+        const now = yield* DateTime.now;
+
+        const wait = retryAfterOf(response.headers, now).pipe(
+          Option.map(Duration.toMillis)
+        );
+
+        const shortWait =
+          response.status === 429 &&
+          tries < maxShortWaits &&
+          Option.exists(
+            wait,
+            (millis) => millis <= Duration.toMillis(shortWaitLimit)
+          );
+
+        if (!shortWait) {
+          return response;
+        }
+
+        yield* Effect.sleep(Duration.millis(Option.getOrElse(wait, () => 0)));
       }
-
-      const at = yield* Clock.currentTimeMillis;
-
-      yield* Ref.update(lastWrites, (writes) =>
-        new Map(writes).set(token.root, at)
-      );
-
-      return yield* write;
-    });
+    }).pipe(writes.withPermits(1));
 
   // Sends one file of the article: the address DEV serves it at.
   const upload = Effect.fn("DevToArticles.upload")(function* upload(
@@ -317,7 +363,6 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
         });
 
         return yield* spaced(
-          token,
           execute(
             uploads,
             signed(
@@ -520,24 +565,21 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
 
     // The commit: once it may have reached DEV, nothing is sent again.
     const response = yield* spaced(
-      token,
-      api
-        .execute(
-          signed(
-            token,
-            HttpClientRequest.post(devtoUrl(hosts, "/api/articles")).pipe(
-              HttpClientRequest.bodyJsonUnsafe({ article: fields })
-            )
+      api.execute(
+        signed(
+          token,
+          HttpClientRequest.post(devtoUrl(hosts, "/api/articles")).pipe(
+            HttpClientRequest.bodyJsonUnsafe({ article: fields })
           )
         )
-        .pipe(
-          Effect.map(Option.some),
-          Effect.catchTags({
-            HttpClientError: () => Effect.succeedNone,
-            OutboundRequestRefused: (refused) =>
-              Effect.fail(guardRefusalOf(refused)),
-          })
-        )
+      )
+    ).pipe(
+      Effect.map(Option.some),
+      Effect.catchTags({
+        HttpClientError: () => Effect.succeedNone,
+        OutboundRequestRefused: (refused) =>
+          Effect.fail(guardRefusalOf(refused)),
+      })
     );
 
     if (Option.isNone(response) || response.value.status >= 500) {
@@ -564,7 +606,6 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
     fields: Partial<ArticleFields>
   ) =>
     spaced(
-      token,
       execute(
         api,
         signed(
