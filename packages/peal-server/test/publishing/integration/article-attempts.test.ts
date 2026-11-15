@@ -1218,4 +1218,86 @@ describe("an attempt at sending an article", () => {
       })
     )
   );
+
+  it.effect(
+    "answers what an earlier attempt of its round ended with, and sends nothing",
+    () =>
+      onArticles(
+        Effect.gen(function* endedEarlier() {
+          const site = yield* fakeWordPress();
+          const workspaceId = yield* freshWorkspace;
+          const channel = yield* siteChannel(workspaceId, site);
+          const articles = yield* Articles;
+          const actor = writer(workspaceId);
+          const calls = yield* ArticleJournal;
+          const turns = yield* ArticleSendTurns;
+          const sharding = yield* Sharding.Sharding;
+
+          const draft = yield* articles.create(
+            actor,
+            { channelId: channel.id, content: content() },
+            Option.none()
+          );
+
+          const held = yield* Deferred.make<boolean>();
+          const release = yield* Deferred.make<boolean>();
+
+          yield* turns
+            .inTurn(
+              channel.id,
+              Deferred.succeed(held, true).pipe(
+                Effect.andThen(Deferred.await(release))
+              )
+            )
+            .pipe(Effect.forkScoped);
+
+          yield* Deferred.await(held);
+
+          yield* articles.schedule(actor, draft.id, {
+            at: Option.none(),
+            timeZone: zone,
+          });
+
+          yield* eventually(
+            "the article is being sent",
+            stateOf(draft.id).pipe(Effect.map((state) => state === "publishing"))
+          );
+
+          // Meanwhile attempt 1 is recorded as having made the post, as a
+          // run the database kept from answering would leave it.
+          const post = site.addPost({ title: "Spring sowing" });
+          const key = `${draft.id}:synthetic:1`;
+          const at = yield* DateTime.now;
+          const call = { articleId: draft.id, attempt: 1, round: draft.round };
+
+          yield* calls.begin({ ...call, idempotencyKey: key, startedAt: at });
+          yield* calls.committing(key, at);
+          yield* calls.finish(
+            key,
+            {
+              _tag: "published",
+              platformPostId: PlatformPostIdSchema.make(String(post)),
+            },
+            at
+          );
+
+          // Past attempt 1's patience: attempt 2 takes the turn.
+          for (let round = 0; round < 200; round += 1) {
+            yield* sharding.pollStorage;
+            yield* TestClock.adjust(Duration.seconds(10));
+            yield* TestClock.withLive(Effect.sleep(Duration.millis(10)));
+          }
+
+          yield* Deferred.succeed(release, true);
+
+          yield* eventuallyLater(
+            "the article is published",
+            stateOf(draft.id).pipe(Effect.map((state) => state === "published"))
+          );
+
+          assert.strictEqual(madePosts(site), 0);
+          assert.lengthOf(site.posts(), 1);
+        })
+      )
+  );
 });
