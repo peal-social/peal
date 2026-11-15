@@ -25,6 +25,8 @@ module Peal
 
       member -> { Peal::Types::ArticleViolationSiteTimeInPast }, key: "SITE_TIME_IN_PAST"
 
+      member -> { Peal::Types::ArticleViolationSiteStatusNotTaken }, key: "SITE_STATUS_NOT_TAKEN"
+
       member -> { Peal::Types::ArticleViolationTimeInPast }, key: "TIME_IN_PAST"
 
       member -> { Peal::Types::ArticleViolationCoverNotImage }, key: "COVER_NOT_IMAGE"

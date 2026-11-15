@@ -32,6 +32,12 @@ public readonly record struct ChannelPlatform : IStringEnum
 
     public static readonly ChannelPlatform Wordpress = new(Values.Wordpress);
 
+    public static readonly ChannelPlatform Devto = new(Values.Devto);
+
+    public static readonly ChannelPlatform Hashnode = new(Values.Hashnode);
+
+    public static readonly ChannelPlatform WordpressCom = new(Values.WordpressCom);
+
     public ChannelPlatform(string value)
     {
         Value = value;
@@ -151,5 +157,11 @@ public readonly record struct ChannelPlatform : IStringEnum
         public const string GoogleBusiness = "googleBusiness";
 
         public const string Wordpress = "wordpress";
+
+        public const string Devto = "devto";
+
+        public const string Hashnode = "hashnode";
+
+        public const string WordpressCom = "wordpressCom";
     }
 }

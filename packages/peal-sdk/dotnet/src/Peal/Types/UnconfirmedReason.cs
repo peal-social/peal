@@ -20,6 +20,8 @@ public readonly record struct UnconfirmedReason : IStringEnum
 
     public static readonly UnconfirmedReason SearchRefused = new(Values.SearchRefused);
 
+    public static readonly UnconfirmedReason SeveralOnSite = new(Values.SeveralOnSite);
+
     public UnconfirmedReason(string value)
     {
         Value = value;
@@ -127,5 +129,7 @@ public readonly record struct UnconfirmedReason : IStringEnum
         public const string StillProcessing = "stillProcessing";
 
         public const string SearchRefused = "searchRefused";
+
+        public const string SeveralOnSite = "severalOnSite";
     }
 }

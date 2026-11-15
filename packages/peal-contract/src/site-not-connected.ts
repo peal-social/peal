@@ -11,13 +11,26 @@ import { errorEnvelope } from "./error-envelope.ts";
  * - `credentialsRefused`: the website refused the user name and the
  *   application password.
  * - `cannotPublish`: the website's user may not publish posts or upload
- *   files, which publishing articles needs.
+ *   files, which publishing articles needs; on Hashnode, the team's
+ *   publication lists the member as a contributor.
+ * - `otherWayIn`: the platform connects another way: a WordPress site by
+ *   its address, user and application password (`connectSite`), a
+ *   publishing platform by the member's key (`connectSiteWithKey`).
+ * - `publicationRequired`: the Hashnode member has several publications:
+ *   name the one to publish to.
+ * - `publicationNotFound`: Hashnode has no such publication.
+ * - `planRequired`: the Hashnode publication is not on Hashnode's Pro
+ *   plan, which its API needs for every request.
  */
 export const SiteNotConnectedReasonSchema = Schema.Literals([
   "notWordPress",
   "addressNotAllowed",
   "credentialsRefused",
   "cannotPublish",
+  "otherWayIn",
+  "publicationRequired",
+  "publicationNotFound",
+  "planRequired",
 ]).annotate({ identifier: "SiteNotConnectedReason" });
 
 export type SiteNotConnectedReason = typeof SiteNotConnectedReasonSchema.Type;

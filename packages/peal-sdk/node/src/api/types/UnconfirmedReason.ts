@@ -6,6 +6,7 @@ export const UnconfirmedReason = {
         Interrupted: "interrupted",
         AdapterFailure: "adapterFailure",
         StillProcessing: "stillProcessing",
-        SearchRefused: "searchRefused"
+        SearchRefused: "searchRefused",
+        SeveralOnSite: "severalOnSite"
     } as const;
 export type UnconfirmedReason = typeof UnconfirmedReason[keyof typeof UnconfirmedReason];

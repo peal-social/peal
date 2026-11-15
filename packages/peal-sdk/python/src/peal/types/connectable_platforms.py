@@ -9,6 +9,7 @@ from ..core.serialization import FieldMetadata
 from .instagram_connection import InstagramConnection
 from .linked_in_connection import LinkedInConnection
 from .platform import Platform
+from .site_platform import SitePlatform
 
 
 class ConnectablePlatforms(UniversalBaseModel):
@@ -23,6 +24,7 @@ class ConnectablePlatforms(UniversalBaseModel):
         pydantic.Field(alias="linkedinConnections"),
     ]
     platforms: typing.List[Platform]
+    sites: typing.Optional[typing.List[SitePlatform]] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

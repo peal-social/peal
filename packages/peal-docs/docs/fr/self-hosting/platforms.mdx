@@ -21,8 +21,10 @@ Un serveur auto-hébergé propose une plateforme une fois que vous y avez enregi
 | [Pinterest](#pinterest)                        | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | L’accès Standard de Pinterest                           |
 | [Google Business Profile](#google-business)    | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | L’accès de Google aux API Business Profile              |
 | [Sites WordPress](#wordpress)                  | Aucun : chaque membre donne le mot de passe d’application de son site                                                | Rien à enregistrer                                      |
+| [WordPress.com](#wordpress-com)                | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Aucun examen connu                                      |
+| [DEV et Hashnode](#devto-hashnode)             | Aucun : chaque membre donne une clé à lui                                                                            | Rien à enregistrer                                      |
 
-Pour LinkedIn, X, YouTube, Pinterest et Google Business Profile, l’un des deux réglages sans l’autre arrête le serveur au démarrage ; sans les deux, **Canaux** ne propose pas la plateforme. [Variables d’environnement](/self-hosting/environment-variables#channels) liste chaque réglage des plateformes, avec sa valeur par défaut.
+Pour LinkedIn, X, YouTube, Pinterest, Google Business Profile et WordPress.com, l’un des deux réglages sans l’autre arrête le serveur au démarrage ; sans les deux, **Canaux** ne propose pas la plateforme. [Variables d’environnement](/self-hosting/environment-variables#channels) liste chaque réglage des plateformes, avec sa valeur par défaut.
 
 ### Clés des jetons [#token-keys]
 
@@ -56,6 +58,9 @@ Pour publier une image ou une vidéo, le serveur la lit dans le stockage des mé
 | YouTube                 | `oauth2.googleapis.com` et `www.googleapis.com`                                                                                                      | Vidéos par parties de 8 Mio, une seule gardée à la fois                                                     |
 | Pinterest               | `api.pinterest.com` (ou le bac à sable), et l’adresse que Pinterest nomme pour chaque vidéo, celle d’un stockage d’objets                            | Vidéos envoyées à mesure qu’elles sont lues, jamais gardées entières ; images que Pinterest va chercher     |
 | Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` et `mybusiness.googleapis.com` | Photos que Google va chercher dans le stockage des médias                                                   |
+| WordPress.com           | `public-api.wordpress.com`, dont l’API sert les routes de base de chaque site                                                                        | Images lues entières                                                                                        |
+| DEV                     | `dev.to`                                                                                                                                             | Images lues entières                                                                                        |
+| Hashnode                | `gql-beta.hashnode.com`, et l’adresse d’envoi que Hashnode donne pour chaque image                                                                   | Images envoyées à mesure qu’elles sont lues                                                                 |
 
 Les plateformes renvoient les personnes vers `PUBLIC_URL/connect/<plateforme>/callback`, par leur navigateur. Elles n’appellent jamais le serveur elles-mêmes, sauf Bluesky, qui lit la description du client de Peal, et les demandes de suppression de données de Meta.
 
@@ -518,3 +523,30 @@ Google va chercher chaque photo par un lien vers le stockage des médias, valabl
 ## Sites WordPress [#wordpress]
 
 Un site WordPress ne demande aucune application : un membre le connecte avec son adresse, un utilisateur et un mot de passe d’application créé sur la page de profil de cet utilisateur ([Sites web et articles](/guides/channels/websites)), que le serveur garde chiffré avec `PEAL_TOKEN_KEYS`. Peal joint l’API REST du site en HTTPS sur le port par défaut, à des adresses publiques seulement, redirections comprises : un site de votre propre réseau demande son nom d’hôte, ou son adresse, dans `PEAL_OUTBOUND_ALLOWED_HOSTS` ([Variables d’environnement](/self-hosting/environment-variables#channels)). N’y mettez que des hôtes auxquels vous confiez tous les membres : c’est ainsi qu’une requête pourrait atteindre un service de votre réseau.
+
+## WordPress.com [#wordpress-com]
+
+Un serveur connecte les sites WordPress.com, et les sites Jetpack que les membres y atteignent, une fois que vous y avez enregistré une application. WordPress.com ne documente aucun examen pour elle.
+
+<Steps>
+  <Step title="Créer une application">
+    Sur `developer.wordpress.com/apps`, connecté avec le compte WordPress.com
+    qui la possède, créez une application de type **Web**, au nom de votre
+    service, avec l’adresse de votre site et une description.
+  </Step>
+  <Step title="Ajouter l’adresse de redirection">
+    Donnez `PUBLIC_URL/connect/wordpress-com/callback` comme adresse de
+    redirection, comme `https://peal.example.com/connect/wordpress-com/callback`
+    : WordPress.com ne prend que l’adresse exacte.
+  </Step>
+  <Step title="Renseigner les identifiants">
+    Mettez l’identifiant client de l’application dans `WORDPRESS_COM_CLIENT_ID`
+    et son secret dans `WORDPRESS_COM_CLIENT_SECRET`.
+  </Step>
+</Steps>
+
+Les membres se connectent sur WordPress.com et choisissent un site. Peal ne demande aucune portée : celle de WordPress.com par défaut donne ce seul site à l’application, et Peal appelle ses routes de base par `public-api.wordpress.com`, comme il appelle un site WordPress à vous. WordPress.com ne documente ni expiration ni renouvellement pour ces jetons : un jeton qu’il refuse marque le canal **Reconnecter**.
+
+## DEV et Hashnode [#devto-hashnode]
+
+DEV et Hashnode ne demandent aucune application : un membre connecte un compte avec une clé créée là-bas (une clé d’API sur DEV, un jeton d’accès personnel sur Hashnode), que le serveur garde chiffrée avec `PEAL_TOKEN_KEYS`. Hashnode ne répond à son API que pour une publication en offre Pro, que le membre paie sur Hashnode.

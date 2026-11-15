@@ -17,6 +17,7 @@ class ArticleViolation extends JsonSerializableType
      *   |'tooManyTerms'
      *   |'termInvalid'
      *   |'siteTimeInPast'
+     *   |'siteStatusNotTaken'
      *   |'timeInPast'
      *   |'coverNotImage'
      *   |'approvalRequired'
@@ -35,6 +36,7 @@ class ArticleViolation extends JsonSerializableType
      *   |ArticleViolationTooManyTerms
      *   |ArticleViolationTermInvalid
      *   |ArticleViolationSiteTimeInPast
+     *   |ArticleViolationSiteStatusNotTaken
      *   |ArticleViolationTimeInPast
      *   |ArticleViolationCoverNotImage
      *   |ArticleViolationApprovalRequired
@@ -54,6 +56,7 @@ class ArticleViolation extends JsonSerializableType
      *   |'tooManyTerms'
      *   |'termInvalid'
      *   |'siteTimeInPast'
+     *   |'siteStatusNotTaken'
      *   |'timeInPast'
      *   |'coverNotImage'
      *   |'approvalRequired'
@@ -68,6 +71,7 @@ class ArticleViolation extends JsonSerializableType
      *   |ArticleViolationTooManyTerms
      *   |ArticleViolationTermInvalid
      *   |ArticleViolationSiteTimeInPast
+     *   |ArticleViolationSiteStatusNotTaken
      *   |ArticleViolationTimeInPast
      *   |ArticleViolationCoverNotImage
      *   |ArticleViolationApprovalRequired
@@ -175,6 +179,18 @@ class ArticleViolation extends JsonSerializableType
         return new ArticleViolation([
             'type' => 'siteTimeInPast',
             'value' => $siteTimeInPast,
+        ]);
+    }
+
+    /**
+     * @param ArticleViolationSiteStatusNotTaken $siteStatusNotTaken
+     * @return ArticleViolation
+     */
+    public static function siteStatusNotTaken(ArticleViolationSiteStatusNotTaken $siteStatusNotTaken): ArticleViolation
+    {
+        return new ArticleViolation([
+            'type' => 'siteStatusNotTaken',
+            'value' => $siteStatusNotTaken,
         ]);
     }
 
@@ -393,6 +409,28 @@ class ArticleViolation extends JsonSerializableType
     /**
      * @return bool
      */
+    public function isSiteStatusNotTaken(): bool
+    {
+        return $this->value instanceof ArticleViolationSiteStatusNotTaken && $this->type === 'siteStatusNotTaken';
+    }
+
+    /**
+     * @return ArticleViolationSiteStatusNotTaken
+     */
+    public function asSiteStatusNotTaken(): ArticleViolationSiteStatusNotTaken
+    {
+        if (!($this->value instanceof ArticleViolationSiteStatusNotTaken && $this->type === 'siteStatusNotTaken')) {
+            throw new Exception(
+                "Expected siteStatusNotTaken; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
     public function isTimeInPast(): bool
     {
         return $this->value instanceof ArticleViolationTimeInPast && $this->type === 'timeInPast';
@@ -508,6 +546,10 @@ class ArticleViolation extends JsonSerializableType
                 $value = $this->asSiteTimeInPast()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
+            case 'siteStatusNotTaken':
+                $value = $this->asSiteStatusNotTaken()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
             case 'timeInPast':
                 $value = $this->asTimeInPast()->jsonSerialize();
                 $result = array_merge($value, $result);
@@ -579,6 +621,9 @@ class ArticleViolation extends JsonSerializableType
                 break;
             case 'siteTimeInPast':
                 $args['value'] = ArticleViolationSiteTimeInPast::jsonDeserialize($data);
+                break;
+            case 'siteStatusNotTaken':
+                $args['value'] = ArticleViolationSiteStatusNotTaken::jsonDeserialize($data);
                 break;
             case 'timeInPast':
                 $args['value'] = ArticleViolationTimeInPast::jsonDeserialize($data);

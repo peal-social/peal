@@ -5,6 +5,7 @@ import type {
   InstagramConnection,
   LinkedInConnection,
   Platform,
+  SitePlatform,
 } from "peal-contract";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -15,7 +16,8 @@ const render = async (
   locale: "en" | "fr",
   platforms: readonly Platform[],
   instagramConnections: readonly InstagramConnection[] = [],
-  linkedinConnections: readonly LinkedInConnection[] = []
+  linkedinConnections: readonly LinkedInConnection[] = [],
+  sites: readonly SitePlatform[] = []
 ) => {
   const messages = await loadMessages(locale);
 
@@ -26,6 +28,7 @@ const render = async (
           instagramConnections={instagramConnections}
           linkedinConnections={linkedinConnections}
           platforms={platforms}
+          sites={sites}
           workspaceId="5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f"
         />
       </RegistryProvider>
@@ -34,6 +37,25 @@ const render = async (
 };
 
 describe(ConnectForms, () => {
+  it("offers the websites by key everywhere, WordPress.com with its app", async () => {
+    const without = await render("en", ["mastodon"]);
+
+    expect(without).toContain(">Connect DEV<");
+    expect(without).toContain(">Connect Hashnode<");
+    expect(without).toContain("Pro plan");
+    expect(without).not.toContain("Connect WordPress.com");
+
+    const withApp = await render(
+      "fr",
+      ["mastodon"],
+      [],
+      [],
+      ["wordpress", "devto", "hashnode", "wordpressCom"]
+    );
+
+    expect(withApp).toContain(">Connecter WordPress.com<");
+  });
+
   it("offers every platform the server connects", async () => {
     const html = await render("en", ["x", "linkedin", "bluesky", "mastodon"]);
 

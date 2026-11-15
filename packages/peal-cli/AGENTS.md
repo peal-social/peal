@@ -65,6 +65,12 @@
   WordPress site (`channels.connectSite`): the application password is
   read with `readSecret` (typed without echo, or piped in), never an
   argument.
+- `peal channels connect-website-key --platform devto|hashnode
+  [--publication <address>]` connects DEV or Hashnode
+  (`channels.connectSiteWithKey`), the key read with `readSecret` too.
+  WordPress.com's sign-in (`startSiteSignIn`, `completeSiteSignIn`)
+  needs the web app's callback page, so it has no command: both are
+  exempt from parity, as the social sign-ins are.
 - `peal articles` (list, show, create, schedule, unschedule, retry,
   unpublish, delete) follows the articles group; `create` writes the
   body from plain text (`--text`, a paragraph a block), as rich text is

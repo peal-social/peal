@@ -25,6 +25,10 @@ public class PlatformsTest : BaseMockServerTest
               "platforms": [
                 "x",
                 "x"
+              ],
+              "sites": [
+                "wordpress",
+                "wordpress"
               ]
             }
             """;
@@ -62,6 +66,9 @@ public class PlatformsTest : BaseMockServerTest
               ],
               "platforms": [
                 "x"
+              ],
+              "sites": [
+                "wordpress"
               ]
             }
             """;

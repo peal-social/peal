@@ -1436,16 +1436,21 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             yield* DateTime.now
           );
 
+          // And an account on DEV, connected: a website too.
+          const devto = yield* freshChannel(workspaceId, { platform: "devto" });
+
           yield* Effect.all([
             channels.insert(lasting, syntheticCredentials(lasting)),
             channels.insert(lapsed, syntheticCredentials(lapsed)),
             channels.insert(website, syntheticCredentials(website)),
+            channels.insert(devto, syntheticCredentials(devto)),
           ]);
           yield* Effect.addFinalizer(() =>
             Effect.all([
               channels.remove(workspaceId, lasting.id),
               channels.remove(workspaceId, lapsed.id),
               channels.remove(workspaceId, website.id),
+              channels.remove(workspaceId, devto.id),
             ]).pipe(Effect.orDie)
           );
 
@@ -1492,6 +1497,15 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             disabled: 0,
             refreshNeeded: 0,
           });
+
+          // Every website is out of the counts as of the list.
+          const active = yield* reader.call(
+            "list_channels",
+            ChannelsJsonSchema,
+            { status: "active" }
+          );
+
+          assert.strictEqual(active.counts?.active, active.channels.length);
 
           for (const [tool, args] of [
             ["rename_channel", { channelId: lasting.id, label: null }],

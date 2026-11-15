@@ -3248,6 +3248,7 @@ export const studioGroupsLive = (studio: Studio) =>
       handlers.handleAll({
         chooseAccounts: () => refusing,
         completeConnect: () => refusing,
+        completeSiteSignIn: () => refusing,
         connect: () => refusing,
         // A website connects at once: a password with "refused" in it
         // stands for one the site refuses.
@@ -3276,6 +3277,39 @@ export const studioGroupsLive = (studio: Studio) =>
               displayName: "Synthetic Garden Journal",
               handle: payload.address.replace(/^https?:\/\//u, ""),
               id: "0199a000-0000-7000-8000-000000005173",
+              label: null,
+              platform: payload.platform,
+              status: { _tag: "active" },
+              tokenExpiresAt: null,
+            };
+
+            return site;
+          }),
+        connectSiteWithKey: ({ params, payload }) =>
+          Effect.gen(function* connectSiteWithKey() {
+            yield* allowed("channel:connect");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            if (payload.apiKey.includes("refused")) {
+              return yield* new SiteNotConnected({
+                reason: "credentialsRefused",
+              });
+            }
+
+            yield* record(
+              studio,
+              `website:key:${payload.platform}:${payload.apiKey}`
+            );
+
+            const site: Channel = {
+              avatarUrl: null,
+              connection: null,
+              displayName: "Synthetic Gardener",
+              handle: "dev.to/synthetic_gardener",
+              id: "0199a000-0000-7000-8000-000000005174",
               label: null,
               platform: payload.platform,
               status: { _tag: "active" },
@@ -3338,6 +3372,7 @@ export const studioGroupsLive = (studio: Studio) =>
           ),
         platforms: () => refusing,
         reconnect: () => refusing,
+        startSiteSignIn: () => refusing,
         update: ({ params, payload }) =>
           changingChannel(
             studio,

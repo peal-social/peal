@@ -2,7 +2,7 @@ import { Context } from "effect";
 import type { DateTime, Effect, Option } from "effect";
 
 import type { ConnectAttempt } from "#channels/domain/connect-attempt.ts";
-import type { Platform } from "#channels/domain/platform.ts";
+import type { ChannelPlatform } from "#channels/domain/platform.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 
@@ -34,7 +34,7 @@ export class ConnectAttempts extends Context.Service<
     readonly take: (
       state: string,
       owner: {
-        readonly platform: Platform;
+        readonly platform: ChannelPlatform;
         readonly startedBy: string;
         readonly workspaceId: WorkspaceId;
       }

@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { PlatformSchema } from "#channels/domain/platform.ts";
+import { ChannelPlatformSchema } from "#channels/domain/platform.ts";
 
 /**
  * A platform's OAuth client is configured by halves: its id without its
@@ -9,7 +9,7 @@ import { PlatformSchema } from "#channels/domain/platform.ts";
  */
 export class InvalidPlatformClient extends Schema.TaggedError<InvalidPlatformClient>()(
   "InvalidPlatformClient",
-  { platform: PlatformSchema, reason: Schema.String }
+  { platform: ChannelPlatformSchema, reason: Schema.String }
 ) {
   override get message(): string {
     return `The ${this.platform} client settings are invalid: ${this.reason}`;

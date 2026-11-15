@@ -4,6 +4,7 @@ import type { Effect, Option, Redacted } from "effect";
 import type { AvatarUrl } from "#channels/domain/avatar-url.ts";
 import type { SitePlatform } from "#channels/domain/platform.ts";
 import type { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
+import type { KeySitePlatform } from "#shared/domain/platform.ts";
 
 import type { SiteRefused } from "./site-refused.ts";
 
@@ -14,6 +15,14 @@ export interface SiteSignIn {
   readonly applicationPassword: Redacted.Redacted;
   readonly platform: SitePlatform;
   readonly userName: string;
+}
+
+/** What a member gives to connect a website with a key made there. */
+export interface SiteKeySignIn {
+  readonly apiKey: Redacted.Redacted;
+  readonly platform: KeySitePlatform;
+  /** The publication to publish to, where an account has several. */
+  readonly publication: Option.Option<string>;
 }
 
 /** The website, as its own API describes it to the user who signed in. */
@@ -41,6 +50,14 @@ export class SiteVerifier extends Context.Service<
   {
     readonly verify: (
       signIn: SiteSignIn
+    ) => Effect.Effect<VerifiedSite, PlatformUnavailable | SiteRefused>;
+    /**
+     * The account a key opens, on the platform it was made on, once the
+     * platform said the key lets Peal publish: its `accountId` is the
+     * platform's own id of it.
+     */
+    readonly verifyKey: (
+      signIn: SiteKeySignIn
     ) => Effect.Effect<VerifiedSite, PlatformUnavailable | SiteRefused>;
   }
 >()("peal-server/channels/application/SiteVerifier") {}

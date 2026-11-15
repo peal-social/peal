@@ -22,6 +22,9 @@ public record ConnectablePlatforms : IJsonOnDeserialized
     [JsonPropertyName("platforms")]
     public IEnumerable<Platform> Platforms { get; set; } = new List<Platform>();
 
+    [JsonPropertyName("sites")]
+    public IEnumerable<SitePlatform>? Sites { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

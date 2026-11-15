@@ -10,4 +10,5 @@ enum UnconfirmedReason: string
     case AdapterFailure = "adapterFailure";
     case StillProcessing = "stillProcessing";
     case SearchRefused = "searchRefused";
+    case SeveralOnSite = "severalOnSite";
 }

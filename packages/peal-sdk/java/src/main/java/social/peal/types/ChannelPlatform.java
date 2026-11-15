@@ -9,13 +9,23 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public final class ChannelPlatform {
     public static final ChannelPlatform BLUESKY = new ChannelPlatform(Value.BLUESKY, "bluesky");
 
-    public static final ChannelPlatform INSTAGRAM = new ChannelPlatform(Value.INSTAGRAM, "instagram");
-
     public static final ChannelPlatform FACEBOOK = new ChannelPlatform(Value.FACEBOOK, "facebook");
 
     public static final ChannelPlatform YOUTUBE = new ChannelPlatform(Value.YOUTUBE, "youtube");
 
     public static final ChannelPlatform GOOGLE_BUSINESS = new ChannelPlatform(Value.GOOGLE_BUSINESS, "googleBusiness");
+
+    public static final ChannelPlatform X = new ChannelPlatform(Value.X, "x");
+
+    public static final ChannelPlatform WORDPRESS = new ChannelPlatform(Value.WORDPRESS, "wordpress");
+
+    public static final ChannelPlatform DEVTO = new ChannelPlatform(Value.DEVTO, "devto");
+
+    public static final ChannelPlatform INSTAGRAM = new ChannelPlatform(Value.INSTAGRAM, "instagram");
+
+    public static final ChannelPlatform WORDPRESS_COM = new ChannelPlatform(Value.WORDPRESS_COM, "wordpressCom");
+
+    public static final ChannelPlatform HASHNODE = new ChannelPlatform(Value.HASHNODE, "hashnode");
 
     public static final ChannelPlatform MASTODON = new ChannelPlatform(Value.MASTODON, "mastodon");
 
@@ -23,11 +33,7 @@ public final class ChannelPlatform {
 
     public static final ChannelPlatform LINKEDIN = new ChannelPlatform(Value.LINKEDIN, "linkedin");
 
-    public static final ChannelPlatform X = new ChannelPlatform(Value.X, "x");
-
     public static final ChannelPlatform PINTEREST = new ChannelPlatform(Value.PINTEREST, "pinterest");
-
-    public static final ChannelPlatform WORDPRESS = new ChannelPlatform(Value.WORDPRESS, "wordpress");
 
     public static final ChannelPlatform TIKTOK = new ChannelPlatform(Value.TIKTOK, "tiktok");
 
@@ -65,26 +71,32 @@ public final class ChannelPlatform {
         switch (value) {
             case BLUESKY:
                 return visitor.visitBluesky();
-            case INSTAGRAM:
-                return visitor.visitInstagram();
             case FACEBOOK:
                 return visitor.visitFacebook();
             case YOUTUBE:
                 return visitor.visitYoutube();
             case GOOGLE_BUSINESS:
                 return visitor.visitGoogleBusiness();
+            case X:
+                return visitor.visitX();
+            case WORDPRESS:
+                return visitor.visitWordpress();
+            case DEVTO:
+                return visitor.visitDevto();
+            case INSTAGRAM:
+                return visitor.visitInstagram();
+            case WORDPRESS_COM:
+                return visitor.visitWordpressCom();
+            case HASHNODE:
+                return visitor.visitHashnode();
             case MASTODON:
                 return visitor.visitMastodon();
             case THREADS:
                 return visitor.visitThreads();
             case LINKEDIN:
                 return visitor.visitLinkedin();
-            case X:
-                return visitor.visitX();
             case PINTEREST:
                 return visitor.visitPinterest();
-            case WORDPRESS:
-                return visitor.visitWordpress();
             case TIKTOK:
                 return visitor.visitTiktok();
             case UNKNOWN:
@@ -98,26 +110,32 @@ public final class ChannelPlatform {
         switch (value) {
             case "bluesky":
                 return BLUESKY;
-            case "instagram":
-                return INSTAGRAM;
             case "facebook":
                 return FACEBOOK;
             case "youtube":
                 return YOUTUBE;
             case "googleBusiness":
                 return GOOGLE_BUSINESS;
+            case "x":
+                return X;
+            case "wordpress":
+                return WORDPRESS;
+            case "devto":
+                return DEVTO;
+            case "instagram":
+                return INSTAGRAM;
+            case "wordpressCom":
+                return WORDPRESS_COM;
+            case "hashnode":
+                return HASHNODE;
             case "mastodon":
                 return MASTODON;
             case "threads":
                 return THREADS;
             case "linkedin":
                 return LINKEDIN;
-            case "x":
-                return X;
             case "pinterest":
                 return PINTEREST;
-            case "wordpress":
-                return WORDPRESS;
             case "tiktok":
                 return TIKTOK;
             default:
@@ -150,6 +168,12 @@ public final class ChannelPlatform {
 
         WORDPRESS,
 
+        DEVTO,
+
+        HASHNODE,
+
+        WORDPRESS_COM,
+
         UNKNOWN
     }
 
@@ -177,6 +201,12 @@ public final class ChannelPlatform {
         T visitGoogleBusiness();
 
         T visitWordpress();
+
+        T visitDevto();
+
+        T visitHashnode();
+
+        T visitWordpressCom();
 
         T visitUnknown(String unknownType);
     }

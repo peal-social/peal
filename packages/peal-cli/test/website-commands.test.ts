@@ -60,3 +60,45 @@ describe("peal channels connect-website", () => {
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 });
+
+const keyed = (...rest: readonly string[]) => [
+  "channels",
+  "connect-website-key",
+  "--platform",
+  "devto",
+  ...rest,
+  ...inStudio,
+];
+
+describe("peal channels connect-website-key", () => {
+  it.effect("connects the account with the key piped in, never shown", () =>
+    Effect.gen(function* connects() {
+      const session = yield* signedIn();
+      const key = "synthetic-devto-key";
+
+      const printed = yield* session.piping(`${key}\n`).printed(keyed());
+
+      assert.include(
+        printed,
+        "Connected Synthetic Gardener (dev.to/synthetic_gardener) to Studio"
+      );
+      assert.notInclude(printed, key);
+
+      const { changes } = yield* Ref.get(session.studio.state);
+
+      assert.include(changes, `website:key:devto:${key}`);
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("says why the platform refused the key", () =>
+    Effect.gen(function* refused() {
+      const session = yield* signedIn();
+
+      const errors = yield* session
+        .piping("synthetic refused key\n")
+        .refused(keyed());
+
+      assert.include(errors, "or the key: check them");
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+});

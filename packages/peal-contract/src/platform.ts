@@ -25,14 +25,20 @@ export type Platform = typeof PlatformSchema.Type;
 
 /**
  * The websites a channel can publish articles to: `wordpress`, a WordPress
- * site of its own, reached with an application password. The server's
- * list (src/shared/domain/platform.ts) is the source; a test keeps the two
- * equal.
+ * site of its own, reached with an application password; `devto`, an
+ * account on DEV (dev.to), reached with the member's API key; `hashnode`,
+ * a publication on Hashnode, reached with the member's personal access
+ * token (Hashnode's API needs its Pro plan on the publication);
+ * `wordpressCom`, a site on WordPress.com, signed in to there. The
+ * server's list (src/shared/domain/platform.ts) is the source; a test
+ * keeps the two equal.
  */
-// One kind so far: a single literal, which the document writes as a plain
-// enum (a list of one would be an anyOf of one). Further kinds of site
-// join it as `Schema.Literals`.
-export const SitePlatformSchema = Schema.Literal("wordpress").annotate({
+export const SitePlatformSchema = Schema.Literals([
+  "wordpress",
+  "devto",
+  "hashnode",
+  "wordpressCom",
+]).annotate({
   description: "A kind of website a channel publishes articles to.",
   identifier: "SitePlatform",
 });
@@ -40,12 +46,42 @@ export const SitePlatformSchema = Schema.Literal("wordpress").annotate({
 export type SitePlatform = typeof SitePlatformSchema.Type;
 
 /**
+ * The websites a member connects with a key of theirs, made on the site
+ * for Peal (`connectSiteWithKey`): `devto`, `hashnode`. The server's list is the
+ * source; a test keeps the two equal.
+ */
+export const KeySitePlatformSchema = Schema.Literals([
+  "devto",
+  "hashnode",
+]).annotate({
+  description: "A kind of website a channel connects to with a key.",
+  identifier: "KeySitePlatform",
+});
+
+export type KeySitePlatform = typeof KeySitePlatformSchema.Type;
+
+/**
+ * The websites a member signs in to, for Peal to publish there
+ * (`startSiteSignIn`): `wordpressCom`, when the server has its app. The
+ * server's list is the source; a test keeps the two equal.
+ */
+// One kind so far: a single literal, which the document writes as a plain
+// enum (a list of one would be an anyOf of one). Further kinds join it as
+// `Schema.Literals`.
+export const OAuthSitePlatformSchema = Schema.Literal("wordpressCom").annotate({
+  description: "A kind of website a channel connects to by signing in.",
+  identifier: "OAuthSitePlatform",
+});
+
+export type OAuthSitePlatform = typeof OAuthSitePlatformSchema.Type;
+
+/**
  * What a channel connects to: a social network, whose channels take posts,
  * or a website, whose channels take articles.
  */
 export const ChannelPlatformSchema = Schema.Literals([
   ...PlatformSchema.literals,
-  SitePlatformSchema.literal,
+  ...SitePlatformSchema.literals,
 ]).annotate({
   description:
     "What a channel connects to: a social network (posts) or a website (articles).",

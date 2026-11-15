@@ -22,6 +22,7 @@ import type { Article, ArticleViolation } from "#publishing/domain/article.ts";
 import type { InvalidArticleTransition } from "#publishing/domain/invalid-article-transition.ts";
 import { authorOf } from "#publishing/domain/post.ts";
 import { Schedule } from "#publishing/domain/schedule.ts";
+import { siteRules } from "#publishing/domain/site-rules.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
@@ -183,6 +184,18 @@ export class Articles extends Context.Service<
         return article.value;
       });
 
+      // What the article's site takes: a channel gone meanwhile is
+      // refused when the article is sent, and is checked as WordPress.
+      const rulesOf = (actor: Actor, channelId: ChannelId) =>
+        sites.lookUp(actor, channelId).pipe(
+          Effect.map((channel) =>
+            Option.match(channel, {
+              onNone: () => siteRules.wordpress,
+              onSome: ({ platform }) => siteRules[platform],
+            })
+          )
+        );
+
       // The files the article shows are the workspace's, ready, and
       // images: the cover is refused as a violation, any other as unknown.
       const checkMedia = Effect.fn("Articles.checkMedia")(function* checkMedia(
@@ -324,9 +337,11 @@ export class Articles extends Context.Service<
       // The article goes out at `time`: what it says is checked as the
       // site would take it, and the time must not have passed.
       const scheduling = Effect.fn("Articles.scheduling")(function* scheduling(
+        actor: Actor,
         article: Article,
         time: ArticleTime
       ) {
+        const rules = yield* rulesOf(actor, article.channelId);
         const now = yield* DateTime.now;
         const at = Option.getOrElse(time.at, () => now);
         const schedule = new Schedule({ at, timeZone: time.timeZone });
@@ -335,7 +350,7 @@ export class Articles extends Context.Service<
           ...(Option.isSome(time.at) && DateTime.isLessThan(at, now)
             ? [{ _tag: "timeInPast" } as const]
             : []),
-          ...articleViolations(article.content, schedule, now),
+          ...articleViolations(article.content, schedule, now, rules),
         ]);
 
         return yield* Effect.fromResult(scheduled(article, schedule, now));
@@ -381,7 +396,7 @@ export class Articles extends Context.Service<
 
         const placed = yield* Option.match(time, {
           onNone: () => Effect.succeed(article),
-          onSome: (when) => scheduling(article, when),
+          onSome: (when) => scheduling(actor, article, when),
         });
 
         return yield* transaction(persisted(Option.none(), placed));
@@ -411,7 +426,12 @@ export class Articles extends Context.Service<
             if (next.state._tag === "scheduled") {
               yield* mayGoOut(actor);
               yield* rejected(
-                articleViolations(content, next.state.schedule, now)
+                articleViolations(
+                  content,
+                  next.state.schedule,
+                  now,
+                  yield* rulesOf(actor, current.channelId)
+                )
               );
             }
 
@@ -460,7 +480,7 @@ export class Articles extends Context.Service<
         return yield* changing(article, (current) =>
           // The library may have lost a file since it was written.
           checkMedia(actor, current.content).pipe(
-            Effect.andThen(scheduling(current, time))
+            Effect.andThen(scheduling(actor, current, time))
           )
         );
       });
@@ -500,7 +520,12 @@ export class Articles extends Context.Service<
 
             if (next.state._tag === "scheduled") {
               yield* rejected(
-                articleViolations(next.content, next.state.schedule, now)
+                articleViolations(
+                  next.content,
+                  next.state.schedule,
+                  now,
+                  yield* rulesOf(actor, current.channelId)
+                )
               );
             }
 
@@ -568,7 +593,8 @@ export class Articles extends Context.Service<
               // Already on the site: it keeps what it was made as.
               content,
               live.schedule,
-              live.publishedAt
+              live.publishedAt,
+              yield* rulesOf(actor, article.channelId)
             ).filter(({ _tag }) => _tag !== "siteTimeInPast")
           );
 

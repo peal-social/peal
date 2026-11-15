@@ -3,5 +3,15 @@
 import typing
 
 SiteNotConnectedReason = typing.Union[
-    typing.Literal["notWordPress", "addressNotAllowed", "credentialsRefused", "cannotPublish"], typing.Any
+    typing.Literal[
+        "notWordPress",
+        "addressNotAllowed",
+        "credentialsRefused",
+        "cannotPublish",
+        "otherWayIn",
+        "publicationRequired",
+        "publicationNotFound",
+        "planRequired",
+    ],
+    typing.Any,
 ]

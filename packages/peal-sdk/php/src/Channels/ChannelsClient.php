@@ -17,9 +17,13 @@ use Peal\Channels\Requests\FindChannelsRequest;
 use Peal\Types\ChannelPage;
 use Peal\Types\ConnectablePlatforms;
 use Peal\Channels\Requests\ConnectSite;
+use Peal\Channels\Requests\ConnectSiteWithKey;
+use Peal\Types\OAuthSitePlatform;
+use Peal\Channels\Requests\StartSiteSignIn;
+use Peal\Types\Authorization;
+use Peal\Channels\Requests\SiteSignInCallback;
 use Peal\Types\Platform;
 use Peal\Channels\Requests\ConnectChannel;
-use Peal\Types\Authorization;
 use Peal\Channels\Requests\ConnectCallback;
 use Peal\Types\ConnectOutcome;
 use Peal\Channels\Requests\ChooseAccounts;
@@ -285,6 +289,192 @@ class ChannelsClient
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
                     path: "api/workspaces/{$workspaceId}/channels/websites",
+                    method: HttpMethod::POST,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return Channel::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions); on Hashnode (`hashnode`), a personal access token from the account's settings (Developer) and the publication's address in `publication`, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one of a team that lists the member as a contributor `cannotPublish` (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every request, `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     *
+     * Example:
+     * ```php
+     * $client->channels->connectSiteWithKey(
+     *     'workspaceId',
+     *     new ConnectSiteWithKey([
+     *         'apiKey' => 'apiKey',
+     *         'platform' => KeySitePlatform::Devto->value,
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $workspaceId
+     * @param ConnectSiteWithKey $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?Channel
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function connectSiteWithKey(string $workspaceId, ConnectSiteWithKey $request, ?array $options = null): ?Channel
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/workspaces/{$workspaceId}/channels/websites/keys",
+                    method: HttpMethod::POST,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return Channel::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (`wordpressCom`), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With `channelId`, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed `notConfigured`. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     *
+     * Example:
+     * ```php
+     * $client->channels->startSiteSignIn(
+     *     'workspaceId',
+     *     OAuthSitePlatform::WordpressCom->value,
+     *     new StartSiteSignIn([]),
+     * );
+     * ```
+     *
+     * @param string $workspaceId
+     * @param value-of<OAuthSitePlatform> $platform
+     * @param StartSiteSignIn $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?Authorization
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function startSiteSignIn(string $workspaceId, string $platform, StartSiteSignIn $request = new StartSiteSignIn(), ?array $options = null): ?Authorization
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/workspaces/{$workspaceId}/channels/websites/sign-in/{$platform}",
+                    method: HttpMethod::POST,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return Authorization::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected `cannotPublish`; a reconnect that reached another site ConnectFailed `accountMismatch`. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
+     *
+     * Example:
+     * ```php
+     * $client->channels->completeSiteSignIn(
+     *     'workspaceId',
+     *     OAuthSitePlatform::WordpressCom->value,
+     *     new SiteSignInCallback([
+     *         'state' => 'state',
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $workspaceId
+     * @param value-of<OAuthSitePlatform> $platform
+     * @param SiteSignInCallback $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?Channel
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function completeSiteSignIn(string $workspaceId, string $platform, SiteSignInCallback $request, ?array $options = null): ?Channel
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/workspaces/{$workspaceId}/channels/websites/sign-in/{$platform}/callback",
                     method: HttpMethod::POST,
                     body: $request,
                 ),

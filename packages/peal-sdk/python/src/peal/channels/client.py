@@ -11,6 +11,8 @@ from ..types.channel_page import ChannelPage
 from ..types.channel_status_name import ChannelStatusName
 from ..types.connect_outcome import ConnectOutcome
 from ..types.connectable_platforms import ConnectablePlatforms
+from ..types.key_site_platform import KeySitePlatform
+from ..types.o_auth_site_platform import OAuthSitePlatform
 from ..types.platform import Platform
 from ..types.site_platform import SitePlatform
 from .raw_client import AsyncRawChannelsClient, RawChannelsClient
@@ -213,6 +215,149 @@ class ChannelsClient:
             platform=platform,
             user_name=user_name,
             request_options=request_options,
+        )
+        return _response.data
+
+    def connect_site_with_key(
+        self,
+        workspace_id: str,
+        *,
+        api_key: str,
+        platform: KeySitePlatform,
+        publication: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Channel:
+        """
+        Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions); on Hashnode (`hashnode`), a personal access token from the account's settings (Developer) and the publication's address in `publication`, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one of a team that lists the member as a contributor `cannotPublish` (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every request, `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        api_key : str
+
+        platform : KeySitePlatform
+
+        publication : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Channel
+            Channel
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.channels.connect_site_with_key(
+            workspace_id="workspaceId",
+            api_key="apiKey",
+            platform="devto",
+        )
+        """
+        _response = self._raw_client.connect_site_with_key(
+            workspace_id, api_key=api_key, platform=platform, publication=publication, request_options=request_options
+        )
+        return _response.data
+
+    def start_site_sign_in(
+        self,
+        workspace_id: str,
+        platform: OAuthSitePlatform,
+        *,
+        channel_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Authorization:
+        """
+        Starts connecting a website by signing in on its platform: on WordPress.com (`wordpressCom`), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With `channelId`, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed `notConfigured`. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        platform : OAuthSitePlatform
+
+        channel_id : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Authorization
+            Authorization
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.channels.start_site_sign_in(
+            workspace_id="workspaceId",
+            platform="wordpressCom",
+        )
+        """
+        _response = self._raw_client.start_site_sign_in(
+            workspace_id, platform, channel_id=channel_id, request_options=request_options
+        )
+        return _response.data
+
+    def complete_site_sign_in(
+        self,
+        workspace_id: str,
+        platform: OAuthSitePlatform,
+        *,
+        state: str,
+        code: typing.Optional[str] = OMIT,
+        error: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Channel:
+        """
+        Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected `cannotPublish`; a reconnect that reached another site ConnectFailed `accountMismatch`. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        platform : OAuthSitePlatform
+
+        state : str
+
+        code : typing.Optional[str]
+
+        error : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Channel
+            Channel
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.channels.complete_site_sign_in(
+            workspace_id="workspaceId",
+            platform="wordpressCom",
+            state="state",
+        )
+        """
+        _response = self._raw_client.complete_site_sign_in(
+            workspace_id, platform, state=state, code=code, error=error, request_options=request_options
         )
         return _response.data
 
@@ -792,6 +937,173 @@ class AsyncChannelsClient:
             platform=platform,
             user_name=user_name,
             request_options=request_options,
+        )
+        return _response.data
+
+    async def connect_site_with_key(
+        self,
+        workspace_id: str,
+        *,
+        api_key: str,
+        platform: KeySitePlatform,
+        publication: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Channel:
+        """
+        Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions); on Hashnode (`hashnode`), a personal access token from the account's settings (Developer) and the publication's address in `publication`, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one of a team that lists the member as a contributor `cannotPublish` (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every request, `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        api_key : str
+
+        platform : KeySitePlatform
+
+        publication : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Channel
+            Channel
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.channels.connect_site_with_key(
+                workspace_id="workspaceId",
+                api_key="apiKey",
+                platform="devto",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.connect_site_with_key(
+            workspace_id, api_key=api_key, platform=platform, publication=publication, request_options=request_options
+        )
+        return _response.data
+
+    async def start_site_sign_in(
+        self,
+        workspace_id: str,
+        platform: OAuthSitePlatform,
+        *,
+        channel_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Authorization:
+        """
+        Starts connecting a website by signing in on its platform: on WordPress.com (`wordpressCom`), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With `channelId`, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed `notConfigured`. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        platform : OAuthSitePlatform
+
+        channel_id : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Authorization
+            Authorization
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.channels.start_site_sign_in(
+                workspace_id="workspaceId",
+                platform="wordpressCom",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.start_site_sign_in(
+            workspace_id, platform, channel_id=channel_id, request_options=request_options
+        )
+        return _response.data
+
+    async def complete_site_sign_in(
+        self,
+        workspace_id: str,
+        platform: OAuthSitePlatform,
+        *,
+        state: str,
+        code: typing.Optional[str] = OMIT,
+        error: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Channel:
+        """
+        Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected `cannotPublish`; a reconnect that reached another site ConnectFailed `accountMismatch`. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        platform : OAuthSitePlatform
+
+        state : str
+
+        code : typing.Optional[str]
+
+        error : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Channel
+            Channel
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.channels.complete_site_sign_in(
+                workspace_id="workspaceId",
+                platform="wordpressCom",
+                state="state",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.complete_site_sign_in(
+            workspace_id, platform, state=state, code=code, error=error, request_options=request_options
         )
         return _response.data
 

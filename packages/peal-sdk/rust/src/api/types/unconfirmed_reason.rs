@@ -9,6 +9,7 @@ pub enum UnconfirmedReason {
     AdapterFailure,
     StillProcessing,
     SearchRefused,
+    SeveralOnSite,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -23,6 +24,7 @@ impl Serialize for UnconfirmedReason {
             Self::AdapterFailure => serializer.serialize_str("adapterFailure"),
             Self::StillProcessing => serializer.serialize_str("stillProcessing"),
             Self::SearchRefused => serializer.serialize_str("searchRefused"),
+            Self::SeveralOnSite => serializer.serialize_str("severalOnSite"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -38,6 +40,7 @@ impl<'de> Deserialize<'de> for UnconfirmedReason {
             "adapterFailure" => Ok(Self::AdapterFailure),
             "stillProcessing" => Ok(Self::StillProcessing),
             "searchRefused" => Ok(Self::SearchRefused),
+            "severalOnSite" => Ok(Self::SeveralOnSite),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -52,6 +55,7 @@ impl fmt::Display for UnconfirmedReason {
             Self::AdapterFailure => write!(f, "adapterFailure"),
             Self::StillProcessing => write!(f, "stillProcessing"),
             Self::SearchRefused => write!(f, "searchRefused"),
+            Self::SeveralOnSite => write!(f, "severalOnSite"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

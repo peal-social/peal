@@ -8,6 +8,9 @@ module Peal
       extend Peal::Internal::Types::Enum
 
       WORDPRESS = "wordpress"
+      DEVTO = "devto"
+      HASHNODE = "hashnode"
+      WORDPRESS_COM = "wordpressCom"
     end
   end
 end

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import social.peal.core.ObjectMappers;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
@@ -27,16 +28,20 @@ public final class ConnectablePlatforms {
 
     private final List<Platform> platforms;
 
+    private final Optional<List<SitePlatform>> sites;
+
     private final Map<String, Object> additionalProperties;
 
     private ConnectablePlatforms(
             List<InstagramConnection> instagramConnections,
             List<LinkedInConnection> linkedinConnections,
             List<Platform> platforms,
+            Optional<List<SitePlatform>> sites,
             Map<String, Object> additionalProperties) {
         this.instagramConnections = instagramConnections;
         this.linkedinConnections = linkedinConnections;
         this.platforms = platforms;
+        this.sites = sites;
         this.additionalProperties = additionalProperties;
     }
 
@@ -55,6 +60,11 @@ public final class ConnectablePlatforms {
         return platforms;
     }
 
+    @JsonProperty("sites")
+    public Optional<List<SitePlatform>> getSites() {
+        return sites;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -69,12 +79,13 @@ public final class ConnectablePlatforms {
     private boolean equalTo(ConnectablePlatforms other) {
         return instagramConnections.equals(other.instagramConnections)
                 && linkedinConnections.equals(other.linkedinConnections)
-                && platforms.equals(other.platforms);
+                && platforms.equals(other.platforms)
+                && sites.equals(other.sites);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.instagramConnections, this.linkedinConnections, this.platforms);
+        return Objects.hash(this.instagramConnections, this.linkedinConnections, this.platforms, this.sites);
     }
 
     @java.lang.Override
@@ -94,6 +105,8 @@ public final class ConnectablePlatforms {
 
         private List<Platform> platforms = new ArrayList<>();
 
+        private Optional<List<SitePlatform>> sites = Optional.empty();
+
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
@@ -102,6 +115,7 @@ public final class ConnectablePlatforms {
             instagramConnections(other.getInstagramConnections());
             linkedinConnections(other.getLinkedinConnections());
             platforms(other.getPlatforms());
+            sites(other.getSites());
             return this;
         }
 
@@ -168,15 +182,28 @@ public final class ConnectablePlatforms {
             return this;
         }
 
+        @JsonSetter(value = "sites", nulls = Nulls.SKIP)
+        public Builder sites(Optional<List<SitePlatform>> sites) {
+            this.sites = sites;
+            return this;
+        }
+
+        public Builder sites(List<SitePlatform> sites) {
+            this.sites = Optional.ofNullable(sites);
+            return this;
+        }
+
         public ConnectablePlatforms build() {
-            return new ConnectablePlatforms(instagramConnections, linkedinConnections, platforms, additionalProperties);
+            return new ConnectablePlatforms(
+                    instagramConnections, linkedinConnections, platforms, sites, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("instagramConnections")
                     || key.equalsIgnoreCase("linkedinConnections")
-                    || key.equalsIgnoreCase("platforms")) {
+                    || key.equalsIgnoreCase("platforms")
+                    || key.equalsIgnoreCase("sites")) {
                 return;
             }
             this.additionalProperties.put(key, value);

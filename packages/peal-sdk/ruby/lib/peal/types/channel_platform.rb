@@ -19,6 +19,9 @@ module Peal
       PINTEREST = "pinterest"
       GOOGLE_BUSINESS = "googleBusiness"
       WORDPRESS = "wordpress"
+      DEVTO = "devto"
+      HASHNODE = "hashnode"
+      WORDPRESS_COM = "wordpressCom"
     end
   end
 end

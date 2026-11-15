@@ -2,6 +2,9 @@
 
 /** A kind of website a channel publishes articles to. */
 export const SitePlatform = {
-        Wordpress: "wordpress"
+        Wordpress: "wordpress",
+        Devto: "devto",
+        Hashnode: "hashnode",
+        WordpressCom: "wordpressCom"
     } as const;
 export type SitePlatform = typeof SitePlatform[keyof typeof SitePlatform];

@@ -48,6 +48,12 @@ pub enum ArticleViolation {
     #[non_exhaustive]
     SiteTimeInPast {},
 
+    #[serde(rename = "siteStatusNotTaken")]
+    #[non_exhaustive]
+    SiteStatusNotTaken {
+        status: ArticleViolationSiteStatusNotTakenStatus,
+    },
+
     #[serde(rename = "timeInPast")]
     #[non_exhaustive]
     TimeInPast {},
@@ -98,6 +104,10 @@ impl ArticleViolation {
 
     pub fn site_time_in_past() -> Self {
         Self::SiteTimeInPast {}
+    }
+
+    pub fn site_status_not_taken(status: ArticleViolationSiteStatusNotTakenStatus) -> Self {
+        Self::SiteStatusNotTaken { status }
     }
 
     pub fn time_in_past() -> Self {

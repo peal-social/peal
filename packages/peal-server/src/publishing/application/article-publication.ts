@@ -128,6 +128,14 @@ const stillToCheck: AttemptOutcome = {
   reason: "interrupted",
 };
 
+// The site holds several posts the call may have made, which no one can
+// tell apart: the member looks, and renames or removes the one written
+// there before sending it again.
+const severalOnSite: AttemptOutcome = {
+  _tag: "unconfirmed",
+  reason: "severalOnSite",
+};
+
 // What a search for an earlier call's post leaves the attempt to do: take
 // the post found, keep the article to check when several match, or send
 // it when none does.
@@ -136,7 +144,7 @@ const searchOutcome = (search: SiteSearch): Option.Option<AttemptOutcome> => {
     return Option.some(search.result);
   }
 
-  return search._tag === "several" ? Option.some(stillToCheck) : Option.none();
+  return search._tag === "several" ? Option.some(severalOnSite) : Option.none();
 };
 
 // The site refused the search for a post an earlier call may have made.

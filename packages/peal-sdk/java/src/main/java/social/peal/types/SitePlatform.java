@@ -7,7 +7,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class SitePlatform {
+    public static final SitePlatform WORDPRESS_COM = new SitePlatform(Value.WORDPRESS_COM, "wordpressCom");
+
+    public static final SitePlatform HASHNODE = new SitePlatform(Value.HASHNODE, "hashnode");
+
     public static final SitePlatform WORDPRESS = new SitePlatform(Value.WORDPRESS, "wordpress");
+
+    public static final SitePlatform DEVTO = new SitePlatform(Value.DEVTO, "devto");
 
     private final Value value;
 
@@ -40,8 +46,14 @@ public final class SitePlatform {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case WORDPRESS_COM:
+                return visitor.visitWordpressCom();
+            case HASHNODE:
+                return visitor.visitHashnode();
             case WORDPRESS:
                 return visitor.visitWordpress();
+            case DEVTO:
+                return visitor.visitDevto();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -51,8 +63,14 @@ public final class SitePlatform {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static SitePlatform valueOf(String value) {
         switch (value) {
+            case "wordpressCom":
+                return WORDPRESS_COM;
+            case "hashnode":
+                return HASHNODE;
             case "wordpress":
                 return WORDPRESS;
+            case "devto":
+                return DEVTO;
             default:
                 return new SitePlatform(Value.UNKNOWN, value);
         }
@@ -61,11 +79,23 @@ public final class SitePlatform {
     public enum Value {
         WORDPRESS,
 
+        DEVTO,
+
+        HASHNODE,
+
+        WORDPRESS_COM,
+
         UNKNOWN
     }
 
     public interface Visitor<T> {
         T visitWordpress();
+
+        T visitDevto();
+
+        T visitHashnode();
+
+        T visitWordpressCom();
 
         T visitUnknown(String unknownType);
     }

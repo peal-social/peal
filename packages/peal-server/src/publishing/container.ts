@@ -1,4 +1,4 @@
-import { Layer } from "effect";
+import { Effect, Layer } from "effect";
 import { Digest, Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
@@ -127,12 +127,15 @@ import { NotifiedFollowUpNotices } from "#publishing/infrastructure/notified-fol
 import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified-publication-outcomes.ts";
 import { NotifiedRecyclingNotices } from "#publishing/infrastructure/notified-recycling-notices.ts";
 import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allowance.ts";
+import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
+import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashnode/hashnode-articles.ts";
 import { LivePostClientsLive } from "#publishing/infrastructure/platforms/live-post-clients-live.ts";
 import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platform-clients-live.ts";
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
 import { PlatformRepostsLive } from "#publishing/infrastructure/platforms/platform-reposts-live.ts";
 import { TikTokCreatorsLive } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
-import { WordPressSitePublisherLive } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
 import { ShortLinksLinkShortener } from "#publishing/infrastructure/shortlinks-link-shortener.ts";
 import { ShortLinksShortLinkDefaults } from "#publishing/infrastructure/shortlinks-short-link-defaults.ts";
 import { SqlArticleSendTurns } from "#publishing/infrastructure/sql-article-send-turns.ts";
@@ -156,7 +159,10 @@ import { PublishTargetV1Live } from "#publishing/infrastructure/workflows/publis
 import { SendFollowUpV1Live } from "#publishing/infrastructure/workflows/send-follow-up.ts";
 import { WorkspaceRecyclingActors } from "#publishing/infrastructure/workspace-recycling-actors.ts";
 import { XThreadsLive } from "#publishing/infrastructure/x-threads.ts";
+import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
+import { wordpressComHosts } from "#shared/infrastructure/platforms/wordpress-api.ts";
 
 // The use cases over their adapters, asking whatever ApprovalGate they are
 // given before a post is scheduled.
@@ -767,10 +773,22 @@ export const PublishingCronsLive = Layer.mergeAll(
   QuotaRetentionCron.pipe(Layer.provide(DrizzlePlatformQuota))
 );
 
-// The websites articles go to: WordPress's, with the tokens the channels
+// The websites articles go to: WordPress sites, on WordPress.com too,
+// DEV and Hashnode, with the tokens the channels
 // context hands out and the files the media context does, over the
 // guarded public client.
-const SitePublisherLive = WordPressSitePublisherLive.pipe(
+const SitePublisherLive = routedSitePublisher(
+  Effect.gen(function* siteAdapters() {
+    const wordpress = yield* wordpressSiteAdapter(wordpressComHosts);
+
+    return {
+      devto: yield* devtoSiteAdapter(devtoHosts),
+      hashnode: yield* hashnodeSiteAdapter(hashnodeHosts),
+      wordpress,
+      wordpressCom: wordpress,
+    };
+  })
+).pipe(
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessSiteCredentials,

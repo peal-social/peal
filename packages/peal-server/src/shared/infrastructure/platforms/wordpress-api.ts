@@ -2,6 +2,8 @@ import type { Option } from "effect";
 import { Effect, Redacted, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 
+import type { SitePlatform } from "#shared/domain/platform.ts";
+
 // What the channels and publishing contexts share of WordPress's REST API
 // (developer.wordpress.org/rest-api): how a route is written under the
 // root discovery found, how an application password is sent, and how the
@@ -81,3 +83,65 @@ export const wordpressErrorOf = (
 
 /** The namespace of the core endpoints Peal calls. */
 export const coreNamespace = "wp/v2";
+
+/**
+ * Where WordPress.com's API is: its sites' core routes are served under
+ * `/wp/v2/sites/{site id}/` (developer.wordpress.com/docs/api), with the
+ * OAuth token a member gave Peal as a bearer token.
+ */
+export interface WordPressComHosts {
+  readonly api: string;
+}
+
+export const wordpressComHosts: WordPressComHosts = {
+  api: "https://public-api.wordpress.com",
+};
+
+/** The site a channel names: its platform, and its API's root or id. */
+export interface WordPressSite {
+  readonly credential: Redacted.Redacted;
+  readonly platform: SitePlatform;
+  /** A site's API root, or a WordPress.com site's id. */
+  readonly root: string;
+}
+
+/**
+ * The address of a core route (such as `/wp/v2/posts`) on the site: under
+ * its own API's root, or under WordPress.com's for a site there.
+ */
+export const siteRouteUrl = (
+  hosts: WordPressComHosts,
+  site: WordPressSite,
+  route: string,
+  query: Readonly<Record<string, string>> = {}
+): URL => {
+  if (site.platform !== "wordpressCom") {
+    return routeUrl(site.root, route, query);
+  }
+
+  const below = route.replace(/^\/*wp\/v2\/?/u, "");
+
+  const url = new URL(
+    `/wp/v2/sites/${encodeURIComponent(site.root)}/${below}`,
+    hosts.api
+  );
+
+  for (const [name, value] of Object.entries(query)) {
+    url.searchParams.set(name, value);
+  }
+
+  return url;
+};
+
+/**
+ * Signs a request for the site: an application password as Basic
+ * credentials, a WordPress.com token as a bearer token.
+ */
+export const withSiteToken =
+  (site: WordPressSite) => (request: HttpClientRequest.HttpClientRequest) =>
+    site.platform === "wordpressCom"
+      ? request.pipe(
+          HttpClientRequest.bearerToken(site.credential),
+          HttpClientRequest.acceptJson
+        )
+      : request.pipe(withSiteCredential(site.credential));

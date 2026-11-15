@@ -185,6 +185,89 @@ func TestChannelsConnectSiteWithWireMock(
 	VerifyRequestCount(t, "TestChannelsConnectSiteWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites", nil, 1)
 }
 
+func TestChannelsConnectSiteWithKeyWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.ConnectSiteWithKey{
+		WorkspaceID: "workspaceId",
+		APIKey:      "apiKey",
+		Platform:    peal.KeySitePlatformDevto,
+	}
+	_, invocationErr := client.Channels.ConnectSiteWithKey(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestChannelsConnectSiteWithKeyWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestChannelsConnectSiteWithKeyWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites/keys", nil, 1)
+}
+
+func TestChannelsStartSiteSignInWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.StartSiteSignIn{
+		WorkspaceID: "workspaceId",
+		Platform:    peal.OAuthSitePlatformWordpressCom,
+	}
+	_, invocationErr := client.Channels.StartSiteSignIn(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestChannelsStartSiteSignInWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestChannelsStartSiteSignInWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites/sign-in/wordpressCom", nil, 1)
+}
+
+func TestChannelsCompleteSiteSignInWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.SiteSignInCallback{
+		WorkspaceID: "workspaceId",
+		Platform:    peal.OAuthSitePlatformWordpressCom,
+		State:       "state",
+	}
+	_, invocationErr := client.Channels.CompleteSiteSignIn(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestChannelsCompleteSiteSignInWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestChannelsCompleteSiteSignInWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites/sign-in/wordpressCom/callback", nil, 1)
+}
+
 func TestChannelsConnectWithWireMock(
 	t *testing.T,
 ) {

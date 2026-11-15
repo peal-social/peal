@@ -1,6 +1,13 @@
 import { JoseKey } from "@atproto/oauth-client-node";
 import { assert, layer } from "@effect/vitest";
-import { ConfigProvider, Effect, Layer, Option, Redacted } from "effect";
+import {
+  ConfigProvider,
+  Effect,
+  Layer,
+  Option,
+  Redacted,
+  Schema,
+} from "effect";
 import { Base64Url } from "effect/encoding";
 import { Dns } from "effect/net";
 
@@ -12,6 +19,7 @@ import { ConnectLinkJournal } from "#channels/application/connect-link-journal.t
 import { ListChannels } from "#channels/application/list-channels.ts";
 import { OAuthClientDocuments } from "#channels/application/oauth-client-documents.ts";
 import { PlatformAuthorizers } from "#channels/application/platform-authorizer.ts";
+import { SiteAuthorizers } from "#channels/application/site-authorizer.ts";
 import { TokenCipher } from "#channels/application/token-cipher.ts";
 import { ChannelsLive } from "#channels/container.ts";
 import { platforms } from "#channels/domain/platform.ts";
@@ -22,6 +30,7 @@ import { DrizzleEngagementRecords } from "#engagement/infrastructure/drizzle-eng
 import { Notify } from "#notifications/application/notify.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
+import { OAuthSitePlatformSchema } from "#shared/domain/platform.ts";
 import {
   AccountDaysUncountedTest,
   AloneInAccountsTest,
@@ -37,6 +46,8 @@ import {
 import { TransactionsTest } from "#test/notifications/support.ts";
 import { WebhookEvents } from "#webhooks/application/webhook-events.ts";
 import { PartnerOwnership } from "#workspace/application/partner-ownership.ts";
+
+const isOAuthSite = Schema.is(OAuthSitePlatformSchema);
 
 // What the context needs from the rest of the server: names to resolve,
 // notices to send, which nothing here sends, and plans, which limit nothing.
@@ -553,9 +564,10 @@ layer(DatabaseTest)(
       Effect.gen(function* redirects() {
         const layers = yield* everyApp;
 
-        const { authorizers, documents } = yield* Effect.all({
+        const { authorizers, documents, sites } = yield* Effect.all({
           authorizers: PlatformAuthorizers,
           documents: OAuthClientDocuments,
+          sites: SiteAuthorizers,
         }).pipe(Effect.provide(layers));
 
         const request = {
@@ -573,8 +585,23 @@ layer(DatabaseTest)(
           const signIns =
             registration.registeredBy === "server"
               ? []
-              : registration.platforms.map((platform) =>
-                  authorizers.for(platform, connectionOf(registration.id))
+              : registration.platforms.map(
+                  (
+                    platform
+                  ): Option.Option<
+                    Effect.Effect<
+                      { readonly authorizationUrl: string },
+                      unknown
+                    >
+                  > =>
+                    // A website signs in through the sites' authorizers.
+                    isOAuthSite(platform)
+                      ? sites
+                          .for(platform)
+                          .pipe(Option.map(({ begin }) => begin))
+                      : authorizers
+                          .for(platform, connectionOf(registration.id))
+                          .pipe(Option.map(({ begin }) => begin(request)))
                 );
 
           const listed = registration.addresses
@@ -582,7 +609,7 @@ layer(DatabaseTest)(
             .map(({ url }) => url);
 
           for (const signIn of signIns) {
-            const pending = yield* Option.getOrThrow(signIn).begin(request);
+            const pending = yield* Option.getOrThrow(signIn);
             const redirect = redirectOf(pending.authorizationUrl);
 
             assert.isNotNull(redirect, registration.id);

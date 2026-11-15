@@ -13,6 +13,7 @@ import social.peal.resources.channels.requests.ChooseAccounts;
 import social.peal.resources.channels.requests.ConnectCallback;
 import social.peal.resources.channels.requests.ConnectChannel;
 import social.peal.resources.channels.requests.ConnectSite;
+import social.peal.resources.channels.requests.ConnectSiteWithKey;
 import social.peal.resources.channels.requests.DisableChannelsRequest;
 import social.peal.resources.channels.requests.DisconnectChannelsRequest;
 import social.peal.resources.channels.requests.EnableChannelsRequest;
@@ -20,11 +21,14 @@ import social.peal.resources.channels.requests.FindChannelsRequest;
 import social.peal.resources.channels.requests.ListChannelsRequest;
 import social.peal.resources.channels.requests.PlatformsChannelsRequest;
 import social.peal.resources.channels.requests.ReconnectChannelsRequest;
+import social.peal.resources.channels.requests.SiteSignInCallback;
+import social.peal.resources.channels.requests.StartSiteSignIn;
 import social.peal.types.Authorization;
 import social.peal.types.Channel;
 import social.peal.types.ChannelPage;
 import social.peal.types.ConnectOutcome;
 import social.peal.types.ConnectablePlatforms;
+import social.peal.types.OAuthSitePlatform;
 import social.peal.types.Platform;
 
 public class AsyncChannelsClient {
@@ -244,6 +248,132 @@ public class AsyncChannelsClient {
             String workspaceId, ConnectSite request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
                 this.rawClient.connectSite(workspaceId, request, requestOptions);
+        CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (<code>devto</code>), an API key from the account's settings (Extensions); on Hashnode (<code>hashnode</code>), a personal access token from the account's settings (Developer) and the publication's address in <code>publication</code>, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected <code>credentialsRefused</code>; a Hashnode publication that is not found is <code>publicationNotFound</code>, one of a team that lists the member as a contributor <code>cannotPublish</code> (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several <code>publicationRequired</code>, and one without Hashnode's Pro plan, which its API needs for every request, <code>planRequired</code>; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public CompletableFuture<Channel> connectSiteWithKey(String workspaceId, ConnectSiteWithKey request) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
+                this.rawClient.connectSiteWithKey(workspaceId, request);
+        CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (<code>devto</code>), an API key from the account's settings (Extensions); on Hashnode (<code>hashnode</code>), a personal access token from the account's settings (Developer) and the publication's address in <code>publication</code>, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected <code>credentialsRefused</code>; a Hashnode publication that is not found is <code>publicationNotFound</code>, one of a team that lists the member as a contributor <code>cannotPublish</code> (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several <code>publicationRequired</code>, and one without Hashnode's Pro plan, which its API needs for every request, <code>planRequired</code>; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public CompletableFuture<Channel> connectSiteWithKey(
+            String workspaceId, ConnectSiteWithKey request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
+                this.rawClient.connectSiteWithKey(workspaceId, request, requestOptions);
+        CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> startSiteSignIn(String workspaceId, OAuthSitePlatform platform) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
+                this.rawClient.startSiteSignIn(workspaceId, platform);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> startSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
+                this.rawClient.startSiteSignIn(workspaceId, platform, requestOptions);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> startSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, StartSiteSignIn request) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
+                this.rawClient.startSiteSignIn(workspaceId, platform, request);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> startSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, StartSiteSignIn request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
+                this.rawClient.startSiteSignIn(workspaceId, platform, request, requestOptions);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected <code>cannotPublish</code>; a reconnect that reached another site ConnectFailed <code>accountMismatch</code>. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
+     */
+    public CompletableFuture<Channel> completeSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, SiteSignInCallback request) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
+                this.rawClient.completeSiteSignIn(workspaceId, platform, request);
+        CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected <code>cannotPublish</code>; a reconnect that reached another site ConnectFailed <code>accountMismatch</code>. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
+     */
+    public CompletableFuture<Channel> completeSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, SiteSignInCallback request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
+                this.rawClient.completeSiteSignIn(workspaceId, platform, request, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

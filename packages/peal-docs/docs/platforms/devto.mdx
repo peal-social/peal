@@ -1,0 +1,46 @@
+---
+title: DEV
+description: "Connect a DEV account to Peal with an API key, and what an article there may hold."
+sidebar:
+  icon: newspaper
+---
+
+How to connect an account on DEV (dev.to), and what an article there may hold. DEV takes [articles](/guides/channels/websites), not posts.
+
+## At a glance [#at-a-glance]
+
+|             |                                                          |
+| ----------- | -------------------------------------------------------- |
+| Title       | 128 characters at most                                   |
+| Body        | Written as Markdown by Peal, with its images             |
+| Tags        | 4 at most, letters and digits only                       |
+| Categories  | None                                                     |
+| On the site | Published at once, a draft there, or scheduled there     |
+| Unpublish   | Makes the article a draft on DEV again: DEV deletes none |
+
+## Connect [#connect]
+
+<Steps>
+  <Step title="Make an API key">
+    On DEV, open **Settings**, then **Extensions**. Under **DEV Community API
+    Keys**, describe it as Peal and choose **Generate API Key**.
+  </Step>
+  <Step title="Connect it in Peal">
+    In **Channels**, under **DEV**, paste the key, then **Connect DEV**.
+  </Step>
+</Steps>
+
+Peal checks the key on DEV, then keeps it encrypted: it is never shown again. The channel is the account the key belongs to. Connecting it again with a new key replaces the old one. Revoke the key on DEV to cut Peal off; the channel is then marked **Reconnect**.
+
+## Articles [#articles]
+
+- Peal writes the body as Markdown, where everything you typed stays text: no markup, Liquid tag (`{% … %}`, `{{ … }}`) or embed of DEV's is made of it, an `@name` mentions no one, and an address typed in the text shows as text, not as a link: make a link with the editor's link button.
+- Each image goes to DEV's image upload first, once, and the article shows it from DEV. DEV takes 10 uploads an hour per account by default: an article with more images waits for DEV, and is sent once it can be.
+- The excerpt is the article's description, the featured image its cover.
+- **Scheduled there** gives DEV the time, and DEV publishes it then.
+- DEV takes one write a second from a server, whatever account it is for: Peal sends its writes to DEV one at a time, a second apart, for every account together, and waits out a short wait DEV asks for.
+- When DEV's answer is lost, Peal looks among your articles for one of the same title and body before anything else, and never sends it twice.
+
+## On your own server [#self-hosting]
+
+DEV needs no app on a self-hosted server: each member brings a key. See [DEV and Hashnode](/self-hosting/platforms#devto-hashnode).

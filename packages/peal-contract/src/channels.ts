@@ -19,6 +19,8 @@ import {
   ChannelPlatformSchema,
   LinkedInConnectionSchema,
   PlatformSchema,
+  KeySitePlatformSchema,
+  OAuthSitePlatformSchema,
   SitePlatformSchema,
 } from "./platform.ts";
 import type { Platform } from "./platform.ts";
@@ -182,6 +184,9 @@ export const ConnectablePlatformsSchema = Schema.Struct({
   // when LinkedIn is not among the platforms.
   linkedinConnections: Schema.Array(LinkedInConnectionSchema),
   platforms: Schema.Array(PlatformSchema),
+  // The websites this server connects: those by address, by key, and
+  // those it has the sign-in app of (WordPress.com).
+  sites: Schema.optionalKey(Schema.Array(SitePlatformSchema)),
 }).annotate({ identifier: "ConnectablePlatforms" });
 
 export type ConnectablePlatforms = typeof ConnectablePlatformsSchema.Type;
@@ -264,6 +269,46 @@ export const ConnectSiteSchema = Schema.Struct({
 
 export type ConnectSite = typeof ConnectSiteSchema.Type;
 
+/**
+ * A website to connect with a key the member made on it for Peal: on DEV,
+ * an API key from the account's settings (Extensions, "DEV Community API
+ * Keys"); on Hashnode, a personal access token from the account's
+ * settings (Developer), and the publication to publish to.
+ */
+export const ConnectSiteWithKeySchema = Schema.Struct({
+  // Kept encrypted, and never shown again.
+  apiKey: Schema.String.check(Schema.isBetweenLength(1, 200)),
+  platform: KeySitePlatformSchema,
+  // On Hashnode, the publication to publish to: its address (such as
+  // blog.example.com or name.hashnode.dev). Without it, the only one the
+  // token's member has.
+  publication: Schema.optionalKey(
+    Schema.String.check(Schema.isBetweenLength(1, 2048))
+  ),
+}).annotate({ identifier: "ConnectSiteWithKey" });
+
+export type ConnectSiteWithKey = typeof ConnectSiteWithKeySchema.Type;
+
+/**
+ * What a website's platform added to the callback page's address: the
+ * `state` that names the sign-in, and either a `code` or an `error`.
+ */
+export const SiteSignInCallbackSchema = Schema.Struct({
+  code: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(2048))),
+  error: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(256))),
+  state: Schema.String.check(Schema.isBetweenLength(1, 256)),
+}).annotate({ identifier: "SiteSignInCallback" });
+
+export type SiteSignInCallback = typeof SiteSignInCallbackSchema.Type;
+
+/** A sign-in on a website's platform, for a new site or to reconnect one. */
+export const StartSiteSignInSchema = Schema.Struct({
+  // The channel to reconnect: the sign-in must reach its site again.
+  channelId: Schema.optionalKey(Schema.String),
+}).annotate({ identifier: "StartSiteSignIn" });
+
+export type StartSiteSignIn = typeof StartSiteSignInSchema.Type;
+
 // Reconnecting adds no channel, so no plan limit refuses it.
 const reconnectErrors = [
   Forbidden,
@@ -338,6 +383,56 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
         description:
           "Connects a website, to publish articles to it: a WordPress site, by its address, the login name of the user Peal publishes as and an application password made for Peal on that user's profile page. Peal finds the site's REST API, checks the user may publish posts and upload files, and keeps the password encrypted. The site must be on HTTPS at a public address (SiteNotConnected `addressNotAllowed`); one that has no WordPress REST API is `notWordPress`, a refused password `credentialsRefused`, a user who may not publish `cannotPublish`. A site that does not answer, or fails on its side, is PlatformUnreachable. The REST API must be on the same site as the home page (`addressNotAllowed`). A site the workspace has already, at the same home page, is reconnected with the new password, even where its API's address changed. A site counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the site is called. A workspace tries 30 times an hour at most (SiteConnectLimited). Needs channel:connect.",
         summary: "Connect a website",
+      })
+    ),
+    HttpApiEndpoint.post("connectSiteWithKey", "/websites/keys", {
+      error: [...connectErrors, SiteNotConnected, SiteConnectLimited],
+      params: workspace,
+      payload: ConnectSiteWithKeySchema,
+      success: ChannelSchema,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description:
+          "Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions); on Hashnode (`hashnode`), a personal access token from the account's settings (Developer) and the publication's address in `publication`, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one of a team that lists the member as a contributor `cannotPublish` (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every request, `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.",
+        summary: "Connect a website with a key",
+      })
+    ),
+    HttpApiEndpoint.post("startSiteSignIn", "/websites/sign-in/:platform", {
+      error: [
+        ...connectErrors,
+        ChannelNotFound,
+        SiteNotConnected,
+        SiteConnectLimited,
+      ],
+      params: { ...workspace, platform: OAuthSitePlatformSchema },
+      payload: StartSiteSignInSchema,
+      success: AuthorizationSchema,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description:
+          "Starts connecting a website by signing in on its platform: on WordPress.com (`wordpressCom`), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With `channelId`, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed `notConfigured`. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.",
+        summary: "Start signing in to a website",
+      })
+    ),
+    HttpApiEndpoint.post(
+      "completeSiteSignIn",
+      "/websites/sign-in/:platform/callback",
+      {
+        error: [
+          ...connectErrors,
+          ChannelNotFound,
+          SiteNotConnected,
+          SiteConnectLimited,
+        ],
+        params: { ...workspace, platform: OAuthSitePlatformSchema },
+        payload: SiteSignInCallbackSchema,
+        success: ChannelSchema,
+      }
+    ).annotateMerge(
+      OpenApi.annotations({
+        description:
+          "Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected `cannotPublish`; a reconnect that reached another site ConnectFailed `accountMismatch`. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.",
+        summary: "Complete signing in to a website",
       })
     ),
     HttpApiEndpoint.post("connect", "/connect/:platform", {

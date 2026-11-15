@@ -51,6 +51,9 @@ require_relative "peal/channels/types/list_channels_request"
 require_relative "peal/channels/types/find_channels_request"
 require_relative "peal/channels/types/platforms_channels_request"
 require_relative "peal/channels/types/connect_site"
+require_relative "peal/channels/types/connect_site_with_key"
+require_relative "peal/channels/types/start_site_sign_in"
+require_relative "peal/channels/types/site_sign_in_callback"
 require_relative "peal/channels/types/connect_channel"
 require_relative "peal/channels/types/connect_callback"
 require_relative "peal/channels/types/choose_accounts"
@@ -546,6 +549,8 @@ module Peal
     autoload :ArticleViolationBodyMissing, ::File.join(__dir__, "peal/types/article_violation_body_missing")
     autoload :ArticleViolationCoverNotImage, ::File.join(__dir__, "peal/types/article_violation_cover_not_image")
     autoload :ArticleViolationExcerptTooLong, ::File.join(__dir__, "peal/types/article_violation_excerpt_too_long")
+    autoload :ArticleViolationSiteStatusNotTakenStatus, ::File.join(__dir__, "peal/types/article_violation_site_status_not_taken_status")
+    autoload :ArticleViolationSiteStatusNotTaken, ::File.join(__dir__, "peal/types/article_violation_site_status_not_taken")
     autoload :ArticleViolationSiteTimeInPast, ::File.join(__dir__, "peal/types/article_violation_site_time_in_past")
     autoload :ArticleViolationTermInvalidField, ::File.join(__dir__, "peal/types/article_violation_term_invalid_field")
     autoload :ArticleViolationTermInvalid, ::File.join(__dir__, "peal/types/article_violation_term_invalid")
@@ -852,6 +857,7 @@ module Peal
     autoload :ConnectOutcome, ::File.join(__dir__, "peal/types/connect_outcome")
     autoload :InstagramConnection, ::File.join(__dir__, "peal/types/instagram_connection")
     autoload :LinkedInConnection, ::File.join(__dir__, "peal/types/linked_in_connection")
+    autoload :SitePlatform, ::File.join(__dir__, "peal/types/site_platform")
     autoload :ConnectablePlatforms, ::File.join(__dir__, "peal/types/connectable_platforms")
     autoload :CreatedAPIKey, ::File.join(__dir__, "peal/types/created_api_key")
     autoload :CreatedConnectLink, ::File.join(__dir__, "peal/types/created_connect_link")
@@ -997,6 +1003,7 @@ module Peal
     autoload :InvalidTimeRangeEncoded, ::File.join(__dir__, "peal/types/invalid_time_range_encoded")
     autoload :Invitation, ::File.join(__dir__, "peal/types/invitation")
     autoload :InvitationNotFoundEncoded, ::File.join(__dir__, "peal/types/invitation_not_found_encoded")
+    autoload :KeySitePlatform, ::File.join(__dir__, "peal/types/key_site_platform")
     autoload :LastTargetLeftEncoded, ::File.join(__dir__, "peal/types/last_target_left_encoded")
     autoload :LinkedInOrganization, ::File.join(__dir__, "peal/types/linked_in_organization")
     autoload :LivePostChangeKind, ::File.join(__dir__, "peal/types/live_post_change_kind")
@@ -1100,6 +1107,7 @@ module Peal
     autoload :NoticePage, ::File.join(__dir__, "peal/types/notice_page")
     autoload :NotificationPreferencesEmail, ::File.join(__dir__, "peal/types/notification_preferences_email")
     autoload :NotificationPreferences, ::File.join(__dir__, "peal/types/notification_preferences")
+    autoload :OAuthSitePlatform, ::File.join(__dir__, "peal/types/o_auth_site_platform")
     autoload :OrganicCounts, ::File.join(__dir__, "peal/types/organic_counts")
     autoload :WorkspaceOverview, ::File.join(__dir__, "peal/types/workspace_overview")
     autoload :Overview, ::File.join(__dir__, "peal/types/overview")
@@ -1217,7 +1225,6 @@ module Peal
     autoload :SiteConnectLimitedEncoded, ::File.join(__dir__, "peal/types/site_connect_limited_encoded")
     autoload :SiteNotConnectedReason, ::File.join(__dir__, "peal/types/site_not_connected_reason")
     autoload :SiteNotConnectedEncoded, ::File.join(__dir__, "peal/types/site_not_connected_encoded")
-    autoload :SitePlatform, ::File.join(__dir__, "peal/types/site_platform")
     autoload :SpendCeilingExceededEncoded, ::File.join(__dir__, "peal/types/spend_ceiling_exceeded_encoded")
     autoload :Standing, ::File.join(__dir__, "peal/types/standing")
     autoload :SubscribableWebhookEventType, ::File.join(__dir__, "peal/types/subscribable_webhook_event_type")

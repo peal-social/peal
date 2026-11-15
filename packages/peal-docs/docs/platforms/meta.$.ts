@@ -1,7 +1,7 @@
 import { defineMeta } from "blume";
 
 // The Platforms tab, in both languages: one page per platform, in the
-// order the app lists them.
+// order the app lists them, then the websites that take articles.
 export default defineMeta({
   pages: [
     "index",
@@ -16,5 +16,8 @@ export default defineMeta({
     "youtube",
     "pinterest",
     "google-business",
+    "wordpress-com",
+    "devto",
+    "hashnode",
   ],
 });

@@ -86,7 +86,9 @@ const ReconnectControl = ({
     return (
       <ReconnectWebsite
         handle={channel.handle}
+        id={channel.id}
         needsReconnect={needsReconnect}
+        platform={channel.platform}
         workspaceId={workspaceId}
       />
     );

@@ -132,6 +132,7 @@ const LoadedConnectForms = ({
         instagramConnections={platforms.value.instagramConnections}
         linkedinConnections={platforms.value.linkedinConnections}
         platforms={platforms.value.platforms}
+        sites={platforms.value.sites ?? []}
         workspaceId={workspaceId}
       />
     );

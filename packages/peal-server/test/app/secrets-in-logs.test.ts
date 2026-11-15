@@ -24,13 +24,15 @@ import {
   Schema,
   Tracer,
 } from "effect";
+import { SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
 import sharp from "sharp";
 
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
-import { WordPressSiteVerifierLive } from "#channels/infrastructure/platforms/wordpress/wordpress-site-verifier.ts";
+import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
+import { wordpressComAuthorizer } from "#channels/infrastructure/platforms/wordpress-com/wordpress-com-authorizer.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
 import { S3MediaStorageLive } from "#media/infrastructure/s3-media-storage.ts";
 import { FacebookOptions } from "#publishing/domain/facebook-options.ts";
@@ -40,6 +42,9 @@ import {
   PostTargetIdSchema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
+import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
+import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import { ShortLinks } from "#shortlinks/application/short-links.ts";
 import { ShortLinksLive } from "#shortlinks/container.ts";
 import {
@@ -47,6 +52,11 @@ import {
   DatabaseTest as AssistantDatabaseTest,
   imagesTest,
 } from "#test/assistant/support.ts";
+import { fakeDevTo, gardener } from "#test/channels/fakes/fake-devto.ts";
+import {
+  fakeHashnode,
+  writerOnHashnode,
+} from "#test/channels/fakes/fake-hashnode.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
   OpenOutboundGuard,
@@ -448,7 +458,7 @@ layer(
   Layer.mergeAll(
     capture,
     Layer.succeed(Tracer.Tracer, tracer),
-    WordPressSiteVerifierLive.pipe(
+    siteVerifiersLive({ devto: devtoHosts, hashnode: hashnodeHosts }).pipe(
       Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
     )
   ),
@@ -487,6 +497,112 @@ layer(
         assert.notInclude(written(), onTheWire);
         assert.notInclude(written(), onTheWire.replaceAll(" ", ""));
       }).pipe(Effect.scoped)
+  );
+});
+
+// Where the fakes of the key-based sites listen, set by the test.
+const keySiteHosts = {
+  devto: { api: "http://127.0.0.1:9" },
+  hashnode: { api: "http://127.0.0.1:9/" },
+};
+
+// A DEV key and a Hashnode token go on the wire, to fakes on loopback:
+// what is written about those calls holds neither.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    siteVerifiersLive(keySiteHosts).pipe(
+      Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
+    )
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about checking a website's key", (it) => {
+  it.effect(
+    "holds no key nor token, which every call carries in a header",
+    () =>
+      Effect.gen(function* searched() {
+        const devto = yield* fakeDevTo();
+        const hashnode = yield* fakeHashnode();
+
+        keySiteHosts.devto.api = devto.api;
+        keySiteHosts.hashnode.api = hashnode.api;
+
+        yield* SiteVerifier.use((verifier) =>
+          Effect.all([
+            verifier.verifyKey({
+              apiKey: Redacted.make(gardener.key),
+              platform: "devto",
+              publication: Option.none(),
+            }),
+            verifier.verifyKey({
+              apiKey: Redacted.make(writerOnHashnode.token),
+              platform: "hashnode",
+              publication: Option.none(),
+            }),
+          ])
+        ).pipe(Effect.withSpan("test.website-keys"));
+
+        assert.strictEqual(
+          devto.requests()[0]?.headers["api-key"],
+          gardener.key
+        );
+        assert.strictEqual(
+          hashnode.requests()[0]?.authorization,
+          writerOnHashnode.token
+        );
+        assert.include(written(), "/api/users/me");
+        assert.notInclude(written(), gardener.key);
+        assert.notInclude(written(), writerOnHashnode.token);
+      }).pipe(Effect.scoped)
+  );
+});
+
+// Where the WordPress.com the test started listens.
+const comHosts = { api: "http://127.0.0.1:9" };
+
+// WordPress.com's sign-in sends the app's secret and the member's code,
+// and gets the site's token, which the site's description is read with:
+// what is written about those calls holds none of them.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard),
+    SecureRandom.layerWebCrypto
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about signing in to WordPress.com", (it) => {
+  it.effect("holds no client secret, code nor token", () =>
+    Effect.gen(function* searched() {
+      const com = {
+        blogId: 2_024_001,
+        code: "synthetic-code-on-the-wire",
+        token: "synthetic-wpcom-token-on-the-wire",
+      };
+
+      const secret = "synthetic-wpcom-secret-on-the-wire";
+      const site = yield* fakeWordPress({ wordpressCom: com });
+
+      comHosts.api = new URL(site.home).origin;
+
+      const authorizer = yield* wordpressComAuthorizer({
+        client: { clientId: "153160", clientSecret: Redacted.make(secret) },
+        hosts: comHosts,
+        http: yield* publicHttpClient,
+        publicUrl: "https://peal.example.com",
+      });
+
+      const grant = yield* authorizer
+        .complete(com.code)
+        .pipe(Effect.withSpan("test.wordpress-com"));
+
+      assert.strictEqual(grant.site.accountId, String(com.blogId));
+      assert.include(written(), "/oauth2/token");
+      assert.notInclude(written(), secret);
+      assert.notInclude(written(), com.code);
+      assert.notInclude(written(), com.token);
+    }).pipe(Effect.scoped)
   );
 });
 

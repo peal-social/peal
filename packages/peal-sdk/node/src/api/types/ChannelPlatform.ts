@@ -13,6 +13,9 @@ export const ChannelPlatform = {
         Youtube: "youtube",
         Pinterest: "pinterest",
         GoogleBusiness: "googleBusiness",
-        Wordpress: "wordpress"
+        Wordpress: "wordpress",
+        Devto: "devto",
+        Hashnode: "hashnode",
+        WordpressCom: "wordpressCom"
     } as const;
 export type ChannelPlatform = typeof ChannelPlatform[keyof typeof ChannelPlatform];

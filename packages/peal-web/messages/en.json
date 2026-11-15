@@ -721,7 +721,7 @@
     "retry": "Try again",
     "empty": "No account is connected yet.",
     "listTitle": "Connected accounts",
-    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} x {X} youtube {YouTube} other {{platform}}}",
+    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} devto {DEV} hashnode {Hashnode} wordpressCom {WordPress.com} x {X} youtube {YouTube} other {{platform}}}",
     "platformVia": "{platform, select, instagram {Instagram} linkedin {LinkedIn} other {{platform}}} ({connection, select, instagramLogin {Instagram Login} facebookLogin {through a Facebook Page} linkedinProfile {profile} linkedinPage {company page} other {{connection}}})",
     "status": {
       "active": "Connected",
@@ -802,8 +802,12 @@
       "tooManyTries": "The workspace tried to connect websites too many times in the last hour. Try again later.",
       "notWordPress": "This address leads to no WordPress site. Give the site’s home page, such as https://blog.example.com.",
       "addressNotAllowed": "Peal reaches websites over HTTPS, at public addresses only.",
-      "credentialsRefused": "The site refused the user name and the application password. Check both, and that your host lets the Authorization header through.",
-      "cannotPublish": "This user may not publish posts or upload files on the site: use an Author, an Editor or an Administrator."
+      "credentialsRefused": "The site refused what Peal signs in with: check the user name and the application password, and that your host lets the Authorization header through; or the key, which may have been revoked.",
+      "cannotPublish": "This user may not publish posts or upload files on the site: use an Author, an Editor or an Administrator.",
+      "otherWayIn": "This platform connects another way: a WordPress site of its own by its address, DEV and Hashnode by a key, WordPress.com by signing in there.",
+      "publicationRequired": "You have several publications on Hashnode: give the address of the one to publish to.",
+      "publicationNotFound": "Hashnode has no such publication. Give its address, such as blog.example.com.",
+      "planRequired": "Hashnode answers its API only for a publication on its Pro plan. Upgrade the publication on Hashnode, then connect it again."
     },
     "websiteTitle": "WordPress website",
     "websiteDescription": "Publish articles to a WordPress site of your own. On your user’s profile page in WordPress, under Application Passwords, make a password for Peal and paste it here: Peal keeps it encrypted and never shows it again.",
@@ -815,7 +819,31 @@
     "websitePasswordHint": "Made for Peal on the user’s profile page; not the user’s own password.",
     "connectWebsite": "Connect the website",
     "websiteConnected": "{site} is connected.",
-    "reconnectWebsite": "Reconnect {handle} with a new application password"
+    "reconnectWebsite": "Reconnect {handle} with a new application password",
+    "keySite": {
+      "devto": {
+        "title": "DEV",
+        "description": "Publish articles to your account on DEV (dev.to). In DEV’s settings, under Extensions, make an API key for Peal and paste it here: Peal keeps it encrypted and never shows it again. DEV deletes no article through its API: unpublishing one makes it a draft there.",
+        "key": "API key",
+        "keyHint": "From Settings, Extensions, “DEV Community API Keys”.",
+        "connect": "Connect DEV"
+      },
+      "hashnode": {
+        "title": "Hashnode",
+        "description": "Publish articles to a Hashnode publication. Hashnode answers its API only for a publication on its Pro plan. In Hashnode’s account settings, under Developer, make a personal access token for Peal and paste it here: Peal keeps it encrypted and never shows it again.",
+        "key": "Personal access token",
+        "keyHint": "From your Hashnode account’s settings, Developer.",
+        "publication": "Publication",
+        "publicationHint": "Its address, such as blog.example.com or name.hashnode.dev. Leave it empty when you have one publication.",
+        "connect": "Connect Hashnode"
+      }
+    },
+    "wordpressCom": {
+      "title": "WordPress.com",
+      "description": "Publish articles to a site on WordPress.com, or a Jetpack site you reach there. You sign in on WordPress.com and pick the site; you must be able to publish posts and upload files on it.",
+      "connect": "Connect WordPress.com"
+    },
+    "reconnectKeySite": "Reconnect {handle} with a new key"
   },
   "PlatformConnect": {
     "connecting": "Opening…",
@@ -1783,7 +1811,7 @@
     "viewPost": "See it on {platform}",
     "failed": "It did not go out: {reason}",
     "unconfirmed": "Peal cannot tell whether it went out: {reason}. Check {platform} before you post it again, then say what you found.",
-    "unconfirmedReason": "{reason, select, noResponse {the platform did not answer} unreadableResponse {its answer could not be read} interrupted {the server stopped during the call} adapterFailure {Peal failed during the call} stillProcessing {the platform was still processing it when Peal stopped checking} searchRefused {the site refused Peal’s search for it} other {{reason}}}",
+    "unconfirmedReason": "{reason, select, noResponse {the platform did not answer} unreadableResponse {its answer could not be read} interrupted {the server stopped during the call} adapterFailure {Peal failed during the call} stillProcessing {the platform was still processing it when Peal stopped checking} searchRefused {the site refused Peal’s search for it} severalOnSite {the site holds another post of its title, which Peal cannot tell from it} other {{reason}}}",
     "cancelled": "It was cancelled before it went out.",
     "dropped": "This channel was taken off the post before it went out: the post went out on its other channels.",
     "pending": "It waits for its turn.",
@@ -3493,7 +3521,7 @@
       "disabledToReconnect": "Turned off, to reconnect"
     },
     "troubleStatus": "{status, select, failed {Failed} other {Unconfirmed}}",
-    "reason": "{reason, select, contentRejected {Content refused} channelDisconnected {Channel disconnected} channelDisabled {Channel turned off} mediaRemoved {Media deleted} mediaRejected {Media refused} missed {Missed} notPublished {Not found after a check} rateLimited {Rate limited} tokenExpired {Authorization stopped working} unavailable {Platform unreachable} appNotAudited {Private posts only, app not audited} quotaExceeded {Daily upload allowance spent} appBillingLimit {Server’s app not paid for} planLimit {Plan limit reached} partsNotSent {Later parts not sent} repliesNotAllowed {Replies refused by X} paymentMethodRequired {Payment method needed for X} xCeilingReached {X ceiling reached} paymentFailed {Payment failed, X not billed} perAccountPricingRequired {Per-account pricing needed for X} xThreadCut {Thread cut by X’s meter} noResponse {No answer} unreadableResponse {Unreadable answer} interrupted {Interrupted} adapterFailure {Failed during the call} stillProcessing {Still processing} searchRefused {Search refused by the site} other {{reason}}}",
+    "reason": "{reason, select, contentRejected {Content refused} channelDisconnected {Channel disconnected} channelDisabled {Channel turned off} mediaRemoved {Media deleted} mediaRejected {Media refused} missed {Missed} notPublished {Not found after a check} rateLimited {Rate limited} tokenExpired {Authorization stopped working} unavailable {Platform unreachable} appNotAudited {Private posts only, app not audited} quotaExceeded {Daily upload allowance spent} appBillingLimit {Server’s app not paid for} planLimit {Plan limit reached} partsNotSent {Later parts not sent} repliesNotAllowed {Replies refused by X} paymentMethodRequired {Payment method needed for X} xCeilingReached {X ceiling reached} paymentFailed {Payment failed, X not billed} perAccountPricingRequired {Per-account pricing needed for X} xThreadCut {Thread cut by X’s meter} noResponse {No answer} unreadableResponse {Unreadable answer} interrupted {Interrupted} adapterFailure {Failed during the call} stillProcessing {Still processing} searchRefused {Search refused by the site} severalOnSite {Several of its title on the site} other {{reason}}}",
     "requests": {
       "title": "Contract requests",
       "description": "Requests to cancel a contract or withdraw from one that the form could not apply by itself: no contract was found, or their sender has not followed the link emailed to them. Apply one to a workspace only once you know its sender holds that contract; it takes effect as of the date it was received, and the sender is told.",
@@ -4720,7 +4748,7 @@
         "failed": "Failed",
         "unconfirmed": "To check"
       },
-      "noSite": "Connect a WordPress website on the Channels page to write articles for it.",
+      "noSite": "Connect a website on the Channels page (a WordPress site, WordPress.com, DEV or Hashnode) to write articles for it.",
       "sites": "{count, plural, one {# website} other {# websites}} connected.",
       "new": "New article",
       "connect": "Connect a website",
@@ -4767,7 +4795,7 @@
       "updateOnSite": "Update on the site",
       "unpublish": "Unpublish",
       "unpublishTitle": "Unpublish this article?",
-      "unpublishDescription": "Its post moves to the site’s trash: readers no longer see it, and the site deletes it later.",
+      "unpublishDescription": "Readers no longer see it. On a WordPress site its post moves to the trash, which the site empties later; on DEV, which deletes no article through its API, it becomes a draft there; on Hashnode it is removed from the publication.",
       "cancel": "Cancel",
       "delete": "Delete",
       "permalink": "On the site at",
@@ -4775,7 +4803,7 @@
       "scheduled": "Scheduled: what goes out is public.",
       "unscheduled": "Back to draft.",
       "updatedOnSite": "Updated on the site.",
-      "unpublished": "Moved to the site’s trash.",
+      "unpublished": "Unpublished on the site.",
       "deleted": "Deleted from Peal.",
       "violations": {
         "titleMissing": "Give it a title.",
@@ -4783,12 +4811,13 @@
         "bodyMissing": "Write its body.",
         "bodyInvalid": "The body holds something the site cannot take.",
         "excerptTooLong": "The excerpt is too long.",
-        "tooManyTerms": "Too many tags or categories: 20 at most.",
-        "termInvalid": "A tag or a category is empty, or too long.",
+        "tooManyTerms": "Too many tags or categories for this site: a WordPress site takes 20 of each, Hashnode 15 tags, DEV 4, and neither DEV nor Hashnode takes categories.",
+        "termInvalid": "A tag or a category is empty, too long, or one the site does not take (DEV’s tags are letters and digits only).",
         "siteTimeInPast": "For the site to publish it at a time, the time must be ahead.",
         "timeInPast": "That time has passed.",
         "approvalRequired": "Your posts need an approval here, and articles cannot be approved yet: someone whose posts go out without one sends it.",
-        "coverNotImage": "The featured image must be an image."
+        "coverNotImage": "The featured image must be an image.",
+        "siteStatusNotTaken": "Hashnode cannot publish an article at a time itself: choose “Published at once” and give the time, and Peal sends it then."
       },
       "errors": {
         "ArticleChangeRefused": "The site refused the change ({code}): nothing changed.",
@@ -4804,7 +4833,11 @@
       },
       "linkAddress": "The link’s address",
       "linkHint": "Empty removes the link.",
-      "linkApply": "Apply"
+      "linkApply": "Apply",
+      "failedNote": "It did not go out ({code}). Fix what the site refused, then send it again.",
+      "failedPlanRequired": "Hashnode refused it: its API answers only for a publication on its Pro plan. Upgrade the publication on Hashnode, then send it again.",
+      "toCheckNote": "Peal cannot tell whether it reached the site: look there, and send it again only if it is not.",
+      "toCheckSeveral": "The site has another article of this title, which Peal cannot tell from this one, so it never sends this one again on its own. Look on the site: if this article is there, it is live, and you can leave it; if it is not, rename or delete the other article there, then send it again."
     }
   }
 }

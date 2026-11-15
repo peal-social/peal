@@ -13,6 +13,7 @@ module Peal
       ADAPTER_FAILURE = "adapterFailure"
       STILL_PROCESSING = "stillProcessing"
       SEARCH_REFUSED = "searchRefused"
+      SEVERAL_ON_SITE = "severalOnSite"
     end
   end
 end

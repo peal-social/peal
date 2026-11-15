@@ -15,6 +15,7 @@ import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
 import { storableLine } from "#shared/domain/platform-text.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
+import type { SitePlatform } from "#shared/domain/platform.ts";
 
 import { ChannelAllowance } from "./channel-allowance.ts";
 import { ChannelEvents } from "./channel-events.ts";
@@ -24,11 +25,16 @@ import { channelRoomOf } from "./channel-room.ts";
 import { encryptTokens } from "./channel-tokens.ts";
 import type { MissingTokenKey } from "./missing-token-key.ts";
 import type { IssuedTokens } from "./platform-authorizer.ts";
+import { ReconnectAccountMismatch } from "./reconnect-account-mismatch.ts";
 import type { SiteConnectLimited } from "./site-connect-limited.ts";
 import { SiteConnectPace } from "./site-connect-pace.ts";
-import type { SiteRefused } from "./site-refused.ts";
+import { SiteRefused } from "./site-refused.ts";
 import { SiteVerifier } from "./site-verifier.ts";
-import type { SiteSignIn, VerifiedSite } from "./site-verifier.ts";
+import type {
+  SiteKeySignIn,
+  SiteSignIn,
+  VerifiedSite,
+} from "./site-verifier.ts";
 import { TokenCipher } from "./token-cipher.ts";
 
 // The longest a site's name or home page is kept, as a platform's handle
@@ -70,6 +76,15 @@ const tokensOf = (signIn: SiteSignIn, site: VerifiedSite): IssuedTokens => ({
   scopes: site.scopes,
 });
 
+// The credential a key's calls carry: the key itself.
+const keyTokensOf = (signIn: SiteKeySignIn): IssuedTokens => ({
+  accessToken: Redacted.make(Redacted.value(signIn.apiKey).trim()),
+  expiresAt: Option.none(),
+  refreshToken: Option.none(),
+  renewable: false,
+  scopes: [],
+});
+
 // What the site told about itself, as the channel keeps it: an
 // application password lasts until its user revokes it.
 const connectedOf = (site: VerifiedSite): ConnectedAccount => ({
@@ -90,7 +105,9 @@ const connectedOf = (site: VerifiedSite): ConnectedAccount => ({
  * password let Peal publish (`SiteVerifier`), and only then is the
  * password kept, encrypted for the channel as a platform's token is. A
  * site the workspace has already takes the new password; a new one needs
- * room in the plan and is counted for billing like any channel. Needs
+ * room in the plan and is counted for billing like any channel. An
+ * account on a publishing platform connects the same way with a key the
+ * member made there (`connectWithKey`), the key kept as its token. Needs
  * channel:connect.
  */
 export class ConnectSite extends Context.Service<
@@ -100,6 +117,28 @@ export class ConnectSite extends Context.Service<
       actor: Actor,
       signIn: SiteSignIn
     ) => Effect.Effect<Channel, ConnectSiteFailure>;
+    readonly connectWithKey: (
+      actor: Actor,
+      signIn: SiteKeySignIn
+    ) => Effect.Effect<Channel, ConnectSiteFailure>;
+    /**
+     * Keeps the site a sign-in on its platform reached, with its token:
+     * the channel `reconnecting` names, which must be that site, or the
+     * workspace's channel of it, or a new one, which needs room.
+     */
+    readonly connectSigned: (
+      actor: Actor,
+      platform: SitePlatform,
+      grant: {
+        readonly accessToken: Redacted.Redacted;
+        readonly site: VerifiedSite;
+      },
+      reconnecting: Option.Option<Channel>
+    ) => Effect.Effect<Channel, ConnectSiteFailure | ReconnectAccountMismatch>;
+    /** Whether the workspace may take one more channel: its plan's room. */
+    readonly roomFor: (
+      actor: Actor
+    ) => Effect.Effect<void, DatabaseError | PlanLimitReached>;
   }
 >()("peal-server/channels/application/ConnectSite") {
   static readonly layer = Layer.effect(
@@ -190,7 +229,7 @@ export class ConnectSite extends Context.Service<
 
       const add = Effect.fn("ConnectSite.add")(function* add(
         actor: Actor,
-        signIn: SiteSignIn,
+        platform: SitePlatform,
         site: VerifiedSite,
         tokens: IssuedTokens
       ) {
@@ -203,7 +242,7 @@ export class ConnectSite extends Context.Service<
             ...connectedOf(site),
             accountId: site.accountId,
             id,
-            platform: signIn.platform,
+            platform,
             workspaceId: actor.workspaceId,
           },
           yield* DateTime.now
@@ -225,6 +264,12 @@ export class ConnectSite extends Context.Service<
         signIn: SiteSignIn
       ) {
         yield* Effect.fromResult(authorize(actor, "channel:connect"));
+
+        // Only a WordPress site of its own takes a password.
+        if (signIn.platform !== "wordpress") {
+          return yield* new SiteRefused({ reason: "otherWayIn" });
+        }
+
         yield* pace.take(actor.workspaceId);
 
         // A new site needs room in the plan: checked before the site is
@@ -281,13 +326,23 @@ export class ConnectSite extends Context.Service<
           );
         }
 
-        return yield* add(actor, signIn, site, tokens).pipe(
-          // Connected from another tab meanwhile: this one reconnects it.
+        return yield* addOrReconnect(actor, signIn.platform, site, tokens);
+      });
+
+      // A new account, unless another tab connected it meanwhile: this one
+      // then reconnects it.
+      const addOrReconnect = (
+        actor: Actor,
+        platform: SitePlatform,
+        site: VerifiedSite,
+        tokens: IssuedTokens
+      ) =>
+        add(actor, platform, site, tokens).pipe(
           Effect.catchTag("ChannelAlreadyConnected", () =>
             Effect.gen(function* raced() {
               const other = yield* channels.findByAccount(
                 actor.workspaceId,
-                signIn.platform,
+                platform,
                 site.accountId
               );
 
@@ -301,9 +356,97 @@ export class ConnectSite extends Context.Service<
             })
           )
         );
-      });
 
-      return ConnectSite.of({ connect });
+      const connectWithKey = Effect.fn("ConnectSite.connectWithKey")(
+        function* connectWithKey(actor: Actor, signIn: SiteKeySignIn) {
+          yield* Effect.fromResult(authorize(actor, "channel:connect"));
+          yield* pace.take(actor.workspaceId);
+
+          // A new account needs room in the plan: checked before the
+          // platform is given the key, unless the workspace has an account
+          // there already, which the key may reconnect.
+          const known = (yield* channels.list(actor.workspaceId)).some(
+            (channel) => channel.platform === signIn.platform
+          );
+
+          if (!known) {
+            yield* roomForChannel(actor.workspaceId);
+          }
+
+          const site = yield* verifier.verifyKey(signIn);
+          const tokens = keyTokensOf(signIn);
+
+          const existing = yield* channels.findByAccount(
+            actor.workspaceId,
+            signIn.platform,
+            site.accountId
+          );
+
+          if (Option.isSome(existing)) {
+            return yield* reconnectTo(
+              existing.value,
+              tokens,
+              connectedOf(site)
+            );
+          }
+
+          return yield* addOrReconnect(actor, signIn.platform, site, tokens);
+        }
+      );
+
+      const connectSigned = Effect.fn("ConnectSite.connectSigned")(
+        function* connectSigned(
+          actor: Actor,
+          platform: SitePlatform,
+          grant: {
+            readonly accessToken: Redacted.Redacted;
+            readonly site: VerifiedSite;
+          },
+          reconnecting: Option.Option<Channel>
+        ) {
+          const tokens: IssuedTokens = {
+            accessToken: grant.accessToken,
+            expiresAt: Option.none(),
+            refreshToken: Option.none(),
+            renewable: false,
+            scopes: grant.site.scopes,
+          };
+
+          const connected = connectedOf(grant.site);
+
+          if (Option.isSome(reconnecting)) {
+            const channel = reconnecting.value;
+
+            // The sign-in must reach the channel's own site again.
+            if (channel.accountId !== grant.site.accountId) {
+              return yield* new ReconnectAccountMismatch({
+                channelId: channel.id,
+              });
+            }
+
+            return yield* reconnectTo(channel, tokens, connected);
+          }
+
+          const existing = yield* channels.findByAccount(
+            actor.workspaceId,
+            platform,
+            grant.site.accountId
+          );
+
+          if (Option.isSome(existing)) {
+            return yield* reconnectTo(existing.value, tokens, connected);
+          }
+
+          return yield* addOrReconnect(actor, platform, grant.site, tokens);
+        }
+      );
+
+      return ConnectSite.of({
+        connect,
+        connectSigned,
+        connectWithKey,
+        roomFor: (actor) => roomForChannel(actor.workspaceId),
+      });
     })
   );
 }

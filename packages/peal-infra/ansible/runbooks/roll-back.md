@@ -220,6 +220,37 @@ The release that connects WordPress sites and sends articles to them
    or missed past an hour (`missed`). Tell its workspace, or wait until it
    has gone out.
 
+## Past more article sites
+
+The release that adds DEV, Hashnode and sites on WordPress.com stores
+what the release before cannot read:
+
+- a channel of one of them (`channels.channels.platform` `devto`,
+  `hashnode` or `wordpressCom`), and the events and notices that name
+  one: the release before fails on them as the release before websites
+  fails on `wordpress` (above);
+- an article to check because its site holds another of its title
+  (`publishing.articles.state` with the reason `severalOnSite`, and its
+  calls' outcome in `publishing.article_calls`), which the release
+  before fails to decode where it reads the article.
+
+1. **Channels, events and notices of the new sites:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT 'channel' AS kind, id FROM channels.channels WHERE platform IN ('devto', 'hashnode', 'wordpressCom') UNION ALL SELECT 'event', id FROM webhooks.events WHERE data->>'platform' IN ('devto', 'hashnode', 'wordpressCom') UNION ALL SELECT 'notice', id FROM notifications.notices WHERE event->'channel'->>'platform' IN ('devto', 'hashnode', 'wordpressCom')"
+   ```
+
+2. **Articles or calls with the new reason:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT 'article' AS kind, id::text FROM publishing.articles WHERE state::text LIKE '%severalOnSite%' UNION ALL SELECT 'call', article_id::text FROM publishing.article_calls WHERE outcome::text LIKE '%severalOnSite%'"
+   ```
+
+3. **Either lists a row:** do not roll back past this release; release
+   a fix forward instead. Never change the rows by hand.
+
 ## Past follow-up rules
 
 The release that follows posts up at a likes threshold (migration

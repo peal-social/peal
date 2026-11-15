@@ -58,6 +58,10 @@ public final class ArticleViolation {
         return new ArticleViolation(new SiteTimeInPastValue(value));
     }
 
+    public static ArticleViolation siteStatusNotTaken(ArticleViolationSiteStatusNotTaken value) {
+        return new ArticleViolation(new SiteStatusNotTakenValue(value));
+    }
+
     public static ArticleViolation timeInPast(ArticleViolationTimeInPast value) {
         return new ArticleViolation(new TimeInPastValue(value));
     }
@@ -100,6 +104,10 @@ public final class ArticleViolation {
 
     public boolean isSiteTimeInPast() {
         return value instanceof SiteTimeInPastValue;
+    }
+
+    public boolean isSiteStatusNotTaken() {
+        return value instanceof SiteStatusNotTakenValue;
     }
 
     public boolean isTimeInPast() {
@@ -174,6 +182,13 @@ public final class ArticleViolation {
         return Optional.empty();
     }
 
+    public Optional<ArticleViolationSiteStatusNotTaken> getSiteStatusNotTaken() {
+        if (isSiteStatusNotTaken()) {
+            return Optional.of(((SiteStatusNotTakenValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<ArticleViolationTimeInPast> getTimeInPast() {
         if (isTimeInPast()) {
             return Optional.of(((TimeInPastValue) value).value);
@@ -240,6 +255,8 @@ public final class ArticleViolation {
 
         T visitSiteTimeInPast(ArticleViolationSiteTimeInPast siteTimeInPast);
 
+        T visitSiteStatusNotTaken(ArticleViolationSiteStatusNotTaken siteStatusNotTaken);
+
         T visitTimeInPast(ArticleViolationTimeInPast timeInPast);
 
         T visitCoverNotImage(ArticleViolationCoverNotImage coverNotImage);
@@ -259,6 +276,7 @@ public final class ArticleViolation {
         @JsonSubTypes.Type(TooManyTermsValue.class),
         @JsonSubTypes.Type(TermInvalidValue.class),
         @JsonSubTypes.Type(SiteTimeInPastValue.class),
+        @JsonSubTypes.Type(SiteStatusNotTakenValue.class),
         @JsonSubTypes.Type(TimeInPastValue.class),
         @JsonSubTypes.Type(CoverNotImageValue.class),
         @JsonSubTypes.Type(ApprovalRequiredValue.class)
@@ -574,6 +592,46 @@ public final class ArticleViolation {
         }
 
         private boolean equalTo(SiteTimeInPastValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "ArticleViolation{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("siteStatusNotTaken")
+    @JsonIgnoreProperties("_tag")
+    private static final class SiteStatusNotTakenValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private ArticleViolationSiteStatusNotTaken value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private SiteStatusNotTakenValue() {}
+
+        private SiteStatusNotTakenValue(ArticleViolationSiteStatusNotTaken value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitSiteStatusNotTaken(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof SiteStatusNotTakenValue && equalTo((SiteStatusNotTakenValue) other);
+        }
+
+        private boolean equalTo(SiteStatusNotTakenValue other) {
             return value.equals(other.value);
         }
 

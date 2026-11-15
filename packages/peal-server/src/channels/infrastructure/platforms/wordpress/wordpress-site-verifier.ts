@@ -1,9 +1,8 @@
-import { Effect, Layer, Option, Redacted, Schema } from "effect";
+import { Effect, Option, Redacted, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
 import { SiteRefused } from "#channels/application/site-refused.ts";
-import { SiteVerifier } from "#channels/application/site-verifier.ts";
 import type {
   SiteSignIn,
   VerifiedSite,
@@ -211,107 +210,104 @@ const handleOf = (home: URL) =>
   `${home.host}${home.pathname.replace(/\/+$/u, "")}`;
 
 /**
- * SiteVerifier for WordPress: finds the site's REST API, checks that it
+ * How `SiteVerifier` checks a WordPress site: finds the site's REST API, checks that it
  * is WordPress's, then that the user and the application password open
  * it with the rights publishing needs. Every request goes through the
  * public HTTP client and the outbound guard, redirects included, which
  * are followed one request at a time.
  */
-export const WordPressSiteVerifierLive = Layer.effect(
-  SiteVerifier,
-  Effect.gen(function* WordPressSiteVerifierLive() {
-    const http = yield* publicHttpClient;
+export const wordpressSiteVerify = Effect.gen(function* wordpressSiteVerify() {
+  const http = yield* publicHttpClient;
 
-    const verify = Effect.fn("WordPressSiteVerifier.verify")(function* verify(
-      signIn: SiteSignIn
-    ) {
-      const start = yield* Option.match(addressOf(signIn.address), {
-        onNone: () => Effect.fail(refused("notWordPress")),
-        onSome: Effect.succeed,
-      });
-
-      const home = yield* homeOf(http, start);
-
-      // The root the home page names, else the one sites with pretty
-      // permalinks serve.
-      const root = Option.getOrElse(
-        home.linked,
-        () => new URL("wp-json/", home.at.href.replace(/\/*$/u, "/"))
-      );
-
-      // The password goes to the API on the home page's own site, and to
-      // an address short enough to keep, or to none.
-      if (root.origin !== home.at.origin) {
-        return yield* refused("addressNotAllowed");
-      }
-
-      if (root.href.length > maxRootLength) {
-        return yield* refused("notWordPress");
-      }
-
-      const index = yield* indexAt(http, root);
-
-      if (Option.isNone(index)) {
-        return yield* refused("notWordPress");
-      }
-
-      const response = yield* http
-        .execute(
-          HttpClientRequest.get(
-            routeUrl(root.href, "/wp/v2/users/me", {
-              _fields: "capabilities,id",
-              context: "edit",
-            })
-          ).pipe(withSiteCredential(credentialOf(signIn)))
-        )
-        .pipe(sent);
-
-      if (isDown(response.status)) {
-        return yield* new PlatformUnavailable();
-      }
-
-      if (response.status === 401 || response.status === 403) {
-        return yield* Option.match(yield* wordpressErrorOf(response), {
-          // A proxy in front of the site answered: it may let Peal
-          // through later.
-          onNone: () => Effect.fail(new PlatformUnavailable()),
-          onSome: () => Effect.fail(refused("credentialsRefused")),
-        });
-      }
-
-      const user = yield* HttpClientResponse.schemaBodyJson(UserSchema)(
-        response
-      ).pipe(Effect.mapError(() => refused("notWordPress")));
-
-      const granted = kept.filter(
-        (capability) => user.capabilities[capability] === true
-      );
-
-      if (!needed.every((capability) => granted.includes(capability))) {
-        return yield* refused("cannotPublish");
-      }
-
-      const homePage = Option.fromUndefinedOr(index.value.home).pipe(
-        Option.flatMap((written) => Option.fromNullishOr(URL.parse(written))),
-        Option.getOrElse(() => home.at)
-      );
-
-      const site: VerifiedSite = {
-        accountId: root.href,
-        avatarUrl: Option.fromUndefinedOr(index.value.site_icon_url).pipe(
-          Option.filter((icon) => icon !== ""),
-          Option.flatMap(decodeAvatar)
-        ),
-        displayName: Option.fromUndefinedOr(index.value.name).pipe(
-          Option.filter((name) => name.trim() !== "")
-        ),
-        handle: handleOf(homePage),
-        scopes: granted,
-      };
-
-      return site;
+  const verify = Effect.fn("WordPressSiteVerifier.verify")(function* verify(
+    signIn: SiteSignIn
+  ) {
+    const start = yield* Option.match(addressOf(signIn.address), {
+      onNone: () => Effect.fail(refused("notWordPress")),
+      onSome: Effect.succeed,
     });
 
-    return SiteVerifier.of({ verify });
-  })
-);
+    const home = yield* homeOf(http, start);
+
+    // The root the home page names, else the one sites with pretty
+    // permalinks serve.
+    const root = Option.getOrElse(
+      home.linked,
+      () => new URL("wp-json/", home.at.href.replace(/\/*$/u, "/"))
+    );
+
+    // The password goes to the API on the home page's own site, and to
+    // an address short enough to keep, or to none.
+    if (root.origin !== home.at.origin) {
+      return yield* refused("addressNotAllowed");
+    }
+
+    if (root.href.length > maxRootLength) {
+      return yield* refused("notWordPress");
+    }
+
+    const index = yield* indexAt(http, root);
+
+    if (Option.isNone(index)) {
+      return yield* refused("notWordPress");
+    }
+
+    const response = yield* http
+      .execute(
+        HttpClientRequest.get(
+          routeUrl(root.href, "/wp/v2/users/me", {
+            _fields: "capabilities,id",
+            context: "edit",
+          })
+        ).pipe(withSiteCredential(credentialOf(signIn)))
+      )
+      .pipe(sent);
+
+    if (isDown(response.status)) {
+      return yield* new PlatformUnavailable();
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return yield* Option.match(yield* wordpressErrorOf(response), {
+        // A proxy in front of the site answered: it may let Peal
+        // through later.
+        onNone: () => Effect.fail(new PlatformUnavailable()),
+        onSome: () => Effect.fail(refused("credentialsRefused")),
+      });
+    }
+
+    const user = yield* HttpClientResponse.schemaBodyJson(UserSchema)(
+      response
+    ).pipe(Effect.mapError(() => refused("notWordPress")));
+
+    const granted = kept.filter(
+      (capability) => user.capabilities[capability] === true
+    );
+
+    if (!needed.every((capability) => granted.includes(capability))) {
+      return yield* refused("cannotPublish");
+    }
+
+    const homePage = Option.fromUndefinedOr(index.value.home).pipe(
+      Option.flatMap((written) => Option.fromNullishOr(URL.parse(written))),
+      Option.getOrElse(() => home.at)
+    );
+
+    const site: VerifiedSite = {
+      accountId: root.href,
+      avatarUrl: Option.fromUndefinedOr(index.value.site_icon_url).pipe(
+        Option.filter((icon) => icon !== ""),
+        Option.flatMap(decodeAvatar)
+      ),
+      displayName: Option.fromUndefinedOr(index.value.name).pipe(
+        Option.filter((name) => name.trim() !== "")
+      ),
+      handle: handleOf(homePage),
+      scopes: granted,
+    };
+
+    return site;
+  });
+
+  return verify;
+});

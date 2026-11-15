@@ -1,11 +1,18 @@
 ---
 title: Websites and articles
-description: "Connect a WordPress site, and publish articles to it from Peal: a title, a formatted body, a featured image, tags and categories, at once, as a draft, or at a time."
+description: "Connect a website (a WordPress site, WordPress.com, DEV or Hashnode), and publish articles to it from Peal: a title, a formatted body, a featured image, tags and categories, at once, as a draft, or at a time."
 sidebar:
   icon: newspaper
 ---
 
-A website is a channel too: a WordPress site of your own, which takes **articles** rather than posts. An article has a title, a formatted body, an excerpt, tags, categories and a featured image, and Peal sends it to the site as a post of the site's own.
+A website is a channel too, which takes **articles** rather than posts: a WordPress site of your own, a site on WordPress.com, an account on DEV, or a publication on Hashnode. An article has a title, a formatted body, an excerpt, tags, categories and a featured image, and Peal sends it to the site as a post of the site's own.
+
+| Website                                | Connects with                                   | Its page                                  |
+| -------------------------------------- | ----------------------------------------------- | ----------------------------------------- |
+| A WordPress site of your own           | Its address, a user and an application password | [Below](#connect)                         |
+| WordPress.com, and Jetpack sites there | Signing in on WordPress.com                     | [WordPress.com](/platforms/wordpress-com) |
+| DEV                                    | An API key                                      | [DEV](/platforms/devto)                   |
+| Hashnode, on its Pro plan              | A personal access token and the publication     | [Hashnode](/platforms/hashnode)           |
 
 A website counts as one channel, as any connected account does: on a plan priced per account, it is one account.
 
@@ -44,6 +51,28 @@ Peal reaches websites over HTTPS at public addresses only. A site on a private n
 
 When the site later refuses the password, as after it was revoked, the channel is marked **Reconnect**: reconnect it with a new application password.
 
+## Connect WordPress.com, DEV or Hashnode [#other-sites]
+
+In **Channels**, a site on WordPress.com connects by signing in on WordPress.com and picking the site; an account on DEV with an API key; a publication on Hashnode with a personal access token and the publication's address. Each platform's page says where to make the key: [WordPress.com](/platforms/wordpress-com), [DEV](/platforms/devto), [Hashnode](/platforms/hashnode). Peal keeps the key or the token encrypted, and never shows it again; a site or an account counts as one channel, and a new one needs room in the workspace's plan.
+
+| Message                                         | What to do                                                                                                                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The site refused what Peal signs in with        | Make a new key or token, and paste it whole.                                                                                                             |
+| You have several publications on Hashnode       | Give the address of the one to publish to.                                                                                                               |
+| Hashnode has no such publication                | Give its address, such as `blog.example.com` or `name.hashnode.dev`.                                                                                     |
+| Hashnode answers its API only on its Pro plan   | Upgrade the publication on Hashnode, then connect it again.                                                                                              |
+| This user may not publish posts or upload files | On WordPress.com, sign in as an Author, an Editor or an Administrator of the site; on Hashnode, a team's publication needs you as an owner or an editor. |
+
+## What each site takes [#sites]
+
+| Website                  | Title          | Tags                  | Categories | On the site                                       | Unpublish                    |
+| ------------------------ | -------------- | --------------------- | ---------- | ------------------------------------------------- | ---------------------------- |
+| WordPress, WordPress.com | 500 characters | 20                    | 20         | Published at once, a draft there, scheduled there | To the site's trash          |
+| DEV                      | 128 characters | 4, letters and digits | None       | Published at once, a draft there, scheduled there | Back to a draft there        |
+| Hashnode                 | 500 characters | 15                    | None       | Published at once, a draft there                  | Removed from the publication |
+
+A WordPress site gets the article's HTML, which Peal writes itself; DEV and Hashnode get Markdown, which Peal writes too, where everything you typed stays text. Each image goes to the site first, once.
+
 ## Write an article [#articles]
 
 Open **Posts**, then **Articles**, and **New article**. Choose the website, then write:
@@ -66,16 +95,20 @@ Choose what the site makes of the article, then when Peal sends it:
 | A draft there     | Keeps it as a draft, to finish and publish on the site.                               |
 | Scheduled there   | Publishes it itself at the article's time: Peal sends it at once, and the site waits. |
 
-Leave the time empty to send it now, or give one: Peal sends it then. Peal checks the article before it is scheduled, everything at once: a title, a body, at most 20 tags and 20 categories, a time ahead, and that the library still has its images. The title and the excerpt go to the site as plain text, as you typed them.
+Leave the time empty to send it now, or give one: Peal sends it then. Peal checks the article before it is scheduled, everything at once: a title, a body, the tags and categories [its site takes](#sites), a time ahead, and that the library still has its images. Hashnode cannot publish an article at a time itself: give it a time with **Published at once**, and Peal sends it then. The title and the excerpt go to the site as plain text, as you typed them.
+
+DEV takes one write a second from a server, whatever account it is for, and 10 image uploads an hour from an account by default: Peal sends its writes to DEV one at a time, a second apart, and an article that meets the second limit waits for DEV, then goes. Hashnode may answer a search from a cache some 25 seconds old: an article sent again within a minute of the call it looks for waits, then looks.
 
 A workspace over its plan, as after its trial, sends no article until it is back within it, as for its posts. An image a scheduled article shows cannot be deleted from the library until the article is back to draft or has gone out; deleting one that a draft, a failed article or one to check shows takes it off that article.
 
 What goes out is public. Peal never sends an article twice: when the site's answer is lost, Peal looks for the post among the user's posts, by its title, and takes it when exactly one matches; when it cannot tell, the article is **To check**: look on the site, then send it again only if it is not there. Sent again, Peal first looks for that post once more, among the user's posts of its title made or changed within a day of the first send, and takes it when it finds exactly one; when it finds several, or the site refuses the search, the article stays **To check**.
 
+When the site holds another article of the same title, which Peal cannot tell from the one it sent, the article says so, and Peal never sends it again on its own. Look on the site: if the article is there, it is live, and you can leave it; if it is not, rename or delete the other article there, then send it again.
+
 ## Once it is on the site [#on-site]
 
 - **Update on the site** sends the title, body, excerpt, tags, categories and featured image again over the site's post, at once: a featured image or an excerpt removed in Peal is removed there. The site keeps its status and its date. Images the site has already are not sent again.
-- **Unpublish** moves the post to the site's trash, which WordPress empties after 30 days by default. The article stays in Peal, shown as in the site's trash. A site whose trash is turned off refuses it: delete the post there.
+- **Unpublish** moves the post to the site's trash, which WordPress empties after 30 days by default. The article stays in Peal, shown as in the site's trash. A site whose trash is turned off refuses it: delete the post there. On DEV, which deletes no article through its API, the article becomes a draft there again; on Hashnode, the post is removed from the publication.
 - **Send again** sends a failed article again, at once.
 
 Deleting an article in Peal leaves its post on the site.
@@ -86,4 +119,4 @@ Articles cannot be approved yet. In a workspace whose posts wait for an approval
 
 ## In the API [#api]
 
-The [articles endpoints](/reference) do the same: `POST /api/workspaces/{workspaceId}/channels/websites` connects a site, and `/api/workspaces/{workspaceId}/articles` writes, schedules, sends again, updates and unpublishes articles. The webhook events [`article.published` and `article.failed`](/developers/webhooks/events/articles) tell how each ended. The command line has `peal channels connect-website` and `peal articles`.
+The [articles endpoints](/reference) do the same: `POST /api/workspaces/{workspaceId}/channels/websites` connects a WordPress site, `…/channels/websites/keys` an account on DEV or Hashnode, `…/channels/websites/sign-in/wordpressCom` starts signing in to WordPress.com, and `/api/workspaces/{workspaceId}/articles` writes, schedules, sends again, updates and unpublishes articles. The webhook events [`article.published` and `article.failed`](/developers/webhooks/events/articles) tell how each ended. The command line has `peal channels connect-website`, `peal channels connect-website-key` and `peal articles`.

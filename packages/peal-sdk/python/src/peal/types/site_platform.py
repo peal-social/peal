@@ -2,4 +2,4 @@
 
 import typing
 
-SitePlatform = typing.Union[typing.Literal["wordpress"], typing.Any]
+SitePlatform = typing.Union[typing.Literal["wordpress", "devto", "hashnode", "wordpressCom"], typing.Any]

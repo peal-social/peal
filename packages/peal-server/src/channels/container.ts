@@ -18,6 +18,7 @@ import { ForgetTokenOwners } from "#channels/application/forget-token-owners.ts"
 import { ListChannels } from "#channels/application/list-channels.ts";
 import { PurgeConnectLinks } from "#channels/application/purge-connect-links.ts";
 import { RefreshChannelTokens } from "#channels/application/refresh-channel-tokens.ts";
+import { SiteSignIns } from "#channels/application/site-sign-ins.ts";
 import { WarnChannelsNeedingReconnect } from "#channels/application/warn-channels-needing-reconnect.ts";
 import { analyticsChannelEvents } from "#channels/infrastructure/analytics-channel-events.ts";
 import { DrizzleChannelDirectory } from "#channels/infrastructure/drizzle-channel-directory.ts";
@@ -37,7 +38,8 @@ import { ChannelPlatformsLive } from "#channels/infrastructure/platforms/channel
 import { MetaSignedRequestsLive } from "#channels/infrastructure/platforms/meta/meta-signed-requests.ts";
 import { OAuthClientDocumentsLive } from "#channels/infrastructure/platforms/oauth-client-documents-live.ts";
 import { PlatformAuthorizersLive } from "#channels/infrastructure/platforms/platform-authorizers.ts";
-import { WordPressSiteVerifierLive } from "#channels/infrastructure/platforms/wordpress/wordpress-site-verifier.ts";
+import { siteAuthorizersLive } from "#channels/infrastructure/platforms/site-authorizers.ts";
+import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { PublicConnectLinkAddresses } from "#channels/infrastructure/public-connect-link-addresses.ts";
 import { PublicDataDeletionLinks } from "#channels/infrastructure/public-data-deletion-links.ts";
 import { RandomConnectLinkTokens } from "#channels/infrastructure/random-connect-link-tokens.ts";
@@ -48,7 +50,10 @@ import {
   webhookChannelNotices,
 } from "#channels/infrastructure/webhook-channel-events.ts";
 import { InboxPlatformsLive } from "#shared/infrastructure/inbox-platforms.ts";
+import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
+import { wordpressComHosts } from "#shared/infrastructure/platforms/wordpress-api.ts";
 
 // Who hears of a channel connected or gone: the workspace's webhook
 // endpoints, then the analytics context, which keeps or deletes the
@@ -68,7 +73,8 @@ const PlatformsLive = Layer.mergeAll(
   PlatformAuthorizersLive,
   OAuthClientDocumentsLive,
   MetaSignedRequestsLive,
-  WordPressSiteVerifierLive
+  siteVerifiersLive({ devto: devtoHosts, hashnode: hashnodeHosts }),
+  siteAuthorizersLive(wordpressComHosts)
 ).pipe(
   Layer.provide(ChannelPlatformsLive),
   Layer.provide(InboxPlatformsLive),
@@ -118,7 +124,11 @@ const UseCasesLive = Layer.mergeAll(
     Layer.provideMerge(ConnectLinks.layer),
     Layer.provideMerge(ConnectChannel.layer)
   ),
-  ConnectSite.layer.pipe(Layer.provide(MemorySiteConnectPace)),
+  // Every way a website connects counts in one pace per workspace.
+  SiteSignIns.layer.pipe(
+    Layer.provideMerge(ConnectSite.layer),
+    Layer.provide(MemorySiteConnectPace)
+  ),
   ChannelUsage.layer,
   DeletePlatformUserData.layer,
   DeauthorizePlatformUser.layer,

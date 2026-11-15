@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Redacted } from "effect";
+import { Context, Effect, Layer, Option, Redacted } from "effect";
 import { Digest, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
@@ -10,6 +10,8 @@ import type { ConnectOutcome } from "#channels/application/connect-channel.ts";
 import { ConnectSite } from "#channels/application/connect-site.ts";
 import { PlatformAuthorizers } from "#channels/application/platform-authorizer.ts";
 import type { PlatformAuthorizer } from "#channels/application/platform-authorizer.ts";
+import { SiteAuthorizers } from "#channels/application/site-authorizer.ts";
+import { SiteSignIns } from "#channels/application/site-sign-ins.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import { DrizzleConnectAttempts } from "#channels/infrastructure/drizzle-connect-attempts.ts";
 import { DrizzleConnectChoices } from "#channels/infrastructure/drizzle-connect-choices.ts";
@@ -24,14 +26,16 @@ import { MastodonApps } from "#channels/infrastructure/platforms/mastodon/mastod
 import { mastodonAuthorizer } from "#channels/infrastructure/platforms/mastodon/mastodon-authorizer.ts";
 import { pinterestAuthorizer } from "#channels/infrastructure/platforms/pinterest/pinterest-authorizer.ts";
 import { registryOf } from "#channels/infrastructure/platforms/platform-authorizers.ts";
+import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { tiktokAuthorizer } from "#channels/infrastructure/platforms/tiktok/tiktok-authorizer.ts";
-import { WordPressSiteVerifierLive } from "#channels/infrastructure/platforms/wordpress/wordpress-site-verifier.ts";
 import { xAuthorizer } from "#channels/infrastructure/platforms/x/x-authorizer.ts";
 import type { XEndpoints } from "#channels/infrastructure/platforms/x/x-authorizer.ts";
 import { youtubeAuthorizer } from "#channels/infrastructure/platforms/youtube/youtube-authorizer.ts";
 import type { YouTubeEndpoints } from "#channels/infrastructure/platforms/youtube/youtube-authorizer.ts";
 import { SqlChannelLocks } from "#channels/infrastructure/sql-channel-locks.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
+import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import type { PinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import type { TikTokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
@@ -332,16 +336,27 @@ export const pinterestAuthorizerOn = (hosts: PinterestHosts) =>
   );
 
 /**
- * ConnectSite with the WordPress verifier, whose requests all go through:
- * over the adapters a `connectChannelWith` layer gives.
+ * ConnectSite with the websites' verifiers, whose requests all go through,
+ * and the website sign-ins `authorizers` has: over the adapters a
+ * `connectChannelWith` layer gives.
  */
-export const WordPressSitesTest = ConnectSite.layer.pipe(
-  Layer.provide(
-    Layer.merge(
-      WordPressSiteVerifierLive.pipe(
-        Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
-      ),
-      MemorySiteConnectPace
+export const siteSignInsWith = (authorizers: typeof SiteAuthorizers.Service) =>
+  SiteSignIns.layer.pipe(
+    Layer.provideMerge(ConnectSite.layer),
+    Layer.provide(
+      Layer.mergeAll(
+        siteVerifiersLive({ devto: devtoHosts, hashnode: hashnodeHosts }).pipe(
+          Layer.provide(
+            Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard)
+          )
+        ),
+        MemorySiteConnectPace,
+        Layer.succeed(SiteAuthorizers, authorizers)
+      )
     )
-  )
+  );
+
+/** ConnectSite and the sign-ins of a server without WordPress.com's app. */
+export const WordPressSitesTest = siteSignInsWith(
+  SiteAuthorizers.of({ for: () => Option.none() })
 );

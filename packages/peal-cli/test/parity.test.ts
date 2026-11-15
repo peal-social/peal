@@ -123,6 +123,7 @@ const coverage = {
   "channels.completeConnect": exempt(connecting),
   "channels.connect": exempt(connecting),
   "channels.connectSite": by("channels connect-website"),
+  "channels.connectSiteWithKey": by("channels connect-website-key"),
   "channels.disable": by("channels disable"),
   "channels.disconnect": exempt(
     "Disconnecting deletes a channel and fails its scheduled posts: a person does it, in the web app."
@@ -134,6 +135,8 @@ const coverage = {
     "Only the web app's connect forms read which platforms the server connects."
   ),
   "channels.reconnect": exempt(connecting),
+  "channels.startSiteSignIn": exempt(connecting),
+  "channels.completeSiteSignIn": exempt(connecting),
   "channels.update": by("channels rename"),
   "connectLinks.create": by("links create"),
   "connectLinks.get": by("links show"),

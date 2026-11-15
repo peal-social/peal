@@ -1,0 +1,53 @@
+---
+title: Hashnode
+description: "Connecter une publication Hashnode à Peal avec un jeton d’accès personnel, et ce qu’un article peut y contenir."
+sidebar:
+  icon: newspaper
+---
+
+Comment connecter une publication sur Hashnode, et ce qu’un article peut y contenir. Hashnode prend des [articles](/guides/channels/websites), pas des publications.
+
+<Callout type="warning" title="L’offre Pro de Hashnode">
+  Hashnode ne répond à son API que pour une publication en offre Pro, payée sur
+  Hashnode. Sans elle, connecter la publication est refusé, et un article qui y
+  part échoue, chacun en le disant.
+</Callout>
+
+## En bref [#at-a-glance]
+
+|             |                                                                |
+| ----------- | -------------------------------------------------------------- |
+| Corps       | Écrit en Markdown par Peal, avec ses images                    |
+| Étiquettes  | 15 au plus                                                     |
+| Catégories  | Aucune                                                         |
+| Sur le site | Publié aussitôt, ou un brouillon là-bas ; pas programmé là-bas |
+| Dépublier   | Retire l’article, ou le brouillon, de la publication           |
+
+## Connecter [#connect]
+
+<Steps>
+  <Step title="Créer un jeton d’accès personnel">
+    Sur Hashnode, ouvrez les réglages de votre compte, puis **Developer**, et
+    générez un jeton d’accès personnel pour Peal.
+  </Step>
+  <Step title="Le connecter dans Peal">
+    Dans **Canaux**, sous **Hashnode**, collez le jeton et donnez l’adresse de
+    la publication, comme `blog.example.com` ou `nom.hashnode.dev`, puis
+    **Connecter Hashnode**. Avec une seule publication, l’adresse peut rester
+    vide.
+  </Step>
+</Steps>
+
+Peal vérifie le jeton et la publication sur Hashnode, puis conserve le jeton chiffré : il n’est plus jamais affiché. Le canal est la publication : la vôtre, ou celle d’une équipe dont vous êtes propriétaire ou éditeur (un contributeur n’y soumet que des brouillons à relire, et est refusé). Un membre que la publication garde privé n’est pas dans sa liste visible : la publication se connecte, et le premier article dit s’il peut y publier. Révoquez le jeton sur Hashnode pour couper l’accès de Peal ; le canal est alors marqué **Reconnecter**.
+
+## Articles [#articles]
+
+- Peal écrit le corps en Markdown, où tout ce que vous avez tapé reste du texte.
+- Chaque image part d’abord à l’envoi d’images de Hashnode, une fois : des images de 8 Mo au plus, jamais en SVG.
+- L’extrait est le sous-titre de l’article, l’image mise en avant sa couverture, chaque étiquette nommée par son identifiant.
+- Hashnode ne peut pas publier un article lui-même à une heure donnée : donnez l’heure avec **Publié aussitôt**, et Peal l’envoie alors.
+- Quand la réponse de Hashnode se perd, Peal cherche d’abord parmi les derniers articles de la publication celui de même titre et de même corps, et ne l’envoie jamais deux fois.
+
+## Sur votre propre serveur [#self-hosting]
+
+Hashnode ne demande aucune application sur un serveur auto-hébergé : chaque membre apporte son jeton. Voir [DEV et Hashnode](/self-hosting/platforms#devto-hashnode).

@@ -25,7 +25,10 @@ import {
   DrizzleArticleStore,
 } from "#publishing/infrastructure/drizzle-article-store.ts";
 import { ListedSiteChannels } from "#publishing/infrastructure/listed-site-channels.ts";
-import { WordPressSitePublisherLive } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
+import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashnode/hashnode-articles.ts";
+import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
 import { SqlArticleSendTurns } from "#publishing/infrastructure/sql-article-send-turns.ts";
 import { WorkflowArticleJobs } from "#publishing/infrastructure/workflow-article-jobs.ts";
 import { PublishArticleV1Live } from "#publishing/infrastructure/workflows/publish-article.ts";
@@ -241,7 +244,30 @@ const SteeredOutboundGuard = Layer.succeed(
   })
 );
 
-const SitePublisherTest = WordPressSitePublisherLive.pipe(
+/**
+ * Where the DEV the test started listens: set by the test before it
+ * sends an article there, read at each call.
+ */
+export const testDevToHosts = { api: "http://127.0.0.1:9" };
+
+/** Where the WordPress.com the test started listens, as `testDevToHosts`. */
+export const testWordPressComHosts = { api: "http://127.0.0.1:9" };
+
+/** Where the Hashnode the test started listens, as `testDevToHosts`. */
+export const testHashnodeHosts = { api: "http://127.0.0.1:9/" };
+
+const SitePublisherTest = routedSitePublisher(
+  Effect.gen(function* siteAdapters() {
+    const wordpress = yield* wordpressSiteAdapter(testWordPressComHosts);
+
+    return {
+      devto: yield* devtoSiteAdapter(testDevToHosts),
+      hashnode: yield* hashnodeSiteAdapter(testHashnodeHosts),
+      wordpress,
+      wordpressCom: wordpress,
+    };
+  })
+).pipe(
   Layer.provide(
     Layer.mergeAll(
       SiteAccessTest,

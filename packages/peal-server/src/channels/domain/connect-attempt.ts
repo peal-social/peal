@@ -8,8 +8,8 @@ import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, UserId } from "#shared/domain/ids.ts";
 
 import { InvalidConnectState } from "./invalid-connect-state.ts";
-import { PlatformSchema } from "./platform.ts";
-import type { Platform } from "./platform.ts";
+import { ChannelPlatformSchema } from "./platform.ts";
+import type { ChannelPlatform } from "./platform.ts";
 
 /**
  * How long a member has to sign in on the platform and come back. Platforms
@@ -47,7 +47,8 @@ export class ConnectAttempt extends Schema.Class<ConnectAttempt>(
   expiresAt: Schema.DateTimeUtc,
   // The server the account lives on, for platforms with many (Mastodon).
   instance: Schema.Option(Schema.NonEmptyString),
-  platform: PlatformSchema,
+  // A social network, or a website signed in to (WordPress.com).
+  platform: ChannelPlatformSchema,
   startedBy: Schema.NonEmptyString,
   state: Schema.NonEmptyString,
   workspaceId: WorkspaceIdSchema,
@@ -60,7 +61,7 @@ export const startAttempt = (
     readonly channelId: Option.Option<ChannelId>;
     readonly connection: Option.Option<ChannelConnection>;
     readonly instance: Option.Option<string>;
-    readonly platform: Platform;
+    readonly platform: ChannelPlatform;
     readonly state: string;
   },
   now: DateTime.Utc
@@ -85,7 +86,7 @@ export const startAttempt = (
 export const completableBy = (
   attempt: ConnectAttempt,
   actor: Actor,
-  platform: Platform,
+  platform: ChannelPlatform,
   now: DateTime.Utc
 ): Result.Result<ConnectAttempt, InvalidConnectState> =>
   attempt.workspaceId === actor.workspaceId &&

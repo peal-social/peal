@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { isSocialChannel } from "peal-contract";
 import type { Channel } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -30,7 +31,7 @@ export const workspaceArticle = (workspaceId: string, articleId: string) =>
 
 /** Whether the channel is a website's, which takes articles. */
 export const isSiteChannel = (channel: Channel): boolean =>
-  channel.platform === "wordpress";
+  !isSocialChannel(channel);
 
 /** The workspace's websites: the channels articles go to. */
 export const workspaceSites = Atom.family((workspaceId: string) =>

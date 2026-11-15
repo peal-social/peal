@@ -721,7 +721,7 @@
     "retry": "Réessayer",
     "empty": "Aucun compte n’est encore connecté.",
     "listTitle": "Comptes connectés",
-    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} x {X} youtube {YouTube} other {{platform}}}",
+    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} devto {DEV} hashnode {Hashnode} wordpressCom {WordPress.com} x {X} youtube {YouTube} other {{platform}}}",
     "platformVia": "{platform, select, instagram {Instagram} linkedin {LinkedIn} other {{platform}}} ({connection, select, instagramLogin {connexion Instagram} facebookLogin {via une Page Facebook} linkedinProfile {profil} linkedinPage {page d’entreprise} other {{connection}}})",
     "status": {
       "active": "Connecté",
@@ -802,8 +802,12 @@
       "tooManyTries": "L’espace de travail a essayé de connecter des sites trop de fois dans l’heure. Réessayez plus tard.",
       "notWordPress": "Cette adresse ne mène à aucun site WordPress. Donnez la page d’accueil du site, comme https://blog.example.com.",
       "addressNotAllowed": "Peal joint les sites web en HTTPS, à des adresses publiques seulement.",
-      "credentialsRefused": "Le site a refusé l’identifiant et le mot de passe d’application. Vérifiez-les, et que votre hébergeur laisse passer l’en-tête Authorization.",
-      "cannotPublish": "Cet utilisateur ne peut pas publier d’articles ni téléverser de fichiers sur le site : prenez un auteur, un éditeur ou un administrateur."
+      "credentialsRefused": "Le site a refusé ce avec quoi Peal se connecte : vérifiez l’identifiant et le mot de passe d’application, et que votre hébergeur laisse passer l’en-tête Authorization ; ou la clé, qui a peut-être été révoquée.",
+      "cannotPublish": "Cet utilisateur ne peut pas publier d’articles ni téléverser de fichiers sur le site : prenez un auteur, un éditeur ou un administrateur.",
+      "otherWayIn": "Cette plateforme se connecte autrement : un site WordPress à vous par son adresse, DEV et Hashnode par une clé, WordPress.com en s’y connectant.",
+      "publicationRequired": "Vous avez plusieurs publications sur Hashnode : donnez l’adresse de celle où publier.",
+      "publicationNotFound": "Hashnode n’a pas cette publication. Donnez son adresse, comme blog.example.com.",
+      "planRequired": "Hashnode ne répond à son API que pour une publication en offre Pro. Passez la publication en Pro sur Hashnode, puis connectez-la de nouveau."
     },
     "websiteTitle": "Site WordPress",
     "websiteDescription": "Publiez des articles sur un site WordPress à vous. Sur la page de profil de votre utilisateur dans WordPress, sous Mots de passe d’application, créez un mot de passe pour Peal et collez-le ici : Peal le garde chiffré et ne le montre plus jamais.",
@@ -815,7 +819,31 @@
     "websitePasswordHint": "Créé pour Peal sur la page de profil de l’utilisateur ; pas son propre mot de passe.",
     "connectWebsite": "Connecter le site",
     "websiteConnected": "{site} est connecté.",
-    "reconnectWebsite": "Reconnecter {handle} avec un nouveau mot de passe d’application"
+    "reconnectWebsite": "Reconnecter {handle} avec un nouveau mot de passe d’application",
+    "keySite": {
+      "devto": {
+        "title": "DEV",
+        "description": "Publiez des articles sur votre compte DEV (dev.to). Dans les réglages de DEV, sous Extensions, créez une clé d’API pour Peal et collez-la ici : Peal la conserve chiffrée et ne l’affiche plus jamais. DEV ne supprime aucun article par son API : dépublier un article le remet en brouillon là-bas.",
+        "key": "Clé d’API",
+        "keyHint": "Dans Settings, Extensions, « DEV Community API Keys ».",
+        "connect": "Connecter DEV"
+      },
+      "hashnode": {
+        "title": "Hashnode",
+        "description": "Publiez des articles sur une publication Hashnode. Hashnode ne répond à son API que pour une publication en offre Pro. Dans les réglages de votre compte Hashnode, sous Developer, créez un jeton d’accès personnel pour Peal et collez-le ici : Peal le conserve chiffré et ne l’affiche plus jamais.",
+        "key": "Jeton d’accès personnel",
+        "keyHint": "Dans les réglages de votre compte Hashnode, Developer.",
+        "publication": "Publication",
+        "publicationHint": "Son adresse, comme blog.example.com ou nom.hashnode.dev. Laissez vide si vous n’en avez qu’une.",
+        "connect": "Connecter Hashnode"
+      }
+    },
+    "wordpressCom": {
+      "title": "WordPress.com",
+      "description": "Publiez des articles sur un site WordPress.com, ou un site Jetpack que vous y atteignez. Vous vous connectez sur WordPress.com et choisissez le site ; vous devez pouvoir y publier des articles et y envoyer des fichiers.",
+      "connect": "Connecter WordPress.com"
+    },
+    "reconnectKeySite": "Reconnecter {handle} avec une nouvelle clé"
   },
   "PlatformConnect": {
     "connecting": "Ouverture…",
@@ -1783,7 +1811,7 @@
     "viewPost": "La voir sur {platform}",
     "failed": "Elle n’est pas partie : {reason}",
     "unconfirmed": "Peal ne sait pas si elle est partie : {reason}. Vérifiez sur {platform} avant de la republier, puis indiquez ce que vous avez trouvé.",
-    "unconfirmedReason": "{reason, select, noResponse {la plateforme n’a pas répondu} unreadableResponse {sa réponse n’a pas pu être lue} interrupted {le serveur s’est arrêté pendant l’envoi} adapterFailure {Peal a échoué pendant l’envoi} stillProcessing {la plateforme la traitait encore quand Peal a cessé de vérifier} searchRefused {le site a refusé que Peal la cherche} other {{reason}}}",
+    "unconfirmedReason": "{reason, select, noResponse {la plateforme n’a pas répondu} unreadableResponse {sa réponse n’a pas pu être lue} interrupted {le serveur s’est arrêté pendant l’envoi} adapterFailure {Peal a échoué pendant l’envoi} stillProcessing {la plateforme la traitait encore quand Peal a cessé de vérifier} searchRefused {le site a refusé que Peal la cherche} severalOnSite {le site a un autre article de ce titre, que Peal ne peut pas distinguer} other {{reason}}}",
     "cancelled": "Elle a été annulée avant de partir.",
     "dropped": "Ce canal a été retiré de la publication avant son départ : elle est partie sur ses autres canaux.",
     "pending": "Elle attend son tour.",
@@ -3493,7 +3521,7 @@
       "disabledToReconnect": "Désactivé, à reconnecter"
     },
     "troubleStatus": "{status, select, failed {Échec} other {Non confirmé}}",
-    "reason": "{reason, select, contentRejected {Contenu refusé} channelDisconnected {Canal déconnecté} channelDisabled {Canal désactivé} mediaRemoved {Média supprimé} mediaRejected {Média refusé} missed {Manquée} notPublished {Introuvable après vérification} rateLimited {Limite de débit} tokenExpired {Autorisation expirée} unavailable {Plateforme injoignable} appNotAudited {Publications privées seulement, application non auditée} quotaExceeded {Allocation quotidienne de mises en ligne épuisée} appBillingLimit {Application du serveur non réglée} planLimit {Limite de l’abonnement atteinte} partsNotSent {Suite non envoyée} repliesNotAllowed {Réponses refusées par X} paymentMethodRequired {Moyen de paiement requis pour X} xCeilingReached {Plafond X atteint} paymentFailed {Paiement en échec, X non facturé} perAccountPricingRequired {Tarif par compte requis pour X} xThreadCut {Fil coupé par le compteur de X} noResponse {Pas de réponse} unreadableResponse {Réponse illisible} interrupted {Interrompue} adapterFailure {Échec pendant l’appel} stillProcessing {Traitement en cours} searchRefused {Recherche refusée par le site} other {{reason}}}",
+    "reason": "{reason, select, contentRejected {Contenu refusé} channelDisconnected {Canal déconnecté} channelDisabled {Canal désactivé} mediaRemoved {Média supprimé} mediaRejected {Média refusé} missed {Manquée} notPublished {Introuvable après vérification} rateLimited {Limite de débit} tokenExpired {Autorisation expirée} unavailable {Plateforme injoignable} appNotAudited {Publications privées seulement, application non auditée} quotaExceeded {Allocation quotidienne de mises en ligne épuisée} appBillingLimit {Application du serveur non réglée} planLimit {Limite de l’abonnement atteinte} partsNotSent {Suite non envoyée} repliesNotAllowed {Réponses refusées par X} paymentMethodRequired {Moyen de paiement requis pour X} xCeilingReached {Plafond X atteint} paymentFailed {Paiement en échec, X non facturé} perAccountPricingRequired {Tarif par compte requis pour X} xThreadCut {Fil coupé par le compteur de X} noResponse {Pas de réponse} unreadableResponse {Réponse illisible} interrupted {Interrompue} adapterFailure {Échec pendant l’appel} stillProcessing {Traitement en cours} searchRefused {Recherche refusée par le site} severalOnSite {Plusieurs de ce titre sur le site} other {{reason}}}",
     "requests": {
       "title": "Demandes sur les contrats",
       "description": "Les demandes de résiliation ou de rétractation que le formulaire n’a pas pu appliquer seul : aucun contrat trouvé, ou leur auteur n’a pas suivi le lien reçu par e-mail. N’en appliquez une à un espace de travail qu’une fois certain que son auteur est titulaire de ce contrat ; elle prend effet à la date de sa réception, et son auteur en est informé.",
@@ -4720,7 +4748,7 @@
         "failed": "Échec",
         "unconfirmed": "À vérifier"
       },
-      "noSite": "Connectez un site WordPress sur la page Canaux pour y écrire des articles.",
+      "noSite": "Connectez un site web sur la page Canaux (un site WordPress, WordPress.com, DEV ou Hashnode) pour y écrire des articles.",
       "sites": "{count, plural, one {# site web connecté} other {# sites web connectés}}.",
       "new": "Nouvel article",
       "connect": "Connecter un site",
@@ -4767,7 +4795,7 @@
       "updateOnSite": "Mettre à jour sur le site",
       "unpublish": "Dépublier",
       "unpublishTitle": "Dépublier cet article ?",
-      "unpublishDescription": "Son article part dans la corbeille du site : les lecteurs ne le voient plus, et le site le supprime plus tard.",
+      "unpublishDescription": "Les lecteurs ne le voient plus. Sur un site WordPress, son article part à la corbeille, que le site vide plus tard ; sur DEV, qui ne supprime aucun article par son API, il redevient un brouillon là-bas ; sur Hashnode, il est retiré de la publication.",
       "cancel": "Annuler",
       "delete": "Supprimer",
       "permalink": "Sur le site à",
@@ -4775,7 +4803,7 @@
       "scheduled": "Programmé : ce qui part est public.",
       "unscheduled": "Repassé en brouillon.",
       "updatedOnSite": "Mis à jour sur le site.",
-      "unpublished": "Parti dans la corbeille du site.",
+      "unpublished": "Dépublié du site.",
       "deleted": "Supprimé de Peal.",
       "violations": {
         "titleMissing": "Donnez-lui un titre.",
@@ -4783,12 +4811,13 @@
         "bodyMissing": "Écrivez son corps.",
         "bodyInvalid": "Le corps contient quelque chose que le site ne peut pas prendre.",
         "excerptTooLong": "L’extrait est trop long.",
-        "tooManyTerms": "Trop d’étiquettes ou de catégories : 20 au plus.",
-        "termInvalid": "Une étiquette ou une catégorie est vide, ou trop longue.",
+        "tooManyTerms": "Trop d’étiquettes ou de catégories pour ce site : un site WordPress en prend 20 de chaque, Hashnode 15 étiquettes, DEV 4, et ni DEV ni Hashnode ne prend de catégories.",
+        "termInvalid": "Une étiquette ou une catégorie est vide, trop longue, ou refusée par le site (les étiquettes de DEV ne sont que lettres et chiffres).",
         "siteTimeInPast": "Pour que le site le publie à une heure, l’heure doit être à venir.",
         "timeInPast": "Cette heure est passée.",
         "approvalRequired": "Vos publications doivent être approuvées ici, et les articles ne peuvent pas encore l’être : un membre dont les publications partent sans approbation l’envoie.",
-        "coverNotImage": "L’image mise en avant doit être une image."
+        "coverNotImage": "L’image mise en avant doit être une image.",
+        "siteStatusNotTaken": "Hashnode ne peut pas publier un article lui-même à une heure donnée : choisissez « Publié aussitôt » et donnez l’heure, Peal l’enverra alors."
       },
       "errors": {
         "ArticleChangeRefused": "Le site a refusé la modification ({code}) : rien n’a changé.",
@@ -4804,7 +4833,11 @@
       },
       "linkAddress": "L’adresse du lien",
       "linkHint": "Vide enlève le lien.",
-      "linkApply": "Appliquer"
+      "linkApply": "Appliquer",
+      "failedNote": "Il n’est pas parti ({code}). Corrigez ce que le site a refusé, puis renvoyez-le.",
+      "failedPlanRequired": "Hashnode l’a refusé : son API ne répond que pour une publication en offre Pro. Passez la publication en Pro sur Hashnode, puis renvoyez-le.",
+      "toCheckNote": "Peal ne peut pas savoir s’il a atteint le site : regardez-y, et renvoyez-le seulement s’il n’y est pas.",
+      "toCheckSeveral": "Le site a un autre article de ce titre, que Peal ne peut pas distinguer de celui-ci : il ne le renvoie donc jamais de lui-même. Regardez sur le site : si cet article y est, il est en ligne et vous pouvez le laisser ; sinon, renommez ou supprimez l’autre article là-bas, puis renvoyez-le."
     }
   }
 }

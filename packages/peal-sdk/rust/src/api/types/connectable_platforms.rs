@@ -10,6 +10,8 @@ pub struct ConnectablePlatforms {
     pub linkedin_connections: Vec<LinkedInConnection>,
     #[serde(default)]
     pub platforms: Vec<Platform>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sites: Option<Vec<SitePlatform>>,
 }
 
 impl ConnectablePlatforms {
@@ -24,6 +26,7 @@ pub struct ConnectablePlatformsBuilder {
     instagram_connections: Option<Vec<InstagramConnection>>,
     linkedin_connections: Option<Vec<LinkedInConnection>>,
     platforms: Option<Vec<Platform>>,
+    sites: Option<Vec<SitePlatform>>,
 }
 
 impl ConnectablePlatformsBuilder {
@@ -39,6 +42,11 @@ impl ConnectablePlatformsBuilder {
 
     pub fn platforms(mut self, value: Vec<Platform>) -> Self {
         self.platforms = Some(value);
+        self
+    }
+
+    pub fn sites(mut self, value: Vec<SitePlatform>) -> Self {
+        self.sites = Some(value);
         self
     }
 
@@ -58,6 +66,7 @@ impl ConnectablePlatformsBuilder {
             platforms: self
                 .platforms
                 .ok_or_else(|| BuildError::missing_field("platforms"))?,
+            sites: self.sites,
         })
     }
 }
