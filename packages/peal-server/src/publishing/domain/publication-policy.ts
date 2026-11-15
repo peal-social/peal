@@ -284,6 +284,14 @@ const badRequestReason = (code: string): RefusalReason => {
     return "repliesNotAllowed";
   }
 
+  if (code === platformRefusalCodes.forumThreadNameRequired) {
+    return "forumThreadNameRequired";
+  }
+
+  if (code === platformRefusalCodes.chatMigrated) {
+    return "chatMigrated";
+  }
+
   if (partRefusals.has(code)) {
     return "partsNotSent";
   }

@@ -91,6 +91,10 @@ const failureReasons: Readonly<Record<FailureReason, string>> = {
     "X bills each post, passed on at X's rates, and the billing account's last payment failed: update the payment method from the billing page, then post it again",
   perAccountPricingRequired:
     "X bills each post, passed on at X's rates, and the workspace's plan is one from before per-account pricing: move to per-account pricing on the billing page, then post it again",
+  forumThreadNameRequired:
+    "the Discord channel is a forum, whose posts need a title (threadName in the post's options): copy the post, give it one, then schedule it",
+  chatMigrated:
+    "the Telegram group became a supergroup with a new id: connect the chat again (peal channels connect-chat), then post on the new channel",
   xThreadCut:
     "the thread was cut: X's meter refused the next part, as the billing account cannot be billed for it now (the billing page says why); once it can, repost to send the rest",
 };

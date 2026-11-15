@@ -212,6 +212,10 @@ export const french: EmailCatalog = {
       "X facture chaque publication, que Peal refacture aux tarifs de X, et le dernier paiement du compte de facturation a échoué : rien ne part au-delà de l’inclus tant qu’il n’est pas réglé. Rien n’a été envoyé. Mettez à jour le moyen de paiement depuis la page de facturation, puis publiez-la à nouveau.",
     perAccountPricingRequired:
       "X facture chaque publication, que Peal refacture aux tarifs de X, et l’abonnement de l’espace de travail est antérieur au tarif par compte, qui seul facture l’usage de X. Rien n’a été envoyé. Passez au tarif par compte sur la page de facturation, puis publiez-la à nouveau.",
+    forumThreadNameRequired:
+      "le salon est un forum, dont les publications demandent un titre, et la publication n’en avait pas. Copiez la publication, donnez-lui un titre de post de forum dans ses options Discord, puis programmez-la.",
+    chatMigrated:
+      "la discussion a changé d’identifiant, comme un groupe Telegram qui devient un supergroupe. Connectez à nouveau la discussion, puis publiez sur son nouveau canal.",
     xThreadCut:
       "le fil a été coupé : ses premières parties sont en ligne, et le compteur de X a refusé la suivante, car le compte de facturation ne peut pas être facturé pour elle maintenant (pas de moyen de paiement, un paiement en échec, un abonnement antérieur au tarif par compte, ou son plafond mensuel pour X : la page de facturation dit lequel). Dès qu’il le peut, envoyez la suite à nouveau, ou gardez les parties en ligne comme publication.",
   },
