@@ -86,6 +86,7 @@ import {
   freshOwner,
   WebhooksTest,
 } from "#test/webhooks/support.ts";
+import { appWithOidc, FakeOidc } from "#test/workspace/fakes/fake-oidc.ts";
 import {
   bodyOf,
   MigratedSqlLive,
@@ -101,6 +102,12 @@ import {
   keyOf,
   partnerOf,
 } from "#test/workspace/integration/partner-support.ts";
+import {
+  finishSignIn,
+  signUpPage,
+  startSignIn,
+  verified as verifiedIdentity,
+} from "#test/workspace/integration/provider-support.ts";
 import {
   codeOf,
   enrolled,
@@ -276,6 +283,48 @@ const TwoStepTest = Layer.mergeAll(
     Layer.merge(capture, Layer.succeed(Tracer.Tracer, tracer))
   ),
   MigratedSqlLive
+);
+
+// A sign-in through an OpenID Connect provider: the provider sends the
+// browser back with its code and the sign-in's state in the address.
+const ProviderTest = Layer.mergeAll(
+  appWithOidc({}, Layer.merge(capture, Layer.succeed(Tracer.Tracer, tracer))),
+  MigratedSqlLive
+);
+
+layer(ProviderTest, { excludeTestServices: true, timeout: "180 seconds" })(
+  "what the server writes about a provider's sign-in",
+  (it) => {
+    it.effect("holds no code, state, nonce, ID token or address", () =>
+      Effect.gen(function* providerSignIn() {
+        const provider = yield* FakeOidc;
+        const email = "secrets-provider-synthetic@example.test";
+        const started = yield* startSignIn(signUpPage());
+        const code = yield* provider.issue(
+          verifiedIdentity(email),
+          started.nonce
+        );
+        const finished = yield* finishSignIn(started, code);
+
+        assert.isNull(finished.error);
+
+        const all = written();
+
+        assert.include(all, "/api/auth/callback/oidc");
+
+        for (const [name, value] of [
+          ["the provider's code", code],
+          ["the sign-in's state", started.state],
+          ["the ID token's nonce", started.nonce],
+          ...provider.idTokens().map((token) => ["an ID token", token]),
+          ["the address", email],
+        ] as const) {
+          assert.isAbove(value.length, 10, name);
+          assert.notInclude(all, value, name);
+        }
+      })
+    );
+  }
 );
 
 layer(TwoStepTest, { excludeTestServices: true, timeout: "180 seconds" })(

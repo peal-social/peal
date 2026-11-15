@@ -97,7 +97,17 @@ export const finishSignIn = Effect.fn("finishSignIn")(function* finishSignIn(
 
   const reply = yield* app.request(
     `/api/auth/callback/oidc?${query.toString()}`,
-    { headers: cookies === "" ? {} : { cookie: cookies } }
+    {
+      // As a browser opens the address the provider sends it back to.
+      headers:
+        cookies === ""
+          ? { accept: "text/html", "sec-fetch-mode": "navigate" }
+          : {
+              accept: "text/html",
+              cookie: cookies,
+              "sec-fetch-mode": "navigate",
+            },
+    }
   );
 
   const location = new URL(reply.headers.get("location") ?? "/", origin);

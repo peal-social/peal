@@ -75,6 +75,8 @@ export interface FakeOidcProvider {
     nonce: string,
     spoiled?: Spoiled
   ) => Effect.Effect<string>;
+  /** Every ID token it signed, in order. */
+  readonly idTokens: () => readonly string[];
   readonly server: FakeHttpServer;
 }
 
@@ -87,6 +89,7 @@ const fakeOidc = Effect.gen(function* fakeOidc() {
   const key = yield* signingKey;
   const foreign = yield* signingKey;
   const answers = new Map<string, { idToken?: string }>();
+  const signed: string[] = [];
 
   const server = yield* fakeHttpServer((request, origin) => {
     if (
@@ -178,16 +181,21 @@ const fakeOidc = Effect.gen(function* fakeOidc() {
   };
 
   return FakeOidc.of({
+    idTokens: () => [...signed],
     issue: (identity, nonce, spoiled = {}) =>
       Effect.promise(async () => {
         const code = `synthetic-code-${randomUUID()}`;
 
-        answers.set(
-          code,
-          spoiled.withoutIdToken === true
-            ? {}
-            : { idToken: await sign(identity, nonce, spoiled) }
-        );
+        if (spoiled.withoutIdToken === true) {
+          answers.set(code, {});
+
+          return code;
+        }
+
+        const idToken = await sign(identity, nonce, spoiled);
+
+        signed.push(idToken);
+        answers.set(code, { idToken });
 
         return code;
       }),
@@ -204,13 +212,17 @@ export const oidcSettings = (provider: FakeOidcProvider) => ({
 });
 
 /** The server signing people in with the fake provider, and the fake. */
-export const appWithOidc = (env: Readonly<Record<string, string>> = {}) =>
+export const appWithOidc = (
+  env: Readonly<Record<string, string>> = {},
+  // What watches the app, as TestApp.layerWith takes it.
+  observed?: Layer.Layer<never>
+) =>
   Layer.unwrap(
     Effect.gen(function* withOidc() {
       const provider = yield* fakeOidc;
 
       return Layer.merge(
-        TestApp.layerWith({ ...oidcSettings(provider), ...env }),
+        TestApp.layerWith({ ...oidcSettings(provider), ...env }, observed),
         Layer.succeed(FakeOidc, provider)
       );
     })

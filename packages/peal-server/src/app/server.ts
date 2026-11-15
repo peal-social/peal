@@ -38,7 +38,7 @@ import { countRequests } from "#app/request-metrics.ts";
 import { ShortLinkRedirectsLive } from "#app/short-links/redirects.ts";
 import { httpShutdownTimeout } from "#app/shutdown.ts";
 import { SystemHandlers } from "#app/system.ts";
-import { UntracedPathsLive } from "#app/untraced-paths.ts";
+import { RedactedQueryLive, UntracedPathsLive } from "#app/untraced-paths.ts";
 import { DigestUnsubscribeLive } from "#app/weekly-digest/unsubscribe.ts";
 import { AssistantApiLive, AssistantLive } from "#assistant/container.ts";
 import {
@@ -238,6 +238,7 @@ export const RoutesLive = Layer.mergeAll(
   DiscoveryLive,
   ShortLinkRedirectsLive,
   UntracedPathsLive,
+  RedactedQueryLive,
   DigestUnsubscribeLive,
   MeterErrorsLive,
   ApiAnswersLive

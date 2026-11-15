@@ -8,6 +8,7 @@ import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 import { CaptchaSchema } from "peal-contract";
 
+import { mcpResource, registeredClient } from "#test/app/mcp-support.ts";
 import { appWithOidc, FakeOidc } from "#test/workspace/fakes/fake-oidc.ts";
 import { enrolled } from "#test/workspace/support.ts";
 
@@ -20,6 +21,7 @@ import {
   password,
   signIn,
   TestApp,
+  workspaceOf,
 } from "./harness.ts";
 import {
   accountOf,
@@ -575,5 +577,73 @@ layer(
           [`oidc:${sub}`, `credential:${id}`].toSorted()
         );
       })
+  );
+});
+
+// An MCP client's authorization waits at the sign-in page, whose signed
+// query the sign-in carries in its state: once the provider's callback
+// signs the person in, the authorization goes on to the workspace picker.
+layer(
+  Layer.mergeAll(
+    appWithOidc({ MCP_DYNAMIC_REGISTRATION: "true" }),
+    MigratedSqlLive
+  ),
+  settings
+)("an MCP client's authorization through a provider", (it) => {
+  it.effect("goes on to the workspace picker after the callback", () =>
+    Effect.gen(function* resumes() {
+      const app = yield* TestApp;
+      const provider = yield* FakeOidc;
+      const email = newEmail("mcp-provider");
+      const sub = newSubject();
+
+      const created = yield* providerSignIn(verified(email, sub), {
+        body: signUpPage(),
+      });
+
+      yield* workspaceOf(
+        { cookies: created.cookies, email, id: "" },
+        "Provider Notes"
+      );
+
+      const clientId = yield* registeredClient;
+
+      const query = new URLSearchParams({
+        client_id: clientId,
+        code_challenge: "synthetic-challenge-0123456789abcdefghijklmnopqrstu",
+        code_challenge_method: "S256",
+        redirect_uri: "http://127.0.0.1:33418/callback",
+        resource: mcpResource,
+        response_type: "code",
+        scope: "workspace:read",
+        state: "mcp-provider",
+      });
+
+      const authorization = yield* app.request(
+        `/api/auth/oauth2/authorize?${query.toString()}`
+      );
+
+      const signInPageUrl = new URL(
+        authorization.headers.get("location") ?? "",
+        origin
+      );
+
+      assert.strictEqual(signInPageUrl.pathname, "/sign-in");
+
+      const started = yield* startSignIn({
+        ...signInPage,
+        oauth_query: signInPageUrl.search.slice(1),
+      });
+
+      const code = yield* provider.issue(verified(email, sub), started.nonce);
+      const finished = yield* finishSignIn(started, code);
+
+      assert.isNull(finished.error);
+      assert.strictEqual(finished.location.pathname, "/oauth/workspace");
+      assert.strictEqual(
+        finished.location.searchParams.get("client_id"),
+        clientId
+      );
+    })
   );
 });
