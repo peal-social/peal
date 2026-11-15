@@ -275,7 +275,10 @@ export const PartnerHandlers = HttpApiBuilder.group(
             });
           }
 
-          return movedChannelView(moved.channel);
+          return {
+            channel: movedChannelView(moved.channel),
+            postsLeft: moved.postsLeft,
+          };
         }),
       updateWorkspace: ({ params, payload }) =>
         Effect.gen(function* updateWorkspace() {

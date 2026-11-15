@@ -67,6 +67,14 @@ export class WorkspacePostStore extends Context.Service<
      * claims a call under the follow-up, so none begins while this holds
      * it.
      */
+    /**
+     * How many of the workspace's posts still have a target on the
+     * channel to go out: awaiting approval, scheduled or publishing.
+     */
+    readonly countWaitingOn: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
+    ) => Effect.Effect<number, DatabaseError>;
     readonly lockFollowUpCalls: (
       workspaceId: WorkspaceId,
       channelId: ChannelId

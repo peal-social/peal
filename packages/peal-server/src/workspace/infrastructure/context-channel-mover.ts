@@ -5,6 +5,7 @@ import {
   Layer,
   Option,
   Predicate,
+  Ref,
   Schema,
 } from "effect";
 import { SqlClient, SqlError } from "effect/sql";
@@ -100,6 +101,11 @@ export const ContextChannelMoverLive = Layer.effect(
       .pipe(Effect.mapError((cause) => new DatabaseError({ cause })));
 
     return ChannelMover.of({
+      postsLeft: (workspaceId, channelId) =>
+        Option.match(decodeChannelId(channelId), {
+          onNone: () => Effect.succeed(0),
+          onSome: (id) => posts.waitingOn(workspaceId, id),
+        }),
       current: (workspaceId, channelId) =>
         Option.match(decodeChannelId(channelId), {
           onNone: () => Effect.succeedNone,
@@ -112,52 +118,71 @@ export const ContextChannelMoverLive = Layer.effect(
         Option.match(decodeChannelId(channelId), {
           onNone: () => Effect.fail(new CustomerChannelNotFound()),
           onSome: (id) =>
-            moves
-              .move({
-                as,
-                channelId: id,
-                from,
-                inside: boundWaits.pipe(
-                  Effect.andThen(inside),
-                  Effect.andThen(
-                    posts.ensureChannelIdle(from, id).pipe(
-                      Effect.andThen(engagement.ensureChannelIdle(from, id)),
-                      Effect.catchTags({
-                        PostsPublishing: () =>
-                          Effect.fail(new WorkspaceBusy({ workspaceId: from })),
-                        SendsInFlight: () =>
-                          Effect.fail(new WorkspaceBusy({ workspaceId: from })),
-                      })
-                    )
-                  )
-                ),
-                to,
-              })
-              .pipe(
-                Effect.map(movedView),
-                Effect.catchTags({
-                  // Another request held a row or a hold too long.
-                  DatabaseError: (failure) =>
-                    Effect.fail(
-                      isLockTimeout(failure)
-                        ? new WorkspaceBusy({ workspaceId: from })
-                        : failure
+            Effect.gen(function* moving() {
+              // What the source has left on the channel, counted in the
+              // move's transaction.
+              const left = yield* Ref.make(0);
+
+              return yield* moves
+                .move({
+                  as,
+                  channelId: id,
+                  from,
+                  inside: boundWaits.pipe(
+                    Effect.andThen(inside),
+                    Effect.andThen(
+                      posts.ensureChannelIdle(from, id).pipe(
+                        Effect.andThen(engagement.ensureChannelIdle(from, id)),
+                        Effect.catchTags({
+                          PostsPublishing: () =>
+                            Effect.fail(
+                              new WorkspaceBusy({ workspaceId: from })
+                            ),
+                          SendsInFlight: () =>
+                            Effect.fail(
+                              new WorkspaceBusy({ workspaceId: from })
+                            ),
+                        })
+                      )
                     ),
-                  ChannelAccountTaken: ({ channelId: there }) =>
-                    Effect.fail(
-                      new AccountConnectedThere({ channelId: there })
-                    ),
-                  ChannelNotFound: () =>
-                    Effect.fail(new CustomerChannelNotFound()),
-                  // The partner's workspaces share its pool: one outside
-                  // is a bug of the ownership check.
-                  ChannelOutsidePool: Effect.die,
-                  MalformedEncryptedToken: Effect.die,
-                  MissingTokenKey: Effect.die,
-                  TokenAuthenticationFailed: Effect.die,
-                  UnknownTokenKey: Effect.die,
+                    Effect.andThen(posts.waitingOn(from, id)),
+                    Effect.flatMap((waiting) => Ref.set(left, waiting))
+                  ),
+                  to,
                 })
-              ),
+                .pipe(
+                  Effect.flatMap((channel) =>
+                    Ref.get(left).pipe(
+                      Effect.map((postsLeft) => ({
+                        channel: movedView(channel),
+                        postsLeft,
+                      }))
+                    )
+                  ),
+                  Effect.catchTags({
+                    // Another request held a row or a hold too long.
+                    DatabaseError: (failure) =>
+                      Effect.fail(
+                        isLockTimeout(failure)
+                          ? new WorkspaceBusy({ workspaceId: from })
+                          : failure
+                      ),
+                    ChannelAccountTaken: ({ channelId: there }) =>
+                      Effect.fail(
+                        new AccountConnectedThere({ channelId: there })
+                      ),
+                    ChannelNotFound: () =>
+                      Effect.fail(new CustomerChannelNotFound()),
+                    // The partner's workspaces share its pool: one outside
+                    // is a bug of the ownership check.
+                    ChannelOutsidePool: Effect.die,
+                    MalformedEncryptedToken: Effect.die,
+                    MissingTokenKey: Effect.die,
+                    TokenAuthenticationFailed: Effect.die,
+                    UnknownTokenKey: Effect.die,
+                  })
+                );
+            }),
         }),
     });
   })

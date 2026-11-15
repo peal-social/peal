@@ -46,6 +46,11 @@ const ChannelSchema = Schema.Struct({
 
 const ChannelsSchema = Schema.Array(ChannelSchema);
 
+const MovedSchema = Schema.Struct({
+  channel: ChannelSchema,
+  postsLeft: Schema.Number,
+});
+
 const ActivitySchema = Schema.Struct({
   items: Schema.Array(Schema.Struct({ operation: Schema.String })),
 });
@@ -116,6 +121,11 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const postId = yield* seedPost(from.id, channelId, "Stays behind");
 
+          // Scheduled on the channel: it fails there, and the move says so.
+          yield* sql`UPDATE publishing.posts SET status = 'scheduled', scheduled_at = now() + interval '1 day' WHERE id = ${postId}`;
+          // A draft does not go out: it is not counted.
+          yield* seedPost(from.id, channelId, "A draft");
+
           const reply = yield* app.request(
             `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
@@ -123,8 +133,12 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(reply.status, 200);
 
-          const moved = yield* bodyOf(ChannelSchema, reply);
+          const { channel: moved, postsLeft } = yield* bodyOf(
+            MovedSchema,
+            reply
+          );
 
+          assert.strictEqual(postsLeft, 1);
           assert.notStrictEqual(moved.id, channelId);
           assert.deepStrictEqual(
             { ...moved, id: "" },
@@ -199,14 +213,14 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         assert.strictEqual(first.status, 200);
 
-        const moved = yield* bodyOf(ChannelSchema, first);
+        const moved = yield* bodyOf(MovedSchema, first);
 
         // Its answer lost, the same request answers the channel where it
         // went, and moves nothing more.
         const retried = yield* send(to.id);
 
         assert.strictEqual(retried.status, 200);
-        assert.deepStrictEqual(yield* bodyOf(ChannelSchema, retried), moved);
+        assert.deepStrictEqual(yield* bodyOf(MovedSchema, retried), moved);
         assert.lengthOf(yield* channelsOf(key, to.id), 1);
 
         // The same key for another move is refused.
@@ -472,7 +486,10 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
           );
 
-          const moved = yield* bodyOf(ChannelSchema, reply);
+          const { channel: moved } = yield* bodyOf(
+            MovedSchema,
+            reply
+          );
 
           const deleted = yield* app.request(
             `/api/partner/workspaces/${to.id}`,

@@ -59,6 +59,15 @@ export class PostRecords extends Context.Service<
      * channel as the transaction left it. A post that only waits, or is
      * scheduled, does not keep it.
      */
+    /**
+     * How many of the workspace's posts still have a target on the
+     * channel to go out (awaiting approval, scheduled or publishing):
+     * those a channel moved away fails there.
+     */
+    readonly waitingOn: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
+    ) => Effect.Effect<number, DatabaseError>;
     readonly ensureChannelIdle: (
       workspaceId: WorkspaceId,
       channelId: ChannelId
@@ -194,6 +203,8 @@ export class PostRecords extends Context.Service<
         exportSaved: (workspaceId) => store.exportSaved(workspaceId),
         exportWorkspace: (workspaceId) => store.exportAll(workspaceId),
         forgetAuthor: (userId) => store.clearAuthor(userId),
+        waitingOn: (workspaceId, channelId) =>
+          store.countWaitingOn(workspaceId, channelId),
       });
     })
   );

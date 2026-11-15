@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, countDistinct, eq, inArray, isNull, sql } from "drizzle-orm";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
 import { ExecutionIdSchema } from "#publishing/application/publication-scheduler.ts";
@@ -694,6 +694,30 @@ export const DrizzleWorkspacePostStore = Layer.effect(
       }
     );
 
+    const countWaitingOn = Effect.fn("WorkspacePostStore.countWaitingOn")(
+      function* countWaitingOn(workspaceId: string, channelId: string) {
+        const [row] = yield* db
+          .select({ waiting: countDistinct(posts.id) })
+          .from(postTargets)
+          .innerJoin(posts, eq(posts.id, postTargets.postId))
+          .where(
+            and(
+              eq(posts.workspaceId, workspaceId),
+              eq(postTargets.channelId, channelId),
+              inArray(posts.status, [
+                "awaitingApproval",
+                "scheduled",
+                "publishing",
+              ]),
+              inArray(postTargets.status, ["pending", "publishing"])
+            )
+          )
+          .pipe(Effect.mapError(failed));
+
+        return row?.waiting ?? 0;
+      }
+    );
+
     const lockFollowUpCalls = Effect.fn("WorkspacePostStore.lockFollowUpCalls")(
       function* lockFollowUpCalls(workspaceId: string, channelId: string) {
         const sending = yield* db
@@ -720,6 +744,7 @@ export const DrizzleWorkspacePostStore = Layer.effect(
       exportAll,
       exportAuthored,
       exportSaved,
+      countWaitingOn,
       lockAll,
       lockFollowUpCalls,
       lockRounds,

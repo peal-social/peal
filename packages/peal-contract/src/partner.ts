@@ -160,6 +160,18 @@ export const ChannelMoveSchema = Schema.Struct({
 
 export type ChannelMove = typeof ChannelMoveSchema.Type;
 
+/** A channel moved, and what it left behind. */
+export const MovedChannelSchema = Schema.Struct({
+  // The channel where it went, under its new id.
+  channel: ChannelSchema,
+  // How many posts of the workspace it left still had it to go out on
+  // (awaiting approval, scheduled or being published): they fail there
+  // for this channel, as for a disconnected one, unless changed.
+  postsLeft: Schema.Int,
+}).annotate({ identifier: "MovedChannel" });
+
+export type MovedChannel = typeof MovedChannelSchema.Type;
+
 /** The filters and the page of a list of a partner's workspaces. */
 export const workspaceListQuery = {
   before: Schema.optionalKey(Schema.String),
@@ -293,7 +305,7 @@ export class PartnerApi extends HttpApiGroup.make("partner")
         },
         params: { ...workspace, channelId: Schema.String },
         payload: ChannelMoveSchema,
-        success: ChannelSchema,
+        success: MovedChannelSchema,
       }
     ).annotateMerge(
       OpenApi.annotations({

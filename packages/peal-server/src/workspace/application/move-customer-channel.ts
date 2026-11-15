@@ -46,6 +46,11 @@ export interface ChannelMoveRequest {
 export interface ChannelMoved {
   readonly channel: MovedChannel;
   readonly from: WorkspaceId;
+  /**
+   * How many of the posts of the workspace it left still had a target on
+   * the channel to go out, which fail there.
+   */
+  readonly postsLeft: number;
   /** Whether the answer is an earlier request's, sent again. */
   readonly replayed: boolean;
   readonly to: WorkspaceId;
@@ -176,6 +181,7 @@ export class MoveCustomerChannel extends Context.Service<
             const replayed: ChannelMoved = {
               channel: there.value,
               from: from.id,
+              postsLeft: yield* mover.postsLeft(from.id, request.channelId),
               replayed: true,
               to: use.workspaceId,
             };
@@ -232,9 +238,10 @@ export class MoveCustomerChannel extends Context.Service<
             to: to.id,
           })
           .pipe(
-            Effect.map((channel): ChannelMoved => ({
+            Effect.map(({ channel, postsLeft }): ChannelMoved => ({
               channel,
               from: from.id,
+              postsLeft,
               replayed: false,
               to: to.id,
             })),

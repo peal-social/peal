@@ -42,6 +42,14 @@ export class ChannelMover extends Context.Service<
       workspaceId: WorkspaceId,
       channelId: string
     ) => Effect.Effect<Option.Option<MovedChannel>, DatabaseError>;
+    /**
+     * How many of the workspace's posts still have a target on the
+     * channel to go out, which fail there once the channel has moved.
+     */
+    readonly postsLeft: (
+      workspaceId: WorkspaceId,
+      channelId: string
+    ) => Effect.Effect<number, DatabaseError>;
     readonly move: (move: {
       /** The id the channel takes where it goes. */
       readonly as: ChannelId;
@@ -57,7 +65,11 @@ export class ChannelMover extends Context.Service<
       >;
       readonly to: WorkspaceId;
     }) => Effect.Effect<
-      MovedChannel,
+      {
+        readonly channel: MovedChannel;
+        /** As `postsLeft` counted them, in the move's transaction. */
+        readonly postsLeft: number;
+      },
       | AccountConnectedThere
       | CustomerChannelNotFound
       | CustomerWorkspaceNotFound
