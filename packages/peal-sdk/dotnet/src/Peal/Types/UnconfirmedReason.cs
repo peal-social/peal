@@ -18,6 +18,8 @@ public readonly record struct UnconfirmedReason : IStringEnum
 
     public static readonly UnconfirmedReason StillProcessing = new(Values.StillProcessing);
 
+    public static readonly UnconfirmedReason SearchRefused = new(Values.SearchRefused);
+
     public UnconfirmedReason(string value)
     {
         Value = value;
@@ -123,5 +125,7 @@ public readonly record struct UnconfirmedReason : IStringEnum
         public const string AdapterFailure = "adapterFailure";
 
         public const string StillProcessing = "stillProcessing";
+
+        public const string SearchRefused = "searchRefused";
     }
 }
