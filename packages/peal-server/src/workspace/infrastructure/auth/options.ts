@@ -13,8 +13,14 @@ import {
 import type { OAuthOptions, Scope } from "@better-auth/oauth-provider";
 import { betterAuth } from "better-auth";
 import type { Session, User } from "better-auth";
-import { APIError, createAuthMiddleware } from "better-auth/api";
-import { admin, jwt, organization, twoFactor } from "better-auth/plugins";
+import { APIError, createAuthMiddleware, getOAuthState } from "better-auth/api";
+import {
+  admin,
+  genericOAuth,
+  jwt,
+  organization,
+  twoFactor,
+} from "better-auth/plugins";
 import { Option, Redacted, Schema } from "effect";
 
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -48,7 +54,14 @@ import {
   servesMcp,
   workspaceClaim,
 } from "./oauth.ts";
+import { providerAdmission } from "./provider-admission.ts";
+import { guardProviderSignIn } from "./provider-sign-in.ts";
 import type { AuthConfiguration } from "./settings.ts";
+import { offersProviders } from "./sign-in-provider-settings.ts";
+import {
+  signInProviderConfigs,
+  signInProviderIds,
+} from "./sign-in-providers.ts";
 import { refuseUnadmittedSignUps } from "./sign-up-gate.ts";
 import type { SignUpAdmission } from "./sign-up-gate.ts";
 import {
@@ -318,11 +331,13 @@ const oauthServer = (settings: AuthConfiguration) => {
 // Every route's before hook. A request staff send while acting as someone
 // is checked and recorded first, refused or not. Then what two-step
 // verification decides: a workspace's routes for a member it refuses, and
-// turning it on or off, and a sign-up the server's mode does not admit.
+// turning it on or off, and a sign-up the server's mode does not admit,
+// and a provider's sign-in that asks for more than Peal's pages do.
 const beforeEveryRoute = (hooks: AuthHooks) =>
   createAuthMiddleware(async (ctx) => {
     await guardImpersonatedRequest(ctx, hooks.impersonatedRequest);
     await refuseUnadmittedSignUps(ctx, hooks.signUp);
+    guardProviderSignIn(ctx);
     await refuseImpersonatedChanges(ctx);
     refusePersonalSubscriptions(ctx);
     await keepPayerLeaving(ctx, hooks);
@@ -330,6 +345,42 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
     await guardTwoStepChanges(ctx, hooks.twoStep);
     await noteTwoStepSender(ctx);
   });
+
+// The columns of `auth.account` that hold what a provider issued. Peal needs
+// none of it once the person is signed in, so a sign-in provider's account
+// keeps only who it is (`account_id`, the provider's subject).
+const withoutProviderTokens = <A extends Readonly<Record<string, unknown>>>(
+  account: A
+) =>
+  signInProviderIds.some((id) => id === account["providerId"])
+    ? {
+        data: {
+          ...account,
+          accessToken: null,
+          accessTokenExpiresAt: null,
+          idToken: null,
+          refreshToken: null,
+          refreshTokenExpiresAt: null,
+          scope: null,
+        },
+      }
+    : { data: account };
+
+// A provider's sign-up keeps the language of the page it started on, which
+// the sign-up page put in the sign-in's state, as a password sign-up sends
+// it in its body. No state, as on a password sign-up: nothing changes.
+const localeOfProviderSignUp = async <
+  U extends Readonly<Record<string, unknown>>,
+>(
+  user: U
+) => {
+  const state: unknown = await getOAuthState();
+  const locale = decodeLocaleField(state);
+
+  return Option.isSome(locale)
+    ? { data: { ...user, locale: locale.value.locale } }
+    : { data: user };
+};
 
 /**
  * The Better Auth instance: email and password with verification, workspaces
@@ -347,7 +398,22 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
  */
 export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
   betterAuth({
-    account: { encryptOAuthTokens: true },
+    account: {
+      // A provider reaches an account only through an address both sides
+      // confirmed: the provider's `email_verified`, on each sign-in, and the
+      // account's own (Better Auth's `requireLocalEmailVerified`, on by
+      // default). No provider is trusted without it, an address never
+      // links to another, and a link copies nothing onto the account.
+      accountLinking: {
+        allowDifferentEmails: false,
+        enabled: true,
+        trustedProviders: [],
+        updateUserInfoOnLink: false,
+      },
+      encryptOAuthTokens: true,
+      // A sign-in again writes no token: Peal keeps none of a provider's.
+      updateAccountOnSignIn: false,
+    },
     advanced: {
       cookiePrefix,
       database: { generateId: "uuid" },
@@ -399,6 +465,14 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
       "/admin/set-user-password",
       "/admin/unban-user",
       "/admin/update-user",
+      // A provider reaches an account only by a confirmed address on both
+      // sides, never by a link the person asks for, and Peal keeps none of
+      // a provider's tokens to hand out or renew.
+      "/account-info",
+      "/get-access-token",
+      "/link-social",
+      "/refresh-token",
+      "/unlink-account",
       "/api-key/create",
       "/api-key/delete",
       "/api-key/get",
@@ -414,6 +488,25 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
       "/organization/delete",
       "/token",
     ],
+    databaseHooks: {
+      account: {
+        create: {
+          before: async (account) => {
+            await Promise.resolve();
+
+            return withoutProviderTokens(account);
+          },
+        },
+        update: {
+          before: async (account) => {
+            await Promise.resolve();
+
+            return withoutProviderTokens(account);
+          },
+        },
+      },
+      user: { create: { before: localeOfProviderSignUp } },
+    },
     emailAndPassword: {
       // A sign-up for an email that already has an account answers with a
       // made-up user. Built with the admin plugin's fields, it reads the same
@@ -457,6 +550,9 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
       }),
       before: beforeEveryRoute(hooks),
     },
+    // A provider's callback that fails before its state is read sends the
+    // browser back to Peal's sign-in page, never to Better Auth's own.
+    onAPIError: { errorURL: `${settings.publicUrl}/sign-in` },
     logger: {
       level: "warn",
       // Messages only: Better Auth passes request details as further
@@ -596,6 +692,19 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
       // authorization with it. Its options are the library's own, but the
       // issuer the authenticator app shows.
       twoFactor({ issuer: "Peal" }),
+      // Google, and the OpenID Connect provider a self-hoster set, as
+      // Better Auth's social providers (`/sign-in/social`,
+      // `/callback/:id`): only on a server that set one, as the plugin has
+      // no table. It comes after two-step verification and before the
+      // OAuth server, whose after hook resumes an authorization once the
+      // callback has signed the person in.
+      ...(offersProviders(settings.signInProviders)
+        ? [
+            genericOAuth({
+              config: signInProviderConfigs(settings.signInProviders),
+            }),
+          ]
+        : []),
       oauthServer(settings),
       // The command line's sign-in (RFC 8628): it shows a code, which the
       // user enters on the web app's /device page.
@@ -632,6 +741,9 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
     telemetry: { enabled: false },
     trustedOrigins: [...settings.trustedOrigins],
     user: {
+      // Who a sign-in provider lets in (provider-admission.ts): a confirmed
+      // address, no two-step verification, and the sign-up gate.
+      validateUserInfo: providerAdmission(hooks.signUp),
       additionalFields: {
         locale: {
           defaultValue: defaultLocale,
