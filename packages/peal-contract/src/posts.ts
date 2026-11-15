@@ -243,7 +243,9 @@ export type FailureReason = typeof FailureReasonSchema.Type;
  * (`noResponse`), the answer could not be read (`unreadableResponse`), the
  * server stopped during the call (`interrupted`), Peal's own code failed
  * during it (`adapterFailure`), or the platform took the post and was still
- * processing it when Peal stopped checking (`stillProcessing`).
+ * processing it when Peal stopped checking (`stillProcessing`), or the
+ * site refused Peal's search for a post an earlier call may have made
+ * (`searchRefused`, an article).
  */
 export const UnconfirmedReasonSchema = Schema.Literals([
   "noResponse",
@@ -251,6 +253,7 @@ export const UnconfirmedReasonSchema = Schema.Literals([
   "interrupted",
   "adapterFailure",
   "stillProcessing",
+  "searchRefused",
 ]).annotate({ identifier: "UnconfirmedReason" });
 
 export type UnconfirmedReason = typeof UnconfirmedReasonSchema.Type;

@@ -4,7 +4,7 @@ import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { buffer } from "node:stream/consumers";
 
-import { Effect, Option, Schema } from "effect";
+import { Clock, Effect, Option, Schema } from "effect";
 
 // A WordPress site as its REST API documents it, on a loopback port: the
 // discovery `Link` header on the home page, the index, the current user,
@@ -232,476 +232,487 @@ const send = (response: ServerResponse, answer: FakeWordPressAnswer) => {
  * HTTP on loopback: tests open the outbound guard to reach it.
  */
 export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
-  Effect.acquireRelease(
-    Effect.promise(async () => {
-      const users = options.users ?? [editor, contributor];
-      const homePath = options.home ?? "/";
-      const pretty = options.pretty ?? true;
-      const received: FakeWordPressRequest[] = [];
-      const posts = new Map<number, FakeWordPressPost>();
-      const files: FakeWordPressMedia[] = [];
-      const tags = new Map<number, string>();
-      const categories = new Map<number, string>([[1, "Uncategorized"]]);
-      let nextId = 100;
-      let origin = "";
+  Clock.clockWith((clock) =>
+    Effect.acquireRelease(
+      Effect.promise(async () => {
+        // When the site says something changed: on the test's own clock.
+        const stamp = () =>
+          new Date(clock.currentTimeMillisUnsafe()).toISOString().slice(0, 19);
 
-      // A featured image the site's library has, or none.
-      const knownMedia = (id: number | undefined) =>
-        id === undefined ||
-        id === 0 ||
-        (options.dropsFeatured !== true &&
-          files.some((file) => file.id === id));
+        const users = options.users ?? [editor, contributor];
+        const homePath = options.home ?? "/";
+        const pretty = options.pretty ?? true;
+        const received: FakeWordPressRequest[] = [];
+        const posts = new Map<number, FakeWordPressPost>();
+        const files: FakeWordPressMedia[] = [];
+        const tags = new Map<number, string>();
+        const categories = new Map<number, string>([[1, "Uncategorized"]]);
+        let nextId = 100;
+        let origin = "";
 
-      const rootUrl = () =>
-        pretty ? `${origin}/wp-json/` : `${origin}/?rest_route=/`;
+        // A featured image the site's library has, or none.
+        const knownMedia = (id: number | undefined) =>
+          id === undefined ||
+          id === 0 ||
+          (options.dropsFeatured !== true &&
+            files.some((file) => file.id === id));
 
-      const postView = (post: FakeWordPressPost) => ({
-        ...post,
-        content: { raw: post.content, rendered: post.content },
-        excerpt: { raw: post.excerpt, rendered: post.excerpt },
-        link: `${origin}/?p=${post.id}`,
-        title: { raw: post.title, rendered: post.title },
-      });
+        const rootUrl = () =>
+          pretty ? `${origin}/wp-json/` : `${origin}/?rest_route=/`;
 
-      const termsOf = (
-        terms: Map<number, string>,
-        request: FakeWordPressRequest,
-        user: FakeWordPressUser | undefined
-      ): FakeWordPressAnswer => {
-        if (request.method === "GET") {
-          // A `LIKE` on the name as stored, whatever was searched for.
-          const search = (request.query.get("search") ?? "").toLowerCase();
+        const postView = (post: FakeWordPressPost) => ({
+          ...post,
+          content: { raw: post.content, rendered: post.content },
+          excerpt: { raw: post.excerpt, rendered: post.excerpt },
+          link: `${origin}/?p=${post.id}`,
+          title: { raw: post.title, rendered: post.title },
+        });
 
-          const searched = (name: string) =>
-            options.searchesDisplayedNames === true
-              ? name.replaceAll("&amp;", "&")
-              : name;
+        const termsOf = (
+          terms: Map<number, string>,
+          request: FakeWordPressRequest,
+          user: FakeWordPressUser | undefined
+        ): FakeWordPressAnswer => {
+          if (request.method === "GET") {
+            // A `LIKE` on the name as stored, whatever was searched for.
+            const search = (request.query.get("search") ?? "").toLowerCase();
 
-          return {
-            body: [...terms].flatMap(([id, name]) =>
-              searched(name).toLowerCase().includes(search)
-                ? [{ id, name, slug: name.toLowerCase() }]
-                : []
-            ),
-            status: 200,
-          };
-        }
-
-        if (user === undefined) {
-          return error(
-            401,
-            "rest_cannot_create",
-            "Sorry, you are not allowed to create terms."
-          );
-        }
-
-        const { name } = termFieldsOf(request.body);
-
-        if (name === undefined || name === "") {
-          return error(
-            400,
-            "rest_missing_callback_param",
-            "Missing parameter(s): name"
-          );
-        }
-
-        const stored = storedTermName(name);
-
-        const existing = [...terms].find(
-          ([, known]) => known.toLowerCase() === stored.toLowerCase()
-        );
-
-        if (existing !== undefined) {
-          return {
-            body: {
-              code: "term_exists",
-              data: { status: 400, term_id: existing[0] },
-              message: "A term with the name provided already exists.",
-            },
-            status: 400,
-          };
-        }
-
-        nextId += 1;
-        terms.set(nextId, stored);
-
-        return { body: { id: nextId, name: stored }, status: 201 };
-      };
-
-      const createPost = (
-        request: FakeWordPressRequest,
-        user: FakeWordPressUser
-      ): FakeWordPressAnswer => {
-        if (user.capabilities["edit_posts"] !== true) {
-          return error(
-            403,
-            "rest_cannot_create",
-            "Sorry, you are not allowed to create posts as this user."
-          );
-        }
-
-        const fields = postFieldsOf(request.body);
-
-        nextId += 1;
-
-        const post: FakeWordPressPost = {
-          author: user.id,
-          categories: [...(fields.categories ?? [])],
-          content: fields.content ?? "",
-          date_gmt: fields.date_gmt ?? null,
-          excerpt: fields.excerpt ?? "",
-          // A file the library does not have is dropped, as WordPress
-          // drops it: the post is saved without it, and no error said.
-          featured_media: knownMedia(fields.featured_media)
-            ? (fields.featured_media ?? 0)
-            : 0,
-          id: nextId,
-          modified_gmt: new Date().toISOString().slice(0, 19),
-          status: fields.status ?? "draft",
-          tags: [...(fields.tags ?? [])],
-          title: fields.title ?? "",
-        };
-
-        posts.set(post.id, post);
-
-        return { body: postView(post), status: 201 };
-      };
-
-      const postsRoute = (
-        request: FakeWordPressRequest,
-        user: FakeWordPressUser | undefined,
-        id: number | undefined
-      ): FakeWordPressAnswer => {
-        if (user === undefined) {
-          return error(
-            401,
-            "rest_cannot_create",
-            "Sorry, you are not allowed to do that."
-          );
-        }
-
-        if (id === undefined && request.method === "GET") {
-          const search = request.query.get("search") ?? "";
-          const after = request.query.get("modified_after");
-
-          return {
-            body: [...posts.values()].flatMap((post) =>
-              post.title.includes(search) &&
-              (after === null ||
-                options.beforeModifiedAfter === true ||
-                post.modified_gmt > after.slice(0, 19))
-                ? [postView(post)]
-                : []
-            ),
-            status: 200,
-          };
-        }
-
-        if (id === undefined) {
-          return createPost(request, user);
-        }
-
-        const post = posts.get(id);
-
-        if (post === undefined) {
-          return error(404, "rest_post_invalid_id", "Invalid post ID.");
-        }
-
-        if (request.method === "DELETE") {
-          if (request.query.get("force") === "true") {
-            posts.delete(id);
+            const searched = (name: string) =>
+              options.searchesDisplayedNames === true
+                ? name.replaceAll("&amp;", "&")
+                : name;
 
             return {
-              body: { deleted: true, previous: postView(post) },
+              body: [...terms].flatMap(([id, name]) =>
+                searched(name).toLowerCase().includes(search)
+                  ? [{ id, name, slug: name.toLowerCase() }]
+                  : []
+              ),
               status: 200,
             };
           }
 
-          if (post.status === "trash") {
+          if (user === undefined) {
             return error(
-              410,
-              "rest_already_trashed",
-              "The post has already been deleted."
+              401,
+              "rest_cannot_create",
+              "Sorry, you are not allowed to create terms."
             );
           }
 
-          post.status = "trash";
+          const { name } = termFieldsOf(request.body);
 
-          return { body: postView(post), status: 200 };
-        }
+          if (name === undefined || name === "") {
+            return error(
+              400,
+              "rest_missing_callback_param",
+              "Missing parameter(s): name"
+            );
+          }
 
-        if (request.method === "POST") {
+          const stored = storedTermName(name);
+
+          const existing = [...terms].find(
+            ([, known]) => known.toLowerCase() === stored.toLowerCase()
+          );
+
+          if (existing !== undefined) {
+            return {
+              body: {
+                code: "term_exists",
+                data: { status: 400, term_id: existing[0] },
+                message: "A term with the name provided already exists.",
+              },
+              status: 400,
+            };
+          }
+
+          nextId += 1;
+          terms.set(nextId, stored);
+
+          return { body: { id: nextId, name: stored }, status: 201 };
+        };
+
+        const createPost = (
+          request: FakeWordPressRequest,
+          user: FakeWordPressUser
+        ): FakeWordPressAnswer => {
+          if (user.capabilities["edit_posts"] !== true) {
+            return error(
+              403,
+              "rest_cannot_create",
+              "Sorry, you are not allowed to create posts as this user."
+            );
+          }
+
           const fields = postFieldsOf(request.body);
 
-          Object.assign(post, {
-            ...fields,
-            featured_media: knownMedia(fields.featured_media)
-              ? (fields.featured_media ?? post.featured_media)
-              : 0,
-            categories: [...(fields.categories ?? post.categories)],
-            tags: [...(fields.tags ?? post.tags)],
-          });
-          post.modified_gmt = new Date().toISOString().slice(0, 19);
-        }
-
-        return { body: postView(post), status: 200 };
-      };
-
-      const mediaRoute = (
-        request: FakeWordPressRequest,
-        user: FakeWordPressUser | undefined
-      ): FakeWordPressAnswer => {
-        if (user?.capabilities["upload_files"] !== true) {
-          return error(
-            403,
-            "rest_cannot_create",
-            "Sorry, you are not allowed to upload media on this site."
-          );
-        }
-
-        const disposition = request.headers["content-disposition"] ?? "";
-
-        const fileName = /filename="?(?<name>[^";]+)"?/u.exec(disposition)
-          ?.groups?.["name"];
-
-        if (fileName === undefined) {
-          return error(
-            400,
-            "rest_upload_no_content_disposition",
-            "No Content-Disposition supplied."
-          );
-        }
-
-        nextId += 1;
-
-        const file: FakeWordPressMedia = {
-          altText: "",
-          bytes: request.body,
-          contentType: request.headers["content-type"] ?? "",
-          fileName,
-          id: nextId,
-        };
-
-        files.push(file);
-
-        return {
-          body: {
-            id: file.id,
-            source_url: `${origin}/wp-content/uploads/${fileName}`,
-          },
-          status: 201,
-        };
-      };
-
-      const route = (request: FakeWordPressRequest): FakeWordPressAnswer => {
-        const user = signedIn(users, request.authorization);
-        const { route: path } = request;
-
-        if (request.authorization !== undefined && user === undefined) {
-          return error(
-            401,
-            "incorrect_password",
-            "The provided password is an invalid application password."
-          );
-        }
-
-        if (path === "/") {
-          return {
-            body: {
-              authentication: {
-                "application-passwords": {
-                  endpoints: {
-                    authorization: `${origin}/wp-admin/authorize-application.php`,
-                  },
-                },
-              },
-              home: `${origin}${homePath.replace(/\/$/u, "")}`,
-              name: "Synthetic Garden Journal",
-              namespaces: ["oembed/1.0", "wp/v2", "wp-site-health/v1"],
-              url: origin,
-            },
-            status: 200,
-          };
-        }
-
-        if (path === "/wp/v2/users/me") {
-          return user === undefined
-            ? error(
-                401,
-                "rest_not_logged_in",
-                "You are not currently logged in."
-              )
-            : {
-                body: {
-                  capabilities: user.capabilities,
-                  id: user.id,
-                  name: user.name,
-                  slug: user.login,
-                },
-                status: 200,
-              };
-        }
-
-        if (path === "/wp/v2/tags") {
-          return termsOf(tags, request, user);
-        }
-
-        if (path === "/wp/v2/categories") {
-          return termsOf(categories, request, user);
-        }
-
-        if (path === "/wp/v2/media") {
-          return mediaRoute(request, user);
-        }
-
-        const post = /^\/wp\/v2\/posts(?:\/(?<id>\d+))?$/u.exec(path);
-
-        if (post !== null) {
-          return postsRoute(
-            request,
-            user,
-            post.groups?.["id"] === undefined
-              ? undefined
-              : Number(post.groups["id"])
-          );
-        }
-
-        return error(
-          404,
-          "rest_no_route",
-          "No route was found matching the URL and request method."
-        );
-      };
-
-      const answer = async (
-        incoming: IncomingMessage,
-        response: ServerResponse
-      ) => {
-        const body = await buffer(incoming);
-        const url = new URL(incoming.url ?? "/", origin);
-        const restRoute = url.searchParams.get("rest_route");
-
-        const routeOf = () => {
-          if (restRoute !== null) {
-            return restRoute;
-          }
-
-          if (pretty && url.pathname.startsWith("/wp-json")) {
-            return url.pathname.slice("/wp-json".length) || "/";
-          }
-
-          return url.pathname;
-        };
-
-        const request: FakeWordPressRequest = {
-          authorization: incoming.headers.authorization,
-          body,
-          headers: incoming.headers,
-          method: incoming.method ?? "GET",
-          query: url.searchParams,
-          route: routeOf(),
-        };
-
-        received.push(request);
-
-        const intercepted = options.intercept?.(request);
-
-        if (intercepted === "hang") {
-          return;
-        }
-
-        if (intercepted !== undefined) {
-          send(response, intercepted);
-
-          return;
-        }
-
-        const isApi =
-          restRoute !== null || (pretty && url.pathname.startsWith("/wp-json"));
-
-        if (!isApi) {
-          send(response, {
-            headers:
-              options.linkHeader === false
-                ? {}
-                : { link: `<${rootUrl()}>; rel="https://api.w.org/"` },
-            status: url.pathname === homePath ? 200 : 404,
-          });
-
-          return;
-        }
-
-        const answered = route(request);
-
-        if (options.drop?.(request) === true) {
-          incoming.socket.destroy();
-
-          return;
-        }
-
-        send(response, answered);
-      };
-
-      const server = createServer((incoming, response) => {
-        void answer(incoming, response);
-      });
-
-      server.listen(0, "127.0.0.1");
-      await once(server, "listening");
-
-      origin = `http://127.0.0.1:${decodeAddress(server.address()).port}`;
-
-      const fake: FakeWordPress = {
-        addCategory: (name) => {
-          nextId += 1;
-          categories.set(nextId, storedTermName(name));
-
-          return nextId;
-        },
-        addPost: (partial) => {
           nextId += 1;
 
           const post: FakeWordPressPost = {
-            author: editor.id,
-            categories: [],
-            content: "",
-            date_gmt: null,
-            excerpt: "",
-            featured_media: 0,
+            author: user.id,
+            categories: [...(fields.categories ?? [])],
+            content: fields.content ?? "",
+            // Made now, as WordPress dates a post it publishes; a draft has
+            // no date yet.
+            date_gmt:
+              fields.date_gmt ??
+              ((fields.status ?? "draft") === "draft" ? null : stamp()),
+            excerpt: fields.excerpt ?? "",
+            // A file the library does not have is dropped, as WordPress
+            // drops it: the post is saved without it, and no error said.
+            featured_media: knownMedia(fields.featured_media)
+              ? (fields.featured_media ?? 0)
+              : 0,
             id: nextId,
-            modified_gmt: new Date().toISOString().slice(0, 19),
-            status: "publish",
-            tags: [],
-            title: "",
-            ...partial,
+            modified_gmt: stamp(),
+            status: fields.status ?? "draft",
+            tags: [...(fields.tags ?? [])],
+            title: fields.title ?? "",
           };
 
           posts.set(post.id, post);
 
-          return post.id;
-        },
-        categories: () => new Map(categories),
-        home: `${origin}${homePath}`,
-        deleteMedia: (id) => {
-          const index = files.findIndex((file) => file.id === id);
+          return { body: postView(post), status: 201 };
+        };
 
-          if (index !== -1) {
-            files.splice(index, 1);
+        const postsRoute = (
+          request: FakeWordPressRequest,
+          user: FakeWordPressUser | undefined,
+          id: number | undefined
+        ): FakeWordPressAnswer => {
+          if (user === undefined) {
+            return error(
+              401,
+              "rest_cannot_create",
+              "Sorry, you are not allowed to do that."
+            );
           }
-        },
-        media: () => [...files],
-        posts: () => [...posts.values()],
-        requests: () => [...received],
-        root: rootUrl(),
-        tags: () => new Map(tags),
-      };
 
-      return { fake, server };
-    }),
-    ({ server }) =>
-      Effect.promise(async () => {
-        server.closeAllConnections();
-        server.close();
-        await once(server, "close");
-      })
-  ).pipe(Effect.map(({ fake }) => fake));
+          if (id === undefined && request.method === "GET") {
+            const search = request.query.get("search") ?? "";
+            const after = request.query.get("modified_after");
+
+            return {
+              body: [...posts.values()].flatMap((post) =>
+                post.title.includes(search) &&
+                (after === null ||
+                  options.beforeModifiedAfter === true ||
+                  post.modified_gmt > after.slice(0, 19))
+                  ? [postView(post)]
+                  : []
+              ),
+              status: 200,
+            };
+          }
+
+          if (id === undefined) {
+            return createPost(request, user);
+          }
+
+          const post = posts.get(id);
+
+          if (post === undefined) {
+            return error(404, "rest_post_invalid_id", "Invalid post ID.");
+          }
+
+          if (request.method === "DELETE") {
+            if (request.query.get("force") === "true") {
+              posts.delete(id);
+
+              return {
+                body: { deleted: true, previous: postView(post) },
+                status: 200,
+              };
+            }
+
+            if (post.status === "trash") {
+              return error(
+                410,
+                "rest_already_trashed",
+                "The post has already been deleted."
+              );
+            }
+
+            post.status = "trash";
+
+            return { body: postView(post), status: 200 };
+          }
+
+          if (request.method === "POST") {
+            const fields = postFieldsOf(request.body);
+
+            Object.assign(post, {
+              ...fields,
+              featured_media: knownMedia(fields.featured_media)
+                ? (fields.featured_media ?? post.featured_media)
+                : 0,
+              categories: [...(fields.categories ?? post.categories)],
+              tags: [...(fields.tags ?? post.tags)],
+            });
+            post.modified_gmt = stamp();
+          }
+
+          return { body: postView(post), status: 200 };
+        };
+
+        const mediaRoute = (
+          request: FakeWordPressRequest,
+          user: FakeWordPressUser | undefined
+        ): FakeWordPressAnswer => {
+          if (user?.capabilities["upload_files"] !== true) {
+            return error(
+              403,
+              "rest_cannot_create",
+              "Sorry, you are not allowed to upload media on this site."
+            );
+          }
+
+          const disposition = request.headers["content-disposition"] ?? "";
+
+          const fileName = /filename="?(?<name>[^";]+)"?/u.exec(disposition)
+            ?.groups?.["name"];
+
+          if (fileName === undefined) {
+            return error(
+              400,
+              "rest_upload_no_content_disposition",
+              "No Content-Disposition supplied."
+            );
+          }
+
+          nextId += 1;
+
+          const file: FakeWordPressMedia = {
+            altText: "",
+            bytes: request.body,
+            contentType: request.headers["content-type"] ?? "",
+            fileName,
+            id: nextId,
+          };
+
+          files.push(file);
+
+          return {
+            body: {
+              id: file.id,
+              source_url: `${origin}/wp-content/uploads/${fileName}`,
+            },
+            status: 201,
+          };
+        };
+
+        const route = (request: FakeWordPressRequest): FakeWordPressAnswer => {
+          const user = signedIn(users, request.authorization);
+          const { route: path } = request;
+
+          if (request.authorization !== undefined && user === undefined) {
+            return error(
+              401,
+              "incorrect_password",
+              "The provided password is an invalid application password."
+            );
+          }
+
+          if (path === "/") {
+            return {
+              body: {
+                authentication: {
+                  "application-passwords": {
+                    endpoints: {
+                      authorization: `${origin}/wp-admin/authorize-application.php`,
+                    },
+                  },
+                },
+                home: `${origin}${homePath.replace(/\/$/u, "")}`,
+                name: "Synthetic Garden Journal",
+                namespaces: ["oembed/1.0", "wp/v2", "wp-site-health/v1"],
+                url: origin,
+              },
+              status: 200,
+            };
+          }
+
+          if (path === "/wp/v2/users/me") {
+            return user === undefined
+              ? error(
+                  401,
+                  "rest_not_logged_in",
+                  "You are not currently logged in."
+                )
+              : {
+                  body: {
+                    capabilities: user.capabilities,
+                    id: user.id,
+                    name: user.name,
+                    slug: user.login,
+                  },
+                  status: 200,
+                };
+          }
+
+          if (path === "/wp/v2/tags") {
+            return termsOf(tags, request, user);
+          }
+
+          if (path === "/wp/v2/categories") {
+            return termsOf(categories, request, user);
+          }
+
+          if (path === "/wp/v2/media") {
+            return mediaRoute(request, user);
+          }
+
+          const post = /^\/wp\/v2\/posts(?:\/(?<id>\d+))?$/u.exec(path);
+
+          if (post !== null) {
+            return postsRoute(
+              request,
+              user,
+              post.groups?.["id"] === undefined
+                ? undefined
+                : Number(post.groups["id"])
+            );
+          }
+
+          return error(
+            404,
+            "rest_no_route",
+            "No route was found matching the URL and request method."
+          );
+        };
+
+        const answer = async (
+          incoming: IncomingMessage,
+          response: ServerResponse
+        ) => {
+          const body = await buffer(incoming);
+          const url = new URL(incoming.url ?? "/", origin);
+          const restRoute = url.searchParams.get("rest_route");
+
+          const routeOf = () => {
+            if (restRoute !== null) {
+              return restRoute;
+            }
+
+            if (pretty && url.pathname.startsWith("/wp-json")) {
+              return url.pathname.slice("/wp-json".length) || "/";
+            }
+
+            return url.pathname;
+          };
+
+          const request: FakeWordPressRequest = {
+            authorization: incoming.headers.authorization,
+            body,
+            headers: incoming.headers,
+            method: incoming.method ?? "GET",
+            query: url.searchParams,
+            route: routeOf(),
+          };
+
+          received.push(request);
+
+          const intercepted = options.intercept?.(request);
+
+          if (intercepted === "hang") {
+            return;
+          }
+
+          if (intercepted !== undefined) {
+            send(response, intercepted);
+
+            return;
+          }
+
+          const isApi =
+            restRoute !== null ||
+            (pretty && url.pathname.startsWith("/wp-json"));
+
+          if (!isApi) {
+            send(response, {
+              headers:
+                options.linkHeader === false
+                  ? {}
+                  : { link: `<${rootUrl()}>; rel="https://api.w.org/"` },
+              status: url.pathname === homePath ? 200 : 404,
+            });
+
+            return;
+          }
+
+          const answered = route(request);
+
+          if (options.drop?.(request) === true) {
+            incoming.socket.destroy();
+
+            return;
+          }
+
+          send(response, answered);
+        };
+
+        const server = createServer((incoming, response) => {
+          void answer(incoming, response);
+        });
+
+        server.listen(0, "127.0.0.1");
+        await once(server, "listening");
+
+        origin = `http://127.0.0.1:${decodeAddress(server.address()).port}`;
+
+        const fake: FakeWordPress = {
+          addCategory: (name) => {
+            nextId += 1;
+            categories.set(nextId, storedTermName(name));
+
+            return nextId;
+          },
+          addPost: (partial) => {
+            nextId += 1;
+
+            const post: FakeWordPressPost = {
+              author: editor.id,
+              categories: [],
+              content: "",
+              date_gmt: null,
+              excerpt: "",
+              featured_media: 0,
+              id: nextId,
+              modified_gmt: stamp(),
+              status: "publish",
+              tags: [],
+              title: "",
+              ...partial,
+            };
+
+            posts.set(post.id, post);
+
+            return post.id;
+          },
+          categories: () => new Map(categories),
+          home: `${origin}${homePath}`,
+          deleteMedia: (id) => {
+            const index = files.findIndex((file) => file.id === id);
+
+            if (index !== -1) {
+              files.splice(index, 1);
+            }
+          },
+          media: () => [...files],
+          posts: () => [...posts.values()],
+          requests: () => [...received],
+          root: rootUrl(),
+          tags: () => new Map(tags),
+        };
+
+        return { fake, server };
+      }),
+      ({ server }) =>
+        Effect.promise(async () => {
+          server.closeAllConnections();
+          server.close();
+          await once(server, "close");
+        })
+    ).pipe(Effect.map(({ fake }) => fake))
+  );

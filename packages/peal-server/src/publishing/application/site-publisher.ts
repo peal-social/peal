@@ -1,11 +1,17 @@
 import { Context } from "effect";
-import type { DateTime, Effect, Option } from "effect";
+import type { DateTime, Effect } from "effect";
 
 import type { ArticleId } from "#publishing/domain/article-id.ts";
 import type { Article } from "#publishing/domain/article.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
+
+/** What a search of the site for an article's post found. */
+export type SiteSearch =
+  | { readonly _tag: "found"; readonly result: PublishResult }
+  | { readonly _tag: "none" }
+  | { readonly _tag: "several" };
 
 /** Send this article to its site. */
 export interface SitePublishRequest {
@@ -45,12 +51,13 @@ export class SitePublisher extends Context.Service<
       request: SitePublishRequest
     ) => Effect.Effect<PublishResult, PublishFailure>;
     /**
-     * Looks for the post a call made from `startedAt` on, never making
-     * one: it, none found, or the search failing.
+     * Looks for the post a call made at `startedAt`, among the site's made
+     * or changed then, never making one: it, none, or several (which no
+     * one can tell apart), or the search failing.
      */
     readonly find: (
       request: SitePublishRequest
-    ) => Effect.Effect<Option.Option<PublishResult>, PublishFailure>;
+    ) => Effect.Effect<SiteSearch, PublishFailure>;
     /** Moves the article's post to the site's trash. */
     readonly remove: (
       article: Article,

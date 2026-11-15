@@ -1775,7 +1775,7 @@
     "viewPost": "La voir sur {platform}",
     "failed": "Elle n’est pas partie : {reason}",
     "unconfirmed": "Peal ne sait pas si elle est partie : {reason}. Vérifiez sur {platform} avant de la republier, puis indiquez ce que vous avez trouvé.",
-    "unconfirmedReason": "{reason, select, noResponse {la plateforme n’a pas répondu} unreadableResponse {sa réponse n’a pas pu être lue} interrupted {le serveur s’est arrêté pendant l’envoi} adapterFailure {Peal a échoué pendant l’envoi} stillProcessing {la plateforme la traitait encore quand Peal a cessé de vérifier} other {{reason}}}",
+    "unconfirmedReason": "{reason, select, noResponse {la plateforme n’a pas répondu} unreadableResponse {sa réponse n’a pas pu être lue} interrupted {le serveur s’est arrêté pendant l’envoi} adapterFailure {Peal a échoué pendant l’envoi} stillProcessing {la plateforme la traitait encore quand Peal a cessé de vérifier} searchRefused {le site a refusé que Peal la cherche} other {{reason}}}",
     "cancelled": "Elle a été annulée avant de partir.",
     "dropped": "Ce canal a été retiré de la publication avant son départ : elle est partie sur ses autres canaux.",
     "pending": "Elle attend son tour.",

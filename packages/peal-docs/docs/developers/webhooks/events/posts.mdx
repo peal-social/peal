@@ -191,6 +191,7 @@ Once a member says what they found, a `post.published`, or a `post.failed` with 
 | `interrupted`        | The server stopped during the call, so whether it went out is not known.           |
 | `adapterFailure`     | Peal's own code failed during the call, after the request may have left.           |
 | `stillProcessing`    | The platform took the post and was still processing it when Peal stopped checking. |
+| `searchRefused`      | An article's site refused Peal's search for a post an earlier call may have made.  |
 
 ```json title="post.unconfirmed"
 {

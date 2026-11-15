@@ -165,6 +165,13 @@ const HookedArticleStore = Layer.effect(
  */
 export const journalOutage = Ref.makeUnsafe(0);
 
+/**
+ * How many more times the journal fails to read an attempt's earlier
+ * refusals, as through a database that answers some queries and not
+ * others.
+ */
+export const refusalsOutage = Ref.makeUnsafe(0);
+
 // The journal, failing to begin calls while `journalOutage` says.
 const OutagedArticleJournal = Layer.effect(
   ArticleJournal,
@@ -173,6 +180,17 @@ const OutagedArticleJournal = Layer.effect(
 
     return ArticleJournal.of({
       ...journal,
+      earlierRefusals: (call) =>
+        Ref.modify(refusalsOutage, (left) => [
+          left > 0,
+          Math.max(0, left - 1),
+        ]).pipe(
+          Effect.flatMap((down) =>
+            down
+              ? Effect.fail(new DatabaseError({ cause: "synthetic outage" }))
+              : journal.earlierRefusals(call)
+          )
+        ),
       begin: (call) =>
         Ref.modify(journalOutage, (left) => [
           left > 0,

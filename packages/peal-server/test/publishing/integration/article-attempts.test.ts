@@ -26,6 +26,7 @@ import { fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import { freshWorkspace } from "#test/channels/support.ts";
 import {
   journalOutage,
+  refusalsOutage,
   planChannels,
   siteChannel,
 } from "#test/publishing/article-server.ts";
@@ -987,5 +988,234 @@ describe("an attempt at sending an article", () => {
           assert.strictEqual(madePosts(site), 1);
         })
       )
+  );
+
+  it.effect(
+    "never posts again after the database failed once the post was recorded",
+    () =>
+      onArticles(
+        Effect.gen(function* recordedThenDown() {
+          const site = yield* fakeWordPress();
+          const workspaceId = yield* freshWorkspace;
+          const channel = yield* siteChannel(workspaceId, site);
+
+          // Once the post is recorded, the reads that follow fail longer
+          // than the attempt's own retries.
+          yield* Ref.set(refusalsOutage, 11);
+
+          const article = yield* (yield* Articles).create(
+            writer(workspaceId),
+            { channelId: channel.id, content: content() },
+            now
+          );
+
+          yield* eventuallyLater(
+            "the article is published",
+            stateOf(article.id).pipe(
+              Effect.map((state) => state === "published")
+            )
+          ).pipe(Effect.ensuring(Ref.set(refusalsOutage, 0)));
+
+          assert.strictEqual(madePosts(site), 1);
+          assert.lengthOf(site.posts(), 1);
+        })
+      )
+  );
+
+  it.effect(
+    "keeps an article to check when its search finds several posts of its title",
+    () =>
+      onArticles(
+        Effect.gen(function* several() {
+          let searchDown = true;
+
+          const { actor, sent, site } = yield* sentTo({
+            drop: (request) =>
+              request.route === "/wp/v2/posts" &&
+              request.method === "POST" &&
+              request.query.get("search") === null,
+            intercept: (request) =>
+              searchDown &&
+              request.route === "/wp/v2/posts" &&
+              request.method === "GET"
+                ? { body: "Service Unavailable", status: 503 }
+                : undefined,
+          });
+
+          assert.strictEqual(sent.state._tag, "unconfirmed");
+
+          // Another post of that title, written by hand meanwhile.
+          site.addPost({ title: "Spring sowing" });
+          searchDown = false;
+
+          yield* (yield* Articles).retry(actor, sent.id);
+
+          yield* eventually(
+            "the article ended",
+            stateOf(sent.id).pipe(
+              Effect.map(
+                (state) => state !== "scheduled" && state !== "publishing"
+              )
+            )
+          );
+
+          assert.strictEqual(yield* stateOf(sent.id), "unconfirmed");
+          assert.lengthOf(site.posts(), 2);
+        })
+      )
+  );
+
+  it.effect(
+    "keeps an article to check, and posts nothing, when the site refuses its search",
+    () =>
+      onArticles(
+        Effect.gen(function* refusedSearch() {
+          let search: "down" | "refused" | "open" = "down";
+
+          const { actor, sent, site } = yield* sentTo({
+            drop: (request) =>
+              request.route === "/wp/v2/posts" &&
+              request.method === "POST" &&
+              request.query.get("search") === null,
+            intercept: (request) => {
+              if (
+                request.route !== "/wp/v2/posts" ||
+                request.method !== "GET"
+              ) {
+                return;
+              }
+
+              if (search === "down") {
+                return { body: "Service Unavailable", status: 503 };
+              }
+
+              return search === "refused"
+                ? {
+                    body: {
+                      code: "rest_forbidden_context",
+                      data: { status: 403 },
+                      message: "Sorry, you are not allowed to edit posts.",
+                    },
+                    status: 403,
+                  }
+                : undefined;
+            },
+          });
+
+          assert.strictEqual(sent.state._tag, "unconfirmed");
+
+          search = "refused";
+
+          yield* (yield* Articles).retry(actor, sent.id);
+
+          yield* eventually(
+            "the article ended",
+            stateOf(sent.id).pipe(
+              Effect.map(
+                (state) => state !== "scheduled" && state !== "publishing"
+              )
+            )
+          );
+
+          const ended = yield* ArticleStore.use((store) => store.get(sent.id));
+          const { state } = Option.getOrThrow(ended);
+
+          assert.strictEqual(state._tag, "unconfirmed");
+          assert.strictEqual(
+            state._tag === "unconfirmed" ? state.reason : undefined,
+            "searchRefused"
+          );
+          assert.lengthOf(site.posts(), 1);
+        })
+      )
+  );
+
+  it.effect(
+    "finds its post from the earlier call's time when it is sent again much later",
+    () =>
+      onArticles(
+        Effect.gen(function* muchLater() {
+          let searchDown = true;
+
+          const { actor, sent, site } = yield* sentTo({
+            drop: (request) =>
+              request.route === "/wp/v2/posts" &&
+              request.method === "POST" &&
+              request.query.get("search") === null,
+            intercept: (request) =>
+              searchDown &&
+              request.route === "/wp/v2/posts" &&
+              request.method === "GET"
+                ? { body: "Service Unavailable", status: 503 }
+                : undefined,
+          });
+
+          assert.strictEqual(sent.state._tag, "unconfirmed");
+          searchDown = false;
+
+          // Two hours later, the member sends it again.
+          yield* TestClock.adjust(Duration.hours(2));
+
+          yield* (yield* Articles).retry(actor, sent.id);
+
+          yield* eventually(
+            "the article is published",
+            stateOf(sent.id).pipe(Effect.map((state) => state === "published"))
+          );
+
+          assert.lengthOf(site.posts(), 1);
+        })
+      )
+  );
+
+  it.effect("takes no post of its title made long after the earlier call", () =>
+    onArticles(
+      Effect.gen(function* tooLate() {
+        let searchDown = true;
+        let gatewayDown = true;
+
+        // The post never arrives: its call is refused by a proxy, and
+        // the search is down, so it is to check.
+        const { actor, sent, site } = yield* sentTo({
+          intercept: (request) => {
+            if (
+              gatewayDown &&
+              request.route === "/wp/v2/posts" &&
+              request.method === "POST" &&
+              request.query.get("search") === null
+            ) {
+              return { body: "Bad Gateway", status: 502 };
+            }
+
+            return searchDown &&
+              request.route === "/wp/v2/posts" &&
+              request.method === "GET"
+              ? { body: "Service Unavailable", status: 503 }
+              : undefined;
+          },
+        });
+
+        assert.strictEqual(sent.state._tag, "unconfirmed");
+        searchDown = false;
+        gatewayDown = false;
+
+        // A week later, the same user writes a post of that title.
+        yield* TestClock.adjust(Duration.days(7));
+        site.addPost({
+          modified_gmt: DateTime.formatIso(yield* DateTime.now).slice(0, 19),
+          title: "Spring sowing",
+        });
+
+        yield* (yield* Articles).retry(actor, sent.id);
+
+        yield* eventually(
+          "the article is published",
+          stateOf(sent.id).pipe(Effect.map((state) => state === "published"))
+        );
+
+        // Its own post, not the week-old one.
+        assert.lengthOf(site.posts(), 2);
+      })
+    )
   );
 });

@@ -9,7 +9,10 @@ import { MediaForPublishing } from "#publishing/application/media-for-publishing
 import { SiteCredentials } from "#publishing/application/site-credentials.ts";
 import type { SiteToken } from "#publishing/application/site-credentials.ts";
 import { SitePublisher } from "#publishing/application/site-publisher.ts";
-import type { SitePublishRequest } from "#publishing/application/site-publisher.ts";
+import type {
+  SitePublishRequest,
+  SiteSearch,
+} from "#publishing/application/site-publisher.ts";
 import { articleHtml, escapeHtml } from "#publishing/domain/article-html.ts";
 import { articleMediaOf } from "#publishing/domain/article.ts";
 import type { Article } from "#publishing/domain/article.ts";
@@ -60,6 +63,15 @@ const uploadTimeout = Duration.minutes(10);
 // site's clock and Peal's may differ.
 const clockSlack = Duration.minutes(1);
 
+// How long after its call a post may have been made by it: a post of the
+// same title made later is another.
+const searchWindow = Duration.days(1);
+
+// The answers read a page, and the pages read, when looking for a post.
+const searchPageSize = 100;
+
+const maxSearchPages = 5;
+
 // The longest of WordPress's codes kept.
 const maxCodeLength = 100;
 
@@ -80,6 +92,7 @@ const postFields = "featured_media,id,link";
 
 const FoundPostSchema = Schema.Struct({
   id: Schema.Number,
+  date_gmt: Schema.optionalKey(Schema.NullOr(Schema.String)),
   link: Schema.optionalKey(Schema.String),
   modified_gmt: Schema.optionalKey(Schema.String),
   title: Schema.Struct({ raw: Schema.optionalKey(Schema.String) }),
@@ -505,35 +518,55 @@ export const WordPressSitePublisherLive = Layer.effect(
 
       const title = siteTitle(article);
 
-      const posts = yield* execute(
-        api,
-        signed(
-          token,
-          HttpClientRequest.get(
-            routeUrl(token.root, "/wp/v2/posts", {
-              _fields: "id,link,modified_gmt,title",
-              author: String(me.id),
-              context: "edit",
-              modified_after: DateTime.formatIso(
-                DateTime.subtractDuration(startedAt, clockSlack)
-              ),
-              per_page: "20",
-              search: title,
-              status: "publish,future,draft,pending,private",
-            })
-          )
-        )
-      ).pipe(Effect.flatMap(sentJson(Schema.Array(FoundPostSchema), [200])));
-
-      // A site before WordPress 5.7 ignores `modified_after`: the posts
-      // changed before the attempt are left out here as well.
+      // The call's own window: from a minute before it left (the site's
+      // clock and Peal's may differ) to a day after, as long as the post
+      // could have been made by it.
       const since = isoGmt(DateTime.subtractDuration(startedAt, clockSlack));
+      const until = isoGmt(DateTime.addDuration(startedAt, searchWindow));
 
-      const titled = posts.filter(
-        (post) =>
-          post.title.raw?.trim() === title &&
-          (post.modified_gmt === undefined || post.modified_gmt >= since)
-      );
+      const inWindow = (at: string | null | undefined) =>
+        at !== null && at !== undefined && at >= since && at <= until;
+
+      const titled: (typeof FoundPostSchema.Type)[] = [];
+
+      // Every page of the answers, not the first alone: a common title on
+      // a busy site may match many posts.
+      for (let page = 1; page <= maxSearchPages; page += 1) {
+        const posts = yield* execute(
+          api,
+          signed(
+            token,
+            HttpClientRequest.get(
+              routeUrl(token.root, "/wp/v2/posts", {
+                _fields: "date_gmt,id,link,modified_gmt,title",
+                author: String(me.id),
+                context: "edit",
+                modified_after: DateTime.formatIso(
+                  DateTime.subtractDuration(startedAt, clockSlack)
+                ),
+                page: String(page),
+                per_page: String(searchPageSize),
+                search: title,
+                status: "publish,future,draft,pending,private",
+              })
+            )
+          )
+        ).pipe(Effect.flatMap(sentJson(Schema.Array(FoundPostSchema), [200])));
+
+        // A site before WordPress 5.7 ignores `modified_after`: the window
+        // is kept here as well, by when each post was made or changed.
+        titled.push(
+          ...posts.filter(
+            (post) =>
+              post.title.raw?.trim() === title &&
+              (inWindow(post.date_gmt) || inWindow(post.modified_gmt))
+          )
+        );
+
+        if (posts.length < searchPageSize) {
+          break;
+        }
+      }
 
       const recorded = yield* store
         .recordedOn(
@@ -543,10 +576,16 @@ export const WordPressSitePublisherLive = Layer.effect(
         .pipe(Effect.orDie);
 
       const unclaimed = titled.filter((post) => !recorded.has(String(post.id)));
+      const [only] = unclaimed;
 
-      return unclaimed.length === 1
-        ? Option.fromUndefinedOr(unclaimed[0])
-        : Option.none();
+      const search: SiteSearch =
+        only === undefined
+          ? { _tag: "none" }
+          : unclaimed.length > 1
+            ? { _tag: "several" }
+            : { _tag: "found", result: published(only) };
+
+      return search;
     });
 
     const articleOf = (articleId: SitePublishRequest["articleId"]) =>
@@ -568,11 +607,10 @@ export const WordPressSitePublisherLive = Layer.effect(
       reason: UnconfirmedReason
     ) =>
       lookUp(token, article, startedAt).pipe(
-        Effect.map(
-          Option.match({
-            onNone: (): PublishResult => ({ _tag: "unconfirmed", reason }),
-            onSome: published,
-          })
+        Effect.map((search): PublishResult =>
+          search._tag === "found"
+            ? search.result
+            : { _tag: "unconfirmed", reason }
         ),
         // The search failed: whether it went out is not known.
         Effect.catchTag(
@@ -666,9 +704,7 @@ export const WordPressSitePublisherLive = Layer.effect(
       const article = yield* articleOf(request.articleId);
 
       return yield* credentials.withToken(article.channelId, (token) =>
-        lookUp(token, article, request.startedAt).pipe(
-          Effect.map(Option.map(published))
-        )
+        lookUp(token, article, request.startedAt)
       );
     });
 

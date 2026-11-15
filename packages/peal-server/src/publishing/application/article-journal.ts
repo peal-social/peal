@@ -91,6 +91,21 @@ export class ArticleJournal extends Context.Service<
       readonly articleId: ArticleId;
       readonly round: number;
     }) => Effect.Effect<Option.Option<DateTime.Utc>, DatabaseError>;
+    /**
+     * What the latest earlier attempt of the round ended with, when it
+     * ended published or to check: the attempts after it answer that.
+     */
+    readonly endedBefore: (call: {
+      readonly articleId: ArticleId;
+      readonly attempt: number;
+      readonly round: number;
+    }) => Effect.Effect<
+      Option.Option<{
+        readonly outcome: AttemptOutcome;
+        readonly startedAt: DateTime.Utc;
+      }>,
+      DatabaseError
+    >;
     /** Forgets a call that never reached the site. */
     readonly drop: (
       idempotencyKey: string

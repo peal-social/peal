@@ -128,6 +128,12 @@ const stillToCheck: AttemptOutcome = {
   reason: "interrupted",
 };
 
+// The site refused the search for a post an earlier call may have made.
+const searchRefused: AttemptOutcome = {
+  _tag: "unconfirmed",
+  reason: "searchRefused",
+};
+
 // The workspace holds more channels or members than its plan allows.
 const planRefusal: AttemptOutcome = new BadRequest({
   code: ownRefusalCodes.planLimit,
@@ -175,6 +181,14 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
       round: attempt.round,
     };
 
+    // The round's earlier refusals, read only for an outcome they decide:
+    // a published or unconfirmed one needs none, so a read that fails
+    // cannot turn it into a failure.
+    const refusalsFor = (outcome: AttemptOutcome) =>
+      outcome._tag === "PlatformUnavailable" || outcome._tag === "RateLimited"
+        ? journal.earlierRefusals(attempt)
+        : Effect.succeed({ rateLimited: 0, unavailable: 0 });
+
     // An attempt that ended answers what it recorded, as the first run
     // decided: never sent again, whoever holds the channel's turn.
     const recorded = yield* journal.found(call);
@@ -183,7 +197,7 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
       const { finishedAt, outcome, startedAt } = recorded.value;
 
       return decide(outcome, {
-        earlier: yield* journal.earlierRefusals(attempt),
+        earlier: yield* refusalsFor(outcome),
         sinceScheduled: DateTime.distance(attempt.dueAt, finishedAt),
         startedAt,
       });
@@ -211,6 +225,30 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
 
       if (start._tag === "completed") {
         return start;
+      }
+
+      // An earlier attempt of the round that ended published, or to
+      // check, answers for this one: nothing is sent again, as when the
+      // database kept that attempt from answering in time.
+      const ended = yield* journal.endedBefore(call);
+
+      if (Option.isSome(ended)) {
+        const finishedAt = yield* DateTime.now;
+
+        const endedKey =
+          start._tag === "started"
+            ? attempt.idempotencyKey
+            : start.idempotencyKey;
+
+        yield* journal
+          .finish(endedKey, ended.value.outcome, finishedAt)
+          .pipe(Effect.retry(outcomeWriteRetry));
+
+        return {
+          finishedAt,
+          outcome: ended.value.outcome,
+          startedAt: ended.value.startedAt,
+        };
       }
 
       // The key the attempt's row is written under: its own, or the one an
@@ -310,9 +348,26 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
         onNone: () => Effect.succeed(Option.none<AttemptOutcome>()),
         onSome: (at) =>
           publisher.find({ ...request, startedAt: at }).pipe(
-            Effect.map(Option.map((found): AttemptOutcome => found)),
+            // Found, it is adopted; several, nobody can tell which: to
+            // check; none, the article is sent.
+            Effect.map((search): Option.Option<AttemptOutcome> =>
+              search._tag === "found"
+                ? Option.some(search.result)
+                : search._tag === "several"
+                  ? Option.some(stillToCheck)
+                  : Option.none()
+            ),
+            // The site down, the search is made again later; refused, the
+            // article stays to check, and nothing is sent either way.
             Effect.catch((error) =>
-              Effect.succeed(Option.some<AttemptOutcome>(error))
+              Effect.succeed(
+                Option.some<AttemptOutcome>(
+                  error._tag === "PlatformUnavailable" ||
+                    error._tag === "RateLimited"
+                    ? error
+                    : searchRefused
+                )
+              )
             ),
             Effect.catchDefect(() =>
               Effect.succeed(
@@ -433,7 +488,7 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
 
     const { finishedAt, outcome, startedAt } = ended.value;
 
-    const earlier = yield* journal.earlierRefusals(attempt);
+    const earlier = yield* refusalsFor(outcome);
 
     const decision: PublicationDecision = decide(outcome, {
       earlier,

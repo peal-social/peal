@@ -429,6 +429,36 @@ export const DrizzleArticleJournal = Layer.effect(
           ? yield* Effect.die("A journal row vanished after a conflict")
           : yield* callStartOf(row);
       }),
+      endedBefore: (call) =>
+        db
+          .select({
+            outcome: articleCalls.outcome,
+            startedAt: articleCalls.startedAt,
+          })
+          .from(articleCalls)
+          .where(
+            and(
+              eq(articleCalls.articleId, call.articleId),
+              eq(articleCalls.round, call.round),
+              lt(articleCalls.attempt, call.attempt),
+              sql`${articleCalls.outcome}->>'_tag' IN ('published', 'unconfirmed')`
+            )
+          )
+          .orderBy(desc(articleCalls.attempt))
+          .limit(1)
+          .pipe(
+            Effect.mapError(failed),
+            Effect.flatMap(([row]) =>
+              row === undefined
+                ? Effect.succeedNone
+                : decodeOutcome(row.outcome).pipe(
+                    Effect.orDie,
+                    Effect.map((outcome) =>
+                      Option.some({ outcome, startedAt: utc(row.startedAt) })
+                    )
+                  )
+            )
+          ),
       toCheckBefore: (call) =>
         db
           .select({ committedAt: articleCalls.committedAt })
