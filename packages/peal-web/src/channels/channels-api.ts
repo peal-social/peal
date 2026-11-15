@@ -51,6 +51,20 @@ export const chooseAccounts = PealApi.mutation("channels", "chooseAccounts");
 /** Connects a website by its address, a user and an application password. */
 export const connectSite = PealApi.mutation("channels", "connectSite");
 
+/** Connects an account on a publishing platform with a key made there. */
+export const connectSiteWithKey = PealApi.mutation(
+  "channels",
+  "connectSiteWithKey"
+);
+
+/** Starts signing in to a website's platform (WordPress.com). */
+export const startSiteSignIn = PealApi.mutation("channels", "startSiteSignIn");
+
+export const completeSiteSignIn = PealApi.mutation(
+  "channels",
+  "completeSiteSignIn"
+);
+
 export const reconnectChannel = PealApi.mutation("channels", "reconnect");
 
 export const disconnectChannel = PealApi.mutation("channels", "disconnect");

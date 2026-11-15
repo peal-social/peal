@@ -1,6 +1,6 @@
 import { Option, Schema } from "effect";
-import { PlatformSchema } from "peal-contract";
-import type { Platform } from "peal-contract";
+import { ChannelPlatformSchema } from "peal-contract";
+import type { ChannelPlatform } from "peal-contract";
 
 import { forgetLink } from "#connect-link/pending-link.ts";
 
@@ -11,7 +11,7 @@ import { forgetLink } from "#connect-link/pending-link.ts";
 const storageKey = "peal.channels.pending-connection";
 
 const PendingSchema = Schema.Struct({
-  platform: PlatformSchema,
+  platform: ChannelPlatformSchema,
   workspaceId: Schema.String,
 });
 
@@ -48,7 +48,7 @@ export const rememberConnection = (pending: PendingConnection): void => {
  * The workspace of the connection this tab started for the platform, as a
  * string, or null when the tab started none.
  */
-export const pendingWorkspace = (platform: Platform): string | null =>
+export const pendingWorkspace = (platform: ChannelPlatform): string | null =>
   storage().pipe(
     Option.flatMap((tab) => Option.fromNullOr(tab.getItem(storageKey))),
     Option.flatMap(decodePending),

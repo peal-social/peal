@@ -5,6 +5,7 @@ import type {
   InstagramConnection,
   LinkedInConnection,
   Platform,
+  SitePlatform,
 } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
@@ -30,7 +31,11 @@ import {
   metaPlatforms,
 } from "#components/channels/connect-meta.tsx";
 import type { MetaPlatform } from "#components/channels/connect-meta.tsx";
-import { ConnectWebsite } from "#components/channels/connect-website.tsx";
+import {
+  ConnectKeySite,
+  ConnectWebsite,
+  ConnectWordPressCom,
+} from "#components/channels/connect-website.tsx";
 
 const ErrorMessage = ({
   error,
@@ -284,6 +289,9 @@ const ConnectWithInstagram = ({
   );
 };
 
+// A server that names no website sign-in: those by address and key alone.
+const noSites: readonly SitePlatform[] = [];
+
 /**
  * Where a member starts connecting an account, for each platform this
  * server connects: a form for Mastodon and Bluesky, which ask for a server
@@ -291,19 +299,23 @@ const ConnectWithInstagram = ({
  * Business Profile, one for each of Instagram's ways in the server has,
  * one for a LinkedIn profile and one for company pages on a server that
  * connects pages, and Meta's sign-in for Threads and Facebook Pages; and
- * a WordPress site, by its address and an application password, which
- * every server connects.
+ * a WordPress site, by its address and an application password, DEV and
+ * Hashnode by a key, which every server connects, and a site on
+ * WordPress.com on a server with its app.
  */
 export const ConnectForms = ({
   instagramConnections,
   linkedinConnections,
   platforms,
+  sites = noSites,
   workspaceId,
 }: {
   readonly instagramConnections: readonly InstagramConnection[];
   /** What the server connects on LinkedIn: profiles, pages, or both. */
   readonly linkedinConnections: readonly LinkedInConnection[];
   readonly platforms: readonly Platform[];
+  /** The websites the server connects, WordPress.com when it has its app. */
+  readonly sites?: readonly SitePlatform[];
   readonly workspaceId: string;
 }) => {
   const offered = new Set(platforms);
@@ -355,6 +367,11 @@ export const ConnectForms = ({
           : []
       )}
       <ConnectWebsite workspaceId={workspaceId} />
+      {sites.includes("wordpressCom") ? (
+        <ConnectWordPressCom workspaceId={workspaceId} />
+      ) : null}
+      <ConnectKeySite platform="devto" workspaceId={workspaceId} />
+      <ConnectKeySite platform="hashnode" workspaceId={workspaceId} />
     </div>
   );
 };

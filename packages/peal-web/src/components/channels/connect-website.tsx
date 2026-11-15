@@ -3,6 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { useTranslations } from "next-intl";
+import type { ChannelPlatform, KeySitePlatform } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import {
@@ -30,9 +31,12 @@ import { useChannelErrorText } from "#channels/channel-error-text.ts";
 import {
   channelsChanged,
   connectSite,
+  connectSiteWithKey,
   failureOf,
+  startSiteSignIn,
 } from "#channels/channels-api.ts";
 import type { ChannelErrorKey } from "#channels/channels-api.ts";
+import { rememberConnection } from "#channels/pending-connection.ts";
 
 interface WebsiteFieldsProps {
   /** The address to start from: the site's, to reconnect it. */
@@ -192,26 +196,265 @@ export const ConnectWebsite = ({
   );
 };
 
+interface KeySiteFieldsProps {
+  readonly onConnected?: () => void;
+  readonly platform: KeySitePlatform;
+  /** The publication to start from: the channel's, to reconnect it. */
+  readonly publication?: string;
+  readonly workspaceId: string;
+}
+
 /**
- * Reconnects a website's channel: the same form, on the site's address,
- * for a new application password, as a site has no sign-in to go back to.
+ * The form that connects an account on a publishing platform with a key
+ * made there for Peal: on DEV an API key, on Hashnode a personal access
+ * token and the publication to publish to. The key goes to the server
+ * once, and is never shown again.
+ */
+export const KeySiteFields = ({
+  onConnected,
+  platform,
+  publication: startPublication = "",
+  workspaceId,
+}: KeySiteFieldsProps) => {
+  const t = useTranslations("ChannelsPage");
+  const errorText = useChannelErrorText();
+  const connect = useAtomSet(connectSiteWithKey, { mode: "promiseExit" });
+  const [key, setKey] = useState("");
+  const [publication, setPublication] = useState(startPublication);
+  const [error, setError] = useState<ChannelErrorKey | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const id = useId();
+
+  const onKey = (event: ChangeEvent<HTMLInputElement>) => {
+    setKey(event.target.value);
+  };
+
+  const onPublication = (event: ChangeEvent<HTMLInputElement>) => {
+    setPublication(event.target.value);
+  };
+
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+
+    const named = publication.trim();
+
+    startTransition(async () => {
+      const exit = await connect({
+        params: { workspaceId },
+        payload:
+          platform === "hashnode" && named !== ""
+            ? { apiKey: key, platform, publication: named }
+            : { apiKey: key, platform },
+        reactivityKeys: channelsChanged(workspaceId),
+      });
+
+      Option.match(failureOf(exit), {
+        onNone: () => {
+          if (exit._tag === "Success") {
+            setKey("");
+            toast.success(
+              t("websiteConnected", {
+                site: exit.value.displayName ?? exit.value.handle,
+              })
+            );
+            onConnected?.();
+          }
+        },
+        onSome: setError,
+      });
+    });
+  };
+
+  return (
+    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+      {error === null ? null : (
+        <Alert variant="destructive">
+          <AlertDescription>{errorText(error)}</AlertDescription>
+        </Alert>
+      )}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={`${id}-key`}>{t(`keySite.${platform}.key`)}</Label>
+        <Input
+          id={`${id}-key`}
+          type="password"
+          autoComplete="off"
+          required
+          value={key}
+          onChange={onKey}
+          aria-describedby={`${id}-key-hint`}
+        />
+        <p id={`${id}-key-hint`} className="text-muted-foreground text-xs">
+          {t(`keySite.${platform}.keyHint`)}
+        </p>
+      </div>
+      {platform === "hashnode" ? (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`${id}-publication`}>
+            {t("keySite.hashnode.publication")}
+          </Label>
+          <Input
+            id={`${id}-publication`}
+            autoCapitalize="none"
+            spellCheck={false}
+            value={publication}
+            onChange={onPublication}
+            aria-describedby={`${id}-publication-hint`}
+          />
+          <p
+            id={`${id}-publication-hint`}
+            className="text-muted-foreground text-xs"
+          >
+            {t("keySite.hashnode.publicationHint")}
+          </p>
+        </div>
+      ) : null}
+      <Button type="submit" disabled={isPending} focusableWhenDisabled>
+        {isPending ? t("connecting") : t(`keySite.${platform}.connect`)}
+      </Button>
+    </form>
+  );
+};
+
+/** Where a member connects an account on DEV or Hashnode. */
+export const ConnectKeySite = ({
+  platform,
+  workspaceId,
+}: {
+  readonly platform: KeySitePlatform;
+  readonly workspaceId: string;
+}) => {
+  const t = useTranslations("ChannelsPage");
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          <h3>{t(`keySite.${platform}.title`)}</h3>
+        </CardTitle>
+        <CardDescription>
+          {t(`keySite.${platform}.description`)}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <KeySiteFields platform={platform} workspaceId={workspaceId} />
+      </CardContent>
+    </Card>
+  );
+};
+
+/**
+ * Sends the member to sign in on WordPress.com, for a new site or to
+ * reconnect `channelId`'s; the callback page completes it.
+ */
+const useWordPressComSignIn = (workspaceId: string) => {
+  const errorText = useChannelErrorText();
+  const start = useAtomSet(startSiteSignIn, { mode: "promiseExit" });
+  const [isPending, startTransition] = useTransition();
+
+  const signIn = (channelId?: string) => {
+    startTransition(async () => {
+      const exit = await start({
+        params: { platform: "wordpressCom", workspaceId },
+        payload: channelId === undefined ? {} : { channelId },
+      });
+
+      Option.match(failureOf(exit), {
+        onNone: () => {
+          if (exit._tag === "Success") {
+            rememberConnection({ platform: "wordpressCom", workspaceId });
+            globalThis.location.assign(exit.value.authorizationUrl);
+          }
+        },
+        onSome: (key) => {
+          toast.error(errorText(key));
+        },
+      });
+    });
+  };
+
+  return { isPending, signIn };
+};
+
+/** Where a member connects a site on WordPress.com, by signing in there. */
+export const ConnectWordPressCom = ({
+  workspaceId,
+}: {
+  readonly workspaceId: string;
+}) => {
+  const t = useTranslations("ChannelsPage");
+  const platforms = useTranslations("PlatformConnect");
+  const { isPending, signIn } = useWordPressComSignIn(workspaceId);
+
+  const onClick = () => {
+    signIn();
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          <h3>{t("wordpressCom.title")}</h3>
+        </CardTitle>
+        <CardDescription>{t("wordpressCom.description")}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Button disabled={isPending} focusableWhenDisabled onClick={onClick}>
+          {isPending ? platforms("connecting") : t("wordpressCom.connect")}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
+
+/**
+ * Reconnects a website's channel: a WordPress site of its own with the
+ * same form on its address, for a new application password; an account on
+ * DEV or Hashnode with a new key; a site on WordPress.com by signing in
+ * there again.
  */
 export const ReconnectWebsite = ({
   handle,
+  id: channelId,
   needsReconnect,
+  platform,
   workspaceId,
 }: {
   /** The site's home page without its scheme, as the channel keeps it. */
   readonly handle: string;
+  readonly id: string;
   readonly needsReconnect: boolean;
+  readonly platform: ChannelPlatform;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("ChannelsPage");
   const [open, setOpen] = useState(false);
+  const { isPending, signIn } = useWordPressComSignIn(workspaceId);
 
   const close = () => {
     setOpen(false);
   };
+
+  if (platform === "wordpressCom") {
+    const onClick = () => {
+      signIn(channelId);
+    };
+
+    return (
+      <Button
+        variant={needsReconnect ? "default" : "outline"}
+        size="sm"
+        disabled={isPending}
+        focusableWhenDisabled
+        aria-label={t("reconnectAccount", { handle })}
+        onClick={onClick}
+      >
+        {t("reconnect")}
+      </Button>
+    );
+  }
+
+  const keyed = platform === "devto" || platform === "hashnode";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -228,14 +471,31 @@ export const ReconnectWebsite = ({
       </DialogTrigger>
       <DialogContent closeLabel={t("cancel")}>
         <DialogHeader>
-          <DialogTitle>{t("reconnectWebsite", { handle })}</DialogTitle>
-          <DialogDescription>{t("websiteDescription")}</DialogDescription>
+          <DialogTitle>
+            {keyed
+              ? t("reconnectKeySite", { handle })
+              : t("reconnectWebsite", { handle })}
+          </DialogTitle>
+          <DialogDescription>
+            {keyed
+              ? t(`keySite.${platform}.description`)
+              : t("websiteDescription")}
+          </DialogDescription>
         </DialogHeader>
-        <WebsiteFields
-          address={`https://${handle}`}
-          onConnected={close}
-          workspaceId={workspaceId}
-        />
+        {keyed ? (
+          <KeySiteFields
+            onConnected={close}
+            platform={platform}
+            publication={platform === "hashnode" ? handle : ""}
+            workspaceId={workspaceId}
+          />
+        ) : (
+          <WebsiteFields
+            address={`https://${handle}`}
+            onConnected={close}
+            workspaceId={workspaceId}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
