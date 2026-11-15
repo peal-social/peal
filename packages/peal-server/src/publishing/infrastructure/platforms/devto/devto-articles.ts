@@ -223,7 +223,7 @@ const contentOf = (
   const { content } = article;
 
   return {
-    body_markdown: articleMarkdown(content.body, addresses),
+    body_markdown: articleMarkdown(content.body, addresses, "forem"),
     description: Option.getOrElse(content.excerpt, () => ""),
     main_image: Option.getOrNull(
       content.coverMediaId.pipe(

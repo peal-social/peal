@@ -77,6 +77,50 @@ export interface FakeDevTo {
   readonly requests: () => readonly FakeDevToRequest[];
 }
 
+/** What a reader of DEV sees of an article's Markdown, and whether Liquid ran. */
+export interface ForemReading {
+  /** Some of the text made a Liquid tag or variable: an embed, or text lost. */
+  readonly liveLiquid: boolean;
+  readonly text: string;
+}
+
+// Redcarpet un-escapes these alone (`char_escape`); before any other
+// character the backslash stays, as text.
+const redcarpetEscapes = /\\(?<escaped>[\\`*_{}[\]()#+\-.!:|&<>^~=])/gu;
+
+/**
+ * An article's Markdown as Forem renders it, outside code (forem/forem
+ * `MarkdownProcessor::Parser#finalize`): Redcarpet un-escapes what it
+ * knows, the sanitiser decodes entities, then Liquid reads `{{` and `{%`;
+ * Liquid's own text `{{ '{' }}` is a brace. No Markdown syntax is kept:
+ * only the text a reader would see, with its line breaks.
+ */
+export const readAsForem = (markdown: string): ForemReading => {
+  const prose = markdown.replaceAll(/```[\s\S]*?```|`[^`]*`/gu, "");
+
+  const decoded = prose
+    .replaceAll(redcarpetEscapes, "$<escaped>")
+    .replaceAll("&#123;", "{")
+    .replaceAll("&#125;", "}")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&amp;", "&");
+
+  let liveLiquid = false;
+
+  const text = decoded.replaceAll(/\{\{ '\{' \}\}|\{\{|\{%/gu, (token) => {
+    if (token === "{{ '{' }}") {
+      return "{";
+    }
+
+    liveLiquid = true;
+
+    return token;
+  });
+
+  return { liveLiquid, text };
+};
+
 /** A writer on DEV, whose key is synthetic. */
 export const gardener: FakeDevToUser = {
   id: 4242,

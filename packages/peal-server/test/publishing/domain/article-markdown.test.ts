@@ -190,3 +190,56 @@ describe("an article's body as Markdown", () => {
     expect(written).toBe("one\\\ntwo\n\n- outer\n\n  - inner");
   });
 });
+
+const forem = (...content: Written[]) =>
+  articleMarkdown(body(...content), none, "forem");
+
+describe("an article's body as DEV's Markdown", () => {
+  it("writes each brace a member typed as Liquid's own text, never a tag", () => {
+    expect(
+      forem(paragraph(text("a {{ b }} {% embed https://e.example %} c")))
+    ).toBe(
+      "a {{ '{' }}{{ '{' }} b }} {{ '{' }}% embed https://e\\.example %} c"
+    );
+  });
+
+  it("leaves a dollar alone, and breaks a line with two spaces", () => {
+    expect(
+      forem(paragraph(text("It costs $5"), { type: "hardBreak" }, text("then")))
+    ).toBe("It costs $5  \nthen");
+  });
+
+  it("mentions nobody: an at sign is followed by a word joiner", () => {
+    expect(forem(paragraph(text("thanks @ben and a@b")))).toBe(
+      "thanks @⁠ben and a@⁠b"
+    );
+  });
+});
+
+describe("Markdown that would show its syntax", () => {
+  it("starts no code block from the spaces a paragraph begins with", () => {
+    expect(articleMarkdown(body(paragraph(text("    indented"))), none)).toBe(
+      "indented"
+    );
+  });
+
+  it("closes a mark that ends in punctuation before a letter, as HTML", () => {
+    expect(
+      articleMarkdown(
+        body(paragraph(text("Note:", [{ type: "bold" }]), text("text"))),
+        none
+      )
+    ).toBe("<strong>Note:</strong>text");
+  });
+
+  it("keeps two lists in a row apart", () => {
+    const list = {
+      content: [{ content: [paragraph(text("one"))], type: "listItem" }],
+      type: "bulletList",
+    };
+
+    expect(articleMarkdown(body(list, list), none)).toBe(
+      "- one\n\n<!-- -->\n\n- one"
+    );
+  });
+});

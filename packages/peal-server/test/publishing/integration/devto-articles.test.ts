@@ -9,6 +9,7 @@ import { TestClock } from "effect/testing";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { Articles } from "#publishing/application/articles.ts";
+import { readAsForem } from "#test/channels/fakes/fake-devto.ts";
 import { freshWorkspace } from "#test/channels/support.ts";
 import { coverImage } from "#test/publishing/article-server.ts";
 import {
@@ -57,6 +58,47 @@ const sentFields = (body: Buffer) =>
   Schema.decodeUnknownSync(SentSchema)(body.toString()).article;
 
 describe("an article on DEV", () => {
+  it.effect(
+    "reads on DEV as typed: no Liquid made of braces, no stray backslash",
+    () =>
+      onArticles(
+        Effect.gen(function* asTyped() {
+          const { devto, sent: article } = yield* sentToDevTo(
+            {},
+            {
+              body: {
+                content: [
+                  {
+                    content: [
+                      {
+                        text: "Use {{ secrets.TOKEN }} and {% embed https://e.example %} for $5",
+                        type: "text",
+                      },
+                      { type: "hardBreak" },
+                      { text: "then {% endraw %} {", type: "text" },
+                    ],
+                    type: "paragraph",
+                  },
+                ],
+                type: "doc",
+              },
+              coverMediaId: Option.none(),
+            }
+          );
+
+          assert.strictEqual(stateOf(article), "published");
+
+          const reading = readAsForem(devto.articles()[0]?.body_markdown ?? "");
+
+          assert.isFalse(reading.liveLiquid);
+          assert.strictEqual(
+            reading.text,
+            "Use {{ secrets.TOKEN }} and {% embed https://e.example %} for $5  \nthen {% endraw %} {"
+          );
+        })
+      )
+  );
+
   it.effect("goes once: its files, then the article in Markdown", () =>
     onArticles(
       Effect.gen(function* sent() {
