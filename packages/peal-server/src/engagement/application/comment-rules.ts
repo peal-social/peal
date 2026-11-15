@@ -49,6 +49,7 @@ import type { Platform } from "#shared/domain/platform.ts";
 import { CommentRuleNotFound } from "./comment-rule-not-found.ts";
 import { CommentRuleNotPossible } from "./comment-rule-not-possible.ts";
 import { EngagementReplies } from "./engagement-replies.ts";
+import { CommentRuleNotices } from "./ports/comment-rule-notices.ts";
 import { CommentRuleStore } from "./ports/comment-rule-store.ts";
 import type { MatchOutcome, RuleMatch } from "./ports/comment-rule-store.ts";
 import { EngagementChannels } from "./ports/engagement-channels.ts";
@@ -264,6 +265,7 @@ export class CommentRules extends Context.Service<
       const limits = yield* ReplyLimits;
       const starters = yield* RuleStarters;
       const replies = yield* EngagementReplies;
+      const ruleNotices = yield* CommentRuleNotices;
       const inbox = yield* CurrentInboxPlatforms;
       const ids = yield* Ids;
       const { transaction } = yield* TransactionRunner;
@@ -568,8 +570,29 @@ export class CommentRules extends Context.Service<
           starter._tag === "gone" ||
           !can(starter.actor, "engagement:reply")
         ) {
-          yield* store.update(endCommentRule(rule, "starterGone", now));
-          tally.ended += 1;
+          // Under the rule's lock: a member's change or stop meanwhile
+          // wins, and the end is told once, with it.
+          const ended = yield* transaction(
+            Effect.gen(function* end() {
+              const locked = yield* store.lock(rule.workspaceId, rule.id);
+
+              if (
+                Option.isNone(locked) ||
+                locked.value.status._tag !== "active"
+              ) {
+                return false;
+              }
+
+              yield* store.update(
+                endCommentRule(locked.value, "starterGone", now)
+              );
+              yield* ruleNotices.stopped(locked.value, "starterGone");
+
+              return true;
+            })
+          );
+
+          tally.ended += ended ? 1 : 0;
 
           return tally;
         }

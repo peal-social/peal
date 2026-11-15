@@ -6,6 +6,7 @@ import { SqlClient } from "effect/sql";
 import { CommentRules } from "#engagement/application/comment-rules.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import { EngagementReplies } from "#engagement/application/engagement-replies.ts";
+import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { CommentRuleStore } from "#engagement/application/ports/comment-rule-store.ts";
 import { EngagementChannels } from "#engagement/application/ports/engagement-channels.ts";
 import { EngagementOutcomes } from "#engagement/application/ports/engagement-outcomes.ts";
@@ -72,6 +73,20 @@ const FakeFollowedPosts = Layer.succeed(
   })
 );
 
+// The rules told stopped, with why.
+const stoppedRules = Ref.makeUnsafe<readonly (readonly [string, string])[]>([]);
+
+const RecordedRuleNotices = Layer.succeed(
+  CommentRuleNotices,
+  CommentRuleNotices.of({
+    stopped: (rule, reason) =>
+      Ref.update(stoppedRules, (told) => [...told, [rule.id, reason] as const]),
+  })
+);
+
+// The workspaces whose rules' starters are gone, as a test says.
+const startersGone = Ref.makeUnsafe<ReadonlySet<WorkspaceId>>(new Set());
+
 // The replies' jobs started: a reply is journalled, never sent here.
 const started = Ref.makeUnsafe<readonly string[]>([]);
 
@@ -117,7 +132,9 @@ const FailingForOutage = Layer.effect(
 const rulesTestWith = <E, R>(store: Layer.Layer<CommentRuleStore, E, R>) =>
   CommentRules.layer.pipe(
     Layer.provideMerge(EngagementReplies.layer),
-    Layer.provideMerge(DrizzleEngagementRecords),
+    Layer.provideMerge(
+      DrizzleEngagementRecords.pipe(Layer.provide(RecordedRuleNotices))
+    ),
     Layer.provideMerge(
       Layer.mergeAll(
         store,
@@ -143,13 +160,23 @@ const rulesTestWith = <E, R>(store: Layer.Layer<CommentRuleStore, E, R>) =>
           RuleStarters,
           RuleStarters.of({
             of: (rule) =>
-              Effect.succeed({
-                _tag: "acting",
-                actor: actorIn(rule.workspaceId, permissionsFor("editor")),
-              }),
+              Ref.get(startersGone).pipe(
+                Effect.map((gone) =>
+                  gone.has(rule.workspaceId)
+                    ? ({ _tag: "gone" } as const)
+                    : ({
+                        _tag: "acting",
+                        actor: actorIn(
+                          rule.workspaceId,
+                          permissionsFor("editor")
+                        ),
+                      } as const)
+                )
+              ),
           })
         ),
         UnreadComments,
+        RecordedRuleNotices,
         MeteredUsage.layerUnmetered
       )
     ),
@@ -567,6 +594,20 @@ describe("comment rules", () => {
           ended.rule.status._tag === "ended" ? ended.rule.status.reason : null,
           "channelGone"
         );
+
+        // Told once, with why: a channel gone again ends nothing more.
+        yield* EngagementRecords.use((records) =>
+          records.channelGone(
+            thread.channelId,
+            "mastodon",
+            DateTime.nowUnsafe()
+          )
+        );
+
+        assert.deepStrictEqual(
+          (yield* Ref.get(stoppedRules)).filter(([id]) => id === rule.rule.id),
+          [[rule.rule.id, "channelGone"]]
+        );
       }).pipe(Effect.ensuring(forget(workspaceId)));
     }).pipe(Effect.provide(RulesTest))
   );
@@ -782,5 +823,41 @@ describe("comment rules", () => {
           assert.strictEqual((yield* Fiber.join(run)).replied, 1);
         }).pipe(Effect.ensuring(forget(workspaceId)));
       }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live("end a rule whose starter is gone, and tell it once", () =>
+    Effect.gen(function* starterGone() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const thread = yield* threadOn(workspaceId, "mastodon");
+        const rules = yield* CommentRules;
+
+        const rule = yield* rules.start(actorIn(workspaceId), {
+          keywords: ["price"],
+          reply: "On our site.",
+          scope: { _tag: "channel", channelId: thread.channelId },
+        });
+
+        yield* Ref.update(
+          startersGone,
+          (gone) => new Set([...gone, workspaceId])
+        );
+
+        assert.strictEqual((yield* rules.runDue).ended, 1);
+        yield* rules.runDue;
+
+        const ended = yield* rules.get(actorIn(workspaceId), rule.rule.id);
+
+        assert.deepStrictEqual(
+          ended.rule.status._tag === "ended" ? ended.rule.status.reason : null,
+          "starterGone"
+        );
+        assert.deepStrictEqual(
+          (yield* Ref.get(stoppedRules)).filter(([id]) => id === rule.rule.id),
+          [[rule.rule.id, "starterGone"]]
+        );
+      }).pipe(Effect.ensuring(forget(workspaceId)));
+    }).pipe(Effect.provide(RulesTest))
   );
 });

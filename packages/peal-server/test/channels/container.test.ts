@@ -17,6 +17,7 @@ import { ChannelsLive } from "#channels/container.ts";
 import { platforms } from "#channels/domain/platform.ts";
 import { platformRegistrations } from "#channels/infrastructure/platforms/platform-addresses.ts";
 import type { PlatformRegistration } from "#channels/infrastructure/platforms/platform-addresses.ts";
+import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { DrizzleEngagementRecords } from "#engagement/infrastructure/drizzle-engagement-records.ts";
 import { Notify } from "#notifications/application/notify.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
@@ -65,6 +66,7 @@ const Neighbours = Layer.mergeAll(
   DrizzleAnalyticsRecords.pipe(Layer.provide(DatabaseTest)),
   DrizzleEngagementRecords.pipe(
     Layer.provide(MeteredUsage.layerUnmetered),
+    Layer.provide(CommentRuleNotices.none),
     Layer.provide(DatabaseTest)
   )
 );

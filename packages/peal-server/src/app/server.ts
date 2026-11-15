@@ -297,9 +297,10 @@ const MetersContextLive = BillingMetersLive.pipe(
 
 // What engagement keeps that other contexts erase or end: a channel gone
 // or a workspace erased gives back the outbound messages of what never
-// set out, on the meters.
+// set out, on the meters, and a channel gone tells the comment rules it
+// ended through the notices.
 const EngagementRecordsContextLive = EngagementRecordsLive.pipe(
-  Layer.provide(MetersContextLive)
+  Layer.provide(Layer.merge(MetersContextLive, NoticesContextLive))
 );
 
 // The channels context, over those, which sends notices and webhook

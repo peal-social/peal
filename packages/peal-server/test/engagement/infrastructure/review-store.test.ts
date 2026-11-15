@@ -3,6 +3,7 @@ import { DateTime, Effect, Layer, Option, Result } from "effect";
 import { SqlClient } from "effect/sql";
 
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
+import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { ReviewStore } from "#engagement/application/ports/review-store.ts";
 import { ReviewIdSchema } from "#engagement/domain/review-id.ts";
 import { ReviewReplyIdSchema } from "#engagement/domain/review-reply-id.ts";
@@ -37,7 +38,10 @@ import { reviewReading } from "#test/engagement/support.ts";
 
 const StoreTest = Layer.mergeAll(
   DrizzleReviewStore,
-  DrizzleEngagementRecords.pipe(Layer.provide(MeteredUsage.layerUnmetered))
+  DrizzleEngagementRecords.pipe(
+    Layer.provide(MeteredUsage.layerUnmetered),
+    Layer.provide(CommentRuleNotices.none)
+  )
 ).pipe(Layer.provideMerge(DatabaseTest));
 
 const utc = (iso: string) => DateTime.makeUnsafe(iso);
