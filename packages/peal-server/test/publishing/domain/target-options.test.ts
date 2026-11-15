@@ -81,6 +81,8 @@ describe("the platforms that take options", () => {
       "youtube",
       "pinterest",
       "googleBusiness",
+      "discord",
+      "telegram",
     ]);
     expect(takesOptions("facebook")).toBeTruthy();
     expect(noOptionsOn("instagram")).toStrictEqual(

@@ -16,12 +16,31 @@ export const PlatformSchema = Schema.Literals([
   "youtube",
   "pinterest",
   "googleBusiness",
+  "discord",
+  "telegram",
 ]).annotate({
   description: "A social network a channel connects to.",
   identifier: "Platform",
 });
 
 export type Platform = typeof PlatformSchema.Type;
+
+/**
+ * The chats a channel posts to, connected with a secret the member pastes
+ * (`connectChat`) rather than a sign-in: `discord`, a Discord channel by
+ * its webhook's address; `telegram`, a Telegram channel or group by the
+ * member's own bot and the chat. The server's list is the source; a test
+ * keeps the two equal.
+ */
+export const ChatPlatformSchema = Schema.Literals([
+  "discord",
+  "telegram",
+]).annotate({
+  description: "A chat a channel posts to, connected with a secret.",
+  identifier: "ChatPlatform",
+});
+
+export type ChatPlatform = typeof ChatPlatformSchema.Type;
 
 /**
  * The websites a channel can publish articles to: `wordpress`, a WordPress

@@ -322,6 +322,35 @@ export const optionFields = {
       name: "disableQuotes",
     },
   ],
+  discord: [
+    {
+      initial: false,
+      kind: "toggle",
+      label: "discord.mentions",
+      hint: "discord.mentionsHint",
+      name: "mentions",
+    },
+    {
+      initial: false,
+      kind: "toggle",
+      label: "discord.silent",
+      name: "silent",
+    },
+    {
+      initial: false,
+      kind: "toggle",
+      label: "discord.suppressEmbeds",
+      name: "suppressEmbeds",
+    },
+    {
+      hint: "discord.threadNameHint",
+      invalid: "discord.threadNameInvalid",
+      kind: "text",
+      label: "discord.threadName",
+      maxLength: 100,
+      name: "threadName",
+    },
+  ],
   facebook: [
     {
       // A feed post, left out, is the first choice (`none`).
@@ -672,6 +701,22 @@ export const optionFields = {
       kind: "text",
       label: "pinterest.dominantColor",
       name: "dominantColor",
+    },
+  ],
+  telegram: [
+    {
+      hint: "telegram.linkPreviewHint",
+      initial: true,
+      kind: "toggle",
+      label: "telegram.linkPreview",
+      name: "linkPreview",
+    },
+    {
+      hint: "telegram.silentHint",
+      initial: false,
+      kind: "toggle",
+      label: "telegram.silent",
+      name: "silent",
     },
   ],
   threads: [

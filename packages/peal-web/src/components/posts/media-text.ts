@@ -49,9 +49,13 @@ export const useMediaProblemText = () => {
           kind,
           position,
         }),
+      mediaTotalTooLarge: ({ maximum }) =>
+        t("problem.mediaTotalTooLarge", { maximum: size(maximum) }),
       mixedMedia: () => t("problem.mixedMedia"),
       sideOutOfRange: ({ kind, maximum, minimum, position }) =>
         t("problem.sideOutOfRange", { kind, maximum, minimum, position }),
+      sideSumTooLarge: ({ kind, maximum, position }) =>
+        t("problem.sideSumTooLarge", { kind, maximum, position }),
       tooManyMedia: ({ count, maximum }) =>
         t("problem.tooManyMedia", { count, maximum }),
       tooManyPixels: ({ kind, maximum, position }) =>
@@ -78,9 +82,11 @@ type MediaViolationTag =
   | "aspectRatioUnsupported"
   | "mediaTooLarge"
   | "mediaTooSmall"
+  | "mediaTotalTooLarge"
   | "mediaTypeUnsupported"
   | "mixedMedia"
   | "sideOutOfRange"
+  | "sideSumTooLarge"
   | "tooManyPixels"
   | "tooManyVideos"
   | "videoTooLong"
@@ -154,6 +160,16 @@ export const useMediaViolationTexts = (
         minimum: size(violation.minimum),
         size: size(violation.byteSize),
       }),
+    mediaTotalTooLarge: ({
+      channelId,
+      maximum,
+      total,
+    }: Of<"mediaTotalTooLarge">) =>
+      t("violation.mediaTotalTooLarge", {
+        channel: channelName(channelId),
+        maximum: size(maximum),
+        size: size(total),
+      }),
     mediaTypeUnsupported: (violation: Of<"mediaTypeUnsupported">) =>
       t("violation.mediaTypeUnsupported", {
         ...named(violation),
@@ -167,6 +183,13 @@ export const useMediaViolationTexts = (
         height: violation.height,
         maximum: violation.maximum,
         minimum: violation.minimum,
+        width: violation.width,
+      }),
+    sideSumTooLarge: (violation: Of<"sideSumTooLarge">) =>
+      t("violation.sideSumTooLarge", {
+        ...named(violation),
+        height: violation.height,
+        maximum: violation.maximum,
         width: violation.width,
       }),
     tooManyPixels: (violation: Of<"tooManyPixels">) =>

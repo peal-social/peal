@@ -51,6 +51,8 @@ describe(shortenablePlatforms, () => {
       "youtube",
       "pinterest",
       "googleBusiness",
+      "discord",
+      "telegram",
     ]);
   });
 });

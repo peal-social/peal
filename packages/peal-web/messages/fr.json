@@ -1560,6 +1560,21 @@
         "videoTitle": "Titre de la vidéo",
         "videoTitleHint": "Pour une publication avec une vidéo : une ligne, de 255 caractères au plus.",
         "videoTitleInvalid": "Un titre tient sur une ligne, en 255 caractères au plus, pour une publication avec une vidéo."
+      },
+      "discord": {
+        "mentions": "Notifier les personnes et les rôles mentionnés",
+        "mentionsHint": "Désactivé, une mention de @everyone, d’un rôle ou d’une personne s’affiche dans le texte mais ne notifie personne.",
+        "silent": "Envoyer sans notification",
+        "suppressEmbeds": "N’afficher aucun aperçu de ses liens",
+        "threadName": "Titre du post de forum",
+        "threadNameHint": "Nécessaire sur un salon forum ou média, où la première partie ouvre un post de forum de ce titre. Tout autre salon le refuse.",
+        "threadNameInvalid": "Une ligne de texte, pas seulement des espaces."
+      },
+      "telegram": {
+        "linkPreview": "Afficher l’aperçu de son premier lien",
+        "linkPreviewHint": "Sur une partie sans image ni vidéo.",
+        "silent": "Envoyer sans son",
+        "silentHint": "Les membres reçoivent la notification sans son."
       }
     },
     "Formats": {
@@ -2028,7 +2043,9 @@
       "aspectRatioUnsupported": "{kind, select, image {Image {position}} video {Vidéo {position}} other {Média {position}}} : proportions non acceptées",
       "altTextTooLong": "{kind, select, image {Image {position}} video {Vidéo {position}} other {Média {position}}} : texte alternatif de plus de {maximum, number} caractères",
       "missingAltText": "{count, plural, one {# sans texte alternatif} other {# sans texte alternatif}}",
-      "mediaTooSmall": "{kind, select, image {Image {position}} video {Vidéo {position}} other {Média {position}}} : moins de {minimum}"
+      "mediaTooSmall": "{kind, select, image {Image {position}} video {Vidéo {position}} other {Média {position}}} : moins de {minimum}",
+      "sideSumTooLarge": "{kind, select, image {Image {position}} video {Vidéo {position}} other {Média {position}}} : largeur et hauteur de plus de {maximum, number} pixels ensemble",
+      "mediaTotalTooLarge": "Fichiers de plus de {maximum} ensemble"
     },
     "violation": {
       "tooManyVideos": "{channel} : {count} vidéos, {maximum} au plus.",
@@ -2041,7 +2058,9 @@
       "sideOutOfRange": "{channel} : {kind, select, image {l’image {position}} video {la vidéo {position}} other {une image ou une vidéo}} fait {width} × {height}, mais chaque côté doit faire de {minimum, number} à {maximum, number} pixels.",
       "aspectRatioUnsupported": "{channel} : {kind, select, image {l’image {position}} video {la vidéo {position}} other {une image ou une vidéo}} fait {width} × {height} ; ce canal accepte une largeur de {minimum} à {maximum} fois la hauteur.",
       "altTextTooLong": "{channel} : le texte alternatif de {kind, select, image {l’image {position}} video {la vidéo {position}} other {une image ou une vidéo}} a {length, number} caractères, {maximum, number} au plus.",
-      "mediaTooSmall": "{channel} : {kind, select, image {l’image {position}} video {la vidéo {position}} other {une image ou une vidéo}} pèse {size}, {minimum} au moins."
+      "mediaTooSmall": "{channel} : {kind, select, image {l’image {position}} video {la vidéo {position}} other {une image ou une vidéo}} pèse {size}, {minimum} au moins.",
+      "sideSumTooLarge": "{channel} : {kind, select, image {l’image {position}} video {la vidéo {position}} other {une image ou une vidéo}} fait {width} × {height}, mais largeur et hauteur doivent faire {maximum, number} pixels au plus ensemble.",
+      "mediaTotalTooLarge": "{channel} : les fichiers pèsent {size} ensemble, {maximum} au plus."
     },
     "calendar": "{count, plural, one {Avec # image ou vidéo} other {Avec # images ou vidéos}}"
   },

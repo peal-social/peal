@@ -209,6 +209,8 @@ const brokenRule = (violation: ContentViolation): string =>
       "the platform publishes nothing without an image or a video",
     mediaTooLarge: ({ byteSize, maximum }) =>
       `it weighs ${size(byteSize)}, and the platform takes ${size(maximum)}`,
+    mediaTotalTooLarge: ({ maximum, total }) =>
+      `the files weigh ${size(total)} together, and the platform takes ${size(maximum)} in one post`,
     mediaTooSmall: ({ byteSize, minimum }) =>
       `it weighs ${String(byteSize)} bytes, and the platform takes ${String(minimum)} at least`,
     mediaTypeUnsupported: ({ contentType }) =>
@@ -249,6 +251,8 @@ const brokenRule = (violation: ContentViolation): string =>
     pollNotSupported: () => "Peal sends no poll to this platform",
     pollWithMedia: () =>
       "the platform never takes a poll and images or videos in one post",
+    sideSumTooLarge: ({ height, maximum, width }) =>
+      `it is ${String(width)}×${String(height)}, and the platform takes ${String(maximum)} pixels of width and height together`,
     sideOutOfRange: ({ height, maximum, minimum, width }) =>
       `it is ${String(width)}×${String(height)}, and the platform takes sides from ${String(minimum)} to ${String(maximum)} pixels`,
     textTooLong: ({ length, maximum, unit }) =>

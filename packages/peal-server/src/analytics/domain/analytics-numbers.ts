@@ -38,12 +38,14 @@ const basics = ["likes", "reposts", "replies"] as const;
  */
 export const postCounts: Readonly<Record<Platform, readonly PostCount[]>> = {
   bluesky: [...basics, "quotes"],
+  discord: [],
   facebook: basics,
   googleBusiness: [],
   instagram: [...basics, "impressions"],
   linkedin: [...basics, "impressions", "clicks", "reach"],
   mastodon: [...basics, "quotes"],
   pinterest: [...basics, "impressions"],
+  telegram: [],
   threads: [...basics, "quotes", "impressions"],
   tiktok: [...basics, "impressions"],
   x: [...basics, "quotes", "impressions", "saves"],
@@ -59,12 +61,14 @@ export const accountNumbers: Readonly<
   Record<Platform, readonly AccountNumber[]>
 > = {
   bluesky: ["followers", "following", "posts"],
+  discord: [],
   facebook: ["followers"],
   googleBusiness: [],
   instagram: ["followers", "following", "posts"],
   linkedin: ["followers", "views", "reach"],
   mastodon: ["followers", "following", "posts"],
   pinterest: ["followers", "following", "posts", "views"],
+  telegram: [],
   threads: ["followers"],
   tiktok: ["followers", "following", "posts"],
   x: ["followers", "following", "posts"],

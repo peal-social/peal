@@ -1560,6 +1560,21 @@
         "videoTitle": "Video title",
         "videoTitleHint": "For a post with a video: one line, 255 characters at most.",
         "videoTitleInvalid": "A title is one line, 255 characters at most, for a post with a video."
+      },
+      "discord": {
+        "mentions": "Notify the people and roles it mentions",
+        "mentionsHint": "Off, a mention of @everyone, a role or a person shows in the text but notifies nobody.",
+        "silent": "Send without a notification",
+        "suppressEmbeds": "Show no preview of its links",
+        "threadName": "Forum post title",
+        "threadNameHint": "Needed on a forum or media channel, where the first part opens a forum post of this title. Any other channel refuses it.",
+        "threadNameInvalid": "One line of text, not only spaces."
+      },
+      "telegram": {
+        "linkPreview": "Show a preview of its first link",
+        "linkPreviewHint": "On a part without images or videos.",
+        "silent": "Send without sound",
+        "silentHint": "Members get the notification with no sound."
       }
     },
     "Formats": {
@@ -2028,7 +2043,9 @@
       "aspectRatioUnsupported": "{kind, select, image {Image {position}} video {Video {position}} other {Media {position}}}: shape not taken",
       "altTextTooLong": "{kind, select, image {Image {position}} video {Video {position}} other {Media {position}}}: alt text over {maximum, number} characters",
       "missingAltText": "{count, plural, one {# without alt text} other {# without alt text}}",
-      "mediaTooSmall": "{kind, select, image {Image {position}} video {Video {position}} other {Media {position}}}: under {minimum}"
+      "mediaTooSmall": "{kind, select, image {Image {position}} video {Video {position}} other {Media {position}}}: under {minimum}",
+      "sideSumTooLarge": "{kind, select, image {Image {position}} video {Video {position}} other {Media {position}}}: width and height over {maximum, number} pixels together",
+      "mediaTotalTooLarge": "Files over {maximum} together"
     },
     "violation": {
       "tooManyVideos": "{channel}: {count} videos, at most {maximum}.",
@@ -2041,7 +2058,9 @@
       "sideOutOfRange": "{channel}: {kind, select, image {image {position}} video {video {position}} other {an image or a video}} is {width} × {height}, but each side must be {minimum, number} to {maximum, number} pixels.",
       "aspectRatioUnsupported": "{channel}: {kind, select, image {image {position}} video {video {position}} other {an image or a video}} is {width} × {height}; it takes a width from {minimum} to {maximum} times the height.",
       "altTextTooLong": "{channel}: the alt text of {kind, select, image {image {position}} video {video {position}} other {an image or a video}} has {length, number} characters, at most {maximum, number}.",
-      "mediaTooSmall": "{channel}: {kind, select, image {image {position}} video {video {position}} other {an image or a video}} weighs {size}, at least {minimum}."
+      "mediaTooSmall": "{channel}: {kind, select, image {image {position}} video {video {position}} other {an image or a video}} weighs {size}, at least {minimum}.",
+      "sideSumTooLarge": "{channel}: {kind, select, image {image {position}} video {video {position}} other {an image or a video}} is {width} × {height}, but width and height must be {maximum, number} pixels at most together.",
+      "mediaTotalTooLarge": "{channel}: the files weigh {size} together, at most {maximum}."
     },
     "calendar": "{count, plural, one {With # image or video} other {With # images or videos}}"
   },

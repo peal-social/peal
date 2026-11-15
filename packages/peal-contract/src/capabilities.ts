@@ -43,6 +43,10 @@ export const TextCapabilitiesSchema = Schema.Struct({
   // Characters refused anywhere in the text.
   forbiddenCharacters: Schema.Array(Schema.String),
   limits: Schema.Array(TextLimitSchema),
+  // The limits on a part's text when the part shows media, in place of
+  // `limits` (a caption), the last one being Peal's own; left out where
+  // `limits` apply with media too.
+  limitsWithMedia: Schema.optionalKey(Schema.Array(TextLimitSchema)),
   maxHashtags: Schema.NullOr(Schema.Int),
   // Different links: the same link twice counts once.
   maxLinks: Schema.NullOr(Schema.Int),
@@ -66,6 +70,9 @@ export const MediaFormatSchema = Schema.Struct({
   maxPixels: Schema.NullOr(Schema.Int),
   // Each of width and height, in pixels.
   maxSide: Schema.NullOr(Schema.Int),
+  // Width plus height, in pixels; left out where the platform has no such
+  // limit.
+  maxSideSum: Schema.optionalKey(Schema.Int),
   minAspectRatio: Schema.NullOr(Schema.Finite),
   minByteSize: Schema.NullOr(ByteCountSchema),
   minDurationMs: Schema.NullOr(Schema.Int),
@@ -89,6 +96,9 @@ export const MediaCapabilitiesSchema = Schema.Struct({
   formats: Schema.NullOr(Schema.Array(MediaFormatSchema)),
   // Images and videos together.
   maxCount: Schema.Int,
+  // The most bytes all of a part's files weigh together; left out where
+  // the platform has no such limit.
+  maxTotalByteSize: Schema.optionalKey(ByteCountSchema),
   maxVideos: Schema.NullOr(Schema.Int),
   // One post can show images and videos together; null when not known.
   mixesKinds: Schema.NullOr(Schema.Boolean),

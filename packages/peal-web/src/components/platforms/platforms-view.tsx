@@ -23,11 +23,13 @@ import type { ReactNode } from "react";
 import type { SimpleIcon } from "simple-icons";
 import {
   siBluesky,
+  siDiscord,
   siFacebook,
   siGoogle,
   siInstagram,
   siMastodon,
   siPinterest,
+  siTelegram,
   siThreads,
   siTiktok,
   siX,
@@ -41,12 +43,14 @@ import type { PlatformRow } from "#platforms/rows.ts";
 // LinkedIn asked to be left out of simple-icons: a lettered tile stands in.
 const marks: Readonly<Record<Platform, SimpleIcon | null>> = {
   bluesky: siBluesky,
+  discord: siDiscord,
   facebook: siFacebook,
   googleBusiness: siGoogle,
   instagram: siInstagram,
   linkedin: null,
   mastodon: siMastodon,
   pinterest: siPinterest,
+  telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,
   x: siX,

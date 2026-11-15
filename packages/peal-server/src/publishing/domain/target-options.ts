@@ -4,6 +4,7 @@ import { platforms } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 import { BlueskyOptions } from "./bluesky-options.ts";
+import { DiscordOptions } from "./discord-options.ts";
 import { FacebookOptions } from "./facebook-options.ts";
 import { describeFields } from "./field-description.ts";
 import type {
@@ -19,6 +20,7 @@ import { MastodonOptions } from "./mastodon-options.ts";
 import type { OptionConstraint } from "./option-constraint.ts";
 import type { OptionProblem } from "./option-problem.ts";
 import { PinterestOptions } from "./pinterest-options.ts";
+import { TelegramOptions } from "./telegram-options.ts";
 import { ThreadsOptions } from "./threads-options.ts";
 import { TikTokOptions } from "./tiktok-options.ts";
 import { XOptions } from "./x-options.ts";
@@ -48,6 +50,8 @@ export const TargetOptionsSchema = Schema.Union([
   XOptions,
   InstagramOptions,
   FacebookOptions,
+  DiscordOptions,
+  TelegramOptions,
 ]);
 
 export type TargetOptions = typeof TargetOptionsSchema.Type;

@@ -81,6 +81,7 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
 
     const registry: Registry = {
       bluesky: { edit: notEditing, remove: yield* blueskyLivePost({ api }) },
+      discord: neither,
       facebook: neither,
       googleBusiness: {
         edit: googleBusinessLiveEdit(google),
@@ -96,6 +97,7 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
         edit: notEditing,
         remove: pinterestLivePost({ api, apiUrl: settings.pinterestApi }),
       },
+      telegram: neither,
       threads: neither,
       tiktok: neither,
       x: {

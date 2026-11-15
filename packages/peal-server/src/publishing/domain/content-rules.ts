@@ -459,7 +459,14 @@ export const violationsOn = (
 
   const counted = countedText(text, options);
 
-  const tooLong = rules.textLimits.flatMap(
+  // A part that shows media carries its text as a caption where the
+  // platform limits captions apart (Telegram).
+  const limits =
+    media > 0 && rules.textLimitsWithMedia !== undefined
+      ? rules.textLimitsWithMedia
+      : rules.textLimits;
+
+  const tooLong = limits.flatMap(
     ({ maximum, unit }): readonly ContentViolation[] => {
       const length = measureText(counted, unit);
 
@@ -541,13 +548,24 @@ const durationViolations = (
 };
 
 const dimensionViolations = (
-  { aspectRatio, maxPixels, sideRange }: FormatLimits,
+  { aspectRatio, maxPixels, maxSideSum, sideRange }: FormatLimits,
   on: MediaOnChannel,
   { height, width }: Dimensions
 ): readonly ContentViolation[] => {
   const ratio = width / height;
 
   return [
+    ...(maxSideSum !== undefined && width + height > maxSideSum
+      ? [
+          {
+            _tag: "sideSumTooLarge" as const,
+            ...on,
+            height,
+            maximum: maxSideSum,
+            width,
+          },
+        ]
+      : []),
     ...(sideRange !== undefined &&
     [width, height].some(
       (side) => side < sideRange.minimum || side > sideRange.maximum
@@ -708,6 +726,8 @@ export const mediaViolationsOn = (
     files.length > fewest &&
     (maxMedia === undefined || content.media.length <= maxMedia);
 
+  const total = files.reduce((sum, file) => sum + file.byteSize, 0);
+
   return [
     ...files.flatMap((file) =>
       fileViolations(rules, channel, file, altTexts.get(file.mediaId) ?? "")
@@ -719,6 +739,16 @@ export const mediaViolationsOn = (
             ...channel,
             count: files.length,
             maximum: fewest,
+          },
+        ]
+      : []),
+    ...(rules.maxTotalByteSize !== undefined && total > rules.maxTotalByteSize
+      ? [
+          {
+            _tag: "mediaTotalTooLarge" as const,
+            ...channel,
+            maximum: rules.maxTotalByteSize,
+            total,
           },
         ]
       : []),

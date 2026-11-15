@@ -50,6 +50,17 @@ export const livePostSupport = {
   // `api/com/atproto/repo/deleteRecord.ts` answers a record already gone
   // as done, without a commit. Posts have no edit call.
   bluesky: { edit: blockedBy("noApi"), unpublish: can },
+  // `DELETE /webhooks/{webhook.id}/{webhook.token}/messages/{message.id}`
+  // ("Returns a 204 No Content response on success") and `PATCH` on the
+  // same address ("Edits a previously-sent webhook message from the same
+  // token"; "To remove or replace files you will have to supply the
+  // attachments field", so an edit that sends none keeps them), each with
+  // `thread_id` for a message in a thread. Read 2026-11-16.
+  // https://docs.discord.com/developers/resources/webhook
+  discord: {
+    edit: blockedBy("unverified"),
+    unpublish: blockedBy("unverified"),
+  },
   // Page posts: `DELETE /{page_post_id}` is documented in the Pages API,
   // and the Graph reference says "Only select developers can perform this
   // operation using the API": whether Peal's app may is not known.
@@ -98,6 +109,19 @@ export const livePostSupport = {
   // `PATCH /v5/pins/{pin_id}` is "currently in beta and not available to
   // all apps" there (v5.28.0): whether Peal's app has it is not known.
   pinterest: { edit: blockedBy("unverified"), unpublish: can },
+  // `deleteMessages` ("A JSON-serialized list of 1-100 identifiers of
+  // messages to delete"), under `deleteMessage`'s rules: "A message can
+  // only be deleted if it was sent less than 48 hours ago", and "Bots
+  // granted can_post_messages permissions can delete outgoing messages in
+  // channels", "Bots can delete outgoing messages in private chats,
+  // groups, and supergroups". `editMessageText` and `editMessageCaption`
+  // replace a text or a caption, with no time limit stated for a bot's
+  // own message. Bot API 10.4, read 2026-11-16.
+  // https://core.telegram.org/bots/api
+  telegram: {
+    edit: blockedBy("unverified"),
+    unpublish: blockedBy("unverified"),
+  },
   // `DELETE /{threads-media-id}` needs `threads_delete`, which Peal does
   // not ask for; Threads documents no edit call.
   // https://developers.facebook.com/docs/threads/posts/delete-posts

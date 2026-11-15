@@ -205,6 +205,8 @@ export interface FormatLimits {
   readonly maxMediaWith?: number;
   /** Width times height. */
   readonly maxPixels?: number;
+  /** Width plus height, in pixels (Telegram's photos). */
+  readonly maxSideSum?: number;
   readonly minByteSize?: number;
   readonly minDurationMs?: number;
   /** Each of width and height, in pixels, both bounds included. */
@@ -223,6 +225,8 @@ export interface MediaRules {
   readonly formats: Readonly<Partial<Record<MediaContentType, FormatLimits>>>;
   /** The longest alt text it keeps for one image or video, in code points. */
   readonly maxAltTextLength?: number;
+  /** The most bytes all of a part's files weigh together (Discord's request). */
+  readonly maxTotalByteSize?: number;
   readonly maxVideos?: number;
   /** One post can show images and videos together. */
   readonly mixesKinds: boolean;
@@ -334,6 +338,11 @@ export interface PlatformRules {
   readonly sendsText?: boolean;
   /** Every limit applies. */
   readonly textLimits: readonly TextLimit[];
+  /**
+   * The limits on a part's text when the part shows media, in place of
+   * `textLimits` (Telegram: a caption). Left out, `textLimits` apply.
+   */
+  readonly textLimitsWithMedia?: readonly TextLimit[];
 }
 
 const mebibyte = 1024 * 1024;
@@ -376,6 +385,17 @@ const threadsVideo: FormatLimits = {
 };
 
 const facebookImage: FormatLimits = { maxByteSize: 10 * mebibyte };
+
+// A Discord file: 20 MiB, the default per file; 25 MiB a message in all.
+const discordFile: FormatLimits = { maxByteSize: 20 * mebibyte };
+
+// A Telegram photo: 10 MB, width and height 10,000 in total, a ratio of
+// 20 at most either way.
+const telegramPhoto: FormatLimits = {
+  aspectRatio: { maximum: 20, minimum: 0.05 },
+  maxByteSize: 10 * mebibyte,
+  maxSideSum: 10_000,
+};
 
 const youtubeVideo: FormatLimits = {
   maxByteSize: 256 * 1024 * mebibyte,
@@ -517,6 +537,27 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
       { maximum: 3000, unit: "utf8Bytes" },
     ],
   },
+  // Text in Discord's markdown; up to 10 files, images and videos together.
+  discord: {
+    followUps: thread,
+    maxMedia: 10,
+    media: {
+      formats: {
+        "image/gif": discordFile,
+        "image/jpeg": discordFile,
+        "image/png": discordFile,
+        "image/webp": discordFile,
+        "video/mp4": discordFile,
+        "video/quicktime": discordFile,
+      },
+      maxAltTextLength: 1024,
+      maxTotalByteSize: 25 * mebibyte,
+      mixesKinds: true,
+      showsAltText: true,
+    },
+    mediaRequired: false,
+    textLimits: [{ maximum: 2000, unit: "utf16Units" }],
+  },
   facebook: {
     followUps: firstComment([{ maximum: 63_206, unit: "codePoints" }]),
     media: {
@@ -643,6 +684,25 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     },
     mediaRequired: true,
     textLimits: [{ maximum: 800, unit: "codePoints" }],
+  },
+  // Plain text; a text with media is a caption, of 1,024 at most. One
+  // file, or an album of 2 to 10 photos and videos; a GIF alone.
+  telegram: {
+    followUps: thread,
+    maxMedia: 10,
+    media: {
+      formats: {
+        "image/gif": { maxByteSize: 50 * mebibyte, maxMediaWith: 1 },
+        "image/jpeg": telegramPhoto,
+        "image/png": telegramPhoto,
+        "video/mp4": { maxByteSize: 50 * mebibyte },
+      },
+      mixesKinds: true,
+      showsAltText: false,
+    },
+    mediaRequired: false,
+    textLimits: [{ maximum: 4096, unit: "utf16Units" }],
+    textLimitsWithMedia: [{ maximum: 1024, unit: "utf16Units" }],
   },
   threads: {
     poll: {
@@ -841,12 +901,14 @@ export const keepsLinksAsWritten = (platform: Platform): boolean =>
  */
 const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   bluesky: ["bsky.app"],
+  discord: [],
   facebook: ["facebook.com", "fb.com", "fb.me", "fb.watch"],
   googleBusiness: [],
   instagram: ["instagram.com"],
   linkedin: ["linkedin.com", "lnkd.in"],
   mastodon: [],
   pinterest: ["pinterest.com", "pin.it"],
+  telegram: [],
   threads: ["threads.net", "threads.com"],
   tiktok: ["tiktok.com"],
   x: ["x.com", "twitter.com"],

@@ -46,18 +46,22 @@ export type FollowUpSupport = "available" | FollowUpBlocker;
  *   `ReblogService`). X's repost is a call X bills of its own, which no meter of
  *   Peal's counts yet: not built. The other platforms have no repost an
  *   app can make of its own post.
+ * - Discord and Telegram: a chat has no repost, and Peal reads no counts
+ *   there, so no rule's threshold is ever met.
  * - LinkedIn forbids both: its API Terms (3.1) refuse using the APIs "to
  *   automate posting on the LinkedIn Services", and its User Agreement
  *   (8.2) bots that "comment on, like, share, or re-share posts".
  */
 export const followUpSupport = {
   bluesky: { comment: "available", repost: "available" },
+  discord: { comment: "noApi", repost: "noApi" },
   facebook: { comment: "notBuilt", repost: "noApi" },
   googleBusiness: { comment: "noApi", repost: "noApi" },
   instagram: { comment: "notBuilt", repost: "noApi" },
   linkedin: { comment: "notAllowed", repost: "notAllowed" },
   mastodon: { comment: "available", repost: "available" },
   pinterest: { comment: "noApi", repost: "noApi" },
+  telegram: { comment: "noApi", repost: "noApi" },
   threads: { comment: "review", repost: "notBuilt" },
   tiktok: { comment: "noApi", repost: "noApi" },
   x: { comment: "available", repost: "notBuilt" },

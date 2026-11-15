@@ -71,12 +71,14 @@ describe(mediaViolationsOn, () => {
 
     expect(withRules.toSorted()).toStrictEqual([
       "bluesky",
+      "discord",
       "facebook",
       "googleBusiness",
       "instagram",
       "linkedin",
       "mastodon",
       "pinterest",
+      "telegram",
       "threads",
       "tiktok",
       "x",

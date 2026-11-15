@@ -683,6 +683,45 @@ export const countedText = (
  * What a post says on a channel that only its platform knows, tagged by
  * `platform`. Platforms without a member here take no options.
  */
+/** The longest name of a Discord forum post, in characters. */
+export const maxDiscordThreadNameLength = 100;
+
+export const DiscordOptionsSchema = Schema.Struct({
+  // Notifies whoever the text mentions: people, roles and `@everyone`.
+  // Left out, the message notifies nobody it mentions.
+  mentions: Schema.optionalKey(Schema.Boolean),
+  platform: Schema.Literal("discord"),
+  // Sends without a notification.
+  silent: Schema.optionalKey(Schema.Boolean),
+  // Shows no embed for the text's links.
+  suppressEmbeds: Schema.optionalKey(Schema.Boolean),
+  // The title of the forum post the first part opens: one line of 1 to
+  // `maxDiscordThreadNameLength` characters. A forum or media channel
+  // needs it; any other channel refuses it.
+  threadName: Schema.optionalKey(OptionTextSchema),
+}).annotate({
+  description:
+    "How a post goes out on a Discord channel, on every part of a thread. Scheduling needs none of them; a forum channel needs a thread name.",
+  identifier: "DiscordOptions",
+});
+
+export type DiscordOptions = typeof DiscordOptionsSchema.Type;
+
+export const TelegramOptionsSchema = Schema.Struct({
+  // False sends a text alone without its link's preview; a part with
+  // media shows none whatever it says. Left out, the preview is shown.
+  linkPreview: Schema.optionalKey(Schema.Boolean),
+  platform: Schema.Literal("telegram"),
+  // Sends with a notification that makes no sound.
+  silent: Schema.optionalKey(Schema.Boolean),
+}).annotate({
+  description:
+    "How a post goes out on a Telegram channel or group, on every part of a thread. Scheduling needs none of them.",
+  identifier: "TelegramOptions",
+});
+
+export type TelegramOptions = typeof TelegramOptionsSchema.Type;
+
 export const TargetOptionsSchema = Schema.Union([
   YouTubeOptionsSchema,
   TikTokOptionsSchema,
@@ -695,6 +734,8 @@ export const TargetOptionsSchema = Schema.Union([
   XOptionsSchema,
   InstagramOptionsSchema,
   FacebookOptionsSchema,
+  DiscordOptionsSchema,
+  TelegramOptionsSchema,
 ]).annotate({
   description:
     "What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.",
