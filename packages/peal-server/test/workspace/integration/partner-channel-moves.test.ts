@@ -308,6 +308,47 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
+      "answers 409 rather than wait long for a workspace another request holds",
+      () =>
+        Effect.gen(function* held() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const { home, owner } = yield* partnerOf("held");
+          const { key } = yield* keyOf(owner, home);
+          const from = yield* customerOf(key, "Held from");
+          const to = yield* customerOf(key, "Held to");
+          const channelId = yield* connectedIn(from.id, "@held@social.example");
+
+          // The workspace it goes to, held as an erasure holds it.
+          const moved = yield* Effect.scoped(
+            Effect.gen(function* holding() {
+              const connection = yield* sql.reserve;
+
+              yield* connection.executeRaw("BEGIN", []);
+              yield* connection.execute(
+                "SELECT id FROM auth.organization WHERE id = $1 FOR UPDATE",
+                [to.id],
+                undefined
+              );
+
+              const reply = yield* app.request(
+                `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+                { body: { toWorkspaceId: to.id }, headers: bearer(key) }
+              );
+
+              yield* connection.executeRaw("ROLLBACK", []);
+
+              return reply;
+            })
+          );
+
+          assert.strictEqual(moved.status, 409);
+          assert.deepInclude(moved.body, { _tag: "WorkspaceBusy" });
+          assert.lengthOf(yield* channelsOf(key, from.id), 1);
+        })
+    );
+
+    it.effect(
       "goes with the workspace it went to when that one is offboarded",
       () =>
         Effect.gen(function* offboarded() {
