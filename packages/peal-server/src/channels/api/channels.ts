@@ -293,6 +293,19 @@ export const ChannelsHandlers = HttpApiBuilder.group(
 
           return toChannelView(channel);
         }),
+      connectSiteWithKey: ({ payload }) =>
+        Effect.gen(function* connectSiteWithKeyHandler() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const channel = yield* connectSite
+            .connectWithKey(actor, {
+              apiKey: Redacted.make(payload.apiKey),
+              platform: payload.platform,
+            })
+            .pipe(Effect.catch(siteFailure));
+
+          return toChannelView(channel);
+        }),
       disable: ({ params }) =>
         Effect.gen(function* disable() {
           const actor = actorOf(yield* CurrentMember);

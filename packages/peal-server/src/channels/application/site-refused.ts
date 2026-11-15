@@ -9,6 +9,7 @@ import { Schema } from "effect";
  *   names an API on another site.
  * - `credentialsRefused`: the site refused the user and the password.
  * - `cannotPublish`: the user may not publish posts or upload files.
+ * - `otherWayIn`: the platform connects another way (by key, by password).
  */
 export class SiteRefused extends Schema.TaggedError<SiteRefused>()(
   "SiteRefused",
@@ -18,6 +19,7 @@ export class SiteRefused extends Schema.TaggedError<SiteRefused>()(
       "addressNotAllowed",
       "credentialsRefused",
       "cannotPublish",
+      "otherWayIn",
     ]),
   }
 ) {}

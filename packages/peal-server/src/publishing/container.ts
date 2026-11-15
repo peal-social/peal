@@ -127,6 +127,7 @@ import { NotifiedFollowUpNotices } from "#publishing/infrastructure/notified-fol
 import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified-publication-outcomes.ts";
 import { NotifiedRecyclingNotices } from "#publishing/infrastructure/notified-recycling-notices.ts";
 import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allowance.ts";
+import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
 import { LivePostClientsLive } from "#publishing/infrastructure/platforms/live-post-clients-live.ts";
 import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platform-clients-live.ts";
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
@@ -157,6 +158,7 @@ import { PublishTargetV1Live } from "#publishing/infrastructure/workflows/publis
 import { SendFollowUpV1Live } from "#publishing/infrastructure/workflows/send-follow-up.ts";
 import { WorkspaceRecyclingActors } from "#publishing/infrastructure/workspace-recycling-actors.ts";
 import { XThreadsLive } from "#publishing/infrastructure/x-threads.ts";
+import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 
 // The use cases over their adapters, asking whatever ApprovalGate they are
@@ -768,11 +770,14 @@ export const PublishingCronsLive = Layer.mergeAll(
   QuotaRetentionCron.pipe(Layer.provide(DrizzlePlatformQuota))
 );
 
-// The websites articles go to: WordPress's, with the tokens the channels
+// The websites articles go to: WordPress's and DEV's, with the tokens the channels
 // context hands out and the files the media context does, over the
 // guarded public client.
 const SitePublisherLive = routedSitePublisher(
-  wordpressSiteAdapter.pipe(Effect.map((wordpress) => ({ wordpress })))
+  Effect.all({
+    devto: devtoSiteAdapter(devtoHosts),
+    wordpress: wordpressSiteAdapter,
+  })
 ).pipe(
   Layer.provide(
     Layer.mergeAll(

@@ -19,6 +19,7 @@ import {
   ChannelPlatformSchema,
   LinkedInConnectionSchema,
   PlatformSchema,
+  KeySitePlatformSchema,
   SitePlatformSchema,
 } from "./platform.ts";
 import type { Platform } from "./platform.ts";
@@ -264,6 +265,19 @@ export const ConnectSiteSchema = Schema.Struct({
 
 export type ConnectSite = typeof ConnectSiteSchema.Type;
 
+/**
+ * A website to connect with a key the member made on it for Peal: on DEV,
+ * an API key from the account's settings (Extensions, "DEV Community API
+ * Keys").
+ */
+export const ConnectSiteWithKeySchema = Schema.Struct({
+  // Kept encrypted, and never shown again.
+  apiKey: Schema.String.check(Schema.isBetweenLength(1, 200)),
+  platform: KeySitePlatformSchema,
+}).annotate({ identifier: "ConnectSiteWithKey" });
+
+export type ConnectSiteWithKey = typeof ConnectSiteWithKeySchema.Type;
+
 // Reconnecting adds no channel, so no plan limit refuses it.
 const reconnectErrors = [
   Forbidden,
@@ -338,6 +352,18 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
         description:
           "Connects a website, to publish articles to it: a WordPress site, by its address, the login name of the user Peal publishes as and an application password made for Peal on that user's profile page. Peal finds the site's REST API, checks the user may publish posts and upload files, and keeps the password encrypted. The site must be on HTTPS at a public address (SiteNotConnected `addressNotAllowed`); one that has no WordPress REST API is `notWordPress`, a refused password `credentialsRefused`, a user who may not publish `cannotPublish`. A site that does not answer, or fails on its side, is PlatformUnreachable. The REST API must be on the same site as the home page (`addressNotAllowed`). A site the workspace has already, at the same home page, is reconnected with the new password, even where its API's address changed. A site counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the site is called. A workspace tries 30 times an hour at most (SiteConnectLimited). Needs channel:connect.",
         summary: "Connect a website",
+      })
+    ),
+    HttpApiEndpoint.post("connectSiteWithKey", "/websites/keys", {
+      error: [...connectErrors, SiteNotConnected, SiteConnectLimited],
+      params: workspace,
+      payload: ConnectSiteWithKeySchema,
+      success: ChannelSchema,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description:
+          "Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions). Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to. A key the platform refuses is SiteNotConnected `credentialsRefused`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.",
+        summary: "Connect a website with a key",
       })
     ),
     HttpApiEndpoint.post("connect", "/connect/:platform", {

@@ -24,14 +24,15 @@ import { MastodonApps } from "#channels/infrastructure/platforms/mastodon/mastod
 import { mastodonAuthorizer } from "#channels/infrastructure/platforms/mastodon/mastodon-authorizer.ts";
 import { pinterestAuthorizer } from "#channels/infrastructure/platforms/pinterest/pinterest-authorizer.ts";
 import { registryOf } from "#channels/infrastructure/platforms/platform-authorizers.ts";
+import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { tiktokAuthorizer } from "#channels/infrastructure/platforms/tiktok/tiktok-authorizer.ts";
-import { WordPressSiteVerifierLive } from "#channels/infrastructure/platforms/wordpress/wordpress-site-verifier.ts";
 import { xAuthorizer } from "#channels/infrastructure/platforms/x/x-authorizer.ts";
 import type { XEndpoints } from "#channels/infrastructure/platforms/x/x-authorizer.ts";
 import { youtubeAuthorizer } from "#channels/infrastructure/platforms/youtube/youtube-authorizer.ts";
 import type { YouTubeEndpoints } from "#channels/infrastructure/platforms/youtube/youtube-authorizer.ts";
 import { SqlChannelLocks } from "#channels/infrastructure/sql-channel-locks.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
+import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
 import type { PinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import type { TikTokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
@@ -338,7 +339,7 @@ export const pinterestAuthorizerOn = (hosts: PinterestHosts) =>
 export const WordPressSitesTest = ConnectSite.layer.pipe(
   Layer.provide(
     Layer.merge(
-      WordPressSiteVerifierLive.pipe(
+      siteVerifiersLive({ devto: devtoHosts }).pipe(
         Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
       ),
       MemorySiteConnectPace

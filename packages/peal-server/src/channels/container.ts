@@ -36,7 +36,7 @@ import { ChannelPlatformsLive } from "#channels/infrastructure/platforms/channel
 import { MetaSignedRequestsLive } from "#channels/infrastructure/platforms/meta/meta-signed-requests.ts";
 import { OAuthClientDocumentsLive } from "#channels/infrastructure/platforms/oauth-client-documents-live.ts";
 import { PlatformAuthorizersLive } from "#channels/infrastructure/platforms/platform-authorizers.ts";
-import { WordPressSiteVerifierLive } from "#channels/infrastructure/platforms/wordpress/wordpress-site-verifier.ts";
+import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { PublicConnectLinkAddresses } from "#channels/infrastructure/public-connect-link-addresses.ts";
 import { PublicDataDeletionLinks } from "#channels/infrastructure/public-data-deletion-links.ts";
 import { RandomConnectLinkTokens } from "#channels/infrastructure/random-connect-link-tokens.ts";
@@ -47,6 +47,7 @@ import {
   webhookChannelNotices,
 } from "#channels/infrastructure/webhook-channel-events.ts";
 import { InboxPlatformsLive } from "#shared/infrastructure/inbox-platforms.ts";
+import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 
 // Who hears of a channel connected or gone: the workspace's webhook
@@ -67,7 +68,7 @@ const PlatformsLive = Layer.mergeAll(
   PlatformAuthorizersLive,
   OAuthClientDocumentsLive,
   MetaSignedRequestsLive,
-  WordPressSiteVerifierLive
+  siteVerifiersLive({ devto: devtoHosts })
 ).pipe(
   Layer.provide(ChannelPlatformsLive),
   Layer.provide(InboxPlatformsLive),

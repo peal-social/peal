@@ -22,19 +22,12 @@ import type {
 } from "./invalid-article-transition.ts";
 import { FailureReasonSchema } from "./post-target-status.ts";
 import { Schedule } from "./schedule.ts";
+import { maxTermLength, siteRules } from "./site-rules.ts";
+import type { SiteRules } from "./site-rules.ts";
 import type { TargetSettlement } from "./target-settlement.ts";
-
-/** The longest title an article takes. */
-export const maxArticleTitleLength = 500;
 
 /** The longest excerpt. */
 export const maxExcerptLength = 1000;
-
-/** The most tags, and the most categories, an article names. */
-export const maxArticleTerms = 20;
-
-/** The longest name of a tag or a category (WordPress keeps 200). */
-export const maxTermLength = 200;
 
 /**
  * Where an article stands:
@@ -112,15 +105,20 @@ export type ArticleViolation = typeof ArticleViolationSchema.Type;
 
 const termViolations = (
   field: "categories" | "tags",
-  names: readonly string[]
+  names: readonly string[],
+  maximum: number,
+  takes: (name: string) => boolean
 ): readonly ArticleViolation[] => [
-  ...(names.length > maxArticleTerms
-    ? [{ _tag: "tooManyTerms", field, maximum: maxArticleTerms } as const]
+  ...(names.length > maximum
+    ? [{ _tag: "tooManyTerms", field, maximum } as const]
     : []),
-  ...(names.some((name) => name.trim() === "" || name.length > maxTermLength)
+  ...(names.some((name) => !takes(name))
     ? [{ _tag: "termInvalid", field } as const]
     : []),
 ];
+
+const takesTerm = (name: string) =>
+  name.trim() !== "" && name.length <= maxTermLength;
 
 /**
  * What would keep the article from going out at `schedule`: checked when
@@ -129,15 +127,17 @@ const termViolations = (
 export const articleViolations = (
   content: ArticleContent,
   schedule: Schedule,
-  now: DateTime.Utc
+  now: DateTime.Utc,
+  // What its site takes; a WordPress site's unless told.
+  rules: SiteRules = siteRules.wordpress
 ): readonly ArticleViolation[] => {
   const title = content.title.trim();
   const excerpt = Option.getOrElse(content.excerpt, () => "");
 
   return [
     ...(title === "" ? [{ _tag: "titleMissing" } as const] : []),
-    ...(content.title.length > maxArticleTitleLength
-      ? [{ _tag: "titleTooLong", maximum: maxArticleTitleLength } as const]
+    ...(content.title.length > rules.maxTitleLength
+      ? [{ _tag: "titleTooLong", maximum: rules.maxTitleLength } as const]
       : []),
     ...(bodyTextLength(content.body) === 0 &&
     bodyMediaOf(content.body).length === 0
@@ -146,8 +146,13 @@ export const articleViolations = (
     ...(excerpt.length > maxExcerptLength
       ? [{ _tag: "excerptTooLong", maximum: maxExcerptLength } as const]
       : []),
-    ...termViolations("tags", content.tags),
-    ...termViolations("categories", content.categories),
+    ...termViolations("tags", content.tags, rules.maxTags, rules.takesTag),
+    ...termViolations(
+      "categories",
+      content.categories,
+      rules.maxCategories,
+      takesTerm
+    ),
     // The site publishes it itself: its time must be ahead.
     ...(content.siteStatus === "future" &&
     !DateTime.isGreaterThan(schedule.at, now)

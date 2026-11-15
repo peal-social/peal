@@ -11,6 +11,7 @@ import { decryptTokens } from "#channels/application/channel-tokens.ts";
 import { ConnectSite } from "#channels/application/connect-site.ts";
 import { SiteRefused } from "#channels/application/site-refused.ts";
 import type {
+  SiteKeySignIn,
   SiteSignIn,
   VerifiedSite,
 } from "#channels/application/site-verifier.ts";
@@ -68,6 +69,21 @@ const answerFor = (
     : Effect.fail(new SiteRefused({ reason: "credentialsRefused" }));
 };
 
+// The account a key opens: `synthetic key` the member's on DEV, any
+// other refused.
+const keyAnswerFor = (
+  signIn: SiteKeySignIn
+): Effect.Effect<VerifiedSite, PlatformUnavailable | SiteRefused> =>
+  Redacted.value(signIn.apiKey).startsWith("synthetic key")
+    ? Effect.succeed({
+        accountId: "4242",
+        avatarUrl: Option.none(),
+        displayName: Option.some("Synthetic Gardener"),
+        handle: "dev.to/synthetic_gardener",
+        scopes: [],
+      })
+    : Effect.fail(new SiteRefused({ reason: "credentialsRefused" }));
+
 // The site as the verifier finds it, for the password `synthetic`; any
 // other is refused, and `down.example` does not answer. Typed with
 // `/plain`, the same site answers at the API root it has without pretty
@@ -78,6 +94,10 @@ const VerifierTest = Layer.succeed(
     verify: (signIn: SiteSignIn) =>
       Ref.update(verified, (count) => count + 1).pipe(
         Effect.andThen(answerFor(signIn))
+      ),
+    verifyKey: (signIn: SiteKeySignIn) =>
+      Ref.update(verified, (count) => count + 1).pipe(
+        Effect.andThen(keyAnswerFor(signIn))
       ),
   })
 );
@@ -369,6 +389,160 @@ layer(ConnectSiteTest)("connecting a website", (it) => {
 
       assert.strictEqual(refused._tag, "PlatformUnavailable");
       assert.lengthOf(yield* repository.list(workspaceId), 0);
+    })
+  );
+});
+
+const keySignIn = (key = "synthetic key one") => ({
+  apiKey: Redacted.make(key),
+  platform: "devto" as const,
+});
+
+layer(ConnectSiteTest)("connecting a website with a key", (it) => {
+  it.effect("adds the account the key opens, the key sealed", () =>
+    Effect.gen(function* added() {
+      const workspaceId = yield* freshWorkspace;
+      const sites = yield* ConnectSite;
+      const repository = yield* ChannelRepository;
+
+      const channel = yield* sites.connectWithKey(
+        manager(workspaceId),
+        keySignIn()
+      );
+
+      assert.strictEqual(channel.platform, "devto");
+      assert.strictEqual(channel.accountId, "4242");
+      assert.strictEqual(channel.handle, "dev.to/synthetic_gardener");
+      assert.deepStrictEqual(channel.token, { _tag: "nonExpiring" });
+
+      const stored = yield* repository.credentials(channel.id);
+
+      assert.isTrue(Option.isSome(stored));
+
+      if (Option.isSome(stored)) {
+        assert.notInclude(stored.value.accessToken, "synthetic");
+
+        const tokens = yield* decryptTokens(stored.value, channel.id);
+
+        assert.strictEqual(
+          Redacted.value(tokens.accessToken),
+          "synthetic key one"
+        );
+      }
+
+      assert.deepStrictEqual((yield* Ref.get(counted)).at(-1), {
+        pooled: 1,
+        workspaceId,
+      });
+    })
+  );
+
+  it.effect("reconnects the account with a new key, adding none", () =>
+    Effect.gen(function* again() {
+      const workspaceId = yield* freshWorkspace;
+      const sites = yield* ConnectSite;
+      const repository = yield* ChannelRepository;
+
+      const first = yield* sites.connectWithKey(
+        manager(workspaceId),
+        keySignIn()
+      );
+
+      const before = (yield* Ref.get(counted)).length;
+
+      const second = yield* sites.connectWithKey(
+        manager(workspaceId),
+        keySignIn("synthetic key two")
+      );
+
+      assert.strictEqual(second.id, first.id);
+      assert.lengthOf(yield* repository.list(workspaceId), 1);
+      assert.lengthOf(yield* Ref.get(counted), before);
+
+      const stored = yield* repository.credentials(first.id);
+
+      if (Option.isSome(stored)) {
+        const tokens = yield* decryptTokens(stored.value, first.id);
+
+        assert.strictEqual(
+          Redacted.value(tokens.accessToken),
+          "synthetic key two"
+        );
+      }
+    })
+  );
+
+  it.effect(
+    "refuses a new account before the platform is called, once the plan is full",
+    () =>
+      Effect.gen(function* full() {
+        const workspaceId = yield* freshWorkspace;
+        const sites = yield* ConnectSite;
+        const repository = yield* ChannelRepository;
+
+        for (const _ of [1, 2]) {
+          const channel = yield* freshChannel(workspaceId);
+
+          yield* repository.insert(channel, syntheticCredentials(channel));
+        }
+
+        const asked = yield* Ref.get(verified);
+
+        const refused = yield* sites
+          .connectWithKey(manager(workspaceId), keySignIn())
+          .pipe(Effect.flip);
+
+        assert.strictEqual(refused._tag, "PlanLimitReached");
+        assert.strictEqual(yield* Ref.get(verified), asked);
+      })
+  );
+
+  it.effect("saves nothing when the platform refuses the key", () =>
+    Effect.gen(function* refusedKey() {
+      const workspaceId = yield* freshWorkspace;
+      const sites = yield* ConnectSite;
+      const repository = yield* ChannelRepository;
+
+      const refused = yield* sites
+        .connectWithKey(manager(workspaceId), keySignIn("wrong"))
+        .pipe(Effect.flip);
+
+      assert.deepStrictEqual(
+        refused,
+        new SiteRefused({ reason: "credentialsRefused" })
+      );
+      assert.lengthOf(yield* repository.list(workspaceId), 0);
+    })
+  );
+
+  it.effect("refuses a password for a platform that takes a key", () =>
+    Effect.gen(function* otherWay() {
+      const workspaceId = yield* freshWorkspace;
+      const sites = yield* ConnectSite;
+      const asked = yield* Ref.get(verified);
+
+      const refused = yield* sites
+        .connect(manager(workspaceId), { ...signIn(), platform: "devto" })
+        .pipe(Effect.flip);
+
+      assert.deepStrictEqual(
+        refused,
+        new SiteRefused({ reason: "otherWayIn" })
+      );
+      assert.strictEqual(yield* Ref.get(verified), asked);
+    })
+  );
+
+  it.effect("needs channel:connect", () =>
+    Effect.gen(function* permission() {
+      const workspaceId = yield* freshWorkspace;
+      const sites = yield* ConnectSite;
+
+      const refused = yield* sites
+        .connectWithKey(actorIn(workspaceId, ["channel:read"]), keySignIn())
+        .pipe(Effect.flip);
+
+      assert.strictEqual(refused._tag, "MissingPermission");
     })
   );
 });

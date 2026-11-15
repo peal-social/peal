@@ -30,7 +30,7 @@ import sharp from "sharp";
 
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
-import { WordPressSiteVerifierLive } from "#channels/infrastructure/platforms/wordpress/wordpress-site-verifier.ts";
+import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
 import { S3MediaStorageLive } from "#media/infrastructure/s3-media-storage.ts";
 import { FacebookOptions } from "#publishing/domain/facebook-options.ts";
@@ -40,6 +40,7 @@ import {
   PostTargetIdSchema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
+import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
 import { ShortLinks } from "#shortlinks/application/short-links.ts";
 import { ShortLinksLive } from "#shortlinks/container.ts";
 import {
@@ -448,7 +449,7 @@ layer(
   Layer.mergeAll(
     capture,
     Layer.succeed(Tracer.Tracer, tracer),
-    WordPressSiteVerifierLive.pipe(
+    siteVerifiersLive({ devto: devtoHosts }).pipe(
       Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
     )
   ),

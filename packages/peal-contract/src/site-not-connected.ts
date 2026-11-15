@@ -12,12 +12,16 @@ import { errorEnvelope } from "./error-envelope.ts";
  *   application password.
  * - `cannotPublish`: the website's user may not publish posts or upload
  *   files, which publishing articles needs.
+ * - `otherWayIn`: the platform connects another way: a WordPress site by
+ *   its address, user and application password (`connectSite`), a
+ *   publishing platform by the member's key (`connectSiteWithKey`).
  */
 export const SiteNotConnectedReasonSchema = Schema.Literals([
   "notWordPress",
   "addressNotAllowed",
   "credentialsRefused",
   "cannotPublish",
+  "otherWayIn",
 ]).annotate({ identifier: "SiteNotConnectedReason" });
 
 export type SiteNotConnectedReason = typeof SiteNotConnectedReasonSchema.Type;

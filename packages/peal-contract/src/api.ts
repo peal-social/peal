@@ -1038,6 +1038,7 @@ export {
   ConnectChannelSchema,
   ConnectOutcomeSchema,
   ConnectSiteSchema,
+  ConnectSiteWithKeySchema,
   isSocialChannel,
   maxSiteAddressLength,
 } from "./channels.ts";
@@ -1056,6 +1057,7 @@ export type {
   ConnectChannel,
   ConnectOutcome,
   ConnectSite,
+  ConnectSiteWithKey,
   SocialChannel,
 } from "./channels.ts";
 
@@ -1306,6 +1308,7 @@ export {
   ChannelConnectionSchema,
   ChannelPlatformSchema,
   InstagramConnectionSchema,
+  KeySitePlatformSchema,
   LinkedInConnectionSchema,
   PlatformSchema,
   SitePlatformSchema,
@@ -1315,6 +1318,7 @@ export type {
   ChannelConnection,
   ChannelPlatform,
   InstagramConnection,
+  KeySitePlatform,
   LinkedInConnection,
   Platform,
   SitePlatform,
