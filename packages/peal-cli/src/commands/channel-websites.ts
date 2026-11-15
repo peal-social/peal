@@ -1,6 +1,6 @@
 import { Console, Effect, Redacted } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
-import { ChannelSchema, SitePlatformSchema } from "peal-contract";
+import { ChannelSchema, KeySitePlatformSchema } from "peal-contract";
 
 import { explain } from "#explain.ts";
 import { jsonFlag, printJson } from "#json.ts";
@@ -17,7 +17,8 @@ export const connectWebsite = Command.make(
       )
     ),
     json: jsonFlag,
-    platform: Flag.Literals("platform", [SitePlatformSchema.literal]).pipe(
+    // Only a WordPress site of its own takes a password.
+    platform: Flag.Literals("platform", ["wordpress"] as const).pipe(
       Flag.withDescription("What the site runs: wordpress."),
       Flag.withDefault("wordpress" as const)
     ),
@@ -60,5 +61,49 @@ export const connectWebsite = Command.make(
 ).pipe(
   Command.withDescription(
     "Connect a WordPress site, to publish articles to it: its address, the user Peal publishes as, and an application password made for Peal on that user's profile page. The password is never an argument: the command asks for it at a terminal, without echo, or reads it from standard input (peal channels connect-website https://blog.example.com --user editor < password.txt). A site counts as one channel. Needs channel:connect."
+  )
+);
+
+/**
+ * peal channels connect-website-key: an account on a publishing platform,
+ * with a key made there for Peal.
+ */
+export const connectWebsiteKey = Command.make(
+  "connect-website-key",
+  {
+    json: jsonFlag,
+    platform: Flag.Literals("platform", KeySitePlatformSchema.literals).pipe(
+      Flag.withDescription("Where the account is: devto (DEV).")
+    ),
+    workspace: workspaceFlag,
+  },
+  Effect.fn("channels.connectWebsiteKey")(
+    function* connectWebsiteKeyCommand(input) {
+      const { client, url, workspace } = yield* inWorkspace(input.workspace);
+
+      // Never an argument: typed without echo, or piped in.
+      const key = yield* readSecret("The API key:");
+
+      const channel = yield* client.channels
+        .connectSiteWithKey({
+          params: { workspaceId: workspace.id },
+          payload: { apiKey: Redacted.value(key), platform: input.platform },
+        })
+        .pipe(Effect.mapError(explain(url)));
+
+      if (input.json) {
+        yield* printJson(ChannelSchema, channel);
+
+        return;
+      }
+
+      yield* Console.log(
+        `Connected ${channel.displayName ?? channel.handle} (${channel.handle}) to ${workspace.name}, as channel ${channel.id}. Its key is kept encrypted and never shown again; revoke it on the platform to cut Peal off.`
+      );
+    }
+  )
+).pipe(
+  Command.withDescription(
+    "Connect an account on a publishing platform, to publish articles to it, with a key made there for Peal: on DEV, an API key from Settings, Extensions. The key is never an argument: the command asks for it at a terminal, without echo, or reads it from standard input (peal channels connect-website-key --platform devto < key.txt). An account counts as one channel. Needs channel:connect."
   )
 );

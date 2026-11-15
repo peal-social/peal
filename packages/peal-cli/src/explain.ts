@@ -919,9 +919,11 @@ const reasonOf =
               cannotPublish:
                 "the user may not publish posts or upload files there: use an Author, an Editor or an Administrator",
               credentialsRefused:
-                "the site refused the user name and the application password: check both, and that the site lets application passwords through (some hosts strip the Authorization header)",
+                "the site refused the user name and the application password, or the key: check them, that a key is the account's and not revoked, and that a WordPress site lets application passwords through (some hosts strip the Authorization header)",
               notWordPress:
                 "the address leads to no WordPress REST API: give the site's home page",
+              otherWayIn:
+                "the platform connects another way: a WordPress site of its own with connect-website, DEV with connect-website-key",
             }[reason]
           }. Nothing was saved.`
         ),

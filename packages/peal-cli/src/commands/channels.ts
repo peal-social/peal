@@ -20,7 +20,10 @@ import type {
 import { capabilities, lookupWith } from "#commands/channel-capabilities.ts";
 import { defaults } from "#commands/channel-defaults.ts";
 import { settings } from "#commands/channel-settings.ts";
-import { connectWebsite } from "#commands/channel-websites.ts";
+import {
+  connectWebsite,
+  connectWebsiteKey,
+} from "#commands/channel-websites.ts";
 import { explain } from "#explain.ts";
 import { jsonFlag, printJson } from "#json.ts";
 import { columns, instant } from "#print.ts";
@@ -325,5 +328,6 @@ export const channels = Command.make("channels").pipe(
     tiktok,
     defaults,
     connectWebsite,
+    connectWebsiteKey,
   ])
 );

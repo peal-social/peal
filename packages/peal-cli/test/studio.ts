@@ -3281,6 +3281,39 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return site;
           }),
+        connectSiteWithKey: ({ params, payload }) =>
+          Effect.gen(function* connectSiteWithKey() {
+            yield* allowed("channel:connect");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            if (payload.apiKey.includes("refused")) {
+              return yield* new SiteNotConnected({
+                reason: "credentialsRefused",
+              });
+            }
+
+            yield* record(
+              studio,
+              `website:key:${payload.platform}:${payload.apiKey}`
+            );
+
+            const site: Channel = {
+              avatarUrl: null,
+              connection: null,
+              displayName: "Synthetic Gardener",
+              handle: "dev.to/synthetic_gardener",
+              id: "0199a000-0000-7000-8000-000000005174",
+              label: null,
+              platform: payload.platform,
+              status: { _tag: "active" },
+              tokenExpiresAt: null,
+            };
+
+            return site;
+          }),
         disable: ({ params }) =>
           changingChannel(studio, params, turnedOff, "disable"),
         disconnect: () => refusing,
