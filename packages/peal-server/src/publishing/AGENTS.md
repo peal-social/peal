@@ -280,6 +280,27 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   took for the article (`publishing.article_files`, `ArticleJournal`) is
   never sent again, across attempts and updates. Only an http or https
   `link` is kept as the permalink.
+- `SitePublisher` is `routedSitePublisher`: it reads the article and
+  the channel's credential once, then calls the `SiteAdapter` of the
+  channel's platform. WordPress's adapter serves `wordpress` and
+  `wordpressCom` (`siteRouteUrl`, `withSiteToken`: WordPress.com's
+  `/wp/v2/sites/{id}/` with a bearer token). DEV's (`devto/`, Forem's API
+  v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a
+  200) take Markdown written by `domain/article-markdown.ts` alone, where
+  a member's text stays text: ASCII punctuation escaped, `& < > { }` as
+  entities (Forem runs Liquid over the HTML), `[` escaped (no link or
+  embed); titles go as plain text, which both escape. Each adapter keeps
+  the journal's rules: files sent once (`article_files`, id 0 where the
+  site gives none), the commit after `committing`, a lost answer looked
+  for by title and body (DEV's `/me/all`, Hashnode's latest posts or
+  drafts, a draft's id `draft:<id>`), never sent again. DEV takes one
+  write a second per key (the adapter waits) and deletes nothing
+  (unpublishing sets `published` false); Hashnode cannot publish at a
+  time (`siteStatusNotTaken`) and refuses all without its Pro plan
+  (`platformRefusalCodes.sitePlanRequired`). What each site takes is
+  `domain/site-rules.ts`, checked by `articleViolations` with the
+  channel's rules. Tests set the fakes' addresses on
+  `testDevToHosts`, `testHashnodeHosts`, `testWordPressComHosts`.
 - Erasing a workspace erases its articles (`ArticleRecords`, refused
   while a call to a site is in flight, `PostsPublishing`), the export
   holds them, and a member who leaves is forgotten as their author.

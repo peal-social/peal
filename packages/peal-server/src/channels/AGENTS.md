@@ -53,6 +53,21 @@
   hour (`SiteConnectPace`, `SiteConnectLimited`). Connecting the same site
   again reconnects its channel, and one at the same home page under a new
   API root follows it (`siteMovedTo`).
+- A publishing platform's account connects with the member's key
+  (`ConnectSite.connectWithKey`, `POST …/channels/websites/keys`,
+  `KeySitePlatform`: `devto`, `hashnode`), checked by
+  `SiteVerifier.verifyKey` (`platforms/devto/`, `platforms/hashnode/`),
+  the key kept as the channel's token; a Hashnode channel is a
+  publication (its id the account id), named by its address or the
+  member's only one, and Hashnode refuses its API to one without its Pro
+  plan (`SiteRefused` `planRequired`). WordPress.com signs in
+  (`SiteSignIns`, `OAuthSitePlatform`: `wordpressCom`), with the
+  operator's app (`WORDPRESS_COM_CLIENT_ID` and `_SECRET`, read by
+  `siteAuthorizersLive`, not the platforms' settings): its attempts are
+  `ConnectAttempts`' (a `ChannelPlatform`), no scope (one site), the
+  site's id the account id, kept through `ConnectSite.connectSigned`.
+  Every way a website connects shares one `SiteConnectPace`, and a
+  password, a key or a sign-in for the other kind is `otherWayIn`.
 - On a server that bills, an account of a platform whose calls are passed
   through at the platform's rates (X, on the `xApi` meter) is connected
   only on per-account pricing that pays: `ChannelAllowance.passedThrough`

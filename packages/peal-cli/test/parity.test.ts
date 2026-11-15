@@ -135,6 +135,8 @@ const coverage = {
     "Only the web app's connect forms read which platforms the server connects."
   ),
   "channels.reconnect": exempt(connecting),
+  "channels.startSiteSignIn": exempt(connecting),
+  "channels.completeSiteSignIn": exempt(connecting),
   "channels.update": by("channels rename"),
   "connectLinks.create": by("links create"),
   "connectLinks.get": by("links show"),

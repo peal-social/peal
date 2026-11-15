@@ -3245,6 +3245,7 @@ export const studioGroupsLive = (studio: Studio) =>
       handlers.handleAll({
         chooseAccounts: () => refusing,
         completeConnect: () => refusing,
+        completeSiteSignIn: () => refusing,
         connect: () => refusing,
         // A website connects at once: a password with "refused" in it
         // stands for one the site refuses.
@@ -3368,6 +3369,7 @@ export const studioGroupsLive = (studio: Studio) =>
           ),
         platforms: () => refusing,
         reconnect: () => refusing,
+        startSiteSignIn: () => refusing,
         update: ({ params, payload }) =>
           changingChannel(
             studio,
