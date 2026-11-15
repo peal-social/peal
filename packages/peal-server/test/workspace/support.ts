@@ -21,6 +21,7 @@ import {
 } from "#test/workspace/integration/harness.ts";
 import type { Person, Reply } from "#test/workspace/integration/harness.ts";
 import { makeAuth } from "#workspace/infrastructure/auth/options.ts";
+import type { SignInProviderSettings } from "#workspace/infrastructure/auth/sign-in-provider-settings.ts";
 
 /** The cookies a browser holds after a reply that may set or expire some. */
 export const withCookies = (cookies: string, reply: Reply): string => {
@@ -212,6 +213,11 @@ export const signInWithCode = Effect.fn("signInWithCode")(
   }
 );
 
+const noSignInProviders: SignInProviderSettings = {
+  google: Option.none(),
+  oidc: Option.none(),
+};
+
 const ignore = () => {
   // An instance that serves no request sends and logs nothing.
 };
@@ -225,7 +231,9 @@ const nothing = async (): Promise<void> => {
  * database: for tests that read its plugins and routes, never for one that
  * sends it a request.
  */
-export const authWithoutDatabase = () =>
+export const authWithoutDatabase = (
+  signInProviders: SignInProviderSettings = noSignInProviders
+) =>
   makeAuth({
     database: { db: drizzle.mock(), tables: {} },
     hooks: {
@@ -265,6 +273,7 @@ export const authWithoutDatabase = () =>
       publicUrl: "http://localhost:3001",
       requireEmailVerification: true,
       secret: Redacted.make("synthetic-auth-secret-for-tests-0123456789"),
+      signInProviders,
       stripe: Option.some({
         apiUrl: Option.none(),
         catalogue: catalogueKeysOf("synthetic"),
