@@ -49,6 +49,11 @@ import {
   DatabaseTest as AssistantDatabaseTest,
   imagesTest,
 } from "#test/assistant/support.ts";
+import { fakeDevTo, gardener } from "#test/channels/fakes/fake-devto.ts";
+import {
+  fakeHashnode,
+  writerOnHashnode,
+} from "#test/channels/fakes/fake-hashnode.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
   OpenOutboundGuard,
@@ -488,6 +493,64 @@ layer(
         assert.include(written(), "/wp/v2/users/me");
         assert.notInclude(written(), onTheWire);
         assert.notInclude(written(), onTheWire.replaceAll(" ", ""));
+      }).pipe(Effect.scoped)
+  );
+});
+
+// Where the fakes of the key-based sites listen, set by the test.
+const keySiteHosts = {
+  devto: { api: "http://127.0.0.1:9" },
+  hashnode: { api: "http://127.0.0.1:9/" },
+};
+
+// A DEV key and a Hashnode token go on the wire, to fakes on loopback:
+// what is written about those calls holds neither.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    siteVerifiersLive(keySiteHosts).pipe(
+      Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
+    )
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about checking a website's key", (it) => {
+  it.effect(
+    "holds no key nor token, which every call carries in a header",
+    () =>
+      Effect.gen(function* searched() {
+        const devto = yield* fakeDevTo();
+        const hashnode = yield* fakeHashnode();
+
+        keySiteHosts.devto.api = devto.api;
+        keySiteHosts.hashnode.api = hashnode.api;
+
+        yield* SiteVerifier.use((verifier) =>
+          Effect.all([
+            verifier.verifyKey({
+              apiKey: Redacted.make(gardener.key),
+              platform: "devto",
+              publication: Option.none(),
+            }),
+            verifier.verifyKey({
+              apiKey: Redacted.make(writerOnHashnode.token),
+              platform: "hashnode",
+              publication: Option.none(),
+            }),
+          ])
+        ).pipe(Effect.withSpan("test.website-keys"));
+
+        assert.strictEqual(
+          devto.requests()[0]?.headers["api-key"],
+          gardener.key
+        );
+        assert.strictEqual(
+          hashnode.requests()[0]?.authorization,
+          writerOnHashnode.token
+        );
+        assert.include(written(), "/api/users/me");
+        assert.notInclude(written(), gardener.key);
+        assert.notInclude(written(), writerOnHashnode.token);
       }).pipe(Effect.scoped)
   );
 });
