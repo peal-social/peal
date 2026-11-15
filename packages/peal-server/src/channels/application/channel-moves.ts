@@ -162,13 +162,20 @@ export class ChannelMoves extends Context.Service<
                 });
               }
 
-              yield* channels.remove(asked.from, channel.value.id);
+              // The row itself, in place: a deletion that comes first
+              // leaves nothing to move, and one that waits on the row
+              // deletes it where it went.
+              const relocated = yield* channels.relocate(
+                { channelId: channel.value.id, workspaceId: asked.from },
+                moved,
+                rebound
+              );
+
+              if (!relocated) {
+                return yield* notFound;
+              }
+
               yield* events.disconnected(channel.value, "moved");
-              // Every insert takes the additions this holds: a channel of
-              // the account there meanwhile would be a bug.
-              yield* channels
-                .insert(moved, rebound)
-                .pipe(Effect.catchTag("ChannelAlreadyConnected", Effect.die));
               yield* allowance.counted(asked.to, pooled(asked.to));
               yield* events.connected(moved, false);
 

@@ -30,9 +30,12 @@
   decrypted for the old id, encrypted for the new, `granted_by` and
   `token_owner` kept, which `credentials` reads), the platform asked
   nothing. Under the channel's lock, then one transaction: the caller's
-  `inside` check, both workspaces' `addingTo` (smaller id first), the old
-  row removed and `ChannelEvents.disconnected` (`moved`), the new one
-  inserted, `ChannelAllowance.counted` with the pool, then
+  `inside` check, both workspaces' `addingTo` (smaller id first), the
+  account asked there under that hold, the row itself rewritten in place
+  (`relocate`: new id, workspace and tokens; nothing written is
+  `ChannelNotFound`, and a platform's data deletion waiting on the row
+  deletes it where it went), `ChannelEvents.disconnected` (`moved`),
+  `ChannelAllowance.counted` with the pool, then
   `ChannelEvents.connected`. So the workspace it leaves sees a
   disconnection (posts fail as a disconnected channel's, analytics keeps
   a week, the inbox ends its threads and deletes its messages) and the

@@ -226,6 +226,21 @@ export class ChannelRepository extends Context.Service<
     readonly search: (
       request: ChannelPageRequest
     ) => Effect.Effect<ChannelPage, DatabaseError>;
+    /**
+     * Writes the channel's row as `moved`, a channel of another workspace
+     * under a new id, with tokens bound to it, in place: a deletion
+     * waiting on the row (a platform's data deletion, by its grant) then
+     * finds it as it now is, and deletes it. Says whether the channel was
+     * still there, in `from`.
+     */
+    readonly relocate: (
+      from: {
+        readonly channelId: ChannelId;
+        readonly workspaceId: WorkspaceId;
+      },
+      moved: Channel,
+      credentials: ChannelCredentials
+    ) => Effect.Effect<boolean, DatabaseError>;
     /** Deletes the channel and its tokens. Says whether it was there. */
     readonly remove: (
       workspaceId: WorkspaceId,

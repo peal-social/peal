@@ -2,7 +2,8 @@
 // the workspace it goes to, with the same account and tokens bound to its
 // new id, and none left where it was.
 import { assert, layer } from "@effect/vitest";
-import { Context, Effect, Layer, Option, Redacted, Ref } from "effect";
+import { Context, Effect, Fiber, Layer, Option, Redacted, Ref } from "effect";
+import { SqlClient } from "effect/sql";
 
 import { ChannelAllowance } from "#channels/application/channel-allowance.ts";
 import { ChannelCredentials } from "#channels/application/channel-credentials.ts";
@@ -295,5 +296,191 @@ layer(MovesTest)("moving a channel", (it) => {
 
       assert.strictEqual(failure._tag, "ChannelNotFound");
     })
+  );
+});
+
+// What another connection does while a move runs: just before it writes
+// (`beforeWrite`), or once it wrote and before it commits (`afterWrite`).
+class Meanwhile extends Context.Service<
+  Meanwhile,
+  Ref.Ref<{
+    readonly afterWrite: Effect.Effect<void>;
+    readonly beforeWrite: Effect.Effect<void>;
+  }>
+>()("peal-server/test/ChannelMovesMeanwhile") {}
+
+const MeanwhileTest = Layer.effect(
+  Meanwhile,
+  Ref.make({ afterWrite: Effect.void, beforeWrite: Effect.void })
+);
+
+// The repository, which runs `beforeWrite` as the move asks whether the
+// other workspace has the account, the last read before it writes.
+const RacingRepository = Layer.effect(
+  ChannelRepository,
+  Effect.gen(function* racing() {
+    const repository = yield* ChannelRepository;
+    const meanwhile = yield* Meanwhile;
+
+    return ChannelRepository.of({
+      ...repository,
+      findByAccount: (workspaceId, platform, accountId) =>
+        Ref.get(meanwhile).pipe(
+          Effect.flatMap(({ beforeWrite }) => beforeWrite),
+          Effect.andThen(
+            repository.findByAccount(workspaceId, platform, accountId)
+          )
+        ),
+    });
+  })
+).pipe(Layer.provide(DrizzleChannelRepository));
+
+// Events that run `afterWrite` when the move tells the disconnection,
+// inside its transaction, after it wrote the row.
+const RacingEvents = Layer.effect(
+  ChannelEvents,
+  Effect.gen(function* racingEvents() {
+    const meanwhile = yield* Meanwhile;
+
+    return ChannelEvents.of({
+      connected: () => Effect.void,
+      disabled: () => Effect.void,
+      disconnected: () =>
+        Ref.get(meanwhile).pipe(Effect.flatMap(({ afterWrite }) => afterWrite)),
+      enabled: () => Effect.void,
+    });
+  })
+);
+
+const RacingTest = ChannelMoves.layer.pipe(
+  Layer.provideMerge(
+    Layer.mergeAll(
+      RacingRepository,
+      SqlChannelLocks,
+      TokenCipherTest,
+      HeardTest,
+      TransactionsTest,
+      // After HeardTest's, which it replaces.
+      RacingEvents
+    )
+  ),
+  Layer.provideMerge(MeanwhileTest),
+  Layer.provideMerge(DatabaseTest)
+);
+
+// A statement on a connection of its own, outside the move's transaction,
+// committed as it ends: as a member's disconnect or a platform's data
+// deletion runs beside a move. Answers how many rows it changed.
+const elsewhere = (
+  sql: SqlClient.SqlClient,
+  statement: string,
+  parameters: readonly string[]
+) =>
+  Effect.scoped(
+    Effect.gen(function* onItsOwn() {
+      const connection = yield* sql.reserve;
+
+      const rows = yield* connection.execute(
+        `${statement} RETURNING id`,
+        parameters,
+        undefined
+      );
+
+      return rows.length;
+    })
+  ).pipe(Effect.orDie);
+
+layer(RacingTest)("a move raced by a deletion", (it) => {
+  it.effect(
+    "fails, and moves nothing, when the channel was deleted before it wrote",
+    () =>
+      Effect.gen(function* deletedFirst() {
+        const repository = yield* ChannelRepository;
+        const sql = yield* SqlClient.SqlClient;
+        const meanwhile = yield* Meanwhile;
+        const from = yield* freshWorkspace;
+        const to = yield* freshWorkspace;
+        const channel = yield* stored(from);
+
+        yield* Ref.set(meanwhile, {
+          afterWrite: Effect.void,
+          beforeWrite: elsewhere(
+            sql,
+            "DELETE FROM channels.channels WHERE id = $1",
+            [channel.id]
+          ).pipe(Effect.asVoid),
+        });
+
+        const failure = yield* moveOf(channel, to).pipe(Effect.flip);
+
+        yield* Ref.set(meanwhile, {
+          afterWrite: Effect.void,
+          beforeWrite: Effect.void,
+        });
+
+        assert.strictEqual(failure._tag, "ChannelNotFound");
+        assert.lengthOf(yield* repository.list(to), 0);
+        assert.lengthOf(yield* repository.list(from), 0);
+      })
+  );
+
+  it.effect(
+    "is deleted with it by a data deletion that waited on its row",
+    () =>
+      Effect.gen(function* deletedMeanwhile() {
+        const repository = yield* ChannelRepository;
+        const sql = yield* SqlClient.SqlClient;
+        const meanwhile = yield* Meanwhile;
+        const from = yield* freshWorkspace;
+        const to = yield* freshWorkspace;
+        const channel = yield* stored(from);
+        const grant = `synthetic-manager-${channel.id}`;
+
+        yield* sql`UPDATE channels.channels SET granted_by = ${grant} WHERE id = ${channel.id}`.pipe(
+          Effect.orDie
+        );
+
+        const deletion = yield* Ref.make(Option.none<Fiber.Fiber<number>>());
+
+        // The deletion starts once the move wrote the row, and waits on
+        // it until the move commits.
+        yield* Ref.set(meanwhile, {
+          afterWrite: Effect.gen(function* deleteByGrant() {
+            const fiber = yield* elsewhere(
+              sql,
+              "DELETE FROM channels.channels WHERE granted_by = $1",
+              [grant]
+            ).pipe(Effect.forkDetach);
+
+            yield* Ref.set(deletion, Option.some(fiber));
+
+            // Until Postgres says it waits on a lock: its activity is read
+            // afresh each time, not from the transaction's snapshot.
+            yield* sql<{
+              readonly waiting: number;
+            }>`SELECT pg_stat_clear_snapshot(), (SELECT count(*)::int FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock' AND query LIKE 'DELETE FROM channels.channels WHERE granted_by%') AS waiting`.pipe(
+              Effect.orDie,
+              Effect.repeat({
+                until: ([row]) => (row?.waiting ?? 0) > 0,
+              })
+            );
+          }),
+          beforeWrite: Effect.void,
+        });
+
+        const moved = yield* moveOf(channel, to);
+
+        yield* Ref.set(meanwhile, {
+          afterWrite: Effect.void,
+          beforeWrite: Effect.void,
+        });
+
+        const fiber = yield* Ref.get(deletion);
+
+        assert(Option.isSome(fiber));
+        assert.strictEqual(yield* Fiber.join(fiber.value), 1);
+        assert.isTrue(Option.isNone(yield* repository.findById(to, moved.id)));
+        assert.lengthOf(yield* repository.list(from), 0);
+      })
   );
 });

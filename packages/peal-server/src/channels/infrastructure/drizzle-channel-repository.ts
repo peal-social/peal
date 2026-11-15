@@ -438,6 +438,20 @@ export const DrizzleChannelRepository = Layer.effect(
             Effect.mapError(failed),
             Effect.flatMap(Effect.forEach(toChannel))
           ),
+      relocate: (from, moved, credentials) =>
+        db
+          .update(channels)
+          .set({
+            ...channelColumns(moved),
+            ...credentialColumns(credentials),
+            label: null,
+          })
+          .where(byId(from.workspaceId, from.channelId))
+          .returning({ id: channels.id })
+          .pipe(
+            Effect.mapError(failed),
+            Effect.map((rows) => rows.length > 0)
+          ),
       remove: (workspaceId, channelId) =>
         db
           .delete(channels)
