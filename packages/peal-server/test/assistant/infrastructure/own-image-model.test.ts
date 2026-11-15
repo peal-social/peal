@@ -73,7 +73,7 @@ const provider = (answers: Readonly<Record<string, Answer>>) =>
         request.on("end", () => {
           received.push({ headers: request.headers, url: request.url ?? "" });
 
-          const answer = answers[request.url ?? ""];
+          const answer = new Map(Object.entries(answers)).get(request.url ?? "");
 
           if (answer === undefined) {
             response.writeHead(418).end();

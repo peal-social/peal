@@ -90,7 +90,7 @@ const provider = (answers: Readonly<Record<string, Answer>>) =>
             url: request.url ?? "",
           });
 
-          const answer = answers[request.url ?? ""];
+          const answer = new Map(Object.entries(answers)).get(request.url ?? "");
 
           if (answer === undefined) {
             response.writeHead(404).end();

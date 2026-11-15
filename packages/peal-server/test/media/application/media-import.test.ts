@@ -62,7 +62,7 @@ const hostServing = (files: Readonly<Record<string, Answer>>) =>
   Effect.acquireRelease(
     Effect.promise(async () => {
       const server = createServer((request, response) => {
-        const answer = files[request.url ?? ""];
+        const answer = new Map(Object.entries(files)).get(request.url ?? "");
 
         if (answer === undefined) {
           response.writeHead(404).end();
