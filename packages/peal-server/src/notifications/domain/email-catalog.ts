@@ -3,7 +3,9 @@ import type { PaidPlan } from "#shared/domain/plan.ts";
 
 import type { TwoStepChange } from "./auth-email.ts";
 import type {
+  AutomationStopReason,
   FeedStopReason,
+  FollowUpNotSentReason,
   PostFailureReason,
   RecyclingEndReason,
 } from "./notice-event.ts";
@@ -278,6 +280,35 @@ export interface EmailCatalog {
    */
   readonly recyclingEnded: EmailMessages;
   readonly recyclingEndReasons: Readonly<Record<RecyclingEndReason, string>>;
+  /**
+   * Follow-ups of a rule of `{workspaceName}` did not go out: `{count}` of
+   * them, for `{reasons}`, those of `followUpNotSentReasons.other` joined
+   * by `reasonsJoint`; one alone is `followUpNotSent`, with
+   * `followUpNotSentReasons.one`.
+   */
+  readonly followUpsNotSent: EmailMessages;
+  readonly followUpNotSent: EmailMessages;
+  readonly followUpNotSentReasons: {
+    readonly one: Readonly<Record<FollowUpNotSentReason, string>>;
+    readonly other: Readonly<Record<FollowUpNotSentReason, string>>;
+  };
+  readonly reasonsJoint: string;
+  /**
+   * A follow-up rule of `{workspaceName}` ended by itself, for `{reason}`,
+   * one of `followUpRuleStopReasons`.
+   */
+  readonly followUpRuleStopped: EmailMessages;
+  readonly followUpRuleStopReasons: Readonly<
+    Record<AutomationStopReason, string>
+  >;
+  /**
+   * A comment rule of `{workspaceName}` ended by itself, for `{reason}`,
+   * one of `commentRuleStopReasons`.
+   */
+  readonly commentRuleStopped: EmailMessages;
+  readonly commentRuleStopReasons: Readonly<
+    Record<AutomationStopReason, string>
+  >;
   /**
    * Peal turned off the webhook endpoint at `{host}` in `{workspaceName}`,
    * for `{reason}`, one of `webhookTurnOffReasons`.

@@ -12,6 +12,7 @@ import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
+import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { EngagementStore } from "#engagement/application/ports/engagement-store.ts";
 import { PurgeEngagement } from "#engagement/application/purge-engagement.ts";
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
@@ -70,7 +71,10 @@ const PurgeTest = PurgeEngagement.layer.pipe(
   Layer.provideMerge(
     Layer.merge(
       DrizzleEngagementStore,
-      DrizzleEngagementRecords.pipe(Layer.provide(MeteredUsage.layerUnmetered))
+      DrizzleEngagementRecords.pipe(
+        Layer.provide(MeteredUsage.layerUnmetered),
+        Layer.provide(CommentRuleNotices.none)
+      )
     )
   ),
   Layer.provideMerge(SqlTransactions),

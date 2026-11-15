@@ -45,6 +45,11 @@ export interface NoticeRequest {
    */
   readonly followers?: readonly UserId[];
   /**
+   * For an event about a post: every member who may act hears too,
+   * beside the followers (`recipientsOf`).
+   */
+  readonly everyoneWhoMayAct?: boolean;
+  /**
    * Names the event, such as `post-target:<id>:<round>`: an event
    * whose key was notified before notifies nobody again.
    */
@@ -124,7 +129,11 @@ export class Notify extends Context.Service<
               mayAct: mayAct.has(userId),
               userId,
             })),
-            { except: request.except, followers: request.followers }
+            {
+              everyoneWhoMayAct: request.everyoneWhoMayAct,
+              except: request.except,
+              followers: request.followers,
+            }
           )
         );
 
