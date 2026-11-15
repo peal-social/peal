@@ -37,6 +37,7 @@ import {
 } from "#channels/channels-api.ts";
 import type { ChannelErrorKey } from "#channels/channels-api.ts";
 import { rememberConnection } from "#channels/pending-connection.ts";
+import { publicationAddressOf } from "#channels/site-handles.ts";
 
 interface WebsiteFieldsProps {
   /** The address to start from: the site's, to reconnect it. */
@@ -486,7 +487,9 @@ export const ReconnectWebsite = ({
           <KeySiteFields
             onConnected={close}
             platform={platform}
-            publication={platform === "hashnode" ? handle : ""}
+            publication={
+              platform === "hashnode" ? publicationAddressOf(handle) : ""
+            }
             workspaceId={workspaceId}
           />
         ) : (
