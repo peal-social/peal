@@ -24,48 +24,94 @@ const encoder = new TextEncoder();
 const quoted = (name: string) =>
   name.replaceAll("\r", "%0D").replaceAll("\n", "%0A").replaceAll('"', "%22");
 
+// The header of a file's part, after the boundary line.
+const fileHeader = <E, R>(boundary: string, file: MultipartFile<E, R>) =>
+  [
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="${quoted(file.name)}"; filename="${quoted(file.fileName)}"`,
+    `Content-Type: ${file.contentType}`,
+    "",
+    "",
+  ].join("\r\n");
+
 /**
- * A `multipart/form-data` body (RFC 7578) with text fields and one file,
- * the file last, as a stream: the file's bytes pass through as they are
- * read, so a form with a video of any size holds a chunk of it at a time,
- * where `FormData` needs the whole file. Its length is known beforehand
- * from the file's size, for servers that refuse a body without one.
+ * A `multipart/form-data` body (RFC 7578) with text fields, then files,
+ * each in turn, as a stream: each file's bytes pass through as they are
+ * read, and a file is opened only once those before it are sent, so a
+ * form with files of any size holds a chunk of one at a time, where
+ * `FormData` needs every file whole. Its length is known beforehand from
+ * the files' sizes, for servers that refuse a body without one.
  * `boundary` must not occur in the fields; a random one never does.
+ */
+export const multipartFormBody = <E, R>(form: {
+  readonly boundary: string;
+  readonly fields: readonly MultipartField[];
+  readonly files: readonly MultipartFile<E, R>[];
+}) => {
+  const { boundary, fields, files } = form;
+
+  // Each field's part, each ending in the line break before the next
+  // boundary.
+  const head = encoder.encode(
+    fields
+      .map(({ name, value }) =>
+        [
+          `--${boundary}`,
+          `Content-Disposition: form-data; name="${quoted(name)}"`,
+          "",
+          `${value}\r\n`,
+        ].join("\r\n")
+      )
+      .join("")
+  );
+
+  // Each file's part: its header, its bytes, and the line break that ends
+  // it before the next boundary.
+  const parts = files.map((file, index) => ({
+    file,
+    header: encoder.encode(
+      `${index === 0 ? "" : "\r\n"}${fileHeader(boundary, file)}`
+    ),
+  }));
+
+  // The line break that ends the last file's part, then the closing
+  // boundary.
+  const tail = encoder.encode(
+    `${parts.length === 0 ? "" : "\r\n"}--${boundary}--\r\n`
+  );
+
+  let bytes: Stream.Stream<Uint8Array, E, R> = Stream.make(head);
+  let contentLength = head.length + tail.length;
+
+  for (const { file, header } of parts) {
+    bytes = bytes.pipe(
+      Stream.concat(Stream.make(header)),
+      Stream.concat(file.bytes)
+    );
+    contentLength += header.length + file.byteSize;
+  }
+
+  return {
+    bytes: bytes.pipe(Stream.concat(Stream.make(tail))),
+    contentLength,
+    contentType: `multipart/form-data; boundary=${boundary}`,
+  };
+};
+
+/**
+ * A `multipart/form-data` body with text fields and one file, the file
+ * last (`multipartFormBody` with one file).
  */
 export const multipartBody = <E, R>(form: {
   readonly boundary: string;
   readonly fields: readonly MultipartField[];
   readonly file: MultipartFile<E, R>;
-}) => {
-  const { boundary, fields, file } = form;
-
-  const head = encoder.encode(
-    [
-      ...fields.flatMap(({ name, value }) => [
-        `--${boundary}`,
-        `Content-Disposition: form-data; name="${quoted(name)}"`,
-        "",
-        value,
-      ]),
-      `--${boundary}`,
-      `Content-Disposition: form-data; name="${quoted(file.name)}"; filename="${quoted(file.fileName)}"`,
-      `Content-Type: ${file.contentType}`,
-      "",
-      "",
-    ].join("\r\n")
-  );
-
-  const tail = encoder.encode(`\r\n--${boundary}--\r\n`);
-
-  return {
-    bytes: Stream.make(head).pipe(
-      Stream.concat(file.bytes),
-      Stream.concat(Stream.make(tail))
-    ),
-    contentLength: head.length + file.byteSize + tail.length,
-    contentType: `multipart/form-data; boundary=${boundary}`,
-  };
-};
+}) =>
+  multipartFormBody({
+    boundary: form.boundary,
+    fields: form.fields,
+    files: [form.file],
+  });
 
 /**
  * A boundary for a form sent for the call `key` names (its idempotency
