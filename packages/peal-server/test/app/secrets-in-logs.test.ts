@@ -300,10 +300,12 @@ layer(ProviderTest, { excludeTestServices: true, timeout: "180 seconds" })(
         const provider = yield* FakeOidc;
         const email = "secrets-provider-synthetic@example.test";
         const started = yield* startSignIn(signUpPage());
+
         const code = yield* provider.issue(
           verifiedIdentity(email),
           started.nonce
         );
+
         const finished = yield* finishSignIn(started, code);
 
         assert.isNull(finished.error);
