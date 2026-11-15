@@ -339,19 +339,34 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
   const ended = Effect.gen(function* ended() {
     const now = yield* Clock.currentTimeMillis;
 
-    yield* Ref.set(nextWrite, now + Duration.toMillis(writeSpacing));
+    yield* Ref.update(nextWrite, (next) =>
+      Math.max(next, now + Duration.toMillis(writeSpacing))
+    );
   });
 
   // A write in its slot; one DEV refused for coming too soon, with a
-  // short `Retry-After`, waits it out and goes again (nothing was made).
-  const spaced = <E, R>(
-    write: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+  // short `Retry-After`, waits it out, holding nothing, and goes again
+  // (nothing was made). A short write holds the process's turn to its
+  // end; an upload, which may take minutes, only to its start, so the
+  // writes made in a member's request (an update, an unpublish) never
+  // wait behind one.
+  const paced = <E, R>(
+    write: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+    long: boolean
   ) =>
     Effect.gen(function* spacedWrite() {
       for (let tries = 1; ; tries += 1) {
-        yield* slot;
+        const response = long
+          ? yield* slot.pipe(
+              Effect.andThen(ended),
+              writes.withPermits(1),
+              Effect.andThen(write.pipe(Effect.ensuring(ended)))
+            )
+          : yield* slot.pipe(
+              Effect.andThen(write.pipe(Effect.ensuring(ended))),
+              writes.withPermits(1)
+            );
 
-        const response = yield* write.pipe(Effect.ensuring(ended));
         const now = yield* DateTime.now;
 
         const wait = retryAfterOf(response.headers, now).pipe(
@@ -372,7 +387,11 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
 
         yield* Effect.sleep(Duration.millis(Option.getOrElse(wait, () => 0)));
       }
-    }).pipe(writes.withPermits(1));
+    });
+
+  const spaced = <E, R>(
+    write: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+  ) => paced(write, false);
 
   // Sends one file of the article: the address DEV serves it at.
   const upload = Effect.fn("DevToArticles.upload")(function* upload(
@@ -398,7 +417,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
           },
         });
 
-        return yield* spaced(
+        return yield* paced(
           execute(
             uploads,
             signed(
@@ -410,7 +429,8 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
                 })
               )
             )
-          )
+          ),
+          true
         ).pipe(
           Effect.flatMap((response) =>
             response.status === 201 || response.status === 200

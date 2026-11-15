@@ -4,12 +4,21 @@
 import { Buffer } from "node:buffer";
 
 import { assert, describe, it } from "@effect/vitest";
-import { DateTime, Duration, Effect, Fiber, Option, Schema } from "effect";
+import {
+  Clock,
+  DateTime,
+  Duration,
+  Effect,
+  Fiber,
+  Option,
+  Schema,
+} from "effect";
 import { TestClock } from "effect/testing";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ArticleStore } from "#publishing/application/article-store.ts";
 import { Articles } from "#publishing/application/articles.ts";
+import type { ArticleContent } from "#publishing/domain/article-content.ts";
 import {
   gardener,
   neighbour,
@@ -215,6 +224,103 @@ describe("an article on DEV", () => {
         assert.strictEqual(devto.throttled(), 0);
       })
     )
+  );
+
+  it.effect(
+    "changes an article on DEV at once, while another's upload is long",
+    () =>
+      onArticles(
+        Effect.gen(function* alongside() {
+          const devto = yield* startDevTo({
+            intercept: ({ headers, path }) =>
+              path === "/api/images" && headers["api-key"] === gardener.key
+                ? "hang"
+                : undefined,
+          });
+
+          const articles = yield* Articles;
+          const neighbourSpace = yield* freshWorkspace;
+
+          const neighbourChannel = yield* devtoChannel(
+            neighbourSpace,
+            neighbour.key
+          );
+
+          const neighbourWriter = writer(neighbourSpace);
+
+          const plainFields: Partial<ArticleContent> = {
+            body: {
+              content: [
+                {
+                  content: [{ text: "Plain", type: "text" }],
+                  type: "paragraph",
+                },
+              ],
+              type: "doc",
+            },
+            categories: [],
+            coverMediaId: Option.none(),
+          };
+
+          const plain = content(plainFields);
+
+          const live = yield* articles.create(
+            neighbourWriter,
+            { channelId: neighbourChannel.id, content: plain },
+            Option.some({ at: Option.none(), timeZone: zone })
+          );
+
+          yield* eventuallyLater(
+            "the neighbour's article is on DEV",
+            Effect.sync(() => devto.articles().length === 1)
+          );
+
+          // The gardener's article starts its upload, which never ends.
+          const gardenerSpace = yield* freshWorkspace;
+          const gardenerChannel = yield* devtoChannel(gardenerSpace);
+
+          yield* articles.create(
+            writer(gardenerSpace),
+            {
+              channelId: gardenerChannel.id,
+              content: content({ categories: [] }),
+            },
+            Option.some({ at: Option.none(), timeZone: zone })
+          );
+
+          yield* eventuallyLater(
+            "the upload has started",
+            Effect.sync(() =>
+              devto
+                .requests()
+                .some(
+                  ({ headers, path }) =>
+                    path === "/api/images" &&
+                    headers["api-key"] === gardener.key
+                )
+            )
+          );
+
+          const before = yield* Clock.currentTimeMillis;
+
+          yield* clockMoving(
+            articles.updateOnSite(
+              neighbourWriter,
+              live.id,
+              content({ ...plainFields, title: "Spring sowing, revised" })
+            )
+          );
+
+          const after = yield* Clock.currentTimeMillis;
+
+          assert.isBelow(after - before, 30_000);
+          assert.strictEqual(
+            devto.articles().find(({ userId }) => userId === neighbour.id)
+              ?.title,
+            "Spring sowing, revised"
+          );
+        })
+      )
   );
 
   it.effect("stays a draft on DEV when told, and waits there when told", () =>
