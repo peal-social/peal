@@ -285,8 +285,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   channel's platform. WordPress's adapter serves `wordpress` and
   `wordpressCom` (`siteRouteUrl`, `withSiteToken`: WordPress.com's
   `/wp/v2/sites/{id}/` with a bearer token). DEV's (`devto/`, Forem's API
-  v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a
-  200) take Markdown written by `domain/article-markdown.ts` alone, where
+  v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a 200) take Markdown written by `domain/article-markdown.ts` alone, where
   a member's text stays text: ASCII punctuation escaped, `& < > { }` as
   entities (Forem runs Liquid over the HTML), `[` escaped (no link or
   embed); titles go as plain text, which both escape. Each adapter keeps
