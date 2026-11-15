@@ -56,13 +56,13 @@ Quand le site refuse plus tard le mot de passe, par exemple une fois révoqué, 
 
 Dans **Canaux**, un site WordPress.com se connecte en se connectant sur WordPress.com et en choisissant le site ; un compte DEV avec une clé d’API ; une publication Hashnode avec un jeton d’accès personnel et l’adresse de la publication. La page de chaque plateforme dit où créer la clé : [WordPress.com](/platforms/wordpress-com), [DEV](/platforms/devto), [Hashnode](/platforms/hashnode). Peal conserve la clé ou le jeton chiffré, et ne l’affiche plus jamais ; un site ou un compte compte pour un canal, et un nouveau demande de la place dans l’offre de l’espace de travail.
 
-| Message                                                                  | Que faire                                                                          |
-| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| Le site a refusé ce avec quoi Peal se connecte                           | Créez une nouvelle clé ou un nouveau jeton, et collez-le en entier.                |
-| Vous avez plusieurs publications sur Hashnode                            | Donnez l’adresse de celle où publier.                                              |
-| Hashnode n’a pas cette publication                                       | Donnez son adresse, comme `blog.example.com` ou `nom.hashnode.dev`.                |
-| Hashnode ne répond à son API qu’en offre Pro                             | Passez la publication en Pro sur Hashnode, puis connectez-la de nouveau.           |
-| Cet utilisateur ne peut pas publier d’articles ni téléverser de fichiers | Sur WordPress.com, connectez-vous comme auteur, éditeur ou administrateur du site. |
+| Message                                                                  | Que faire                                                                                                                                                           |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Le site a refusé ce avec quoi Peal se connecte                           | Créez une nouvelle clé ou un nouveau jeton, et collez-le en entier.                                                                                                 |
+| Vous avez plusieurs publications sur Hashnode                            | Donnez l’adresse de celle où publier.                                                                                                                               |
+| Hashnode n’a pas cette publication                                       | Donnez son adresse, comme `blog.example.com` ou `nom.hashnode.dev`.                                                                                                 |
+| Hashnode ne répond à son API qu’en offre Pro                             | Passez la publication en Pro sur Hashnode, puis connectez-la de nouveau.                                                                                            |
+| Cet utilisateur ne peut pas publier d’articles ni téléverser de fichiers | Sur WordPress.com, connectez-vous comme auteur, éditeur ou administrateur du site ; sur Hashnode, la publication d’une équipe vous demande propriétaire ou éditeur. |
 
 ## Ce que prend chaque site [#sites]
 
@@ -98,7 +98,7 @@ Choisissez ce que le site fait de l’article, puis quand Peal l’envoie :
 
 Laissez l’heure vide pour l’envoyer maintenant, ou donnez-en une : Peal l’envoie alors. Peal vérifie l’article avant de le programmer, tout à la fois : un titre, un corps, les étiquettes et catégories [que son site prend](#sites), une heure à venir, et que la médiathèque a toujours ses images. Hashnode ne peut pas publier un article lui-même à une heure donnée : donnez-lui l’heure avec **Publié aussitôt**, et Peal l’envoie alors. Le titre et l’extrait partent sur le site en texte brut, tels que vous les avez tapés.
 
-DEV prend un appel par seconde d’un compte, et 10 envois d’images par heure par défaut : Peal s’en tient au premier, et un article qui atteint le second attend DEV, puis part.
+DEV prend une écriture par seconde d’un serveur, quel que soit le compte, et 10 envois d’images par heure d’un compte par défaut : Peal envoie ses écritures à DEV une à une, à une seconde d’écart, et un article qui atteint la seconde limite attend DEV, puis part. Hashnode peut répondre à une recherche depuis un cache vieux de 25 secondes environ : un article renvoyé moins d’une minute après l’appel qu’il cherche attend, puis cherche.
 
 Un espace de travail au-delà de son offre, comme après son essai, n’envoie aucun article avant d’y revenir, comme pour ses publications. Une image qu’un article programmé montre ne peut pas être supprimée de la médiathèque avant que l’article repasse en brouillon ou soit parti ; supprimer une image qu’un brouillon, un article en échec ou à vérifier montre la retire de cet article.
 

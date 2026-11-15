@@ -59,7 +59,8 @@
   `SiteVerifier.verifyKey` (`platforms/devto/`, `platforms/hashnode/`),
   the key kept as the channel's token; a Hashnode channel is a
   publication (its id the account id), named by its address or the
-  member's only one, and Hashnode refuses its API to one without its Pro
+  member's only one, a team's only for its owners and editors
+  (`cannotPublish`), and Hashnode refuses its API to one without its Pro
   plan (`SiteRefused` `planRequired`). WordPress.com signs in
   (`SiteSignIns`, `OAuthSitePlatform`: `wordpressCom`), with the
   operator's app (`WORDPRESS_COM_CLIENT_ID` and `_SECRET`, read by

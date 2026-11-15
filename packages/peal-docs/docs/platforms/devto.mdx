@@ -34,11 +34,11 @@ Peal checks the key on DEV, then keeps it encrypted: it is never shown again. Th
 
 ## Articles [#articles]
 
-- Peal writes the body as Markdown, where everything you typed stays text: no markup, template tag or embed of DEV's is made of it.
+- Peal writes the body as Markdown, where everything you typed stays text: no markup, Liquid tag (`{% … %}`, `{{ … }}`) or embed of DEV's is made of it, and an `@name` mentions no one.
 - Each image goes to DEV's image upload first, once, and the article shows it from DEV. DEV takes 10 uploads an hour per account by default: an article with more images waits for DEV, and is sent once it can be.
 - The excerpt is the article's description, the featured image its cover.
 - **Scheduled there** gives DEV the time, and DEV publishes it then.
-- Peal sends at most one call a second to DEV, as DEV asks.
+- DEV takes one write a second from a server, whatever account it is for: Peal sends its writes to DEV one at a time, a second apart, for every account together, and waits out a short wait DEV asks for.
 - When DEV's answer is lost, Peal looks among your articles for one of the same title and body before anything else, and never sends it twice.
 
 ## On your own server [#self-hosting]

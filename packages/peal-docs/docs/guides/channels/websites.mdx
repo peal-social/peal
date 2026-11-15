@@ -55,13 +55,13 @@ When the site later refuses the password, as after it was revoked, the channel i
 
 In **Channels**, a site on WordPress.com connects by signing in on WordPress.com and picking the site; an account on DEV with an API key; a publication on Hashnode with a personal access token and the publication's address. Each platform's page says where to make the key: [WordPress.com](/platforms/wordpress-com), [DEV](/platforms/devto), [Hashnode](/platforms/hashnode). Peal keeps the key or the token encrypted, and never shows it again; a site or an account counts as one channel, and a new one needs room in the workspace's plan.
 
-| Message                                         | What to do                                                                         |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------- |
-| The site refused what Peal signs in with        | Make a new key or token, and paste it whole.                                       |
-| You have several publications on Hashnode       | Give the address of the one to publish to.                                         |
-| Hashnode has no such publication                | Give its address, such as `blog.example.com` or `name.hashnode.dev`.               |
-| Hashnode answers its API only on its Pro plan   | Upgrade the publication on Hashnode, then connect it again.                        |
-| This user may not publish posts or upload files | On WordPress.com, sign in as an Author, an Editor or an Administrator of the site. |
+| Message                                         | What to do                                                                                                                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The site refused what Peal signs in with        | Make a new key or token, and paste it whole.                                                                                                             |
+| You have several publications on Hashnode       | Give the address of the one to publish to.                                                                                                               |
+| Hashnode has no such publication                | Give its address, such as `blog.example.com` or `name.hashnode.dev`.                                                                                     |
+| Hashnode answers its API only on its Pro plan   | Upgrade the publication on Hashnode, then connect it again.                                                                                              |
+| This user may not publish posts or upload files | On WordPress.com, sign in as an Author, an Editor or an Administrator of the site; on Hashnode, a team's publication needs you as an owner or an editor. |
 
 ## What each site takes [#sites]
 
@@ -97,7 +97,7 @@ Choose what the site makes of the article, then when Peal sends it:
 
 Leave the time empty to send it now, or give one: Peal sends it then. Peal checks the article before it is scheduled, everything at once: a title, a body, the tags and categories [its site takes](#sites), a time ahead, and that the library still has its images. Hashnode cannot publish an article at a time itself: give it a time with **Published at once**, and Peal sends it then. The title and the excerpt go to the site as plain text, as you typed them.
 
-DEV takes one call a second from an account, and 10 image uploads an hour by default: Peal keeps to the first, and an article that meets the second waits for DEV, then goes.
+DEV takes one write a second from a server, whatever account it is for, and 10 image uploads an hour from an account by default: Peal sends its writes to DEV one at a time, a second apart, and an article that meets the second limit waits for DEV, then goes. Hashnode may answer a search from a cache some 25 seconds old: an article sent again within a minute of the call it looks for waits, then looks.
 
 A workspace over its plan, as after its trial, sends no article until it is back within it, as for its posts. An image a scheduled article shows cannot be deleted from the library until the article is back to draft or has gone out; deleting one that a draft, a failed article or one to check shows takes it off that article.
 

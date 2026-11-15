@@ -286,17 +286,30 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `wordpressCom` (`siteRouteUrl`, `withSiteToken`: WordPress.com's
   `/wp/v2/sites/{id}/` with a bearer token). DEV's (`devto/`, Forem's API
   v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a 200) take Markdown written by `domain/article-markdown.ts` alone, where
-  a member's text stays text: ASCII punctuation escaped, `& < > { }` as
-  entities (Forem runs Liquid over the HTML), `[` escaped (no link or
-  embed); titles go as plain text, which both escape. Each adapter keeps
-  the journal's rules: files sent once (`article_files`, id 0 where the
-  site gives none), the commit after `committing`, a lost answer looked
-  for by title and body (DEV's `/me/all`, Hashnode's latest posts or
-  drafts, a draft's id `draft:<id>`), never sent again. DEV takes one
-  write a second per key (the adapter waits) and deletes nothing
-  (unpublishing sets `published` false); Hashnode cannot publish at a
-  time (`siteStatusNotTaken`) and refuses all without its Pro plan
-  (`platformRefusalCodes.sitePlanRequired`). What each site takes is
+  a member's text stays text: ASCII punctuation escaped, `& < >` as
+  entities, `[` escaped (no link or embed). Hashnode reads CommonMark
+  (`{ }` as entities too); DEV Forem's dialect (`"forem"`): Redcarpet,
+  then a sanitiser that decodes entities, then Liquid over the HTML, so
+  each `{` is Liquid's own text `{{ '{' }}`, only what Redcarpet
+  un-escapes is escaped (not `$`), a hard break is two spaces, and a word
+  joiner follows each `@` (no mention). In both, a mark beside a letter
+  is HTML, a paragraph's leading spaces go, and two lists of a kind are
+  an HTML comment apart. Titles go as plain text, which both escape. Each
+  adapter keeps the journal's rules: files sent once (`article_files`, id
+  0 where the site gives none), the commit after `committing`, a lost
+  answer looked for, never sent again. DEV's is found by its body (DEV
+  rewrites titles, `normalize_title`; a title is compared by its letters
+  and digits, and one of the title with another body is `several`),
+  among drafts, published articles, or all for one scheduled there; every
+  write to DEV in the process goes one at a time, a second apart (DEV
+  limits writes by address), a short `Retry-After` waited out in place;
+  DEV deletes nothing (unpublishing sets `published` false) and refuses a
+  `published_at` past, left out once gone by. Hashnode's is found among
+  the latest posts or drafts (a draft's id `draft:<id>`); its reads may
+  come from a cache, so `find` waits a minute past the earlier call; a
+  commit answered with an undocumented code is looked for; it cannot
+  publish at a time (`siteStatusNotTaken`) and refuses all without its
+  Pro plan (`platformRefusalCodes.sitePlanRequired`). What each site takes is
   `domain/site-rules.ts`, checked by `articleViolations` with the
   channel's rules. Tests set the fakes' addresses on
   `testDevToHosts`, `testHashnodeHosts`, `testWordPressComHosts`.
