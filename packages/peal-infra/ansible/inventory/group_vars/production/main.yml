@@ -112,6 +112,8 @@ peal_settings:
   # vault. X's analytics stay off: X bills each read.
   YOUTUBE_CLIENT_ID: 370547380506-ap0ocl7sbbjqgc0n9pihspup46dn9505.apps.googleusercontent.com
   X_CLIENT_ID: OTdwb0p4d0QzaWFpRU5iamYzWGU6MTpjaQ
+  # One WordPress.com app serves both environments, with both callbacks.
+  WORDPRESS_COM_CLIENT_ID: "153160"
   # The day billing is turned on, every workspace on the free tier with more
   # accounts than it includes would stop publishing: set the grace's day
   # (YYYY-MM-DD) with STRIPE_SECRET_KEY, a month or so ahead (the docs'
