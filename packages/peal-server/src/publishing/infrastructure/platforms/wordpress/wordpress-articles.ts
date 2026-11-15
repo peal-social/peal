@@ -36,10 +36,11 @@ import {
 } from "#shared/infrastructure/platforms/public-http.ts";
 import { retryAfterOf } from "#shared/infrastructure/platforms/retry-after.ts";
 import {
-  routeUrl,
-  withSiteCredential,
+  siteRouteUrl,
+  withSiteToken,
   wordpressErrorOf,
 } from "#shared/infrastructure/platforms/wordpress-api.ts";
+import type { WordPressComHosts } from "#shared/infrastructure/platforms/wordpress-api.ts";
 
 // Articles on a WordPress site, through its REST API as the handbook
 // documents it (developer.wordpress.org/rest-api/reference): each file
@@ -236,20 +237,7 @@ const siteTitle = (article: Article) =>
 const signed = (
   token: SiteToken,
   request: HttpClientRequest.HttpClientRequest
-) => request.pipe(withSiteCredential(token.credential));
-
-// The post's own route; `answered` asks for its id and address alone, not
-// the content the site would send back whole.
-const postRoute = (
-  token: SiteToken,
-  platformPostId: string,
-  answered: boolean
-) =>
-  routeUrl(
-    token.root,
-    `/wp/v2/posts/${encodeURIComponent(platformPostId)}`,
-    answered ? { _fields: postFields } : {}
-  );
+) => request.pipe(withSiteToken(token));
 
 // The post's address, when it is a web page's: anything else the site
 // answers is not kept, nor linked to.
@@ -279,11 +267,33 @@ const published = (post: {
 };
 
 /**
- * The calls to WordPress sites. Every request goes through the public
- * HTTP client and the outbound guard, to the API's root the channel keeps.
+ * The calls to WordPress sites: a site of its own, at the API's root the
+ * channel keeps, or a site on WordPress.com, through its API at `hosts`
+ * (its sites' core routes, the same as a site's own). Every request goes
+ * through the public HTTP client and the outbound guard.
  */
-export const wordpressSiteAdapter = Effect.gen(
-  function* wordpressSiteAdapter() {
+export const wordpressSiteAdapter = Effect.fnUntraced(
+  function* wordpressSiteAdapter(hosts: WordPressComHosts) {
+    // A core route of the token's site: its own, or on WordPress.com.
+    const routeOf = (
+      token: SiteToken,
+      route: string,
+      query: Readonly<Record<string, string>> = {}
+    ) => siteRouteUrl(hosts, token, route, query);
+
+    // The post's own route; `answered` asks for its id and address alone,
+    // not the content the site would send back whole.
+    const postRoute = (
+      token: SiteToken,
+      platformPostId: string,
+      answered: boolean
+    ) =>
+      routeOf(
+        token,
+        `/wp/v2/posts/${encodeURIComponent(platformPostId)}`,
+        answered ? { _fields: postFields } : {}
+      );
+
     const store = yield* ArticleStore;
     const journal = yield* ArticleJournal;
     const library = yield* MediaForPublishing;
@@ -309,7 +319,7 @@ export const wordpressSiteAdapter = Effect.gen(
               token,
               HttpClientRequest.post(
                 // Its id and address are all Peal reads of the answer.
-                routeUrl(token.root, "/wp/v2/media", {
+                routeOf(token, "/wp/v2/media", {
                   _fields: "id,source_url",
                 })
               ).pipe(
@@ -345,7 +355,7 @@ export const wordpressSiteAdapter = Effect.gen(
           signed(
             token,
             HttpClientRequest.get(
-              routeUrl(token.root, `/wp/v2/${taxonomy}`, {
+              routeOf(token, `/wp/v2/${taxonomy}`, {
                 _fields: "id,name",
                 per_page: "100",
                 search: wanted,
@@ -366,9 +376,9 @@ export const wordpressSiteAdapter = Effect.gen(
           api,
           signed(
             token,
-            HttpClientRequest.post(
-              routeUrl(token.root, `/wp/v2/${taxonomy}`)
-            ).pipe(HttpClientRequest.bodyJsonUnsafe({ name: wanted }))
+            HttpClientRequest.post(routeOf(token, `/wp/v2/${taxonomy}`)).pipe(
+              HttpClientRequest.bodyJsonUnsafe({ name: wanted })
+            )
           )
         ).pipe(
           // A 400 may be the site having it under a name its search did
@@ -503,7 +513,7 @@ export const wordpressSiteAdapter = Effect.gen(
         signed(
           token,
           HttpClientRequest.get(
-            routeUrl(token.root, "/wp/v2/users/me", { _fields: "id" })
+            routeOf(token, "/wp/v2/users/me", { _fields: "id" })
           )
         )
       ).pipe(Effect.flatMap(sentJson(MeSchema, [200])));
@@ -529,7 +539,7 @@ export const wordpressSiteAdapter = Effect.gen(
           signed(
             token,
             HttpClientRequest.get(
-              routeUrl(token.root, "/wp/v2/posts", {
+              routeOf(token, "/wp/v2/posts", {
                 _fields: "date_gmt,id,link,modified_gmt,title",
                 author: String(me.id),
                 context: "edit",
@@ -625,7 +635,7 @@ export const wordpressSiteAdapter = Effect.gen(
           signed(
             token,
             HttpClientRequest.post(
-              routeUrl(token.root, "/wp/v2/posts", { _fields: postFields })
+              routeOf(token, "/wp/v2/posts", { _fields: postFields })
             ).pipe(HttpClientRequest.bodyJsonUnsafe(fields))
           )
         )

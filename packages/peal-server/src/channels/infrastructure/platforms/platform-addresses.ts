@@ -1,7 +1,7 @@
 import { DataDeletionApi } from "peal-contract";
 import type { MetaApp } from "peal-contract";
 
-import type { Platform } from "#channels/domain/platform.ts";
+import type { ChannelPlatform } from "#channels/domain/platform.ts";
 import { metaAdsCallbackPath } from "#shared/infrastructure/platforms/meta-graph.ts";
 
 import { blueskyPaths } from "./bluesky/bluesky-client.ts";
@@ -13,6 +13,7 @@ import { instagramCallbackPath } from "./meta/instagram-login-authorizer.ts";
 import { threadsCallbackPath } from "./meta/threads-authorizer.ts";
 import { pinterestCallbackPath } from "./pinterest/pinterest-authorizer.ts";
 import { tiktokCallbackPath } from "./tiktok/tiktok-authorizer.ts";
+import { wordpressComCallbackPath } from "./wordpress-com/wordpress-com-authorizer.ts";
 import { xCallbackPath } from "./x/x-authorizer.ts";
 import { youtubeCallbackPath } from "./youtube/youtube-authorizer.ts";
 
@@ -47,6 +48,7 @@ export interface PlatformRegistration {
     | "pinterest"
     | "threads"
     | "tiktok"
+    | "wordpressCom"
     | "x"
     | "youtube";
   /** The platform, and the product of its app, as the command prints it. */
@@ -54,7 +56,7 @@ export interface PlatformRegistration {
   /** What to know before registering them. */
   readonly notes: readonly string[];
   /** The platforms whose channels it connects. */
-  readonly platforms: readonly Platform[];
+  readonly platforms: readonly ChannelPlatform[];
   /**
    * Who gives the platform the addresses: the operator, in the platform's
    * settings for the app, or the server, which needs nobody.
@@ -262,6 +264,17 @@ export const platformRegistrations = (
       platforms: ["pinterest"],
       registeredBy: "operator",
       settings: ["PINTEREST_APP_ID", "PINTEREST_APP_SECRET"],
+    },
+    {
+      addresses: [redirect("Redirect URLs", wordpressComCallbackPath)],
+      id: "wordpressCom",
+      name: "WordPress.com: an application (developer.wordpress.com/apps), of type Web",
+      notes: [
+        "Its sites, and the Jetpack sites a member reaches there, connect as websites, one picked per sign-in: Peal asks for no scope, WordPress.com's single-site access.",
+      ],
+      platforms: ["wordpressCom"],
+      registeredBy: "operator",
+      settings: ["WORDPRESS_COM_CLIENT_ID", "WORDPRESS_COM_CLIENT_SECRET"],
     },
     {
       addresses: [

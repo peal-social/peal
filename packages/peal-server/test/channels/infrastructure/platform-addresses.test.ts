@@ -173,6 +173,7 @@ describe("the addresses to register with each platform", () => {
       pinterest: ["PINTEREST_APP_ID", "PINTEREST_APP_SECRET"],
       threads: ["THREADS_APP_ID", "THREADS_APP_SECRET"],
       tiktok: ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"],
+      wordpressCom: ["WORDPRESS_COM_CLIENT_ID", "WORDPRESS_COM_CLIENT_SECRET"],
       x: ["X_CLIENT_ID", "X_CLIENT_SECRET"],
       youtube: ["YOUTUBE_CLIENT_ID", "YOUTUBE_CLIENT_SECRET"],
     });

@@ -1,6 +1,6 @@
 import { Config, Effect, Option, Redacted } from "effect";
 
-import type { Platform } from "#channels/domain/platform.ts";
+import type { ChannelPlatform } from "#channels/domain/platform.ts";
 import { InvalidPlatformClient } from "#channels/infrastructure/invalid-platform-client.ts";
 
 /**
@@ -32,7 +32,7 @@ const nonBlankSecret = Config.map(
  * the server at startup.
  */
 export const oauthClientConfig = (
-  platform: Platform,
+  platform: ChannelPlatform,
   prefix: string,
   idSuffix = "CLIENT_ID",
   secretSuffix = "CLIENT_SECRET"

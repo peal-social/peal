@@ -35,6 +35,8 @@ import { DisconnectChannel } from "#channels/application/disconnect-channel.ts";
 import { ListChannels } from "#channels/application/list-channels.ts";
 import { OAuthClientDocuments } from "#channels/application/oauth-client-documents.ts";
 import type { AuthorizationCallback } from "#channels/application/platform-authorizer.ts";
+import { SiteSignIns } from "#channels/application/site-sign-ins.ts";
+import type { SiteSignInFailure } from "#channels/application/site-sign-ins.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { allowanceRefusal } from "#shared/api/allowance-reached.ts";
 import type { AllowanceRefusal } from "#shared/api/allowance-reached.ts";
@@ -219,6 +221,34 @@ const siteFailureWith =
         Effect.fail(new SiteNotConnected({ reason })),
     });
 
+// How a website sign-in fails, as the contract tells clients.
+const signInFailureWith =
+  (
+    siteFailure: (
+      failure: ConnectSiteFailure
+    ) => ReturnType<ReturnType<typeof siteFailureWith>>
+  ) =>
+  (failure: SiteSignInFailure) =>
+    Match.valueTags(failure, {
+      AuthorizationDenied: () => refused("denied"),
+      AuthorizationFailed: ({ reason }) =>
+        Effect.logWarning("A website's platform did not authorize a site").pipe(
+          Effect.annotateLogs({ reason }),
+          Effect.andThen(refused("authorizationFailed"))
+        ),
+      ChannelNotFound: () => Effect.fail(new ChannelNotFound()),
+      DatabaseError: siteFailure,
+      InvalidConnectState: () => refused("invalidState"),
+      MissingPermission: siteFailure,
+      MissingTokenKey: siteFailure,
+      PlanLimitReached: siteFailure,
+      PlatformNotConnectable: () => refused("notConfigured"),
+      PlatformUnavailable: siteFailure,
+      ReconnectAccountMismatch: () => refused("accountMismatch"),
+      SiteConnectLimited: siteFailure,
+      SiteRefused: siteFailure,
+    });
+
 export const ChannelsHandlers = HttpApiBuilder.group(
   Api,
   "channels",
@@ -228,6 +258,7 @@ export const ChannelsHandlers = HttpApiBuilder.group(
     const settings = yield* ChannelSettings;
     const connectChannel = yield* ConnectChannel;
     const connectSite = yield* ConnectSite;
+    const siteSignIns = yield* SiteSignIns;
 
     const startFailure = startFailureWith(
       yield* limitRefusal,
@@ -235,6 +266,7 @@ export const ChannelsHandlers = HttpApiBuilder.group(
     );
 
     const siteFailure = siteFailureWith(yield* limitRefusal);
+    const signInFailure = signInFailureWith(siteFailure);
     const completeFailure = completeFailureWith(startFailure);
     const chooseFailure = chooseFailureWith(startFailure);
 
@@ -304,6 +336,30 @@ export const ChannelsHandlers = HttpApiBuilder.group(
               publication: Option.fromUndefinedOr(payload.publication),
             })
             .pipe(Effect.catch(siteFailure));
+
+          return toChannelView(channel);
+        }),
+      startSiteSignIn: ({ params, payload }) =>
+        Effect.gen(function* startSiteSignInHandler() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const authorizationUrl = yield* siteSignIns
+            .start(
+              actor,
+              params.platform,
+              Option.fromUndefinedOr(payload.channelId)
+            )
+            .pipe(Effect.catch(signInFailure));
+
+          return { authorizationUrl };
+        }),
+      completeSiteSignIn: ({ params, payload }) =>
+        Effect.gen(function* completeSiteSignInHandler() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const channel = yield* siteSignIns
+            .complete(actor, params.platform, callbackOf(payload))
+            .pipe(Effect.catch(signInFailure));
 
           return toChannelView(channel);
         }),
@@ -399,6 +455,14 @@ export const ChannelsHandlers = HttpApiBuilder.group(
             instagramConnections: connectable.instagramConnections,
             linkedinConnections: connectable.linkedinConnections,
             platforms: connectable.platforms,
+            sites: [
+              "wordpress" as const,
+              "devto" as const,
+              "hashnode" as const,
+              ...(siteSignIns.configured("wordpressCom")
+                ? ["wordpressCom" as const]
+                : []),
+            ],
           };
         }),
       reconnect: ({ params, query }) =>

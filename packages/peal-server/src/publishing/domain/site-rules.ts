@@ -43,6 +43,14 @@ export const hashnodeSlugOf = (name: string): string =>
     .replaceAll(/[^\p{L}\p{N}]+/gu, "-")
     .replaceAll(/^-+|-+$/gu, "");
 
+const wordpressRules: SiteRules = {
+  maxCategories: maxArticleTerms,
+  maxTags: maxArticleTerms,
+  maxTitleLength: maxArticleTitleLength,
+  takesFuture: true,
+  takesTag: (name) => name.trim() !== "" && name.length <= maxTermLength,
+};
+
 /** Each kind of website's rules. */
 export const siteRules: Readonly<Record<SitePlatform, SiteRules>> = {
   devto: {
@@ -59,11 +67,7 @@ export const siteRules: Readonly<Record<SitePlatform, SiteRules>> = {
     takesFuture: false,
     takesTag: (name) => hashnodeSlugOf(name) !== "" && name.length <= 100,
   },
-  wordpress: {
-    maxCategories: maxArticleTerms,
-    maxTags: maxArticleTerms,
-    maxTitleLength: maxArticleTitleLength,
-    takesFuture: true,
-    takesTag: (name) => name.trim() !== "" && name.length <= maxTermLength,
-  },
+  wordpress: wordpressRules,
+  // WordPress.com runs WordPress: its sites take what WordPress does.
+  wordpressCom: wordpressRules,
 };

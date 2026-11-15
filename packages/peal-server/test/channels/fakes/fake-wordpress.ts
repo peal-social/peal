@@ -89,6 +89,21 @@ export interface FakeWordPressOptions {
   readonly dropsFeatured?: boolean;
   /** Whether the site ignores `modified_after`, as WordPress before 5.7. */
   readonly beforeModifiedAfter?: boolean;
+  /**
+   * The site on WordPress.com instead: its core routes under
+   * `/wp/v2/sites/{blogId}/`, the editor signed in with `token` as a
+   * bearer token, WordPress.com's token exchange (`/oauth2/token`, which
+   * takes `code`) and its description of the site (`/rest/v1.1/sites/…`).
+   */
+  readonly wordpressCom?: FakeWordPressCom;
+}
+
+/** What a site on WordPress.com answers. */
+export interface FakeWordPressCom {
+  readonly blogId: number;
+  readonly capabilities?: Readonly<Record<string, boolean>>;
+  readonly code: string;
+  readonly token: string;
 }
 
 export interface FakeWordPressAnswer {
@@ -503,7 +518,25 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
         };
 
         const route = (request: FakeWordPressRequest): FakeWordPressAnswer => {
-          const user = signedIn(users, request.authorization);
+          const com = options.wordpressCom;
+
+          if (
+            com !== undefined &&
+            request.authorization !== undefined &&
+            request.authorization !== `Bearer ${com.token}`
+          ) {
+            return error(
+              401,
+              "oauth2_invalid_token",
+              "The OAuth2 token is invalid."
+            );
+          }
+
+          const user =
+            com === undefined
+              ? signedIn(users, request.authorization)
+              : users.find(({ id }) => id === editor.id);
+
           const { route: path } = request;
 
           if (request.authorization !== undefined && user === undefined) {
@@ -582,6 +615,69 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
           );
         };
 
+        // What WordPress.com answers apart from its sites' core routes:
+        // the token exchange, and its description of the site.
+        const wordpressComAnswer = (
+          url: URL,
+          body: Buffer,
+          headers: IncomingMessage["headers"]
+        ): FakeWordPressAnswer | null => {
+          const com = options.wordpressCom;
+
+          if (com === undefined) {
+            return null;
+          }
+
+          if (url.pathname === "/oauth2/token") {
+            const form = new URLSearchParams(body.toString());
+
+            return form.get("code") === com.code &&
+              form.get("grant_type") === "authorization_code"
+              ? {
+                  body: {
+                    access_token: com.token,
+                    blog_id: String(com.blogId),
+                    blog_url: `${origin}${homePath}`,
+                    token_type: "bearer",
+                  },
+                  status: 200,
+                }
+              : {
+                  body: {
+                    error: "invalid_grant",
+                    error_description: "Invalid code",
+                  },
+                  status: 400,
+                };
+          }
+
+          if (url.pathname === `/rest/v1.1/sites/${com.blogId}`) {
+            return headers.authorization === `Bearer ${com.token}`
+              ? {
+                  body: {
+                    ID: com.blogId,
+                    URL: `${origin}${homePath}`,
+                    capabilities: com.capabilities ?? {
+                      publish_posts: true,
+                      upload_files: true,
+                    },
+                    icon: { img: `${origin}/icon.png` },
+                    name: "Synthetic Garden Journal",
+                  },
+                  status: 200,
+                }
+              : {
+                  body: {
+                    error: "authorization_required",
+                    message: "An active access token must be used.",
+                  },
+                  status: 403,
+                };
+          }
+
+          return null;
+        };
+
         const answer = async (
           incoming: IncomingMessage,
           response: ServerResponse
@@ -590,7 +686,16 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
           const url = new URL(incoming.url ?? "/", origin);
           const restRoute = url.searchParams.get("rest_route");
 
+          const comPrefix =
+            options.wordpressCom === undefined
+              ? undefined
+              : `/wp/v2/sites/${options.wordpressCom.blogId}/`;
+
           const routeOf = () => {
+            if (comPrefix !== undefined && url.pathname.startsWith(comPrefix)) {
+              return `/wp/v2/${url.pathname.slice(comPrefix.length)}`;
+            }
+
             if (restRoute !== null) {
               return restRoute;
             }
@@ -625,7 +730,16 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
             return;
           }
 
+          const com = wordpressComAnswer(url, body, incoming.headers);
+
+          if (com !== null) {
+            send(response, com);
+
+            return;
+          }
+
           const isApi =
+            (comPrefix !== undefined && url.pathname.startsWith(comPrefix)) ||
             restRoute !== null ||
             (pretty && url.pathname.startsWith("/wp-json"));
 

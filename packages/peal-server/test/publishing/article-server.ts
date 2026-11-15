@@ -250,14 +250,22 @@ const SteeredOutboundGuard = Layer.succeed(
  */
 export const testDevToHosts = { api: "http://127.0.0.1:9" };
 
+/** Where the WordPress.com the test started listens, as `testDevToHosts`. */
+export const testWordPressComHosts = { api: "http://127.0.0.1:9" };
+
 /** Where the Hashnode the test started listens, as `testDevToHosts`. */
 export const testHashnodeHosts = { api: "http://127.0.0.1:9/" };
 
 const SitePublisherTest = routedSitePublisher(
-  Effect.all({
-    hashnode: hashnodeSiteAdapter(testHashnodeHosts),
-    devto: devtoSiteAdapter(testDevToHosts),
-    wordpress: wordpressSiteAdapter,
+  Effect.gen(function* siteAdapters() {
+    const wordpress = yield* wordpressSiteAdapter(testWordPressComHosts);
+
+    return {
+      devto: yield* devtoSiteAdapter(testDevToHosts),
+      hashnode: yield* hashnodeSiteAdapter(testHashnodeHosts),
+      wordpress,
+      wordpressCom: wordpress,
+    };
   })
 ).pipe(
   Layer.provide(

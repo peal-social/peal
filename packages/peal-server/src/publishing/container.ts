@@ -162,6 +162,7 @@ import { XThreadsLive } from "#publishing/infrastructure/x-threads.ts";
 import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
 import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
+import { wordpressComHosts } from "#shared/infrastructure/platforms/wordpress-api.ts";
 
 // The use cases over their adapters, asking whatever ApprovalGate they are
 // given before a post is scheduled.
@@ -772,14 +773,20 @@ export const PublishingCronsLive = Layer.mergeAll(
   QuotaRetentionCron.pipe(Layer.provide(DrizzlePlatformQuota))
 );
 
-// The websites articles go to: WordPress's, DEV's and Hashnode's, with the tokens the channels
+// The websites articles go to: WordPress sites, on WordPress.com too,
+// DEV and Hashnode, with the tokens the channels
 // context hands out and the files the media context does, over the
 // guarded public client.
 const SitePublisherLive = routedSitePublisher(
-  Effect.all({
-    hashnode: hashnodeSiteAdapter(hashnodeHosts),
-    devto: devtoSiteAdapter(devtoHosts),
-    wordpress: wordpressSiteAdapter,
+  Effect.gen(function* siteAdapters() {
+    const wordpress = yield* wordpressSiteAdapter(wordpressComHosts);
+
+    return {
+      devto: yield* devtoSiteAdapter(devtoHosts),
+      hashnode: yield* hashnodeSiteAdapter(hashnodeHosts),
+      wordpress,
+      wordpressCom: wordpress,
+    };
   })
 ).pipe(
   Layer.provide(

@@ -25,6 +25,7 @@ import { channelRoomOf } from "./channel-room.ts";
 import { encryptTokens } from "./channel-tokens.ts";
 import type { MissingTokenKey } from "./missing-token-key.ts";
 import type { IssuedTokens } from "./platform-authorizer.ts";
+import { ReconnectAccountMismatch } from "./reconnect-account-mismatch.ts";
 import type { SiteConnectLimited } from "./site-connect-limited.ts";
 import { SiteConnectPace } from "./site-connect-pace.ts";
 import { SiteRefused } from "./site-refused.ts";
@@ -120,6 +121,24 @@ export class ConnectSite extends Context.Service<
       actor: Actor,
       signIn: SiteKeySignIn
     ) => Effect.Effect<Channel, ConnectSiteFailure>;
+    /**
+     * Keeps the site a sign-in on its platform reached, with its token:
+     * the channel `reconnecting` names, which must be that site, or the
+     * workspace's channel of it, or a new one, which needs room.
+     */
+    readonly connectSigned: (
+      actor: Actor,
+      platform: SitePlatform,
+      grant: {
+        readonly accessToken: Redacted.Redacted;
+        readonly site: VerifiedSite;
+      },
+      reconnecting: Option.Option<Channel>
+    ) => Effect.Effect<Channel, ConnectSiteFailure | ReconnectAccountMismatch>;
+    /** Whether the workspace may take one more channel: its plan's room. */
+    readonly roomFor: (
+      actor: Actor
+    ) => Effect.Effect<void, DatabaseError | PlanLimitReached>;
   }
 >()("peal-server/channels/application/ConnectSite") {
   static readonly layer = Layer.effect(
@@ -375,7 +394,59 @@ export class ConnectSite extends Context.Service<
         }
       );
 
-      return ConnectSite.of({ connect, connectWithKey });
+      const connectSigned = Effect.fn("ConnectSite.connectSigned")(
+        function* connectSigned(
+          actor: Actor,
+          platform: SitePlatform,
+          grant: {
+            readonly accessToken: Redacted.Redacted;
+            readonly site: VerifiedSite;
+          },
+          reconnecting: Option.Option<Channel>
+        ) {
+          const tokens: IssuedTokens = {
+            accessToken: grant.accessToken,
+            expiresAt: Option.none(),
+            refreshToken: Option.none(),
+            renewable: false,
+            scopes: grant.site.scopes,
+          };
+
+          const connected = connectedOf(grant.site);
+
+          if (Option.isSome(reconnecting)) {
+            const channel = reconnecting.value;
+
+            // The sign-in must reach the channel's own site again.
+            if (channel.accountId !== grant.site.accountId) {
+              return yield* new ReconnectAccountMismatch({
+                channelId: channel.id,
+              });
+            }
+
+            return yield* reconnectTo(channel, tokens, connected);
+          }
+
+          const existing = yield* channels.findByAccount(
+            actor.workspaceId,
+            platform,
+            grant.site.accountId
+          );
+
+          if (Option.isSome(existing)) {
+            return yield* reconnectTo(existing.value, tokens, connected);
+          }
+
+          return yield* addOrReconnect(actor, platform, grant.site, tokens);
+        }
+      );
+
+      return ConnectSite.of({
+        connect,
+        connectSigned,
+        connectWithKey,
+        roomFor: (actor) => roomForChannel(actor.workspaceId),
+      });
     })
   );
 }

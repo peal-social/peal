@@ -371,6 +371,8 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
           instagramConnections: [],
           linkedinConnections: [],
           platforms: ["mastodon"],
+          // Without WordPress.com's app, the websites by address and key.
+          sites: ["wordpress", "devto", "hashnode"],
         });
 
         const refused = yield* Effect.flip(
