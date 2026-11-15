@@ -1481,13 +1481,11 @@
     "livePost": {
       "edit": {
         "_id": "Option",
-        "_tag": "Some",
-        "value": "unverified"
+        "_tag": "None"
       },
       "unpublish": {
         "_id": "Option",
-        "_tag": "Some",
-        "value": "unverified"
+        "_tag": "None"
       }
     },
     "lookups": [],
@@ -1587,13 +1585,11 @@
     "livePost": {
       "edit": {
         "_id": "Option",
-        "_tag": "Some",
-        "value": "unverified"
+        "_tag": "None"
       },
       "unpublish": {
         "_id": "Option",
-        "_tag": "Some",
-        "value": "unverified"
+        "_tag": "None"
       }
     },
     "lookups": [],

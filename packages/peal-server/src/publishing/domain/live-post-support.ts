@@ -57,10 +57,7 @@ export const livePostSupport = {
   // attachments field", so an edit that sends none keeps them), each with
   // `thread_id` for a message in a thread. Read 2026-11-16.
   // https://docs.discord.com/developers/resources/webhook
-  discord: {
-    edit: blockedBy("unverified"),
-    unpublish: blockedBy("unverified"),
-  },
+  discord: { edit: can, unpublish: can },
   // Page posts: `DELETE /{page_post_id}` is documented in the Pages API,
   // and the Graph reference says "Only select developers can perform this
   // operation using the API": whether Peal's app may is not known.
@@ -118,10 +115,7 @@ export const livePostSupport = {
   // replace a text or a caption, with no time limit stated for a bot's
   // own message. Bot API 10.4, read 2026-11-16.
   // https://core.telegram.org/bots/api
-  telegram: {
-    edit: blockedBy("unverified"),
-    unpublish: blockedBy("unverified"),
-  },
+  telegram: { edit: can, unpublish: can },
   // `DELETE /{threads-media-id}` needs `threads_delete`, which Peal does
   // not ask for; Threads documents no edit call.
   // https://developers.facebook.com/docs/threads/posts/delete-posts

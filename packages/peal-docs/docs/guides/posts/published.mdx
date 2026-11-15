@@ -15,6 +15,8 @@ Take back a post that went out, correct its text on the platforms that allow it,
 | ----------------------- | --------- | ---- | -------------------------------------------------------------------------------------- |
 | Mastodon                | Yes       | Yes  |                                                                                        |
 | Google Business Profile | Yes       | Yes  |                                                                                        |
+| Discord                 | Yes       | Yes  |                                                                                        |
+| Telegram                | Yes       | Yes  | Telegram deletes a message only within 48 hours of sending it                          |
 | Bluesky                 | Yes       | No   | Bluesky has no call to edit a post                                                     |
 | X                       | Yes       | No   | X does not say which posts may be edited, or on which access                           |
 | Pinterest               | Yes       | No   | Editing a Pin is in beta, not open to every app                                        |
@@ -24,8 +26,6 @@ Take back a post that went out, correct its text on the platforms that allow it,
 | Instagram               | No        | No   | Deleting needs a permission Meta grants after a review; Instagram has no call to edit  |
 | YouTube                 | No        | No   | It needs a wider permission than the one Peal asks for                                 |
 | TikTok                  | No        | No   | TikTok's API has no call to delete or edit a post                                      |
-| Discord                 | No        | No   | Not built yet                                                                          |
-| Telegram                | No        | No   | Not built yet                                                                          |
 
 Where it cannot, delete the post on the platform itself. Peal cannot unpublish either:
 
@@ -61,7 +61,7 @@ The deletion runs in the background, with the channel's other calls, one at a ti
 
 ## Edit a published post [#edit-live]
 
-A post that went out can have its text corrected on Mastodon and Google Business Profile.
+A post that went out can have its text corrected on Mastodon, Google Business Profile, Discord and Telegram.
 
 <Steps>
   <Step title="Choose Edit">

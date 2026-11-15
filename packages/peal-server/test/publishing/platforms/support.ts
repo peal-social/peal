@@ -827,11 +827,17 @@ export const liveClientsOn = (options: {
   LivePostClients.pipe(
     Effect.provide(
       livePostClientsWith({
+        discordHosts: options.platforms.discordHosts ?? {
+          api: "http://127.0.0.1:9",
+        },
         googleBusinessApi:
           options.platforms.googleBusinessApi ?? new URL("http://127.0.0.1:9"),
         mastodonScheme: "http:",
         pinterestApi:
           options.platforms.pinterestApi ?? new URL("http://127.0.0.1:9"),
+        telegramHosts: options.platforms.telegramHosts ?? {
+          api: "http://127.0.0.1:9",
+        },
         xApi: options.platforms.xApi ?? new URL("http://127.0.0.1:9"),
       }).pipe(
         Layer.provide(
