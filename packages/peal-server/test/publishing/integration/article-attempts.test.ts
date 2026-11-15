@@ -1260,7 +1260,9 @@ describe("an attempt at sending an article", () => {
 
           yield* eventually(
             "the article is being sent",
-            stateOf(draft.id).pipe(Effect.map((state) => state === "publishing"))
+            stateOf(draft.id).pipe(
+              Effect.map((state) => state === "publishing")
+            )
           );
 
           // Meanwhile attempt 1 is recorded as having made the post, as a

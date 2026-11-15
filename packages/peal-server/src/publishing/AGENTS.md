@@ -243,7 +243,16 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `SitePublisher.find`), adopting it when found. A turn that cannot be
   asked, the database failing, counts as taken: the attempt keeps
   waiting. `drop` forgets only a call that never left, and `committing`
-  fails, so the post's call is not made, when its row is gone. WordPress
+  fails, so the post's call is not made, when its row is gone. An
+  attempt the database keeps from running, past its retries, is made
+  again a minute later (`retryingDatabaseOr`), and an attempt, in its
+  turn, first answers what an earlier attempt of its round ended with
+  when that was published or to check (`ArticleJournal.endedBefore`);
+  the round's refusals are read only for an outcome they decide. A
+  search for a post looks at the user's posts of its title made or
+  changed within a day of the call, page by page; several are to check,
+  never sent, and a search the site refuses leaves the article to check
+  (`searchRefused`). WordPress
   drops a featured image its library lost and answers `featured_media`
   0: the cover alone is then sent once more, over that post, and one the
   site drops again is not offered any more
