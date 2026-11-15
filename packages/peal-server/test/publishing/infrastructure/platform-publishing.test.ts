@@ -50,6 +50,7 @@ const platformsOn = (instanceUrl: string) =>
   RoutedPlatformPublisher.pipe(
     Layer.provide(
       platformClientsWith({
+        discordHosts: { api: instanceUrl },
         googleBusinessApi: new URL(instanceUrl),
         linkedinApi: new URL(instanceUrl),
         mastodonScheme: "http:",

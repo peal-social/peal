@@ -105,7 +105,7 @@ describe(multipartFormBody, () => {
 
   it.effect("frames fields alone", () =>
     Effect.gen(function* fieldsAlone() {
-      const body = multipartFormBody({
+      const body = multipartFormBody<never, never>({
         boundary: "peal-synthetic",
         fields: [{ name: "chat_id", value: "-100" }],
         files: [],
