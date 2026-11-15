@@ -30,6 +30,7 @@ import { isSocialChannel } from "#channels/application/social-channels.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
+import { SitePlatformSchema } from "#shared/domain/platform.ts";
 import { makeDatabasePing } from "#shared/infrastructure/database-ping.ts";
 import { userPrincipalOf } from "#workspace/api/principal.ts";
 import { AccountDirectory } from "#workspace/application/account-directory.ts";
@@ -201,23 +202,35 @@ const BasicToolsLive = BasicTools.toLayer(
 
           const { counts, items } = yield* matching(Option.none());
 
-          // Without a platform asked, the counts leave the websites out,
-          // as the list does.
-          const websites =
+          // Without a platform asked, the counts leave every website
+          // out, as the list does.
+          const siteCounts =
             platform === undefined
-              ? yield* listChannels
-                  .search(actor, {
-                    after: Option.none(),
-                    limit: 1,
-                    platform: Option.some("wordpress"),
-                    query: Option.fromUndefinedOr(search),
-                    status: Option.fromUndefinedOr(status),
-                  })
-                  .pipe(
-                    Effect.map((page) => page.counts),
-                    Effect.catchTags(readingFailures)
+              ? yield* Effect.all(
+                  SitePlatformSchema.literals.map((site) =>
+                    listChannels
+                      .search(actor, {
+                        after: Option.none(),
+                        limit: 1,
+                        platform: Option.some(site),
+                        query: Option.fromUndefinedOr(search),
+                        status: Option.fromUndefinedOr(status),
+                      })
+                      .pipe(
+                        Effect.map((page) => page.counts),
+                        Effect.catchTags(readingFailures)
+                      )
                   )
-              : { active: 0, disabled: 0, refreshNeeded: 0 };
+                )
+              : [];
+
+          const websites = { active: 0, disabled: 0, refreshNeeded: 0 };
+
+          for (const each of siteCounts) {
+            websites.active += each.active;
+            websites.disabled += each.disabled;
+            websites.refreshNeeded += each.refreshNeeded;
+          }
 
           return {
             channels: items.filter(isSocialChannel).map(toChannelView),
