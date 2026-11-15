@@ -223,7 +223,7 @@ export class ConnectChannel extends Context.Service<
       channelId: string,
       // `messages`: the sign-in also asks for the account's direct
       // messages, where the platform asks for them apart.
-      options?: { readonly messages?: boolean }
+      options?: { readonly messages?: boolean; readonly reposts?: boolean }
     ) => Effect.Effect<string, ReconnectFailure>;
     /**
      * The channel the account became, or the one it reconnected, or the
@@ -477,7 +477,7 @@ export class ConnectChannel extends Context.Service<
         function* reconnect(
           actor: Actor,
           channelId: string,
-          options?: { readonly messages?: boolean }
+          options?: { readonly messages?: boolean; readonly reposts?: boolean }
         ) {
           yield* Effect.fromResult(authorize(actor, "channel:connect"));
 
@@ -494,6 +494,7 @@ export class ConnectChannel extends Context.Service<
             instance: Option.none(),
             messages: options?.messages ?? false,
             reconnecting: Option.some(channel),
+            reposts: options?.reposts ?? false,
           });
 
           return yield* saveAttempt(

@@ -38,6 +38,8 @@
 //! - **channelSets**
 //! - **queues**
 //! - **recycling**
+//! - **followUps**
+//! - **inboxRules**
 //! - **feeds**
 //! - **channelDefaults**
 //! - **shortLinks**
@@ -58,9 +60,11 @@ pub mod channels;
 pub mod connect_links;
 pub mod credential;
 pub mod feeds;
+pub mod follow_ups;
 pub mod inbox;
 pub mod inbox_messages;
 pub mod inbox_reviews;
+pub mod inbox_rules;
 pub mod invitations;
 pub mod lookups;
 pub mod media;
@@ -121,6 +125,8 @@ pub struct PealClient {
     pub channel_sets: ChannelSetsClient,
     pub queues: QueuesClient,
     pub recycling: RecyclingClient,
+    pub follow_ups: FollowUpsClient,
+    pub inbox_rules: InboxRulesClient,
     pub feeds: FeedsClient,
     pub channel_defaults: ChannelDefaultsClient,
     pub short_links: ShortLinksClient,
@@ -166,6 +172,8 @@ impl PealClient {
             channel_sets: ChannelSetsClient::new(config.clone())?,
             queues: QueuesClient::new(config.clone())?,
             recycling: RecyclingClient::new(config.clone())?,
+            follow_ups: FollowUpsClient::new(config.clone())?,
+            inbox_rules: InboxRulesClient::new(config.clone())?,
             feeds: FeedsClient::new(config.clone())?,
             channel_defaults: ChannelDefaultsClient::new(config.clone())?,
             short_links: ShortLinksClient::new(config.clone())?,
@@ -187,9 +195,11 @@ pub use channels::ChannelsClient;
 pub use connect_links::ConnectLinksClient;
 pub use credential::CredentialClient;
 pub use feeds::FeedsClient;
+pub use follow_ups::FollowUpsClient;
 pub use inbox::InboxClient;
 pub use inbox_messages::InboxMessagesClient;
 pub use inbox_reviews::InboxReviewsClient;
+pub use inbox_rules::InboxRulesClient;
 pub use invitations::InvitationsClient;
 pub use lookups::LookupsClient;
 pub use media::MediaClient;

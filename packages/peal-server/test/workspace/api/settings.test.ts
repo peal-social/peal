@@ -322,6 +322,7 @@ const PortsLive = Layer.mergeAll(
               usageReports: [],
             },
             channels: [],
+            commentRules: [],
             media: [],
             posts: [],
             review: {
@@ -334,6 +335,7 @@ const PortsLive = Layer.mergeAll(
               channelDefaults: [],
               channelSets: [],
               feeds: [],
+              followUpRules: [],
               queues: [
                 {
                   channelIds: ["019a6f10-0000-7000-8000-0000000000c1"],
