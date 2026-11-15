@@ -273,3 +273,32 @@ release is rolled forward.
 
 2. **It lists a row:** do not roll back past this release; release a fix
    forward instead. Never change the rows by hand.
+
+## Past connect links of several platforms
+
+The release that gives a connect link several platforms (migration
+`embedding-kit-3`) keeps them in `channels.connect_links.platforms`,
+what a link connected so far in `connected_platforms` and `channel_ids`,
+and the platform a sign-in started at in `started_platform`. The release
+before ignores the three, and reads `platform`, the first: nothing fails
+to decode, but a link of several platforms still waiting works there for
+its first platform alone, and completes at its next connection, its
+`channelIds` then naming that one channel only (those it connected before
+stay connected). A sign-in started at another platform then completes
+nothing (`invalidState`). The partner accent colour
+(`workspace.partners.accent_color`) is ignored, and the hosted pages show
+none. A channel move's idempotency key keeps the channel it made in
+`workspace.partner_idempotency_keys.channel_id`, which the release before,
+which has no move, ignores.
+
+1. **Links of several platforms still waiting:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id, platforms, connected_platforms FROM channels.connect_links WHERE status = 'pending' AND cardinality(platforms) > 1 AND expires_at > now()"
+   ```
+
+2. **It lists a row:** roll back only once the partners those workspaces
+   belong to know their links offer the first platform alone until the
+   release comes back, or once the links have expired. Never change the
+   rows by hand.

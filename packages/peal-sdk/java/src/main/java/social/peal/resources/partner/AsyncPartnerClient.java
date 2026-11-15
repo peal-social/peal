@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
+import social.peal.resources.partner.requests.ChannelMove;
 import social.peal.resources.partner.requests.CustomerWorkspaceChange;
 import social.peal.resources.partner.requests.DeleteWorkspacePartnerRequest;
 import social.peal.resources.partner.requests.GetWorkspacePartnerRequest;
@@ -15,6 +16,7 @@ import social.peal.resources.partner.requests.NewCustomerWorkspace;
 import social.peal.resources.partner.requests.OverviewPartnerRequest;
 import social.peal.types.CustomerWorkspace;
 import social.peal.types.CustomerWorkspacePage;
+import social.peal.types.MovedChannel;
 import social.peal.types.PartnerHealth;
 import social.peal.types.PartnerOverview;
 
@@ -385,6 +387,37 @@ public class AsyncPartnerClient {
         CompletableFuture<PealClientHttpResponse<CustomerWorkspace>> rawFuture =
                 this.rawClient.updateWorkspace(workspaceId, request, requestOptions);
         CompletableFuture<CustomerWorkspace> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Moves a channel from a workspace the partner owns to another one it owns (<code>toWorkspaceId</code>), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id, and <code>postsLeft</code>: how many posts of the workspace it left still had it to go out on. In the workspace it left, it is disconnected (<code>channel.disconnected</code> there, <code>channel.connected</code> in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 <code>ChannelAccountTaken</code>. While a call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review or a direct message), or another request holds either workspace for more than 5 seconds (an offboarding), it answers 409 <code>WorkspaceBusy</code>: send it again a moment later. Reads through the channel are not waited for. Send an <code>Idempotency-Key</code> header to make the request safe to send again: within 24 hours, the same key with the same request answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 <code>IdempotencyKeyReused</code>. Keys are the partner's, shared with workspace creation. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
+     */
+    public CompletableFuture<MovedChannel> moveChannel(String workspaceId, String channelId, ChannelMove request) {
+        CompletableFuture<PealClientHttpResponse<MovedChannel>> rawFuture =
+                this.rawClient.moveChannel(workspaceId, channelId, request);
+        CompletableFuture<MovedChannel> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Moves a channel from a workspace the partner owns to another one it owns (<code>toWorkspaceId</code>), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id, and <code>postsLeft</code>: how many posts of the workspace it left still had it to go out on. In the workspace it left, it is disconnected (<code>channel.disconnected</code> there, <code>channel.connected</code> in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 <code>ChannelAccountTaken</code>. While a call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review or a direct message), or another request holds either workspace for more than 5 seconds (an offboarding), it answers 409 <code>WorkspaceBusy</code>: send it again a moment later. Reads through the channel are not waited for. Send an <code>Idempotency-Key</code> header to make the request safe to send again: within 24 hours, the same key with the same request answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 <code>IdempotencyKeyReused</code>. Keys are the partner's, shared with workspace creation. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
+     */
+    public CompletableFuture<MovedChannel> moveChannel(
+            String workspaceId, String channelId, ChannelMove request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<MovedChannel>> rawFuture =
+                this.rawClient.moveChannel(workspaceId, channelId, request, requestOptions);
+        CompletableFuture<MovedChannel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
                 rawFuture.cancel(true);

@@ -182,6 +182,11 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   erased, and its jobs are stopped with it (`PublicationScheduler.cancel`
   and `cancelRound`); one that wakes all the same finds its target gone
   and ends `superseded`, sending nothing.
+  `PostRecords.ensureChannelIdle` is the same check for one channel's
+  targets, live changes and follow-ups `sending` with a claimed call
+  (`lockRounds` and `lockOpen` with a channel, `lockFollowUpCalls`),
+  held in the caller's transaction: a channel moving to another
+  workspace waits for no scheduled post, and for no call but its own.
 - An article (`domain/article.ts`, `Articles`, `publishing.articles`) is
   a sibling of a post, never one: a title, a body, an excerpt, tags,
   categories, a cover, for one website's channel (`SiteChannels`,

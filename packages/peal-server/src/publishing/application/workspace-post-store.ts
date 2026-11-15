@@ -9,7 +9,12 @@ import type {
   PostRecord,
   SavedItemsRecord,
 } from "#shared/application/personal-data.ts";
-import type { PostId, UserId, WorkspaceId } from "#shared/domain/ids.ts";
+import type {
+  ChannelId,
+  PostId,
+  UserId,
+  WorkspaceId,
+} from "#shared/domain/ids.ts";
 
 import type { ExecutionId } from "./publication-scheduler.ts";
 
@@ -49,11 +54,31 @@ export class WorkspacePostStore extends Context.Service<
      * call to its platform is in flight: begun in the journal, and not
      * ended. A call begins by writing its journal row under the target, so
      * none can begin while this transaction holds the target, nor after it
-     * deleted it.
+     * deleted it. With `channelId`, the targets on that channel alone.
      */
     readonly lockRounds: (
-      workspaceId: WorkspaceId
+      workspaceId: WorkspaceId,
+      channelId?: ChannelId
     ) => Effect.Effect<readonly OpenRound[], DatabaseError>;
+    /**
+     * Locks the workspace's follow-ups on the channel that are on their
+     * way (`sending`) until the transaction ends, and says whether one's
+     * call is claimed: begun at its platform, and not ended. A gate
+     * claims a call under the follow-up, so none begins while this holds
+     * it.
+     */
+    /**
+     * How many of the workspace's posts still have a target on the
+     * channel to go out: awaiting approval, scheduled or publishing.
+     */
+    readonly countWaitingOn: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
+    ) => Effect.Effect<number, DatabaseError>;
+    readonly lockFollowUpCalls: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
+    ) => Effect.Effect<boolean, DatabaseError>;
     /** The workspace's posts with their targets, oldest first. */
     readonly exportAll: (
       workspaceId: WorkspaceId

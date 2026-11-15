@@ -1,0 +1,81 @@
+import { Context } from "effect";
+import type { DateTime, Effect, Option } from "effect";
+
+import type { DatabaseError } from "#shared/application/database-error.ts";
+import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
+import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
+import type { Platform } from "#shared/domain/platform.ts";
+
+import type { AccountConnectedThere } from "./account-connected-there.ts";
+import type { CustomerChannelNotFound } from "./customer-channel-not-found.ts";
+import type { CustomerWorkspaceNotFound } from "./customer-workspace-not-found.ts";
+import type { MoveKeyClaimed } from "./move-key-claimed.ts";
+import type { WorkspaceBusy } from "./workspace-busy.ts";
+
+/** A channel as it stands in the workspace it was moved to. */
+export interface MovedChannel {
+  readonly avatarUrl: Option.Option<string>;
+  readonly connection: Option.Option<ChannelConnection>;
+  readonly displayName: Option.Option<string>;
+  readonly handle: string;
+  readonly id: string;
+  readonly platform: Platform;
+  readonly status:
+    | { readonly _tag: "active" }
+    | { readonly _tag: "disabled"; readonly refreshNeeded: boolean }
+    | { readonly _tag: "refreshNeeded" };
+  /** When it must be reconnected by, for a token Peal cannot renew. */
+  readonly tokenExpiresAt: Option.Option<DateTime.Utc>;
+}
+
+/**
+ * Moves a channel between two workspaces of one pool, as the channels
+ * context moves one (`ChannelMoves`), once nothing is being sent through
+ * it for the workspace it leaves (publishing's posts and their changes):
+ * refused with `WorkspaceBusy` while a call is in flight.
+ */
+export class ChannelMover extends Context.Service<
+  ChannelMover,
+  {
+    /** The channel of the workspace as it now stands, if it has it. */
+    readonly current: (
+      workspaceId: WorkspaceId,
+      channelId: string
+    ) => Effect.Effect<Option.Option<MovedChannel>, DatabaseError>;
+    /**
+     * How many of the workspace's posts still have a target on the
+     * channel to go out, which fail there once the channel has moved.
+     */
+    readonly postsLeft: (
+      workspaceId: WorkspaceId,
+      channelId: string
+    ) => Effect.Effect<number, DatabaseError>;
+    readonly move: (move: {
+      /** The id the channel takes where it goes. */
+      readonly as: ChannelId;
+      readonly channelId: string;
+      readonly from: WorkspaceId;
+      /**
+       * What the caller checks first, in the move's transaction: that
+       * both workspaces are still the partner's.
+       */
+      readonly inside: Effect.Effect<
+        void,
+        CustomerWorkspaceNotFound | DatabaseError | MoveKeyClaimed
+      >;
+      readonly to: WorkspaceId;
+    }) => Effect.Effect<
+      {
+        readonly channel: MovedChannel;
+        /** As `postsLeft` counted them, in the move's transaction. */
+        readonly postsLeft: number;
+      },
+      | AccountConnectedThere
+      | CustomerChannelNotFound
+      | CustomerWorkspaceNotFound
+      | DatabaseError
+      | MoveKeyClaimed
+      | WorkspaceBusy
+    >;
+  }
+>()("peal-server/workspace/application/ChannelMover") {}

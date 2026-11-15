@@ -1,0 +1,26 @@
+using global::System.Text.Json.Serialization;
+using Peal.Core;
+
+namespace Peal;
+
+[Serializable]
+public record ChannelMove
+{
+    [JsonIgnore]
+    public required string WorkspaceId { get; set; }
+
+    [JsonIgnore]
+    public required string ChannelId { get; set; }
+
+    [JsonIgnore]
+    public string? IdempotencyKey { get; set; }
+
+    [JsonPropertyName("toWorkspaceId")]
+    public required string ToWorkspaceId { get; set; }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return JsonUtils.Serialize(this);
+    }
+}

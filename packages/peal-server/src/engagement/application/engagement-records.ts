@@ -16,6 +16,8 @@ import type {
 } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
+import type { SendsInFlight } from "./sends-in-flight.ts";
+
 /**
  * What engagement keeps about a workspace or a user, for the workspace
  * context when data is exported or erased. A workspace's threads, the
@@ -71,6 +73,17 @@ export class EngagementRecords extends Context.Service<
     readonly exportUserMessages: (
       userId: UserId
     ) => Effect.Effect<readonly SentMessageRecord[], DatabaseError>;
+    /**
+     * Refused while a reply, an answer to a review or a direct message of
+     * the workspace is on its way through the channel, its call claimed
+     * and not ended. In the caller's transaction, those on their way stay
+     * held until it ends, so no call claims one meanwhile: it then finds
+     * the channel as the transaction left it.
+     */
+    readonly ensureChannelIdle: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
+    ) => Effect.Effect<void, DatabaseError | SendsInFlight>;
     /**
      * Deletes the workspace's threads, comments, reviews, conversations
      * and what was sent to them.

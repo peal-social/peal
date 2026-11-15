@@ -12,7 +12,7 @@ const IdRowsSchema = Schema.Array(Schema.Struct({ id: Schema.String }));
 
 // Posts, targets, channels and notices have UUIDv7 ids: a random UUID with
 // the version digit of v7 reads as one.
-const newUuid7 = (): string => {
+export const newUuid7 = (): string => {
   const random = randomUUID();
 
   return `${random.slice(0, 14)}7${random.slice(15)}`;

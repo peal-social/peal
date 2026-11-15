@@ -225,6 +225,7 @@ require_relative "peal/partner/types/new_customer_workspace"
 require_relative "peal/partner/types/get_workspace_partner_request"
 require_relative "peal/partner/types/delete_workspace_partner_request"
 require_relative "peal/partner/types/customer_workspace_change"
+require_relative "peal/partner/types/channel_move"
 require_relative "peal/partner_usage/client"
 require_relative "peal/partner_usage/types/get_partner_usage_request"
 require_relative "peal/partner_account/client"
@@ -768,6 +769,7 @@ module Peal
     autoload :ChannelStatusRefreshNeeded, ::File.join(__dir__, "peal/types/channel_status_refresh_needed")
     autoload :ChannelStatus, ::File.join(__dir__, "peal/types/channel_status")
     autoload :Channel, ::File.join(__dir__, "peal/types/channel")
+    autoload :ChannelAccountTakenEncoded, ::File.join(__dir__, "peal/types/channel_account_taken_encoded")
     autoload :ChannelCannotPostEncodedTag, ::File.join(__dir__, "peal/types/channel_cannot_post_encoded_tag")
     autoload :ChannelCannotPostEncodedReason, ::File.join(__dir__, "peal/types/channel_cannot_post_encoded_reason")
     autoload :ChannelCannotPostEncoded, ::File.join(__dir__, "peal/types/channel_cannot_post_encoded")
@@ -1053,6 +1055,7 @@ module Peal
     autoload :MessagePendingEncoded, ::File.join(__dir__, "peal/types/message_pending_encoded")
     autoload :MeteredPosts, ::File.join(__dir__, "peal/types/metered_posts")
     autoload :MetricsSnapshot, ::File.join(__dir__, "peal/types/metrics_snapshot")
+    autoload :MovedChannel, ::File.join(__dir__, "peal/types/moved_channel")
     autoload :SpecialAdCategory, ::File.join(__dir__, "peal/types/special_ad_category")
     autoload :NewBoost, ::File.join(__dir__, "peal/types/new_boost")
     autoload :NotRecyclableReason, ::File.join(__dir__, "peal/types/not_recyclable_reason")

@@ -19,6 +19,8 @@ use Peal\Types\CustomerWorkspacePage;
 use Peal\Partner\Requests\NewCustomerWorkspace;
 use Peal\Types\CustomerWorkspace;
 use Peal\Partner\Requests\CustomerWorkspaceChange;
+use Peal\Partner\Requests\ChannelMove;
+use Peal\Types\MovedChannel;
 
 class PartnerClient
 {
@@ -453,6 +455,74 @@ class PartnerClient
                     return null;
                 }
                 return CustomerWorkspace::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Moves a channel from a workspace the partner owns to another one it owns (`toWorkspaceId`), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id, and `postsLeft`: how many posts of the workspace it left still had it to go out on. In the workspace it left, it is disconnected (`channel.disconnected` there, `channel.connected` in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 `ChannelAccountTaken`. While a call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review or a direct message), or another request holds either workspace for more than 5 seconds (an offboarding), it answers 409 `WorkspaceBusy`: send it again a moment later. Reads through the channel are not waited for. Send an `Idempotency-Key` header to make the request safe to send again: within 24 hours, the same key with the same request answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 `IdempotencyKeyReused`. Keys are the partner's, shared with workspace creation. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (`Authorization: Bearer peal_partner_…`): any other credential answers 403.
+     *
+     * Example:
+     * ```php
+     * $client->partner->moveChannel(
+     *     'workspaceId',
+     *     'channelId',
+     *     new ChannelMove([
+     *         'toWorkspaceId' => 'toWorkspaceId',
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $workspaceId
+     * @param string $channelId
+     * @param ChannelMove $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?MovedChannel
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function moveChannel(string $workspaceId, string $channelId, ChannelMove $request, ?array $options = null): ?MovedChannel
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        $headers = [];
+        if ($request->idempotencyKey != null) {
+            $headers['idempotency-key'] = $request->idempotencyKey;
+        }
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/partner/workspaces/{$workspaceId}/channels/{$channelId}/move",
+                    method: HttpMethod::POST,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return MovedChannel::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

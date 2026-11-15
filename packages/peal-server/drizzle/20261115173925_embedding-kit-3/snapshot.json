@@ -1,0 +1,183 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "3c668ef8-7a1f-4d65-879e-9bef64a9acec",
+  "prevIds": [
+    "3b39ae36-eba9-410e-8b16-0178946e6e14"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "channels",
+        "connect_links",
+        "platforms"
+      ],
+      "writes": [
+        "s|col|channels.connect_links.platforms",
+        "n|col|channels.connect_links.platforms",
+        "e|col|channels.connect_links.platforms"
+      ],
+      "reads": [
+        "n|tbl|channels.connect_links",
+        "n|sch|channels"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "channels",
+        "connect_links",
+        "connected_platforms"
+      ],
+      "writes": [
+        "s|col|channels.connect_links.connected_platforms",
+        "n|col|channels.connect_links.connected_platforms",
+        "e|col|channels.connect_links.connected_platforms"
+      ],
+      "reads": [
+        "n|tbl|channels.connect_links",
+        "n|sch|channels"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "channels",
+        "connect_links",
+        "started_platform"
+      ],
+      "writes": [
+        "s|col|channels.connect_links.started_platform",
+        "n|col|channels.connect_links.started_platform",
+        "e|col|channels.connect_links.started_platform"
+      ],
+      "reads": [
+        "n|tbl|channels.connect_links",
+        "n|sch|channels"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "workspace",
+        "partner_idempotency_keys",
+        "channel_id"
+      ],
+      "writes": [
+        "s|col|workspace.partner_idempotency_keys.channel_id",
+        "n|col|workspace.partner_idempotency_keys.channel_id",
+        "e|col|workspace.partner_idempotency_keys.channel_id"
+      ],
+      "reads": [
+        "n|tbl|workspace.partner_idempotency_keys",
+        "n|sch|workspace"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "workspace",
+        "partners",
+        "accent_color"
+      ],
+      "writes": [
+        "s|col|workspace.partners.accent_color",
+        "n|col|workspace.partners.accent_color",
+        "e|col|workspace.partners.accent_color"
+      ],
+      "reads": [
+        "n|tbl|workspace.partners",
+        "n|sch|workspace"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "channels",
+        "table": "connect_links",
+        "name": "platforms",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "channels",
+        "table": "connect_links",
+        "name": "connected_platforms",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "channels",
+        "table": "connect_links",
+        "name": "started_platform",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "partner_idempotency_keys",
+        "name": "channel_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "partners",
+        "name": "accent_color",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}
