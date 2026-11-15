@@ -1,4 +1,4 @@
-import { Console, Effect, Redacted } from "effect";
+import { Console, Effect, Option, Redacted } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import { ChannelSchema, KeySitePlatformSchema } from "peal-contract";
 
@@ -73,7 +73,16 @@ export const connectWebsiteKey = Command.make(
   {
     json: jsonFlag,
     platform: Flag.Literals("platform", KeySitePlatformSchema.literals).pipe(
-      Flag.withDescription("Where the account is: devto (DEV).")
+      Flag.withDescription(
+        "Where the account is: devto (DEV) or hashnode (Hashnode)."
+      )
+    ),
+    publication: Flag.String("publication").pipe(
+      Flag.withMetavar("<address>"),
+      Flag.withDescription(
+        "On Hashnode, the publication to publish to, such as blog.example.com; without it, the member's only one."
+      ),
+      Flag.optional
     ),
     workspace: workspaceFlag,
   },
@@ -87,7 +96,14 @@ export const connectWebsiteKey = Command.make(
       const channel = yield* client.channels
         .connectSiteWithKey({
           params: { workspaceId: workspace.id },
-          payload: { apiKey: Redacted.value(key), platform: input.platform },
+          payload: {
+            apiKey: Redacted.value(key),
+            platform: input.platform,
+            ...Option.match(input.publication, {
+              onNone: () => ({}),
+              onSome: (publication) => ({ publication }),
+            }),
+          },
         })
         .pipe(Effect.mapError(explain(url)));
 
@@ -104,6 +120,6 @@ export const connectWebsiteKey = Command.make(
   )
 ).pipe(
   Command.withDescription(
-    "Connect an account on a publishing platform, to publish articles to it, with a key made there for Peal: on DEV, an API key from Settings, Extensions. The key is never an argument: the command asks for it at a terminal, without echo, or reads it from standard input (peal channels connect-website-key --platform devto < key.txt). An account counts as one channel. Needs channel:connect."
+    "Connect an account on a publishing platform, to publish articles to it, with a key made there for Peal: on DEV, an API key from Settings, Extensions; on Hashnode, a personal access token from the account's settings (Developer), with --publication naming the publication, which needs Hashnode's Pro plan for its API. The key is never an argument: the command asks for it at a terminal, without echo, or reads it from standard input (peal channels connect-website-key --platform devto < key.txt). An account, or a Hashnode publication, counts as one channel. Needs channel:connect."
   )
 );

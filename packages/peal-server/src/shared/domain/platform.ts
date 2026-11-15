@@ -26,14 +26,19 @@ export const platforms: readonly Platform[] = PlatformSchema.literals;
 /**
  * Websites a channel can publish articles to: a WordPress site of its
  * own (`wordpress`, an application password), or an account on a
- * publishing platform (`devto`, by the member's API key).
+ * publishing platform by the member's key: `devto` (an API key),
+ * `hashnode` (a personal access token, and one of its publications).
  */
-export const SitePlatformSchema = Schema.Literals(["wordpress", "devto"]);
+export const SitePlatformSchema = Schema.Literals([
+  "wordpress",
+  "devto",
+  "hashnode",
+]);
 
 export type SitePlatform = typeof SitePlatformSchema.Type;
 
 /** The websites a member connects with a key of theirs. */
-export const KeySitePlatformSchema = Schema.Literals(["devto"]);
+export const KeySitePlatformSchema = Schema.Literals(["devto", "hashnode"]);
 
 export type KeySitePlatform = typeof KeySitePlatformSchema.Type;
 

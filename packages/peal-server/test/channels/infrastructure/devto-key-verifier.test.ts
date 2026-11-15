@@ -16,7 +16,11 @@ const Http = Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard);
 const verifyOn = (api: string, key: string) =>
   devtoVerifyKey({ api }).pipe(
     Effect.flatMap((verify) =>
-      verify({ apiKey: Redacted.make(key), platform: "devto" })
+      verify({
+        apiKey: Redacted.make(key),
+        platform: "devto",
+        publication: Option.none(),
+      })
     )
   );
 

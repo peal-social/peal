@@ -128,6 +128,7 @@ import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified
 import { NotifiedRecyclingNotices } from "#publishing/infrastructure/notified-recycling-notices.ts";
 import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allowance.ts";
 import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
+import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashnode/hashnode-articles.ts";
 import { LivePostClientsLive } from "#publishing/infrastructure/platforms/live-post-clients-live.ts";
 import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platform-clients-live.ts";
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
@@ -159,6 +160,7 @@ import { SendFollowUpV1Live } from "#publishing/infrastructure/workflows/send-fo
 import { WorkspaceRecyclingActors } from "#publishing/infrastructure/workspace-recycling-actors.ts";
 import { XThreadsLive } from "#publishing/infrastructure/x-threads.ts";
 import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 
 // The use cases over their adapters, asking whatever ApprovalGate they are
@@ -770,11 +772,12 @@ export const PublishingCronsLive = Layer.mergeAll(
   QuotaRetentionCron.pipe(Layer.provide(DrizzlePlatformQuota))
 );
 
-// The websites articles go to: WordPress's and DEV's, with the tokens the channels
+// The websites articles go to: WordPress's, DEV's and Hashnode's, with the tokens the channels
 // context hands out and the files the media context does, over the
 // guarded public client.
 const SitePublisherLive = routedSitePublisher(
   Effect.all({
+    hashnode: hashnodeSiteAdapter(hashnodeHosts),
     devto: devtoSiteAdapter(devtoHosts),
     wordpress: wordpressSiteAdapter,
   })

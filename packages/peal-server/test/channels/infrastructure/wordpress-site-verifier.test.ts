@@ -9,6 +9,7 @@ import { Dns } from "effect/net";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import { fakeHttpServer, json } from "#test/channels/fakes/fake-http-server.ts";
 import {
@@ -18,7 +19,10 @@ import {
 } from "#test/channels/fakes/fake-wordpress.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
 
-const VerifierTest = siteVerifiersLive({ devto: devtoHosts }).pipe(
+const VerifierTest = siteVerifiersLive({
+  devto: devtoHosts,
+  hashnode: hashnodeHosts,
+}).pipe(
   Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
 );
 
@@ -215,7 +219,10 @@ layer(VerifierTest)("checking a WordPress site", (it) => {
 });
 
 // The real guard: a site members name is reached at public addresses only.
-const GuardedTest = siteVerifiersLive({ devto: devtoHosts }).pipe(
+const GuardedTest = siteVerifiersLive({
+  devto: devtoHosts,
+  hashnode: hashnodeHosts,
+}).pipe(
   Layer.provide(
     Layer.mergeAll(
       FetchHttpClient.layer,

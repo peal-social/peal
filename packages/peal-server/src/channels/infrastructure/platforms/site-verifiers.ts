@@ -3,13 +3,16 @@ import { Effect, Layer } from "effect";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
 import type { SiteKeySignIn } from "#channels/application/site-verifier.ts";
 import type { DevToHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import type { HashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 
 import { devtoVerifyKey } from "./devto/devto-key-verifier.ts";
+import { hashnodeVerifyKey } from "./hashnode/hashnode-key-verifier.ts";
 import { wordpressSiteVerify } from "./wordpress/wordpress-site-verifier.ts";
 
 /** Where the publishing platforms' APIs are. */
 export interface SiteHosts {
   readonly devto: DevToHosts;
+  readonly hashnode: HashnodeHosts;
 }
 
 /**
@@ -24,8 +27,9 @@ export const siteVerifiersLive = (hosts: SiteHosts) =>
     Effect.gen(function* SiteVerifiersLive() {
       const verify = yield* wordpressSiteVerify;
       const devto = yield* devtoVerifyKey(hosts.devto);
+      const hashnode = yield* hashnodeVerifyKey(hosts.hashnode);
 
-      const byPlatform = { devto } satisfies Record<
+      const byPlatform = { devto, hashnode } satisfies Record<
         SiteKeySignIn["platform"],
         typeof devto
       >;

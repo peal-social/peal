@@ -26,6 +26,7 @@ import {
 } from "#publishing/infrastructure/drizzle-article-store.ts";
 import { ListedSiteChannels } from "#publishing/infrastructure/listed-site-channels.ts";
 import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
+import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashnode/hashnode-articles.ts";
 import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
 import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
 import { SqlArticleSendTurns } from "#publishing/infrastructure/sql-article-send-turns.ts";
@@ -249,8 +250,12 @@ const SteeredOutboundGuard = Layer.succeed(
  */
 export const testDevToHosts = { api: "http://127.0.0.1:9" };
 
+/** Where the Hashnode the test started listens, as `testDevToHosts`. */
+export const testHashnodeHosts = { api: "http://127.0.0.1:9/" };
+
 const SitePublisherTest = routedSitePublisher(
   Effect.all({
+    hashnode: hashnodeSiteAdapter(testHashnodeHosts),
     devto: devtoSiteAdapter(testDevToHosts),
     wordpress: wordpressSiteAdapter,
   })

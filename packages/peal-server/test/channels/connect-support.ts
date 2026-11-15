@@ -33,6 +33,7 @@ import type { YouTubeEndpoints } from "#channels/infrastructure/platforms/youtub
 import { SqlChannelLocks } from "#channels/infrastructure/sql-channel-locks.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
 import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import type { PinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import type { TikTokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
@@ -339,7 +340,7 @@ export const pinterestAuthorizerOn = (hosts: PinterestHosts) =>
 export const WordPressSitesTest = ConnectSite.layer.pipe(
   Layer.provide(
     Layer.merge(
-      siteVerifiersLive({ devto: devtoHosts }).pipe(
+      siteVerifiersLive({ devto: devtoHosts, hashnode: hashnodeHosts }).pipe(
         Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
       ),
       MemorySiteConnectPace

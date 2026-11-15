@@ -15,6 +15,11 @@ import { errorEnvelope } from "./error-envelope.ts";
  * - `otherWayIn`: the platform connects another way: a WordPress site by
  *   its address, user and application password (`connectSite`), a
  *   publishing platform by the member's key (`connectSiteWithKey`).
+ * - `publicationRequired`: the Hashnode member has several publications:
+ *   name the one to publish to.
+ * - `publicationNotFound`: Hashnode has no such publication.
+ * - `planRequired`: the Hashnode publication is not on Hashnode's Pro
+ *   plan, which its API needs for every request.
  */
 export const SiteNotConnectedReasonSchema = Schema.Literals([
   "notWordPress",
@@ -22,6 +27,9 @@ export const SiteNotConnectedReasonSchema = Schema.Literals([
   "credentialsRefused",
   "cannotPublish",
   "otherWayIn",
+  "publicationRequired",
+  "publicationNotFound",
+  "planRequired",
 ]).annotate({ identifier: "SiteNotConnectedReason" });
 
 export type SiteNotConnectedReason = typeof SiteNotConnectedReasonSchema.Type;

@@ -56,6 +56,10 @@ export const platformRefusalCodes = {
   // A BadRequest: the post a later part answers is gone from the platform
   // (Bluesky: its record no longer exists).
   replyTargetGone: "replyTargetGone",
+  // A BadRequest: the site's API refuses the account until its plan is
+  // paid for (Hashnode: every request needs its Pro plan on the
+  // publication). Nothing was sent.
+  sitePlanRequired: "sitePlanRequired",
 } as const;
 
 /**

@@ -396,6 +396,7 @@ layer(ConnectSiteTest)("connecting a website", (it) => {
 const keySignIn = (key = "synthetic key one") => ({
   apiKey: Redacted.make(key),
   platform: "devto" as const,
+  publication: Option.none(),
 });
 
 layer(ConnectSiteTest)("connecting a website with a key", (it) => {

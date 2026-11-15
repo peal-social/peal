@@ -268,12 +268,19 @@ export type ConnectSite = typeof ConnectSiteSchema.Type;
 /**
  * A website to connect with a key the member made on it for Peal: on DEV,
  * an API key from the account's settings (Extensions, "DEV Community API
- * Keys").
+ * Keys"); on Hashnode, a personal access token from the account's
+ * settings (Developer), and the publication to publish to.
  */
 export const ConnectSiteWithKeySchema = Schema.Struct({
   // Kept encrypted, and never shown again.
   apiKey: Schema.String.check(Schema.isBetweenLength(1, 200)),
   platform: KeySitePlatformSchema,
+  // On Hashnode, the publication to publish to: its address (such as
+  // blog.example.com or name.hashnode.dev). Without it, the only one the
+  // token's member has.
+  publication: Schema.optionalKey(
+    Schema.String.check(Schema.isBetweenLength(1, 2048))
+  ),
 }).annotate({ identifier: "ConnectSiteWithKey" });
 
 export type ConnectSiteWithKey = typeof ConnectSiteWithKeySchema.Type;
@@ -362,7 +369,7 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     }).annotateMerge(
       OpenApi.annotations({
         description:
-          "Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions). Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to. A key the platform refuses is SiteNotConnected `credentialsRefused`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.",
+          "Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions); on Hashnode (`hashnode`), a personal access token from the account's settings (Developer) and the publication's address in `publication`, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one to name among several `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every request, `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.",
         summary: "Connect a website with a key",
       })
     ),

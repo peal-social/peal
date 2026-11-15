@@ -41,6 +41,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { ShortLinks } from "#shortlinks/application/short-links.ts";
 import { ShortLinksLive } from "#shortlinks/container.ts";
 import {
@@ -449,7 +450,7 @@ layer(
   Layer.mergeAll(
     capture,
     Layer.succeed(Tracer.Tracer, tracer),
-    siteVerifiersLive({ devto: devtoHosts }).pipe(
+    siteVerifiersLive({ devto: devtoHosts, hashnode: hashnodeHosts }).pipe(
       Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
     )
   ),

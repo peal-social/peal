@@ -26,13 +26,16 @@ export type Platform = typeof PlatformSchema.Type;
 /**
  * The websites a channel can publish articles to: `wordpress`, a WordPress
  * site of its own, reached with an application password; `devto`, an
- * account on DEV (dev.to), reached with the member's API key. The
+ * account on DEV (dev.to), reached with the member's API key; `hashnode`,
+ * a publication on Hashnode, reached with the member's personal access
+ * token (Hashnode's API needs its Pro plan on the publication). The
  * server's list (src/shared/domain/platform.ts) is the source; a test
  * keeps the two equal.
  */
 export const SitePlatformSchema = Schema.Literals([
   "wordpress",
   "devto",
+  "hashnode",
 ]).annotate({
   description: "A kind of website a channel publishes articles to.",
   identifier: "SitePlatform",
@@ -42,10 +45,13 @@ export type SitePlatform = typeof SitePlatformSchema.Type;
 
 /**
  * The websites a member connects with a key of theirs, made on the site
- * for Peal (`connectSiteWithKey`): `devto`. The server's list is the
+ * for Peal (`connectSiteWithKey`): `devto`, `hashnode`. The server's list is the
  * source; a test keeps the two equal.
  */
-export const KeySitePlatformSchema = Schema.Literals(["devto"]).annotate({
+export const KeySitePlatformSchema = Schema.Literals([
+  "devto",
+  "hashnode",
+]).annotate({
   description: "A kind of website a channel connects to with a key.",
   identifier: "KeySitePlatform",
 });

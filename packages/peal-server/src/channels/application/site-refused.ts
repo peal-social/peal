@@ -10,6 +10,10 @@ import { Schema } from "effect";
  * - `credentialsRefused`: the site refused the user and the password.
  * - `cannotPublish`: the user may not publish posts or upload files.
  * - `otherWayIn`: the platform connects another way (by key, by password).
+ * - `publicationRequired`, `publicationNotFound`: the Hashnode publication
+ *   to publish to is to name, or not found.
+ * - `planRequired`: the Hashnode publication lacks the Pro plan its API
+ *   needs.
  */
 export class SiteRefused extends Schema.TaggedError<SiteRefused>()(
   "SiteRefused",
@@ -20,6 +24,9 @@ export class SiteRefused extends Schema.TaggedError<SiteRefused>()(
       "credentialsRefused",
       "cannotPublish",
       "otherWayIn",
+      "publicationRequired",
+      "publicationNotFound",
+      "planRequired",
     ]),
   }
 ) {}

@@ -48,6 +48,7 @@ import {
 } from "#channels/infrastructure/webhook-channel-events.ts";
 import { InboxPlatformsLive } from "#shared/infrastructure/inbox-platforms.ts";
 import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 
 // Who hears of a channel connected or gone: the workspace's webhook
@@ -68,7 +69,7 @@ const PlatformsLive = Layer.mergeAll(
   PlatformAuthorizersLive,
   OAuthClientDocumentsLive,
   MetaSignedRequestsLive,
-  siteVerifiersLive({ devto: devtoHosts })
+  siteVerifiersLive({ devto: devtoHosts, hashnode: hashnodeHosts })
 ).pipe(
   Layer.provide(ChannelPlatformsLive),
   Layer.provide(InboxPlatformsLive),

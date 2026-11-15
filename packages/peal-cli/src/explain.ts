@@ -923,7 +923,13 @@ const reasonOf =
               notWordPress:
                 "the address leads to no WordPress REST API: give the site's home page",
               otherWayIn:
-                "the platform connects another way: a WordPress site of its own with connect-website, DEV with connect-website-key",
+                "the platform connects another way: a WordPress site of its own with connect-website, DEV and Hashnode with connect-website-key",
+              planRequired:
+                "Hashnode answers its API only for a publication on its Pro plan: upgrade the publication on Hashnode, then connect it again",
+              publicationNotFound:
+                "Hashnode has no such publication: give its address, such as blog.example.com",
+              publicationRequired:
+                "the member has several publications on Hashnode: name one with --publication",
             }[reason]
           }. Nothing was saved.`
         ),

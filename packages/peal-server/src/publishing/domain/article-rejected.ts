@@ -14,6 +14,11 @@ export const ArticleViolationSchema = Schema.Union([
     field: Schema.Literals(["categories", "tags"]),
   }),
   Schema.TaggedStruct("siteTimeInPast", {}),
+  // The site cannot publish it at a time itself (Hashnode): send it at
+  // the time instead, as published.
+  Schema.TaggedStruct("siteStatusNotTaken", {
+    status: Schema.Literals(["publish", "draft", "future"]),
+  }),
   Schema.TaggedStruct("timeInPast", {}),
   Schema.TaggedStruct("coverNotImage", {}),
   // The workspace's posts wait for an approval, and articles have none

@@ -301,6 +301,7 @@ export const ChannelsHandlers = HttpApiBuilder.group(
             .connectWithKey(actor, {
               apiKey: Redacted.make(payload.apiKey),
               platform: payload.platform,
+              publication: Option.fromUndefinedOr(payload.publication),
             })
             .pipe(Effect.catch(siteFailure));
 

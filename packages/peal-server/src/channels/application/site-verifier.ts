@@ -21,6 +21,8 @@ export interface SiteSignIn {
 export interface SiteKeySignIn {
   readonly apiKey: Redacted.Redacted;
   readonly platform: KeySitePlatform;
+  /** The publication to publish to, where an account has several. */
+  readonly publication: Option.Option<string>;
 }
 
 /** The website, as its own API describes it to the user who signed in. */
