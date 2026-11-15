@@ -3,8 +3,9 @@
 // application password, the token of a
 // link that applies a request to cancel, the value of a header a webhook
 // endpoint's deliveries carry, two-step verification's key, codes and
-// recovery codes, the image provider's key, or the key of a provider a
-// workspace brought (nor the prompt sent to either). The app runs here as production
+// recovery codes, the image provider's key, the key of a provider a
+// workspace brought (nor the prompt sent to either), or a chat's secret,
+// which its platform carries in the path of every address. The app runs here as production
 // runs it, logging each request and tracing it, and everything a log line
 // or a span would export is searched for each secret.
 import { once } from "node:events";
@@ -30,7 +31,9 @@ import { SqlClient } from "effect/sql";
 import sharp from "sharp";
 
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
+import { ChatVerifier } from "#channels/application/chat-verifier.ts";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
+import { chatVerifiersLive } from "#channels/infrastructure/platforms/chat-verifiers.ts";
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { wordpressComAuthorizer } from "#channels/infrastructure/platforms/wordpress-com/wordpress-com-authorizer.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
@@ -65,15 +68,31 @@ import {
 } from "#test/channels/support.ts";
 import { storageSettings } from "#test/media/support.ts";
 import {
+  discordAccount,
+  discordSecret,
+  discordWebhookId,
+  discordWebhookToken,
+  fakeDiscordApi,
+} from "#test/publishing/fakes/fake-discord-api.ts";
+import {
   facebookPageId,
   fakeMetaGraph,
   graphAppSecret,
 } from "#test/publishing/fakes/fake-meta-graph.ts";
 import {
+  fakeTelegramApi,
+  telegramAccount,
+  telegramBotToken,
+} from "#test/publishing/fakes/fake-telegram-api.ts";
+import { json } from "#test/publishing/fakes/platform-server.ts";
+import {
   attached,
   credentialsOf,
+  discordClientWith,
+  httpClientTimingOutAfter,
   metaClientWith,
   outgoing,
+  telegramClientWith,
   testFile,
 } from "#test/publishing/platforms/support.ts";
 import { liveTarget, OpenLinkStanding } from "#test/shortlinks/support.ts";
@@ -240,6 +259,32 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(site.status, 422);
 
+          // A chat's secrets, refused before they leave: the webhook's
+          // address is on another host, the bot's token has not a bot's
+          // shape.
+          const webhookToken = "synthetic-webhook-token-that-opens-nothing";
+          const botToken = "synthetic-bot-token-that-opens-nothing";
+
+          const chats = yield* Effect.all(
+            [
+              {
+                platform: "discord",
+                webhookUrl: `https://example.com/api/webhooks/1/${webhookToken}`,
+              },
+              { botToken, chat: "@synthetic_news", platform: "telegram" },
+            ].map((body) =>
+              app.request(`/api/workspaces/${customer.id}/channels/chats`, {
+                body,
+                headers: bearer(key),
+              })
+            )
+          );
+
+          assert.deepStrictEqual(
+            chats.map(({ status }) => status),
+            [422, 422]
+          );
+
           // What an address holds is written, which is why no token goes
           // in one: this search would find it.
           const inAddress = "synthetic-marker-in-an-address";
@@ -256,6 +301,8 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.isAbove(spans.length, 10);
 
           for (const [name, secret] of [
+            ["a Discord webhook's token", webhookToken],
+            ["a Telegram bot's token", botToken],
             ["a connect link's token", token],
             ["a partner key", key],
             ["a review link's token", reviewToken],
@@ -554,6 +601,112 @@ layer(
         assert.include(written(), "/api/users/me");
         assert.notInclude(written(), gardener.key);
         assert.notInclude(written(), writerOnHashnode.token);
+      }).pipe(Effect.scoped)
+  );
+});
+
+// Where the chats' fakes listen, set by the test.
+const chatHosts = {
+  discord: { api: "http://127.0.0.1:9" },
+  telegram: { api: "http://127.0.0.1:9" },
+};
+
+// A Discord webhook's token and a Telegram bot's token go in the path of
+// every address their platform is called at: what is written about a
+// connection, a post that goes out, one the platform refuses and one that
+// never gets an answer holds neither.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    chatVerifiersLive(chatHosts).pipe(
+      Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
+    )
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about chats", (it) => {
+  it.effect(
+    "holds no webhook token nor bot token, which every address carries",
+    () =>
+      Effect.gen(function* searched() {
+        const discord = yield* fakeDiscordApi();
+        const telegram = yield* fakeTelegramApi();
+
+        chatHosts.discord.api = discord.url;
+        chatHosts.telegram.api = telegram.url;
+
+        // Connected: each platform is asked.
+        yield* ChatVerifier.use((verifier) =>
+          Effect.all([
+            verifier.verify({
+              platform: "discord",
+              webhookUrl: Redacted.make(
+                `https://discord.com/api/webhooks/${discordWebhookId}/${discordWebhookToken}`
+              ),
+            }),
+            verifier.verify({
+              botToken: Redacted.make(telegramBotToken),
+              chat: "@synthetic_news",
+              platform: "telegram",
+            }),
+          ])
+        ).pipe(Effect.withSpan("test.chat-connections"));
+
+        const slow = yield* httpClientTimingOutAfter("300 millis");
+
+        const onDiscord = yield* discordClientWith({
+          api: discord.url,
+          credentials: credentialsOf(
+            { accountId: discordAccount, platform: "discord" },
+            [discordSecret]
+          ),
+          http: slow,
+        });
+
+        const onTelegram = yield* telegramClientWith({
+          api: telegram.url,
+          credentials: credentialsOf(
+            { accountId: telegramAccount, platform: "telegram" },
+            [telegramBotToken]
+          ),
+          http: slow,
+        });
+
+        // A post goes out, one is refused, and one is never answered.
+        discord.script(`POST ${discord.webhookPath}`, [
+          { _tag: "answer", body: {}, status: 200 },
+        ]);
+        discord.script(`POST ${discord.webhookPath}`, [
+          json({ code: 50_035, message: "Synthetic" }, 400),
+          { _tag: "hang" },
+        ]);
+        telegram.script("sendMessage", [
+          { _tag: "answer", body: { ok: true }, status: 200 },
+        ]);
+
+        const results = yield* Effect.all(
+          [
+            onDiscord.publish(yield* outgoing({ accountId: discordAccount })),
+            onDiscord.publish(yield* outgoing({ accountId: discordAccount })),
+            onDiscord.publish(yield* outgoing({ accountId: discordAccount })),
+            onTelegram.publish(yield* outgoing({ accountId: telegramAccount })),
+            onTelegram.publish(yield* outgoing({ accountId: telegramAccount })),
+          ].map((publish) => publish.pipe(Effect.exit))
+        ).pipe(Effect.withSpan("test.chat-posts"));
+
+        assert.strictEqual(results.length, 5);
+        assert.isAbove(discord.requests().length, 3);
+        assert.isAbove(telegram.requests().length, 4);
+
+        const all = written();
+
+        // The calls were written about, by name.
+        assert.include(all, "DiscordWebhookVerifier.verify");
+        assert.include(all, "TelegramChatVerifier.verify");
+        assert.include(all, "DiscordClient.commit");
+        assert.notInclude(all, discordWebhookToken);
+        assert.notInclude(all, telegramBotToken);
+        assert.notInclude(all, telegramBotToken.split(":")[1] ?? "");
       }).pipe(Effect.scoped)
   );
 });
