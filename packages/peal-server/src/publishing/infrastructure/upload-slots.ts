@@ -133,6 +133,19 @@ export const limitedUploads = Layer.effect(
           ),
           Effect.andThen(media.held(workspaceId, mediaId))
         ),
+      // One slot for the request when any of its files is large: it reads
+      // them one after another.
+      heldInTurn: (workspaceId, mediaIds) =>
+        Effect.all(
+          mediaIds.map((mediaId) => media.describe(workspaceId, mediaId))
+        ).pipe(
+          Effect.flatMap((files) =>
+            files.some(({ byteSize }) => byteSize >= largeUpload)
+              ? slot
+              : Effect.void
+          ),
+          Effect.andThen(media.heldInTurn(workspaceId, mediaIds))
+        ),
       open: (workspaceId, mediaId) =>
         Stream.unwrap(
           media

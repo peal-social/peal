@@ -70,6 +70,7 @@ const store = Effect.gen(function* makeStore() {
     MediaForPublishing.of({
       describe: (_workspace, id) => Effect.succeed(described(id)),
       held: () => Effect.succeed(opened),
+      heldInTurn: (_workspace, ids) => Effect.succeed(ids.map(() => opened)),
       open: () => opened,
       publicUrl: () => Effect.succeed("https://media.test/file"),
     })
@@ -165,6 +166,58 @@ describe("upload slots", () => {
         yield* Fiber.join(uploads);
 
         assert.strictEqual(yield* files.most, 1);
+        assert.strictEqual(yield* uploadsWaiting, 0);
+      })
+  );
+
+  it.effect(
+    "has a request of several large files take one slot for them all, so it never waits on itself",
+    () =>
+      Effect.gen(function* together() {
+        const files = yield* store;
+        const handed = yield* Ref.make(0);
+
+        // Two requests of three large files each, as two albums, on a
+        // server with one slot: each takes the slot once.
+        const sending = (first: number) =>
+          MediaForPublishing.use((media) =>
+            media
+              .heldInTurn(workspaceId, [
+                mediaId(first),
+                mediaId(first + 1),
+                mediaId(first + 2),
+              ])
+              .pipe(
+                Effect.tap(() => Ref.update(handed, (count) => count + 1)),
+                Effect.flatMap((streams) =>
+                  Effect.forEach(streams, Stream.runDrain, { discard: true })
+                ),
+                Effect.scoped
+              )
+          );
+
+        const uploads = yield* Effect.forEach([1, 10], sending, {
+          concurrency: "unbounded",
+          discard: true,
+        }).pipe(
+          Effect.provide(
+            limitedUploads.pipe(
+              Layer.provide(files.layer),
+              Layer.provide(settings({ PEAL_MAX_CONCURRENT_UPLOADS: "1" }))
+            )
+          ),
+          Effect.forkChild
+        );
+
+        yield* TestClock.adjust(Duration.minutes(5));
+
+        assert.strictEqual(yield* Ref.get(handed), 1);
+        assert.strictEqual(yield* uploadsWaiting, 1);
+
+        yield* Deferred.succeed(files.finish, true);
+        yield* Fiber.join(uploads);
+
+        assert.strictEqual(yield* Ref.get(handed), 2);
         assert.strictEqual(yield* uploadsWaiting, 0);
       })
   );

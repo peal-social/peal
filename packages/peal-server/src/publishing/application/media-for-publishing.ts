@@ -58,6 +58,23 @@ export class MediaForPublishing extends Context.Service<
       Scope.Scope
     >;
     /**
+     * The bytes of several files sent one after another in one request (a
+     * multipart form of several files), in the order given: as `held`,
+     * whatever they must wait for is waited for here, before the request
+     * is opened, and kept for the scope. As the request reads one file at
+     * a time, they take one turn among the server's large uploads
+     * together, never one each, which several requests holding some could
+     * wait on forever.
+     */
+    readonly heldInTurn: (
+      workspaceId: WorkspaceId,
+      mediaIds: readonly MediaAssetId[]
+    ) => Effect.Effect<
+      readonly Stream.Stream<Uint8Array, MediaFailure>[],
+      MediaFailure,
+      Scope.Scope
+    >;
+    /**
      * The bytes, as the store sends them, read in parts: whatever the file
      * waits for is waited for when the first part is read.
      */

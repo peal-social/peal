@@ -131,7 +131,7 @@ describe(multipartFormBody, () => {
 
       const tracked = (name: string) => ({
         ...file(name, `${name}.png`, "x"),
-        bytes: Stream.suspend(() => {
+        bytes: Stream.suspend((): Stream.Stream<Uint8Array> => {
           opened.push(name);
 
           return Stream.make(encoder.encode("x"));

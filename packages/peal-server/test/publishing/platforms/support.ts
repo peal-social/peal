@@ -249,6 +249,12 @@ export const mediaOf = (files: readonly TestFile[]) => {
         found(mediaId).pipe(Effect.map(({ media }) => media)),
       held: (_workspace, mediaId) =>
         found(mediaId).pipe(Effect.map(({ bytes }) => Stream.make(bytes))),
+      heldInTurn: (_workspace, mediaIds) =>
+        Effect.all(
+          mediaIds.map((mediaId) =>
+            found(mediaId).pipe(Effect.map(({ bytes }) => Stream.make(bytes)))
+          )
+        ),
       open: (_workspace, mediaId) =>
         Stream.unwrap(
           found(mediaId).pipe(Effect.map(({ bytes }) => Stream.make(bytes)))
