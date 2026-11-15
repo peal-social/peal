@@ -1,5 +1,6 @@
 import { Option } from "effect";
 import type {
+  Platform,
   LivePostBlocker,
   LivePostChange,
   PlatformCapabilities,
@@ -216,3 +217,11 @@ export const isRemovedEverywhere = (post: Pick<Post, "targets">): boolean => {
 
   return live.length > 0 && live.every(({ removedAt }) => removedAt !== null);
 };
+
+/**
+ * How long after it was sent a platform deletes a post, in hours, where
+ * it limits that: Telegram's "A message can only be deleted if it was sent
+ * less than 48 hours ago" (core.telegram.org/bots/api, deleteMessage).
+ */
+export const deletionWindowOf = (platform: Platform): number | undefined =>
+  platform === "telegram" ? 48 : undefined;

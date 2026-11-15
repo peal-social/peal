@@ -721,7 +721,7 @@
     "retry": "Try again",
     "empty": "No account is connected yet.",
     "listTitle": "Connected accounts",
-    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} devto {DEV} hashnode {Hashnode} wordpressCom {WordPress.com} x {X} youtube {YouTube} other {{platform}}}",
+    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} devto {DEV} hashnode {Hashnode} wordpressCom {WordPress.com} x {X} youtube {YouTube} other {{platform}}}",
     "platformVia": "{platform, select, instagram {Instagram} linkedin {LinkedIn} other {{platform}}} ({connection, select, instagramLogin {Instagram Login} facebookLogin {through a Facebook Page} linkedinProfile {profile} linkedinPage {company page} other {{connection}}})",
     "status": {
       "active": "Connected",
@@ -736,7 +736,7 @@
     "disconnectAccount": "Disconnect {handle}",
     "disconnecting": "Disconnecting…",
     "disconnectTitle": "Disconnect {handle}?",
-    "disconnectDescription": "Peal deletes the tokens it holds for this {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} account and posts nothing more on it. You can connect it again later.",
+    "disconnectDescription": "Peal deletes the tokens it holds for this {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} account and posts nothing more on it. You can connect it again later.",
     "cancel": "Cancel",
     "disconnected": "{handle} is disconnected.",
     "offHint": "{who, select, you {Nothing goes out on this channel while it is off. Choose Turn on to post on it again.} other {Nothing goes out on this channel while it is off. An owner or an admin of the workspace can turn it back on.}}{reconnect, select, yes { Its account’s authorization stopped working meanwhile: it will need reconnecting once the channel is on.} other {}}",
@@ -807,7 +807,17 @@
       "otherWayIn": "This platform connects another way: a WordPress site of its own by its address, DEV and Hashnode by a key, WordPress.com by signing in there.",
       "publicationRequired": "You have several publications on Hashnode: give the address of the one to publish to.",
       "publicationNotFound": "Hashnode has no such publication. Give its address, such as blog.example.com.",
-      "planRequired": "Hashnode answers its API only for a publication on its Pro plan. Upgrade the publication on Hashnode, then connect it again."
+      "planRequired": "Hashnode answers its API only for a publication on its Pro plan. Upgrade the publication on Hashnode, then connect it again.",
+      "chatTooManyTries": "The workspace tried to connect chats too many times in the last hour. Try again later.",
+      "chat": {
+        "addressNotAWebhook": "This is not a Discord webhook’s address. In the channel’s settings, under Integrations, Webhooks, choose a webhook and Copy Webhook URL.",
+        "webhookNotFound": "Discord has no such webhook: it was deleted, or its address changed. Copy its address again from the channel’s settings.",
+        "webhookKindNotSupported": "This webhook does not post messages. Make a new webhook in the channel’s settings, under Integrations, Webhooks.",
+        "credentialsRefused": "Telegram refused the bot’s token. Copy it again from @BotFather, or make a new one there.",
+        "chatNotFound": "Telegram knows no such chat, or the bot is not in it. Add the bot to the chat, then give its public name, such as @name, or its id.",
+        "chatKindNotSupported": "This is a private chat with a person. Peal posts in channels and groups.",
+        "cannotPost": "The bot may not post in this chat. In a channel, make it an administrator who may post messages; in a group, let it send messages."
+      }
     },
     "websiteTitle": "WordPress website",
     "websiteDescription": "Publish articles to a WordPress site of your own. On your user’s profile page in WordPress, under Application Passwords, make a password for Peal and paste it here: Peal keeps it encrypted and never shows it again.",
@@ -843,7 +853,28 @@
       "description": "Publish articles to a site on WordPress.com, or a Jetpack site you reach there. You sign in on WordPress.com and pick the site; you must be able to publish posts and upload files on it.",
       "connect": "Connect WordPress.com"
     },
-    "reconnectKeySite": "Reconnect {handle} with a new key"
+    "reconnectKeySite": "Reconnect {handle} with a new key",
+    "chat": {
+      "howTo": "How to connect it",
+      "connected": "{chat} is connected.",
+      "reconnect": "Reconnect {handle}",
+      "discord": {
+        "title": "Discord",
+        "description": "Post to a Discord channel through a webhook. In the channel’s settings, under Integrations, Webhooks, make a webhook for Peal and copy its address: Peal keeps it encrypted and never shows it again.",
+        "secret": "Webhook address",
+        "secretHint": "It starts with https://discord.com/api/webhooks/.",
+        "connect": "Connect Discord"
+      },
+      "telegram": {
+        "title": "Telegram",
+        "description": "Post to a Telegram channel or group with a bot of your own. Make one with @BotFather, add it to the channel as an administrator who may post messages, or to the group, and paste its token: Peal keeps it encrypted and never shows it again.",
+        "secret": "Bot token",
+        "secretHint": "The token @BotFather gave when you made the bot.",
+        "chat": "Chat",
+        "chatHint": "Its public name, such as @name, or its id, which starts with -100 for a channel or a supergroup.",
+        "connect": "Connect Telegram"
+      }
+    }
   },
   "PlatformConnect": {
     "connecting": "Opening…",
@@ -893,9 +924,9 @@
     "title": "Connect an account",
     "headingSeveral": "Connect your accounts",
     "asksSeveral": "{host} asks to connect your accounts on these platforms, to publish there for you.",
-    "platformName": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
+    "platformName": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
     "platformConnected": "Connected",
-    "connectPlatform": "Connect {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
+    "connectPlatform": "Connect {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
     "left": "{platforms} {count, plural, one {is} other {are}} left to connect.",
     "connectAnother": "Connect another account",
     "heading": "Connect your {platform, select, bluesky {Bluesky} facebook {Facebook} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} account",
@@ -1031,9 +1062,10 @@
       "edited": "Edited on {at, date, medium}",
       "editFailed": "The edit failed ({code}). Peal kept the earlier text; if the platform did not answer, it may show the new one: check it before you try again.",
       "editBlocked": "{by, select, noApi {{platform} offers no way for Peal to edit posts.} permission {{platform} does not let Peal edit posts yet.} unverified {Peal does not edit posts on {platform} yet.} other {Peal cannot edit posts on {platform}.}}",
-      "editRefused": "{reason, select, notPublished {The post is not live on this channel.} alreadyRemoved {The post was removed from this channel.} noPlatformId {Peal has no id for this part on the platform: edit it there.} notSupported {The platform does not let Peal edit this post: edit it there.} changeInProgress {Another change of this post is under way.} channelUnavailable {The channel is disconnected, turned off or must be reconnected.} approvalRequired {Your posts need approval: ask an approver to make this change.} invalid {The platform would refuse this text: check its length and characters.} forbidden {Your role does not let you edit published posts.} other {The post could not be edited. Try again.}}"
+      "editRefused": "{reason, select, notPublished {The post is not live on this channel.} alreadyRemoved {The post was removed from this channel.} noPlatformId {Peal has no id for this part on the platform: edit it there.} notSupported {The platform does not let Peal edit this post: edit it there.} changeInProgress {Another change of this post is under way.} channelUnavailable {The channel is disconnected, turned off or must be reconnected.} approvalRequired {Your posts need approval: ask an approver to make this change.} invalid {The platform would refuse this text: check its length and characters.} forbidden {Your role does not let you edit published posts.} other {The post could not be edited. Try again.}}",
+      "deletesWithin": "{platform} deletes a post only within {hours} hours of sending it."
     },
-    "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} other {{platform}}}",
+    "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} other {{platform}}}",
     "status": "{status, select, draft {Draft} awaitingApproval {Awaiting approval} scheduled {Scheduled} publishing {Publishing} finished {Finished} cancelled {Cancelled} other {{status}}}",
     "targetStatus": "{status, select, pending {Waiting} publishing {Publishing} published {Published} failed {Failed} unconfirmed {To check} cancelled {Cancelled} other {{status}}}",
     "outcome": "{outcome, select, published {Published} partiallyPublished {Partly published} unconfirmed {To check} failed {Failed} cancelled {Cancelled} other {{outcome}}}",
@@ -2125,7 +2157,7 @@
     }
   },
   "Notices": {
-    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
+    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
     "channel": "{platform} ({handle})",
     "unknownChannel": "a disconnected channel",
     "unknownWorkspace": "a workspace you left",
@@ -2276,9 +2308,9 @@
         "loadFailed": "The usage could not be loaded.",
         "retry": "Try again",
         "published": "{count, plural, one {# post published} other {# posts published}}",
-        "onPlatform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} {count, number}",
+        "onPlatform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} {count, number}",
         "channelDays": "{count, plural, one {# channel-day} other {# channel-days}}, over {days, plural, one {# day counted} other {# days counted}}",
-        "metered": "{count, plural, one {# post} other {# posts}} on {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} in {month}, {withLinks, number} with a link",
+        "metered": "{count, plural, one {# post} other {# posts}} on {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} in {month}, {withLinks, number} with a link",
         "shared": "This workspace's channels count against the plan of its partner's workspace.",
         "nothing": "Nothing has been counted in this period yet.",
         "views": "Show the usage as",
@@ -3825,7 +3857,7 @@
       "hint": "What each channel will receive. This is not how the platform will lay it out.",
       "hintSelect": "What each channel will receive. This is not how the platform will lay it out. Select some words to comment on them.",
       "disconnected": "A disconnected channel",
-      "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
+      "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
       "noText": "No text on this channel.",
       "mediaLabel": "Images, videos and documents",
       "channelMediaLabel": "Images, videos and documents on {handle}",
@@ -4492,7 +4524,7 @@
     "status": "{status, select, active {Active} paused {Paused} ended {Ended} other {Unknown}}",
     "awaitingApproval": "Awaiting approval",
     "ended": "Ended: {reason, select, stopped {stopped by a member} completed {everything it armed is over} starterGone {whoever started it can no longer publish} channelGone {its channel was disconnected} other {for another reason}}.",
-    "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} other {A channel}}: comment {comment, select, available {yes} notAsked {not asked} noApi {not possible there} review {waits for the platform’s review} notBuilt {not yet} notAllowed {forbidden by the platform’s rules} turnedOff {turned off on this server} reconnect {connect the channel again} notCounted {no likes counted there} textTooLong {too long} other {no}}, repost {repost, select, available {yes} notAsked {not asked} noApi {not possible there} review {waits for the platform’s review} notBuilt {not yet} notAllowed {forbidden by the platform’s rules} turnedOff {turned off on this server} reconnect {connect the channel again} notCounted {no likes counted there} textTooLong {too long} other {no}}",
+    "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} other {A channel}}: comment {comment, select, available {yes} notAsked {not asked} noApi {not possible there} review {waits for the platform’s review} notBuilt {not yet} notAllowed {forbidden by the platform’s rules} turnedOff {turned off on this server} reconnect {connect the channel again} notCounted {no likes counted there} textTooLong {too long} other {no}}, repost {repost, select, available {yes} notAsked {not asked} noApi {not possible there} review {waits for the platform’s review} notBuilt {not yet} notAllowed {forbidden by the platform’s rules} turnedOff {turned off on this server} reconnect {connect the channel again} notCounted {no likes counted there} textTooLong {too long} other {no}}",
     "allowReposts": "Allow reposts",
     "allowRepostsFailed": "The channel could not be connected again: try again.",
     "repostsNeedReconnect": "Bluesky asks to connect the channel again before Peal reposts from it.",
@@ -4548,7 +4580,7 @@
     "keywords": "When a comment says: {keywords}",
     "status": "{status, select, active {Active} paused {Paused} ended {Ended} other {Unknown}}",
     "replied": "{count, plural, =0 {No reply yet} one {# reply among the latest comments} other {# replies among the latest comments}}",
-    "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} other {A channel}}: {reply, select, available {answers there} noApi {no comments Peal reads} notAllowed {the platform’s rules forbid an app to answer by itself} unsupported {this server does not read its comments} reconnect {connect the channel again} textTooLong {the reply is too long} other {cannot answer}}",
+    "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} other {A channel}}: {reply, select, available {answers there} noApi {no comments Peal reads} notAllowed {the platform’s rules forbid an app to answer by itself} unsupported {this server does not read its comments} reconnect {connect the channel again} textTooLong {the reply is too long} other {cannot answer}}",
     "started": "The rule is set: it answers the comments that come from now on.",
     "pause": "Pause",
     "paused": "The rule is paused.",

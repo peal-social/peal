@@ -34,6 +34,7 @@ import {
   workspacePost,
 } from "#posts/api.ts";
 import {
+  deletionWindowOf,
   editStateOf,
   endedSince,
   isRemoving,
@@ -223,6 +224,9 @@ export const LivePostActions = ({
       <LivePostView
         busy={busy}
         channelName={channelName}
+        deletesWithinHours={
+          channel === undefined ? undefined : deletionWindowOf(channel.platform)
+        }
         platform={platform}
         state={liveStateOf(target, listed, ability)}
         onUnpublish={onUnpublish}

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type {
+  ChatPlatform,
   InstagramConnection,
   LinkedInConnection,
   Platform,
@@ -24,6 +25,7 @@ import type { ChangeEvent, SubmitEvent } from "react";
 import { useChannelErrorText } from "#channels/channel-error-text.ts";
 import type { ChannelErrorKey } from "#channels/channels-api.ts";
 import { useConnect } from "#channels/use-connect.ts";
+import { ConnectChat } from "#components/channels/connect-chat.tsx";
 import { ConnectInstagram } from "#components/channels/connect-instagram.tsx";
 import { ConnectLinkedIn } from "#components/channels/connect-linkedin.tsx";
 import {
@@ -292,6 +294,9 @@ const ConnectWithInstagram = ({
 // A server that names no website sign-in: those by address and key alone.
 const noSites: readonly SitePlatform[] = [];
 
+// A server that names no chat.
+const noChats: readonly ChatPlatform[] = [];
+
 /**
  * Where a member starts connecting an account, for each platform this
  * server connects: a form for Mastodon and Bluesky, which ask for a server
@@ -301,15 +306,23 @@ const noSites: readonly SitePlatform[] = [];
  * connects pages, and Meta's sign-in for Threads and Facebook Pages; and
  * a WordPress site, by its address and an application password, DEV and
  * Hashnode by a key, which every server connects, and a site on
- * WordPress.com on a server with its app.
+ * WordPress.com on a server with its app; and the chats the server names
+ * (Discord, Telegram), each with the secret its member pastes, linking
+ * the docs where the operator publishes them.
  */
 export const ConnectForms = ({
+  chats = noChats,
+  docsUrl = null,
   instagramConnections,
   linkedinConnections,
   platforms,
   sites = noSites,
   workspaceId,
 }: {
+  /** The chats the server connects, each with a secret. */
+  readonly chats?: readonly ChatPlatform[];
+  /** Where the operator publishes the docs; none when it does not. */
+  readonly docsUrl?: string | null;
   readonly instagramConnections: readonly InstagramConnection[];
   /** What the server connects on LinkedIn: profiles, pages, or both. */
   readonly linkedinConnections: readonly LinkedInConnection[];
@@ -372,6 +385,14 @@ export const ConnectForms = ({
       ) : null}
       <ConnectKeySite platform="devto" workspaceId={workspaceId} />
       <ConnectKeySite platform="hashnode" workspaceId={workspaceId} />
+      {chats.map((chat) => (
+        <ConnectChat
+          key={chat}
+          docsUrl={docsUrl}
+          platform={chat}
+          workspaceId={workspaceId}
+        />
+      ))}
     </div>
   );
 };

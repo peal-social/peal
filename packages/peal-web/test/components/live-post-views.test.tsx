@@ -33,6 +33,33 @@ const renderState = async (locale: "en" | "fr", state: LiveState) =>
     </NextIntlClientProvider>
   );
 
+describe("Telegram's Unpublish", () => {
+  it("says Telegram deletes a post only within 48 hours", async () => {
+    const html = renderToStaticMarkup(
+      <NextIntlClientProvider
+        locale="en"
+        messages={await loadMessages("en")}
+        timeZone="UTC"
+      >
+        <LivePostView
+          busy={false}
+          channelName="Synthetic news (@synthetic_news)"
+          deletesWithinHours={48}
+          platform="Telegram"
+          state={{ _tag: "offered" }}
+          onUnpublish={() => {
+            // Nothing is asked while rendering to markup.
+          }}
+        />
+      </NextIntlClientProvider>
+    );
+
+    expect(html).toContain(
+      "Telegram deletes a post only within 48 hours of sending it."
+    );
+  });
+});
+
 const channel: SocialChannel = {
   avatarUrl: null,
   connection: null,

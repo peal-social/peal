@@ -15,7 +15,12 @@ import { LinkedInOptions, pageProblems } from "./linkedin-options.ts";
 import type { Dimensions, MediaFile } from "./media-file.ts";
 import { mediaNamedBy } from "./named-media.ts";
 import type { OptionProblem } from "./option-problem.ts";
-import { followUpsThrough, partRulesFor, rulesFor } from "./platform-rules.ts";
+import {
+  followUpsThrough,
+  partRulesFor,
+  rulesFor,
+  textLimitsOf,
+} from "./platform-rules.ts";
 import type {
   FormatLimits,
   MediaRules,
@@ -461,12 +466,7 @@ export const violationsOn = (
 
   // A part that shows media carries its text as a caption where the
   // platform limits captions apart (Telegram).
-  const limits =
-    media > 0 && rules.textLimitsWithMedia !== undefined
-      ? rules.textLimitsWithMedia
-      : rules.textLimits;
-
-  const tooLong = limits.flatMap(
+  const tooLong = textLimitsOf(rules, media > 0).flatMap(
     ({ maximum, unit }): readonly ContentViolation[] => {
       const length = measureText(counted, unit);
 

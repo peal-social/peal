@@ -149,6 +149,34 @@ describe(fitOn, () => {
   });
 });
 
+describe("a chat's count", () => {
+  it("holds a Telegram caption to 1,024, a text alone to 4,096", () => {
+    const caption = fitOn("telegram", "a".repeat(1025), 1);
+    const alone = fitOn("telegram", "a".repeat(1025), 0);
+
+    expect(caption.tightest).toStrictEqual({
+      length: 1025,
+      maximum: 1024,
+      remaining: -1,
+      unit: "utf16Units",
+    });
+    expect(fits(caption)).toBeFalsy();
+    expect(alone.tightest?.maximum).toBe(4096);
+    expect(fits(alone)).toBeTruthy();
+  });
+
+  it("counts an emoji as two on Discord, up to 2,000", () => {
+    expect(
+      fitOn("discord", "\u{1F600}".repeat(1000), 0).tightest
+    ).toStrictEqual({
+      length: 2000,
+      maximum: 2000,
+      remaining: 0,
+      unit: "utf16Units",
+    });
+  });
+});
+
 describe("the text of a story", () => {
   const story = { format: "story", platform: "instagram" } as const;
 

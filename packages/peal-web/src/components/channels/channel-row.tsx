@@ -36,6 +36,7 @@ import {
 } from "#channels/channels-api.ts";
 import { rememberConnection } from "#channels/pending-connection.ts";
 import { ChannelPower } from "#components/channels/channel-power.tsx";
+import { ReconnectChat } from "#components/channels/connect-chat.tsx";
 import { ReconnectWebsite } from "#components/channels/connect-website.tsx";
 import { RenameChannel } from "#components/channels/rename-channel.tsx";
 
@@ -81,6 +82,19 @@ const ReconnectControl = ({
       });
     });
   };
+
+  // A chat has no sign-in: the same form takes a new secret.
+  if (channel.platform === "discord" || channel.platform === "telegram") {
+    return (
+      <ReconnectChat
+        handle={channel.handle}
+        id={channel.id}
+        needsReconnect={needsReconnect}
+        platform={channel.platform}
+        workspaceId={workspaceId}
+      />
+    );
+  }
 
   if (!isSocialChannel(channel)) {
     return (

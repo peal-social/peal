@@ -6,6 +6,7 @@ import {
   countMentions,
   measureText,
   rulesFor,
+  textLimitsOf,
 } from "peal-contract/post-text";
 import type { PlatformRules, TextUnit } from "peal-contract/post-text";
 
@@ -65,7 +66,8 @@ const tooMany = (
     : [];
 
 /**
- * How `text`, shown with `media` images or videos, fits `platform`, with
+ * How `text`, shown with `media` images or videos, fits `platform` (a
+ * caption's limits where the platform has them apart, Telegram's), with
  * the `options` it has on the channel, which some platforms count with the
  * text (a Mastodon content warning: `countedText`) and which may choose a
  * format of rules of its own (`rulesFor`): a story's text is not sent, so
@@ -83,7 +85,7 @@ export const fitOn = (
   const counted = countedText(sent ? text : "", options);
 
   const counts = sent
-    ? rules.textLimits.map(({ maximum, unit }): TextCount => {
+    ? textLimitsOf(rules, media > 0).map(({ maximum, unit }): TextCount => {
         const length = measureText(counted, unit);
 
         return { length, maximum, remaining: maximum - length, unit };

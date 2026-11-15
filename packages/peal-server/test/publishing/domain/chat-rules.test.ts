@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Duration, Option } from "effect";
 
+import { previewOn } from "#publishing/domain/channel-preview.ts";
 import {
   mediaViolationsOn,
   violationsOn,
@@ -268,5 +269,24 @@ describe("Telegram's rules", () => {
   it("shows no alt text, and takes a thread of parts", () => {
     expect(platformRules.telegram.media?.showsAltText).toBeFalsy();
     expect(platformRules.telegram.followUps?.kind).toBe("thread");
+  });
+});
+
+describe("a chat's preview", () => {
+  it("counts a Telegram caption against 1,024, and a text alone against 4,096", () => {
+    const withMedia = previewOn(
+      contentOf("A synthetic caption", { media: [image] }),
+      telegram,
+      []
+    );
+
+    const alone = previewOn(contentOf("A synthetic text"), telegram, []);
+
+    expect(withMedia.textCounts.map(({ maximum }) => maximum)).toStrictEqual([
+      1024,
+    ]);
+    expect(alone.textCounts.map(({ maximum }) => maximum)).toStrictEqual([
+      4096,
+    ]);
   });
 });

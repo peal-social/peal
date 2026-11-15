@@ -861,6 +861,19 @@ export const followUpsThrough = (
     : followUpsOn(platform, options);
 
 /**
+ * The limits on a part's text by the rules in force: those on a caption
+ * where the part shows media and the platform has them apart
+ * (`textLimitsWithMedia`, Telegram's), its `textLimits` otherwise.
+ */
+export const textLimitsOf = (
+  rules: PlatformRules,
+  showsMedia: boolean
+): readonly TextLimit[] =>
+  showsMedia && rules.textLimitsWithMedia !== undefined
+    ? rules.textLimitsWithMedia
+    : rules.textLimits;
+
+/**
  * The rules a part after the first follows on the platform, with the
  * options the post has there: a post's (`rulesFor`) in a thread, and a
  * comment's where the parts are comments: its text's limits, no file.

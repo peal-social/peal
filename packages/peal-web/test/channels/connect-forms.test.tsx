@@ -2,6 +2,7 @@ import { RegistryProvider } from "@effect/atom-react";
 import { describe, expect, it } from "@effect/vitest";
 import { NextIntlClientProvider } from "next-intl";
 import type {
+  ChatPlatform,
   InstagramConnection,
   LinkedInConnection,
   Platform,
@@ -17,7 +18,9 @@ const render = async (
   platforms: readonly Platform[],
   instagramConnections: readonly InstagramConnection[] = [],
   linkedinConnections: readonly LinkedInConnection[] = [],
-  sites: readonly SitePlatform[] = []
+  sites: readonly SitePlatform[] = [],
+  chats: readonly ChatPlatform[] = [],
+  docsUrl: string | null = "https://docs.peal.social"
 ) => {
   const messages = await loadMessages(locale);
 
@@ -25,6 +28,8 @@ const render = async (
     <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
       <RegistryProvider>
         <ConnectForms
+          chats={chats}
+          docsUrl={docsUrl}
           instagramConnections={instagramConnections}
           linkedinConnections={linkedinConnections}
           platforms={platforms}
@@ -37,6 +42,62 @@ const render = async (
 };
 
 describe(ConnectForms, () => {
+  it("offers no chat the server does not name", async () => {
+    const without = await render("en", ["mastodon"]);
+
+    expect(without).not.toContain("Connect Discord");
+    expect(without).not.toContain("Connect Telegram");
+  });
+
+  it("offers the chats the server connects, each with its secret in a password field", async () => {
+    const html = await render(
+      "en",
+      ["mastodon"],
+      [],
+      [],
+      [],
+      ["discord", "telegram"]
+    );
+
+    for (const shown of [
+      ">Connect Discord<",
+      ">Connect Telegram<",
+      "Integrations",
+      "@BotFather",
+      'href="https://docs.peal.social/platforms/discord"',
+    ]) {
+      expect(html).toContain(shown);
+    }
+  });
+
+  it("types a chat's secret unseen, and offers the chats in French too", async () => {
+    const html = await render(
+      "en",
+      ["mastodon"],
+      [],
+      [],
+      [],
+      ["discord", "telegram"]
+    );
+
+    const french = await render(
+      "fr",
+      ["mastodon"],
+      [],
+      [],
+      [],
+      ["discord", "telegram"]
+    );
+
+    // The webhook's address and the bot's token beside the websites'
+    // password and keys.
+    expect(html.match(/type="password"/gu)?.length ?? 0).toBeGreaterThanOrEqual(
+      5
+    );
+    expect(french).toContain(">Connecter Discord<");
+    expect(french).toContain(">Connecter Telegram<");
+  });
+
   it("offers the websites by key everywhere, WordPress.com with its app", async () => {
     const without = await render("en", ["mastodon"]);
 

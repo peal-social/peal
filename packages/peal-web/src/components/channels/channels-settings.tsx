@@ -118,8 +118,10 @@ const LoadedChannels = ({
 // The forms for the platforms this server connects, once the browser knows
 // which: a platform the server lacks settings for is not offered.
 const LoadedConnectForms = ({
+  docsUrl,
   workspaceId,
 }: {
+  readonly docsUrl: string | null;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("PlatformConnect");
@@ -129,6 +131,8 @@ const LoadedConnectForms = ({
   if (AsyncResult.isSuccess(platforms)) {
     return (
       <ConnectForms
+        chats={platforms.value.chats ?? []}
+        docsUrl={docsUrl}
         instagramConnections={platforms.value.instagramConnections}
         linkedinConnections={platforms.value.linkedinConnections}
         platforms={platforms.value.platforms}
@@ -156,6 +160,8 @@ const onServer = () => false;
 interface ChannelsSettingsProps {
   readonly canConnect: boolean;
   readonly canDisconnect: boolean;
+  /** Where the operator publishes the docs, which the chats' forms link. */
+  readonly docsUrl?: string | null;
   readonly workspaceId: string;
 }
 
@@ -164,6 +170,7 @@ interface ChannelsSettingsProps {
 export const ChannelsSettings = ({
   canConnect,
   canDisconnect,
+  docsUrl = null,
   workspaceId,
 }: ChannelsSettingsProps) => {
   const t = useTranslations("ChannelsPage");
@@ -199,7 +206,7 @@ export const ChannelsSettings = ({
           </p>
         </div>
         {canConnect && hydrated ? (
-          <LoadedConnectForms workspaceId={workspaceId} />
+          <LoadedConnectForms docsUrl={docsUrl} workspaceId={workspaceId} />
         ) : null}
         {canConnect && !hydrated ? <Loading /> : null}
       </section>
