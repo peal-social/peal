@@ -1006,6 +1006,7 @@ module Peal
     autoload :MessagePendingEncoded, ::File.join(__dir__, "peal/types/message_pending_encoded")
     autoload :MeteredPosts, ::File.join(__dir__, "peal/types/metered_posts")
     autoload :MetricsSnapshot, ::File.join(__dir__, "peal/types/metrics_snapshot")
+    autoload :MovedChannel, ::File.join(__dir__, "peal/types/moved_channel")
     autoload :SpecialAdCategory, ::File.join(__dir__, "peal/types/special_ad_category")
     autoload :NewBoost, ::File.join(__dir__, "peal/types/new_boost")
     autoload :NotRecyclableReason, ::File.join(__dir__, "peal/types/not_recyclable_reason")

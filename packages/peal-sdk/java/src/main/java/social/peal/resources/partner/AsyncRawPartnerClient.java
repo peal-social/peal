@@ -43,10 +43,10 @@ import social.peal.resources.partner.requests.GetWorkspacePartnerRequest;
 import social.peal.resources.partner.requests.ListWorkspacesPartnerRequest;
 import social.peal.resources.partner.requests.NewCustomerWorkspace;
 import social.peal.resources.partner.requests.OverviewPartnerRequest;
-import social.peal.types.Channel;
 import social.peal.types.CustomerWorkspace;
 import social.peal.types.CustomerWorkspacePage;
 import social.peal.types.DeletionIncompleteEncoded;
+import social.peal.types.MovedChannel;
 import social.peal.types.PartnerHealth;
 import social.peal.types.PartnerOverview;
 import social.peal.types.UnauthenticatedEncoded;
@@ -939,17 +939,17 @@ public class AsyncRawPartnerClient {
     }
 
     /**
-     * Moves a channel from a workspace the partner owns to another one it owns (<code>toWorkspaceId</code>), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id: in the workspace it left, it is disconnected (<code>channel.disconnected</code> there, <code>channel.connected</code> in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 <code>ChannelAccountTaken</code>; while a post or a change of a live post is being sent through the channel, 409 <code>WorkspaceBusy</code>: send it again a moment later. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
+     * Moves a channel from a workspace the partner owns to another one it owns (<code>toWorkspaceId</code>), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id, and <code>postsLeft</code>: how many posts of the workspace it left still had it to go out on. In the workspace it left, it is disconnected (<code>channel.disconnected</code> there, <code>channel.connected</code> in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 <code>ChannelAccountTaken</code>. While a call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review or a direct message), or another request holds either workspace for more than 5 seconds (an offboarding), it answers 409 <code>WorkspaceBusy</code>: send it again a moment later. Reads through the channel are not waited for. Send an <code>Idempotency-Key</code> header to make the request safe to send again: within 24 hours, the same key with the same request answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 <code>IdempotencyKeyReused</code>. Keys are the partner's, shared with workspace creation. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
      */
-    public CompletableFuture<PealClientHttpResponse<Channel>> moveChannel(
+    public CompletableFuture<PealClientHttpResponse<MovedChannel>> moveChannel(
             String workspaceId, String channelId, ChannelMove request) {
         return moveChannel(workspaceId, channelId, request, null);
     }
 
     /**
-     * Moves a channel from a workspace the partner owns to another one it owns (<code>toWorkspaceId</code>), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id: in the workspace it left, it is disconnected (<code>channel.disconnected</code> there, <code>channel.connected</code> in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 <code>ChannelAccountTaken</code>; while a post or a change of a live post is being sent through the channel, 409 <code>WorkspaceBusy</code>: send it again a moment later. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
+     * Moves a channel from a workspace the partner owns to another one it owns (<code>toWorkspaceId</code>), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id, and <code>postsLeft</code>: how many posts of the workspace it left still had it to go out on. In the workspace it left, it is disconnected (<code>channel.disconnected</code> there, <code>channel.connected</code> in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 <code>ChannelAccountTaken</code>. While a call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review or a direct message), or another request holds either workspace for more than 5 seconds (an offboarding), it answers 409 <code>WorkspaceBusy</code>: send it again a moment later. Reads through the channel are not waited for. Send an <code>Idempotency-Key</code> header to make the request safe to send again: within 24 hours, the same key with the same request answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 <code>IdempotencyKeyReused</code>. Keys are the partner's, shared with workspace creation. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
      */
-    public CompletableFuture<PealClientHttpResponse<Channel>> moveChannel(
+    public CompletableFuture<PealClientHttpResponse<MovedChannel>> moveChannel(
             String workspaceId, String channelId, ChannelMove request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
@@ -969,16 +969,20 @@ public class AsyncRawPartnerClient {
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
                             request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
-        } catch (JsonProcessingException e) {
-            throw new PealClientException("Failed to serialize request", e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        Request okhttpRequest = new Request.Builder()
+        Request.Builder _requestBuilder = new Request.Builder()
                 .url(httpUrl.build())
                 .method("POST", body)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
                 .addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json")
-                .build();
+                .addHeader("Accept", "application/json");
+        if (request.getIdempotencyKey().isPresent()) {
+            _requestBuilder.addHeader(
+                    "idempotency-key", request.getIdempotencyKey().get());
+        }
+        Request okhttpRequest = _requestBuilder.build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -987,7 +991,7 @@ public class AsyncRawPartnerClient {
                 .newBuilder()
                 .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
                 .build();
-        CompletableFuture<PealClientHttpResponse<Channel>> future = new CompletableFuture<>();
+        CompletableFuture<PealClientHttpResponse<MovedChannel>> future = new CompletableFuture<>();
         RetryInterceptor.AsyncCall okhttpCall = RetryInterceptor.newAsyncCall(client, okhttpRequest);
         okhttpCall.enqueue(new Callback() {
             @Override
@@ -996,7 +1000,7 @@ public class AsyncRawPartnerClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     if (response.isSuccessful()) {
                         future.complete(new PealClientHttpResponse<>(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Channel.class), response));
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, MovedChannel.class), response));
                         return;
                     }
                     try {

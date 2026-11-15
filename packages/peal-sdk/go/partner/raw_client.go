@@ -357,7 +357,7 @@ func (r *RawClient) MoveChannel(
 	ctx context.Context,
 	request *peal.ChannelMove,
 	opts ...option.RequestOption,
-) (*core.Response[*peal.Channel], error) {
+) (*core.Response[*peal.MovedChannel], error) {
 	options := core.NewRequestOptions(opts...)
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
@@ -373,8 +373,11 @@ func (r *RawClient) MoveChannel(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
+	if request.IdempotencyKey != nil {
+		headers.Add("idempotency-key", *request.IdempotencyKey)
+	}
 	headers.Add("Content-Type", "application/json")
-	var response *peal.Channel
+	var response *peal.MovedChannel
 	raw, err := r.caller.Call(
 		ctx,
 		&internal.CallParams{
@@ -394,7 +397,7 @@ func (r *RawClient) MoveChannel(
 	if err != nil {
 		return nil, err
 	}
-	return &core.Response[*peal.Channel]{
+	return &core.Response[*peal.MovedChannel]{
 		StatusCode: raw.StatusCode,
 		Header:     raw.Header,
 		Body:       response,

@@ -5,6 +5,7 @@ package social.peal.resources.partner.requests;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,19 +14,29 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import social.peal.core.ObjectMappers;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ChannelMove.Builder.class)
 public final class ChannelMove {
+    private final Optional<String> idempotencyKey;
+
     private final String toWorkspaceId;
 
     private final Map<String, Object> additionalProperties;
 
-    private ChannelMove(String toWorkspaceId, Map<String, Object> additionalProperties) {
+    private ChannelMove(
+            Optional<String> idempotencyKey, String toWorkspaceId, Map<String, Object> additionalProperties) {
+        this.idempotencyKey = idempotencyKey;
         this.toWorkspaceId = toWorkspaceId;
         this.additionalProperties = additionalProperties;
+    }
+
+    @JsonIgnore
+    public Optional<String> getIdempotencyKey() {
+        return idempotencyKey;
     }
 
     @JsonProperty("toWorkspaceId")
@@ -45,12 +56,12 @@ public final class ChannelMove {
     }
 
     private boolean equalTo(ChannelMove other) {
-        return toWorkspaceId.equals(other.toWorkspaceId);
+        return idempotencyKey.equals(other.idempotencyKey) && toWorkspaceId.equals(other.toWorkspaceId);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.toWorkspaceId);
+        return Objects.hash(this.idempotencyKey, this.toWorkspaceId);
     }
 
     @java.lang.Override
@@ -74,11 +85,17 @@ public final class ChannelMove {
         _FinalStage additionalProperty(String key, Object value);
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
+
+        _FinalStage idempotencyKey(Optional<String> idempotencyKey);
+
+        _FinalStage idempotencyKey(String idempotencyKey);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder implements ToWorkspaceIdStage, _FinalStage {
         private String toWorkspaceId;
+
+        private Optional<String> idempotencyKey = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
 
@@ -86,6 +103,7 @@ public final class ChannelMove {
 
         @java.lang.Override
         public Builder from(ChannelMove other) {
+            idempotencyKey(other.getIdempotencyKey());
             toWorkspaceId(other.getToWorkspaceId());
             return this;
         }
@@ -98,8 +116,20 @@ public final class ChannelMove {
         }
 
         @java.lang.Override
+        public _FinalStage idempotencyKey(String idempotencyKey) {
+            this.idempotencyKey = Optional.ofNullable(idempotencyKey);
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage idempotencyKey(Optional<String> idempotencyKey) {
+            this.idempotencyKey = idempotencyKey;
+            return this;
+        }
+
+        @java.lang.Override
         public ChannelMove build() {
-            return new ChannelMove(toWorkspaceId, additionalProperties);
+            return new ChannelMove(idempotencyKey, toWorkspaceId, additionalProperties);
         }
 
         @JsonAnySetter

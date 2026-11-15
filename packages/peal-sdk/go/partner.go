@@ -184,15 +184,17 @@ func (l *ListWorkspacesPartnerRequest) SetName(name *string) {
 }
 
 var (
-	channelMoveFieldWorkspaceID   = big.NewInt(1 << 0)
-	channelMoveFieldChannelID     = big.NewInt(1 << 1)
-	channelMoveFieldToWorkspaceID = big.NewInt(1 << 2)
+	channelMoveFieldIdempotencyKey = big.NewInt(1 << 0)
+	channelMoveFieldWorkspaceID    = big.NewInt(1 << 1)
+	channelMoveFieldChannelID      = big.NewInt(1 << 2)
+	channelMoveFieldToWorkspaceID  = big.NewInt(1 << 3)
 )
 
 type ChannelMove struct {
-	WorkspaceID   string `json:"-" url:"-"`
-	ChannelID     string `json:"-" url:"-"`
-	ToWorkspaceID string `json:"toWorkspaceId" url:"-"`
+	IdempotencyKey *string `json:"-" url:"-"`
+	WorkspaceID    string  `json:"-" url:"-"`
+	ChannelID      string  `json:"-" url:"-"`
+	ToWorkspaceID  string  `json:"toWorkspaceId" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -205,6 +207,13 @@ func (c *ChannelMove) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
+}
+
+// SetIdempotencyKey sets the IdempotencyKey field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChannelMove) SetIdempotencyKey(idempotencyKey *string) {
+	c.IdempotencyKey = idempotencyKey
+	c.require(channelMoveFieldIdempotencyKey)
 }
 
 // SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
@@ -283,6 +292,108 @@ func (o *OverviewPartnerRequest) SetBefore(before *string) {
 func (o *OverviewPartnerRequest) SetLimit(limit *string) {
 	o.Limit = limit
 	o.require(overviewPartnerRequestFieldLimit)
+}
+
+var (
+	movedChannelFieldChannel   = big.NewInt(1 << 0)
+	movedChannelFieldPostsLeft = big.NewInt(1 << 1)
+)
+
+type MovedChannel struct {
+	Channel   *Channel `json:"channel" url:"channel"`
+	PostsLeft int      `json:"postsLeft" url:"postsLeft"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (m *MovedChannel) GetChannel() *Channel {
+	if m == nil {
+		return nil
+	}
+	return m.Channel
+}
+
+func (m *MovedChannel) GetPostsLeft() int {
+	if m == nil {
+		return 0
+	}
+	return m.PostsLeft
+}
+
+func (m *MovedChannel) GetExtraProperties() map[string]interface{} {
+	if m == nil {
+		return nil
+	}
+	return m.extraProperties
+}
+
+func (m *MovedChannel) require(field *big.Int) {
+	next := new(big.Int)
+	if m.explicitFields != nil {
+		next.Set(m.explicitFields)
+	}
+	next.Or(next, field)
+	m.explicitFields = next
+}
+
+// SetChannel sets the Channel field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *MovedChannel) SetChannel(channel *Channel) {
+	m.Channel = channel
+	m.require(movedChannelFieldChannel)
+}
+
+// SetPostsLeft sets the PostsLeft field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *MovedChannel) SetPostsLeft(postsLeft int) {
+	m.PostsLeft = postsLeft
+	m.require(movedChannelFieldPostsLeft)
+}
+
+func (m *MovedChannel) UnmarshalJSON(data []byte) error {
+	type unmarshaler MovedChannel
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*m = MovedChannel(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *m)
+	if err != nil {
+		return err
+	}
+	m.extraProperties = extraProperties
+	m.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (m *MovedChannel) MarshalJSON() ([]byte, error) {
+	type embed MovedChannel
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*m),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, m.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (m *MovedChannel) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	if len(m.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(m.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(m); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", m)
 }
 
 var (

@@ -12,6 +12,9 @@ public record ChannelMove
     [JsonIgnore]
     public required string ChannelId { get; set; }
 
+    [JsonIgnore]
+    public string? IdempotencyKey { get; set; }
+
     [JsonPropertyName("toWorkspaceId")]
     public required string ToWorkspaceId { get; set; }
 

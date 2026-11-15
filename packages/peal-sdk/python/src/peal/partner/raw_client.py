@@ -19,10 +19,10 @@ from ..errors.service_unavailable_error import ServiceUnavailableError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..errors.unprocessable_entity_error import UnprocessableEntityError
-from ..types.channel import Channel
 from ..types.customer_workspace import CustomerWorkspace
 from ..types.customer_workspace_page import CustomerWorkspacePage
 from ..types.deletion_incomplete_encoded import DeletionIncompleteEncoded
+from ..types.moved_channel import MovedChannel
 from ..types.partner_health import PartnerHealth
 from ..types.partner_overview import PartnerOverview
 from ..types.unauthenticated_encoded import UnauthenticatedEncoded
@@ -767,10 +767,11 @@ class RawPartnerClient:
         channel_id: str,
         *,
         to_workspace_id: str,
+        idempotency_key: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[Channel]:
+    ) -> HttpResponse[MovedChannel]:
         """
-        Moves a channel from a workspace the partner owns to another one it owns (`toWorkspaceId`), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id: in the workspace it left, it is disconnected (`channel.disconnected` there, `channel.connected` in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 `ChannelAccountTaken`; while a post or a change of a live post is being sent through the channel, 409 `WorkspaceBusy`: send it again a moment later. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (`Authorization: Bearer peal_partner_…`): any other credential answers 403.
+        Moves a channel from a workspace the partner owns to another one it owns (`toWorkspaceId`), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id, and `postsLeft`: how many posts of the workspace it left still had it to go out on. In the workspace it left, it is disconnected (`channel.disconnected` there, `channel.connected` in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 `ChannelAccountTaken`. While a call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review or a direct message), or another request holds either workspace for more than 5 seconds (an offboarding), it answers 409 `WorkspaceBusy`: send it again a moment later. Reads through the channel are not waited for. Send an `Idempotency-Key` header to make the request safe to send again: within 24 hours, the same key with the same request answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 `IdempotencyKeyReused`. Keys are the partner's, shared with workspace creation. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (`Authorization: Bearer peal_partner_…`): any other credential answers 403.
 
         Parameters
         ----------
@@ -780,13 +781,15 @@ class RawPartnerClient:
 
         to_workspace_id : str
 
+        idempotency_key : typing.Optional[str]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[Channel]
-            Channel
+        HttpResponse[MovedChannel]
+            MovedChannel
         """
         _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
@@ -799,6 +802,7 @@ class RawPartnerClient:
             },
             headers={
                 "content-type": "application/json",
+                "idempotency-key": str(idempotency_key) if idempotency_key is not None else None,
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -806,9 +810,9 @@ class RawPartnerClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    Channel,
+                    MovedChannel,
                     parse_obj_as(
-                        type_=Channel,  # type: ignore
+                        type_=MovedChannel,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1615,10 +1619,11 @@ class AsyncRawPartnerClient:
         channel_id: str,
         *,
         to_workspace_id: str,
+        idempotency_key: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[Channel]:
+    ) -> AsyncHttpResponse[MovedChannel]:
         """
-        Moves a channel from a workspace the partner owns to another one it owns (`toWorkspaceId`), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id: in the workspace it left, it is disconnected (`channel.disconnected` there, `channel.connected` in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 `ChannelAccountTaken`; while a post or a change of a live post is being sent through the channel, 409 `WorkspaceBusy`: send it again a moment later. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (`Authorization: Bearer peal_partner_…`): any other credential answers 403.
+        Moves a channel from a workspace the partner owns to another one it owns (`toWorkspaceId`), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id, and `postsLeft`: how many posts of the workspace it left still had it to go out on. In the workspace it left, it is disconnected (`channel.disconnected` there, `channel.connected` in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 `ChannelAccountTaken`. While a call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review or a direct message), or another request holds either workspace for more than 5 seconds (an offboarding), it answers 409 `WorkspaceBusy`: send it again a moment later. Reads through the channel are not waited for. Send an `Idempotency-Key` header to make the request safe to send again: within 24 hours, the same key with the same request answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 `IdempotencyKeyReused`. Keys are the partner's, shared with workspace creation. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. Takes a partner key (`Authorization: Bearer peal_partner_…`): any other credential answers 403.
 
         Parameters
         ----------
@@ -1628,13 +1633,15 @@ class AsyncRawPartnerClient:
 
         to_workspace_id : str
 
+        idempotency_key : typing.Optional[str]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[Channel]
-            Channel
+        AsyncHttpResponse[MovedChannel]
+            MovedChannel
         """
         _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
@@ -1647,6 +1654,7 @@ class AsyncRawPartnerClient:
             },
             headers={
                 "content-type": "application/json",
+                "idempotency-key": str(idempotency_key) if idempotency_key is not None else None,
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -1654,9 +1662,9 @@ class AsyncRawPartnerClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    Channel,
+                    MovedChannel,
                     parse_obj_as(
-                        type_=Channel,  # type: ignore
+                        type_=MovedChannel,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

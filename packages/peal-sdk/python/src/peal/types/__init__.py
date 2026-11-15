@@ -610,6 +610,7 @@ if typing.TYPE_CHECKING:
     from .metric_totals import MetricTotals
     from .metrics_snapshot import MetricsSnapshot
     from .money import Money
+    from .moved_channel import MovedChannel
     from .new_boost import NewBoost
     from .non_finite_number import NonFiniteNumber
     from .not_found_error_body import (
@@ -1681,6 +1682,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "MetricTotals": ".metric_totals",
     "MetricsSnapshot": ".metrics_snapshot",
     "Money": ".money",
+    "MovedChannel": ".moved_channel",
     "NewBoost": ".new_boost",
     "NonFiniteNumber": ".non_finite_number",
     "NotFoundErrorBody": ".not_found_error_body",
@@ -2765,6 +2767,7 @@ __all__ = [
     "MetricTotals",
     "MetricsSnapshot",
     "Money",
+    "MovedChannel",
     "NewBoost",
     "NonFiniteNumber",
     "NotFoundErrorBody",

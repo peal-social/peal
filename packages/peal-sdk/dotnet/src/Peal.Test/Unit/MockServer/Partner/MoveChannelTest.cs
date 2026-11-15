@@ -20,17 +20,20 @@ public class MoveChannelTest : BaseMockServerTest
 
         const string mockResponse = """
             {
-              "avatarUrl": "avatarUrl",
-              "connection": "instagramLogin",
-              "displayName": "displayName",
-              "handle": "handle",
-              "id": "id",
-              "label": "label",
-              "platform": "x",
-              "status": {
-                "_tag": "active"
+              "channel": {
+                "avatarUrl": "avatarUrl",
+                "connection": "instagramLogin",
+                "displayName": "displayName",
+                "handle": "handle",
+                "id": "id",
+                "label": "label",
+                "platform": "x",
+                "status": {
+                  "_tag": "active"
+                },
+                "tokenExpiresAt": "tokenExpiresAt"
               },
-              "tokenExpiresAt": "tokenExpiresAt"
+              "postsLeft": 1
             }
             """;
 
@@ -72,17 +75,20 @@ public class MoveChannelTest : BaseMockServerTest
 
         const string mockResponse = """
             {
-              "avatarUrl": "avatarUrl",
-              "connection": "instagramLogin",
-              "displayName": "displayName",
-              "handle": "handle",
-              "id": "id",
-              "label": "label",
-              "platform": "x",
-              "status": {
-                "_tag": "active"
+              "channel": {
+                "avatarUrl": "avatarUrl",
+                "connection": "instagramLogin",
+                "displayName": "displayName",
+                "handle": "handle",
+                "id": "id",
+                "label": "label",
+                "platform": "x",
+                "status": {
+                  "_tag": "active"
+                },
+                "tokenExpiresAt": "tokenExpiresAt"
               },
-              "tokenExpiresAt": "tokenExpiresAt"
+              "postsLeft": 1
             }
             """;
 

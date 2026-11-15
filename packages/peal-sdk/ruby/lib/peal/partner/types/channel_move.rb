@@ -8,6 +8,8 @@ module Peal
 
         field :channel_id, -> { String }, optional: false, nullable: false, api_name: "channelId"
 
+        field :idempotency_key, -> { String }, optional: true, nullable: false, api_name: "idempotency-key"
+
         field :to_workspace_id, -> { String }, optional: false, nullable: false, api_name: "toWorkspaceId"
       end
     end

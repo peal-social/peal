@@ -8,6 +8,11 @@ use Peal\Core\Json\JsonProperty;
 class ChannelMove extends JsonSerializableType
 {
     /**
+     * @var ?string $idempotencyKey
+     */
+    public ?string $idempotencyKey;
+
+    /**
      * @var string $toWorkspaceId
      */
     #[JsonProperty('toWorkspaceId')]
@@ -16,11 +21,13 @@ class ChannelMove extends JsonSerializableType
     /**
      * @param array{
      *   toWorkspaceId: string,
+     *   idempotencyKey?: ?string,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
+        $this->idempotencyKey = $values['idempotencyKey'] ?? null;
         $this->toWorkspaceId = $values['toWorkspaceId'];
     }
 }

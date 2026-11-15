@@ -11,5 +11,6 @@
 export interface ChannelMove {
     workspaceId: string;
     channelId: string;
+    "idempotency-key"?: string;
     toWorkspaceId: string;
 }

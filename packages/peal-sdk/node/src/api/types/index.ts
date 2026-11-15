@@ -437,6 +437,7 @@ export * from "./MeterTerms.js";
 export * from "./MetricsSnapshot.js";
 export * from "./MetricTotals.js";
 export * from "./Money.js";
+export * from "./MovedChannel.js";
 export * from "./NewBoost.js";
 export * from "./NonFiniteNumber.js";
 export * from "./NotFoundErrorBody.js";
