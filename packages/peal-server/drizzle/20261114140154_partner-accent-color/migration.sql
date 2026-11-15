@@ -1,1 +1,0 @@
-ALTER TABLE "workspace"."partners" ADD COLUMN "accent_color" text;
