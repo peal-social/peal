@@ -7,6 +7,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class SiteNotConnectedReason {
+    public static final SiteNotConnectedReason PLAN_REQUIRED =
+            new SiteNotConnectedReason(Value.PLAN_REQUIRED, "planRequired");
+
+    public static final SiteNotConnectedReason PUBLICATION_NOT_FOUND =
+            new SiteNotConnectedReason(Value.PUBLICATION_NOT_FOUND, "publicationNotFound");
+
+    public static final SiteNotConnectedReason PUBLICATION_REQUIRED =
+            new SiteNotConnectedReason(Value.PUBLICATION_REQUIRED, "publicationRequired");
+
     public static final SiteNotConnectedReason NOT_WORD_PRESS =
             new SiteNotConnectedReason(Value.NOT_WORD_PRESS, "notWordPress");
 
@@ -18,6 +27,9 @@ public final class SiteNotConnectedReason {
 
     public static final SiteNotConnectedReason ADDRESS_NOT_ALLOWED =
             new SiteNotConnectedReason(Value.ADDRESS_NOT_ALLOWED, "addressNotAllowed");
+
+    public static final SiteNotConnectedReason OTHER_WAY_IN =
+            new SiteNotConnectedReason(Value.OTHER_WAY_IN, "otherWayIn");
 
     private final Value value;
 
@@ -52,6 +64,12 @@ public final class SiteNotConnectedReason {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case PLAN_REQUIRED:
+                return visitor.visitPlanRequired();
+            case PUBLICATION_NOT_FOUND:
+                return visitor.visitPublicationNotFound();
+            case PUBLICATION_REQUIRED:
+                return visitor.visitPublicationRequired();
             case NOT_WORD_PRESS:
                 return visitor.visitNotWordPress();
             case CREDENTIALS_REFUSED:
@@ -60,6 +78,8 @@ public final class SiteNotConnectedReason {
                 return visitor.visitCannotPublish();
             case ADDRESS_NOT_ALLOWED:
                 return visitor.visitAddressNotAllowed();
+            case OTHER_WAY_IN:
+                return visitor.visitOtherWayIn();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -69,6 +89,12 @@ public final class SiteNotConnectedReason {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static SiteNotConnectedReason valueOf(String value) {
         switch (value) {
+            case "planRequired":
+                return PLAN_REQUIRED;
+            case "publicationNotFound":
+                return PUBLICATION_NOT_FOUND;
+            case "publicationRequired":
+                return PUBLICATION_REQUIRED;
             case "notWordPress":
                 return NOT_WORD_PRESS;
             case "credentialsRefused":
@@ -77,6 +103,8 @@ public final class SiteNotConnectedReason {
                 return CANNOT_PUBLISH;
             case "addressNotAllowed":
                 return ADDRESS_NOT_ALLOWED;
+            case "otherWayIn":
+                return OTHER_WAY_IN;
             default:
                 return new SiteNotConnectedReason(Value.UNKNOWN, value);
         }
@@ -91,6 +119,14 @@ public final class SiteNotConnectedReason {
 
         CANNOT_PUBLISH,
 
+        OTHER_WAY_IN,
+
+        PUBLICATION_REQUIRED,
+
+        PUBLICATION_NOT_FOUND,
+
+        PLAN_REQUIRED,
+
         UNKNOWN
     }
 
@@ -102,6 +138,14 @@ public final class SiteNotConnectedReason {
         T visitCredentialsRefused();
 
         T visitCannotPublish();
+
+        T visitOtherWayIn();
+
+        T visitPublicationRequired();
+
+        T visitPublicationNotFound();
+
+        T visitPlanRequired();
 
         T visitUnknown(String unknownType);
     }

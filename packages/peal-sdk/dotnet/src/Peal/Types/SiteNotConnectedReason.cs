@@ -18,6 +18,18 @@ public readonly record struct SiteNotConnectedReason : IStringEnum
 
     public static readonly SiteNotConnectedReason CannotPublish = new(Values.CannotPublish);
 
+    public static readonly SiteNotConnectedReason OtherWayIn = new(Values.OtherWayIn);
+
+    public static readonly SiteNotConnectedReason PublicationRequired = new(
+        Values.PublicationRequired
+    );
+
+    public static readonly SiteNotConnectedReason PublicationNotFound = new(
+        Values.PublicationNotFound
+    );
+
+    public static readonly SiteNotConnectedReason PlanRequired = new(Values.PlanRequired);
+
     public SiteNotConnectedReason(string value)
     {
         Value = value;
@@ -121,5 +133,13 @@ public readonly record struct SiteNotConnectedReason : IStringEnum
         public const string CredentialsRefused = "credentialsRefused";
 
         public const string CannotPublish = "cannotPublish";
+
+        public const string OtherWayIn = "otherWayIn";
+
+        public const string PublicationRequired = "publicationRequired";
+
+        public const string PublicationNotFound = "publicationNotFound";
+
+        public const string PlanRequired = "planRequired";
     }
 }

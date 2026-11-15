@@ -16,6 +16,9 @@ pub enum ChannelPlatform {
     Pinterest,
     GoogleBusiness,
     Wordpress,
+    Devto,
+    Hashnode,
+    WordpressCom,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -36,6 +39,9 @@ impl Serialize for ChannelPlatform {
             Self::Pinterest => serializer.serialize_str("pinterest"),
             Self::GoogleBusiness => serializer.serialize_str("googleBusiness"),
             Self::Wordpress => serializer.serialize_str("wordpress"),
+            Self::Devto => serializer.serialize_str("devto"),
+            Self::Hashnode => serializer.serialize_str("hashnode"),
+            Self::WordpressCom => serializer.serialize_str("wordpressCom"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -57,6 +63,9 @@ impl<'de> Deserialize<'de> for ChannelPlatform {
             "pinterest" => Ok(Self::Pinterest),
             "googleBusiness" => Ok(Self::GoogleBusiness),
             "wordpress" => Ok(Self::Wordpress),
+            "devto" => Ok(Self::Devto),
+            "hashnode" => Ok(Self::Hashnode),
+            "wordpressCom" => Ok(Self::WordpressCom),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -77,6 +86,9 @@ impl fmt::Display for ChannelPlatform {
             Self::Pinterest => write!(f, "pinterest"),
             Self::GoogleBusiness => write!(f, "googleBusiness"),
             Self::Wordpress => write!(f, "wordpress"),
+            Self::Devto => write!(f, "devto"),
+            Self::Hashnode => write!(f, "hashnode"),
+            Self::WordpressCom => write!(f, "wordpressCom"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

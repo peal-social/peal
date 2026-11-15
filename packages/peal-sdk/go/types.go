@@ -2652,18 +2652,19 @@ func (a ArticleStateConflictEncodedTag) Ptr() *ArticleStateConflictEncodedTag {
 }
 
 type ArticleViolation struct {
-	Type             string
-	TitleMissing     *ArticleViolationTitleMissing
-	TitleTooLong     *ArticleViolationTitleTooLong
-	BodyMissing      *ArticleViolationBodyMissing
-	BodyInvalid      *ArticleViolationBodyInvalid
-	ExcerptTooLong   *ArticleViolationExcerptTooLong
-	TooManyTerms     *ArticleViolationTooManyTerms
-	TermInvalid      *ArticleViolationTermInvalid
-	SiteTimeInPast   *ArticleViolationSiteTimeInPast
-	TimeInPast       *ArticleViolationTimeInPast
-	CoverNotImage    *ArticleViolationCoverNotImage
-	ApprovalRequired *ArticleViolationApprovalRequired
+	Type               string
+	TitleMissing       *ArticleViolationTitleMissing
+	TitleTooLong       *ArticleViolationTitleTooLong
+	BodyMissing        *ArticleViolationBodyMissing
+	BodyInvalid        *ArticleViolationBodyInvalid
+	ExcerptTooLong     *ArticleViolationExcerptTooLong
+	TooManyTerms       *ArticleViolationTooManyTerms
+	TermInvalid        *ArticleViolationTermInvalid
+	SiteTimeInPast     *ArticleViolationSiteTimeInPast
+	SiteStatusNotTaken *ArticleViolationSiteStatusNotTaken
+	TimeInPast         *ArticleViolationTimeInPast
+	CoverNotImage      *ArticleViolationCoverNotImage
+	ApprovalRequired   *ArticleViolationApprovalRequired
 
 	rawJSON json.RawMessage
 }
@@ -2729,6 +2730,13 @@ func (a *ArticleViolation) GetSiteTimeInPast() *ArticleViolationSiteTimeInPast {
 		return nil
 	}
 	return a.SiteTimeInPast
+}
+
+func (a *ArticleViolation) GetSiteStatusNotTaken() *ArticleViolationSiteStatusNotTaken {
+	if a == nil {
+		return nil
+	}
+	return a.SiteStatusNotTaken
 }
 
 func (a *ArticleViolation) GetTimeInPast() *ArticleViolationTimeInPast {
@@ -2812,6 +2820,12 @@ func (a *ArticleViolation) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		a.SiteTimeInPast = value
+	case "siteStatusNotTaken":
+		value := new(ArticleViolationSiteStatusNotTaken)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		a.SiteStatusNotTaken = value
 	case "timeInPast":
 		value := new(ArticleViolationTimeInPast)
 		if err := json.Unmarshal(data, &value); err != nil {
@@ -2863,6 +2877,9 @@ func (a ArticleViolation) MarshalJSON() ([]byte, error) {
 	if a.SiteTimeInPast != nil {
 		return internal.MarshalJSONWithExtraProperty(a.SiteTimeInPast, "_tag", "siteTimeInPast")
 	}
+	if a.SiteStatusNotTaken != nil {
+		return internal.MarshalJSONWithExtraProperty(a.SiteStatusNotTaken, "_tag", "siteStatusNotTaken")
+	}
 	if a.TimeInPast != nil {
 		return internal.MarshalJSONWithExtraProperty(a.TimeInPast, "_tag", "timeInPast")
 	}
@@ -2887,6 +2904,7 @@ type ArticleViolationVisitor interface {
 	VisitTooManyTerms(*ArticleViolationTooManyTerms) error
 	VisitTermInvalid(*ArticleViolationTermInvalid) error
 	VisitSiteTimeInPast(*ArticleViolationSiteTimeInPast) error
+	VisitSiteStatusNotTaken(*ArticleViolationSiteStatusNotTaken) error
 	VisitTimeInPast(*ArticleViolationTimeInPast) error
 	VisitCoverNotImage(*ArticleViolationCoverNotImage) error
 	VisitApprovalRequired(*ArticleViolationApprovalRequired) error
@@ -2916,6 +2934,9 @@ func (a *ArticleViolation) Accept(visitor ArticleViolationVisitor) error {
 	}
 	if a.SiteTimeInPast != nil {
 		return visitor.VisitSiteTimeInPast(a.SiteTimeInPast)
+	}
+	if a.SiteStatusNotTaken != nil {
+		return visitor.VisitSiteStatusNotTaken(a.SiteStatusNotTaken)
 	}
 	if a.TimeInPast != nil {
 		return visitor.VisitTimeInPast(a.TimeInPast)
@@ -2957,6 +2978,9 @@ func (a *ArticleViolation) validate() error {
 	}
 	if a.SiteTimeInPast != nil {
 		fields = append(fields, "siteTimeInPast")
+	}
+	if a.SiteStatusNotTaken != nil {
+		fields = append(fields, "siteStatusNotTaken")
 	}
 	if a.TimeInPast != nil {
 		fields = append(fields, "timeInPast")
@@ -3345,6 +3369,117 @@ func (a *ArticleViolationExcerptTooLong) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	articleViolationSiteStatusNotTakenFieldStatus = big.NewInt(1 << 0)
+)
+
+type ArticleViolationSiteStatusNotTaken struct {
+	Status ArticleViolationSiteStatusNotTakenStatus `json:"status" url:"status"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *ArticleViolationSiteStatusNotTaken) GetStatus() ArticleViolationSiteStatusNotTakenStatus {
+	if a == nil {
+		return ""
+	}
+	return a.Status
+}
+
+func (a *ArticleViolationSiteStatusNotTaken) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *ArticleViolationSiteStatusNotTaken) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleViolationSiteStatusNotTaken) SetStatus(status ArticleViolationSiteStatusNotTakenStatus) {
+	a.Status = status
+	a.require(articleViolationSiteStatusNotTakenFieldStatus)
+}
+
+func (a *ArticleViolationSiteStatusNotTaken) UnmarshalJSON(data []byte) error {
+	type unmarshaler ArticleViolationSiteStatusNotTaken
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = ArticleViolationSiteStatusNotTaken(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *ArticleViolationSiteStatusNotTaken) MarshalJSON() ([]byte, error) {
+	type embed ArticleViolationSiteStatusNotTaken
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *ArticleViolationSiteStatusNotTaken) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+type ArticleViolationSiteStatusNotTakenStatus string
+
+const (
+	ArticleViolationSiteStatusNotTakenStatusPublish ArticleViolationSiteStatusNotTakenStatus = "publish"
+	ArticleViolationSiteStatusNotTakenStatusDraft   ArticleViolationSiteStatusNotTakenStatus = "draft"
+	ArticleViolationSiteStatusNotTakenStatusFuture  ArticleViolationSiteStatusNotTakenStatus = "future"
+)
+
+func NewArticleViolationSiteStatusNotTakenStatusFromString(s string) (ArticleViolationSiteStatusNotTakenStatus, error) {
+	switch s {
+	case "publish":
+		return ArticleViolationSiteStatusNotTakenStatusPublish, nil
+	case "draft":
+		return ArticleViolationSiteStatusNotTakenStatusDraft, nil
+	case "future":
+		return ArticleViolationSiteStatusNotTakenStatusFuture, nil
+	}
+	var t ArticleViolationSiteStatusNotTakenStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (a ArticleViolationSiteStatusNotTakenStatus) Ptr() *ArticleViolationSiteStatusNotTakenStatus {
+	return &a
 }
 
 type ArticleViolationSiteTimeInPast struct {
@@ -6571,6 +6706,9 @@ const (
 	ChannelPlatformPinterest      ChannelPlatform = "pinterest"
 	ChannelPlatformGoogleBusiness ChannelPlatform = "googleBusiness"
 	ChannelPlatformWordpress      ChannelPlatform = "wordpress"
+	ChannelPlatformDevto          ChannelPlatform = "devto"
+	ChannelPlatformHashnode       ChannelPlatform = "hashnode"
+	ChannelPlatformWordpressCom   ChannelPlatform = "wordpressCom"
 )
 
 func NewChannelPlatformFromString(s string) (ChannelPlatform, error) {
@@ -6599,6 +6737,12 @@ func NewChannelPlatformFromString(s string) (ChannelPlatform, error) {
 		return ChannelPlatformGoogleBusiness, nil
 	case "wordpress":
 		return ChannelPlatformWordpress, nil
+	case "devto":
+		return ChannelPlatformDevto, nil
+	case "hashnode":
+		return ChannelPlatformHashnode, nil
+	case "wordpressCom":
+		return ChannelPlatformWordpressCom, nil
 	}
 	var t ChannelPlatform
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -26069,10 +26213,14 @@ func (s *SiteNotConnectedEncoded) String() string {
 type SiteNotConnectedReason string
 
 const (
-	SiteNotConnectedReasonNotWordPress       SiteNotConnectedReason = "notWordPress"
-	SiteNotConnectedReasonAddressNotAllowed  SiteNotConnectedReason = "addressNotAllowed"
-	SiteNotConnectedReasonCredentialsRefused SiteNotConnectedReason = "credentialsRefused"
-	SiteNotConnectedReasonCannotPublish      SiteNotConnectedReason = "cannotPublish"
+	SiteNotConnectedReasonNotWordPress        SiteNotConnectedReason = "notWordPress"
+	SiteNotConnectedReasonAddressNotAllowed   SiteNotConnectedReason = "addressNotAllowed"
+	SiteNotConnectedReasonCredentialsRefused  SiteNotConnectedReason = "credentialsRefused"
+	SiteNotConnectedReasonCannotPublish       SiteNotConnectedReason = "cannotPublish"
+	SiteNotConnectedReasonOtherWayIn          SiteNotConnectedReason = "otherWayIn"
+	SiteNotConnectedReasonPublicationRequired SiteNotConnectedReason = "publicationRequired"
+	SiteNotConnectedReasonPublicationNotFound SiteNotConnectedReason = "publicationNotFound"
+	SiteNotConnectedReasonPlanRequired        SiteNotConnectedReason = "planRequired"
 )
 
 func NewSiteNotConnectedReasonFromString(s string) (SiteNotConnectedReason, error) {
@@ -26085,6 +26233,14 @@ func NewSiteNotConnectedReasonFromString(s string) (SiteNotConnectedReason, erro
 		return SiteNotConnectedReasonCredentialsRefused, nil
 	case "cannotPublish":
 		return SiteNotConnectedReasonCannotPublish, nil
+	case "otherWayIn":
+		return SiteNotConnectedReasonOtherWayIn, nil
+	case "publicationRequired":
+		return SiteNotConnectedReasonPublicationRequired, nil
+	case "publicationNotFound":
+		return SiteNotConnectedReasonPublicationNotFound, nil
+	case "planRequired":
+		return SiteNotConnectedReasonPlanRequired, nil
 	}
 	var t SiteNotConnectedReason
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

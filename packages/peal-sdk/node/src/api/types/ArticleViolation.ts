@@ -11,6 +11,7 @@ export type ArticleViolation =
     | Peal.ArticleViolation.TooManyTerms
     | Peal.ArticleViolation.TermInvalid
     | Peal.ArticleViolation.SiteTimeInPast
+    | Peal.ArticleViolation.SiteStatusNotTaken
     | Peal.ArticleViolation.TimeInPast
     | Peal.ArticleViolation.CoverNotImage
     | Peal.ArticleViolation.ApprovalRequired;
@@ -46,6 +47,10 @@ export namespace ArticleViolation {
 
     export interface SiteTimeInPast extends Peal.ArticleViolationSiteTimeInPast {
         _tag: "siteTimeInPast";
+    }
+
+    export interface SiteStatusNotTaken extends Peal.ArticleViolationSiteStatusNotTaken {
+        _tag: "siteStatusNotTaken";
     }
 
     export interface TimeInPast extends Peal.ArticleViolationTimeInPast {

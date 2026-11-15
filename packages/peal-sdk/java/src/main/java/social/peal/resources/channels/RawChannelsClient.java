@@ -38,6 +38,7 @@ import social.peal.resources.channels.requests.ChooseAccounts;
 import social.peal.resources.channels.requests.ConnectCallback;
 import social.peal.resources.channels.requests.ConnectChannel;
 import social.peal.resources.channels.requests.ConnectSite;
+import social.peal.resources.channels.requests.ConnectSiteWithKey;
 import social.peal.resources.channels.requests.DisableChannelsRequest;
 import social.peal.resources.channels.requests.DisconnectChannelsRequest;
 import social.peal.resources.channels.requests.EnableChannelsRequest;
@@ -45,11 +46,14 @@ import social.peal.resources.channels.requests.FindChannelsRequest;
 import social.peal.resources.channels.requests.ListChannelsRequest;
 import social.peal.resources.channels.requests.PlatformsChannelsRequest;
 import social.peal.resources.channels.requests.ReconnectChannelsRequest;
+import social.peal.resources.channels.requests.SiteSignInCallback;
+import social.peal.resources.channels.requests.StartSiteSignIn;
 import social.peal.types.Authorization;
 import social.peal.types.Channel;
 import social.peal.types.ChannelPage;
 import social.peal.types.ConnectOutcome;
 import social.peal.types.ConnectablePlatforms;
+import social.peal.types.OAuthSitePlatform;
 import social.peal.types.Platform;
 import social.peal.types.UnauthenticatedEncoded;
 
@@ -377,6 +381,300 @@ public class RawChannelsClient {
                 .addPathSegment(PathSegments.validate(workspaceId))
                 .addPathSegments("channels")
                 .addPathSegments("websites");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Channel.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 402:
+                        throw new PaymentRequiredError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 422:
+                        throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 502:
+                        throw new BadGatewayError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (<code>devto</code>), an API key from the account's settings (Extensions); on Hashnode (<code>hashnode</code>), a personal access token from the account's settings (Developer) and the publication's address in <code>publication</code>, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected <code>credentialsRefused</code>; a Hashnode publication that is not found is <code>publicationNotFound</code>, one to name among several <code>publicationRequired</code>, and one without Hashnode's Pro plan, which its API needs for every request, <code>planRequired</code>; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public PealClientHttpResponse<Channel> connectSiteWithKey(String workspaceId, ConnectSiteWithKey request) {
+        return connectSiteWithKey(workspaceId, request, null);
+    }
+
+    /**
+     * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (<code>devto</code>), an API key from the account's settings (Extensions); on Hashnode (<code>hashnode</code>), a personal access token from the account's settings (Developer) and the publication's address in <code>publication</code>, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected <code>credentialsRefused</code>; a Hashnode publication that is not found is <code>publicationNotFound</code>, one to name among several <code>publicationRequired</code>, and one without Hashnode's Pro plan, which its API needs for every request, <code>planRequired</code>; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public PealClientHttpResponse<Channel> connectSiteWithKey(
+            String workspaceId, ConnectSiteWithKey request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("channels/websites")
+                .addPathSegments("keys");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Channel.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 402:
+                        throw new PaymentRequiredError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 422:
+                        throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 502:
+                        throw new BadGatewayError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public PealClientHttpResponse<Authorization> startSiteSignIn(String workspaceId, OAuthSitePlatform platform) {
+        return startSiteSignIn(workspaceId, platform, StartSiteSignIn.builder().build());
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public PealClientHttpResponse<Authorization> startSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, RequestOptions requestOptions) {
+        return startSiteSignIn(workspaceId, platform, StartSiteSignIn.builder().build(), requestOptions);
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public PealClientHttpResponse<Authorization> startSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, StartSiteSignIn request) {
+        return startSiteSignIn(workspaceId, platform, request, null);
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public PealClientHttpResponse<Authorization> startSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, StartSiteSignIn request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("channels/websites/sign-in")
+                .addPathSegment(PathSegments.validate(platform.toString()));
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Authorization.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 402:
+                        throw new PaymentRequiredError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 422:
+                        throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 502:
+                        throw new BadGatewayError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected <code>cannotPublish</code>; a reconnect that reached another site ConnectFailed <code>accountMismatch</code>. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
+     */
+    public PealClientHttpResponse<Channel> completeSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, SiteSignInCallback request) {
+        return completeSiteSignIn(workspaceId, platform, request, null);
+    }
+
+    /**
+     * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected <code>cannotPublish</code>; a reconnect that reached another site ConnectFailed <code>accountMismatch</code>. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
+     */
+    public PealClientHttpResponse<Channel> completeSiteSignIn(
+            String workspaceId, OAuthSitePlatform platform, SiteSignInCallback request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("channels/websites/sign-in")
+                .addPathSegment(PathSegments.validate(platform.toString()))
+                .addPathSegments("callback");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);

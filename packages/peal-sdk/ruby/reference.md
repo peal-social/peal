@@ -825,6 +825,275 @@ client.channels.connect_site(
 </dl>
 </details>
 
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect_site_with_key</a>(workspace_id:, request) -> Peal::Types::Channel</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions); on Hashnode (`hashnode`), a personal access token from the account's settings (Developer) and the publication's address in `publication`, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one to name among several `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every request, `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```ruby
+client.channels.connect_site_with_key(
+  workspace_id: "workspaceId",
+  api_key: "apiKey",
+  platform: "devto"
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspace_id:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**api_key:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**platform:** `Peal::Types::KeySitePlatform` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publication:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `Peal::Channels::RequestOptions` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">start_site_sign_in</a>(workspace_id:, platform:, request) -> Peal::Types::Authorization</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts connecting a website by signing in on its platform: on WordPress.com (`wordpressCom`), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With `channelId`, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed `notConfigured`. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```ruby
+client.channels.start_site_sign_in(
+  workspace_id: "workspaceId",
+  platform: "wordpressCom"
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspace_id:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**platform:** `Peal::Types::OAuthSitePlatform` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**channel_id:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `Peal::Channels::RequestOptions` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">complete_site_sign_in</a>(workspace_id:, platform:, request) -> Peal::Types::Channel</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected `cannotPublish`; a reconnect that reached another site ConnectFailed `accountMismatch`. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```ruby
+client.channels.complete_site_sign_in(
+  workspace_id: "workspaceId",
+  platform: "wordpressCom",
+  state: "state"
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspace_id:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**platform:** `Peal::Types::OAuthSitePlatform` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**code:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**error:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**state:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `Peal::Channels::RequestOptions` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect</a>(workspace_id:, platform:, request) -> Peal::Types::Authorization</code></summary>
 <dl>
 <dd>

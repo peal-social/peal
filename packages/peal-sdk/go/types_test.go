@@ -5512,6 +5512,39 @@ func TestGettersArticleViolation(t *testing.T) {
 		_ = obj.GetSiteTimeInPast() // Should return zero value
 	})
 
+	t.Run("GetSiteStatusNotTaken", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ArticleViolation{}
+		var expected *ArticleViolationSiteStatusNotTaken
+		obj.SiteStatusNotTaken = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetSiteStatusNotTaken(), "getter should return the property value")
+	})
+
+	t.Run("GetSiteStatusNotTaken_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ArticleViolation{}
+		obj.SiteStatusNotTaken = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetSiteStatusNotTaken(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetSiteStatusNotTaken_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ArticleViolation
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetSiteStatusNotTaken() // Should return zero value
+	})
+
 	t.Run("GetTimeInPast", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -5659,6 +5692,77 @@ func TestSettersMarkExplicitArticleViolationExcerptTooLong(t *testing.T) {
 
 		// Act
 		obj.SetMaximum(fernTestValueMaximum)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersArticleViolationSiteStatusNotTaken(t *testing.T) {
+	t.Run("SetStatus", func(t *testing.T) {
+		obj := &ArticleViolationSiteStatusNotTaken{}
+		var fernTestValueStatus ArticleViolationSiteStatusNotTakenStatus
+		obj.SetStatus(fernTestValueStatus)
+		assert.Equal(t, fernTestValueStatus, obj.Status)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersArticleViolationSiteStatusNotTaken(t *testing.T) {
+	t.Run("GetStatus", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ArticleViolationSiteStatusNotTaken{}
+		var expected ArticleViolationSiteStatusNotTakenStatus
+		obj.Status = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetStatus(), "getter should return the property value")
+	})
+
+	t.Run("GetStatus_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ArticleViolationSiteStatusNotTaken
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetStatus() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitArticleViolationSiteStatusNotTaken(t *testing.T) {
+	t.Run("SetStatus_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ArticleViolationSiteStatusNotTaken{}
+		var fernTestValueStatus ArticleViolationSiteStatusNotTakenStatus
+
+		// Act
+		obj.SetStatus(fernTestValueStatus)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -65354,6 +65458,39 @@ func TestJSONMarshalingArticleViolationExcerptTooLong(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingArticleViolationSiteStatusNotTaken(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ArticleViolationSiteStatusNotTaken{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled ArticleViolationSiteStatusNotTaken
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj ArticleViolationSiteStatusNotTaken
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj ArticleViolationSiteStatusNotTaken
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingArticleViolationSiteTimeInPast(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -73295,6 +73432,22 @@ func TestStringArticleViolationExcerptTooLong(t *testing.T) {
 	})
 }
 
+func TestStringArticleViolationSiteStatusNotTaken(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &ArticleViolationSiteStatusNotTaken{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ArticleViolationSiteStatusNotTaken
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
 func TestStringArticleViolationSiteTimeInPast(t *testing.T) {
 	t.Run("StringMethod", func(t *testing.T) {
 		t.Parallel()
@@ -76588,6 +76741,42 @@ func TestEnumArticleStateConflictEncodedTag(t *testing.T) {
 	})
 }
 
+func TestEnumArticleViolationSiteStatusNotTakenStatus(t *testing.T) {
+	t.Run("NewFromString_publish", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewArticleViolationSiteStatusNotTakenStatusFromString("publish")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ArticleViolationSiteStatusNotTakenStatus("publish"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_draft", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewArticleViolationSiteStatusNotTakenStatusFromString("draft")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ArticleViolationSiteStatusNotTakenStatus("draft"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_future", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewArticleViolationSiteStatusNotTakenStatusFromString("future")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ArticleViolationSiteStatusNotTakenStatus("future"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewArticleViolationSiteStatusNotTakenStatusFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewArticleViolationSiteStatusNotTakenStatusFromString("publish")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
 func TestEnumArticleViolationTermInvalidField(t *testing.T) {
 	t.Run("NewFromString_categories", func(t *testing.T) {
 		t.Parallel()
@@ -77169,6 +77358,27 @@ func TestEnumChannelPlatform(t *testing.T) {
 		val, err := NewChannelPlatformFromString("wordpress")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, ChannelPlatform("wordpress"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_devto", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewChannelPlatformFromString("devto")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ChannelPlatform("devto"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_hashnode", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewChannelPlatformFromString("hashnode")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ChannelPlatform("hashnode"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_wordpressCom", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewChannelPlatformFromString("wordpressCom")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ChannelPlatform("wordpressCom"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
@@ -80385,6 +80595,34 @@ func TestEnumSiteNotConnectedReason(t *testing.T) {
 		assert.Equal(t, SiteNotConnectedReason("cannotPublish"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_otherWayIn", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSiteNotConnectedReasonFromString("otherWayIn")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SiteNotConnectedReason("otherWayIn"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_publicationRequired", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSiteNotConnectedReasonFromString("publicationRequired")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SiteNotConnectedReason("publicationRequired"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_publicationNotFound", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSiteNotConnectedReasonFromString("publicationNotFound")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SiteNotConnectedReason("publicationNotFound"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_planRequired", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSiteNotConnectedReasonFromString("planRequired")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SiteNotConnectedReason("planRequired"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewSiteNotConnectedReasonFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)
@@ -81812,6 +82050,29 @@ func TestExtraPropertiesArticleViolationExcerptTooLong(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *ArticleViolationExcerptTooLong
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesArticleViolationSiteStatusNotTaken(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &ArticleViolationSiteStatusNotTaken{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ArticleViolationSiteStatusNotTaken
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

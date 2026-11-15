@@ -91,6 +91,15 @@ public record ArticleViolation
     }
 
     /// <summary>
+    /// Create an instance of ArticleViolation with <see cref="ArticleViolation.SiteStatusNotTaken"/>.
+    /// </summary>
+    public ArticleViolation(ArticleViolation.SiteStatusNotTaken value)
+    {
+        Type = "siteStatusNotTaken";
+        Value = value.Value;
+    }
+
+    /// <summary>
     /// Create an instance of ArticleViolation with <see cref="ArticleViolation.TimeInPast"/>.
     /// </summary>
     public ArticleViolation(ArticleViolation.TimeInPast value)
@@ -167,6 +176,11 @@ public record ArticleViolation
     /// Returns true if <see cref="Type"/> is "siteTimeInPast"
     /// </summary>
     public bool IsSiteTimeInPast => Type == "siteTimeInPast";
+
+    /// <summary>
+    /// Returns true if <see cref="Type"/> is "siteStatusNotTaken"
+    /// </summary>
+    public bool IsSiteStatusNotTaken => Type == "siteStatusNotTaken";
 
     /// <summary>
     /// Returns true if <see cref="Type"/> is "timeInPast"
@@ -256,6 +270,17 @@ public record ArticleViolation
             : throw new global::System.Exception("ArticleViolation.Type is not 'siteTimeInPast'");
 
     /// <summary>
+    /// Returns the value as a <see cref="Peal.ArticleViolationSiteStatusNotTaken"/> if <see cref="Type"/> is 'siteStatusNotTaken', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'siteStatusNotTaken'.</exception>
+    public Peal.ArticleViolationSiteStatusNotTaken AsSiteStatusNotTaken() =>
+        IsSiteStatusNotTaken
+            ? (Peal.ArticleViolationSiteStatusNotTaken)Value!
+            : throw new global::System.Exception(
+                "ArticleViolation.Type is not 'siteStatusNotTaken'"
+            );
+
+    /// <summary>
     /// Returns the value as a <see cref="Peal.ArticleViolationTimeInPast"/> if <see cref="Type"/> is 'timeInPast', otherwise throws an exception.
     /// </summary>
     /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'timeInPast'.</exception>
@@ -291,6 +316,7 @@ public record ArticleViolation
         Func<Peal.ArticleViolationTooManyTerms, T> onTooManyTerms,
         Func<Peal.ArticleViolationTermInvalid, T> onTermInvalid,
         Func<Peal.ArticleViolationSiteTimeInPast, T> onSiteTimeInPast,
+        Func<Peal.ArticleViolationSiteStatusNotTaken, T> onSiteStatusNotTaken,
         Func<Peal.ArticleViolationTimeInPast, T> onTimeInPast,
         Func<Peal.ArticleViolationCoverNotImage, T> onCoverNotImage,
         Func<Peal.ArticleViolationApprovalRequired, T> onApprovalRequired,
@@ -307,6 +333,7 @@ public record ArticleViolation
             "tooManyTerms" => onTooManyTerms(AsTooManyTerms()),
             "termInvalid" => onTermInvalid(AsTermInvalid()),
             "siteTimeInPast" => onSiteTimeInPast(AsSiteTimeInPast()),
+            "siteStatusNotTaken" => onSiteStatusNotTaken(AsSiteStatusNotTaken()),
             "timeInPast" => onTimeInPast(AsTimeInPast()),
             "coverNotImage" => onCoverNotImage(AsCoverNotImage()),
             "approvalRequired" => onApprovalRequired(AsApprovalRequired()),
@@ -323,6 +350,7 @@ public record ArticleViolation
         Action<Peal.ArticleViolationTooManyTerms> onTooManyTerms,
         Action<Peal.ArticleViolationTermInvalid> onTermInvalid,
         Action<Peal.ArticleViolationSiteTimeInPast> onSiteTimeInPast,
+        Action<Peal.ArticleViolationSiteStatusNotTaken> onSiteStatusNotTaken,
         Action<Peal.ArticleViolationTimeInPast> onTimeInPast,
         Action<Peal.ArticleViolationCoverNotImage> onCoverNotImage,
         Action<Peal.ArticleViolationApprovalRequired> onApprovalRequired,
@@ -354,6 +382,9 @@ public record ArticleViolation
                 break;
             case "siteTimeInPast":
                 onSiteTimeInPast(AsSiteTimeInPast());
+                break;
+            case "siteStatusNotTaken":
+                onSiteStatusNotTaken(AsSiteStatusNotTaken());
                 break;
             case "timeInPast":
                 onTimeInPast(AsTimeInPast());
@@ -483,6 +514,20 @@ public record ArticleViolation
     }
 
     /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.ArticleViolationSiteStatusNotTaken"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsSiteStatusNotTaken(out Peal.ArticleViolationSiteStatusNotTaken? value)
+    {
+        if (Type == "siteStatusNotTaken")
+        {
+            value = (Peal.ArticleViolationSiteStatusNotTaken)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
     /// Attempts to cast the value to a <see cref="Peal.ArticleViolationTimeInPast"/> and returns true if successful.
     /// </summary>
     public bool TryAsTimeInPast(out Peal.ArticleViolationTimeInPast? value)
@@ -548,6 +593,9 @@ public record ArticleViolation
         new(value);
 
     public static implicit operator ArticleViolation(ArticleViolation.SiteTimeInPast value) =>
+        new(value);
+
+    public static implicit operator ArticleViolation(ArticleViolation.SiteStatusNotTaken value) =>
         new(value);
 
     public static implicit operator ArticleViolation(ArticleViolation.TimeInPast value) =>
@@ -650,6 +698,13 @@ public record ArticleViolation
                         ?? throw new JsonException(
                             "Failed to deserialize Peal.ArticleViolationSiteTimeInPast"
                         ),
+                "siteStatusNotTaken" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.ArticleViolationSiteStatusNotTaken?>(
+                        options
+                    )
+                        ?? throw new JsonException(
+                            "Failed to deserialize Peal.ArticleViolationSiteStatusNotTaken"
+                        ),
                 "timeInPast" =>
                     jsonWithoutDiscriminator.Deserialize<Peal.ArticleViolationTimeInPast?>(options)
                         ?? throw new JsonException(
@@ -691,6 +746,7 @@ public record ArticleViolation
                     "tooManyTerms" => JsonSerializer.SerializeToNode(value.Value, options),
                     "termInvalid" => JsonSerializer.SerializeToNode(value.Value, options),
                     "siteTimeInPast" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "siteStatusNotTaken" => JsonSerializer.SerializeToNode(value.Value, options),
                     "timeInPast" => JsonSerializer.SerializeToNode(value.Value, options),
                     "coverNotImage" => JsonSerializer.SerializeToNode(value.Value, options),
                     "approvalRequired" => JsonSerializer.SerializeToNode(value.Value, options),
@@ -879,6 +935,26 @@ public record ArticleViolation
 
         public static implicit operator ArticleViolation.SiteTimeInPast(
             Peal.ArticleViolationSiteTimeInPast value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for siteStatusNotTaken
+    /// </summary>
+    [Serializable]
+    public struct SiteStatusNotTaken
+    {
+        public SiteStatusNotTaken(Peal.ArticleViolationSiteStatusNotTaken value)
+        {
+            Value = value;
+        }
+
+        internal Peal.ArticleViolationSiteStatusNotTaken Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator ArticleViolation.SiteStatusNotTaken(
+            Peal.ArticleViolationSiteStatusNotTaken value
         ) => new(value);
     }
 

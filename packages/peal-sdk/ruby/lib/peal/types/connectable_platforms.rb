@@ -10,6 +10,8 @@ module Peal
       field :linkedin_connections, -> { Internal::Types::Array[Peal::Types::LinkedInConnection] }, optional: false, nullable: false, api_name: "linkedinConnections"
 
       field :platforms, -> { Internal::Types::Array[Peal::Types::Platform] }, optional: false, nullable: false
+
+      field :sites, -> { Internal::Types::Array[Peal::Types::SitePlatform] }, optional: true, nullable: false
     end
   end
 end

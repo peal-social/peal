@@ -215,6 +215,182 @@ module Peal
         end
       end
 
+      # Connects an account on a publishing platform, to publish articles to it, with a key the member made there for
+      # Peal: on DEV (`devto`), an API key from the account's settings (Extensions); on Hashnode (`hashnode`), a
+      # personal access token from the account's settings (Developer) and the publication's address in `publication`,
+      # which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted;
+      # the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is
+      # SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one to
+      # name among several `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every
+      # request, `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An
+      # account the workspace has already is reconnected with the new key. An account counts as one channel: a new one
+      # needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace
+      # has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together
+      # (SiteConnectLimited). Needs channel:connect.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::Channels::Types::ConnectSiteWithKey]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      #
+      # @example
+      #   client.channels.connect_site_with_key(
+      #     workspace_id: "workspaceId",
+      #     api_key: "apiKey",
+      #     platform: "devto"
+      #   )
+      #
+      # @return [Peal::Types::Channel]
+      def connect_site_with_key(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::Channels::Types::ConnectSiteWithKey.new(params).to_h
+        non_body_param_names = %w[workspaceId]
+        body = request_data.except(*non_body_param_names)
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/websites/keys",
+          body: body,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::Channel.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Starts connecting a website by signing in on its platform: on WordPress.com (`wordpressCom`), a site there or a
+      # Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page,
+      # where the browser goes next; the connection is tied to the caller and the workspace, and must be completed
+      # within 15 minutes. With `channelId`, it reconnects that channel, and the sign-in must reach its site again. A
+      # server without the platform's app answers ConnectFailed `notConfigured`. A new site needs room in the
+      # workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace
+      # tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs
+      # channel:connect.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::Channels::Types::StartSiteSignIn]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [Peal::Types::OAuthSitePlatform] :platform
+      #
+      # @example
+      #   client.channels.start_site_sign_in(
+      #     workspace_id: "workspaceId",
+      #     platform: "wordpressCom"
+      #   )
+      #
+      # @return [Peal::Types::Authorization]
+      def start_site_sign_in(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::Channels::Types::StartSiteSignIn.new(params).to_h
+        non_body_param_names = %w[workspaceId platform]
+        body = request_data.except(*non_body_param_names)
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/websites/sign-in/#{URI.encode_uri_component(params[:platform].to_s)}",
+          body: body,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::Authorization.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or
+      # the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member
+      # who may not publish posts and upload files on the site is SiteNotConnected `cannotPublish`; a reconnect that
+      # reached another site ConnectFailed `accountMismatch`. A new site needs room in the workspace's plan
+      # (PlanLimitReached). Needs channel:connect.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::Channels::Types::SiteSignInCallback]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [Peal::Types::OAuthSitePlatform] :platform
+      #
+      # @example
+      #   client.channels.complete_site_sign_in(
+      #     workspace_id: "workspaceId",
+      #     platform: "wordpressCom",
+      #     state: "state"
+      #   )
+      #
+      # @return [Peal::Types::Channel]
+      def complete_site_sign_in(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::Channels::Types::SiteSignInCallback.new(params).to_h
+        non_body_param_names = %w[workspaceId platform]
+        body = request_data.except(*non_body_param_names)
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/websites/sign-in/#{URI.encode_uri_component(params[:platform].to_s)}/callback",
+          body: body,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::Channel.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
       # Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes
       # next. For Instagram, `connection` picks Instagram Login (the professional account itself, no Facebook Page
       # needed) or Facebook Login (the accounts linked to the caller's Pages); without it, the server's preferred way.

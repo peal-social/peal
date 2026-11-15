@@ -178,6 +178,90 @@ func (c *ConnectCallback) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	siteSignInCallbackFieldWorkspaceID = big.NewInt(1 << 0)
+	siteSignInCallbackFieldPlatform    = big.NewInt(1 << 1)
+	siteSignInCallbackFieldCode        = big.NewInt(1 << 2)
+	siteSignInCallbackFieldError       = big.NewInt(1 << 3)
+	siteSignInCallbackFieldState       = big.NewInt(1 << 4)
+)
+
+type SiteSignInCallback struct {
+	WorkspaceID string            `json:"-" url:"-"`
+	Platform    OAuthSitePlatform `json:"-" url:"-"`
+	Code        *string           `json:"code,omitempty" url:"-"`
+	Error       *string           `json:"error,omitempty" url:"-"`
+	State       string            `json:"state" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (s *SiteSignInCallback) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SiteSignInCallback) SetWorkspaceID(workspaceID string) {
+	s.WorkspaceID = workspaceID
+	s.require(siteSignInCallbackFieldWorkspaceID)
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SiteSignInCallback) SetPlatform(platform OAuthSitePlatform) {
+	s.Platform = platform
+	s.require(siteSignInCallbackFieldPlatform)
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SiteSignInCallback) SetCode(code *string) {
+	s.Code = code
+	s.require(siteSignInCallbackFieldCode)
+}
+
+// SetError sets the Error field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SiteSignInCallback) SetError(error_ *string) {
+	s.Error = error_
+	s.require(siteSignInCallbackFieldError)
+}
+
+// SetState sets the State field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SiteSignInCallback) SetState(state string) {
+	s.State = state
+	s.require(siteSignInCallbackFieldState)
+}
+
+func (s *SiteSignInCallback) UnmarshalJSON(data []byte) error {
+	type unmarshaler SiteSignInCallback
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*s = SiteSignInCallback(body)
+	return nil
+}
+
+func (s *SiteSignInCallback) MarshalJSON() ([]byte, error) {
+	type embed SiteSignInCallback
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	connectChannelFieldWorkspaceID = big.NewInt(1 << 0)
 	connectChannelFieldPlatform    = big.NewInt(1 << 1)
 	connectChannelFieldConnection  = big.NewInt(1 << 2)
@@ -336,6 +420,81 @@ func (c *ConnectSite) UnmarshalJSON(data []byte) error {
 
 func (c *ConnectSite) MarshalJSON() ([]byte, error) {
 	type embed ConnectSite
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
+	connectSiteWithKeyFieldWorkspaceID = big.NewInt(1 << 0)
+	connectSiteWithKeyFieldAPIKey      = big.NewInt(1 << 1)
+	connectSiteWithKeyFieldPlatform    = big.NewInt(1 << 2)
+	connectSiteWithKeyFieldPublication = big.NewInt(1 << 3)
+)
+
+type ConnectSiteWithKey struct {
+	WorkspaceID string          `json:"-" url:"-"`
+	APIKey      string          `json:"apiKey" url:"-"`
+	Platform    KeySitePlatform `json:"platform" url:"-"`
+	Publication *string         `json:"publication,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (c *ConnectSiteWithKey) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectSiteWithKey) SetWorkspaceID(workspaceID string) {
+	c.WorkspaceID = workspaceID
+	c.require(connectSiteWithKeyFieldWorkspaceID)
+}
+
+// SetAPIKey sets the APIKey field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectSiteWithKey) SetAPIKey(apiKey string) {
+	c.APIKey = apiKey
+	c.require(connectSiteWithKeyFieldAPIKey)
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectSiteWithKey) SetPlatform(platform KeySitePlatform) {
+	c.Platform = platform
+	c.require(connectSiteWithKeyFieldPlatform)
+}
+
+// SetPublication sets the Publication field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectSiteWithKey) SetPublication(publication *string) {
+	c.Publication = publication
+	c.require(connectSiteWithKeyFieldPublication)
+}
+
+func (c *ConnectSiteWithKey) UnmarshalJSON(data []byte) error {
+	type unmarshaler ConnectSiteWithKey
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*c = ConnectSiteWithKey(body)
+	return nil
+}
+
+func (c *ConnectSiteWithKey) MarshalJSON() ([]byte, error) {
+	type embed ConnectSiteWithKey
 	var marshaler = struct {
 		embed
 	}{
@@ -631,6 +790,72 @@ func (r *ReconnectChannelsRequest) SetMessages(messages *ReconnectChannelsReques
 func (r *ReconnectChannelsRequest) SetReposts(reposts *ReconnectChannelsRequestReposts) {
 	r.Reposts = reposts
 	r.require(reconnectChannelsRequestFieldReposts)
+}
+
+var (
+	startSiteSignInFieldWorkspaceID = big.NewInt(1 << 0)
+	startSiteSignInFieldPlatform    = big.NewInt(1 << 1)
+	startSiteSignInFieldChannelID   = big.NewInt(1 << 2)
+)
+
+type StartSiteSignIn struct {
+	WorkspaceID string            `json:"-" url:"-"`
+	Platform    OAuthSitePlatform `json:"-" url:"-"`
+	ChannelID   *string           `json:"channelId,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (s *StartSiteSignIn) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *StartSiteSignIn) SetWorkspaceID(workspaceID string) {
+	s.WorkspaceID = workspaceID
+	s.require(startSiteSignInFieldWorkspaceID)
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *StartSiteSignIn) SetPlatform(platform OAuthSitePlatform) {
+	s.Platform = platform
+	s.require(startSiteSignInFieldPlatform)
+}
+
+// SetChannelID sets the ChannelID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *StartSiteSignIn) SetChannelID(channelID *string) {
+	s.ChannelID = channelID
+	s.require(startSiteSignInFieldChannelID)
+}
+
+func (s *StartSiteSignIn) UnmarshalJSON(data []byte) error {
+	type unmarshaler StartSiteSignIn
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*s = StartSiteSignIn(body)
+	return nil
+}
+
+func (s *StartSiteSignIn) MarshalJSON() ([]byte, error) {
+	type embed StartSiteSignIn
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
 }
 
 var (
@@ -2089,12 +2314,14 @@ var (
 	connectablePlatformsFieldInstagramConnections = big.NewInt(1 << 0)
 	connectablePlatformsFieldLinkedinConnections  = big.NewInt(1 << 1)
 	connectablePlatformsFieldPlatforms            = big.NewInt(1 << 2)
+	connectablePlatformsFieldSites                = big.NewInt(1 << 3)
 )
 
 type ConnectablePlatforms struct {
 	InstagramConnections []InstagramConnection `json:"instagramConnections" url:"instagramConnections"`
 	LinkedinConnections  []LinkedInConnection  `json:"linkedinConnections" url:"linkedinConnections"`
 	Platforms            []Platform            `json:"platforms" url:"platforms"`
+	Sites                []SitePlatform        `json:"sites,omitempty" url:"sites,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2122,6 +2349,13 @@ func (c *ConnectablePlatforms) GetPlatforms() []Platform {
 		return nil
 	}
 	return c.Platforms
+}
+
+func (c *ConnectablePlatforms) GetSites() []SitePlatform {
+	if c == nil {
+		return nil
+	}
+	return c.Sites
 }
 
 func (c *ConnectablePlatforms) GetExtraProperties() map[string]interface{} {
@@ -2159,6 +2393,13 @@ func (c *ConnectablePlatforms) SetLinkedinConnections(linkedinConnections []Link
 func (c *ConnectablePlatforms) SetPlatforms(platforms []Platform) {
 	c.Platforms = platforms
 	c.require(connectablePlatformsFieldPlatforms)
+}
+
+// SetSites sets the Sites field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectablePlatforms) SetSites(sites []SitePlatform) {
+	c.Sites = sites
+	c.require(connectablePlatformsFieldSites)
 }
 
 func (c *ConnectablePlatforms) UnmarshalJSON(data []byte) error {
@@ -2226,6 +2467,29 @@ func (i InstagramConnection) Ptr() *InstagramConnection {
 	return &i
 }
 
+// A kind of website a channel connects to with a key.
+type KeySitePlatform string
+
+const (
+	KeySitePlatformDevto    KeySitePlatform = "devto"
+	KeySitePlatformHashnode KeySitePlatform = "hashnode"
+)
+
+func NewKeySitePlatformFromString(s string) (KeySitePlatform, error) {
+	switch s {
+	case "devto":
+		return KeySitePlatformDevto, nil
+	case "hashnode":
+		return KeySitePlatformHashnode, nil
+	}
+	var t KeySitePlatform
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (k KeySitePlatform) Ptr() *KeySitePlatform {
+	return &k
+}
+
 // What a LinkedIn channel posts as: a profile or a page.
 type LinkedInConnection string
 
@@ -2249,17 +2513,46 @@ func (l LinkedInConnection) Ptr() *LinkedInConnection {
 	return &l
 }
 
+// A kind of website a channel connects to by signing in.
+type OAuthSitePlatform string
+
+const (
+	OAuthSitePlatformWordpressCom OAuthSitePlatform = "wordpressCom"
+)
+
+func NewOAuthSitePlatformFromString(s string) (OAuthSitePlatform, error) {
+	switch s {
+	case "wordpressCom":
+		return OAuthSitePlatformWordpressCom, nil
+	}
+	var t OAuthSitePlatform
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (o OAuthSitePlatform) Ptr() *OAuthSitePlatform {
+	return &o
+}
+
 // A kind of website a channel publishes articles to.
 type SitePlatform string
 
 const (
-	SitePlatformWordpress SitePlatform = "wordpress"
+	SitePlatformWordpress    SitePlatform = "wordpress"
+	SitePlatformDevto        SitePlatform = "devto"
+	SitePlatformHashnode     SitePlatform = "hashnode"
+	SitePlatformWordpressCom SitePlatform = "wordpressCom"
 )
 
 func NewSitePlatformFromString(s string) (SitePlatform, error) {
 	switch s {
 	case "wordpress":
 		return SitePlatformWordpress, nil
+	case "devto":
+		return SitePlatformDevto, nil
+	case "hashnode":
+		return SitePlatformHashnode, nil
+	case "wordpressCom":
+		return SitePlatformWordpressCom, nil
 	}
 	var t SitePlatform
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

@@ -10,6 +10,12 @@ public readonly record struct SitePlatform : IStringEnum
 {
     public static readonly SitePlatform Wordpress = new(Values.Wordpress);
 
+    public static readonly SitePlatform Devto = new(Values.Devto);
+
+    public static readonly SitePlatform Hashnode = new(Values.Hashnode);
+
+    public static readonly SitePlatform WordpressCom = new(Values.WordpressCom);
+
     public SitePlatform(string value)
     {
         Value = value;
@@ -107,5 +113,11 @@ public readonly record struct SitePlatform : IStringEnum
     public static class Values
     {
         public const string Wordpress = "wordpress";
+
+        public const string Devto = "devto";
+
+        public const string Hashnode = "hashnode";
+
+        public const string WordpressCom = "wordpressCom";
     }
 }

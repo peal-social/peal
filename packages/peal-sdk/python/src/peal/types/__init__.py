@@ -137,6 +137,7 @@ if typing.TYPE_CHECKING:
         ArticleViolation_BodyMissing,
         ArticleViolation_CoverNotImage,
         ArticleViolation_ExcerptTooLong,
+        ArticleViolation_SiteStatusNotTaken,
         ArticleViolation_SiteTimeInPast,
         ArticleViolation_TermInvalid,
         ArticleViolation_TimeInPast,
@@ -149,6 +150,8 @@ if typing.TYPE_CHECKING:
     from .article_violation_body_missing import ArticleViolationBodyMissing
     from .article_violation_cover_not_image import ArticleViolationCoverNotImage
     from .article_violation_excerpt_too_long import ArticleViolationExcerptTooLong
+    from .article_violation_site_status_not_taken import ArticleViolationSiteStatusNotTaken
+    from .article_violation_site_status_not_taken_status import ArticleViolationSiteStatusNotTakenStatus
     from .article_violation_site_time_in_past import ArticleViolationSiteTimeInPast
     from .article_violation_term_invalid import ArticleViolationTermInvalid
     from .article_violation_term_invalid_field import ArticleViolationTermInvalidField
@@ -581,6 +584,7 @@ if typing.TYPE_CHECKING:
     from .invalid_time_zone_encoded_tag import InvalidTimeZoneEncodedTag
     from .invitation import Invitation
     from .invitation_not_found_encoded import InvitationNotFoundEncoded
+    from .key_site_platform import KeySitePlatform
     from .last_target_left_encoded import LastTargetLeftEncoded
     from .limited_count import LimitedCount
     from .linked_in_connection import LinkedInConnection
@@ -744,6 +748,7 @@ if typing.TYPE_CHECKING:
     from .notice_page import NoticePage
     from .notification_preferences import NotificationPreferences
     from .notification_preferences_email import NotificationPreferencesEmail
+    from .o_auth_site_platform import OAuthSitePlatform
     from .option_constraint import (
         OptionConstraint,
         OptionConstraint_NeededWith,
@@ -1282,6 +1287,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ArticleViolationBodyMissing": ".article_violation_body_missing",
     "ArticleViolationCoverNotImage": ".article_violation_cover_not_image",
     "ArticleViolationExcerptTooLong": ".article_violation_excerpt_too_long",
+    "ArticleViolationSiteStatusNotTaken": ".article_violation_site_status_not_taken",
+    "ArticleViolationSiteStatusNotTakenStatus": ".article_violation_site_status_not_taken_status",
     "ArticleViolationSiteTimeInPast": ".article_violation_site_time_in_past",
     "ArticleViolationTermInvalid": ".article_violation_term_invalid",
     "ArticleViolationTermInvalidField": ".article_violation_term_invalid_field",
@@ -1295,6 +1302,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ArticleViolation_BodyMissing": ".article_violation",
     "ArticleViolation_CoverNotImage": ".article_violation",
     "ArticleViolation_ExcerptTooLong": ".article_violation",
+    "ArticleViolation_SiteStatusNotTaken": ".article_violation",
     "ArticleViolation_SiteTimeInPast": ".article_violation",
     "ArticleViolation_TermInvalid": ".article_violation",
     "ArticleViolation_TimeInPast": ".article_violation",
@@ -1719,6 +1727,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "InvalidTimeZoneEncodedTag": ".invalid_time_zone_encoded_tag",
     "Invitation": ".invitation",
     "InvitationNotFoundEncoded": ".invitation_not_found_encoded",
+    "KeySitePlatform": ".key_site_platform",
     "LastTargetLeftEncoded": ".last_target_left_encoded",
     "LimitedCount": ".limited_count",
     "LinkedInConnection": ".linked_in_connection",
@@ -1874,6 +1883,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "NoticePage": ".notice_page",
     "NotificationPreferences": ".notification_preferences",
     "NotificationPreferencesEmail": ".notification_preferences_email",
+    "OAuthSitePlatform": ".o_auth_site_platform",
     "OptionConstraint": ".option_constraint",
     "OptionConstraintNeededWith": ".option_constraint_needed_with",
     "OptionConstraintNeedsOneOf": ".option_constraint_needs_one_of",
@@ -2429,6 +2439,8 @@ __all__ = [
     "ArticleViolationBodyMissing",
     "ArticleViolationCoverNotImage",
     "ArticleViolationExcerptTooLong",
+    "ArticleViolationSiteStatusNotTaken",
+    "ArticleViolationSiteStatusNotTakenStatus",
     "ArticleViolationSiteTimeInPast",
     "ArticleViolationTermInvalid",
     "ArticleViolationTermInvalidField",
@@ -2442,6 +2454,7 @@ __all__ = [
     "ArticleViolation_BodyMissing",
     "ArticleViolation_CoverNotImage",
     "ArticleViolation_ExcerptTooLong",
+    "ArticleViolation_SiteStatusNotTaken",
     "ArticleViolation_SiteTimeInPast",
     "ArticleViolation_TermInvalid",
     "ArticleViolation_TimeInPast",
@@ -2866,6 +2879,7 @@ __all__ = [
     "InvalidTimeZoneEncodedTag",
     "Invitation",
     "InvitationNotFoundEncoded",
+    "KeySitePlatform",
     "LastTargetLeftEncoded",
     "LimitedCount",
     "LinkedInConnection",
@@ -3021,6 +3035,7 @@ __all__ = [
     "NoticePage",
     "NotificationPreferences",
     "NotificationPreferencesEmail",
+    "OAuthSitePlatform",
     "OptionConstraint",
     "OptionConstraintNeededWith",
     "OptionConstraintNeedsOneOf",

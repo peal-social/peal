@@ -8,6 +8,7 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .article_violation_site_status_not_taken_status import ArticleViolationSiteStatusNotTakenStatus
 from .article_violation_term_invalid_field import ArticleViolationTermInvalidField
 from .article_violation_too_many_terms_field import ArticleViolationTooManyTermsField
 
@@ -137,6 +138,22 @@ class ArticleViolation_SiteTimeInPast(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+class ArticleViolation_SiteStatusNotTaken(UniversalBaseModel):
+    type: typing_extensions.Annotated[
+        typing.Literal["siteStatusNotTaken"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "siteStatusNotTaken"
+    status: ArticleViolationSiteStatusNotTakenStatus
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 class ArticleViolation_TimeInPast(UniversalBaseModel):
     type: typing_extensions.Annotated[
         typing.Literal["timeInPast"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
@@ -192,6 +209,7 @@ ArticleViolation = typing_extensions.Annotated[
         ArticleViolation_TooManyTerms,
         ArticleViolation_TermInvalid,
         ArticleViolation_SiteTimeInPast,
+        ArticleViolation_SiteStatusNotTaken,
         ArticleViolation_TimeInPast,
         ArticleViolation_CoverNotImage,
         ArticleViolation_ApprovalRequired,

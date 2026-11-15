@@ -347,7 +347,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"instagramConnections\": [\n    \"instagramLogin\"\n  ],\n  \"linkedinConnections\": [\n    \"linkedinProfile\"\n  ],\n  \"platforms\": [\n    \"x\"\n  ]\n}",
+        "body": "{\n  \"instagramConnections\": [\n    \"instagramLogin\"\n  ],\n  \"linkedinConnections\": [\n    \"linkedinProfile\"\n  ],\n  \"platforms\": [\n    \"x\"\n  ],\n  \"sites\": [\n    \"wordpress\"\n  ]\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -389,6 +389,120 @@
         }
       },
       "uuid": "9a398982-b5e8-40e3-bab0-95286aa87fe1",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "abcf02ab-f22e-4a8b-be05-262935ca376d",
+      "name": "Connect a website with a key - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/channels/websites/keys",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"avatarUrl\": \"avatarUrl\",\n  \"connection\": \"instagramLogin\",\n  \"displayName\": \"displayName\",\n  \"handle\": \"handle\",\n  \"id\": \"id\",\n  \"label\": \"label\",\n  \"platform\": \"x\",\n  \"status\": {\n    \"_tag\": \"active\"\n  },\n  \"tokenExpiresAt\": \"tokenExpiresAt\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "abcf02ab-f22e-4a8b-be05-262935ca376d",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "8fa3e0ba-8e7d-4007-a020-594b45157a07",
+      "name": "Start signing in to a website - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/channels/websites/sign-in/{platform}",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "platform": {
+            "equalTo": "wordpressCom"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"authorizationUrl\": \"authorizationUrl\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "8fa3e0ba-8e7d-4007-a020-594b45157a07",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "14c247f7-107b-4472-9f9f-845d063b6b22",
+      "name": "Complete signing in to a website - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/channels/websites/sign-in/{platform}/callback",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "platform": {
+            "equalTo": "wordpressCom"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"avatarUrl\": \"avatarUrl\",\n  \"connection\": \"instagramLogin\",\n  \"displayName\": \"displayName\",\n  \"handle\": \"handle\",\n  \"id\": \"id\",\n  \"label\": \"label\",\n  \"platform\": \"x\",\n  \"status\": {\n    \"_tag\": \"active\"\n  },\n  \"tokenExpiresAt\": \"tokenExpiresAt\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "14c247f7-107b-4472-9f9f-845d063b6b22",
       "persistent": true,
       "priority": 3,
       "metadata": {
@@ -9128,6 +9242,6 @@
     }
   ],
   "meta": {
-    "total": 243
+    "total": 246
   }
 }

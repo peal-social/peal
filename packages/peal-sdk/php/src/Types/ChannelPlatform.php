@@ -16,4 +16,7 @@ enum ChannelPlatform: string
     case Pinterest = "pinterest";
     case GoogleBusiness = "googleBusiness";
     case Wordpress = "wordpress";
+    case Devto = "devto";
+    case Hashnode = "hashnode";
+    case WordpressCom = "wordpressCom";
 }

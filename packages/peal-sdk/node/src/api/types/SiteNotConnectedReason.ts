@@ -4,6 +4,10 @@ export const SiteNotConnectedReason = {
         NotWordPress: "notWordPress",
         AddressNotAllowed: "addressNotAllowed",
         CredentialsRefused: "credentialsRefused",
-        CannotPublish: "cannotPublish"
+        CannotPublish: "cannotPublish",
+        OtherWayIn: "otherWayIn",
+        PublicationRequired: "publicationRequired",
+        PublicationNotFound: "publicationNotFound",
+        PlanRequired: "planRequired"
     } as const;
 export type SiteNotConnectedReason = typeof SiteNotConnectedReason[keyof typeof SiteNotConnectedReason];

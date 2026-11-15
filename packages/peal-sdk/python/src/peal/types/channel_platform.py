@@ -16,6 +16,9 @@ ChannelPlatform = typing.Union[
         "pinterest",
         "googleBusiness",
         "wordpress",
+        "devto",
+        "hashnode",
+        "wordpressCom",
     ],
     typing.Any,
 ]
