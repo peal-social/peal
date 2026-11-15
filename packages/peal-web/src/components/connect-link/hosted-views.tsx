@@ -45,7 +45,7 @@ export const HostedCard = ({
 
   return (
     <div
-      className={`mx-auto flex w-full max-w-sm flex-col gap-6 rounded-lg border p-6${accent === null ? "" : " border-t-4 border-t-(--host-accent)"}`}
+      className={`bg-card mx-auto flex w-full max-w-sm flex-col gap-6 rounded-lg border p-6${accent === null ? "" : " border-t-4 border-t-(--host-accent)"}`}
       style={accent === null ? undefined : { "--host-accent": accent }}
     >
       {host === null ? null : (

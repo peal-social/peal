@@ -360,6 +360,8 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             // Not `#RRGGBB`, or lost on Peal's light pages.
             { accentColor: "#fff" },
             { accentColor: "#FFCA00" },
+            { accentColor: "#415EEEFF" },
+            { accentColor: "rgb(65, 94, 238)" },
           ]) {
             const refused = yield* app.request(
               `/api/workspaces/${home}/partner`,

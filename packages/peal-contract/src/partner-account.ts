@@ -56,9 +56,10 @@ export const OpenPartnerSchema = Schema.Struct({
 
 /** What to change of a partner account: what is left out stays as it is. */
 export const PartnerChangeSchema = Schema.Struct({
-  // `#RRGGBB`; null removes it.
+  // `#RRGGBB`; null removes it. Anything else, up to this length, is
+  // refused by the server as `PartnerDetailsInvalid` (`accentColor`).
   accentColor: Schema.optionalKey(
-    Schema.NullOr(Schema.String.check(Schema.isMaxLength(7)))
+    Schema.NullOr(Schema.String.check(Schema.isMaxLength(64)))
   ),
   // Null removes the logo.
   logoUrl: Schema.optionalKey(

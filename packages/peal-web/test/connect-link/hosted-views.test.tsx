@@ -74,6 +74,12 @@ describe("a connect link's page", () => {
     expect(html).toContain("--host-accent:#166534");
   });
 
+  it("is a white card on the page, as DESIGN.md's hosted pages are", async () => {
+    const html = await welcome("en", link);
+
+    expect(html).toMatch(/class="bg-card /u);
+  });
+
   it("draws no line without an accent colour, nor for one that is not #RRGGBB", async () => {
     const pages = await Promise.all(
       [null, "red;background:url(x)", "#FFF"].map(
