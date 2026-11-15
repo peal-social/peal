@@ -65,9 +65,10 @@ export type KeySitePlatform = typeof KeySitePlatformSchema.Type;
  * (`startSiteSignIn`): `wordpressCom`, when the server has its app. The
  * server's list is the source; a test keeps the two equal.
  */
-export const OAuthSitePlatformSchema = Schema.Literals([
-  "wordpressCom",
-]).annotate({
+// One kind so far: a single literal, which the document writes as a plain
+// enum (a list of one would be an anyOf of one). Further kinds join it as
+// `Schema.Literals`.
+export const OAuthSitePlatformSchema = Schema.Literal("wordpressCom").annotate({
   description: "A kind of website a channel connects to by signing in.",
   identifier: "OAuthSitePlatform",
 });

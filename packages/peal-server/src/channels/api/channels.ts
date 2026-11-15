@@ -358,7 +358,12 @@ export const ChannelsHandlers = HttpApiBuilder.group(
           const actor = actorOf(yield* CurrentMember);
 
           const channel = yield* siteSignIns
-            .complete(actor, params.platform, callbackOf(payload))
+            .complete(actor, params.platform, {
+              code: Option.fromUndefinedOr(payload.code),
+              error: Option.fromUndefinedOr(payload.error),
+              issuer: Option.none(),
+              state: payload.state,
+            })
             .pipe(Effect.catch(signInFailure));
 
           return toChannelView(channel);

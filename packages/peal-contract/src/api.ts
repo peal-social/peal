@@ -1039,6 +1039,7 @@ export {
   ConnectOutcomeSchema,
   ConnectSiteSchema,
   ConnectSiteWithKeySchema,
+  SiteSignInCallbackSchema,
   StartSiteSignInSchema,
   isSocialChannel,
   maxSiteAddressLength,
@@ -1059,6 +1060,7 @@ export type {
   ConnectOutcome,
   ConnectSite,
   ConnectSiteWithKey,
+  SiteSignInCallback,
   StartSiteSignIn,
   SocialChannel,
 } from "./channels.ts";

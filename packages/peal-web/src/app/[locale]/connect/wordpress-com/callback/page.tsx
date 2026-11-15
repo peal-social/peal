@@ -1,11 +1,11 @@
 import { Option, Schema } from "effect";
 import { getTranslations } from "next-intl/server";
-import { ConnectCallbackSchema } from "peal-contract";
+import { SiteSignInCallbackSchema } from "peal-contract";
 
 import { AuthCard } from "#components/auth/auth-card.tsx";
 import { CompleteSiteSignIn } from "#components/channels/complete-site-sign-in.tsx";
 
-const decodeCallback = Schema.decodeUnknownOption(ConnectCallbackSchema);
+const decodeCallback = Schema.decodeUnknownOption(SiteSignInCallbackSchema);
 
 // Where WordPress.com sends the browser back after a member signs in
 // there, with the state, and a code or an error, in the address: the

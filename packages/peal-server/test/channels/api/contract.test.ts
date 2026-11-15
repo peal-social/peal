@@ -6,6 +6,7 @@ import {
   ChannelPlatformSchema as ContractChannelPlatformSchema,
   InstagramConnectionSchema as ContractConnectionSchema,
   KeySitePlatformSchema as ContractKeySitePlatformSchema,
+  OAuthSitePlatformSchema as ContractOAuthSitePlatformSchema,
   LinkedInConnectionSchema as ContractLinkedInConnectionSchema,
   MetaAppSchema,
   PlatformSchema as ContractPlatformSchema,
@@ -21,7 +22,10 @@ import {
 import { ChannelConnectionSchema } from "#shared/domain/channel-connection.ts";
 import { InstagramConnectionSchema } from "#shared/domain/instagram-connection.ts";
 import { LinkedInConnectionSchema } from "#shared/domain/linkedin-connection.ts";
-import { KeySitePlatformSchema } from "#shared/domain/platform.ts";
+import {
+  KeySitePlatformSchema,
+  OAuthSitePlatformSchema,
+} from "#shared/domain/platform.ts";
 
 // What the API reference tells clients each endpoint may answer.
 const documentedStatuses = (path: string) =>
@@ -47,6 +51,9 @@ describe("the channels contract", () => {
     );
     expect(ContractKeySitePlatformSchema.literals).toStrictEqual(
       KeySitePlatformSchema.literals
+    );
+    expect([ContractOAuthSitePlatformSchema.literal]).toStrictEqual(
+      OAuthSitePlatformSchema.literals
     );
     expect(ContractChannelPlatformSchema.literals).toStrictEqual(
       ChannelPlatformSchema.literals

@@ -4,7 +4,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { constVoid } from "effect/Function";
 import { useTranslations } from "next-intl";
-import type { ConnectCallback, OAuthSitePlatform } from "peal-contract";
+import type { OAuthSitePlatform, SiteSignInCallback } from "peal-contract";
 import { Alert, AlertDescription, AlertTitle } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -28,7 +28,7 @@ const notYetKnown = "";
 const unknownOnServer = () => notYetKnown;
 
 interface CompleteSiteSignInProps {
-  readonly callback: ConnectCallback | null;
+  readonly callback: SiteSignInCallback | null;
   readonly platform: OAuthSitePlatform;
 }
 
@@ -71,7 +71,7 @@ export const CompleteSiteSignIn = ({
 
     started.current = true;
 
-    const finish = async (workspace: string, payload: ConnectCallback) => {
+    const finish = async (workspace: string, payload: SiteSignInCallback) => {
       const exit = await complete({
         params: { platform, workspaceId: workspace },
         payload,

@@ -289,6 +289,18 @@ export const ConnectSiteWithKeySchema = Schema.Struct({
 
 export type ConnectSiteWithKey = typeof ConnectSiteWithKeySchema.Type;
 
+/**
+ * What a website's platform added to the callback page's address: the
+ * `state` that names the sign-in, and either a `code` or an `error`.
+ */
+export const SiteSignInCallbackSchema = Schema.Struct({
+  code: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(2048))),
+  error: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(256))),
+  state: Schema.String.check(Schema.isBetweenLength(1, 256)),
+}).annotate({ identifier: "SiteSignInCallback" });
+
+export type SiteSignInCallback = typeof SiteSignInCallbackSchema.Type;
+
 /** A sign-in on a website's platform, for a new site or to reconnect one. */
 export const StartSiteSignInSchema = Schema.Struct({
   // The channel to reconnect: the sign-in must reach its site again.
@@ -413,7 +425,7 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
           SiteConnectLimited,
         ],
         params: { ...workspace, platform: OAuthSitePlatformSchema },
-        payload: ConnectCallbackSchema,
+        payload: SiteSignInCallbackSchema,
         success: ChannelSchema,
       }
     ).annotateMerge(
