@@ -24,7 +24,9 @@
   a channel calls it too; reconnecting one adds none.
 - A channel moves to another workspace of its pool through `ChannelMoves`
   (the caller decides who may: the workspace context's
-  `MoveCustomerChannel`, a partner's customers): a new channel there with
+  `MoveCustomerChannel`, a partner's customers; `ChannelMoves` refuses a
+  workspace outside the pool itself, `ChannelOutsidePool`, read through
+  `ChannelAllowance.sharingIn`): a new channel there with
   a new id (`movedChannel`: same account, scopes, token and status, no
   label, its `createdAt` kept: billing's counts before a grace read it), its tokens re-bound to it (`rebindTokens`:
   decrypted for the old id, encrypted for the new, `granted_by` and

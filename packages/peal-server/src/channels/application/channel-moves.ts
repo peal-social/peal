@@ -14,6 +14,7 @@ import { ChannelAllowance } from "./channel-allowance.ts";
 import { ChannelEvents } from "./channel-events.ts";
 import { ChannelLocks } from "./channel-locks.ts";
 import { ChannelNotFound } from "./channel-not-found.ts";
+import { ChannelOutsidePool } from "./channel-outside-pool.ts";
 import { ChannelRepository } from "./channel-repository.ts";
 import { rebindTokens } from "./channel-tokens.ts";
 import type { MissingTokenKey } from "./missing-token-key.ts";
@@ -35,6 +36,7 @@ export interface ChannelMove<E, R> {
 export type MoveFailure =
   | ChannelAccountTaken
   | ChannelNotFound
+  | ChannelOutsidePool
   | DatabaseError
   | MissingTokenKey
   | TokenDecryptionError;
@@ -116,6 +118,18 @@ export class ChannelMoves extends Context.Service<
 
         if (Option.isNone(found)) {
           return yield* notFound;
+        }
+
+        // Only where the pool counts the channel already, read without
+        // its hold: the caller holds both workspaces, which keeps them
+        // where they are.
+        const pools = yield* allowance.sharingIn([asked.from]);
+
+        if (
+          asked.to !== asked.from &&
+          !(pools.get(asked.from) ?? []).includes(asked.to)
+        ) {
+          return yield* new ChannelOutsidePool();
         }
 
         const id = yield* newId(ChannelIdSchema);

@@ -20,6 +20,7 @@ import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-chann
 import { SqlChannelLocks } from "#channels/infrastructure/sql-channel-locks.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { Meanwhile } from "#test/channels/meanwhile.ts";
+import { MovePool, pooledWorkspace } from "#test/channels/move-pool.ts";
 import {
   DatabaseTest,
   freshChannel,
@@ -63,6 +64,7 @@ const HeardTest = Layer.mergeAll(
     ChannelAllowance,
     Effect.gen(function* allowance() {
       const told = yield* Told;
+      const pool = yield* MovePool;
 
       return ChannelAllowance.of({
         channels: () => Effect.succeed(Option.none()),
@@ -77,11 +79,21 @@ const HeardTest = Layer.mergeAll(
           ),
         passedThrough: () => Effect.succeedNone,
         sharedWith: () => Effect.succeed([]),
-        sharingIn: () => Effect.succeed(new Map()),
+        sharingIn: (workspaceIds) =>
+          Ref.get(pool).pipe(
+            Effect.map(
+              (pooled) =>
+                new Map(
+                  workspaceIds
+                    .filter((id) => pooled.includes(id))
+                    .map((id) => [id, pooled.filter((other) => other !== id)])
+                )
+            )
+          ),
       });
     })
   )
-).pipe(Layer.provideMerge(ToldTest));
+).pipe(Layer.provideMerge(ToldTest), Layer.provideMerge(MovePool.layerTest));
 
 const MovesTest = ChannelMoves.layer.pipe(
   Layer.provideMerge(
@@ -145,8 +157,8 @@ layer(MovesTest)("moving a channel", (it) => {
       Effect.gen(function* moves() {
         const repository = yield* ChannelRepository;
         const cipher = yield* TokenCipher;
-        const from = yield* freshWorkspace;
-        const to = yield* freshWorkspace;
+        const from = yield* pooledWorkspace;
+        const to = yield* pooledWorkspace;
         const channel = yield* stored(from);
 
         yield* Told.use((told) => Ref.set(told, []));
@@ -215,8 +227,8 @@ layer(MovesTest)("moving a channel", (it) => {
   it.effect("leaves everything as it was when the caller's check fails", () =>
     Effect.gen(function* refused() {
       const repository = yield* ChannelRepository;
-      const from = yield* freshWorkspace;
-      const to = yield* freshWorkspace;
+      const from = yield* pooledWorkspace;
+      const to = yield* pooledWorkspace;
       const channel = yield* stored(from);
 
       const failure = yield* ChannelMoves.use((moves) =>
@@ -241,8 +253,8 @@ layer(MovesTest)("moving a channel", (it) => {
     () =>
       Effect.gen(function* taken() {
         const repository = yield* ChannelRepository;
-        const from = yield* freshWorkspace;
-        const to = yield* freshWorkspace;
+        const from = yield* pooledWorkspace;
+        const to = yield* pooledWorkspace;
         const channel = yield* stored(from);
 
         const there = yield* freshChannel(to, { accountId: channel.accountId });
@@ -284,12 +296,29 @@ layer(MovesTest)("moving a channel", (it) => {
       })
   );
 
+  it.effect("moves nothing out of its pool", () =>
+    Effect.gen(function* outside() {
+      const repository = yield* ChannelRepository;
+      const from = yield* pooledWorkspace;
+      const stranger = yield* freshWorkspace;
+      const channel = yield* stored(from);
+
+      const failure = yield* moveOf(channel, stranger).pipe(Effect.flip);
+
+      assert.strictEqual(failure._tag, "ChannelOutsidePool");
+      assert.isTrue(
+        Option.isSome(yield* repository.findById(from, channel.id))
+      );
+      assert.lengthOf(yield* repository.list(stranger), 0);
+    })
+  );
+
   it.effect("finds no channel of another workspace", () =>
     Effect.gen(function* elsewhere() {
-      const other = yield* freshWorkspace;
+      const other = yield* pooledWorkspace;
       const channel = yield* stored(other);
-      const from = yield* freshWorkspace;
-      const to = yield* freshWorkspace;
+      const from = yield* pooledWorkspace;
+      const to = yield* pooledWorkspace;
 
       const failure = yield* ChannelMoves.use((moves) =>
         moves.move({ channelId: channel.id, from, inside: Effect.void, to })
@@ -389,8 +418,8 @@ layer(RacingTest)("a move raced by a deletion", (it) => {
         const repository = yield* ChannelRepository;
         const sql = yield* SqlClient.SqlClient;
         const meanwhile = yield* Meanwhile;
-        const from = yield* freshWorkspace;
-        const to = yield* freshWorkspace;
+        const from = yield* pooledWorkspace;
+        const to = yield* pooledWorkspace;
         const channel = yield* stored(from);
 
         yield* Ref.set(meanwhile, {
@@ -422,8 +451,8 @@ layer(RacingTest)("a move raced by a deletion", (it) => {
         const repository = yield* ChannelRepository;
         const sql = yield* SqlClient.SqlClient;
         const meanwhile = yield* Meanwhile;
-        const from = yield* freshWorkspace;
-        const to = yield* freshWorkspace;
+        const from = yield* pooledWorkspace;
+        const to = yield* pooledWorkspace;
         const channel = yield* stored(from);
         const grant = `synthetic-manager-${channel.id}`;
 

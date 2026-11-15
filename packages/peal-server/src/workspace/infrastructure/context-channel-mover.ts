@@ -132,6 +132,9 @@ export const ContextChannelMoverLive = Layer.effect(
                     ),
                   ChannelNotFound: () =>
                     Effect.fail(new CustomerChannelNotFound()),
+                  // The partner's workspaces share its pool: one outside
+                  // is a bug of the ownership check.
+                  ChannelOutsidePool: Effect.die,
                   MalformedEncryptedToken: Effect.die,
                   MissingTokenKey: Effect.die,
                   TokenAuthenticationFailed: Effect.die,
