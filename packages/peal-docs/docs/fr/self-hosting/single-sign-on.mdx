@@ -1,0 +1,59 @@
+---
+title: Authentification unique
+description: Laissez les gens se connecter à votre serveur avec votre fournisseur d’identité OpenID Connect, ou avec Google, en plus de leur mot de passe.
+sidebar:
+  icon: key-round
+---
+
+Laissez les membres de votre organisation se connecter et créer leur compte avec votre fournisseur d’identité (tout fournisseur OpenID Connect), ou avec Google. Le formulaire de mot de passe reste : un fournisseur est une façon de plus d’entrer.
+
+## Enregistrer Peal chez votre fournisseur [#register]
+
+<Steps>
+  <Step title="Créez un client">
+    Chez votre fournisseur, créez un client confidentiel (une
+    « application ») pour le Web, avec l’URI de redirection
+    `<PUBLIC_URL>/api/auth/callback/oidc`, par exemple
+    `https://peal.example.com/api/auth/callback/oidc`. Autorisez le flux
+    du code d’autorisation ; Peal utilise PKCE.
+  </Step>
+  <Step title="Donnez-lui les portées">
+    Peal demande `openid email profile` sauf si vous en définissez
+    d’autres. Le fournisseur doit mettre `email` et `email_verified` dans
+    le jeton d’identité (ID token), que Peal lit seul, jamais le point
+    d’accès userinfo.
+  </Step>
+  <Step title="Définissez les variables">
+    Définissez `PEAL_OIDC_ISSUER`, `PEAL_OIDC_CLIENT_ID` et
+    `PEAL_OIDC_CLIENT_SECRET`, et `PEAL_OIDC_NAME` pour le nom du bouton
+    ([Variables d’environnement](/self-hosting/environment-variables#sign-in-providers)),
+    puis redémarrez le serveur. Les pages de connexion et d’inscription
+    montrent alors **Continuer avec** et ce nom au-dessus du formulaire.
+  </Step>
+</Steps>
+
+Peal lit le document de découverte du fournisseur à `<issuer>/.well-known/openid-configuration` et vérifie la signature, l’émetteur, l’audience et le nonce de chaque jeton d’identité. Un fournisseur dont la découverte échoue au démarrage du serveur est réessayé à la connexion suivante ; le serveur démarre quand même. Le fournisseur peut être sur votre réseau privé : le serveur le joint directement.
+
+## Ce que le fournisseur doit envoyer [#claims]
+
+- `email`, et `email_verified` à `true`. Un fournisseur qui n’envoie pas `email_verified`, ou `false`, ne peut connecter personne : Peal dit à la personne que son fournisseur n’a pas confirmé l’adresse.
+- `sub`, que Peal conserve comme identifiant de la personne chez le fournisseur. Peal ne conserve aucun jeton du fournisseur, ni sa photo.
+- `name`, facultatif : sans lui, un nouveau compte prend le nom de l’adresse.
+
+## Comment les comptes sont reliés [#matching]
+
+La connexion par un fournisseur n’atteint un compte que par une adresse confirmée des deux côtés : le fournisseur dit l’avoir confirmée, et le compte Peal l’a confirmée aussi. Un compte dont l’adresse n’a jamais été confirmée n’est pas relié au fournisseur ; son titulaire se connecte d’abord avec son mot de passe, ou le réinitialise. Une fois relié, l’identifiant du fournisseur connecte ce compte, même si l’adresse change chez le fournisseur. Rien d’autre ne relie un compte à un fournisseur, et la page du compte n’a ni lien ni déliaison.
+
+## Créer un compte [#sign-up]
+
+Un fournisseur ne crée un compte que depuis la page d’inscription, sous sa ligne des conditions. Sur la page de connexion, une adresse sans compte est invitée à s’inscrire. Avec `PEAL_SIGN_UP=invitation`, l’inscription par un fournisseur demande aussi le lien de l’invitation, et l’adresse confirmée par le fournisseur doit être celle à laquelle l’invitation a été envoyée ([Qui peut s’inscrire](/self-hosting/options#sign-up)).
+
+Un compte créé par un fournisseur n’a pas de mot de passe. Son titulaire en définit un avec **Mot de passe oublié ?**, ou depuis la page du compte, avant d’activer la validation en deux étapes ou de fermer le compte, qui le demandent toutes deux.
+
+## Validation en deux étapes [#two-step]
+
+Un compte où la validation en deux étapes est activée se connecte avec son mot de passe et son code : la connexion par un fournisseur lui est refusée. Un espace de travail qui exige la validation en deux étapes refuse un membre qui ne l’a pas, quelle que soit sa façon de se connecter : dans un tel espace, les membres se connectent avec leur mot de passe.
+
+## Google [#google]
+
+Google se règle de la même façon, avec ses deux variables, `GOOGLE_SIGN_IN_CLIENT_ID` et `GOOGLE_SIGN_IN_CLIENT_SECRET`. Dans la console Google Cloud, créez un client OAuth de type « Application Web » avec l’URI de redirection `<PUBLIC_URL>/api/auth/callback/google`, et un écran de consentement qui ne demande que `openid`, `email` et `profile`. Google et votre propre fournisseur peuvent être activés ensemble.

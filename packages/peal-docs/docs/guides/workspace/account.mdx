@@ -19,6 +19,16 @@ Choose **Account settings** in the account menu.
 | **Sessions**               | The browsers and devices signed in to your account, with when they signed in and were last active. Sign one out, or every session but the one you use.                                                                                                    |
 | **Connected applications** | The [command line](/developers/cli) and the [MCP clients](/developers/mcp) you let act for you, with what they may do and in which workspaces. **Revoke** one, and it can no longer renew its access: the access it already holds ends within 15 minutes. |
 
+### Sign in with Google or your organisation's provider [#providers]
+
+Where the server offers it, the sign-in and sign-up pages show **Continue with Google**, or **Continue with** and the name of the provider your server's operator set. Peal's own service offers Google.
+
+- On the sign-up page, it makes your account with the address your provider confirmed, and accepts the terms as the form does.
+- On the sign-in page, it signs in the account that uses the same address, once both your provider and Peal have confirmed it. An account whose address Peal never confirmed signs in with its password first.
+- An account with two-step verification signs in with its password and its code: the provider's sign-in is refused for it.
+
+An account made this way has no password. Under **Set a password**, **Email me a link** sends one to your address; you then sign in either way. Two-step verification and deleting your account need it first.
+
 ### Two-step verification [#two-step]
 
 With two-step verification on, signing in asks, after your password, for a code from an authenticator app on your phone. Your email address must be confirmed first.

@@ -11,6 +11,7 @@ export default defineMeta({
     "assistant",
     "ads",
     "options",
+    "single-sign-on",
     "privacy",
     "monitoring",
     "staff",
