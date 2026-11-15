@@ -368,7 +368,9 @@
   (`connected_platforms`, `channel_ids`) and completes the link once none
   is left (`waitingPlatforms`); a start names the platform
   (`started_platform`, the one `complete` and `choose` finish at), and one
-  not waiting is `notOffered`, kept as no failure. Its way in
+  not waiting is `notOffered`, kept as no failure. A start, a
+  completion, a choice and a revocation each decide on the link held
+  (`ConnectLinkStore.lock`), so none undoes what another just wrote. Its way in
   (`connection`) is the platform's it belongs to; a row without one asks
   the server's first, never an older way in (unlike a channel's row).
   Opening it uses nothing. It lasts 7 days unless told (1 to 720 hours),

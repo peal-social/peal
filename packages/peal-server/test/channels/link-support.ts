@@ -23,6 +23,7 @@ import {
   connectChannelWith,
   testPublicUrl,
 } from "#test/channels/connect-support.ts";
+import { SignInHold } from "#test/channels/sign-in-hold.ts";
 import {
   actorIn,
   freshWorkspace,
@@ -73,6 +74,7 @@ export const fakeSignIn = (platform: Platform) =>
 // code names, without asking anything first: for links of several
 // platforms beside Mastodon's fake instance.
 const fakeAuthorizer = (
+  hold: SignInHold["Service"],
   platform: Platform,
   connection?: InstagramConnection
 ): PlatformAuthorizer => {
@@ -89,19 +91,21 @@ const fakeAuthorizer = (
         };
       }),
     complete: ({ callback }) =>
-      Effect.succeed({
-        accountId: `${platform}-${Option.getOrElse(callback.code, () => "account")}`,
-        avatarUrl: Option.none(),
-        displayName: Option.none(),
-        handle: `synthetic.${platform}`,
-        tokens: {
-          accessToken: Redacted.make("synthetic-access-token"),
-          expiresAt: Option.none(),
-          refreshToken: Option.none(),
-          renewable: false,
-          scopes: [],
-        },
-      }),
+      Effect.flatten(Ref.get(hold)).pipe(
+        Effect.as({
+          accountId: `${platform}-${Option.getOrElse(callback.code, () => "account")}`,
+          avatarUrl: Option.none(),
+          displayName: Option.none(),
+          handle: `synthetic.${platform}`,
+          tokens: {
+            accessToken: Redacted.make("synthetic-access-token"),
+            expiresAt: Option.none(),
+            refreshToken: Option.none(),
+            renewable: false,
+            scopes: [],
+          },
+        })
+      ),
     platform,
     policy: tokenPolicies.threads,
     refresh: () => Effect.die(new Error("A fake sign-in renews nothing")),
@@ -116,11 +120,12 @@ const LinkAuthorizersTest = Layer.effect(
   PlatformAuthorizers,
   Effect.gen(function* LinkAuthorizersTest() {
     const http = yield* publicHttpClient;
+    const hold = yield* SignInHold;
 
     return authorizersOf(
       yield* mastodonAuthorizer({ http, publicUrl: testPublicUrl }),
-      fakeAuthorizer("threads"),
-      fakeAuthorizer("instagram", "instagramLogin")
+      fakeAuthorizer(hold, "threads"),
+      fakeAuthorizer(hold, "instagram", "instagramLogin")
     );
   })
 ).pipe(
@@ -177,7 +182,8 @@ export const LinksTest = ConnectLinks.layer.pipe(
     connectChannelWith(
       LinkAuthorizersTest.pipe(Layer.provide(OpenOutboundGuard))
     )
-  )
+  ),
+  Layer.provideMerge(SignInHold.layerTest)
 );
 
 /** Someone who connects accounts in the workspace. */

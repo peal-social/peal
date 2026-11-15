@@ -510,9 +510,19 @@ export class ConnectLinks extends Context.Service<
         yield* Effect.fromResult(authorize(actor, "channel:connect"));
 
         const link = yield* found(actor, linkId);
-        const revoked = revokeLink(link, yield* DateTime.now);
 
-        yield* store.ended(revoked);
+        // Held, so a completion that ends meanwhile is waited for, and
+        // what it connected stays on the link.
+        yield* transaction(
+          Effect.gen(function* revoking() {
+            const current = Option.getOrElse(
+              yield* store.lock(link.id),
+              () => link
+            );
+
+            yield* store.ended(revokeLink(current, yield* DateTime.now));
+          })
+        );
 
         // As it now stands: used a moment ago, it stays used.
         return yield* found(actor, linkId);
@@ -671,22 +681,41 @@ export class ConnectLinks extends Context.Service<
           const now = yield* DateTime.now;
           const issued = yield* tokens.issue;
 
-          const [next = link.platform] = waitingPlatforms(link);
+          // Decided on the link as it stands, held: a completion at the
+          // same platform is waited for, and then found done. Counted
+          // before the platform is asked anything, so a link passed
+          // around starts no more sign-ins than it may.
+          const started = yield* transaction(
+            Effect.gen(function* startingHeld() {
+              const current = Option.getOrElse(
+                yield* store.lock(link.id),
+                () => link
+              );
+
+              const [next = current.platform] = waitingPlatforms(current);
+
+              const marked = yield* Effect.fromResult(
+                startLink(
+                  current,
+                  issued.digest,
+                  Option.getOrElse(
+                    request.platform ?? Option.none(),
+                    () => next
+                  ),
+                  now
+                )
+              );
+
+              return (yield* store.started(marked))
+                ? marked
+                : yield* Effect.fail(yield* endedMeanwhile(current));
+            })
+          );
 
           const platform = Option.getOrElse(
-            request.platform ?? Option.none(),
-            () => next
+            started.startedPlatform,
+            () => started.platform
           );
-
-          const started = yield* Effect.fromResult(
-            startLink(link, issued.digest, platform, now)
-          );
-
-          // Counted before the platform is asked anything, so a link
-          // passed around starts no more sign-ins than it may.
-          if (!(yield* store.started(started))) {
-            return yield* Effect.fail(yield* endedMeanwhile(link));
-          }
 
           const actor = linkActor(started);
 

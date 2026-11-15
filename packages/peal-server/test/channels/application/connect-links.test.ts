@@ -1,7 +1,7 @@
 // Connect links: whoever holds one connects an account on a hosted page,
 // without a Peal account, once, from the browser that started the sign-in.
 import { assert, layer } from "@effect/vitest";
-import { Effect, Option, Redacted, Ref, Schema } from "effect";
+import { Deferred, Effect, Fiber, Option, Redacted, Ref, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
@@ -24,6 +24,7 @@ import {
   mastodonLink as mastodon,
   pages,
 } from "#test/channels/link-support.ts";
+import { SignInHold } from "#test/channels/sign-in-hold.ts";
 import { actorIn, freshWorkspace } from "#test/channels/support.ts";
 
 const callbackOf = (back: {
@@ -48,6 +49,63 @@ const reasonOf = <A, E extends { readonly _tag: string }>(
   );
 
 const CountSchema = Schema.Array(Schema.Struct({ rows: Schema.Number }));
+
+const WaitingSchema = Schema.Array(Schema.Struct({ waiting: Schema.Number }));
+
+// Until another statement of this database waits on a row's lock, read
+// afresh each time rather than from a transaction's snapshot.
+const untilSomeoneWaits = SqlClient.SqlClient.use((sql) =>
+  sql`SELECT pg_stat_clear_snapshot(), (SELECT count(*)::int FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock') AS waiting`.pipe(
+    Effect.flatMap(Schema.decodeUnknownEffect(WaitingSchema)),
+    Effect.orDie,
+    Effect.repeat({ until: ([row]) => (row?.waiting ?? 0) > 0 })
+  )
+);
+
+// A completion of the link's sign-in at Threads, held inside, the link
+// locked, until `release`.
+const heldCompletion = Effect.fn("heldCompletion")(function* heldCompletion(
+  token: Redacted.Redacted
+) {
+  const links = yield* ConnectLinks;
+  const hold = yield* SignInHold;
+  const entered = yield* Deferred.make<boolean>();
+  const released = yield* Deferred.make<boolean>();
+
+  const started = yield* links.start(token, {
+    handle: Option.none(),
+    instance: Option.none(),
+    platform: Option.some("threads"),
+  });
+
+  yield* Ref.set(
+    hold,
+    Deferred.succeed(entered, true).pipe(
+      Effect.andThen(Deferred.await(released))
+    )
+  );
+
+  const completing = yield* links
+    .complete(
+      token,
+      Option.some(started.browser),
+      callbackOf({
+        code: "held",
+        state:
+          new URL(started.authorizationUrl).searchParams.get("state") ?? "",
+      })
+    )
+    .pipe(Effect.forkChild);
+
+  yield* Deferred.await(entered);
+
+  return {
+    completing,
+    release: Deferred.succeed(released, true).pipe(
+      Effect.andThen(Ref.set(hold, Effect.void))
+    ),
+  };
+});
 
 // What a fake platform's sign-in sends back for the account `code`.
 const fakeCallback = (authorizationUrl: string, code: string) =>
@@ -928,5 +986,66 @@ layer(LinksTest)("connect links", (it) => {
         "ChannelNotFound"
       );
     }).pipe(Effect.scoped)
+  );
+
+  it.effect("start nothing at a platform a completion connects meanwhile", () =>
+    Effect.gen(function* startedMeanwhile() {
+      const links = yield* ConnectLinks;
+      const { token } = yield* linked({ platforms: ["threads", "mastodon"] });
+      const { completing, release } = yield* heldCompletion(token);
+
+      const starting = yield* links
+        .start(token, {
+          handle: Option.none(),
+          instance: Option.none(),
+          platform: Option.some("threads"),
+        })
+        .pipe(Effect.flip, Effect.forkChild);
+
+      yield* untilSomeoneWaits;
+      yield* release;
+
+      assert.strictEqual((yield* Fiber.join(completing))._tag, "connected");
+
+      const refused = yield* Fiber.join(starting);
+
+      assert.deepInclude(refused, {
+        _tag: "HostedConnectFailed",
+        reason: "platformNotOffered",
+      });
+    })
+  );
+
+  it.effect("keep what a link connected while it was being revoked", () =>
+    Effect.gen(function* revokedMeanwhile() {
+      const links = yield* ConnectLinks;
+
+      const { link, token, workspaceId } = yield* linked({
+        platforms: ["threads", "mastodon"],
+      });
+
+      const { completing, release } = yield* heldCompletion(token);
+
+      const revoking = yield* links
+        .revoke(manager(workspaceId), link.id)
+        .pipe(Effect.forkChild);
+
+      yield* untilSomeoneWaits;
+      yield* release;
+
+      const connected = yield* Fiber.join(completing);
+
+      assert(connected._tag === "connected");
+
+      const [threads] = connected.channels;
+
+      assert(threads !== undefined);
+
+      const revoked = yield* Fiber.join(revoking);
+
+      assert.strictEqual(revoked.status._tag, "revoked");
+      assert.deepStrictEqual(revoked.connectedChannels, [threads.id]);
+      assert.deepStrictEqual(revoked.connectedPlatforms, ["threads"]);
+    })
   );
 });
