@@ -53,6 +53,27 @@ export const webhookOf = (
     : Option.some({ id, token: Redacted.make(token) });
 };
 
+// A webhook's address as Discord hands it out (a channel's settings,
+// Integrations, Webhooks, "Copy Webhook URL"): `https://discord.com/api/
+// webhooks/<id>/<token>`, on the older `discordapp.com` too, with or
+// without the API's version. Nothing else: no user, port, query or other
+// host, so the token never goes anywhere but Discord.
+const webhookAddress =
+  /^https:\/\/(?:discord\.com|discordapp\.com)\/api(?:\/v\d{1,2})?\/webhooks\/(?<id>\d{1,20})\/(?<token>[\w-]{1,256})\/?$/u;
+
+/** The webhook an address a member pasted names, if it is one. */
+export const webhookOfAddress = (
+  address: Redacted.Redacted
+): Option.Option<DiscordWebhook> => {
+  const groups = webhookAddress.exec(Redacted.value(address).trim())?.groups;
+  const id = groups?.["id"];
+  const token = groups?.["token"];
+
+  return id === undefined || token === undefined
+    ? Option.none()
+    : Option.some({ id, token: Redacted.make(token) });
+};
+
 /** The secret a channel keeps for a webhook: `<id>/<token>`. */
 export const webhookSecretOf = (webhook: DiscordWebhook): Redacted.Redacted =>
   Redacted.make(`${webhook.id}/${Redacted.value(webhook.token)}`);

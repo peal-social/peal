@@ -5,8 +5,10 @@ import { SqlClient } from "effect/sql";
 
 import type { WorkspaceEntitlements } from "#billing/application/workspace-entitlements.ts";
 import { ChannelEvents } from "#channels/application/channel-events.ts";
+import type { ChatVerifier } from "#channels/application/chat-verifier.ts";
 import { ConnectChannel } from "#channels/application/connect-channel.ts";
 import type { ConnectOutcome } from "#channels/application/connect-channel.ts";
+import { ConnectChat } from "#channels/application/connect-chat.ts";
 import { ConnectSite } from "#channels/application/connect-site.ts";
 import { PlatformAuthorizers } from "#channels/application/platform-authorizer.ts";
 import type { PlatformAuthorizer } from "#channels/application/platform-authorizer.ts";
@@ -15,8 +17,11 @@ import { SiteSignIns } from "#channels/application/site-sign-ins.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import { DrizzleConnectAttempts } from "#channels/infrastructure/drizzle-connect-attempts.ts";
 import { DrizzleConnectChoices } from "#channels/infrastructure/drizzle-connect-choices.ts";
+import { MemoryChatConnectPace } from "#channels/infrastructure/memory-chat-connect-pace.ts";
 import { MemorySiteConnectPace } from "#channels/infrastructure/memory-site-connect-pace.ts";
 import { PlanChannelAllowanceLive } from "#channels/infrastructure/plan-channel-allowance.ts";
+import { chatVerifiersLive } from "#channels/infrastructure/platforms/chat-verifiers.ts";
+import type { ChatHosts } from "#channels/infrastructure/platforms/chat-verifiers.ts";
 import { googleBusinessAuthorizer } from "#channels/infrastructure/platforms/google-business/google-business-authorizer.ts";
 import type { GoogleBusinessEndpoints } from "#channels/infrastructure/platforms/google-business/google-business-authorizer.ts";
 import { linkedinAuthorizer } from "#channels/infrastructure/platforms/linkedin/linkedin-authorizer.ts";
@@ -353,6 +358,31 @@ export const siteSignInsWith = (authorizers: typeof SiteAuthorizers.Service) =>
         MemorySiteConnectPace,
         Layer.succeed(SiteAuthorizers, authorizers)
       )
+    )
+  );
+
+/**
+ * ConnectChat with `verifier`, over the adapters a `connectChannelWith`
+ * layer gives.
+ */
+export const chatsWith = (verifier: Layer.Layer<ChatVerifier>) =>
+  ConnectChat.layer.pipe(
+    Layer.provide(Layer.mergeAll(verifier, MemoryChatConnectPace))
+  );
+
+/**
+ * ConnectChat with the chats' verifiers on `hosts`, whose requests all go
+ * through: a port nobody listens on unless told.
+ */
+export const chatsOn = (hosts?: ChatHosts) =>
+  chatsWith(
+    chatVerifiersLive(
+      hosts ?? {
+        discord: { api: "http://127.0.0.1:9" },
+        telegram: { api: "http://127.0.0.1:9" },
+      }
+    ).pipe(
+      Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
     )
   );
 

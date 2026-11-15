@@ -3,6 +3,8 @@ import { HttpApiBuilder, HttpApiError } from "effect/http-api";
 import {
   Api,
   ChannelNotFound,
+  ChatConnectLimited,
+  ChatNotConnected,
   ConnectFailed,
   CurrentMember,
   defaultChannelPageSize,
@@ -29,6 +31,8 @@ import type {
   ReconnectFailure,
   StartFailure,
 } from "#channels/application/connect-channel.ts";
+import { ConnectChat } from "#channels/application/connect-chat.ts";
+import type { ConnectChatFailure } from "#channels/application/connect-chat.ts";
 import { ConnectSite } from "#channels/application/connect-site.ts";
 import type { ConnectSiteFailure } from "#channels/application/connect-site.ts";
 import { DisconnectChannel } from "#channels/application/disconnect-channel.ts";
@@ -221,6 +225,29 @@ const siteFailureWith =
         Effect.fail(new SiteNotConnected({ reason })),
     });
 
+// How connecting a chat fails, as the contract tells clients. The
+// platform's refusal keeps its reason, never its words.
+const chatFailureWith =
+  (limitReached: LimitRefusal) => (failure: ConnectChatFailure) =>
+    Match.valueTags(failure, {
+      ChannelNotFound: () => Effect.fail(new ChannelNotFound()),
+      ChatConnectLimited: () => Effect.fail(new ChatConnectLimited()),
+      ChatRefused: ({ reason }) =>
+        Effect.fail(new ChatNotConnected({ reason })),
+      DatabaseError: Effect.die,
+      MissingPermission: forbidden,
+      MissingTokenKey: () =>
+        Effect.logError(
+          "A chat was not connected: PEAL_TOKEN_KEYS is not set"
+        ).pipe(Effect.andThen(refused("notConfigured"))),
+      PlanLimitReached: limitReached,
+      PlatformUnavailable: () =>
+        Effect.logWarning(
+          "A chat's platform did not answer while connecting"
+        ).pipe(Effect.andThen(Effect.fail(new PlatformUnreachable()))),
+      ReconnectAccountMismatch: () => refused("accountMismatch"),
+    });
+
 // How a website sign-in fails, as the contract tells clients.
 const signInFailureWith =
   (
@@ -258,6 +285,7 @@ export const ChannelsHandlers = HttpApiBuilder.group(
     const settings = yield* ChannelSettings;
     const connectChannel = yield* ConnectChannel;
     const connectSite = yield* ConnectSite;
+    const connectChat = yield* ConnectChat;
     const siteSignIns = yield* SiteSignIns;
 
     const startFailure = startFailureWith(
@@ -266,6 +294,7 @@ export const ChannelsHandlers = HttpApiBuilder.group(
     );
 
     const siteFailure = siteFailureWith(yield* limitRefusal);
+    const chatFailure = chatFailureWith(yield* limitRefusal);
     const signInFailure = signInFailureWith(siteFailure);
     const completeFailure = completeFailureWith(startFailure);
     const chooseFailure = chooseFailureWith(startFailure);
@@ -309,6 +338,38 @@ export const ChannelsHandlers = HttpApiBuilder.group(
             .pipe(Effect.catch(startFailure));
 
           return { authorizationUrl };
+        }),
+      connectChat: ({ payload }) =>
+        Effect.gen(function* connectChatHandler() {
+          const actor = actorOf(yield* CurrentMember);
+
+          // A channel id that is no channel's is no channel of the
+          // workspace.
+          const reconnecting = Option.fromUndefinedOr(payload.channelId);
+          const channelId = reconnecting.pipe(Option.flatMap(decodeChannelId));
+
+          if (Option.isSome(reconnecting) && Option.isNone(channelId)) {
+            return yield* new ChannelNotFound();
+          }
+
+          const channel = yield* connectChat
+            .connect(
+              actor,
+              payload.platform === "discord"
+                ? {
+                    platform: "discord",
+                    webhookUrl: Redacted.make(payload.webhookUrl),
+                  }
+                : {
+                    botToken: Redacted.make(payload.botToken),
+                    chat: payload.chat,
+                    platform: "telegram",
+                  },
+              channelId
+            )
+            .pipe(Effect.catch(chatFailure));
+
+          return toChannelView(channel);
         }),
       connectSite: ({ payload }) =>
         Effect.gen(function* connectSiteHandler() {
@@ -459,6 +520,9 @@ export const ChannelsHandlers = HttpApiBuilder.group(
           return {
             instagramConnections: connectable.instagramConnections,
             linkedinConnections: connectable.linkedinConnections,
+            // Both chats need no setting: they connect with the member's
+            // own secret.
+            chats: ["discord" as const, "telegram" as const],
             platforms: connectable.platforms,
             sites: [
               "wordpress" as const,

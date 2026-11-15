@@ -9,6 +9,7 @@ import { ChannelOverview } from "#channels/application/channel-overview.ts";
 import { ChannelSettings } from "#channels/application/channel-settings.ts";
 import { ChannelUsage } from "#channels/application/channel-usage.ts";
 import { ConnectChannel } from "#channels/application/connect-channel.ts";
+import { ConnectChat } from "#channels/application/connect-chat.ts";
 import { ConnectLinks } from "#channels/application/connect-links.ts";
 import { ConnectSite } from "#channels/application/connect-site.ts";
 import { DeauthorizePlatformUser } from "#channels/application/deauthorize-platform-user.ts";
@@ -30,11 +31,13 @@ import { DrizzleConnectChoices } from "#channels/infrastructure/drizzle-connect-
 import { DrizzleConnectLinkStore } from "#channels/infrastructure/drizzle-connect-link-store.ts";
 import { DrizzleDataDeletions } from "#channels/infrastructure/drizzle-data-deletions.ts";
 import { engagementChannelEvents } from "#channels/infrastructure/engagement-channel-events.ts";
+import { MemoryChatConnectPace } from "#channels/infrastructure/memory-chat-connect-pace.ts";
 import { MemorySiteConnectPace } from "#channels/infrastructure/memory-site-connect-pace.ts";
 import { NotifiedChannelNotices } from "#channels/infrastructure/notified-channel-notices.ts";
 import { PartnerLinkHosts } from "#channels/infrastructure/partner-link-hosts.ts";
 import { AccountChannelAllowanceLive } from "#channels/infrastructure/plan-channel-allowance.ts";
 import { ChannelPlatformsLive } from "#channels/infrastructure/platforms/channel-platform-settings.ts";
+import { chatVerifiersLive } from "#channels/infrastructure/platforms/chat-verifiers.ts";
 import { MetaSignedRequestsLive } from "#channels/infrastructure/platforms/meta/meta-signed-requests.ts";
 import { OAuthClientDocumentsLive } from "#channels/infrastructure/platforms/oauth-client-documents-live.ts";
 import { PlatformAuthorizersLive } from "#channels/infrastructure/platforms/platform-authorizers.ts";
@@ -51,8 +54,10 @@ import {
 } from "#channels/infrastructure/webhook-channel-events.ts";
 import { InboxPlatformsLive } from "#shared/infrastructure/inbox-platforms.ts";
 import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
+import { discordHosts } from "#shared/infrastructure/platforms/discord-api.ts";
 import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
+import { telegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 import { wordpressComHosts } from "#shared/infrastructure/platforms/wordpress-api.ts";
 
 // Who hears of a channel connected or gone: the workspace's webhook
@@ -74,6 +79,7 @@ const PlatformsLive = Layer.mergeAll(
   OAuthClientDocumentsLive,
   MetaSignedRequestsLive,
   siteVerifiersLive({ devto: devtoHosts, hashnode: hashnodeHosts }),
+  chatVerifiersLive({ discord: discordHosts, telegram: telegramHosts }),
   siteAuthorizersLive(wordpressComHosts)
 ).pipe(
   Layer.provide(ChannelPlatformsLive),
@@ -129,6 +135,7 @@ const UseCasesLive = Layer.mergeAll(
     Layer.provideMerge(ConnectSite.layer),
     Layer.provide(MemorySiteConnectPace)
   ),
+  ConnectChat.layer.pipe(Layer.provide(MemoryChatConnectPace)),
   ChannelUsage.layer,
   DeletePlatformUserData.layer,
   DeauthorizePlatformUser.layer,

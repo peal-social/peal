@@ -18,6 +18,7 @@ import {
   authorizersOf,
   connectChannelWith,
   WordPressSitesTest,
+  chatsOn,
 } from "#test/channels/connect-support.ts";
 import { freshWorkspace, memberOf } from "#test/channels/support.ts";
 import { TransactionsTest } from "#test/notifications/support.ts";
@@ -37,7 +38,8 @@ const FreeTierTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
   DisconnectChannel.layer,
-  WordPressSitesTest
+  WordPressSitesTest,
+  chatsOn()
 ).pipe(
   Layer.provideMerge(TransactionsTest),
   Layer.provideMerge(

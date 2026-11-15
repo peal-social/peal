@@ -210,6 +210,16 @@
     "tag": "ChannelSetNotFound"
   },
   {
+    "code": "chat_connect_limited",
+    "status": 429,
+    "tag": "ChatConnectLimited"
+  },
+  {
+    "code": "chat_not_connected",
+    "status": 422,
+    "tag": "ChatNotConnected"
+  },
+  {
     "code": "client_error_too_large",
     "status": 413,
     "tag": "ClientErrorTooLarge"
