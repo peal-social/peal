@@ -249,3 +249,27 @@ The same release's comment rules (the same migration) add two
 tables the release before ignores: rules stop answering, and the replies
 they made stay ordinary replies of the inbox, which the release before
 reads as any other. Nothing to check before rolling back.
+
+## Past automation notices
+
+The release that tells members what rules acting by themselves did not
+do (migrations `automation-notice-preference` and `follow-up-notices`)
+adds columns the release before ignores (`email_automations`,
+`follow_ups.notice_due`, `follow_up_rules.not_sent_told_at`: nothing is
+told there, and what is marked is told after rolling forward) and a key in
+an armed follow-up's state, `heldBack`, which it ignores too (such a
+follow-up whose window ends there expires `windowEnded`). It writes three
+notices the release before cannot read: `FollowUpsNotSent`,
+`FollowUpRuleStopped` and `CommentRuleStopped`. The release before fails
+to decode each on every read: those users' notices answer 500 until the
+release is rolled forward.
+
+1. **Notices of rules acting by themselves:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM notifications.notices WHERE event->>'_tag' IN ('FollowUpsNotSent', 'FollowUpRuleStopped', 'CommentRuleStopped')"
+   ```
+
+2. **It lists a row:** do not roll back past this release; release a fix
+   forward instead. Never change the rows by hand.

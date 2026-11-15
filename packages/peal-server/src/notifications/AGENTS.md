@@ -28,12 +28,18 @@
   (`NoticeRequest.author`), whatever their role, and the members with
   `post:schedule` who chose `everyPost`, off by default; for a post without
   an author, or whose author left the workspace, every member with
-  `post:schedule`; for billing, every member with `billing:manage`. Every
+  `post:schedule`; for billing, every member with `billing:manage`. A
+  request with `everyoneWhoMayAct` tells every member who may act beside
+  its followers: a rule whose starter can no longer act
+  (`FollowUpRuleStopped`, `CommentRuleStopped` for `starterGone`) goes to
+  those who can start it again, the starter following it. Every
   notice reaches the app; `NotificationPreferences` say which are also
   emailed (failed and unconfirmed posts, channels to reconnect and
   deliveries failing on a webhook endpoint, `webhookFailing`, and a
-  recycling rule that ended, `recyclingEnded`, and a feed that stopped,
-  `feedStopped`, by default,
+  recycling rule that ended, `recyclingEnded`, a feed that stopped,
+  `feedStopped`, and a rule acting by itself that did not, `automations`:
+  `FollowUpsNotSent`, `FollowUpRuleStopped` and `CommentRuleStopped`
+  (`engagement:read` for the last), by default,
   not published posts; billing's and a webhook endpoint turned off always,
   as no preference covers them). A preferences change writes only what it names.
 - `Notify.resolve(key)` says an event was dealt with: its notices are marked

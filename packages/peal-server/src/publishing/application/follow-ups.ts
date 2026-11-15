@@ -49,12 +49,14 @@ import { Ids, newId } from "#shared/application/ids.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { can } from "#shared/domain/access.ts";
 import type { Actor } from "#shared/domain/access.ts";
+import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 
 import { ApprovalGate } from "./approval-gate.ts";
 import { FollowUpChannels } from "./follow-up-channels.ts";
 import { FollowUpCounts } from "./follow-up-counts.ts";
 import { FollowUpJobs } from "./follow-up-jobs.ts";
+import { FollowUpNotices } from "./follow-up-notices.ts";
 import { FollowUpStore } from "./follow-up-store.ts";
 import type { ArmedFollowUp } from "./follow-up-store.ts";
 import { PlatformCredentials } from "./platform-credentials.ts";
@@ -117,6 +119,8 @@ export interface FollowUpRun {
    * were armed: a Bluesky repost once the account granted reposts.
    */
   readonly armed: number;
+  /** Rules whose follow-ups that did not go out were told to members. */
+  readonly told: number;
 }
 
 /** What a rule asks, as a channel's abilities read it. */
@@ -138,8 +142,8 @@ const liveSince = (target: PostTarget): Option.Option<DateTime.Utc> =>
     ? Option.fromUndefinedOr(livePartsOf(target)[0]?.publishedAt)
     : Option.none();
 
-// Why a window passed without it going out.
-const expiryOf = (
+/** Why a window passed without it going out. */
+export const expiryOf = (
   { followUp, rule }: ArmedFollowUp,
   likes: Option.Option<number>,
   starterHeld: boolean
@@ -152,10 +156,12 @@ const expiryOf = (
     return "belowThreshold";
   }
 
-  // The platform put it off, and its window ended meanwhile.
+  // The platform put it off, and its window ended meanwhile; held back by
+  // Peal, it is what held it that is told.
   if (
     followUp.status._tag === "armed" &&
-    followUp.status.notBefore !== undefined
+    followUp.status.notBefore !== undefined &&
+    followUp.status.heldBack !== true
   ) {
     return "windowEnded";
   }
@@ -240,6 +246,7 @@ export class FollowUps extends Context.Service<
       const credentials = yield* PlatformCredentials;
       const actors = yield* RecyclingActors;
       const gate = yield* ApprovalGate;
+      const notices = yield* FollowUpNotices;
       const ids = yield* Ids;
       const { transaction } = yield* TransactionRunner;
 
@@ -450,6 +457,7 @@ export class FollowUps extends Context.Service<
           ) {
             yield* store.updateRule(endFollowUpRule(rule, "starterGone", now));
             yield* cancelArmed(rule);
+            yield* notices.stopped(rule, "starterGone");
 
             return "cancelled" as const;
           }
@@ -666,6 +674,7 @@ export class FollowUps extends Context.Service<
 
               yield* store.updateRule(ended);
               yield* cancelArmed(ended);
+              yield* notices.stopped(ended, "channelGone");
 
               return true;
             })
@@ -765,6 +774,82 @@ export class FollowUps extends Context.Service<
         }
       });
 
+      // A rule's follow-ups that ended without going out, told to members
+      // in a transaction of their own, under the rule's lock: all those
+      // waiting together, once a UTC day at most; those that end after it
+      // wait for the next day, but those that may be out, told at once. A
+      // run tells what ended before it started.
+      const tell = Effect.fn("FollowUps.tell")(function* tell(
+        ruleId: FollowUpRuleId,
+        workspaceId: WorkspaceId
+      ) {
+        const now = yield* DateTime.now;
+        const rule = yield* store.lockRule(workspaceId, ruleId);
+
+        if (Option.isNone(rule)) {
+          return false;
+        }
+
+        const untold = yield* store.untold(ruleId);
+
+        const toldToday = Option.exists(
+          untold.lastTold,
+          (at) => !DateTime.isLessThan(at, DateTime.startOf(now, "day"))
+        );
+
+        // Past the day's notice, only those that may be out, as they ask
+        // the members to check the platform: the others wait.
+        const followUps = toldToday
+          ? untold.followUps.filter(
+              ({ status }) => status._tag === "unconfirmed"
+            )
+          : untold.followUps;
+
+        if (followUps.length === 0) {
+          return false;
+        }
+
+        yield* notices.notSent(rule.value, followUps, now, toldToday);
+        yield* store.told(
+          ruleId,
+          followUps.map(({ id }) => id),
+          now
+        );
+
+        return true;
+      });
+
+      // Every rule with follow-ups to tell of, a page at a time.
+      const tellNotSent = Effect.gen(function* tellNotSent() {
+        let after = Option.none<FollowUpRuleId>();
+        let told = 0;
+
+        for (;;) {
+          const page = yield* store.untoldRules(after, armedPageSize);
+
+          for (const { ruleId, workspaceId } of page) {
+            // A rule whose notice cannot be made is told at a later run;
+            // the others, and the rest of the run, go on.
+            const done = yield* transaction(tell(ruleId, workspaceId)).pipe(
+              Effect.catchTag("DatabaseError", (failure) =>
+                Effect.logWarning(
+                  "A follow-up rule's notice could not be made",
+                  failure
+                ).pipe(Effect.annotateLogs({ ruleId }), Effect.as(false))
+              )
+            );
+
+            told += done ? 1 : 0;
+          }
+
+          if (page.length < armedPageSize) {
+            return told;
+          }
+
+          after = Option.fromUndefinedOr(page.at(-1)?.ruleId);
+        }
+      });
+
       const runDue = Effect.gen(function* runDue() {
         const tally = {
           armed: 0,
@@ -773,8 +858,13 @@ export class FollowUps extends Context.Service<
           completed: 0,
           expired: 0,
           left: 0,
+          told: 0,
           triggered: 0,
         };
+
+        // What ended since the last run first: the follow-ups a run sets
+        // out end within minutes of each other, and are told together.
+        tally.told = yield* tellNotSent;
 
         let after = Option.none<FollowUpId>();
 

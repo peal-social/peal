@@ -189,6 +189,7 @@ if typing.TYPE_CHECKING:
     from .assistant_unavailable_encoded_tag import AssistantUnavailableEncodedTag
     from .attempt_result import AttemptResult
     from .authorization import Authorization
+    from .automation_stop_reason import AutomationStopReason
     from .bad_gateway_error_body import (
         BadGatewayErrorBody,
         BadGatewayErrorBody_AssistantFailed,
@@ -463,6 +464,7 @@ if typing.TYPE_CHECKING:
     from .follow_up_kind import FollowUpKind
     from .follow_up_not_possible_encoded import FollowUpNotPossibleEncoded
     from .follow_up_not_possible_encoded_tag import FollowUpNotPossibleEncodedTag
+    from .follow_up_not_sent_reason import FollowUpNotSentReason
     from .follow_up_refusal import FollowUpRefusal
     from .follow_up_rule import FollowUpRule
     from .follow_up_rule_ended_encoded import FollowUpRuleEndedEncoded
@@ -682,8 +684,11 @@ if typing.TYPE_CHECKING:
         NoticeEvent_AllowanceReached,
         NoticeEvent_ChannelReconnectRequired,
         NoticeEvent_ChannelReconnectSoon,
+        NoticeEvent_CommentRuleStopped,
         NoticeEvent_CommentsReceived,
         NoticeEvent_FeedStopped,
+        NoticeEvent_FollowUpRuleStopped,
+        NoticeEvent_FollowUpsNotSent,
         NoticeEvent_MessagesReceived,
         NoticeEvent_MessagesTurnedOff,
         NoticeEvent_PaymentMethodNeeded,
@@ -711,8 +716,11 @@ if typing.TYPE_CHECKING:
     from .notice_event_allowance_reached import NoticeEventAllowanceReached
     from .notice_event_channel_reconnect_required import NoticeEventChannelReconnectRequired
     from .notice_event_channel_reconnect_soon import NoticeEventChannelReconnectSoon
+    from .notice_event_comment_rule_stopped import NoticeEventCommentRuleStopped
     from .notice_event_comments_received import NoticeEventCommentsReceived
     from .notice_event_feed_stopped import NoticeEventFeedStopped
+    from .notice_event_follow_up_rule_stopped import NoticeEventFollowUpRuleStopped
+    from .notice_event_follow_ups_not_sent import NoticeEventFollowUpsNotSent
     from .notice_event_messages_received import NoticeEventMessagesReceived
     from .notice_event_messages_turned_off import NoticeEventMessagesTurnedOff
     from .notice_event_payment_method_needed import NoticeEventPaymentMethodNeeded
@@ -1323,6 +1331,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AssistantUnavailableEncodedTag": ".assistant_unavailable_encoded_tag",
     "AttemptResult": ".attempt_result",
     "Authorization": ".authorization",
+    "AutomationStopReason": ".automation_stop_reason",
     "BadGatewayErrorBody": ".bad_gateway_error_body",
     "BadGatewayErrorBody_AssistantFailed": ".bad_gateway_error_body",
     "BadGatewayErrorBody_TextProviderRefused": ".bad_gateway_error_body",
@@ -1597,6 +1606,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FollowUpKind": ".follow_up_kind",
     "FollowUpNotPossibleEncoded": ".follow_up_not_possible_encoded",
     "FollowUpNotPossibleEncodedTag": ".follow_up_not_possible_encoded_tag",
+    "FollowUpNotSentReason": ".follow_up_not_sent_reason",
     "FollowUpRefusal": ".follow_up_refusal",
     "FollowUpRule": ".follow_up_rule",
     "FollowUpRuleEndedEncoded": ".follow_up_rule_ended_encoded",
@@ -1806,8 +1816,11 @@ _dynamic_imports: typing.Dict[str, str] = {
     "NoticeEventAllowanceReached": ".notice_event_allowance_reached",
     "NoticeEventChannelReconnectRequired": ".notice_event_channel_reconnect_required",
     "NoticeEventChannelReconnectSoon": ".notice_event_channel_reconnect_soon",
+    "NoticeEventCommentRuleStopped": ".notice_event_comment_rule_stopped",
     "NoticeEventCommentsReceived": ".notice_event_comments_received",
     "NoticeEventFeedStopped": ".notice_event_feed_stopped",
+    "NoticeEventFollowUpRuleStopped": ".notice_event_follow_up_rule_stopped",
+    "NoticeEventFollowUpsNotSent": ".notice_event_follow_ups_not_sent",
     "NoticeEventMessagesReceived": ".notice_event_messages_received",
     "NoticeEventMessagesTurnedOff": ".notice_event_messages_turned_off",
     "NoticeEventPaymentMethodNeeded": ".notice_event_payment_method_needed",
@@ -1833,8 +1846,11 @@ _dynamic_imports: typing.Dict[str, str] = {
     "NoticeEvent_AllowanceReached": ".notice_event",
     "NoticeEvent_ChannelReconnectRequired": ".notice_event",
     "NoticeEvent_ChannelReconnectSoon": ".notice_event",
+    "NoticeEvent_CommentRuleStopped": ".notice_event",
     "NoticeEvent_CommentsReceived": ".notice_event",
     "NoticeEvent_FeedStopped": ".notice_event",
+    "NoticeEvent_FollowUpRuleStopped": ".notice_event",
+    "NoticeEvent_FollowUpsNotSent": ".notice_event",
     "NoticeEvent_MessagesReceived": ".notice_event",
     "NoticeEvent_MessagesTurnedOff": ".notice_event",
     "NoticeEvent_PaymentMethodNeeded": ".notice_event",
@@ -2462,6 +2478,7 @@ __all__ = [
     "AssistantUnavailableEncodedTag",
     "AttemptResult",
     "Authorization",
+    "AutomationStopReason",
     "BadGatewayErrorBody",
     "BadGatewayErrorBody_AssistantFailed",
     "BadGatewayErrorBody_TextProviderRefused",
@@ -2736,6 +2753,7 @@ __all__ = [
     "FollowUpKind",
     "FollowUpNotPossibleEncoded",
     "FollowUpNotPossibleEncodedTag",
+    "FollowUpNotSentReason",
     "FollowUpRefusal",
     "FollowUpRule",
     "FollowUpRuleEndedEncoded",
@@ -2945,8 +2963,11 @@ __all__ = [
     "NoticeEventAllowanceReached",
     "NoticeEventChannelReconnectRequired",
     "NoticeEventChannelReconnectSoon",
+    "NoticeEventCommentRuleStopped",
     "NoticeEventCommentsReceived",
     "NoticeEventFeedStopped",
+    "NoticeEventFollowUpRuleStopped",
+    "NoticeEventFollowUpsNotSent",
     "NoticeEventMessagesReceived",
     "NoticeEventMessagesTurnedOff",
     "NoticeEventPaymentMethodNeeded",
@@ -2972,8 +2993,11 @@ __all__ = [
     "NoticeEvent_AllowanceReached",
     "NoticeEvent_ChannelReconnectRequired",
     "NoticeEvent_ChannelReconnectSoon",
+    "NoticeEvent_CommentRuleStopped",
     "NoticeEvent_CommentsReceived",
     "NoticeEvent_FeedStopped",
+    "NoticeEvent_FollowUpRuleStopped",
+    "NoticeEvent_FollowUpsNotSent",
     "NoticeEvent_MessagesReceived",
     "NoticeEvent_MessagesTurnedOff",
     "NoticeEvent_PaymentMethodNeeded",

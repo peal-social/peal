@@ -879,6 +879,7 @@ const exported = (exportedAt: DateTime.Utc): AccountExport => ({
   notices: [],
   notificationPreferences: {
     email: {
+      automations: true,
       channelReconnect: true,
       comments: false,
       feedStopped: true,

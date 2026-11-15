@@ -109,6 +109,36 @@ export const FeedStopReasonSchema = Schema.Literals([
 
 export type FeedStopReason = typeof FeedStopReasonSchema.Type;
 
+/**
+ * Why follow-ups of a rule did not go out, as members are told: the
+ * platform refused them (`failed`), they may be out without Peal knowing
+ * (`unconfirmed`), or their seven days passed while the platform put them
+ * off (`windowEnded`), their channel was not connected again
+ * (`notGranted`) or the rule waited for an approval (`notApproved`).
+ */
+export const FollowUpNotSentReasonSchema = Schema.Literals([
+  "failed",
+  "unconfirmed",
+  "windowEnded",
+  "notGranted",
+  "notApproved",
+]);
+
+export type FollowUpNotSentReason = typeof FollowUpNotSentReasonSchema.Type;
+
+/**
+ * Why a rule that acts by itself (a follow-up rule, a comment rule) ended
+ * without a member stopping it: whoever started it can no longer do what
+ * it does (`starterGone`), or its channel was disconnected
+ * (`channelGone`).
+ */
+export const AutomationStopReasonSchema = Schema.Literals([
+  "starterGone",
+  "channelGone",
+]);
+
+export type AutomationStopReason = typeof AutomationStopReasonSchema.Type;
+
 // A post's channel is none when it was disconnected before the notice was
 // made: the notice still says what happened to the post.
 const postOn = {
@@ -320,6 +350,24 @@ export const NoticeEventSchema = Schema.Union([
     feedId: Uuid7Schema,
     reason: FeedStopReasonSchema,
   }),
+  // Follow-ups of a rule did not go out: `count` of them, told together,
+  // and why (`reasons`, each once). Told once a rule and UTC day at most:
+  // those that end after are told the next day.
+  Schema.TaggedStruct("FollowUpsNotSent", {
+    count: Schema.Int,
+    reasons: Schema.Array(FollowUpNotSentReasonSchema),
+    ruleId: Uuid7Schema,
+  }),
+  // A follow-up rule ended by itself, and why: once each rule.
+  Schema.TaggedStruct("FollowUpRuleStopped", {
+    reason: AutomationStopReasonSchema,
+    ruleId: Uuid7Schema,
+  }),
+  // A comment rule ended by itself, and why: once each rule.
+  Schema.TaggedStruct("CommentRuleStopped", {
+    reason: AutomationStopReasonSchema,
+    ruleId: Uuid7Schema,
+  }),
   // An ad network refused a member's sign-in: the ad accounts it connects
   // are no longer read until they sign in again.
   Schema.TaggedStruct("AdConnectionReconnectRequired", {
@@ -351,6 +399,7 @@ export type NoticeEvent = typeof NoticeEventSchema.Type;
 
 /** The kinds of notice a reader chooses to receive by email or not. */
 export type EmailKind =
+  | "automations"
   | "channelReconnect"
   | "comments"
   | "postFailed"
@@ -381,6 +430,10 @@ export const emailKindOf = (event: NoticeEvent): Option.Option<EmailKind> =>
     // The channel's account must be reconnected for them.
     MessagesTurnedOff: () => Option.some<EmailKind>("channelReconnect"),
     FeedStopped: () => Option.some<EmailKind>("feedStopped"),
+    // Rules that act by themselves: what they did not do, or their end.
+    FollowUpsNotSent: () => Option.some<EmailKind>("automations"),
+    FollowUpRuleStopped: () => Option.some<EmailKind>("automations"),
+    CommentRuleStopped: () => Option.some<EmailKind>("automations"),
     PostApprovalRequested: () => Option.some<EmailKind>("postReview"),
     PostApproved: () => Option.some<EmailKind>("postReview"),
     PostChangesRequested: () => Option.some<EmailKind>("postReview"),
@@ -422,6 +475,9 @@ export const audienceOf = (event: NoticeEvent): Permission =>
     MessagesReceived: (): Permission => "engagement:message",
     MessagesTurnedOff: (): Permission => "channel:connect",
     FeedStopped: (): Permission => "post:schedule",
+    FollowUpsNotSent: (): Permission => "post:schedule",
+    FollowUpRuleStopped: (): Permission => "post:schedule",
+    CommentRuleStopped: (): Permission => "engagement:reply",
     PostApprovalRequested: (): Permission => "post:approve",
     PostApproved: (): Permission => "post:schedule",
     PostChangesRequested: (): Permission => "post:schedule",
@@ -454,6 +510,9 @@ export const isAboutPost = (event: NoticeEvent): boolean =>
     MessagesReceived: () => false,
     MessagesTurnedOff: () => false,
     FeedStopped: () => true,
+    FollowUpsNotSent: () => true,
+    FollowUpRuleStopped: () => true,
+    CommentRuleStopped: () => true,
     PostApprovalRequested: () => true,
     PostApproved: () => true,
     PostChangesRequested: () => true,
@@ -483,7 +542,11 @@ export const isAboutPost = (event: NoticeEvent): boolean =>
  */
 export const readerPermissionOf = (event: NoticeEvent): Permission => {
   // Comments and messages are read with a permission of their own.
-  if (event._tag === "CommentsReceived" || event._tag === "MessagesReceived") {
+  if (
+    event._tag === "CommentsReceived" ||
+    event._tag === "MessagesReceived" ||
+    event._tag === "CommentRuleStopped"
+  ) {
     return "engagement:read";
   }
 
@@ -511,6 +574,11 @@ export interface Hearing {
    * whoever asked for its approval, or wrote in its review.
    */
   readonly followers?: readonly UserId[] | undefined;
+  /**
+   * Whether every member who may act hears, beside the followers: a rule
+   * whose starter can no longer act is for the others to start again.
+   */
+  readonly everyoneWhoMayAct?: boolean | undefined;
 }
 
 /**
@@ -532,7 +600,7 @@ export const recipientsOf = (
   event: NoticeEvent,
   author: Option.Option<UserId>,
   members: readonly Candidate[],
-  { except, followers = [] }: Hearing = {}
+  { everyoneWhoMayAct = false, except, followers = [] }: Hearing = {}
 ): readonly UserId[] => {
   // An author who left the workspace hears nothing more of it; their post
   // is then told as one without an author.
@@ -553,6 +621,10 @@ export const recipientsOf = (
 
     if (!isAboutPost(event)) {
       return member.mayAct;
+    }
+
+    if (everyoneWhoMayAct) {
+      return member.mayAct || follows(member);
     }
 
     // Everyone who may approve is asked to.
@@ -583,6 +655,11 @@ export const pageOf = (event: NoticeEvent, workspaceId: WorkspaceId): string =>
     MessagesTurnedOff: () => `/app/${workspaceId}/inbox`,
     FeedStopped: ({ feedId }) =>
       `/app/${workspaceId}/settings/feeds?feed=${feedId}`,
+    FollowUpsNotSent: ({ ruleId }) =>
+      `/app/${workspaceId}/settings/follow-ups?rule=${ruleId}`,
+    FollowUpRuleStopped: ({ ruleId }) =>
+      `/app/${workspaceId}/settings/follow-ups?rule=${ruleId}`,
+    CommentRuleStopped: () => `/app/${workspaceId}/settings/comment-rules`,
     PostApprovalRequested: ({ postId }) =>
       `/app/${workspaceId}/posts/${postId}`,
     PostApproved: ({ postId }) => `/app/${workspaceId}/posts/${postId}`,

@@ -20,7 +20,6 @@ import type {
 } from "#publishing/domain/follow-up.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
-import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 
 import { ApprovalGate } from "./approval-gate.ts";
 import { actsNow } from "./follow-up-acts-now.ts";
@@ -150,14 +149,11 @@ export class SendFollowUp extends Context.Service<
           return yield* transaction(settle(followUpId, attempt, outcome));
         }
 
-        // Put off, as nothing went out: armed again until its window ends,
-        // for the run to judge again.
+        // Held back, as nothing went out: armed again until its window
+        // ends, for the run to judge again.
         if (!(yield* stillMayAct(followUp))) {
           return yield* transaction(
-            settle(followUpId, attempt, {
-              _tag: "refused",
-              failure: new PlatformUnavailable(),
-            })
+            settle(followUpId, attempt, { _tag: "heldBack" })
           );
         }
 
@@ -179,7 +175,9 @@ export class SendFollowUp extends Context.Service<
           yield* Metric.update(
             Metric.withAttributes(followUpsSent, {
               outcome:
-                outcome._tag === "refused" ? "refused" : outcome.result._tag,
+                outcome._tag === "answered"
+                  ? outcome.result._tag
+                  : outcome._tag,
             }),
             1
           );

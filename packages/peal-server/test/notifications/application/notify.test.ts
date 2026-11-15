@@ -13,7 +13,7 @@ import { DatabaseError } from "#shared/application/database-error.ts";
 import { newId } from "#shared/application/ids.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { Permission } from "#shared/domain/access.ts";
-import { PostIdSchema } from "#shared/domain/ids.ts";
+import { PostIdSchema, Uuid7Schema } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { Locale } from "#shared/domain/locale.ts";
 import { freshChannel, freshWorkspace } from "#test/channels/support.ts";
@@ -440,6 +440,43 @@ layer(Test)("notices", (it) => {
         assert.strictEqual(yield* deliver(request.key), 0);
         assert.lengthOf(yield* sentTo(ada.email), 0);
         assert.lengthOf(yield* sentTo(chloe.email), 0);
+      })
+  );
+
+  it.effect(
+    "tell a rule whose starter can no longer act to everyone who may, and the starter",
+    () =>
+      Effect.gen(function* starterGone() {
+        const { people, workspaceId } = yield* workspaceWith([
+          { locale: "en", permissions: owner },
+          { locale: "en", permissions: editor },
+          // Started it as an editor, a viewer now.
+          { locale: "en", permissions: viewer },
+        ]);
+
+        const [olga, ed, vic] = people;
+
+        assert(olga !== undefined && ed !== undefined && vic !== undefined);
+
+        yield* Notify.use((notify) =>
+          notify.notify({
+            event: {
+              _tag: "FollowUpRuleStopped",
+              reason: "starterGone",
+              ruleId: Uuid7Schema.make("00000000-0000-7000-8000-00000000f0a1"),
+            },
+            everyoneWhoMayAct: true,
+            followers: [vic.userId],
+            key: `follow-up-rule:${workspaceId}:stopped`,
+            workspaceId,
+          })
+        );
+
+        const told = yield* Effect.forEach([olga, ed, vic], (person) =>
+          noticesOf(person).pipe(Effect.map((notices) => notices.length))
+        );
+
+        assert.deepStrictEqual(told, [1, 1, 1]);
       })
   );
 

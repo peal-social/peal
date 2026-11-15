@@ -13,6 +13,7 @@ import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
+import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { EngagementStore } from "#engagement/application/ports/engagement-store.ts";
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
 import {
@@ -55,7 +56,10 @@ import { reading } from "#test/engagement/support.ts";
 
 const StoreTest = Layer.mergeAll(
   DrizzleEngagementStore,
-  DrizzleEngagementRecords.pipe(Layer.provide(MeteredUsage.layerUnmetered))
+  DrizzleEngagementRecords.pipe(
+    Layer.provide(MeteredUsage.layerUnmetered),
+    Layer.provide(CommentRuleNotices.none)
+  )
 ).pipe(Layer.provideMerge(DatabaseTest));
 
 const utc = (iso: string) => DateTime.makeUnsafe(iso);
