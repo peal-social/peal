@@ -191,6 +191,10 @@ const connectedIn = Effect.fn("connectedIn")(function* connectedIn(
   return channel;
 });
 
+// The channels several workspaces count together.
+const countedBefore = (counts: ReadonlyMap<WorkspaceId, number>) =>
+  [...counts.values()].reduce((total, count) => total + count, 0);
+
 interface Row {
   readonly day: string;
   readonly peak: number;
@@ -480,9 +484,6 @@ layer(DaysTest)("the account-days", (it) => {
         yield* sql`UPDATE channels.channels SET created_at = ${DateTime.toDateUtc(DateTime.subtract(graceSince, { days: 1 }))} WHERE workspace_id = ${from}`.pipe(
           Effect.orDie
         );
-
-        const countedBefore = (counts: ReadonlyMap<WorkspaceId, number>) =>
-          [...counts.values()].reduce((total, count) => total + count, 0);
 
         const before = countedBefore(
           yield* repository.countIn([from, to], graceSince)

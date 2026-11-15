@@ -19,6 +19,7 @@ import type { Channel } from "#channels/domain/channel.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import { SqlChannelLocks } from "#channels/infrastructure/sql-channel-locks.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
+import { Meanwhile } from "#test/channels/meanwhile.ts";
 import {
   DatabaseTest,
   freshChannel,
@@ -298,16 +299,6 @@ layer(MovesTest)("moving a channel", (it) => {
     })
   );
 });
-
-// What another connection does while a move runs: just before it writes
-// (`beforeWrite`), or once it wrote and before it commits (`afterWrite`).
-class Meanwhile extends Context.Service<
-  Meanwhile,
-  Ref.Ref<{
-    readonly afterWrite: Effect.Effect<void>;
-    readonly beforeWrite: Effect.Effect<void>;
-  }>
->()("peal-server/test/ChannelMovesMeanwhile") {}
 
 const MeanwhileTest = Layer.effect(
   Meanwhile,
