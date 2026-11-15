@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
+import { Option } from "effect";
 
-import { authErrorKey } from "#auth/errors.ts";
+import { authErrorKey, providerErrorKey } from "#auth/errors.ts";
 
 describe(authErrorKey, () => {
   it("explains the errors Better Auth reports by code", () => {
@@ -44,5 +45,47 @@ describe(authErrorKey, () => {
       "UNKNOWN"
     );
     expect(authErrorKey({ status: 500 })).toBe("UNKNOWN");
+  });
+});
+
+describe(providerErrorKey, () => {
+  it("reads nothing from an address without an error", () => {
+    expect(providerErrorKey(undefined, true)).toStrictEqual(Option.none());
+  });
+
+  it.each([
+    ["provider_email_unverified", "PROVIDER_EMAIL_UNVERIFIED"],
+    ["email_not_found", "PROVIDER_EMAIL_NOT_FOUND"],
+    ["account_not_linked", "PROVIDER_ACCOUNT_NOT_LINKED"],
+    ["two_step_password", "PROVIDER_TWO_STEP_PASSWORD"],
+    ["signup_disabled", "PROVIDER_SIGN_UP_DISABLED"],
+    ["sign_up_by_invitation", "SIGN_UP_BY_INVITATION"],
+    ["access_denied", "PROVIDER_ACCESS_DENIED"],
+    ["account_banned", "PROVIDER_FAILED"],
+  ])("explains %s", (code, key) => {
+    expect(providerErrorKey(code, true)).toStrictEqual(Option.some(key));
+  });
+
+  it("sends nobody to sign up where the server takes no sign-up", () => {
+    expect(providerErrorKey("signup_disabled", false)).toStrictEqual(
+      Option.some("PROVIDER_NO_ACCOUNT")
+    );
+  });
+
+  // Anyone can write the address: what it says is never shown.
+  it.each([
+    "Your account was suspended, call +1 555 0100",
+    "invalid_code",
+    "<script>",
+  ])("reads an unknown code as a failure: %s", (code) => {
+    expect(providerErrorKey(code, true)).toStrictEqual(
+      Option.some("PROVIDER_FAILED")
+    );
+  });
+
+  it("reads a repeated parameter as a failure", () => {
+    expect(
+      providerErrorKey(["two_step_password", "access_denied"], true)
+    ).toStrictEqual(Option.some("PROVIDER_FAILED"));
   });
 });

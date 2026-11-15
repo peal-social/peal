@@ -42,6 +42,7 @@ const KnownErrorSchema = Schema.Literals([
 
 export type AuthErrorKey =
   | typeof KnownErrorSchema.Type
+  | ProviderErrorKey
   | "TOO_MANY_REQUESTS"
   | "UNKNOWN";
 
@@ -64,3 +65,64 @@ export const authErrorKey = (error: AuthClientError): AuthErrorKey =>
       error.status === 429 ? "TOO_MANY_REQUESTS" : "UNKNOWN"
     )
   );
+
+// What a sign-in provider's callback writes into the address it sends the
+// browser back to (`?error=<code>`): Peal's admission's codes and Better
+// Auth's. The address can be written by anyone, so only these codes are
+// read, and never `error_description`.
+const providerErrorKeys = {
+  access_denied: "PROVIDER_ACCESS_DENIED",
+  account_banned: "PROVIDER_FAILED",
+  account_not_linked: "PROVIDER_ACCOUNT_NOT_LINKED",
+  email_not_found: "PROVIDER_EMAIL_NOT_FOUND",
+  provider_email_unverified: "PROVIDER_EMAIL_UNVERIFIED",
+  sign_up_by_invitation: "SIGN_UP_BY_INVITATION",
+  signup_disabled: "PROVIDER_SIGN_UP_DISABLED",
+  two_step_password: "PROVIDER_TWO_STEP_PASSWORD",
+} as const;
+
+const ProviderCodeSchema = Schema.Literals([
+  "access_denied",
+  "account_banned",
+  "account_not_linked",
+  "email_not_found",
+  "provider_email_unverified",
+  "sign_up_by_invitation",
+  "signup_disabled",
+  "two_step_password",
+]);
+
+const decodeProviderCode = Schema.decodeUnknownOption(ProviderCodeSchema);
+
+export type ProviderErrorKey =
+  | (typeof providerErrorKeys)[keyof typeof providerErrorKeys]
+  | "PROVIDER_FAILED"
+  | "PROVIDER_NO_ACCOUNT";
+
+/**
+ * The catalogue key (under `Auth.errors`) that explains why a provider's
+ * sign-in came back with `error`, or none when the address has none. An
+ * unknown code reads as a failure. Where the server takes no sign-up from
+ * anyone, an unknown address is told so without being sent to sign up.
+ */
+export const providerErrorKey = (
+  error: string | readonly string[] | undefined,
+  signUpOffered: boolean
+): Option.Option<ProviderErrorKey> => {
+  if (error === undefined) {
+    return Option.none();
+  }
+
+  return Option.some(
+    decodeProviderCode(error).pipe(
+      Option.map((code): ProviderErrorKey => {
+        const key = providerErrorKeys[code];
+
+        return key === "PROVIDER_SIGN_UP_DISABLED" && !signUpOffered
+          ? "PROVIDER_NO_ACCOUNT"
+          : key;
+      }),
+      Option.getOrElse((): ProviderErrorKey => "PROVIDER_FAILED")
+    )
+  );
+};
