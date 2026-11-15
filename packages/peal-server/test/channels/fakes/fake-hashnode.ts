@@ -69,6 +69,11 @@ export interface FakeHashnodeOptions {
   ) => FakeHashnodeAnswer | undefined;
   readonly publications?: readonly FakeHashnodePublication[];
   readonly users?: readonly FakeHashnodeUser[];
+  /**
+   * How old Hashnode's cached reads are, in seconds: a listing leaves out
+   * what was made since, as a cache some 25 seconds old would.
+   */
+  readonly cacheSeconds?: number;
 }
 
 export interface FakeHashnode {
@@ -389,9 +394,15 @@ export const fakeHashnode = (options: FakeHashnodeOptions = {}) =>
             return refused("FORBIDDEN", noPro);
           }
 
+          const cachedAt =
+            Date.parse(now()) - (options.cacheSeconds ?? 0) * 1000;
+
           const mine = [...posts.values()]
             .filter(
-              (post) => post.publicationId === publication.id && !post.removed
+              (post) =>
+                post.publicationId === publication.id &&
+                !post.removed &&
+                Date.parse(post.publishedAt) <= cachedAt
             )
             .toReversed();
 

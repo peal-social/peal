@@ -6,11 +6,13 @@ import { Effect, Fiber, Option, Schema } from "effect";
 import { TestClock } from "effect/testing";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
+import { ArticleStore } from "#publishing/application/article-store.ts";
 import { Articles } from "#publishing/application/articles.ts";
 import { gardenBlog } from "#test/channels/fakes/fake-hashnode.ts";
 import { freshWorkspace } from "#test/channels/support.ts";
 import {
   content,
+  eventuallyLater,
   onArticles,
   stateOf,
   writer,
@@ -166,6 +168,85 @@ describe("an article on Hashnode", () => {
               });
             }
           );
+
+          assert.strictEqual(stateOf(article), "unconfirmed");
+          assert.lengthOf(
+            hashnode
+              .requests()
+              .filter(({ operation }) => operation === "PealPublishPost"),
+            1
+          );
+        })
+      )
+  );
+
+  it.effect(
+    "never sends again while Hashnode's cached reads may hide its post",
+    () =>
+      onArticles(
+        Effect.gen(function* cached() {
+          const {
+            actor,
+            hashnode,
+            sent: article,
+          } = yield* sentToHashnode({
+            cacheSeconds: 25,
+            drop: ({ operation }) => operation === "PealPublishPost",
+          });
+
+          // The search ran on a listing from before the post.
+          assert.strictEqual(stateOf(article), "unconfirmed");
+
+          yield* (yield* Articles).retry(actor, article.id);
+
+          yield* eventuallyLater(
+            "the article is sent again",
+            ArticleStore.use((store) => store.get(article.id)).pipe(
+              Effect.map((found) =>
+                Option.exists(
+                  found,
+                  ({ state }) =>
+                    state._tag !== "scheduled" && state._tag !== "publishing"
+                )
+              )
+            )
+          );
+
+          assert.lengthOf(hashnode.posts(), 1);
+          assert.strictEqual(
+            stateOf(
+              Option.getOrThrow(
+                yield* ArticleStore.use((store) => store.get(article.id))
+              )
+            ),
+            "published"
+          );
+        })
+      )
+  );
+
+  it.effect(
+    "is to check when Hashnode answers the commit with an unknown error",
+    () =>
+      onArticles(
+        Effect.gen(function* unknownCode() {
+          const { hashnode, sent: article } = yield* sentToHashnode({
+            intercept: ({ operation }) =>
+              operation === "PealPublishPost"
+                ? {
+                    body: {
+                      data: null,
+                      errors: [
+                        {
+                          extensions: { code: "GATEWAY_TIMEOUT" },
+                          message: "upstream",
+                        },
+                      ],
+                    },
+                    status: 200,
+                  }
+                : undefined,
+          });
 
           assert.strictEqual(stateOf(article), "unconfirmed");
           assert.lengthOf(

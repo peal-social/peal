@@ -70,6 +70,19 @@ const uploadTimeout = Duration.minutes(10);
 // Hashnode takes images of 8 MB at most, and no SVG.
 const maxImageBytes = 8 * 1024 * 1024;
 
+// How long Hashnode may answer a read from its cache (some 25 seconds,
+// by its own guide), with room: a search sooner may miss a post just made.
+const readCacheLife = Duration.minutes(1);
+
+// The codes Hashnode refuses an operation with, documented: any other on
+// the commit may follow a post made.
+const commitRefusals: ReadonlySet<string> = new Set([
+  "bad_user_input",
+  "forbidden",
+  "not_found",
+  platformRefusalCodes.sitePlanRequired,
+]);
+
 // How far before the call a post made by it may say it was published.
 const clockSlack = Duration.minutes(1);
 
@@ -586,7 +599,14 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
             )
       ).pipe(
         Effect.map(Option.some),
-        Effect.catchTag("PlatformUnavailable", () => Effect.succeedNone)
+        Effect.catchTag("PlatformUnavailable", () => Effect.succeedNone),
+        // A code Hashnode does not document as a refusal says nothing of
+        // whether the post was made: it is looked for.
+        Effect.catchIf(
+          (failure) =>
+            failure._tag === "BadRequest" && !commitRefusals.has(failure.code),
+          () => Effect.succeedNone
+        )
       );
 
       return Option.isSome(made)
@@ -651,9 +671,27 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
       );
     });
 
+    // Looks for the post an earlier round's call may have made, never
+    // while Hashnode's cached reads may still hide it: within their life
+    // since that call, the search waits, as Hashnode unavailable, and the
+    // attempt is made again later.
+    const find = Effect.fn("HashnodeArticles.find")(function* find(
+      request: SitePublishRequest,
+      article: Article,
+      token: SiteToken
+    ) {
+      const now = yield* DateTime.now;
+      const readable = DateTime.addDuration(request.startedAt, readCacheLife);
+
+      if (DateTime.isLessThan(now, readable)) {
+        return yield* new PlatformUnavailable();
+      }
+
+      return yield* lookUp(token, article, request.startedAt);
+    });
+
     const adapter: SiteAdapter = {
-      find: (request, article, token) =>
-        lookUp(token, article, request.startedAt),
+      find,
       publish,
       remove,
       resume: (request, article, token) =>
