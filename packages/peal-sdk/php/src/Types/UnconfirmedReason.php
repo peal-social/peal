@@ -9,4 +9,5 @@ enum UnconfirmedReason: string
     case Interrupted = "interrupted";
     case AdapterFailure = "adapterFailure";
     case StillProcessing = "stillProcessing";
+    case SearchRefused = "searchRefused";
 }

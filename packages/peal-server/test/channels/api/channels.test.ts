@@ -8,6 +8,7 @@ import {
   ConnectFailed,
   Forbidden,
   OAuthClientNotPublished,
+  SiteNotConnected,
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -30,7 +31,9 @@ import {
   authorizersOf,
   connectChannelWith,
   mastodonInstance,
+  WordPressSitesTest,
 } from "#test/channels/connect-support.ts";
+import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
   freshChannel,
   freshWorkspace,
@@ -50,7 +53,8 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 const UseCasesTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
-  DisconnectChannel.layer
+  DisconnectChannel.layer,
+  WordPressSitesTest
 ).pipe(
   Layer.provideMerge(TransactionsTest),
   Layer.provideMerge(MastodonConnectTest)
@@ -375,6 +379,57 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
 
         assert.instanceOf(refused, Forbidden);
       })
+  );
+
+  it.effect("connect a website, and say why one is refused", () =>
+    Effect.gen(function* website() {
+      const site = yield* fakeWordPress();
+      const workspaceId = yield* freshWorkspace;
+      const client = yield* clientAs(owner(workspaceId));
+      const params = { workspaceId };
+
+      const channel = yield* client.channels.connectSite({
+        params,
+        payload: {
+          address: site.home,
+          applicationPassword: editor.password,
+          platform: "wordpress",
+          userName: editor.login,
+        },
+      });
+
+      assert.strictEqual(channel.platform, "wordpress");
+      assert.strictEqual(channel.displayName, "Synthetic Garden Journal");
+
+      const refused = yield* Effect.flip(
+        client.channels.connectSite({
+          params,
+          payload: {
+            address: site.home,
+            applicationPassword: "synthetic wrong",
+            platform: "wordpress",
+            userName: editor.login,
+          },
+        })
+      );
+
+      assert.instanceOf(refused, SiteNotConnected);
+      assert.strictEqual(refused.reason, "credentialsRefused");
+
+      const forbidden = yield* Effect.flip(
+        (yield* clientAs(viewer(workspaceId))).channels.connectSite({
+          params,
+          payload: {
+            address: site.home,
+            applicationPassword: editor.password,
+            platform: "wordpress",
+            userName: editor.login,
+          },
+        })
+      );
+
+      assert.instanceOf(forbidden, Forbidden);
+    })
   );
 
   it.effect("answer 422 invalidState to a choice nobody was offered", () =>
@@ -715,7 +770,8 @@ const RecordingAuthorizers = Layer.effect(
 const AskingTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
-  DisconnectChannel.layer
+  DisconnectChannel.layer,
+  WordPressSitesTest
 ).pipe(
   Layer.provideMerge(TransactionsTest),
   Layer.provideMerge(connectChannelWith(RecordingAuthorizers))

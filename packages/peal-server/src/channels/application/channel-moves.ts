@@ -8,6 +8,7 @@ import type { Ids } from "#shared/application/ids.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
+import { isSocialPlatform } from "#shared/domain/platform.ts";
 
 import { ChannelAccountTaken } from "./channel-account-taken.ts";
 import { ChannelAllowance } from "./channel-allowance.ts";
@@ -118,7 +119,9 @@ export class ChannelMoves extends Context.Service<
 
         const found = yield* channels.findById(asked.from, asked.channelId);
 
-        if (Option.isNone(found)) {
+        // A website's channel holds articles, which no move rule covers:
+        // only a social network's account moves.
+        if (Option.isNone(found) || !isSocialPlatform(found.value.platform)) {
           return yield* notFound;
         }
 

@@ -16,6 +16,7 @@ import { EngagementRecords } from "#engagement/application/engagement-records.ts
 import { PostRecords } from "#publishing/application/post-records.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
+import { isSocialPlatform } from "#shared/domain/platform.ts";
 import { AccountConnectedThere } from "#workspace/application/account-connected-there.ts";
 import { ChannelMover } from "#workspace/application/channel-mover.ts";
 import type { MovedChannel } from "#workspace/application/channel-mover.ts";
@@ -27,20 +28,27 @@ const decodeChannelId = Schema.decodeUnknownOption(ChannelIdSchema);
 // A channel as the channels context answers it.
 type ChannelRead = Effect.Success<ReturnType<ChannelMoves["Service"]["move"]>>;
 
-// A channel as the workspace context reads one it moved.
-const movedView = (channel: ChannelRead): MovedChannel => ({
-  avatarUrl: channel.avatarUrl,
-  connection: channel.connection,
-  displayName: channel.displayName,
-  handle: channel.handle,
-  id: channel.id,
-  platform: channel.platform,
-  status: channel.status,
-  tokenExpiresAt:
-    channel.token._tag === "nonRefreshable"
-      ? Option.some(channel.token.expiresAt)
-      : Option.none(),
-});
+// A channel as the workspace context reads one it moved: a social
+// network's, as only those move.
+const movedView = (channel: ChannelRead): Option.Option<MovedChannel> => {
+  const { platform } = channel;
+
+  return isSocialPlatform(platform)
+    ? Option.some({
+        avatarUrl: channel.avatarUrl,
+        connection: channel.connection,
+        displayName: channel.displayName,
+        handle: channel.handle,
+        id: channel.id,
+        platform,
+        status: channel.status,
+        tokenExpiresAt:
+          channel.token._tag === "nonRefreshable"
+            ? Option.some(channel.token.expiresAt)
+            : Option.none(),
+      })
+    : Option.none();
+};
 
 /**
  * The longest a move waits for a row or a hold another request has (an
@@ -112,7 +120,7 @@ export const ContextChannelMoverLive = Layer.effect(
           onSome: (id) =>
             channels
               .findById(workspaceId, id)
-              .pipe(Effect.map(Option.map(movedView))),
+              .pipe(Effect.map(Option.flatMap(movedView))),
         }),
       move: ({ as, channelId, from, inside, to }) =>
         Option.match(decodeChannelId(channelId), {
@@ -152,12 +160,16 @@ export const ContextChannelMoverLive = Layer.effect(
                 })
                 .pipe(
                   Effect.flatMap((channel) =>
-                    Ref.get(left).pipe(
-                      Effect.map((postsLeft) => ({
-                        channel: movedView(channel),
-                        postsLeft,
-                      }))
-                    )
+                    Effect.all({
+                      channel: Option.match(movedView(channel), {
+                        onNone: () =>
+                          Effect.die(
+                            new Error("A website's channel was moved")
+                          ),
+                        onSome: Effect.succeed,
+                      }),
+                      postsLeft: Ref.get(left),
+                    })
                   ),
                   Effect.catchTags({
                     // Another request held a row or a hold too long.

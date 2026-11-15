@@ -38,6 +38,9 @@ export const UnconfirmedReasonSchema = Schema.Literals([
   // The platform took the post and, when Peal stopped checking, still had
   // not said it was published (a video it was still processing).
   "stillProcessing",
+  // The site refused the search for a post an earlier call may have made,
+  // so whether it is there is not known.
+  "searchRefused",
 ]);
 
 export type UnconfirmedReason = typeof UnconfirmedReasonSchema.Type;

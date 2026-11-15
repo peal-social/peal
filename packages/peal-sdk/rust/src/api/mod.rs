@@ -12,8 +12,8 @@ pub mod resources;
 pub mod types;
 
 pub use resources::{
-    ActivityClient, AdsClient, AnalyticsClient, ApiKeysClient, AssistantClient, BillingClient,
-    CapabilitiesClient, ChannelDefaultsClient, ChannelSetsClient, ChannelsClient,
+    ActivityClient, AdsClient, AnalyticsClient, ApiKeysClient, ArticlesClient, AssistantClient,
+    BillingClient, CapabilitiesClient, ChannelDefaultsClient, ChannelSetsClient, ChannelsClient,
     ConnectLinksClient, CredentialClient, FeedsClient, FollowUpsClient, InboxClient,
     InboxMessagesClient, InboxReviewsClient, InboxRulesClient, InvitationsClient, LookupsClient,
     MediaClient, MembersClient, NoticesClient, NotificationPreferencesClient, OverviewClient,

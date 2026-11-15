@@ -296,6 +296,34 @@ layer(MovesTest)("moving a channel", (it) => {
       })
   );
 
+  it.effect("moves no website: its articles have no such rule", () =>
+    Effect.gen(function* website() {
+      const repository = yield* ChannelRepository;
+      const from = yield* pooledWorkspace;
+      const to = yield* pooledWorkspace;
+      const site = yield* freshChannel(from, { platform: "wordpress" });
+
+      yield* repository.insert(
+        site,
+        yield* encryptTokens(
+          {
+            accessToken: Redacted.make("synthetic-user:synthetic-password"),
+            expiresAt: Option.none(),
+            refreshToken: Option.none(),
+            renewable: false,
+            scopes: [],
+          },
+          site.id
+        )
+      );
+
+      const failure = yield* moveOf(site, to).pipe(Effect.flip);
+
+      assert.strictEqual(failure._tag, "ChannelNotFound");
+      assert.isTrue(Option.isSome(yield* repository.findById(from, site.id)));
+    })
+  );
+
   it.effect("moves nothing out of its pool", () =>
     Effect.gen(function* outside() {
       const repository = yield* ChannelRepository;
