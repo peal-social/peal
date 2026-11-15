@@ -231,6 +231,68 @@ export const french: EmailCatalog = {
       "Vous recevez cet e-mail parce que vous avez ajouté ce flux dans {workspaceName} sur Peal, ou y programmez des publications. Choisissez les notifications que vous recevez par e-mail dans vos préférences de notification.",
     subject: "Un flux ne crée plus de publications",
   },
+  followUpsNotSent: {
+    action: "Ouvrir les relances",
+    body: "Une règle de relance de {workspaceName} a des relances qui ne sont pas parties ({count}) : {reasons}. La règle, dans les relances de l’espace de travail, montre chacune et pourquoi.",
+    ignore:
+      "Vous recevez cet e-mail parce que vous avez lancé cette règle dans {workspaceName} sur Peal, ou y programmez des publications. Choisissez les notifications que vous recevez par e-mail dans vos préférences de notification.",
+    subject: "Des relances ne sont pas parties",
+  },
+  followUpNotSent: {
+    action: "Ouvrir les relances",
+    body: "Une relance d’une règle de {workspaceName} n’est pas partie : {reasons}. La règle, dans les relances de l’espace de travail, la montre et dit pourquoi.",
+    ignore:
+      "Vous recevez cet e-mail parce que vous avez lancé cette règle dans {workspaceName} sur Peal, ou y programmez des publications. Choisissez les notifications que vous recevez par e-mail dans vos préférences de notification.",
+    subject: "Une relance n’est pas partie",
+  },
+  followUpNotSentReasons: {
+    one: {
+      failed:
+        "elle a échoué, et la règle donne le code de la plateforme ou de Peal",
+      notApproved:
+        "la règle attendait une approbation jusqu’à la fin de ses sept jours",
+      notGranted: "son canal n’a pas été reconnecté à temps",
+      unconfirmed:
+        "Peal n’a pas pu savoir si elle est partie : vérifiez la plateforme, car Peal ne la renvoie jamais",
+      windowEnded:
+        "la plateforme l’a repoussée jusqu’à la fin de ses sept jours",
+    },
+    other: {
+      failed:
+        "elles ont échoué, et la règle donne pour chacune le code de la plateforme ou de Peal",
+      notApproved:
+        "la règle attendait une approbation jusqu’à la fin de leurs sept jours",
+      notGranted: "leur canal n’a pas été reconnecté à temps",
+      unconfirmed:
+        "Peal n’a pas pu savoir si elles sont parties : vérifiez la plateforme, car Peal ne les renvoie jamais",
+      windowEnded:
+        "la plateforme les a repoussées jusqu’à la fin de leurs sept jours",
+    },
+  },
+  reasonsJoint: " ; ",
+  followUpRuleStopped: {
+    action: "Ouvrir les relances",
+    body: "Une règle de relance de {workspaceName} s’est arrêtée d’elle-même : {reason} Les relances qu’elle n’avait pas envoyées sont abandonnées, et celles qu’elle a envoyées restent sur les plateformes. Pour relancer des publications, lancez une nouvelle règle.",
+    ignore:
+      "Vous recevez cet e-mail parce que vous avez lancé cette règle dans {workspaceName} sur Peal, ou y programmez des publications. Choisissez les notifications que vous recevez par e-mail dans vos préférences de notification.",
+    subject: "Une règle de relance s’est arrêtée",
+  },
+  followUpRuleStopReasons: {
+    channelGone: "son canal a été déconnecté.",
+    starterGone: "la personne qui l’a lancée ne peut plus y publier.",
+  },
+  commentRuleStopped: {
+    action: "Ouvrir les réponses aux commentaires",
+    body: "Une règle de réponse aux commentaires de {workspaceName} s’est arrêtée d’elle-même : {reason} Les réponses qu’elle a envoyées restent sur les plateformes. Pour répondre de nouveau par mot-clé, lancez une nouvelle règle dans les réponses aux commentaires de l’espace de travail.",
+    ignore:
+      "Vous recevez cet e-mail parce que vous avez lancé cette règle dans {workspaceName} sur Peal, ou y répondez aux commentaires. Choisissez les notifications que vous recevez par e-mail dans vos préférences de notification.",
+    subject: "Une règle de réponse aux commentaires s’est arrêtée",
+  },
+  commentRuleStopReasons: {
+    channelGone: "son canal a été déconnecté.",
+    starterGone:
+      "la personne qui l’a lancée ne peut plus y répondre aux commentaires.",
+  },
   intervals: { month: "mois", year: "an" },
   invitation: {
     action: "Accepter l’invitation",

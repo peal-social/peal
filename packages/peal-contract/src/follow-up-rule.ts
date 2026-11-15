@@ -158,6 +158,11 @@ export const FollowUpSchema = Schema.Struct({
   // The likes analytics counted when its threshold was reached; null
   // before.
   likes: Schema.NullOr(Schema.Int),
+  // When it is tried next, once it was put off: by the platform
+  // (unreachable, or slowing the account down), or by Peal, as its rule
+  // could not act when it was to go. Nothing sets out before then. Null
+  // unless armed and put off.
+  notBefore: Schema.NullOr(Schema.DateTimeUtc),
   // Its public address, once sent, when the platform gives one.
   permalink: Schema.NullOr(Schema.String),
   // The platform's id of the comment or the repost, once sent.

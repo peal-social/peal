@@ -31,6 +31,7 @@ import { DrizzleEngagementStore } from "#engagement/infrastructure/drizzle-engag
 import { DrizzleInboxWaitingReads } from "#engagement/infrastructure/drizzle-inbox-waiting-reads.ts";
 import { DrizzleMessageStore } from "#engagement/infrastructure/drizzle-message-store.ts";
 import { DrizzleReviewStore } from "#engagement/infrastructure/drizzle-review-store.ts";
+import { NotifiedCommentRuleNotices } from "#engagement/infrastructure/notified-comment-rule-notices.ts";
 import { PublishingFollowedPosts } from "#engagement/infrastructure/publishing-followed-posts.ts";
 import { PublishingReplyLimits } from "#engagement/infrastructure/publishing-reply-limits.ts";
 import { ToldEngagementOutcomes } from "#engagement/infrastructure/told-engagement-outcomes.ts";
@@ -128,6 +129,7 @@ export const engagementLive = <E, R>(
         WorkflowReplyJobs,
         ToldEngagementOutcomes,
         DrizzleCommentRuleStore,
+        NotifiedCommentRuleNotices,
         WorkspaceRuleStarters,
         gated
       )
@@ -140,7 +142,7 @@ export const engagementLive = <E, R>(
       // messages are read and answered.
       Layer.provide(InboxMessagesLive)
     ),
-    DrizzleEngagementRecords
+    EngagementRecordsLive
   );
 
 // The inbox endpoints. They need the use cases the context provides, and
@@ -157,8 +159,14 @@ export { InboxReviewsHandlers as InboxReviewsApiLive } from "#engagement/api/inb
 // The inbox's direct messages endpoints, alike.
 export { InboxMessagesHandlers as InboxMessagesApiLive } from "#engagement/api/inbox-messages.ts";
 
-/** EngagementRecords alone, for the workspace context's exports and erasures. */
-export { DrizzleEngagementRecords as EngagementRecordsLive } from "#engagement/infrastructure/drizzle-engagement-records.ts";
+/**
+ * EngagementRecords alone, for the workspace context's exports and
+ * erasures, telling through the notices a comment rule its channel's end
+ * ended. Needs Notify and MeteredUsage.
+ */
+export const EngagementRecordsLive = DrizzleEngagementRecords.pipe(
+  Layer.provide(NotifiedCommentRuleNotices)
+);
 
 /**
  * The platforms' comments, as the channels' gates run them. Needs the

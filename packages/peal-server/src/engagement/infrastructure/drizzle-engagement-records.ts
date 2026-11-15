@@ -1,11 +1,13 @@
 import { and, asc, eq, inArray, isNull, ne } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
-import { DateTime, Effect, Layer } from "effect";
-import { SqlClient } from "effect/sql";
+import { DateTime, Effect, Layer, Option } from "effect";
+import { SqlClient, SqlError } from "effect/sql";
 
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
+import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { SendsInFlight } from "#engagement/application/sends-in-flight.ts";
 import type { CommentRuleEndReason } from "#engagement/domain/comment-rule-end-reason.ts";
+import { CommentRuleIdSchema } from "#engagement/domain/comment-rule-id.ts";
 import type { CollectionEnd } from "#engagement/domain/thread.ts";
 import { boundsKeeping } from "#engagement/infrastructure/platforms/refresh-bounds.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
@@ -16,7 +18,7 @@ import type {
   SentReplyRecord,
   SentReviewReplyRecord,
 } from "#shared/application/personal-data.ts";
-import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
@@ -53,6 +55,7 @@ export const DrizzleEngagementRecords = Layer.effect(
     const db = yield* Drizzle;
     const sql = yield* SqlClient.SqlClient;
     const meters = yield* MeteredUsage;
+    const ruleNotices = yield* CommentRuleNotices;
 
     // The messages sent from Peal that never set out (on their way, no
     // call begun), locked until the caller's transaction ends, so a job
@@ -397,21 +400,53 @@ export const DrizzleEngagementRecords = Layer.effect(
         yield* giveBackUnsent(unsent);
 
         // The rules that answer the channel's comments end with it: they
-        // would hold one of the workspace's rules and answer nothing.
-        yield* db
-          .update(commentRules)
-          .set({
-            endedReason: "channelGone" satisfies CommentRuleEndReason,
-            status: "ended",
-            statusAt: DateTime.toDateUtc(at),
-          })
-          .where(
-            and(
-              eq(commentRules.channelId, channelId),
-              ne(commentRules.status, "ended")
-            )
+        // would hold one of the workspace's rules and answer nothing. Each
+        // is told, in the transaction that ends it.
+        yield* sql
+          .withTransaction(
+            Effect.gen(function* ending() {
+              const ended = yield* db
+                .update(commentRules)
+                .set({
+                  endedReason: "channelGone" satisfies CommentRuleEndReason,
+                  status: "ended",
+                  statusAt: DateTime.toDateUtc(at),
+                })
+                .where(
+                  and(
+                    eq(commentRules.channelId, channelId),
+                    ne(commentRules.status, "ended")
+                  )
+                )
+                .returning({
+                  id: commentRules.id,
+                  startedBy: commentRules.startedBy,
+                  workspaceId: commentRules.workspaceId,
+                })
+                .pipe(Effect.mapError(failed));
+
+              yield* Effect.forEach(
+                ended,
+                ({ id, startedBy, workspaceId }) =>
+                  ruleNotices.stopped(
+                    {
+                      id: CommentRuleIdSchema.make(id),
+                      startedBy: Option.fromNullOr(startedBy).pipe(
+                        Option.map((userId) => UserIdSchema.make(userId))
+                      ),
+                      workspaceId: WorkspaceIdSchema.make(workspaceId),
+                    },
+                    "channelGone"
+                  ),
+                { discard: true }
+              );
+            })
           )
-          .pipe(Effect.mapError(failed));
+          .pipe(
+            Effect.catchIf(SqlError.isSqlError, (failure) =>
+              Effect.fail(failed(failure))
+            )
+          );
 
         // A location's reviews go at once, with their replies.
         if (platform === "googleBusiness") {

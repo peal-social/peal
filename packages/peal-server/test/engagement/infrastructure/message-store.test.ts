@@ -15,6 +15,7 @@ import { SqlClient } from "effect/sql";
 
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import { forgetChannelMessages } from "#engagement/application/forget-channel-messages.ts";
+import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
 import { ConversationIdSchema } from "#engagement/domain/conversation-id.ts";
 import {
@@ -58,7 +59,7 @@ import { FakeMetersLedger, fakeMeters } from "#test/shared/support.ts";
 // meters that count in memory.
 const StoreTest = Layer.mergeAll(
   DrizzleMessageStore,
-  DrizzleEngagementRecords
+  DrizzleEngagementRecords.pipe(Layer.provide(CommentRuleNotices.none))
 ).pipe(
   Layer.provideMerge(fakeMeters({ allowed: Option.none() })),
   Layer.provideMerge(DatabaseTest)

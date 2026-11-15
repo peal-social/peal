@@ -81,7 +81,10 @@ const Likes = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0));
  */
 export const FollowUpStatusSchema = Schema.Union([
   Schema.TaggedStruct("armed", {
-    // Put off by the platform: not set out again before then.
+    // Held back by Peal, its rule unable to act when it was to go, rather
+    // than put off by the platform. Absent for the platform's.
+    heldBack: Schema.optionalKey(Schema.Boolean),
+    // Put off: not set out again before then.
     notBefore: Schema.optionalKey(Schema.DateTimeUtc),
     until: Schema.DateTimeUtc,
   }),
@@ -310,9 +313,13 @@ export const beginFollowUpCall = (
       )
     : refused(followUp, "begin");
 
-/** How a call ended: what the platform answered, or its refusal. */
+/**
+ * How a call ended: what the platform answered, or its refusal; or that
+ * Peal held it back before the call, its rule unable to act then.
+ */
 export type FollowUpCallOutcome =
   | { readonly _tag: "answered"; readonly result: PublishResult }
+  | { readonly _tag: "heldBack" }
   | { readonly _tag: "refused"; readonly failure: PublishFailure };
 
 // A refusal's code, as it is kept: the platform's own, never its words.
@@ -333,8 +340,9 @@ const isPassing = (failure: PublishFailure): boolean =>
 
 /**
  * The follow-up as its call ended, at `now`: a refusal that passes (the
- * platform unreachable, a rate limit) arms it again until its window ends,
- * as nothing went out; any other fails it.
+ * platform unreachable, a rate limit), or Peal holding it back, arms it
+ * again until its window ends, as nothing went out; any other refusal
+ * fails it.
  */
 export const settleFollowUp = (
   followUp: FollowUp,
@@ -349,6 +357,20 @@ export const settleFollowUp = (
 
   const { likes, triggeredAt, until } = status;
   const attemptedAt = Option.getOrElse(status.attemptedAt, () => now);
+
+  if (outcome._tag === "heldBack") {
+    return Result.succeed(
+      withStatus(followUp, {
+        _tag: "armed",
+        heldBack: true,
+        notBefore: DateTime.addDuration(
+          now,
+          putOffFor(followUp.attempt, Option.none())
+        ),
+        until,
+      })
+    );
+  }
 
   if (outcome._tag === "refused") {
     return Result.succeed(
@@ -439,3 +461,59 @@ export const isOver = (followUp: FollowUp): boolean =>
   followUp.status._tag !== "armed" &&
   followUp.status._tag !== "sending" &&
   followUp.status._tag !== "waiting";
+
+/**
+ * Why a follow-up that ended without going out is told to members: the
+ * platform refused it (`failed`), it may be out without Peal knowing
+ * (`unconfirmed`), or its window passed while the platform put it off
+ * (`windowEnded`), its channel was not connected again (`notGranted`) or
+ * its rule waited for an approval (`notApproved`). In this order.
+ */
+export const followUpNotSentReasons = [
+  "failed",
+  "unconfirmed",
+  "windowEnded",
+  "notGranted",
+  "notApproved",
+] as const;
+
+export type FollowUpNotSentReason = (typeof followUpNotSentReasons)[number];
+
+/**
+ * Why members are told the follow-up did not go out, or none: one that
+ * went out, waits, or ended as its rule or the post's likes made it end
+ * (below its threshold, paused, given up, the channel's day full) is not
+ * told.
+ */
+export const notSentReasonOf = (
+  followUp: FollowUp
+): Option.Option<FollowUpNotSentReason> => {
+  const { status } = followUp;
+
+  if (status._tag === "failed" || status._tag === "unconfirmed") {
+    return Option.some(status._tag);
+  }
+
+  if (status._tag !== "expired") {
+    return Option.none();
+  }
+
+  const { reason } = status;
+
+  return reason === "windowEnded" ||
+    reason === "notGranted" ||
+    reason === "notApproved"
+    ? Option.some(reason)
+    : Option.none();
+};
+
+/** The reasons the follow-ups are told for, each once, in their order. */
+export const notSentReasonsOf = (
+  followUps: readonly FollowUp[]
+): readonly FollowUpNotSentReason[] => {
+  const found = new Set(
+    followUps.flatMap((followUp) => Option.toArray(notSentReasonOf(followUp)))
+  );
+
+  return followUpNotSentReasons.filter((reason) => found.has(reason));
+};

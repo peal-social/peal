@@ -224,6 +224,63 @@ export const english: EmailCatalog = {
       "You receive this email because you added this feed in {workspaceName} on Peal, or schedule posts there. Choose which notifications you receive by email in your notification preferences.",
     subject: "A feed no longer makes posts",
   },
+  followUpsNotSent: {
+    action: "Open the follow-ups",
+    body: "A follow-up rule of {workspaceName} has follow-ups that did not go out ({count}): {reasons}. The rule, in the workspace’s follow-ups, shows each one and why.",
+    ignore:
+      "You receive this email because you started this rule in {workspaceName} on Peal, or schedule posts there. Choose which notifications you receive by email in your notification preferences.",
+    subject: "Follow-ups did not go out",
+  },
+  followUpNotSent: {
+    action: "Open the follow-ups",
+    body: "A follow-up of a rule of {workspaceName} did not go out: {reasons}. The rule, in the workspace’s follow-ups, shows it and why.",
+    ignore:
+      "You receive this email because you started this rule in {workspaceName} on Peal, or schedule posts there. Choose which notifications you receive by email in your notification preferences.",
+    subject: "A follow-up did not go out",
+  },
+  followUpNotSentReasons: {
+    one: {
+      failed: "it failed, and the rule shows the platform’s or Peal’s code",
+      notApproved: "the rule waited for an approval until its seven days ended",
+      notGranted: "its channel was not connected again in time",
+      unconfirmed:
+        "Peal could not tell whether it went out: check the platform, as Peal never sends it again",
+      windowEnded: "the platform put it off until its seven days ended",
+    },
+    other: {
+      failed:
+        "they failed, and the rule shows the platform’s or Peal’s code for each",
+      notApproved:
+        "the rule waited for an approval until their seven days ended",
+      notGranted: "their channel was not connected again in time",
+      unconfirmed:
+        "Peal could not tell whether they went out: check the platform, as Peal never sends them again",
+      windowEnded: "the platform put them off until their seven days ended",
+    },
+  },
+  reasonsJoint: "; ",
+  followUpRuleStopped: {
+    action: "Open the follow-ups",
+    body: "A follow-up rule of {workspaceName} stopped by itself: {reason} The follow-ups it had not sent are given up, and those it sent stay on the platforms. To follow posts up again, start a new rule.",
+    ignore:
+      "You receive this email because you started this rule in {workspaceName} on Peal, or schedule posts there. Choose which notifications you receive by email in your notification preferences.",
+    subject: "A follow-up rule stopped",
+  },
+  followUpRuleStopReasons: {
+    channelGone: "its channel was disconnected.",
+    starterGone: "whoever started it can no longer publish there.",
+  },
+  commentRuleStopped: {
+    action: "Open the comment replies",
+    body: "A comment reply rule of {workspaceName} stopped by itself: {reason} The replies it sent stay on the platforms. To answer by keyword again, start a new rule in the workspace’s comment replies.",
+    ignore:
+      "You receive this email because you started this rule in {workspaceName} on Peal, or answer comments there. Choose which notifications you receive by email in your notification preferences.",
+    subject: "A comment reply rule stopped",
+  },
+  commentRuleStopReasons: {
+    channelGone: "its channel was disconnected.",
+    starterGone: "whoever started it can no longer answer comments there.",
+  },
   intervals: { month: "month", year: "year" },
   invitation: {
     action: "Accept the invitation",
