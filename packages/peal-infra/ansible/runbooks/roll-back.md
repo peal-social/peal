@@ -205,7 +205,7 @@ reads as any other. Nothing to check before rolling back.
 ## Past connect links of several platforms
 
 The release that gives a connect link several platforms (migration
-`partner-accent-and-link-platforms`) keeps them in `channels.connect_links.platforms`,
+`embedding-kit-3`) keeps them in `channels.connect_links.platforms`,
 what a link connected so far in `connected_platforms` and `channel_ids`,
 and the platform a sign-in started at in `started_platform`. The release
 before ignores the three, and reads `platform`, the first: nothing fails
@@ -215,7 +215,9 @@ its first platform alone, and completes at its next connection, its
 stay connected). A sign-in started at another platform then completes
 nothing (`invalidState`). The partner accent colour
 (`workspace.partners.accent_color`) is ignored, and the hosted pages show
-none.
+none. A channel move's idempotency key keeps the channel it made in
+`workspace.partner_idempotency_keys.channel_id`, which the release before,
+which has no move, ignores.
 
 1. **Links of several platforms still waiting:**
 

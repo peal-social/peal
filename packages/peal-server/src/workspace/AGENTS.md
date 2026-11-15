@@ -491,7 +491,11 @@ The staff context follows these rules too. What the law has a host keep is in
   it locks both workspaces' rows (smaller id first) and checks they are
   still the partner's, as an offboarding locks its row first, so a move
   never adds a channel to a workspace being erased. Both activity logs
-  keep `partner.moveChannel`.
+  keep `partner.moveChannel`. It takes the partner's `Idempotency-Key`
+  (`partner_idempotency_keys`, with the moved channel in `channel_id`,
+  claimed in the move's transaction): the same request answers the channel
+  it moved, as it stands now. It answers `postsLeft`, the source's posts
+  still to go out on the channel (`PostRecords.waitingOn`).
 - A workspace a partner owns takes the home workspace's plan (`PlanHolders`,
   `WorkspaceEntitlements.layerShared`). Channels are counted across the
   home workspace and every workspace the partner owns, under the partner's

@@ -20,6 +20,7 @@ import {
   maxWorkspacePageSize,
   MediaContentTypeSchema,
   minAccentContrast,
+  moveLockSeconds,
   partnerKeyPermissions,
   PartnerScopeSchema,
   PermissionSchema,
@@ -70,6 +71,7 @@ import {
 } from "#workspace/domain/partner.ts";
 import { maxReturnOrigins as domainMaxReturnOrigins } from "#workspace/domain/return-origin.ts";
 import { RoleSchema as DomainRoleSchema } from "#workspace/domain/roles.ts";
+import { moveLockTimeout } from "#workspace/infrastructure/context-channel-mover.ts";
 
 describe("the contract", () => {
   it("lists the server's permission vocabulary", () => {
@@ -95,6 +97,7 @@ describe("the contract", () => {
       maxWorkspaceNameLength,
       maxWorkspacePageSize,
       minAccentContrast,
+      moveLockSeconds,
     }).toStrictEqual({
       creationKeyLifetimeHours: Duration.toHours(creationKeyLifetime),
       defaultWorkspacePageSize: serverDefaultPageSize,
@@ -107,6 +110,7 @@ describe("the contract", () => {
       maxWorkspaceNameLength: domainMaxWorkspaceNameLength,
       maxWorkspacePageSize: serverMaxPageSize,
       minAccentContrast: domainMinAccentContrast,
+      moveLockSeconds: Duration.toSeconds(moveLockTimeout),
     });
   });
 

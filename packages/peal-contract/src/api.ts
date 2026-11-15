@@ -2222,6 +2222,7 @@ export {
   maxWorkspaceNameLength,
   maxWorkspacePageSize,
   minAccentContrast,
+  moveLockSeconds,
   ChannelMoveSchema,
   MovedChannelSchema,
   NewCustomerWorkspaceSchema,

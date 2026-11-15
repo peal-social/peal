@@ -128,27 +128,29 @@ When an account was connected to the wrong customer's workspace, or a customer's
 curl -X POST https://api.example.com/api/partner/workspaces/$FROM/channels/$CHANNEL/move \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
   -H "Content-Type: application/json" \
+  -H "Idempotency-Key: move-$CHANNEL-$TO" \
   -d '{"toWorkspaceId": "'$TO'"}'
 ```
 
-The answer is the channel in the workspace it went to, under a new id: keep that one. The workspace it left sends [`channel.disconnected`](/developers/webhooks/events/channels#channel-disconnected), the other [`channel.connected`](/developers/webhooks/events/channels#channel-connected), and both workspaces' [activity logs](/guides/workspace#activity) keep the move.
+The answer holds `channel`, the channel in the workspace it went to, under a new id (keep that one), and `postsLeft`, how many posts of the workspace it left still had the channel to go out on: they fail there for it. With an `Idempotency-Key` header, a request sent again within 24 hours, after a timeout for instance, answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 `IdempotencyKeyReused`. Without one, a request sent again after a move answers 404 `ChannelNotFound`, the old id being gone: look for the account in the workspace it was moved to. The workspace it left sends [`channel.disconnected`](/developers/webhooks/events/channels#channel-disconnected), the other [`channel.connected`](/developers/webhooks/events/channels#channel-connected), and both workspaces' [activity logs](/guides/workspace#activity) keep the move.
 
-| What                                | After the move                                                                                                                                                       |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The account, its tokens, its status | In the workspace it went to. A channel turned off stays off; one to reconnect stays to reconnect.                                                                    |
-| Its name in the workspace           | Left behind: the other workspace gives it its own.                                                                                                                   |
-| Posts, drafts and scheduled posts   | Stay in the workspace they were made in. Those still to go out on the channel fail there as a disconnected channel's do: move or change them before.                 |
-| Queues, channel sets, recycling     | Stay, and pass the channel over as a disconnected one.                                                                                                               |
-| Analytics                           | The numbers of the workspace it left stay there, kept a week as a disconnected channel's are, and come back if it returns within that week. The other starts afresh. |
-| Inbox threads and direct messages   | End in the workspace it left, as a disconnected channel's do. The other reads the account's comments and messages afresh.                                            |
-| Plan and usage                      | Your workspaces share one plan: the move counts no channel more, and no plan limit refuses it.                                                                       |
+| What                                | After the move                                                                                                                                                         |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The account, its tokens, its status | In the workspace it went to. A channel turned off stays off; one to reconnect stays to reconnect.                                                                      |
+| Its name in the workspace           | Left behind: the other workspace gives it its own.                                                                                                                     |
+| Posts, drafts and scheduled posts   | Stay in the workspace they were made in. Those still to go out on the channel fail there as a disconnected channel's do (`postsLeft` counts them): change them before. |
+| Queues, channel sets, recycling     | Stay, and pass the channel over as a disconnected one.                                                                                                                 |
+| Analytics                           | The numbers of the workspace it left stay there, kept a week as a disconnected channel's are, and come back if it returns within that week. The other starts afresh.   |
+| Inbox threads and direct messages   | End in the workspace it left, as a disconnected channel's do. The other reads the account's comments and messages afresh.                                              |
+| Plan and usage                      | Your workspaces share one plan: the move counts no channel more, and no plan limit refuses it.                                                                         |
 
-| Answer                    | Why                                                                                                   |
-| ------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 404 `WorkspaceNotFound`   | Either workspace is not one your partner account owns: your home workspace and anyone else's included |
-| 404 `ChannelNotFound`     | The workspace has no channel with this id                                                             |
-| 409 `ChannelAccountTaken` | The workspace it goes to has a channel of the same account (`channelId`), or is the one it is in      |
-| 409 `WorkspaceBusy`       | A post, or a change of a live post, is being sent through the channel: send it again a moment later   |
+| Answer                     | Why                                                                                                                                                                                                                                                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 404 `WorkspaceNotFound`    | Either workspace is not one your partner account owns: your home workspace and anyone else's included                                                                                                                                                                                                                |
+| 404 `ChannelNotFound`      | The workspace has no channel with this id                                                                                                                                                                                                                                                                            |
+| 409 `ChannelAccountTaken`  | The workspace it goes to has a channel of the same account (`channelId`), or is the one it is in                                                                                                                                                                                                                     |
+| 409 `IdempotencyKeyReused` | The `Idempotency-Key` was used for another request in the last 24 hours                                                                                                                                                                                                                                              |
+| 409 `WorkspaceBusy`        | A call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review, a direct message), or another request holds either workspace for more than 5 seconds: send it again a moment later. Reads through the channel are not waited for. |
 
 It needs the scope `workspaces:write`, and the key's permissions `channel:connect` and `channel:disconnect`.
 

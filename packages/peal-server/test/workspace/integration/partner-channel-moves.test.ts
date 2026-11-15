@@ -486,10 +486,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
           );
 
-          const { channel: moved } = yield* bodyOf(
-            MovedSchema,
-            reply
-          );
+          const { channel: moved } = yield* bodyOf(MovedSchema, reply);
 
           const deleted = yield* app.request(
             `/api/partner/workspaces/${to.id}`,
