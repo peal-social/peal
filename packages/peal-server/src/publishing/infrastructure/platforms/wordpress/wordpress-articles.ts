@@ -1,4 +1,4 @@
-import { DateTime, Duration, Effect, Layer, Option, Schema } from "effect";
+import { DateTime, Duration, Effect, Option, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
@@ -6,9 +6,7 @@ import { ArticleJournal } from "#publishing/application/article-journal.ts";
 import type { SiteFile } from "#publishing/application/article-journal.ts";
 import { ArticleStore } from "#publishing/application/article-store.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
-import { SiteCredentials } from "#publishing/application/site-credentials.ts";
 import type { SiteToken } from "#publishing/application/site-credentials.ts";
-import { SitePublisher } from "#publishing/application/site-publisher.ts";
 import type {
   SitePublishRequest,
   SiteSearch,
@@ -17,6 +15,7 @@ import { articleHtml, escapeHtml } from "#publishing/domain/article-html.ts";
 import { articleMediaOf } from "#publishing/domain/article.ts";
 import type { Article } from "#publishing/domain/article.ts";
 import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
+import type { SiteAdapter } from "#publishing/infrastructure/platforms/site-adapter.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
@@ -127,11 +126,6 @@ const sameTerm = (stored: string, wanted: string) =>
   decodedName(stored).trim().toLowerCase() === wanted.toLowerCase();
 
 const MeSchema = Schema.Struct({ id: Schema.Number });
-
-// Peal's own refusal for an article it cannot read any more.
-const articleGone = new BadRequest({
-  code: ownRefusalCodes.channelDisconnected,
-});
 
 const codeOf = (code: string) => storableLine(code, maxCodeLength);
 
@@ -285,15 +279,13 @@ const published = (post: {
 };
 
 /**
- * SitePublisher for WordPress sites. Every request goes through the public
+ * The calls to WordPress sites. Every request goes through the public
  * HTTP client and the outbound guard, to the API's root the channel keeps.
  */
-export const WordPressSitePublisherLive = Layer.effect(
-  SitePublisher,
-  Effect.gen(function* WordPressSitePublisherLive() {
+export const wordpressSiteAdapter = Effect.gen(
+  function* wordpressSiteAdapter() {
     const store = yield* ArticleStore;
     const journal = yield* ArticleJournal;
-    const credentials = yield* SiteCredentials;
     const library = yield* MediaForPublishing;
     const api = yield* publicHttpClient;
     const uploads = yield* publicHttpClientWith({ timeout: uploadTimeout });
@@ -592,17 +584,6 @@ export const WordPressSitePublisherLive = Layer.effect(
       return search;
     });
 
-    const articleOf = (articleId: SitePublishRequest["articleId"]) =>
-      store.get(articleId).pipe(
-        Effect.orDie,
-        Effect.flatMap(
-          Option.match({
-            onNone: () => Effect.fail(articleGone),
-            onSome: Effect.succeed,
-          })
-        )
-      );
-
     // Found among the user's posts, or not known.
     const lookedUp = (
       token: SiteToken,
@@ -625,126 +606,107 @@ export const WordPressSitePublisherLive = Layer.effect(
       );
 
     const publish = Effect.fn("WordPressArticles.publish")(function* publish(
-      request: SitePublishRequest
-    ) {
-      const article = yield* articleOf(request.articleId);
-
-      return yield* credentials.withToken(article.channelId, (token) =>
-        Effect.gen(function* publishing() {
-          const fields = yield* fieldsOf(token, article, "create");
-
-          // From here a run that stops looks for the post, never makes it.
-          const committedAt = yield* request.committing.pipe(
-            Effect.mapError(() => new PlatformUnavailable())
-          );
-
-          // The commit: once it may have reached the site, nothing is
-          // sent again; an answer lost, or unreadable, is looked for. A
-          // request the guard refused never left.
-          const response = yield* api
-            .execute(
-              signed(
-                token,
-                HttpClientRequest.post(
-                  routeUrl(token.root, "/wp/v2/posts", { _fields: postFields })
-                ).pipe(HttpClientRequest.bodyJsonUnsafe(fields))
-              )
-            )
-            .pipe(
-              Effect.map(Option.some),
-              Effect.catchTags({
-                HttpClientError: () => Effect.succeedNone,
-                OutboundRequestRefused: (refused) =>
-                  Effect.fail(guardRefusalOf(refused)),
-              })
-            );
-
-          if (Option.isNone(response) || response.value.status >= 500) {
-            return yield* lookedUp(token, article, committedAt, "noResponse");
-          }
-
-          if (response.value.status !== 200 && response.value.status !== 201) {
-            return yield* refusalOf(response.value);
-          }
-
-          const post = yield* HttpClientResponse.schemaBodyJson(PostSchema)(
-            response.value
-          ).pipe(Effect.option);
-
-          if (Option.isSome(post) && lostCover(fields, post.value)) {
-            // Made without the cover the site lost: the cover goes once
-            // more, over the post just made, never as another. Should that
-            // fail, the post stands without it.
-            yield* coverAgain(token, article, String(post.value.id), {
-              newPost: true,
-            }).pipe(Effect.ignore);
-          }
-
-          return Option.isSome(post)
-            ? published(post.value)
-            : yield* lookedUp(
-                token,
-                article,
-                committedAt,
-                "unreadableResponse"
-              );
-        })
-      );
-    });
-
-    const resume = Effect.fn("WordPressArticles.resume")(function* resume(
-      request: SitePublishRequest
-    ) {
-      const article = yield* articleOf(request.articleId);
-
-      return yield* credentials.withToken(article.channelId, (token) =>
-        lookedUp(token, article, request.startedAt, "interrupted")
-      );
-    });
-
-    const find = Effect.fn("WordPressArticles.find")(function* find(
-      request: SitePublishRequest
-    ) {
-      const article = yield* articleOf(request.articleId);
-
-      return yield* credentials.withToken(article.channelId, (token) =>
-        lookUp(token, article, request.startedAt)
-      );
-    });
-
-    const remove = Effect.fn("WordPressArticles.remove")(function* remove(
+      request: SitePublishRequest,
       article: Article,
-      platformPostId: string
+      token: SiteToken
     ) {
-      yield* credentials.withToken(article.channelId, (token) =>
-        execute(
-          api,
+      const fields = yield* fieldsOf(token, article, "create");
+
+      // From here a run that stops looks for the post, never makes it.
+      const committedAt = yield* request.committing.pipe(
+        Effect.mapError(() => new PlatformUnavailable())
+      );
+
+      // The commit: once it may have reached the site, nothing is
+      // sent again; an answer lost, or unreadable, is looked for. A
+      // request the guard refused never left.
+      const response = yield* api
+        .execute(
           signed(
             token,
-            HttpClientRequest.delete(postRoute(token, platformPostId, false))
+            HttpClientRequest.post(
+              routeUrl(token.root, "/wp/v2/posts", { _fields: postFields })
+            ).pipe(HttpClientRequest.bodyJsonUnsafe(fields))
           )
-        ).pipe(
-          Effect.flatMap((response) =>
-            Effect.gen(function* removed() {
-              const own =
-                response.status === 200
-                  ? Option.none()
-                  : yield* wordpressErrorOf(response);
+        )
+        .pipe(
+          Effect.map(Option.some),
+          Effect.catchTags({
+            HttpClientError: () => Effect.succeedNone,
+            OutboundRequestRefused: (refused) =>
+              Effect.fail(guardRefusalOf(refused)),
+          })
+        );
 
-              // In the trash already, or deleted for good: gone either way.
-              const gone =
-                response.status === 200 ||
-                own.pipe(
-                  Option.exists(
-                    ({ code }) =>
-                      code === "rest_already_trashed" ||
-                      code === "rest_post_invalid_id"
-                  )
-                );
+      if (Option.isNone(response) || response.value.status >= 500) {
+        return yield* lookedUp(token, article, committedAt, "noResponse");
+      }
 
-              return yield* gone ? Effect.void : refusalOf(response);
-            })
-          )
+      if (response.value.status !== 200 && response.value.status !== 201) {
+        return yield* refusalOf(response.value);
+      }
+
+      const post = yield* HttpClientResponse.schemaBodyJson(PostSchema)(
+        response.value
+      ).pipe(Effect.option);
+
+      if (Option.isSome(post) && lostCover(fields, post.value)) {
+        // Made without the cover the site lost: the cover goes once
+        // more, over the post just made, never as another. Should that
+        // fail, the post stands without it.
+        yield* coverAgain(token, article, String(post.value.id), {
+          newPost: true,
+        }).pipe(Effect.ignore);
+      }
+
+      return Option.isSome(post)
+        ? published(post.value)
+        : yield* lookedUp(token, article, committedAt, "unreadableResponse");
+    });
+
+    const resume = (
+      request: SitePublishRequest,
+      article: Article,
+      token: SiteToken
+    ) => lookedUp(token, article, request.startedAt, "interrupted");
+
+    const find = (
+      request: SitePublishRequest,
+      article: Article,
+      token: SiteToken
+    ) => lookUp(token, article, request.startedAt);
+
+    const removePost = Effect.fn("WordPressArticles.remove")(function* remove(
+      platformPostId: string,
+      token: SiteToken
+    ) {
+      yield* execute(
+        api,
+        signed(
+          token,
+          HttpClientRequest.delete(postRoute(token, platformPostId, false))
+        )
+      ).pipe(
+        Effect.flatMap((response) =>
+          Effect.gen(function* removed() {
+            const own =
+              response.status === 200
+                ? Option.none()
+                : yield* wordpressErrorOf(response);
+
+            // In the trash already, or deleted for good: gone either way.
+            const gone =
+              response.status === 200 ||
+              own.pipe(
+                Option.exists(
+                  ({ code }) =>
+                    code === "rest_already_trashed" ||
+                    code === "rest_post_invalid_id"
+                )
+              );
+
+            return yield* gone ? Effect.void : refusalOf(response);
+          })
         )
       );
     });
@@ -828,24 +790,22 @@ export const WordPressSitePublisherLive = Layer.effect(
       }
     );
 
-    const update = Effect.fn("WordPressArticles.update")(function* update(
+    // What it says, never how it stands: the site keeps its status.
+    const update = (
       article: Article,
-      platformPostId: string
-    ) {
-      yield* credentials.withToken(article.channelId, (token) =>
-        Effect.gen(function* updating() {
-          // What it says, never how it stands: the site keeps its status.
-          yield* updatePost(token, article, platformPostId);
-        })
-      );
-    });
+      platformPostId: string,
+      token: SiteToken
+    ) => updatePost(token, article, platformPostId);
 
-    return SitePublisher.of({
+    const adapter: SiteAdapter = {
       find,
       publish,
-      remove,
+      remove: (_article, platformPostId, token) =>
+        removePost(platformPostId, token),
       resume,
       update,
-    });
-  })
+    };
+
+    return adapter;
+  }
 );

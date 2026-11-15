@@ -1,4 +1,4 @@
-import { Layer } from "effect";
+import { Effect, Layer } from "effect";
 import { Digest, Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
@@ -132,7 +132,8 @@ import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platfo
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
 import { PlatformRepostsLive } from "#publishing/infrastructure/platforms/platform-reposts-live.ts";
 import { TikTokCreatorsLive } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
-import { WordPressSitePublisherLive } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
 import { ShortLinksLinkShortener } from "#publishing/infrastructure/shortlinks-link-shortener.ts";
 import { ShortLinksShortLinkDefaults } from "#publishing/infrastructure/shortlinks-short-link-defaults.ts";
 import { SqlArticleSendTurns } from "#publishing/infrastructure/sql-article-send-turns.ts";
@@ -770,7 +771,9 @@ export const PublishingCronsLive = Layer.mergeAll(
 // The websites articles go to: WordPress's, with the tokens the channels
 // context hands out and the files the media context does, over the
 // guarded public client.
-const SitePublisherLive = WordPressSitePublisherLive.pipe(
+const SitePublisherLive = routedSitePublisher(
+  wordpressSiteAdapter.pipe(Effect.map((wordpress) => ({ wordpress })))
+).pipe(
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessSiteCredentials,

@@ -25,7 +25,8 @@ import {
   DrizzleArticleStore,
 } from "#publishing/infrastructure/drizzle-article-store.ts";
 import { ListedSiteChannels } from "#publishing/infrastructure/listed-site-channels.ts";
-import { WordPressSitePublisherLive } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
 import { SqlArticleSendTurns } from "#publishing/infrastructure/sql-article-send-turns.ts";
 import { WorkflowArticleJobs } from "#publishing/infrastructure/workflow-article-jobs.ts";
 import { PublishArticleV1Live } from "#publishing/infrastructure/workflows/publish-article.ts";
@@ -241,7 +242,9 @@ const SteeredOutboundGuard = Layer.succeed(
   })
 );
 
-const SitePublisherTest = WordPressSitePublisherLive.pipe(
+const SitePublisherTest = routedSitePublisher(
+  wordpressSiteAdapter.pipe(Effect.map((wordpress) => ({ wordpress })))
+).pipe(
   Layer.provide(
     Layer.mergeAll(
       SiteAccessTest,
