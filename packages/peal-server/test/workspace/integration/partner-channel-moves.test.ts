@@ -178,6 +178,46 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
         })
     );
 
+    it.effect("answers a move sent again with its key as the first did", () =>
+      Effect.gen(function* again() {
+        const app = yield* TestApp;
+        const { home, owner } = yield* partnerOf("again");
+        const { key } = yield* keyOf(owner, home);
+        const from = yield* customerOf(key, "Again from");
+        const to = yield* customerOf(key, "Again to");
+        const other = yield* customerOf(key, "Again elsewhere");
+        const channelId = yield* connectedIn(from.id, "@again@social.example");
+        const path = `/api/partner/workspaces/${from.id}/channels/${channelId}/move`;
+
+        const send = (toWorkspaceId: string) =>
+          app.request(path, {
+            body: { toWorkspaceId },
+            headers: { ...bearer(key), "idempotency-key": "move-synthetic-1" },
+          });
+
+        const first = yield* send(to.id);
+
+        assert.strictEqual(first.status, 200);
+
+        const moved = yield* bodyOf(ChannelSchema, first);
+
+        // Its answer lost, the same request answers the channel where it
+        // went, and moves nothing more.
+        const retried = yield* send(to.id);
+
+        assert.strictEqual(retried.status, 200);
+        assert.deepStrictEqual(yield* bodyOf(ChannelSchema, retried), moved);
+        assert.lengthOf(yield* channelsOf(key, to.id), 1);
+
+        // The same key for another move is refused.
+        const reused = yield* send(other.id);
+
+        assert.strictEqual(reused.status, 409);
+        assert.deepInclude(reused.body, { _tag: "IdempotencyKeyReused" });
+        assert.lengthOf(yield* channelsOf(key, other.id), 0);
+      })
+    );
+
     it.effect(
       "refuses what the key may not do, and workspaces not its partner's",
       () =>

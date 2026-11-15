@@ -283,8 +283,14 @@ export class PartnerApi extends HttpApiGroup.make("partner")
           WorkspaceNotFound,
           ChannelNotFound,
           ChannelAccountTaken,
+          IdempotencyKeyReused,
           WorkspaceBusy,
         ],
+        headers: {
+          "idempotency-key": Schema.optionalKey(
+            Schema.String.check(Schema.isBetweenLength(1, maxCreationKeyLength))
+          ),
+        },
         params: { ...workspace, channelId: Schema.String },
         payload: ChannelMoveSchema,
         success: ChannelSchema,

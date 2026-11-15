@@ -10,6 +10,7 @@ import {
 import { SqlClient, SqlError } from "effect/sql";
 
 import { ChannelMoves } from "#channels/application/channel-moves.ts";
+import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import { PostRecords } from "#publishing/application/post-records.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
@@ -21,6 +22,24 @@ import { CustomerChannelNotFound } from "#workspace/application/customer-channel
 import { WorkspaceBusy } from "#workspace/application/workspace-busy.ts";
 
 const decodeChannelId = Schema.decodeUnknownOption(ChannelIdSchema);
+
+// A channel as the channels context answers it.
+type ChannelRead = Effect.Success<ReturnType<ChannelMoves["Service"]["move"]>>;
+
+// A channel as the workspace context reads one it moved.
+const movedView = (channel: ChannelRead): MovedChannel => ({
+  avatarUrl: channel.avatarUrl,
+  connection: channel.connection,
+  displayName: channel.displayName,
+  handle: channel.handle,
+  id: channel.id,
+  platform: channel.platform,
+  status: channel.status,
+  tokenExpiresAt:
+    channel.token._tag === "nonRefreshable"
+      ? Option.some(channel.token.expiresAt)
+      : Option.none(),
+});
 
 /**
  * The longest a move waits for a row or a hold another request has (an
@@ -68,6 +87,7 @@ export const ContextChannelMoverLive = Layer.effect(
   ChannelMover,
   Effect.gen(function* ContextChannelMover() {
     const moves = yield* ChannelMoves;
+    const channels = yield* ChannelRepository;
     const posts = yield* PostRecords;
     const engagement = yield* EngagementRecords;
     const sql = yield* SqlClient.SqlClient;
@@ -80,12 +100,21 @@ export const ContextChannelMoverLive = Layer.effect(
       .pipe(Effect.mapError((cause) => new DatabaseError({ cause })));
 
     return ChannelMover.of({
-      move: ({ channelId, from, inside, to }) =>
+      current: (workspaceId, channelId) =>
+        Option.match(decodeChannelId(channelId), {
+          onNone: () => Effect.succeedNone,
+          onSome: (id) =>
+            channels
+              .findById(workspaceId, id)
+              .pipe(Effect.map(Option.map(movedView))),
+        }),
+      move: ({ as, channelId, from, inside, to }) =>
         Option.match(decodeChannelId(channelId), {
           onNone: () => Effect.fail(new CustomerChannelNotFound()),
           onSome: (id) =>
             moves
               .move({
+                as,
                 channelId: id,
                 from,
                 inside: boundWaits.pipe(
@@ -105,19 +134,7 @@ export const ContextChannelMoverLive = Layer.effect(
                 to,
               })
               .pipe(
-                Effect.map((channel): MovedChannel => ({
-                  avatarUrl: channel.avatarUrl,
-                  connection: channel.connection,
-                  displayName: channel.displayName,
-                  handle: channel.handle,
-                  id: channel.id,
-                  platform: channel.platform,
-                  status: channel.status,
-                  tokenExpiresAt:
-                    channel.token._tag === "nonRefreshable"
-                      ? Option.some(channel.token.expiresAt)
-                      : Option.none(),
-                })),
+                Effect.map(movedView),
                 Effect.catchTags({
                   // Another request held a row or a hold too long.
                   DatabaseError: (failure) =>

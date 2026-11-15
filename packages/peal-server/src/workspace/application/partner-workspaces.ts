@@ -469,7 +469,10 @@ export class PartnerWorkspaces extends Context.Service<
               );
 
               if (Option.isSome(claimed)) {
-                return yield* new CreationKeyClaimed(claimed.value);
+                return yield* new CreationKeyClaimed({
+                  sameRequest: claimed.value.sameRequest,
+                  workspaceId: claimed.value.workspaceId,
+                });
               }
             }
 
@@ -479,7 +482,11 @@ export class PartnerWorkspaces extends Context.Service<
           })
         ).pipe(
           Effect.catchTag("CreationKeyClaimed", (claimed) =>
-            replayOf(key.partnerId, claimed)
+            replayOf(key.partnerId, {
+              channelId: Option.none(),
+              sameRequest: claimed.sameRequest,
+              workspaceId: claimed.workspaceId,
+            })
           )
         );
       });

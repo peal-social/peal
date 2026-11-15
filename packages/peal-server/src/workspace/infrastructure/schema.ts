@@ -118,13 +118,17 @@ export const partnerWorkspaces = workspaceSchema.table(
 );
 
 /**
- * The idempotency keys of the requests that created workspaces, by
- * partner: the SHA-256 of the key and of the request it came with, never
- * the key, which the partner chose, nor what the request said.
+ * The idempotency keys of the requests that created workspaces, or moved
+ * a channel between two (`channel_id`, the channel where it went, in
+ * `workspace_id`), by partner: the SHA-256 of the key and of the request
+ * it came with, never the key, which the partner chose, nor what the
+ * request said.
  */
 export const partnerIdempotencyKeys = workspaceSchema.table(
   "partner_idempotency_keys",
   {
+    // The channel a move made; null for a creation.
+    channelId: uuid("channel_id"),
     createdAt: instant("created_at").notNull(),
     keyDigest: text("key_digest").notNull(),
     partnerId: uuid("partner_id")

@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "0e7696f0-6684-48b2-a6c5-7fdea983d7f5",
+  "id": "d5877863-3ca5-4d0d-836e-01c2cf6ea6b9",
   "prevIds": [
     "0f523001-4504-4d52-9970-c9f8d4007a0d"
   ],
@@ -66,6 +66,24 @@
       "statementTarget": [
         "column",
         "workspace",
+        "partner_idempotency_keys",
+        "channel_id"
+      ],
+      "writes": [
+        "s|col|workspace.partner_idempotency_keys.channel_id",
+        "n|col|workspace.partner_idempotency_keys.channel_id",
+        "e|col|workspace.partner_idempotency_keys.channel_id"
+      ],
+      "reads": [
+        "n|tbl|workspace.partner_idempotency_keys",
+        "n|sch|workspace"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "workspace",
         "partners",
         "accent_color"
       ],
@@ -120,6 +138,22 @@
         "table": "connect_links",
         "name": "started_platform",
         "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "partner_idempotency_keys",
+        "name": "channel_id",
+        "type": "uuid",
         "typeSchema": null,
         "notNull": false,
         "dimensions": 0,

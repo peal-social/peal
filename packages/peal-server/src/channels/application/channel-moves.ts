@@ -22,6 +22,8 @@ import type { TokenCipher, TokenDecryptionError } from "./token-cipher.ts";
 
 /** What a move asks: the channel, where it is, and where it goes. */
 export interface ChannelMove<E, R> {
+  /** The id it takes where it goes; a new one when none is given. */
+  readonly as?: ChannelId;
   readonly channelId: ChannelId;
   readonly from: WorkspaceId;
   /**
@@ -132,7 +134,7 @@ export class ChannelMoves extends Context.Service<
           return yield* new ChannelOutsidePool();
         }
 
-        const id = yield* newId(ChannelIdSchema);
+        const id = asked.as ?? (yield* newId(ChannelIdSchema));
 
         const moving = Effect.gen(function* moving() {
           yield* asked.inside;

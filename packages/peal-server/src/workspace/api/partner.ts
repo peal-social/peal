@@ -232,7 +232,7 @@ export const PartnerHandlers = HttpApiBuilder.group(
 
           return partnerHealthView(page);
         }),
-      moveChannel: ({ params, payload }) =>
+      moveChannel: ({ headers, params, payload }) =>
         Effect.gen(function* moveChannel() {
           const key = yield* currentKey;
 
@@ -240,12 +240,17 @@ export const PartnerHandlers = HttpApiBuilder.group(
             .move(key, {
               channelId: params.channelId,
               from: params.workspaceId,
+              idempotencyKey: Option.fromUndefinedOr(
+                headers["idempotency-key"]
+              ),
               to: payload.toWorkspaceId,
             })
             .pipe(
               Effect.catchTags({
                 AccountConnectedThere: ({ channelId }) =>
                   Effect.fail(new ChannelAccountTaken({ channelId })),
+                CreationKeyReused: () =>
+                  Effect.fail(new IdempotencyKeyReused()),
                 CustomerChannelNotFound: () =>
                   Effect.fail(new ChannelNotFound()),
                 CustomerWorkspaceNotFound: notFound,
@@ -257,8 +262,11 @@ export const PartnerHandlers = HttpApiBuilder.group(
               })
             );
 
-          // Each workspace's log keeps that the channel left it, or came.
-          for (const workspaceId of [moved.from, moved.to]) {
+          // Each workspace's log keeps that the channel left it, or came;
+          // a request sent again moved nothing.
+          for (const workspaceId of moved.replayed
+            ? []
+            : [moved.from, moved.to]) {
             yield* recordMade(activity, {
               operation: "partner.moveChannel",
               principal: key,

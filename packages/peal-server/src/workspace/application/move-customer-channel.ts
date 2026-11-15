@@ -1,10 +1,13 @@
-import { Context, Effect, Layer, Option, Schema } from "effect";
+import { Context, DateTime, Effect, Layer, Option, Schema } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
-import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { newId } from "#shared/application/ids.ts";
+import type { Ids } from "#shared/application/ids.ts";
+import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { MissingPermission } from "#shared/domain/missing-permission.ts";
 import type { CustomerWorkspace } from "#workspace/domain/customer-workspace.ts";
+import { creationKeyLifetime } from "#workspace/domain/idempotency.ts";
 import { MissingPartnerScope } from "#workspace/domain/missing-partner-scope.ts";
 import type { PartnerKeyPrincipal } from "#workspace/domain/partner-key-principal.ts";
 
@@ -12,9 +15,12 @@ import type { AccountConnectedThere } from "./account-connected-there.ts";
 import { AccountStore } from "./account-store.ts";
 import { ChannelMover } from "./channel-mover.ts";
 import type { MovedChannel } from "./channel-mover.ts";
-import type { CustomerChannelNotFound } from "./customer-channel-not-found.ts";
+import { CreationKeyReused } from "./creation-key-reused.ts";
+import { CustomerChannelNotFound } from "./customer-channel-not-found.ts";
 import { CustomerWorkspaceNotFound } from "./customer-workspace-not-found.ts";
 import { CustomerWorkspaces } from "./customer-workspaces.ts";
+import type { CreationKeyUse, KeyedCreation } from "./customer-workspaces.ts";
+import { MoveKeyClaimed } from "./move-key-claimed.ts";
 import type { WorkspaceBusy } from "./workspace-busy.ts";
 
 const decodeWorkspaceId = Schema.decodeUnknownOption(WorkspaceIdSchema);
@@ -27,6 +33,12 @@ const movingPermissions = ["channel:disconnect", "channel:connect"] as const;
 export interface ChannelMoveRequest {
   readonly channelId: string;
   readonly from: string;
+  /**
+   * The partner's own key for the request: sent again within
+   * `creationKeyLifetime`, the same request answers the channel the first
+   * moved, as it now stands, and moves nothing.
+   */
+  readonly idempotencyKey: Option.Option<string>;
   readonly to: string;
 }
 
@@ -34,11 +46,14 @@ export interface ChannelMoveRequest {
 export interface ChannelMoved {
   readonly channel: MovedChannel;
   readonly from: WorkspaceId;
+  /** Whether the answer is an earlier request's, sent again. */
+  readonly replayed: boolean;
   readonly to: WorkspaceId;
 }
 
 export type ChannelMoveFailure =
   | AccountConnectedThere
+  | CreationKeyReused
   | CustomerChannelNotFound
   | CustomerWorkspaceNotFound
   | DatabaseError
@@ -76,6 +91,7 @@ export class MoveCustomerChannel extends Context.Service<
       const workspaces = yield* CustomerWorkspaces;
       const accounts = yield* AccountStore;
       const mover = yield* ChannelMover;
+      const ports = yield* Effect.context<Ids>();
 
       // The workspace, while the key's partner owns it.
       const ownedBy = Effect.fn("MoveCustomerChannel.ownedBy")(
@@ -124,19 +140,113 @@ export class MoveCustomerChannel extends Context.Service<
           : Effect.fail(new MissingPermission({ permission: missing }));
 
         const from = yield* ownedBy(key, request.from);
-        const to = yield* ownedBy(key, request.to);
+        const now = yield* DateTime.now;
+        const since = DateTime.subtractDuration(now, creationKeyLifetime);
 
-        const channel = yield* mover.move({
-          channelId: request.channelId,
-          from: from.id,
-          inside: stillOwned(key, [...new Set([from.id, to.id])]),
-          to: to.id,
+        // The request as its key keeps it, apart from any creation's.
+        const keyed = request.idempotencyKey.pipe(
+          Option.map((idempotencyKey): KeyedCreation => ({
+            fingerprint: JSON.stringify({
+              channelId: request.channelId,
+              from: request.from,
+              move: true,
+              to: request.to,
+            }),
+            key: idempotencyKey,
+          }))
+        );
+
+        // The channel an earlier request with the key moved, as it now
+        // stands where it went.
+        const replayOf = Effect.fn("MoveCustomerChannel.replayOf")(
+          function* replayOf(use: CreationKeyUse) {
+            if (!use.sameRequest || Option.isNone(use.channelId)) {
+              return yield* new CreationKeyReused();
+            }
+
+            const there = yield* mover.current(
+              use.workspaceId,
+              use.channelId.value
+            );
+
+            if (Option.isNone(there)) {
+              return yield* new CustomerChannelNotFound();
+            }
+
+            const replayed: ChannelMoved = {
+              channel: there.value,
+              from: from.id,
+              replayed: true,
+              to: use.workspaceId,
+            };
+
+            return replayed;
+          }
+        );
+
+        if (Option.isSome(keyed)) {
+          const used = yield* workspaces.keyUse(
+            key.partnerId,
+            keyed.value,
+            since
+          );
+
+          if (Option.isSome(used)) {
+            return yield* replayOf(used.value);
+          }
+        }
+
+        const to = yield* ownedBy(key, request.to);
+        const as = yield* newId(ChannelIdSchema);
+
+        // Kept in the move's transaction: a move and its key commit
+        // together, and two requests with one key move once.
+        const claimed = Option.match(keyed, {
+          onNone: () => Effect.void,
+          onSome: (creation) =>
+            workspaces
+              .claimKey(
+                key.partnerId,
+                creation,
+                { at: now, channelId: as, workspaceId: to.id },
+                since
+              )
+              .pipe(
+                Effect.flatMap(
+                  Option.match({
+                    onNone: () => Effect.void,
+                    onSome: (use) => Effect.fail(new MoveKeyClaimed(use)),
+                  })
+                )
+              ),
         });
 
-        const moved: ChannelMoved = { channel, from: from.id, to: to.id };
-
-        return moved;
-      });
+        return yield* mover
+          .move({
+            as,
+            channelId: request.channelId,
+            from: from.id,
+            inside: stillOwned(key, [...new Set([from.id, to.id])]).pipe(
+              Effect.andThen(claimed)
+            ),
+            to: to.id,
+          })
+          .pipe(
+            Effect.map((channel): ChannelMoved => ({
+              channel,
+              from: from.id,
+              replayed: false,
+              to: to.id,
+            })),
+            Effect.catchTag("MoveKeyClaimed", (use) =>
+              replayOf({
+                channelId: use.channelId,
+                sameRequest: use.sameRequest,
+                workspaceId: use.workspaceId,
+              })
+            )
+          );
+      }, Effect.provideContext(ports));
 
       return MoveCustomerChannel.of({ move });
     })

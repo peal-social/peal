@@ -3,12 +3,13 @@ import type { DateTime, Effect, Option } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
-import type { WorkspaceId } from "#shared/domain/ids.ts";
+import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 import type { AccountConnectedThere } from "./account-connected-there.ts";
 import type { CustomerChannelNotFound } from "./customer-channel-not-found.ts";
 import type { CustomerWorkspaceNotFound } from "./customer-workspace-not-found.ts";
+import type { MoveKeyClaimed } from "./move-key-claimed.ts";
 import type { WorkspaceBusy } from "./workspace-busy.ts";
 
 /** A channel as it stands in the workspace it was moved to. */
@@ -36,7 +37,14 @@ export interface MovedChannel {
 export class ChannelMover extends Context.Service<
   ChannelMover,
   {
+    /** The channel of the workspace as it now stands, if it has it. */
+    readonly current: (
+      workspaceId: WorkspaceId,
+      channelId: string
+    ) => Effect.Effect<Option.Option<MovedChannel>, DatabaseError>;
     readonly move: (move: {
+      /** The id the channel takes where it goes. */
+      readonly as: ChannelId;
       readonly channelId: string;
       readonly from: WorkspaceId;
       /**
@@ -45,7 +53,7 @@ export class ChannelMover extends Context.Service<
        */
       readonly inside: Effect.Effect<
         void,
-        CustomerWorkspaceNotFound | DatabaseError
+        CustomerWorkspaceNotFound | DatabaseError | MoveKeyClaimed
       >;
       readonly to: WorkspaceId;
     }) => Effect.Effect<
@@ -54,6 +62,7 @@ export class ChannelMover extends Context.Service<
       | CustomerChannelNotFound
       | CustomerWorkspaceNotFound
       | DatabaseError
+      | MoveKeyClaimed
       | WorkspaceBusy
     >;
   }
