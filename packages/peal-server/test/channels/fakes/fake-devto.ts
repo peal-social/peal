@@ -189,6 +189,18 @@ const send = (response: ServerResponse, answer: FakeDevToAnswer) => {
 
 const fiveMinutes = 5 * 60 * 1000;
 
+const fifteenMinutes = 15 * 60 * 1000;
+
+// A title as Forem keeps it (`Article#normalize_title`): what is not a
+// word, a space, punctuation (Onigmo's, the ASCII symbols included) or a
+// currency symbol (and a few more) made a
+// space, spaces run together, the ends stripped.
+const forTitle = (title: string) =>
+  title
+    .replaceAll(/[^\p{L}\p{N}_\s\p{P}\p{Sc}!-/:-@[-`{-~]/gu, " ")
+    .replaceAll(/\s+/gu, " ")
+    .trim();
+
 // The test's clock, in milliseconds.
 const clockNow = (clock: Clock.Clock) => () => clock.currentTimeMillisUnsafe();
 
@@ -294,9 +306,19 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
               ? (given.published_at ?? new Date(now()).toISOString())
               : null,
             tags: (given.tags ?? []).map((tag) => tag.toLowerCase()),
-            title: given.title ?? "",
+            title: forTitle(given.title ?? ""),
             userId: user.id,
           };
+
+          // Forem: a time more than 15 minutes past is refused
+          // (`future_or_current_published_at`).
+          const stale =
+            article.published_at !== null &&
+            Date.parse(article.published_at) < now() - fifteenMinutes;
+
+          if (stale) {
+            return error(422, "Published at must be in the future");
+          }
 
           const refused = refusal(article);
 
@@ -359,7 +381,8 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
               given.tags === undefined
                 ? article.tags
                 : given.tags.map((tag) => tag.toLowerCase()),
-            title: given.title ?? article.title,
+            title:
+              given.title === undefined ? article.title : forTitle(given.title),
           };
 
           const refused = refusal(next);
@@ -375,7 +398,8 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
 
         const listed = (
           request: FakeDevToRequest,
-          user: FakeDevToUser
+          user: FakeDevToUser,
+          which: "all" | "published" | "unpublished"
         ): FakeDevToAnswer => {
           const page = Number(request.query.get("page") ?? "1");
           const perPage = Number(request.query.get("per_page") ?? "30");
@@ -394,10 +418,14 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
               (right.published_at ?? "").localeCompare(left.published_at ?? "")
             );
 
+          const shown = {
+            all: [...drafts, ...published],
+            published,
+            unpublished: drafts,
+          }[which];
+
           return {
-            body: [...drafts, ...published]
-              .slice((page - 1) * perPage, page * perPage)
-              .map(view),
+            body: shown.slice((page - 1) * perPage, page * perPage).map(view),
             status: 200,
           };
         };
@@ -428,8 +456,19 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
             return changed(request, user, Number(own));
           }
 
-          if (method === "GET" && path === "/api/articles/me/all") {
-            return listed(request, user);
+          const listing =
+            /^\/api\/articles\/me\/(?<which>all|published|unpublished)$/u.exec(
+              path
+            )?.groups?.["which"];
+
+          if (method === "GET" && listing !== undefined) {
+            return listed(
+              request,
+              user,
+              listing === "published" || listing === "unpublished"
+                ? listing
+                : "all"
+            );
           }
 
           return error(404, "not found");

@@ -63,14 +63,18 @@ import { retryAfterOf } from "#shared/infrastructure/platforms/retry-after.ts";
 // `description`, `tags`, `main_image`, and `published` (false for a
 // draft; true with a future `published_at`, which DEV publishes itself
 // then). DEV takes the title and the description as plain text, and
-// escapes them itself. It keeps no idempotency key: a post whose answer
-// was lost is looked for among the member's articles
-// (`/api/articles/me/all`, drafts first), by its title and its body,
-// and adopted only when exactly one, not another article's, matches.
-// `PUT /api/articles/{id}` sends it again; DEV has no way to delete an
-// article, so unpublishing makes it a draft there (`published` false).
-// DEV takes one write a second per key: the adapter waits between its
-// own, and a 429 waits for its `Retry-After`.
+// escapes them itself (and rewrites a title: `normalize_title`). It
+// keeps no idempotency key: a post whose answer was lost is looked for
+// among the member's drafts, published articles, or all for one DEV
+// publishes itself, by its body, which DEV keeps as sent, and adopted
+// only when exactly one, not another article's, matches; one of the
+// title (by its letters and digits) with another body is never sent
+// again. `PUT /api/articles/{id}` sends it again; DEV has no way to
+// delete an article, so unpublishing makes it a draft there
+// (`published` false). DEV takes one write a second from an address:
+// every write of the process goes one at a time, and a short
+// `Retry-After` is waited out in place. A time "scheduled there" that has
+// gone by is left out, as DEV refuses one past.
 
 // Uploads take longer than the API's calls.
 const uploadTimeout = Duration.minutes(10);
@@ -250,18 +254,50 @@ const contentOf = (
   };
 };
 
-// How it lands: a draft, published now, or at its time, by DEV itself.
-const statusOf = (article: Article) => {
+// When DEV is to publish it itself, as "scheduled there": none for a
+// draft or an article published at once.
+const plannedAt = (article: Article) => {
   const { content, state } = article;
 
-  if (content.siteStatus === "draft") {
+  return content.siteStatus === "future" && state._tag !== "draft"
+    ? Option.some(state.schedule.at)
+    : Option.none<DateTime.Utc>();
+};
+
+// How it lands: a draft, published now, or at its time, by DEV itself. A
+// time gone by is left out: DEV refuses one more than 15 minutes past
+// (`future_or_current_published_at`), and publishes it now without one.
+const statusOf = (article: Article, now: DateTime.Utc) => {
+  if (article.content.siteStatus === "draft") {
     return { published: false };
   }
 
-  return content.siteStatus === "future" && state._tag !== "draft"
-    ? { published: true, published_at: isoOf(state.schedule.at) }
-    : { published: true };
+  return Option.match(
+    plannedAt(article).pipe(
+      Option.filter((at) => DateTime.isGreaterThan(at, now))
+    ),
+    {
+      onNone: () => ({ published: true }),
+      onSome: (at) => ({ published: true, published_at: isoOf(at) }),
+    }
+  );
 };
+
+// Where DEV lists an article: a draft among the drafts, a post published
+// now among the published ones (newest first, past any number of
+// drafts), one DEV publishes itself among all.
+const listingOf = (draft: boolean, scheduled: boolean) => {
+  if (draft) {
+    return "/api/articles/me/unpublished";
+  }
+
+  return scheduled ? "/api/articles/me/all" : "/api/articles/me/published";
+};
+
+// What of a title DEV keeps whatever it does to it: its letters and
+// digits. Forem's `normalize_title` makes a space of what it does not
+// allow, which is never a letter or a digit, and runs spaces together.
+const titleKey = (title: string) => title.replaceAll(/[^\p{L}\p{N}]/gu, "");
 
 const signed = (
   token: SiteToken,
@@ -444,13 +480,10 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
     const expected = contentOf(article, addresses);
     const since = DateTime.subtractDuration(startedAt, clockSlack);
     const until = DateTime.addDuration(startedAt, searchWindow);
-    const { state } = article;
+    const draft = article.content.siteStatus === "draft";
 
     // A post DEV publishes itself says the time it was given.
-    const scheduledAt =
-      statusOf(article).published_at !== undefined && state._tag !== "draft"
-        ? Option.some(state.schedule.at)
-        : Option.none();
+    const scheduledAt = plannedAt(article);
 
     const inWindow = (at: string | null | undefined) =>
       Option.fromNullishOr(at).pipe(
@@ -468,15 +501,17 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
         )
       );
 
-    const matching: (typeof ListedSchema.Type)[] = [];
+    const listed = listingOf(draft, Option.isSome(scheduledAt));
+
+    const candidates: (typeof ListedSchema.Type)[] = [];
 
     for (let page = 1; page <= maxSearchPages; page += 1) {
-      const listed = yield* execute(
+      const posts = yield* execute(
         listing,
         signed(
           token,
           HttpClientRequest.get(
-            devtoUrl(hosts, "/api/articles/me/all", {
+            devtoUrl(hosts, listed, {
               page: String(page),
               per_page: String(searchPageSize),
             })
@@ -484,21 +519,15 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
         )
       ).pipe(Effect.flatMap(answered(Schema.Array(ListedSchema), [200])));
 
-      matching.push(
-        ...listed.filter(
-          (post) =>
-            post.title.trim() === expected.title &&
-            // Its files' addresses known, the body says which post it is.
-            (!complete ||
-              (post.body_markdown ?? "").trim() ===
-                expected.body_markdown.trim()) &&
-            (post.published === true
-              ? inWindow(post.published_at)
-              : !statusOf(article).published)
+      candidates.push(
+        ...posts.filter((post) =>
+          post.published === true
+            ? !draft && inWindow(post.published_at)
+            : draft
         )
       );
 
-      if (listed.length < searchPageSize) {
+      if (posts.length < searchPageSize) {
         break;
       }
     }
@@ -506,23 +535,42 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
     const recorded = yield* store
       .recordedOn(
         article.channelId,
-        matching.map((post) => String(post.id))
+        candidates.map((post) => String(post.id))
       )
       .pipe(Effect.orDie);
 
-    const unclaimed = matching.filter((post) => !recorded.has(String(post.id)));
-    const [only] = unclaimed;
+    const unclaimed = candidates.filter(
+      (post) => !recorded.has(String(post.id))
+    );
 
-    if (only === undefined) {
-      const none: SiteSearch = { _tag: "none" };
+    const titled = unclaimed.filter(
+      (post) => titleKey(post.title) === titleKey(expected.title)
+    );
 
-      return none;
+    // DEV keeps the body as it was sent: with every file's address known,
+    // the body says which post it is. One of the title with another body
+    // may be it, rewritten there, or another: no one can tell, and it is
+    // never sent again.
+    const matching = complete
+      ? unclaimed.filter(
+          (post) =>
+            (post.body_markdown ?? "").trim() === expected.body_markdown.trim()
+        )
+      : titled;
+
+    const [only] = matching;
+
+    if (only !== undefined) {
+      const found: SiteSearch =
+        matching.length > 1
+          ? { _tag: "several" }
+          : { _tag: "found", result: published(only) };
+
+      return found;
     }
 
     const search: SiteSearch =
-      unclaimed.length > 1
-        ? { _tag: "several" }
-        : { _tag: "found", result: published(only) };
+      titled.length > 0 ? { _tag: "several" } : { _tag: "none" };
 
     return search;
   });
@@ -555,7 +603,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
 
     const fields: ArticleFields = {
       ...contentOf(article, addresses),
-      ...statusOf(article),
+      ...statusOf(article, yield* DateTime.now),
     };
 
     // From here a run that stops looks for the post, never makes it.

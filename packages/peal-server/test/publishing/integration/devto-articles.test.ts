@@ -8,6 +8,7 @@ import { DateTime, Duration, Effect, Fiber, Option, Schema } from "effect";
 import { TestClock } from "effect/testing";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
+import { ArticleStore } from "#publishing/application/article-store.ts";
 import { Articles } from "#publishing/application/articles.ts";
 import {
   gardener,
@@ -302,6 +303,168 @@ describe("an article on DEV", () => {
           );
         })
       )
+  );
+
+  it.effect(
+    "adopts its article when the answer was lost, whatever DEV made of its title",
+    () =>
+      onArticles(
+        Effect.gen(function* rewritten() {
+          const { devto, sent: article } = yield* sentToDevTo(
+            {
+              drop: ({ method, path }) =>
+                method === "POST" && path === "/api/articles",
+            },
+            { title: "10×  faster sowing" }
+          );
+
+          assert.strictEqual(devto.articles()[0]?.title, "10 faster sowing");
+          assert.strictEqual(stateOf(article), "published");
+          assert.lengthOf(devto.articles(), 1);
+        })
+      )
+  );
+
+  it.effect(
+    "never sends again while an article of its title holds another body",
+    () =>
+      onArticles(
+        Effect.gen(function* uncertain() {
+          const {
+            actor,
+            devto,
+            sent: article,
+          } = yield* sentToDevTo(
+            {
+              intercept: ({ method, path }) =>
+                method === "POST" && path === "/api/articles"
+                  ? { body: { error: "boom", status: 502 }, status: 502 }
+                  : undefined,
+            },
+            {},
+            (fake) => {
+              fake.addArticle({
+                body_markdown: "Something else.",
+                published: true,
+                // Written by hand within the call's window.
+                published_at: "2026-06-15T07:00:30.000Z",
+                title: "Spring sowing",
+              });
+            }
+          );
+
+          assert.strictEqual(stateOf(article), "unconfirmed");
+
+          yield* (yield* Articles).retry(actor, article.id);
+
+          yield* eventuallyLater(
+            "the article is sent again",
+            ArticleStore.use((store) => store.get(article.id)).pipe(
+              Effect.map((found) =>
+                Option.exists(
+                  found,
+                  ({ state }) =>
+                    state._tag !== "scheduled" && state._tag !== "publishing"
+                )
+              )
+            )
+          );
+
+          assert.lengthOf(
+            devto
+              .requests()
+              .filter(
+                ({ method, path }) =>
+                  method === "POST" && path === "/api/articles"
+              ),
+            1
+          );
+        })
+      )
+  );
+
+  it.effect("finds a published article past the account's drafts", () =>
+    onArticles(
+      Effect.gen(function* manyDrafts() {
+        const { sent: article } = yield* sentToDevTo(
+          {
+            drop: ({ method, path }) =>
+              method === "POST" && path === "/api/articles",
+          },
+          {},
+          (fake) => {
+            for (let draft = 0; draft < 160; draft += 1) {
+              fake.addArticle({ title: `Draft ${draft}` });
+            }
+          }
+        );
+
+        assert.strictEqual(stateOf(article), "published");
+      })
+    )
+  );
+
+  it.effect("drops a time DEV would take as past, once it has gone by", () =>
+    onArticles(
+      Effect.gen(function* late() {
+        let limited = false;
+
+        const devto = yield* startDevTo({
+          intercept: ({ method, path }) => {
+            const first =
+              method === "POST" && path === "/api/articles" && !limited;
+
+            limited ||= first;
+
+            return first
+              ? {
+                  body: { error: "Rate limit reached", status: 429 },
+                  headers: { "retry-after": "1500" },
+                  status: 429,
+                }
+              : undefined;
+          },
+        });
+
+        const workspaceId = yield* freshWorkspace;
+        const channel = yield* devtoChannel(workspaceId);
+
+        const at = DateTime.addDuration(
+          yield* DateTime.now,
+          Duration.minutes(5)
+        );
+
+        const made = yield* (yield* Articles).create(
+          writer(workspaceId),
+          {
+            channelId: channel.id,
+            content: content({ categories: [], siteStatus: "future" }),
+          },
+          Option.some({ at: Option.some(at), timeZone: zone })
+        );
+
+        yield* eventuallyLater(
+          "the article is sent",
+          ArticleStore.use((store) => store.get(made.id)).pipe(
+            Effect.map((found) =>
+              Option.exists(
+                found,
+                ({ state }) =>
+                  state._tag !== "scheduled" && state._tag !== "publishing"
+              )
+            )
+          )
+        );
+
+        const sent = yield* ArticleStore.use((store) => store.get(made.id));
+
+        assert.strictEqual(
+          Option.getOrUndefined(sent)?.state._tag,
+          "published"
+        );
+        assert.lengthOf(devto.articles(), 1);
+      })
+    )
   );
 
   it.effect("marks the channel to reconnect when DEV refuses the key", () =>
