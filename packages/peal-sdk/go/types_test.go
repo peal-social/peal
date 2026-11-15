@@ -10214,7 +10214,7 @@ func TestSettersChannel(t *testing.T) {
 
 	t.Run("SetPlatform", func(t *testing.T) {
 		obj := &Channel{}
-		var fernTestValuePlatform Platform
+		var fernTestValuePlatform ChannelPlatform
 		obj.SetPlatform(fernTestValuePlatform)
 		assert.Equal(t, fernTestValuePlatform, obj.Platform)
 		assert.NotNil(t, obj.explicitFields)
@@ -10421,7 +10421,7 @@ func TestGettersChannel(t *testing.T) {
 		t.Parallel()
 		// Arrange
 		obj := &Channel{}
-		var expected Platform
+		var expected ChannelPlatform
 		obj.Platform = expected
 
 		// Act & Assert
@@ -10699,7 +10699,7 @@ func TestSettersMarkExplicitChannel(t *testing.T) {
 		t.Parallel()
 		// Arrange
 		obj := &Channel{}
-		var fernTestValuePlatform Platform
+		var fernTestValuePlatform ChannelPlatform
 
 		// Act
 		obj.SetPlatform(fernTestValuePlatform)

@@ -6143,7 +6143,7 @@ type Channel struct {
 	Handle         string             `json:"handle" url:"handle"`
 	ID             string             `json:"id" url:"id"`
 	Label          *string            `json:"label,omitempty" url:"label,omitempty"`
-	Platform       Platform           `json:"platform" url:"platform"`
+	Platform       ChannelPlatform    `json:"platform" url:"platform"`
 	Status         *ChannelStatus     `json:"status" url:"status"`
 	TokenExpiresAt *string            `json:"tokenExpiresAt,omitempty" url:"tokenExpiresAt,omitempty"`
 
@@ -6196,7 +6196,7 @@ func (c *Channel) GetLabel() *string {
 	return c.Label
 }
 
-func (c *Channel) GetPlatform() Platform {
+func (c *Channel) GetPlatform() ChannelPlatform {
 	if c == nil {
 		return ""
 	}
@@ -6277,7 +6277,7 @@ func (c *Channel) SetLabel(label *string) {
 
 // SetPlatform sets the Platform field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (c *Channel) SetPlatform(platform Platform) {
+func (c *Channel) SetPlatform(platform ChannelPlatform) {
 	c.Platform = platform
 	c.require(channelFieldPlatform)
 }
