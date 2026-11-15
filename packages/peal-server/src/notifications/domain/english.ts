@@ -320,6 +320,7 @@ export const english: EmailCatalog = {
     pinterest: "Pinterest",
     threads: "Threads",
     tiktok: "TikTok",
+    wordpress: "WordPress",
     x: "X",
     youtube: "YouTube",
   },

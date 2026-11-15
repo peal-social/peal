@@ -8,6 +8,7 @@
 //! - **apiKeys**
 //! - **channels**
 //! - **posts**
+//! - **articles**
 //! - **media**
 //! - **notices**
 //! - **notificationPreferences**
@@ -49,6 +50,7 @@ pub mod activity;
 pub mod ads;
 pub mod analytics;
 pub mod api_keys;
+pub mod articles;
 pub mod assistant;
 pub mod billing;
 pub mod capabilities;
@@ -93,6 +95,7 @@ pub struct PealClient {
     pub api_keys: ApiKeysClient,
     pub channels: ChannelsClient,
     pub posts: PostsClient,
+    pub articles: ArticlesClient,
     pub media: MediaClient,
     pub notices: NoticesClient,
     pub notification_preferences: NotificationPreferencesClient,
@@ -139,6 +142,7 @@ impl PealClient {
             api_keys: ApiKeysClient::new(config.clone())?,
             channels: ChannelsClient::new(config.clone())?,
             posts: PostsClient::new(config.clone())?,
+            articles: ArticlesClient::new(config.clone())?,
             media: MediaClient::new(config.clone())?,
             notices: NoticesClient::new(config.clone())?,
             notification_preferences: NotificationPreferencesClient::new(config.clone())?,
@@ -181,6 +185,7 @@ pub use activity::ActivityClient;
 pub use ads::AdsClient;
 pub use analytics::AnalyticsClient;
 pub use api_keys::ApiKeysClient;
+pub use articles::ArticlesClient;
 pub use assistant::AssistantClient;
 pub use billing::BillingClient;
 pub use capabilities::CapabilitiesClient;

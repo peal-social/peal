@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from "lucide-react";
 import {
+  NewspaperIcon,
   CableIcon,
   CalendarDaysIcon,
   ChartColumnIcon,
@@ -67,6 +68,7 @@ const icons: Readonly<Record<Page, LucideIcon>> = {
   analytics: ChartColumnIcon,
   apiKeys: KeyRoundIcon,
   approvals: CircleCheckIcon,
+  articles: NewspaperIcon,
   assistant: SparklesIcon,
   billing: CreditCardIcon,
   calendar: CalendarDaysIcon,

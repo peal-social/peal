@@ -5,6 +5,7 @@ import { ActivityApi } from "./activity.ts";
 import { AdsApi } from "./ads.ts";
 import { AnalyticsApi } from "./analytics.ts";
 import { ApiKeysApi } from "./api-keys.ts";
+import { ArticlesApi } from "./articles.ts";
 import { AssistantApi } from "./assistant.ts";
 import { BillingAccountsDeskApi } from "./billing-accounts-desk.ts";
 import { BillingActionsApi } from "./billing-actions.ts";
@@ -1036,6 +1037,9 @@ export {
   ConnectCallbackSchema,
   ConnectChannelSchema,
   ConnectOutcomeSchema,
+  ConnectSiteSchema,
+  isSocialChannel,
+  maxSiteAddressLength,
 } from "./channels.ts";
 
 export type {
@@ -1051,6 +1055,8 @@ export type {
   ConnectCallback,
   ConnectChannel,
   ConnectOutcome,
+  ConnectSite,
+  SocialChannel,
 } from "./channels.ts";
 
 export {
@@ -1298,16 +1304,20 @@ export type { AllowanceReason } from "./usage-allowance-reached.ts";
 
 export {
   ChannelConnectionSchema,
+  ChannelPlatformSchema,
   InstagramConnectionSchema,
   LinkedInConnectionSchema,
   PlatformSchema,
+  SitePlatformSchema,
 } from "./platform.ts";
 
 export type {
   ChannelConnection,
+  ChannelPlatform,
   InstagramConnection,
   LinkedInConnection,
   Platform,
+  SitePlatform,
 } from "./platform.ts";
 
 export {
@@ -1776,6 +1786,15 @@ export { TooManyClientErrors } from "./too-many-client-errors.ts";
 export { TooManyRequests } from "./too-many-requests.ts";
 
 export { Unauthenticated } from "./unauthenticated.ts";
+
+export { SiteConnectLimited } from "./site-connect-limited.ts";
+
+export {
+  SiteNotConnected,
+  SiteNotConnectedReasonSchema,
+} from "./site-not-connected.ts";
+
+export type { SiteNotConnectedReason } from "./site-not-connected.ts";
 
 export { UnknownChannels } from "./unknown-channels.ts";
 
@@ -2387,6 +2406,50 @@ export type {
   ReviewSettings,
 } from "./review.ts";
 
+export {
+  ArticleBodySchema,
+  ArticleInputSchema,
+  ArticlePageSchema,
+  ArticleSchema,
+  ArticleSiteStatusSchema,
+  ArticleStateSchema,
+  ArticleTimeSchema,
+  defaultArticlePageSize,
+  maxArticleExcerptLength,
+  maxArticlePageSize,
+  maxArticleTermLength,
+  maxArticleTerms,
+  maxArticleTitleLength,
+  NewArticleSchema,
+} from "./articles.ts";
+
+export type {
+  Article,
+  ArticleBody,
+  ArticleInput,
+  ArticlePage,
+  ArticleSiteStatus,
+  ArticleState,
+  ArticleTime,
+  NewArticle,
+} from "./articles.ts";
+
+export { ArticleChangeRefused } from "./article-change-refused.ts";
+
+export { ArticleNotFound } from "./article-not-found.ts";
+
+export { ArticleRejected } from "./article-rejected.ts";
+
+export { ArticleStateConflict } from "./article-state-conflict.ts";
+
+export { ArticleStateNameSchema } from "./article-state-name.ts";
+
+export type { ArticleStateName } from "./article-state-name.ts";
+
+export { ArticleViolationSchema } from "./article-violation.ts";
+
+export type { ArticleViolation } from "./article-violation.ts";
+
 export { WorkspaceNotFound } from "./workspace-not-found.ts";
 
 // The one definition of the HTTP API. The server implements it; the web app,
@@ -2401,6 +2464,7 @@ export class Api extends HttpApi.make("peal")
   .add(ChannelOAuthApi)
   .add(DataDeletionApi)
   .add(PostsApi)
+  .add(ArticlesApi)
   .add(MediaApi)
   .add(NoticesApi)
   .add(NotificationPreferencesApi)

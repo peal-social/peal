@@ -12,6 +12,7 @@ module Peal
       INTERRUPTED = "interrupted"
       ADAPTER_FAILURE = "adapterFailure"
       STILL_PROCESSING = "stillProcessing"
+      SEARCH_REFUSED = "searchRefused"
     end
   end
 end

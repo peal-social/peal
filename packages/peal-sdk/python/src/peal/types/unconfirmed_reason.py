@@ -3,5 +3,8 @@
 import typing
 
 UnconfirmedReason = typing.Union[
-    typing.Literal["noResponse", "unreadableResponse", "interrupted", "adapterFailure", "stillProcessing"], typing.Any
+    typing.Literal[
+        "noResponse", "unreadableResponse", "interrupted", "adapterFailure", "stillProcessing", "searchRefused"
+    ],
+    typing.Any,
 ]
