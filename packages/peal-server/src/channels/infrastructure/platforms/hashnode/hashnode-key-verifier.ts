@@ -39,9 +39,30 @@ const MemberSchema = Schema.Struct({
   }),
 });
 
+// A publication found by its address, with who may publish there: its
+// author, and a team's members with their role.
 const FoundSchema = Schema.Struct({
-  publication: Schema.NullOr(PublicationSchema),
+  publication: Schema.NullOr(
+    Schema.Struct({
+      ...PublicationSchema.fields,
+      author: Schema.Struct({ id: Schema.String }),
+      members: Schema.Struct({
+        edges: Schema.Array(
+          Schema.Struct({
+            node: Schema.Struct({
+              role: Schema.String,
+              user: Schema.Struct({ id: Schema.String }),
+            }),
+          })
+        ),
+      }),
+    })
+  ),
 });
+
+// The roles of a team's publication that publish: a contributor submits
+// drafts for review only.
+const publishingRoles: ReadonlySet<string> = new Set(["OWNER", "EDITOR"]);
 
 const member = {
   name: "PealMember",
@@ -52,7 +73,7 @@ const member = {
 const publicationAt = {
   name: "PealPublication",
   query:
-    "query PealPublication($host: String!) { publication(host: $host) { id title url } }",
+    "query PealPublication($host: String!) { publication(host: $host) { id title url author { id } members(first: 100) { edges { node { role user { id } } } } } }",
 };
 
 const decodeAvatar = Schema.decodeUnknownOption(AvatarUrlSchema);
@@ -139,13 +160,24 @@ export const hashnodeVerifyKey = Effect.fnUntraced(function* hashnodeVerifyKey(
         return host === ""
           ? Effect.fail(new SiteRefused({ reason: "publicationNotFound" }))
           : ask(signIn, publicationAt, { host }, FoundSchema).pipe(
-              Effect.flatMap(({ publication: found }) =>
-                found === null
-                  ? Effect.fail(
-                      new SiteRefused({ reason: "publicationNotFound" })
-                    )
-                  : Effect.succeed(found)
-              )
+              Effect.flatMap(({ publication: found }) => {
+                if (found === null) {
+                  return Effect.fail(
+                    new SiteRefused({ reason: "publicationNotFound" })
+                  );
+                }
+
+                const mayPublish =
+                  found.author.id === me.id ||
+                  found.members.edges.some(
+                    ({ node }) =>
+                      node.user.id === me.id && publishingRoles.has(node.role)
+                  );
+
+                return mayPublish
+                  ? Effect.succeed(found)
+                  : Effect.fail(new SiteRefused({ reason: "cannotPublish" }));
+              })
             );
       },
     });

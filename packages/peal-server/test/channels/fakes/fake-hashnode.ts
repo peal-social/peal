@@ -27,6 +27,11 @@ export interface FakeHashnodeUser {
 /** A publication, and whether it has Hashnode's Pro plan. */
 export interface FakeHashnodePublication {
   readonly id: string;
+  /** The members of a team's publication, with their role there. */
+  readonly members?: readonly {
+    readonly role: "CONTRIBUTOR" | "EDITOR" | "OWNER";
+    readonly userId: string;
+  }[];
   readonly ownerId: string;
   readonly pro: boolean;
   readonly title: string;
@@ -432,7 +437,13 @@ export const fakeHashnode = (options: FakeHashnodeOptions = {}) =>
 
           return data({
             publication: {
+              author: { id: publication.ownerId },
               id: publication.id,
+              members: {
+                edges: (publication.members ?? []).map(({ role, userId }) => ({
+                  node: { role, user: { id: userId } },
+                })),
+              },
               title: publication.title,
               url: publication.url,
             },

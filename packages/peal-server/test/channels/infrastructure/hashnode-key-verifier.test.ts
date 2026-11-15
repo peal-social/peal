@@ -90,6 +90,43 @@ layer(Http)("checking a Hashnode token", (it) => {
     })
   );
 
+  it.effect(
+    "connects a team's publication only for its owners and editors",
+    () =>
+      Effect.gen(function* team() {
+        const teamBlog = {
+          ...secondBlog,
+          ownerId: "64f0000000000000000000c9",
+          title: "A Team's Notes",
+        };
+
+        const as = (role: "CONTRIBUTOR" | "EDITOR") => ({
+          publications: [
+            gardenBlog,
+            { ...teamBlog, members: [{ role, userId: writerOnHashnode.id }] },
+          ],
+        });
+
+        const { site } = yield* verifyWith(
+          as("EDITOR"),
+          "second.hashnode.example"
+        );
+
+        assert.strictEqual(site.accountId, teamBlog.id);
+        assert.deepStrictEqual(
+          yield* refusalOf(as("CONTRIBUTOR"), "second.hashnode.example"),
+          new SiteRefused({ reason: "cannotPublish" })
+        );
+        assert.deepStrictEqual(
+          yield* refusalOf(
+            { publications: [gardenBlog, teamBlog] },
+            "second.hashnode.example"
+          ),
+          new SiteRefused({ reason: "cannotPublish" })
+        );
+      })
+  );
+
   it.effect("refuses a token Hashnode refuses", () =>
     Effect.gen(function* token() {
       assert.deepStrictEqual(
