@@ -308,6 +308,73 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
+      "waits for a follow-up and a reply on their way through the channel",
+      () =>
+        Effect.gen(function* sending() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const { home, owner } = yield* partnerOf("sending");
+          const { key } = yield* keyOf(owner, home);
+          const from = yield* customerOf(key, "Sending from");
+          const to = yield* customerOf(key, "Sending to");
+
+          const channelId = yield* connectedIn(
+            from.id,
+            "@sending@social.example"
+          );
+
+          const postId = yield* seedPost(
+            from.id,
+            channelId,
+            "Live",
+            "finished"
+          );
+
+          const [target] =
+            yield* sql`SELECT id FROM publishing.post_targets WHERE post_id = ${postId}`.pipe(
+              Effect.flatMap(Schema.decodeUnknownEffect(IdsSchema))
+            );
+
+          const ruleId = randomUUID();
+          const followUpId = randomUUID();
+
+          yield* sql`INSERT INTO publishing.follow_up_rules (id, workspace_id, scope, post_id, likes, comment, repost, approval, status, started_via, created_at)
+            VALUES (${ruleId}, ${from.id}, 'post', ${postId}, 50, 'A synthetic follow-up', false, '{"_tag":"notNeeded"}'::jsonb, 'active', '{"_tag":"web"}'::jsonb, now())`;
+          yield* sql`INSERT INTO publishing.follow_ups (id, rule_id, workspace_id, post_id, target_id, channel_id, kind, status, state, armed_at, triggered_at, call_claimed_at)
+            VALUES (${followUpId}, ${ruleId}, ${from.id}, ${postId}, ${target?.id ?? ""}, ${channelId}, 'comment', 'sending', '{"_tag":"sending","likes":50,"attemptedAt":null}'::jsonb, now(), now(), now())`;
+
+          const move = app.request(
+            `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+            { body: { toWorkspaceId: to.id }, headers: bearer(key) }
+          );
+
+          const following = yield* move;
+
+          assert.strictEqual(following.status, 409);
+          assert.deepInclude(following.body, { _tag: "WorkspaceBusy" });
+
+          yield* sql`DELETE FROM publishing.follow_ups WHERE id = ${followUpId}`;
+
+          // A reply under the post, its call claimed and not ended.
+          const threadId = randomUUID();
+          const commentId = randomUUID();
+
+          yield* sql`INSERT INTO engagement.threads (id, workspace_id, channel_id, target_id, post_id, platform_post_id, published_at, next_collection_at, comment_count, unanswered_count, last_comment_at)
+            VALUES (${threadId}, ${from.id}, ${channelId}, ${target?.id ?? ""}, ${postId}, 'synthetic-post', now(), now(), 1, 1, now())`;
+          yield* sql`INSERT INTO engagement.comments (id, thread_id, workspace_id, channel_id, platform_comment_id, author_platform_id, author_handle, author_display_name, text, written_at, received_at, state)
+            VALUES (${commentId}, ${threadId}, ${from.id}, ${channelId}, 'synthetic-comment', '7001', 'reader@social.example', 'A synthetic reader', 'A synthetic comment', now(), now(), 'answered')`;
+          yield* sql`INSERT INTO engagement.replies (id, thread_id, comment_id, workspace_id, channel_id, text, created_at, status, call_claimed_at)
+            VALUES (${randomUUID()}, ${threadId}, ${commentId}, ${from.id}, ${channelId}, 'A synthetic reply', now(), 'sending', now())`;
+
+          const replying = yield* move;
+
+          assert.strictEqual(replying.status, 409);
+          assert.deepInclude(replying.body, { _tag: "WorkspaceBusy" });
+          assert.lengthOf(yield* channelsOf(key, from.id), 1);
+        })
+    );
+
+    it.effect(
       "answers 409 rather than wait long for a workspace another request holds",
       () =>
         Effect.gen(function* held() {

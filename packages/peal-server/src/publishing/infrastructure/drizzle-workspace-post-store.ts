@@ -27,6 +27,7 @@ import {
   followUpRules,
   followUps as armedFollowUps,
   recyclingRules,
+  followUps as followUpRows,
   idempotencyKeys,
   livePostChanges,
   postTargets,
@@ -693,6 +694,26 @@ export const DrizzleWorkspacePostStore = Layer.effect(
       }
     );
 
+    const lockFollowUpCalls = Effect.fn("WorkspacePostStore.lockFollowUpCalls")(
+      function* lockFollowUpCalls(workspaceId: string, channelId: string) {
+        const sending = yield* db
+          .select({ claimedAt: followUpRows.callClaimedAt })
+          .from(followUpRows)
+          .where(
+            and(
+              eq(followUpRows.workspaceId, workspaceId),
+              eq(followUpRows.channelId, channelId),
+              eq(followUpRows.status, "sending")
+            )
+          )
+          .orderBy(asc(followUpRows.id))
+          .for("update")
+          .pipe(Effect.mapError(failed));
+
+        return sending.some(({ claimedAt }) => claimedAt !== null);
+      }
+    );
+
     return WorkspacePostStore.of({
       clearAuthor,
       deleteAll,
@@ -700,6 +721,7 @@ export const DrizzleWorkspacePostStore = Layer.effect(
       exportAuthored,
       exportSaved,
       lockAll,
+      lockFollowUpCalls,
       lockRounds,
     });
   })

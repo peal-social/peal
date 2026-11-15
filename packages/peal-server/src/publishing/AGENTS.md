@@ -183,7 +183,8 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   and `cancelRound`); one that wakes all the same finds its target gone
   and ends `superseded`, sending nothing.
   `PostRecords.ensureChannelIdle` is the same check for one channel's
-  targets and live changes (`lockRounds` and `lockOpen` with a channel),
+  targets, live changes and follow-ups `sending` with a claimed call
+  (`lockRounds` and `lockOpen` with a channel, `lockFollowUpCalls`),
   held in the caller's transaction: a channel moving to another
   workspace waits for no scheduled post, and for no call but its own.
 - A post keeps how it was created and last scheduled (`PostAttribution`,

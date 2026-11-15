@@ -10,6 +10,7 @@ import {
 import { SqlClient, SqlError } from "effect/sql";
 
 import { ChannelMoves } from "#channels/application/channel-moves.ts";
+import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import { PostRecords } from "#publishing/application/post-records.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
@@ -68,6 +69,7 @@ export const ContextChannelMoverLive = Layer.effect(
   Effect.gen(function* ContextChannelMover() {
     const moves = yield* ChannelMoves;
     const posts = yield* PostRecords;
+    const engagement = yield* EngagementRecords;
     const sql = yield* SqlClient.SqlClient;
 
     // For the rest of the move's transaction.
@@ -89,13 +91,15 @@ export const ContextChannelMoverLive = Layer.effect(
                 inside: boundWaits.pipe(
                   Effect.andThen(inside),
                   Effect.andThen(
-                    posts
-                      .ensureChannelIdle(from, id)
-                      .pipe(
-                        Effect.catchTag("PostsPublishing", () =>
-                          Effect.fail(new WorkspaceBusy({ workspaceId: from }))
-                        )
-                      )
+                    posts.ensureChannelIdle(from, id).pipe(
+                      Effect.andThen(engagement.ensureChannelIdle(from, id)),
+                      Effect.catchTags({
+                        PostsPublishing: () =>
+                          Effect.fail(new WorkspaceBusy({ workspaceId: from })),
+                        SendsInFlight: () =>
+                          Effect.fail(new WorkspaceBusy({ workspaceId: from })),
+                      })
+                    )
                   )
                 ),
                 to,

@@ -60,6 +60,17 @@ export class WorkspacePostStore extends Context.Service<
       workspaceId: WorkspaceId,
       channelId?: ChannelId
     ) => Effect.Effect<readonly OpenRound[], DatabaseError>;
+    /**
+     * Locks the workspace's follow-ups on the channel that are on their
+     * way (`sending`) until the transaction ends, and says whether one's
+     * call is claimed: begun at its platform, and not ended. A gate
+     * claims a call under the follow-up, so none begins while this holds
+     * it.
+     */
+    readonly lockFollowUpCalls: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
+    ) => Effect.Effect<boolean, DatabaseError>;
     /** The workspace's posts with their targets, oldest first. */
     readonly exportAll: (
       workspaceId: WorkspaceId

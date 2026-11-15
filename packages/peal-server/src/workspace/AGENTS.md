@@ -482,8 +482,12 @@ The staff context follows these rules too. What the law has a host keep is in
   `channel:disconnect`) moves a channel between two workspaces the key's
   partner owns, never its home, through `ChannelMover`
   (`ContextChannelMoverLive`: channels' `ChannelMoves`, after
-  publishing's `PostRecords.ensureChannelIdle`, `WorkspaceBusy` while a
-  call is in flight through the channel). Inside the move's transaction
+  publishing's `PostRecords.ensureChannelIdle` and engagement's
+  `EngagementRecords.ensureChannelIdle`, `WorkspaceBusy` while a call
+  claimed through the channel has not ended: a post, a live change, a
+  follow-up, a reply, a review's answer or a direct message; reads are not
+  waited for). Its waits on locks are bounded (`moveLockTimeout`, 5 s,
+  `SET LOCAL lock_timeout`), a lock that runs out `WorkspaceBusy` too. Inside the move's transaction
   it locks both workspaces' rows (smaller id first) and checks they are
   still the partner's, as an offboarding locks its row first, so a move
   never adds a channel to a workspace being erased. Both activity logs

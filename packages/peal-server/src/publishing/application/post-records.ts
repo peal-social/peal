@@ -52,8 +52,8 @@ export class PostRecords extends Context.Service<
     ) => Effect.Effect<void, DatabaseError | PostsPublishing>;
     /**
      * Refused while a call to a platform is in flight through the channel
-     * for one of the workspace's posts, publishing it or changing it once
-     * live, as its outcome is not known yet. In the caller's transaction,
+     * for one of the workspace's posts, publishing it, changing it once
+     * live, or sending its follow-up, as its outcome is not known yet. In the caller's transaction,
      * those posts' targets and changes stay held until it ends, so no call
      * through the channel begins meanwhile: one that wakes after finds the
      * channel as the transaction left it. A post that only waits, or is
@@ -170,8 +170,14 @@ export class PostRecords extends Context.Service<
               const rounds = yield* store.lockRounds(workspaceId, channelId);
               const open = yield* changes.lockOpen(workspaceId, channelId);
 
+              const followingUp = yield* store.lockFollowUpCalls(
+                workspaceId,
+                channelId
+              );
+
               yield* rounds.some(({ inFlight }) => inFlight) ||
-              open.some(({ inFlight }) => inFlight)
+              open.some(({ inFlight }) => inFlight) ||
+              followingUp
                 ? Effect.fail(new PostsPublishing({ workspaceId }))
                 : Effect.void;
             })
