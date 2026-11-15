@@ -20,6 +20,9 @@ public final class UnconfirmedReason {
     public static final UnconfirmedReason STILL_PROCESSING =
             new UnconfirmedReason(Value.STILL_PROCESSING, "stillProcessing");
 
+    public static final UnconfirmedReason SEVERAL_ON_SITE =
+            new UnconfirmedReason(Value.SEVERAL_ON_SITE, "severalOnSite");
+
     public static final UnconfirmedReason INTERRUPTED = new UnconfirmedReason(Value.INTERRUPTED, "interrupted");
 
     private final Value value;
@@ -64,6 +67,8 @@ public final class UnconfirmedReason {
                 return visitor.visitSearchRefused();
             case STILL_PROCESSING:
                 return visitor.visitStillProcessing();
+            case SEVERAL_ON_SITE:
+                return visitor.visitSeveralOnSite();
             case INTERRUPTED:
                 return visitor.visitInterrupted();
             case UNKNOWN:
@@ -85,6 +90,8 @@ public final class UnconfirmedReason {
                 return SEARCH_REFUSED;
             case "stillProcessing":
                 return STILL_PROCESSING;
+            case "severalOnSite":
+                return SEVERAL_ON_SITE;
             case "interrupted":
                 return INTERRUPTED;
             default:
@@ -105,6 +112,8 @@ public final class UnconfirmedReason {
 
         SEARCH_REFUSED,
 
+        SEVERAL_ON_SITE,
+
         UNKNOWN
     }
 
@@ -120,6 +129,8 @@ public final class UnconfirmedReason {
         T visitStillProcessing();
 
         T visitSearchRefused();
+
+        T visitSeveralOnSite();
 
         T visitUnknown(String unknownType);
     }

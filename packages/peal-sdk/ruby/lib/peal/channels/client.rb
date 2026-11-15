@@ -221,7 +221,8 @@ module Peal
       # which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted;
       # the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is
       # SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one of
-      # a team where the member is not an owner or an editor `cannotPublish`, one to name among several
+      # a team that lists the member as a contributor `cannotPublish` (a member the publication keeps private is
+      # connected, and the first article says whether they may publish), one to name among several
       # `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every request,
       # `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the
       # workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in
