@@ -5,6 +5,7 @@ import { SqlClient, SqlError } from "effect/sql";
 
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
+import { SendsInFlight } from "#engagement/application/sends-in-flight.ts";
 import type { CommentRuleEndReason } from "#engagement/domain/comment-rule-end-reason.ts";
 import { CommentRuleIdSchema } from "#engagement/domain/comment-rule-id.ts";
 import type { CollectionEnd } from "#engagement/domain/thread.ts";
@@ -511,8 +512,37 @@ export const DrizzleEngagementRecords = Layer.effect(
       }
     );
 
+    // What of the workspace is on its way through the channel, held: the
+    // claim of a call is written under the row.
+    const ensureChannelIdle = Effect.fn("EngagementRecords.ensureChannelIdle")(
+      function* ensureChannelIdle(workspaceId: string, channelId: string) {
+        const claimed = yield* Effect.forEach(
+          [replies, reviewReplies, outgoingMessages],
+          (table) =>
+            db
+              .select({ claimedAt: table.callClaimedAt })
+              .from(table)
+              .where(
+                and(
+                  eq(table.workspaceId, workspaceId),
+                  eq(table.channelId, channelId),
+                  eq(table.status, "sending")
+                )
+              )
+              .orderBy(asc(table.id))
+              .for("update")
+              .pipe(Effect.mapError(failed))
+        );
+
+        yield* claimed.flat().some(({ claimedAt }) => claimedAt !== null)
+          ? Effect.fail(new SendsInFlight())
+          : Effect.void;
+      }
+    );
+
     return EngagementRecords.of({
       channelGone,
+      ensureChannelIdle,
       eraseWorkspace,
       exportCommentRules,
       exportUser,

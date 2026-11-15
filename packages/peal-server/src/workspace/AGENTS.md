@@ -477,6 +477,25 @@ The staff context follows these rules too. What the law has a host keep is in
   owner's account not closed and the partner account not closed while it
   owns a workspace (`PartnerOwnership.ensureDeletable`,
   `PartnerOwnsWorkspaces`, 409).
+- `MoveCustomerChannel` (`POST /api/partner/workspaces/:workspaceId/channels/:channelId/move`,
+  scope `workspaces:write` and the key's `channel:connect` and
+  `channel:disconnect`) moves a channel between two workspaces the key's
+  partner owns, never its home, through `ChannelMover`
+  (`ContextChannelMoverLive`: channels' `ChannelMoves`, after
+  publishing's `PostRecords.ensureChannelIdle` and engagement's
+  `EngagementRecords.ensureChannelIdle`, `WorkspaceBusy` while a call
+  claimed through the channel has not ended: a post, a live change, a
+  follow-up, a reply, a review's answer or a direct message; reads are not
+  waited for). Its waits on locks are bounded (`moveLockTimeout`, 5 s,
+  `SET LOCAL lock_timeout`), a lock that runs out `WorkspaceBusy` too. Inside the move's transaction
+  it locks both workspaces' rows (smaller id first) and checks they are
+  still the partner's, as an offboarding locks its row first, so a move
+  never adds a channel to a workspace being erased. Both activity logs
+  keep `partner.moveChannel`. It takes the partner's `Idempotency-Key`
+  (`partner_idempotency_keys`, with the moved channel in `channel_id`,
+  claimed in the move's transaction): the same request answers the channel
+  it moved, as it stands now. It answers `postsLeft`, the source's posts
+  still to go out on the channel (`PostRecords.waitingOn`).
 - A workspace a partner owns takes the home workspace's plan (`PlanHolders`,
   `WorkspaceEntitlements.layerShared`). Channels are counted across the
   home workspace and every workspace the partner owns, under the partner's

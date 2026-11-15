@@ -248,6 +248,7 @@ if typing.TYPE_CHECKING:
     from .ceiling_currency_mismatch_encoded_tag import CeilingCurrencyMismatchEncodedTag
     from .changes_outcome import ChangesOutcome
     from .channel import Channel
+    from .channel_account_taken_encoded import ChannelAccountTakenEncoded
     from .channel_cannot_post_encoded import ChannelCannotPostEncoded
     from .channel_cannot_post_encoded_reason import ChannelCannotPostEncodedReason
     from .channel_cannot_post_encoded_tag import ChannelCannotPostEncodedTag
@@ -671,6 +672,7 @@ if typing.TYPE_CHECKING:
     from .metric_totals import MetricTotals
     from .metrics_snapshot import MetricsSnapshot
     from .money import Money
+    from .moved_channel import MovedChannel
     from .new_boost import NewBoost
     from .non_finite_number import NonFiniteNumber
     from .not_found_error_body import (
@@ -1393,6 +1395,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CeilingCurrencyMismatchEncodedTag": ".ceiling_currency_mismatch_encoded_tag",
     "ChangesOutcome": ".changes_outcome",
     "Channel": ".channel",
+    "ChannelAccountTakenEncoded": ".channel_account_taken_encoded",
     "ChannelCannotPostEncoded": ".channel_cannot_post_encoded",
     "ChannelCannotPostEncodedReason": ".channel_cannot_post_encoded_reason",
     "ChannelCannotPostEncodedTag": ".channel_cannot_post_encoded_tag",
@@ -1810,6 +1813,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "MetricTotals": ".metric_totals",
     "MetricsSnapshot": ".metrics_snapshot",
     "Money": ".money",
+    "MovedChannel": ".moved_channel",
     "NewBoost": ".new_boost",
     "NonFiniteNumber": ".non_finite_number",
     "NotFoundErrorBody": ".not_found_error_body",
@@ -2545,6 +2549,7 @@ __all__ = [
     "CeilingCurrencyMismatchEncodedTag",
     "ChangesOutcome",
     "Channel",
+    "ChannelAccountTakenEncoded",
     "ChannelCannotPostEncoded",
     "ChannelCannotPostEncodedReason",
     "ChannelCannotPostEncodedTag",
@@ -2962,6 +2967,7 @@ __all__ = [
     "MetricTotals",
     "MetricsSnapshot",
     "Money",
+    "MovedChannel",
     "NewBoost",
     "NonFiniteNumber",
     "NotFoundErrorBody",

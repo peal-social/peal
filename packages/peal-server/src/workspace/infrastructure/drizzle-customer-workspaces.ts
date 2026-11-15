@@ -182,6 +182,7 @@ export const DrizzleCustomerWorkspaces = Layer.effect(
     ) =>
       db
         .select({
+          channelId: partnerIdempotencyKeys.channelId,
           requestDigest: partnerIdempotencyKeys.requestDigest,
           workspaceId: partnerIdempotencyKeys.workspaceId,
         })
@@ -199,6 +200,7 @@ export const DrizzleCustomerWorkspaces = Layer.effect(
           Effect.map(([row]) =>
             Option.fromUndefinedOr(row).pipe(
               Option.map((used): CreationKeyUse => ({
+                channelId: Option.fromNullOr(used.channelId),
                 sameRequest: used.requestDigest === digests.requestDigest,
                 workspaceId: WorkspaceIdSchema.make(used.workspaceId),
               }))
@@ -216,6 +218,7 @@ export const DrizzleCustomerWorkspaces = Layer.effect(
           const written = yield* db
             .insert(partnerIdempotencyKeys)
             .values({
+              channelId: use.channelId ?? null,
               createdAt: date(use.at),
               keyDigest: digests.keyDigest,
               partnerId,
@@ -224,6 +227,7 @@ export const DrizzleCustomerWorkspaces = Layer.effect(
             })
             .onConflictDoUpdate({
               set: {
+                channelId: use.channelId ?? null,
                 createdAt: date(use.at),
                 requestDigest: digests.requestDigest,
                 workspaceId: use.workspaceId,

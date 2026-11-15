@@ -28,7 +28,7 @@ import { forbidden } from "#shared/api/forbidden.ts";
 import { isSocialPlatform } from "#shared/domain/platform.ts";
 
 import { cookieOf, nonceOf } from "./connect-link-cookie.ts";
-import { toConnectLinkView } from "./connect-link-view.ts";
+import { platformsOf, toConnectLinkView } from "./connect-link-view.ts";
 
 const noLink = () => Effect.fail(new ConnectLinkNotFound());
 
@@ -44,6 +44,7 @@ export const ConnectLinksHandlers = HttpApiBuilder.group(
       create: ({ payload }) =>
         Effect.gen(function* create() {
           const actor = actorOf(yield* CurrentMember);
+          const platforms = yield* platformsOf(payload);
 
           const created = yield* links
             .create(actor, {
@@ -51,7 +52,7 @@ export const ConnectLinksHandlers = HttpApiBuilder.group(
               connection: Option.fromUndefinedOr(payload.connection),
               expiresInHours: Option.fromUndefinedOr(payload.expiresInHours),
               locale: Option.fromUndefinedOr(payload.locale),
-              platform: payload.platform,
+              platforms,
               returnUrl: Option.fromUndefinedOr(payload.returnUrl),
             })
             .pipe(
@@ -158,6 +159,7 @@ const outcomeView = (outcome: HostedOutcome): HostedOutcomeView =>
               ]
             : [];
         }),
+        remaining: outcome.remaining,
         returnTo: Option.getOrNull(outcome.returnTo),
       }
     : {
@@ -232,11 +234,13 @@ export const HostedConnectHandlers = HttpApiBuilder.group(
           return {
             expiresAt: hosted.expiresAt,
             host: {
+              accentColor: Option.getOrNull(hosted.host.accentColor),
               logoUrl: Option.getOrNull(hosted.host.logoUrl),
               name: hosted.host.name,
             },
             input: hosted.input,
             platform: hosted.platform,
+            platforms: hosted.platforms,
             reconnecting: Option.getOrNull(hosted.reconnecting),
             returnTo: Option.getOrNull(hosted.returnTo),
             status: hosted.state,
@@ -248,6 +252,7 @@ export const HostedConnectHandlers = HttpApiBuilder.group(
             .start(Redacted.make(headers[connectLinkTokenHeader]), {
               handle: Option.fromUndefinedOr(payload.handle),
               instance: Option.fromUndefinedOr(payload.instance),
+              platform: Option.fromUndefinedOr(payload.platform),
             })
             .pipe(Effect.catchTags(hostedFailures));
 

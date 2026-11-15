@@ -286,6 +286,7 @@ export const DrizzleChannelRepository = Layer.effect(
         db
           .select({
             accessToken: channels.accessToken,
+            grantedBy: channels.grantedBy,
             refreshToken: channels.refreshToken,
             tokenOwner: channels.tokenOwner,
           })
@@ -299,6 +300,10 @@ export const DrizzleChannelRepository = Layer.effect(
                 : decodeCredentials({
                     accessToken: row.accessToken,
                     refreshToken: Option.fromNullOr(row.refreshToken),
+                    ...Option.match(Option.fromNullOr(row.grantedBy), {
+                      onNone: () => ({}),
+                      onSome: (grantedBy) => ({ grantedBy }),
+                    }),
                     ...Option.match(Option.fromNullOr(row.tokenOwner), {
                       onNone: () => ({}),
                       onSome: (tokenOwner) => ({ tokenOwner }),
@@ -432,6 +437,20 @@ export const DrizzleChannelRepository = Layer.effect(
           .pipe(
             Effect.mapError(failed),
             Effect.flatMap(Effect.forEach(toChannel))
+          ),
+      relocate: (from, moved, credentials) =>
+        db
+          .update(channels)
+          .set({
+            ...channelColumns(moved),
+            ...credentialColumns(credentials),
+            label: null,
+          })
+          .where(byId(from.workspaceId, from.channelId))
+          .returning({ id: channels.id })
+          .pipe(
+            Effect.mapError(failed),
+            Effect.map((rows) => rows.length > 0)
           ),
       remove: (workspaceId, channelId) =>
         db

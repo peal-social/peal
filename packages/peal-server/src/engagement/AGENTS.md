@@ -563,3 +563,8 @@
   follow: change them together. A conversation is read a page at a time
   (`maxInboxMessagesPerPage`, the cursor the message's time and id). Test the store at 2049 (the purge at
   1935).
+- `EngagementRecords.ensureChannelIdle` refuses (`SendsInFlight`) while a
+  reply, a review's answer or a direct message on the channel is
+  `sending` with its call claimed, holding those rows in the caller's
+  transaction (a claim is written under the row): a channel moving to
+  another workspace waits for them.

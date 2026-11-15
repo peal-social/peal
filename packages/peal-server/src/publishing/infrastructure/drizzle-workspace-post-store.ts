@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, countDistinct, eq, inArray, isNull, sql } from "drizzle-orm";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
 import { ExecutionIdSchema } from "#publishing/application/publication-scheduler.ts";
@@ -27,6 +27,7 @@ import {
   followUpRules,
   followUps as armedFollowUps,
   recyclingRules,
+  followUps as followUpRows,
   idempotencyKeys,
   livePostChanges,
   postTargets,
@@ -642,7 +643,7 @@ export const DrizzleWorkspacePostStore = Layer.effect(
     );
 
     const lockRounds = Effect.fn("WorkspacePostStore.lockRounds")(
-      function* lockRounds(workspaceId: string) {
+      function* lockRounds(workspaceId: string, channelId?: string) {
         // FOR UPDATE waits for a call that is writing its journal row,
         // which holds the target's key, and then sees the row.
         const targets = yield* db
@@ -652,7 +653,10 @@ export const DrizzleWorkspacePostStore = Layer.effect(
           .where(
             and(
               eq(posts.workspaceId, workspaceId),
-              eq(posts.status, "publishing")
+              eq(posts.status, "publishing"),
+              channelId === undefined
+                ? undefined
+                : eq(postTargets.channelId, channelId)
             )
           )
           .orderBy(asc(postTargets.id))
@@ -690,13 +694,59 @@ export const DrizzleWorkspacePostStore = Layer.effect(
       }
     );
 
+    const countWaitingOn = Effect.fn("WorkspacePostStore.countWaitingOn")(
+      function* countWaitingOn(workspaceId: string, channelId: string) {
+        const [row] = yield* db
+          .select({ waiting: countDistinct(posts.id) })
+          .from(postTargets)
+          .innerJoin(posts, eq(posts.id, postTargets.postId))
+          .where(
+            and(
+              eq(posts.workspaceId, workspaceId),
+              eq(postTargets.channelId, channelId),
+              inArray(posts.status, [
+                "awaitingApproval",
+                "scheduled",
+                "publishing",
+              ]),
+              inArray(postTargets.status, ["pending", "publishing"])
+            )
+          )
+          .pipe(Effect.mapError(failed));
+
+        return row?.waiting ?? 0;
+      }
+    );
+
+    const lockFollowUpCalls = Effect.fn("WorkspacePostStore.lockFollowUpCalls")(
+      function* lockFollowUpCalls(workspaceId: string, channelId: string) {
+        const sending = yield* db
+          .select({ claimedAt: followUpRows.callClaimedAt })
+          .from(followUpRows)
+          .where(
+            and(
+              eq(followUpRows.workspaceId, workspaceId),
+              eq(followUpRows.channelId, channelId),
+              eq(followUpRows.status, "sending")
+            )
+          )
+          .orderBy(asc(followUpRows.id))
+          .for("update")
+          .pipe(Effect.mapError(failed));
+
+        return sending.some(({ claimedAt }) => claimedAt !== null);
+      }
+    );
+
     return WorkspacePostStore.of({
       clearAuthor,
       deleteAll,
       exportAll,
       exportAuthored,
       exportSaved,
+      countWaitingOn,
       lockAll,
+      lockFollowUpCalls,
       lockRounds,
     });
   })

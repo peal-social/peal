@@ -137,6 +137,36 @@ export const connectChannel = (
     workspaceId: channel.workspaceId,
   });
 
+/**
+ * The channel as it goes to another workspace of its pool, at `now`: a
+ * new channel there, `id`, with the same account, way in, scopes, token
+ * and status. It keeps when it was connected (`createdAt`): the pool has
+ * held the account since, and billing's counts of what was connected
+ * before a date (a grace) read it. Its name was the other workspace's,
+ * and stays behind.
+ */
+export const movedChannel = (
+  channel: Channel,
+  to: { readonly id: ChannelId; readonly workspaceId: WorkspaceId },
+  now: DateTime.Utc
+): Channel =>
+  new Channel({
+    accountId: channel.accountId,
+    avatarUrl: channel.avatarUrl,
+    connection: channel.connection,
+    createdAt: channel.createdAt,
+    displayName: channel.displayName,
+    handle: channel.handle,
+    id: to.id,
+    label: Option.none(),
+    platform: channel.platform,
+    scopes: channel.scopes,
+    status: channel.status,
+    token: channel.token,
+    updatedAt: now,
+    workspaceId: to.workspaceId,
+  });
+
 // The channel with its status, and possibly what the platform last told about
 // the account, changed at `now`.
 const withChange = (

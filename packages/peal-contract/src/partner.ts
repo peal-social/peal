@@ -9,6 +9,9 @@ import {
 
 import { Authentication } from "./authentication.ts";
 import { BillingUnavailable } from "./billing-unavailable.ts";
+import { ChannelAccountTaken } from "./channel-account-taken.ts";
+import { ChannelNotFound } from "./channel-not-found.ts";
+import { ChannelSchema } from "./channels.ts";
 import { DeletionIncomplete } from "./deletion-incomplete.ts";
 import { ExternalIdTaken } from "./external-id-taken.ts";
 import { Forbidden } from "./forbidden.ts";
@@ -30,6 +33,13 @@ export const maxPartnerNameLength = 80;
 
 export const maxPartnerLogoUrlLength = 2048;
 
+/**
+ * The least contrast a partner's accent colour keeps with the white card
+ * of a hosted page and the page around it (WCAG 2's 3:1 for a line that
+ * must be seen).
+ */
+export const minAccentContrast = 3;
+
 /** How many return origins a partner registers at most. */
 export const maxReturnOrigins = 20;
 
@@ -49,6 +59,9 @@ export const creationKeyLifetimeHours = 24;
 
 /** A partner account, as its people and its keys read it. */
 export const PartnerSchema = Schema.Struct({
+  // Drawn as a line beside the logo on the hosted pages, as `#RRGGBB`;
+  // null for Peal's own look.
+  accentColor: Schema.NullOr(Schema.String),
   createdAt: Schema.DateTimeUtc,
   id: Schema.String,
   // Shown on the hosted pages, from its own address.
@@ -138,6 +151,29 @@ export const CustomerWorkspaceChangeSchema = Schema.Struct({
 }).annotate({ identifier: "CustomerWorkspaceChange" });
 
 export type CustomerWorkspaceChange = typeof CustomerWorkspaceChangeSchema.Type;
+
+/** How long a channel move waits for a lock another request holds. */
+export const moveLockSeconds = 5;
+
+/** Where to move a channel: another workspace of the partner. */
+export const ChannelMoveSchema = Schema.Struct({
+  // The workspace the channel goes to, which the partner owns.
+  toWorkspaceId: Schema.String,
+}).annotate({ identifier: "ChannelMove" });
+
+export type ChannelMove = typeof ChannelMoveSchema.Type;
+
+/** A channel moved, and what it left behind. */
+export const MovedChannelSchema = Schema.Struct({
+  // The channel where it went, under its new id.
+  channel: ChannelSchema,
+  // How many posts of the workspace it left still had it to go out on
+  // (awaiting approval, scheduled or being published): they fail there
+  // for this channel, as for a disconnected one, unless changed.
+  postsLeft: Schema.Int,
+}).annotate({ identifier: "MovedChannel" });
+
+export type MovedChannel = typeof MovedChannelSchema.Type;
 
 /** The filters and the page of a list of a partner's workspaces. */
 export const workspaceListQuery = {
@@ -251,6 +287,33 @@ export class PartnerApi extends HttpApiGroup.make("partner")
       OpenApi.annotations({
         description: `Changes a workspace's name or external id: what is left out stays as it is, and a null \`externalId\` removes it. An external id another of the partner's workspaces has answers 409 \`ExternalIdTaken\`. Needs the scope workspaces:write. ${keyOnly}`,
         summary: "Change a workspace of the partner",
+      })
+    ),
+    HttpApiEndpoint.post(
+      "moveChannel",
+      "/workspaces/:workspaceId/channels/:channelId/move",
+      {
+        error: [
+          Forbidden,
+          WorkspaceNotFound,
+          ChannelNotFound,
+          ChannelAccountTaken,
+          IdempotencyKeyReused,
+          WorkspaceBusy,
+        ],
+        headers: {
+          "idempotency-key": Schema.optionalKey(
+            Schema.String.check(Schema.isBetweenLength(1, maxCreationKeyLength))
+          ),
+        },
+        params: { ...workspace, channelId: Schema.String },
+        payload: ChannelMoveSchema,
+        success: MovedChannelSchema,
+      }
+    ).annotateMerge(
+      OpenApi.annotations({
+        description: `Moves a channel from a workspace the partner owns to another one it owns (\`toWorkspaceId\`), without a new sign-in: the account, its tokens and its status go with it, and the platform is asked nothing. Answers the channel in the workspace it went to, under a new id, and \`postsLeft\`: how many posts of the workspace it left still had it to go out on. In the workspace it left, it is disconnected (\`channel.disconnected\` there, \`channel.connected\` in the other). What belongs to the workspace it left stays there: its posts, those scheduled on the channel included, which fail there as a disconnected channel's do unless they are changed first; the analytics of its posts, kept a week as a disconnected channel's are, should it come back; its inbox threads and direct messages, which end as a disconnected channel's do. Its name in the workspace is left behind too. The workspace it goes to starts reading the account afresh. The workspaces share one plan, so the move counts no channel more. A workspace that has a channel of the same account, or the workspace the channel is in, answers 409 \`ChannelAccountTaken\`. While a call through the channel is in flight for the workspace it leaves (a post, a change of a live post, a follow-up, a reply, an answer to a review or a direct message), or another request holds either workspace for more than ${String(moveLockSeconds)} seconds (an offboarding), it answers 409 \`WorkspaceBusy\`: send it again a moment later. Reads through the channel are not waited for. Send an \`Idempotency-Key\` header to make the request safe to send again: within ${creationKeyLifetimeHours} hours, the same key with the same request answers the channel the first one moved, as it now stands, and moves nothing; the same key with another request answers 409 \`IdempotencyKeyReused\`. Keys are the partner's, shared with workspace creation. Needs the scope workspaces:write, and the key's permissions channel:connect and channel:disconnect. ${keyOnly}`,
+        summary: "Move a channel to another workspace of the partner",
       })
     ),
     HttpApiEndpoint.delete("deleteWorkspace", "/workspaces/:workspaceId", {

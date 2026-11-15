@@ -7,7 +7,7 @@ import type {
   SavedItemsRecord,
 } from "#shared/application/personal-data.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
-import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
+import type { ChannelId, UserId, WorkspaceId } from "#shared/domain/ids.ts";
 
 import { LivePostChangeStore } from "./live-post-change-store.ts";
 import { LivePostJobs } from "./live-post-jobs.ts";
@@ -49,6 +49,28 @@ export class PostRecords extends Context.Service<
      */
     readonly ensureErasable: (
       workspaceId: WorkspaceId
+    ) => Effect.Effect<void, DatabaseError | PostsPublishing>;
+    /**
+     * Refused while a call to a platform is in flight through the channel
+     * for one of the workspace's posts, publishing it, changing it once
+     * live, or sending its follow-up, as its outcome is not known yet. In the caller's transaction,
+     * those posts' targets and changes stay held until it ends, so no call
+     * through the channel begins meanwhile: one that wakes after finds the
+     * channel as the transaction left it. A post that only waits, or is
+     * scheduled, does not keep it.
+     */
+    /**
+     * How many of the workspace's posts still have a target on the
+     * channel to go out (awaiting approval, scheduled or publishing):
+     * those a channel moved away fails there.
+     */
+    readonly waitingOn: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
+    ) => Effect.Effect<number, DatabaseError>;
+    readonly ensureChannelIdle: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
     ) => Effect.Effect<void, DatabaseError | PostsPublishing>;
     /** The posts the user wrote in these workspaces, oldest first. */
     readonly exportAuthored: (
@@ -147,7 +169,33 @@ export class PostRecords extends Context.Service<
         }
       );
 
+      const ensureChannelIdle = Effect.fn("PostRecords.ensureChannelIdle")(
+        function* ensureChannelIdle(
+          workspaceId: WorkspaceId,
+          channelId: ChannelId
+        ) {
+          yield* transaction(
+            Effect.gen(function* holdChannel() {
+              const rounds = yield* store.lockRounds(workspaceId, channelId);
+              const open = yield* changes.lockOpen(workspaceId, channelId);
+
+              const followingUp = yield* store.lockFollowUpCalls(
+                workspaceId,
+                channelId
+              );
+
+              yield* rounds.some(({ inFlight }) => inFlight) ||
+              open.some(({ inFlight }) => inFlight) ||
+              followingUp
+                ? Effect.fail(new PostsPublishing({ workspaceId }))
+                : Effect.void;
+            })
+          );
+        }
+      );
+
       return PostRecords.of({
+        ensureChannelIdle,
         ensureErasable,
         eraseWorkspace,
         exportAuthored: (userId, workspaceIds) =>
@@ -155,6 +203,8 @@ export class PostRecords extends Context.Service<
         exportSaved: (workspaceId) => store.exportSaved(workspaceId),
         exportWorkspace: (workspaceId) => store.exportAll(workspaceId),
         forgetAuthor: (userId) => store.clearAuthor(userId),
+        waitingOn: (workspaceId, channelId) =>
+          store.countWaitingOn(workspaceId, channelId),
       });
     })
   );

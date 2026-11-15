@@ -47,8 +47,12 @@ export interface KeyedCreation {
   readonly key: string;
 }
 
-/** What a key was used for: the workspace, and whether by this request. */
+/**
+ * What a key was used for: the workspace, the channel a move made there,
+ * and whether by this request.
+ */
 export interface CreationKeyUse {
+  readonly channelId: Option.Option<string>;
   readonly sameRequest: boolean;
   readonly workspaceId: WorkspaceId;
 }
@@ -158,7 +162,12 @@ export class CustomerWorkspaces extends Context.Service<
     readonly claimKey: (
       partnerId: PartnerId,
       request: KeyedCreation,
-      use: { readonly at: DateTime.Utc; readonly workspaceId: WorkspaceId },
+      use: {
+        readonly at: DateTime.Utc;
+        /** The channel a move makes, for a move's key. */
+        readonly channelId?: string;
+        readonly workspaceId: WorkspaceId;
+      },
       since: DateTime.Utc
     ) => Effect.Effect<Option.Option<CreationKeyUse>, DatabaseError>;
     /** Deletes the keys used at `before` or earlier, and says how many. */

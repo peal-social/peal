@@ -997,6 +997,8 @@ export type { Captcha } from "./captcha.ts";
 
 export { ChannelCannotPost } from "./channel-cannot-post.ts";
 
+export { ChannelAccountTaken } from "./channel-account-taken.ts";
+
 export { ChannelNotFound } from "./channel-not-found.ts";
 
 export {
@@ -2201,6 +2203,7 @@ export {
   HostedChannelSchema,
   HostedConnectApi,
   HostedLinkInputSchema,
+  HostedLinkPlatformSchema,
   HostedLinkSchema,
   HostedOutcomeSchema,
   HostedStartSchema,
@@ -2251,6 +2254,10 @@ export {
   maxReturnOrigins,
   maxWorkspaceNameLength,
   maxWorkspacePageSize,
+  minAccentContrast,
+  moveLockSeconds,
+  ChannelMoveSchema,
+  MovedChannelSchema,
   NewCustomerWorkspaceSchema,
   PartnerApi,
   PartnerOverviewSchema,
@@ -2261,7 +2268,9 @@ export {
 
 export type {
   CustomerWorkspace,
+  ChannelMove,
   CustomerWorkspaceChange,
+  MovedChannel,
   CustomerWorkspacePage,
   NewCustomerWorkspace,
   Partner,
