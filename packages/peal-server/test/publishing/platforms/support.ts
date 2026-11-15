@@ -42,6 +42,7 @@ import { facebookClient } from "#publishing/infrastructure/platforms/meta/facebo
 import { instagramClient } from "#publishing/infrastructure/platforms/meta/instagram-client.ts";
 import { threadsClient } from "#publishing/infrastructure/platforms/meta/threads-client.ts";
 import { pinterestClient } from "#publishing/infrastructure/platforms/pinterest/pinterest-client.ts";
+import { telegramClient } from "#publishing/infrastructure/platforms/telegram/telegram-client.ts";
 import { tiktokClient } from "#publishing/infrastructure/platforms/tiktok/tiktok-client.ts";
 import { xClient } from "#publishing/infrastructure/platforms/x/x-client.ts";
 import { youtubeClient } from "#publishing/infrastructure/platforms/youtube/youtube-client.ts";
@@ -423,6 +424,30 @@ export const discordClientWith = Effect.fn("test.discordClient")(
     const api = options.http ?? (yield* httpClient);
 
     return yield* discordClient({
+      api,
+      hosts: { api: options.api },
+      timing: testTiming,
+      uploads: api,
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(options.credentials, mediaOf(options.files ?? []))
+      )
+    );
+  }
+);
+
+/** The Telegram client, with the fake as Telegram's Bot API. */
+export const telegramClientWith = Effect.fn("test.telegramClient")(
+  function* telegramClientWith(options: {
+    readonly api: string;
+    readonly credentials: Layer.Layer<CredentialLog | PlatformCredentials>;
+    readonly files?: readonly TestFile[];
+    /** A client of its own, as one that gives up sooner. */
+    readonly http?: Effect.Success<typeof httpClient> | undefined;
+  }) {
+    const api = options.http ?? (yield* httpClient);
+
+    return yield* telegramClient({
       api,
       hosts: { api: options.api },
       timing: testTiming,

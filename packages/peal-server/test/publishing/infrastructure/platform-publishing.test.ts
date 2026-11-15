@@ -66,6 +66,7 @@ const platformsOn = (instanceUrl: string) =>
           threadsGraph: new URL(instanceUrl),
         },
         pinterestApi: new URL(instanceUrl),
+        telegramHosts: { api: instanceUrl },
         tiktokApi: new URL(instanceUrl),
         tiktokPullFrom: Option.none(),
         timing: testTiming,
