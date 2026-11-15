@@ -87,6 +87,12 @@ export interface FakeDevTo {
 
 /** What a reader of DEV sees of an article's Markdown, and whether Liquid ran. */
 export interface ForemReading {
+  /**
+   * What Redcarpet's `autolink` made a link of, as written in the
+   * Markdown: it fires on `://`, `www.` and an email's `@`, before any
+   * escape is read (`autolink.c`).
+   */
+  readonly autolinks: readonly string[];
   /** Some of the text made a Liquid tag or variable: an embed, or text lost. */
   readonly liveLiquid: boolean;
   readonly text: string;
@@ -106,10 +112,18 @@ const redcarpetEscapes = /\\(?<escaped>[\\`*_{}[\]()#+\-.!:|&<>^~=])/gu;
 export const readAsForem = (markdown: string): ForemReading => {
   const prose = markdown.replaceAll(/```[\s\S]*?```|`[^`]*`/gu, "");
 
+  const autolinks = [
+    ...prose.matchAll(
+      /[a-z][a-z0-9+.-]*:\/\/\S*|\bwww\.\S*|[\w.+-]+@[\w-]+\S*/giu
+    ),
+  ].map(([link]) => link);
+
   const decoded = prose
     .replaceAll(redcarpetEscapes, "$<escaped>")
     .replaceAll("&#123;", "{")
     .replaceAll("&#125;", "}")
+    .replaceAll("&#96;", "`")
+    .replaceAll("&#64;", "@")
     .replaceAll("&lt;", "<")
     .replaceAll("&gt;", ">")
     .replaceAll("&amp;", "&");
@@ -126,7 +140,7 @@ export const readAsForem = (markdown: string): ForemReading => {
     return token;
   });
 
-  return { liveLiquid, text };
+  return { autolinks, liveLiquid, text };
 };
 
 /** Another writer on DEV, whose key is synthetic. */

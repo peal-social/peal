@@ -80,7 +80,10 @@ describe("an article on DEV", () => {
                         type: "text",
                       },
                       { type: "hardBreak" },
-                      { text: "then {% endraw %} {", type: "text" },
+                      {
+                        text: "then {% endraw %} { at https://example.com/a_b, mail a@b.example",
+                        type: "text",
+                      },
                     ],
                     type: "paragraph",
                   },
@@ -96,9 +99,10 @@ describe("an article on DEV", () => {
           const reading = readAsForem(devto.articles()[0]?.body_markdown ?? "");
 
           assert.isFalse(reading.liveLiquid);
+          assert.deepStrictEqual(reading.autolinks, []);
           assert.strictEqual(
             reading.text,
-            "Use {{ secrets.TOKEN }} and {% embed https://e.example %} for $5  \nthen {% endraw %} {"
+            "Use {{ secrets.TOKEN }} and {% embed https://e.example %} for $5  \nthen {% endraw %} { at https://example.com/a_b, mail a@b.example"
           );
         })
       )

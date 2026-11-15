@@ -199,7 +199,7 @@ describe("an article's body as DEV's Markdown", () => {
     expect(
       forem(paragraph(text("a {{ b }} {% embed https://e.example %} c")))
     ).toBe(
-      "a {{ '{' }}{{ '{' }} b }} {{ '{' }}% embed https://e\\.example %} c"
+      "a {{ '{' }}{{ '{' }} b }} {{ '{' }}% embed https\\://e\\.example %} c"
     );
   });
 
@@ -209,9 +209,21 @@ describe("an article's body as DEV's Markdown", () => {
     ).toBe("It costs $5  \nthen");
   });
 
+  it("links no address: its colon is escaped, before Redcarpet's autolink", () => {
+    expect(forem(paragraph(text("see https://example.com/a_b")))).toBe(
+      "see https\\://example\\.com/a\\_b"
+    );
+  });
+
+  it("writes a member's backtick as an entity, which Forem's code pass skips", () => {
+    expect(forem(paragraph(text("a `{ b }` c")))).toBe(
+      "a &#96;{{ '{' }} b }&#96; c"
+    );
+  });
+
   it("mentions nobody: an at sign is followed by a word joiner", () => {
     expect(forem(paragraph(text("thanks @ben and a@b")))).toBe(
-      "thanks @⁠ben and a@⁠b"
+      "thanks @\u2060ben and a&#64;b"
     );
   });
 });

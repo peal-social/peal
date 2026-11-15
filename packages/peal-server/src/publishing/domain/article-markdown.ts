@@ -58,6 +58,7 @@ const foremEscapes = new Map([
   ["<", "&lt;"],
   [">", "&gt;"],
   ["{", "{{ '{' }}"],
+  ["`", "&#96;"],
 ]);
 
 const wordJoiner = "\u2060";
@@ -76,12 +77,21 @@ export const escapeMarkdown = (
     );
   }
 
-  return flat
-    .replaceAll(
-      /[&<>{]|[!#()*+\-.=[\\\]^_`|~]/gu,
-      (character) => foremEscapes.get(character) ?? `\\${character}`
-    )
-    .replaceAll("@", `@${wordJoiner}`);
+  return flat.replaceAll(
+    /(?<before>[\p{L}\p{N}_]?)@|[&<>{`]|[!#():*+\-.=[\\\]^_|~]/gu,
+    (character, before: string | undefined) => {
+      if (!character.endsWith("@")) {
+        return foremEscapes.get(character) ?? `\\${character}`;
+      }
+
+      // Forem mentions an `@` that follows no word character (`\B@`):
+      // a word joiner breaks it. Any other, as an email's, is an entity,
+      // which Redcarpet's autolink does not read and readers copy clean.
+      return before === undefined || before === ""
+        ? `@${wordJoiner}`
+        : `${escapeMarkdown(before, "forem")}&#64;`;
+    }
+  );
 };
 
 // An address as a link's or an image's destination: what the WHATWG
