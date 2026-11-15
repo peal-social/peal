@@ -26,7 +26,7 @@ import {
   keyOf,
   partnerOf,
 } from "./partner-support.ts";
-import { seedChannel, seedPost } from "./seed.ts";
+import { newUuid7, seedChannel, seedPost } from "./seed.ts";
 
 const MovesLive = Layer.mergeAll(
   TestApp.layerWith({
@@ -389,8 +389,8 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
               Effect.flatMap(Schema.decodeUnknownEffect(IdsSchema))
             );
 
-          const ruleId = randomUUID();
-          const followUpId = randomUUID();
+          const ruleId = newUuid7();
+          const followUpId = newUuid7();
 
           yield* sql`INSERT INTO publishing.follow_up_rules (id, workspace_id, scope, post_id, likes, comment, repost, approval, status, started_via, created_at)
             VALUES (${ruleId}, ${from.id}, 'post', ${postId}, 50, 'A synthetic follow-up', false, '{"_tag":"notNeeded"}'::jsonb, 'active', '{"_tag":"web"}'::jsonb, now())`;
@@ -410,21 +410,25 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
           yield* sql`DELETE FROM publishing.follow_ups WHERE id = ${followUpId}`;
 
           // A reply under the post, its call claimed and not ended.
-          const threadId = randomUUID();
-          const commentId = randomUUID();
+          const threadId = newUuid7();
+          const commentId = newUuid7();
 
           yield* sql`INSERT INTO engagement.threads (id, workspace_id, channel_id, target_id, post_id, platform_post_id, published_at, next_collection_at, comment_count, unanswered_count, last_comment_at)
             VALUES (${threadId}, ${from.id}, ${channelId}, ${target?.id ?? ""}, ${postId}, 'synthetic-post', now(), now(), 1, 1, now())`;
           yield* sql`INSERT INTO engagement.comments (id, thread_id, workspace_id, channel_id, platform_comment_id, author_platform_id, author_handle, author_display_name, text, written_at, received_at, state)
             VALUES (${commentId}, ${threadId}, ${from.id}, ${channelId}, 'synthetic-comment', '7001', 'reader@social.example', 'A synthetic reader', 'A synthetic comment', now(), now(), 'answered')`;
           yield* sql`INSERT INTO engagement.replies (id, thread_id, comment_id, workspace_id, channel_id, text, created_at, status, call_claimed_at)
-            VALUES (${randomUUID()}, ${threadId}, ${commentId}, ${from.id}, ${channelId}, 'A synthetic reply', now(), 'sending', now())`;
+            VALUES (${newUuid7()}, ${threadId}, ${commentId}, ${from.id}, ${channelId}, 'A synthetic reply', now(), 'sending', now())`;
 
           const replying = yield* move;
 
           assert.strictEqual(replying.status, 409);
           assert.deepInclude(replying.body, { _tag: "WorkspaceBusy" });
           assert.lengthOf(yield* channelsOf(key, from.id), 1);
+
+          // Nothing left on its way for the jobs, or the tests, that read
+          // every reply still sending.
+          yield* sql`DELETE FROM engagement.threads WHERE id = ${threadId}`;
         })
     );
 
