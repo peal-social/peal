@@ -97,11 +97,11 @@ export const admitProviderUser = async (
 
   const { email, id } = user;
 
-  if (email === undefined || id === undefined) {
-    return refusal("account_banned");
-  }
-
   if (source.action === "create-user") {
+    if (email === undefined) {
+      return refusal("sign_up_by_invitation");
+    }
+
     const invitationId = await reads.invitationId();
 
     const admitted = await reads
@@ -109,6 +109,10 @@ export const admitProviderUser = async (
       .catch(() => false);
 
     return admitted ? undefined : refusal("sign_up_by_invitation");
+  }
+
+  if (id === undefined) {
+    return refusal("account_banned");
   }
 
   const account = await reads.account(id);

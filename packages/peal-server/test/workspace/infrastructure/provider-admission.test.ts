@@ -50,11 +50,15 @@ const data = (
     method === "oauth"
       ? { action, method, oauth: { providerId: "oidc" } }
       : { action, method },
-  user: {
-    email: "ada@example.test",
-    emailVerified,
-    id: "8d3f5b8e-6a51-4c58-9d1e-0f3e2b6a7c90",
-  },
+  // Better Auth asks before it makes a user, which has no id yet.
+  user:
+    action === "create-user"
+      ? { email: "ada@example.test", emailVerified }
+      : {
+          email: "ada@example.test",
+          emailVerified,
+          id: "8d3f5b8e-6a51-4c58-9d1e-0f3e2b6a7c90",
+        },
 });
 
 describe("who a provider may sign in", () => {

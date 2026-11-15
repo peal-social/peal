@@ -56,6 +56,7 @@ import { CaptchaChallengeLive } from "#workspace/infrastructure/auth/captcha-cha
 import { CliClientLive } from "#workspace/infrastructure/auth/cli-client.ts";
 import { AuthGatewayLive } from "#workspace/infrastructure/auth/gateway.ts";
 import { LegalConnectionJournal } from "#workspace/infrastructure/auth/legal-connection-journal.ts";
+import { SignInProvidersLive } from "#workspace/infrastructure/auth/offered-sign-in-providers.ts";
 import { PasswordCheckLive } from "#workspace/infrastructure/auth/password-check.ts";
 import { AuthSettings } from "#workspace/infrastructure/auth/settings.ts";
 import { WorkspacePeopleLive } from "#workspace/infrastructure/auth/workspace-people.ts";
@@ -198,6 +199,7 @@ const ImpersonationGuardLive = ImpersonationGuard.layer.pipe(
 export const WorkspaceLive = Layer.mergeAll(
   UseCasesLive,
   CaptchaChallengeLive,
+  SignInProvidersLive,
   DrizzleCredentialNames
 ).pipe(
   Layer.provide(AdaptersLive),

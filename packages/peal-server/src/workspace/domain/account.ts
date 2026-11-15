@@ -22,6 +22,9 @@ export class Account extends Schema.Class<Account>(
   ban: Schema.Option(BanSchema),
   email: Schema.String,
   emailVerified: Schema.Boolean,
+  // Whether the account has a password: one made through a sign-in
+  // provider has none until it sets one through a reset.
+  hasPassword: Schema.Boolean,
   id: UserIdSchema,
   image: Schema.Option(Schema.String),
   locale: LocaleSchema,

@@ -103,7 +103,11 @@ layer(
 
       assert.deepStrictEqual(
         yield* Schema.decodeUnknownEffect(CaptchaSchema)(reply.body),
-        { signUp: "invitation", turnstileSiteKey: null }
+        {
+          signInProviders: [],
+          signUp: "invitation",
+          turnstileSiteKey: null,
+        }
       );
     })
   );

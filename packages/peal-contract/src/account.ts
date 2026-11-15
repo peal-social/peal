@@ -47,7 +47,8 @@ const ExportedUserSchema = Schema.Struct({
 
 const ExportedSignInMethodSchema = Schema.Struct({
   createdAt: instant,
-  // `credential` for an email and a password.
+  // `credential` for an email and a password, `google` for Google, `oidc`
+  // for the OpenID Connect provider the server's operator set.
   provider: Schema.String,
   updatedAt: instant,
 });

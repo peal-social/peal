@@ -416,6 +416,10 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
     },
     advanced: {
       cookiePrefix,
+      // Better Auth leaves out its check of the addresses a request asks
+      // to be sent back to (callbackURL and the like) when NODE_ENV is
+      // test: written here, tests run it as production does.
+      disableOriginCheck: false,
       database: { generateId: "uuid" },
       ipAddress: {
         ipAddressHeaders: [...settings.ipAddressHeaders],

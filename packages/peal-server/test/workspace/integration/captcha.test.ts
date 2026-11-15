@@ -59,6 +59,7 @@ layer(appWithTurnstile(passingSecretKey), { timeout: "120 seconds" })(
     it.effect("tells clients the site key to show the widget with", () =>
       Effect.gen(function* siteKey() {
         assert.deepStrictEqual(yield* captchaSettings, {
+          signInProviders: [],
           signUp: "open",
           turnstileSiteKey: passingSiteKey,
         });
@@ -121,6 +122,7 @@ layer(TestApp.layerWith(unconfirmedEmails), { timeout: "120 seconds" })(
     it.effect("asks for no token", () =>
       Effect.gen(function* off() {
         assert.deepStrictEqual(yield* captchaSettings, {
+          signInProviders: [],
           signUp: "open",
           turnstileSiteKey: null,
         });
@@ -129,3 +131,26 @@ layer(TestApp.layerWith(unconfirmedEmails), { timeout: "120 seconds" })(
     );
   }
 );
+
+// Discovery nobody answers: the sign-in pages are told of both all the same,
+// and Better Auth tries the discovery again on a sign-in.
+layer(
+  TestApp.layerWith({
+    GOOGLE_SIGN_IN_CLIENT_ID: "synthetic-google-client",
+    GOOGLE_SIGN_IN_CLIENT_SECRET: "synthetic-google-secret",
+    PEAL_OIDC_CLIENT_ID: "synthetic-oidc-client",
+    PEAL_OIDC_CLIENT_SECRET: "synthetic-oidc-secret",
+    PEAL_OIDC_ISSUER: "http://127.0.0.1:9",
+    PEAL_OIDC_NAME: "Example Corp",
+  }),
+  { timeout: "120 seconds" }
+)("a server with sign-in providers", (it) => {
+  it.effect("lists them, Google first", () =>
+    Effect.gen(function* providers() {
+      assert.deepStrictEqual((yield* captchaSettings).signInProviders, [
+        { id: "google", name: "Google" },
+        { id: "oidc", name: "Example Corp" },
+      ]);
+    })
+  );
+});
