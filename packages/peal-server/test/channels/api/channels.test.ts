@@ -770,7 +770,8 @@ const RecordingAuthorizers = Layer.effect(
 const AskingTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
-  DisconnectChannel.layer
+  DisconnectChannel.layer,
+  WordPressSitesTest
 ).pipe(
   Layer.provideMerge(TransactionsTest),
   Layer.provideMerge(connectChannelWith(RecordingAuthorizers))
