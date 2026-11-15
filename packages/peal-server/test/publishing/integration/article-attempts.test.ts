@@ -1078,18 +1078,14 @@ describe("an attempt at sending an article", () => {
               request.method === "POST" &&
               request.query.get("search") === null,
             intercept: (request) => {
-              if (
-                request.route !== "/wp/v2/posts" ||
-                request.method !== "GET"
-              ) {
-                return;
-              }
+              const searching =
+                request.route === "/wp/v2/posts" && request.method === "GET";
 
-              if (search === "down") {
+              if (searching && search === "down") {
                 return { body: "Service Unavailable", status: 503 };
               }
 
-              return search === "refused"
+              return searching && search === "refused"
                 ? {
                     body: {
                       code: "rest_forbidden_context",

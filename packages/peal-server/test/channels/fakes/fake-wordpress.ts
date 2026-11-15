@@ -138,6 +138,10 @@ export const contributor: FakeWordPressUser = {
   password: "synthetic contributor password 9876",
 };
 
+// When the site says something changed: on the test's own clock.
+const stampOf = (clock: Clock.Clock) =>
+  new Date(clock.currentTimeMillisUnsafe()).toISOString().slice(0, 19);
+
 const decodeAddress = Schema.decodeUnknownSync(
   Schema.Struct({ port: Schema.Number })
 );
@@ -235,10 +239,6 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
   Clock.clockWith((clock) =>
     Effect.acquireRelease(
       Effect.promise(async () => {
-        // When the site says something changed: on the test's own clock.
-        const stamp = () =>
-          new Date(clock.currentTimeMillisUnsafe()).toISOString().slice(0, 19);
-
         const users = options.users ?? [editor, contributor];
         const homePath = options.home ?? "/";
         const pretty = options.pretty ?? true;
@@ -357,7 +357,7 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
             // no date yet.
             date_gmt:
               fields.date_gmt ??
-              ((fields.status ?? "draft") === "draft" ? null : stamp()),
+              ((fields.status ?? "draft") === "draft" ? null : stampOf(clock)),
             excerpt: fields.excerpt ?? "",
             // A file the library does not have is dropped, as WordPress
             // drops it: the post is saved without it, and no error said.
@@ -365,7 +365,7 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
               ? (fields.featured_media ?? 0)
               : 0,
             id: nextId,
-            modified_gmt: stamp(),
+            modified_gmt: stampOf(clock),
             status: fields.status ?? "draft",
             tags: [...(fields.tags ?? [])],
             title: fields.title ?? "",
@@ -450,7 +450,7 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
               categories: [...(fields.categories ?? post.categories)],
               tags: [...(fields.tags ?? post.tags)],
             });
-            post.modified_gmt = stamp();
+            post.modified_gmt = stampOf(clock);
           }
 
           return { body: postView(post), status: 200 };
@@ -679,7 +679,7 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
               excerpt: "",
               featured_media: 0,
               id: nextId,
-              modified_gmt: stamp(),
+              modified_gmt: stampOf(clock),
               status: "publish",
               tags: [],
               title: "",

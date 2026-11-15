@@ -27,7 +27,7 @@ import { ArticleJournal } from "./article-journal.ts";
 import { ArticleSendTurns } from "./article-send-turns.ts";
 import { ArticleStore } from "./article-store.ts";
 import { SitePublisher } from "./site-publisher.ts";
-import type { SitePublishRequest } from "./site-publisher.ts";
+import type { SitePublishRequest, SiteSearch } from "./site-publisher.ts";
 import { withinPlan } from "./within-plan.ts";
 
 // The steps of the job that sends an article (`PublishArticleV1`): claim
@@ -126,6 +126,17 @@ const turnDeadline = Duration.days(1);
 const stillToCheck: AttemptOutcome = {
   _tag: "unconfirmed",
   reason: "interrupted",
+};
+
+// What a search for an earlier call's post leaves the attempt to do: take
+// the post found, keep the article to check when several match, or send
+// it when none does.
+const searchOutcome = (search: SiteSearch): Option.Option<AttemptOutcome> => {
+  if (search._tag === "found") {
+    return Option.some(search.result);
+  }
+
+  return search._tag === "several" ? Option.some(stillToCheck) : Option.none();
 };
 
 // The site refused the search for a post an earlier call may have made.
@@ -350,13 +361,7 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
           publisher.find({ ...request, startedAt: at }).pipe(
             // Found, it is adopted; several, nobody can tell which: to
             // check; none, the article is sent.
-            Effect.map((search): Option.Option<AttemptOutcome> =>
-              search._tag === "found"
-                ? Option.some(search.result)
-                : search._tag === "several"
-                  ? Option.some(stillToCheck)
-                  : Option.none()
-            ),
+            Effect.map((search) => searchOutcome(search)),
             // The site down, the search is made again later; refused, the
             // article stays to check, and nothing is sent either way.
             Effect.catch((error) =>

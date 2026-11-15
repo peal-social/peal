@@ -578,12 +578,16 @@ export const WordPressSitePublisherLive = Layer.effect(
       const unclaimed = titled.filter((post) => !recorded.has(String(post.id)));
       const [only] = unclaimed;
 
+      if (only === undefined) {
+        const none: SiteSearch = { _tag: "none" };
+
+        return none;
+      }
+
       const search: SiteSearch =
-        only === undefined
-          ? { _tag: "none" }
-          : unclaimed.length > 1
-            ? { _tag: "several" }
-            : { _tag: "found", result: published(only) };
+        unclaimed.length > 1
+          ? { _tag: "several" }
+          : { _tag: "found", result: published(only) };
 
       return search;
     });
