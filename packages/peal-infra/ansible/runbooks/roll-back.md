@@ -333,3 +333,11 @@ which has no move, ignores.
    belong to know their links offer the first platform alone until the
    release comes back, or once the links have expired. Never change the
    rows by hand.
+
+## Past sign-in providers
+
+The release that signs people in with Google or an OpenID Connect provider
+stores `auth.account` rows of `google` and `oidc`, which the release before
+ignores: a person whose account has only such a row cannot sign in there
+until they reset a password through "Forgot password". Nothing else needs
+checking.

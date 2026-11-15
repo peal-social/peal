@@ -171,8 +171,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
   {
     applies: "always",
     data: {
-      en: "Your name, email address, language, sign-in methods (your password, stored hashed, and, with two-step verification, your authenticator app’s key and your recovery codes, stored encrypted) and sessions; the workspaces you belong to, your role in each, and the invitations you send or receive",
-      fr: "Vos nom, adresse e-mail, langue, moyens de connexion (votre mot de passe, conservé haché, et, avec la validation en deux étapes, la clé de votre application d’authentification et vos codes de secours, conservés chiffrés) et sessions ; les espaces de travail dont vous êtes membre, votre rôle dans chacun et les invitations envoyées ou reçues",
+      en: "Your name, email address, language, sign-in methods (your password, stored hashed, and, with two-step verification, your authenticator app’s key and your recovery codes, stored encrypted; or your identifier at a sign-in provider, Google or the provider your server’s operator set, never a token of it) and sessions; the workspaces you belong to, your role in each, and the invitations you send or receive",
+      fr: "Vos nom, adresse e-mail, langue, moyens de connexion (votre mot de passe, conservé haché, et, avec la validation en deux étapes, la clé de votre application d’authentification et vos codes de secours, conservés chiffrés ; ou votre identifiant auprès d’un fournisseur de connexion, Google ou celui que l’exploitant de votre serveur a choisi, jamais un de ses jetons) et sessions ; les espaces de travail dont vous êtes membre, votre rôle dans chacun et les invitations envoyées ou reçues",
     },
     id: "account",
     legalBasis: contract,
@@ -190,8 +190,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
       fr: "Tant que votre compte existe : sa fermeture les efface aussitôt. La clé de votre application d’authentification et vos codes de secours sont supprimés dès que la validation en deux étapes est désactivée. Les données propres à un espace de travail sont effacées à sa suppression",
     },
     source: {
-      en: "You, when you sign up and use the service; for an invitation, the member who invited you, who gave your email address",
-      fr: "Vous, à l’inscription et en utilisant le service ; pour une invitation, le membre qui vous a invité, qui a donné votre adresse e-mail",
+      en: "You, when you sign up and use the service; for an invitation, the member who invited you, who gave your email address; when you sign in with a sign-in provider, that provider, which gives your name, your email address and whether it confirmed it",
+      fr: "Vous, à l’inscription et en utilisant le service ; pour une invitation, le membre qui vous a invité, qui a donné votre adresse e-mail ; quand vous vous connectez avec un fournisseur de connexion, ce fournisseur, qui donne votre nom, votre adresse e-mail et s’il l’a confirmée",
     },
   },
   {
@@ -903,6 +903,14 @@ export const recipientCategories: readonly RecipientCategory[] = [
     recipient: {
       en: "On a server where ads are on, the ad network a boost runs on (Meta Platforms, for ads on Facebook and Instagram), which receives what the ad needs: the post’s id, the budget, the dates, the audience asked for, and who benefits from the ad and who pays for it; it processes them as a controller, under its own terms and privacy policy",
       fr: "Sur un serveur où les publicités sont activées, le réseau publicitaire sur lequel une mise en avant est diffusée (Meta Platforms, pour les publicités sur Facebook et Instagram), qui reçoit ce que la publicité demande : l’identifiant de la publication, le budget, les dates, l’audience demandée, et qui bénéficie de la publicité et qui la paie ; il les traite en tant que responsable de traitement, selon ses propres conditions et sa politique de confidentialité",
+    },
+  },
+  {
+    // On a server where a sign-in provider is set, for those who use it.
+    applies: "always",
+    recipient: {
+      en: "When you sign in with a sign-in provider (Google, or the provider your server’s operator set), that provider, which learns that you sign in to this service; it processes this as a controller, under its own terms and privacy policy",
+      fr: "Quand vous vous connectez avec un fournisseur de connexion (Google, ou celui que l’exploitant de votre serveur a choisi), ce fournisseur, qui apprend que vous vous connectez à ce service ; il le traite en tant que responsable de traitement, selon ses propres conditions et sa politique de confidentialité",
     },
   },
   {

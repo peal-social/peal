@@ -6,9 +6,10 @@ The staff context follows these rules too. What the law has a host keep is in
 - Better Auth lives only in `src/workspace/infrastructure/auth/`. `makeAuth`
   in `options.ts` is its one configuration, and its routes are under
   `/api/auth`. Every plugin is always on and options that shape tables are
-  constants, so every deployment has the same tables, but for two:
+  constants, so every deployment has the same tables, but for three:
   Stripe's, registered only with `STRIPE_SECRET_KEY` (`auth-schema` generates
-  its tables anyway, unused without it), and the captcha, which has none.
+  its tables anyway, unused without it), and the captcha and the sign-in
+  providers' (generic OAuth), which have none.
 - Turnstile (Better Auth's captcha plugin) guards `/sign-up/email` and
   `/request-password-reset` when `TURNSTILE_SECRET_KEY` and
   `TURNSTILE_SITE_KEY` are both set; one without the other stops the
@@ -346,6 +347,61 @@ The staff context follows these rules too. What the law has a host keep is in
   exits non-zero. Replaying an account's erasure runs `planClosure` on what
   the restore brought back, and refuses with `LastOwner`.
 
+## Sign-in providers
+
+- Google (`GOOGLE_SIGN_IN_CLIENT_*`) and one OpenID Connect provider
+  (`PEAL_OIDC_*`), read by `sign-in-provider-settings.ts` (each group all
+  or nothing, the issuer https but on a loopback host, scopes with
+  `openid` and `email`), are Better Auth's generic OAuth plugin
+  (`sign-in-providers.ts`, ids `google` and `oidc`), registered only when
+  one is set, after two-step verification and before the OAuth server
+  (`auth-plugins.test.ts`). Both use discovery and
+  `requireIdTokenVerification`: the profile is the ID token's claims alone,
+  checked for signature, issuer, audience and nonce, never the userinfo
+  endpoint (`getUserInfo`); PKCE on; no offline access. The name is made
+  storable (`profileToUser`), the picture never kept.
+- Discovery, token and key requests go to the host the operator set,
+  through the library's own fetch, not `publicHttpClient`: a company's
+  provider may be on a private network, and no user input picks it. Leave
+  it so.
+- `providerAdmission` (`provider-admission.ts`, `user.validateUserInfo`)
+  decides every provider sign-in, answering codes of
+  `providerRefusalCodes` into the callback's address: the provider must say
+  it confirmed the address (`email_verified` true, a missing claim refused,
+  no setting to trust a provider without it), on every action; an existing
+  account with two-step verification is refused (`two_step_password`),
+  before anything is linked or a session made (the plugin gates password
+  sign-ins only); a banned one too; a new account passes `SignUpGate` with
+  the invitation the sign-up page put in the state (`additionalData`, a
+  lower-case UUID). An account is made only when the sign-up page asks
+  (`disableImplicitSignUp`, `requestSignUp`). Linking is implicit only, by
+  an address both sides confirmed (`accountLinking`, no trusted provider,
+  `requireLocalEmailVerified` left at its default); `/link-social`,
+  `/unlink-account`, `/get-access-token`, `/refresh-token` and
+  `/account-info` are disabled (the list of kept account routes is in
+  `auth-plugins.test.ts`). `guardProviderSignIn` refuses 400
+  `PROVIDER_SIGN_IN_FIELD_NOT_ALLOWED` a `/sign-in/social` body with
+  `idToken`, `scopes`, `additionalParams`, `loginHint` or state Peal does
+  not read.
+- No provider token is kept: the account hooks null the token columns of
+  `google` and `oidc` accounts, and `updateAccountOnSignIn` is off. A
+  provider's sign-up keeps the page's language (`user.create.before`,
+  from the state). `onAPIError.errorURL` is the web app's `/sign-in`.
+  `advanced.disableOriginCheck: false` makes tests run Better Auth's check
+  of `callbackURL` and the like, which it skips under NODE_ENV=test.
+- An account a provider made has no password (`Account.hasPassword`,
+  `GET /api/me`) until it resets one, which `/reset-password` creates;
+  closing it and turning two-step verification on need one. A workspace's
+  two-step requirement holds for it as for any account.
+- The HTTP tracer redacts `code` and `state` in `url.full` and
+  `url.query` (`RedactedQueryLive`, `src/app/untraced-paths.ts`): the
+  callback's address carries both (`test/app/secrets-in-logs.test.ts`).
+- Tests sign in through `test/workspace/fakes/fake-oidc.ts`, an OpenID
+  Provider on a loopback port that signs ID tokens with a key made for the
+  run (`provider-support.ts` drives a sign-in as the pages do, the
+  callback as a browser opens it: an MCP authorization resumes only on a
+  navigation).
+
 ## Two-step verification
 
 - Better Auth's two-factor plugin, always on with the library's defaults
@@ -355,7 +411,8 @@ The staff context follows these rules too. What the law has a host keep is in
   hooks run in that order, and on a sign-in during an authorization its
   hook must delete the password's session before the OAuth server resumes
   with it (`test/workspace/infrastructure/auth-plugins.test.ts`). It gates
-  password sign-ins, Peal's only kind; the second step's routes resume an
+  password sign-ins (a provider's sign-in of an account that has it is
+  refused: see Sign-in providers); the second step's routes resume an
   authorization themselves (`test/workspace/integration/two-step.test.ts`).
 - A workspace's requirement is `workspace.security_policies` (no row:
   none), changed through `WorkspaceSecurity` by an owner in person
