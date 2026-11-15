@@ -44,6 +44,12 @@ class MeUser extends JsonSerializableType
     public string $name;
 
     /**
+     * @var ?bool $hasPassword
+     */
+    #[JsonProperty('hasPassword')]
+    public ?bool $hasPassword;
+
+    /**
      * @var bool $twoStepEnabled
      */
     #[JsonProperty('twoStepEnabled')]
@@ -58,6 +64,7 @@ class MeUser extends JsonSerializableType
      *   name: string,
      *   twoStepEnabled: bool,
      *   image?: ?string,
+     *   hasPassword?: ?bool,
      * } $values
      */
     public function __construct(
@@ -69,6 +76,7 @@ class MeUser extends JsonSerializableType
         $this->image = $values['image'] ?? null;
         $this->locale = $values['locale'];
         $this->name = $values['name'];
+        $this->hasPassword = $values['hasPassword'] ?? null;
         $this->twoStepEnabled = $values['twoStepEnabled'];
     }
 

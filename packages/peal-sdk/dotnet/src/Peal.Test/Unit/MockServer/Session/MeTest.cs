@@ -21,6 +21,7 @@ public class MeTest : BaseMockServerTest
                 "image": "image",
                 "locale": "en",
                 "name": "name",
+                "hasPassword": true,
                 "twoStepEnabled": true
               },
               "workspaces": [
@@ -76,6 +77,7 @@ public class MeTest : BaseMockServerTest
                 "image": "image",
                 "locale": "en",
                 "name": "name",
+                "hasPassword": true,
                 "twoStepEnabled": true
               },
               "workspaces": [
