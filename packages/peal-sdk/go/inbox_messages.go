@@ -2300,18 +2300,21 @@ func (i *InboxParticipant) String() string {
 }
 
 var (
-	inboxReplyWindowFieldClosesAt = big.NewInt(1 << 0)
-	inboxReplyWindowFieldOpen     = big.NewInt(1 << 1)
+	inboxReplyWindowFieldClosesAt       = big.NewInt(1 << 0)
+	inboxReplyWindowFieldOpen           = big.NewInt(1 << 1)
+	inboxReplyWindowFieldPersonClosesAt = big.NewInt(1 << 2)
 )
 
 // inboxReplyWindowNullableFields maps the wire names of InboxReplyWindow's nullable fields (required or optional) to their field bits.
 var inboxReplyWindowNullableFields = map[string]*big.Int{
-	"closesAt": inboxReplyWindowFieldClosesAt,
+	"closesAt":       inboxReplyWindowFieldClosesAt,
+	"personClosesAt": inboxReplyWindowFieldPersonClosesAt,
 }
 
 type InboxReplyWindow struct {
-	ClosesAt *string `json:"closesAt,omitempty" url:"closesAt,omitempty"`
-	Open     bool    `json:"open" url:"open"`
+	ClosesAt       *string `json:"closesAt,omitempty" url:"closesAt,omitempty"`
+	Open           bool    `json:"open" url:"open"`
+	PersonClosesAt *string `json:"personClosesAt,omitempty" url:"personClosesAt,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2332,6 +2335,13 @@ func (i *InboxReplyWindow) GetOpen() bool {
 		return false
 	}
 	return i.Open
+}
+
+func (i *InboxReplyWindow) GetPersonClosesAt() *string {
+	if i == nil {
+		return nil
+	}
+	return i.PersonClosesAt
 }
 
 func (i *InboxReplyWindow) GetExtraProperties() map[string]interface{} {
@@ -2362,6 +2372,13 @@ func (i *InboxReplyWindow) SetClosesAt(closesAt *string) {
 func (i *InboxReplyWindow) SetOpen(open bool) {
 	i.Open = open
 	i.require(inboxReplyWindowFieldOpen)
+}
+
+// SetPersonClosesAt sets the PersonClosesAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxReplyWindow) SetPersonClosesAt(personClosesAt *string) {
+	i.PersonClosesAt = personClosesAt
+	i.require(inboxReplyWindowFieldPersonClosesAt)
 }
 
 func (i *InboxReplyWindow) UnmarshalJSON(data []byte) error {

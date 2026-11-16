@@ -27,11 +27,18 @@ public final class InboxReplyWindow {
 
     private final boolean open;
 
+    private final Optional<String> personClosesAt;
+
     private final Map<String, Object> additionalProperties;
 
-    private InboxReplyWindow(Optional<String> closesAt, boolean open, Map<String, Object> additionalProperties) {
+    private InboxReplyWindow(
+            Optional<String> closesAt,
+            boolean open,
+            Optional<String> personClosesAt,
+            Map<String, Object> additionalProperties) {
         this.closesAt = closesAt;
         this.open = open;
+        this.personClosesAt = personClosesAt;
         this.additionalProperties = additionalProperties;
     }
 
@@ -48,10 +55,24 @@ public final class InboxReplyWindow {
         return open;
     }
 
+    @JsonIgnore
+    public Optional<String> getPersonClosesAt() {
+        if (personClosesAt == null) {
+            return Optional.empty();
+        }
+        return personClosesAt;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("closesAt")
     private Optional<String> _getClosesAt() {
         return closesAt;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("personClosesAt")
+    private Optional<String> _getPersonClosesAt() {
+        return personClosesAt;
     }
 
     @java.lang.Override
@@ -66,12 +87,12 @@ public final class InboxReplyWindow {
     }
 
     private boolean equalTo(InboxReplyWindow other) {
-        return closesAt.equals(other.closesAt) && open == other.open;
+        return closesAt.equals(other.closesAt) && open == other.open && personClosesAt.equals(other.personClosesAt);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.closesAt, this.open);
+        return Objects.hash(this.closesAt, this.open, this.personClosesAt);
     }
 
     @java.lang.Override
@@ -101,11 +122,19 @@ public final class InboxReplyWindow {
         _FinalStage closesAt(String closesAt);
 
         _FinalStage closesAt(Nullable<String> closesAt);
+
+        _FinalStage personClosesAt(Optional<String> personClosesAt);
+
+        _FinalStage personClosesAt(String personClosesAt);
+
+        _FinalStage personClosesAt(Nullable<String> personClosesAt);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder implements OpenStage, _FinalStage {
         private boolean open;
+
+        private Optional<String> personClosesAt = Optional.empty();
 
         private Optional<String> closesAt = Optional.empty();
 
@@ -117,6 +146,7 @@ public final class InboxReplyWindow {
         public Builder from(InboxReplyWindow other) {
             closesAt(other.getClosesAt());
             open(other.getOpen());
+            personClosesAt(other.getPersonClosesAt());
             return this;
         }
 
@@ -124,6 +154,31 @@ public final class InboxReplyWindow {
         @JsonSetter("open")
         public _FinalStage open(boolean open) {
             this.open = open;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage personClosesAt(Nullable<String> personClosesAt) {
+            if (personClosesAt.isNull()) {
+                this.personClosesAt = null;
+            } else if (personClosesAt.isEmpty()) {
+                this.personClosesAt = Optional.empty();
+            } else {
+                this.personClosesAt = Optional.of(personClosesAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage personClosesAt(String personClosesAt) {
+            this.personClosesAt = Optional.ofNullable(personClosesAt);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "personClosesAt", nulls = Nulls.SKIP)
+        public _FinalStage personClosesAt(Optional<String> personClosesAt) {
+            this.personClosesAt = personClosesAt;
             return this;
         }
 
@@ -154,12 +209,14 @@ public final class InboxReplyWindow {
 
         @java.lang.Override
         public InboxReplyWindow build() {
-            return new InboxReplyWindow(closesAt, open, additionalProperties);
+            return new InboxReplyWindow(closesAt, open, personClosesAt, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("closesAt") || key.equalsIgnoreCase("open")) {
+            if (key.equalsIgnoreCase("closesAt")
+                    || key.equalsIgnoreCase("open")
+                    || key.equalsIgnoreCase("personClosesAt")) {
                 return;
             }
             this.additionalProperties.put(key, value);

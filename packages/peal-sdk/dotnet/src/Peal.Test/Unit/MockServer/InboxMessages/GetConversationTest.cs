@@ -88,7 +88,8 @@ public class GetConversationTest : BaseMockServerTest
               ],
               "window": {
                 "closesAt": "closesAt",
-                "open": true
+                "open": true,
+                "personClosesAt": "personClosesAt"
               }
             }
             """;
@@ -172,7 +173,8 @@ public class GetConversationTest : BaseMockServerTest
               ],
               "window": {
                 "closesAt": "closesAt",
-                "open": true
+                "open": true,
+                "personClosesAt": "personClosesAt"
               }
             }
             """;
