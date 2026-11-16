@@ -406,6 +406,62 @@ describe("Meta's direct messages, read", () => {
     )
   );
 
+  it.effect(
+    "space every call of one account across reads, a resume and an unfollow alike",
+    () =>
+      atNow(
+        Effect.gen(function* shared() {
+          const { account, graph, platform } = yield* onGraph("messenger", {
+            pace: Duration.millis(500),
+          });
+
+          graph.add(conversation("c_1", [message(1)]));
+
+          const settle = (count: number) =>
+            Effect.gen(function* settled() {
+              for (
+                let waited = 0;
+                waited < 50 && graph.requests().length < count;
+                waited += 1
+              ) {
+                yield* Effect.promise(async () => {
+                  await delay(10);
+                });
+              }
+
+              yield* Effect.promise(async () => {
+                await delay(30);
+              });
+            });
+
+          // Two channels of the Page read at once, as two workspaces do,
+          // then a resume of a message: one call each half second.
+          const fibers = yield* Effect.forkChild(
+            Effect.all(
+              [
+                platform.read(account, toRead),
+                platform.read(account, toRead),
+                platform.resume(account, outgoing()),
+              ],
+              { concurrency: "unbounded" }
+            )
+          );
+
+          yield* settle(1);
+          assert.lengthOf(graph.requests(), 1);
+
+          for (let calls = 2; calls <= 5; calls += 1) {
+            yield* TestClock.adjust("500 millis");
+            yield* settle(calls);
+            assert.lengthOf(graph.requests(), calls);
+          }
+
+          yield* Fiber.join(fibers);
+          assert.lengthOf(graph.requests(), 5);
+        })
+      )
+  );
+
   it.effect("stop for the run past the usage ceiling of Meta's headers", () =>
     atNow(
       Effect.gen(function* ceiling() {

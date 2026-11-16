@@ -108,7 +108,7 @@ import type { MetaEngagementOptions } from "./meta-comments.ts";
 // sandbox checks what src/engagement/AGENTS.md lists as Not verified.
 
 export interface MetaMessagesOptions extends MetaEngagementOptions {
-  /** How long a read waits between two calls of one account. */
+  /** How long the process waits between two calls of one account. */
   readonly pace?: Duration.Duration;
 }
 
@@ -367,37 +367,54 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
 
     // A Graph call as the account, half a second after its last one in
     // this read: its answer, or none when nothing came back.
-    const pacedCalls = Effect.fnUntraced(function* pacedCalls() {
-      const last = yield* Ref.make(Option.none<DateTime.Utc>());
+    // When each account may next be called, for every read, resume and
+    // subscription of the process: Meta's limit is the app's for the Page
+    // or account, whichever channel calls (a Page in two workspaces).
+    const nextCall = yield* Ref.make(new Map<string, DateTime.Utc>());
 
-      return (
-        account: ChannelAccount,
-        token: Redacted.Redacted,
-        path: string,
-        params: Readonly<Record<string, string>>
-      ) =>
-        Effect.gen(function* paced() {
-          const previous = yield* Ref.get(last);
-          const now = yield* DateTime.now;
+    // Waits for the account's next slot, and takes it.
+    const paced = Effect.fnUntraced(function* paced(account: ChannelAccount) {
+      const now = yield* DateTime.now;
+      const key = `${account.platform}:${account.accountId}`;
 
-          if (Option.isSome(previous)) {
-            const ready = DateTime.addDuration(previous.value, pace);
+      const slot = yield* Ref.modify(nextCall, (slots) => {
+        const earliest = slots.get(key);
 
-            if (DateTime.isLessThan(now, ready)) {
-              yield* Effect.sleep(DateTime.distance(now, ready));
-            }
-          }
+        const taken =
+          earliest === undefined || DateTime.isLessThan(earliest, now)
+            ? now
+            : earliest;
 
-          yield* Ref.set(last, Option.some(yield* DateTime.now));
+        // Slots long past are forgotten, so the map stays small.
+        const kept = new Map(
+          [...slots].filter(([, at]) =>
+            DateTime.isGreaterThanOrEqualTo(at, now)
+          )
+        );
 
-          return yield* request(account, token, "GET", path, params).pipe(
-            Effect.flatMap(http.execute),
-            Effect.option
-          );
-        });
+        kept.set(key, DateTime.addDuration(taken, pace));
+
+        return [taken, kept] as const;
+      });
+
+      if (DateTime.isLessThan(now, slot)) {
+        yield* Effect.sleep(DateTime.distance(now, slot));
+      }
     });
 
-    type Call = Effect.Success<ReturnType<typeof pacedCalls>>;
+    // A Graph call as the account, once its slot came: its answer, or none
+    // when nothing came back.
+    const call = (
+      account: ChannelAccount,
+      token: Redacted.Redacted,
+      path: string,
+      params: Readonly<Record<string, string>>
+    ) =>
+      paced(account).pipe(
+        Effect.andThen(request(account, token, "GET", path, params)),
+        Effect.flatMap(http.execute),
+        Effect.option
+      );
 
     // What a refused read means: a refused token, for ChannelAccess to
     // renew; a missing permission, which pauses the channel and deletes
@@ -428,7 +445,6 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
     // A conversation's latest messages read back: whole when it holds no
     // more than Meta details and every one came with its details.
     const readBack = Effect.fn("MetaMessages.readBack")(function* readBack(
-      call: Call,
       account: ChannelAccount,
       token: Redacted.Redacted,
       listed: ListedConversation,
@@ -495,7 +511,6 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
       token: Redacted.Redacted,
       toRead: MessagesToRead
     ) {
-      const call = yield* pacedCalls();
       const deadline = DateTime.addDuration(yield* DateTime.now, deadlineAfter);
       const readings: ConversationReading[] = [];
       const seen: string[] = [];
@@ -568,7 +583,6 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
           }
 
           const read = yield* readBack(
-            call,
             account,
             token,
             conversation,
@@ -722,6 +736,8 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
       token: Redacted.Redacted,
       message: OutgoingDirect
     ) {
+      yield* paced(account);
+
       const answer = yield* request(
         account,
         token,
@@ -770,6 +786,8 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
       access
         .withToken(account.channelId, (token) =>
           Effect.gen(function* subscription() {
+            yield* paced(account);
+
             const answer = yield* request(
               account,
               token.accessToken,
@@ -819,6 +837,8 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
       return access
         .withToken(account.channelId, (token) =>
           Effect.gen(function* linked() {
+            yield* paced(account);
+
             const answer = yield* request(
               account,
               token.accessToken,
