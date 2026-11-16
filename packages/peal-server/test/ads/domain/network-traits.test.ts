@@ -4,7 +4,7 @@ import { Duration } from "effect";
 import { AdNetworkSchema } from "#ads/domain/ad-network.ts";
 import { networkTraits } from "#ads/domain/network-traits.ts";
 
-describe("networkTraits", () => {
+describe("what each ad network reads and allows", () => {
   it("describes every network", () => {
     expect(Object.keys(networkTraits).toSorted()).toStrictEqual(
       [...AdNetworkSchema.literals].toSorted()
@@ -37,6 +37,6 @@ describe("networkTraits", () => {
       reportsResults: described.reportsResults,
       spends: described.spends,
     }).toStrictEqual(traits);
-    expect(Duration.equals(described.syncEvery, syncEvery)).toBe(true);
+    expect(Duration.equals(described.syncEvery, syncEvery)).toBeTruthy();
   });
 });

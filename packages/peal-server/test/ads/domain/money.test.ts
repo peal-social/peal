@@ -41,11 +41,14 @@ describe(minorUnitsOfMicros, () => {
     expect(minorUnitsOfMicros("5000001", 0)).toBe(6);
   });
 
-  it("refuses what is not a whole number of micros, or past the largest amount", () => {
+  it("refuses what is not a whole number of micros", () => {
     expect(minorUnitsOfMicros("", 2)).toBeUndefined();
     expect(minorUnitsOfMicros("-1000000", 2)).toBeUndefined();
     expect(minorUnitsOfMicros("1.5", 2)).toBeUndefined();
     expect(minorUnitsOfMicros("1e6", 2)).toBeUndefined();
+  });
+
+  it("refuses an amount past the largest Peal keeps", () => {
     expect(minorUnitsOfMicros("1".repeat(30), 2)).toBeUndefined();
     expect(minorUnitsOfMicros("10000000000000000000", 2)).toBeUndefined();
   });
