@@ -4,7 +4,7 @@ import { definePrimitive } from "@ui-sdk/core";
 import { createParts } from "@ui-sdk/react/primitive";
 import { useEffect, useRef, useState } from "react";
 
-import type { AsciiCube } from "../lib/ascii-cube";
+import type { AsciiCube, AsciiCubeVariant } from "../lib/ascii-cube";
 import { cn } from "../lib/utils";
 
 interface AsciiArtState {
@@ -68,7 +68,11 @@ const { Root } = createParts(asciiArt, { root: "div" });
 
 const loadCube = async () => await import("../lib/ascii-cube");
 
-const AsciiCanvas = ({ inView, reducedMotion }: AsciiArtState) => {
+const AsciiCanvas = ({
+  inView,
+  reducedMotion,
+  variant,
+}: AsciiArtState & { readonly variant: AsciiCubeVariant }) => {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [cube, setCube] = useState<AsciiCube | undefined>();
 
@@ -97,6 +101,7 @@ const AsciiCanvas = ({ inView, reducedMotion }: AsciiArtState) => {
           },
           fontFamily,
           scrollTarget: target.parentElement ?? target,
+          variant,
         });
         setCube(made);
       }
@@ -110,7 +115,7 @@ const AsciiCanvas = ({ inView, reducedMotion }: AsciiArtState) => {
       cancelled = true;
       made?.dispose();
     };
-  }, []);
+  }, [variant]);
 
   useEffect(() => {
     if (cube === undefined) {
@@ -127,22 +132,33 @@ const AsciiCanvas = ({ inView, reducedMotion }: AsciiArtState) => {
   }, [cube, inView, reducedMotion]);
 
   return (
-    <canvas ref={canvas} className="absolute inset-0 size-full font-mono" />
+    <canvas
+      ref={canvas}
+      className="absolute inset-0 size-full font-mono [image-rendering:pixelated]"
+    />
   );
 };
 
 /**
- * The site's hero art (DESIGN.md, Site): Peal's cube as pixelated text,
- * turning slowly while on screen and still for reduced motion. It is
- * decoration, hidden from screen readers; size it with `className`.
+ * The site's hero art (DESIGN.md, Site): Peal's cube as dithered pixels or
+ * as small glyphs, turning slowly while on screen and still for reduced
+ * motion. It is decoration, hidden from screen readers; size it with
+ * `className`.
  */
 const AsciiArt = ({
   className,
+  variant = "pixels",
 }: {
   readonly className?: string | undefined;
+  /** Square pixels with ordered dithering, or Geist Mono glyphs. */
+  readonly variant?: AsciiCubeVariant | undefined;
 }) => (
-  <Root data-slot="ascii-art" className={cn("relative", className)}>
-    {(state: AsciiArtState) => <AsciiCanvas {...state} />}
+  <Root
+    data-slot="ascii-art"
+    data-variant={variant}
+    className={cn("relative", className)}
+  >
+    {(state: AsciiArtState) => <AsciiCanvas {...state} variant={variant} />}
   </Root>
 );
 

@@ -290,12 +290,16 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   licence's line and the language links in a first cell, then a bordered
   cell per column of links (legal, the contract's functions, Peal's
   accounts), and a caption row at the foot.
-- **Hero art.** The home page's hero shows the mark as pixelated text:
-  Peal's cube rendered at low resolution and drawn as Geist Mono glyphs
-  chosen by brightness (no dots), each face in its own colour of the mark,
-  on `background`. It starts with a short intro, turns slowly, follows the
-  scroll a little, stops when off screen, and is one still frame for
-  readers who ask for reduced motion.
+- **Hero art.** The home page's hero shows Peal's cube rendered at low
+  resolution, each face in its own colour of the mark (yellow top, blue
+  left, lavender right), on `background`, with crisp edges and no
+  anti-aliasing. By default as square pixels of 5 px, with no gap, in four
+  tones of each face's colour mixed by a 4x4 Bayer dither and a darker
+  outline; or as Geist Mono glyphs in 6 by 8 px cells, chosen by
+  brightness from `-=+x*%#@` (no dots). It starts with a short intro (cells
+  switching on), turns slowly, spins a little with the scroll, stops when
+  off screen, and is one still frame for readers who ask for reduced
+  motion.
 
 ## Writing
 

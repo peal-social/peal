@@ -1,15 +1,24 @@
 // The site's hero art (DESIGN.md, Site): Peal's cube rendered by Three.js at
-// one pixel per character cell, then drawn on a 2D canvas as Geist Mono
-// glyphs picked by brightness, each face in its colour of the mark. GSAP
-// runs the intro, the slow turn and the scroll-linked tilt.
+// one pixel per cell into a small target, then drawn on the canvas by a
+// second, full-screen shader pass, as square pixels with ordered dithering
+// or as Geist Mono glyphs picked by brightness, each face in its colour of
+// the mark. Nothing is read back from the GPU. GSAP runs the intro, the
+// slow turn and the scroll-linked spin.
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   BoxGeometry,
+  CanvasTexture,
+  Color,
   Mesh,
+  NearestFilter,
   OrthographicCamera,
+  PlaneGeometry,
   Scene,
   ShaderMaterial,
+  SRGBColorSpace,
+  Vector2,
+  Vector3,
   WebGLRenderTarget,
   WebGLRenderer,
 } from "three";
@@ -21,14 +30,18 @@ export interface AsciiCubeColours {
   readonly top: string;
 }
 
+/** Square dithered pixels, or Geist Mono glyphs. */
+export type AsciiCubeVariant = "glyphs" | "pixels";
+
 export interface AsciiCubeOptions {
-  /** The canvas the glyphs are drawn on, sized by its parent. */
+  /** The canvas the art is drawn on, sized by its parent. */
   readonly canvas: HTMLCanvasElement;
   readonly colours: AsciiCubeColours;
-  /** The monospace font family, such as Geist Mono's. */
+  /** The monospace font family, such as Geist Mono's, for glyphs. */
   readonly fontFamily: string;
-  /** The element whose passage through the window tilts the cube. */
+  /** The element whose passage through the window spins the cube. */
   readonly scrollTarget: Element;
+  readonly variant: AsciiCubeVariant;
 }
 
 export interface AsciiCube {
@@ -41,13 +54,14 @@ export interface AsciiCube {
   readonly dispose: () => void;
 }
 
-// Brightness ramp, dim to bright, with no dots: the art is glyph blocks.
-const ramp = "-=+x*%#@";
+// Brightness ramp, dim to bright, with no dots.
+const ramp = ["-", "=", "+", "x", "*", "%", "#", "@"] as const;
 
-// One cell is one rendered pixel; Geist Mono's advance is 0.6 em.
-const cellWidth = 9;
-const cellHeight = 15;
-const fontSize = 14;
+// Each variant's cell, in CSS pixels, and the glyphs' font size.
+const cells = {
+  glyphs: { font: 8.5, height: 8, width: 6 },
+  pixels: { font: 0, height: 5, width: 5 },
+} as const;
 
 // The mark's isometric view: a quarter turn around the vertical, then the
 // cube tipped toward the reader until its top is a rhombus.
@@ -61,7 +75,7 @@ const halfHeight = 1.08;
 // Radians per second of the slow turn.
 const turnSpeed = 0.3;
 
-const vertexShader = `
+const cubeVertex = `
   varying vec3 vNormal;
   varying vec2 vUv;
   void main() {
@@ -72,8 +86,8 @@ const vertexShader = `
 `;
 
 // Red carries the face (1 top, 2 left, 3 right, over 3), green the shade
-// and blue whether the pixel is on the face's edge, drawn densest.
-const fragmentShader = `
+// and blue whether the pixel is on the face's edge.
+const cubeFragment = `
   uniform float face;
   varying vec3 vNormal;
   varying vec2 vUv;
@@ -83,31 +97,148 @@ const fragmentShader = `
     float across = 0.5 + 0.5 * (vUv.x + vUv.y) * 0.5;
     float shade = clamp(0.25 + 0.95 * lambert * across, 0.0, 1.0);
     float inset = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
-    gl_FragColor = vec4(face / 3.0, shade, step(inset, 0.045), 1.0);
+    gl_FragColor = vec4(face / 3.0, shade, step(inset, 0.03), 1.0);
+  }
+`;
+
+const screenVertex = `
+  void main() {
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+  }
+`;
+
+// Reads the cell under each fragment from the cube's target and draws it:
+// face colour, shade, edge, and the intro's reveal by a per-cell threshold.
+const screenFragment = `
+  uniform sampler2D cube;
+  uniform sampler2D atlas;
+  uniform vec2 cellSize;
+  uniform vec2 grid;
+  uniform vec2 offset;
+  uniform float reveal;
+  uniform float time;
+  uniform float glyphs;
+  uniform vec3 top;
+  uniform vec3 left;
+  uniform vec3 right;
+
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+  }
+
+  float bayer(vec2 p) {
+    vec2 q = mod(p, 4.0);
+    int i = int(q.x + q.y * 4.0);
+    float m[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0,
+      3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+    return (m[i] + 0.5) / 16.0;
+  }
+
+  void main() {
+    vec2 position = gl_FragCoord.xy - offset;
+    vec2 cell = floor(position / cellSize);
+    if (any(lessThan(cell, vec2(0.0))) || any(greaterThanEqual(cell, grid))) {
+      discard;
+    }
+    vec4 texel = texture2D(cube, (cell + 0.5) / grid);
+    float face = floor(texel.r * 3.0 + 0.5);
+    float threshold = hash(cell);
+    if (texel.a == 0.0 || face < 0.5 || threshold > reveal) {
+      discard;
+    }
+    vec3 colour = face < 1.5 ? top : (face < 2.5 ? left : right);
+    bool settling = reveal < 1.0 && reveal - threshold < 0.08;
+    float flicker = hash(cell + floor(time * 24.0));
+
+    if (glyphs > 0.5) {
+      float level = settling
+        ? floor(flicker * 8.0)
+        : (texel.b > 0.5 ? 7.0 : min(6.0, floor(texel.g * 7.0)));
+      vec2 inCell = fract(position / cellSize);
+      float alpha = texture2D(atlas, vec2((level + inCell.x) / 8.0, inCell.y)).a;
+      gl_FragColor = vec4(colour * alpha, alpha);
+      return;
+    }
+
+    // Four steps per face, from a darker to a lighter tone of its colour,
+    // chosen by the shade with a 4x4 Bayer matrix between them.
+    float tone = clamp(floor(texel.g * 3.0 + bayer(cell)), 0.0, 3.0);
+    if (texel.b > 0.5) {
+      tone = 0.0;
+    }
+    if (settling) {
+      tone = flicker > 0.5 ? 3.0 : 1.0;
+    }
+    vec3 dark = colour * 0.72;
+    vec3 light = mix(colour, vec3(1.0), 0.28);
+    gl_FragColor = vec4(mix(dark, light, tone / 3.0), 1.0);
   }
 `;
 
 const faceMaterial = (face: number) =>
   new ShaderMaterial({
-    fragmentShader,
+    fragmentShader: cubeFragment,
     uniforms: { face: { value: face } },
-    vertexShader,
+    vertexShader: cubeVertex,
   });
+
+// A CSS colour as its sRGB components, which the shader writes unchanged.
+const srgb = (css: string) => {
+  const colour = new Color(css);
+  const components = { b: 0, g: 0, r: 0 };
+
+  colour.getRGB(components, SRGBColorSpace);
+
+  return new Vector3(components.r, components.g, components.b);
+};
+
+// The ramp's glyphs side by side in white, one cell each, at the screen's
+// pixel ratio, for the glyphs variant.
+const glyphAtlas = (fontFamily: string, ratio: number) => {
+  const { font, height, width } = cells.glyphs;
+  const atlas = document.createElement("canvas");
+  atlas.width = Math.round(width * ratio) * ramp.length;
+  atlas.height = Math.round(height * ratio);
+
+  const context = atlas.getContext("2d");
+  const cellWidth = atlas.width / ramp.length;
+
+  if (context !== null) {
+    context.fillStyle = "#ffffff";
+    context.font = `${font * ratio}px ${fontFamily}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+
+    for (const [index, glyph] of ramp.entries()) {
+      context.fillText(glyph, (index + 0.5) * cellWidth, atlas.height / 2);
+    }
+  }
+
+  const texture = new CanvasTexture(atlas);
+  texture.magFilter = NearestFilter;
+  texture.minFilter = NearestFilter;
+
+  return texture;
+};
 
 export const createAsciiCube = ({
   canvas,
   colours,
   fontFamily,
   scrollTarget,
+  variant,
 }: AsciiCubeOptions): AsciiCube => {
   gsap.registerPlugin(ScrollTrigger);
 
-  const context = canvas.getContext("2d");
-  const renderer = new WebGLRenderer({ alpha: true, antialias: false });
-  renderer.setPixelRatio(1);
+  const cell = cells[variant];
+  const renderer = new WebGLRenderer({ alpha: true, antialias: false, canvas });
   renderer.setClearColor(0x00_00_00, 0);
 
-  const target = new WebGLRenderTarget(1, 1);
+  const target = new WebGLRenderTarget(1, 1, {
+    magFilter: NearestFilter,
+    minFilter: NearestFilter,
+  });
+
   const scene = new Scene();
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
   camera.position.set(0, 0, 4);
@@ -121,13 +252,34 @@ export const createAsciiCube = ({
   const cube = new Mesh(geometry, [left, left, top, top, right, right]);
   scene.add(cube);
 
-  const fills = ["", colours.top, colours.left, colours.right];
+  let atlas = glyphAtlas(fontFamily, window.devicePixelRatio || 1);
 
-  let columns = 0;
-  let rows = 0;
-  let pixels = new Uint8Array(0);
-  // Each cell's threshold for the intro's reveal, fixed per size.
-  let thresholds = new Float32Array(0);
+  const uniforms = {
+    atlas: { value: atlas },
+    cellSize: { value: new Vector2(1, 1) },
+    cube: { value: target.texture },
+    glyphs: { value: variant === "glyphs" ? 1 : 0 },
+    grid: { value: new Vector2(1, 1) },
+    left: { value: srgb(colours.left) },
+    offset: { value: new Vector2(0, 0) },
+    reveal: { value: 0 },
+    right: { value: srgb(colours.right) },
+    time: { value: 0 },
+    top: { value: srgb(colours.top) },
+  };
+
+  const screen = new ShaderMaterial({
+    depthTest: false,
+    depthWrite: false,
+    fragmentShader: screenFragment,
+    uniforms,
+    vertexShader: screenVertex,
+  });
+
+  const quad = new Mesh(new PlaneGeometry(2, 2), screen);
+  quad.frustumCulled = false;
+  const screenScene = new Scene();
+  screenScene.add(quad);
 
   // What GSAP animates: the intro's reveal, scale and spin, and the scroll.
   const motion = { reveal: 0, scale: 0.82, scroll: 0, spin: -1.4 };
@@ -148,90 +300,49 @@ export const createAsciiCube = ({
     };
   };
 
-  // The glyph for one cell, empty where the cube is not, or not yet.
-  const glyphAt = (row: number, column: number, reveal: number) => {
-    // Render targets count rows from the bottom.
-    const index = ((rows - 1 - row) * columns + column) * 4;
-    const face = Math.round(((pixels[index] ?? 0) / 255) * 3);
-    const threshold = thresholds[row * columns + column] ?? 0;
-
-    if ((pixels[index + 3] ?? 0) === 0 || face === 0 || threshold > reveal) {
-      return { fill: "", glyph: "" };
-    }
-
-    const fill = fills[face] ?? colours.left;
-
-    // Cells about to settle show a passing glyph during the intro.
-    if (reveal < 1 && reveal - threshold < 0.08) {
-      return {
-        fill,
-        glyph: ramp[Math.floor(Math.random() * ramp.length)] ?? "",
-      };
-    }
-
-    if ((pixels[index + 2] ?? 0) > 127) {
-      return { fill, glyph: ramp.at(-1) ?? "" };
-    }
-
-    const shade = (pixels[index + 1] ?? 0) / 255;
-
-    const level = Math.min(
-      ramp.length - 2,
-      Math.floor(shade * (ramp.length - 1))
-    );
-
-    return { fill, glyph: ramp[level] ?? "" };
-  };
-
   const draw = () => {
-    if (context === null || columns === 0 || rows === 0) {
-      return;
-    }
-
     const { pitch, reveal, scale, yaw } = pose();
 
     cube.rotation.set(pitch, yaw, 0);
     cube.scale.setScalar(scale);
+    uniforms.reveal.value = reveal;
+    uniforms.time.value = elapsed;
     renderer.setRenderTarget(target);
     renderer.render(scene, camera);
-    renderer.readRenderTargetPixels(target, 0, 0, columns, rows, pixels);
     renderer.setRenderTarget(null);
-
-    context.clearRect(0, 0, columns * cellWidth, rows * cellHeight);
-
-    for (let row = 0; row < rows; row += 1) {
-      for (let column = 0; column < columns; column += 1) {
-        const cell = glyphAt(row, column, reveal);
-
-        if (cell.glyph !== "") {
-          context.fillStyle = cell.fill;
-          context.fillText(
-            cell.glyph,
-            column * cellWidth + cellWidth / 2,
-            row * cellHeight + cellHeight / 2
-          );
-        }
-      }
-    }
+    renderer.render(screenScene, camera);
   };
 
   const resize = () => {
     const { height, width } = canvas.getBoundingClientRect();
     const ratio = window.devicePixelRatio || 1;
-    columns = Math.max(1, Math.floor(width / cellWidth));
-    rows = Math.max(1, Math.floor(height / cellHeight));
-    canvas.width = Math.round(columns * cellWidth * ratio);
-    canvas.height = Math.round(rows * cellHeight * ratio);
-    context?.setTransform(ratio, 0, 0, ratio, 0, 0);
+    const columns = Math.max(1, Math.floor(width / cell.width));
+    const rows = Math.max(1, Math.floor(height / cell.height));
 
-    if (context !== null) {
-      context.font = `${fontSize}px ${fontFamily}`;
-      context.textAlign = "center";
-      context.textBaseline = "middle";
+    renderer.setPixelRatio(ratio);
+    renderer.setSize(width, height, false);
+
+    // Whole device pixels per cell, so every cell has the same size.
+    const cellSize = new Vector2(
+      Math.round(cell.width * ratio),
+      Math.round(cell.height * ratio)
+    );
+
+    uniforms.cellSize.value = cellSize;
+    uniforms.grid.value = new Vector2(columns, rows);
+    uniforms.offset.value = new Vector2(
+      Math.floor((canvas.width - columns * cellSize.x) / 2),
+      Math.floor((canvas.height - rows * cellSize.y) / 2)
+    );
+
+    if (variant === "glyphs") {
+      atlas.dispose();
+      atlas = glyphAtlas(fontFamily, ratio);
+      uniforms.atlas.value = atlas;
     }
 
     const halfWidth =
-      (halfHeight * (columns * cellWidth)) / (rows * cellHeight);
+      (halfHeight * (columns * cell.width)) / (rows * cell.height);
 
     camera.left = -halfWidth;
     camera.right = halfWidth;
@@ -239,10 +350,6 @@ export const createAsciiCube = ({
     camera.bottom = -halfHeight;
     camera.updateProjectionMatrix();
     target.setSize(columns, rows);
-    pixels = new Uint8Array(columns * rows * 4);
-    thresholds = Float32Array.from({ length: columns * rows }, () =>
-      Math.random()
-    );
     draw();
   };
 
@@ -283,6 +390,9 @@ export const createAsciiCube = ({
       top.dispose();
       left.dispose();
       right.dispose();
+      quad.geometry.dispose();
+      screen.dispose();
+      atlas.dispose();
       target.dispose();
       renderer.dispose();
     },
