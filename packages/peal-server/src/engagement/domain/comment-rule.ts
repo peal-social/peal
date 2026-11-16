@@ -1,5 +1,5 @@
-import type { DateTime, Option } from "effect";
-import { Duration, Result, Schema } from "effect";
+import type { DateTime } from "effect";
+import { Duration, Option, Result, Schema } from "effect";
 
 import {
   ChannelIdSchema,
@@ -255,6 +255,10 @@ export const changeCommentRule = (
     })
   );
 };
+
+/** The rule as shown to one who may not read its private text. */
+export const withoutPrivateReply = (rule: CommentRule): CommentRule =>
+  changed(rule, { privateReply: Option.none() });
 
 /** The rule ended at `now`; an ended one stays as it ended. */
 export const endCommentRule = (

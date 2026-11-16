@@ -50,6 +50,7 @@ import {
 } from "#test/engagement/rule-world.ts";
 import { actorIn } from "#test/publishing/support.ts";
 import { fakeMeters } from "#test/shared/fake-meters.ts";
+import { withheldWhileImpersonating } from "#workspace/domain/membership.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
 // Comment rules on Postgres, with the inbox's own replies: a comment that
@@ -1517,6 +1518,116 @@ describe("a comment rule's private reply", () => {
           Effect.ensuring(Ref.set(meanwhile, Effect.void)),
           Effect.ensuring(forget(workspaceId))
         );
+      }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live(
+    "shows its private text and private replies only to who may read private replies",
+    () =>
+      Effect.gen(function* hidden() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const { rule, thread } = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+
+          yield* received(thread, [{ author: 1, text: "price?" }]);
+          yield* rules.runDue;
+          yield* publicRepliesEnd(workspaceId, "sent");
+          yield* rules.runDue;
+
+          const member = actorIn(workspaceId);
+
+          const subject =
+            member.subject._tag === "user" ? member.subject : undefined;
+
+          assert.isDefined(subject);
+
+          const readers = {
+            application: new Actor({
+              permissions: member.permissions,
+              subject: { ...subject, clientId: "synthetic-client" },
+              workspaceId,
+            }),
+            partnerKey: new Actor({
+              permissions: ["engagement:read", "engagement:reply"],
+              subject: { _tag: "apiKey", apiKeyId: "synthetic-partner-key" },
+              workspaceId,
+            }),
+            viewer: actorIn(workspaceId, permissionsFor("viewer")),
+          };
+
+          // What a reader learns of the rule's private side, by get and list.
+          const seen = (reader: Actor) =>
+            Effect.all([
+              rules.get(reader, rule.rule.id),
+              rules
+                .list(reader, {
+                  after: Option.none(),
+                  limit: 100,
+                  status: Option.none(),
+                })
+                .pipe(
+                  Effect.map((all) =>
+                    all.filter((one) => one.rule.id === rule.rule.id)
+                  )
+                ),
+            ]).pipe(
+              Effect.map(([one, listed]) =>
+                [one, ...listed].map((shown) => ({
+                  privateReply: Option.isSome(shown.rule.privateReply),
+                  privateReplyIds: shown.matches.filter(
+                    ({ outcome }) =>
+                      outcome._tag === "replied" &&
+                      Option.exists(
+                        outcome.private,
+                        (made) => made._tag === "privateReply"
+                      )
+                  ).length,
+                  statuses: shown.matches.filter(({ privateStatus }) =>
+                    Option.isSome(privateStatus)
+                  ).length,
+                }))
+              )
+            );
+
+          const nothing = {
+            privateReply: false,
+            privateReplyIds: 0,
+            statuses: 0,
+          };
+
+          for (const [name, reader] of Object.entries(readers)) {
+            assert.deepStrictEqual(
+              yield* seen(reader),
+              [nothing, nothing],
+              name
+            );
+          }
+
+          // Staff acting as a member hold what membership gives them:
+          // nothing of the inbox, so not even the rule.
+          const staff = new Actor({
+            permissions: member.permissions.filter(
+              (permission) => !withheldWhileImpersonating.has(permission)
+            ),
+            subject: {
+              ...subject,
+              impersonatedBy: Option.some(subject.userId),
+            },
+            workspaceId,
+          });
+
+          assert.strictEqual(
+            (yield* rules.get(staff, rule.rule.id).pipe(Effect.flip))._tag,
+            "MissingPermission"
+          );
+
+          assert.deepStrictEqual(yield* seen(member), [
+            { privateReply: true, privateReplyIds: 1, statuses: 1 },
+            { privateReply: true, privateReplyIds: 1, statuses: 1 },
+          ]);
+        }).pipe(Effect.ensuring(forget(workspaceId)));
       }).pipe(Effect.provide(RulesTest))
   );
 

@@ -235,6 +235,11 @@ export class EngagementPrivateReplies extends Context.Service<
      * not.
      */
     readonly mayWrite: (actor: Actor) => Effect.Effect<void, Refused>;
+    /**
+     * Whether the actor may see private replies: `engagement:readMessages`,
+     * and an application the owner's leave. Never fails.
+     */
+    readonly mayRead: (actor: Actor) => Effect.Effect<boolean, DatabaseError>;
   }
 >()("peal-server/engagement/application/EngagementPrivateReplies") {
   static readonly layer = Layer.effect(
@@ -604,6 +609,7 @@ export class EngagementPrivateReplies extends Context.Service<
       return EngagementPrivateReplies.of({
         channelStanding,
         confirm,
+        mayRead,
         mayWrite,
         ofThread,
         privateReply,

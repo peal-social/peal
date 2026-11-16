@@ -24,6 +24,7 @@ import {
   maxRuleRepliesPerDay,
   claimLifetime,
   startCommentRule,
+  withoutPrivateReply,
 } from "#engagement/domain/comment-rule.ts";
 import type {
   CommentRule,
@@ -176,6 +177,17 @@ export interface CommentRulesRun {
 }
 
 type Refused = DatabaseError | MissingPermission;
+
+// A match as one who may not read private replies sees it: nothing of
+// its private reply, made or not.
+const withoutPrivate = (match: RuleMatch): RuleMatch => ({
+  ...match,
+  outcome:
+    match.outcome._tag === "replied"
+      ? { ...match.outcome, private: Option.none() }
+      : match.outcome,
+  privateStatus: Option.none(),
+});
 
 // A private reply's own reasons, as the match keeps them.
 const privateCode = (code: PrivateCode | CommentRulePrivateAbility) =>
@@ -492,13 +504,20 @@ export class CommentRules extends Context.Service<
         }
       );
 
+      // A rule as `actor` sees it: its private text and private replies
+      // only to one who may read private replies (`engagement:readMessages`,
+      // an application the owner's leave), as a thread shows them.
       const listed = Effect.fn("CommentRules.listed")(function* listed(
+        actor: Actor,
         rule: CommentRule
       ) {
+        const matches = yield* store.matchesOf(rule.id, matchesShown);
+        const mayRead = yield* privateReplies.mayRead(actor);
+
         const shown: ListedCommentRule = {
           channels: yield* channelsOf(rule),
-          matches: yield* store.matchesOf(rule.id, matchesShown),
-          rule,
+          matches: mayRead ? matches : matches.map(withoutPrivate),
+          rule: mayRead ? rule : withoutPrivateReply(rule),
         };
 
         return shown;
@@ -569,9 +588,9 @@ export class CommentRules extends Context.Service<
 
         const rules = yield* store.list(actor.workspaceId, request);
 
-        return yield* Effect.forEach((rule: CommentRule) => listed(rule))(
-          rules
-        );
+        return yield* Effect.forEach((rule: CommentRule) =>
+          listed(actor, rule)
+        )(rules);
       });
 
       const get = Effect.fn("CommentRules.get")(function* get(
@@ -580,7 +599,7 @@ export class CommentRules extends Context.Service<
       ) {
         yield* Effect.fromResult(authorize(actor, "engagement:read"));
 
-        return yield* listed(yield* found(actor, ruleId, false));
+        return yield* listed(actor, yield* found(actor, ruleId, false));
       });
 
       // A private text as a rule keeps it: given, it must not be empty,
@@ -678,7 +697,7 @@ export class CommentRules extends Context.Service<
           })
         );
 
-        return yield* listed(rule);
+        return yield* listed(actor, rule);
       });
 
       const change = Effect.fn("CommentRules.change")(function* change(
@@ -753,7 +772,7 @@ export class CommentRules extends Context.Service<
           })
         );
 
-        return yield* listed(next);
+        return yield* listed(actor, next);
       });
 
       const stop = Effect.fn("CommentRules.stop")(function* stop(

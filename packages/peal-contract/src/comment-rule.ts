@@ -128,7 +128,10 @@ export const CommentRulePrivateStatusSchema = Schema.Literals([
  * its name (`MissingPermission` when whoever started the rule may no
  * longer send private replies, `PrivateReplyPending` when the comment
  * has one already, `PrivateReplyNotPossible` past the 7 days,
- * `AllowanceReached`, …). Both null for a rule without one.
+ * `AllowanceReached`, …). Both null for a rule without one;
+ * `privateReplyId` and `privateStatus` null too to a reader who may not
+ * read private replies (engagement:readMessages, and an application the
+ * owner's consent).
  */
 export const CommentRuleMatchSchema = Schema.Struct({
   code: Schema.NullOr(Schema.String),
@@ -157,7 +160,8 @@ export const CommentRuleSchema = Schema.Struct({
   // The post whose comments it answers; null for a channel's rule.
   postId: Schema.NullOr(Schema.String),
   // Sent privately to the author of each comment it answered in public,
-  // once that reply is out, where a channel can carry it; null for none.
+  // once that reply is out, where a channel can carry it; null for none,
+  // and to a reader who may not read private replies.
   privateReply: Schema.NullOr(Schema.String),
   reply: Schema.String,
   // The member who started it; null for a key, or once they left Peal.
