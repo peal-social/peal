@@ -17,6 +17,7 @@ import {
   upcoming,
 } from "../changelog/history.ts";
 import {
+  capitalised,
   changelogPage,
   escapeMarkdown,
   releaseNotes,
@@ -182,6 +183,21 @@ describe("versions", () => {
 });
 
 describe("markdown", () => {
+  it("capitalises a plain first word, and keeps names as they are written", () => {
+    expect(capitalised("keep the time zone")).toBe("Keep the time zone");
+    expect(capitalised("first comments, and polls")).toBe(
+      "First comments, and polls"
+    );
+    expect(capitalised("release.yml refuses a commit")).toBe(
+      "release.yml refuses a commit"
+    );
+    expect(capitalised("per-account standing")).toBe("Per-account standing");
+    expect(capitalised("peal.social as the handle")).toBe(
+      "peal.social as the handle"
+    );
+    expect(capitalised("iOS uploads")).toBe("iOS uploads");
+  });
+
   it("escapes what MDX would read as markup, and keeps code spans", () => {
     expect(escapeMarkdown("PEAL_INBOX_MESSAGES on <Card> {x}")).toBe(
       "PEAL\\_INBOX\\_MESSAGES on \\<Card\\> \\{x\\}"

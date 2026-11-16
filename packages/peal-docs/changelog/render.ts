@@ -77,8 +77,13 @@ export const escapeMarkdown = (text: string): string => {
   return escaped + text.slice(from).replaceAll(markup, "\\$&");
 };
 
-const capitalised = (text: string): string =>
-  text.charAt(0).toUpperCase() + text.slice(1);
+// A plain word, hyphens allowed (`per-account`): a name such as
+// `release.yml`, `peal.social` or `iOS` keeps how it is written.
+const plainWord = /^[a-z]+(?:-[a-z]+)*[,:;]?(?:\s|$)/u;
+
+/** The text with its first word capitalised, when it is a plain word. */
+export const capitalised = (text: string): string =>
+  plainWord.test(text) ? text.charAt(0).toUpperCase() + text.slice(1) : text;
 
 const line = (entry: Entry, locale: Locale, repository: string): string => {
   const text = escapeMarkdown(capitalised(entryText(entry, locale)));
