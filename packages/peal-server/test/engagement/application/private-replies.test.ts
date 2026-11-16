@@ -189,6 +189,14 @@ describe("a member's private reply", () => {
 
           assert.strictEqual(run, "settled");
           assert.strictEqual(world.state.sent.length, 1);
+          // The attempt was committed before the platform was called.
+          assert.deepStrictEqual(
+            world.state.sentAs.map(
+              (status) =>
+                status._tag === "sending" && Option.isSome(status.attemptedAt)
+            ),
+            [true]
+          );
           assert.strictEqual(
             world.state.replies.get(reply.id)?.status._tag,
             "sent"
@@ -664,6 +672,46 @@ describe("a private reply's job", () => {
       );
       assert.deepStrictEqual(world.state.cancelled, [reply.id]);
     }).pipe(Effect.provide(world.layer));
+  });
+});
+
+describe("another workspace's private reply", () => {
+  it.effect("is neither shown nor confirmed", () => {
+    const world = worldWith();
+
+    world.state.sending = { _tag: "unconfirmed", reason: "noResponse" };
+
+    const elsewhere = new Actor({
+      permissions: [...editor.permissions],
+      subject: editor.subject,
+      workspaceId: WorkspaceIdSchema.make(
+        "33333333-3333-4333-8333-333333333333"
+      ),
+    });
+
+    return at(
+      Effect.gen(function* isolated() {
+        const reply = yield* sending();
+
+        yield* SendPrivateReply.use((send) => send.run(reply.id));
+
+        const shown = yield* EngagementPrivateReplies.use((replies) =>
+          replies.privateReply(elsewhere, reply.id)
+        ).pipe(Effect.flip);
+
+        assert.strictEqual(shown._tag, "PrivateReplyNotFound");
+
+        const confirmed = yield* EngagementPrivateReplies.use((replies) =>
+          replies.confirm(elsewhere, reply.id, false)
+        ).pipe(Effect.flip);
+
+        assert.strictEqual(confirmed._tag, "PrivateReplyNotFound");
+        assert.strictEqual(
+          world.state.replies.get(reply.id)?.status._tag,
+          "unconfirmed"
+        );
+      })
+    ).pipe(Effect.provide(world.layer));
   });
 });
 

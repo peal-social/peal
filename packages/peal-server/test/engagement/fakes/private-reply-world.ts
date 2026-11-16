@@ -42,6 +42,8 @@ export interface PrivateReplyWorldState {
   readonly resumed: PrivateReplyRequest[];
   resuming: PrivateReplyOutcome;
   readonly sent: PrivateReplyRequest[];
+  /** How each reply stood in the journal when the platform was called. */
+  readonly sentAs: PrivateReply["status"][];
   sending: PrivateReplyOutcome;
 }
 
@@ -71,6 +73,7 @@ export const makePrivateReplyWorld = (
     resumed: [],
     resuming: { _tag: "unconfirmed", reason: "interrupted" },
     sent: [],
+    sentAs: [],
     sending: { _tag: "sent", platformMessageId: "m-private" },
   };
 
@@ -269,6 +272,12 @@ export const makePrivateReplyWorld = (
         send: (request) =>
           Effect.sync(() => {
             state.sent.push(request);
+
+            const journalled = state.replies.get(request.privateReplyId);
+
+            if (journalled !== undefined) {
+              state.sentAs.push(journalled.status);
+            }
 
             return state.sending;
           }),
