@@ -46,6 +46,8 @@ export const discordMark = markOf(siDiscord);
 
 export const telegramMark = markOf(siTelegram);
 
+export const slackMark = lettered("S");
+
 export type PlatformGroup = "ads" | "blog" | "chat" | "social";
 
 /** The menu's groups, in the order it shows them. */
@@ -117,7 +119,7 @@ const channelEntries: Readonly<
     mark: markOf(siPinterest),
     name: "Pinterest",
   },
-  slack: { docs: "platforms/slack", mark: lettered("S"), name: "Slack" },
+  slack: { docs: "platforms/slack", mark: slackMark, name: "Slack" },
   telegram: {
     docs: "platforms/telegram",
     mark: telegramMark,

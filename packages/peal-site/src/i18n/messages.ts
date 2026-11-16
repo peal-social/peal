@@ -71,11 +71,10 @@ const en = {
     terms: "Terms of service",
   },
   nav: {
-    allPlatforms: {
-      caption: "every platform",
-      description:
-        "What a post may hold on each platform, and how to connect it.",
-      title: "Compare the platforms",
+    comparePlatforms: "Compare every platform",
+    platformsIntro: {
+      body: "Write it once, adjust it where a platform needs to, and see what each network allows before you publish.",
+      headline: "One post, every platform",
     },
     blog: "Blog",
     brand: "Peal",
@@ -87,13 +86,57 @@ const en = {
     github: "GitHub",
     home: "Peal home page",
     intros: {
+      agents: {
+        body: "Let an AI agent write, schedule or publish posts, choose whether it may publish, and read what it did.",
+        headline: "Hand the routine to an agent",
+      },
+      analytics: {
+        body: "How your posts and accounts did on each platform, which posts did best, and the figures to export.",
+        headline: "See what worked",
+      },
+      api: {
+        body: "Authenticate with a key and publish a post in five requests, with an OpenAPI document and a reference for the rest.",
+        headline: "Everything Peal does, over HTTP",
+      },
+      approvals: {
+        body: "Show a post to a client who has no Peal account, collect their comments, and get their approval before it goes out.",
+        headline: "Get a yes before it goes out",
+      },
+      calendar: {
+        body: "Schedule in your own time zone, move or cancel a post on the calendar, and follow how it went on each channel.",
+        headline: "Plan the weeks ahead",
+      },
       changelog: {
         body: "The notes of each Peal release, published on GitHub, with a link to every change it brings.",
         headline: "Every release, as it ships",
       },
+      cli: {
+        body: "Sign in or use an API key, choose the workspace, and read every answer as JSON.",
+        headline: "Peal from your terminal",
+      },
+      composer: {
+        body: "Give a channel its own text and options where it needs them, and preview the post on each.",
+        headline: "Write a post once",
+      },
       discord: {
         body: "Ask for help, share what you build on the API or the MCP server, and hear what ships next.",
         headline: "Talk with the people building Peal",
+      },
+      embedding: {
+        body: "A partner account, a workspace for each of your customers, and a hosted page where they connect their accounts.",
+        headline: "Peal inside your own product",
+      },
+      inbox: {
+        body: "Comments under your posts, your Google Business Profile reviews, and your Mastodon and Bluesky direct messages, answered in one place.",
+        headline: "Answer people where they reply",
+      },
+      mcp: {
+        body: "Connect an AI assistant or any MCP client to one workspace, and choose whether it may publish.",
+        headline: "Let an assistant work in Peal",
+      },
+      sdks: {
+        body: "Install the client for your language, check the credential, publish a post and handle errors the same way in each.",
+        headline: "Clients in eight languages",
       },
       security: {
         body: "How to report it privately, what to put in the report, and how we keep you informed while we fix it.",
@@ -107,12 +150,16 @@ const en = {
         body: "Live checks of the app, the API, the docs and this site, with how each has answered lately.",
         headline: "Is Peal up right now?",
       },
+      webhooks: {
+        body: "Peal tells your own server what happens in a workspace, so you never have to poll.",
+        headline: "Hear about changes as they happen",
+      },
     },
     launch: {
       caption: "latest launch",
       description:
-        "Post to a Discord channel or a Telegram chat from the same composer as every other platform.",
-      title: "Discord and Telegram",
+        "Post to a Discord channel, a Slack channel or a Telegram chat from the same composer as every other platform.",
+      title: "Discord, Slack and Telegram",
     },
     links: {
       agents: {
@@ -176,7 +223,7 @@ const en = {
         title: "Self-hosting guide",
       },
       status: {
-        description: "Whether Peal is up, and past incidents.",
+        description: "Whether Peal is up right now.",
         title: "Status",
       },
       webhooks: {
@@ -400,11 +447,10 @@ const fr: Messages = {
     terms: "Conditions d’utilisation",
   },
   nav: {
-    allPlatforms: {
-      caption: "toutes les plateformes",
-      description:
-        "Ce qu’une publication peut contenir sur chaque plateforme, et comment la connecter.",
-      title: "Comparer les plateformes",
+    comparePlatforms: "Comparer toutes les plateformes",
+    platformsIntro: {
+      body: "Écrivez-la une fois, ajustez-la là où une plateforme le demande, et voyez ce que chaque réseau accepte avant de publier.",
+      headline: "Une publication, toutes les plateformes",
     },
     blog: "Blog",
     brand: "Peal",
@@ -416,13 +462,57 @@ const fr: Messages = {
     github: "GitHub",
     home: "Accueil de Peal",
     intros: {
+      agents: {
+        body: "Laissez un agent IA rédiger, programmer ou publier, choisissez s’il peut publier, et lisez ce qu’il a fait.",
+        headline: "Confiez la routine à un agent",
+      },
+      analytics: {
+        body: "Comment vos publications et vos comptes ont marché sur chaque plateforme, lesquelles ont le mieux marché, et les chiffres à exporter.",
+        headline: "Voyez ce qui a marché",
+      },
+      api: {
+        body: "Authentifiez-vous avec une clé et publiez en cinq requêtes, avec un document OpenAPI et une référence pour le reste.",
+        headline: "Tout ce que fait Peal, en HTTP",
+      },
+      approvals: {
+        body: "Montrez une publication à un client sans compte Peal, recueillez ses commentaires, et obtenez son accord avant qu’elle parte.",
+        headline: "Un oui avant la publication",
+      },
+      calendar: {
+        body: "Programmez dans votre fuseau horaire, déplacez ou annulez une publication sur le calendrier, et suivez comment elle s’est passée sur chaque canal.",
+        headline: "Planifiez les semaines à venir",
+      },
       changelog: {
         body: "Les notes de chaque version de Peal, publiées sur GitHub, avec un lien vers chaque changement qu’elle apporte.",
         headline: "Chaque version, dès sa sortie",
       },
+      cli: {
+        body: "Connectez-vous ou utilisez une clé d’API, choisissez l’espace de travail, et lisez chaque réponse en JSON.",
+        headline: "Peal depuis votre terminal",
+      },
+      composer: {
+        body: "Donnez à un canal son propre texte et ses options là où il le faut, et prévisualisez la publication sur chacun.",
+        headline: "Écrivez une publication une fois",
+      },
       discord: {
         body: "Demandez de l’aide, montrez ce que vous construisez sur l’API ou le serveur MCP, et découvrez ce qui arrive ensuite.",
         headline: "Échangez avec l’équipe qui construit Peal",
+      },
+      embedding: {
+        body: "Un compte partenaire, un espace de travail par client, et une page hébergée où ils connectent leurs comptes.",
+        headline: "Peal dans votre propre produit",
+      },
+      inbox: {
+        body: "Les commentaires sous vos publications, les avis de vos établissements Google Business Profile et vos messages privés Mastodon et Bluesky, traités au même endroit.",
+        headline: "Répondez là où l’on vous répond",
+      },
+      mcp: {
+        body: "Connectez un assistant IA ou tout client MCP à un espace de travail, et choisissez s’il peut publier.",
+        headline: "Un assistant qui travaille dans Peal",
+      },
+      sdks: {
+        body: "Installez le client de votre langage, vérifiez l’identifiant, publiez et traitez les erreurs de la même façon dans chacun.",
+        headline: "Des clients dans huit langages",
       },
       security: {
         body: "Comment la signaler en privé, quoi mettre dans le signalement, et comment nous vous tenons informé pendant la correction.",
@@ -436,12 +526,16 @@ const fr: Messages = {
         body: "Des vérifications en direct de l’application, de l’API, de la documentation et de ce site, avec leurs réponses récentes.",
         headline: "Peal fonctionne-t-il en ce moment ?",
       },
+      webhooks: {
+        body: "Peal dit à votre serveur ce qui se passe dans un espace de travail, sans que vous ayez à interroger.",
+        headline: "Soyez prévenu au moment où ça change",
+      },
     },
     launch: {
       caption: "dernière nouveauté",
       description:
-        "Publiez dans un salon Discord ou une conversation Telegram depuis le même éditeur que pour les autres plateformes.",
-      title: "Discord et Telegram",
+        "Publiez dans un salon Discord, un canal Slack ou une conversation Telegram depuis le même éditeur que pour les autres plateformes.",
+      title: "Discord, Slack et Telegram",
     },
     links: {
       agents: {
@@ -508,7 +602,7 @@ const fr: Messages = {
         title: "Guide d’auto-hébergement",
       },
       status: {
-        description: "Si Peal fonctionne, et les incidents passés.",
+        description: "Si Peal fonctionne en ce moment.",
         title: "État du service",
       },
       webhooks: {

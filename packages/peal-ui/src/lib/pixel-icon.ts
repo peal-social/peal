@@ -33,8 +33,11 @@ const scatter = (column: number, row: number) => {
  * already on the page, into cell coverage. Strokes and fills in
  * `currentColor` are drawn in black, since only coverage counts.
  */
-export const rasterise = async (svg: SVGSVGElement): Promise<PixelIcon> => {
-  const size = iconCells * sample;
+export const rasterise = async (
+  svg: SVGSVGElement,
+  cells = iconCells
+): Promise<PixelIcon> => {
+  const size = cells * sample;
   const copy = svg.cloneNode(true);
 
   if (!(copy instanceof SVGSVGElement)) {
@@ -59,18 +62,18 @@ export const rasterise = async (svg: SVGSVGElement): Promise<PixelIcon> => {
   canvas.height = size;
 
   const context = canvas.getContext("2d", { willReadFrequently: true });
-  const coverage = new Float32Array(iconCells * iconCells);
+  const coverage = new Float32Array(cells * cells);
 
   if (context === null) {
-    return { columns: iconCells, coverage, rows: iconCells };
+    return { columns: cells, coverage, rows: cells };
   }
 
   context.drawImage(image, 0, 0, size, size);
 
   const { data } = context.getImageData(0, 0, size, size);
 
-  for (let row = 0; row < iconCells; row += 1) {
-    for (let column = 0; column < iconCells; column += 1) {
+  for (let row = 0; row < cells; row += 1) {
+    for (let column = 0; column < cells; column += 1) {
       let alpha = 0;
 
       for (let y = 0; y < sample; y += 1) {
@@ -80,11 +83,11 @@ export const rasterise = async (svg: SVGSVGElement): Promise<PixelIcon> => {
         }
       }
 
-      coverage[row * iconCells + column] = alpha / (255 * sample * sample);
+      coverage[row * cells + column] = alpha / (255 * sample * sample);
     }
   }
 
-  return { columns: iconCells, coverage, rows: iconCells };
+  return { columns: cells, coverage, rows: cells };
 };
 
 /** The four colours a pixel may take on the brand field, dim to bright. */

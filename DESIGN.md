@@ -295,7 +295,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   something (brands' marks in 40 px bordered tiles), a title, one line and
   an arrow, linking to what it features.
 - **Menu preview.** A mega menu may close on a preview card instead of a
-  featured card (Resources does): a `muted` cell holding a brand field
+  featured card (all three do): a `muted` cell holding a brand field
   without rails, as tall as the rows beside it, with pixel art, then an
   intro: a headline (a sentence, 15 px, 600) and a line or two (13 px,
   muted) about what the page holds, written for the card and never the
@@ -308,12 +308,16 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   previewed, it shows the card's own mark and intro. Moving from one row
   to another dissolves the pixels in about 280 ms, and a scanline sweeps
   the art while the menu is open; with reduced motion, the art swaps at
-  once and nothing sweeps. The drawer has no preview.
+  once and nothing sweeps. A menu whose rows are all of a kind, such as
+  Platforms, has one preview for all of them that does not change with the
+  row. The drawer has no preview.
 - **Platforms menu.** Every platform a channel connects to and every ad
   network, from the contract's lists, under Social (a wide cell of two
   columns), then Chat, Ads and Blog stacked in one column beside it, each
   row linking to the platform's docs page; both kinds of WordPress site
-  are one entry. Its card compares the platforms. The panel fits from
+  are one entry. Its preview is one post fanning out to many networks:
+  the mark in the centre, joined by spokes to nodes around it. A small
+  text link under the rows compares every platform. The panel fits from
   1024 px up.
 - **Marks on the site.** Brands' marks (platforms, GitHub, Discord) come
   from simple-icons, at the version the workspace pins, in `currentColor`:

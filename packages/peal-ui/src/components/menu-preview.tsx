@@ -87,12 +87,17 @@ interface MenuPreviewItem extends MenuPreviewIntro {
 interface MenuPreviewFallback extends MenuPreviewIntro {
   /** Its art: an SVG, such as a brand's mark, which the card rasterises. */
   readonly art: React.ReactNode;
+  /** Cells across the art, for a drawing larger than a row's icon. */
+  readonly cells?: number | undefined;
 }
 
 const reducedMotion = () =>
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const PreviewArt = ({ current }: MenuPreviewState) => {
+const PreviewArt = ({
+  cells,
+  current,
+}: MenuPreviewState & { readonly cells: number | undefined }) => {
   const canvas = useRef<HTMLCanvasElement>(null);
   const art = useRef<PixelArt | undefined>(undefined);
   const icons = useRef(new Map<string, PixelIcon>());
@@ -142,7 +147,10 @@ const PreviewArt = ({ current }: MenuPreviewState) => {
           );
 
     const show = async (svg: SVGSVGElement) => {
-      const icon = icons.current.get(key) ?? (await rasterise(svg));
+      const icon =
+        icons.current.get(key) ??
+        (await rasterise(svg, current === null ? cells : undefined));
+
       icons.current.set(key, icon);
 
       if (!cancelled && shown.current !== key) {
@@ -161,7 +169,7 @@ const PreviewArt = ({ current }: MenuPreviewState) => {
     return () => {
       cancelled = true;
     };
-  }, [current]);
+  }, [cells, current]);
 
   return (
     <canvas
@@ -227,7 +235,10 @@ const MenuPreview = ({
             className="bg-muted flex w-72 flex-col gap-3 rounded-md border p-2"
           >
             <BrandField rails={false} className="min-h-56 flex-1 rounded-md">
-              <PreviewArt current={item === undefined ? null : current} />
+              <PreviewArt
+                cells={fallback.cells}
+                current={item === undefined ? null : current}
+              />
             </BrandField>
             <span hidden data-preview-art="">
               {fallback.art}

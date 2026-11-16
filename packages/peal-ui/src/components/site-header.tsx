@@ -29,6 +29,7 @@ import { useId } from "react";
 
 import { cn } from "../lib/utils";
 import { Button, buttonVariants } from "./button";
+import { FanOutArt } from "./fan-out-art";
 import { MenuPreview } from "./menu-preview";
 import {
   NavigationMenu,
@@ -121,6 +122,8 @@ interface SiteMenuFeature {
   readonly caption: string;
   readonly description: string;
   readonly href: string;
+  /** A drawn picture for a preview's art, in place of the first mark. */
+  readonly illustration?: "fan-out" | undefined;
   /** Brands' marks shown at the card's top, as its picture. */
   readonly marks?: readonly SiteMark[] | undefined;
   readonly title: string;
@@ -128,12 +131,15 @@ interface SiteMenuFeature {
 
 interface SiteMenu {
   readonly feature?: SiteMenuFeature | undefined;
+  /** A small link under the rows, such as one to compare every platform. */
+  readonly footer?: SiteLink | undefined;
   /**
-   * Whether the feature card becomes a preview of the hovered or focused
-   * row: pixel art and the row's intro, not a link, with the feature's
-   * first mark, title and description while no row is previewed.
+   * Whether the feature card becomes a preview, not a link: `rows` shows
+   * the hovered or focused row's icon as pixel art and its intro, and the
+   * feature's art, title and description while no row is previewed;
+   * `menu` always shows the feature's.
    */
-  readonly preview?: boolean | undefined;
+  readonly preview?: "menu" | "rows" | undefined;
   readonly groups: readonly SiteMenuGroup[];
   readonly kind: "menu";
   readonly label: string;
@@ -355,34 +361,75 @@ const MenuColumns = ({ menu }: { readonly menu: SiteMenu }) =>
     </div>
   ));
 
+const MenuRows = ({ menu }: { readonly menu: SiteMenu }) => (
+  <div className="flex flex-col gap-2">
+    <div className="flex flex-1 gap-2">
+      <MenuColumns menu={menu} />
+    </div>
+    {menu.footer === undefined ? null : (
+      <NavigationMenuLink
+        href={menu.footer.href}
+        className="text-muted-foreground hover:text-foreground w-fit items-center gap-1 px-2 py-1 text-[13px]"
+      >
+        {menu.footer.label}
+        <ArrowRightIcon
+          aria-hidden="true"
+          strokeWidth={1.75}
+          className="size-3.5"
+        />
+      </NavigationMenuLink>
+    )}
+  </div>
+);
+
+// The preview's own art: a drawn picture, or the feature's first mark.
+const previewArt = (feature: SiteMenuFeature) => {
+  if (feature.illustration === "fan-out") {
+    return <FanOutArt />;
+  }
+
+  const mark = feature.marks?.[0];
+
+  return mark === undefined ? undefined : <Mark mark={mark} />;
+};
+
 const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => {
   const { feature } = menu;
-  const art = feature?.marks?.[0];
+  const art = feature === undefined ? undefined : previewArt(feature);
 
-  if (menu.preview === true && feature !== undefined && art !== undefined) {
+  if (
+    menu.preview !== undefined &&
+    feature !== undefined &&
+    art !== undefined
+  ) {
     return (
       <MenuPreview
         fallback={{
-          art: <Mark mark={art} />,
+          art,
           body: feature.description,
+          cells: feature.illustration === undefined ? undefined : 48,
           headline: feature.title,
         }}
-        items={menu.groups.flatMap((group) =>
-          group.links.map((link) => ({
-            body: link.intro?.body ?? link.description ?? "",
-            headline: link.intro?.headline ?? link.title,
-            key: link.href,
-          }))
-        )}
+        items={
+          menu.preview === "menu"
+            ? []
+            : menu.groups.flatMap((group) =>
+                group.links.map((link) => ({
+                  body: link.intro?.body ?? link.description ?? "",
+                  headline: link.intro?.headline ?? link.title,
+                  key: link.href,
+                }))
+              )
+        }
       >
-        <MenuColumns menu={menu} />
+        <MenuRows menu={menu} />
       </MenuPreview>
     );
   }
 
   return (
     <div className="flex gap-2">
-      <MenuColumns menu={menu} />
+      <MenuRows menu={menu} />
       {feature === undefined ? null : <FeatureCard feature={feature} />}
     </div>
   );
@@ -463,6 +510,14 @@ const MobileMenu = ({
               <h2 className="text-foreground text-[15px] font-semibold">
                 {item.label}
               </h2>
+              {item.footer === undefined ? null : (
+                <a
+                  href={item.footer.href}
+                  className="text-muted-foreground order-last text-[13px]"
+                >
+                  {item.footer.label}
+                </a>
+              )}
               {item.groups.map((group) => (
                 <div key={group.label} className="flex flex-col gap-1">
                   <p className="text-muted-foreground text-xs">{group.label}</p>

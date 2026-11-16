@@ -21,6 +21,7 @@ import {
   discordMark,
   githubMark,
   platformGroups,
+  slackMark,
   siteEntries,
   telegramMark,
 } from "./platforms.ts";
@@ -214,11 +215,12 @@ const navItems = (
                 : {
                     ...t.launch,
                     href: launch,
-                    marks: [discordMark, telegramMark],
+                    marks: [discordMark, slackMark, telegramMark],
                   },
             groups: products,
             kind: "menu" as const,
             label: t.products,
+            preview: "rows" as const,
             value: "products",
           },
         ]),
@@ -226,13 +228,23 @@ const navItems = (
       ? []
       : [
           {
-            feature:
+            // One preview for every platform; the comparison moves to a
+            // link under the rows.
+            feature: {
+              caption: "",
+              description: t.platformsIntro.body,
+              href: overview ?? repository,
+              illustration: "fan-out" as const,
+              title: t.platformsIntro.headline,
+            },
+            footer:
               overview === undefined
                 ? undefined
-                : { ...t.allPlatforms, href: overview },
+                : { href: overview, label: t.comparePlatforms },
             groups: platforms,
             kind: "menu" as const,
             label: t.platforms,
+            preview: "menu" as const,
             value: "platforms",
           },
         ]),
@@ -246,7 +258,7 @@ const navItems = (
       ],
       kind: "menu",
       label: t.resources,
-      preview: true,
+      preview: "rows",
       value: "resources",
     },
     {
