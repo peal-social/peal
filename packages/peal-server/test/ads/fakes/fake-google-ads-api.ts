@@ -72,11 +72,11 @@ export interface FakeCampaign {
 /** A day of a campaign's numbers; Google leaves out a metric at zero. */
 export interface FakeCampaignDay {
   readonly campaignId: string;
-  readonly clicks?: string;
-  readonly costMicros?: string;
+  readonly clicks?: string | undefined;
+  readonly costMicros?: string | undefined;
   readonly customerId: string;
   readonly date: string;
-  readonly impressions?: string;
+  readonly impressions?: string | undefined;
 }
 
 export interface FakeGoogleAdsOptions {

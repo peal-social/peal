@@ -6,6 +6,7 @@ import type { AdNetworkClient } from "#ads/application/ports/ad-network.ts";
 import { AdNotices } from "#ads/application/ports/ad-notices.ts";
 import { SpendAuthorizations } from "#ads/application/spend-authorizations.ts";
 import { adsWith } from "#ads/container.ts";
+import type { AdNetwork } from "#ads/domain/ad-network.ts";
 import type { AdsMode } from "#ads/domain/ads-mode.ts";
 import type { BoostId } from "#ads/domain/ids.ts";
 import { CurrencySchema, Money } from "#ads/domain/money.ts";
@@ -30,7 +31,9 @@ import {
 import { TransactionsTest } from "#test/notifications/support.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
+import type { FakeGoogleAdsOptions } from "./fakes/fake-google-ads-api.ts";
 import type { FakeMarketingOptions } from "./fakes/fake-marketing-api.ts";
+import { googleAgainstFake } from "./google-client.ts";
 import { metaAgainstFake } from "./meta-client.ts";
 
 /** What a use case told the workspace, as recorded. */
@@ -41,15 +44,17 @@ export interface ToldAd {
 }
 
 /**
- * The ad network a test talks to: none until the test starts a fake, then
- * the adapter against that fake, in the mode the test asks for.
+ * The ad networks a test talks to: none until the test starts a fake, then
+ * the adapter against that fake, in the mode the test asks for. Starting
+ * one replaces those before, unless `alongside` keeps them.
  */
 export class TestNetworks extends Context.Service<
   TestNetworks,
   {
     readonly use: (
       client: AdNetworkClient,
-      mode: AdsMode
+      mode: AdsMode,
+      alongside?: boolean
     ) => Effect.Effect<void>;
     readonly told: (
       workspaceId: WorkspaceId
@@ -59,9 +64,9 @@ export class TestNetworks extends Context.Service<
   static readonly layer = Layer.effectContext(
     Effect.gen(function* TestNetworksLive() {
       const current = yield* Ref.make<{
-        readonly client: Option.Option<AdNetworkClient>;
+        readonly clients: readonly AdNetworkClient[];
         readonly mode: AdsMode;
-      }>({ client: Option.none(), mode: "off" });
+      }>({ clients: [], mode: "off" });
 
       const told = yield* Ref.make<readonly ToldAd[]>([]);
       const now = () => Effect.runSync(Ref.get(current));
@@ -76,14 +81,29 @@ export class TestNetworks extends Context.Service<
               all.filter((entry) => entry.workspaceId === workspaceId)
             )
           ),
-        use: (client, mode) =>
-          Ref.set(current, { client: Option.some(client), mode }),
+        use: (client, mode, alongside = false) =>
+          Ref.update(current, ({ clients }) => ({
+            clients: [
+              ...(alongside
+                ? clients.filter(({ network }) => network !== client.network)
+                : []),
+              client,
+            ],
+            mode,
+          })),
       }).pipe(
         Context.add(AdNetworks, {
           get available() {
-            return now().mode === "off" ? [] : (["meta"] as const);
+            const { clients, mode } = now();
+
+            return mode === "off" ? [] : clients.map(({ network }) => network);
           },
-          for: () => (now().mode === "off" ? Option.none() : now().client),
+          for: (network) =>
+            now().mode === "off"
+              ? Option.none()
+              : Option.fromUndefinedOr(
+                  now().clients.find((client) => client.network === network)
+                ),
           get mode() {
             return now().mode;
           },
@@ -159,6 +179,24 @@ export const onMeta = Effect.fn("test.onMeta")(function* onMeta(
   return api;
 });
 
+/**
+ * Starts a fake of Google's token endpoint and Google Ads API for the
+ * test, and has the use cases reach it as a server that names `google` in
+ * PEAL_ADS_NETWORKS would, in `mode`: in place of Meta, or beside it with
+ * `alongside`.
+ */
+export const onGoogle = Effect.fn("test.onGoogle")(function* onGoogle(
+  options: FakeGoogleAdsOptions = {},
+  mode: AdsMode = "read",
+  alongside?: boolean
+) {
+  const { api, client } = yield* googleAgainstFake(options);
+
+  yield* TestNetworks.use((networks) => networks.use(client, mode, alongside));
+
+  return api;
+});
+
 /** A member with a role, as themselves in their own session. */
 export const member = (
   workspaceId: WorkspaceId,
@@ -229,28 +267,32 @@ export const tagOf = <E extends { readonly _tag: string }, R>(
 const stateOf = (url: string) => new URL(url).searchParams.get("state") ?? "";
 
 /** What the network's page sends back after a sign-in that went through. */
-export const returnedWith = (url: string) => ({
+export const returnedWith = (url: string, network: AdNetwork = "meta") => ({
   code: Option.some("good-code"),
   error: Option.none(),
-  network: "meta" as const,
+  network,
   state: stateOf(url),
 });
 
 /** Signs the actor in to the fake, and answers what the sign-in reaches. */
-export const signIn = Effect.fn("test.signIn")(function* signIn(actor: Actor) {
+export const signIn = Effect.fn("test.signIn")(function* signIn(
+  actor: Actor,
+  network: AdNetwork = "meta"
+) {
   const connections = yield* AdConnections;
-  const url = yield* connections.begin(actor, "meta");
+  const url = yield* connections.begin(actor, network);
 
-  return yield* connections.complete(actor, returnedWith(url));
+  return yield* connections.complete(actor, returnedWith(url, network));
 });
 
 /** The actor's sign-in with accounts connected. */
 export const connected = Effect.fn("test.connected")(function* connected(
   actor: Actor,
-  externalIds: readonly string[] = ["1001"]
+  externalIds: readonly string[] = ["1001"],
+  network: AdNetwork = "meta"
 ) {
   const connections = yield* AdConnections;
-  const { connection } = yield* signIn(actor);
+  const { connection } = yield* signIn(actor, network);
 
   const accounts = yield* connections.connect(
     actor,

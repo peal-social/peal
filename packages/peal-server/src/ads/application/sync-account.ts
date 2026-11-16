@@ -12,6 +12,7 @@ import type { AccountSnapshot } from "#ads/domain/account-snapshot.ts";
 import type { AdAccount } from "#ads/domain/ad-account.ts";
 import type { AdAccountId } from "#ads/domain/ids.ts";
 import { firstSyncDays, resyncDays } from "#ads/domain/insight-retention.ts";
+import { traitsOf } from "#ads/domain/network-traits.ts";
 import type { Ids } from "#shared/application/ids.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
@@ -31,9 +32,6 @@ import { GrantStore } from "./ports/grant-store.ts";
 import { PromotablePosts } from "./ports/promotable-posts.ts";
 import { ReadModel } from "./ports/read-model.ts";
 
-/** How often an account is read when nothing holds it back. */
-export const syncInterval = Duration.hours(1);
-
 // The least and the most an account is put off when its network asks to
 // slow down, whatever wait it gave.
 const shortestHalt = Duration.minutes(15);
@@ -46,8 +44,9 @@ const clamp = (wait: Duration.Duration) =>
  * Reads one ad account from its network and saves what it found: the
  * account's own state, its campaigns, ad sets and ads, and each ad's days
  * (90 days the first time, the last 7 after, as networks correct recent
- * days). It then says when the account is next read: in an hour, or once
- * the wait its network asked for is over.
+ * days). It then says when the account is next read: after its
+ * network's `syncEvery` (an hour on Meta, six on Google Ads), or once the
+ * wait its network asked for is over.
  *
  * It runs inside the account's gate, one call at a time. A token the
  * network refuses marks the sign-in, whose person is told once; the
@@ -227,7 +226,7 @@ export class SyncAccount extends Context.Service<
             account,
             failure._tag === "RateLimited" && failure.retryAfter !== undefined
               ? clamp(failure.retryAfter)
-              : syncInterval
+              : traitsOf(account.network).syncEvery
           );
 
           return "postponed" as const;
@@ -276,6 +275,7 @@ export class SyncAccount extends Context.Service<
         }
 
         const taken = yield* metered(account, snapshot.success, now);
+        const traits = traitsOf(account.network);
 
         const promoted = taken.ads.flatMap((ad) => [
           ...Option.toArray(ad.promotedPagePostId),
@@ -285,7 +285,11 @@ export class SyncAccount extends Context.Service<
         yield* readModel.save({
           account,
           complete: taken.complete,
-          matched: yield* posts.matching(account.workspaceId, promoted),
+          // A network read by campaign has no ad that shows a post.
+          matched:
+            traits.days === "campaign"
+              ? new Map()
+              : yield* posts.matching(account.workspaceId, promoted),
           now,
           snapshot: taken,
         });
@@ -303,7 +307,7 @@ export class SyncAccount extends Context.Service<
           account.id,
           DateTime.addDuration(
             now,
-            Option.getOrElse(halted, () => syncInterval)
+            Option.getOrElse(halted, () => traits.syncEvery)
           ),
           // A sync cut short reads the same days again: the account is
           // read whole only when nothing held it back.

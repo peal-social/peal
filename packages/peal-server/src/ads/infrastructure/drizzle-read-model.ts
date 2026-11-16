@@ -1,4 +1,4 @@
-import { and, eq, lt, notInArray, sql } from "drizzle-orm";
+import { and, eq, gte, lt, lte, notInArray, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
@@ -18,6 +18,7 @@ import {
   CampaignObjectiveSchema,
 } from "#ads/domain/ad-object.ts";
 import { AdAccountIdSchema, NetworkObjectIdSchema } from "#ads/domain/ids.ts";
+import { traitsOf } from "#ads/domain/network-traits.ts";
 import { PostIdSchema, PostTargetIdSchema } from "#shared/domain/ids.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
@@ -27,6 +28,7 @@ import {
   activeAdMonths,
   adSets,
   ads,
+  campaignDays,
   campaigns,
   insightDays,
 } from "./schema.ts";
@@ -82,6 +84,7 @@ const CampaignRowSchema = Schema.Struct({
   dailyBudget: Schema.NullOr(amount),
   endsAt: storedInstant,
   externalId: NetworkObjectIdSchema,
+  kind: Schema.NullOr(Schema.String),
   name: Schema.String,
   objective: CampaignObjectiveSchema,
   rawStatus: Schema.String,
@@ -180,10 +183,24 @@ export const DrizzleReadModel = Layer.effect(
       coalesce(sum(i.clicks), 0)::float8 AS clicks,
       sum(i.results)::float8 AS results`;
 
+    const campaignBetween = (range: DayRange) =>
+      client`d.day BETWEEN ${dayText(range.from)}::date AND ${dayText(range.to)}::date`;
+
+    // A campaign's own days carry no reach and no results.
+    const campaignSums = client`
+      coalesce(sum(d.spend), 0)::float8 AS spend,
+      coalesce(sum(d.impressions), 0)::float8 AS impressions,
+      0::float8 AS reach,
+      coalesce(sum(d.clicks), 0)::float8 AS clicks,
+      NULL::float8 AS results`;
+
     return ReadModel.of({
-      ads: (workspaceId, accountId, campaignExternalId, range) =>
-        query(
-          client`
+      ads: (account, campaignExternalId, range) =>
+        // A network read by campaign keeps no ad.
+        traitsOf(account.network).days === "campaign"
+          ? Effect.succeed([])
+          : query(
+              client`
             SELECT a.account_id AS "accountId", a.external_id AS "externalId",
               a.ad_set_external_id AS "adSetExternalId",
               a.campaign_external_id AS "campaignExternalId", a.name,
@@ -193,7 +210,7 @@ export const DrizzleReadModel = Layer.effect(
             LEFT JOIN ads.insight_days i
               ON i.account_id = a.account_id
               AND i.ad_external_id = a.external_id AND ${between(range)}
-            WHERE a.workspace_id = ${workspaceId} AND a.account_id = ${accountId}
+            WHERE a.workspace_id = ${account.workspaceId} AND a.account_id = ${account.id}
               ${Option.match(campaignExternalId, {
                 onNone: () => client``,
                 onSome: (id) => client`AND a.campaign_external_id = ${id}`,
@@ -201,40 +218,48 @@ export const DrizzleReadModel = Layer.effect(
             GROUP BY a.account_id, a.external_id
             ORDER BY a.external_id DESC
             LIMIT 1000`,
-          decodeAds
-        ).pipe(
-          Effect.map((rows) =>
-            rows.map((row): AdRow => ({
-              accountId: row.accountId,
-              adSetExternalId: row.adSetExternalId,
-              campaignExternalId: row.campaignExternalId,
-              externalId: row.externalId,
-              name: row.name,
-              postId: Option.fromNullOr(row.postId),
-              rawStatus: row.rawStatus,
-              status: row.status,
-              targetId: Option.fromNullOr(row.targetId),
-              totals: totalsOf(row),
-            }))
-          )
-        ),
-      campaigns: (workspaceId, accountId, range) =>
+              decodeAds
+            ).pipe(
+              Effect.map((rows) =>
+                rows.map((row): AdRow => ({
+                  accountId: row.accountId,
+                  adSetExternalId: row.adSetExternalId,
+                  campaignExternalId: row.campaignExternalId,
+                  externalId: row.externalId,
+                  name: row.name,
+                  postId: Option.fromNullOr(row.postId),
+                  rawStatus: row.rawStatus,
+                  status: row.status,
+                  targetId: Option.fromNullOr(row.targetId),
+                  totals: totalsOf(row),
+                }))
+              )
+            ),
+      campaigns: (account, range) =>
         query(
           client`
             SELECT c.account_id AS "accountId", c.external_id AS "externalId",
               c.name, c.status, c.raw_status AS "rawStatus", c.objective,
-              c.daily_budget::float8 AS "dailyBudget",
+              c.kind, c.daily_budget::float8 AS "dailyBudget",
               c.total_budget::float8 AS "totalBudget",
               c.starts_at AS "startsAt", c.ends_at AS "endsAt",
-              c.synced_at AS "syncedAt", ${sums}
+              c.synced_at AS "syncedAt",
+              ${traitsOf(account.network).days === "campaign" ? campaignSums : sums}
             FROM ads.campaigns c
-            LEFT JOIN ads.ads a
-              ON a.account_id = c.account_id
-              AND a.campaign_external_id = c.external_id
-            LEFT JOIN ads.insight_days i
-              ON i.account_id = a.account_id
-              AND i.ad_external_id = a.external_id AND ${between(range)}
-            WHERE c.workspace_id = ${workspaceId} AND c.account_id = ${accountId}
+            ${
+              traitsOf(account.network).days === "campaign"
+                ? client`LEFT JOIN ads.campaign_days d
+                    ON d.account_id = c.account_id
+                    AND d.campaign_external_id = c.external_id
+                    AND ${campaignBetween(range)}`
+                : client`LEFT JOIN ads.ads a
+                    ON a.account_id = c.account_id
+                    AND a.campaign_external_id = c.external_id
+                  LEFT JOIN ads.insight_days i
+                    ON i.account_id = a.account_id
+                    AND i.ad_external_id = a.external_id AND ${between(range)}`
+            }
+            WHERE c.workspace_id = ${account.workspaceId} AND c.account_id = ${account.id}
             GROUP BY c.account_id, c.external_id
             ORDER BY c.starts_at DESC NULLS LAST, c.external_id DESC
             LIMIT 1000`,
@@ -246,6 +271,7 @@ export const DrizzleReadModel = Layer.effect(
               dailyBudget: Option.fromNullOr(row.dailyBudget),
               endsAt: Option.fromNullOr(row.endsAt),
               externalId: row.externalId,
+              kind: Option.fromNullOr(row.kind),
               name: row.name,
               objective: row.objective,
               rawStatus: row.rawStatus,
@@ -257,15 +283,23 @@ export const DrizzleReadModel = Layer.effect(
             }))
           )
         ),
-      days: (workspaceId, accountId, range) =>
+      days: (account, range) =>
         query(
-          client`
-            SELECT to_char(i.day, 'YYYY-MM-DD') AS day, ${sums}
-            FROM ads.insight_days i
-            WHERE i.workspace_id = ${workspaceId} AND i.account_id = ${accountId}
-              AND ${between(range)}
-            GROUP BY i.day
-            ORDER BY i.day`,
+          traitsOf(account.network).days === "campaign"
+            ? client`
+                SELECT to_char(d.day, 'YYYY-MM-DD') AS day, ${campaignSums}
+                FROM ads.campaign_days d
+                WHERE d.workspace_id = ${account.workspaceId} AND d.account_id = ${account.id}
+                  AND ${campaignBetween(range)}
+                GROUP BY d.day
+                ORDER BY d.day`
+            : client`
+                SELECT to_char(i.day, 'YYYY-MM-DD') AS day, ${sums}
+                FROM ads.insight_days i
+                WHERE i.workspace_id = ${account.workspaceId} AND i.account_id = ${account.id}
+                  AND ${between(range)}
+                GROUP BY i.day
+                ORDER BY i.day`,
           decodeDays
         ).pipe(
           Effect.map((rows) =>
@@ -306,6 +340,10 @@ export const DrizzleReadModel = Layer.effect(
             .where(lt(insightDays.day, dayText(day)))
             .returning({ day: insightDays.day }),
           db
+            .delete(campaignDays)
+            .where(lt(campaignDays.day, dayText(day)))
+            .returning({ day: campaignDays.day }),
+          db
             .delete(activeAdMonths)
             .where(
               lt(
@@ -316,7 +354,10 @@ export const DrizzleReadModel = Layer.effect(
             .returning({ month: activeAdMonths.month }),
         ]).pipe(
           Effect.mapError(failed),
-          Effect.map(([days, months]) => days.length + months.length)
+          Effect.map(
+            ([days, ofCampaigns, months]) =>
+              days.length + ofCampaigns.length + months.length
+          )
         ),
       save: ({ account, complete, matched, now, snapshot }) => {
         const common = {
@@ -344,6 +385,7 @@ export const DrizzleReadModel = Layer.effect(
                   dailyBudget: Option.getOrNull(campaign.dailyBudget),
                   endsAt: dateOrNull(campaign.endsAt),
                   externalId: campaign.externalId,
+                  kind: Option.getOrNull(campaign.kind),
                   name: campaign.name,
                   objective: campaign.objective,
                   rawStatus: campaign.rawStatus,
@@ -353,7 +395,7 @@ export const DrizzleReadModel = Layer.effect(
                 }))
               )
               .onConflictDoUpdate({
-                set: reread([...state, ...budget, "objective"]),
+                set: reread([...state, ...budget, "kind", "objective"]),
                 target: [campaigns.accountId, campaigns.externalId],
               });
           }
@@ -460,6 +502,46 @@ export const DrizzleReadModel = Layer.effect(
                   insightDays.accountId,
                   insightDays.adExternalId,
                   insightDays.day,
+                ],
+              });
+          }
+
+          // The days read whole replace those kept: a day the network no
+          // longer lists did nothing.
+          if (Option.isSome(snapshot.campaignDaysCover)) {
+            const { from, to } = snapshot.campaignDaysCover.value;
+
+            yield* db
+              .delete(campaignDays)
+              .where(
+                and(
+                  eq(campaignDays.accountId, account.id),
+                  gte(campaignDays.day, dayText(from)),
+                  lte(campaignDays.day, dayText(to))
+                )
+              );
+          }
+
+          for (const rows of batches(snapshot.campaignDays)) {
+            yield* db
+              .insert(campaignDays)
+              .values(
+                rows.map((day) => ({
+                  accountId: account.id,
+                  campaignExternalId: day.campaignExternalId,
+                  clicks: day.clicks,
+                  day: dayText(day.day),
+                  impressions: day.impressions,
+                  spend: day.spend,
+                  workspaceId: account.workspaceId,
+                }))
+              )
+              .onConflictDoUpdate({
+                set: reread(["clicks", "impressions", "spend"]),
+                target: [
+                  campaignDays.accountId,
+                  campaignDays.campaignExternalId,
+                  campaignDays.day,
                 ],
               });
           }

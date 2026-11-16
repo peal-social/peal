@@ -4,6 +4,7 @@ import type { AuditAction } from "#ads/domain/audit-action.ts";
 import { committedIn, monthsTouched } from "#ads/domain/commitment.ts";
 import { AdAccountIdSchema } from "#ads/domain/ids.ts";
 import type { Money } from "#ads/domain/money.ts";
+import { traitsOf } from "#ads/domain/network-traits.ts";
 import { PersonRequired } from "#ads/domain/person-required.ts";
 import type { SpendAuthorization } from "#ads/domain/spend-authorization.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -73,7 +74,8 @@ const decodeAccountId = Schema.decodeUnknownOption(AdAccountIdSchema);
  * `decide` is the owner's alone (ads:authorize), in their own session:
  * never a key, an application or staff acting as them. Turning spending
  * on takes an explicit ceiling in the account's currency, on a server
- * whose operator offers spending. A ceiling may always be lowered, under
+ * whose operator offers spending, for an account of a network Peal spends
+ * on (`networkTraits`: not Google Ads, which Peal only reads). A ceiling may always be lowered, under
  * running boosts too: they keep running, and nothing new starts until
  * there is room. Turning spending off is refused while a boost runs or
  * may run: it is stopped first, so "off" never leaves something spending.
@@ -174,7 +176,12 @@ export class SpendAuthorizations extends Context.Service<
             const { account } = yield* found(actor, accountId);
 
             if (decision._tag === "on") {
-              if (networks.mode !== "spend") {
+              // Neither a server that does not offer spending, nor a
+              // network Peal only reads (Google Ads), takes a ceiling.
+              if (
+                networks.mode !== "spend" ||
+                !traitsOf(account.network).spends
+              ) {
                 return yield* new SpendingUnavailable();
               }
 
