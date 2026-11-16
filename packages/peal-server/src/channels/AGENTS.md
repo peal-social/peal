@@ -249,7 +249,9 @@
   minutes), which the erasure waits for `releaseWait` (ten seconds) at
   most and never cuts short, so an erasure never waits on Meta once a
   channel. `departed` answers `done` or `failed`; each channel not let go
-  by the end is logged by its id and counted
+  by the end is logged by its id, platform, `accountId` and, on Instagram,
+  `connection` (a business account's public ids, for the operator to reach
+  it once the channel is gone; never a token) and counted
   (`peal.channels.release.left_subscribed`, which `peal-erased-channels-subscribed`
   alerts on at once, its summary saying how to remove the app from the
   Page): `metaMessageDepartures` deletes Meta's
