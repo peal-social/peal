@@ -1,5 +1,9 @@
 import { DateTime, Effect, Option, Schema } from "effect";
-import { CurrentMember, defaultInboxPageSize } from "peal-contract";
+import {
+  CurrentMember,
+  defaultInboxPageSize,
+  privateReplyWindowDays,
+} from "peal-contract";
 
 import { InboxTools } from "#app/mcp/inbox-tools.ts";
 import {
@@ -26,6 +30,7 @@ import {
 import {
   cursorOf,
   toCommentView,
+  toPrivateReplyView,
   toReplyView,
   toThreadDetailView,
   toThreadPageView,
@@ -42,6 +47,7 @@ import {
   EngagementMessages,
   maxMessagesPerPage,
 } from "#engagement/application/engagement-messages.ts";
+import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import { EngagementReplies } from "#engagement/application/engagement-replies.ts";
 import { EngagementReviews } from "#engagement/application/engagement-reviews.ts";
 import type { MessageAbilityUnavailable } from "#engagement/application/message-ability-unavailable.ts";
@@ -51,6 +57,7 @@ import type { ReviewActionFailed } from "#engagement/application/review-action-f
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
 import { CommentRuleIdSchema } from "#engagement/domain/comment-rule-id.ts";
 import type { CommentRuleScope } from "#engagement/domain/comment-rule.ts";
+import type { Comment } from "#engagement/domain/comment.ts";
 import { ConversationIdSchema } from "#engagement/domain/conversation-id.ts";
 import type { InvalidReplyTransition } from "#engagement/domain/invalid-reply-transition.ts";
 import { ReplyIdSchema } from "#engagement/domain/reply-id.ts";
@@ -58,6 +65,7 @@ import { ReviewIdSchema } from "#engagement/domain/review-id.ts";
 import { ReviewThreadIdSchema } from "#engagement/domain/review-thread-id.ts";
 import { ThreadIdSchema } from "#engagement/domain/thread-id.ts";
 import { actorOf } from "#shared/api/actor.ts";
+import type { Actor } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
 import { ChannelIdSchema, PostIdSchema } from "#shared/domain/ids.ts";
 
@@ -92,6 +100,14 @@ const cannotMessage = ({
       : "Nothing was sent: this server does not send direct messages on this channel's platform, or nobody else wrote in the conversation yet, and Peal never starts one."
   );
 };
+
+// Why a comment gets no private reply, in words.
+const privateReplyRefusals = {
+  gone: "The comment is no longer on its platform: nothing was sent.",
+  ownComment:
+    "The channel's own account wrote this comment: a private reply goes to someone else's. Nothing was sent.",
+  tooOld: `The comment was written more than ${String(privateReplyWindowDays)} days ago, less Peal's hour: the platform takes no private reply to it any more. Nothing was sent.`,
+} as const;
 
 const noLocation = () =>
   refuse(
@@ -244,9 +260,16 @@ export const InboxToolsLive = InboxTools.toLayer(
     const reviews = yield* EngagementReviews;
     const commentRules = yield* CommentRules;
     const messages = yield* EngagementMessages;
+    const privateReplies = yield* EngagementPrivateReplies;
     const refusedByMeter = yield* usageRefusal;
 
     const actor = CurrentMember.pipe(Effect.map(actorOf));
+
+    // A comment as the member sees it, with its private reply.
+    const commentView = (member: Actor, comment: Comment) =>
+      privateReplies
+        .ofThread(member, comment.channelId, [comment.id])
+        .pipe(Effect.map((shown) => toCommentView(comment, new Map(), shown)));
 
     // Without the owner's leave, an application lists conversations only:
     // the refusal names its client id, which the owner allows.
@@ -467,6 +490,49 @@ export const InboxToolsLive = InboxTools.toLayer(
               })
             );
         }),
+      send_private_reply: ({ commentId, idempotencyKey, text }) =>
+        Effect.gen(function* sendPrivateReply() {
+          const id = yield* idOr(decodeCommentId(commentId), noComment);
+          const sender = yield* actor;
+
+          return yield* privateReplies
+            .send(sender, id, text, Option.fromUndefinedOr(idempotencyKey))
+            .pipe(
+              Effect.map(toPrivateReplyView),
+              Effect.catchTags({
+                AbilityUnavailable: ({ standing }) =>
+                  refuse(
+                    standing === "reconnect"
+                      ? "This channel may not send private replies yet: its account was connected before Peal asked for its direct messages' permissions. The user reconnects it for its messages, in the web app. Nothing was sent."
+                      : "Nothing was sent: private replies go only on Instagram and Facebook Pages, where this server reads the platform's direct messages and the workspace turned the channel's messages on. The user turns them on in the web app."
+                  ),
+                AllowanceReached: refusedByMeter(
+                  sender.workspaceId,
+                  "Nothing was sent."
+                ),
+                CommentNotFound: noComment,
+                DatabaseError: Effect.die,
+                MessagesNeedConsent: notAllowedToRead,
+                MissingPermission: notAllowed("send private replies"),
+                PrivateReplyNotPossible: ({ reason }) =>
+                  refuse(privateReplyRefusals[reason]),
+                PrivateReplyPending: ({ privateReplyId }) =>
+                  refuse(
+                    `The comment has its private reply already (${privateReplyId}), on its way, unconfirmed or sent: the platform takes one a comment, so nothing more was sent. Do not call this tool again for it.`
+                  ),
+                ReplyEmpty: () =>
+                  refuse("The message says nothing: nothing was sent."),
+                ReplyKeyReused: () =>
+                  refuse(
+                    "This idempotencyKey was first sent with another comment or another text: nothing was sent. Call again under a new key."
+                  ),
+                ReplyTooLong: ({ length, maximum, unit }) =>
+                  refuse(
+                    `The message is too long for its platform: ${String(length)} ${unit}, where it takes ${String(maximum)}. Nothing was sent.`
+                  ),
+              })
+            );
+        }),
       delete_location_review_reply: ({ reviewId }) =>
         Effect.gen(function* deleteReply() {
           const id = yield* idOr(decodeReviewId(reviewId), noReview);
@@ -577,8 +643,18 @@ export const InboxToolsLive = InboxTools.toLayer(
         Effect.gen(function* getThread() {
           const id = yield* idOr(decodeThreadId(threadId), noThread);
 
-          return yield* inbox.thread(yield* actor, id).pipe(
-            Effect.map(toThreadDetailView),
+          const member = yield* actor;
+
+          return yield* inbox.thread(member, id).pipe(
+            Effect.flatMap((detail) =>
+              privateReplies
+                .ofThread(
+                  member,
+                  detail.summary.thread.channelId,
+                  detail.comments.map(({ id: shown }) => shown)
+                )
+                .pipe(Effect.map((shown) => toThreadDetailView(detail, shown)))
+            ),
             Effect.catchTags({
               DatabaseError: Effect.die,
               MissingPermission: notAllowed("read comments"),
@@ -615,8 +691,10 @@ export const InboxToolsLive = InboxTools.toLayer(
         Effect.gen(function* markAnswered() {
           const id = yield* idOr(decodeCommentId(commentId), noComment);
 
-          return yield* replies.setAnswered(yield* actor, id, answered).pipe(
-            Effect.map((comment) => toCommentView(comment)),
+          const member = yield* actor;
+
+          return yield* replies.setAnswered(member, id, answered).pipe(
+            Effect.flatMap((comment) => commentView(member, comment)),
             Effect.catchTags({
               CommentGone: gone,
               CommentNotFound: noComment,
@@ -629,8 +707,10 @@ export const InboxToolsLive = InboxTools.toLayer(
         Effect.gen(function* moderate() {
           const id = yield* idOr(decodeCommentId(commentId), noComment);
 
-          return yield* replies.moderate(yield* actor, id, action).pipe(
-            Effect.map((comment) => toCommentView(comment)),
+          const member = yield* actor;
+
+          return yield* replies.moderate(member, id, action).pipe(
+            Effect.flatMap((comment) => commentView(member, comment)),
             Effect.catchTags({
               AbilityUnavailable: unavailable,
               CommentGone: gone,

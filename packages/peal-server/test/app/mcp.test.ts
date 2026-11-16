@@ -359,6 +359,7 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           "run_channel_lookup",
           "schedule_post",
           "send_message",
+          "send_private_reply",
           "send_test_webhook",
           "server_health",
           "set_channel_defaults",

@@ -88,6 +88,7 @@ export const publishingTools: ReadonlySet<string> = new Set([
   "revoke_review_link",
   "schedule_post",
   "send_message",
+  "send_private_reply",
   "start_comment_rule",
   "start_follow_up_rule",
   "stop_comment_rule",
