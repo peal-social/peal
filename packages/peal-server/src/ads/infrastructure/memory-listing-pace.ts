@@ -147,15 +147,20 @@ export const memoryListingPace = (options: ListingPaceOptions) =>
                 : []),
             ] as const;
 
-            for (const [key, length, limit] of limits) {
-              const current = windowOf(all, key, at, length);
+            const reached = limits
+              .map(([key, length, limit]) => ({
+                current: windowOf(all, key, at, length),
+                limit,
+              }))
+              .find(({ current, limit }) => current.count >= limit);
 
-              if (current.count >= limit) {
-                return yield* new ListingLimited({
-                  retryAfter: Duration.millis(current.endsAt - at),
-                });
-              }
-            }
+            yield* reached === undefined
+              ? Effect.void
+              : Effect.fail(
+                  new ListingLimited({
+                    retryAfter: Duration.millis(reached.current.endsAt - at),
+                  })
+                );
 
             yield* Ref.update(windows, (latest) => {
               const next = new Map(latest);

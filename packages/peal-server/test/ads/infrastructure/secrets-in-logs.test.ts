@@ -86,6 +86,7 @@ describe("what the server writes about the ad network", () => {
         const code = "good-code";
 
         const grant = yield* client.complete(code, Option.none());
+
         const {
           accounts: [account],
         } = yield* client.accounts(grant.token);
