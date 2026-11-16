@@ -34,6 +34,7 @@ import { DiscoveryLive } from "#app/discovery/live.ts";
 import { McpLive } from "#app/mcp/server.ts";
 import { MeterErrorsLive } from "#app/meter-errors/route.ts";
 import { ObservabilityLive } from "#app/observability.ts";
+import { PlatformEventsLive } from "#app/platform-events/route.ts";
 import { countRequests } from "#app/request-metrics.ts";
 import { ShortLinkRedirectsLive } from "#app/short-links/redirects.ts";
 import { httpShutdownTimeout } from "#app/shutdown.ts";
@@ -241,6 +242,7 @@ export const RoutesLive = Layer.mergeAll(
   RedactedQueryLive,
   DigestUnsubscribeLive,
   MeterErrorsLive,
+  PlatformEventsLive,
   ApiAnswersLive
 );
 
