@@ -3,5 +3,6 @@
 import typing
 
 TextUnit = typing.Union[
-    typing.Literal["graphemes", "codePoints", "utf8Bytes", "emojiBytes", "utf16Units", "weighted"], typing.Any
+    typing.Literal["graphemes", "codePoints", "utf8Bytes", "emojiBytes", "utf16Units", "weighted", "escapedUtf16Units"],
+    typing.Any,
 ]

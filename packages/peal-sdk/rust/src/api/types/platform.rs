@@ -17,6 +17,7 @@ pub enum Platform {
     GoogleBusiness,
     Discord,
     Telegram,
+    Slack,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -38,6 +39,7 @@ impl Serialize for Platform {
             Self::GoogleBusiness => serializer.serialize_str("googleBusiness"),
             Self::Discord => serializer.serialize_str("discord"),
             Self::Telegram => serializer.serialize_str("telegram"),
+            Self::Slack => serializer.serialize_str("slack"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -60,6 +62,7 @@ impl<'de> Deserialize<'de> for Platform {
             "googleBusiness" => Ok(Self::GoogleBusiness),
             "discord" => Ok(Self::Discord),
             "telegram" => Ok(Self::Telegram),
+            "slack" => Ok(Self::Slack),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -81,6 +84,7 @@ impl fmt::Display for Platform {
             Self::GoogleBusiness => write!(f, "googleBusiness"),
             Self::Discord => write!(f, "discord"),
             Self::Telegram => write!(f, "telegram"),
+            Self::Slack => write!(f, "slack"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

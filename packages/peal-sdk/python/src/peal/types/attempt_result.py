@@ -27,6 +27,7 @@ AttemptResult = typing.Union[
         "xThreadCut",
         "forumThreadNameRequired",
         "chatMigrated",
+        "cannotPost",
     ],
     typing.Any,
 ]

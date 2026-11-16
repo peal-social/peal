@@ -7071,6 +7071,7 @@ const (
 	ChannelPlatformGoogleBusiness ChannelPlatform = "googleBusiness"
 	ChannelPlatformDiscord        ChannelPlatform = "discord"
 	ChannelPlatformTelegram       ChannelPlatform = "telegram"
+	ChannelPlatformSlack          ChannelPlatform = "slack"
 	ChannelPlatformWordpress      ChannelPlatform = "wordpress"
 	ChannelPlatformDevto          ChannelPlatform = "devto"
 	ChannelPlatformHashnode       ChannelPlatform = "hashnode"
@@ -7105,6 +7106,8 @@ func NewChannelPlatformFromString(s string) (ChannelPlatform, error) {
 		return ChannelPlatformDiscord, nil
 	case "telegram":
 		return ChannelPlatformTelegram, nil
+	case "slack":
+		return ChannelPlatformSlack, nil
 	case "wordpress":
 		return ChannelPlatformWordpress, nil
 	case "devto":
@@ -10933,6 +10936,7 @@ const (
 	FailureReasonXThreadCut                FailureReason = "xThreadCut"
 	FailureReasonForumThreadNameRequired   FailureReason = "forumThreadNameRequired"
 	FailureReasonChatMigrated              FailureReason = "chatMigrated"
+	FailureReasonCannotPost                FailureReason = "cannotPost"
 )
 
 func NewFailureReasonFromString(s string) (FailureReason, error) {
@@ -10983,6 +10987,8 @@ func NewFailureReasonFromString(s string) (FailureReason, error) {
 		return FailureReasonForumThreadNameRequired, nil
 	case "chatMigrated":
 		return FailureReasonChatMigrated, nil
+	case "cannotPost":
+		return FailureReasonCannotPost, nil
 	}
 	var t FailureReason
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -23590,6 +23596,7 @@ const (
 	PlatformGoogleBusiness Platform = "googleBusiness"
 	PlatformDiscord        Platform = "discord"
 	PlatformTelegram       Platform = "telegram"
+	PlatformSlack          Platform = "slack"
 )
 
 func NewPlatformFromString(s string) (Platform, error) {
@@ -23620,6 +23627,8 @@ func NewPlatformFromString(s string) (Platform, error) {
 		return PlatformDiscord, nil
 	case "telegram":
 		return PlatformTelegram, nil
+	case "slack":
+		return PlatformSlack, nil
 	}
 	var t Platform
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -27447,6 +27456,93 @@ func (s SiteNotConnectedReason) Ptr() *SiteNotConnectedReason {
 }
 
 var (
+	slackOptionsFieldUnfurlLinks = big.NewInt(1 << 0)
+)
+
+// How a post goes out on a Slack channel, on every part of a thread. Scheduling needs none of them.
+type SlackOptions struct {
+	UnfurlLinks *bool `json:"unfurlLinks,omitempty" url:"unfurlLinks,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SlackOptions) GetUnfurlLinks() *bool {
+	if s == nil {
+		return nil
+	}
+	return s.UnfurlLinks
+}
+
+func (s *SlackOptions) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SlackOptions) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetUnfurlLinks sets the UnfurlLinks field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SlackOptions) SetUnfurlLinks(unfurlLinks *bool) {
+	s.UnfurlLinks = unfurlLinks
+	s.require(slackOptionsFieldUnfurlLinks)
+}
+
+func (s *SlackOptions) UnmarshalJSON(data []byte) error {
+	type unmarshaler SlackOptions
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SlackOptions(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SlackOptions) MarshalJSON() ([]byte, error) {
+	type embed SlackOptions
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SlackOptions) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
 	spendCeilingExceededEncodedFieldCode      = big.NewInt(1 << 0)
 	spendCeilingExceededEncodedFieldMessage   = big.NewInt(1 << 1)
 	spendCeilingExceededEncodedFieldRequestID = big.NewInt(1 << 2)
@@ -27915,6 +28011,7 @@ type TargetOptions struct {
 	Facebook       *FacebookOptions
 	Discord        *DiscordOptions
 	Telegram       *TelegramOptions
+	Slack          *SlackOptions
 
 	rawJSON json.RawMessage
 }
@@ -28017,6 +28114,13 @@ func (t *TargetOptions) GetTelegram() *TelegramOptions {
 	return t.Telegram
 }
 
+func (t *TargetOptions) GetSlack() *SlackOptions {
+	if t == nil {
+		return nil
+	}
+	return t.Slack
+}
+
 func (t *TargetOptions) UnmarshalJSON(data []byte) error {
 	var unmarshaler struct {
 		Platform string `json:"platform"`
@@ -28107,6 +28211,12 @@ func (t *TargetOptions) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		t.Telegram = value
+	case "slack":
+		value := new(SlackOptions)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		t.Slack = value
 	}
 	t.rawJSON = json.RawMessage(data)
 	return nil
@@ -28155,6 +28265,9 @@ func (t TargetOptions) MarshalJSON() ([]byte, error) {
 	if t.Telegram != nil {
 		return internal.MarshalJSONWithExtraProperty(t.Telegram, "platform", "telegram")
 	}
+	if t.Slack != nil {
+		return internal.MarshalJSONWithExtraProperty(t.Slack, "platform", "slack")
+	}
 	if len(t.rawJSON) > 0 {
 		return t.rawJSON, nil
 	}
@@ -28175,6 +28288,7 @@ type TargetOptionsVisitor interface {
 	VisitFacebook(*FacebookOptions) error
 	VisitDiscord(*DiscordOptions) error
 	VisitTelegram(*TelegramOptions) error
+	VisitSlack(*SlackOptions) error
 }
 
 func (t *TargetOptions) Accept(visitor TargetOptionsVisitor) error {
@@ -28216,6 +28330,9 @@ func (t *TargetOptions) Accept(visitor TargetOptionsVisitor) error {
 	}
 	if t.Telegram != nil {
 		return visitor.VisitTelegram(t.Telegram)
+	}
+	if t.Slack != nil {
+		return visitor.VisitSlack(t.Slack)
 	}
 	return fmt.Errorf("type %T does not define a non-empty union type", t)
 }
@@ -28263,6 +28380,9 @@ func (t *TargetOptions) validate() error {
 	}
 	if t.Telegram != nil {
 		fields = append(fields, "telegram")
+	}
+	if t.Slack != nil {
+		fields = append(fields, "slack")
 	}
 	if len(fields) == 0 {
 		if t.Platform != "" {
@@ -29780,12 +29900,13 @@ func (t TextProviderRefusedEncodedReason) Ptr() *TextProviderRefusedEncodedReaso
 type TextUnit string
 
 const (
-	TextUnitGraphemes  TextUnit = "graphemes"
-	TextUnitCodePoints TextUnit = "codePoints"
-	TextUnitUtf8Bytes  TextUnit = "utf8Bytes"
-	TextUnitEmojiBytes TextUnit = "emojiBytes"
-	TextUnitUtf16Units TextUnit = "utf16Units"
-	TextUnitWeighted   TextUnit = "weighted"
+	TextUnitGraphemes         TextUnit = "graphemes"
+	TextUnitCodePoints        TextUnit = "codePoints"
+	TextUnitUtf8Bytes         TextUnit = "utf8Bytes"
+	TextUnitEmojiBytes        TextUnit = "emojiBytes"
+	TextUnitUtf16Units        TextUnit = "utf16Units"
+	TextUnitWeighted          TextUnit = "weighted"
+	TextUnitEscapedUtf16Units TextUnit = "escapedUtf16Units"
 )
 
 func NewTextUnitFromString(s string) (TextUnit, error) {
@@ -29802,6 +29923,8 @@ func NewTextUnitFromString(s string) (TextUnit, error) {
 		return TextUnitUtf16Units, nil
 	case "weighted":
 		return TextUnitWeighted, nil
+	case "escapedUtf16Units":
+		return TextUnitEscapedUtf16Units, nil
 	}
 	var t TextUnit
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

@@ -139,6 +139,15 @@ public record TargetOptions
     }
 
     /// <summary>
+    /// Create an instance of TargetOptions with <see cref="TargetOptions.Slack"/>.
+    /// </summary>
+    public TargetOptions(TargetOptions.Slack value)
+    {
+        Platform = "slack";
+        Value = value.Value;
+    }
+
+    /// <summary>
     /// Discriminant value
     /// </summary>
     [JsonPropertyName("platform")]
@@ -213,6 +222,11 @@ public record TargetOptions
     /// Returns true if <see cref="Platform"/> is "telegram"
     /// </summary>
     public bool IsTelegram => Platform == "telegram";
+
+    /// <summary>
+    /// Returns true if <see cref="Platform"/> is "slack"
+    /// </summary>
+    public bool IsSlack => Platform == "slack";
 
     /// <summary>
     /// Returns the value as a <see cref="Peal.YouTubeOptions"/> if <see cref="Platform"/> is 'youtube', otherwise throws an exception.
@@ -331,6 +345,15 @@ public record TargetOptions
             ? (Peal.TelegramOptions)Value!
             : throw new global::System.Exception("TargetOptions.Platform is not 'telegram'");
 
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.SlackOptions"/> if <see cref="Platform"/> is 'slack', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'slack'.</exception>
+    public Peal.SlackOptions AsSlack() =>
+        IsSlack
+            ? (Peal.SlackOptions)Value!
+            : throw new global::System.Exception("TargetOptions.Platform is not 'slack'");
+
     public T Match<T>(
         Func<Peal.YouTubeOptions, T> onYoutube,
         Func<Peal.TikTokOptions, T> onTiktok,
@@ -345,6 +368,7 @@ public record TargetOptions
         Func<Peal.FacebookOptions, T> onFacebook,
         Func<Peal.DiscordOptions, T> onDiscord,
         Func<Peal.TelegramOptions, T> onTelegram,
+        Func<Peal.SlackOptions, T> onSlack,
         Func<string, object?, T> onUnknown_
     )
     {
@@ -363,6 +387,7 @@ public record TargetOptions
             "facebook" => onFacebook(AsFacebook()),
             "discord" => onDiscord(AsDiscord()),
             "telegram" => onTelegram(AsTelegram()),
+            "slack" => onSlack(AsSlack()),
             _ => onUnknown_(Platform, Value),
         };
     }
@@ -381,6 +406,7 @@ public record TargetOptions
         Action<Peal.FacebookOptions> onFacebook,
         Action<Peal.DiscordOptions> onDiscord,
         Action<Peal.TelegramOptions> onTelegram,
+        Action<Peal.SlackOptions> onSlack,
         Action<string, object?> onUnknown_
     )
     {
@@ -424,6 +450,9 @@ public record TargetOptions
                 break;
             case "telegram":
                 onTelegram(AsTelegram());
+                break;
+            case "slack":
+                onSlack(AsSlack());
                 break;
             default:
                 onUnknown_(Platform, Value);
@@ -613,6 +642,20 @@ public record TargetOptions
         return false;
     }
 
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.SlackOptions"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsSlack(out Peal.SlackOptions? value)
+    {
+        if (Platform == "slack")
+        {
+            value = (Peal.SlackOptions)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator TargetOptions(TargetOptions.Youtube value) => new(value);
@@ -640,6 +683,8 @@ public record TargetOptions
     public static implicit operator TargetOptions(TargetOptions.Discord value) => new(value);
 
     public static implicit operator TargetOptions(TargetOptions.Telegram value) => new(value);
+
+    public static implicit operator TargetOptions(TargetOptions.Slack value) => new(value);
 
     [Serializable]
     internal sealed class JsonConverter : JsonConverter<TargetOptions>
@@ -711,6 +756,8 @@ public record TargetOptions
                     ?? throw new JsonException("Failed to deserialize Peal.DiscordOptions"),
                 "telegram" => jsonWithoutDiscriminator.Deserialize<Peal.TelegramOptions?>(options)
                     ?? throw new JsonException("Failed to deserialize Peal.TelegramOptions"),
+                "slack" => jsonWithoutDiscriminator.Deserialize<Peal.SlackOptions?>(options)
+                    ?? throw new JsonException("Failed to deserialize Peal.SlackOptions"),
                 _ => json.Deserialize<object?>(options),
             };
             return new TargetOptions(discriminator, value);
@@ -738,6 +785,7 @@ public record TargetOptions
                     "facebook" => JsonSerializer.SerializeToNode(value.Value, options),
                     "discord" => JsonSerializer.SerializeToNode(value.Value, options),
                     "telegram" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "slack" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["platform"] = value.Platform;
@@ -1011,5 +1059,23 @@ public record TargetOptions
 
         public static implicit operator TargetOptions.Telegram(Peal.TelegramOptions value) =>
             new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for slack
+    /// </summary>
+    [Serializable]
+    public struct Slack
+    {
+        public Slack(Peal.SlackOptions value)
+        {
+            Value = value;
+        }
+
+        internal Peal.SlackOptions Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TargetOptions.Slack(Peal.SlackOptions value) => new(value);
     }
 }

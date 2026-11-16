@@ -33,6 +33,8 @@ public final class Platform {
 
     public static final Platform TIKTOK = new Platform(Value.TIKTOK, "tiktok");
 
+    public static final Platform SLACK = new Platform(Value.SLACK, "slack");
+
     private final Value value;
 
     private final String string;
@@ -90,6 +92,8 @@ public final class Platform {
                 return visitor.visitPinterest();
             case TIKTOK:
                 return visitor.visitTiktok();
+            case SLACK:
+                return visitor.visitSlack();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -125,6 +129,8 @@ public final class Platform {
                 return PINTEREST;
             case "tiktok":
                 return TIKTOK;
+            case "slack":
+                return SLACK;
             default:
                 return new Platform(Value.UNKNOWN, value);
         }
@@ -157,6 +163,8 @@ public final class Platform {
 
         TELEGRAM,
 
+        SLACK,
+
         UNKNOWN
     }
 
@@ -186,6 +194,8 @@ public final class Platform {
         T visitDiscord();
 
         T visitTelegram();
+
+        T visitSlack();
 
         T visitUnknown(String unknownType);
     }

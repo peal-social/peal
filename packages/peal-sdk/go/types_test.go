@@ -48403,6 +48403,87 @@ func TestSettersMarkExplicitSiteNotConnectedEncoded(t *testing.T) {
 
 }
 
+func TestSettersSlackOptions(t *testing.T) {
+	t.Run("SetUnfurlLinks", func(t *testing.T) {
+		obj := &SlackOptions{}
+		var fernTestValueUnfurlLinks *bool
+		obj.SetUnfurlLinks(fernTestValueUnfurlLinks)
+		assert.Equal(t, fernTestValueUnfurlLinks, obj.UnfurlLinks)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersSlackOptions(t *testing.T) {
+	t.Run("GetUnfurlLinks", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &SlackOptions{}
+		var expected *bool
+		obj.UnfurlLinks = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetUnfurlLinks(), "getter should return the property value")
+	})
+
+	t.Run("GetUnfurlLinks_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &SlackOptions{}
+		obj.UnfurlLinks = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetUnfurlLinks(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetUnfurlLinks_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *SlackOptions
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetUnfurlLinks() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitSlackOptions(t *testing.T) {
+	t.Run("SetUnfurlLinks_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &SlackOptions{}
+		var fernTestValueUnfurlLinks *bool
+
+		// Act
+		obj.SetUnfurlLinks(fernTestValueUnfurlLinks)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersSpendCeilingExceededEncoded(t *testing.T) {
 	t.Run("SetCode", func(t *testing.T) {
 		obj := &SpendCeilingExceededEncoded{}
@@ -49839,6 +49920,39 @@ func TestGettersTargetOptions(t *testing.T) {
 			}
 		}()
 		_ = obj.GetTelegram() // Should return zero value
+	})
+
+	t.Run("GetSlack", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &TargetOptions{}
+		var expected *SlackOptions
+		obj.Slack = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetSlack(), "getter should return the property value")
+	})
+
+	t.Run("GetSlack_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &TargetOptions{}
+		obj.Slack = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetSlack(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetSlack_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *TargetOptions
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetSlack() // Should return zero value
 	})
 
 }
@@ -72618,6 +72732,39 @@ func TestJSONMarshalingSiteNotConnectedEncoded(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingSlackOptions(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &SlackOptions{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled SlackOptions
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj SlackOptions
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj SlackOptions
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingSpendCeilingExceededEncoded(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -78387,6 +78534,22 @@ func TestStringSiteNotConnectedEncoded(t *testing.T) {
 	})
 }
 
+func TestStringSlackOptions(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &SlackOptions{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *SlackOptions
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
 func TestStringSpendCeilingExceededEncoded(t *testing.T) {
 	t.Run("StringMethod", func(t *testing.T) {
 		t.Parallel()
@@ -80066,6 +80229,13 @@ func TestEnumChannelPlatform(t *testing.T) {
 		assert.Equal(t, ChannelPlatform("telegram"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_slack", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewChannelPlatformFromString("slack")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ChannelPlatform("slack"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_wordpress", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewChannelPlatformFromString("wordpress")
@@ -80744,6 +80914,13 @@ func TestEnumFailureReason(t *testing.T) {
 		val, err := NewFailureReasonFromString("chatMigrated")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, FailureReason("chatMigrated"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_cannotPost", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewFailureReasonFromString("cannotPost")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, FailureReason("cannotPost"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
@@ -82901,6 +83078,13 @@ func TestEnumPlatform(t *testing.T) {
 		assert.Equal(t, Platform("telegram"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_slack", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFromString("slack")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, Platform("slack"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewPlatformFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)
@@ -83555,6 +83739,13 @@ func TestEnumTextUnit(t *testing.T) {
 		val, err := NewTextUnitFromString("weighted")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, TextUnit("weighted"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_escapedUtf16Units", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewTextUnitFromString("escapedUtf16Units")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, TextUnit("escapedUtf16Units"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
@@ -88319,6 +88510,29 @@ func TestExtraPropertiesSiteNotConnectedEncoded(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *SiteNotConnectedEncoded
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesSlackOptions(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &SlackOptions{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *SlackOptions
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

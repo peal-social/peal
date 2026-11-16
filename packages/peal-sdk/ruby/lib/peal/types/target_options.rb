@@ -36,6 +36,8 @@ module Peal
       member -> { Peal::Types::DiscordOptions }, key: "DISCORD"
 
       member -> { Peal::Types::TelegramOptions }, key: "TELEGRAM"
+
+      member -> { Peal::Types::SlackOptions }, key: "SLACK"
     end
   end
 end

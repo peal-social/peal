@@ -17,4 +17,5 @@ enum Platform: string
     case GoogleBusiness = "googleBusiness";
     case Discord = "discord";
     case Telegram = "telegram";
+    case Slack = "slack";
 }

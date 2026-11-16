@@ -687,6 +687,7 @@ export * from "./SiteConnectLimitedEncoded.js";
 export * from "./SiteNotConnectedEncoded.js";
 export * from "./SiteNotConnectedReason.js";
 export * from "./SitePlatform.js";
+export * from "./SlackOptions.js";
 export * from "./SlotTime.js";
 export * from "./SpecialAdCategory.js";
 export * from "./SpendCeilingExceededEncoded.js";

@@ -10,6 +10,7 @@ pub enum TextUnit {
     EmojiBytes,
     Utf16Units,
     Weighted,
+    EscapedUtf16Units,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -24,6 +25,7 @@ impl Serialize for TextUnit {
             Self::EmojiBytes => serializer.serialize_str("emojiBytes"),
             Self::Utf16Units => serializer.serialize_str("utf16Units"),
             Self::Weighted => serializer.serialize_str("weighted"),
+            Self::EscapedUtf16Units => serializer.serialize_str("escapedUtf16Units"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -39,6 +41,7 @@ impl<'de> Deserialize<'de> for TextUnit {
             "emojiBytes" => Ok(Self::EmojiBytes),
             "utf16Units" => Ok(Self::Utf16Units),
             "weighted" => Ok(Self::Weighted),
+            "escapedUtf16Units" => Ok(Self::EscapedUtf16Units),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -53,6 +56,7 @@ impl fmt::Display for TextUnit {
             Self::EmojiBytes => write!(f, "emojiBytes"),
             Self::Utf16Units => write!(f, "utf16Units"),
             Self::Weighted => write!(f, "weighted"),
+            Self::EscapedUtf16Units => write!(f, "escapedUtf16Units"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

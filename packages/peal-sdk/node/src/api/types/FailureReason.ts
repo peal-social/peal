@@ -23,6 +23,7 @@ export const FailureReason = {
         PerAccountPricingRequired: "perAccountPricingRequired",
         XThreadCut: "xThreadCut",
         ForumThreadNameRequired: "forumThreadNameRequired",
-        ChatMigrated: "chatMigrated"
+        ChatMigrated: "chatMigrated",
+        CannotPost: "cannotPost"
     } as const;
 export type FailureReason = typeof FailureReason[keyof typeof FailureReason];

@@ -19,6 +19,8 @@ public final class TextUnit {
 
     public static final TextUnit UTF8BYTES = new TextUnit(Value.UTF8BYTES, "utf8Bytes");
 
+    public static final TextUnit ESCAPED_UTF16UNITS = new TextUnit(Value.ESCAPED_UTF16UNITS, "escapedUtf16Units");
+
     private final Value value;
 
     private final String string;
@@ -62,6 +64,8 @@ public final class TextUnit {
                 return visitor.visitUtf16Units();
             case UTF8BYTES:
                 return visitor.visitUtf8Bytes();
+            case ESCAPED_UTF16UNITS:
+                return visitor.visitEscapedUtf16Units();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -83,6 +87,8 @@ public final class TextUnit {
                 return UTF16UNITS;
             case "utf8Bytes":
                 return UTF8BYTES;
+            case "escapedUtf16Units":
+                return ESCAPED_UTF16UNITS;
             default:
                 return new TextUnit(Value.UNKNOWN, value);
         }
@@ -101,6 +107,8 @@ public final class TextUnit {
 
         WEIGHTED,
 
+        ESCAPED_UTF16UNITS,
+
         UNKNOWN
     }
 
@@ -116,6 +124,8 @@ public final class TextUnit {
         T visitUtf16Units();
 
         T visitWeighted();
+
+        T visitEscapedUtf16Units();
 
         T visitUnknown(String unknownType);
     }
