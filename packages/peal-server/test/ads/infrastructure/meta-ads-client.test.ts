@@ -56,6 +56,19 @@ const ad = (
       : { accountId: "17840000000000001", platform, platformPostId: "1790001" },
 });
 
+// What every creative of a boost opts out of.
+const optedOut = {
+  contextual_multi_ads: { enroll_status: "OPT_OUT" },
+  degrees_of_freedom_spec: {
+    creative_features_spec: {
+      product_extensions: {
+        action_metadata: { type: "MANUAL" },
+        enroll_status: "OPT_OUT",
+      },
+    },
+  },
+};
+
 const snapshotRequest = {
   currency: eur,
   externalId: account,
@@ -396,15 +409,20 @@ describe("the requests a boost is made of", () => {
       );
       assert.strictEqual(second?.params["dsa_beneficiary"], "Example Studio");
       assert.strictEqual(second?.params["dsa_payor"], "Example Studio");
+      // The audience is the member's: Meta does not widen it.
       assert.deepStrictEqual(JSON.parse(second?.params["targeting"] ?? "{}"), {
         age_max: 45,
         age_min: 25,
         geo_locations: { countries: ["FR", "BE"] },
+        targeting_automation: { advantage_audience: 0 },
       });
 
       assert.strictEqual(third?.path, "/act_1001/ads");
       assert.strictEqual(third?.params["status"], "PAUSED");
+      // The post alone: never beside other advertisers' ads, nor with
+      // products Meta matched to it.
       assert.deepStrictEqual(JSON.parse(third?.params["creative"] ?? "{}"), {
+        ...optedOut,
         object_story_id: "700_900",
       });
 
@@ -435,6 +453,7 @@ describe("the requests a boost is made of", () => {
         assert.deepStrictEqual(
           JSON.parse(api.writes()[2]?.params["creative"] ?? "{}"),
           {
+            ...optedOut,
             instagram_user_id: "17840000000000001",
             object_id: "701",
             source_instagram_media_id: "1790001",

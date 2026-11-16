@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 
-import { Effect, Redacted, Schema } from "effect";
+import { Effect, Option, Redacted, Schema } from "effect";
 
 import type { MetaApp } from "#shared/infrastructure/platforms/meta-apps.ts";
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
@@ -192,7 +192,25 @@ const formOf = (request: PlatformRequest) =>
 const version = "/v27.0";
 
 const decodeCreative = Schema.decodeUnknownSync(
-  Schema.fromJsonString(Schema.Record(Schema.String, Schema.String))
+  Schema.fromJsonString(
+    Schema.Struct({
+      object_story_id: Schema.optionalKey(Schema.String),
+      source_instagram_media_id: Schema.optionalKey(Schema.String),
+    })
+  )
+);
+
+// What an ad set's targeting says of Advantage+ audience.
+const decodeTargeting = Schema.decodeUnknownOption(
+  Schema.fromJsonString(
+    Schema.Struct({
+      targeting_automation: Schema.optionalKey(
+        Schema.Struct({
+          advantage_audience: Schema.optionalKey(Schema.Literals([0, 1])),
+        })
+      ),
+    })
+  )
 );
 
 const decodeStatuses = Schema.decodeUnknownSync(
@@ -210,15 +228,16 @@ const decodeRange = Schema.decodeUnknownSync(
 
 const kinds = { ads: "ad", adsets: "adset", campaigns: "campaign" } as const;
 
-const isEdge = (edge: string): edge is keyof typeof kinds => edge in kinds;
+const isEdge = (edge: string): edge is keyof typeof kinds =>
+  Object.hasOwn(kinds, edge);
 
 // What the creative of an ad says it shows.
 const creativeJson = (object: FakeObject): JsonValue => {
   const creative = decodeCreative(object.params["creative"] ?? "{}");
 
   return present([
-    ["effective_object_story_id", creative["object_story_id"]],
-    ["effective_instagram_media_id", creative["source_instagram_media_id"]],
+    ["effective_object_story_id", creative.object_story_id],
+    ["effective_instagram_media_id", creative.source_instagram_media_id],
   ]);
 };
 
@@ -243,6 +262,22 @@ const creationRefusal = (
   // "Budget is too low."
   if (budget < 100) {
     return marketingError(100, 1_885_272);
+  }
+
+  // From v23.0 a new ad set's `targeting_automation.advantage_audience`
+  // "defaults to 1 or requires an explicit value of either 1 or 0"
+  // ("Advantage+ audience", read 2026-11-16): Meta opts a default set-up
+  // in silently and refuses the others. The fake is stricter, refusing
+  // every ad set without the value, so a test fails when it is left out.
+  // Meta's subcode for the refusal is the trial's to record.
+  const automation = Option.flatMap(
+    decodeTargeting(params["targeting"] ?? ""),
+    (targeting) =>
+      Option.fromUndefinedOr(targeting.targeting_automation?.advantage_audience)
+  );
+
+  if (Option.isNone(automation)) {
+    return marketingError(100);
   }
 
   // A lifetime budget needs an end time.
@@ -323,6 +358,7 @@ export const fakeMarketingApi = (options: FakeMarketingOptions = {}) =>
 
       return present([
         ["id", object.id],
+        ["account_id", object.accountId],
         ["name", params["name"] ?? ""],
         ["status", object.status],
         ["effective_status", effectiveStatus(object)],
@@ -570,7 +606,9 @@ export const fakeMarketingApi = (options: FakeMarketingOptions = {}) =>
 
       const status = formOf(request).get("status");
 
-      if (status !== "ACTIVE" && status !== "PAUSED") {
+      // "DELETED" too, which the trial's cleaning sends ("Manage Your Ad
+      // Object's Status").
+      if (status !== "ACTIVE" && status !== "PAUSED" && status !== "DELETED") {
         return marketingError(100);
       }
 

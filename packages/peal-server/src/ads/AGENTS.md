@@ -129,6 +129,20 @@ weaken a rule below to make something pass.
   (`dropped`). Use cases are tested on Postgres with `AdsTest`
   (`test/ads/support.ts`): `onMeta` starts a fake for the test, and boosts'
   jobs are recorded, never run: a test places a boost itself.
+- The trial (`bun packages/peal-server/scripts/ads-trial.ts`, over
+  `infrastructure/meta/trial.ts`) runs the adapter's own requests
+  against Meta from the operator's machine: the one place a network's
+  message is shown, on that terminal and in `.local/ads-trial.log`
+  (mode 0600), with the token, the app secret and the proof masked
+  (`printing`). It runs with Bun directly and has no Nx target: Nx keeps
+  every task's terminal output in its cache. It reads its settings from
+  the environment only (`trialSettings`). It makes everything paused,
+  and pauses or deletes only objects named `peal-trial-…`; `activate`
+  checks the day `PEAL_ADS_TRIAL_ACTIVATE` names before any request,
+  then runs only an object of the trial's in the account given as
+  `--sandbox-account` (`activationRefusal`). Never give it a way to run
+  or change anything else, and keep its tests
+  (`test/ads/infrastructure/ads-trial.test.ts`) on the fake.
 - Handlers map each refusal to its contract error and `DatabaseError` to a
   defect inside `catchTags`: never `Effect.orDie` after it, which turns
   every refusal into a 500.

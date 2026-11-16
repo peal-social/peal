@@ -165,7 +165,9 @@ layer(AdsTest, { excludeTestServices: true })("boosting a post", (it) => {
         assert.strictEqual(adSet?.params["lifetime_budget"], "5000");
         assert.isDefined(adSet?.params["end_time"]);
         assert.strictEqual(campaign?.params["name"], `Peal boost ${boost.id}`);
-        assert.deepStrictEqual(JSON.parse(ad?.params["creative"] ?? "{}"), {
+        // The post as it is, with the creative's opt-outs the adapter's
+        // own tests read.
+        assert.deepInclude(JSON.parse(ad?.params["creative"] ?? "{}"), {
           object_story_id: post.platformPostId,
         });
 
