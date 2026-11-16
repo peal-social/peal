@@ -1862,6 +1862,137 @@ describe("a comment rule's private reply", () => {
       }).pipe(Effect.provide(RulesTest))
   );
 
+  it.live("takes no private reply after a public reply withdrawn", () =>
+    Effect.gen(function* withdrawn() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const { rule, thread } = yield* instagramRule(workspaceId);
+        const rules = yield* CommentRules;
+
+        const [asks] = yield* received(thread, [{ author: 1, text: "price?" }]);
+
+        yield* rules.runDue;
+        yield* SqlClient.SqlClient.use(
+          (sql) => sql`UPDATE engagement.replies
+            SET status = 'withdrawn', settled_at = now(),
+              platform_comment_id = 'public-reply-1'
+            WHERE workspace_id = ${workspaceId}`
+        ).pipe(Effect.orDie);
+        yield* rules.runDue;
+
+        assert.deepStrictEqual(yield* privateRepliesIn(workspaceId), []);
+        assert.deepStrictEqual(
+          yield* privateOutcomes(workspaceId, rule.rule.id),
+          new Map([[asks?.id, "publicReplyWithdrawn"]])
+        );
+      }).pipe(Effect.ensuring(forget(workspaceId)));
+    }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live(
+    "checks the channel again before it sends: messages turned off since say so",
+    () =>
+      Effect.gen(function* offSince() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const { rule, thread } = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+
+          const [asks] = yield* received(thread, [
+            { author: 1, text: "price?" },
+          ]);
+
+          yield* rules.runDue;
+          assert.deepStrictEqual(
+            yield* privateOutcomes(workspaceId, rule.rule.id),
+            new Map([[asks?.id, "waiting"]])
+          );
+
+          yield* SqlClient.SqlClient.use(
+            (sql) =>
+              sql`DELETE FROM engagement.message_channels WHERE workspace_id = ${workspaceId}`
+          ).pipe(Effect.orDie);
+          yield* publicRepliesEnd(workspaceId, "sent");
+          yield* rules.runDue;
+
+          assert.deepStrictEqual(
+            yield* privateOutcomes(workspaceId, rule.rule.id),
+            new Map([[asks?.id, "messagesOff"]])
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live(
+    "settles those waiting stopped when the rule ends with its starter gone",
+    () =>
+      Effect.gen(function* starterGone() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const { rule, thread } = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+
+          const [asks] = yield* received(thread, [
+            { author: 1, text: "price?" },
+          ]);
+
+          yield* rules.runDue;
+          yield* Ref.update(
+            startersGone,
+            (gone) => new Set([...gone, workspaceId])
+          );
+          yield* rules.runDue;
+
+          assert.deepStrictEqual(
+            yield* privateOutcomes(workspaceId, rule.rule.id),
+            new Map([[asks?.id, "stopped"]])
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live(
+    "settles a match's private reply once, and never moves a settled one",
+    () =>
+      Effect.gen(function* settlesOnce() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const { rule, thread } = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+          const store = yield* CommentRuleStore;
+
+          const [asks] = yield* received(thread, [
+            { author: 1, text: "price?" },
+          ]);
+
+          assert.isDefined(asks);
+
+          yield* rules.runDue;
+
+          assert.isTrue(
+            yield* store.settlePrivate(rule.rule.id, asks.id, {
+              _tag: "privateCode",
+              code: "messagesOff",
+            })
+          );
+          assert.isFalse(
+            yield* store.settlePrivate(rule.rule.id, asks.id, {
+              _tag: "privateCode",
+              code: "AllowanceReached",
+            })
+          );
+          assert.deepStrictEqual(
+            yield* privateOutcomes(workspaceId, rule.rule.id),
+            new Map([[asks.id, "messagesOff"]])
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      }).pipe(Effect.provide(RulesTest))
+  );
+
   it.live("answers nothing more in public once stopped mid-run", () =>
     Effect.gen(function* stopsPublic() {
       const workspaceId = yield* freshWorkspace;
@@ -2046,6 +2177,12 @@ describe("a comment rule's private reply", () => {
             {
               privateReply: null,
             }
+          );
+
+          // At once, not at the next run.
+          assert.deepStrictEqual(
+            [...(yield* privateOutcomes(workspaceId, rule.rule.id)).values()],
+            ["stopped", "stopped"]
           );
 
           yield* publicRepliesEnd(workspaceId, "sent");
