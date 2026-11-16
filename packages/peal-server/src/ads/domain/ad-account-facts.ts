@@ -19,6 +19,11 @@ export class AdAccountFacts extends Schema.Class<AdAccountFacts>(
   externalId: NetworkObjectIdSchema,
   name: Schema.String.check(Schema.isMaxLength(512)),
   /**
+   * The manager account it is reached through, on Google Ads; none when
+   * reached directly, and on Meta.
+   */
+  reachedThrough: Schema.Option(NetworkObjectIdSchema),
+  /**
    * The most the account may spend in all, set at the network, in minor
    * units: none when it has no cap.
    */

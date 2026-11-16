@@ -5,9 +5,13 @@ weaken a rule below to make something pass.
 
 - Ads are off unless the operator sets `PEAL_ADS` (`adsModeConfig`): `off`
   (unset or blank), `read` (ad accounts connect and are read; the sign-in
-  asks for `ads_read` only) or `spend` (boosting too). Anything else stops
-  the server, as does `read` or `spend` without Meta's main app
-  (`META_APP_ID`, `META_APP_SECRET`): ads run on the app Facebook Pages
+  asks for `ads_read` only) or `spend` (boosting too). `PEAL_ADS_NETWORKS`
+  (`adsNetworksConfig`) names the networks, `meta` when unset; `google`
+  joins only when named, and `spend` needs `meta`. Anything else stops
+  the server, as does a network named without its app or client: Meta's
+  main app (`META_APP_ID`, `META_APP_SECRET`), Google Ads' OAuth client
+  (`GOOGLE_ADS_CLIENT_ID`, `GOOGLE_ADS_CLIENT_SECRET`). Meta's ads run on
+  its main app: ads run on the app Facebook Pages
   connect with, so its data deletion and deauthorize callbacks reach the
   ads sign-ins (`PlatformUserGrants`, backed by `AdsPlatformUserGrants`).
 - An ad account is not a channel. A person signs in to the network
@@ -163,3 +167,59 @@ weaken a rule below to make something pass.
   published target are not over (requested, active, paused, unconfirmed):
   publishing refuses to delete such a post from its platform
   (`boostRunning`), as the ad would go on spending on a post that is gone.
+- What a network does is described in `domain/network-traits.ts`
+  (`days` by ad or by campaign, `spends`, `reportsReach`,
+  `reportsResults`, `syncEvery`): code asks the traits, never "is this
+  Meta?", and a network added does not compile until described. The
+  account view's `capabilities` come from them.
+- Google Ads (`infrastructure/google/`) is read only: campaigns and one
+  row a campaign a day (`ads.campaign_days`), never an ad, a boost or
+  spending (`SpendAuthorizations.decide` refuses, `maySpend` is false),
+  no managed ads counted, read every six hours (three operations a read).
+  Its only requests are the token endpoint, `customers:listAccessible
+  Customers` and `googleAds:search`; a test fails on any other path and
+  on `:mutate` (`test/ads/infrastructure/google-ads-client.test.ts`).
+  The grant's token is the refresh token; each call trades it for an
+  access token kept for that call. No developer token: Google retired
+  them (9 September 2026), and the access level is the client's Cloud
+  project's. Refusals are kept as `google.<kind>.<VALUE>`, never with
+  Google's message (it quotes the query); money is micros, read with
+  `minorUnitsOfMicros`, and `minorUnitDigits("google", …)` follows the
+  ISO 4217 table. A client account is read through its manager
+  (`reachedThrough`, the `login-customer-id` header). The API version is
+  `googleAdsApiVersion` (v26, which Google ends in November 2027):
+  nothing upgrades it by itself. It was never run against Google: before
+  `google` is named anywhere, connect a test account and a real one with
+  nothing running, and compare what Google answers with
+  `google-ads-schemas.ts`. Tests use the loopback fake
+  (`test/ads/fakes/fake-google-ads-api.ts`, `onGoogle` in `AdsTest`).
+- Only Google's token errors (`OAUTH_TOKEN_*`, `GOOGLE_ACCOUNT_DELETED`,
+  `AUTHENTICATION_ERROR`, a bare 401) and the token endpoint's
+  `invalid_grant` reject a grant; an account Google cannot find, a
+  manager's 2-step rule, or a person without Google Ads are that
+  account's (`google-ads-http.ts`). The fake types each error under the
+  enum Google puts it in.
+- Listings of what a sign-in reaches go through `ListingPace` (in
+  process: ten a sign-in and thirty a workspace an hour, kept five
+  minutes, and 300 of Google's operations a day for every workspace's
+  listings, 100 for one), and each one takes the way (`reachedThrough`)
+  Google lists to the accounts of its own sign-in (`setWays` matches the
+  grant); a read refused as a permission reads the sign-in's kept listing,
+  or lists once, to find another way, else the account is
+  `unreachableSince`, its history kept, and is not looked for again until
+  a member's listing finds it.
+- A read cut at the page bound is never taken for whole: days go on from
+  their last day a few times, and what stays cut halts the account six
+  hours (not marked read, logged as an error). Cost is kept in micros (`campaign_days.spend_micros`) and
+  rounded once where days are summed.
+- A sweep's scheduled time travels with each sync (`runAt`): the next read
+  counts from it, on every network.
+- `reread` in the read model names drizzle's properties: every listed
+  field is taken again at each read (before, only those whose property and
+  column shared a name were).
+- The MCP tools do not offer Google Ads accounts (Google's policy for
+  tools names MCP servers that pass its data on): they list Meta's
+  alone, refuse a Google account in words, and a boost on one as read only
+  (`refusals.ts`), until the
+  owner decides otherwise. The API, the SDKs and the command line serve
+  both.

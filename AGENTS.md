@@ -252,7 +252,8 @@ self-hoster needs only Postgres and an S3-compatible store:
   bills per connected account and by use, in US dollars, as the rate card
   (`peal-contract/rate-card`) says;
 - ads: off until `PEAL_ADS` is `read` or `spend`, with the operator's own
-  Meta app holding the ads permissions (see
+  Meta app holding the ads permissions, and Google Ads, read only, once
+  `PEAL_ADS_NETWORKS` names `google` with its own OAuth client (see
   [`src/ads/AGENTS.md`](packages/peal-server/src/ads/AGENTS.md));
 - captcha: Turnstile, off when no key is set;
 - sign-up: anyone, unless `PEAL_SIGN_UP=invitation` (an invitation's link

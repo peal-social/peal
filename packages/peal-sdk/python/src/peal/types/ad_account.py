@@ -7,6 +7,7 @@ import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .ad_access import AdAccess
+from .ad_account_capabilities import AdAccountCapabilities
 from .ad_account_status import AdAccountStatus
 from .ad_network import AdNetwork
 
@@ -25,6 +26,7 @@ class AdAccount(UniversalBaseModel):
     An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
     """
 
+    capabilities: typing.Optional[AdAccountCapabilities] = None
     connected_at: typing_extensions.Annotated[
         str, FieldMetadata(alias="connectedAt"), pydantic.Field(alias="connectedAt")
     ]
@@ -58,6 +60,9 @@ class AdAccount(UniversalBaseModel):
     new_ads_untracked_until: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="newAdsUntrackedUntil"), pydantic.Field(alias="newAdsUntrackedUntil")
     ] = None
+    reached_through: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="reachedThrough"), pydantic.Field(alias="reachedThrough")
+    ] = None
     spend_cap: typing_extensions.Annotated[
         typing.Optional[int],
         FieldMetadata(alias="spendCap"),
@@ -78,6 +83,9 @@ class AdAccount(UniversalBaseModel):
         typing.Optional[str], FieldMetadata(alias="syncedAt"), pydantic.Field(alias="syncedAt")
     ] = None
     time_zone: typing_extensions.Annotated[str, FieldMetadata(alias="timeZone"), pydantic.Field(alias="timeZone")]
+    unreachable_since: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="unreachableSince"), pydantic.Field(alias="unreachableSince")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

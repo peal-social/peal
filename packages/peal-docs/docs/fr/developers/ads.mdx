@@ -39,6 +39,8 @@ Le groupe `ads` est sous `/api/workspaces/{workspaceId}/ads`. Les chemins ci-des
 
 Les trois rapports prennent `from` et `to`, des jours du calendrier du compte comme `2026-11-01`, tous deux compris et séparés de 366 jours au plus : les 30 derniers jours quand ils manquent. Les campagnes et les publicités viennent par mille au plus. `ads.listBoosts` et `ads.auditTrail` répondent un `nextCursor` à passer comme `cursor` pour la page suivante.
 
+Un compte dit ce que son réseau permet dans `capabilities` (`ads`, `boosts`, `reach`, `results`) : masquez ce qui vaut faux. Un compte Google Ads (`network` `google`) les a toutes à faux : ses campagnes portent leurs propres jours et un `kind` (`SEARCH`, `PERFORMANCE_MAX`), `ads.listAds` n’en renvoie aucune, `reach` vaut 0 et `results` null, et activer sa dépense répond `AdSpendingUnavailable`. `reachedThrough` nomme le compte administrateur par lequel il est lu.
+
 Les SDK ont les mêmes opérations dans leur groupe `ads` (`peal.ads.quoteBoost`, `peal.ads.createBoost`…), et la [ligne de commande](/developers/cli/workspace) les commandes sous `peal ads`.
 
 ### Un devis, puis la mise en avant [#api-boost]
@@ -237,4 +239,4 @@ Un [point de terminaison de webhook](/developers/webhooks) peut s’abonner à h
 
 La [ligne de commande](/developers/cli) a les commandes des publicités sous `peal ads` : lancez `peal ads --help` pour en voir la liste. Les [assistants IA](/developers/mcp/tools#tools) ont des outils pour les publicités, qui suivent les mêmes permissions et les mêmes règles : un outil qui dépense le dit dans sa description, et demande que l’application porte `workspace:publish` et `workspace:ads`.
 
-Ni l’une ni les autres ne se connectent à un réseau publicitaire, n’activent les dépenses ni ne changent un plafond : cela se fait dans l’application web, par une personne.
+Ni l’une ni les autres ne se connectent à un réseau publicitaire, n’activent les dépenses ni ne changent un plafond : cela se fait dans l’application web, par une personne. Les outils MCP ne proposent pas les comptes Google Ads, ce que la règle de Google pour les outils demande d’un serveur MCP : ils ne listent que ceux de Meta, et refusent un compte Google Ads en le disant ; la ligne de commande montre les deux.

@@ -8,6 +8,7 @@ module Peal
       extend Peal::Internal::Types::Enum
 
       META = "meta"
+      GOOGLE = "google"
     end
   end
 end

@@ -1,4 +1,16 @@
-import { and, asc, eq, gt, inArray, lte, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  isNull,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 import { Effect, Layer, Option, Schema } from "effect";
 import { SqlClient, SqlError } from "effect/sql";
 
@@ -33,10 +45,12 @@ export const toAccount = (row: Row, access: string) =>
     id: row.id,
     name: row.name,
     network: row.network,
+    reachedThrough: Option.fromNullOr(row.reachedThrough),
     spendCap: Option.fromNullOr(row.spendCap),
     status: row.status,
     syncedAt: utcOrNone(row.syncedAt),
     timeZone: row.timeZone,
+    unreachableSince: utcOrNone(row.unreachableSince),
     workspaceId: row.workspaceId,
   }).pipe(Effect.orDie);
 
@@ -213,6 +227,7 @@ export const DrizzleAccountStore = Layer.effect(
             network: account.network,
             // Read at the next run of the sync.
             nextSyncAt: date(account.connectedAt),
+            reachedThrough: Option.getOrNull(account.reachedThrough),
             spendCap: Option.getOrNull(account.spendCap),
             status: account.status,
             syncedAt: dateOrNull(account.syncedAt),
@@ -278,6 +293,8 @@ export const DrizzleAccountStore = Layer.effect(
             name: facts.name,
             spendCap: Option.getOrNull(facts.spendCap),
             status: facts.status,
+            // The network described it: it is reached again.
+            unreachableSince: null,
             // The currency and the zone an account was connected with
             // stay: budgets and months were counted in them.
           })
@@ -295,6 +312,40 @@ export const DrizzleAccountStore = Layer.effect(
           })
           .where(eq(accounts.id, accountId))
           .pipe(Effect.mapError(failed), Effect.asVoid),
+      markUnreachable: (accountId, since) =>
+        db
+          .update(accounts)
+          .set({ unreachableSince: date(since) })
+          .where(
+            and(eq(accounts.id, accountId), isNull(accounts.unreachableSince))
+          )
+          .pipe(Effect.mapError(failed), Effect.asVoid),
+      setWays: Effect.fn("AccountStore.setWays")(
+        function* setWays(grant, ways) {
+          for (const way of ways) {
+            const through = Option.getOrNull(way.reachedThrough);
+
+            yield* db
+              .update(accounts)
+              .set({ reachedThrough: through })
+              .where(
+                and(
+                  eq(accounts.workspaceId, grant.workspaceId),
+                  eq(accounts.network, grant.network),
+                  eq(accounts.grantId, grant.id),
+                  eq(accounts.externalId, way.externalId),
+                  through === null
+                    ? isNotNull(accounts.reachedThrough)
+                    : or(
+                        isNull(accounts.reachedThrough),
+                        ne(accounts.reachedThrough, through)
+                      )
+                )
+              )
+              .pipe(Effect.mapError(failed));
+          }
+        }
+      ),
       spendingOn: (accountId, spending) =>
         locked(spendingLockName, accountId, spending).pipe(
           Effect.withSpan("AccountStore.spendingOn")

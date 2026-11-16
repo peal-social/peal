@@ -1,4 +1,4 @@
-import { Context, Effect, Layer } from "effect";
+import { Context, Effect, Layer, Option } from "effect";
 
 import { BoostOperations } from "#ads/application/boost-operations.ts";
 import { AccountSyncer } from "#ads/application/ports/account-syncer.ts";
@@ -18,7 +18,9 @@ export const DirectAds = Layer.effectContext(
 
     return Context.make(
       AccountSyncer,
-      AccountSyncer.of({ sync: (accountId) => sync.run(accountId) })
+      AccountSyncer.of({
+        sync: (accountId, runAt) => sync.run(accountId, Option.some(runAt)),
+      })
     ).pipe(
       Context.add(
         BoostGateway,

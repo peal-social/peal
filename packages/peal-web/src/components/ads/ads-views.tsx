@@ -37,6 +37,7 @@ import {
 import type { ReactNode, SubmitEvent } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
+import { capabilitiesOf } from "#ads/capabilities.ts";
 import type { AdsError } from "#ads/errors.ts";
 import { decimalOf, parseAmount } from "#ads/money.ts";
 import { useMoney } from "#ads/use-money.ts";
@@ -144,6 +145,18 @@ export const AdAccountView = ({
   const money = useMoney();
   const { currency, minorUnitDigits: digits } = account;
 
+  const spendingText = (shown: AdAccount) => {
+    if (!capabilitiesOf(shown).boosts) {
+      return t("accounts.readOnly");
+    }
+
+    return shown.spendingEnabled && shown.monthlyCeiling !== null
+      ? t("accounts.spendingOn", {
+          ceiling: money(shown.monthlyCeiling, currency, digits),
+        })
+      : t("accounts.spendingOff");
+  };
+
   return (
     <li className="flex flex-col gap-4 py-6">
       <div className="flex flex-wrap items-center gap-2">
@@ -160,6 +173,16 @@ export const AdAccountView = ({
           <AlertDescription>{t("accounts.reconnect")}</AlertDescription>
         </Alert>
       ) : null}
+      {account.unreachableSince === undefined ||
+      account.unreachableSince === null ? null : (
+        <Alert variant="destructive">
+          <AlertDescription>
+            {t("accounts.unreachable", {
+              date: DateTime.toDate(account.unreachableSince),
+            })}
+          </AlertDescription>
+        </Alert>
+      )}
       {account.newAdsUntrackedUntil === undefined ||
       account.newAdsUntrackedUntil === null ? null : (
         <Alert>
@@ -185,13 +208,13 @@ export const AdAccountView = ({
             {money(account.amountSpent, currency, digits)}
           </Fact>
         )}
-        <Fact label={t("accounts.spending")}>
-          {account.spendingEnabled && account.monthlyCeiling !== null
-            ? t("accounts.spendingOn", {
-                ceiling: money(account.monthlyCeiling, currency, digits),
-              })
-            : t("accounts.spendingOff")}
-        </Fact>
+        {account.reachedThrough === undefined ||
+        account.reachedThrough === null ? null : (
+          <Fact label={t("accounts.reachedThrough")}>
+            {account.reachedThrough}
+          </Fact>
+        )}
+        <Fact label={t("accounts.spending")}>{spendingText(account)}</Fact>
         {committedThisMonth === null ? null : (
           <Fact
             label={t("accounts.committed")}
@@ -200,7 +223,10 @@ export const AdAccountView = ({
             {money(committedThisMonth, currency, digits)}
           </Fact>
         )}
-        <Fact label={t("accounts.synced")}>
+        <Fact
+          label={t("accounts.synced")}
+          hint={t("accounts.syncedEvery", { network: account.network })}
+        >
           {account.syncedAt === null
             ? t("accounts.neverSynced")
             : t("accounts.syncedAt", {
@@ -333,7 +359,9 @@ export const CampaignsTableView = ({
   const t = useTranslations("Ads.campaigns");
   const format = useFormatter();
   const money = useMoney();
-  const { currency, minorUnitDigits: digits, name } = report.account;
+
+  const { currency, minorUnitDigits: digits, name, network } = report.account;
+  const capabilities = capabilitiesOf(report.account);
 
   // Days are on the account's calendar, in no zone: written in UTC.
   const day = (key: string) =>
@@ -349,6 +377,7 @@ export const CampaignsTableView = ({
         {t("caption", {
           account: name,
           from: day(report.from),
+          network,
           to: day(report.to),
         })}
       </TableCaption>
@@ -356,7 +385,7 @@ export const CampaignsTableView = ({
         <TableRow>
           <TableHead scope="col">{t("name")}</TableHead>
           <TableHead scope="col">{t("status")}</TableHead>
-          <TableHead scope="col">{t("objective")}</TableHead>
+          <TableHead scope="col">{t("objective", { network })}</TableHead>
           <TableHead scope="col">{t("budget")}</TableHead>
           <TableHead scope="col" className="text-right">
             {t("spend")}
@@ -367,9 +396,11 @@ export const CampaignsTableView = ({
           <TableHead scope="col" className="text-right">
             {t("clicks")}
           </TableHead>
-          <TableHead scope="col" className="text-right">
-            {t("results")}
-          </TableHead>
+          {capabilities.results ? (
+            <TableHead scope="col" className="text-right">
+              {t("results")}
+            </TableHead>
+          ) : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -383,7 +414,8 @@ export const CampaignsTableView = ({
                 {t("statusValue", { status: campaign.status })}
               </TableCell>
               <TableCell>
-                {t("objectiveValue", { objective: campaign.objective })}
+                {campaign.kind ??
+                  t("objectiveValue", { objective: campaign.objective })}
               </TableCell>
               <TableCell>
                 {budget === null
@@ -402,11 +434,13 @@ export const CampaignsTableView = ({
               <TableCell variant="numeric">
                 {format.number(campaign.totals.clicks)}
               </TableCell>
-              <TableCell variant="numeric">
-                {campaign.totals.results === null
-                  ? t("noResults")
-                  : format.number(campaign.totals.results)}
-              </TableCell>
+              {capabilities.results ? (
+                <TableCell variant="numeric">
+                  {campaign.totals.results === null
+                    ? t("noResults")
+                    : format.number(campaign.totals.results)}
+                </TableCell>
+              ) : null}
             </TableRow>
           );
         })}
@@ -432,6 +466,7 @@ export const DailySpendView = ({
   const format = useFormatter();
   const money = useMoney();
   const { currency, minorUnitDigits: digits } = report.account;
+  const capabilities = capabilitiesOf(report.account);
 
   const dayLabel = (day: string | number | undefined) =>
     format.dateTime(dayDate(String(day)), {
@@ -528,9 +563,11 @@ export const DailySpendView = ({
               <TableHead scope="col" className="text-right">
                 {t("clicks")}
               </TableHead>
-              <TableHead scope="col" className="text-right">
-                {t("results")}
-              </TableHead>
+              {capabilities.results ? (
+                <TableHead scope="col" className="text-right">
+                  {t("results")}
+                </TableHead>
+              ) : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -546,16 +583,53 @@ export const DailySpendView = ({
                 <TableCell variant="numeric">
                   {format.number(totals.clicks)}
                 </TableCell>
-                <TableCell variant="numeric">
-                  {totals.results === null
-                    ? t("noResults")
-                    : format.number(totals.results)}
-                </TableCell>
+                {capabilities.results ? (
+                  <TableCell variant="numeric">
+                    {totals.results === null
+                      ? t("noResults")
+                      : format.number(totals.results)}
+                  </TableCell>
+                ) : null}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TabsContent>
     </Tabs>
+  );
+};
+
+/**
+ * What Peal tells a member before sending them to Google's consent page,
+ * as Google's policy for tools asks of a web app (in a dialog of its own):
+ * what is read and why, that nothing is changed though Google's screen
+ * names editing, how often it reads, and how to remove it.
+ */
+export const GoogleAdsDisclosureView = ({
+  docsUrl,
+}: {
+  /** The docs' Google Ads section; none where the operator sets no docs. */
+  readonly docsUrl: string | null;
+}) => {
+  const t = useTranslations("Ads.google");
+
+  return (
+    <div className="flex flex-col gap-3 text-sm">
+      <p>{t("reads")}</p>
+      <p>{t("changes")}</p>
+      <p>{t("every")}</p>
+      <p>{t("passkey")}</p>
+      <p>{t("remove")}</p>
+      {docsUrl === null ? null : (
+        <a
+          className="text-primary underline underline-offset-4"
+          href={docsUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          {t("docs")}
+        </a>
+      )}
+    </div>
   );
 };

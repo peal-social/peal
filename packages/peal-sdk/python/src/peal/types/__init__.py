@@ -45,6 +45,7 @@ if typing.TYPE_CHECKING:
     from .ad_account import AdAccount
     from .ad_account_busy_encoded import AdAccountBusyEncoded
     from .ad_account_busy_encoded_tag import AdAccountBusyEncodedTag
+    from .ad_account_capabilities import AdAccountCapabilities
     from .ad_account_not_found_encoded import AdAccountNotFoundEncoded
     from .ad_account_spend_cap_exceeded_encoded import AdAccountSpendCapExceededEncoded
     from .ad_account_status import AdAccountStatus
@@ -1218,6 +1219,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AdAccount": ".ad_account",
     "AdAccountBusyEncoded": ".ad_account_busy_encoded",
     "AdAccountBusyEncodedTag": ".ad_account_busy_encoded_tag",
+    "AdAccountCapabilities": ".ad_account_capabilities",
     "AdAccountNotFoundEncoded": ".ad_account_not_found_encoded",
     "AdAccountSpendCapExceededEncoded": ".ad_account_spend_cap_exceeded_encoded",
     "AdAccountStatus": ".ad_account_status",
@@ -2392,6 +2394,7 @@ __all__ = [
     "AdAccount",
     "AdAccountBusyEncoded",
     "AdAccountBusyEncodedTag",
+    "AdAccountCapabilities",
     "AdAccountNotFoundEncoded",
     "AdAccountSpendCapExceededEncoded",
     "AdAccountStatus",

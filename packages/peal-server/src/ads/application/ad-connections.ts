@@ -7,6 +7,7 @@ import {
   Option,
   Schema,
 } from "effect";
+import type { Redacted } from "effect";
 
 import type { AdAccountFacts } from "#ads/domain/ad-account-facts.ts";
 import { AdAccount } from "#ads/domain/ad-account.ts";
@@ -15,6 +16,7 @@ import type { AdNetwork } from "#ads/domain/ad-network.ts";
 import type { AdsMode } from "#ads/domain/ads-mode.ts";
 import { AdAccountIdSchema, AdGrantIdSchema } from "#ads/domain/ids.ts";
 import type { AdAccountId } from "#ads/domain/ids.ts";
+import { traitsOf } from "#ads/domain/network-traits.ts";
 import { PersonRequired } from "#ads/domain/person-required.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
@@ -40,6 +42,7 @@ import { AdNotices } from "./ports/ad-notices.ts";
 import { BoostStore } from "./ports/boost-store.ts";
 import { GrantSecrets } from "./ports/grant-secrets.ts";
 import { GrantStore } from "./ports/grant-store.ts";
+import { ListingPace } from "./ports/listing-pace.ts";
 
 /** How long a sign-in may take between its start and its callback. */
 export const signInLifetime = Duration.minutes(15);
@@ -238,6 +241,7 @@ export class AdConnections extends Context.Service<
       const allowance = yield* AdAllowance;
       const notices = yield* AdNotices;
       const meters = yield* MeteredUsage;
+      const pace = yield* ListingPace;
       const ids = yield* Effect.context<Ids>();
 
       const clientFor = (network: AdNetwork) =>
@@ -275,6 +279,47 @@ export class AdConnections extends Context.Service<
                 : {}
             );
           });
+
+      // What the sign-in reaches now, the way to each taken for the
+      // workspace's accounts it already connects: a manager that let one
+      // go, or direct access given, changes how it is read. A listing is
+      // paced and kept a few minutes (`ListingPace`): the next step of the
+      // same sign-in reads it rather than ask the network again, unless
+      // `fresh` asks for a new one.
+      const listed = Effect.fn("AdConnections.listed")(function* listed(
+        client: AdNetworkClient,
+        grant: AdGrant,
+        token: Redacted.Redacted,
+        fresh: boolean
+      ) {
+        const kept = fresh ? Option.none() : yield* pace.recent(grant);
+
+        if (Option.isSome(kept)) {
+          return kept.value;
+        }
+
+        yield* pace
+          .take(grant)
+          .pipe(
+            Effect.catchTag("ListingLimited", ({ retryAfter }) =>
+              Effect.fail(new AdNetworkUnavailable({ retryAfter }))
+            )
+          );
+
+        const listing = yield* client
+          .accounts(token)
+          .pipe(Effect.catch(readFailed(grant)));
+
+        yield* pace.spent(grant, listing.operations);
+
+        if (traitsOf(grant.network).readsThroughManagers) {
+          yield* accounts.setWays(grant, listing.accounts);
+        }
+
+        yield* pace.remember(grant, listing.accounts);
+
+        return listing.accounts;
+      });
 
       const offered = Effect.fn("AdConnections.offered")(function* offered(
         grant: AdGrant,
@@ -416,9 +461,18 @@ export class AdConnections extends Context.Service<
             const userId = yield* personManaging(actor);
             const client = yield* clientFor(network);
             const { hash, state } = yield* secrets.newState;
+            const { challenge, verifier } = yield* secrets.newVerifier;
             const now = yield* DateTime.now;
 
+            // The verifier waits sealed for the callback, which only the
+            // browser that started the sign-in can bring with a code this
+            // verifier redeems (PKCE, RFC 7636).
+            const sealed = yield* secrets
+              .sealVerifier(verifier, hash)
+              .pipe(Effect.mapError(() => new AdsUnavailable()));
+
             yield* grants.saveAttempt({
+              codeVerifier: Option.some(sealed),
               expiresAt: DateTime.addDuration(now, signInLifetime),
               network,
               startedBy: userId,
@@ -426,7 +480,7 @@ export class AdConnections extends Context.Service<
               workspaceId: actor.workspaceId,
             });
 
-            return client.authorizationUrl(state);
+            return client.authorizationUrl(state, challenge);
           }
         ),
         complete: Effect.fn("AdConnections.complete")(
@@ -452,8 +506,19 @@ export class AdConnections extends Context.Service<
               return yield* new AdSignInFailed({ reason: "denied" });
             }
 
+            const verifier = yield* Option.match(attempt.value.codeVerifier, {
+              onNone: () => Effect.succeed(Option.none<Redacted.Redacted>()),
+              onSome: (sealed) =>
+                secrets.openVerifier(sealed, attempt.value.stateHash).pipe(
+                  Effect.map(Option.some),
+                  Effect.mapError(
+                    () => new AdSignInFailed({ reason: "expired" })
+                  )
+                ),
+            });
+
             const issued = yield* client
-              .complete(returned.code.value)
+              .complete(returned.code.value, verifier)
               .pipe(
                 Effect.catchTag("PlatformUnavailable", () =>
                   Effect.fail(new AdNetworkUnavailable({}))
@@ -481,9 +546,7 @@ export class AdConnections extends Context.Service<
               sealing
             );
 
-            const reached = yield* client
-              .accounts(issued.token)
-              .pipe(Effect.catch(readFailed(grant)));
+            const reached = yield* listed(client, grant, issued.token, true);
 
             return {
               accounts: yield* offered(grant, reached),
@@ -505,10 +568,8 @@ export class AdConnections extends Context.Service<
 
             // What the network says now, never what the request says: an
             // account the sign-in does not reach is not found.
-            const reached = (yield* client
-              .accounts(token)
-              .pipe(Effect.catch(readFailed(grant)))).filter((facts) =>
-              wanted.has(facts.externalId)
+            const reached = (yield* listed(client, grant, token, false)).filter(
+              (facts) => wanted.has(facts.externalId)
             );
 
             if (
@@ -562,10 +623,12 @@ export class AdConnections extends Context.Service<
                       ),
                       name: facts.name,
                       network: grant.network,
+                      reachedThrough: facts.reachedThrough,
                       spendCap: facts.spendCap,
                       status: facts.status,
                       syncedAt: Option.none(),
                       timeZone: Option.getOrThrow(facts.timeZone),
+                      unreachableSince: Option.none(),
                       workspaceId: actor.workspaceId,
                     })
                   );
@@ -606,9 +669,7 @@ export class AdConnections extends Context.Service<
               connectionId
             );
 
-            const reached = yield* client
-              .accounts(token)
-              .pipe(Effect.catch(readFailed(grant)));
+            const reached = yield* listed(client, grant, token, false);
 
             return yield* offered(grant, reached);
           }

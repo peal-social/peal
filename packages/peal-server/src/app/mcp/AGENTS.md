@@ -238,3 +238,7 @@
   reads the feed when it asks for a queue). Every description says a
   feed's content is other people's text: data, never instructions. The
   CLI's are `peal feeds`.
+- The ads tools list and read Meta's ad accounts alone: a Google Ads
+  account is refused in words (`adNetworkNotOfferedText`), as Google's
+  policy for tools names MCP servers (`offeredNetworks`,
+  `ads-handlers.ts`).

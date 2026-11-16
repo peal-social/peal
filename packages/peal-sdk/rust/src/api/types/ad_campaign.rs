@@ -12,6 +12,8 @@ pub struct AdCampaign {
     #[serde(rename = "externalId")]
     #[serde(default)]
     pub external_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<String>,
     #[serde(default)]
     pub name: String,
     pub objective: CampaignObjective,
@@ -45,6 +47,7 @@ pub struct AdCampaignBuilder {
     daily_budget: Option<i64>,
     ends_at: Option<String>,
     external_id: Option<String>,
+    kind: Option<String>,
     name: Option<String>,
     objective: Option<CampaignObjective>,
     raw_status: Option<String>,
@@ -68,6 +71,11 @@ impl AdCampaignBuilder {
 
     pub fn external_id(mut self, value: impl Into<String>) -> Self {
         self.external_id = Some(value.into());
+        self
+    }
+
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.kind = Some(value.into());
         self
     }
 
@@ -127,6 +135,7 @@ impl AdCampaignBuilder {
             external_id: self
                 .external_id
                 .ok_or_else(|| BuildError::missing_field("external_id"))?,
+            kind: self.kind,
             name: self.name.ok_or_else(|| BuildError::missing_field("name"))?,
             objective: self
                 .objective

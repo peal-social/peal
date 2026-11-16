@@ -2,16 +2,18 @@ import { assert, layer } from "@effect/vitest";
 import { DateTime, Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api } from "peal-contract";
+import { AdNetworkSchema as ContractNetworkSchema, Api } from "peal-contract";
 import type { Member, NewBoost, Permission } from "peal-contract";
 
 import { AdsHandlers } from "#ads/api/ads.ts";
 import { BoostOperations } from "#ads/application/boost-operations.ts";
-import { BoostIdSchema } from "#ads/domain/ids.ts";
+import { SyncAccount } from "#ads/application/sync-account.ts";
+import { AdNetworkSchema } from "#ads/domain/ad-network.ts";
+import { AdAccountIdSchema, BoostIdSchema } from "#ads/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { yenAccount, euroAccount } from "#test/ads/fakes/fake-marketing-api.ts";
 import { TestPosts } from "#test/ads/fakes/test-posts.ts";
-import { AdsTest, onMeta } from "#test/ads/support.ts";
+import { AdsTest, onGoogle, onMeta } from "#test/ads/support.ts";
 import { freshWorkspace } from "#test/channels/support.ts";
 import { securityTest } from "#workspace/api/security.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
@@ -111,6 +113,119 @@ const boostOf = (
   );
 
 layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
+  it.effect("name the networks the domain knows", () =>
+    Effect.sync(() => {
+      assert.deepStrictEqual(
+        [...ContractNetworkSchema.literals],
+        [...AdNetworkSchema.literals]
+      );
+    })
+  );
+
+  it.effect(
+    "show a Google Ads account with what it allows, its manager, and its campaigns' kind",
+    () =>
+      Effect.gen(function* google() {
+        const workspaceId = yield* freshWorkspace;
+        const owner = yield* clientAs(person(workspaceId, "owner"));
+        const params = { workspaceId };
+
+        yield* onGoogle(
+          {
+            accessible: ["2222222222"],
+            campaigns: [
+              {
+                advertisingChannelType: "SEARCH",
+                customerId: "3333333333",
+                id: "931",
+                name: "Client campaign",
+                status: "ENABLED",
+              },
+            ],
+            customers: [
+              {
+                clients: ["3333333333"],
+                currencyCode: "EUR",
+                descriptiveName: "Example Agency",
+                id: "2222222222",
+                manager: true,
+                timeZone: "Europe/Paris",
+              },
+              {
+                currencyCode: "EUR",
+                descriptiveName: "Example Client",
+                id: "3333333333",
+                timeZone: "Europe/Paris",
+              },
+            ],
+          },
+          "spend",
+          true
+        );
+
+        const { authorizationUrl } = yield* owner.ads.connect({
+          params: { ...params, network: "google" },
+        });
+
+        const signedIn = yield* owner.ads.completeConnect({
+          params: { ...params, network: "google" },
+          payload: { code: "good-code", state: stateOf(authorizationUrl) },
+        });
+
+        assert.strictEqual(signedIn.connection.network, "google");
+        assert.isFalse(signedIn.connection.maySpend);
+
+        const [account] = yield* owner.ads.connectAccounts({
+          params: { ...params, connectionId: signedIn.connection.id },
+          payload: { externalIds: ["3333333333"] },
+        });
+
+        assert.deepStrictEqual(
+          [account?.network, account?.reachedThrough, account?.capabilities],
+          [
+            "google",
+            "2222222222",
+            { ads: false, boosts: false, reach: false, results: false },
+          ]
+        );
+
+        const accountId = account?.id ?? "";
+
+        yield* SyncAccount.use((sync) =>
+          sync.run(AdAccountIdSchema.make(accountId))
+        );
+
+        const campaigns = yield* owner.ads.listCampaigns({
+          params: { ...params, accountId },
+          query: {},
+        });
+
+        assert.deepStrictEqual(
+          campaigns.rows.map(({ kind, name }) => [name, kind]),
+          [["Client campaign", "SEARCH"]]
+        );
+
+        const ads = yield* owner.ads.listAds({
+          params: { ...params, accountId },
+          query: {},
+        });
+
+        assert.lengthOf(ads.rows, 0);
+        assert.strictEqual(
+          (yield* failureOf(
+            owner.ads.setSpending({
+              params: { ...params, accountId },
+              payload: {
+                enabled: true,
+                monthlyCeiling: { amount: 1000, currency: "EUR" },
+              },
+            })
+          ))._tag,
+          "AdSpendingUnavailable"
+        );
+      }).pipe(Effect.scoped)
+  );
+
   it.effect(
     "say what the server offers, and nothing more when ads are off",
     () =>
@@ -172,6 +287,10 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         assert.strictEqual(spending.account.monthlyCeiling, 20_000);
         assert.isTrue(spending.account.spendingEnabled);
         assert.strictEqual(spending.account.minorUnitDigits, 2);
+        assert.deepStrictEqual(
+          [spending.account.reachedThrough, spending.account.capabilities],
+          [null, { ads: true, boosts: true, reach: true, results: true }]
+        );
         assert.strictEqual(spending.committedThisMonth, 0);
 
         // An admin reads, and manages accounts, but does not decide what

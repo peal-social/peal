@@ -33,6 +33,7 @@ import {
   setAdSpending,
   startAdSignIn,
 } from "#ads/api.ts";
+import { capabilitiesOf } from "#ads/capabilities.ts";
 import { adsErrorOf } from "#ads/errors.ts";
 import type { AdsError } from "#ads/errors.ts";
 import { parseAmount } from "#ads/money.ts";
@@ -53,6 +54,7 @@ import {
   CampaignsTableView,
   ceilingOf,
   DailySpendView,
+  GoogleAdsDisclosureView,
   SpendingFormView,
 } from "./ads-views.tsx";
 
@@ -64,11 +66,14 @@ export interface AdsRights {
   readonly manage: boolean;
 }
 
-// Starts a sign-in, then leaves for the ad network's page.
+// Starts a sign-in, then leaves for the ad network's page: for Google
+// Ads, once the member has read what Peal reads there and continued.
 const Connect = ({
+  docsUrl,
   networks,
   workspaceId,
 }: {
+  readonly docsUrl: string | null;
   readonly networks: readonly AdNetwork[];
   readonly workspaceId: string;
 }) => {
@@ -99,21 +104,49 @@ const Connect = ({
     <div className="flex flex-col items-start gap-2">
       <AdsErrorAlert error={error} />
       <div className="flex flex-wrap gap-2">
-        {networks.map((network) => (
-          <Button
-            key={network}
-            disabled={isPending}
-            focusableWhenDisabled
-            onClick={handleConnect(network)}
-          >
-            {isPending
-              ? t("connections.connecting")
-              : t("connections.connect", {
-                  network: t("network", { network }),
-                  several: networks.length > 1 ? "true" : "false",
-                })}
-          </Button>
-        ))}
+        {networks.map((network) => {
+          const label = isPending
+            ? t("connections.connecting")
+            : t("connections.connect", {
+                network: t("network", { network }),
+                several: networks.length > 1 ? "true" : "false",
+              });
+
+          return network === "google" ? (
+            <AlertDialog key={network}>
+              <AlertDialogTrigger
+                render={
+                  <Button disabled={isPending} focusableWhenDisabled>
+                    {label}
+                  </Button>
+                }
+              />
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t("google.title")}</AlertDialogTitle>
+                  <AlertDialogDescription render={<div />}>
+                    <GoogleAdsDisclosureView docsUrl={docsUrl} />
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t("google.cancel")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConnect(network)}>
+                    {t("google.continue")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <Button
+              key={network}
+              disabled={isPending}
+              focusableWhenDisabled
+              onClick={handleConnect(network)}
+            >
+              {label}
+            </Button>
+          );
+        })}
       </div>
       <p className="text-muted-foreground text-sm">
         {t("connections.connectHint")}
@@ -390,6 +423,9 @@ const AccountSection = ({
 }) => {
   const t = useTranslations("Ads");
   const spending = useAtomValue(adSpending(workspaceId, account.id));
+  // A network Peal only reads (Google Ads) never spends, whatever the
+  // server offers.
+  const spendsHere = spends && capabilitiesOf(account).boosts;
 
   return (
     <AdAccountView
@@ -405,14 +441,14 @@ const AccountSection = ({
         ) : undefined
       }
     >
-      {spends && rights.authorize ? (
+      {spendsHere && rights.authorize ? (
         <Spending
           key={`${account.id}-${String(account.monthlyCeiling)}`}
           account={account}
           workspaceId={workspaceId}
         />
       ) : null}
-      {spends && !rights.authorize ? (
+      {spendsHere && !rights.authorize ? (
         <p className="text-muted-foreground text-sm">
           {t("spending.ownersOnly")}
         </p>
@@ -420,14 +456,14 @@ const AccountSection = ({
       <section className="flex flex-col gap-2">
         <h4 className="font-medium">{t("campaigns.title")}</h4>
         <p className="text-muted-foreground text-sm">
-          {t("campaigns.description")}
+          {t("campaigns.description", { network: account.network })}
         </p>
         <Campaigns accountId={account.id} workspaceId={workspaceId} />
       </section>
       <section className="flex flex-col gap-2">
         <h4 className="font-medium">{t("insights.title")}</h4>
         <p className="text-muted-foreground text-sm">
-          {t("insights.description")}
+          {t("insights.description", { network: account.network })}
         </p>
         <DailySpend accountId={account.id} workspaceId={workspaceId} />
       </section>
@@ -513,9 +549,11 @@ const Accounts = ({
 // The page once the browser can ask with the visitor's cookies: what the
 // server offers first, and nothing more when it offers no ads.
 const LoadedAds = ({
+  docsUrl,
   rights,
   workspaceId,
 }: {
+  readonly docsUrl: string | null;
   readonly rights: AdsRights;
   readonly workspaceId: string;
 }) => {
@@ -549,7 +587,11 @@ const LoadedAds = ({
             </p>
             <Connections mayManage={rights.manage} workspaceId={workspaceId} />
             {rights.manage ? (
-              <Connect networks={value.networks} workspaceId={workspaceId} />
+              <Connect
+                docsUrl={docsUrl}
+                networks={value.networks}
+                workspaceId={workspaceId}
+              />
             ) : null}
           </section>
           <section
@@ -576,9 +618,12 @@ const LoadedAds = ({
  * daily spend. Instants are written in the reader's time zone.
  */
 export const AdsScreen = ({
+  docsUrl,
   rights,
   workspaceId,
 }: {
+  /** The docs' page on ads, which the Google Ads dialog links to. */
+  readonly docsUrl: string | null;
   readonly rights: AdsRights;
   readonly workspaceId: string;
 }) => {
@@ -586,7 +631,7 @@ export const AdsScreen = ({
 
   return hydrated ? (
     <InTimeZone timeZone={browserTimeZone()}>
-      <LoadedAds rights={rights} workspaceId={workspaceId} />
+      <LoadedAds docsUrl={docsUrl} rights={rights} workspaceId={workspaceId} />
     </InTimeZone>
   ) : (
     <SettingsLoading />

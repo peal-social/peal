@@ -39,6 +39,8 @@ The `ads` group is under `/api/workspaces/{workspaceId}/ads`. Paths below start 
 
 The three reports take `from` and `to`, calendar days of the account such as `2026-11-01`, both included and at most 366 days apart: the last 30 days when left out. Campaigns and ads come a thousand at most. `ads.listBoosts` and `ads.auditTrail` answer a `nextCursor` to pass as `cursor` for the next page.
 
+An account says what its network allows in `capabilities` (`ads`, `boosts`, `reach`, `results`): hide what is false. A Google Ads account (`network` `google`) has all four false: its campaigns carry their own days and a `kind` (`SEARCH`, `PERFORMANCE_MAX`), `ads.listAds` answers none, `reach` reads 0 and `results` null, and turning its spending on answers `AdSpendingUnavailable`. `reachedThrough` names the manager account it is read through.
+
 The SDKs have the same operations in their `ads` group (`peal.ads.quoteBoost`, `peal.ads.createBoost`…), and the [command line](/developers/cli/workspace) the commands under `peal ads`.
 
 ### Quote, then boost [#api-boost]
@@ -236,4 +238,4 @@ A [webhook endpoint](/developers/webhooks) can subscribe to eight events, which 
 
 The [command line](/developers/cli) has the ads commands under `peal ads`: run `peal ads --help` for the list. [AI assistants](/developers/mcp/tools#tools) have ads tools, which follow the same permissions and the same rules: a tool that spends says so in its description, and needs the application to hold `workspace:publish` and `workspace:ads`.
 
-Neither signs in to an ad network, turns spending on or changes a ceiling: those are done in the web app, by a person.
+Neither signs in to an ad network, turns spending on or changes a ceiling: those are done in the web app, by a person. The MCP tools do not offer Google Ads accounts, which Google's policy for tools asks of an MCP server: they list Meta's alone, and refuse a Google Ads account in words; the command line shows both.

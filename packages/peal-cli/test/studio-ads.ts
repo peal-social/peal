@@ -60,6 +60,19 @@ export const yenAccountId = "0190f3a0-0000-7000-8000-0000000aa002";
 
 export const adConnectionId = "0190f3a0-0000-7000-8000-0000000ac001";
 
+/** A Google Ads account, read through its manager: it never spends. */
+export const googleAccountId = "0190f3a0-0000-7000-8000-0000000aa003";
+
+const googleConnectionId = "0190f3a0-0000-7000-8000-0000000ac002";
+
+// What Peal reads and does on Meta's accounts: everything.
+const metaCapabilities = {
+  ads: true,
+  boosts: true,
+  reach: true,
+  results: true,
+};
+
 /** A Facebook Page of the studio, known to its ads alone. */
 export const facebookPageId = "0190f3a0-0000-7000-8000-00000000c007";
 
@@ -90,6 +103,7 @@ const adAccounts: readonly AdAccount[] = [
     access: "working",
     amountSpent: 45_000,
     connectedAt: at("2026-10-01T09:05:00Z"),
+    capabilities: metaCapabilities,
     connectionId: adConnectionId,
     currency: "EUR",
     externalId: "act_1000000000000001",
@@ -98,6 +112,7 @@ const adAccounts: readonly AdAccount[] = [
     monthlyCeiling: euroCeiling,
     name: "Studio ads",
     network: "meta",
+    reachedThrough: null,
     spendCap: null,
     spendingEnabled: true,
     status: "active",
@@ -108,6 +123,7 @@ const adAccounts: readonly AdAccount[] = [
     access: "working",
     amountSpent: null,
     connectedAt: at("2026-10-01T09:05:00Z"),
+    capabilities: metaCapabilities,
     connectionId: adConnectionId,
     currency: "JPY",
     externalId: "act_1000000000000002",
@@ -116,11 +132,32 @@ const adAccounts: readonly AdAccount[] = [
     monthlyCeiling: null,
     name: "Studio Japan",
     network: "meta",
+    reachedThrough: null,
     spendCap: 500_000,
     spendingEnabled: false,
     status: "active",
     syncedAt: at("2026-11-09T11:07:00Z"),
     timeZone: "Asia/Tokyo",
+  },
+  {
+    access: "working",
+    amountSpent: null,
+    capabilities: { ads: false, boosts: false, reach: false, results: false },
+    connectedAt: at("2026-10-02T09:05:00Z"),
+    connectionId: googleConnectionId,
+    currency: "EUR",
+    externalId: "3333333333",
+    id: googleAccountId,
+    minorUnitDigits: 2,
+    monthlyCeiling: null,
+    name: "Studio search",
+    network: "google",
+    reachedThrough: "2222222222",
+    spendCap: null,
+    spendingEnabled: false,
+    status: "active",
+    syncedAt: at("2026-11-09T06:00:00Z"),
+    timeZone: "Europe/Paris",
   },
 ];
 
@@ -728,6 +765,25 @@ export const adsGroupLive = (studio: Studio) =>
           const world = yield* worldOf(studio, params.workspaceId);
           const account = yield* findAccount(world, params.accountId);
 
+          const google = {
+            dailyBudget: 1000,
+            endsAt: null,
+            externalId: "901",
+            kind: "SEARCH",
+            name: "Winter search",
+            objective: "other" as const,
+            rawStatus: "ENABLED",
+            startsAt: at("2026-11-01T00:00:00Z"),
+            status: "active" as const,
+            syncedAt: at("2026-11-09T06:00:00Z"),
+            totalBudget: null,
+            totals: { ...totals(351, 600), reach: 0, results: null },
+          };
+
+          if (account.id === googleAccountId) {
+            return report(account, query, [google]);
+          }
+
           const rows =
             account.id === euroAccountId
               ? [
@@ -735,6 +791,7 @@ export const adsGroupLive = (studio: Studio) =>
                     dailyBudget: null,
                     endsAt: at("2026-11-25T09:00:00Z"),
                     externalId: campaignId,
+                    kind: null,
                     name: "Spring catalogue",
                     objective: "engagement" as const,
                     rawStatus: "ACTIVE",

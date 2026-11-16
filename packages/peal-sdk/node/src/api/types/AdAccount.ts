@@ -6,6 +6,7 @@ export interface AdAccount {
     access: Peal.AdAccess;
     /** An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it. */
     amountSpent: number | null;
+    capabilities?: Peal.AdAccountCapabilities | undefined;
     connectedAt: string;
     connectionId: string;
     /** An ISO 4217 currency code, in capitals: `EUR`, `USD`. */
@@ -18,10 +19,12 @@ export interface AdAccount {
     name: string;
     network: Peal.AdNetwork;
     newAdsUntrackedUntil?: (string | null) | undefined;
+    reachedThrough?: (string | null) | undefined;
     /** An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it. */
     spendCap: number | null;
     spendingEnabled: boolean;
     status: Peal.AdAccountStatus;
     syncedAt: string | null;
     timeZone: string;
+    unreachableSince?: (string | null) | undefined;
 }

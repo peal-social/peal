@@ -1,5 +1,5 @@
 import { Context, Schema } from "effect";
-import type { Effect } from "effect";
+import type { DateTime, Effect } from "effect";
 
 import type { AdAccountId } from "#ads/domain/ids.ts";
 
@@ -34,6 +34,13 @@ export type SyncOutcome = typeof SyncOutcomeSchema.Type;
 export class AccountSyncer extends Context.Service<
   AccountSyncer,
   {
-    readonly sync: (accountId: AdAccountId) => Effect.Effect<SyncOutcome>;
+    /**
+     * Reads the account; `runAt` is the sweep's scheduled time, which its
+     * next read is counted from.
+     */
+    readonly sync: (
+      accountId: AdAccountId,
+      runAt: DateTime.Utc
+    ) => Effect.Effect<SyncOutcome>;
   }
 >()("peal-server/ads/application/AccountSyncer") {}

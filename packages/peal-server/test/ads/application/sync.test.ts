@@ -160,6 +160,30 @@ layer(AdsTest, { excludeTestServices: true })("syncing ad accounts", (it) => {
   );
 
   it.effect(
+    "takes what the network says of an object again at each read, its own words too",
+    () =>
+      Effect.gen(function* reread() {
+        const api = yield* onMeta();
+        const owner = yield* freshOwner;
+        const account = yield* connectedAccount(owner);
+        const sync = yield* SyncAccount;
+        const reports = yield* AdReports;
+        const campaign = api.hold("campaign", "1001", { name: "Autumn" });
+
+        yield* sync.run(account.id);
+        campaign.status = "PAUSED";
+        yield* sync.run(account.id);
+
+        const { rows } = yield* reports.campaigns(owner, account.id, noRange);
+
+        assert.deepStrictEqual(
+          rows.map(({ rawStatus, status }) => [status, rawStatus]),
+          [["paused", "PAUSED"]]
+        );
+      })
+  );
+
+  it.effect(
     "keeps what the network stops listing, as archived, and replaces a day read again",
     () =>
       Effect.gen(function* again() {

@@ -85,10 +85,26 @@ export type NewObject =
       readonly post: PromotedPost;
     };
 
+/**
+ * The ad accounts a sign-in reaches, and how many of the network's
+ * operations listing them spent (Google Ads counts each search against a
+ * daily allowance its project shares; 0 where none is counted).
+ */
+export interface AccountListing {
+  readonly accounts: readonly AdAccountFacts[];
+  readonly operations: number;
+}
+
 /** What a sync reads of an account. */
 export interface SnapshotRequest {
   readonly currency: Currency;
   readonly externalId: NetworkObjectId;
+  /**
+   * The manager account the account is reached through, where the network
+   * reads a client account through its manager (Google Ads); none when
+   * reached directly. Meta's adapter ignores it.
+   */
+  readonly reachedThrough: Option.Option<NetworkObjectId>;
   /** The first and last days of insights to read, on the account's calendar. */
   readonly since: LocalDate;
   readonly timeZone: TimeZoneId;
@@ -125,22 +141,34 @@ export interface Snapshot extends AccountSnapshot {
  */
 export interface AdNetworkClient {
   readonly network: AdNetwork;
-  /** Where to send the browser to sign in, for a state Peal chose. */
-  readonly authorizationUrl: (state: string) => string;
-  /** Exchanges what the callback brought for the person's grant. */
+  /**
+   * Where to send the browser to sign in, for a state Peal chose and the
+   * S256 challenge of the sign-in's PKCE verifier (which a network without
+   * PKCE ignores).
+   */
+  readonly authorizationUrl: (state: string, codeChallenge: string) => string;
+  /**
+   * Exchanges what the callback brought for the person's grant, with the
+   * sign-in's PKCE verifier when it has one.
+   */
   readonly complete: (
-    code: string
+    code: string,
+    codeVerifier: Option.Option<Redacted.Redacted>
   ) => Effect.Effect<NetworkGrant, AdSignInFailed | PlatformUnavailable>;
   /** Whether a grant with these scopes may make and run ads. */
   readonly maySpend: (scopes: readonly string[]) => boolean;
   /** The ad accounts the grant's person can use. */
   readonly accounts: (
     token: Redacted.Redacted
-  ) => Effect.Effect<readonly AdAccountFacts[], ReadFailure>;
-  /** One ad account, as the network describes it now. */
+  ) => Effect.Effect<AccountListing, ReadFailure>;
+  /**
+   * One ad account, as the network describes it now, reached directly or
+   * through the manager account given (which Meta's adapter ignores).
+   */
   readonly account: (
     token: Redacted.Redacted,
-    externalId: NetworkObjectId
+    externalId: NetworkObjectId,
+    reachedThrough: Option.Option<NetworkObjectId>
   ) => Effect.Effect<AdAccountFacts, ReadFailure>;
   /** The account's campaigns, ad sets, ads and their days. */
   readonly snapshot: (

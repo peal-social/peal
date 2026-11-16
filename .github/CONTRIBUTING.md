@@ -577,6 +577,8 @@ In development, these are the ones you may want:
 | `PEAL_AI_IMAGE_MODEL`         | unset                            | The image model: required with a provider                              |
 | `PEAL_AI_IMAGE_API_KEY`       | unset                            | The image provider's key, if it takes one                              |
 | `PEAL_ADS`                    | `off`                            | `read` connects Meta ad accounts, `spend` also boosts posts            |
+| `PEAL_ADS_NETWORKS`           | `meta`                           | `meta,google` adds Google Ads, read only                               |
+| `GOOGLE_ADS_CLIENT_ID`        | unset: no Google Ads             | Its Google client's id, with `GOOGLE_ADS_CLIENT_SECRET`                |
 | `STRIPE_SECRET_KEY`           | unset: no billing, no limits     | Bills workspaces through Stripe, with the variables it needs           |
 | `TURNSTILE_SITE_KEY`          | unset: no captcha                | With `TURNSTILE_SECRET_KEY`, Turnstile on sign-up and resets           |
 | `MCP_DYNAMIC_REGISTRATION`    | `false`                          | Lets MCP clients register themselves                                   |
