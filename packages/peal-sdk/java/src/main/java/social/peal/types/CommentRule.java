@@ -42,6 +42,8 @@ public final class CommentRule {
 
     private final Optional<String> postId;
 
+    private final Optional<String> privateReply;
+
     private final String reply;
 
     private final Optional<String> startedBy;
@@ -59,6 +61,7 @@ public final class CommentRule {
             List<String> keywords,
             List<CommentRuleMatch> matches,
             Optional<String> postId,
+            Optional<String> privateReply,
             String reply,
             Optional<String> startedBy,
             CommentRuleStatus status,
@@ -71,6 +74,7 @@ public final class CommentRule {
         this.keywords = keywords;
         this.matches = matches;
         this.postId = postId;
+        this.privateReply = privateReply;
         this.reply = reply;
         this.startedBy = startedBy;
         this.status = status;
@@ -126,6 +130,14 @@ public final class CommentRule {
         return postId;
     }
 
+    @JsonIgnore
+    public Optional<String> getPrivateReply() {
+        if (privateReply == null) {
+            return Optional.empty();
+        }
+        return privateReply;
+    }
+
     @JsonProperty("reply")
     public String getReply() {
         return reply;
@@ -163,6 +175,12 @@ public final class CommentRule {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privateReply")
+    private Optional<String> _getPrivateReply() {
+        return privateReply;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("startedBy")
     private Optional<String> _getStartedBy() {
         return startedBy;
@@ -188,6 +206,7 @@ public final class CommentRule {
                 && keywords.equals(other.keywords)
                 && matches.equals(other.matches)
                 && postId.equals(other.postId)
+                && privateReply.equals(other.privateReply)
                 && reply.equals(other.reply)
                 && startedBy.equals(other.startedBy)
                 && status.equals(other.status);
@@ -204,6 +223,7 @@ public final class CommentRule {
                 this.keywords,
                 this.matches,
                 this.postId,
+                this.privateReply,
                 this.reply,
                 this.startedBy,
                 this.status);
@@ -279,6 +299,12 @@ public final class CommentRule {
 
         _FinalStage postId(Nullable<String> postId);
 
+        _FinalStage privateReply(Optional<String> privateReply);
+
+        _FinalStage privateReply(String privateReply);
+
+        _FinalStage privateReply(Nullable<String> privateReply);
+
         _FinalStage startedBy(Optional<String> startedBy);
 
         _FinalStage startedBy(String startedBy);
@@ -297,6 +323,8 @@ public final class CommentRule {
         private CommentRuleStatus status;
 
         private Optional<String> startedBy = Optional.empty();
+
+        private Optional<String> privateReply = Optional.empty();
 
         private Optional<String> postId = Optional.empty();
 
@@ -324,6 +352,7 @@ public final class CommentRule {
             keywords(other.getKeywords());
             matches(other.getMatches());
             postId(other.getPostId());
+            privateReply(other.getPrivateReply());
             reply(other.getReply());
             startedBy(other.getStartedBy());
             status(other.getStatus());
@@ -380,6 +409,31 @@ public final class CommentRule {
         @JsonSetter(value = "startedBy", nulls = Nulls.SKIP)
         public _FinalStage startedBy(Optional<String> startedBy) {
             this.startedBy = startedBy;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReply(Nullable<String> privateReply) {
+            if (privateReply.isNull()) {
+                this.privateReply = null;
+            } else if (privateReply.isEmpty()) {
+                this.privateReply = Optional.empty();
+            } else {
+                this.privateReply = Optional.of(privateReply.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReply(String privateReply) {
+            this.privateReply = Optional.ofNullable(privateReply);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "privateReply", nulls = Nulls.SKIP)
+        public _FinalStage privateReply(Optional<String> privateReply) {
+            this.privateReply = privateReply;
             return this;
         }
 
@@ -541,6 +595,7 @@ public final class CommentRule {
                     keywords,
                     matches,
                     postId,
+                    privateReply,
                     reply,
                     startedBy,
                     status,
@@ -557,6 +612,7 @@ public final class CommentRule {
                     || key.equalsIgnoreCase("keywords")
                     || key.equalsIgnoreCase("matches")
                     || key.equalsIgnoreCase("postId")
+                    || key.equalsIgnoreCase("privateReply")
                     || key.equalsIgnoreCase("reply")
                     || key.equalsIgnoreCase("startedBy")
                     || key.equalsIgnoreCase("status")) {

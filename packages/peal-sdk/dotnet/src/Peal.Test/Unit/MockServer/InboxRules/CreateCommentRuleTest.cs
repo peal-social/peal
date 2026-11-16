@@ -29,11 +29,13 @@ public class CreateCommentRuleTest : BaseMockServerTest
                 {
                   "channelId": "channelId",
                   "platform": "x",
+                  "privateReply": "available",
                   "reply": "available"
                 },
                 {
                   "channelId": "channelId",
                   "platform": "x",
+                  "privateReply": "available",
                   "reply": "available"
                 }
               ],
@@ -50,6 +52,9 @@ public class CreateCommentRuleTest : BaseMockServerTest
                   "commentId": "commentId",
                   "lookedAt": "lookedAt",
                   "outcome": "claimed",
+                  "privateCode": "privateCode",
+                  "privateReplyId": "privateReplyId",
+                  "privateStatus": "sending",
                   "replyId": "replyId"
                 },
                 {
@@ -57,10 +62,14 @@ public class CreateCommentRuleTest : BaseMockServerTest
                   "commentId": "commentId",
                   "lookedAt": "lookedAt",
                   "outcome": "claimed",
+                  "privateCode": "privateCode",
+                  "privateReplyId": "privateReplyId",
+                  "privateStatus": "sending",
                   "replyId": "replyId"
                 }
               ],
               "postId": "postId",
+              "privateReply": "privateReply",
               "reply": "reply",
               "startedBy": "startedBy",
               "status": "active"
@@ -90,6 +99,7 @@ public class CreateCommentRuleTest : BaseMockServerTest
                 ChannelId = null,
                 Keywords = new List<string>() { "keywords", "keywords" },
                 PostId = null,
+                PrivateReply = null,
                 Reply = "reply",
             }
         );
@@ -115,6 +125,7 @@ public class CreateCommentRuleTest : BaseMockServerTest
                 {
                   "channelId": "channelId",
                   "platform": "x",
+                  "privateReply": "available",
                   "reply": "available"
                 }
               ],
@@ -130,10 +141,14 @@ public class CreateCommentRuleTest : BaseMockServerTest
                   "commentId": "commentId",
                   "lookedAt": "lookedAt",
                   "outcome": "claimed",
+                  "privateCode": "privateCode",
+                  "privateReplyId": "privateReplyId",
+                  "privateStatus": "sending",
                   "replyId": "replyId"
                 }
               ],
               "postId": "postId",
+              "privateReply": "privateReply",
               "reply": "reply",
               "startedBy": "startedBy",
               "status": "active"

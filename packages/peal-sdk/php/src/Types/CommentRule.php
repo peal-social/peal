@@ -57,6 +57,12 @@ class CommentRule extends JsonSerializableType
     public ?string $postId;
 
     /**
+     * @var ?string $privateReply
+     */
+    #[JsonProperty('privateReply')]
+    public ?string $privateReply;
+
+    /**
      * @var string $reply
      */
     #[JsonProperty('reply')]
@@ -86,6 +92,7 @@ class CommentRule extends JsonSerializableType
      *   channelId?: ?string,
      *   endedReason?: ?value-of<CommentRuleEndReason>,
      *   postId?: ?string,
+     *   privateReply?: ?string,
      *   startedBy?: ?string,
      * } $values
      */
@@ -100,6 +107,7 @@ class CommentRule extends JsonSerializableType
         $this->keywords = $values['keywords'];
         $this->matches = $values['matches'];
         $this->postId = $values['postId'] ?? null;
+        $this->privateReply = $values['privateReply'] ?? null;
         $this->reply = $values['reply'];
         $this->startedBy = $values['startedBy'] ?? null;
         $this->status = $values['status'];

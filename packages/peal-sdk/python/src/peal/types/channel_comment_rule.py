@@ -7,12 +7,16 @@ import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .comment_rule_ability import CommentRuleAbility
+from .comment_rule_private_ability import CommentRulePrivateAbility
 from .platform import Platform
 
 
 class ChannelCommentRule(UniversalBaseModel):
     channel_id: typing_extensions.Annotated[str, FieldMetadata(alias="channelId"), pydantic.Field(alias="channelId")]
     platform: Platform
+    private_reply: typing_extensions.Annotated[
+        CommentRulePrivateAbility, FieldMetadata(alias="privateReply"), pydantic.Field(alias="privateReply")
+    ]
     reply: CommentRuleAbility
 
     if IS_PYDANTIC_V2:

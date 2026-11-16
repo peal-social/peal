@@ -23,6 +23,15 @@ public record CommentRuleMatch : IJsonOnDeserialized
     [JsonPropertyName("outcome")]
     public required CommentRuleOutcome Outcome { get; set; }
 
+    [JsonPropertyName("privateCode")]
+    public string? PrivateCode { get; set; }
+
+    [JsonPropertyName("privateReplyId")]
+    public string? PrivateReplyId { get; set; }
+
+    [JsonPropertyName("privateStatus")]
+    public CommentRulePrivateStatus? PrivateStatus { get; set; }
+
     [JsonPropertyName("replyId")]
     public string? ReplyId { get; set; }
 

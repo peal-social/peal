@@ -42,6 +42,14 @@ func TestSettersNewCommentRule(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetPrivateReply", func(t *testing.T) {
+		obj := &NewCommentRule{}
+		var fernTestValuePrivateReply *string
+		obj.SetPrivateReply(fernTestValuePrivateReply)
+		assert.Equal(t, fernTestValuePrivateReply, obj.PrivateReply)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetReply", func(t *testing.T) {
 		obj := &NewCommentRule{}
 		var fernTestValueReply string
@@ -154,6 +162,37 @@ func TestSettersMarkExplicitNewCommentRule(t *testing.T) {
 
 		// Act
 		obj.SetPostID(fernTestValuePostID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateReply_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NewCommentRule{}
+		var fernTestValuePrivateReply *string
+
+		// Act
+		obj.SetPrivateReply(fernTestValuePrivateReply)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -557,6 +596,14 @@ func TestSettersChannelCommentRule(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetPrivateReply", func(t *testing.T) {
+		obj := &ChannelCommentRule{}
+		var fernTestValuePrivateReply CommentRulePrivateAbility
+		obj.SetPrivateReply(fernTestValuePrivateReply)
+		assert.Equal(t, fernTestValuePrivateReply, obj.PrivateReply)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetReply", func(t *testing.T) {
 		obj := &ChannelCommentRule{}
 		var fernTestValueReply CommentRuleAbility
@@ -612,6 +659,29 @@ func TestGettersChannelCommentRule(t *testing.T) {
 			}
 		}()
 		_ = obj.GetPlatform() // Should return zero value
+	})
+
+	t.Run("GetPrivateReply", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ChannelCommentRule{}
+		var expected CommentRulePrivateAbility
+		obj.PrivateReply = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPrivateReply(), "getter should return the property value")
+	})
+
+	t.Run("GetPrivateReply_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ChannelCommentRule
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPrivateReply() // Should return zero value
 	})
 
 	t.Run("GetReply", func(t *testing.T) {
@@ -679,6 +749,37 @@ func TestSettersMarkExplicitChannelCommentRule(t *testing.T) {
 
 		// Act
 		obj.SetPlatform(fernTestValuePlatform)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateReply_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ChannelCommentRule{}
+		var fernTestValuePrivateReply CommentRulePrivateAbility
+
+		// Act
+		obj.SetPrivateReply(fernTestValuePrivateReply)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -797,6 +898,14 @@ func TestSettersCommentRule(t *testing.T) {
 		var fernTestValuePostID *string
 		obj.SetPostID(fernTestValuePostID)
 		assert.Equal(t, fernTestValuePostID, obj.PostID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPrivateReply", func(t *testing.T) {
+		obj := &CommentRule{}
+		var fernTestValuePrivateReply *string
+		obj.SetPrivateReply(fernTestValuePrivateReply)
+		assert.Equal(t, fernTestValuePrivateReply, obj.PrivateReply)
 		assert.NotNil(t, obj.explicitFields)
 	})
 
@@ -1069,6 +1178,39 @@ func TestGettersCommentRule(t *testing.T) {
 			}
 		}()
 		_ = obj.GetPostID() // Should return zero value
+	})
+
+	t.Run("GetPrivateReply", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRule{}
+		var expected *string
+		obj.PrivateReply = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPrivateReply(), "getter should return the property value")
+	})
+
+	t.Run("GetPrivateReply_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRule{}
+		obj.PrivateReply = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPrivateReply(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPrivateReply_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *CommentRule
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPrivateReply() // Should return zero value
 	})
 
 	t.Run("GetReply", func(t *testing.T) {
@@ -1401,6 +1543,37 @@ func TestSettersMarkExplicitCommentRule(t *testing.T) {
 		// It verifies that setting a field via setter allows successful JSON round-trip
 	})
 
+	t.Run("SetPrivateReply_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRule{}
+		var fernTestValuePrivateReply *string
+
+		// Act
+		obj.SetPrivateReply(fernTestValuePrivateReply)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
 	t.Run("SetReply_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -1529,6 +1702,30 @@ func TestSettersCommentRuleMatch(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetPrivateCode", func(t *testing.T) {
+		obj := &CommentRuleMatch{}
+		var fernTestValuePrivateCode *string
+		obj.SetPrivateCode(fernTestValuePrivateCode)
+		assert.Equal(t, fernTestValuePrivateCode, obj.PrivateCode)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPrivateReplyID", func(t *testing.T) {
+		obj := &CommentRuleMatch{}
+		var fernTestValuePrivateReplyID *string
+		obj.SetPrivateReplyID(fernTestValuePrivateReplyID)
+		assert.Equal(t, fernTestValuePrivateReplyID, obj.PrivateReplyID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPrivateStatus", func(t *testing.T) {
+		obj := &CommentRuleMatch{}
+		var fernTestValuePrivateStatus *CommentRulePrivateStatus
+		obj.SetPrivateStatus(fernTestValuePrivateStatus)
+		assert.Equal(t, fernTestValuePrivateStatus, obj.PrivateStatus)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetReplyID", func(t *testing.T) {
 		obj := &CommentRuleMatch{}
 		var fernTestValueReplyID *string
@@ -1640,6 +1837,105 @@ func TestGettersCommentRuleMatch(t *testing.T) {
 			}
 		}()
 		_ = obj.GetOutcome() // Should return zero value
+	})
+
+	t.Run("GetPrivateCode", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		var expected *string
+		obj.PrivateCode = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPrivateCode(), "getter should return the property value")
+	})
+
+	t.Run("GetPrivateCode_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		obj.PrivateCode = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPrivateCode(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPrivateCode_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *CommentRuleMatch
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPrivateCode() // Should return zero value
+	})
+
+	t.Run("GetPrivateReplyID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		var expected *string
+		obj.PrivateReplyID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPrivateReplyID(), "getter should return the property value")
+	})
+
+	t.Run("GetPrivateReplyID_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		obj.PrivateReplyID = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPrivateReplyID(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPrivateReplyID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *CommentRuleMatch
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPrivateReplyID() // Should return zero value
+	})
+
+	t.Run("GetPrivateStatus", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		var expected *CommentRulePrivateStatus
+		obj.PrivateStatus = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPrivateStatus(), "getter should return the property value")
+	})
+
+	t.Run("GetPrivateStatus_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		obj.PrivateStatus = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPrivateStatus(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPrivateStatus_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *CommentRuleMatch
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPrivateStatus() // Should return zero value
 	})
 
 	t.Run("GetReplyID", func(t *testing.T) {
@@ -1779,6 +2075,99 @@ func TestSettersMarkExplicitCommentRuleMatch(t *testing.T) {
 
 		// Act
 		obj.SetOutcome(fernTestValueOutcome)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateCode_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		var fernTestValuePrivateCode *string
+
+		// Act
+		obj.SetPrivateCode(fernTestValuePrivateCode)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateReplyID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		var fernTestValuePrivateReplyID *string
+
+		// Act
+		obj.SetPrivateReplyID(fernTestValuePrivateReplyID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateStatus_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleMatch{}
+		var fernTestValuePrivateStatus *CommentRulePrivateStatus
+
+		// Act
+		obj.SetPrivateStatus(fernTestValuePrivateStatus)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -2021,6 +2410,14 @@ func TestSettersCommentRuleChange(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetPrivateReply", func(t *testing.T) {
+		obj := &CommentRuleChange{}
+		var fernTestValuePrivateReply *string
+		obj.SetPrivateReply(fernTestValuePrivateReply)
+		assert.Equal(t, fernTestValuePrivateReply, obj.PrivateReply)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetReply", func(t *testing.T) {
 		obj := &CommentRuleChange{}
 		var fernTestValueReply *string
@@ -2133,6 +2530,37 @@ func TestSettersMarkExplicitCommentRuleChange(t *testing.T) {
 
 		// Act
 		obj.SetPaused(fernTestValuePaused)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateReply_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CommentRuleChange{}
+		var fernTestValuePrivateReply *string
+
+		// Act
+		obj.SetPrivateReply(fernTestValuePrivateReply)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -2326,6 +2754,7 @@ func TestRequiredNullableRoundTripCommentRule(t *testing.T) {
 		"channelId",
 		"endedReason",
 		"postId",
+		"privateReply",
 		"startedBy",
 	}
 	marshalToMap := func(t *testing.T, obj *CommentRule) map[string]json.RawMessage {
@@ -2339,7 +2768,7 @@ func TestRequiredNullableRoundTripCommentRule(t *testing.T) {
 	t.Run("NullPreserved", func(t *testing.T) {
 		t.Parallel()
 		var obj CommentRule
-		require.NoError(t, json.Unmarshal([]byte(`{"channelId":null,"endedReason":null,"postId":null,"startedBy":null}`), &obj))
+		require.NoError(t, json.Unmarshal([]byte(`{"channelId":null,"endedReason":null,"postId":null,"privateReply":null,"startedBy":null}`), &obj))
 		result := marshalToMap(t, &obj)
 		for _, key := range requiredNullableKeys {
 			value, ok := result[key]
@@ -2370,6 +2799,9 @@ func TestRequiredNullableRoundTripCommentRule(t *testing.T) {
 func TestRequiredNullableRoundTripCommentRuleMatch(t *testing.T) {
 	requiredNullableKeys := []string{
 		"code",
+		"privateCode",
+		"privateReplyId",
+		"privateStatus",
 		"replyId",
 	}
 	marshalToMap := func(t *testing.T, obj *CommentRuleMatch) map[string]json.RawMessage {
@@ -2383,7 +2815,7 @@ func TestRequiredNullableRoundTripCommentRuleMatch(t *testing.T) {
 	t.Run("NullPreserved", func(t *testing.T) {
 		t.Parallel()
 		var obj CommentRuleMatch
-		require.NoError(t, json.Unmarshal([]byte(`{"code":null,"replyId":null}`), &obj))
+		require.NoError(t, json.Unmarshal([]byte(`{"code":null,"privateCode":null,"privateReplyId":null,"privateStatus":null,"replyId":null}`), &obj))
 		result := marshalToMap(t, &obj)
 		for _, key := range requiredNullableKeys {
 			value, ok := result[key]
@@ -2647,6 +3079,106 @@ func TestEnumCommentRuleOutcome(t *testing.T) {
 
 	t.Run("Ptr", func(t *testing.T) {
 		val, err := NewCommentRuleOutcomeFromString("claimed")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumCommentRulePrivateAbility(t *testing.T) {
+	t.Run("NewFromString_available", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateAbilityFromString("available")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateAbility("available"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_noApi", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateAbilityFromString("noApi")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateAbility("noApi"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_unsupported", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateAbilityFromString("unsupported")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateAbility("unsupported"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_messagesOff", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateAbilityFromString("messagesOff")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateAbility("messagesOff"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_reconnect", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateAbilityFromString("reconnect")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateAbility("reconnect"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_textTooLong", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateAbilityFromString("textTooLong")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateAbility("textTooLong"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewCommentRulePrivateAbilityFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewCommentRulePrivateAbilityFromString("available")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumCommentRulePrivateStatus(t *testing.T) {
+	t.Run("NewFromString_sending", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateStatusFromString("sending")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateStatus("sending"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sent", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateStatusFromString("sent")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateStatus("sent"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_failed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateStatusFromString("failed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateStatus("failed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_unconfirmed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCommentRulePrivateStatusFromString("unconfirmed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CommentRulePrivateStatus("unconfirmed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewCommentRulePrivateStatusFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewCommentRulePrivateStatusFromString("sending")
 		assert.NoError(t, err)
 		ptr := val.Ptr()
 		assert.NotNil(t, ptr)

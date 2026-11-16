@@ -11,6 +11,7 @@ export interface CommentRule {
     keywords: string[];
     matches: Peal.CommentRuleMatch[];
     postId: string | null;
+    privateReply: string | null;
     reply: string;
     startedBy: string | null;
     status: Peal.CommentRuleStatus;

@@ -10,19 +10,21 @@ import (
 )
 
 var (
-	newCommentRuleFieldWorkspaceID = big.NewInt(1 << 0)
-	newCommentRuleFieldChannelID   = big.NewInt(1 << 1)
-	newCommentRuleFieldKeywords    = big.NewInt(1 << 2)
-	newCommentRuleFieldPostID      = big.NewInt(1 << 3)
-	newCommentRuleFieldReply       = big.NewInt(1 << 4)
+	newCommentRuleFieldWorkspaceID  = big.NewInt(1 << 0)
+	newCommentRuleFieldChannelID    = big.NewInt(1 << 1)
+	newCommentRuleFieldKeywords     = big.NewInt(1 << 2)
+	newCommentRuleFieldPostID       = big.NewInt(1 << 3)
+	newCommentRuleFieldPrivateReply = big.NewInt(1 << 4)
+	newCommentRuleFieldReply        = big.NewInt(1 << 5)
 )
 
 type NewCommentRule struct {
-	WorkspaceID string   `json:"-" url:"-"`
-	ChannelID   *string  `json:"channelId,omitempty" url:"-"`
-	Keywords    []string `json:"keywords" url:"-"`
-	PostID      *string  `json:"postId,omitempty" url:"-"`
-	Reply       string   `json:"reply" url:"-"`
+	WorkspaceID  string   `json:"-" url:"-"`
+	ChannelID    *string  `json:"channelId,omitempty" url:"-"`
+	Keywords     []string `json:"keywords" url:"-"`
+	PostID       *string  `json:"postId,omitempty" url:"-"`
+	PrivateReply *string  `json:"privateReply,omitempty" url:"-"`
+	Reply        string   `json:"reply" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -63,6 +65,13 @@ func (n *NewCommentRule) SetKeywords(keywords []string) {
 func (n *NewCommentRule) SetPostID(postID *string) {
 	n.PostID = postID
 	n.require(newCommentRuleFieldPostID)
+}
+
+// SetPrivateReply sets the PrivateReply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewCommentRule) SetPrivateReply(privateReply *string) {
+	n.PrivateReply = privateReply
+	n.require(newCommentRuleFieldPrivateReply)
 }
 
 // SetReply sets the Reply field and marks it as non-optional;
@@ -220,15 +229,17 @@ func (l *ListCommentRulesInboxRulesRequest) SetStatus(status *CommentRuleStatus)
 }
 
 var (
-	channelCommentRuleFieldChannelID = big.NewInt(1 << 0)
-	channelCommentRuleFieldPlatform  = big.NewInt(1 << 1)
-	channelCommentRuleFieldReply     = big.NewInt(1 << 2)
+	channelCommentRuleFieldChannelID    = big.NewInt(1 << 0)
+	channelCommentRuleFieldPlatform     = big.NewInt(1 << 1)
+	channelCommentRuleFieldPrivateReply = big.NewInt(1 << 2)
+	channelCommentRuleFieldReply        = big.NewInt(1 << 3)
 )
 
 type ChannelCommentRule struct {
-	ChannelID string             `json:"channelId" url:"channelId"`
-	Platform  Platform           `json:"platform" url:"platform"`
-	Reply     CommentRuleAbility `json:"reply" url:"reply"`
+	ChannelID    string                    `json:"channelId" url:"channelId"`
+	Platform     Platform                  `json:"platform" url:"platform"`
+	PrivateReply CommentRulePrivateAbility `json:"privateReply" url:"privateReply"`
+	Reply        CommentRuleAbility        `json:"reply" url:"reply"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -249,6 +260,13 @@ func (c *ChannelCommentRule) GetPlatform() Platform {
 		return ""
 	}
 	return c.Platform
+}
+
+func (c *ChannelCommentRule) GetPrivateReply() CommentRulePrivateAbility {
+	if c == nil {
+		return ""
+	}
+	return c.PrivateReply
 }
 
 func (c *ChannelCommentRule) GetReply() CommentRuleAbility {
@@ -286,6 +304,13 @@ func (c *ChannelCommentRule) SetChannelID(channelID string) {
 func (c *ChannelCommentRule) SetPlatform(platform Platform) {
 	c.Platform = platform
 	c.require(channelCommentRuleFieldPlatform)
+}
+
+// SetPrivateReply sets the PrivateReply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChannelCommentRule) SetPrivateReply(privateReply CommentRulePrivateAbility) {
+	c.PrivateReply = privateReply
+	c.require(channelCommentRuleFieldPrivateReply)
 }
 
 // SetReply sets the Reply field and marks it as non-optional;
@@ -338,39 +363,42 @@ func (c *ChannelCommentRule) String() string {
 }
 
 var (
-	commentRuleFieldChannelID   = big.NewInt(1 << 0)
-	commentRuleFieldChannels    = big.NewInt(1 << 1)
-	commentRuleFieldCreatedAt   = big.NewInt(1 << 2)
-	commentRuleFieldEndedReason = big.NewInt(1 << 3)
-	commentRuleFieldID          = big.NewInt(1 << 4)
-	commentRuleFieldKeywords    = big.NewInt(1 << 5)
-	commentRuleFieldMatches     = big.NewInt(1 << 6)
-	commentRuleFieldPostID      = big.NewInt(1 << 7)
-	commentRuleFieldReply       = big.NewInt(1 << 8)
-	commentRuleFieldStartedBy   = big.NewInt(1 << 9)
-	commentRuleFieldStatus      = big.NewInt(1 << 10)
+	commentRuleFieldChannelID    = big.NewInt(1 << 0)
+	commentRuleFieldChannels     = big.NewInt(1 << 1)
+	commentRuleFieldCreatedAt    = big.NewInt(1 << 2)
+	commentRuleFieldEndedReason  = big.NewInt(1 << 3)
+	commentRuleFieldID           = big.NewInt(1 << 4)
+	commentRuleFieldKeywords     = big.NewInt(1 << 5)
+	commentRuleFieldMatches      = big.NewInt(1 << 6)
+	commentRuleFieldPostID       = big.NewInt(1 << 7)
+	commentRuleFieldPrivateReply = big.NewInt(1 << 8)
+	commentRuleFieldReply        = big.NewInt(1 << 9)
+	commentRuleFieldStartedBy    = big.NewInt(1 << 10)
+	commentRuleFieldStatus       = big.NewInt(1 << 11)
 )
 
 // commentRuleNullableFields maps the wire names of CommentRule's nullable fields (required or optional) to their field bits.
 var commentRuleNullableFields = map[string]*big.Int{
-	"channelId":   commentRuleFieldChannelID,
-	"endedReason": commentRuleFieldEndedReason,
-	"postId":      commentRuleFieldPostID,
-	"startedBy":   commentRuleFieldStartedBy,
+	"channelId":    commentRuleFieldChannelID,
+	"endedReason":  commentRuleFieldEndedReason,
+	"postId":       commentRuleFieldPostID,
+	"privateReply": commentRuleFieldPrivateReply,
+	"startedBy":    commentRuleFieldStartedBy,
 }
 
 type CommentRule struct {
-	ChannelID   *string               `json:"channelId,omitempty" url:"channelId,omitempty"`
-	Channels    []*ChannelCommentRule `json:"channels" url:"channels"`
-	CreatedAt   string                `json:"createdAt" url:"createdAt"`
-	EndedReason *CommentRuleEndReason `json:"endedReason,omitempty" url:"endedReason,omitempty"`
-	ID          string                `json:"id" url:"id"`
-	Keywords    []string              `json:"keywords" url:"keywords"`
-	Matches     []*CommentRuleMatch   `json:"matches" url:"matches"`
-	PostID      *string               `json:"postId,omitempty" url:"postId,omitempty"`
-	Reply       string                `json:"reply" url:"reply"`
-	StartedBy   *string               `json:"startedBy,omitempty" url:"startedBy,omitempty"`
-	Status      CommentRuleStatus     `json:"status" url:"status"`
+	ChannelID    *string               `json:"channelId,omitempty" url:"channelId,omitempty"`
+	Channels     []*ChannelCommentRule `json:"channels" url:"channels"`
+	CreatedAt    string                `json:"createdAt" url:"createdAt"`
+	EndedReason  *CommentRuleEndReason `json:"endedReason,omitempty" url:"endedReason,omitempty"`
+	ID           string                `json:"id" url:"id"`
+	Keywords     []string              `json:"keywords" url:"keywords"`
+	Matches      []*CommentRuleMatch   `json:"matches" url:"matches"`
+	PostID       *string               `json:"postId,omitempty" url:"postId,omitempty"`
+	PrivateReply *string               `json:"privateReply,omitempty" url:"privateReply,omitempty"`
+	Reply        string                `json:"reply" url:"reply"`
+	StartedBy    *string               `json:"startedBy,omitempty" url:"startedBy,omitempty"`
+	Status       CommentRuleStatus     `json:"status" url:"status"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -433,6 +461,13 @@ func (c *CommentRule) GetPostID() *string {
 		return nil
 	}
 	return c.PostID
+}
+
+func (c *CommentRule) GetPrivateReply() *string {
+	if c == nil {
+		return nil
+	}
+	return c.PrivateReply
 }
 
 func (c *CommentRule) GetReply() string {
@@ -526,6 +561,13 @@ func (c *CommentRule) SetMatches(matches []*CommentRuleMatch) {
 func (c *CommentRule) SetPostID(postID *string) {
 	c.PostID = postID
 	c.require(commentRuleFieldPostID)
+}
+
+// SetPrivateReply sets the PrivateReply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CommentRule) SetPrivateReply(privateReply *string) {
+	c.PrivateReply = privateReply
+	c.require(commentRuleFieldPrivateReply)
 }
 
 // SetReply sets the Reply field and marks it as non-optional;
@@ -658,25 +700,34 @@ func (c CommentRuleEndReason) Ptr() *CommentRuleEndReason {
 }
 
 var (
-	commentRuleMatchFieldCode      = big.NewInt(1 << 0)
-	commentRuleMatchFieldCommentID = big.NewInt(1 << 1)
-	commentRuleMatchFieldLookedAt  = big.NewInt(1 << 2)
-	commentRuleMatchFieldOutcome   = big.NewInt(1 << 3)
-	commentRuleMatchFieldReplyID   = big.NewInt(1 << 4)
+	commentRuleMatchFieldCode           = big.NewInt(1 << 0)
+	commentRuleMatchFieldCommentID      = big.NewInt(1 << 1)
+	commentRuleMatchFieldLookedAt       = big.NewInt(1 << 2)
+	commentRuleMatchFieldOutcome        = big.NewInt(1 << 3)
+	commentRuleMatchFieldPrivateCode    = big.NewInt(1 << 4)
+	commentRuleMatchFieldPrivateReplyID = big.NewInt(1 << 5)
+	commentRuleMatchFieldPrivateStatus  = big.NewInt(1 << 6)
+	commentRuleMatchFieldReplyID        = big.NewInt(1 << 7)
 )
 
 // commentRuleMatchNullableFields maps the wire names of CommentRuleMatch's nullable fields (required or optional) to their field bits.
 var commentRuleMatchNullableFields = map[string]*big.Int{
-	"code":    commentRuleMatchFieldCode,
-	"replyId": commentRuleMatchFieldReplyID,
+	"code":           commentRuleMatchFieldCode,
+	"privateCode":    commentRuleMatchFieldPrivateCode,
+	"privateReplyId": commentRuleMatchFieldPrivateReplyID,
+	"privateStatus":  commentRuleMatchFieldPrivateStatus,
+	"replyId":        commentRuleMatchFieldReplyID,
 }
 
 type CommentRuleMatch struct {
-	Code      *string            `json:"code,omitempty" url:"code,omitempty"`
-	CommentID string             `json:"commentId" url:"commentId"`
-	LookedAt  string             `json:"lookedAt" url:"lookedAt"`
-	Outcome   CommentRuleOutcome `json:"outcome" url:"outcome"`
-	ReplyID   *string            `json:"replyId,omitempty" url:"replyId,omitempty"`
+	Code           *string                   `json:"code,omitempty" url:"code,omitempty"`
+	CommentID      string                    `json:"commentId" url:"commentId"`
+	LookedAt       string                    `json:"lookedAt" url:"lookedAt"`
+	Outcome        CommentRuleOutcome        `json:"outcome" url:"outcome"`
+	PrivateCode    *string                   `json:"privateCode,omitempty" url:"privateCode,omitempty"`
+	PrivateReplyID *string                   `json:"privateReplyId,omitempty" url:"privateReplyId,omitempty"`
+	PrivateStatus  *CommentRulePrivateStatus `json:"privateStatus,omitempty" url:"privateStatus,omitempty"`
+	ReplyID        *string                   `json:"replyId,omitempty" url:"replyId,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -711,6 +762,27 @@ func (c *CommentRuleMatch) GetOutcome() CommentRuleOutcome {
 		return ""
 	}
 	return c.Outcome
+}
+
+func (c *CommentRuleMatch) GetPrivateCode() *string {
+	if c == nil {
+		return nil
+	}
+	return c.PrivateCode
+}
+
+func (c *CommentRuleMatch) GetPrivateReplyID() *string {
+	if c == nil {
+		return nil
+	}
+	return c.PrivateReplyID
+}
+
+func (c *CommentRuleMatch) GetPrivateStatus() *CommentRulePrivateStatus {
+	if c == nil {
+		return nil
+	}
+	return c.PrivateStatus
 }
 
 func (c *CommentRuleMatch) GetReplyID() *string {
@@ -762,6 +834,27 @@ func (c *CommentRuleMatch) SetLookedAt(lookedAt string) {
 func (c *CommentRuleMatch) SetOutcome(outcome CommentRuleOutcome) {
 	c.Outcome = outcome
 	c.require(commentRuleMatchFieldOutcome)
+}
+
+// SetPrivateCode sets the PrivateCode field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CommentRuleMatch) SetPrivateCode(privateCode *string) {
+	c.PrivateCode = privateCode
+	c.require(commentRuleMatchFieldPrivateCode)
+}
+
+// SetPrivateReplyID sets the PrivateReplyID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CommentRuleMatch) SetPrivateReplyID(privateReplyID *string) {
+	c.PrivateReplyID = privateReplyID
+	c.require(commentRuleMatchFieldPrivateReplyID)
+}
+
+// SetPrivateStatus sets the PrivateStatus field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CommentRuleMatch) SetPrivateStatus(privateStatus *CommentRulePrivateStatus) {
+	c.PrivateStatus = privateStatus
+	c.require(commentRuleMatchFieldPrivateStatus)
 }
 
 // SetReplyID sets the ReplyID field and marks it as non-optional;
@@ -962,6 +1055,68 @@ func (c *CommentRulePage) String() string {
 	return fmt.Sprintf("%#v", c)
 }
 
+type CommentRulePrivateAbility string
+
+const (
+	CommentRulePrivateAbilityAvailable   CommentRulePrivateAbility = "available"
+	CommentRulePrivateAbilityNoAPI       CommentRulePrivateAbility = "noApi"
+	CommentRulePrivateAbilityUnsupported CommentRulePrivateAbility = "unsupported"
+	CommentRulePrivateAbilityMessagesOff CommentRulePrivateAbility = "messagesOff"
+	CommentRulePrivateAbilityReconnect   CommentRulePrivateAbility = "reconnect"
+	CommentRulePrivateAbilityTextTooLong CommentRulePrivateAbility = "textTooLong"
+)
+
+func NewCommentRulePrivateAbilityFromString(s string) (CommentRulePrivateAbility, error) {
+	switch s {
+	case "available":
+		return CommentRulePrivateAbilityAvailable, nil
+	case "noApi":
+		return CommentRulePrivateAbilityNoAPI, nil
+	case "unsupported":
+		return CommentRulePrivateAbilityUnsupported, nil
+	case "messagesOff":
+		return CommentRulePrivateAbilityMessagesOff, nil
+	case "reconnect":
+		return CommentRulePrivateAbilityReconnect, nil
+	case "textTooLong":
+		return CommentRulePrivateAbilityTextTooLong, nil
+	}
+	var t CommentRulePrivateAbility
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (c CommentRulePrivateAbility) Ptr() *CommentRulePrivateAbility {
+	return &c
+}
+
+type CommentRulePrivateStatus string
+
+const (
+	CommentRulePrivateStatusSending     CommentRulePrivateStatus = "sending"
+	CommentRulePrivateStatusSent        CommentRulePrivateStatus = "sent"
+	CommentRulePrivateStatusFailed      CommentRulePrivateStatus = "failed"
+	CommentRulePrivateStatusUnconfirmed CommentRulePrivateStatus = "unconfirmed"
+)
+
+func NewCommentRulePrivateStatusFromString(s string) (CommentRulePrivateStatus, error) {
+	switch s {
+	case "sending":
+		return CommentRulePrivateStatusSending, nil
+	case "sent":
+		return CommentRulePrivateStatusSent, nil
+	case "failed":
+		return CommentRulePrivateStatusFailed, nil
+	case "unconfirmed":
+		return CommentRulePrivateStatusUnconfirmed, nil
+	}
+	var t CommentRulePrivateStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (c CommentRulePrivateStatus) Ptr() *CommentRulePrivateStatus {
+	return &c
+}
+
 type CommentRuleStatus string
 
 const (
@@ -988,19 +1143,21 @@ func (c CommentRuleStatus) Ptr() *CommentRuleStatus {
 }
 
 var (
-	commentRuleChangeFieldWorkspaceID = big.NewInt(1 << 0)
-	commentRuleChangeFieldRuleID      = big.NewInt(1 << 1)
-	commentRuleChangeFieldKeywords    = big.NewInt(1 << 2)
-	commentRuleChangeFieldPaused      = big.NewInt(1 << 3)
-	commentRuleChangeFieldReply       = big.NewInt(1 << 4)
+	commentRuleChangeFieldWorkspaceID  = big.NewInt(1 << 0)
+	commentRuleChangeFieldRuleID       = big.NewInt(1 << 1)
+	commentRuleChangeFieldKeywords     = big.NewInt(1 << 2)
+	commentRuleChangeFieldPaused       = big.NewInt(1 << 3)
+	commentRuleChangeFieldPrivateReply = big.NewInt(1 << 4)
+	commentRuleChangeFieldReply        = big.NewInt(1 << 5)
 )
 
 type CommentRuleChange struct {
-	WorkspaceID string   `json:"-" url:"-"`
-	RuleID      string   `json:"-" url:"-"`
-	Keywords    []string `json:"keywords,omitempty" url:"-"`
-	Paused      *bool    `json:"paused,omitempty" url:"-"`
-	Reply       *string  `json:"reply,omitempty" url:"-"`
+	WorkspaceID  string   `json:"-" url:"-"`
+	RuleID       string   `json:"-" url:"-"`
+	Keywords     []string `json:"keywords,omitempty" url:"-"`
+	Paused       *bool    `json:"paused,omitempty" url:"-"`
+	PrivateReply *string  `json:"privateReply,omitempty" url:"-"`
+	Reply        *string  `json:"reply,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1041,6 +1198,13 @@ func (c *CommentRuleChange) SetKeywords(keywords []string) {
 func (c *CommentRuleChange) SetPaused(paused *bool) {
 	c.Paused = paused
 	c.require(commentRuleChangeFieldPaused)
+}
+
+// SetPrivateReply sets the PrivateReply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CommentRuleChange) SetPrivateReply(privateReply *string) {
+	c.PrivateReply = privateReply
+	c.require(commentRuleChangeFieldPrivateReply)
 }
 
 // SetReply sets the Reply field and marks it as non-optional;

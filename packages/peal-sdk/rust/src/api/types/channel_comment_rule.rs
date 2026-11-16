@@ -6,6 +6,8 @@ pub struct ChannelCommentRule {
     #[serde(default)]
     pub channel_id: String,
     pub platform: Platform,
+    #[serde(rename = "privateReply")]
+    pub private_reply: CommentRulePrivateAbility,
     pub reply: CommentRuleAbility,
 }
 
@@ -20,6 +22,7 @@ impl ChannelCommentRule {
 pub struct ChannelCommentRuleBuilder {
     channel_id: Option<String>,
     platform: Option<Platform>,
+    private_reply: Option<CommentRulePrivateAbility>,
     reply: Option<CommentRuleAbility>,
 }
 
@@ -34,6 +37,11 @@ impl ChannelCommentRuleBuilder {
         self
     }
 
+    pub fn private_reply(mut self, value: CommentRulePrivateAbility) -> Self {
+        self.private_reply = Some(value);
+        self
+    }
+
     pub fn reply(mut self, value: CommentRuleAbility) -> Self {
         self.reply = Some(value);
         self
@@ -43,6 +51,7 @@ impl ChannelCommentRuleBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`channel_id`](ChannelCommentRuleBuilder::channel_id)
     /// - [`platform`](ChannelCommentRuleBuilder::platform)
+    /// - [`private_reply`](ChannelCommentRuleBuilder::private_reply)
     /// - [`reply`](ChannelCommentRuleBuilder::reply)
     pub fn build(self) -> Result<ChannelCommentRule, BuildError> {
         Ok(ChannelCommentRule {
@@ -52,6 +61,9 @@ impl ChannelCommentRuleBuilder {
             platform: self
                 .platform
                 .ok_or_else(|| BuildError::missing_field("platform"))?,
+            private_reply: self
+                .private_reply
+                .ok_or_else(|| BuildError::missing_field("private_reply"))?,
             reply: self
                 .reply
                 .ok_or_else(|| BuildError::missing_field("reply"))?,

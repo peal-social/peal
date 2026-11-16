@@ -22,6 +22,9 @@ pub struct CommentRule {
     #[serde(rename = "postId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub post_id: Option<String>,
+    #[serde(rename = "privateReply")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_reply: Option<String>,
     #[serde(default)]
     pub reply: String,
     #[serde(rename = "startedBy")]
@@ -47,6 +50,7 @@ pub struct CommentRuleBuilder {
     keywords: Option<Vec<String>>,
     matches: Option<Vec<CommentRuleMatch>>,
     post_id: Option<String>,
+    private_reply: Option<String>,
     reply: Option<String>,
     started_by: Option<String>,
     status: Option<CommentRuleStatus>,
@@ -93,6 +97,11 @@ impl CommentRuleBuilder {
         self
     }
 
+    pub fn private_reply(mut self, value: impl Into<String>) -> Self {
+        self.private_reply = Some(value.into());
+        self
+    }
+
     pub fn reply(mut self, value: impl Into<String>) -> Self {
         self.reply = Some(value.into());
         self
@@ -135,6 +144,7 @@ impl CommentRuleBuilder {
                 .matches
                 .ok_or_else(|| BuildError::missing_field("matches"))?,
             post_id: self.post_id,
+            private_reply: self.private_reply,
             reply: self
                 .reply
                 .ok_or_else(|| BuildError::missing_field("reply"))?,

@@ -6,6 +6,9 @@ pub struct CommentRuleChange {
     pub keywords: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paused: Option<bool>,
+    #[serde(rename = "privateReply")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_reply: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply: Option<String>,
 }
@@ -21,6 +24,7 @@ impl CommentRuleChange {
 pub struct CommentRuleChangeBuilder {
     keywords: Option<Vec<String>>,
     paused: Option<bool>,
+    private_reply: Option<String>,
     reply: Option<String>,
 }
 
@@ -35,6 +39,11 @@ impl CommentRuleChangeBuilder {
         self
     }
 
+    pub fn private_reply(mut self, value: impl Into<String>) -> Self {
+        self.private_reply = Some(value.into());
+        self
+    }
+
     pub fn reply(mut self, value: impl Into<String>) -> Self {
         self.reply = Some(value.into());
         self
@@ -45,6 +54,7 @@ impl CommentRuleChangeBuilder {
         Ok(CommentRuleChange {
             keywords: self.keywords,
             paused: self.paused,
+            private_reply: self.private_reply,
             reply: self.reply,
         })
     }

@@ -27,6 +27,9 @@ class CommentRule(UniversalBaseModel):
     post_id: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="postId"), pydantic.Field(alias="postId")
     ] = None
+    private_reply: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="privateReply"), pydantic.Field(alias="privateReply")
+    ] = None
     reply: str
     started_by: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="startedBy"), pydantic.Field(alias="startedBy")

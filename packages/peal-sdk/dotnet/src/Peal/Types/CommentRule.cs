@@ -35,6 +35,9 @@ public record CommentRule : IJsonOnDeserialized
     [JsonPropertyName("postId")]
     public string? PostId { get; set; }
 
+    [JsonPropertyName("privateReply")]
+    public string? PrivateReply { get; set; }
+
     [JsonPropertyName("reply")]
     public required string Reply { get; set; }
 

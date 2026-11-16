@@ -10,6 +10,9 @@ pub struct NewCommentRule {
     #[serde(rename = "postId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub post_id: Option<String>,
+    #[serde(rename = "privateReply")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_reply: Option<String>,
     #[serde(default)]
     pub reply: String,
 }
@@ -26,6 +29,7 @@ pub struct NewCommentRuleBuilder {
     channel_id: Option<String>,
     keywords: Option<Vec<String>>,
     post_id: Option<String>,
+    private_reply: Option<String>,
     reply: Option<String>,
 }
 
@@ -45,6 +49,11 @@ impl NewCommentRuleBuilder {
         self
     }
 
+    pub fn private_reply(mut self, value: impl Into<String>) -> Self {
+        self.private_reply = Some(value.into());
+        self
+    }
+
     pub fn reply(mut self, value: impl Into<String>) -> Self {
         self.reply = Some(value.into());
         self
@@ -61,6 +70,7 @@ impl NewCommentRuleBuilder {
                 .keywords
                 .ok_or_else(|| BuildError::missing_field("keywords"))?,
             post_id: self.post_id,
+            private_reply: self.private_reply,
             reply: self
                 .reply
                 .ok_or_else(|| BuildError::missing_field("reply"))?,

@@ -21,11 +21,13 @@ public class ListCommentRulesTest : BaseMockServerTest
                     {
                       "channelId": "channelId",
                       "platform": "x",
+                      "privateReply": "available",
                       "reply": "available"
                     },
                     {
                       "channelId": "channelId",
                       "platform": "x",
+                      "privateReply": "available",
                       "reply": "available"
                     }
                   ],
@@ -42,6 +44,9 @@ public class ListCommentRulesTest : BaseMockServerTest
                       "commentId": "commentId",
                       "lookedAt": "lookedAt",
                       "outcome": "claimed",
+                      "privateCode": "privateCode",
+                      "privateReplyId": "privateReplyId",
+                      "privateStatus": "sending",
                       "replyId": "replyId"
                     },
                     {
@@ -49,10 +54,14 @@ public class ListCommentRulesTest : BaseMockServerTest
                       "commentId": "commentId",
                       "lookedAt": "lookedAt",
                       "outcome": "claimed",
+                      "privateCode": "privateCode",
+                      "privateReplyId": "privateReplyId",
+                      "privateStatus": "sending",
                       "replyId": "replyId"
                     }
                   ],
                   "postId": "postId",
+                  "privateReply": "privateReply",
                   "reply": "reply",
                   "startedBy": "startedBy",
                   "status": "active"
@@ -63,11 +72,13 @@ public class ListCommentRulesTest : BaseMockServerTest
                     {
                       "channelId": "channelId",
                       "platform": "x",
+                      "privateReply": "available",
                       "reply": "available"
                     },
                     {
                       "channelId": "channelId",
                       "platform": "x",
+                      "privateReply": "available",
                       "reply": "available"
                     }
                   ],
@@ -84,6 +95,9 @@ public class ListCommentRulesTest : BaseMockServerTest
                       "commentId": "commentId",
                       "lookedAt": "lookedAt",
                       "outcome": "claimed",
+                      "privateCode": "privateCode",
+                      "privateReplyId": "privateReplyId",
+                      "privateStatus": "sending",
                       "replyId": "replyId"
                     },
                     {
@@ -91,10 +105,14 @@ public class ListCommentRulesTest : BaseMockServerTest
                       "commentId": "commentId",
                       "lookedAt": "lookedAt",
                       "outcome": "claimed",
+                      "privateCode": "privateCode",
+                      "privateReplyId": "privateReplyId",
+                      "privateStatus": "sending",
                       "replyId": "replyId"
                     }
                   ],
                   "postId": "postId",
+                  "privateReply": "privateReply",
                   "reply": "reply",
                   "startedBy": "startedBy",
                   "status": "active"
@@ -136,6 +154,7 @@ public class ListCommentRulesTest : BaseMockServerTest
                     {
                       "channelId": "channelId",
                       "platform": "x",
+                      "privateReply": "available",
                       "reply": "available"
                     }
                   ],
@@ -153,6 +172,7 @@ public class ListCommentRulesTest : BaseMockServerTest
                     }
                   ],
                   "postId": "postId",
+                  "privateReply": "privateReply",
                   "reply": "reply",
                   "startedBy": "startedBy",
                   "status": "active"
