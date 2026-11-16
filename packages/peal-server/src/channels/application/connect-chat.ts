@@ -314,6 +314,23 @@ export class ConnectChat extends Context.Service<
             });
           }
 
+          // The webhook moved where another channel of the workspace
+          // already posts: that channel holds the account, and this one
+          // cannot take it.
+          if (channel.accountId !== chat.accountId) {
+            const holder = yield* channels.findByAccount(
+              actor.workspaceId,
+              chat.platform,
+              chat.accountId
+            );
+
+            if (Option.exists(holder, ({ id }) => id !== channel.id)) {
+              return yield* new ReconnectAccountMismatch({
+                channelId: channel.id,
+              });
+            }
+          }
+
           return yield* reconnectTo(channel, chat);
         }
 

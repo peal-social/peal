@@ -49,6 +49,17 @@ const discordAnswer = (
     return Effect.fail(new ChatRefused({ reason: "addressNotAWebhook" }));
   }
 
+  // Webhook 6, in channel 309 from the start.
+  if (address.includes("/webhooks/6/")) {
+    return Effect.succeed({
+      accountId: "200/309",
+      displayName: Option.some("Synthetic announcements"),
+      handle: "Synthetic announcements",
+      platform: "discord",
+      secret: Redacted.make("6/synthetic-token"),
+    });
+  }
+
   // Webhook 5, which a server's managers moved to channel 309.
   if (address.includes("/webhooks/5/moved")) {
     return Effect.succeed({
@@ -68,6 +79,12 @@ const discordAnswer = (
     secret: Redacted.make(`${match}/synthetic-token`),
   });
 };
+
+// A sign-in with a Discord webhook's address.
+const discordAt = (address: string) => ({
+  platform: "discord" as const,
+  webhookUrl: Redacted.make(address),
+});
 
 const answerFor = (
   signIn: ChatSignIn
@@ -335,6 +352,49 @@ layer(ConnectChatTest)("connecting a chat", (it) => {
         assert.lengthOf(listed, 1);
         assert.strictEqual(listed[0]?.accountId, "200/309");
         assert.lengthOf(yield* Ref.get(counted), billed);
+      })
+  );
+
+  it.effect(
+    "refuses to move a channel onto another channel's account, its webhook moved there",
+    () =>
+      Effect.gen(function* taken() {
+        const workspaceId = yield* freshWorkspace;
+        const chats = yield* ConnectChat;
+        const repository = yield* ChannelRepository;
+
+        const news = yield* chats.connect(
+          manager(workspaceId),
+          discordAt("https://discord.com/api/webhooks/5/synthetic-token"),
+          Option.none()
+        );
+
+        const announcements = yield* chats.connect(
+          manager(workspaceId),
+          discordAt("https://discord.com/api/webhooks/6/synthetic-token"),
+          Option.none()
+        );
+
+        // Webhook 5 moved into the channel the second already posts in.
+        const refused = yield* chats
+          .connect(
+            manager(workspaceId),
+            discordAt("https://discord.com/api/webhooks/5/moved"),
+            Option.some(news.id)
+          )
+          .pipe(Effect.flip);
+
+        assert.strictEqual(refused._tag, "ReconnectAccountMismatch");
+
+        const listed = yield* repository.list(workspaceId);
+
+        assert.deepStrictEqual(
+          new Map(listed.map(({ accountId, id }) => [id, accountId])),
+          new Map([
+            [news.id, "200/301"],
+            [announcements.id, "200/309"],
+          ])
+        );
       })
   );
 
