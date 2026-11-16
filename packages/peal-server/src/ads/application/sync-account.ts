@@ -58,7 +58,16 @@ const clamp = (wait: Duration.Duration) =>
 export class SyncAccount extends Context.Service<
   SyncAccount,
   {
-    readonly run: (accountId: AdAccountId) => Effect.Effect<SyncOutcome>;
+    /**
+     * Reads the account. Its next read counts from `runAt`, the scheduled
+     * time of the sweep that asks (none: from now), so a read every six
+     * hours is due at the sweep six hours on, however late in its run the
+     * account came.
+     */
+    readonly run: (
+      accountId: AdAccountId,
+      runAt?: Option.Option<DateTime.Utc>
+    ) => Effect.Effect<SyncOutcome>;
   }
 >()("peal-server/ads/application/SyncAccount") {
   static readonly layer = Layer.effect(
@@ -238,7 +247,8 @@ export class SyncAccount extends Context.Service<
       );
 
       const read = Effect.fn("SyncAccount.read")(function* read(
-        account: AdAccount
+        account: AdAccount,
+        runAt: Option.Option<DateTime.Utc>
       ) {
         const client = networks.for(account.network);
         const stored = yield* grants.token(account.grantId);
@@ -257,7 +267,13 @@ export class SyncAccount extends Context.Service<
           return yield* failedRead(account, new TokenRejected());
         }
 
-        return yield* readWith(account, client.value, token.value, false);
+        return yield* readWith(
+          account,
+          client.value,
+          token.value,
+          false,
+          runAt
+        );
       });
 
       // An account read through a manager that refuses it may have been
@@ -317,7 +333,8 @@ export class SyncAccount extends Context.Service<
         account: AdAccount,
         client: AdNetworkClient,
         token: Redacted.Redacted,
-        rerouting: boolean
+        rerouting: boolean,
+        runAt: Option.Option<DateTime.Utc>
       ): Effect.fn.Return<SyncOutcome, DatabaseError> {
         const now = yield* DateTime.now;
         const today = localDateOf(now, account.timeZone);
@@ -348,7 +365,7 @@ export class SyncAccount extends Context.Service<
             const other = yield* rerouted(account, client, token);
 
             if (other._tag === "rerouted") {
-              return yield* readWith(other.account, client, token, true);
+              return yield* readWith(other.account, client, token, true, runAt);
             }
 
             if (other._tag === "unreachable") {
@@ -388,12 +405,19 @@ export class SyncAccount extends Context.Service<
 
         const halted = taken.haltedFor.pipe(Option.map(clamp));
 
+        // A wait the network asked for counts from now; the next read,
+        // from the sweep's scheduled time, so the sweep that many hours on
+        // finds it due.
         yield* accounts.scheduleSync(
           account.id,
-          DateTime.addDuration(
-            now,
-            Option.getOrElse(halted, () => traits.syncEvery)
-          ),
+          Option.match(halted, {
+            onNone: () =>
+              DateTime.addDuration(
+                Option.getOrElse(runAt, () => now),
+                traits.syncEvery
+              ),
+            onSome: (wait) => DateTime.addDuration(now, wait),
+          }),
           // A sync cut short reads the same days again: the account is
           // read whole only when nothing held it back.
           Option.isSome(halted) ? Option.none() : Option.some(now)
@@ -405,12 +429,12 @@ export class SyncAccount extends Context.Service<
       });
 
       return SyncAccount.of({
-        run: (accountId) =>
+        run: (accountId, runAt = Option.none()) =>
           accounts.get(accountId).pipe(
             Effect.flatMap((found) =>
               Option.match(found, {
                 onNone: () => Effect.succeed<SyncOutcome>("gone"),
-                onSome: ({ account }) => read(account),
+                onSome: ({ account }) => read(account, runAt),
               })
             ),
             // The database failing leaves the account due: the next run

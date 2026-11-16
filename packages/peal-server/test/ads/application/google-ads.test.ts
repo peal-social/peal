@@ -173,6 +173,13 @@ const due = (account: AdAccount, after: Duration.Input) =>
     return listed.some((entry) => entry.account.id === account.id);
   });
 
+const dueAt = (account: AdAccount, at: DateTime.Utc) =>
+  AccountStore.use((store) => store.dueForSync(at, 10_000, Option.none())).pipe(
+    Effect.map((listed) =>
+      listed.some((entry) => entry.account.id === account.id)
+    )
+  );
+
 // The owner's Google sign-in with one account connected: that account.
 const connectedGoogle = (owner: Actor, externalId = "1111111111") =>
   connected(owner, [externalId], "google").pipe(
@@ -268,10 +275,23 @@ layer(BillingTest, { excludeTestServices: true })(
 
           const { account } = yield* connectedGoogle(owner, "3333333333");
 
-          assert.strictEqual(yield* sync.run(account.id), "synced");
+          // The sweep scheduled ten minutes ago reaches the account now:
+          // its next read is due at the sweep six hours on, not six hours
+          // from now, which that sweep would miss by ten minutes.
+          const runAt = DateTime.subtract(yield* DateTime.now, { minutes: 10 });
+
+          assert.strictEqual(
+            yield* sync.run(account.id, Option.some(runAt)),
+            "synced"
+          );
           assert.isFalse(yield* due(account, "5 hours"));
-          assert.isTrue(yield* due(account, "6 hours"));
-          assert.strictEqual(yield* sync.run(account.id), "synced");
+          assert.isTrue(
+            yield* dueAt(account, DateTime.add(runAt, { hours: 6 }))
+          );
+          assert.strictEqual(
+            yield* sync.run(account.id, Option.none()),
+            "synced"
+          );
           assert.deepStrictEqual(
             daysAsked(api.requests(), "3333333333"),
             [90, 7]
