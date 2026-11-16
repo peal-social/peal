@@ -253,8 +253,9 @@ export class MessageStore extends Context.Service<
     ) => Effect.Effect<readonly OutgoingMessage[], DatabaseError>;
     /**
      * The channel's messages sent from Peal still on their way whose call
-     * was never set out: deleting them sends nothing, so their outbound
-     * message is given back.
+     * was never claimed, an attempt that waited for the gate's turn among
+     * them: deleting them sends nothing, so their outbound message is
+     * given back.
      */
     readonly unsentOf: (
       channelId: ChannelId

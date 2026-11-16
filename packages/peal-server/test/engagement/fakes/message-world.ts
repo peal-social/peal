@@ -324,7 +324,10 @@ export const makeMessageWorld = (
           (message) =>
             message.channelId === channelId &&
             message.status._tag === "sending" &&
-            Option.isNone(message.status.attemptedAt)
+            // Its call never claimed: the fake gate claims as it calls.
+            ![...state.sent, ...state.resumed].some(
+              (request) => request.messageId === message.id
+            )
         )
       ),
     switchedOn: (workspaceId) =>

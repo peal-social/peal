@@ -1006,7 +1006,9 @@ export const DrizzleMessageStore = Layer.effect(
           and(
             eq(outgoingMessages.channelId, channelId),
             eq(outgoingMessages.status, "sending"),
-            isNull(outgoingMessages.attemptedAt)
+            // Its call never claimed: an attempt recorded that waited for
+            // the gate's turn never left either.
+            isNull(outgoingMessages.callClaimedAt)
           )
         )
         // Locked until the transaction ends: a job that would begin one
