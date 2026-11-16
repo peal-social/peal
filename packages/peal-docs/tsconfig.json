@@ -5,10 +5,14 @@
   },
   "include": [
     "blume.config.ts",
+    "changelog/*.ts",
+    "changelog-variables.ts",
     "components.ts",
     "platform-variables.ts",
     "pricing-variables.ts",
     "retention-variables.ts",
-    "scripts/*.ts"
+    "scripts/*.ts",
+    "test/*.ts",
+    "vitest.config.ts"
   ]
 }

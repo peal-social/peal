@@ -6,9 +6,15 @@ import { turnstile } from "blume/captcha";
 import { node } from "blume/deploy";
 import { openapi } from "blume/reference";
 
+import { writeChangelogPartials } from "./changelog/partials.ts";
 import { platformVariables } from "./platform-variables.ts";
 import { pricingVariables } from "./pricing-variables.ts";
 import { retentionVariables } from "./retention-variables.ts";
+
+// The Changelog page includes its releases from partials written here, from
+// the release history (changelog/load.ts says where it is read from),
+// before Blume reads any page: the page never lists a release by hand.
+writeChangelogPartials();
 
 // Values that differ per deployment come from the environment, so the same
 // sources build anyone's copy of the docs. Each is optional: an unset or empty
