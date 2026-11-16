@@ -601,6 +601,8 @@ describe("the messages' collection", () => {
           assert.deepStrictEqual(world.state.turnedOff, [
             { channelId: channelId(1), workspaceId },
           ]);
+          // Its platform is asked to stop the account's events too.
+          assert.deepStrictEqual(world.state.unfollows, [channelId(1)]);
         })
       ).pipe(Effect.provide(world.layer));
     }

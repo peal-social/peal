@@ -343,6 +343,20 @@ export class CollectMessages extends Context.Service<
         );
       });
 
+      // Asks the box's platform to stop the account's events, once and
+      // best effort: a refusal, or a gate too busy to answer in time, is
+      // logged by the channel's id.
+      const stopEvents = (channelId: ChannelId) =>
+        source.unfollow({ channelId }).pipe(
+          Effect.timeout(unfollowWait),
+          Effect.catch((error) =>
+            Effect.logWarning(
+              "Could not tell a platform to stop a channel's message events"
+            ).pipe(Effect.annotateLogs({ channelId, reason: error._tag }))
+          ),
+          Effect.asVoid
+        );
+
       // A channel that left goes now, with what it held, as do the messages
       // of one whose account no longer grants them; one that cannot be read
       // waits.
@@ -375,12 +389,14 @@ export class CollectMessages extends Context.Service<
 
         // Its account was signed in again without what reading takes: its
         // messages are turned off, never left on unread, and members told.
+        // Its platform is then asked to stop the account's events, best
+        // effort: a grant that lacks the messages may still allow that.
         if (failure._tag === "MessagesUngranted") {
           return transaction(
             forgetChannelMessages(store, meters, box.channelId).pipe(
               Effect.andThen(outcomes.turnedOff(box))
             )
-          );
+          ).pipe(Effect.andThen(stopEvents(box.channelId)));
         }
 
         return store.saveBox(
@@ -427,20 +443,7 @@ export class CollectMessages extends Context.Service<
           // Its messages were turned off while the platform answered, after
           // the platform was told to stop: it is told again.
           yield* Option.isNone(yield* store.box(box.channelId))
-            ? source.unfollow({ channelId: box.channelId }).pipe(
-                Effect.timeout(unfollowWait),
-                Effect.catch((error) =>
-                  Effect.logWarning(
-                    "Could not tell a platform to stop a channel's message events"
-                  ).pipe(
-                    Effect.annotateLogs({
-                      channelId: box.channelId,
-                      reason: error._tag,
-                    })
-                  )
-                ),
-                Effect.asVoid
-              )
+            ? stopEvents(box.channelId)
             : store.markFollowed(box.channelId, now);
         });
 
