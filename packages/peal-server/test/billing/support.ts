@@ -57,7 +57,8 @@ import {
   WorkspaceOwnersLive,
 } from "#workspace/container.ts";
 
-const entitlementsOn = (plan: Plan, freeTier = true) =>
+/** The entitlements of `plan`, without a subscription. */
+export const entitlementsOn = (plan: Plan, freeTier = true) =>
   new Entitlements({
     freeTier,
     plan: Option.some(plan),

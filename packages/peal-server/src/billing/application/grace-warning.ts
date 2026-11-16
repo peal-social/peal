@@ -1,6 +1,7 @@
-import { Effect, Layer, Option } from "effect";
+import { Cause, Effect, Layer, Option } from "effect";
 
 import type { BillingAccountId } from "#billing/domain/billing-account.ts";
+import type { WorkspaceId } from "#shared/domain/ids.ts";
 
 import { BillingAccountStore } from "./ports/billing-account-store.ts";
 import { BillingMode } from "./ports/billing-mode.ts";
@@ -10,25 +11,55 @@ import { WorkspaceStanding } from "./workspace-standing.ts";
 // Billing accounts read at a time.
 const page = 200;
 
+// Every failure but an interruption, which stops the look as a whole.
+const unread = (cause: Cause.Cause<unknown>) => !Cause.hasInterrupts(cause);
+
 /**
  * The billing workspaces on the free tier over their accounts, from the
  * first: none past the first page that holds one, as one is enough to
- * warn.
+ * warn. A page whose holders cannot be read is read again one holder at a
+ * time: a holder that still cannot be (a row that fails its schema, a
+ * read that fails) is logged and skipped, and the others are looked at.
  */
 export const firstOverFree = Effect.gen(function* firstOverFree() {
   const accounts = yield* BillingAccountStore;
   const entitlements = yield* WorkspaceEntitlements;
   const standing = yield* WorkspaceStanding;
 
+  const overIn = (holders: readonly WorkspaceId[]) =>
+    Effect.gen(function* overAmong() {
+      const plans = yield* entitlements.ofEach(holders);
+
+      return [...(yield* standing.overPlanIn(holders))].filter((id) =>
+        Option.contains(plans.get(id)?.plan ?? Option.none(), "free")
+      );
+    });
+
+  const eachOverIn = (holders: readonly WorkspaceId[]) =>
+    Effect.all(
+      holders.map((holder) =>
+        overIn([holder]).pipe(
+          Effect.catchCauseIf(unread, (cause) =>
+            Effect.logWarning(
+              "Could not look at a billing workspace at start: skipped",
+              cause
+            ).pipe(
+              Effect.annotateLogs({ workspaceId: holder }),
+              Effect.as<readonly WorkspaceId[]>([])
+            )
+          )
+        )
+      )
+    ).pipe(Effect.map((over) => over.flat()));
+
   let after = Option.none<BillingAccountId>();
 
   for (;;) {
     const found = yield* accounts.page(after, page);
     const holders = [...new Set(found.map(({ holder }) => holder))];
-    const plans = yield* entitlements.ofEach(holders);
 
-    const over = [...(yield* standing.overPlanIn(holders))].filter((id) =>
-      Option.contains(plans.get(id)?.plan ?? Option.none(), "free")
+    const over = yield* overIn(holders).pipe(
+      Effect.catchCauseIf(unread, () => eachOverIn(holders))
     );
 
     if (over.length > 0 || found.length < page) {
