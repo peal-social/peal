@@ -12,6 +12,7 @@ import {
   facebookPageId,
   runningBoostId,
   yenAccountId,
+  googleAccountId,
 } from "./studio-ads.ts";
 import type { AdsWorld } from "./studio-ads.ts";
 import { instagramId, mastodonId, scheduledId, studioId } from "./studio.ts";
@@ -222,6 +223,62 @@ describe("peal ads, reading", () => {
       assert.match(yen, /Spending\s+off: an owner turns it on/u);
       assert.match(yen, /Its own cap\s+500000 JPY at the ad network/u);
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
+    "shows a Google Ads account read only, by campaign, without reach or results",
+    () =>
+      Effect.gen(function* google() {
+        const session = yield* signedIn();
+
+        assert.match(
+          yield* session.printed(["ads", "accounts", ...inStudio]),
+          new RegExp(
+            `${googleAccountId}\\s+Studio search\\s+google\\s+EUR\\s+active\\s+read only`,
+            "u"
+          )
+        );
+
+        const one = yield* session.printed([
+          "ads",
+          "account",
+          googleAccountId,
+          ...inStudio,
+        ]);
+
+        assert.match(
+          one,
+          /Network\s+google, where its id is 3333333333, through the manager account 2222222222/u
+        );
+        assert.match(
+          one,
+          /Spending\s+never: Peal only reads Google Ads accounts/u
+        );
+        assert.match(one, /Last read\s+.+, every six hours/u);
+
+        const campaigns = yield* session.printed([
+          "ads",
+          "campaigns",
+          googleAccountId,
+          ...inStudio,
+        ]);
+
+        assert.include(
+          campaigns,
+          "Campaigns of Studio search, with what they did"
+        );
+        assert.match(
+          campaigns,
+          /901\s+Winter search\s+active\s+SEARCH\s+3\.51 EUR spent\s+600 impressions\s+12 clicks$/mu
+        );
+        assert.notInclude(campaigns, "reach");
+        assert.notInclude(campaigns, "results");
+
+        assert.include(
+          yield* session.printed(["ads", "list", googleAccountId, ...inStudio]),
+          "Peal reads the campaigns of Studio search and their days, not its ads: peal ads campaigns shows them."
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 
   it.effect("says who connects an ad account, where none is", () =>

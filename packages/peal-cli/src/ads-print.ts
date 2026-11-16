@@ -170,14 +170,17 @@ export const boostRow = (boost: Boost, amounts: Amounts): string[] => [
   `ends ${instant(boost.endsAt)}`,
 ];
 
-/** What some ads did, as cells: spend, then the counts. */
+/**
+ * What some ads did, as cells: spend, then the counts; reach and results
+ * only where the account's network reports them.
+ */
 export const totalsCells = (
   totals: PaidTotals,
   account: AdAccount
 ): string[] => [
   `${money(totals.spend, account.currency, account.minorUnitDigits)} spent`,
   `${String(totals.impressions)} impressions`,
-  `${String(totals.reach)} reach`,
+  ...(account.capabilities.reach ? [`${String(totals.reach)} reach`] : []),
   `${String(totals.clicks)} clicks`,
-  `${count(totals.results)} results`,
+  ...(account.capabilities.results ? [`${count(totals.results)} results`] : []),
 ];
