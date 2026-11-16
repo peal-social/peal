@@ -287,6 +287,17 @@ const MenuRows = ({ menu }: { readonly menu: SiteMenu }) => (
   </div>
 );
 
+// A row's icon or mark alone, which its preview draws in pixels.
+const rowArt = (link: SiteMenuLink) => {
+  if (link.mark !== undefined) {
+    return <Mark mark={link.mark} />;
+  }
+
+  const Icon = siteIcons[link.icon ?? "globe"];
+
+  return <Icon aria-hidden="true" strokeWidth={1.75} />;
+};
+
 // The preview's own art: a drawn picture, or the feature's first mark.
 const previewArt = (feature: SiteMenuFeature) => {
   if (feature.illustration === "fan-out") {
@@ -320,6 +331,7 @@ const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => {
             ? []
             : menu.groups.flatMap((group) =>
                 group.links.map((link) => ({
+                  art: rowArt(link),
                   body: link.intro?.body ?? link.description ?? "",
                   headline: link.intro?.headline ?? link.title,
                   key: link.href,

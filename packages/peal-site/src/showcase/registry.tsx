@@ -2,6 +2,12 @@
 // checks: how the showcase renders the block, and the props of each of its
 // specimens, shown beside it as JSON. Specimens render on the server, but
 // for an interactive block's, which hydrate on the page as one island.
+import { ArtStage } from "peal-ui/blocks/art/art-stage";
+import { BrandField } from "peal-ui/blocks/art/brand-field";
+import { PixelCube } from "peal-ui/blocks/art/pixel-cube";
+import { PixelField } from "peal-ui/blocks/art/pixel-field";
+import { PixelIcon } from "peal-ui/blocks/art/pixel-icon";
+import { PixelImage } from "peal-ui/blocks/art/pixel-image";
 import { Cell } from "peal-ui/blocks/blueprint/cell";
 import { CellGrid } from "peal-ui/blocks/blueprint/cell-grid";
 import { CornerFrame } from "peal-ui/blocks/blueprint/corner-frame";
@@ -14,6 +20,7 @@ import type { SectionHeadingContent } from "peal-ui/blocks/text/section-heading"
 import { SectionLabel } from "peal-ui/blocks/text/section-label";
 import type { SectionLabelContent } from "peal-ui/blocks/text/section-label";
 import { Statement } from "peal-ui/blocks/text/statement";
+import type { SiteIcon } from "peal-ui/lib/site-icons";
 import type * as React from "react";
 
 import type { Category } from "./categories.ts";
@@ -24,7 +31,9 @@ import {
   frenchLength,
   long,
   short,
+  syntheticPicture,
 } from "./fixtures.ts";
+import { IconCycle } from "./icon-cycle.tsx";
 
 export interface ShowcaseSpecimen {
   readonly name: string;
@@ -82,7 +91,184 @@ const cellCopy = (count: number) =>
     title: `Cell ${index + 1}`,
   }));
 
+// An art cell beside a text cell, as a page would place art.
+const ArtRow = ({
+  art,
+  title,
+}: {
+  readonly art: React.ReactNode;
+  readonly title: string;
+}) => (
+  <Section rule="both">
+    <CellGrid columns={2}>
+      <Cell className="flex flex-col justify-end">
+        <h3 className="text-[15px] font-semibold">{title}</h3>
+        <p className="text-muted-foreground mt-2 text-sm">{short.body}</p>
+      </Cell>
+      <Cell className="p-0">{art}</Cell>
+    </CellGrid>
+  </Section>
+);
+
 export const registry: readonly ShowcaseEntry[] = [
+  entry<{ readonly height: "h-24" | "h-40" }>({
+    categories: ["Hooks"],
+    interactive: true,
+    purpose:
+      "The behaviour every moving piece of art shares, as a ui-sdk primitive: whether it is on screen, and whether the reader asked for less motion.",
+    render: ({ height }) => (
+      <ArtStage className={`bg-muted ${height}`}>
+        {(state) => (
+          <span className="block p-6 font-mono text-xs">
+            in view: {String(state.inView)} · reduced motion:{" "}
+            {String(state.reducedMotion)}
+          </span>
+        )}
+      </ArtStage>
+    ),
+    slug: "art/art-stage",
+    specimens: [
+      { name: "Its state, as the art reads it", props: { height: "h-24" } },
+    ],
+  }),
+  entry<{
+    readonly captions: { readonly end: string; readonly start: string };
+  }>({
+    categories: ["Gradients", "Backgrounds"],
+    purpose:
+      "The brand field, the one gradient: for the hero, the closing band and covers only.",
+    render: ({ captions }) => (
+      <BrandField captions={captions} className="h-72">
+        <p className="p-10 text-[30px] leading-[1.1] font-semibold tracking-[-0.025em] sm:text-[40px]">
+          {short.title}
+        </p>
+      </BrandField>
+    ),
+    slug: "art/brand-field",
+    specimens: [
+      {
+        name: "With its rails and captions",
+        props: {
+          captions: { end: "a synthetic caption", start: "example.com" },
+        },
+      },
+    ],
+  }),
+  entry<{ readonly variant: "glyphs" | "pixels" }>({
+    categories: ["Pixel arts"],
+    interactive: true,
+    purpose:
+      "Peal's cube in pixel art, turning slowly while on screen and still for reduced motion.",
+    render: ({ variant }) => (
+      <ArtRow
+        art={<PixelCube className="h-80" variant={variant} />}
+        title={short.title}
+      />
+    ),
+    slug: "art/pixel-cube",
+    specimens: [
+      { name: "Pixels", props: { variant: "pixels" } },
+      { name: "Glyphs", props: { variant: "glyphs" } },
+    ],
+  }),
+  entry<{
+    readonly animate?: boolean;
+    readonly cycle?: readonly SiteIcon[];
+    readonly icon?: SiteIcon;
+    readonly on: "field" | "page";
+  }>({
+    categories: ["Pixel arts"],
+    interactive: true,
+    purpose:
+      "An icon or a brand's mark rasterised onto 5 px cells, on the page or on the brand field; with `animate`, a new one dissolves in and a scanline sweeps.",
+    render: ({ animate, cycle, icon, on }) => {
+      if (cycle !== undefined) {
+        return (
+          <BrandField className="mx-auto max-w-6xl" rails={false}>
+            <IconCycle icons={cycle} />
+          </BrandField>
+        );
+      }
+
+      const art =
+        icon === undefined ? (
+          <PixelIcon
+            animate={animate}
+            className="h-64"
+            mark={exampleMark}
+            on={on}
+          />
+        ) : (
+          <PixelIcon animate={animate} className="h-64" icon={icon} on={on} />
+        );
+
+      return on === "field" ? (
+        <BrandField className="mx-auto max-w-6xl" rails={false}>
+          {art}
+        </BrandField>
+      ) : (
+        <ArtRow art={art} title={short.title} />
+      );
+    },
+    slug: "art/pixel-icon",
+    specimens: [
+      { name: "An icon on the page", props: { icon: "calendar", on: "page" } },
+      {
+        name: "A brand's mark on the brand field, sweeping",
+        props: { animate: true, on: "field" },
+      },
+      {
+        name: "Dissolving from icon to icon, as a menu's preview",
+        props: {
+          cycle: ["calendar", "inbox", "chart", "terminal"],
+          on: "field",
+        },
+      },
+    ],
+  }),
+  entry<{
+    readonly alt: string;
+    readonly height: number;
+    readonly src: string;
+    readonly width: number;
+  }>({
+    categories: ["Pixel arts", "Images"],
+    interactive: true,
+    purpose:
+      "Any image dithered onto 5 px cells in the mark's tones; the image itself, with its alt, is the server's HTML.",
+    render: (props) => (
+      <ArtRow art={<PixelImage {...props} />} title={short.title} />
+    ),
+    slug: "art/pixel-image",
+    specimens: [
+      {
+        name: "A synthetic picture",
+        props: {
+          alt: "A synthetic landscape in greys",
+          height: 360,
+          src: syntheticPicture,
+          width: 640,
+        },
+      },
+    ],
+  }),
+  entry<{ readonly seed: number }>({
+    categories: ["Shaders", "Pixel arts"],
+    interactive: true,
+    purpose:
+      "The one shader: a slow dithered noise in lavender, blue and yellow on 5 px cells, for an art cell.",
+    render: ({ seed }) => (
+      <ArtRow
+        art={<PixelField className="h-80" seed={seed} />}
+        title={short.title}
+      />
+    ),
+    slug: "art/pixel-field",
+    specimens: [
+      { name: "Seed 1", props: { seed: 1 } },
+      { name: "Seed 2", props: { seed: 2 } },
+    ],
+  }),
   entry<{ readonly rule: "both" | "none" | "top"; readonly title: string }>({
     categories: ["Borders", "Backgrounds"],
     purpose:

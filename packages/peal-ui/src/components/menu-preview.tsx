@@ -2,11 +2,9 @@
 
 import { definePrimitive } from "@ui-sdk/core";
 import { createParts } from "@ui-sdk/react/primitive";
-import { useEffect, useRef } from "react";
 import type * as React from "react";
 
-import { createPixelArt, rasterise } from "../lib/pixel-icon";
-import type { PixelArt, PixelIcon } from "../lib/pixel-icon";
+import { PixelIcon } from "../blocks/art/pixel-icon";
 import { cn } from "../lib/utils";
 import { BrandField } from "./brand-field";
 
@@ -80,6 +78,8 @@ interface MenuPreviewIntro {
 
 /** A row the preview can show, by the key its row carries. */
 interface MenuPreviewItem extends MenuPreviewIntro {
+  /** The row's icon or mark, as an SVG, which the card rasterises. */
+  readonly art?: React.ReactNode;
   readonly key: string;
 }
 
@@ -88,97 +88,8 @@ interface MenuPreviewFallback extends MenuPreviewIntro {
   /** Its art: an SVG, such as a brand's mark, which the card rasterises. */
   readonly art: React.ReactNode;
   /** Cells across the art, for a drawing larger than a row's icon. */
-  readonly cells?: number | undefined;
+  readonly cells?: 34 | 48 | undefined;
 }
-
-const reducedMotion = () =>
-  matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const PreviewArt = ({
-  cells,
-  current,
-}: MenuPreviewState & { readonly cells: number | undefined }) => {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const art = useRef<PixelArt | undefined>(undefined);
-  const icons = useRef(new Map<string, PixelIcon>());
-  const shown = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    // The pixels draw on the canvas; the idle sweep runs only while the open
-    // menu shows the card.
-    const start = (element: HTMLCanvasElement) => {
-      const style = getComputedStyle(element);
-      const tone = (name: string) => style.getPropertyValue(name).trim();
-
-      const made = createPixelArt(element, {
-        tones: [tone("--brand"), tone("--lavender"), "#ffffff", tone("--sun")],
-      });
-
-      art.current = made;
-
-      const visibility = new IntersectionObserver((entries) => {
-        const entry = entries.at(-1);
-        made.idle(entry?.isIntersecting === true && !reducedMotion());
-      });
-
-      visibility.observe(element);
-
-      return () => {
-        visibility.disconnect();
-        made.dispose();
-        art.current = undefined;
-      };
-    };
-
-    return canvas.current === null ? undefined : start(canvas.current);
-  }, []);
-
-  useEffect(() => {
-    const element = canvas.current;
-    const panel = element?.closest('[data-slot="menu-preview"]');
-    const key = current ?? "";
-    let cancelled = false;
-
-    const source =
-      current === null
-        ? panel?.querySelector("[data-preview-art] svg")
-        : panel?.querySelector(
-            `[data-preview-key="${CSS.escape(current)}"] svg`
-          );
-
-    const show = async (svg: SVGSVGElement) => {
-      const icon =
-        icons.current.get(key) ??
-        (await rasterise(svg, current === null ? cells : undefined));
-
-      icons.current.set(key, icon);
-
-      if (!cancelled && shown.current !== key) {
-        art.current?.show(
-          icon,
-          shown.current !== undefined && !reducedMotion()
-        );
-        shown.current = key;
-      }
-    };
-
-    if (source instanceof SVGSVGElement) {
-      void show(source);
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [cells, current]);
-
-  return (
-    <canvas
-      ref={canvas}
-      aria-hidden="true"
-      className="absolute inset-0 size-full [image-rendering:pixelated]"
-    />
-  );
-};
 
 // Every intro sits in the same grid cell and only the current one shows,
 // so the card keeps the height of the longest and never jumps.
@@ -209,7 +120,7 @@ const Intro = ({
  * pixel art and intro follow the row the pointer rests on or focus is in,
  * and show the card's own art and intro otherwise. The card is not a link
  * and screen readers skip it: the rows are the links. Rows name themselves
- * with `data-preview-key`, and their icon's SVG is the art.
+ * with `data-preview-key`, and each item carries its row's icon as art.
  */
 const MenuPreview = ({
   children,
@@ -235,14 +146,27 @@ const MenuPreview = ({
             className="bg-muted flex w-72 flex-col gap-3 rounded-md border p-2"
           >
             <BrandField rails={false} className="min-h-56 flex-1 rounded-md">
-              <PreviewArt
-                cells={fallback.cells}
-                current={item === undefined ? null : current}
-              />
+              {item?.art === undefined ? (
+                <PixelIcon
+                  animate
+                  artKey="fallback"
+                  cells={fallback.cells}
+                  className="absolute inset-0"
+                  on="field"
+                >
+                  {fallback.art}
+                </PixelIcon>
+              ) : (
+                <PixelIcon
+                  animate
+                  artKey={item.key}
+                  className="absolute inset-0"
+                  on="field"
+                >
+                  {item.art}
+                </PixelIcon>
+              )}
             </BrandField>
-            <span hidden data-preview-art="">
-              {fallback.art}
-            </span>
             <span className="grid px-2 pb-2">
               <Intro intro={fallback} shown={item === undefined} />
               {items.map((candidate) => (

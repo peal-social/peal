@@ -7,6 +7,8 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { pixelCell } from "../src/lib/pixel-palette";
+
 const design = readFileSync(
   path.join(import.meta.dirname, "../../../DESIGN.md"),
   "utf-8"
@@ -171,6 +173,16 @@ describe("DESIGN.md and tokens.css", () => {
     expect(tokens.get("hatch")).toBe(
       `repeating-linear-gradient(${hatch?.["angle"]}deg, var(--border) 0 ${hatch?.["width"]}px, transparent ${hatch?.["width"]}px ${hatch?.["gap"]}px)`
     );
+  });
+
+  it("gives the pixel art's cell to --pixel-cell and its renderers", () => {
+    const pixels = /square cells of (?<pixels>\d+) px/u.exec(design)?.groups?.[
+      "pixels"
+    ];
+
+    expect(pixels).toBeDefined();
+    expect(tokens.get("pixel-cell")).toBe(`${pixels}px`);
+    expect(pixelCell).toBe(Number(pixels));
   });
 
   it("gives the radius of controls and cards to --radius", () => {

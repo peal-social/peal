@@ -23,6 +23,9 @@ import {
   WebGLRenderer,
 } from "three";
 
+import { pixelCell } from "./pixel-palette";
+import { glslBayer, glslHash } from "./pixel-shader";
+
 /** The mark's three colours, as CSS colours: top, left and right faces. */
 export interface AsciiCubeColours {
   readonly left: string;
@@ -60,7 +63,7 @@ const ramp = ["-", "=", "+", "x", "*", "%", "#", "@"] as const;
 // Each variant's cell, in CSS pixels, and the glyphs' font size.
 const cells = {
   glyphs: { font: 8.5, height: 8, width: 6 },
-  pixels: { font: 0, height: 5, width: 5 },
+  pixels: { font: 0, height: pixelCell, width: pixelCell },
 } as const;
 
 // The mark's isometric view: a quarter turn around the vertical, then the
@@ -122,17 +125,8 @@ const screenFragment = `
   uniform vec3 left;
   uniform vec3 right;
 
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-  }
-
-  float bayer(vec2 p) {
-    vec2 q = mod(p, 4.0);
-    int i = int(q.x + q.y * 4.0);
-    float m[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0,
-      3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
-    return (m[i] + 0.5) / 16.0;
-  }
+  ${glslHash}
+  ${glslBayer}
 
   void main() {
     vec2 position = gl_FragCoord.xy - offset;

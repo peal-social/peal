@@ -113,6 +113,9 @@
     var(--border) 0 1px,
     transparent 1px 8px
   );
+  /* The pixel art's cell (DESIGN.md, Pixel art); lib/pixel-palette.ts's
+     pixelCell draws with it. */
+  --pixel-cell: 5px;
   /* The palette tags take their colour from, by name. */
   --tag-gray: oklch(0.556 0 0);
   --tag-red: oklch(0.577 0.215 27);

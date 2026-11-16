@@ -4,6 +4,11 @@
 // contract, never with these.
 import type { SiteMark } from "peal-ui/blocks/blueprint/mark";
 
+import picture from "./synthetic-picture.svg?url";
+
+/** A synthetic picture in greys, served from the site, for the pixel image. */
+export const syntheticPicture = picture;
+
 /** Said under every specimen, so no screenshot passes for a real page. */
 export const syntheticNote = "Synthetic content, for layout only.";
 

@@ -2,6 +2,8 @@
 // a small grid and drawn as square pixels on a 2D canvas, in the hero art's
 // language (Bayer-dithered tones, crisp cells), with a pixel dissolve from
 // one icon to the next and a scanline sweep while idle. No WebGL.
+import { pixelCell, threshold } from "./pixel-palette";
+import type { PixelTones } from "./pixel-palette";
 
 /** How much of each cell an icon covers, from 0 to 1, row by row. */
 export interface PixelIcon {
@@ -15,11 +17,6 @@ const iconCells = 34;
 
 // Pixels sampled per cell while rasterising.
 const sample = 5;
-
-const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-
-const threshold = (column: number, row: number) =>
-  ((bayer[(row % 4) * 4 + (column % 4)] ?? 0) + 0.5) / 16;
 
 // A fixed per-cell order for the dissolve, so cells switch in a scatter.
 const scatter = (column: number, row: number) => {
@@ -90,9 +87,9 @@ export const rasterise = async (
   return { columns: cells, coverage, rows: cells };
 };
 
-/** The four colours a pixel may take on the brand field, dim to bright. */
+/** The four colours a pixel may take, dim to bright. */
 export interface PixelPalette {
-  readonly tones: readonly [string, string, string, string];
+  readonly tones: PixelTones;
 }
 
 export interface PixelArt {
@@ -103,8 +100,7 @@ export interface PixelArt {
   readonly dispose: () => void;
 }
 
-// Cell size in CSS pixels, as the hero art's pixels.
-const cellSize = 5;
+const cellSize = pixelCell;
 
 const dissolveMs = 280;
 
@@ -172,7 +168,7 @@ export const createPixelArt = (
         }
 
         if (tone >= 0) {
-          context.fillStyle = palette.tones[tone] ?? "#ffffff";
+          context.fillStyle = palette.tones[tone] ?? palette.tones[2];
           context.fillRect(
             Math.round(column * cellSize * ratio),
             Math.round(row * cellSize * ratio),

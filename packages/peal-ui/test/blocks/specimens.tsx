@@ -3,6 +3,12 @@
 // structure (structure.test.tsx). A block that is missing here fails both.
 import type * as React from "react";
 
+import { ArtStage } from "../../src/blocks/art/art-stage";
+import { BrandField } from "../../src/blocks/art/brand-field";
+import { PixelCube } from "../../src/blocks/art/pixel-cube";
+import { PixelField } from "../../src/blocks/art/pixel-field";
+import { PixelIcon } from "../../src/blocks/art/pixel-icon";
+import { PixelImage } from "../../src/blocks/art/pixel-image";
 import { Cell } from "../../src/blocks/blueprint/cell";
 import { CellGrid } from "../../src/blocks/blueprint/cell-grid";
 import { CornerFrame } from "../../src/blocks/blueprint/corner-frame";
@@ -21,6 +27,37 @@ export const copy = (name: string) => `copy:${name}`;
 export const squarePath = "M2 2h20v20H2z";
 
 const table = {
+  "art/art-stage": [() => <ArtStage>{() => <canvas />}</ArtStage>],
+  "art/brand-field": [
+    () => (
+      <BrandField captions={{ end: copy("end"), start: copy("start") }}>
+        <p>{copy("content")}</p>
+      </BrandField>
+    ),
+  ],
+  "art/pixel-cube": [() => <PixelCube />, () => <PixelCube variant="glyphs" />],
+  "art/pixel-field": [() => <PixelField seed={2} />],
+  "art/pixel-icon": [
+    () => <PixelIcon icon="calendar" />,
+    () => <PixelIcon mark={{ kind: "letters", letters: copy("letters") }} />,
+    () => (
+      <PixelIcon animate artKey="square" on="field">
+        <svg viewBox="0 0 24 24">
+          <path d={squarePath} />
+        </svg>
+      </PixelIcon>
+    ),
+  ],
+  "art/pixel-image": [
+    () => (
+      <PixelImage
+        alt={copy("alt")}
+        height={90}
+        src="/synthetic.png"
+        width={160}
+      />
+    ),
+  ],
   "blueprint/cell": [
     () => <Cell>{copy("cell")}</Cell>,
     () => <Cell surface="hatch">{copy("hidden")}</Cell>,
