@@ -333,6 +333,17 @@ While the app is in development mode, only people with a role on it can connect 
     reads it, then daily, and asks it to stop when the channel's messages are
     turned off or the channel is disconnected.
 
+    Deleting a workspace asks the same for each of its channels, in the
+    background, for two minutes at most. A channel Meta has not let go by
+    then is logged as a warning with its id ("A channel's platform still
+    sends its events after an erasure") and counted in the metric
+    `peal.channels.release.left_subscribed`, which the alert "Meta still
+    sends an erased workspace's messages" reports. Meta then goes on sending
+    that account's messages, which Peal ignores and never stores, until the
+    app is removed from the Page: find the channel ids in the server's logs,
+    and remove the app from those Pages in Meta's settings (the Page's
+    Business integrations).
+
     Before its App Review, Meta lets an app read and answer only the messages
     of people with a role on it, written to accounts they manage too. Its
     review of `pages_messaging`, `pages_manage_metadata`,

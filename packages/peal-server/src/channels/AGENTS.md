@@ -250,7 +250,9 @@
   most and never cuts short, so an erasure never waits on Meta once a
   channel. `departed` answers `done` or `failed`; each channel not let go
   by the end is logged by its id and counted
-  (`peal.channels.release.left_subscribed`): `metaMessageDepartures` deletes Meta's
+  (`peal.channels.release.left_subscribed`, which `peal-erased-channels-subscribed`
+  alerts on at once, its summary saying how to remove the app from the
+  Page): `metaMessageDepartures` deletes Meta's
   `subscribed_apps` while no other channel reads an account the app's
   subscription carries (`ChannelDirectory.withAccount` gives each
   channel's way in; `EngagementRecords.readsMessages`), then tells the

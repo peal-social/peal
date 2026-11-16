@@ -51,6 +51,7 @@ const watched = [
   "peal_billing_retirements_unconfirmed",
   "peal_billing_meter_errors_total",
   "peal_workspace_sign_in_providers_unavailable",
+  "peal_channels_release_left_subscribed_total",
 ];
 
 const RuleSchema = Schema.Struct({
@@ -219,6 +220,24 @@ describe("the production alert rules", () => {
     expect(rule?.data.find((step) => step.refId === "A")?.model.expr).toBe(
       "max(peal_workspace_sign_in_providers_unavailable) or vector(0)"
     );
+  });
+
+  // Each one is a Page whose owner's workspace was erased while Meta still
+  // sends its messages: rare, and the counter is born at the first one.
+  it("alert from peal-erased-channels-subscribed at once, as a warning, on a channel left subscribed", () => {
+    const rule = ruleOf("peal-erased-channels-subscribed");
+
+    expect(rule).toMatchObject({
+      execErrState: "Error",
+      for: "0s",
+      labels: { severity: "warning" },
+      noDataState: "OK",
+    });
+    expect(rule?.data.find((step) => step.refId === "A")?.model.expr).toBe(
+      "(sum(increase(peal_channels_release_left_subscribed_total[1h])) or vector(0)) + (sum(peal_channels_release_left_subscribed_total unless peal_channels_release_left_subscribed_total offset 1h unless peal_channels_release_left_subscribed_total offset 5m) or vector(0))"
+    );
+    expect(rule?.annotations.summary).toContain("channelId");
+    expect(rule?.annotations.summary).toContain("remove the app");
   });
 
   it("never tell the operator to report usage by hand", () => {

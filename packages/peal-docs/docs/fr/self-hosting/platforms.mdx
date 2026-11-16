@@ -343,6 +343,18 @@ Tant que l’application est en mode développement, seules les personnes qui y 
     chaque jour, et lui demande d’arrêter quand les messages du canal sont
     désactivés ou que le canal est déconnecté.
 
+    Supprimer un espace de travail le demande aussi pour chacun de ses canaux,
+    en arrière-plan, pendant deux minutes au plus. Un canal que Meta n’a pas
+    lâché d’ici là est consigné comme un avertissement avec son identifiant
+    (« A channel's platform still sends its events after an erasure ») et
+    compté dans la métrique `peal.channels.release.left_subscribed`, que
+    l’alerte « Meta still sends an erased workspace's messages » signale.
+    Meta continue alors d’envoyer les messages de ce compte, que Peal ignore
+    et ne conserve jamais, jusqu’à ce que l’application soit retirée de la
+    Page : trouvez les identifiants des canaux dans les journaux du serveur,
+    puis retirez l’application de ces Pages dans les réglages de Meta (les
+    intégrations professionnelles de la Page).
+
     Avant son App Review, Meta ne laisse une application lire et répondre
     qu’aux messages des personnes ayant un rôle sur elle, écrits à des comptes
     qu’elles gèrent aussi. Son examen de `pages_messaging`,
