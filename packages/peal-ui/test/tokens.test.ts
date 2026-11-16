@@ -21,7 +21,13 @@ const tokens = new Map(
   [...tokensFile.matchAll(/--(?<name>[a-z0-9-]+):\s*(?<value>[^;]+);/gu)].map(
     (match) => [
       match.groups?.["name"] ?? "",
-      (match.groups?.["value"] ?? "").trim().toLowerCase(),
+      // The formatter breaks a long value, such as a gradient, over lines.
+      (match.groups?.["value"] ?? "")
+        .replaceAll(/\s+/gu, " ")
+        .replaceAll("( ", "(")
+        .replaceAll(" )", ")")
+        .trim()
+        .toLowerCase(),
     ]
   )
 );
@@ -46,6 +52,24 @@ const neutralRows = [
     })
   )
 );
+
+// The rows of the Brand field's glows table: | Blue | `blue` | `#415EEE` |
+// 0.55 | 0.32 | 50% 55% | 0.9 | 0.07 | normal |, sizes and blur in `--m`.
+const glowRows = [
+  ...design.matchAll(
+    /^\| [A-Z][a-z ]+ +\| `(?<token>[a-z-]+)` +\| `(?<colour>#[0-9A-F]{6})` +\| (?<width>[\d.]+) +\| (?<height>[\d.]+) +\| (?<x>-?\d+%) (?<y>-?\d+%) +\| (?<opacity>[\d.]+) +\| (?<blur>[\d.]+) +\| (?<blend>[a-z-]+) +\|$/gmu
+  ),
+].map(({ groups }) => ({
+  blend: groups?.["blend"] ?? "",
+  blur: Number(groups?.["blur"]),
+  colour: (groups?.["colour"] ?? "").toLowerCase(),
+  height: Number(groups?.["height"]),
+  opacity: Number(groups?.["opacity"]),
+  token: groups?.["token"] ?? "",
+  width: Number(groups?.["width"]),
+  x: groups?.["x"] ?? "",
+  y: groups?.["y"] ?? "",
+}));
 
 describe("DESIGN.md and tokens.css", () => {
   it("reads the Neutrals table", () => {
@@ -77,6 +101,64 @@ describe("DESIGN.md and tokens.css", () => {
     expect(tokens.get("destructive-text")).toBe(
       colourAfter(/`destructive-text`,\s+/u)
     );
+  });
+
+  it("gives the brand field's base to --field-base", () => {
+    const base = /The base is `(?<gradient>radial-gradient\([^`]+\))`/u.exec(
+      design
+    )?.groups?.["gradient"];
+
+    expect(base).toBeDefined();
+    expect(tokens.get("field-base")).toBe(base?.toLowerCase());
+  });
+
+  it("reads the brand field's glows", () => {
+    expect(glowRows.map((row) => row.token)).toStrictEqual([
+      "blue",
+      "lavender",
+      "lavender-deep",
+      "halo",
+      "sun",
+    ]);
+  });
+
+  it.each(glowRows)(
+    "gives the $token glow its colour, geometry and blend",
+    ({ blend, blur, colour, height, opacity, token, width, x, y }) => {
+      const value = (property: string) =>
+        tokens.get(`field-${token}-${property}`);
+
+      expect(value("colour")).toBe(colour);
+      expect(Number(value("width"))).toBe(width);
+      expect(Number(value("height"))).toBe(height);
+      expect(value("x")).toBe(x);
+      expect(value("y")).toBe(y);
+      expect(Number(value("opacity"))).toBe(opacity);
+      expect(Number(value("blur"))).toBe(blur);
+      expect(value("blend")).toBe(blend);
+    }
+  );
+
+  it.each([
+    { name: "Rails", token: "field-rail" },
+    { name: "Ticks", token: "field-tick" },
+    { name: "Captions", token: "field-caption" },
+  ])("gives the field's $name their white to --$token", ({ name, token }) => {
+    const percent = new RegExp(
+      `${name} are white at (?<percent>\\d+)%`,
+      "u"
+    ).exec(design)?.groups?.["percent"];
+
+    expect(percent).toBeDefined();
+    expect(tokens.get(token)).toBe(`rgb(255 255 255 / ${percent}%)`);
+  });
+
+  it("gives the field's grain its opacity", () => {
+    const opacity = /grain at (?<opacity>0?\.\d+) in `soft-light`/u.exec(design)
+      ?.groups?.["opacity"];
+
+    expect(opacity).toBeDefined();
+    expect(Number(tokens.get("field-grain-opacity"))).toBe(Number(opacity));
   });
 
   it("gives the radius of controls and cards to --radius", () => {

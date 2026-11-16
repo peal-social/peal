@@ -51,6 +51,61 @@
   --brand-text: #2f47c9;
   --lavender: #b9a6ff;
   --sun: #ffca00;
+  /* The brand field (DESIGN.md): the social banners' gradient, for the
+     site's hero, a closing call-to-action band and covers. Glow sizes and
+     blur are fractions of --m, the field's width or 2.2 times its height,
+     whichever is larger; their centres are percentages of the field. */
+  --field-base: radial-gradient(
+    120% 140% at 50% 50%,
+    #1e2d8c 0%,
+    #16206a 60%,
+    #0f1650 100%
+  );
+  --field-foreground: #ffffff;
+  --field-blue-colour: #415eee;
+  --field-blue-width: 0.55;
+  --field-blue-height: 0.32;
+  --field-blue-x: 50%;
+  --field-blue-y: 55%;
+  --field-blue-opacity: 0.9;
+  --field-blue-blur: 0.07;
+  --field-blue-blend: normal;
+  --field-lavender-colour: #b9a6ff;
+  --field-lavender-width: 0.42;
+  --field-lavender-height: 0.26;
+  --field-lavender-x: 92%;
+  --field-lavender-y: 0%;
+  --field-lavender-opacity: 0.85;
+  --field-lavender-blur: 0.07;
+  --field-lavender-blend: screen;
+  --field-lavender-deep-colour: #8e86fa;
+  --field-lavender-deep-width: 0.3;
+  --field-lavender-deep-height: 0.2;
+  --field-lavender-deep-x: 6%;
+  --field-lavender-deep-y: 8%;
+  --field-lavender-deep-opacity: 0.55;
+  --field-lavender-deep-blur: 0.07;
+  --field-lavender-deep-blend: screen;
+  --field-halo-colour: #b9a6ff;
+  --field-halo-width: 0.42;
+  --field-halo-height: 0.26;
+  --field-halo-x: 84%;
+  --field-halo-y: 104%;
+  --field-halo-opacity: 0.7;
+  --field-halo-blur: 0.07;
+  --field-halo-blend: screen;
+  --field-sun-colour: #ffca00;
+  --field-sun-width: 0.24;
+  --field-sun-height: 0.13;
+  --field-sun-x: 87%;
+  --field-sun-y: 108%;
+  --field-sun-opacity: 1;
+  --field-sun-blur: 0.05;
+  --field-sun-blend: normal;
+  --field-grain-opacity: 0.32;
+  --field-rail: rgb(255 255 255 / 16%);
+  --field-tick: rgb(255 255 255 / 55%);
+  --field-caption: rgb(255 255 255 / 60%);
   /* The palette tags take their colour from, by name. */
   --tag-gray: oklch(0.556 0 0);
   --tag-red: oklch(0.577 0.215 27);

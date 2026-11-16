@@ -2,9 +2,9 @@
 
 How Peal looks and is laid out: the web app first, and the site and the docs
 after it. `packages/peal-ui/src/styles/tokens.css` carries these values as
-plain CSS variables. The web app reads them through peal-ui's
-`globals.css` and the docs through `packages/peal-docs/theme.css`; the
-site's redesign is to read them the same way. Change this file and the
+plain CSS variables. The web app and the site read them through
+peal-ui's `globals.css`, and the docs through
+`packages/peal-docs/theme.css`. Change this file and the
 tokens together: `nx run peal-ui:test` fails when the colour tables or the
 radius here and the tokens differ. Contributors and agents read this before
 changing a screen.
@@ -101,6 +101,20 @@ slugs, keys, times, counts, code and keyboard shortcuts. peal-ui ships both
 Numbers that line up use `tabular-nums`. Letter spacing is `-0.025em` at
 24 px and above, none below.
 
+### The site's headlines
+
+The marketing site speaks louder than the app, and only its headlines do:
+everything below them keeps the table above.
+
+| Role             | Size (phone) | Weight | Notes                                           |
+| ---------------- | ------------ | ------ | ----------------------------------------------- |
+| Hero headline    | 56 (36)      | 600    | One per page, line height 1.05.                 |
+| Section headline | 40 (30)      | 600    | Line height 1.1; a second sentence in muted.    |
+| Lead             | 18 (16)      | 400    | Under a headline, at most 40 rem wide.          |
+| Caption          | 12           | 400    | Geist Mono, lowercase, `0.04em`, in muted text. |
+
+Headlines keep `-0.025em`; "phone" is below 640 px.
+
 ## Shape and space
 
 - A 4 px grid. Pages have 16 px of padding inside the content area; cards
@@ -126,6 +140,52 @@ file its branding guidelines publish, byte for byte, never redrawn or
 monochrome; lucide's `KeyRound` for a provider without one), then "Continue with" and its name. The buttons sit
 above the form, with "or" on a divider before it, and never take the
 page's main action, which stays the primary button.
+
+## Brand field
+
+The brand field is Peal's one gradient: the mark's colours glowing on a
+deep blue, drawn exactly as Peal's social banners are. peal-ui's
+`BrandField` renders it, from the `--field-*` tokens.
+
+**Where.** Only on the site's hero, a closing call-to-action band at the
+foot of a site page, and covers and social images (blog covers, Open Graph
+images, the social banners). Never in the app or the docs, and never twice
+on one screen.
+
+**On it.** White text only (`#FFFFFF`), over the base and the blue glow
+(5:1 or better there), never over the lavender or yellow glows, which sit
+at the corners for that reason; then the rails and their captions. A button on it is white with ink text, the primary button
+inverted. The site's hero may hold one `background` panel between its
+rails, with the 6 px radius and no border or shadow, for the hero art; no
+other surface sits on the field.
+
+The base is `radial-gradient(120% 140% at 50% 50%, #1E2D8C 0%, #16206A 60%, #0F1650 100%)`.
+Five blurred ellipses glow on it. Their sizes and blur are fractions of
+`--m`, the field's width or 2.2 times its height, whichever is larger; their
+centres are a percentage of the field's width and height:
+
+| Glow          | Token           | Colour    | Width | Height | Centre   | Opacity | Blur | Blend  |
+| ------------- | --------------- | --------- | ----- | ------ | -------- | ------- | ---- | ------ |
+| Blue          | `blue`          | `#415EEE` | 0.55  | 0.32   | 50% 55%  | 0.9     | 0.07 | normal |
+| Lavender      | `lavender`      | `#B9A6FF` | 0.42  | 0.26   | 92% 0%   | 0.85    | 0.07 | screen |
+| Deep lavender | `lavender-deep` | `#8E86FA` | 0.3   | 0.2    | 6% 8%    | 0.55    | 0.07 | screen |
+| Halo          | `halo`          | `#B9A6FF` | 0.42  | 0.26   | 84% 104% | 0.7     | 0.07 | screen |
+| Yellow        | `sun`           | `#FFCA00` | 0.24  | 0.13   | 87% 108% | 1       | 0.05 | normal |
+
+Over them, grain at .32 in `soft-light`: fractal noise (`feTurbulence`,
+base frequency 1.1, three octaves), desaturated.
+
+**Rails.** Two vertical and two horizontal drafting lines cross the whole
+field, 1 px wide. Rails are white at 16%. Where two cross, a crosshair tick
+(±5 px) marks the joint: Ticks are white at 55%. On the site, the vertical
+rails stand on the page's own rails (see [Site](#site)); elsewhere at 13%
+and 87% of the width, and the horizontal ones at 14% and 86% of the
+height.
+
+**Captions.** Small Geist Mono text just under the lower rail, inside the
+vertical ones: Captions are white at 60%, lowercase, `0.04em`, 12 px. One
+on each side at most, such as "peal.social" and "fair source ·
+self-hostable".
 
 ## The frame
 
@@ -201,6 +261,41 @@ blocks and radius are the app's, and no colour is written there twice.
   link to the Developers page replace a section for each.
 - **Platforms** are shown by their own marks, from the same files as the
   app's, never redrawn.
+
+## Site
+
+The marketing site is drawn on a blueprint: the same tokens as the app, on
+`background`, with its structure left visible.
+
+- **Rails.** The content column, 72 rem (1152 px) wide at most with 16 px
+  of gutter on a phone, has a vertical rail on each side in `border`,
+  from the header to the footer. Sections are separated by full-width
+  rules in `border`; where a rule meets a rail, a crosshair tick (±5 px) in
+  `input` marks the joint. Content sits in bordered cells, never in
+  floating cards.
+- **Header**, 56 px, on `background` with a rule under it: the mark and
+  "Peal" on the left; Products and Resources (each opening a mega menu),
+  Pricing, Docs and Blog in the middle; on the right the GitHub star count
+  (Geist Mono, hidden when unknown), a vertical divider, Discord, Log in
+  (a ghost button) and Get started (the primary button). Below 1024 px the
+  middle and right collapse into a menu button that opens a drawer from
+  the right, with the same items.
+- **Mega menu.** One floating panel (the shadow of a popover), white, with
+  the 6 px radius. Its links are grouped under a small label (12 px, muted);
+  each row is a 16 px lucide icon in a bordered 32 px tile, a title (14 px, 500) and a one-line description (13 px, muted), with the `accent` hover.
+  The groups are bordered cells, side by side, and a featured card closes
+  the panel on the right: a `muted` cell with a caption, a title and one
+  line, linking to what it features.
+- **Footer**, on `background` under a full-width rule: the mark, the
+  licence's line and the language links in a first cell, then a bordered
+  cell per column of links (legal, the contract's functions, Peal's
+  accounts), and a caption row at the foot.
+- **Hero art.** The home page's hero shows the mark as pixelated text:
+  Peal's cube rendered at low resolution and drawn as Geist Mono glyphs
+  chosen by brightness (no dots), each face in its own colour of the mark,
+  on `background`. It starts with a short intro, turns slowly, follows the
+  scroll a little, stops when off screen, and is one still frame for
+  readers who ask for reduced motion.
 
 ## Writing
 
