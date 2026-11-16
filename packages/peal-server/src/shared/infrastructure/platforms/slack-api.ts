@@ -178,3 +178,28 @@ export const escapedForSlack = (text: string): string =>
 
     return character === "<" ? "&lt;" : "&gt;";
   });
+
+// An address in a text already escaped: http or https, up to a space, a
+// `|` (which would start a link's label) or an escaped `<` or `>`.
+const addresses = /https?:\/\/(?:(?!&lt;|&gt;)[^\s|])+/gu;
+
+// What ends a sentence after an address, rather than the address.
+const trailing = /[.,!?:)\]'"]+$/u;
+
+/**
+ * A text already escaped (`escapedForSlack`), with each http or https
+ * address written as Slack's link, `<address>`: a text object sent
+ * `verbatim`, which Slack parses for no mention, links nothing else
+ * (docs.slack.dev, reference/block-kit/composition-objects/text-object:
+ * "When set to `false` (as is default) URLs will be auto-converted into
+ * links, conversation names will be link-ified, and certain mentions will
+ * be automatically parsed"). Only the addresses Peal finds become links:
+ * a member's own angle brackets are escaped already.
+ */
+export const linkedForSlack = (escaped: string): string =>
+  escaped.replaceAll(addresses, (found) => {
+    const end = trailing.exec(found)?.[0] ?? "";
+    const address = found.slice(0, found.length - end.length);
+
+    return address === "" ? found : `<${address}>${end}`;
+  });

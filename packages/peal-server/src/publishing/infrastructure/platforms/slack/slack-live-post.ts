@@ -25,7 +25,7 @@ import type {
   SlackHosts,
 } from "#shared/infrastructure/platforms/slack-api.ts";
 
-import { altTextOf, blocksOf } from "./slack-client.ts";
+import { altTextOf, blocksOf, fallbackTextOf } from "./slack-client.ts";
 import type { SlackBlock, SlackHttp } from "./slack-client.ts";
 import { slackChannelOf, slackMessageOf } from "./slack-message.ts";
 import type { SlackMessage } from "./slack-message.ts";
@@ -109,7 +109,10 @@ const fileGone: ReadonlySet<string> = new Set([
   "file_not_found",
 ]);
 
-// Deletes the images a message showed, shared nowhere else.
+// Deletes the images a message showed, shared nowhere else, once the
+// message is gone: as far as Slack lets it, a file it keeps (a workspace
+// that turned file deletion off, `file_deleting_disabled`) logged by its
+// code and left, as the post is gone all the same.
 const deleteFiles = (
   options: SlackLiveOptions,
   token: PublishingToken,
@@ -119,7 +122,16 @@ const deleteFiles = (
     message.files,
     (file) =>
       changing(options, token, "files.delete", { file }).pipe(
-        Effect.flatMap((answer) => settled(answer, fileGone))
+        Effect.flatMap((answer) => settled(answer, fileGone)),
+        Effect.catch((error) =>
+          Effect.logWarning(
+            "Slack kept an image of a message Peal deleted"
+          ).pipe(
+            Effect.annotateLogs({
+              code: error._tag === "BadRequest" ? error.code : error._tag,
+            })
+          )
+        )
       ),
     { discard: true }
   );
@@ -128,7 +140,8 @@ const deleteFiles = (
  * Deletes a message with `chat.delete`, then the images it showed with
  * `files.delete` (`files:write`), which nothing else shows; a message
  * Slack no longer has (`message_not_found`) is gone already, and its files
- * are deleted all the same, one gone already counting as deleted
+ * are deleted all the same, one gone already counting as deleted, one
+ * Slack keeps logged: the removal is done once the message is
  * (docs.slack.dev, methods/chat.delete and files.delete, read 2026-11-16).
  */
 export const slackLivePost =
@@ -165,20 +178,20 @@ export const slackLiveEdit =
         const text = escapedForSlack(edit.text);
         const target = { channel: message.channel, ts: message.ts };
 
+        const files = message.files.map((id, index) => ({
+          altText: altTextOf(edit.media[index]?.altText ?? ""),
+          id,
+        }));
+
+        const fallback = Option.getOrElse(
+          fallbackTextOf(text, files),
+          () => text
+        );
+
         const body =
-          message.files.length === 0
+          files.length === 0
             ? { ...target, text }
-            : {
-                ...target,
-                blocks: blocksOf(
-                  text,
-                  message.files.map((id, index) => ({
-                    altText: altTextOf(edit.media[index]?.altText ?? ""),
-                    id,
-                  }))
-                ),
-                text,
-              };
+            : { ...target, blocks: blocksOf(text, files), text: fallback };
 
         return changing(options, token, "chat.update", body);
       }),

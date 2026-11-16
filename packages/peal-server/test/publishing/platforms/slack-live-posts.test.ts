@@ -134,6 +134,27 @@ describe("deleting and editing on Slack", () => {
   );
 
   it.live(
+    "counts a message deleted as removed, even when Slack keeps its images",
+    () =>
+      Effect.gen(function* kept() {
+        const image = testFile("image", 512);
+        const { client, live, slack } = yield* onSlack({ files: [image] });
+
+        const platformPostId = yield* idOf(
+          yield* client.publish(yield* post({ media: [attached(image)] }))
+        );
+
+        slack.script("files.delete", [slackError("file_deleting_disabled")]);
+
+        assert.strictEqual(
+          yield* live.remove({ channelId, platformPostId }),
+          "removed"
+        );
+        assert.deepStrictEqual(slack.messages(), []);
+      }).pipe(Effect.scoped)
+  );
+
+  it.live(
     "asks nothing of an id that is not a message of Peal's, or of another channel",
     () =>
       Effect.gen(function* invalid() {
@@ -210,7 +231,10 @@ describe("deleting and editing on Slack", () => {
         yield* live.edit({ changeId, channelId, platformPostId });
 
         assert.deepStrictEqual(slack.messages()[0]?.blocks, [
-          { text: { text: "Corrected", type: "mrkdwn" }, type: "section" },
+          {
+            text: { text: "Corrected", type: "mrkdwn", verbatim: true },
+            type: "section",
+          },
           {
             alt_text: "A synthetic chart",
             slack_file: { id: "F0SYNTH001" },

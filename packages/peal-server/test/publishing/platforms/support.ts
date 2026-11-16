@@ -477,6 +477,7 @@ export const slackClientWith = Effect.fn("test.slackClient")(
     return yield* slackClient({
       api,
       hosts: { api: options.api, uploads: options.uploads ?? options.api },
+      notReadyWaits: [Duration.zero, Duration.zero],
       settle: Duration.zero,
       timing: testTiming,
       uploads: api,

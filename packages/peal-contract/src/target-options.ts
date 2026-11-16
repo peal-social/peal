@@ -724,8 +724,8 @@ export type TelegramOptions = typeof TelegramOptionsSchema.Type;
 
 export const SlackOptionsSchema = Schema.Struct({
   platform: Schema.Literal("slack"),
-  // True shows a preview of the pages the text links to. Left out, the
-  // message unfurls none.
+  // True shows previews of the pages and the media the text links to.
+  // Left out, the message unfurls none.
   unfurlLinks: Schema.optionalKey(Schema.Boolean),
 }).annotate({
   description:

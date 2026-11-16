@@ -24,6 +24,7 @@ import {
   unanswered,
 } from "#publishing/infrastructure/platforms/platform-exchange.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
+import { MediaRejected } from "#shared/domain/media-rejected.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
@@ -36,6 +37,7 @@ import {
 } from "#shared/infrastructure/platforms/public-http.ts";
 import {
   escapedForSlack,
+  linkedForSlack,
   slackAnswerOf,
   slackCode,
   slackMethodUrl,
@@ -66,6 +68,13 @@ export interface SlackClientOptions {
    * making it available". Two seconds unless said.
    */
   readonly settle?: Duration.Duration;
+  /**
+   * The waits before posting again a message whose image blocks Slack
+   * refused (`invalid_blocks`), most likely an image not scanned yet:
+   * nothing was posted, so posting again is safe. Past the last, the
+   * images are refused. About three and a half minutes unless said.
+   */
+  readonly notReadyWaits?: readonly Duration.Duration[];
   readonly timing?: StepTiming;
   /** For the files' bytes, which take longer. */
   readonly uploads: SlackHttp;
@@ -108,11 +117,21 @@ export const altTextOf = (altText: string): string => {
   return (written === "" ? "Image" : written).slice(0, maxAltText);
 };
 
-/** A section of mrkdwn text, as Block Kit has it. */
+/**
+ * A section of mrkdwn text, as Block Kit has it, `verbatim`: Slack parses
+ * no `@here`, `@channel`, `@everyone`, `#channel` or name in it.
+ */
 interface SectionBlock {
-  readonly text: { readonly text: string; readonly type: "mrkdwn" };
+  readonly text: {
+    readonly text: string;
+    readonly type: "mrkdwn";
+    readonly verbatim: true;
+  };
   readonly type: "section";
 }
+
+/** The most text a section block's text object takes. */
+const maxSectionText = 3000;
 
 /** An image block showing a file uploaded to Slack. */
 interface ImageBlock {
@@ -123,7 +142,19 @@ interface ImageBlock {
 
 export type SlackBlock = ImageBlock | SectionBlock;
 
-/** A message's blocks: its text as a section, then each image. */
+// The section's text: the escaped text, its addresses written as links,
+// unless that takes it past the section's 3,000 (each link adds two), when
+// the addresses stay text.
+const sectionTextOf = (text: string): string => {
+  const linked = linkedForSlack(text);
+
+  return linked.length <= maxSectionText ? linked : text;
+};
+
+/**
+ * A message's blocks, from its text escaped: the text as a verbatim
+ * section, then each image.
+ */
 export const blocksOf = (
   text: string,
   files: readonly UploadedFile[]
@@ -132,7 +163,11 @@ export const blocksOf = (
     ? []
     : [
         {
-          text: { text, type: "mrkdwn" },
+          text: {
+            text: sectionTextOf(text),
+            type: "mrkdwn",
+            verbatim: true,
+          },
           type: "section",
         } satisfies SectionBlock,
       ]),
@@ -143,6 +178,26 @@ export const blocksOf = (
   })),
 ];
 
+/**
+ * A message's top-level `text`, escaped: with blocks, "a fallback string
+ * to display in notifications", which an images-only message gives as its
+ * images' alt text. None for a message of no text and no image.
+ */
+export const fallbackTextOf = (
+  text: string,
+  files: readonly UploadedFile[]
+): Option.Option<string> => {
+  if (text.trim() !== "") {
+    return Option.some(text);
+  }
+
+  return files.length === 0
+    ? Option.none()
+    : Option.some(
+        escapedForSlack(files.map(({ altText }) => altText).join(", "))
+      );
+};
+
 /** What `chat.postMessage` is sent. */
 interface PostFields {
   blocks?: readonly SlackBlock[];
@@ -150,6 +205,7 @@ interface PostFields {
   text?: string;
   thread_ts?: string;
   readonly unfurl_links: boolean;
+  readonly unfurl_media: boolean;
 }
 
 /** What `files.getUploadURLExternal` is sent. */
@@ -213,6 +269,13 @@ export const slackClient = Effect.fn("SlackClient.make")(function* slackClient(
   const { hosts } = options;
   const settle = options.settle ?? Duration.seconds(2);
 
+  const notReadyWaits = options.notReadyWaits ?? [
+    Duration.seconds(5),
+    Duration.seconds(30),
+    Duration.minutes(1),
+    Duration.minutes(2),
+  ];
+
   // One call of a Web API method with the bot's token, its answer read.
   const call = (
     token: PublishingToken,
@@ -259,7 +322,7 @@ export const slackClient = Effect.fn("SlackClient.make")(function* slackClient(
           read(
             answer,
             UploadTicketSchema,
-            failureOf,
+            (refused) => failureOf(refused, "upload"),
             () => new PlatformUnavailable()
           )
         )
@@ -302,6 +365,42 @@ export const slackClient = Effect.fn("SlackClient.make")(function* slackClient(
       return uploaded;
     }).pipe(Effect.scoped);
 
+  // Deletes files the message will never show, as far as Slack lets it:
+  // one it keeps is logged, by Slack's code, and left.
+  const deleteFiles = (
+    token: PublishingToken,
+    post: OutgoingPost,
+    files: readonly UploadedFile[]
+  ) =>
+    Effect.forEach(
+      files,
+      ({ id }) =>
+        call(
+          token,
+          "files.delete",
+          HttpClientRequest.bodyUrlParams({ file: id })
+        ).pipe(
+          Effect.flatMap((answer) =>
+            answer._tag === "ok" ||
+            (answer._tag === "refused" && answer.code === "file_not_found")
+              ? Effect.void
+              : Effect.logWarning(
+                  "Slack kept an image a message will not show"
+                ).pipe(
+                  Effect.annotateLogs({
+                    channelId: post.channelId,
+                    code: answer._tag === "refused" ? answer.code : answer._tag,
+                  })
+                )
+          ),
+          Effect.catchTags({
+            HttpClientError: () => Effect.void,
+            OutboundRequestRefused: () => Effect.void,
+          })
+        ),
+      { discard: true }
+    );
+
   const prepare = (
     post: OutgoingPost
   ): Effect.Effect<Readiness<readonly UploadedFile[]>, PublishFailure> => {
@@ -334,7 +433,7 @@ export const slackClient = Effect.fn("SlackClient.make")(function* slackClient(
             read(
               answer,
               CompletedSchema,
-              failureOf,
+              (refused) => failureOf(refused, "upload"),
               () => new PlatformUnavailable()
             )
           )
@@ -392,10 +491,16 @@ export const slackClient = Effect.fn("SlackClient.make")(function* slackClient(
           Option.exists(({ unfurlLinks }) => unfurlLinks === true)
         );
 
-        const fields: PostFields = { channel, unfurl_links: unfurl };
+        const fields: PostFields = {
+          channel,
+          unfurl_links: unfurl,
+          unfurl_media: unfurl,
+        };
 
-        if (text.trim() !== "") {
-          fields.text = text;
+        const fallback = fallbackTextOf(text, files);
+
+        if (Option.isSome(fallback)) {
+          fields.text = fallback.value;
         }
 
         if (files.length > 0) {
@@ -410,7 +515,7 @@ export const slackClient = Effect.fn("SlackClient.make")(function* slackClient(
           fields.thread_ts = root.value.ts;
         }
 
-        const answer = yield* call(
+        const postOnce = call(
           token,
           "chat.postMessage",
           HttpClientRequest.bodyJsonUnsafe(fields)
@@ -421,16 +526,30 @@ export const slackClient = Effect.fn("SlackClient.make")(function* slackClient(
           })
         );
 
-        // Blocks Slack refuses with images in them: most likely a file it
-        // has not finished scanning, and nothing was posted, so a later
-        // attempt uploads again.
-        if (
+        const isNotReady = (answer: SlackAnswer) =>
           answer._tag === "refused" &&
           answer.code === "invalid_blocks" &&
-          files.length > 0
-        ) {
-          return yield* new PlatformUnavailable({
-            code: slackCode(answer.code),
+          files.length > 0;
+
+        // Image blocks Slack refuses: most likely a file it has not
+        // finished scanning. Nothing was posted: post again after each
+        // wait, then refuse the images.
+        let answer = yield* postOnce;
+
+        for (const wait of notReadyWaits) {
+          if (!isNotReady(answer)) {
+            break;
+          }
+
+          yield* Effect.sleep(wait);
+          answer = yield* postOnce;
+        }
+
+        if (isNotReady(answer)) {
+          yield* deleteFiles(token, post, files);
+
+          return yield* new MediaRejected({
+            code: slackCode("invalid_blocks"),
           });
         }
 
@@ -440,6 +559,15 @@ export const slackClient = Effect.fn("SlackClient.make")(function* slackClient(
           commitFailureOf,
           (): OutcomeUnknown | PublishFailure | TokenRejected =>
             new OutcomeUnknown({ reason: "unreadableResponse" })
+        ).pipe(
+          // A refusal is definite: nothing shows the files, which go.
+          // After an unknown outcome the message may be there, and show
+          // them.
+          Effect.tapError((failure) =>
+            failure._tag === "OutcomeUnknown"
+              ? Effect.void
+              : deleteFiles(token, post, files)
+          )
         );
 
         const platformPostId = PlatformPostIdSchema.make(

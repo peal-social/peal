@@ -15,14 +15,15 @@ import {
 } from "#shared/infrastructure/platforms/slack-api.ts";
 import type { SlackAnswer } from "#shared/infrastructure/platforms/slack-api.ts";
 
-// The codes that say the app may not post in the channel, which the
-// member fixes in Slack: "Cannot post user messages to a channel they
-// are not in" (`not_in_channel`: invite the app), the channel gone or not
-// one the app sees (`channel_not_found`), "Channel has been archived"
-// (`is_archived`), "A workspace preference prevents the authenticated user
-// from posting" (`restricted_action`), and the upload methods' refusals of
-// the same (`posting_to_channel_denied`, `no_permission`,
-// `ekm_access_denied`: "Administrators have suspended posting").
+// The codes of `chat.postMessage` that say the app may not post in the
+// channel, which the member fixes in Slack: "Cannot post user messages to
+// a channel they are not in" (`not_in_channel`: invite the app), the
+// channel gone or not one the app sees (`channel_not_found`), "Channel has
+// been archived" (`is_archived`), "A workspace preference prevents the
+// authenticated user from posting" (`restricted_action`, and its kinds: a
+// read-only channel, one that takes threads only or none, a thread
+// locked), `posting_to_channel_denied`, `no_permission` and
+// `ekm_access_denied` ("Administrators have suspended posting").
 const cannotPostCodes: ReadonlySet<string> = new Set([
   "channel_not_found",
   "ekm_access_denied",
@@ -31,7 +32,18 @@ const cannotPostCodes: ReadonlySet<string> = new Set([
   "not_in_channel",
   "posting_to_channel_denied",
   "restricted_action",
+  "restricted_action_non_threadable_channel",
+  "restricted_action_read_only_channel",
+  "restricted_action_thread_locked",
+  "restricted_action_thread_only_channel",
 ]);
+
+/**
+ * The call a refusal answered: posting the message, or uploading its
+ * files, whose `no_permission` and `ekm_access_denied` are about the
+ * workspace's uploads, not the channel.
+ */
+export type SlackCall = "post" | "upload";
 
 // The upload methods' refusals of a file, which another file may pass:
 // the workspace takes no such uploads, or has no room left.
@@ -52,14 +64,26 @@ const notDoneCodes: ReadonlySet<string> = new Set([
 ]);
 
 /** A refusal Slack answered, but its own trouble, read from its code. */
-export const slackRefusal = (code: string): PublishFailure | TokenRejected => {
-  // A token Slack no longer takes, or one without a scope the call needs,
-  // which only connecting again gives.
-  if (isRefusedToken(code) || code === "missing_scope") {
+export const slackRefusal = (
+  code: string,
+  call: SlackCall = "post"
+): PublishFailure | TokenRejected => {
+  // A token Slack no longer takes, one without a scope the call needs, or
+  // without the workspace's access, which only connecting again gives.
+  if (
+    isRefusedToken(code) ||
+    code === "missing_scope" ||
+    code === "team_access_not_granted"
+  ) {
     return new TokenRejected();
   }
 
-  if (cannotPostCodes.has(code)) {
+  // "Application has posted too many messages" to the channel, for now.
+  if (code === "message_limit_exceeded") {
+    return new RateLimited({});
+  }
+
+  if (call === "post" && cannotPostCodes.has(code)) {
     return new BadRequest({ code: platformRefusalCodes.cannotPost });
   }
 
@@ -74,7 +98,8 @@ export const slackRefusal = (code: string): PublishFailure | TokenRejected => {
  * unavailable, tried again later.
  */
 export const failureOf = (
-  answer: Exclude<SlackAnswer, { readonly _tag: "ok" }>
+  answer: Exclude<SlackAnswer, { readonly _tag: "ok" }>,
+  call: SlackCall = "post"
 ): PublishFailure | TokenRejected => {
   if (answer._tag === "limited") {
     return Option.match(answer.retryAfter, {
@@ -87,7 +112,7 @@ export const failureOf = (
     isTransient(answer.code) ||
     notDoneCodes.has(answer.code)
     ? new PlatformUnavailable()
-    : slackRefusal(answer.code);
+    : slackRefusal(answer.code, call);
 };
 
 /**

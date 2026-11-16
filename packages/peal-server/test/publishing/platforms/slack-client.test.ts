@@ -85,6 +85,7 @@ describe("publishing in a Slack channel with the app's bot", () => {
         channel: slackChannel,
         text: "Synthetic *news* at https://example.com",
         unfurl_links: false,
+        unfurl_media: false,
       });
     }).pipe(Effect.scoped)
   );
@@ -119,6 +120,7 @@ describe("publishing in a Slack channel with the app's bot", () => {
       );
 
       assert.strictEqual(slack.messages()[0]?.fields["unfurl_links"], true);
+      assert.strictEqual(slack.messages()[0]?.fields["unfurl_media"], true);
     }).pipe(Effect.scoped)
   );
 
@@ -182,6 +184,7 @@ describe("publishing in a Slack channel with the app's bot", () => {
             text: {
               text: "Synthetic &lt;launch&gt; &amp; more",
               type: "mrkdwn",
+              verbatim: true,
             },
             type: "section",
           },
@@ -223,8 +226,39 @@ describe("publishing in a Slack channel with the app's bot", () => {
         ),
         [true]
       );
-      assert.strictEqual(message.fields["text"], undefined);
+      // The notification's words: the image's alt text.
+      assert.strictEqual(message.fields["text"], "A synthetic picture");
     }).pipe(Effect.scoped)
+  );
+
+  it.live(
+    "keeps an image post's mentions and channel names as text, and links its addresses",
+    () =>
+      Effect.gen(function* literal() {
+        const image = testFile("image", 512);
+        const { client, slack } = yield* onSlack({ files: [image] });
+
+        yield* client.publish(
+          yield* post({
+            media: [attached(image)],
+            text: "Lunch @here @channel @everyone in #general, ask <@U0SYNTH> or see https://example.com/menu?a=1&b=2.",
+          })
+        );
+
+        const [message] = slack.messages();
+
+        assert(message !== undefined);
+        // Verbatim: Slack parses no @here, @channel, @everyone or
+        // #channel, and links only what Peal wrote as a link.
+        assert.deepStrictEqual(message.blocks[0], {
+          text: {
+            text: "Lunch @here @channel @everyone in #general, ask &lt;@U0SYNTH&gt; or see <https://example.com/menu?a=1&amp;b=2>.",
+            type: "mrkdwn",
+            verbatim: true,
+          },
+          type: "section",
+        });
+      }).pipe(Effect.scoped)
   );
 
   it.live(
@@ -285,22 +319,89 @@ describe("publishing in a Slack channel with the app's bot", () => {
     }).pipe(Effect.scoped)
   );
 
+  it.live("posts again images Slack could not show yet, once it can", () =>
+    Effect.gen(function* notReady() {
+      const image = testFile("image", 512);
+      const { client, slack } = yield* onSlack({ files: [image] });
+
+      slack.script("chat.postMessage", [slackError("invalid_blocks")]);
+
+      const result = yield* client.publish(
+        yield* post({ media: [attached(image)] })
+      );
+
+      assert.strictEqual(result._tag, "published");
+      assert.lengthOf(commits(slack), 2);
+      assert.lengthOf(slack.messages(), 1);
+      assert.deepStrictEqual(
+        slack.files().map(({ deleted }) => deleted),
+        [false]
+      );
+    }).pipe(Effect.scoped)
+  );
+
   it.live(
-    "takes images Slack cannot show yet as Slack unavailable, nothing posted",
+    "refuses images Slack never shows as media, after a bounded wait, and deletes them",
     () =>
-      Effect.gen(function* notReady() {
+      Effect.gen(function* never() {
         const image = testFile("image", 512);
         const { client, slack } = yield* onSlack({ files: [image] });
 
-        slack.script("chat.postMessage", [slackError("invalid_blocks")]);
+        slack.script("chat.postMessage", [
+          slackError("invalid_blocks"),
+          slackError("invalid_blocks"),
+          slackError("invalid_blocks"),
+        ]);
 
         assert.deepStrictEqual(
           yield* client
             .publish(yield* post({ media: [attached(image)] }))
             .pipe(Effect.flip),
-          new PlatformUnavailable({ code: "slack:invalid_blocks" })
+          new MediaRejected({ code: "slack:invalid_blocks" })
         );
+        // One try, then one after each of the test's two waits.
+        assert.lengthOf(commits(slack), 3);
         assert.deepStrictEqual(slack.messages(), []);
+        assert.deepStrictEqual(
+          slack.files().map(({ deleted }) => deleted),
+          [true]
+        );
+      }).pipe(Effect.scoped)
+  );
+
+  it.live(
+    "deletes the uploaded images when Slack refuses the message, never when its answer is lost",
+    () =>
+      Effect.gen(function* cleaned() {
+        const first = testFile("image", 512);
+        const second = testFile("image", 512);
+
+        const { client, slack } = yield* onSlack({
+          api: { outsideChannel: true },
+          files: [first, second],
+        });
+
+        yield* client
+          .publish(yield* post({ media: [attached(first), attached(second)] }))
+          .pipe(Effect.flip);
+
+        assert.deepStrictEqual(
+          slack.files().map(({ deleted }) => deleted),
+          [true, true]
+        );
+
+        slack.invite();
+        slack.script("chat.postMessage", [{ _tag: "postThenDrop" }]);
+
+        const lost = yield* client.publish(
+          yield* post({ media: [attached(first)] })
+        );
+
+        assert.strictEqual(lost._tag, "unconfirmed");
+        assert.deepStrictEqual(
+          slack.files().map(({ deleted }) => deleted),
+          [true, true, false]
+        );
       }).pipe(Effect.scoped)
   );
 
@@ -431,6 +532,10 @@ describe("publishing in a Slack channel with the app's bot", () => {
           "is_archived",
           "channel_not_found",
           "restricted_action",
+          "restricted_action_read_only_channel",
+          "restricted_action_thread_only_channel",
+          "restricted_action_non_threadable_channel",
+          "restricted_action_thread_locked",
         ]) {
           slack.script("chat.postMessage", [slackError(code)]);
 
@@ -439,6 +544,33 @@ describe("publishing in a Slack channel with the app's bot", () => {
             new BadRequest({ code: "cannotPost" })
           );
         }
+      }).pipe(Effect.scoped)
+  );
+
+  it.live(
+    "waits out Slack's posting limit, and keeps an upload's refusal of the workspace by its code",
+    () =>
+      Effect.gen(function* limits() {
+        const image = testFile("image", 512);
+        const { client, slack } = yield* onSlack({ files: [image] });
+
+        slack.script("chat.postMessage", [
+          slackError("message_limit_exceeded"),
+        ]);
+        slack.script("files.getUploadURLExternal", [
+          slackError("no_permission"),
+        ]);
+
+        assert.deepStrictEqual(
+          yield* client.publish(yield* post()).pipe(Effect.flip),
+          new RateLimited({})
+        );
+        assert.deepStrictEqual(
+          yield* client
+            .publish(yield* post({ media: [attached(image)] }))
+            .pipe(Effect.flip),
+          new BadRequest({ code: "slack:no_permission" })
+        );
       }).pipe(Effect.scoped)
   );
 
