@@ -2,6 +2,7 @@ import { DataDeletionApi } from "peal-contract";
 import type { MetaApp } from "peal-contract";
 
 import type { ChannelPlatform } from "#channels/domain/platform.ts";
+import { metaEventsPath } from "#shared/infrastructure/platforms/meta-apps.ts";
 import { metaAdsCallbackPath } from "#shared/infrastructure/platforms/meta-graph.ts";
 
 import { blueskyPaths } from "./bluesky/bluesky-client.ts";
@@ -71,7 +72,7 @@ export interface PlatformRegistration {
  * origin (PUBLIC_URL), each built from the path its sign-in or its route is
  * written with: the callback paths the authorizers send as `redirect_uri`,
  * Bluesky's client documents, and the contract's routes for Meta's signed
- * requests. A platform that gains a sign-in or a route joins this list, or
+ * requests, and the route Meta's events reach. A platform that gains a sign-in or a route joins this list, or
  * its tests fail (`test/channels/infrastructure/platform-addresses.test.ts`
  * and `test/channels/container.test.ts`).
  */
@@ -102,6 +103,17 @@ export const platformRegistrations = (
       url: at(deauthorize.path.replace(":app", app)),
     },
   ];
+
+  // Where an app's Webhooks product sends its events, checked with the
+  // operator's verify token, then signed with the app's secret.
+  const events = (app: "facebook" | "instagram"): PlatformAddress => ({
+    calledBy: "platform",
+    field: "Webhooks: callback URL",
+    url: at(metaEventsPath.replace(":app", app)),
+  });
+
+  const eventsNote =
+    "Webhooks (direct messages): the Verify Token is META_WEBHOOK_VERIFY_TOKEN, and the app must be published (Live) for Meta to send events.";
 
   return [
     {
@@ -187,10 +199,11 @@ export const platformRegistrations = (
           facebookLoginCallbackPath("instagram")
         ),
         ...signedRequests("facebook"),
+        events("facebook"),
       ],
       id: "facebookLogin",
       name: "Meta: Facebook Login, for Facebook Pages and Instagram through a Page",
-      notes: [],
+      notes: [eventsNote],
       platforms: ["facebook", "instagram"],
       registeredBy: "operator",
       settings: ["META_APP_ID", "META_APP_SECRET"],
@@ -214,10 +227,11 @@ export const platformRegistrations = (
           instagramCallbackPath
         ),
         ...signedRequests("instagram"),
+        events("instagram"),
       ],
       id: "instagramLogin",
       name: "Meta: Instagram, for Instagram with Instagram Login",
-      notes: [],
+      notes: [eventsNote],
       platforms: ["instagram"],
       registeredBy: "operator",
       settings: ["INSTAGRAM_APP_ID", "INSTAGRAM_APP_SECRET"],
