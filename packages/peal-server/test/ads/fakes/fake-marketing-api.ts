@@ -264,10 +264,12 @@ const creationRefusal = (
     return marketingError(100, 1_885_272);
   }
 
-  // From v23.0, a new ad set's targeting outside Meta's default and
-  // relaxed set-ups "requires an explicit value of either 1 or 0" for
-  // `targeting_automation.advantage_audience` ("Advantage+ audience",
-  // read 2026-11-16). Meta's subcode for it is the trial's to record.
+  // From v23.0 a new ad set's `targeting_automation.advantage_audience`
+  // "defaults to 1 or requires an explicit value of either 1 or 0"
+  // ("Advantage+ audience", read 2026-11-16): Meta opts a default set-up
+  // in silently and refuses the others. The fake is stricter, refusing
+  // every ad set without the value, so a test fails when it is left out.
+  // Meta's subcode for the refusal is the trial's to record.
   const automation = Option.flatMap(
     decodeTargeting(params["targeting"] ?? ""),
     (targeting) =>

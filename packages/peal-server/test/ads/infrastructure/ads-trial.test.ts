@@ -1,7 +1,14 @@
 import { createHmac } from "node:crypto";
 
 import { assert, describe, expect, it } from "@effect/vitest";
-import { DateTime, Effect, Layer, Option, Redacted } from "effect";
+import {
+  ConfigProvider,
+  DateTime,
+  Effect,
+  Layer,
+  Option,
+  Redacted,
+} from "effect";
 import { Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
@@ -11,6 +18,7 @@ import {
   masked,
   maskText,
   printing,
+  trialSettings,
 } from "#ads/infrastructure/meta/trial.ts";
 import type { Exchange } from "#ads/infrastructure/meta/trial.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
@@ -19,6 +27,7 @@ import {
   fakeMarketingApi,
 } from "#test/ads/fakes/fake-marketing-api.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
+import { dropped, json } from "#test/publishing/fakes/platform-server.ts";
 
 const trialToken = "EAA-synthetic-trial-token-for-the-loopback-fake-only";
 const secret = Redacted.value(adsApp.appSecret);
@@ -142,6 +151,109 @@ describe("the trial's printer", () => {
         assert.deepInclude(creation?.params ?? [], ["access_token", masked]);
       }).pipe(Effect.scoped)
   );
+
+  it.live(
+    "masks a credential in an answer's headers and in a paging address",
+    () =>
+      Effect.gen(function* inAnswers() {
+        const { api, printed, trial } = yield* trialAgainstFake();
+
+        api.script({
+          answer: json(
+            {
+              data: [],
+              paging: {
+                next: `https://graph.facebook.com/v27.0/me/adaccounts?access_token=${trialToken}&after=x`,
+              },
+            },
+            200,
+            {
+              location: `https://graph.facebook.com/v27.0/me?access_token=${encodeURIComponent(trialToken)}`,
+            }
+          ),
+          when: ({ path }) => path === "/v27.0/me/adaccounts",
+        });
+
+        yield* trial.accounts();
+
+        const all = JSON.stringify(printed);
+
+        for (const value of secrets) {
+          assert.notInclude(all, value);
+          assert.notInclude(all, encodeURIComponent(value));
+        }
+
+        const [answer] = printed;
+
+        assert.include(
+          answer?.answer._tag === "answer"
+            ? (answer.answer.headers["location"] ?? "")
+            : "",
+          masked
+        );
+      }).pipe(Effect.scoped)
+  );
+
+  it.live("prints a request that got no answer, masked", () =>
+    Effect.gen(function* noAnswer() {
+      const { api, printed, trial } = yield* trialAgainstFake();
+
+      api.script({ answer: dropped, when: () => true });
+
+      yield* Effect.flip(trial.accounts());
+
+      const [exchange] = printed;
+
+      assert.strictEqual(exchange?.answer._tag, "noAnswer");
+      assert.deepInclude(exchange?.params ?? [], ["access_token", masked]);
+      assert.notInclude(JSON.stringify(printed), trialToken);
+    }).pipe(Effect.scoped)
+  );
+});
+
+const settingsFrom = (env: Readonly<Record<string, string>>) =>
+  trialSettings.pipe(
+    Effect.provide(ConfigProvider.layer(ConfigProvider.fromUnknown(env)))
+  );
+
+describe("the trial's settings", () => {
+  it.effect("trims the token, and masks it as given and as trimmed", () =>
+    Effect.gen(function* trimmed() {
+      const settings = yield* settingsFrom({
+        PEAL_ADS_TRIAL_TOKEN: ` ${trialToken}\n`,
+      });
+
+      assert.strictEqual(Redacted.value(settings.token), trialToken);
+      assert.include(settings.tokenForms, trialToken);
+      assert.include(settings.tokenForms, ` ${trialToken}\n`);
+      assert.isTrue(Option.isNone(settings.activateOn));
+      assert.notInclude(
+        maskText(`Malformed access token ${trialToken}`, settings.tokenForms),
+        trialToken
+      );
+    })
+  );
+
+  it.effect("refuses a blank or missing token", () =>
+    Effect.gen(function* blank() {
+      for (const env of [{ PEAL_ADS_TRIAL_TOKEN: "  \n" }, {}]) {
+        const refused = yield* Effect.flip(settingsFrom(env));
+
+        assert.strictEqual(refused._tag, "TrialRefused");
+      }
+    })
+  );
+
+  it.effect("reads the activation day from the environment", () =>
+    Effect.gen(function* day() {
+      const settings = yield* settingsFrom({
+        PEAL_ADS_TRIAL_ACTIVATE: "2026-11-16",
+        PEAL_ADS_TRIAL_TOKEN: trialToken,
+      });
+
+      assert.deepStrictEqual(settings.activateOn, Option.some("2026-11-16"));
+    })
+  );
 });
 
 describe("what the trial makes", () => {
@@ -190,11 +302,72 @@ describe("what the trial makes", () => {
       assert.isTrue(api.objects().every(({ status }) => status === "DELETED"));
     }).pipe(Effect.scoped)
   );
+
+  it.live("deletes and pauses only what the trial made", () =>
+    Effect.gen(function* notTrials() {
+      const { api, trial } = yield* trialAgainstFake();
+
+      const own = api.hold(
+        "campaign",
+        "1001",
+        { name: "Spring sale" },
+        "PAUSED"
+      );
+
+      for (const step of [trial.delete(own.id), trial.pause(own.id)]) {
+        const refused = yield* Effect.flip(step);
+
+        assert.strictEqual(refused._tag, "TrialRefused");
+      }
+
+      assert.lengthOf(api.writes(), 0);
+      assert.strictEqual(own.status, "PAUSED");
+    }).pipe(Effect.scoped)
+  );
+
+  it.live("refuses a budget or a run out of bounds, before any request", () =>
+    Effect.gen(function* bounds() {
+      const { api, trial } = yield* trialAgainstFake();
+
+      const set = {
+        ageMax: 65,
+        ageMin: 18,
+        beneficiary: "Peal",
+        budget: 200,
+        campaign: "5001",
+        countries: ["FR"],
+        days: 2,
+        payer: "Peal",
+      };
+
+      for (const wrong of [
+        { budget: 0 },
+        { budget: 10_001 },
+        { days: 0 },
+        { days: 8 },
+      ]) {
+        const refused = yield* Effect.flip(
+          trial.adSet("1001", { ...set, ...wrong })
+        );
+
+        assert.strictEqual(refused._tag, "TrialRefused");
+      }
+
+      for (const days of [0, 91]) {
+        const refused = yield* Effect.flip(trial.snapshot("1001", days));
+
+        assert.strictEqual(refused._tag, "TrialRefused");
+      }
+
+      assert.lengthOf(api.requests(), 0);
+    }).pipe(Effect.scoped)
+  );
 });
 
 describe("activating during the trial", () => {
   const sandbox = {
     objectAccount: "1001",
+    objectName: "peal-trial-20261116T143000Z",
     sandboxAccount: "act_1001",
     today: "2026-11-16",
   };
@@ -226,6 +399,74 @@ describe("activating during the trial", () => {
       )
     ).toBeTruthy();
   });
+
+  it("refuses an object the trial did not make", () => {
+    expect(
+      Option.isSome(
+        activationRefusal({
+          ...sandbox,
+          activateOn: Option.some("2026-11-16"),
+          objectName: "Spring sale",
+        })
+      )
+    ).toBeTruthy();
+  });
+
+  it("refuses blank accounts, which would compare equal", () => {
+    expect(
+      Option.isSome(
+        activationRefusal({
+          ...sandbox,
+          activateOn: Option.some("2026-11-16"),
+          objectAccount: "",
+          sandboxAccount: "act_",
+        })
+      )
+    ).toBeTruthy();
+  });
+
+  it.live("asks Meta nothing when the day is not today's", () =>
+    Effect.gen(function* noRequest() {
+      const { api, trial } = yield* trialAgainstFake();
+
+      const own = api.hold(
+        "campaign",
+        "1001",
+        { name: "peal-trial-x" },
+        "PAUSED"
+      );
+
+      const refused = yield* Effect.flip(
+        trial.activate(own.id, "1001", Option.none())
+      );
+
+      assert.strictEqual(refused._tag, "TrialRefused");
+      assert.lengthOf(api.requests(), 0);
+    }).pipe(Effect.scoped)
+  );
+
+  it.live(
+    "runs nothing in the sandbox account that the trial did not make",
+    () =>
+      Effect.gen(function* notOurs() {
+        const { api, trial } = yield* trialAgainstFake();
+
+        const own = api.hold(
+          "campaign",
+          "1001",
+          { name: "Spring sale" },
+          "PAUSED"
+        );
+
+        const refused = yield* Effect.flip(
+          trial.activate(own.id, "1001", Option.some(yield* today()))
+        );
+
+        assert.strictEqual(refused._tag, "TrialRefused");
+        assert.lengthOf(api.writes(), 0);
+        assert.strictEqual(own.status, "PAUSED");
+      }).pipe(Effect.scoped)
+  );
 
   it("allows the sandbox account on the day named", () => {
     expect(

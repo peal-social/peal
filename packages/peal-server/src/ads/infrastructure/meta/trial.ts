@@ -1,4 +1,12 @@
-import { DateTime, Duration, Effect, Option, Redacted, Schema } from "effect";
+import {
+  Config,
+  DateTime,
+  Duration,
+  Effect,
+  Option,
+  Redacted,
+  Schema,
+} from "effect";
 import { Mac } from "effect/crypto";
 import { HttpClient } from "effect/http";
 import type { HttpClientRequest, HttpClientResponse } from "effect/http";
@@ -185,14 +193,20 @@ export const printing = (
     );
   });
 
-/** Why `activate` refuses, when it does. */
-export const activationRefusal = (check: {
+/** The start of every name the trial gives what it makes. */
+export const trialPrefix = "peal-trial-";
+
+// An ad account's id, once `act_` is taken off: digits, never blank.
+const accountIdPattern = /^\d+$/u;
+
+/** An ad account's id without Meta's `act_` prefix. */
+export const accountIdOf = (id: string): string =>
+  id.trim().replace(/^act_/u, "");
+
+/** Why the day forbids `activate`, when it does: checked before any request. */
+export const dayRefusal = (check: {
   /** `PEAL_ADS_TRIAL_ACTIVATE`, when set. */
   readonly activateOn: Option.Option<string>;
-  /** The ad account the object is in, as Meta says. */
-  readonly objectAccount: string;
-  /** The account the operator named as the sandbox ad account. */
-  readonly sandboxAccount: string;
   /** Today, in UTC, as YYYY-MM-DD. */
   readonly today: string;
 }): Option.Option<string> => {
@@ -202,29 +216,105 @@ export const activationRefusal = (check: {
     );
   }
 
-  if (check.activateOn.value.trim() !== check.today) {
-    return Option.some(
-      `PEAL_ADS_TRIAL_ACTIVATE is not today's date (${check.today}, UTC): nothing is activated.`
-    );
-  }
-
-  return accountIdOf(check.objectAccount) === accountIdOf(check.sandboxAccount)
+  return check.activateOn.value.trim() === check.today
     ? Option.none()
     : Option.some(
-        "The object is not in the ad account named by --sandbox-account: nothing is activated outside the sandbox ad account."
+        `PEAL_ADS_TRIAL_ACTIVATE is not today's date (${check.today}, UTC): nothing is activated.`
       );
 };
 
-/** An ad account's id without Meta's `act_` prefix. */
-export const accountIdOf = (id: string): string =>
-  id.trim().replace(/^act_/u, "");
+/** Why an object is not the trial's to change, when it is not. */
+export const notTrialsRefusal = (name: string): Option.Option<string> =>
+  name.startsWith(trialPrefix)
+    ? Option.none()
+    : Option.some(
+        `The object is not named ${trialPrefix}…: the trial changes only what it made.`
+      );
+
+/** Why `activate` refuses, when it does. */
+export const activationRefusal = (check: {
+  readonly activateOn: Option.Option<string>;
+  /** The ad account the object is in, as Meta says. */
+  readonly objectAccount: string;
+  /** The object's name, as Meta says. */
+  readonly objectName: string;
+  /** The account the operator named as the sandbox ad account. */
+  readonly sandboxAccount: string;
+  readonly today: string;
+}): Option.Option<string> => {
+  const object = accountIdOf(check.objectAccount);
+  const sandbox = accountIdOf(check.sandboxAccount);
+
+  return dayRefusal(check).pipe(
+    Option.orElse(() => notTrialsRefusal(check.objectName)),
+    Option.orElse(() =>
+      accountIdPattern.test(object) && object === sandbox
+        ? Option.none()
+        : Option.some(
+            "The object is not in the ad account named by --sandbox-account: nothing is activated outside the sandbox ad account."
+          )
+    )
+  );
+};
 
 /** The name the trial gives what it makes, from the moment it is made. */
 export const trialName = (now: DateTime.Utc): string =>
-  `peal-trial-${DateTime.formatIso(now).replaceAll(/[-:]|\.\d+/gu, "")}`;
+  `${trialPrefix}${DateTime.formatIso(now).replaceAll(/[-:]|\.\d+/gu, "")}`;
 
-// What an object says of the ad account it is in.
-const InAccountSchema = Schema.Struct({ account_id: Schema.String });
+// What an object says of itself: its name and the ad account it is in.
+const TrialObjectSchema = Schema.Struct({
+  account_id: Schema.String,
+  name: Schema.String,
+});
+
+/** The most a trial ad set's daily budget may be, in minor units. */
+export const maxTrialBudget = 10_000;
+
+/** The longest a trial ad set runs, in days. */
+export const maxTrialDays = 7;
+
+/** The most days of numbers a snapshot reads, as a first sync does. */
+export const maxSnapshotDays = 90;
+
+const refusedUnless = (holds: boolean, reason: string) =>
+  holds ? Effect.void : Effect.fail(new TrialRefused({ reason }));
+
+const isBetween = (value: number, minimum: number, maximum: number) =>
+  Number.isInteger(value) && value >= minimum && value <= maximum;
+
+// The token, trimmed, and every form to mask: as given and as trimmed.
+const TokenConfig = Config.Redacted("PEAL_ADS_TRIAL_TOKEN");
+const ActivateConfig = Config.option(Config.String("PEAL_ADS_TRIAL_ACTIVATE"));
+
+/**
+ * What the trial reads from the environment, and only from it: the token
+ * (`PEAL_ADS_TRIAL_TOKEN`, trimmed, refused when blank or missing) and the
+ * day activation is allowed on (`PEAL_ADS_TRIAL_ACTIVATE`).
+ */
+export const trialSettings = Effect.gen(function* trialSettings() {
+  const blank = new TrialRefused({
+    reason:
+      "Set PEAL_ADS_TRIAL_TOKEN to a user token from the app dashboard's Marketing API Tools page.",
+  });
+
+  const raw = yield* TokenConfig.pipe(Effect.mapError(() => blank));
+  const given = Redacted.value(raw);
+  const trimmed = given.trim();
+
+  if (trimmed === "") {
+    return yield* blank;
+  }
+
+  const activateOn = yield* ActivateConfig.pipe(
+    Effect.orElseSucceed(() => Option.none<string>())
+  );
+
+  return {
+    activateOn,
+    token: Redacted.make(trimmed),
+    tokenForms: [...new Set([given, trimmed])],
+  };
+});
 
 const decodeObjectId = Schema.decodeUnknownEffect(NetworkObjectIdSchema);
 const decodeAudience = Schema.decodeUnknownEffect(Audience);
@@ -324,6 +414,28 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
 
     const named = DateTime.now.pipe(Effect.map(trialName));
 
+    // The object, once Meta says the trial made it: its name is the
+    // trial's. Anything else is refused before it is changed.
+    const trialsOwn = Effect.fn("MetaAds.trial.trialsOwn")(function* trialsOwn(
+      objectId: string
+    ) {
+      const object = yield* objectIdOf(objectId, "The object");
+
+      const { name } = yield* graphGet(
+        `/${object}`,
+        { fields: "account_id,name" },
+        TrialObjectSchema
+      );
+
+      const refusal = notTrialsRefusal(name);
+
+      if (Option.isSome(refusal)) {
+        return yield* new TrialRefused({ reason: refusal.value });
+      }
+
+      return object;
+    });
+
     const created = (accountId: NetworkObjectId, object: NewObject) =>
       client
         .create(token, accountId, object)
@@ -342,6 +454,11 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
         id: string,
         days: number
       ) {
+        yield* refusedUnless(
+          isBetween(days, 1, maxSnapshotDays),
+          `--days is a whole number from 1 to ${maxSnapshotDays}.`
+        );
+
         const externalId = yield* objectIdOf(id, "The ad account");
         const facts = yield* client.account(token, externalId);
         const timeZone = Option.getOrElse(facts.timeZone, () => utc);
@@ -378,6 +495,16 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
         id: string,
         set: TrialAdSet
       ) {
+        // A trial ad set stays small and short, even paused.
+        yield* refusedUnless(
+          isBetween(set.budget, 1, maxTrialBudget),
+          `--budget is a whole number of minor units from 1 to ${maxTrialBudget}.`
+        );
+        yield* refusedUnless(
+          isBetween(set.days, 1, maxTrialDays),
+          `--days is a whole number from 1 to ${maxTrialDays}.`
+        );
+
         const accountId = yield* objectIdOf(id, "The ad account");
         const campaignId = yield* objectIdOf(set.campaign, "The campaign");
 
@@ -485,10 +612,14 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
         });
       }),
 
-      pause: (objectId: string) =>
-        objectIdOf(objectId, "The object").pipe(
-          Effect.flatMap((object) => client.setRunning(token, object, false))
-        ),
+      /** Pauses an object the trial made. */
+      pause: Effect.fn("MetaAds.trial.pause")(function* pause(
+        objectId: string
+      ) {
+        const object = yield* trialsOwn(objectId);
+
+        return yield* client.setRunning(token, object, false);
+      }),
 
       /**
        * Runs an object, only in the sandbox ad account and only on the day
@@ -501,18 +632,27 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
         activateOn: Option.Option<string>
       ) {
         const object = yield* objectIdOf(objectId, "The object");
+        const today = DateTime.formatIsoDateUtc(yield* DateTime.now);
 
-        const { account_id: objectAccount } = yield* graphGet(
+        // The day first: on another day, Meta is asked nothing.
+        const wrongDay = dayRefusal({ activateOn, today });
+
+        if (Option.isSome(wrongDay)) {
+          return yield* new TrialRefused({ reason: wrongDay.value });
+        }
+
+        const facts = yield* graphGet(
           `/${object}`,
-          { fields: "account_id" },
-          InAccountSchema
+          { fields: "account_id,name" },
+          TrialObjectSchema
         );
 
         const refusal = activationRefusal({
           activateOn,
-          objectAccount,
+          objectAccount: facts.account_id,
+          objectName: facts.name,
           sandboxAccount,
-          today: DateTime.formatIsoDateUtc(yield* DateTime.now),
+          today,
         });
 
         if (Option.isSome(refusal)) {
@@ -527,12 +667,13 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
        * Object's Status"): the trial's cleaning, which the product never
        * asks.
        */
-      delete: (objectId: string) =>
-        objectIdOf(objectId, "The object").pipe(
-          Effect.flatMap((object) =>
-            graphPost(`/${object}`, { status: "DELETED" })
-          )
-        ),
+      delete: Effect.fn("MetaAds.trial.delete")(function* deleteObject(
+        objectId: string
+      ) {
+        const object = yield* trialsOwn(objectId);
+
+        return yield* graphPost(`/${object}`, { status: "DELETED" });
+      }),
     };
   }
 );

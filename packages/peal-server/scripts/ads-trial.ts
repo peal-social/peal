@@ -1,23 +1,32 @@
 // The Marketing API trial: runs the ads adapter's own requests against
 // Meta from the operator's machine, and prints each request and Meta's
 // whole answer, the token, the app secret and the proof masked. Each
-// exchange is also appended, masked, to ads-trial.log in the working
-// directory (ignored by Git). From the repository root:
+// exchange is also appended, masked, to the repository's
+// .local/ads-trial.log (mode 0600, ignored by Git, Nx and the linters).
 //
-//   META_APP_ID=… META_APP_SECRET=… PEAL_ADS_TRIAL_TOKEN=… \
-//     bun nx run peal-server:ads-trial -- accounts
+// Run it with Bun directly, never through Nx, which keeps a copy of every
+// task's terminal output in its cache. From the repository root, with the
+// settings exported from the keychain, never typed on the command line:
 //
-// It reads, from the environment only: META_APP_ID and META_APP_SECRET
-// (Meta's main app), PEAL_ADS_TRIAL_TOKEN (a user token, from the app
-// dashboard's Marketing API Tools page) and PEAL_ADS_TRIAL_ACTIVATE (to
-// activate on the sandbox ad account, today's date in UTC, YYYY-MM-DD).
+//   export META_APP_ID=<app id>
+//   export META_APP_SECRET="$(security find-generic-password -s <service> -a META_APP_SECRET -w)"
+//   export PEAL_ADS_TRIAL_TOKEN="$(security find-generic-password -s peal-meta-trial -a PEAL_ADS_TRIAL_TOKEN -w)"
+//   bun packages/peal-server/scripts/ads-trial.ts accounts
 //
-// Everything it makes is paused and named peal-trial-<UTC time>. Only
-// `activate` runs something, and only in the account given as
+// It reads them from the environment only, never from flags:
+// META_APP_ID and META_APP_SECRET (Meta's main app), PEAL_ADS_TRIAL_TOKEN
+// (a user token, from the app dashboard's Marketing API Tools page) and
+// PEAL_ADS_TRIAL_ACTIVATE (to activate on the sandbox ad account, today's
+// date in UTC, YYYY-MM-DD).
+//
+// Everything it makes is paused and named peal-trial-<UTC time>. It
+// pauses and deletes only what bears that name. Only `activate` runs
+// something, and only an object of the trial's in the account given as
 // --sandbox-account, on the day PEAL_ADS_TRIAL_ACTIVATE names.
+import { fileURLToPath } from "node:url";
+
 import { BunDns, BunRuntime, BunServices } from "@effect/platform-bun";
 import {
-  Config,
   Console,
   Effect,
   FileSystem,
@@ -32,7 +41,11 @@ import { FetchHttpClient } from "effect/http";
 
 import type { PromotedPost } from "#ads/application/ports/ad-network.ts";
 import { TrialRefused } from "#ads/infrastructure/meta/trial-refused.ts";
-import { makeTrial, printing } from "#ads/infrastructure/meta/trial.ts";
+import {
+  makeTrial,
+  printing,
+  trialSettings,
+} from "#ads/infrastructure/meta/trial.ts";
 import type { Exchange } from "#ads/infrastructure/meta/trial.ts";
 import { metaAppConfig } from "#shared/infrastructure/platforms/meta-apps.ts";
 import {
@@ -42,7 +55,12 @@ import {
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 
-const logFile = "ads-trial.log";
+// The repository's .local folder, wherever the script is run from.
+const logFolder = fileURLToPath(new URL("../../../.local/", import.meta.url));
+const logFile = `${logFolder}ads-trial.log`;
+
+// The log holds Meta's answers about the owner's accounts: theirs alone.
+const logMode = 0o600;
 
 const MacLive = Mac.layerWebCrypto.pipe(
   Layer.provide(SecureRandom.layerWebCrypto)
@@ -82,16 +100,7 @@ const printed = (exchange: Exchange) =>
 
 const settings = Effect.gen(function* readSettings() {
   const app = yield* metaAppConfig;
-
-  const token = yield* Config.Redacted("PEAL_ADS_TRIAL_TOKEN").pipe(
-    Effect.mapError(
-      () =>
-        new TrialRefused({
-          reason:
-            "Set PEAL_ADS_TRIAL_TOKEN to a user token from the app dashboard's Marketing API Tools page.",
-        })
-    )
-  );
+  const trialSet = yield* trialSettings;
 
   if (Option.isNone(app)) {
     return yield* new TrialRefused({
@@ -99,36 +108,44 @@ const settings = Effect.gen(function* readSettings() {
     });
   }
 
-  return { app: app.value, token };
+  return { ...trialSet, app: app.value };
 });
 
 // The trial, its every exchange printed and logged, for one subcommand.
 const trialFor = (command: string) =>
   Effect.gen(function* printedTrial() {
     const fs = yield* FileSystem.FileSystem;
-    const { app, token } = yield* settings;
+    const { activateOn, app, token, tokenForms } = yield* settings;
     const proof = yield* appSecretProof(token, app.appSecret);
 
     const http = printing(yield* publicHttpClient, {
       secrets: [
-        Redacted.value(token),
+        ...tokenForms,
         Redacted.value(app.appSecret),
         Redacted.value(proof),
       ],
       seen: (exchange) =>
         Console.log(printed(exchange)).pipe(
           Effect.andThen(
-            fs.writeFileString(
-              logFile,
-              `${JSON.stringify({ command, ...exchange })}\n`,
-              { flag: "a" }
+            fs.makeDirectory(logFolder, { recursive: true }).pipe(
+              Effect.andThen(
+                fs.writeFileString(
+                  logFile,
+                  `${JSON.stringify({ command, ...exchange })}\n`,
+                  { flag: "a", mode: logMode }
+                )
+              ),
+              // Made before by another hand, it is narrowed too.
+              Effect.andThen(fs.chmod(logFile, logMode))
             )
           ),
           Effect.orDie
         ),
     });
 
-    return yield* makeTrial({ app, hosts: metaHosts, http, token });
+    const trial = yield* makeTrial({ app, hosts: metaHosts, http, token });
+
+    return { ...trial, activateOn };
   });
 
 // What a step gave back, or why it failed, after the exchanges.
@@ -351,11 +368,7 @@ const activate = Command.make(
       Effect.gen(function* activating() {
         const trial = yield* trialFor("activate");
 
-        const activateOn = yield* Config.option(
-          Config.String("PEAL_ADS_TRIAL_ACTIVATE")
-        );
-
-        return yield* trial.activate(id, sandboxAccount, activateOn);
+        return yield* trial.activate(id, sandboxAccount, trial.activateOn);
       })
     )
 ).pipe(
