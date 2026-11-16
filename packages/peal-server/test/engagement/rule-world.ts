@@ -6,7 +6,7 @@ import { CommentRules } from "#engagement/application/comment-rules.ts";
 import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import { EngagementReplies } from "#engagement/application/engagement-replies.ts";
 import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
-import type { CommentRuleStore } from "#engagement/application/ports/comment-rule-store.ts";
+import { CommentRuleStore } from "#engagement/application/ports/comment-rule-store.ts";
 import { EngagementChannels } from "#engagement/application/ports/engagement-channels.ts";
 import type { EngagedChannel } from "#engagement/application/ports/engagement-channels.ts";
 import { EngagementOutcomes } from "#engagement/application/ports/engagement-outcomes.ts";
@@ -18,6 +18,7 @@ import { ReplyJobs } from "#engagement/application/ports/reply-jobs.ts";
 import { RuleStarters } from "#engagement/application/ports/rule-starters.ts";
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
 import { CommentRuleIdSchema } from "#engagement/domain/comment-rule-id.ts";
+import type { CommentRule } from "#engagement/domain/comment-rule.ts";
 import { receiveComment } from "#engagement/domain/comment.ts";
 import { followBox } from "#engagement/domain/message-box.ts";
 import { ThreadIdSchema } from "#engagement/domain/thread-id.ts";
@@ -161,6 +162,49 @@ export const privateStarted = Ref.makeUnsafe<readonly string[]>([]);
 // What the starter of every rule may do now, as a test sets it.
 export const starterPermissions = Ref.makeUnsafe(permissionsFor("editor"));
 
+// The workspaces whose rules this worker's tests started: other workers
+// run their own rules on the same database, with channels this one does
+// not know, so a run here looks at these alone.
+const ownWorkspaces = new Set<string>();
+
+// The rules' store as a test's runs see it: `active` answers only the
+// rules of this worker's workspaces, a page at a time as the store does.
+const ownRules = <E, R>(store: Layer.Layer<CommentRuleStore, E, R>) =>
+  Layer.effect(
+    CommentRuleStore,
+    Effect.gen(function* OwnRules() {
+      const all = yield* CommentRuleStore;
+
+      return CommentRuleStore.of({
+        ...all,
+        active: Effect.fn("OwnRules.active")(function* active(after, limit) {
+          const kept: CommentRule[] = [];
+          let from = after;
+
+          for (;;) {
+            const page = yield* all.active(from, limit);
+
+            kept.push(
+              ...page.filter(({ workspaceId }) =>
+                ownWorkspaces.has(workspaceId)
+              )
+            );
+
+            if (page.length < limit || kept.length >= limit) {
+              return kept.slice(0, limit);
+            }
+
+            from = Option.fromUndefinedOr(page.at(-1)?.id);
+          }
+        }),
+        insert: (rule) =>
+          Effect.sync(() => ownWorkspaces.add(rule.workspaceId)).pipe(
+            Effect.andThen(all.insert(rule))
+          ),
+      });
+    })
+  ).pipe(Layer.provide(store));
+
 export const rulesTestWith = <E, R>(
   store: Layer.Layer<CommentRuleStore, E, R>,
   meters: Layer.Layer<MeteredUsage> = MeteredUsage.layerUnmetered
@@ -174,7 +218,7 @@ export const rulesTestWith = <E, R>(
     ),
     Layer.provideMerge(
       Layer.mergeAll(
-        store,
+        ownRules(store),
         DrizzleEngagementStore,
         DrizzleMessageStore,
         DrizzlePrivateReplyStore,
