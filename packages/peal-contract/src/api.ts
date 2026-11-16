@@ -2048,6 +2048,7 @@ export {
   maxInboxMessagesPerPage,
   NewInboxMessageSchema,
   NewInboxPrivateReplySchema,
+  privateReplyLimits,
   privateReplyWindowDays,
 } from "./inbox-messages.ts";
 

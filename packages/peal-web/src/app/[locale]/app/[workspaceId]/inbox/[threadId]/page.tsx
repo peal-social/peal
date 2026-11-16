@@ -9,7 +9,7 @@ import { membershipOf } from "#posts/membership.ts";
 
 // One thread of the inbox: the comments under a post on one channel, for
 // members who may read them (engagement:read). Answering and moderating
-// take engagement:reply.
+// take engagement:reply; a private reply, engagement:message.
 const InboxThreadPage = async ({
   params,
 }: PageProps<"/[locale]/app/[workspaceId]/inbox/[threadId]">) => {
@@ -42,6 +42,7 @@ const InboxThreadPage = async ({
         </h1>
       </div>
       <ThreadScreen
+        mayMessage={may.has("engagement:message")}
         mayReply={may.has("engagement:reply")}
         threadId={threadId}
         workspaceId={membership.id}

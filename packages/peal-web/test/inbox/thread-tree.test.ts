@@ -17,6 +17,8 @@ const comment = (id: string, parentId: string | null): InboxComment => ({
   liked: false,
   parentId,
   permalink: null,
+  privateReply: null,
+  privateReplyUntil: null,
   receivedAt: at,
   state: "new",
   text: id,

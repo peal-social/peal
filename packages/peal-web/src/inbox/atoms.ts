@@ -97,3 +97,17 @@ export const moderateComment = PealApi.mutation("inbox", "moderate");
 export const confirmInboxReply = PealApi.mutation("inbox", "confirmReply");
 
 export const withdrawInboxReply = PealApi.mutation("inbox", "withdrawReply");
+
+/**
+ * The one private reply a comment's author may get. Its reactivity keys
+ * are the thread's: the comment shows how it stands.
+ */
+export const sendPrivateReply = PealApi.mutation(
+  "inboxMessages",
+  "sendPrivateReply"
+);
+
+export const confirmPrivateReply = PealApi.mutation(
+  "inboxMessages",
+  "confirmPrivateReply"
+);

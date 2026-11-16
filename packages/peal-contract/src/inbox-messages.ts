@@ -243,6 +243,15 @@ export type NewInboxMessage = typeof NewInboxMessageSchema.Type;
 /** How many days after it was written a comment may get its private reply, as Meta allows, before Peal's hour. */
 export const privateReplyWindowDays = 7;
 
+/**
+ * The longest private reply each platform takes: Instagram 1,000 UTF-8
+ * bytes, Messenger 2,000 characters, as its direct messages.
+ */
+export const privateReplyLimits = {
+  facebook: { maximum: 2000, unit: "utf16Units" },
+  instagram: { maximum: 1000, unit: "utf8Bytes" },
+} as const;
+
 export const NewInboxPrivateReplySchema = Schema.Struct({
   // The comment whose author gets the message.
   commentId: Schema.String,

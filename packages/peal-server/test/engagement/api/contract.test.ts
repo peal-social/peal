@@ -20,6 +20,11 @@ import {
   inboxWindowDays,
   maxInboxPageSize,
   maxInboxReplyLength,
+  InboxPrivateReplyReasonSchema,
+  InboxPrivateReplyStatusSchema,
+  privateReplyLimits,
+  PrivateReplyRefusalSchema,
+  privateReplyWindowDays,
 } from "peal-contract";
 
 import { maxThreadsPerPage } from "#engagement/application/engagement-inbox.ts";
@@ -33,7 +38,11 @@ import {
 } from "#engagement/domain/engagement-abilities.ts";
 import { keptAfterCollection } from "#engagement/domain/engagement-retention.ts";
 import { MessageAbilitySchema } from "#engagement/domain/message-abilities.ts";
-import { maxOutgoingMessageLength } from "#engagement/domain/message-text.ts";
+import {
+  instagramMessageBytes,
+  maxOutgoingMessageLength,
+  messengerMessageCharacters,
+} from "#engagement/domain/message-text.ts";
 import { ModerationActionSchema } from "#engagement/domain/moderation.ts";
 import {
   MessageFailureSchema,
@@ -47,6 +56,13 @@ import {
   replyKeyLifetime,
   ReplyStatusSchema,
 } from "#engagement/domain/reply.ts";
+import {
+  PrivateReplyFailureSchema,
+  PrivateReplyRefusalSchema as DomainRefusalSchema,
+  PrivateReplyStatusSchema,
+  privateReplyKeyLifetime,
+  privateReplyWindow,
+} from "#engagement/domain/private-reply.ts";
 import { CollectionEndSchema } from "#engagement/domain/thread.ts";
 import { InboxMessagePlatformSchema } from "#shared/domain/inbox-message-platform.ts";
 
@@ -135,5 +151,33 @@ describe("the contract's direct messages", () => {
     expect(Object.keys(InboxMessageAbilitiesSchema.fields)).toStrictEqual(
       MessageAbilitySchema.literals
     );
+  });
+});
+
+describe("the contract's private replies", () => {
+  it("names their states, reasons, refusals, window and limits as the domain does", () => {
+    expect(InboxPrivateReplyStatusSchema.literals).toStrictEqual(
+      PrivateReplyStatusSchema.members.map(
+        ({ fields }) => fields._tag.schema.literal
+      )
+    );
+    expect(InboxPrivateReplyReasonSchema.literals).toStrictEqual([
+      ...PrivateReplyFailureSchema.literals,
+      ...ReplyDoubtSchema.literals,
+    ]);
+    expect(PrivateReplyRefusalSchema.literals).toStrictEqual(
+      DomainRefusalSchema.literals
+    );
+    // Seven days, which Peal ends an hour early.
+    expect(Duration.toHours(privateReplyWindow)).toBe(
+      privateReplyWindowDays * 24 - 1
+    );
+    expect(Duration.toHours(privateReplyKeyLifetime)).toBe(
+      idempotencyKeyLifetimeHours
+    );
+    expect(privateReplyLimits).toStrictEqual({
+      facebook: { maximum: messengerMessageCharacters, unit: "utf16Units" },
+      instagram: { maximum: instagramMessageBytes, unit: "utf8Bytes" },
+    });
   });
 });
