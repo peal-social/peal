@@ -12,6 +12,10 @@ next-env.d.ts
 # Generated from the contract: Nx rebuilds them (peal-contract:openapi, peal-sdk:spec)
 packages/peal-contract/openapi.json
 packages/peal-sdk/openapi.json
+# The release history, which release.yml writes into the commit it builds the docs
+# from, and the Changelog page's partials, which blume.config.ts writes from it
+packages/peal-docs/changelog.json
+packages/peal-docs/docs/_changelog/
 # Libraries leave their dependencies' versions to the projects that install them
 packages/peal-sdk/php/composer.lock
 packages/peal-sdk/ruby/Gemfile.lock

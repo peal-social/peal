@@ -69,6 +69,19 @@ describe("the CI plan", () => {
     ).toEqual({ ...none, server: true });
   });
 
+  it("runs Ansible's tests for the changelog generator, which the release's tests run", () => {
+    for (const file of [
+      "packages/peal-docs/changelog/render.ts",
+      "packages/peal-docs/scripts/changelog.ts",
+    ]) {
+      expect(plan({ affected: ["peal-docs"], files: [file], roots })).toEqual({
+        ...none,
+        ansible: true,
+        server: true,
+      });
+    }
+  });
+
   it("runs the server's tests and the end-to-end run when the compose file changes", () => {
     expect(
       plan({

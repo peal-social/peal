@@ -126,6 +126,136 @@
       host.env names are checked against it when the release runs.
   when: "'unknown' in peal_release_host_files_missing.stdout_lines"
 
+# Production publishes a GitHub release of the app once the release runs,
+# with the operator's own gh login: checked here, before anything changes,
+# so a release never deploys and then fails to say so. Read-only, so it
+# runs in check mode too.
+- name: Check that gh may publish the app's release
+  ansible.builtin.command:
+    argv:
+      - "{{ peal_release_gh }}"
+      - api
+      - repos/{{ peal_release_github_repo }}
+      - --jq
+      - .permissions.push
+  delegate_to: localhost
+  become: false
+  register: peal_release_gh_access
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: peal_release_github | bool
+
+- name: Stop unless gh may publish the app's release
+  ansible.builtin.assert:
+    that: peal_release_gh_access.rc == 0 and peal_release_gh_access.stdout | trim == 'true'
+    fail_msg: >-
+      gh cannot publish a release on {{ peal_release_github_repo }}: sign in
+      with an account that may push to it (gh auth login), then release
+      again. Nothing has changed.
+    quiet: true
+  when: peal_release_github | bool
+
+# The app's tags as GitHub has them, which name the release: the checkout
+# fetches them when it moves, and a release published since, of this very
+# commit perhaps, would be missed otherwise. Only the working copy's tags
+# change, so it runs in check mode too, once there is a working copy.
+- name: Fetch the app's release tags
+  ansible.builtin.command:
+    argv:
+      - git
+      - fetch
+      - --quiet
+      - --force
+      - "{{ peal_release_repo_url }}"
+      - +refs/tags/*:refs/tags/*
+    chdir: "{{ peal_release_local_dir }}/checkout"
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  check_mode: false
+  when: peal_release_checkout.before | default(none) is not none
+
+# A pull request labelled no-changelog stays out of the notes and the docs'
+# Changelog: its number, from GitHub, in one read-only call.
+- name: Read the pull requests labelled no-changelog
+  ansible.builtin.command:
+    argv:
+      - "{{ peal_release_gh }}"
+      - pr
+      - list
+      - --repo
+      - "{{ peal_release_github_repo }}"
+      - --state
+      - merged
+      - --label
+      - no-changelog
+      - --limit
+      - "1000"
+      - --json
+      - number
+      - --jq
+      - .[].number
+  delegate_to: localhost
+  become: false
+  register: peal_release_unlisted
+  changed_when: false
+  check_mode: false
+  when: peal_release_github | bool
+
+# The release's name and notes, from the pull requests since the last app
+# tag (the first has the summary written by hand), but those labelled
+# no-changelog, by the generator the docs' Changelog is
+# built with; and the history file the docs read, this release in it, in
+# the commit the images build the docs from. Check mode writes nothing, and
+# names nothing for a commit it has not fetched.
+- name: Name the app's release
+  ansible.builtin.command:
+    argv: >-
+      {{ [peal_release_bun, peal_release_changelog_script, 'release',
+          '--repo', peal_release_local_dir ~ '/checkout',
+          '--commit', peal_release_checkout.after, '--date', peal_release_date,
+          '--exclude', peal_release_unlisted.stdout_lines | join(' ')]
+         + ([] if ansible_check_mode
+            else ['--write', peal_release_local_dir ~ '/checkout/packages/peal-docs/changelog.json']) }}
+  delegate_to: localhost
+  become: false
+  register: peal_release_app_named
+  changed_when: false
+  check_mode: false
+  when: peal_release_github | bool
+
+- name: Read the app's release
+  ansible.builtin.set_fact:
+    peal_release_app: "{{ peal_release_app_named.stdout | from_json }}"
+  when: peal_release_github | bool
+
+- name: Stop unless the app's release has a name
+  ansible.builtin.assert:
+    that: "'tag' in peal_release_app"
+    fail_msg: >-
+      The checkout lacks {{ peal_release_checkout.after }}, so the app's
+      release cannot be named. Nothing has changed.
+    quiet: true
+  when: peal_release_github | bool and not ansible_check_mode
+
+# Elsewhere the docs show the releases tagged so far: the file is
+# rewritten, so one from another environment's release never stays.
+- name: Write the release history the docs show
+  ansible.builtin.command:
+    argv:
+      - "{{ peal_release_bun }}"
+      - "{{ peal_release_changelog_script }}"
+      - history
+      - --repo
+      - "{{ peal_release_local_dir }}/checkout"
+      - --write
+      - "{{ peal_release_local_dir }}/checkout/packages/peal-docs/changelog.json"
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  when: not (peal_release_github | bool)
+
 # Postgres's image is named after its Dockerfile, so it changes, and
 # Postgres restarts, only when that file does.
 - name: Read the Postgres image's Dockerfile
@@ -588,6 +718,64 @@
   retries: 10
   delay: 3
   when: not peal_access_everything
+
+# The release runs: GitHub gets the app's release, once. A commit released
+# before keeps its tag, and a release GitHub has already is left as it is,
+# so running release.yml again changes nothing there. Read-only, so it runs
+# in check mode too; any answer but the release or its absence stops here.
+- name: Read whether GitHub has the app's release
+  ansible.builtin.command:
+    argv:
+      - "{{ peal_release_gh }}"
+      - release
+      - view
+      - "{{ peal_release_app.tag }}"
+      - --repo
+      - "{{ peal_release_github_repo }}"
+      - --json
+      - tagName
+  delegate_to: localhost
+  become: false
+  register: peal_release_github_release
+  changed_when: false
+  failed_when: >-
+    peal_release_github_release.rc != 0
+    and 'release not found' not in peal_release_github_release.stderr
+  check_mode: false
+  when: peal_release_github | bool and 'tag' in peal_release_app
+
+# The tag GitHub makes on the commit that runs, named after the day.
+- name: Publish the app's release on GitHub
+  ansible.builtin.command:
+    argv:
+      - "{{ peal_release_gh }}"
+      - release
+      - create
+      - "{{ peal_release_app.tag }}"
+      - --repo
+      - "{{ peal_release_github_repo }}"
+      - --target
+      - "{{ peal_release_app.commit }}"
+      - --title
+      - "{{ peal_release_app.tag }}"
+      - --notes-file
+      - "-"
+      - --latest
+    stdin: "{{ peal_release_app.notes }}"
+  delegate_to: localhost
+  become: false
+  changed_when: true
+  when: peal_release_github_release is not skipped and peal_release_github_release.rc != 0
+
+- name: Report the app's release check mode leaves out
+  ansible.builtin.debug:
+    msg: >-
+      {% if 'tag' not in peal_release_app %}Check mode has not fetched {{ peal_release_checkout.after }},
+      so the app's release is named when the release runs.{% else %}The release publishes
+      {{ peal_release_app.tag }} on GitHub, at {{ peal_release_app.commit }}.{% endif %}
+  when: >-
+    ansible_check_mode and peal_release_github | bool
+    and ('tag' not in peal_release_app or peal_release_github_release.rc != 0)
 
 - name: List the releases
   ansible.builtin.find:

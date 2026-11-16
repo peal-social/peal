@@ -15,9 +15,14 @@
       "dependsOn": ["peal-contract:openapi"],
       "cache": false
     },
+    "unit": {
+      "command": "vitest run",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": false
+    },
     "test": {
       "executor": "nx:noop",
-      "dependsOn": ["validate"]
+      "dependsOn": ["validate", "unit"]
     },
     "build": {
       "command": "blume build",
@@ -30,7 +35,8 @@
         { "env": "DOCS_PLAUSIBLE_HOST" },
         { "env": "DOCS_APP_URL" },
         { "env": "DOCS_ASSISTANT_MODEL" },
-        { "env": "DOCS_TURNSTILE_SITE_KEY" }
+        { "env": "DOCS_TURNSTILE_SITE_KEY" },
+        { "runtime": "bun packages/peal-docs/scripts/changelog.ts fingerprint" }
       ],
       "outputs": ["{projectRoot}/dist"]
     },

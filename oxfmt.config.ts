@@ -7,6 +7,8 @@ import ultracite from "ultracite/oxfmt";
 export const generated = [
   "packages/peal-contract/openapi.json",
   "packages/peal-sdk/openapi.json",
+  "packages/peal-docs/changelog.json",
+  "packages/peal-docs/docs/_changelog/**",
   "packages/peal-sdk/node/**",
   "packages/peal-sdk/python/**",
   "packages/peal-sdk/go/**",

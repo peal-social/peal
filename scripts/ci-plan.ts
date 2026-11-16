@@ -42,9 +42,11 @@ export const rules: Readonly<Record<Job, Rule>> = {
   ansible: {
     // The release, backup, tunnel and uptime tests read the compose files,
     // the server's catalogue, the web app's routes, the Pulumi stack and the
-    // design system's colours.
+    // design system's colours, and run the docs' changelog generator.
     paths: [
       "DESIGN.md",
+      "packages/peal-docs/changelog/",
+      "packages/peal-docs/scripts/changelog.ts",
       "packages/peal-docker/",
       "packages/peal-server/",
       "packages/peal-web/",

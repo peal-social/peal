@@ -100,11 +100,21 @@ you change before you change it. The ones contributors meet first:
    [legal notice](#licence-of-contributions).
 
 Titles follow [Conventional Commits](https://www.conventionalcommits.org):
-`feat:`, `fix:`, `docs:`, `test:`, `style:`, `refactor:`, `chore:`, with a
-scope where it helps (`fix(sdk): …`, `test(infra): …`) and a `!` for a
-breaking change (`feat(sdk)!: …`). Write the title as what the change does,
-in plain words: "fix: keep a post's time zone when it moves on the calendar".
-Pull requests are squash-merged, so the title becomes the commit on `main`.
+`feat:`, `fix:`, `perf:`, `security:`, `docs:`, `test:`, `style:`,
+`refactor:`, `chore:`, with a scope where it helps (`fix(sdk): …`,
+`test(infra): …`) and a `!` for a breaking change (`feat(sdk)!: …`). Write
+the title as what the change does, in plain words: "fix: keep a post's time
+zone when it moves on the calendar". Pull requests are squash-merged, so the
+title becomes the commit on `main`, and the release notes: each production
+release lists the titles of `feat` (Features), `fix` (Fixes), `perf`
+(Performance) and `security`, or any type with the scope `security`
+(Security), linked to their pull requests, on GitHub and on the docs'
+[Changelog](https://github.com/peal-social/peal/blob/main/packages/peal-docs/docs/changelog.mdx).
+The other types stay out of them, and so does a pull request labelled
+`no-changelog`. A title is public release notes: write it for the people
+who use Peal, with no personal data (names, email addresses, accounts) and
+no internal codes. A work-package code at its end, such as `(U4)`, is
+dropped from the notes.
 
 A maintainer reviews each pull request, as
 [CODEOWNERS](CODEOWNERS) says. It merges through the merge queue, which runs
@@ -728,7 +738,11 @@ serves the public status page, [status.peal.social](https://status.peal.social).
 Ansible in [`packages/peal-infra/ansible`](../packages/peal-infra/ansible/README.md) sets the
 servers up and releases a commit: it builds the images on the machine running
 it, uploads them over SSH, and starts the new server, which migrates the
-database.
+database. Each production release then publishes a GitHub release of the
+app, `vYYYY.MM.DD` (`.2` for a second that day), with the operator's `gh`
+([The app's releases](../packages/peal-infra/ansible/README.md#the-apps-releases)).
+`bun packages/peal-docs/scripts/changelog.ts notes` shows what the next one
+would hold.
 
 ```sh
 cd packages/peal-infra/ansible

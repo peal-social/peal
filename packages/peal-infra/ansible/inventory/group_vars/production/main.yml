@@ -7,6 +7,10 @@
 server_hostname: peal-production
 peal_environment: production
 
+# Each release that runs here publishes a GitHub release of the app, with
+# the operator's gh login (roles/peal_release/defaults); production alone.
+peal_release_github: true
+
 # Where the server is hosted: the provider, a European company, in lowercase
 # as its own site writes it, and the city of its data centre, in lowercase
 # English (paris, not the provider's zone, which differs between providers
