@@ -18,14 +18,17 @@ export const CaptchaHandlers = HttpApiBuilder.group(
     const { turnstileSiteKey } = yield* CaptchaChallenge;
     const { mode } = yield* SignUpSettings;
     const signUps = yield* SignUpGate;
-    const { offered } = yield* SignInProviders;
+    const providers = yield* SignInProviders;
 
     return handlers.handle("get", () =>
       signUps.modeNow().pipe(
         // The server's setting when the accounts cannot be read: the gate
         // decides on the sign-up itself.
         Effect.orElseSucceed(() => mode),
-        Effect.map((signUp) => ({
+        Effect.flatMap((signUp) =>
+          providers.offered.pipe(Effect.map((offered) => ({ offered, signUp })))
+        ),
+        Effect.map(({ offered, signUp }) => ({
           signInProviders: offered.map(({ id, name }) => ({ id, name })),
           signUp,
           turnstileSiteKey: Option.getOrNull(turnstileSiteKey),

@@ -89,6 +89,8 @@ export class FakeOidc extends Context.Service<FakeOidc, FakeOidcProvider>()(
 
 /** How the fake's discovery document departs from a provider's. */
 export interface FakeOidcOptions {
+  /** Answers 503 to this many reads of its discovery document first. */
+  readonly unavailableFor?: number;
   /** Without `id_token_signing_alg_values_supported`, which is required. */
   readonly withoutSigningAlgorithms?: boolean;
 }
@@ -100,12 +102,19 @@ export const fakeOidcWith = Effect.fn("fakeOidcWith")(function* fakeOidcWith(
   const foreign = yield* signingKey;
   const answers = new Map<string, { idToken?: string }>();
   const signed: string[] = [];
+  let discoveryReads = 0;
 
   const server = yield* fakeHttpServer((request, origin) => {
     if (
       request.method === "GET" &&
       request.path === "/.well-known/openid-configuration"
     ) {
+      discoveryReads += 1;
+
+      if (discoveryReads <= (options.unavailableFor ?? 0)) {
+        return { status: 503 };
+      }
+
       return json({
         authorization_endpoint: `${origin}/authorize`,
         id_token_signing_alg_values_supported:
@@ -232,11 +241,12 @@ export const oidcSettings = (provider: FakeOidcProvider) => ({
 export const appWithOidc = (
   env: Readonly<Record<string, string>> = {},
   // What watches the app, as TestApp.layerWith takes it.
-  observed?: Layer.Layer<never>
+  observed?: Layer.Layer<never>,
+  options: FakeOidcOptions = {}
 ) =>
   Layer.unwrap(
     Effect.gen(function* withOidc() {
-      const provider = yield* fakeOidc;
+      const provider = yield* fakeOidcWith(options);
 
       return Layer.merge(
         TestApp.layerWith({ ...oidcSettings(provider), ...env }, observed),

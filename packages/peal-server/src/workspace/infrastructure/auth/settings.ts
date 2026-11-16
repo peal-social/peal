@@ -9,8 +9,9 @@ import {
 } from "#shared/infrastructure/environment.ts";
 import { stripeSettingsConfig } from "#shared/infrastructure/stripe-settings.ts";
 
-import { checkedProviders } from "./provider-discovery.ts";
+import { discoveryRelay } from "./provider-discovery.ts";
 import { signInProvidersConfig } from "./sign-in-provider-settings.ts";
+import type { SignInProviderId } from "./sign-in-providers.ts";
 
 // A comma-separated list, without the spaces around its entries or empty ones.
 const trimmed = (entries: readonly string[]): readonly string[] =>
@@ -90,20 +91,26 @@ export type AuthConfiguration = Config.Success<typeof authSettingsConfig>;
 
 export class AuthSettings extends Context.Service<
   AuthSettings,
-  AuthConfiguration
+  AuthConfiguration & {
+    /** The providers whose discovery has answered, now. */
+    readonly providersOffered: Effect.Effect<readonly SignInProviderId[]>;
+  }
 >()("peal-server/workspace/infrastructure/AuthSettings") {
   /**
-   * The settings, with the sign-in providers whose discovery answered when
-   * the server started (provider-discovery.ts).
+   * The settings, with the sign-in providers' discovery read when the
+   * server starts and served to Better Auth from the relay
+   * (provider-discovery.ts), which lives as long as the server.
    */
   static readonly layer = Layer.effect(
     AuthSettings,
     Effect.gen(function* authSettings() {
       const settings = yield* authSettingsConfig;
+      const relay = yield* discoveryRelay(settings.signInProviders);
 
       return {
         ...settings,
-        signInProviders: yield* checkedProviders(settings.signInProviders),
+        providersOffered: relay.offered,
+        signInProviders: relay.settings,
       };
     })
   );

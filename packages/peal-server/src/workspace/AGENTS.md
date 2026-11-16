@@ -364,11 +364,17 @@ The staff context follows these rules too. What the law has a host keep is in
   `oidc` (`oidcAccountId`): a subject belongs to its issuer, so a new
   `PEAL_OIDC_ISSUER` reaches no account the old one's subjects joined.
 - `AuthSettings.layer` reads each provider's discovery when the server
-  starts (`checkedProviders`, `provider-discovery.ts`, 10 s): one that does
-  not answer in time is left out until the next start, logged, so Better
-  Auth's own discovery (which has no time limit at init) never holds the
-  auth context; a document without OpenID Connect's required fields stops
-  the server (`SignInProviderUnusable`).
+  starts (`discoveryRelay`, `provider-discovery.ts`: three tries, 3 s each,
+  growing pauses) and serves it to Better Auth from a relay on 127.0.0.1 in
+  the process, so the library's own read, which has no time limit and
+  cannot be handed a document (`betterFetch` takes only http URLs), never
+  waits on the provider. One that does not answer is left out (the relay
+  answers 503, Better Auth skips it) and read again in the background, at
+  least once a minute, each failure an error log line, which the server's
+  error-log alert (more than 5 in 10 minutes) picks up; once it answers the
+  relay serves it, `providersOffered` lists it and Better Auth's own retry
+  installs it at the next sign-in naming it. A document without OpenID
+  Connect's required fields stops the server (`SignInProviderUnusable`).
 - Discovery, token and key requests go to the host the operator set,
   through the library's own fetch, not `publicHttpClient`: a company's
   provider may be on a private network, and no user input picks it. Leave

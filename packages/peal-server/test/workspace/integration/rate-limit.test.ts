@@ -45,9 +45,14 @@ const authWith = (env: Record<string, string>) =>
     Layer.provide(
       Layer.effect(
         AuthSettings,
-        authSettingsConfig.parse(
-          ConfigProvider.fromUnknown({ ...production, ...env })
-        )
+        authSettingsConfig
+          .parse(ConfigProvider.fromUnknown({ ...production, ...env }))
+          .pipe(
+            Effect.map((settings) => ({
+              ...settings,
+              providersOffered: Effect.succeed([]),
+            }))
+          )
       )
     ),
     Layer.provide(

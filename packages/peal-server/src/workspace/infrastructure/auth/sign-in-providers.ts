@@ -172,6 +172,8 @@ export const googleProvider = (
   client: SignInProviderClient
 ): GenericOAuthConfig<"google"> => ({
   ...common(client, client.issuer ?? googleIssuer),
+  discoveryUrl:
+    client.discoveryUrl ?? discoveryOf(client.issuer ?? googleIssuer),
   accountSubject: ({ tokens }) => subjectOf(tokens.idToken),
   name: "Google",
   prompt: "select_account",

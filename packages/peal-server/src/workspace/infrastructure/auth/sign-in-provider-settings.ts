@@ -11,6 +11,11 @@ export interface SignInProviderClient {
    * (`GOOGLE_SIGN_IN_ISSUER`).
    */
   readonly issuer?: string;
+  /**
+   * Google's only: where Better Auth reads its discovery, when not from
+   * its issuer (the relay, provider-discovery.ts).
+   */
+  readonly discoveryUrl?: string;
 }
 
 /** The OpenID Connect provider a self-hoster chose, and its client there. */

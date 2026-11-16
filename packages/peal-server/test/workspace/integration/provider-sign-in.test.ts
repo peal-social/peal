@@ -4,7 +4,7 @@
 // verification sends the account to its password, and the server keeps
 // none of the provider's tokens.
 import { assert, layer } from "@effect/vitest";
-import { Effect, Layer, Schema } from "effect";
+import { Effect, Layer, Schedule, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 import { CaptchaSchema } from "peal-contract";
 
@@ -14,6 +14,7 @@ import {
   appWithOidc,
   FakeOidc,
 } from "#test/workspace/fakes/fake-oidc.ts";
+import type { FakeOidcProvider } from "#test/workspace/fakes/fake-oidc.ts";
 import { enrolled } from "#test/workspace/support.ts";
 
 import {
@@ -774,3 +775,68 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), settings)(
     );
   }
 );
+
+const discoveryReads = (provider: FakeOidcProvider) =>
+  provider.server
+    .requests()
+    .filter(({ path }) => path === "/.well-known/openid-configuration").length;
+
+const offeredNow = TestApp.use((app) => app.request("/api/captcha")).pipe(
+  Effect.map(
+    (reply) =>
+      Schema.decodeUnknownSync(CaptchaSchema)(reply.body).signInProviders ?? []
+  )
+);
+
+// Better Auth reads the provider's discovery from the server's own relay,
+// so its read, which has no time limit, never waits on the provider.
+layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), settings)(
+  "the provider's discovery",
+  (it) => {
+    it.effect("is read from the provider once, when the server starts", () =>
+      Effect.gen(function* readOnce() {
+        const provider = yield* FakeOidc;
+
+        const finished = yield* providerSignIn(verified(newEmail("once")), {
+          body: signUpPage(),
+        });
+
+        assert.isNull(finished.error);
+        assert.strictEqual(discoveryReads(provider), 1);
+      })
+    );
+  }
+);
+
+// A provider down when the server starts is left out, read again in the
+// background, and offered again once it answers.
+layer(
+  Layer.mergeAll(
+    appWithOidc({}, undefined, { unavailableFor: 4 }),
+    MigratedSqlLive
+  ),
+  { ...settings, excludeTestServices: true }
+)("a provider down when the server starts", (it) => {
+  it.effect("comes back once it answers, and signs people in", () =>
+    Effect.gen(function* comesBack() {
+      assert.deepStrictEqual(yield* offeredNow, []);
+
+      const offered = yield* offeredNow.pipe(
+        Effect.filterOrFail((providers) => providers.length > 0),
+        Effect.retry(Schedule.spaced("250 millis")),
+        Effect.timeout("30 seconds")
+      );
+
+      assert.deepStrictEqual(offered, [
+        { id: "oidc", name: "Synthetic directory" },
+      ]);
+
+      const finished = yield* providerSignIn(verified(newEmail("back")), {
+        body: signUpPage(),
+      });
+
+      assert.isNull(finished.error);
+      assert.isTrue(setsSession(finished.reply));
+    })
+  );
+});

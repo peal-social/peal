@@ -1,4 +1,4 @@
-import { Context, Layer } from "effect";
+import { Context, Effect, Layer } from "effect";
 
 /** An identity provider the server lets people sign in with. */
 export interface OfferedSignInProvider {
@@ -14,9 +14,15 @@ export interface OfferedSignInProvider {
  */
 export class SignInProviders extends Context.Service<
   SignInProviders,
-  { readonly offered: readonly OfferedSignInProvider[] }
+  {
+    /** Those whose provider answers now: one may come back later. */
+    readonly offered: Effect.Effect<readonly OfferedSignInProvider[]>;
+  }
 >()("peal-server/workspace/application/SignInProviders") {
   /** For tests: a server offering these. */
   static readonly layerTest = (offered: readonly OfferedSignInProvider[]) =>
-    Layer.succeed(SignInProviders, SignInProviders.of({ offered }));
+    Layer.succeed(
+      SignInProviders,
+      SignInProviders.of({ offered: Effect.succeed(offered) })
+    );
 }
