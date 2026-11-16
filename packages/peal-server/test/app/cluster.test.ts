@@ -893,15 +893,19 @@ describe("the cluster on Postgres", () => {
           assert.strictEqual(rolledBack, "rolledBack");
           assert.strictEqual(yield* messagesOf(execution), 0);
 
+          // The execution's own requests to run, which a second start of
+          // the same slot would add to: the run may write others meanwhile.
+          const runs = SqlClient.SqlClient.use((sql) =>
+            count(
+              sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_id = ${execution} AND kind = 0 AND tag = 'run'`
+            )
+          );
+
           yield* transaction(jobs.readBox(channelId, slot));
-
-          const once = yield* messagesOf(execution);
-
           yield* transaction(jobs.readBox(channelId, slot));
           yield* jobs.readBox(channelId, slot);
 
-          assert.isAbove(once, 0);
-          assert.strictEqual(yield* messagesOf(execution), once);
+          assert.strictEqual(yield* runs, 1);
 
           yield* waitUntil("the read ends", hasEnded(execution));
         }).pipe(
