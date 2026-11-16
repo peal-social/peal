@@ -918,6 +918,14 @@ layer(StoreTest)("the message store", (it) => {
         const talk = yield* conversationOn(box, 1, "2049-02-07T09:00:00.000Z");
 
         yield* store.saveConversations([talk]);
+
+        // Its subscription to the platform's events goes with the box: a
+        // channel moved to another workspace, gone here, is followed
+        // afresh there.
+        yield* store.markFollowed(
+          box.channelId,
+          utc("2049-02-07T09:30:00.000Z")
+        );
         yield* records.channelGone(
           box.channelId,
           "mastodon",
