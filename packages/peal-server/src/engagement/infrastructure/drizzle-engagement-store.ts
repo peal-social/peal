@@ -615,9 +615,9 @@ export const DrizzleEngagementStore = Layer.effect(
               // A comment its platform no longer shows takes its settled
               // private replies with it; one on its way goes once its job
               // settles it (PrivateReplyStore.dropIfForgotten).
-              const forgotten = saved
-                .filter(({ state }) => state === "deleted")
-                .map(({ id }) => id);
+              const forgotten = saved.flatMap(({ id, state }) =>
+                state === "deleted" ? [id] : []
+              );
 
               if (forgotten.length > 0) {
                 yield* sql`
