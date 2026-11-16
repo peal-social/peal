@@ -18,6 +18,13 @@ import { TokenCipher } from "./token-cipher.ts";
 
 const decodeChannelId = Schema.decodeUnknownOption(ChannelIdSchema);
 
+// A platform that did not revoke a disconnected channel's tokens.
+const notRevoked = (cause: { readonly _tag: string }) =>
+  Effect.logWarning(
+    "The platform did not revoke a disconnected channel's tokens",
+    cause
+  );
+
 // The longest a disconnect waits on the platform to forget Peal's grant.
 const revokeTimeout = Duration.seconds(10);
 
@@ -121,8 +128,14 @@ export class DisconnectChannel extends Context.Service<
             return yield* Effect.void;
           }
 
-          // Never fails: what is left is the platform's to forget.
-          yield* decryptTokens(credentials.value, channel.value.id).pipe(
+          // What the channel set up on its platform is undone while the
+          // platform revokes its tokens, side by side, so the member waits
+          // ten seconds at most. Neither fails: what is left is the
+          // platform's to forget.
+          const departing = decryptTokens(
+            credentials.value,
+            channel.value.id
+          ).pipe(
             Effect.provideService(TokenCipher, cipher),
             Effect.flatMap((tokens) =>
               departures.departed(channel.value, tokens)
@@ -134,19 +147,19 @@ export class DisconnectChannel extends Context.Service<
             )
           );
 
-          return yield* revoke(channel.value, credentials.value).pipe(
+          const revoked = revoke(channel.value, credentials.value).pipe(
             Effect.timeout(revokeTimeout),
-            Effect.catch((error) =>
-              Effect.logWarning(
-                "The platform did not revoke a disconnected channel's tokens",
-                error
-              )
-            ),
+            Effect.catch(notRevoked),
             Effect.annotateLogs({
               channelId: channel.value.id,
               platform: channel.value.platform,
             })
           );
+
+          return yield* Effect.all([departing, revoked], {
+            concurrency: 2,
+            discard: true,
+          });
         }
       );
 
