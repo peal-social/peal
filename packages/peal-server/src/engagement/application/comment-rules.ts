@@ -750,6 +750,18 @@ export class CommentRules extends Context.Service<
               )
             );
 
+            // A rule that sends private messages is widened, rewritten or
+            // set going again only by one who may send them; pausing it,
+            // or taking its private text off, by anyone who may answer.
+            if (
+              Option.isSome(changed.privateReply) &&
+              (request.keywords !== undefined ||
+                request.reply !== undefined ||
+                request.paused === false)
+            ) {
+              yield* privateReplies.mayWrite(actor);
+            }
+
             if (
               reply !== undefined ||
               Option.isSome(Option.flatten(privateReply))

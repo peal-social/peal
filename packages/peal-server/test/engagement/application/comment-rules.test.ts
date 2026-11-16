@@ -1631,6 +1631,68 @@ describe("a comment rule's private reply", () => {
       }).pipe(Effect.provide(RulesTest))
   );
 
+  it.live(
+    "lets only who may send private replies widen or resume a rule that holds one",
+    () =>
+      Effect.gen(function* widen() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const { rule } = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+
+          const replier = actorIn(
+            workspaceId,
+            permissionsFor("editor").filter(
+              (granted) => granted !== "engagement:message"
+            )
+          );
+
+          const refused = (change: Parameters<typeof rules.change>[2]) =>
+            rules.change(replier, rule.rule.id, change).pipe(
+              Effect.flip,
+              Effect.map((error) =>
+                error._tag === "MissingPermission"
+                  ? error.permission
+                  : error._tag
+              )
+            );
+
+          assert.strictEqual(
+            yield* refused({ keywords: ["price", "list"] }),
+            "engagement:message"
+          );
+          assert.strictEqual(
+            yield* refused({ reply: "Another public text." }),
+            "engagement:message"
+          );
+
+          // Pausing is always theirs; setting going again is not.
+          yield* rules.change(replier, rule.rule.id, { paused: true });
+
+          assert.strictEqual(
+            yield* refused({ paused: false }),
+            "engagement:message"
+          );
+
+          // Taking the private text off is theirs too; then the rule is
+          // a public one they may change.
+          const off = yield* rules.change(replier, rule.rule.id, {
+            privateReply: null,
+          });
+
+          assert.isTrue(Option.isNone(off.rule.privateReply));
+
+          const resumed = yield* rules.change(replier, rule.rule.id, {
+            keywords: ["price", "list"],
+            paused: false,
+          });
+
+          assert.strictEqual(resumed.rule.status._tag, "active");
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      }).pipe(Effect.provide(RulesTest))
+  );
+
   it.live("answers nothing more in public once stopped mid-run", () =>
     Effect.gen(function* stopsPublic() {
       const workspaceId = yield* freshWorkspace;
