@@ -33,7 +33,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRulePage> listCommentRules(String workspaceId) {
         CompletableFuture<PealClientHttpResponse<CommentRulePage>> rawFuture =
@@ -48,7 +48,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRulePage> listCommentRules(String workspaceId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CommentRulePage>> rawFuture =
@@ -63,7 +63,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRulePage> listCommentRules(
             String workspaceId, ListCommentRulesInboxRulesRequest request) {
@@ -79,7 +79,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRulePage> listCommentRules(
             String workspaceId, ListCommentRulesInboxRulesRequest request, RequestOptions requestOptions) {
@@ -126,7 +126,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRule> getCommentRule(String workspaceId, String ruleId) {
         CompletableFuture<PealClientHttpResponse<CommentRule>> rawFuture =
@@ -141,7 +141,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRule> getCommentRule(
             String workspaceId, String ruleId, RequestOptions requestOptions) {
@@ -157,7 +157,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRule> getCommentRule(
             String workspaceId, String ruleId, GetCommentRuleInboxRulesRequest request) {
@@ -173,7 +173,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRule> getCommentRule(
             String workspaceId, String ruleId, GetCommentRuleInboxRulesRequest request, RequestOptions requestOptions) {
@@ -254,7 +254,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply (an application, the owner's consent for messages too).
+     * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
      */
     public CompletableFuture<CommentRule> updateCommentRule(String workspaceId, String ruleId) {
         CompletableFuture<PealClientHttpResponse<CommentRule>> rawFuture =
@@ -269,7 +269,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply (an application, the owner's consent for messages too).
+     * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
      */
     public CompletableFuture<CommentRule> updateCommentRule(
             String workspaceId, String ruleId, RequestOptions requestOptions) {
@@ -285,7 +285,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply (an application, the owner's consent for messages too).
+     * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
      */
     public CompletableFuture<CommentRule> updateCommentRule(
             String workspaceId, String ruleId, CommentRuleChange request) {
@@ -301,7 +301,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply (an application, the owner's consent for messages too).
+     * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
      */
     public CompletableFuture<CommentRule> updateCommentRule(
             String workspaceId, String ruleId, CommentRuleChange request, RequestOptions requestOptions) {

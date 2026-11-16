@@ -34,7 +34,7 @@ func NewClient(options *core.RequestOptions) *Client {
 	}
 }
 
-// Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. Needs engagement:read.
+// Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's `privateReply`, and each match's `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 //
 // Example:
 //
@@ -92,7 +92,7 @@ func (c *Client) CreateCommentRule(
 	return response.Body, nil
 }
 
-// Answers a comment rule of the workspace, what its channels can carry and what it matched. Needs engagement:read.
+// Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 //
 // Example:
 //
@@ -148,7 +148,7 @@ func (c *Client) DeleteCommentRule(
 	return nil
 }
 
-// Changes a rule's keywords, reply or private reply (`privateReply` null takes it off), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply (an application, the owner's consent for messages too).
+// Changes a rule's keywords, reply or private reply (`privateReply` null takes it off), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
 //
 // Example:
 //
