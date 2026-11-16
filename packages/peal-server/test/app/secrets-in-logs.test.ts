@@ -88,6 +88,7 @@ import {
   fakeSlackApi,
   slackAccount,
   slackBotToken,
+  slackUploadTicket,
 } from "#test/publishing/fakes/fake-slack-api.ts";
 import {
   fakeTelegramApi,
@@ -917,6 +918,11 @@ layer(
         json({ error: "not_in_channel", ok: false }),
         { _tag: "hang" },
       ]);
+      // The fifth post's upload never gets an answer.
+      slack.script("upload", [
+        { _tag: "answer", status: 200 },
+        { _tag: "hang" },
+      ]);
 
       const results = yield* Effect.all(
         [
@@ -929,6 +935,12 @@ layer(
             })
           ),
           onSlack.publish(yield* outgoing({ accountId: slackAccount })),
+          onSlack.publish(
+            yield* outgoing({
+              accountId: slackAccount,
+              media: [attached(image)],
+            })
+          ),
         ].map((publish) => publish.pipe(Effect.exit))
       ).pipe(Effect.withSpan("test.slack-posts"));
 
@@ -970,6 +982,11 @@ layer(
       assert.notInclude(all, "xoxb-synthetic-installed-token");
       assert.notInclude(all, "synthetic-webhook-secret");
       assert.notInclude(all, slackBotToken);
+      assert.lengthOf(
+        slack.requests().filter(({ path }) => path.startsWith("/upload/")),
+        2
+      );
+      assert.notInclude(all, slackUploadTicket);
     }).pipe(Effect.scoped)
   );
 });

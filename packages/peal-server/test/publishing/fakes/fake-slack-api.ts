@@ -27,6 +27,9 @@ export const slackTeamId = "T0SYNTH01";
 
 export const slackChannel = "C0SYNTH01";
 
+/** What every upload address the fake answers carries, as a secret. */
+export const slackUploadTicket = "synthetic-upload-ticket";
+
 /** The channel's account id, as the channel keeps it: team and channel. */
 export const slackAccount = `${slackTeamId}/${slackChannel}`;
 
@@ -212,7 +215,11 @@ export const fakeSlackApi = Effect.fn("test.fakeSlackApi")(
         name: decodeText(fields["filename"] ?? ""),
       });
 
-      return ok({ file_id: id, upload_url: `${origin}/upload/v1/${id}` });
+      // A ticket for the one file, as Slack's address carries one.
+      return ok({
+        file_id: id,
+        upload_url: `${origin}/upload/v1/${id}?ticket=${slackUploadTicket}-${id}`,
+      });
     };
 
     const replaceFile = (id: string, change: Partial<FakeSlackFile>) => {
@@ -321,6 +328,10 @@ export const fakeSlackApi = Effect.fn("test.fakeSlackApi")(
     ): Promise<PlatformAnswer> => {
       if (request.path.startsWith("/upload/v1/")) {
         const script = scripts.next("upload");
+
+        if (script?._tag === "hang") {
+          return await never();
+        }
 
         return script?._tag === "answer" ? script : upload(request);
       }
