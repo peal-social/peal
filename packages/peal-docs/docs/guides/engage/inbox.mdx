@@ -1,6 +1,6 @@
 ---
 title: Inbox
-description: "Read and answer the comments under your published posts, the reviews of your Google Business Profile locations and your Mastodon and Bluesky direct messages, and see what each platform lets Peal read."
+description: "Read and answer the comments under your published posts, the reviews of your Google Business Profile locations and your Mastodon, Bluesky, Messenger and Instagram direct messages, and see what each platform lets Peal read."
 sidebar:
   icon: inbox
 ---
@@ -12,7 +12,7 @@ The inbox reads comments on posts published from Peal:
 - on Mastodon and Bluesky;
 - on Facebook Pages, Instagram, YouTube and LinkedIn company pages, where whoever runs the server turned them on ([Facebook Pages and Instagram](#meta), [YouTube](#youtube), [LinkedIn pages](#linkedin)).
 
-Mentions are not collected; direct messages are, on Mastodon and Bluesky, where whoever runs the server turned them on ([Direct messages](#direct-messages)). Peal answers nothing by itself: every reply is written and sent by a person, or by an application a person connected and allowed to publish.
+Mentions are not collected; direct messages are, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram, where whoever runs the server turned them on ([Direct messages](#direct-messages)). Peal answers nothing by itself: every reply is written and sent by a person, or by an application a person connected and allowed to publish.
 
 ## What Peal collects [#collected]
 
@@ -298,7 +298,7 @@ A rule on a post can start before the post is out: it acts on the channels the p
 
 ## Direct messages [#direct-messages]
 
-Where whoever runs the server turned them on ([`PEAL_INBOX_MESSAGES`](/self-hosting/environment-variables#core), with `mastodon`, `bluesky` or both), the inbox also reads the private conversations people hold with the workspace's Mastodon and Bluesky accounts, and members answer them privately, as the account. Neither platform reviews an app for this. Peal never starts a conversation: it answers those someone else began.
+Where whoever runs the server turned them on ([`PEAL_INBOX_MESSAGES`](/self-hosting/environment-variables#core), with `mastodon`, `bluesky`, `facebook`, `instagram`, or several), the inbox also reads the private conversations people hold with the workspace's Mastodon and Bluesky accounts, Facebook Pages (Messenger) and Instagram professional accounts, and members answer them privately, as the account. Neither Mastodon nor Bluesky reviews an app for this; Meta does ([Messenger and Instagram](#meta-messages)). Peal never starts a conversation: it answers those someone else began.
 
 Nothing of a channel's conversations is read until a workspace turns its messages on: an owner or an admin, in person, under **Direct messages: what Peal reads** in the inbox, one channel at a time. Turning them off stops the reading and deletes at once everything Peal kept of that channel's conversations; a message on its way that never set out is not sent.
 
@@ -314,8 +314,23 @@ Nothing of a channel's conversations is read until a workspace turns its message
 - **How long.** Peal keeps each message 30 days after it was sent, a message sent from Peal 30 days after sending ended or it was left unconfirmed, and a conversation until its last message is that old and no message to it is on its way, then deletes them within the hour. Peal reads each kept conversation again at least once a day: a message the platform no longer shows is deleted within a day, and a conversation once two whole listings of the account's conversations in a row no longer show it. A conversation too long to read whole, or an account with more conversations than a listing reads, goes by the 30 days instead; an empty listing deletes nothing. Turning the channel's messages off, disconnecting the channel, or deleting the workspace deletes its conversations at once.
 - **Mastodon.** A direct message is a status of `direct` visibility, which reaches the accounts it mentions: Peal puts the mention of every participant first, and the whole counts in Mastodon's length. A message that mentions anyone else is refused (`message_mentions_outside`), as it would reach them too; a conversation shows only the statuses exchanged between the account and its participants. It takes the permissions Peal's sign-in has always asked (`read:statuses`, `write:statuses`).
 - **Bluesky.** Messages go through Bluesky's chat service, which takes permissions of its own: the sign-in asks only what publishing needs, and turning a Bluesky channel's messages on asks the account to allow its chat first: **Allow, on Bluesky** signs in again asking for it, and the switch stays off until the account allowed it. A later [reconnect](/guides/channels#reconnect) of the channel asks for it again, so its messages stay readable. [Connecting](/guides/channels#connect) the same account again with **Connect Bluesky** asks only what publishing needs: at its next reading Peal then turns the channel's messages off, deletes their conversations, and tells the members who may connect channels; to read them again, choose **Read its messages**, then **Allow, on Bluesky**. A message takes 1,000 characters (graphemes) at most. Answering a message request accepts the conversation. Group conversations are not read.
+- **Messenger and Instagram.** [See below](#meta-messages).
 - **Answering.** Only a conversation someone else wrote in can be answered. One message to a conversation is on its way at a time. A message whose outcome is unknown is never sent again: check the platform, then say what you found. On a server that bills, each message sent counts one inbox message, as a reply to a comment does.
 - **Events and notices.** A webhook endpoint hears [`message.received`](/developers/webhooks/events/media-comments#message-received) for each message read for the first time, and [`message.sent`](/developers/webhooks/events/media-comments#message-sent) for each one that went out, by ids only. Members who answer messages are told "a new message on" the channel, once a conversation and day, never from whom. Members who may connect channels are told when Peal turned a channel's messages off because its account no longer allows them.
+
+### Messenger and Instagram [#meta-messages]
+
+A Facebook Page's Messenger conversations and an Instagram professional account's, through either way in (a Page, or Instagram Login), are read through Meta's Conversations API. Meta also tells Peal when a message arrives, so a new one is in the inbox within seconds; Peal still reads each account on the schedule above, so a missed notice only delays it.
+
+- **What is read.** Each message's text and how many files it carries, a story the account is mentioned in counted as one file. Peal never keeps a file, a story or a link to one: Meta forbids storing a story mention's media.
+- **Permissions.** Connecting a Page or an Instagram account for posting asks for none of Meta's messaging permissions. Turning a channel's messages on asks for them: **Allow, on Facebook** (or **on Instagram**, for an account connected through Instagram Login) signs in again asking for them, and the switch stays off until they are granted. A later [reconnect](/guides/channels#reconnect) asks for them again.
+- **Instagram's own switch.** On Instagram, the account's owner also turns on **Settings → Messages and story replies → Message controls → Connected tools → Allow access to messages**; until then nothing can be read.
+- **Before Meta's review.** Until Meta has reviewed the server's app (its App Review), only people with a role on that app can write to the account and be answered through Peal.
+- **24 hours.** Meta takes an answer only within 24 hours of the person's last message. Peal shows until when a conversation can be answered, and ends a minute early so that a message it lets through is not refused for a clock's difference; past it, the answer box is gone and a message sent through the API is refused before anything is counted (`windowClosed`). Answer from Meta's own inbox if its rules allow it, or wait for the person to write again.
+- **Length.** A message takes 2,000 characters on Messenger, and 1,000 bytes of UTF-8 on Instagram.
+- **20 messages.** Meta gives the details of a conversation's 20 latest messages only. Peal keeps those it has read; a conversation longer than that is never read whole, so its older messages go by the 30 days rather than when they leave the platform.
+- **Messages taken back.** A message its author takes back on Instagram is deleted from Peal as soon as Meta says so. Messenger says nothing of a message taken back: it stays in Peal until its 30 days are up.
+- **Disconnecting.** Turning a channel's messages off, or disconnecting it, asks Meta to stop telling Peal of its messages, unless another channel of the same Page or of the Instagram account linked to it still reads them.
 
 ## With the API, the command line and AI assistants [#api]
 

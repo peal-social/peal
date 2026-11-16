@@ -216,6 +216,18 @@
   scopes only for a reconnect asked with `messages` (the inbox's switch,
   `POST …/reconnect?messages=true`) or of a channel that granted them
   (`grantsBlueskyChat`), so a reconnect never takes its messages away.
+- Where `PEAL_INBOX_MESSAGES` names `facebook` or `instagram`
+  (`ChannelPlatformSettings.messages`), Facebook Login's products ask
+  their `messageScopes` and Instagram Login `instagramLoginMessageScope`
+  only for a sign-in with `messages` or a reconnect of a channel that
+  granted one; off, the dialog's `scope` is as before, byte for byte.
+  Instagram Login keeps what it asked in the attempt's secret, for an
+  answer that lists no permission. `DisconnectChannel` tells
+  `ChannelDepartures` (`channel-departures.ts`) once the channel is gone,
+  with the tokens read before: `metaMessageDepartures` deletes Meta's
+  `subscribed_apps` while no other channel reads the Page or its linked
+  Instagram account (`ChannelDirectory.withAccount`,
+  `EngagementRecords.readsMessages`), best effort, ten seconds.
 - `platformRegistrations` (`infrastructure/platforms/platform-addresses.ts`)
   lists every address a platform is given or reads (redirect URIs, Meta's
   data deletion and deauthorize callbacks, Bluesky's documents), from the

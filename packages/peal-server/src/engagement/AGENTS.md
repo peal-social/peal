@@ -8,8 +8,8 @@
   build on it. Nothing answers by itself but a comment rule (below), and
   no assistant prompt ever reads a comment.
   slice is comments on posts Peal published, the reviews of Google
-  Business Profile locations, and the direct messages of Mastodon and
-  Bluesky channels (below); mentions will build on it. Nothing here answers by itself: no automation,
+  Business Profile locations, and the direct messages of Mastodon,
+  Bluesky, Facebook Page and Instagram channels (below); mentions will build on it. Nothing here answers by itself: no automation,
   and no assistant prompt ever reads a comment.
 - A `Thread` is the comments under one published target; a `Comment` is
   what its platform gave (its id there, the comment it answers, its
@@ -429,15 +429,19 @@
   set out and deletes the box and conversations (`channelGone`).
 - They are read only where `PEAL_INBOX_MESSAGES` names the platform
   (`#shared/infrastructure/inbox-messages.ts`, read once into
-  `CurrentInboxMessages`; `mastodon`, `bluesky`; another name stops the
-  server). Off, `CollectMessages` follows and calls nothing, the
-  abilities are `unsupported` and Bluesky's sign-in is as before, byte for
-  byte. `messageAbilitiesOf` (`read`, `send`): Mastodon takes
+  `CurrentInboxMessages`; `mastodon`, `bluesky`, `facebook`, `instagram`;
+  another name stops the server, as does a Meta platform without its app
+  or `META_WEBHOOK_VERIFY_TOKEN`). Off, `CollectMessages` follows and
+  calls nothing, the abilities are `unsupported` and the sign-ins are as
+  before, byte for byte. `messageAbilitiesOf` (`read`, `send`): Mastodon takes
   `read:statuses` and `write:statuses`, which its sign-in always asked;
   Bluesky the chat methods' `rpc` scopes at `did:web:api.bsky.chat#bsky_chat`
   (`blueskyChatScopes`, or `transition:chat.bsky` with
-  `transition:generic`), asked only when a member turns a Bluesky
-  channel's messages on: `switchChannel` refuses a channel whose read is
+  `transition:generic`), and Meta's by the channel's way in
+  (`metaMessageScopesOf`: `facebookMessageScopes`,
+  `instagramPageMessageScopes`, `instagramLoginMessageScope`;
+  `messageAbilitiesOf` takes the channel's `connection`), asked only when
+  a member turns a channel's messages on: `switchChannel` refuses a channel whose read is
   not `available` (`MessageAbilityUnavailable`, `reconnect`), and the web
   app reconnects it with `messages=true`, the switch off meanwhile. A
   channel without them is never called (`platform-messages.ts`): one whose
@@ -520,10 +524,17 @@
   A `MessagePlatform` without `follow`/`unfollow` (Mastodon, Bluesky)
   answers `unneeded` and calls nothing; one with them answers
   `unneeded` to `unfollow` while another channel of Peal's follows the
-  account. `channelGone` asks nothing: it runs in the channels
-  context's transaction, and a moved channel's account is still
-  followed. Never run any of it against Meta before the setting names a
-  Meta platform anywhere: U9b's adapters, and the sandbox's trial first.
+  account (`FollowedElsewhere`: `platform-messages.ts` asks
+  `MessageChannelsOfAccount` and the boxes; Meta's adapter reads with the
+  Page's token which accounts its subscription carries, the Page and the
+  Instagram account linked to it). A follow that finds the box gone when
+  it returns unfollows again (a switch-off ran meanwhile).
+  `channelGone` asks nothing: it runs in the channels context's
+  transaction; a member's disconnect stops Meta's events afterwards with
+  the tokens the channel held (the channels context's
+  `ChannelDepartures`, which asks `EngagementRecords.readsMessages`), and a
+  moved channel's account stays followed (its events are `ignored` until
+  the new workspace turns its messages on).
 - Mastodon (`platforms/mastodon/mastodon-messages.ts`, docs read
   2026-11-14): a message is a status of `direct` visibility;
   `/api/v1/conversations` (40 a page, 5 pages, the `Link` header's next
@@ -562,11 +573,44 @@
   ones would be missed by two whole listings, and deleted.
   Check too that, after a forced token refresh on the Bluesky test
   account, the channel's stored scopes still pass `grantsBlueskyChat`.
+- Facebook Pages and Instagram (`platforms/meta/meta-messages.ts`, one
+  adapter for the three ways in, Meta's pages read 2026-11-16): the
+  Conversations API (`/me/conversations?platform=messenger|instagram`, 50
+  a page, 5 pages, read to the end as its order is not stated; a changed
+  `updated_time` read back with `messages.limit(20)`, Meta detailing a
+  conversation's 20 latest only, so `complete` only for 20 or fewer, all
+  detailed; `deleted` always empty, Instagram's taken back come by the
+  event and Messenger tells of none), half a second between two calls of
+  an account (`conversationsPace`), and the usage ceiling. Files and a
+  story are a count, never kept. Sending is `POST /me/messages`
+  (`RESPONSE`) with no key: a resume looks among the 20 latest. Meta's
+  codes map to `windowClosed`, `refused`, `conversationGone`,
+  `rateLimited`, by code and subcode, logged by them alone. Instagram
+  1,000 UTF-8 bytes, Messenger 2,000 characters (`chatOverflow`). `follow`
+  is `POST /me/subscribed_apps` (`messages,message_echoes`), `unfollow`
+  its `DELETE`, guarded (above): only messages come by events; once
+  comments do, the guard asks after them too. Never run against Meta.
+  Not verified, for the sandbox's trial with the owner (record each
+  answer in the adapter with its date): which secret signs Instagram
+  Login's events (the route takes either); whether `entry[].id` and a
+  message's `from.id` are the account ids Peal keeps through each way in;
+  the conversations' order; whether a Page's subscription carries
+  Instagram's events, and needs `pages_messaging` on an Instagram-only
+  channel; Messenger's length (the Send API reference needs a sign-in)
+  and the `attachments` and `story` sub-fields; whether Publish asks
+  anything of an app with no reviewed permission; whether a message
+  taken back on Messenger still shows in the Conversations API; and
+  `HUMAN_AGENT` on graph.instagram.com (U9c). Production keeps the
+  setting off until Meta's App Review, counsel's line and one live run.
 - Sending (`EngagementMessages.send`, `engagement:message`, in
-  `publishingPermissions`): the conversation, the channel able, the
-  platform's `replyWindowOf` open (always, on these two), the text within
-  5,000 characters and the platform's length (Mastodon's status through
-  `ReplyLimits`), then the journal row, the meter's claim (one
+  `publishingPermissions`): the conversation, the channel able, the text
+  within 5,000 characters and the platform's length (Mastodon's status
+  through `ReplyLimits`, `chatOverflow` for the others), the platform's
+  `replyWindowOf` open (always on Mastodon and Bluesky; Meta's 24 hours
+  after the person's last message, ended a minute early,
+  `metaWindowSkew`), refused `MessageAbilityUnavailable` with `reason`
+  `windowClosed` and `closedAt` before anything is journalled or claimed,
+  unless a key names a message it made (`madeWithKey`, read only), then the journal row, the meter's claim (one
   `outboundMessages`, paused refusing first unless the request has a key),
   the job (`SendMessageV1`, payload `messageId`, activity `send`,
   persisted contract) and the conversation marked read, in one
