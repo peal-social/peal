@@ -66,6 +66,21 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   Docker). It runs from a copy on the server with the command module:
   over SSH, `ansible.builtin.script` runs in a pseudo-terminal, which
   mixes stderr into the stdout a task parses.
+- A production release that runs publishes the app's GitHub release
+  (`peal_release_github`, in `group_vars/production` alone: never turn it
+  on for the sandbox), after the checks through the tunnel, with the
+  operator's own `gh` login on the machine running Ansible: no GitHub
+  credential goes to the server, the vault or the repository. Its name is
+  CalVer, the day in UTC (`vYYYY.MM.DD`, then `.2`, `.3`… that day), which
+  never matches an SDK's tag; its notes and the docs' Changelog come from
+  one generator, `packages/peal-docs/changelog` (run as
+  `packages/peal-docs/scripts/changelog.ts`), which `release.yml` runs
+  before the images build, writing the history into the checkout's
+  `packages/peal-docs/changelog.json` for the docs. `gh`'s right to push is
+  checked before anything changes; tags are fetched first, a tagged commit
+  keeps its tag and an existing release is left alone, so a second run
+  publishes nothing, and check mode reports instead
+  (`tests/test_release_github.py`, with a stand-in `gh`).
 - `peal_preflight` checks the `PEAL_POSTGRES_*` memory settings in
   `peal_settings` (a whole number with `kB`, `MB`, `GB` or `TB`; a number
   for the page cost) before `release.yml` stops anything: Postgres stops at

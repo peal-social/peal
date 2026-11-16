@@ -9,3 +9,21 @@ peal_release_keep: 3
 peal_release_platforms:
   x86_64: linux/amd64
   aarch64: linux/arm64
+
+# Whether a release that runs publishes a GitHub release of the app, named
+# after the day (vYYYY.MM.DD, then .2, .3… that day) with the notes of the
+# pull requests since the last one: production's group_vars turn it on, and
+# nothing else does, so the sandbox never publishes. gh publishes it with
+# the operator's own login, on the machine running Ansible; the server holds
+# no GitHub credential.
+peal_release_github: false
+peal_release_github_repo: >-
+  {{ peal_release_repo_url | regex_replace('^https://github\.com/', '') | regex_replace('\.git$', '') }}
+# The notes' and the docs' generator, the one the Changelog page is built
+# with (packages/peal-docs/changelog), from the repository running Ansible.
+peal_release_changelog_script: >-
+  {{ playbook_dir | dirname | dirname | dirname }}/peal-docs/scripts/changelog.ts
+# The day the release ships, in UTC, which names it.
+peal_release_date: "{{ now(utc=true, fmt='%Y-%m-%d') }}"
+peal_release_bun: bun
+peal_release_gh: gh

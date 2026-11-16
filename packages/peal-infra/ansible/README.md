@@ -113,7 +113,8 @@ assistant answers within 90, so the tunnel needs no timeout of its own.
 
 Run each with `--limit production` or `--limit sandbox` (`--limit uptime` for
 `bootstrap.yml` on the uptime server), and `site.yml` and `uptime.yml` with
-`--check --diff` first. `release.yml` has no dry run.
+`--check --diff` first. `release.yml` has no dry run of its own; in check
+mode it says what it would publish on GitHub, and publishes nothing.
 
 ### On the server
 
@@ -266,7 +267,9 @@ is the way past 3,000 users.
 ## Run the playbooks
 
 You need [uv](https://docs.astral.sh/uv/), `cloudflared` (`brew install
-cloudflared`), Git, and Docker with Buildx, which builds the images for the
+cloudflared`), Git, Bun with this repository's dependencies installed
+(`bun install --frozen-lockfile`), and, to release production, the GitHub CLI
+signed in ([The app's releases](#the-apps-releases)), and Docker with Buildx, which builds the images for the
 servers' architecture: each server's own, from its facts (`linux/amd64` on
 x86 servers, `linux/arm64` on Arm ones), unless `peal_image_platform` names
 another in the inventory or with `-e`. Docker Desktop and OrbStack emulate
@@ -292,6 +295,8 @@ server:
 - the secrets the server generates, and the swap file's creation;
 - Docker Engine's pins, and the platform images are built for;
 - the release's steps on Postgres, run against its image;
+- the app's GitHub release, on a synthetic repository with a stand-in for
+  `gh` (skipped without Bun);
 - the uptime server: its checks against each environment's host names, then
   Gatus and Caddy run with the configuration Ansible renders, on a network
   that reaches nothing outside, to show that Gatus loads it and takes a
@@ -796,7 +801,9 @@ server:
    `secrets.env`;
 4. the new server starts and applies its migrations before it listens;
 5. the rest of the stack starts, and the release is checked on the server and,
-   for production, through the tunnel.
+   for production, through the tunnel;
+6. on production alone, GitHub gets the app's release
+   ([The app's releases](#the-apps-releases)).
 
 A service's mounts name `/srv/peal/current/…`, which reads the same
 whatever release it points at, so Compose alone would keep a service on
@@ -834,6 +841,43 @@ asking a poll dealt with.
 Every container of the stack runs on a read-only file system, writing only
 to its volumes and to small tmpfs mounts, and none gains privileges it was
 not started with.
+
+### The app's releases
+
+Each production release that runs publishes a GitHub release of the app
+(`peal_release_github`, on in `group_vars/production` alone; the sandbox
+never publishes), with `gh` signed in as the operator on the machine
+running Ansible: nothing new on the server, and no token anywhere in the
+repository. You need Bun, which runs the generator, and, for production,
+`gh auth login` with an account that may push to the repository, which
+`release.yml` checks before it changes anything.
+
+- **The name** is the day it ships, in UTC: `v2026.11.16`, then
+  `v2026.11.16.2`, `.3`… for the next ones that day, which a version sort
+  (`git tag --sort=v:refname`) puts after the first. The SDKs keep their
+  own tags (`sdk-<language>-v…`, `packages/peal-sdk/go/v…`), which the
+  pattern never matches. A release's day is the one its licence counts its
+  two years from ([Licensing](../../../README.md#licensing)).
+- **The notes** list the pull requests merged on `main` since the last app
+  tag, by their titles (`feat`, `fix`, `perf`, and `security` or a
+  `security` scope), each linked to its pull request; the first release,
+  with no tag before it, lists every pull request. The generator is the
+  docs' (`packages/peal-docs/changelog`, run as
+  `packages/peal-docs/scripts/changelog.ts`), so the notes and the docs'
+  Changelog page say the same. To see what the next release would hold:
+  `bun packages/peal-docs/scripts/changelog.ts notes`, from the repository
+  root after `git fetch --tags`.
+- **The docs** are built into the images before the release runs, so
+  `release.yml` names the release first and writes the history, this
+  release in it, into the checkout (`packages/peal-docs/changelog.json`),
+  which the docs read; the sandbox's docs get the releases tagged so far.
+- **Once only.** The release fetches the app's tags first. A commit an app
+  tag names keeps that tag, and a release GitHub has already is left alone,
+  so running `release.yml` again changes nothing there; a run that stopped
+  after the deploy publishes the release when it is run again. Check mode
+  publishes nothing and says what it would publish. A release of a commit
+  older than the last one, as a roll-back to one never released, gets a
+  release of its own with nothing listed.
 
 ### Stripe catalogue
 
@@ -1444,6 +1488,7 @@ A second run of `site.yml` reports no change:
 `release.yml` changes what a release changes. Run again for the same commit,
 it builds and uploads nothing (the images are on the server), creates no
 Bluesky key (one is in `secrets.env`), leaves the database password alone
-(the server's is accepted, over the network as the server signs in), and
-Compose recreates nothing. What it reads of the running containers is their
+(the server's is accepted, over the network as the server signs in),
+publishes no second GitHub release (the commit's tag and release are
+there), and Compose recreates nothing. What it reads of the running containers is their
 image and settings' hash, never their environment, which holds secrets.

@@ -70,3 +70,17 @@ edits (`guides/posts/published.mdx`, under `#unpublish`), the CLI's
 `--options` line (`developers/cli/posts.mdx`), the server settings table
 (`self-hosting/environment-variables.mdx`, first column under "Server").
 Keep each as it is shaped.
+
+## The Changelog
+
+`changelog.mdx` (Get started, both languages) includes its releases from
+`docs/_changelog/<locale>.mdx`, which `blume.config.ts` writes each time
+Blume loads it (Git ignores them): never edit or commit them. They come
+from `changelog/`, the generator the production release's GitHub notes come
+from too: the release history file `changelog.json` when `release.yml`
+wrote one, else the app's tags in Git (`vYYYY.MM.DD`, `.2` for a second
+that day), else nothing, and the page says that nothing has been released
+yet (a shallow clone, as CI's, or the images' builds without the file).
+Entries are the pull requests' English titles; `entryText` in
+`changelog/render.ts` is where a translation plugs in. `nx run
+peal-docs:unit` tests it, on synthetic repositories.
