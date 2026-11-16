@@ -125,6 +125,7 @@ const outgoing: OutgoingDirect = {
   messageId: outgoingMessageId(1),
   participants: [participant(1)],
   platformConversationId: "c1",
+  humanAgent: false,
   request: false,
   takenIds: [],
   text: "@reader1@social.example Thanks!",

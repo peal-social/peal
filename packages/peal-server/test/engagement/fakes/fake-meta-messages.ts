@@ -74,6 +74,12 @@ export interface FakeMetaMessagesOptions {
    * Meta's side), listing every conversation of the account.
    */
   readonly ignoresUserId?: boolean;
+  /**
+   * Whether Meta's App Review granted the app the Human Agent feature:
+   * without it, a message tagged `HUMAN_AGENT` is refused (with a
+   * permission error: Meta's pages do not say which).
+   */
+  readonly humanAgent?: boolean;
 }
 
 type Params = Readonly<Record<string, string>>;
@@ -356,7 +362,18 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
         : graphError(100);
     }
 
-    if (params["messaging_type"] !== "RESPONSE") {
+    const tagged =
+      params["messaging_type"] === "MESSAGE_TAG" &&
+      params["tag"] === "HUMAN_AGENT";
+
+    if (tagged && options.humanAgent !== true) {
+      return graphError(200);
+    }
+
+    if (
+      !tagged &&
+      (params["messaging_type"] !== "RESPONSE" || params["tag"] !== undefined)
+    ) {
       return graphError(100);
     }
 

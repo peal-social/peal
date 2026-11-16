@@ -196,6 +196,7 @@ const statusOf = (row: OutgoingRow) => {
 const outgoingOfRow = (row: OutgoingRow) =>
   decodeOutgoing({
     authorId: Option.fromNullOr(row.authorId),
+    byPerson: row.byPerson,
     channelId: row.channelId,
     conversationId: row.conversationId,
     createdAt: utc(row.createdAt),
@@ -704,7 +705,8 @@ export const DrizzleMessageStore = Layer.effect(
         const inserted = yield* sql`
           INSERT INTO engagement.outgoing_messages (
             id, conversation_id, workspace_id, channel_id, author_id, text,
-            created_at, status, attempted_at, settled_at, reason, key_digest
+            created_at, status, attempted_at, settled_at, reason, key_digest,
+            by_person
           )
           SELECT ${saved.id}::uuid, conversation.id,
                  conversation.workspace_id, conversation.channel_id,
@@ -712,7 +714,7 @@ export const DrizzleMessageStore = Layer.effect(
                  ${DateTime.formatIso(saved.createdAt)}::timestamptz,
                  ${saved.status._tag}, ${status.attemptedAt}::timestamptz,
                  ${status.settledAt}::timestamptz, ${status.reason}::text,
-                 ${keyDigest}::text
+                 ${keyDigest}::text, ${saved.byPerson}
           FROM engagement.conversations AS conversation
           WHERE conversation.id = ${saved.conversationId}::uuid
           ON CONFLICT DO NOTHING

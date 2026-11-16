@@ -436,6 +436,68 @@ layer(StoreTest)("the message store", (it) => {
   );
 
   it.effect(
+    "keeps whether a member wrote a message in person, and journals none so by default",
+    () =>
+      Effect.gen(function* inPerson() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-04T11:00:00.000Z");
+        const at = utc("2049-02-04T11:00:00.000Z");
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box]);
+
+          const talk = yield* conversationOn(
+            box,
+            1,
+            "2049-02-04T09:00:00.000Z"
+          );
+
+          const other = yield* conversationOn(
+            box,
+            2,
+            "2049-02-04T09:00:00.000Z"
+          );
+
+          yield* store.saveConversations([talk, other]);
+
+          const byPerson = writeMessage(
+            yield* newId(OutgoingMessageIdSchema),
+            talk,
+            Option.none(),
+            "Back on Monday",
+            at,
+            true
+          );
+
+          const byKey = writeMessage(
+            yield* newId(OutgoingMessageIdSchema),
+            other,
+            Option.none(),
+            "Back on Monday",
+            at
+          );
+
+          yield* store.journalMessage(byPerson, Option.none());
+          yield* store.journalMessage(byKey, Option.none());
+
+          assert.deepStrictEqual(
+            (yield* store.outgoing(byPerson.id)).pipe(
+              Option.map((kept) => kept.byPerson)
+            ),
+            Option.some(true)
+          );
+          assert.deepStrictEqual(
+            (yield* store.outgoing(byKey.id)).pipe(
+              Option.map((kept) => kept.byPerson)
+            ),
+            Option.some(false)
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
     "drops a message whose conversation went, and finds the stranded",
     () =>
       Effect.gen(function* drops() {

@@ -776,9 +776,20 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
         return failed("conversationGone");
       }
 
+      // A person's own answer carries the Human Agent tag, which Meta
+      // takes "within 7 days after a customer's last message", and the
+      // only tag Instagram takes (`MESSAGE_TAG`: "A non-promotional message
+      // that is being sent outside the 24-hour messaging window with a
+      // message tag"; developers.facebook.com/docs/graph-api/reference/
+      // page/messages, read 2026-11-16). Whether graph.instagram.com takes
+      // it in this form is not stated there: the sandbox's trial says.
+      const kind = message.humanAgent
+        ? { messaging_type: "MESSAGE_TAG", tag: "HUMAN_AGENT" }
+        : { messaging_type: "RESPONSE" };
+
       const sent = yield* request(account, token, "POST", "/me/messages", {
         message: JSON.stringify({ text: message.text }),
-        messaging_type: "RESPONSE",
+        ...kind,
         recipient: JSON.stringify({ id: recipient.value }),
       }).pipe(Effect.flatMap(http.execute), Effect.result);
 

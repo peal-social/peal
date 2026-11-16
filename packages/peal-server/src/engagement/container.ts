@@ -37,6 +37,7 @@ import { DrizzleInboxWaitingReads } from "#engagement/infrastructure/drizzle-inb
 import { DrizzleMessageStore } from "#engagement/infrastructure/drizzle-message-store.ts";
 import { DrizzlePrivateReplyStore } from "#engagement/infrastructure/drizzle-private-reply-store.ts";
 import { DrizzleReviewStore } from "#engagement/infrastructure/drizzle-review-store.ts";
+import { HumanAgentLive } from "#engagement/infrastructure/human-agent-config.ts";
 import { NotifiedCommentRuleNotices } from "#engagement/infrastructure/notified-comment-rule-notices.ts";
 import { PublishingFollowedPosts } from "#engagement/infrastructure/publishing-followed-posts.ts";
 import { PublishingReplyLimits } from "#engagement/infrastructure/publishing-reply-limits.ts";
@@ -162,7 +163,10 @@ export const engagementLive = <E, R>(
       Layer.provide(InboxPlatformsLive),
       // The operator's PEAL_INBOX_MESSAGES: which platforms' direct
       // messages are read and answered.
-      Layer.provide(InboxMessagesLive)
+      Layer.provide(InboxMessagesLive),
+      // The operator's PEAL_META_HUMAN_AGENT: whether a member's own
+      // answer may take Meta's 7 days.
+      Layer.provide(HumanAgentLive)
     ),
     EngagementRecordsLive
   );

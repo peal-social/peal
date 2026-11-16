@@ -21,9 +21,10 @@ import {
   recordBoxRead,
 } from "#engagement/domain/message-box.ts";
 import { beginMessage } from "#engagement/domain/outgoing-message.ts";
+import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { Actor } from "#shared/domain/access.ts";
 import type { Permission } from "#shared/domain/access.ts";
-import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import {
   blueskyChannel,
@@ -845,6 +846,298 @@ describe("a message past Meta's window", () => {
         assert.deepInclude(other, { reason: "windowClosed" });
       }).pipe(Effect.provide(world.layer));
     }
+  );
+});
+
+// The member's own session in the web app, as the API's handler says it.
+const inSession = (actor: Actor, text = "Back on Monday, sorry") =>
+  EngagementMessages.use((messages) =>
+    messages.send(actor, conversationId(1), text, Option.none(), {
+      inSession: true,
+    })
+  );
+
+describe("a person's answer past Meta's 24 hours (Human Agent)", () => {
+  const meta = new Set(["mastodon", "bluesky", "facebook"] as const);
+
+  // When the person last wrote to conversation 1.
+  const lastIncoming = Option.getOrThrow(
+    Option.flatMap(
+      Option.fromUndefinedOr(
+        worldWith().state.conversations.get(conversationId(1))
+      ),
+      ({ lastIncomingAt }) => lastIncomingAt
+    )
+  );
+
+  const after = (duration: Duration.Input) =>
+    DateTime.addDuration(lastIncoming, duration);
+
+  // The world's conversation 1, with Meta's Human Agent feature on or off.
+  const metaWorld = (
+    humanAgent = true,
+    meters = fakeMeters({ allowed: Option.some(10) })
+  ) => ({
+    meters,
+    world: worldWith("facebook", makeMessageWorld(meta, meters, humanAgent)),
+  });
+
+  // A minute before 24 hours, and before 7 days, after the person wrote.
+  const standardClose = after(
+    Duration.sum(Duration.hours(23), Duration.minutes(59))
+  );
+
+  const personClose = after(
+    Duration.subtract(Duration.days(7), Duration.minutes(1))
+  );
+
+  // The MCP client the owner let read and answer messages.
+  const application = {
+    clientId: "synthetic-mcp-client",
+    grantedAt: messagedAt,
+    grantedBy: Option.some(memberId),
+    workspaceId,
+  };
+
+  const staffId = UserIdSchema.make("33333333-3333-4333-8333-333333333333");
+
+  const usedMessages = FakeMetersLedger.use(Ref.get).pipe(
+    Effect.map(({ used }) => used.get("outboundMessages") ?? 0)
+  );
+
+  it.effect("is journalled for a member in their own session", () => {
+    const { meters, world } = metaWorld();
+
+    return at(
+      Effect.gen(function* answered() {
+        const message = yield* inSession(editor);
+
+        assert.isTrue(message.byPerson);
+        assert.strictEqual(world.state.outgoing.size, 1);
+        assert.lengthOf(world.state.jobs, 1);
+        assert.strictEqual(yield* usedMessages, 1);
+      }),
+      after("25 hours")
+    ).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+  });
+
+  it.effect("records a person's answer within the 24 hours too", () => {
+    const { meters, world } = metaWorld();
+
+    return at(
+      Effect.gen(function* answered() {
+        assert.isTrue((yield* inSession(editor)).byPerson);
+      }),
+      after("23 hours")
+    ).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+  });
+
+  it.effect("is open until a minute before the 7 days, and shut after", () => {
+    const { meters, world } = metaWorld();
+
+    return Effect.gen(function* edges() {
+      const refusal = yield* at(
+        inSession(editor),
+        after(
+          Duration.sum(
+            Duration.days(6),
+            Duration.sum(
+              Duration.sum(Duration.hours(23), Duration.minutes(59)),
+              Duration.seconds(30)
+            )
+          )
+        )
+      ).pipe(Effect.flip);
+
+      assert.deepInclude(refusal, {
+        _tag: "MessageAbilityUnavailable",
+        closedAt: personClose,
+        reason: "windowClosed",
+        standing: "unsupported",
+      });
+
+      const late = yield* at(inSession(editor), after("8 days")).pipe(
+        Effect.flip
+      );
+
+      assert.deepInclude(late, {
+        closedAt: personClose,
+        reason: "windowClosed",
+      });
+      assert.strictEqual(world.state.outgoing.size, 0);
+      assert.lengthOf(world.state.jobs, 0);
+      assert.strictEqual(yield* usedMessages, 0);
+
+      const inTime = yield* at(
+        inSession(editor),
+        after(
+          Duration.sum(
+            Duration.days(6),
+            Duration.sum(Duration.hours(23), Duration.minutes(58))
+          )
+        )
+      );
+
+      assert.isTrue(inTime.byPerson);
+    }).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+  });
+
+  it.effect(
+    "is refused to anyone not in their own session, before anything is reserved",
+    () => {
+      const { meters, world } = metaWorld();
+
+      // An API key, and staff acting as the member, with an editor's
+      // permissions.
+      const key = new Actor({
+        permissions: [...editor.permissions],
+        subject: { _tag: "apiKey", apiKeyId: "synthetic-key" },
+        workspaceId,
+      });
+
+      const staff = new Actor({
+        permissions: [...editor.permissions],
+        subject: {
+          _tag: "user",
+          impersonatedBy: Option.some(staffId),
+          userId: memberId,
+        },
+        workspaceId,
+      });
+
+      return at(
+        Effect.gen(function* refused() {
+          // An application allowed to send, which says it is a session.
+          world.state.applications.push(application);
+
+          for (const actor of [throughApp, key, staff]) {
+            const refusal = yield* inSession(actor).pipe(Effect.flip);
+
+            assert.deepInclude(refusal, {
+              closedAt: standardClose,
+              reason: "windowClosed",
+            });
+          }
+
+          // The member as a rule or an automation acts for them, resolved
+          // as they are now (`ActorsNow`): the same actor, without the
+          // session the API's handler alone vouches for.
+          const automated = yield* sending("Back on Monday, sorry").pipe(
+            Effect.flip
+          );
+
+          assert.deepInclude(automated, {
+            closedAt: standardClose,
+            reason: "windowClosed",
+          });
+          assert.strictEqual(world.state.outgoing.size, 0);
+          assert.lengthOf(world.state.jobs, 0);
+          assert.strictEqual(yield* usedMessages, 0);
+        }),
+        after("25 hours")
+      ).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+    }
+  );
+
+  it.effect(
+    "is never a rule's, a tool's or a key's, even within the 24 hours",
+    () => {
+      const { meters, world } = metaWorld();
+
+      return at(
+        Effect.gen(function* notPerson() {
+          world.state.applications.push(application);
+
+          assert.isFalse((yield* sending("Hello")).byPerson);
+          world.state.outgoing.clear();
+          assert.isFalse((yield* inSession(throughApp)).byPerson);
+        }),
+        after("1 hour")
+      ).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+    }
+  );
+
+  it.effect(
+    "is refused where the app does not hold Meta's Human Agent feature",
+    () => {
+      const { meters, world } = metaWorld(false);
+
+      return at(
+        Effect.gen(function* off() {
+          const refusal = yield* inSession(editor).pipe(Effect.flip);
+
+          assert.deepInclude(refusal, {
+            closedAt: standardClose,
+            reason: "windowClosed",
+          });
+          assert.strictEqual(world.state.outgoing.size, 0);
+          assert.strictEqual(yield* usedMessages, 0);
+        }),
+        after("25 hours")
+      ).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+    }
+  );
+
+  it.effect(
+    "is refused on a channel without the messaging permission, as any send",
+    () => {
+      const { meters, world } = metaWorld();
+
+      world.state.channels.set(channelId(1), {
+        ...facebookChannel,
+        scopes: ["pages_show_list"],
+      });
+
+      return at(
+        Effect.gen(function* ungranted() {
+          const refusal = yield* inSession(editor).pipe(Effect.flip);
+
+          assert.deepInclude(refusal, {
+            _tag: "MessageAbilityUnavailable",
+            standing: "reconnect",
+          });
+          assert.strictEqual(world.state.outgoing.size, 0);
+        }),
+        after("25 hours")
+      ).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+    }
+  );
+
+  it.effect("shows a member when a person's answer stops being taken", () => {
+    const { meters, world } = metaWorld();
+
+    return at(
+      Effect.gen(function* shown() {
+        const detail = yield* EngagementMessages.use((messages) =>
+          messages.conversation(editor, conversationId(1))
+        );
+
+        assert.isFalse(detail.window.open);
+        assert.deepStrictEqual(
+          detail.personWindow,
+          Option.some({ closesAt: Option.some(personClose), open: true })
+        );
+      }),
+      after("25 hours")
+    ).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+  });
+
+  it.effect("shows none where the feature is off, or on Mastodon", () =>
+    Effect.gen(function* none() {
+      for (const world of [
+        metaWorld(false).world,
+        worldWith(
+          "mastodon",
+          makeMessageWorld(meta, MeteredUsage.layerUnmetered, true)
+        ),
+      ]) {
+        const detail = yield* EngagementMessages.use((messages) =>
+          messages.conversation(editor, conversationId(1))
+        ).pipe(Effect.provide(world.layer));
+
+        assert.deepStrictEqual(detail.personWindow, Option.none());
+      }
+    })
   );
 });
 

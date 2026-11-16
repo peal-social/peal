@@ -4,6 +4,7 @@ import type { Redacted } from "effect";
 import { ChannelAccess } from "#channels/application/channel-access.ts";
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
+import { CurrentHumanAgent } from "#engagement/application/current-human-agent.ts";
 import { MessagesUngranted } from "#engagement/application/messages-ungranted.ts";
 import { EngagementStore } from "#engagement/application/ports/engagement-store.ts";
 import { MessageChannelsOfAccount } from "#engagement/application/ports/message-channels-of-account.ts";
@@ -166,6 +167,7 @@ export const platformMessagesWith = (settings: {
       const comments = yield* EngagementStore;
       const privateStore = yield* PrivateReplyStore;
       const inbox = yield* CurrentInboxPlatforms;
+      const humanAgent = yield* CurrentHumanAgent;
 
       // One pace for every call of an account the process makes, its
       // messages' and its private replies' alike.
@@ -448,6 +450,12 @@ export const platformMessagesWith = (settings: {
             participants: conversation.participants,
             platformConversationId: conversation.platformConversationId,
             request: conversation.request,
+            // Only a member's own answer, in their session, on Messenger
+            // or Instagram where the operator's app holds the feature.
+            humanAgent:
+              humanAgent &&
+              message.value.byPerson &&
+              (platform === "facebook" || platform === "instagram"),
             takenIds: takenIdsOf(
               kept,
               others.map((other) => ({

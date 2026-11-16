@@ -1,0 +1,1 @@
+ALTER TABLE "engagement"."outgoing_messages" ADD COLUMN "by_person" boolean DEFAULT false NOT NULL;

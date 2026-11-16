@@ -508,6 +508,9 @@ export const outgoingMessages = engagement.table(
   {
     attemptedAt: instant("attempted_at"),
     authorId: uuid("author_id"),
+    // Written by a member in person, in their own session of the web app:
+    // the one message Meta's Human Agent tag may carry.
+    byPerson: boolean("by_person").notNull().default(false),
     callClaimedAt: instant("call_claimed_at"),
     channelId: uuid("channel_id").notNull(),
     conversationId: uuid("conversation_id")

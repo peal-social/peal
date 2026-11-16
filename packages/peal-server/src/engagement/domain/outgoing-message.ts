@@ -93,6 +93,11 @@ export class OutgoingMessage extends Schema.Class<OutgoingMessage>(
   // The member who wrote it; none for an API key, or once they closed
   // their account.
   authorId: Schema.Option(UserIdSchema),
+  // Whether a member wrote it in person, in their own session of the web
+  // app: never an API key, an application (MCP, the command line), staff
+  // acting as them, a rule or an automation. Only such a message may be
+  // sent with Meta's Human Agent tag, past the 24 hours (`personWindowOf`).
+  byPerson: Schema.Boolean,
   channelId: ChannelIdSchema,
   conversationId: ConversationIdSchema,
   createdAt: Schema.DateTimeUtc,
@@ -121,6 +126,7 @@ const withStatus = (
 ): OutgoingMessage =>
   new OutgoingMessage({
     authorId: message.authorId,
+    byPerson: message.byPerson,
     channelId: message.channelId,
     conversationId: message.conversationId,
     createdAt: message.createdAt,
@@ -138,16 +144,21 @@ const refused = (message: OutgoingMessage): Transition =>
     })
   );
 
-/** A message to the conversation, about to be journalled and sent. */
+/**
+ * A message to the conversation, about to be journalled and sent: by a
+ * member in person in their own session (`byPerson`), or not.
+ */
 export const writeMessage = (
   id: OutgoingMessageId,
   conversation: Pick<Conversation, "channelId" | "id" | "workspaceId">,
   authorId: Option.Option<UserId>,
   text: string,
-  now: DateTime.Utc
+  now: DateTime.Utc,
+  byPerson = false
 ): OutgoingMessage =>
   new OutgoingMessage({
     authorId,
+    byPerson,
     channelId: conversation.channelId,
     conversationId: conversation.id,
     createdAt: now,
@@ -245,6 +256,7 @@ export const forgetMessageAuthor = (
 ): OutgoingMessage =>
   new OutgoingMessage({
     authorId: Option.none(),
+    byPerson: message.byPerson,
     channelId: message.channelId,
     conversationId: message.conversationId,
     createdAt: message.createdAt,
