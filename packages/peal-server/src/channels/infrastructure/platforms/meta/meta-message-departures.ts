@@ -1,4 +1,4 @@
-import { Duration, Effect, Layer, Option, Redacted, Schema } from "effect";
+import { Duration, Effect, Layer, Option, Schema } from "effect";
 import { Mac } from "effect/crypto";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 
@@ -88,16 +88,15 @@ export const metaMessageDepartures = (settings: {
         path: string,
         params: Readonly<Record<string, string>> = {}
       ) {
+        // Both stay Redacted, so a trace of the call shows neither.
         const proof =
           viaInstagramLogin || Option.isNone(settings.mainApp)
             ? {}
             : {
-                appsecret_proof: Redacted.value(
-                  yield* appSecretProof(
-                    tokens.accessToken,
-                    settings.mainApp.value.appSecret
-                  ).pipe(Effect.provideService(Mac.Mac, mac))
-                ),
+                appsecret_proof: yield* appSecretProof(
+                  tokens.accessToken,
+                  settings.mainApp.value.appSecret
+                ).pipe(Effect.provideService(Mac.Mac, mac)),
               };
 
         const url = viaInstagramLogin
@@ -109,7 +108,7 @@ export const metaMessageDepartures = (settings: {
             HttpClientRequest.setUrlParams({
               ...params,
               ...proof,
-              access_token: Redacted.value(tokens.accessToken),
+              access_token: tokens.accessToken,
             })
           )
         );

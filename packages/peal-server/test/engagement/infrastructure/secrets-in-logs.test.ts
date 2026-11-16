@@ -1,8 +1,11 @@
 // What the server writes while it reads and answers Meta's direct
-// messages never holds what a person wrote, who wrote it, or the token:
-// the adapter runs against the loopback Graph with a logger and a tracer
-// that keep everything a line or a span would export, through a read, a
-// refused answer, an answer sent, a lost one and a resume.
+// messages never holds what a person wrote, who wrote it, the token or
+// its proof: the adapter runs against the loopback Graph with a logger and
+// a tracer that keep everything a line or a span would export, through a
+// read, a refused answer, an answer sent, a lost one, a resume, the
+// account's events asked for and stopped, and a disconnected channel's.
+import { createHmac } from "node:crypto";
+
 import { assert, describe, it } from "@effect/vitest";
 import {
   Cause,
@@ -21,12 +24,18 @@ import { Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
+import { ChannelDirectory } from "#channels/application/channel-directory.ts";
+import { Channel } from "#channels/domain/channel.ts";
+import { metaMessageDepartures } from "#channels/infrastructure/platforms/meta/meta-message-departures.ts";
+import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import { metaMessages } from "#engagement/infrastructure/platforms/meta/meta-messages.ts";
-import { ChannelIdSchema } from "#shared/domain/ids.ts";
+import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { facebookMessageScopes } from "#shared/domain/inbox-message-platform.ts";
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import { channelAccessOf } from "#test/analytics/access-log.ts";
+import { metaApp } from "#test/channels/fakes/fake-meta.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
 import {
   fakeMetaMessages,
@@ -59,7 +68,7 @@ const spanText = (span: Tracer.NativeSpan): string =>
 
 describe("what the server writes about Meta's direct messages", () => {
   it.live(
-    "holds no text, sender or token, through a read, a refusal, a send, a lost answer and a resume",
+    "holds no text, sender, token or proof, through a read, a refusal, a send, a lost answer, a resume, a follow, an unfollow and a departure",
     () => {
       const lines: string[] = [];
       const spans: Tracer.NativeSpan[] = [];
@@ -173,6 +182,97 @@ describe("what the server writes about Meta's direct messages", () => {
         yield* platform.send(account, outgoing);
         yield* platform.resume(account, outgoing);
 
+        // The account's events, asked for and stopped.
+        yield* Effect.exit(platform.follow?.(account) ?? Effect.void);
+        yield* Effect.exit(
+          platform.unfollow?.(account, () => Effect.succeed(false)) ??
+            Effect.void
+        );
+
+        // A disconnected channel's events, stopped with its tokens.
+        yield* Effect.exit(platform.follow?.(account) ?? Effect.void);
+
+        const at = DateTime.makeUnsafe("2026-11-16T10:00:00.000Z");
+
+        const departing = new Channel({
+          accountId: facebookPageId,
+          avatarUrl: Option.none(),
+          connection: Option.none(),
+          createdAt: at,
+          displayName: Option.none(),
+          handle: "@synthetic_page",
+          id: account.channelId,
+          platform: "facebook",
+          scopes: [...facebookMessageScopes],
+          status: { _tag: "active" },
+          token: { _tag: "nonExpiring" },
+          updatedAt: at,
+          workspaceId: WorkspaceIdSchema.make(
+            "01900000-0000-7000-8000-0000000000a1"
+          ),
+        });
+
+        const departures = metaMessageDepartures({
+          hosts: { ...metaHosts, facebookGraph: url, instagramGraph: url },
+          http: yield* publicHttpClient.pipe(
+            Effect.provide(
+              Layer.merge(FetchHttpClient.layer, OpenOutboundGuard)
+            )
+          ),
+          mainApp: Option.some(metaApp),
+          messages: new Set(["facebook"]),
+        }).pipe(
+          Layer.provide(
+            Layer.mergeAll(
+              Layer.succeed(
+                ChannelDirectory,
+                ChannelDirectory.of({
+                  after: () => Effect.succeed([]),
+                  withAccount: () => Effect.succeed([]),
+                })
+              ),
+              Layer.succeed(
+                EngagementRecords,
+                EngagementRecords.of({
+                  channelGone: () => Effect.void,
+                  ensureChannelIdle: () => Effect.void,
+                  eraseWorkspace: () => Effect.void,
+                  exportCommentRules: () => Effect.succeed([]),
+                  exportUser: () => Effect.succeed([]),
+                  exportUserMessages: () => Effect.succeed([]),
+                  exportUserReviewReplies: () => Effect.succeed([]),
+                  forgetUser: () => Effect.void,
+                  postRemoved: () => Effect.void,
+                  readsMessages: () => Effect.succeed(false),
+                })
+              ),
+              Mac.layerWebCrypto.pipe(
+                Layer.provide(SecureRandom.layerWebCrypto)
+              )
+            )
+          )
+        );
+
+        yield* ChannelDepartures.use((service) =>
+          service.departed(departing, {
+            accessToken: Redacted.make(token),
+            refreshToken: Option.none(),
+          })
+        ).pipe(Effect.provide(departures));
+
+        assert.isTrue(
+          graph
+            .requests()
+            .some(
+              ({ method, path }) =>
+                method === "DELETE" && path === "/v27.0/me/subscribed_apps"
+            )
+        );
+
+        const proof = createHmac("sha256", graphAppSecret)
+          .update(token)
+          .digest("hex");
+
         const all = [...lines, ...spans.map(spanText)].join("\n");
 
         // The calls were written about at all, and the refusals logged.
@@ -185,6 +285,7 @@ describe("what the server writes about Meta's direct messages", () => {
           ["who wrote", sender.id],
           ["the writer's name", sender.name],
           ["the Page's token", token],
+          ["the proof of the app's secret", proof],
         ] as const) {
           assert.notInclude(all, secret, name);
         }
