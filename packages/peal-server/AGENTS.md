@@ -369,7 +369,11 @@ and no socket, for tests.
   Chats did too: a channel of `discord` or `telegram`, a target with
   their options or failed as `forumThreadNameRequired` or `chatMigrated`,
   and the events and notices that name one: never roll back past them
-  while any is stored (the runbook's "Past chats").
+  while any is stored (the runbook's "Past chats"). Slack did too: a
+  channel of `slack`, a target with its options or failed as
+  `cannotPost`, and the events and notices that name one or that reason:
+  never roll back past them while any is stored (the runbook's "Past
+  Slack").
 
 ### Metrics and alerts
 

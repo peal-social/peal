@@ -1,0 +1,67 @@
+---
+title: Slack
+description: "Connecter un canal Slack à Peal en ajoutant son application à votre espace de travail Slack, ce qu’une publication peut y contenir, et l’option qu’elle prend."
+sidebar:
+  icon: /platform-marks/slack.svg
+---
+
+Comment connecter un canal de votre espace de travail Slack, ce qu’une publication peut y contenir, et l’option qu’elle prend.
+
+## En bref [#at-a-glance]
+
+|                   |                                  |
+| ----------------- | -------------------------------- |
+| Texte             | {{platform-slack-text-fr}}       |
+| Texte avec médias | {{platform-slack-text-media-fr}} |
+| Images            | {{platform-slack-media-fr}}      |
+| Parties           | {{platform-slack-parts-fr}}      |
+| Texte alternatif  | {{platform-slack-alt-fr}}        |
+
+Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms-slack) : des images PNG, JPEG et GIF, et aucune vidéo. Un canal Slack compte comme un compte dans l’[abonnement](/guides/workspace/billing).
+
+## Connecter [#connect]
+
+<Steps>
+  <Step title="Choisissez Connecter Slack">
+    Sur **Canaux**, sous **Slack**, choisissez **Connecter Slack**.
+  </Step>
+  <Step title="Ajoutez l’application sur Slack">
+    Slack demande quel espace de travail, puis dans quel canal l’application
+    publie. Choisissez le canal, puis **Autoriser**.
+  </Step>
+  <Step title="Revenez sur Peal">
+    Slack vous renvoie sur Peal, qui connecte ce canal.
+  </Step>
+</Steps>
+
+- Une installation connecte un canal. Pour publier dans un autre canal de l’espace de travail, connectez Slack à nouveau et choisissez-le : chaque canal est un canal à part dans Peal, et dans l’abonnement.
+- Dans un canal privé, invitez aussi l’application : tapez `/invite` dans le canal, puis le nom de l’application. Une publication dans un canal où l’application n’est pas échoue (`cannotPost`), et le dit.
+- Peal demande à Slack de publier des messages (`chat:write`), dans un canal public qu’il n’a pas rejoint aussi (`chat:write.public`), d’envoyer les images qu’une publication montre (`files:write`), et le choix du canal (`incoming-webhook`). Il ne lit aucun canal, message ou fichier de l’espace de travail.
+- Peal garde le jeton de l’application chiffré. Pour couper l’accès de Peal, retirez l’application de l’espace de travail Slack, dans ses réglages d’applications : chaque canal de cet espace de travail s’arrête, et Peal les marque à reconnecter.
+
+## Ce que devient une publication [#posts]
+
+- Le texte suit la mise en forme de Slack : `*gras*`, `_italique_`, `~barré~` et `` `code` `` restent tels que Slack les montre. Peal envoie `&`, `<` et `>` comme Slack les prend, si bien que rien de ce que vous tapez ne mentionne le canal, `@here` ou une personne : cela reste du texte. Slack fait des liens des adresses.
+- Un texte seul prend 4 000 caractères, un texte avec des images 3 000, comptés comme Slack les reçoit : `&` compte 5, `<` et `>` 4 chacun. Peal le vérifie quand la publication est programmée.
+- Les images vont sous le texte, dans le même message, avec leur texte alternatif.
+- Les parties d’un [fil](/guides/posts#threads) sont des réponses dans le fil de la première partie.
+
+## Options [#options]
+
+Aucune option n’est nécessaire, et elle vaut pour chaque partie.
+
+| Option                                        | Nom dans l’API | Valeurs    | Par défaut |
+| --------------------------------------------- | -------------- | ---------- | ---------- |
+| **Afficher un aperçu des pages de ses liens** | `unfurlLinks`  | Oui ou non | Non        |
+
+## Modifier et supprimer [#live]
+
+Peal modifie le texte d’une publication, en gardant ses images, et la supprime, avec ses images : voir [Après la publication](/guides/posts/published). Les réglages d’un espace de travail Slack peuvent interdire de modifier les messages au-delà d’un délai : la modification échoue alors avec la raison de Slack (`slack:edit_window_closed`).
+
+## Quand une réponse se perd [#lost]
+
+Slack ne garde aucune clé sous laquelle publier un message à nouveau, et Peal ne relit aucun canal. Quand Slack prend une publication et que sa réponse n’arrive jamais, la publication est **À vérifier** : regardez le canal, puis confirmez-la ou envoyez-la à nouveau depuis sa page. Peal ne l’envoie jamais à nouveau de lui-même, et n’envoie aucune partie après elle.
+
+## Ce que Peal n’y fait pas [#limits]
+
+Peal ne relit rien de Slack : aucune statistique, aucune réponse, pas de boîte de réception. Il n’envoie ni vidéo ni document, aucun message direct à une personne, et publie sous le nom de l’application seulement.

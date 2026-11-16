@@ -43,7 +43,7 @@ Which platforms let Peal delete: `peal channels capabilities <channel>
 
 Editing replaces the text of one part of a post on one channel, **for
 everyone, at once**: only the text, never media, options or the time. Peal
-edits on Mastodon, Google Business Profile, Discord and Telegram only (`livePost.edit` in the
+edits on Mastodon, Google Business Profile, Discord, Telegram and Slack only (`livePost.edit` in the
 capabilities, `editBlockedBy` where not). Do it only when the user asked
 for that edit, and say which post and channel it changes.
 

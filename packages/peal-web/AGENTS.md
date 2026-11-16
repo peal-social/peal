@@ -111,8 +111,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The workspace's home builds each assistant's setup (`#home/agents.ts`,
   tested) from the MCP endpoint at the address the browser has Peal open
   at, after hydration: never a key. Brand marks come from simple-icons
-  (`BrandMark`); LinkedIn and OpenAI, which are not in it, get a plain
-  tile. Console's Platforms lists `platformRowsOf`
+  (`BrandMark`); LinkedIn, Slack and OpenAI, which are not in it, get a
+  plain tile of their letters (`letters` in `platforms-view.tsx`). Console's Platforms lists `platformRowsOf`
   (`#platforms/rows.ts`): this server's capabilities beside the
   workspace's channels.
 - The web app reports its errors to `POST /api/client-errors`:
@@ -803,6 +803,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   links on http, https or mailto) and `ArticleImage`, a library file by
   `mediaId` shown through the media API's address, never one kept in the
   article: add a node or a mark to the server's `article-body.ts` first.
+  Slack connects with a sign-in button, as Pinterest does
+  (`buttonPlatforms`), the channel picked on Slack's page.
   A chat connects with `ChatFields` (`connect-chat.tsx`), offered from
   the connectable platforms' `chats`: Discord's webhook address, or
   Telegram's bot token and chat, typed in password fields, each refusal

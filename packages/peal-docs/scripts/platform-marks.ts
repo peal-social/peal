@@ -1,7 +1,7 @@
 // Writes public/platform-marks/<slug>.svg, the mark each Platforms page shows
 // in the sidebar: the brand's own, from simple-icons (CC0) in its colour, as
 // the web app's BrandMark draws it, and a lettered tile for a brand that
-// asked to be left out of that set (LinkedIn). Never draw a logo from memory
+// asked to be left out of that set (LinkedIn, Slack). Never draw a logo from memory
 // (DESIGN.md, "Icons"). Run after upgrading simple-icons:
 // bun packages/peal-docs/scripts/platform-marks.ts
 import { mkdir, writeFile } from "node:fs/promises";
@@ -32,12 +32,19 @@ const marks = {
   linkedin: null,
   mastodon: siMastodon,
   pinterest: siPinterest,
+  slack: null,
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,
   x: siX,
   youtube: siYoutube,
 } satisfies Readonly<Record<string, SimpleIcon | null>>;
+
+// The letters of each tile.
+const tileLetters = new Map([
+  ["linkedin", "in"],
+  ["slack", "S"],
+]);
 
 const svgOf = (icon: SimpleIcon) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#${icon.hex}"><path d="${icon.path}"/></svg>\n`;
@@ -54,7 +61,7 @@ await Promise.all(
   Object.entries(marks).map(async ([slug, icon]) => {
     await writeFile(
       path.join(folder, `${slug}.svg`),
-      icon === null ? tile("in") : svgOf(icon)
+      icon === null ? tile(tileLetters.get(slug) ?? "") : svgOf(icon)
     );
   })
 );

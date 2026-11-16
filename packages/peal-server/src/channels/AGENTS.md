@@ -123,6 +123,22 @@
   (`untraced`), the address is built from the `Redacted` value as the
   request is made, and every HTTP client error is typed where it happens
   (`test/app/secrets-in-logs.test.ts` searches for both).
+- Slack connects a channel by installing the operator's app
+  (`platforms/slack/slack-authorizer.ts`, OAuth v2, the app's credentials
+  as Basic): the bot's scopes `incoming-webhook`, `chat:write`,
+  `chat:write.public`, `files:write`, comma-separated, and nothing that
+  reads a channel, a message or a file. The channel is the one Slack's page
+  had the member pick (`incoming_webhook.channel_id`), so Peal never lists
+  a workspace's channels; the webhook's address in the answer is never
+  kept. The account id is `<team id>/<channel id>` (another channel of the
+  workspace is another channel of Peal's, a reconnection through another
+  channel `ReconnectAccountMismatch`), the handle `#<channel>`, the display
+  name the Slack workspace's, the token the bot's (`tokenPolicies.slack`:
+  never renewed, a refused one marks the channel to reconnect). No
+  `revoke`: one bot token serves every channel of that Slack workspace.
+  Slack answers 200 with `ok: false` for its refusals: read with
+  `slackAnswerOf` (`#shared/infrastructure/platforms/slack-api.ts`), by
+  code, never words. Tests set the fake's addresses on `SlackHosts`.
 - On a server that bills, an account of a platform whose calls are passed
   through at the platform's rates (X, on the `xApi` meter) is connected
   only on per-account pricing that pays: `ChannelAllowance.passedThrough`
@@ -148,8 +164,9 @@
   `PINTEREST_APP_ID`/`PINTEREST_APP_SECRET` (its `secretSuffix` too),
   Google Business Profile with `GOOGLE_BUSINESS_CLIENT_ID` and
   `_CLIENT_SECRET` (a client of its own: Google gives access to the
-  Business Profile APIs, quotas and reviews by project). A platform
-  without its settings is in
+  Business Profile APIs, quotas and reviews by project), Slack with
+  `SLACK_CLIENT_ID` and `_CLIENT_SECRET` (never the alerts'
+  `SLACK_ALERTS_WEBHOOK_URL`). A platform without its settings is in
   `unconfigured`. Each declares its `TokenPolicy`, data in
   `channels/domain/token-policy.ts`, which the refresh sweep and the
   reconnect warnings follow: a LinkedIn profile's tokens are not renewed
