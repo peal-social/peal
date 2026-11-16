@@ -59,9 +59,7 @@ const recordsTest = (answering: boolean) =>
         recordedDepartures(answering)
       )
     ),
-    Layer.provideMerge(
-      Layer.effect(Departed, Ref.make<readonly string[]>([]))
-    ),
+    Layer.provideMerge(Layer.effect(Departed, Ref.make<readonly string[]>([]))),
     Layer.provideMerge(DatabaseTest)
   );
 

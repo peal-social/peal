@@ -43,11 +43,9 @@ export const DrizzleChannelRecords = Layer.effect(
 
     const releaseWorkspaces = Effect.fn("ChannelRecords.releaseWorkspaces")(
       function* releaseWorkspaces(workspaceIds: readonly WorkspaceId[]) {
-        const listed = (
-          yield* Effect.forEach(workspaceIds, (workspaceId) =>
-            repository.list(workspaceId)
-          )
-        ).flat();
+        const listed = (yield* Effect.all(
+          workspaceIds.map((workspaceId) => repository.list(workspaceId))
+        )).flat();
 
         const leaving = listed.map(({ id }) => id);
 

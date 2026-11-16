@@ -403,11 +403,11 @@ describe("Meta's direct messages, read", () => {
       const lines: string[] = [];
 
       const capture = Logger.layer([
-        Logger.make(({ fiber, message }) => {
+        Logger.make(({ fiber, message: logged }) => {
           const annotations = fiber.getRef(References.CurrentLogAnnotations);
 
           if (annotations["reason"] === "accountNotAParticipant") {
-            lines.push(JSON.stringify(message));
+            lines.push(JSON.stringify(logged));
           }
         }),
       ]);

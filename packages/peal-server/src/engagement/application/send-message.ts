@@ -183,7 +183,10 @@ export class SendMessage extends Context.Service<
               );
 
               if (Option.isSome(summary)) {
-                yield* outcomes.settled(summary.value.conversation, found.value);
+                yield* outcomes.settled(
+                  summary.value.conversation,
+                  found.value
+                );
               }
 
               return found;

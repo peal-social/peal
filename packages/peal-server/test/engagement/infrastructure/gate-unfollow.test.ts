@@ -172,11 +172,11 @@ layer(StoreTest, { excludeTestServices: true })(
 
             // Turned on again, and its box marked followed, while the
             // DELETE was on its way: Meta then stopped the events anyway.
-            graph.during(unsubscribe, () =>
-              Effect.runPromiseWith(services)(
+            graph.during(unsubscribe, async () => {
+              await Effect.runPromiseWith(services)(
                 turnedOn(channelId, workspaceId).pipe(Effect.orDie)
-              )
-            );
+              );
+            });
 
             yield* source.unfollow({ channelId });
 

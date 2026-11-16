@@ -446,7 +446,7 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
   };
 
   // What runs while one call of a route waits for its answer.
-  const during = new Map<string, () => Promise<unknown>>();
+  const during = new Map<string, () => Promise<void>>();
 
   const answerOf = (
     request: PlatformRequest,
@@ -524,7 +524,7 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
     },
     conversations: () => conversations,
     /** The next call of `route` is answered once `meanwhile` is done. */
-    during: (route: string, meanwhile: () => Promise<unknown>) => {
+    during: (route: string, meanwhile: () => Promise<void>) => {
       during.set(route, meanwhile);
     },
     /** The next call of `route` reaches nothing: its answer is lost first. */
