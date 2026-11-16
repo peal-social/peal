@@ -26,11 +26,12 @@ import {
   reconcileMessages,
 } from "#engagement/domain/direct-message.ts";
 import {
+  heldAt,
   postponeBoxRead,
   recordBoxRead,
   subscriptionDue,
+  MessageBox,
 } from "#engagement/domain/message-box.ts";
-import type { MessageBox } from "#engagement/domain/message-box.ts";
 import { CurrentInboxMessages } from "#shared/application/current-inbox-messages.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
@@ -316,7 +317,29 @@ export class CollectMessages extends Context.Service<
 
         // A read that halted is read again at the next run, from the
         // conversations it did not reach, which have not changed for Peal.
-        yield* store.saveBox(recordBoxRead(current.value, latest, now, at));
+        // An event that moved the box's next read while it read keeps
+        // that earlier read: what it told of may not be in this one.
+        const read = recordBoxRead(current.value, latest, now, at);
+
+        const movedMeanwhile = !DateTime.Equivalence(
+          current.value.nextReadAt,
+          box.nextReadAt
+        );
+
+        yield* store.saveBox(
+          movedMeanwhile &&
+            DateTime.isLessThan(current.value.nextReadAt, read.nextReadAt)
+            ? new MessageBox({
+                channelId: read.channelId,
+                createdAt: read.createdAt,
+                lastReadAt: read.lastReadAt,
+                nextReadAt: current.value.nextReadAt,
+                notBefore: read.notBefore,
+                subscribedAt: read.subscribedAt,
+                workspaceId: read.workspaceId,
+              })
+            : read
+        );
       });
 
       // A channel that left goes now, with what it held, as do the messages
@@ -509,6 +532,12 @@ export class CollectMessages extends Context.Service<
 
         if (Option.isNone(box)) {
           return "missing" as const;
+        }
+
+        // The platform asked to wait, or the channel could not be read: an
+        // event does not cut that short.
+        if (heldAt(box.value, yield* DateTime.now)) {
+          return "deferred" as const;
         }
 
         const turn = yield* readOne(

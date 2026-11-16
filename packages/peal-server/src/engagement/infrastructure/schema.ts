@@ -386,6 +386,9 @@ export const messageBoxes = engagement.table(
     createdAt: instant("created_at").notNull(),
     lastReadAt: instant("last_read_at"),
     nextReadAt: instant("next_read_at").notNull(),
+    // The hold a refusal put on the box (the platform asked to wait, the
+    // channel could not be read): an event never reads it sooner.
+    notBefore: instant("not_before"),
     // When the platform was last asked to tell the server of the account's
     // messages (Meta's subscribed_apps), or found to need no asking.
     subscribedAt: instant("subscribed_at"),

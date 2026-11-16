@@ -2,11 +2,29 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "5a07e3c6-fe72-4483-8c50-2897c1f2030d",
+  "id": "44af3c69-bc07-41a4-9af7-0bd390a8e4d3",
   "prevIds": [
     "3c668ef8-7a1f-4d65-879e-9bef64a9acec"
   ],
   "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "engagement",
+        "message_boxes",
+        "not_before"
+      ],
+      "writes": [
+        "s|col|engagement.message_boxes.not_before",
+        "n|col|engagement.message_boxes.not_before",
+        "e|col|engagement.message_boxes.not_before"
+      ],
+      "reads": [
+        "n|tbl|engagement.message_boxes",
+        "n|sch|engagement"
+      ]
+    },
     {
       "statementType": "add_column",
       "statementTarget": [
@@ -48,6 +66,22 @@
     }
   ],
   "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "engagement",
+        "table": "message_boxes",
+        "name": "not_before",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
     {
       "op": "create",
       "row": {

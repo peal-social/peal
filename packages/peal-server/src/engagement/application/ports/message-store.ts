@@ -108,9 +108,10 @@ export class MessageStore extends Context.Service<
       channelId: ChannelId
     ) => Effect.Effect<Option.Option<MessageBox>, DatabaseError>;
     /**
-     * Moves the box's next read to `at` when it was due later: an event of
-     * its platform says something changed. False when the channel has no
-     * box, as its messages are off.
+     * Moves the box's next read to `at` when it was due later, but never
+     * before the hold a refusal put on it (`notBefore`): an event of its
+     * platform says something changed. False when the channel has no box,
+     * as its messages are off.
      */
     readonly bringForward: (
       channelId: ChannelId,
@@ -132,7 +133,7 @@ export class MessageStore extends Context.Service<
       channelId: ChannelId,
       platformMessageId: string
     ) => Effect.Effect<number, DatabaseError>;
-    /** Saves the box's schedule; one gone stays gone. */
+    /** Saves the box's schedule and hold; one gone stays gone. */
     readonly saveBox: (box: MessageBox) => Effect.Effect<void, DatabaseError>;
     /**
      * Takes the box until the transaction ends: whoever changes its

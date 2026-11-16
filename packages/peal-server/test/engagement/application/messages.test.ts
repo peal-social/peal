@@ -15,7 +15,11 @@ import { ReceiveMessageEvents } from "#engagement/application/receive-message-ev
 import type { MessageEvent } from "#engagement/application/receive-message-events.ts";
 import { SendMessage } from "#engagement/application/send-message.ts";
 import { refreshConversation } from "#engagement/domain/conversation.ts";
-import { followBox, recordBoxRead } from "#engagement/domain/message-box.ts";
+import {
+  followBox,
+  postponeBoxRead,
+  recordBoxRead,
+} from "#engagement/domain/message-box.ts";
 import { beginMessage } from "#engagement/domain/outgoing-message.ts";
 import { Actor } from "#shared/domain/access.ts";
 import type { Permission } from "#shared/domain/access.ts";
@@ -1352,6 +1356,85 @@ const event = (changed: Partial<MessageEvent> = {}): MessageEvent => ({
   messageId: Option.some("m1"),
   platform: "facebook",
   ...changed,
+});
+
+describe("one box read now, against its schedule", () => {
+  it.effect("calls nothing while a refusal's hold lasts", () => {
+    const world = boxWorld();
+    const box = world.state.boxes.get(channelId(1));
+
+    if (box !== undefined) {
+      world.state.boxes.set(
+        channelId(1),
+        postponeBoxRead(box, messagedAt, Duration.minutes(15))
+      );
+    }
+
+    const later = DateTime.addDuration(messagedAt, "10 minutes");
+
+    return at(
+      Effect.gen(function* held() {
+        assert.strictEqual(
+          yield* CollectMessages.use((collect) =>
+            collect.readBox(channelId(1), later)
+          ),
+          "deferred"
+        );
+        assert.lengthOf(world.state.reads, 0);
+        assert.lengthOf(world.state.follows, 0);
+      }),
+      later
+    ).pipe(Effect.provide(world.layer));
+  });
+
+  it.effect(
+    "keeps the earlier read an event asked for while it was reading",
+    () => {
+      const world = boxWorld();
+      const during = DateTime.addDuration(messagedAt, "30 seconds");
+      const box = world.state.boxes.get(channelId(1));
+
+      // Read a moment ago: due again in an hour.
+      if (box !== undefined) {
+        world.state.boxes.set(
+          channelId(1),
+          recordBoxRead(box, Option.none(), messagedAt, messagedAt)
+        );
+      }
+
+      // While the platform answers, an event brings the box to `during`.
+      world.state.read = () =>
+        world.store.bringForward(channelId(1), during).pipe(
+          Effect.orDie,
+          Effect.as({
+            conversations: [],
+            halted: false,
+            listed: [],
+            listedWhole: false,
+          })
+        );
+
+      return at(
+        Effect.gen(function* moved() {
+          // Read now, as an earlier event asked: left alone, its next
+          // read would be an hour on, not `during`.
+          const now = DateTime.addDuration(messagedAt, "10 seconds");
+
+          yield* at(
+            CollectMessages.use((collect) =>
+              collect.readBox(channelId(1), now)
+            ),
+            now
+          );
+
+          assert.deepStrictEqual(
+            world.state.boxes.get(channelId(1))?.nextReadAt,
+            during
+          );
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
 });
 
 describe("a platform's events", () => {

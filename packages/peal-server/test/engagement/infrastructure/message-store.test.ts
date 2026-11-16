@@ -4,6 +4,7 @@ import { assert, layer } from "@effect/vitest";
 import {
   DateTime,
   Deferred,
+  Duration,
   Effect,
   Fiber,
   Layer,
@@ -30,7 +31,11 @@ import type {
 import { DirectMessageIdSchema } from "#engagement/domain/direct-message-id.ts";
 import { receiveMessage } from "#engagement/domain/direct-message.ts";
 import type { MessageReading } from "#engagement/domain/direct-message.ts";
-import { followBox, recordBoxRead } from "#engagement/domain/message-box.ts";
+import {
+  followBox,
+  postponeBoxRead,
+  recordBoxRead,
+} from "#engagement/domain/message-box.ts";
 import type { MessageBox } from "#engagement/domain/message-box.ts";
 import { OutgoingMessageIdSchema } from "#engagement/domain/outgoing-message-id.ts";
 import {
@@ -1349,6 +1354,75 @@ layer(StoreTest)("the message store", (it) => {
           assert.deepStrictEqual(
             (yield* store.messagesOf(there.id)).map(({ id }) => id),
             [twin.id]
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
+    "brings a box forward no earlier than the hold a refusal put on it, and a read lifts the hold",
+    () =>
+      Effect.gen(function* held() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-22T10:00:00.000Z");
+
+        const nextOf = (channelId: typeof box.channelId) =>
+          store
+            .box(channelId)
+            .pipe(
+              Effect.map(
+                Option.map((kept) => DateTime.formatIso(kept.nextReadAt))
+              )
+            );
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box]);
+
+          // The platform asked to wait 15 minutes.
+          const postponed = postponeBoxRead(
+            box,
+            utc("2049-02-22T10:00:00.000Z"),
+            Duration.minutes(15)
+          );
+
+          yield* store.saveBox(postponed);
+
+          yield* store.bringForward(
+            box.channelId,
+            utc("2049-02-22T10:01:00.000Z")
+          );
+
+          assert.deepStrictEqual(
+            yield* nextOf(box.channelId),
+            Option.some("2049-02-22T10:15:00.000Z")
+          );
+          assert.deepStrictEqual(
+            (yield* store.box(box.channelId)).pipe(
+              Option.flatMap((kept) => kept.notBefore),
+              Option.map(DateTime.formatIso)
+            ),
+            Option.some("2049-02-22T10:15:00.000Z")
+          );
+
+          // Read since, the box waits for nothing: an event brings it to now.
+          yield* store.saveBox(
+            recordBoxRead(
+              postponed,
+              Option.none(),
+              utc("2049-02-22T10:16:00.000Z"),
+              utc("2049-02-22T10:15:00.000Z")
+            )
+          );
+
+          yield* store.bringForward(
+            box.channelId,
+            utc("2049-02-22T10:17:00.000Z")
+          );
+
+          assert.deepStrictEqual(
+            yield* nextOf(box.channelId),
+            Option.some("2049-02-22T10:17:00.000Z")
           );
         }).pipe(Effect.ensuring(forget(workspaceId)));
       })

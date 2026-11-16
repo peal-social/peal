@@ -59,7 +59,7 @@ const millis = (at: DateTime.Utc) => DateTime.toEpochMillis(at);
 const boxWith = (
   box: MessageBox,
   changed: Partial<
-    Pick<MessageBox, "lastReadAt" | "nextReadAt" | "subscribedAt">
+    Pick<MessageBox, "lastReadAt" | "nextReadAt" | "notBefore" | "subscribedAt">
   >
 ) =>
   new MessageBox({
@@ -67,6 +67,7 @@ const boxWith = (
     createdAt: box.createdAt,
     lastReadAt: changed.lastReadAt ?? box.lastReadAt,
     nextReadAt: changed.nextReadAt ?? box.nextReadAt,
+    notBefore: changed.notBefore ?? box.notBefore,
     subscribedAt: changed.subscribedAt ?? box.subscribedAt,
     workspaceId: box.workspaceId,
   });
@@ -356,8 +357,14 @@ export const makeMessageWorld = (
           return false;
         }
 
-        if (millis(at) < millis(box.nextReadAt)) {
-          state.boxes.set(channelId, boxWith(box, { nextReadAt: at }));
+        // Never before the box's hold, as the Postgres store.
+        const earliest = Option.match(box.notBefore, {
+          onNone: () => at,
+          onSome: (until) => (millis(until) > millis(at) ? until : at),
+        });
+
+        if (millis(earliest) < millis(box.nextReadAt)) {
+          state.boxes.set(channelId, boxWith(box, { nextReadAt: earliest }));
         }
 
         return true;
