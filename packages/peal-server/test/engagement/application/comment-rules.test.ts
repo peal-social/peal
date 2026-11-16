@@ -1470,6 +1470,56 @@ describe("a comment rule's private reply", () => {
       }).pipe(Effect.provide(RulesTest))
   );
 
+  it.live(
+    "still answers in public when its private text is taken off mid-run",
+    () =>
+      Effect.gen(function* textOff() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const { rule, thread } = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+          const sql = yield* SqlClient.SqlClient;
+
+          const [first] = yield* received(thread, [
+            { author: 1, text: "price?" },
+          ]);
+
+          yield* rules.runDue;
+          yield* publicRepliesEnd(workspaceId, "sent");
+
+          const [second] = yield* received(thread, [
+            { author: 2, text: "price, please" },
+          ]);
+
+          // The text goes after the run listed what waits for it.
+          yield* Ref.set(
+            meanwhile,
+            sql`UPDATE engagement.comment_rules SET private_reply = NULL WHERE id = ${rule.rule.id}`.pipe(
+              Effect.asVoid,
+              Effect.orDie
+            )
+          );
+
+          const run = yield* rules.runDue;
+
+          assert.strictEqual(run.replied, 1);
+          assert.strictEqual(run.privateReplied, 0);
+          assert.deepStrictEqual(yield* privateRepliesIn(workspaceId), []);
+          assert.deepStrictEqual(
+            yield* privateOutcomes(workspaceId, rule.rule.id),
+            new Map([
+              [first?.id, "stopped"],
+              [second?.id, "none"],
+            ])
+          );
+        }).pipe(
+          Effect.ensuring(Ref.set(meanwhile, Effect.void)),
+          Effect.ensuring(forget(workspaceId))
+        );
+      }).pipe(Effect.provide(RulesTest))
+  );
+
   it.live("answers nothing more in public once stopped mid-run", () =>
     Effect.gen(function* stopsPublic() {
       const workspaceId = yield* freshWorkspace;

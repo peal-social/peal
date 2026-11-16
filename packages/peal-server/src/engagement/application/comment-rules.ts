@@ -864,14 +864,18 @@ export class CommentRules extends Context.Service<
         ) {
           const locked = yield* store.lock(rule.workspaceId, rule.id);
 
-          if (
-            Option.isNone(locked) ||
-            locked.value.status._tag !== "active" ||
-            Option.isNone(locked.value.privateReply)
-          ) {
+          if (Option.isNone(locked) || locked.value.status._tag !== "active") {
             yield* store.stopWaiting(rule.id);
 
             return "stopped" as const;
+          }
+
+          // Its text taken off meanwhile: none of those waiting go, and the
+          // rule goes on answering in public.
+          if (Option.isNone(locked.value.privateReply)) {
+            yield* store.stopWaiting(rule.id);
+
+            return "dropped" as const;
           }
 
           const next = afterPublic(yield* comments.reply(waiting.replyId));
@@ -949,6 +953,10 @@ export class CommentRules extends Context.Service<
 
           if (done === "stopped") {
             return tally;
+          }
+
+          if (done === "dropped") {
+            break;
           }
 
           tally.privateReplied += done === "sent" ? 1 : 0;

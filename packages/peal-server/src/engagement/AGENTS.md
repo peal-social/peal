@@ -422,8 +422,7 @@
   (`CommentRuleNotPossible` `privateReply`, `emptyPrivateReply`). Test
   the run on Postgres through `#test/engagement/rule-world.ts`. One
   private reply a comment on Instagram and Facebook Pages, after the
-  public one; never a like or a follow, never a first contact: decision
-  6.
+  public one; never a like or a follow, never a first contact: decision 6.
 - Direct messages are a model of their own beside comments and reviews:
   a `MessageBox` per channel (`engagement.message_boxes`, keyed by the
   channel: its schedule), a `Conversation` per conversation on the
