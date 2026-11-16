@@ -506,6 +506,82 @@ layer(StoreTest)("the message store", (it) => {
   );
 
   it.effect(
+    "hands over one stranded only while no call was claimed since it was listed",
+    () =>
+      Effect.gen(function* handOver() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-06T10:00:00.000Z");
+        const at = utc("2049-02-06T10:00:00.000Z");
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box]);
+
+          const talk = yield* conversationOn(
+            box,
+            1,
+            "2049-02-06T09:00:00.000Z"
+          );
+
+          yield* store.saveConversations([talk]);
+
+          const message = writeMessage(
+            yield* newId(OutgoingMessageIdSchema),
+            talk,
+            Option.none(),
+            "Hello",
+            at
+          );
+
+          yield* store.journalMessage(message, Option.none());
+          yield* store.advanceMessage(
+            Result.getOrThrow(beginMessage(message, at)),
+            message
+          );
+
+          const later = DateTime.addDuration(at, "2 hours");
+          const bound = DateTime.addDuration(at, "1 hour");
+
+          // Listed as stranded, then its gate claims the call.
+          assert.isTrue(
+            (yield* store.strandedMessages(bound, bound, 1000)).some(
+              ({ id }) => id === message.id
+            )
+          );
+          assert.isTrue(yield* store.claimCall(message.id, later));
+          assert.isTrue(
+            Option.isNone(yield* store.handOver(message.id, later, bound))
+          );
+          assert.strictEqual(
+            (yield* store.outgoing(message.id)).pipe(
+              Option.map(({ status }) => status._tag),
+              Option.getOrNull
+            ),
+            "sending"
+          );
+
+          // Its claim old enough: handed over.
+          const handed = yield* store.handOver(
+            message.id,
+            DateTime.addDuration(later, "1 hour"),
+            DateTime.addDuration(later, "10 minutes")
+          );
+
+          assert.deepStrictEqual(
+            handed.pipe(
+              Option.map(({ status }) =>
+                status._tag === "unconfirmed" ? status.reason : status._tag
+              ),
+              Option.getOrNull
+            ),
+            "interrupted"
+          );
+          assert.deepStrictEqual(yield* store.outgoing(message.id), handed);
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
     "deletes each message 30 days after it was sent, and a conversation once its last message is that old",
     () =>
       Effect.gen(function* purges() {

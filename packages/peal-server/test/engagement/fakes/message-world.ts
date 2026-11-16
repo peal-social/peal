@@ -1,4 +1,4 @@
-import { DateTime, Effect, Layer, Option } from "effect";
+import { DateTime, Effect, Layer, Option, Result } from "effect";
 
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
 import { CollectMessages } from "#engagement/application/collect-messages.ts";
@@ -37,6 +37,7 @@ import type { Conversation } from "#engagement/domain/conversation.ts";
 import type { DirectMessage } from "#engagement/domain/direct-message.ts";
 import { MessageBox } from "#engagement/domain/message-box.ts";
 import type { OutgoingMessageId } from "#engagement/domain/outgoing-message-id.ts";
+import { settleMessage } from "#engagement/domain/outgoing-message.ts";
 import type {
   MessageSendOutcome,
   OutgoingMessage,
@@ -667,6 +668,26 @@ export const makeMessageWorld = (
         }
 
         return fresh;
+      }),
+    handOver: (messageId, at) =>
+      Effect.sync(() => {
+        const message = state.outgoing.get(messageId);
+
+        if (message === undefined || message.status._tag !== "sending") {
+          return Option.none<OutgoingMessage>();
+        }
+
+        const handed = Result.getOrThrow(
+          settleMessage(
+            message,
+            { _tag: "unconfirmed", reason: "interrupted" },
+            at
+          )
+        );
+
+        state.outgoing.set(messageId, handed);
+
+        return Option.some(handed);
       }),
     strandedMessages: (writtenBefore, _calledBefore, limit) =>
       Effect.sync(() =>

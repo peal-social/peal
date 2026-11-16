@@ -252,6 +252,17 @@ export class MessageStore extends Context.Service<
       limit: number
     ) => Effect.Effect<readonly OutgoingMessage[], DatabaseError>;
     /**
+     * Hands a stranded message to a person (`unconfirmed`, `interrupted`,
+     * at `at`), only while it is still on its way and no call was claimed
+     * after `calledBefore`: one whose gate claimed its call since it was
+     * listed is left to that call.
+     */
+    readonly handOver: (
+      messageId: OutgoingMessageId,
+      at: DateTime.Utc,
+      calledBefore: DateTime.Utc
+    ) => Effect.Effect<Option.Option<OutgoingMessage>, DatabaseError>;
+    /**
      * The channel's messages sent from Peal still on their way whose call
      * was never claimed, an attempt that waited for the gate's turn among
      * them: deleting them sends nothing, so their outbound message is

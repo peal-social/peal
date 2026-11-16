@@ -863,6 +863,38 @@ export const DrizzleMessageStore = Layer.effect(
       }
     );
 
+    const handOver = Effect.fn("MessageStore.handOver")(function* handOver(
+      messageId: string,
+      at: DateTime.Utc,
+      calledBefore: DateTime.Utc
+    ) {
+      const [row] = yield* db
+        .update(outgoingMessages)
+        .set({
+          attemptedAt: null,
+          platformMessageId: null,
+          reason: "interrupted",
+          settledAt: date(at),
+          status: "unconfirmed",
+        })
+        .where(
+          and(
+            eq(outgoingMessages.id, messageId),
+            eq(outgoingMessages.status, "sending"),
+            or(
+              isNull(outgoingMessages.callClaimedAt),
+              lte(outgoingMessages.callClaimedAt, date(calledBefore))
+            )
+          )
+        )
+        .returning()
+        .pipe(Effect.mapError(failed));
+
+      return row === undefined
+        ? Option.none<OutgoingMessage>()
+        : Option.some(yield* outgoingOfRow(row));
+    });
+
     const channelGone = Effect.fn("MessageStore.channelGone")(
       function* channelGone(channelId: string) {
         const deleted = yield* sql
@@ -1222,6 +1254,7 @@ export const DrizzleMessageStore = Layer.effect(
       saveBox,
       saveConversations,
       saveMessages,
+      handOver,
       strandedMessages,
     });
   })
