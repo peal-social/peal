@@ -21,6 +21,10 @@ describe("Meta's Human Agent setting", () => {
         yield* read({ PEAL_META_HUMAN_AGENT: "false" }),
         Result.succeed(false)
       );
+      assert.deepStrictEqual(
+        yield* read({ PEAL_META_HUMAN_AGENT: "" }),
+        Result.succeed(false)
+      );
     })
   );
 
@@ -35,9 +39,12 @@ describe("Meta's Human Agent setting", () => {
 
   it.effect("stops the server for anything else", () =>
     Effect.gen(function* refused() {
-      assert.isTrue(
-        Result.isFailure(yield* read({ PEAL_META_HUMAN_AGENT: "maybe" }))
-      );
+      for (const value of ["maybe", "1", "on", "yes", "TRUE"]) {
+        assert.isTrue(
+          Result.isFailure(yield* read({ PEAL_META_HUMAN_AGENT: value })),
+          value
+        );
+      }
     })
   );
 });
