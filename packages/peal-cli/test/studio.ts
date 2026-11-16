@@ -2,6 +2,7 @@ import { DateTime, Effect, Layer, Option, Ref, Result, Stream } from "effect";
 import { HttpRouter } from "effect/http";
 import { HttpApiBuilder, HttpApiError, HttpApiSchema } from "effect/http-api";
 import {
+  ChatNotConnected,
   SiteNotConnected,
   AlreadyMember,
   Api,
@@ -3284,6 +3285,59 @@ export const studioGroupsLive = (studio: Studio) =>
             };
 
             return site;
+          }),
+        // A chat connects at once: a webhook's address on another host,
+        // or a token with "refused" in it, stands for one the platform
+        // refuses.
+        connectChat: ({ params, payload }) =>
+          Effect.gen(function* connectChat() {
+            yield* allowed("channel:connect");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            if (
+              payload.platform === "discord" &&
+              !payload.webhookUrl.startsWith("https://discord.com/")
+            ) {
+              return yield* new ChatNotConnected({
+                reason: "addressNotAWebhook",
+              });
+            }
+
+            if (
+              payload.platform === "telegram" &&
+              payload.botToken.includes("refused")
+            ) {
+              return yield* new ChatNotConnected({
+                reason: "credentialsRefused",
+              });
+            }
+
+            yield* record(
+              studio,
+              payload.platform === "discord"
+                ? `chat:discord:${payload.webhookUrl}`
+                : `chat:telegram:${payload.chat}:${payload.botToken}`
+            );
+
+            const chat: Channel = {
+              avatarUrl: null,
+              connection: null,
+              displayName: "Synthetic news",
+              handle:
+                payload.platform === "discord"
+                  ? "Synthetic news"
+                  : payload.chat,
+              id: "0199a000-0000-7000-8000-000000005175",
+              label: null,
+              platform: payload.platform,
+              status: { _tag: "active" },
+              tokenExpiresAt: null,
+            };
+
+            return chat;
           }),
         connectSiteWithKey: ({ params, payload }) =>
           Effect.gen(function* connectSiteWithKey() {

@@ -910,6 +910,31 @@ const reasonOf =
         refused(
           "The workspace has no short link with that id: peal short-links list shows them."
         ),
+      ChatConnectLimited: () =>
+        refused(
+          "The workspace tried to connect chats too many times in the last hour: try again later. Nothing was saved."
+        ),
+      ChatNotConnected: ({ reason }) =>
+        refused(
+          `The chat was not connected: ${
+            {
+              addressNotAWebhook:
+                "the address is not a Discord webhook's: copy it from the channel's settings, Integrations, Webhooks",
+              cannotPost:
+                "the bot may not post in the chat: in a channel, make it an administrator who may post messages; in a group, let it send messages",
+              chatKindNotSupported:
+                "the chat is a private chat with a person: Peal posts in channels and groups",
+              chatNotFound:
+                "Telegram knows no such chat, or the bot is not in it: add the bot, then give the chat's @name or its id",
+              credentialsRefused:
+                "Telegram refused the bot's token: copy it again from @BotFather",
+              webhookKindNotSupported:
+                "the webhook does not post messages: make an incoming one in the channel's settings",
+              webhookNotFound:
+                "Discord has no such webhook: it was deleted, or its address changed",
+            }[reason]
+          }. Nothing was saved.`
+        ),
       SiteConnectLimited: () =>
         refused(
           "The workspace tried to connect websites too many times in the last hour: try again later. Nothing was saved."

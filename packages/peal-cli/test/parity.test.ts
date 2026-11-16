@@ -123,6 +123,7 @@ const coverage = {
   "channels.completeConnect": exempt(connecting),
   "channels.connect": exempt(connecting),
   "channels.connectSite": by("channels connect-website"),
+  "channels.connectChat": by("channels connect-chat"),
   "channels.connectSiteWithKey": by("channels connect-website-key"),
   "channels.disable": by("channels disable"),
   "channels.disconnect": exempt(
