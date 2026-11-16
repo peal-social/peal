@@ -136,6 +136,15 @@ type Turn = "deferred" | "read" | "unreached";
  */
 export type BoxReadOutcome = "deferred" | "missing" | "off" | "read";
 
+// A platform that would not stop a channel's message events, logged by
+// the channel's id and the refusal's tag alone.
+const stopRefused =
+  (channelId: ChannelId) =>
+  ({ _tag: reason }: { readonly _tag: string }) =>
+    Effect.logWarning(
+      "Could not tell a platform to stop a channel's message events"
+    ).pipe(Effect.annotateLogs({ channelId, reason }));
+
 /**
  * Reads the direct messages of every channel on a platform the operator
  * turned on (`PEAL_INBOX_MESSAGES`): off, it follows nothing and calls
@@ -347,15 +356,13 @@ export class CollectMessages extends Context.Service<
       // best effort: a refusal, or a gate too busy to answer in time, is
       // logged by the channel's id.
       const stopEvents = (channelId: ChannelId) =>
-        source.unfollow({ channelId }).pipe(
-          Effect.timeout(unfollowWait),
-          Effect.catch((error) =>
-            Effect.logWarning(
-              "Could not tell a platform to stop a channel's message events"
-            ).pipe(Effect.annotateLogs({ channelId, reason: error._tag }))
-          ),
-          Effect.asVoid
-        );
+        source
+          .unfollow({ channelId })
+          .pipe(
+            Effect.timeout(unfollowWait),
+            Effect.catch(stopRefused(channelId)),
+            Effect.asVoid
+          );
 
       // A channel that left goes now, with what it held, as do the messages
       // of one whose account no longer grants them; one that cannot be read
