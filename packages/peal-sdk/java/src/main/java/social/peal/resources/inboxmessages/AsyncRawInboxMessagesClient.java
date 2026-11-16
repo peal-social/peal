@@ -36,10 +36,13 @@ import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.errors.UnprocessableEntityError;
 import social.peal.resources.inboxmessages.requests.ConfirmMessageInboxMessagesRequest;
+import social.peal.resources.inboxmessages.requests.ConfirmPrivateReplyInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.GetConversationInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.GetMessageSettingsInboxMessagesRequest;
+import social.peal.resources.inboxmessages.requests.GetPrivateReplyInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.ListConversationsInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.NewInboxMessage;
+import social.peal.resources.inboxmessages.requests.NewInboxPrivateReply;
 import social.peal.resources.inboxmessages.requests.SetChannelMessagesInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.SetConversationReadInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.SetMessageApplicationInboxMessagesRequest;
@@ -48,6 +51,7 @@ import social.peal.types.InboxConversationDetail;
 import social.peal.types.InboxConversationPage;
 import social.peal.types.InboxMessageSettings;
 import social.peal.types.InboxOutgoingMessage;
+import social.peal.types.InboxPrivateReply;
 import social.peal.types.UnauthenticatedEncoded;
 
 public class AsyncRawInboxMessagesClient {
@@ -446,6 +450,394 @@ public class AsyncRawInboxMessagesClient {
                                 return;
                             case 422:
                                 future.completeExceptionally(new UnprocessableEntityError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 429:
+                                future.completeExceptionally(new TooManyRequestsError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                        }
+                    } catch (JsonProcessingException ignored) {
+                        // unable to map error response, throwing generic error
+                    }
+                    Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+                    future.completeExceptionally(new PealClientApiException(
+                            "Error with status code " + response.code(), response.code(), errorBody, response));
+                    return;
+                } catch (JsonProcessingException e) {
+                    future.completeExceptionally(
+                            new PealClientException("Failed to deserialize response: " + e.getMessage(), e));
+                } catch (IOException e) {
+                    future.completeExceptionally(new PealClientException("Network error executing HTTP request", e));
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(new PealClientException("Network error executing HTTP request", e));
+            }
+        });
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                okhttpCall.cancel();
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's <code>abilities.privateReply</code>): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's <code>privateReplyUntil</code>), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 <code>InboxActionUnavailable</code>, <code>privateReply</code>, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 <code>PrivateReplyNotPossible</code>, with <code>reason</code>), and a text longer than the platform takes (422 <code>ReplyInvalid</code>). The message is journalled and sent by a job: the answer is the private reply <code>sending</code>; the comment shows how it ended. One whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 <code>PrivateReplyPending</code>), whichever request came first; one that failed lets another through. With an <code>Idempotency-Key</code> header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 <code>IdempotencyKeyReused</code>). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 <code>UsageAllowanceReached</code>); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> sendPrivateReply(
+            String workspaceId, NewInboxPrivateReply request) {
+        return sendPrivateReply(workspaceId, request, null);
+    }
+
+    /**
+     * Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's <code>abilities.privateReply</code>): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's <code>privateReplyUntil</code>), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 <code>InboxActionUnavailable</code>, <code>privateReply</code>, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 <code>PrivateReplyNotPossible</code>, with <code>reason</code>), and a text longer than the platform takes (422 <code>ReplyInvalid</code>). The message is journalled and sent by a job: the answer is the private reply <code>sending</code>; the comment shows how it ended. One whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 <code>PrivateReplyPending</code>), whichever request came first; one that failed lets another through. With an <code>Idempotency-Key</code> header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 <code>IdempotencyKeyReused</code>). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 <code>UsageAllowanceReached</code>); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> sendPrivateReply(
+            String workspaceId, NewInboxPrivateReply request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("inbox/messages")
+                .addPathSegments("private-replies");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        Request.Builder _requestBuilder = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json");
+        if (request.getIdempotencyKey().isPresent()) {
+            _requestBuilder.addHeader(
+                    "idempotency-key", request.getIdempotencyKey().get());
+        }
+        Request okhttpRequest = _requestBuilder.build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> future = new CompletableFuture<>();
+        RetryInterceptor.AsyncCall okhttpCall = RetryInterceptor.newAsyncCall(client, okhttpRequest);
+        okhttpCall.enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                try (ResponseBody responseBody = response.body()) {
+                    String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+                    if (response.isSuccessful()) {
+                        future.complete(new PealClientHttpResponse<>(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, InboxPrivateReply.class),
+                                response));
+                        return;
+                    }
+                    try {
+                        switch (response.code()) {
+                            case 401:
+                                future.completeExceptionally(new UnauthorizedError(
+                                        ObjectMappers.JSON_MAPPER.readValue(
+                                                responseBodyString, UnauthenticatedEncoded.class),
+                                        response));
+                                return;
+                            case 402:
+                                future.completeExceptionally(new PaymentRequiredError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 403:
+                                future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 409:
+                                future.completeExceptionally(new ConflictError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 422:
+                                future.completeExceptionally(new UnprocessableEntityError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 429:
+                                future.completeExceptionally(new TooManyRequestsError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                        }
+                    } catch (JsonProcessingException ignored) {
+                        // unable to map error response, throwing generic error
+                    }
+                    Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+                    future.completeExceptionally(new PealClientApiException(
+                            "Error with status code " + response.code(), response.code(), errorBody, response));
+                    return;
+                } catch (JsonProcessingException e) {
+                    future.completeExceptionally(
+                            new PealClientException("Failed to deserialize response: " + e.getMessage(), e));
+                } catch (IOException e) {
+                    future.completeExceptionally(new PealClientException("Network error executing HTTP request", e));
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(new PealClientException("Network error executing HTTP request", e));
+            }
+        });
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                okhttpCall.cancel();
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> getPrivateReply(
+            String workspaceId, String privateReplyId) {
+        return getPrivateReply(
+                workspaceId,
+                privateReplyId,
+                GetPrivateReplyInboxMessagesRequest.builder().build());
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> getPrivateReply(
+            String workspaceId, String privateReplyId, RequestOptions requestOptions) {
+        return getPrivateReply(
+                workspaceId,
+                privateReplyId,
+                GetPrivateReplyInboxMessagesRequest.builder().build(),
+                requestOptions);
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> getPrivateReply(
+            String workspaceId, String privateReplyId, GetPrivateReplyInboxMessagesRequest request) {
+        return getPrivateReply(workspaceId, privateReplyId, request, null);
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> getPrivateReply(
+            String workspaceId,
+            String privateReplyId,
+            GetPrivateReplyInboxMessagesRequest request,
+            RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("inbox/messages/private-replies")
+                .addPathSegment(PathSegments.validate(privateReplyId));
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        Request.Builder _requestBuilder = new Request.Builder()
+                .url(httpUrl.build())
+                .method("GET", null)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Accept", "application/json");
+        Request okhttpRequest = _requestBuilder.build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        if (requestOptions != null && requestOptions.getMaxRetries().isPresent()) {
+            okhttpRequest = okhttpRequest
+                    .newBuilder()
+                    .tag(
+                            RetryInterceptor.MaxRetriesOverride.class,
+                            new RetryInterceptor.MaxRetriesOverride(
+                                    requestOptions.getMaxRetries().get()))
+                    .build();
+        }
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> future = new CompletableFuture<>();
+        RetryInterceptor.AsyncCall okhttpCall = RetryInterceptor.newAsyncCall(client, okhttpRequest);
+        okhttpCall.enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                try (ResponseBody responseBody = response.body()) {
+                    String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+                    if (response.isSuccessful()) {
+                        future.complete(new PealClientHttpResponse<>(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, InboxPrivateReply.class),
+                                response));
+                        return;
+                    }
+                    try {
+                        switch (response.code()) {
+                            case 401:
+                                future.completeExceptionally(new UnauthorizedError(
+                                        ObjectMappers.JSON_MAPPER.readValue(
+                                                responseBodyString, UnauthenticatedEncoded.class),
+                                        response));
+                                return;
+                            case 403:
+                                future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 429:
+                                future.completeExceptionally(new TooManyRequestsError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                        }
+                    } catch (JsonProcessingException ignored) {
+                        // unable to map error response, throwing generic error
+                    }
+                    Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+                    future.completeExceptionally(new PealClientApiException(
+                            "Error with status code " + response.code(), response.code(), errorBody, response));
+                    return;
+                } catch (JsonProcessingException e) {
+                    future.completeExceptionally(
+                            new PealClientException("Failed to deserialize response: " + e.getMessage(), e));
+                } catch (IOException e) {
+                    future.completeExceptionally(new PealClientException("Network error executing HTTP request", e));
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(new PealClientException("Network error executing HTTP request", e));
+            }
+        });
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                okhttpCall.cancel();
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Records what someone found in the person's conversation for an unconfirmed private reply: it went out (<code>went: true</code>), or it did not (<code>false</code>), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> confirmPrivateReply(
+            String workspaceId, String privateReplyId, ConfirmPrivateReplyInboxMessagesRequest request) {
+        return confirmPrivateReply(workspaceId, privateReplyId, request, null);
+    }
+
+    /**
+     * Records what someone found in the person's conversation for an unconfirmed private reply: it went out (<code>went: true</code>), or it did not (<code>false</code>), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> confirmPrivateReply(
+            String workspaceId,
+            String privateReplyId,
+            ConfirmPrivateReplyInboxMessagesRequest request,
+            RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("inbox/messages/private-replies")
+                .addPathSegment(PathSegments.validate(privateReplyId))
+                .addPathSegments("confirm");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> future = new CompletableFuture<>();
+        RetryInterceptor.AsyncCall okhttpCall = RetryInterceptor.newAsyncCall(client, okhttpRequest);
+        okhttpCall.enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                try (ResponseBody responseBody = response.body()) {
+                    String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+                    if (response.isSuccessful()) {
+                        future.complete(new PealClientHttpResponse<>(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, InboxPrivateReply.class),
+                                response));
+                        return;
+                    }
+                    try {
+                        switch (response.code()) {
+                            case 401:
+                                future.completeExceptionally(new UnauthorizedError(
+                                        ObjectMappers.JSON_MAPPER.readValue(
+                                                responseBodyString, UnauthenticatedEncoded.class),
+                                        response));
+                                return;
+                            case 403:
+                                future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 409:
+                                future.completeExceptionally(new ConflictError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
                                         response));
                                 return;

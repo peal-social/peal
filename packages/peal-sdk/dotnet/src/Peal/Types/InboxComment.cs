@@ -29,6 +29,12 @@ public record InboxComment : IJsonOnDeserialized
     [JsonPropertyName("permalink")]
     public string? Permalink { get; set; }
 
+    [JsonPropertyName("privateReply")]
+    public InboxPrivateReply? PrivateReply { get; set; }
+
+    [JsonPropertyName("privateReplyUntil")]
+    public string? PrivateReplyUntil { get; set; }
+
     [JsonPropertyName("receivedAt")]
     public required string ReceivedAt { get; set; }
 

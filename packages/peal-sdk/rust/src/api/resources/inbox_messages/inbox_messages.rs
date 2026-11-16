@@ -192,6 +192,177 @@ impl InboxMessagesClient {
             .await
     }
 
+    /// Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's `abilities.privateReply`): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's `privateReplyUntil`), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 `InboxActionUnavailable`, `privateReply`, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 `PrivateReplyNotPossible`, with `reason`), and a text longer than the platform takes (422 `ReplyInvalid`). The message is journalled and sent by a job: the answer is the private reply `sending`; the comment shows how it ended. One whose outcome is unknown is `unconfirmed` and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 `PrivateReplyPending`), whichever request came first; one that failed lets another through. With an `Idempotency-Key` header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 `IdempotencyKeyReused`). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 `UsageAllowanceReached`); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// JSON response from the API
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client
+    ///         .inbox_messages
+    ///         .send_private_reply(
+    ///             &"workspaceId".to_string(),
+    ///             &NewInboxPrivateReply {
+    ///                 comment_id: "commentId".to_string(),
+    ///                 text: "text".to_string(),
+    ///             },
+    ///             None,
+    ///         )
+    ///         .await;
+    /// }
+    /// ```
+    pub async fn send_private_reply(
+        &self,
+        workspace_id: &str,
+        request: &NewInboxPrivateReply,
+        options: Option<RequestOptions>,
+    ) -> Result<InboxPrivateReply, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.max_retries = Some(0);
+            Some(o)
+        };
+        self.http_client
+            .execute_request(
+                Method::POST,
+                &format!(
+                    "api/workspaces/{}/inbox/messages/private-replies",
+                    workspace_id
+                ),
+                Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
+                None,
+                options,
+            )
+            .await
+    }
+
+    /// Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// JSON response from the API
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client
+    ///         .inbox_messages
+    ///         .get_private_reply(
+    ///             &"workspaceId".to_string(),
+    ///             &"privateReplyId".to_string(),
+    ///             None,
+    ///         )
+    ///         .await;
+    /// }
+    /// ```
+    pub async fn get_private_reply(
+        &self,
+        workspace_id: &str,
+        private_reply_id: &str,
+        options: Option<RequestOptions>,
+    ) -> Result<InboxPrivateReply, ApiError> {
+        self.http_client
+            .execute_request(
+                Method::GET,
+                &format!(
+                    "api/workspaces/{}/inbox/messages/private-replies/{}",
+                    workspace_id, private_reply_id
+                ),
+                None,
+                None,
+                options,
+            )
+            .await
+    }
+
+    /// Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// JSON response from the API
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client
+    ///         .inbox_messages
+    ///         .confirm_private_reply(
+    ///             &"workspaceId".to_string(),
+    ///             &"privateReplyId".to_string(),
+    ///             &ConfirmPrivateReplyInboxMessagesRequest { went: true },
+    ///             None,
+    ///         )
+    ///         .await;
+    /// }
+    /// ```
+    pub async fn confirm_private_reply(
+        &self,
+        workspace_id: &str,
+        private_reply_id: &str,
+        request: &ConfirmPrivateReplyInboxMessagesRequest,
+        options: Option<RequestOptions>,
+    ) -> Result<InboxPrivateReply, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.max_retries = Some(0);
+            Some(o)
+        };
+        self.http_client
+            .execute_request(
+                Method::POST,
+                &format!(
+                    "api/workspaces/{}/inbox/messages/private-replies/{}/confirm",
+                    workspace_id, private_reply_id
+                ),
+                Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
+                None,
+                options,
+            )
+            .await
+    }
+
     /// Says a conversation was read (`read: true`), or is unread again (`false`). Nothing is sent to the platform. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
     ///
     /// # Arguments

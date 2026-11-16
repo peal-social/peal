@@ -20,6 +20,9 @@ public record InboxAbilities : IJsonOnDeserialized
     [JsonPropertyName("like")]
     public required InboxAbilityStanding Like { get; set; }
 
+    [JsonPropertyName("privateReply")]
+    public required InboxAbilityStanding PrivateReply { get; set; }
+
     [JsonPropertyName("read")]
     public required InboxAbilityStanding Read { get; set; }
 

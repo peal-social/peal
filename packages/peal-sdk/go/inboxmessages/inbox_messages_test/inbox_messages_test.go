@@ -158,6 +158,89 @@ func TestInboxMessagesSendMessageWithWireMock(
 	VerifyRequestCount(t, "TestInboxMessagesSendMessageWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/messages/conversations/conversationId/messages", nil, 1)
 }
 
+func TestInboxMessagesSendPrivateReplyWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.NewInboxPrivateReply{
+		WorkspaceID: "workspaceId",
+		CommentID:   "commentId",
+		Text:        "text",
+	}
+	_, invocationErr := client.InboxMessages.SendPrivateReply(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestInboxMessagesSendPrivateReplyWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestInboxMessagesSendPrivateReplyWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/messages/private-replies", nil, 1)
+}
+
+func TestInboxMessagesGetPrivateReplyWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.GetPrivateReplyInboxMessagesRequest{
+		WorkspaceID:    "workspaceId",
+		PrivateReplyID: "privateReplyId",
+	}
+	_, invocationErr := client.InboxMessages.GetPrivateReply(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestInboxMessagesGetPrivateReplyWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestInboxMessagesGetPrivateReplyWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/messages/private-replies/privateReplyId", nil, 1)
+}
+
+func TestInboxMessagesConfirmPrivateReplyWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.ConfirmPrivateReplyInboxMessagesRequest{
+		WorkspaceID:    "workspaceId",
+		PrivateReplyID: "privateReplyId",
+		Went:           true,
+	}
+	_, invocationErr := client.InboxMessages.ConfirmPrivateReply(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestInboxMessagesConfirmPrivateReplyWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestInboxMessagesConfirmPrivateReplyWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/messages/private-replies/privateReplyId/confirm", nil, 1)
+}
+
 func TestInboxMessagesSetConversationReadWithWireMock(
 	t *testing.T,
 ) {

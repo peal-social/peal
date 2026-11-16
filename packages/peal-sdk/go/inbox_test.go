@@ -973,6 +973,14 @@ func TestSettersInboxAbilities(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetPrivateReply", func(t *testing.T) {
+		obj := &InboxAbilities{}
+		var fernTestValuePrivateReply InboxAbilityStanding
+		obj.SetPrivateReply(fernTestValuePrivateReply)
+		assert.Equal(t, fernTestValuePrivateReply, obj.PrivateReply)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetRead", func(t *testing.T) {
 		obj := &InboxAbilities{}
 		var fernTestValueRead InboxAbilityStanding
@@ -1067,6 +1075,29 @@ func TestGettersInboxAbilities(t *testing.T) {
 			}
 		}()
 		_ = obj.GetLike() // Should return zero value
+	})
+
+	t.Run("GetPrivateReply", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxAbilities{}
+		var expected InboxAbilityStanding
+		obj.PrivateReply = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPrivateReply(), "getter should return the property value")
+	})
+
+	t.Run("GetPrivateReply_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *InboxAbilities
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPrivateReply() // Should return zero value
 	})
 
 	t.Run("GetRead", func(t *testing.T) {
@@ -1211,6 +1242,37 @@ func TestSettersMarkExplicitInboxAbilities(t *testing.T) {
 
 		// Act
 		obj.SetLike(fernTestValueLike)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateReply_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxAbilities{}
+		var fernTestValuePrivateReply InboxAbilityStanding
+
+		// Act
+		obj.SetPrivateReply(fernTestValuePrivateReply)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -1583,6 +1645,22 @@ func TestSettersInboxComment(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetPrivateReply", func(t *testing.T) {
+		obj := &InboxComment{}
+		var fernTestValuePrivateReply *InboxPrivateReply
+		obj.SetPrivateReply(fernTestValuePrivateReply)
+		assert.Equal(t, fernTestValuePrivateReply, obj.PrivateReply)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPrivateReplyUntil", func(t *testing.T) {
+		obj := &InboxComment{}
+		var fernTestValuePrivateReplyUntil *string
+		obj.SetPrivateReplyUntil(fernTestValuePrivateReplyUntil)
+		assert.Equal(t, fernTestValuePrivateReplyUntil, obj.PrivateReplyUntil)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetReceivedAt", func(t *testing.T) {
 		obj := &InboxComment{}
 		var fernTestValueReceivedAt string
@@ -1802,6 +1880,72 @@ func TestGettersInboxComment(t *testing.T) {
 			}
 		}()
 		_ = obj.GetPermalink() // Should return zero value
+	})
+
+	t.Run("GetPrivateReply", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxComment{}
+		var expected *InboxPrivateReply
+		obj.PrivateReply = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPrivateReply(), "getter should return the property value")
+	})
+
+	t.Run("GetPrivateReply_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxComment{}
+		obj.PrivateReply = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPrivateReply(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPrivateReply_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *InboxComment
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPrivateReply() // Should return zero value
+	})
+
+	t.Run("GetPrivateReplyUntil", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxComment{}
+		var expected *string
+		obj.PrivateReplyUntil = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPrivateReplyUntil(), "getter should return the property value")
+	})
+
+	t.Run("GetPrivateReplyUntil_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxComment{}
+		obj.PrivateReplyUntil = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPrivateReplyUntil(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPrivateReplyUntil_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *InboxComment
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPrivateReplyUntil() // Should return zero value
 	})
 
 	t.Run("GetReceivedAt", func(t *testing.T) {
@@ -2085,6 +2229,68 @@ func TestSettersMarkExplicitInboxComment(t *testing.T) {
 
 		// Act
 		obj.SetPermalink(fernTestValuePermalink)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateReply_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxComment{}
+		var fernTestValuePrivateReply *InboxPrivateReply
+
+		// Act
+		obj.SetPrivateReply(fernTestValuePrivateReply)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPrivateReplyUntil_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxComment{}
+		var fernTestValuePrivateReplyUntil *string
+
+		// Act
+		obj.SetPrivateReplyUntil(fernTestValuePrivateReplyUntil)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -4550,6 +4756,8 @@ func TestRequiredNullableRoundTripInboxComment(t *testing.T) {
 		"author",
 		"parentId",
 		"permalink",
+		"privateReply",
+		"privateReplyUntil",
 	}
 	marshalToMap := func(t *testing.T, obj *InboxComment) map[string]json.RawMessage {
 		data, err := json.Marshal(obj)
@@ -4562,7 +4770,7 @@ func TestRequiredNullableRoundTripInboxComment(t *testing.T) {
 	t.Run("NullPreserved", func(t *testing.T) {
 		t.Parallel()
 		var obj InboxComment
-		require.NoError(t, json.Unmarshal([]byte(`{"author":null,"parentId":null,"permalink":null}`), &obj))
+		require.NoError(t, json.Unmarshal([]byte(`{"author":null,"parentId":null,"permalink":null,"privateReply":null,"privateReplyUntil":null}`), &obj))
 		result := marshalToMap(t, &obj)
 		for _, key := range requiredNullableKeys {
 			value, ok := result[key]

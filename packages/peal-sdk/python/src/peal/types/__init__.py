@@ -566,6 +566,10 @@ if typing.TYPE_CHECKING:
     from .inbox_owner_reply import InboxOwnerReply
     from .inbox_owner_reply_moderation import InboxOwnerReplyModeration
     from .inbox_participant import InboxParticipant
+    from .inbox_private_reply import InboxPrivateReply
+    from .inbox_private_reply_not_found_encoded import InboxPrivateReplyNotFoundEncoded
+    from .inbox_private_reply_reason import InboxPrivateReplyReason
+    from .inbox_private_reply_status import InboxPrivateReplyStatus
     from .inbox_reply import InboxReply
     from .inbox_reply_not_found_encoded import InboxReplyNotFoundEncoded
     from .inbox_reply_reason import InboxReplyReason
@@ -908,6 +912,9 @@ if typing.TYPE_CHECKING:
     from .prices import Prices
     from .prices_accounts import PricesAccounts
     from .prices_meters import PricesMeters
+    from .private_reply_not_possible_encoded import PrivateReplyNotPossibleEncoded
+    from .private_reply_pending_encoded import PrivateReplyPendingEncoded
+    from .private_reply_refusal import PrivateReplyRefusal
     from .probe_state import ProbeState
     from .publication_attempt import PublicationAttempt
     from .queue import Queue
@@ -1732,6 +1739,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "InboxOwnerReply": ".inbox_owner_reply",
     "InboxOwnerReplyModeration": ".inbox_owner_reply_moderation",
     "InboxParticipant": ".inbox_participant",
+    "InboxPrivateReply": ".inbox_private_reply",
+    "InboxPrivateReplyNotFoundEncoded": ".inbox_private_reply_not_found_encoded",
+    "InboxPrivateReplyReason": ".inbox_private_reply_reason",
+    "InboxPrivateReplyStatus": ".inbox_private_reply_status",
     "InboxReply": ".inbox_reply",
     "InboxReplyNotFoundEncoded": ".inbox_reply_not_found_encoded",
     "InboxReplyReason": ".inbox_reply_reason",
@@ -2061,6 +2072,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Prices": ".prices",
     "PricesAccounts": ".prices_accounts",
     "PricesMeters": ".prices_meters",
+    "PrivateReplyNotPossibleEncoded": ".private_reply_not_possible_encoded",
+    "PrivateReplyPendingEncoded": ".private_reply_pending_encoded",
+    "PrivateReplyRefusal": ".private_reply_refusal",
     "ProbeState": ".probe_state",
     "PublicationAttempt": ".publication_attempt",
     "Queue": ".queue",
@@ -2907,6 +2921,10 @@ __all__ = [
     "InboxOwnerReply",
     "InboxOwnerReplyModeration",
     "InboxParticipant",
+    "InboxPrivateReply",
+    "InboxPrivateReplyNotFoundEncoded",
+    "InboxPrivateReplyReason",
+    "InboxPrivateReplyStatus",
     "InboxReply",
     "InboxReplyNotFoundEncoded",
     "InboxReplyReason",
@@ -3236,6 +3254,9 @@ __all__ = [
     "Prices",
     "PricesAccounts",
     "PricesMeters",
+    "PrivateReplyNotPossibleEncoded",
+    "PrivateReplyPendingEncoded",
+    "PrivateReplyRefusal",
     "ProbeState",
     "PublicationAttempt",
     "Queue",

@@ -8,10 +8,13 @@ import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.resources.inboxmessages.requests.ConfirmMessageInboxMessagesRequest;
+import social.peal.resources.inboxmessages.requests.ConfirmPrivateReplyInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.GetConversationInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.GetMessageSettingsInboxMessagesRequest;
+import social.peal.resources.inboxmessages.requests.GetPrivateReplyInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.ListConversationsInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.NewInboxMessage;
+import social.peal.resources.inboxmessages.requests.NewInboxPrivateReply;
 import social.peal.resources.inboxmessages.requests.SetChannelMessagesInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.SetConversationReadInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.SetMessageApplicationInboxMessagesRequest;
@@ -20,6 +23,7 @@ import social.peal.types.InboxConversationDetail;
 import social.peal.types.InboxConversationPage;
 import social.peal.types.InboxMessageSettings;
 import social.peal.types.InboxOutgoingMessage;
+import social.peal.types.InboxPrivateReply;
 
 public class AsyncInboxMessagesClient {
     protected final ClientOptions clientOptions;
@@ -191,6 +195,138 @@ public class AsyncInboxMessagesClient {
         CompletableFuture<PealClientHttpResponse<InboxOutgoingMessage>> rawFuture =
                 this.rawClient.sendMessage(workspaceId, conversationId, request, requestOptions);
         CompletableFuture<InboxOutgoingMessage> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's <code>abilities.privateReply</code>): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's <code>privateReplyUntil</code>), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 <code>InboxActionUnavailable</code>, <code>privateReply</code>, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 <code>PrivateReplyNotPossible</code>, with <code>reason</code>), and a text longer than the platform takes (422 <code>ReplyInvalid</code>). The message is journalled and sent by a job: the answer is the private reply <code>sending</code>; the comment shows how it ended. One whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 <code>PrivateReplyPending</code>), whichever request came first; one that failed lets another through. With an <code>Idempotency-Key</code> header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 <code>IdempotencyKeyReused</code>). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 <code>UsageAllowanceReached</code>); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public CompletableFuture<InboxPrivateReply> sendPrivateReply(String workspaceId, NewInboxPrivateReply request) {
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> rawFuture =
+                this.rawClient.sendPrivateReply(workspaceId, request);
+        CompletableFuture<InboxPrivateReply> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's <code>abilities.privateReply</code>): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's <code>privateReplyUntil</code>), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 <code>InboxActionUnavailable</code>, <code>privateReply</code>, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 <code>PrivateReplyNotPossible</code>, with <code>reason</code>), and a text longer than the platform takes (422 <code>ReplyInvalid</code>). The message is journalled and sent by a job: the answer is the private reply <code>sending</code>; the comment shows how it ended. One whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 <code>PrivateReplyPending</code>), whichever request came first; one that failed lets another through. With an <code>Idempotency-Key</code> header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 <code>IdempotencyKeyReused</code>). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 <code>UsageAllowanceReached</code>); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public CompletableFuture<InboxPrivateReply> sendPrivateReply(
+            String workspaceId, NewInboxPrivateReply request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> rawFuture =
+                this.rawClient.sendPrivateReply(workspaceId, request, requestOptions);
+        CompletableFuture<InboxPrivateReply> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public CompletableFuture<InboxPrivateReply> getPrivateReply(String workspaceId, String privateReplyId) {
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> rawFuture =
+                this.rawClient.getPrivateReply(workspaceId, privateReplyId);
+        CompletableFuture<InboxPrivateReply> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public CompletableFuture<InboxPrivateReply> getPrivateReply(
+            String workspaceId, String privateReplyId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> rawFuture =
+                this.rawClient.getPrivateReply(workspaceId, privateReplyId, requestOptions);
+        CompletableFuture<InboxPrivateReply> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public CompletableFuture<InboxPrivateReply> getPrivateReply(
+            String workspaceId, String privateReplyId, GetPrivateReplyInboxMessagesRequest request) {
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> rawFuture =
+                this.rawClient.getPrivateReply(workspaceId, privateReplyId, request);
+        CompletableFuture<InboxPrivateReply> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public CompletableFuture<InboxPrivateReply> getPrivateReply(
+            String workspaceId,
+            String privateReplyId,
+            GetPrivateReplyInboxMessagesRequest request,
+            RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> rawFuture =
+                this.rawClient.getPrivateReply(workspaceId, privateReplyId, request, requestOptions);
+        CompletableFuture<InboxPrivateReply> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Records what someone found in the person's conversation for an unconfirmed private reply: it went out (<code>went: true</code>), or it did not (<code>false</code>), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public CompletableFuture<InboxPrivateReply> confirmPrivateReply(
+            String workspaceId, String privateReplyId, ConfirmPrivateReplyInboxMessagesRequest request) {
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> rawFuture =
+                this.rawClient.confirmPrivateReply(workspaceId, privateReplyId, request);
+        CompletableFuture<InboxPrivateReply> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Records what someone found in the person's conversation for an unconfirmed private reply: it went out (<code>went: true</code>), or it did not (<code>false</code>), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public CompletableFuture<InboxPrivateReply> confirmPrivateReply(
+            String workspaceId,
+            String privateReplyId,
+            ConfirmPrivateReplyInboxMessagesRequest request,
+            RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<InboxPrivateReply>> rawFuture =
+                this.rawClient.confirmPrivateReply(workspaceId, privateReplyId, request, requestOptions);
+        CompletableFuture<InboxPrivateReply> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
                 rawFuture.cancel(true);

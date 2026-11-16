@@ -9,6 +9,7 @@ from ..core.serialization import FieldMetadata
 from .inbox_author import InboxAuthor
 from .inbox_comment_forgotten import InboxCommentForgotten
 from .inbox_comment_state import InboxCommentState
+from .inbox_private_reply import InboxPrivateReply
 
 
 class InboxComment(UniversalBaseModel):
@@ -20,6 +21,12 @@ class InboxComment(UniversalBaseModel):
         typing.Optional[str], FieldMetadata(alias="parentId"), pydantic.Field(alias="parentId")
     ] = None
     permalink: typing.Optional[str] = None
+    private_reply: typing_extensions.Annotated[
+        typing.Optional[InboxPrivateReply], FieldMetadata(alias="privateReply"), pydantic.Field(alias="privateReply")
+    ] = None
+    private_reply_until: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="privateReplyUntil"), pydantic.Field(alias="privateReplyUntil")
+    ] = None
     received_at: typing_extensions.Annotated[str, FieldMetadata(alias="receivedAt"), pydantic.Field(alias="receivedAt")]
     state: InboxCommentState
     text: str

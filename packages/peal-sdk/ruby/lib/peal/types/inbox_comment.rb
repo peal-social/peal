@@ -17,6 +17,10 @@ module Peal
 
       field :permalink, -> { String }, optional: false, nullable: true
 
+      field :private_reply, -> { Peal::Types::InboxPrivateReply }, optional: false, nullable: true, api_name: "privateReply"
+
+      field :private_reply_until, -> { String }, optional: false, nullable: true, api_name: "privateReplyUntil"
+
       field :received_at, -> { String }, optional: false, nullable: false, api_name: "receivedAt"
 
       field :state, -> { Peal::Types::InboxCommentState }, optional: false, nullable: false

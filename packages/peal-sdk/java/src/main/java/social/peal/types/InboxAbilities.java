@@ -25,6 +25,8 @@ public final class InboxAbilities {
 
     private final InboxAbilityStanding like;
 
+    private final InboxAbilityStanding privateReply;
+
     private final InboxAbilityStanding read;
 
     private final InboxAbilityStanding reply;
@@ -37,6 +39,7 @@ public final class InboxAbilities {
             InboxAbilityStanding delete,
             InboxAbilityStanding hide,
             InboxAbilityStanding like,
+            InboxAbilityStanding privateReply,
             InboxAbilityStanding read,
             InboxAbilityStanding reply,
             InboxAbilityStanding withdraw,
@@ -44,6 +47,7 @@ public final class InboxAbilities {
         this.delete = delete;
         this.hide = hide;
         this.like = like;
+        this.privateReply = privateReply;
         this.read = read;
         this.reply = reply;
         this.withdraw = withdraw;
@@ -63,6 +67,11 @@ public final class InboxAbilities {
     @JsonProperty("like")
     public InboxAbilityStanding getLike() {
         return like;
+    }
+
+    @JsonProperty("privateReply")
+    public InboxAbilityStanding getPrivateReply() {
+        return privateReply;
     }
 
     @JsonProperty("read")
@@ -95,6 +104,7 @@ public final class InboxAbilities {
         return delete.equals(other.delete)
                 && hide.equals(other.hide)
                 && like.equals(other.like)
+                && privateReply.equals(other.privateReply)
                 && read.equals(other.read)
                 && reply.equals(other.reply)
                 && withdraw.equals(other.withdraw);
@@ -102,7 +112,7 @@ public final class InboxAbilities {
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.delete, this.hide, this.like, this.read, this.reply, this.withdraw);
+        return Objects.hash(this.delete, this.hide, this.like, this.privateReply, this.read, this.reply, this.withdraw);
     }
 
     @java.lang.Override
@@ -125,7 +135,11 @@ public final class InboxAbilities {
     }
 
     public interface LikeStage {
-        ReadStage like(@NotNull InboxAbilityStanding like);
+        PrivateReplyStage like(@NotNull InboxAbilityStanding like);
+    }
+
+    public interface PrivateReplyStage {
+        ReadStage privateReply(@NotNull InboxAbilityStanding privateReply);
     }
 
     public interface ReadStage {
@@ -150,12 +164,21 @@ public final class InboxAbilities {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder
-            implements DeleteStage, HideStage, LikeStage, ReadStage, ReplyStage, WithdrawStage, _FinalStage {
+            implements DeleteStage,
+                    HideStage,
+                    LikeStage,
+                    PrivateReplyStage,
+                    ReadStage,
+                    ReplyStage,
+                    WithdrawStage,
+                    _FinalStage {
         private InboxAbilityStanding delete;
 
         private InboxAbilityStanding hide;
 
         private InboxAbilityStanding like;
+
+        private InboxAbilityStanding privateReply;
 
         private InboxAbilityStanding read;
 
@@ -172,6 +195,7 @@ public final class InboxAbilities {
             delete(other.getDelete());
             hide(other.getHide());
             like(other.getLike());
+            privateReply(other.getPrivateReply());
             read(other.getRead());
             reply(other.getReply());
             withdraw(other.getWithdraw());
@@ -194,8 +218,15 @@ public final class InboxAbilities {
 
         @java.lang.Override
         @JsonSetter("like")
-        public ReadStage like(@NotNull InboxAbilityStanding like) {
+        public PrivateReplyStage like(@NotNull InboxAbilityStanding like) {
             this.like = Objects.requireNonNull(like, "like must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("privateReply")
+        public ReadStage privateReply(@NotNull InboxAbilityStanding privateReply) {
+            this.privateReply = Objects.requireNonNull(privateReply, "privateReply must not be null");
             return this;
         }
 
@@ -222,7 +253,7 @@ public final class InboxAbilities {
 
         @java.lang.Override
         public InboxAbilities build() {
-            return new InboxAbilities(delete, hide, like, read, reply, withdraw, additionalProperties);
+            return new InboxAbilities(delete, hide, like, privateReply, read, reply, withdraw, additionalProperties);
         }
 
         @JsonAnySetter
@@ -230,6 +261,7 @@ public final class InboxAbilities {
             if (key.equalsIgnoreCase("delete")
                     || key.equalsIgnoreCase("hide")
                     || key.equalsIgnoreCase("like")
+                    || key.equalsIgnoreCase("privateReply")
                     || key.equalsIgnoreCase("read")
                     || key.equalsIgnoreCase("reply")
                     || key.equalsIgnoreCase("withdraw")) {

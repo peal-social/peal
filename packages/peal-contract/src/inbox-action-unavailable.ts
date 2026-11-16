@@ -19,7 +19,8 @@ export class InboxActionUnavailable extends Schema.TaggedError<InboxActionUnavai
   "InboxActionUnavailable",
   {
     ...errorEnvelope,
-    // read, reply, withdraw, like, hide or delete.
+    // read, reply, withdraw, like, hide, delete or privateReply; read or
+    // send for a direct message.
     ability: Schema.String,
     // When the platform's answer window shut (`reason` `windowClosed`):
     // present only then.

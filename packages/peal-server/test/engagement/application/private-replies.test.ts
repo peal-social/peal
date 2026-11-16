@@ -435,6 +435,32 @@ describe("a member's private reply", () => {
   });
 
   it.effect(
+    "takes the channel's messages on in the comment's own workspace only",
+    () => {
+      const world = worldWith(page, makePrivateReplyWorld(), false);
+
+      // One Page in two workspaces: on in the other, off in this one.
+      world.boxes.state.switchedOn.set(channelId(1), {
+        channelId: channelId(1),
+        enabledAt: writtenAt,
+        enabledBy: Option.none(),
+        workspaceId: WorkspaceIdSchema.make(
+          "33333333-3333-4333-8333-333333333333"
+        ),
+      });
+
+      return at(
+        Effect.gen(function* elsewhere() {
+          const refused = yield* sending().pipe(Effect.flip);
+
+          assert.strictEqual(refused._tag, "AbilityUnavailable");
+          yield* reservedNothing(world);
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect(
     "is off where the server reads none of the platform's messages",
     () => {
       const world = worldWith(

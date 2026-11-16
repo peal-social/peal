@@ -209,6 +209,183 @@ module Peal
         end
       end
 
+      # Sends the author of a comment under the workspace's post one private message, as the channel's account, on
+      # Instagram and Facebook Pages (the thread's `abilities.privateReply`): it goes to a real person, and cannot be
+      # taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour
+      # earlier, at the comment's `privateReplyUntil`), and the person must answer before the account may write again,
+      # as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's
+      # direct messages must be on, as the answer comes as one (409 `InboxActionUnavailable`, `privateReply`,
+      # otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer
+      # shows, or one too old (409 `PrivateReplyNotPossible`, with `reason`), and a text longer than the platform takes
+      # (422 `ReplyInvalid`). The message is journalled and sent by a job: the answer is the private reply `sending`;
+      # the comment shows how it ended. One whose outcome is unknown is `unconfirmed` and never sent again: check the
+      # conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is
+      # refused (409 `PrivateReplyPending`), whichever request came first; one that failed lets another through. With an
+      # `Idempotency-Key` header (255 characters at most, new for each), the request is safe to send again: within 24
+      # hours the same key with the same comment and text answers the private reply the first request made; with another
+      # comment or text it is refused (409 `IdempotencyKeyReused`). On a server that bills, each counts one of the
+      # billing account's inbox messages, as a direct message does (402 `UsageAllowanceReached`); one that never went
+      # out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs
+      # engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only
+      # once the workspace's owner let it; staff acting as a member never hold it.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::InboxMessages::Types::NewInboxPrivateReply]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [String, nil] :idempotency_key
+      #
+      # @example
+      #   client.inbox_messages.send_private_reply(
+      #     workspace_id: "workspaceId",
+      #     comment_id: "commentId",
+      #     text: "text"
+      #   )
+      #
+      # @return [Peal::Types::InboxPrivateReply]
+      def send_private_reply(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::InboxMessages::Types::NewInboxPrivateReply.new(params).to_h
+        non_body_param_names = %w[workspaceId idempotency-key]
+        body = request_data.except(*non_body_param_names)
+
+        headers = {}
+        headers["idempotency-key"] = params[:idempotency_key] if params[:idempotency_key]
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/messages/private-replies",
+          headers: headers,
+          body: body,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::InboxPrivateReply.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which
+      # owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a
+      # member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise
+      # 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
+      #
+      # @param request_options [Hash]
+      # @param params [Hash]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [String] :private_reply_id
+      #
+      # @example
+      #   client.inbox_messages.get_private_reply(
+      #     workspace_id: "workspaceId",
+      #     private_reply_id: "privateReplyId"
+      #   )
+      #
+      # @return [Peal::Types::InboxPrivateReply]
+      def get_private_reply(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "GET",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/messages/private-replies/#{URI.encode_uri_component(params[:private_reply_id].to_s)}",
+          request_options: request_options
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::InboxPrivateReply.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went:
+      # true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs
+      # engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only
+      # once the workspace's owner let it; staff acting as a member never hold it.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::InboxMessages::Types::ConfirmPrivateReplyInboxMessagesRequest]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [String] :private_reply_id
+      #
+      # @example
+      #   client.inbox_messages.confirm_private_reply(
+      #     workspace_id: "workspaceId",
+      #     private_reply_id: "privateReplyId",
+      #     went: true
+      #   )
+      #
+      # @return [Peal::Types::InboxPrivateReply]
+      def confirm_private_reply(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::InboxMessages::Types::ConfirmPrivateReplyInboxMessagesRequest.new(params).to_h
+        non_body_param_names = %w[workspaceId privateReplyId]
+        body = request_data.except(*non_body_param_names)
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/messages/private-replies/#{URI.encode_uri_component(params[:private_reply_id].to_s)}/confirm",
+          body: body,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::InboxPrivateReply.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
       # Says a conversation was read (`read: true`), or is unread again (`false`). Nothing is sent to the platform.
       # Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading,
       # only once the workspace's owner let it; staff acting as a member never hold it.

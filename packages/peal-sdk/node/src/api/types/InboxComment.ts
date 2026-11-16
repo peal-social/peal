@@ -9,6 +9,8 @@ export interface InboxComment {
     liked: boolean;
     parentId: string | null;
     permalink: string | null;
+    privateReply: Peal.InboxPrivateReply | null;
+    privateReplyUntil: string | null;
     receivedAt: string;
     state: Peal.InboxCommentState;
     text: string;

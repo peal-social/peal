@@ -18,6 +18,7 @@ public class GetThreadTest : BaseMockServerTest
                 "delete": "available",
                 "hide": "available",
                 "like": "available",
+                "privateReply": "available",
                 "read": "available",
                 "reply": "available",
                 "withdraw": "available"
@@ -34,6 +35,18 @@ public class GetThreadTest : BaseMockServerTest
                   "liked": true,
                   "parentId": "parentId",
                   "permalink": "permalink",
+                  "privateReply": {
+                    "authorId": "authorId",
+                    "commentId": "commentId",
+                    "createdAt": "createdAt",
+                    "id": "id",
+                    "reason": "channelUnavailable",
+                    "ruleId": "ruleId",
+                    "settledAt": "settledAt",
+                    "status": "sending",
+                    "text": "text"
+                  },
+                  "privateReplyUntil": "privateReplyUntil",
                   "receivedAt": "receivedAt",
                   "state": "new",
                   "text": "text",
@@ -51,6 +64,18 @@ public class GetThreadTest : BaseMockServerTest
                   "liked": true,
                   "parentId": "parentId",
                   "permalink": "permalink",
+                  "privateReply": {
+                    "authorId": "authorId",
+                    "commentId": "commentId",
+                    "createdAt": "createdAt",
+                    "id": "id",
+                    "reason": "channelUnavailable",
+                    "ruleId": "ruleId",
+                    "settledAt": "settledAt",
+                    "status": "sending",
+                    "text": "text"
+                  },
+                  "privateReplyUntil": "privateReplyUntil",
                   "receivedAt": "receivedAt",
                   "state": "new",
                   "text": "text",
@@ -130,6 +155,7 @@ public class GetThreadTest : BaseMockServerTest
                 "delete": "available",
                 "hide": "available",
                 "like": "available",
+                "privateReply": "available",
                 "read": "available",
                 "reply": "available",
                 "withdraw": "available"
@@ -145,6 +171,14 @@ public class GetThreadTest : BaseMockServerTest
                   "liked": true,
                   "parentId": "parentId",
                   "permalink": "permalink",
+                  "privateReply": {
+                    "commentId": "commentId",
+                    "createdAt": "createdAt",
+                    "id": "id",
+                    "status": "sending",
+                    "text": "text"
+                  },
+                  "privateReplyUntil": "privateReplyUntil",
                   "receivedAt": "receivedAt",
                   "state": "new",
                   "text": "text",

@@ -49,13 +49,6 @@ import {
   messageKeyLifetime,
   OutgoingMessageStatusSchema,
 } from "#engagement/domain/outgoing-message.ts";
-import { maxReplyLength } from "#engagement/domain/reply-text.ts";
-import {
-  ReplyDoubtSchema,
-  ReplyFailureSchema,
-  replyKeyLifetime,
-  ReplyStatusSchema,
-} from "#engagement/domain/reply.ts";
 import {
   PrivateReplyFailureSchema,
   PrivateReplyRefusalSchema as DomainRefusalSchema,
@@ -63,6 +56,13 @@ import {
   privateReplyKeyLifetime,
   privateReplyWindow,
 } from "#engagement/domain/private-reply.ts";
+import { maxReplyLength } from "#engagement/domain/reply-text.ts";
+import {
+  ReplyDoubtSchema,
+  ReplyFailureSchema,
+  replyKeyLifetime,
+  ReplyStatusSchema,
+} from "#engagement/domain/reply.ts";
 import { CollectionEndSchema } from "#engagement/domain/thread.ts";
 import { InboxMessagePlatformSchema } from "#shared/domain/inbox-message-platform.ts";
 
