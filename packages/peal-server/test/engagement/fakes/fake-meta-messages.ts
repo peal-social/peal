@@ -76,6 +76,7 @@ const proofOf = (token: string) =>
 interface GraphErrorJson {
   code: number;
   error_subcode?: number;
+  is_transient?: boolean;
   fbtrace_id: string;
   message: string;
 }
@@ -100,7 +101,8 @@ interface NodeJson {
 export const graphError = (
   code: number,
   subcode?: number,
-  status = 400
+  status = 400,
+  transient?: boolean
 ): PlatformAnswer => {
   const error: GraphErrorJson = {
     code,
@@ -110,6 +112,10 @@ export const graphError = (
 
   if (subcode !== undefined) {
     error.error_subcode = subcode;
+  }
+
+  if (transient !== undefined) {
+    error.is_transient = transient;
   }
 
   return json(asJson({ error }), status);

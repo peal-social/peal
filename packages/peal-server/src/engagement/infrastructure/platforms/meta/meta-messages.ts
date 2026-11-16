@@ -236,6 +236,7 @@ const ErrorSchema = Schema.Struct({
   error: Schema.Struct({
     code: Schema.optionalKey(Schema.Number),
     error_subcode: Schema.optionalKey(Schema.Number),
+    is_transient: Schema.optionalKey(Schema.Boolean),
   }),
 });
 
@@ -244,8 +245,9 @@ const errorOf = (response: Response.HttpClientResponse) =>
     Effect.map(({ error }) => ({
       code: error.code ?? 0,
       subcode: error.error_subcode ?? 0,
+      transient: error.is_transient ?? false,
     })),
-    Effect.orElseSucceed(() => ({ code: 0, subcode: 0 }))
+    Effect.orElseSucceed(() => ({ code: 0, subcode: 0, transient: false }))
   );
 
 const unanswered: MessageSendOutcome = {
@@ -263,17 +265,25 @@ const failed = (reason: MessageFailure): MessageSendOutcome => ({
   reason,
 });
 
-// Why Meta refused a message, by its code and subcode; none when it gives
-// no reason Peal knows, which the status decides.
+// Why Meta refused a message, by its code and subcode, where its error
+// codes page says it did nothing; none for any other answer, which may
+// follow a message that went out (Meta's own failures, code 1 and 2, say
+// so: "the messages are all sent successfully, but the endpoint returns
+// an error"), so it is left unconfirmed.
 const sendRefusal = (
   code: number,
   subcode: number
 ): Option.Option<MessageFailure> => {
-  if (code === 10 && (subcode === 2_018_278 || subcode === 2_534_022)) {
+  // Outside the allowed window: `2018278`, `2534022`, and `2018065`.
+  if (
+    code === 10 &&
+    (subcode === 2_018_278 || subcode === 2_534_022 || subcode === 2_018_065)
+  ) {
     return Option.some("windowClosed");
   }
 
-  if (code === 100 && subcode === 2_534_014) {
+  // No such Instagram user (`2534014`), no matching user (`2018001`).
+  if (code === 100 && (subcode === 2_534_014 || subcode === 2_018_001)) {
     return Option.some("conversationGone");
   }
 
@@ -282,9 +292,13 @@ const sendRefusal = (
   }
 
   // The person takes no message from the account (`10`/`2018108`, `551`,
-  // `200`/`1545041`), or the app may not write to them yet (`2018028`,
-  // before its review; `2534041`, Instagram's access to messages off).
-  return code === 551 || code === 10 || (code >= 200 && code <= 299)
+  // `200`/`1545041`), the app may not write to them yet (`2018028`, before
+  // its review; `2534041`, Instagram's access to messages off), or the
+  // request is invalid as sent (100).
+  return code === 551 ||
+    code === 10 ||
+    code === 100 ||
+    (code >= 200 && code <= 299)
     ? Option.some("refused")
     : Option.none();
 };
@@ -657,16 +671,35 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
         return unanswered;
       }
 
-      const { code, subcode } = yield* errorOf(response);
+      const { code, subcode, transient } = yield* errorOf(response);
 
       // Refused before anything was made: a renewed token may be tried.
       if (code === 190 || code === 102) {
         return yield* new TokenRejected();
       }
 
-      const reason = sendRefusal(code, subcode).pipe(
-        Option.getOrElse(() => "refused" as const)
-      );
+      // Meta's own failure, or an answer that says nothing Peal knows:
+      // the message may be out, and is never sent again.
+      const refusal = transient
+        ? Option.none<MessageFailure>()
+        : sendRefusal(code, subcode);
+
+      if (Option.isNone(refusal)) {
+        yield* Effect.logWarning(
+          "Meta answered a direct message ambiguously"
+        ).pipe(
+          Effect.annotateLogs({
+            channelId: account.channelId,
+            code,
+            messageId: message.messageId,
+            subcode,
+          })
+        );
+
+        return unanswered;
+      }
+
+      const reason = refusal.value;
 
       // Codes alone: Meta's message may quote the text.
       yield* Effect.logWarning("Meta refused a direct message").pipe(

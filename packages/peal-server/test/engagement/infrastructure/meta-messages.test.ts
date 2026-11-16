@@ -47,7 +47,7 @@ import {
   graphAppSecret,
   instagramUserId,
 } from "#test/publishing/fakes/fake-meta-graph.ts";
-import { json } from "#test/publishing/fakes/platform-server.ts";
+import { json, rawJson } from "#test/publishing/fakes/platform-server.ts";
 
 // Messenger's and Instagram's direct messages against a loopback Graph
 // that answers as Meta's Conversations API and Send API pages say: only
@@ -583,8 +583,29 @@ describe("Meta's direct messages, sent", () => {
         });
 
         // A refused token last: the channel then needs reconnecting.
+        // Meta's own failures, and any answer Peal cannot read, may
+        // follow a message that went out: never taken for not sent.
+        const doubtful = [
+          graphError(1),
+          graphError(2),
+          graphError(100, undefined, 400, true),
+          graphError(9999),
+          rawJson("not json", 400),
+        ];
+
+        graph.script.push("POST /v27.0/me/messages", doubtful);
+
+        for (const _ of doubtful) {
+          assert.deepStrictEqual(yield* platform.send(account, outgoing()), {
+            _tag: "unconfirmed",
+            reason: "noResponse",
+          });
+        }
+
         const cases = [
           [graphError(10, 2_018_278), "windowClosed"],
+          [graphError(10, 2_018_065), "windowClosed"],
+          [graphError(100, 2_018_001), "conversationGone"],
           [graphError(10, 2_534_022), "windowClosed"],
           [graphError(10, 2_018_108), "refused"],
           [graphError(551, 1_545_041), "refused"],
