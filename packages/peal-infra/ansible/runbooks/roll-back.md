@@ -372,6 +372,32 @@ before cannot read:
 3. **Either lists a row:** do not roll back past this release; release a
    fix forward instead. Never change the rows by hand.
 
+## Past Google Ads
+
+The release that reads Google Ads adds `ads.campaign_days`, and the
+columns `ads.accounts.reached_through` and `ads.campaigns.kind`, which the
+release before ignores. It also stores what the release before cannot
+read: a sign-in or an ad account of the network `google`
+(`ads.grants.network`, `ads.accounts.network`). The release before knows
+`meta` alone, and fails to decode such a row wherever it reads it: the
+hourly sync, which reads every account that is due, the ads page and
+API of its workspace, and a workspace's erasure.
+
+1. **Google Ads sign-ins and accounts:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT 'grant' AS kind, id, workspace_id FROM ads.grants WHERE network = 'google' UNION ALL SELECT 'account', id, workspace_id FROM ads.accounts WHERE network = 'google'"
+   ```
+
+2. **It lists a row:** do not roll back past this release. The way out,
+   when a roll-back cannot wait: the members who connected them remove
+   those sign-ins from the workspace's Ads page, which disconnects their
+   accounts with them (removing works with `google` no longer in
+   `PEAL_ADS_NETWORKS` too), so that the query lists nothing, then roll
+   back. Never change the rows by
+   hand.
+
 ## Past sign-in providers
 
 The release that signs people in with Google or an OpenID Connect provider
