@@ -193,8 +193,30 @@ weaken a rule below to make something pass.
   nothing running, and compare what Google answers with
   `google-ads-schemas.ts`. Tests use the loopback fake
   (`test/ads/fakes/fake-google-ads-api.ts`, `onGoogle` in `AdsTest`).
+- Only Google's token errors (`OAUTH_TOKEN_*`, `GOOGLE_ACCOUNT_DELETED`,
+  `AUTHENTICATION_ERROR`, a bare 401) and the token endpoint's
+  `invalid_grant` reject a grant; an account Google cannot find, a
+  manager's 2-step rule, or a person without Google Ads are that
+  account's (`google-ads-http.ts`). The fake types each error under the
+  enum Google puts it in.
+- Listings of what a sign-in reaches go through `ListingPace` (in
+  process: ten a sign-in and thirty a workspace an hour, kept five
+  minutes, and 300 of Google's operations a day for every workspace's
+  listings), and each one takes the way (`reachedThrough`) Google lists;
+  a read refused as a permission lists once to find another way, else the
+  account is `unreachableSince`, its history kept.
+- A read cut at the page bound is never taken for whole: days go on from
+  their last day a few times, and what stays cut halts the account (not
+  marked read). Cost is kept in micros (`campaign_days.spend_micros`) and
+  rounded once where days are summed.
+- A sweep's scheduled time travels with each sync (`runAt`): the next read
+  counts from it, on every network.
+- `reread` in the read model names drizzle's properties: every listed
+  field is taken again at each read (before, only those whose property and
+  column shared a name were).
 - The MCP tools do not offer Google Ads accounts (Google's policy for
   tools names MCP servers that pass its data on): they list Meta's
-  alone and refuse a Google account in words (`refusals.ts`), until the
+  alone, refuse a Google account in words, and a boost on one as read only
+  (`refusals.ts`), until the
   owner decides otherwise. The API, the SDKs and the command line serve
   both.
