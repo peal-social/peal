@@ -350,7 +350,9 @@ before cannot read:
   (`failure_reason` `forumThreadNameRequired` or `chatMigrated`, also in
   the attempts' results), which the release before fails to decode where
   it reads the post, a disconnected chat's posts included;
-- the events and notices that name one, which it fails to decode where it
+- the events and notices that name one, at their top (`data.platform`)
+  or among a post's targets (`data.targets[].platform`: a post
+  scheduled, cancelled or finished), which it fails to decode where it
   reads them.
 
 1. **Channels of chats:**
@@ -364,7 +366,7 @@ before cannot read:
 
    ```sh
    sudo peal-compose exec postgres psql --username peal --dbname peal --command \
-     "SELECT 'target' AS kind, id FROM publishing.post_targets WHERE options->>'platform' IN ('discord', 'telegram') OR failure_reason IN ('forumThreadNameRequired', 'chatMigrated') UNION ALL SELECT 'event', id FROM webhooks.events WHERE data->>'platform' IN ('discord', 'telegram') UNION ALL SELECT 'notice', id FROM notifications.notices WHERE event->'channel'->>'platform' IN ('discord', 'telegram') OR event->'channel'->'value'->>'platform' IN ('discord', 'telegram') OR event->>'reason' IN ('forumThreadNameRequired', 'chatMigrated')"
+     "SELECT 'target' AS kind, id FROM publishing.post_targets WHERE options->>'platform' IN ('discord', 'telegram') OR failure_reason IN ('forumThreadNameRequired', 'chatMigrated') UNION ALL SELECT 'event', id FROM webhooks.events WHERE data->>'platform' IN ('discord', 'telegram') OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'targets') = 'array' THEN data->'targets' ELSE '[]' END) t WHERE t->>'platform' IN ('discord', 'telegram')) UNION ALL SELECT 'notice', id FROM notifications.notices WHERE event->'channel'->>'platform' IN ('discord', 'telegram') OR event->'channel'->'value'->>'platform' IN ('discord', 'telegram') OR event->>'reason' IN ('forumThreadNameRequired', 'chatMigrated')"
    ```
 
 3. **Either lists a row:** do not roll back past this release; release a
