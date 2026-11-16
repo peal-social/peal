@@ -120,9 +120,10 @@ chips (stroke 2), in `currentColor`. An icon-only button has an
 else by a lettered tile; never draw a platform's logo from memory.
 
 A sign-in provider's button is an outline button of the control height,
-the provider's own mark at 16 px (Google's full-colour "G" from its
-sign-in assets, never redrawn or monochrome; lucide's `KeyRound` for a
-provider without one), then "Continue with" and its name. The buttons sit
+the provider's own mark at 16 px, half the control's height as Google
+sets its 20 px G in a 40 px button (Google's full-colour "G" from the
+file its branding guidelines publish, byte for byte, never redrawn or
+monochrome; lucide's `KeyRound` for a provider without one), then "Continue with" and its name. The buttons sit
 above the form, with "or" on a divider before it, and never take the
 page's main action, which stays the primary button.
 

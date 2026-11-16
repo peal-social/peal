@@ -1,3 +1,7 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "@effect/vitest";
 
 import { needsPassword } from "#auth/password-state.ts";
@@ -5,6 +9,12 @@ import { SetPasswordView } from "#components/account/set-password.tsx";
 import { ProviderButtonsView } from "#components/auth/provider-buttons.tsx";
 
 import { ignore, render } from "../two-step/render.tsx";
+
+// sha256 of Google's file, downloaded from
+// https://developers.google.com/static/identity/images/branding_guideline_sample_lt_sq_sl.svg
+// on 2026-11-16.
+const googleAssetDigest =
+  "4e5ead045e381e934bcfc37bbb36297fbb28060cc1023947909df392f14b271d";
 
 describe("the sign-in providers' buttons", () => {
   it("show one outline button per provider, then the form's divider", async () => {
@@ -41,7 +51,8 @@ describe("the sign-in providers' buttons", () => {
       />
     );
 
-    expect(html).toMatch(/<img[^>]*google-g[^>]*\.svg/u);
+    expect(html).toMatch(/<image href="[^"]+" width="40" height="40">/u);
+    expect(html).toContain('viewBox="10 10 20 20"');
     expect(html).toContain("lucide-key-round");
   });
 
@@ -118,5 +129,26 @@ describe("an account without a password", () => {
     expect(offered).toContain("Email me a link");
     expect(sent).toContain("We sent a link to ada@example.test");
     expect(sent).not.toContain("Email me a link");
+  });
+});
+
+// Google's own asset, as its branding guidelines publish it: the icon-only
+// light button (branding_guideline_sample_lt_sq_sl.svg), byte for byte.
+const asset = () =>
+  readFileSync(
+    fileURLToPath(
+      new URL("../../src/components/auth/google-g.svg", import.meta.url)
+    )
+  );
+
+describe("Google's mark", () => {
+  it("is Google's file, unedited", () => {
+    expect(createHash("sha256").update(asset()).digest("hex")).toBe(
+      googleAssetDigest
+    );
+  });
+
+  it("draws with paths alone, which every browser renders", () => {
+    expect(asset().toString("utf-8")).not.toContain("foreignObject");
   });
 });

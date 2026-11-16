@@ -1,14 +1,15 @@
 import { Option, Schema } from "effect";
-import Image from "next/image";
 
-import googleG from "./google-g.svg";
+import googleButton from "./google-g.svg";
 
-// Google's "G", from the pre-approved sign-in assets Google's branding
-// guidelines link (https://developers.google.com/identity/branding-guidelines,
-// read on 2026-11-16: signin-assets.zip, Android + Web, SVG, Light, the
-// icon-only square), as Google drew it: only the button's fill and border
-// are left out and the view box cut to the mark. The guidelines ask for
-// this full-colour mark on white, never a monochrome one or a redrawing.
+// Google's "G", in Google's own file: the icon-only light button its
+// branding guidelines publish (https://developers.google.com/identity/branding-guidelines,
+// read on 2026-11-16: branding_guideline_sample_lt_sq_sl.svg), kept byte
+// for byte, drawn with paths alone. The button is 40 units wide with its
+// G at 10 to 30; the mark shows that G through a window of the same 20
+// units, at half the control's height, as Google's 20 in its 40, scaled
+// with its aspect ratio as the guidelines allow. Never a monochrome or
+// redrawn G.
 
 // Next types an imported SVG as anything: it is the file's address, which
 // Next's build hands over as a static image and Vite's as a string.
@@ -18,12 +19,14 @@ const decodeStaticImage = Schema.decodeUnknownOption(
 
 const decodeAddress = Schema.decodeUnknownOption(Schema.String);
 
-const googleMarkAddress = decodeStaticImage(googleG).pipe(
+const googleButtonAddress = decodeStaticImage(googleButton).pipe(
   Option.map(({ src }) => src),
-  Option.orElse(() => decodeAddress(googleG)),
+  Option.orElse(() => decodeAddress(googleButton)),
   Option.getOrElse(() => "")
 );
 
 export const GoogleMark = () => (
-  <Image src={googleMarkAddress} alt="" width={16} height={16} unoptimized />
+  <svg aria-hidden width={16} height={16} viewBox="10 10 20 20">
+    <image href={googleButtonAddress} width={40} height={40} />
+  </svg>
 );
