@@ -24,16 +24,17 @@ the parts left. The post stays published in Peal: it did go out.
 
 Where it is refused, `live_post_not_changeable` says why in `reason`:
 
-| `reason`             | What to do                                                 |
-| -------------------- | ---------------------------------------------------------- |
-| `notPublished`       | It is not live on that channel.                            |
-| `alreadyRemoved`     | Nothing left to do.                                        |
-| `noPlatformId`       | Confirmed by hand: the user deletes it on the platform.    |
-| `notSupported`       | The platform does not let Peal: the user deletes it there. |
-| `changeInProgress`   | Read `peal posts changes`, then wait.                      |
-| `channelUnavailable` | The channel must be reconnected or turned back on first.   |
-| `boostRunning`       | A boost shows it: the user stops the boost first.          |
-| `approvalRequired`   | Posts need approval: an approver makes the edit.           |
+| `reason`               | What to do                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `notPublished`         | It is not live on that channel.                                                                               |
+| `alreadyRemoved`       | Nothing left to do.                                                                                           |
+| `noPlatformId`         | Confirmed by hand: the user deletes it on the platform.                                                       |
+| `notSupported`         | The platform does not let Peal: the user deletes it there.                                                    |
+| `changeInProgress`     | Read `peal posts changes`, then wait.                                                                         |
+| `channelUnavailable`   | The channel must be reconnected or turned back on first.                                                      |
+| `boostRunning`         | A boost shows it: the user stops the boost first.                                                             |
+| `deletionWindowPassed` | The platform deletes only for a time after the post went out (Telegram: 48 hours): the user deletes it there. |
+| `approvalRequired`     | Posts need approval: an approver makes the edit.                                                              |
 
 Which platforms let Peal delete: `peal channels capabilities <channel>
 --json`, `livePost.unpublish` (and `unpublishBlockedBy` where not).
