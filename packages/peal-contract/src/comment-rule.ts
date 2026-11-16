@@ -62,10 +62,35 @@ export const CommentRuleAbilitySchema = Schema.Literals([
 
 export type CommentRuleAbility = typeof CommentRuleAbilitySchema.Type;
 
+/**
+ * Whether a channel can carry a rule's private reply: `available`; the
+ * platform has no private replies (`noApi`: all but Instagram and
+ * Facebook Pages); this server does not read the platform's comments or
+ * messages (`unsupported`); the channel's messages are off in the
+ * workspace (`messagesOff`: the inbox's messages settings turn them on);
+ * the channel must be connected again for its messages (`reconnect`); the
+ * private text is longer than the platform's messages take
+ * (`textTooLong`).
+ */
+export const CommentRulePrivateAbilitySchema = Schema.Literals([
+  "available",
+  "noApi",
+  "unsupported",
+  "messagesOff",
+  "reconnect",
+  "textTooLong",
+]).annotate({ identifier: "CommentRulePrivateAbility" });
+
+export type CommentRulePrivateAbility =
+  typeof CommentRulePrivateAbilitySchema.Type;
+
 /** What a channel can carry of a rule. */
 export const ChannelCommentRuleSchema = Schema.Struct({
   channelId: Schema.String,
   platform: PlatformSchema,
+  // Whether it can carry the rule's private reply, whether the rule has
+  // one or not.
+  privateReply: CommentRulePrivateAbilitySchema,
   reply: CommentRuleAbilitySchema,
 }).annotate({ identifier: "ChannelCommentRule" });
 
@@ -82,12 +107,37 @@ export const CommentRuleOutcomeSchema = Schema.Literals([
   "refused",
 ]).annotate({ identifier: "CommentRuleOutcome" });
 
-/** A comment a rule matched, and what came of it. */
+/** Where a private reply a rule made stands. */
+export const CommentRulePrivateStatusSchema = Schema.Literals([
+  "sending",
+  "sent",
+  "failed",
+  "unconfirmed",
+]).annotate({ identifier: "CommentRulePrivateStatus" });
+
+/**
+ * A comment a rule matched, and what came of it. For a rule with a
+ * private reply, a comment it `replied` to also has `privateReplyId`, the
+ * private reply made (its state in `privateStatus`, null once it is
+ * purged), or `privateCode`, why none was: `waiting` for the public reply
+ * to be out; `stopped` (the rule was stopped, paused or lost its private
+ * text first); `publicReplyFailed`, `publicReplyUnconfirmed` or
+ * `publicReplyWithdrawn` (no private reply follows a public one that is
+ * not out); the channel's private ability (`messagesOff`, `noApi`,
+ * `unsupported`, `reconnect`, `textTooLong`); or the inbox's refusal, by
+ * its name (`MissingPermission` when whoever started the rule may no
+ * longer send private replies, `PrivateReplyPending` when the comment
+ * has one already, `PrivateReplyNotPossible` past the 7 days,
+ * `AllowanceReached`, …). Both null for a rule without one.
+ */
 export const CommentRuleMatchSchema = Schema.Struct({
   code: Schema.NullOr(Schema.String),
   commentId: Schema.String,
   lookedAt: Schema.DateTimeUtc,
   outcome: CommentRuleOutcomeSchema,
+  privateCode: Schema.NullOr(Schema.String),
+  privateReplyId: Schema.NullOr(Schema.String),
+  privateStatus: Schema.NullOr(CommentRulePrivateStatusSchema),
   replyId: Schema.NullOr(Schema.String),
 }).annotate({ identifier: "CommentRuleMatch" });
 
@@ -106,6 +156,9 @@ export const CommentRuleSchema = Schema.Struct({
   matches: Schema.Array(CommentRuleMatchSchema),
   // The post whose comments it answers; null for a channel's rule.
   postId: Schema.NullOr(Schema.String),
+  // Sent privately to the author of each comment it answered in public,
+  // once that reply is out, where a channel can carry it; null for none.
+  privateReply: Schema.NullOr(Schema.String),
   reply: Schema.String,
   // The member who started it; null for a key, or once they left Peal.
   startedBy: Schema.NullOr(Schema.String),
@@ -134,20 +187,33 @@ const KeywordsSchema = Schema.Array(
   Schema.String.check(Schema.isMaxLength(maxKeywordLength * 2))
 ).check(Schema.isMaxLength(maxKeywords * 2));
 
-/** What starts a rule: on a post (`postId`) or a channel (`channelId`), one of them. */
+/**
+ * What starts a rule: on a post (`postId`) or a channel (`channelId`), one
+ * of them. A `privateReply` is the one private message Instagram and
+ * Facebook Pages let an account send a commenter: sent to the author of
+ * each comment the rule answered, after its public reply is out, within
+ * 7 days of the comment, once a comment, on the channels whose messages
+ * are on; never alone, never on another platform. It goes to real people
+ * by itself: say in it that it is automatic where the law asks.
+ */
 export const NewCommentRuleSchema = Schema.Struct({
   channelId: Schema.optionalKey(Schema.String),
   keywords: KeywordsSchema,
   postId: Schema.optionalKey(Schema.String),
+  privateReply: Schema.optionalKey(ReplySchema),
   reply: ReplySchema,
 }).annotate({ identifier: "NewCommentRule" });
 
 export type NewCommentRule = typeof NewCommentRuleSchema.Type;
 
-/** What changes of a rule: each left out stays as it is. */
+/**
+ * What changes of a rule: each left out stays as it is; `privateReply`
+ * null takes the private reply off.
+ */
 export const CommentRuleChangeSchema = Schema.Struct({
   keywords: Schema.optionalKey(KeywordsSchema),
   paused: Schema.optionalKey(Schema.Boolean),
+  privateReply: Schema.optionalKey(Schema.NullOr(ReplySchema)),
   reply: Schema.optionalKey(ReplySchema),
 }).annotate({ identifier: "CommentRuleChange" });
 
@@ -159,6 +225,8 @@ export const CommentRuleRefusalSchema = Schema.Literals([
   "emptyReply",
   "noChannel",
   "channels",
+  "emptyPrivateReply",
+  "privateReply",
 ]).annotate({ identifier: "CommentRuleRefusal" });
 
 export type CommentRuleRefusal = typeof CommentRuleRefusalSchema.Type;

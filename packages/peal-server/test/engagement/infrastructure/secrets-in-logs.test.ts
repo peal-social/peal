@@ -3,7 +3,9 @@
 // its proof: the adapter runs against the loopback Graph with a logger and
 // a tracer that keep everything a line or a span would export, through a
 // read, a refused answer, an answer sent, a lost one, a resume, the
-// account's events asked for and stopped, and a disconnected channel's.
+// account's events asked for and stopped, and a disconnected channel's;
+// and a comment rule's private replies, run on Postgres, through a public
+// reply, a private one, a refusal and a database that refuses one.
 import { createHmac } from "node:crypto";
 
 import { assert, describe, it } from "@effect/vitest";
@@ -22,12 +24,15 @@ import {
 } from "effect";
 import { Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
+import { SqlClient } from "effect/sql";
 
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelDirectory } from "#channels/application/channel-directory.ts";
 import { Channel } from "#channels/domain/channel.ts";
 import { metaMessageDepartures } from "#channels/infrastructure/platforms/meta/meta-message-departures.ts";
+import { CommentRules } from "#engagement/application/comment-rules.ts";
+import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import {
   accountPace,
@@ -40,16 +45,25 @@ import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import { channelAccessOf } from "#test/analytics/access-log.ts";
 import { metaApp } from "#test/channels/fakes/fake-meta.ts";
-import { OpenOutboundGuard } from "#test/channels/support.ts";
+import { freshWorkspace, OpenOutboundGuard } from "#test/channels/support.ts";
 import {
   fakeMetaMessages,
   graphError,
 } from "#test/engagement/fakes/fake-meta-messages.ts";
+import {
+  forget,
+  instagramRule,
+  privateText,
+  publicRepliesEnd,
+  received,
+  RulesTest,
+} from "#test/engagement/rule-world.ts";
 import { outgoingMessageId, privateReplyId } from "#test/engagement/support.ts";
 import {
   facebookPageId,
   graphAppSecret,
 } from "#test/publishing/fakes/fake-meta-graph.ts";
+import { actorIn } from "#test/publishing/support.ts";
 
 const token = "synthetic-page-token-secret";
 
@@ -450,6 +464,89 @@ describe("what the server writes about Meta's direct messages", () => {
           Layer.merge(capture, Layer.succeed(Tracer.Tracer, tracer))
         )
       );
+    }
+  );
+});
+
+describe("what the server writes about a comment rule's private replies", () => {
+  it.live(
+    "holds no private text, comment or commenter, through a public reply, a private one, a refusal and a database that refuses the journal",
+    () => {
+      const kept = capturing();
+      // A person whose ids and words appear nowhere else in a run.
+      const commenter = 4_820_331;
+      const comment = "synthetic price question 7712";
+
+      return Effect.gen(function* searched() {
+        const workspaceId = yield* freshWorkspace;
+        const sql = yield* SqlClient.SqlClient;
+
+        // The database refuses the private reply's journal once, as a
+        // statement it should have taken: its error names the statement.
+        const refusing = Effect.all([
+          sql`CREATE OR REPLACE FUNCTION engagement.u13b_refuse_private() RETURNS trigger LANGUAGE plpgsql AS $$
+            BEGIN RAISE EXCEPTION 'synthetic refusal'; END $$`,
+          // A statement of the test's own, the workspace an id it made.
+          sql.unsafe(`CREATE TRIGGER u13b_refuse_private BEFORE INSERT ON engagement.private_replies
+            FOR EACH ROW WHEN (NEW.workspace_id = '${workspaceId}'::uuid)
+            EXECUTE FUNCTION engagement.u13b_refuse_private()`),
+        ]).pipe(Effect.orDie);
+
+        const accepting = Effect.all([
+          sql`DROP TRIGGER IF EXISTS u13b_refuse_private ON engagement.private_replies`,
+          sql`DROP FUNCTION IF EXISTS engagement.u13b_refuse_private()`,
+        ]).pipe(Effect.orDie);
+
+        yield* Effect.gen(function* checks() {
+          const { thread } = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+
+          const [asks, other] = yield* received(thread, [
+            { author: commenter, text: comment },
+            { author: commenter + 1, text: `${comment} again` },
+          ]);
+
+          assert.isDefined(asks);
+          assert.isDefined(other);
+
+          yield* rules.runDue;
+          yield* publicRepliesEnd(workspaceId, "sent");
+
+          // Refused by the database: the run logs it and goes on.
+          yield* refusing;
+          yield* rules.runDue.pipe(Effect.ensuring(accepting));
+
+          // A member answers one privately first: the rule's is refused.
+          yield* EngagementPrivateReplies.use((replies) =>
+            replies.send(
+              actorIn(workspaceId),
+              other.id,
+              "synthetic member words"
+            )
+          );
+
+          assert.strictEqual((yield* rules.runDue).privateReplied, 1);
+        }).pipe(
+          Effect.ensuring(accepting),
+          Effect.ensuring(forget(workspaceId))
+        );
+
+        const all = kept.text();
+
+        // The run was written about at all, and the refusal logged.
+        assert.include(all, "CommentRules.followUp");
+        assert.include(all, "A comment rule's run failed");
+
+        for (const [name, secret] of [
+          ["the rule's private text", privateText],
+          ["what the person commented", comment],
+          ["who commented", String(7000 + commenter)],
+          ["the commenter's handle", `reader${String(commenter)}`],
+          ["the commenter's name", `Reader ${String(commenter)}`],
+        ] as const) {
+          assert.notInclude(all, secret, name);
+        }
+      }).pipe(Effect.provide(Layer.merge(RulesTest, kept.layer)));
     }
   );
 });

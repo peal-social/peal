@@ -160,9 +160,12 @@ export const DrizzleEngagementRecords = Layer.effect(
             commentId: match.commentId,
             lookedAt: DateTime.fromDateUnsafe(match.lookedAt),
             outcome: match.outcome,
+            privateCode: match.privateCode,
+            privateReplyId: match.privateReplyId,
             replyId: match.replyId,
           })),
         postId: rule.postId,
+        privateReply: rule.privateReply,
         reply: rule.reply,
         scope: rule.scope,
         status: rule.status,
@@ -492,6 +495,23 @@ export const DrizzleEngagementRecords = Layer.effect(
                   workspaceId: commentRules.workspaceId,
                 })
                 .pipe(Effect.mapError(failed));
+
+              // Their private replies still waiting go with them.
+              if (ended.length > 0) {
+                yield* db
+                  .update(commentRuleMatches)
+                  .set({ privateCode: "stopped" })
+                  .where(
+                    and(
+                      inArray(
+                        commentRuleMatches.ruleId,
+                        ended.map(({ id }) => id)
+                      ),
+                      eq(commentRuleMatches.privateCode, "waiting")
+                    )
+                  )
+                  .pipe(Effect.mapError(failed));
+              }
 
               yield* Effect.forEach(
                 ended,

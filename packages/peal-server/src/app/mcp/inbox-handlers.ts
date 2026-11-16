@@ -40,6 +40,7 @@ import type { CommentRuleNotPossible } from "#engagement/application/comment-rul
 import { CommentRules } from "#engagement/application/comment-rules.ts";
 import type {
   ChangeCommentRuleRequest,
+  StartCommentRuleRequest,
   ListedCommentRule,
 } from "#engagement/application/comment-rules.ts";
 import { EngagementInbox } from "#engagement/application/engagement-inbox.ts";
@@ -201,12 +202,18 @@ const noCommentRule = () =>
     "The workspace has no comment rule with this id: list_comment_rules answers its rules."
   );
 
-const ruleNotPossible = ({ channels, reason }: CommentRuleNotPossible) =>
-  refuse(
-    channels.length === 0
-      ? `The rule cannot answer (${reason}): it needs 1 to 10 keywords, a reply, and a post that went out or a channel the inbox reads.`
-      : `No channel can carry the rule's reply, or it is too long for one that could. Nothing was saved. Each channel: ${JSON.stringify(channels)}`
-  );
+const ruleRefusal = ({ channels, reason }: CommentRuleNotPossible) => {
+  if (channels.length === 0) {
+    return `The rule cannot answer (${reason}): it needs 1 to 10 keywords, a reply, a private reply that says something if it has one, and a post that went out or a channel the inbox reads.`;
+  }
+
+  return reason === "privateReply"
+    ? `No channel that answers can carry the rule's private reply (\`privateReply\` of each channel: \`messagesOff\` means the channel's direct messages are off), or it is too long for one that could. Nothing was saved. Each channel: ${JSON.stringify(channels)}`
+    : `No channel can carry the rule's reply, or it is too long for one that could. Nothing was saved. Each channel: ${JSON.stringify(channels)}`;
+};
+
+const ruleNotPossible = (refusal: CommentRuleNotPossible) =>
+  refuse(ruleRefusal(refusal));
 
 // What a call answers on: one post or one channel.
 const ruleScopeFrom = (given: {
@@ -326,23 +333,33 @@ export const InboxToolsLive = InboxTools.toLayer(
           const member = yield* answerer;
           const scope = yield* ruleScopeFrom(given);
 
-          const listed = yield* commentRules
-            .start(member, {
-              keywords: given.keywords,
-              reply: given.reply,
-              scope,
+          const request: StartCommentRuleRequest =
+            given.privateReply === undefined
+              ? { keywords: given.keywords, reply: given.reply, scope }
+              : {
+                  keywords: given.keywords,
+                  privateReply: given.privateReply,
+                  reply: given.reply,
+                  scope,
+                };
+
+          const listed = yield* commentRules.start(member, request).pipe(
+            Effect.catchTags({
+              CommentRuleNotPossible: ruleNotPossible,
+              DatabaseError: Effect.die,
+              MessagesNeedConsent: notAllowedToRead,
+              MissingPermission: (refusal) =>
+                notAllowed(
+                  refusal.permission === "engagement:message"
+                    ? "send private replies"
+                    : "answer comments"
+                )(refusal),
+              TooManyCommentRules: ({ allowed }) =>
+                refuse(
+                  `The workspace has ${String(allowed)} comment rules going, the most it may: stop one first.`
+                ),
             })
-            .pipe(
-              Effect.catchTags({
-                CommentRuleNotPossible: ruleNotPossible,
-                DatabaseError: Effect.die,
-                MissingPermission: notAllowed("answer comments"),
-                TooManyCommentRules: ({ allowed }) =>
-                  refuse(
-                    `The workspace has ${String(allowed)} comment rules going, the most it may: stop one first.`
-                  ),
-              })
-            );
+          );
 
           return commentRuleView(listed);
         }),
@@ -360,7 +377,13 @@ export const InboxToolsLive = InboxTools.toLayer(
 
           return { stopped: ruleId };
         }),
-      update_comment_rule: ({ keywords, paused, reply, ruleId }) =>
+      update_comment_rule: ({
+        keywords,
+        paused,
+        privateReply,
+        reply,
+        ruleId,
+      }) =>
         Effect.gen(function* update() {
           const change: {
             -readonly [
@@ -380,6 +403,10 @@ export const InboxToolsLive = InboxTools.toLayer(
             change.reply = reply;
           }
 
+          if (privateReply !== undefined) {
+            change.privateReply = privateReply;
+          }
+
           const listed = yield* commentRules
             .change(yield* answerer, yield* ruleIdFrom(ruleId), change)
             .pipe(
@@ -391,7 +418,13 @@ export const InboxToolsLive = InboxTools.toLayer(
                 CommentRuleNotFound: noCommentRule,
                 CommentRuleNotPossible: ruleNotPossible,
                 DatabaseError: Effect.die,
-                MissingPermission: notAllowed("answer comments"),
+                MessagesNeedConsent: notAllowedToRead,
+                MissingPermission: (refusal) =>
+                  notAllowed(
+                    refusal.permission === "engagement:message"
+                      ? "send private replies"
+                      : "answer comments"
+                  )(refusal),
               })
             );
 

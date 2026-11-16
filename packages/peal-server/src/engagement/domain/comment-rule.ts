@@ -41,6 +41,22 @@ export const maxChannelRepliesPerDay = 100;
 export const claimLifetime = Duration.minutes(30);
 
 /**
+ * Why a rule's private reply to a comment it answered in public was not
+ * made, when the reason is the rule's own: it `waiting` for the public
+ * reply to be out; the rule `stopped`, was paused or lost its private
+ * text first; the public reply `publicReplyFailed`, stayed
+ * `publicReplyUnconfirmed` or was `publicReplyWithdrawn`. Beside these, a
+ * channel's private ability (`messagesOff`, `noApi`, …) or the inbox's
+ * refusal, by its tag. Stored and published: add, never rename.
+ */
+export type PrivateCode =
+  | "waiting"
+  | "stopped"
+  | "publicReplyFailed"
+  | "publicReplyUnconfirmed"
+  | "publicReplyWithdrawn";
+
+/**
  * What a rule answers on: the comments under one post, or under every
  * post of one channel.
  */
@@ -81,6 +97,11 @@ export type CommentRuleStatus = typeof CommentRuleStatusSchema.Type;
  * a word, gets `reply` in public, as the channel's account, through the
  * inbox's own replies (their journal, their meter, one reply a comment),
  * once, and one person once a rule; `maxRuleRepliesPerDay` a UTC day.
+ *
+ * A rule may also hold a `privateReply`: once its public reply is out, the
+ * comment's author gets it as the one private message Meta lets an
+ * account send a commenter (Instagram and Facebook Pages), through the
+ * inbox's own private replies. Never alone, never on another platform.
  */
 export class CommentRule extends Schema.Class<CommentRule>(
   "peal-server/engagement/domain/CommentRule"
@@ -91,6 +112,9 @@ export class CommentRule extends Schema.Class<CommentRule>(
   createdAt: Schema.DateTimeUtc,
   id: CommentRuleIdSchema,
   keywords: Schema.Array(Schema.String),
+  // Sent privately to the author of each comment it answered in public,
+  // where the channel can carry it.
+  privateReply: Schema.Option(Schema.String),
   reply: Schema.String,
   scope: CommentRuleScopeSchema,
   startedBy: Schema.Option(UserIdSchema),
@@ -107,6 +131,7 @@ const changed = (rule: CommentRule, fields: Partial<RuleFields>): CommentRule =>
     createdAt: rule.createdAt,
     id: rule.id,
     keywords: rule.keywords,
+    privateReply: rule.privateReply,
     reply: rule.reply,
     scope: rule.scope,
     startedBy: rule.startedBy,
@@ -173,6 +198,7 @@ export const isMatch = (rule: CommentRule, text: string): boolean => {
 export interface NewCommentRule {
   readonly id: CommentRuleId;
   readonly keywords: readonly string[];
+  readonly privateReply: Option.Option<string>;
   readonly reply: string;
   readonly scope: CommentRuleScope;
   readonly startedBy: Option.Option<UserId>;
@@ -195,6 +221,8 @@ export const startCommentRule = (
 export interface CommentRuleChange {
   readonly keywords?: readonly string[];
   readonly paused?: boolean;
+  /** A text sets the private reply; none takes it off. */
+  readonly privateReply?: Option.Option<string>;
   readonly reply?: string;
 }
 
@@ -221,6 +249,7 @@ export const changeCommentRule = (
     changed(rule, {
       answersFrom,
       keywords: change.keywords ?? rule.keywords,
+      privateReply: change.privateReply ?? rule.privateReply,
       reply: change.reply ?? rule.reply,
       status,
     })

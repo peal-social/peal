@@ -289,7 +289,12 @@ const ChannelJobsTest = Layer.mergeAll(
       change: () => Effect.die("No comment rule changes here"),
       get: () => Effect.die("No comment rule is read here"),
       list: () => Effect.succeed([]),
-      runDue: Effect.succeed({ ended: 0, looked: 0, replied: 0 }),
+      runDue: Effect.succeed({
+        ended: 0,
+        looked: 0,
+        privateReplied: 0,
+        replied: 0,
+      }),
       start: () => Effect.die("No comment rule starts here"),
       stop: () => Effect.die("No comment rule stops here"),
     })

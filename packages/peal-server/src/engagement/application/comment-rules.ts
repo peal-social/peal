@@ -31,9 +31,15 @@ import type {
   CommentRuleOrigin,
   CommentRuleScope,
   CommentRuleStatus,
+  PrivateCode,
 } from "#engagement/domain/comment-rule.ts";
 import { abilitiesOf } from "#engagement/domain/engagement-abilities.ts";
+import {
+  chatOverflow,
+  maxOutgoingMessageLength,
+} from "#engagement/domain/message-text.ts";
 import { maxReplyLength } from "#engagement/domain/reply-text.ts";
+import type { Reply } from "#engagement/domain/reply.ts";
 import { CurrentInboxPlatforms } from "#shared/application/current-inbox-platforms.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
@@ -48,12 +54,20 @@ import type { Platform } from "#shared/domain/platform.ts";
 
 import { CommentRuleNotFound } from "./comment-rule-not-found.ts";
 import { CommentRuleNotPossible } from "./comment-rule-not-possible.ts";
+import { EngagementPrivateReplies } from "./engagement-private-replies.ts";
 import { EngagementReplies } from "./engagement-replies.ts";
+import type { MessagesNeedConsent } from "./messages-need-consent.ts";
 import { CommentRuleNotices } from "./ports/comment-rule-notices.ts";
 import { CommentRuleStore } from "./ports/comment-rule-store.ts";
-import type { MatchOutcome, RuleMatch } from "./ports/comment-rule-store.ts";
+import type {
+  MatchOutcome,
+  PrivateOutcome,
+  RuleMatch,
+  WaitingPrivateReply,
+} from "./ports/comment-rule-store.ts";
 import { EngagementChannels } from "./ports/engagement-channels.ts";
 import type { EngagedChannel } from "./ports/engagement-channels.ts";
+import { EngagementStore } from "./ports/engagement-store.ts";
 import { FollowedPosts } from "./ports/followed-posts.ts";
 import { ReplyLimits } from "./ports/reply-limits.ts";
 import { RuleStarters } from "./ports/rule-starters.ts";
@@ -92,10 +106,32 @@ export const CommentRuleAbilitySchema = Schema.Literals([
 
 export type CommentRuleAbility = typeof CommentRuleAbilitySchema.Type;
 
+/**
+ * Whether a channel can carry a rule's private reply: `available`; the
+ * platform has no private replies (`noApi`: all but Instagram and
+ * Facebook Pages); this server does not read the platform's messages or
+ * comments (`unsupported`); the channel's messages are off in the
+ * workspace (`messagesOff`); a permission the channel must be connected
+ * again for (`reconnect`); a text longer than the platform takes
+ * (`textTooLong`).
+ */
+export const CommentRulePrivateAbilitySchema = Schema.Literals([
+  "available",
+  "noApi",
+  "unsupported",
+  "messagesOff",
+  "reconnect",
+  "textTooLong",
+]);
+
+export type CommentRulePrivateAbility =
+  typeof CommentRulePrivateAbilitySchema.Type;
+
 /** What a channel can carry of a rule. */
 export interface ChannelCommentRule {
   readonly channelId: ChannelId;
   readonly platform: Platform;
+  readonly privateReply: CommentRulePrivateAbility;
   readonly reply: CommentRuleAbility;
 }
 
@@ -109,6 +145,8 @@ export interface ListedCommentRule {
 /** What starts a rule. */
 export interface StartCommentRuleRequest {
   readonly keywords: readonly string[];
+  /** Sent privately after each public reply, where a channel carries it. */
+  readonly privateReply?: string;
   readonly reply: string;
   readonly scope: CommentRuleScope;
 }
@@ -117,6 +155,8 @@ export interface StartCommentRuleRequest {
 export interface ChangeCommentRuleRequest {
   readonly keywords?: readonly string[];
   readonly paused?: boolean;
+  /** A text sets the private reply; null takes it off. */
+  readonly privateReply?: string | null;
   readonly reply?: string;
 }
 
@@ -131,10 +171,52 @@ export interface ListCommentRuleRequest {
 export interface CommentRulesRun {
   readonly looked: number;
   readonly replied: number;
+  readonly privateReplied: number;
   readonly ended: number;
 }
 
 type Refused = DatabaseError | MissingPermission;
+
+// A private reply's own reasons, as the match keeps them.
+const privateCode = (code: PrivateCode | CommentRulePrivateAbility) =>
+  Option.some<PrivateOutcome>({ _tag: "privateCode", code });
+
+// What a public reply's state means for the private reply that waits on
+// it: none yet while it is on its way; sent, the private one may go;
+// anything else, never.
+const afterPublic = (
+  reply: Option.Option<Reply>
+): "wait" | "send" | PrivateCode => {
+  if (Option.isNone(reply)) {
+    return "publicReplyFailed";
+  }
+
+  switch (reply.value.status._tag) {
+    case "sending": {
+      return "wait";
+    }
+
+    case "sent": {
+      return "send";
+    }
+
+    case "unconfirmed": {
+      return "publicReplyUnconfirmed";
+    }
+
+    case "withdrawn": {
+      return "publicReplyWithdrawn";
+    }
+
+    case "failed": {
+      return "publicReplyFailed";
+    }
+
+    default: {
+      return reply.value.status satisfies never;
+    }
+  }
+};
 
 type ChangeBeingMade = {
   -readonly [K in keyof CommentRuleChange]: CommentRuleChange[K];
@@ -144,7 +226,8 @@ type ChangeBeingMade = {
 const changeOf = (
   request: ChangeCommentRuleRequest,
   keywords: readonly string[] | undefined,
-  reply: string | undefined
+  reply: string | undefined,
+  privateReply: Option.Option<string> | undefined
 ): CommentRuleChange => {
   const change: ChangeBeingMade = {};
 
@@ -154,6 +237,10 @@ const changeOf = (
 
   if (reply !== undefined) {
     change.reply = reply;
+  }
+
+  if (privateReply !== undefined) {
+    change.privateReply = privateReply;
   }
 
   if (request.paused !== undefined) {
@@ -184,6 +271,17 @@ const mayStart = (actor: Actor) =>
 
 const cleanReply = (reply: string) =>
   storableText(reply, maxReplyLength).trim();
+
+// Cut one past what a member may write, so a text too long stays too long.
+const cleanPrivateReply = (text: string) =>
+  storableText(text, maxOutgoingMessageLength + 1).trim();
+
+// Whether a private text fits the platform's messages.
+const privateFits = (platform: Platform, text: string) =>
+  text.length <= maxOutgoingMessageLength &&
+  (platform !== "facebook" && platform !== "instagram"
+    ? true
+    : Option.isNone(chatOverflow(platform, text)));
 
 // What a reader counts as characters.
 const graphemes = new Intl.Segmenter("und", { granularity: "grapheme" });
@@ -221,6 +319,17 @@ const refusalOf = (tag: string): Option.Option<MatchOutcome> =>
  * not to a member's reply. A rule is refused where no channel it answers
  * on can carry its reply (`CommentRuleNotPossible`, each channel with its
  * reason): Bluesky, X, LinkedIn and YouTube refuse it by their rules.
+ *
+ * A rule's private reply follows its public one, never alone: once the
+ * public reply is out (a later run reads it `sent`), the comment's author
+ * gets it through `EngagementPrivateReplies.send`, as the starter, under a
+ * key of the rule and the comment, so the private replies' journal, their
+ * one-a-comment index, their window and their outbound message apply and
+ * no run sends it twice. Starting one takes `engagement:message` too, and
+ * an application the owner's leave. A public reply that failed, stayed
+ * unconfirmed or was withdrawn takes none; a rule stopped or paused
+ * before it went sends none; a channel that cannot carry it now (its
+ * messages off, say) answers in public only, and the match says why.
  */
 export class CommentRules extends Context.Service<
   CommentRules,
@@ -238,7 +347,10 @@ export class CommentRules extends Context.Service<
       request: StartCommentRuleRequest
     ) => Effect.Effect<
       ListedCommentRule,
-      Refused | CommentRuleNotPossible | TooManyCommentRules
+      | Refused
+      | CommentRuleNotPossible
+      | MessagesNeedConsent
+      | TooManyCommentRules
     >;
     readonly change: (
       actor: Actor,
@@ -246,7 +358,11 @@ export class CommentRules extends Context.Service<
       request: ChangeCommentRuleRequest
     ) => Effect.Effect<
       ListedCommentRule,
-      Refused | CommentRuleEnded | CommentRuleNotFound | CommentRuleNotPossible
+      | Refused
+      | CommentRuleEnded
+      | CommentRuleNotFound
+      | CommentRuleNotPossible
+      | MessagesNeedConsent
     >;
     readonly stop: (
       actor: Actor,
@@ -265,15 +381,48 @@ export class CommentRules extends Context.Service<
       const limits = yield* ReplyLimits;
       const starters = yield* RuleStarters;
       const replies = yield* EngagementReplies;
+      const privateReplies = yield* EngagementPrivateReplies;
+      const comments = yield* EngagementStore;
       const ruleNotices = yield* CommentRuleNotices;
       const inbox = yield* CurrentInboxPlatforms;
       const ids = yield* Ids;
       const { transaction } = yield* TransactionRunner;
 
-      // What a channel can carry of a rule's reply, now.
+      // What a channel can carry of a rule's private reply, now, in the
+      // rule's workspace.
+      const privateAbilityOn = Effect.fn("CommentRules.privateAbilityOn")(
+        function* privateAbilityOn(
+          rule: CommentRule,
+          channelId: ChannelId,
+          platform: Platform
+        ) {
+          if (platform !== "facebook" && platform !== "instagram") {
+            return "noApi" as const;
+          }
+
+          const standing = yield* privateReplies.channelStanding(
+            rule.workspaceId,
+            channelId
+          );
+
+          if (standing !== "available") {
+            return standing;
+          }
+
+          const ability: CommentRulePrivateAbility =
+            Option.isNone(rule.privateReply) ||
+            privateFits(platform, rule.privateReply.value)
+              ? "available"
+              : "textTooLong";
+
+          return ability;
+        }
+      );
+
+      // What a channel can carry of a rule's replies, now.
       const abilityOn = Effect.fn("CommentRules.abilityOn")(function* abilityOn(
-        channelId: ChannelId,
-        reply: string
+        rule: CommentRule,
+        channelId: ChannelId
       ) {
         const channel = yield* channels.describe(channelId).pipe(
           Effect.map(Option.some),
@@ -288,10 +437,12 @@ export class CommentRules extends Context.Service<
 
         const { connection, platform, scopes } = channel.value;
         const support = commentRuleSupport[platform];
+        const privateReply = yield* privateAbilityOn(rule, channelId, platform);
 
         const able = (reason: CommentRuleAbility): ChannelCommentRule => ({
           channelId,
           platform,
+          privateReply,
           reply: reason,
         });
 
@@ -307,7 +458,7 @@ export class CommentRules extends Context.Service<
           );
         }
 
-        const overflow = yield* limits.overflow(platform, reply);
+        const overflow = yield* limits.overflow(platform, rule.reply);
 
         return Option.some(
           able(Option.isSome(overflow) ? "textTooLong" : "available")
@@ -334,7 +485,7 @@ export class CommentRules extends Context.Service<
           }
 
           const found = yield* Effect.forEach((channelId: ChannelId) =>
-            abilityOn(channelId, rule.reply)
+            abilityOn(rule, channelId)
           )(named);
 
           return found.flatMap((one) => Option.toArray(one));
@@ -372,6 +523,22 @@ export class CommentRules extends Context.Service<
           return yield* new CommentRuleNotPossible({
             channels: carried,
             reason: "channels",
+          });
+        }
+
+        // A private reply needs a channel that answers in public and can
+        // carry it, and fits every one that can.
+        if (
+          Option.isSome(rule.privateReply) &&
+          (!carried.some(
+            ({ privateReply, reply }) =>
+              reply === "available" && privateReply === "available"
+          ) ||
+            carried.some(({ privateReply }) => privateReply === "textTooLong"))
+        ) {
+          return yield* new CommentRuleNotPossible({
+            channels: carried,
+            reason: "privateReply",
           });
         }
 
@@ -416,6 +583,36 @@ export class CommentRules extends Context.Service<
         return yield* listed(yield* found(actor, ruleId, false));
       });
 
+      // A private text as a rule keeps it: given, it must not be empty,
+      // and whoever gives it must be one who may send private replies;
+      // null takes it off; left out, nothing changes.
+      const privateReplyOf = Effect.fn("CommentRules.privateReplyOf")(
+        function* privateReplyOf(
+          actor: Actor,
+          given: string | null | undefined
+        ) {
+          // Left out: nothing changes (none); null: taken off (some none).
+          if (given === undefined || given === null) {
+            return given === null
+              ? Option.some(Option.none<string>())
+              : Option.none<Option.Option<string>>();
+          }
+
+          const text = cleanPrivateReply(given);
+
+          if (text.length === 0) {
+            return yield* new CommentRuleNotPossible({
+              channels: [],
+              reason: "emptyPrivateReply",
+            });
+          }
+
+          yield* privateReplies.mayWrite(actor);
+
+          return Option.some(Option.some(text));
+        }
+      );
+
       const start = Effect.fn("CommentRules.start")(function* start(
         actor: Actor,
         request: StartCommentRuleRequest
@@ -439,6 +636,8 @@ export class CommentRules extends Context.Service<
           });
         }
 
+        const privateReply = yield* privateReplyOf(actor, request.privateReply);
+
         const id = yield* newId(CommentRuleIdSchema).pipe(
           Effect.provideService(Ids, ids)
         );
@@ -447,6 +646,7 @@ export class CommentRules extends Context.Service<
           {
             id,
             keywords: keywords.value,
+            privateReply: Option.flatten(privateReply),
             reply,
             scope: request.scope,
             startedBy:
@@ -510,6 +710,8 @@ export class CommentRules extends Context.Service<
           });
         }
 
+        const privateReply = yield* privateReplyOf(actor, request.privateReply);
+
         const now = yield* DateTime.now;
 
         const next = yield* transaction(
@@ -519,16 +721,33 @@ export class CommentRules extends Context.Service<
             const changed = yield* Effect.fromResult(
               changeCommentRule(
                 rule,
-                changeOf(request, keywords.value, reply),
+                changeOf(
+                  request,
+                  keywords.value,
+                  reply,
+                  Option.getOrUndefined(privateReply)
+                ),
                 now
               )
             );
 
-            if (reply !== undefined) {
+            if (
+              reply !== undefined ||
+              Option.isSome(Option.flatten(privateReply))
+            ) {
               yield* possible(changed);
             }
 
             yield* store.update(changed);
+
+            // Paused, or without its private text, it sends none of those
+            // still waiting for their public reply.
+            if (
+              changed.status._tag !== "active" ||
+              Option.isNone(changed.privateReply)
+            ) {
+              yield* store.stopWaiting(changed.id);
+            }
 
             return changed;
           })
@@ -549,7 +768,8 @@ export class CommentRules extends Context.Service<
           Effect.gen(function* save() {
             const rule = yield* found(actor, ruleId, true);
 
-            return yield* store.update(endCommentRule(rule, "stopped", now));
+            yield* store.update(endCommentRule(rule, "stopped", now));
+            yield* store.stopWaiting(rule.id);
           })
         );
       });
@@ -559,7 +779,7 @@ export class CommentRules extends Context.Service<
         rule: CommentRule
       ) {
         const now = yield* DateTime.now;
-        const tally = { ended: 0, looked: 0, replied: 0 };
+        const tally = { ended: 0, looked: 0, privateReplied: 0, replied: 0 };
         const starter = yield* starters.of(rule);
 
         if (starter._tag === "lockedOut") {
@@ -586,6 +806,7 @@ export class CommentRules extends Context.Service<
               yield* store.update(
                 endCommentRule(locked.value, "starterGone", now)
               );
+              yield* store.stopWaiting(rule.id);
               yield* ruleNotices.stopped(locked.value, "starterGone");
 
               return true;
@@ -597,6 +818,142 @@ export class CommentRules extends Context.Service<
           return tally;
         }
 
+        const { actor } = starter;
+        const mayMessage = can(actor, "engagement:message");
+
+        // What each channel can carry now, by its platform's rules too: a
+        // post's rule never answers on Bluesky, X, LinkedIn or YouTube,
+        // whatever the inbox may do there, and sends a private reply only
+        // on Instagram and Facebook Pages.
+        const able = yield* channelsOf(rule);
+
+        const privateOn = new Map(
+          able.map(({ channelId, privateReply }) => [channelId, privateReply])
+        );
+
+        // The private reply a comment answered now gets: none for a rule
+        // without one, `waiting` for its public reply to be out, or why
+        // the starter or the channel cannot send it.
+        const privatePlan = (
+          locked: CommentRule,
+          channelId: ChannelId
+        ): Option.Option<PrivateOutcome> => {
+          if (Option.isNone(locked.privateReply)) {
+            return Option.none();
+          }
+
+          if (!mayMessage) {
+            return Option.some({
+              _tag: "privateCode",
+              code: "MissingPermission",
+            });
+          }
+
+          const ability = privateOn.get(channelId) ?? "unsupported";
+
+          return ability === "available"
+            ? privateCode("waiting")
+            : privateCode(ability);
+        };
+
+        // One private reply whose public reply was waited for, under the
+        // rule's lock, so a member who stops or pauses the rule meanwhile
+        // wins, and settled in the transaction that journals it.
+        const followUp = Effect.fn("CommentRules.followUp")(function* followUp(
+          waiting: WaitingPrivateReply
+        ) {
+          const locked = yield* store.lock(rule.workspaceId, rule.id);
+
+          if (
+            Option.isNone(locked) ||
+            locked.value.status._tag !== "active" ||
+            Option.isNone(locked.value.privateReply)
+          ) {
+            yield* store.stopWaiting(rule.id);
+
+            return "stopped" as const;
+          }
+
+          const next = afterPublic(yield* comments.reply(waiting.replyId));
+
+          if (next === "wait") {
+            return "waiting" as const;
+          }
+
+          const settle = (outcome: Option.Option<PrivateOutcome>) =>
+            Option.match(outcome, {
+              onNone: () => Effect.succeed(false),
+              onSome: (made) =>
+                store.settlePrivate(rule.id, waiting.commentId, made),
+            });
+
+          if (next !== "send") {
+            yield* settle(privateCode(next));
+
+            return "skipped" as const;
+          }
+
+          const planned = privatePlan(locked.value, waiting.channelId);
+
+          if (
+            Option.isNone(planned) ||
+            planned.value._tag !== "privateCode" ||
+            planned.value.code !== "waiting"
+          ) {
+            yield* settle(planned);
+
+            return "skipped" as const;
+          }
+
+          const made = yield* privateReplies
+            .send(
+              actor,
+              waiting.commentId,
+              locked.value.privateReply.value,
+              Option.some(
+                `comment-rule-private:${rule.id}:${waiting.commentId}`
+              ),
+              Option.some(rule.id)
+            )
+            .pipe(
+              Effect.map((reply): PrivateOutcome => ({
+                _tag: "privateReply",
+                privateReplyId: reply.id,
+              })),
+              // A refusal never undoes the public reply: its tag is kept.
+              Effect.catch((error) =>
+                error._tag === "DatabaseError"
+                  ? Effect.fail(error)
+                  : Effect.succeed<PrivateOutcome>({
+                      _tag: "privateCode",
+                      code: error._tag,
+                    })
+              )
+            );
+
+          yield* settle(Option.some(made));
+
+          return made._tag === "privateReply"
+            ? ("sent" as const)
+            : ("skipped" as const);
+        });
+
+        // First what earlier runs answered in public: their private
+        // replies go once the public ones are out, whatever today's caps,
+        // as each follows a reply counted then.
+        for (const waiting of yield* store.waitingPrivate(
+          rule.id,
+          candidatesPerRun
+        )) {
+          const done = yield* transaction(followUp(waiting));
+
+          if (done === "stopped") {
+            return tally;
+          }
+
+          tally.privateReplied += done === "sent" ? 1 : 0;
+        }
+
         const dayStart = DateTime.startOf(now, "day");
 
         if (
@@ -605,11 +962,8 @@ export class CommentRules extends Context.Service<
           return tally;
         }
 
-        // Only the channels that can carry the reply now, by their
-        // platform's rules too: a post's rule never answers on Bluesky,
-        // X, LinkedIn or YouTube, whatever the inbox may do there.
-        const carried = (yield* channelsOf(rule)).flatMap(
-          ({ channelId, reply }) => (reply === "available" ? [channelId] : [])
+        const carried = able.flatMap(({ channelId, reply }) =>
+          reply === "available" ? [channelId] : []
         );
 
         const claimedBefore = DateTime.subtractDuration(now, claimLifetime);
@@ -654,6 +1008,61 @@ export class CommentRules extends Context.Service<
               : ("taken" as const);
           }
         );
+
+        // A claimed comment's public reply, under the rule's lock: a rule
+        // stopped or paused meanwhile answers nothing more. The reply is
+        // journalled and the match settled together, with the private
+        // reply it is to get.
+        const answer = Effect.fn("CommentRules.answer")(function* answer(
+          candidate: (typeof candidates)[number]
+        ) {
+          const locked = yield* store.lock(rule.workspaceId, rule.id);
+
+          if (Option.isNone(locked) || locked.value.status._tag !== "active") {
+            yield* store.releaseMatch(rule.id, candidate.commentId);
+
+            return "stopped" as const;
+          }
+
+          const answered = yield* replies
+            .reply(
+              actor,
+              candidate.commentId,
+              locked.value.reply,
+              Option.some(`comment-rule:${rule.id}:${candidate.commentId}`)
+            )
+            .pipe(
+              Effect.map((reply): Option.Option<MatchOutcome> =>
+                Option.some({
+                  _tag: "replied",
+                  private: privatePlan(locked.value, candidate.channelId),
+                  replyId: reply.id,
+                })
+              ),
+              Effect.catch((error) =>
+                error._tag === "DatabaseError"
+                  ? Effect.fail(error)
+                  : Effect.succeed(refusalOf(error._tag))
+              )
+            );
+
+          if (Option.isNone(answered)) {
+            // The billing account has no room for a message now: later.
+            yield* store.releaseMatch(rule.id, candidate.commentId);
+
+            return "putOff" as const;
+          }
+
+          yield* store.settleMatch(
+            rule.id,
+            candidate.commentId,
+            answered.value
+          );
+
+          return answered.value._tag === "replied"
+            ? ("replied" as const)
+            : ("refused" as const);
+        });
 
         for (const candidate of candidates) {
           if (!isMatch(rule, candidate.text)) {
@@ -700,37 +1109,13 @@ export class CommentRules extends Context.Service<
             continue;
           }
 
-          const answered = yield* replies
-            .reply(
-              starter.actor,
-              candidate.commentId,
-              rule.reply,
-              Option.some(`comment-rule:${rule.id}:${candidate.commentId}`)
-            )
-            .pipe(
-              Effect.map((reply): Option.Option<MatchOutcome> =>
-                Option.some({ _tag: "replied", replyId: reply.id })
-              ),
-              Effect.catch((error) =>
-                error._tag === "DatabaseError"
-                  ? Effect.fail(error)
-                  : Effect.succeed(refusalOf(error._tag))
-              )
-            );
+          const done = yield* transaction(answer(candidate));
 
-          if (Option.isNone(answered)) {
-            // The billing account has no room for a message now: later.
-            yield* store.releaseMatch(rule.id, candidate.commentId);
+          if (done === "stopped" || done === "putOff") {
             break;
           }
 
-          yield* store.settleMatch(
-            rule.id,
-            candidate.commentId,
-            answered.value
-          );
-
-          if (answered.value._tag === "replied") {
+          if (done === "replied") {
             tally.replied += 1;
           }
         }
@@ -739,7 +1124,7 @@ export class CommentRules extends Context.Service<
       });
 
       const runDue = Effect.gen(function* runDue() {
-        const tally = { ended: 0, looked: 0, replied: 0 };
+        const tally = { ended: 0, looked: 0, privateReplied: 0, replied: 0 };
         let after = Option.none<CommentRuleId>();
 
         for (;;) {
@@ -752,7 +1137,12 @@ export class CommentRules extends Context.Service<
               Effect.catchTag("DatabaseError", (failure) =>
                 Effect.logWarning("A comment rule's run failed", failure).pipe(
                   Effect.annotateLogs({ ruleId: rule.id }),
-                  Effect.as({ ended: 0, looked: 0, replied: 0 })
+                  Effect.as({
+                    ended: 0,
+                    looked: 0,
+                    privateReplied: 0,
+                    replied: 0,
+                  })
                 )
               )
             );
@@ -760,6 +1150,7 @@ export class CommentRules extends Context.Service<
             tally.ended += done.ended;
             tally.looked += done.looked;
             tally.replied += done.replied;
+            tally.privateReplied += done.privateReplied;
           }
 
           if (page.length < rulePage) {
@@ -776,6 +1167,10 @@ export class CommentRules extends Context.Service<
         yield* Metric.update(
           Metric.withAttributes(commentRulesRun, { outcome: "looked" }),
           tally.looked
+        );
+        yield* Metric.update(
+          Metric.withAttributes(commentRulesRun, { outcome: "privateReplied" }),
+          tally.privateReplied
         );
 
         const run: CommentRulesRun = tally;

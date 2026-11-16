@@ -2,6 +2,9 @@ import { describe, expect, it } from "@effect/vitest";
 import {
   CommentRuleAbilitySchema as ContractAbilitySchema,
   CommentRuleEndReasonSchema as ContractEndReasonSchema,
+  CommentRulePrivateAbilitySchema as ContractPrivateAbilitySchema,
+  CommentRulePrivateStatusSchema as ContractPrivateStatusSchema,
+  CommentRuleRefusalSchema as ContractRefusalSchema,
   maxChannelRepliesPerDay as contractPerChannelDay,
   maxCommentRulesPerWorkspace as contractRules,
   maxKeywordLength as contractKeywordLength,
@@ -10,8 +13,10 @@ import {
   commentRuleMatchesShown as contractShown,
 } from "peal-contract";
 
+import { CommentRuleNotPossible } from "#engagement/application/comment-rule-not-possible.ts";
 import {
   CommentRuleAbilitySchema,
+  CommentRulePrivateAbilitySchema,
   matchesShown,
 } from "#engagement/application/comment-rules.ts";
 import { CommentRuleEndReasonSchema } from "#engagement/domain/comment-rule-end-reason.ts";
@@ -22,6 +27,7 @@ import {
   maxKeywords,
   maxRuleRepliesPerDay,
 } from "#engagement/domain/comment-rule.ts";
+import { PrivateReplyStatusTagSchema } from "#engagement/domain/private-reply.ts";
 
 // The contract's copy of comment rules' limits and words, which clients
 // read: equal to the server's.
@@ -48,6 +54,18 @@ describe("the comment rules' contract", () => {
     );
     expect(ContractEndReasonSchema.literals).toStrictEqual(
       CommentRuleEndReasonSchema.literals
+    );
+  });
+
+  it("copies the server's words for private replies", () => {
+    expect(ContractPrivateAbilitySchema.literals).toStrictEqual(
+      CommentRulePrivateAbilitySchema.literals
+    );
+    expect(ContractPrivateStatusSchema.literals).toStrictEqual(
+      PrivateReplyStatusTagSchema.literals
+    );
+    expect(ContractRefusalSchema.literals).toStrictEqual(
+      CommentRuleNotPossible.fields.reason.literals
     );
   });
 });
