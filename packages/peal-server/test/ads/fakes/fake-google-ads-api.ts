@@ -401,11 +401,19 @@ export const fakeGoogleAdsApi = (options: FakeGoogleAdsOptions = {}) =>
           "customer_client.status = 'ENABLED'"
         );
 
-        return below(customer).flatMap((entry) =>
+        const rows = below(customer).flatMap((entry) =>
           enabledOnly && (entry.customer.status ?? "ENABLED") !== "ENABLED"
             ? []
-            : [clientRow(entry)]
+            : [entry]
         );
+
+        // Google promises no order without ORDER BY: the fake then answers
+        // the manager's own row last.
+        return (
+          query.includes("ORDER BY customer_client.level")
+            ? rows.toSorted((left, right) => left.level - right.level)
+            : rows.toReversed()
+        ).map(clientRow);
       }
 
       if (from === "customer") {

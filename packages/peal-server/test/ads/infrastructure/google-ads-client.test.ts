@@ -20,10 +20,7 @@ import type {
   FakeGoogleAdsOptions,
 } from "#test/ads/fakes/fake-google-ads-api.ts";
 import { googleAgainstFake, refreshToken } from "#test/ads/google-client.ts";
-import {
-  headerOf,
-  rawJson,
-} from "#test/publishing/fakes/platform-server.ts";
+import { headerOf, rawJson } from "#test/publishing/fakes/platform-server.ts";
 
 const id = (value: string) => NetworkObjectIdSchema.make(value);
 
@@ -292,6 +289,44 @@ describe("the accounts a Google sign-in reaches", () => {
 
         assert.deepStrictEqual(yield* client.accounts(refreshToken), []);
       }).pipe(Effect.scoped)
+  );
+
+  it.live(
+    "finds each manager's own row however many pages its clients take",
+    () =>
+      Effect.gen(function* paging() {
+        const { client } = yield* googleAgainstFake({
+          ...hierarchy,
+          pageSize: 1,
+        });
+
+        assert.deepStrictEqual(
+          (yield* client.accounts(refreshToken)).map(
+            ({ externalId }) => externalId
+          ),
+          ["1111111111", "6666666666", "3333333333", "5555555555"]
+        );
+      }).pipe(Effect.scoped)
+  );
+
+  it.live("lists 2,000 clients of a manager at most", () =>
+    Effect.gen(function* bounded() {
+      const clients = Array.from(
+        { length: 2001 },
+        (_, index) => `9${String(index).padStart(9, "0")}`
+      );
+
+      const { client } = yield* googleAgainstFake({
+        accessible: ["2222222222"],
+        customers: [
+          customer("2222222222", { clients, manager: true }),
+          ...clients.map((id) => customer(id)),
+        ],
+        pageSize: 500,
+      });
+
+      assert.lengthOf(yield* client.accounts(refreshToken), 2000);
+    }).pipe(Effect.scoped)
   );
 
   it.live(

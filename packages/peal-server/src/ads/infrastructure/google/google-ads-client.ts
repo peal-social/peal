@@ -73,7 +73,10 @@ const dayText = ({ day, month, year }: LocalDate) =>
 // GAQL of v26 (field references, read 2026-11-16). `customer_client`
 // lists a manager's every descendant and the manager itself at level 0
 // ("Get account hierarchy"); `test_account` says which are test accounts.
-const clientsQuery = `SELECT customer_client.client_customer, customer_client.level, customer_client.manager, customer_client.descriptive_name, customer_client.currency_code, customer_client.time_zone, customer_client.id, customer_client.status, customer_client.test_account FROM customer_client WHERE customer_client.status = 'ENABLED' LIMIT ${maxClients + 1}`;
+// Ordered by level, so the manager's own row comes first, and read to its
+// last page: a limit would apply before sub-managers are left out.
+const clientsQuery =
+  "SELECT customer_client.client_customer, customer_client.level, customer_client.manager, customer_client.descriptive_name, customer_client.currency_code, customer_client.time_zone, customer_client.id, customer_client.status, customer_client.test_account FROM customer_client WHERE customer_client.status = 'ENABLED' ORDER BY customer_client.level";
 
 const customerQuery =
   "SELECT customer.id, customer.descriptive_name, customer.currency_code, customer.time_zone, customer.status, customer.test_account FROM customer";
@@ -398,10 +401,19 @@ export const googleAdsClient = (options: {
           continue;
         }
 
-        const { rows } = listing.value;
+        const { complete, rows } = listing.value;
         const self = rows.find((row) => levelOf(row) === 0);
 
+        if (!complete) {
+          yield* Effect.logWarning(
+            "A Google Ads manager's clients were not read whole: those past the bound are left out"
+          ).pipe(Effect.annotateLogs({ read: rows.length }));
+        }
+
         if (self === undefined) {
+          yield* Effect.logWarning(
+            "A Google Ads account answered no row of its own: it is left out"
+          );
           continue;
         }
 
