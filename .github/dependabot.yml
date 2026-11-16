@@ -105,6 +105,12 @@ updates:
       gsap:
         patterns:
           - gsap
+      # peal-ui's blocks' tests: a DOM, Testing Library and axe-core.
+      dom-testing:
+        patterns:
+          - jsdom
+          - "@testing-library/*"
+          - axe-core
       lint-tooling:
         patterns:
           - ultracite

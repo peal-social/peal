@@ -12,8 +12,9 @@
 @import "./tokens.css";
 
 /* Tailwind scans the app that imports this file; this adds the components'
-   own classes. */
+   and the blocks' own classes. */
 @source "../components";
+@source "../blocks";
 
 /* Light only (DESIGN.md): the `dark:` variant matches a class nothing sets,
    so the `dark:` classes shadcn/ui's components carry stay inert. */

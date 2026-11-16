@@ -106,6 +106,13 @@
   --field-rail: rgb(255 255 255 / 16%);
   --field-tick: rgb(255 255 255 / 55%);
   --field-caption: rgb(255 255 255 / 60%);
+  /* The site's hatched cell (DESIGN.md, Site, Cells): 1 px lines in border
+     at 45°, 8 px apart. A pattern, not a colour gradient. */
+  --hatch: repeating-linear-gradient(
+    45deg,
+    var(--border) 0 1px,
+    transparent 1px 8px
+  );
   /* The palette tags take their colour from, by name. */
   --tag-gray: oklch(0.556 0 0);
   --tag-red: oklch(0.577 0.215 27);

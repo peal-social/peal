@@ -3,6 +3,7 @@ import type { PartProps } from "@ui-sdk/react/primitive";
 import { useId } from "react";
 import type * as React from "react";
 
+import { Tick } from "../blocks/blueprint/tick";
 import { cn } from "../lib/utils";
 
 // Each glow reads its eight --field-<glow>-* tokens. The class names are
@@ -34,14 +35,6 @@ const glows = [
     name: "sun",
   },
 ] as const;
-
-// A crosshair where two rails cross, centred on the joint.
-const Tick = ({ className }: { readonly className: string }) => (
-  <span className={cn("absolute -ms-[5px] -mt-[5px] size-[11px]", className)}>
-    <span className="absolute start-0 top-[5px] h-px w-full bg-(--field-tick)" />
-    <span className="absolute start-[5px] top-0 h-full w-px bg-(--field-tick)" />
-  </span>
-);
 
 type BrandFieldProps = Omit<PartProps<"div">, "children" | "className"> & {
   /** Mono captions under the lower rail, at its start and its end. */
@@ -123,10 +116,10 @@ const BrandField = ({
                 <span className="absolute -inset-y-[100vmax] start-full w-px bg-(--field-rail)" />
                 <span className="absolute -inset-x-[100vmax] top-0 h-px bg-(--field-rail)" />
                 <span className="absolute -inset-x-[100vmax] top-full h-px bg-(--field-rail)" />
-                <Tick className="start-0 top-0" />
-                <Tick className="start-full top-0" />
-                <Tick className="start-0 top-full" />
-                <Tick className="start-full top-full" />
+                <Tick on="field" className="start-0 top-0" />
+                <Tick on="field" className="start-full top-0" />
+                <Tick on="field" className="start-0 top-full" />
+                <Tick on="field" className="start-full top-full" />
                 {captions?.start === undefined ? null : (
                   <span className="absolute start-2 top-full mt-2 font-mono text-xs tracking-[0.04em] text-(--field-caption) lowercase">
                     {captions.start}

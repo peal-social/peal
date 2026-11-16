@@ -13,10 +13,10 @@ export default defineConfig({
   jsPlugins: shadcn.jsPlugins ?? [],
   overrides: [
     {
-      // The shadcn preset frees `components/ui/**`; here the components sit
-      // in src/components. They own their appearance, so they may restyle
+      // The shadcn preset frees `components/ui/**`; here the components and
+      // the blocks sit in src. They own their appearance, so they may restyle
       // each other and use structural arbitrary values.
-      files: ["src/components/**"],
+      files: ["src/components/**", "src/blocks/**"],
       rules: {
         "shadcn/no-arbitrary-values": "off",
         "shadcn/no-restyle": "off",

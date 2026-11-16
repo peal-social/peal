@@ -161,6 +161,18 @@ describe("DESIGN.md and tokens.css", () => {
     expect(Number(tokens.get("field-grain-opacity"))).toBe(Number(opacity));
   });
 
+  it("gives the site's hatched cell its lines to --hatch", () => {
+    const hatch =
+      /hatched: (?<width>\d+) px lines in\s+`border` at (?<angle>\d+)°, (?<gap>\d+) px apart/u.exec(
+        design
+      )?.groups;
+
+    expect(hatch).toBeDefined();
+    expect(tokens.get("hatch")).toBe(
+      `repeating-linear-gradient(${hatch?.["angle"]}deg, var(--border) 0 ${hatch?.["width"]}px, transparent ${hatch?.["width"]}px ${hatch?.["gap"]}px)`
+    );
+  });
+
   it("gives the radius of controls and cards to --radius", () => {
     const pixels = /Radius: (?<pixels>\d+) px for controls/u.exec(design)
       ?.groups?.["pixels"];
