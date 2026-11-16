@@ -30,7 +30,7 @@ Let the people of your organisation sign in and make their account with your ide
   </Step>
 </Steps>
 
-Peal reads the provider's discovery document at `<issuer>/.well-known/openid-configuration` and checks each ID token's signature, issuer, audience and nonce against it. A provider whose discovery fails when the server starts is tried again at the next sign-in; the server starts all the same. The provider may be on your private network: the server reaches it directly.
+Peal reads the provider's discovery document at `<issuer>/.well-known/openid-configuration` and checks each ID token's signature, issuer, audience and nonce against it. The server reads the discovery document when it starts. A provider that does not answer it within 10 seconds is left out until the server starts again, which the server's log says; the server starts all the same. A document that lacks what OpenID Connect requires (`issuer`, `authorization_endpoint`, `token_endpoint`, `jwks_uri` and `id_token_signing_alg_values_supported`) stops the server, with a message that names what is missing. The provider may be on your private network: the server reaches it directly.
 
 ## What the provider must send [#claims]
 

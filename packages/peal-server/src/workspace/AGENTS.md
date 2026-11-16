@@ -363,6 +363,12 @@ The staff context follows these rules too. What the law has a host keep is in
   the verified token's `sub` (`accountSubject`), `<issuer>|<sub>` for
   `oidc` (`oidcAccountId`): a subject belongs to its issuer, so a new
   `PEAL_OIDC_ISSUER` reaches no account the old one's subjects joined.
+- `AuthSettings.layer` reads each provider's discovery when the server
+  starts (`checkedProviders`, `provider-discovery.ts`, 10 s): one that does
+  not answer in time is left out until the next start, logged, so Better
+  Auth's own discovery (which has no time limit at init) never holds the
+  auth context; a document without OpenID Connect's required fields stops
+  the server (`SignInProviderUnusable`).
 - Discovery, token and key requests go to the host the operator set,
   through the library's own fetch, not `publicHttpClient`: a company's
   provider may be on a private network, and no user input picks it. Leave

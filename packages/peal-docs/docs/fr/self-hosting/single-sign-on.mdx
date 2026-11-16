@@ -32,7 +32,7 @@ Laissez les membres de votre organisation se connecter et créer leur compte ave
   </Step>
 </Steps>
 
-Peal lit le document de découverte du fournisseur à `<issuer>/.well-known/openid-configuration` et vérifie la signature, l’émetteur, l’audience et le nonce de chaque jeton d’identité. Un fournisseur dont la découverte échoue au démarrage du serveur est réessayé à la connexion suivante ; le serveur démarre quand même. Le fournisseur peut être sur votre réseau privé : le serveur le joint directement.
+Peal lit le document de découverte du fournisseur à `<issuer>/.well-known/openid-configuration` et vérifie la signature, l’émetteur, l’audience et le nonce de chaque jeton d’identité. Le serveur lit le document de découverte à son démarrage. Un fournisseur qui ne le fournit pas en 10 secondes est laissé de côté jusqu’au prochain démarrage du serveur, ce que dit son journal ; le serveur démarre quand même. Un document auquel manque ce qu’OpenID Connect exige (`issuer`, `authorization_endpoint`, `token_endpoint`, `jwks_uri` et `id_token_signing_alg_values_supported`) arrête le serveur, avec un message qui nomme ce qui manque. Le fournisseur peut être sur votre réseau privé : le serveur le joint directement.
 
 ## Ce que le fournisseur doit envoyer [#claims]
 

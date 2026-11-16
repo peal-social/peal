@@ -9,6 +9,7 @@ import {
 } from "#shared/infrastructure/environment.ts";
 import { stripeSettingsConfig } from "#shared/infrastructure/stripe-settings.ts";
 
+import { checkedProviders } from "./provider-discovery.ts";
 import { signInProvidersConfig } from "./sign-in-provider-settings.ts";
 
 // A comma-separated list, without the spaces around its entries or empty ones.
@@ -91,10 +92,19 @@ export class AuthSettings extends Context.Service<
   AuthSettings,
   AuthConfiguration
 >()("peal-server/workspace/infrastructure/AuthSettings") {
+  /**
+   * The settings, with the sign-in providers whose discovery answered when
+   * the server started (provider-discovery.ts).
+   */
   static readonly layer = Layer.effect(
     AuthSettings,
     Effect.gen(function* authSettings() {
-      return yield* authSettingsConfig;
+      const settings = yield* authSettingsConfig;
+
+      return {
+        ...settings,
+        signInProviders: yield* checkedProviders(settings.signInProviders),
+      };
     })
   );
 }

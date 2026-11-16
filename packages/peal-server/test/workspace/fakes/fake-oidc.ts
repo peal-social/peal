@@ -87,7 +87,15 @@ export class FakeOidc extends Context.Service<FakeOidc, FakeOidcProvider>()(
   "peal-server/test/FakeOidc"
 ) {}
 
-const fakeOidc = Effect.gen(function* fakeOidc() {
+/** How the fake's discovery document departs from a provider's. */
+export interface FakeOidcOptions {
+  /** Without `id_token_signing_alg_values_supported`, which is required. */
+  readonly withoutSigningAlgorithms?: boolean;
+}
+
+export const fakeOidcWith = Effect.fn("fakeOidcWith")(function* fakeOidcWith(
+  options: FakeOidcOptions
+) {
   const key = yield* signingKey;
   const foreign = yield* signingKey;
   const answers = new Map<string, { idToken?: string }>();
@@ -100,7 +108,8 @@ const fakeOidc = Effect.gen(function* fakeOidc() {
     ) {
       return json({
         authorization_endpoint: `${origin}/authorize`,
-        id_token_signing_alg_values_supported: [algorithm],
+        id_token_signing_alg_values_supported:
+          options.withoutSigningAlgorithms === true ? null : [algorithm],
         issuer: origin,
         jwks_uri: `${origin}/jwks`,
         response_types_supported: ["code"],
@@ -209,6 +218,8 @@ const fakeOidc = Effect.gen(function* fakeOidc() {
   });
 });
 
+const fakeOidc = fakeOidcWith({});
+
 /** The settings that point the server at the fake provider. */
 export const oidcSettings = (provider: FakeOidcProvider) => ({
   PEAL_OIDC_CLIENT_ID: oidcClientId,
@@ -234,6 +245,13 @@ export const appWithOidc = (
     })
   );
 
+/** The settings that point the server's Google at the fake. */
+export const googleSettings = (provider: FakeOidcProvider) => ({
+  GOOGLE_SIGN_IN_CLIENT_ID: oidcClientId,
+  GOOGLE_SIGN_IN_CLIENT_SECRET: oidcClientSecret,
+  GOOGLE_SIGN_IN_ISSUER: provider.server.url,
+});
+
 /** The server signing people in with the fake as Google, and the fake. */
 export const appWithGoogle = (env: Readonly<Record<string, string>> = {}) =>
   Layer.unwrap(
@@ -241,12 +259,7 @@ export const appWithGoogle = (env: Readonly<Record<string, string>> = {}) =>
       const provider = yield* fakeOidc;
 
       return Layer.merge(
-        TestApp.layerWith({
-          GOOGLE_SIGN_IN_CLIENT_ID: oidcClientId,
-          GOOGLE_SIGN_IN_CLIENT_SECRET: oidcClientSecret,
-          GOOGLE_SIGN_IN_ISSUER: provider.server.url,
-          ...env,
-        }),
+        TestApp.layerWith({ ...googleSettings(provider), ...env }),
         Layer.succeed(FakeOidc, provider)
       );
     })
