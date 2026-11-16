@@ -1,0 +1,167 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "bd1b1441-f14f-4b43-81e5-3f79211a2437",
+  "prevIds": [
+    "698cd17a-2606-468a-90cc-80843e5b1f86"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "engagement",
+        "comment_rule_matches",
+        "private_code"
+      ],
+      "writes": [
+        "s|col|engagement.comment_rule_matches.private_code",
+        "n|col|engagement.comment_rule_matches.private_code",
+        "e|col|engagement.comment_rule_matches.private_code"
+      ],
+      "reads": [
+        "n|tbl|engagement.comment_rule_matches",
+        "n|sch|engagement"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "engagement",
+        "comment_rule_matches",
+        "private_reply_id"
+      ],
+      "writes": [
+        "s|col|engagement.comment_rule_matches.private_reply_id",
+        "n|col|engagement.comment_rule_matches.private_reply_id",
+        "e|col|engagement.comment_rule_matches.private_reply_id"
+      ],
+      "reads": [
+        "n|tbl|engagement.comment_rule_matches",
+        "n|sch|engagement"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "engagement",
+        "comment_rules",
+        "private_reply"
+      ],
+      "writes": [
+        "s|col|engagement.comment_rules.private_reply",
+        "n|col|engagement.comment_rules.private_reply",
+        "e|col|engagement.comment_rules.private_reply"
+      ],
+      "reads": [
+        "n|tbl|engagement.comment_rules",
+        "n|sch|engagement"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "engagement",
+        "comment_rule_matches",
+        "comment_rule_matches_waiting"
+      ],
+      "writes": [
+        "s|idx|engagement.comment_rule_matches_waiting",
+        "n|idx|engagement.comment_rule_matches_waiting",
+        "e|idx|engagement.comment_rule_matches_waiting",
+        "n|rel|engagement.comment_rule_matches_waiting"
+      ],
+      "reads": [
+        "n|tbl|engagement.comment_rule_matches",
+        "n|sch|engagement",
+        "n|col|engagement.comment_rule_matches.rule_id",
+        "n|col|engagement.comment_rule_matches.looked_at"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "engagement",
+        "table": "comment_rule_matches",
+        "name": "private_code",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "engagement",
+        "table": "comment_rule_matches",
+        "name": "private_reply_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "engagement",
+        "table": "comment_rules",
+        "name": "private_reply",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "engagement",
+        "table": "comment_rule_matches",
+        "name": "comment_rule_matches_waiting",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "rule_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "looked_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"private_code\" = 'waiting'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    }
+  ]
+}

@@ -906,10 +906,17 @@ const ExportedWorkspaceSchema = Schema.Struct({
             lookedAt: instant,
             // `claimed`, `replied`, `noMatch`, `samePerson` or `refused`.
             outcome: Schema.String,
+            // Why the rule's private reply was not made, or the one it
+            // made; absent from exports made before private replies.
+            privateCode: Schema.optionalKey(nullable(Schema.String)),
+            privateReplyId: Schema.optionalKey(nullable(Schema.String)),
             replyId: nullable(Schema.String),
           })
         ),
         postId: nullable(Schema.String),
+        // The text sent privately after each public reply, or null;
+        // absent from exports made before private replies.
+        privateReply: Schema.optionalKey(nullable(Schema.String)),
         reply: Schema.String,
         // `post` or `channel`.
         scope: Schema.String,

@@ -89,6 +89,16 @@ export const PrivateReplyStatusSchema = Schema.Union([
 
 export type PrivateReplyStatus = typeof PrivateReplyStatusSchema.Type;
 
+/** Where a private reply stands, without what it holds. */
+export const PrivateReplyStatusTagSchema = Schema.Literals([
+  "sending",
+  "sent",
+  "failed",
+  "unconfirmed",
+]);
+
+export type PrivateReplyStatusTag = typeof PrivateReplyStatusTagSchema.Type;
+
 /**
  * The one private message the channel's account sends the author of a
  * comment under one of its posts, on Instagram or a Facebook Page, in

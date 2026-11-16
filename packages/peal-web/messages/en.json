@@ -4655,20 +4655,27 @@
   },
   "CommentRules": {
     "title": "Comment replies",
-    "description": "Rules that answer, by themselves and in public, the comments under a channel’s posts that hold a keyword you chose: once a comment and once a person, 25 replies a day at most, 100 a day for all of a channel’s rules together, each one of your inbox’s replies. They answer on Mastodon, and on Facebook Pages and Instagram where Peal reads their comments; Bluesky’s, X’s, LinkedIn’s and YouTube’s rules forbid an app to answer by itself. A rule never likes, follows or writes privately to anyone.",
+    "description": "Rules that answer, by themselves and in public, the comments under a channel’s posts that hold a keyword you chose: once a comment and once a person, 25 replies a day at most, 100 a day for all of a channel’s rules together, each one of your inbox’s replies. They answer on Mastodon, and on Facebook Pages and Instagram where Peal reads their comments; Bluesky’s, X’s, LinkedIn’s and YouTube’s rules forbid an app to answer by itself. A rule never likes or follows anyone. On Instagram and Facebook Pages, it may also send the author of each comment it answered one private message, after its public reply, where the channel’s direct messages are on.",
     "readOnly": "You may read the rules: changing them takes a role that answers comments.",
     "empty": "No rule answers comments by itself.",
     "keywords": "When a comment says: {keywords}",
     "status": "{status, select, active {Active} paused {Paused} ended {Ended} other {Unknown}}",
     "replied": "{count, plural, =0 {No reply yet} one {# reply among the latest comments} other {# replies among the latest comments}}",
     "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {A channel}}: {reply, select, available {answers there} noApi {no comments Peal reads} notAllowed {the platform’s rules forbid an app to answer by itself} unsupported {this server does not read its comments} reconnect {connect the channel again} textTooLong {the reply is too long} other {cannot answer}}",
+    "carriesPrivately": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {A channel}}: {reply, select, available {answers there} noApi {no comments Peal reads} notAllowed {the platform’s rules forbid an app to answer by itself} unsupported {this server does not read its comments} reconnect {connect the channel again} textTooLong {the reply is too long} other {cannot answer}}; private message: {privateReply, select, available {sent after the public reply} noApi {the platform has no private replies} unsupported {this server does not read its direct messages} messagesOff {turn the channel’s direct messages on} reconnect {connect the channel again for its messages} textTooLong {the message is too long} other {cannot send}}",
+    "privateReplyLabel": "Private message:",
+    "privateMade": "{status, select, waiting {Private message waiting for the public reply to go out} sending {Private message on its way} sent {Private message sent} failed {Private message failed} unconfirmed {Private message unconfirmed: check the conversation} gone {Private message made, no longer kept} other {Private message}}",
+    "privateSkipped": "No private message: {code, select, stopped {the rule was stopped, paused or lost its message first} publicReplyFailed {the public reply did not go out} publicReplyUnconfirmed {the public reply is unconfirmed} publicReplyWithdrawn {the public reply was withdrawn} messagesOff {the channel’s direct messages are off} noApi {the platform has no private replies} unsupported {this server does not read the platform’s direct messages} reconnect {connect the channel again for its messages} textTooLong {the message is too long} MissingPermission {whoever started the rule may not send messages} MessagesNeedConsent {the workspace’s owner did not let the app send messages} PrivateReplyPending {the comment has its private reply already} PrivateReplyNotPossible {the comment is more than 7 days old} AllowanceReached {the billing account has no room for another message} other {it was refused ({code})}}",
     "started": "The rule is set: it answers the comments that come from now on.",
     "pause": "Pause",
     "paused": "The rule is paused.",
     "resume": "Resume",
     "resumed": "The rule is going again.",
+    "resumeHeld": "It sends private messages: an owner, or a member allowed to send messages, can resume it.",
     "stop": "Stop",
     "stopped": "The rule is stopped.",
+    "removePrivate": "Remove the private message",
+    "removedPrivate": "The rule sends no private message any more.",
     "form": {
       "channel": "Channel",
       "chooseChannel": "Choose a channel",
@@ -4676,15 +4683,20 @@
       "keywordsHelp": "Separated by commas, up to 10; whatever their case and accents.",
       "reply": "Reply",
       "public": "It answers in public, by itself, without anyone reading each comment first.",
+      "alsoPrivate": "Also send a private message",
+      "privateReply": "Private message",
+      "privateHint": "Sent once, privately, to the author of each comment the rule answers, after its public reply and within 7 days of the comment. It needs the channel’s direct messages turned on, and the person must answer before you can write again. It goes by itself: say in it that the message is automatic where the law asks.",
       "start": "Start",
       "missing": {
         "channel": "Choose a channel.",
         "keywords": "Give 1 to 10 keywords.",
-        "reply": "Write the reply."
+        "reply": "Write the reply.",
+        "privateReply": "Write the private message, or untick it."
       }
     },
     "errors": {
-      "failed": "The change could not be made ({tag})."
+      "failed": "The change could not be made ({tag}).",
+      "privateReply": "No channel can send this private message: {reason, select, messagesOff {turn the channel’s direct messages on first} noApi {the platform has no private replies} unsupported {this server does not read the platform’s direct messages} reconnect {connect the channel again for its messages} textTooLong {it is too long for the platform} other {it is not possible there}}."
     }
   },
   "ShortLinks": {

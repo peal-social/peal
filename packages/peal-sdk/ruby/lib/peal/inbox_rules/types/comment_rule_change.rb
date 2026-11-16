@@ -12,6 +12,8 @@ module Peal
 
         field :paused, -> { Internal::Types::Boolean }, optional: true, nullable: false
 
+        field :private_reply, -> { String }, optional: true, nullable: true, api_name: "privateReply"
+
         field :reply, -> { String }, optional: true, nullable: false
       end
     end

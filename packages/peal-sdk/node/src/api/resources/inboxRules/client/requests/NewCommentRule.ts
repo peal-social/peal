@@ -13,5 +13,6 @@ export interface NewCommentRule {
     channelId?: string;
     keywords: string[];
     postId?: string;
+    privateReply?: string;
     reply: string;
 }

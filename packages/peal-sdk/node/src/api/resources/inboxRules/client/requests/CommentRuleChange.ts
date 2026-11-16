@@ -12,5 +12,6 @@ export interface CommentRuleChange {
     ruleId: string;
     keywords?: string[];
     paused?: boolean;
+    privateReply?: string | null;
     reply?: string;
 }

@@ -34,6 +34,8 @@ public final class CommentRule {
 
     private final Optional<CommentRuleEndReason> endedReason;
 
+    private final boolean holdsPrivateReply;
+
     private final String id;
 
     private final List<String> keywords;
@@ -41,6 +43,8 @@ public final class CommentRule {
     private final List<CommentRuleMatch> matches;
 
     private final Optional<String> postId;
+
+    private final Optional<String> privateReply;
 
     private final String reply;
 
@@ -55,10 +59,12 @@ public final class CommentRule {
             List<ChannelCommentRule> channels,
             String createdAt,
             Optional<CommentRuleEndReason> endedReason,
+            boolean holdsPrivateReply,
             String id,
             List<String> keywords,
             List<CommentRuleMatch> matches,
             Optional<String> postId,
+            Optional<String> privateReply,
             String reply,
             Optional<String> startedBy,
             CommentRuleStatus status,
@@ -67,10 +73,12 @@ public final class CommentRule {
         this.channels = channels;
         this.createdAt = createdAt;
         this.endedReason = endedReason;
+        this.holdsPrivateReply = holdsPrivateReply;
         this.id = id;
         this.keywords = keywords;
         this.matches = matches;
         this.postId = postId;
+        this.privateReply = privateReply;
         this.reply = reply;
         this.startedBy = startedBy;
         this.status = status;
@@ -103,6 +111,11 @@ public final class CommentRule {
         return endedReason;
     }
 
+    @JsonProperty("holdsPrivateReply")
+    public boolean getHoldsPrivateReply() {
+        return holdsPrivateReply;
+    }
+
     @JsonProperty("id")
     public String getId() {
         return id;
@@ -124,6 +137,14 @@ public final class CommentRule {
             return Optional.empty();
         }
         return postId;
+    }
+
+    @JsonIgnore
+    public Optional<String> getPrivateReply() {
+        if (privateReply == null) {
+            return Optional.empty();
+        }
+        return privateReply;
     }
 
     @JsonProperty("reply")
@@ -163,6 +184,12 @@ public final class CommentRule {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privateReply")
+    private Optional<String> _getPrivateReply() {
+        return privateReply;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("startedBy")
     private Optional<String> _getStartedBy() {
         return startedBy;
@@ -184,10 +211,12 @@ public final class CommentRule {
                 && channels.equals(other.channels)
                 && createdAt.equals(other.createdAt)
                 && endedReason.equals(other.endedReason)
+                && holdsPrivateReply == other.holdsPrivateReply
                 && id.equals(other.id)
                 && keywords.equals(other.keywords)
                 && matches.equals(other.matches)
                 && postId.equals(other.postId)
+                && privateReply.equals(other.privateReply)
                 && reply.equals(other.reply)
                 && startedBy.equals(other.startedBy)
                 && status.equals(other.status);
@@ -200,10 +229,12 @@ public final class CommentRule {
                 this.channels,
                 this.createdAt,
                 this.endedReason,
+                this.holdsPrivateReply,
                 this.id,
                 this.keywords,
                 this.matches,
                 this.postId,
+                this.privateReply,
                 this.reply,
                 this.startedBy,
                 this.status);
@@ -219,9 +250,13 @@ public final class CommentRule {
     }
 
     public interface CreatedAtStage {
-        IdStage createdAt(@NotNull String createdAt);
+        HoldsPrivateReplyStage createdAt(@NotNull String createdAt);
 
         Builder from(CommentRule other);
+    }
+
+    public interface HoldsPrivateReplyStage {
+        IdStage holdsPrivateReply(boolean holdsPrivateReply);
     }
 
     public interface IdStage {
@@ -279,6 +314,12 @@ public final class CommentRule {
 
         _FinalStage postId(Nullable<String> postId);
 
+        _FinalStage privateReply(Optional<String> privateReply);
+
+        _FinalStage privateReply(String privateReply);
+
+        _FinalStage privateReply(Nullable<String> privateReply);
+
         _FinalStage startedBy(Optional<String> startedBy);
 
         _FinalStage startedBy(String startedBy);
@@ -287,8 +328,11 @@ public final class CommentRule {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder implements CreatedAtStage, IdStage, ReplyStage, StatusStage, _FinalStage {
+    public static final class Builder
+            implements CreatedAtStage, HoldsPrivateReplyStage, IdStage, ReplyStage, StatusStage, _FinalStage {
         private String createdAt;
+
+        private boolean holdsPrivateReply;
 
         private String id;
 
@@ -297,6 +341,8 @@ public final class CommentRule {
         private CommentRuleStatus status;
 
         private Optional<String> startedBy = Optional.empty();
+
+        private Optional<String> privateReply = Optional.empty();
 
         private Optional<String> postId = Optional.empty();
 
@@ -320,10 +366,12 @@ public final class CommentRule {
             channels(other.getChannels());
             createdAt(other.getCreatedAt());
             endedReason(other.getEndedReason());
+            holdsPrivateReply(other.getHoldsPrivateReply());
             id(other.getId());
             keywords(other.getKeywords());
             matches(other.getMatches());
             postId(other.getPostId());
+            privateReply(other.getPrivateReply());
             reply(other.getReply());
             startedBy(other.getStartedBy());
             status(other.getStatus());
@@ -332,8 +380,15 @@ public final class CommentRule {
 
         @java.lang.Override
         @JsonSetter("createdAt")
-        public IdStage createdAt(@NotNull String createdAt) {
+        public HoldsPrivateReplyStage createdAt(@NotNull String createdAt) {
             this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("holdsPrivateReply")
+        public IdStage holdsPrivateReply(boolean holdsPrivateReply) {
+            this.holdsPrivateReply = holdsPrivateReply;
             return this;
         }
 
@@ -380,6 +435,31 @@ public final class CommentRule {
         @JsonSetter(value = "startedBy", nulls = Nulls.SKIP)
         public _FinalStage startedBy(Optional<String> startedBy) {
             this.startedBy = startedBy;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReply(Nullable<String> privateReply) {
+            if (privateReply.isNull()) {
+                this.privateReply = null;
+            } else if (privateReply.isEmpty()) {
+                this.privateReply = Optional.empty();
+            } else {
+                this.privateReply = Optional.of(privateReply.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReply(String privateReply) {
+            this.privateReply = Optional.ofNullable(privateReply);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "privateReply", nulls = Nulls.SKIP)
+        public _FinalStage privateReply(Optional<String> privateReply) {
+            this.privateReply = privateReply;
             return this;
         }
 
@@ -537,10 +617,12 @@ public final class CommentRule {
                     channels,
                     createdAt,
                     endedReason,
+                    holdsPrivateReply,
                     id,
                     keywords,
                     matches,
                     postId,
+                    privateReply,
                     reply,
                     startedBy,
                     status,
@@ -553,10 +635,12 @@ public final class CommentRule {
                     || key.equalsIgnoreCase("channels")
                     || key.equalsIgnoreCase("createdAt")
                     || key.equalsIgnoreCase("endedReason")
+                    || key.equalsIgnoreCase("holdsPrivateReply")
                     || key.equalsIgnoreCase("id")
                     || key.equalsIgnoreCase("keywords")
                     || key.equalsIgnoreCase("matches")
                     || key.equalsIgnoreCase("postId")
+                    || key.equalsIgnoreCase("privateReply")
                     || key.equalsIgnoreCase("reply")
                     || key.equalsIgnoreCase("startedBy")
                     || key.equalsIgnoreCase("status")) {

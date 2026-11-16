@@ -35,6 +35,14 @@ const replyFlag = Flag.String("reply").pipe(
   )
 );
 
+const privateReplyFlag = Flag.String("private-reply").pipe(
+  Flag.withMetavar("<text>"),
+  Flag.withDescription(
+    "A private message the rule also sends the author of each comment it answers, once its public reply is out: on Instagram and Facebook Pages only, where the channel's direct messages are on, once a comment, within 7 days of it. It goes to real people by itself: say in it that it is automatic where the law asks."
+  ),
+  Flag.optional
+);
+
 const summary = (rule: CommentRule): string =>
   [
     rule.keywords.join(", "),
@@ -42,6 +50,17 @@ const summary = (rule: CommentRule): string =>
       ? `ended: ${rule.endedReason ?? "stopped"}`
       : rule.status,
   ].join(" · ");
+
+// What came of a match's private reply, when its rule has one.
+const privateOutcome = (match: CommentRule["matches"][number]): string => {
+  if (match.privateReplyId !== null) {
+    return `, private reply ${match.privateStatus ?? "made"} ${match.privateReplyId}`;
+  }
+
+  return match.privateCode === null
+    ? ""
+    : `, no private reply (${match.privateCode})`;
+};
 
 const scopeOf = (rule: CommentRule) =>
   rule.postId === null
@@ -55,13 +74,26 @@ const printRule = (rule: CommentRule, json: boolean, said: string) =>
         yield* Console.log(`${said} (${summary(rule)}): ${rule.id}.`);
         yield* Console.log(`  reply: ${excerpt(rule.reply)}`);
 
-        for (const { channelId, platform, reply } of rule.channels) {
-          yield* Console.log(`  ${platform} ${channelId}: ${reply}`);
+        if (rule.privateReply !== null) {
+          yield* Console.log(`  private reply: ${excerpt(rule.privateReply)}`);
         }
 
-        for (const { code, commentId, outcome } of rule.matches) {
+        for (const {
+          channelId,
+          platform,
+          privateReply,
+          reply,
+        } of rule.channels) {
           yield* Console.log(
-            `  comment ${commentId}: ${outcome}${code === null ? "" : ` (${code})`}`
+            rule.privateReply === null
+              ? `  ${platform} ${channelId}: ${reply}`
+              : `  ${platform} ${channelId}: ${reply}, private reply ${privateReply}`
+          );
+        }
+
+        for (const match of rule.matches) {
+          yield* Console.log(
+            `  comment ${match.commentId}: ${match.outcome}${match.code === null ? "" : ` (${match.code})`}${privateOutcome(match)}`
           );
         }
       });
@@ -153,6 +185,7 @@ const start = Command.make(
       ),
       Flag.optional
     ),
+    privateReply: privateReplyFlag,
     reply: replyFlag,
     workspace: workspaceFlag,
   },
@@ -178,6 +211,10 @@ const start = Command.make(
         payload: {
           keywords: input.keywords,
           reply: input.reply,
+          ...Option.match(input.privateReply, {
+            onNone: () => ({}),
+            onSome: (privateReply) => ({ privateReply }),
+          }),
           ...Option.match(input.post, {
             onNone: () => ({}),
             onSome: (postId) => ({ postId }),
@@ -198,7 +235,7 @@ const start = Command.make(
   })
 ).pipe(
   Command.withDescription(
-    "Make a rule that answers, by itself and in public, the comments that hold a --keyword, with --reply: once a comment and once a person, 25 a day at most. It answers on Mastodon, and on Facebook Pages and Instagram where the server reads them; Bluesky's, X's, LinkedIn's and YouTube's rules forbid it."
+    "Make a rule that answers, by itself and in public, the comments that hold a --keyword, with --reply: once a comment and once a person, 25 a day at most. It answers on Mastodon, and on Facebook Pages and Instagram where the server reads them; Bluesky's, X's, LinkedIn's and YouTube's rules forbid it. With --private-reply, it also sends each comment's author one private message after its public reply, on Instagram and Facebook Pages."
   )
 );
 
@@ -207,11 +244,23 @@ const update = Command.make(
   {
     json: jsonFlag,
     keywords: keywordFlag,
+    noPrivateReply: Flag.Boolean("no-private-reply").pipe(
+      Flag.withDescription(
+        "Take the rule's private reply off: it sends none after."
+      )
+    ),
+    privateReply: privateReplyFlag,
     reply: replyFlag.pipe(Flag.optional),
     rule: ruleArgument,
     workspace: workspaceFlag,
   },
   Effect.fn("inboxRules.update")(function* update(input) {
+    if (Option.isSome(input.privateReply) && input.noPrivateReply) {
+      return yield* new Refused({
+        reason: "Give --private-reply or --no-private-reply, not both.",
+      });
+    }
+
     const payload: {
       -readonly [K in keyof CommentRuleChange]: CommentRuleChange[K];
     } = {};
@@ -224,10 +273,18 @@ const update = Command.make(
       payload.reply = input.reply.value;
     }
 
+    if (Option.isSome(input.privateReply)) {
+      payload.privateReply = input.privateReply.value;
+    }
+
+    if (input.noPrivateReply) {
+      payload.privateReply = null;
+    }
+
     if (Object.keys(payload).length === 0) {
       return yield* new Refused({
         reason:
-          "Give --keyword, --reply or both: nothing else of a rule changes.",
+          "Give --keyword, --reply, --private-reply or --no-private-reply: nothing else of a rule changes.",
       });
     }
 
@@ -244,7 +301,7 @@ const update = Command.make(
   })
 ).pipe(
   Command.withDescription(
-    "Change a rule's keywords (--keyword replaces them all) or its reply."
+    "Change a rule's keywords (--keyword replaces them all), its reply or its private reply."
   )
 );
 
@@ -308,7 +365,7 @@ const stop = Command.make(
 
 export const rules = Command.make("rules").pipe(
   Command.withDescription(
-    "Rules that answer comments holding a keyword, by themselves, in public, as the channel's account. They never like, follow or message anyone privately."
+    "Rules that answer comments holding a keyword, by themselves, in public, as the channel's account, and, with a private reply, privately to each comment's author once on Instagram and Facebook Pages. They never like or follow anyone, nor write to anyone who did not comment."
   ),
   Command.withSubcommands([list, show, start, update, pause, resume, stop])
 );

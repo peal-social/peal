@@ -17,6 +17,9 @@ public record ChannelCommentRule : IJsonOnDeserialized
     [JsonPropertyName("platform")]
     public required Platform Platform { get; set; }
 
+    [JsonPropertyName("privateReply")]
+    public required CommentRulePrivateAbility PrivateReply { get; set; }
+
     [JsonPropertyName("reply")]
     public required CommentRuleAbility Reply { get; set; }
 

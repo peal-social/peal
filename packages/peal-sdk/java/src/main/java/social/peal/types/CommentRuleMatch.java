@@ -32,6 +32,12 @@ public final class CommentRuleMatch {
 
     private final CommentRuleOutcome outcome;
 
+    private final Optional<String> privateCode;
+
+    private final Optional<String> privateReplyId;
+
+    private final Optional<CommentRulePrivateStatus> privateStatus;
+
     private final Optional<String> replyId;
 
     private final Map<String, Object> additionalProperties;
@@ -41,12 +47,18 @@ public final class CommentRuleMatch {
             String commentId,
             String lookedAt,
             CommentRuleOutcome outcome,
+            Optional<String> privateCode,
+            Optional<String> privateReplyId,
+            Optional<CommentRulePrivateStatus> privateStatus,
             Optional<String> replyId,
             Map<String, Object> additionalProperties) {
         this.code = code;
         this.commentId = commentId;
         this.lookedAt = lookedAt;
         this.outcome = outcome;
+        this.privateCode = privateCode;
+        this.privateReplyId = privateReplyId;
+        this.privateStatus = privateStatus;
         this.replyId = replyId;
         this.additionalProperties = additionalProperties;
     }
@@ -75,6 +87,30 @@ public final class CommentRuleMatch {
     }
 
     @JsonIgnore
+    public Optional<String> getPrivateCode() {
+        if (privateCode == null) {
+            return Optional.empty();
+        }
+        return privateCode;
+    }
+
+    @JsonIgnore
+    public Optional<String> getPrivateReplyId() {
+        if (privateReplyId == null) {
+            return Optional.empty();
+        }
+        return privateReplyId;
+    }
+
+    @JsonIgnore
+    public Optional<CommentRulePrivateStatus> getPrivateStatus() {
+        if (privateStatus == null) {
+            return Optional.empty();
+        }
+        return privateStatus;
+    }
+
+    @JsonIgnore
     public Optional<String> getReplyId() {
         if (replyId == null) {
             return Optional.empty();
@@ -86,6 +122,24 @@ public final class CommentRuleMatch {
     @JsonProperty("code")
     private Optional<String> _getCode() {
         return code;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privateCode")
+    private Optional<String> _getPrivateCode() {
+        return privateCode;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privateReplyId")
+    private Optional<String> _getPrivateReplyId() {
+        return privateReplyId;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privateStatus")
+    private Optional<CommentRulePrivateStatus> _getPrivateStatus() {
+        return privateStatus;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
@@ -110,12 +164,23 @@ public final class CommentRuleMatch {
                 && commentId.equals(other.commentId)
                 && lookedAt.equals(other.lookedAt)
                 && outcome.equals(other.outcome)
+                && privateCode.equals(other.privateCode)
+                && privateReplyId.equals(other.privateReplyId)
+                && privateStatus.equals(other.privateStatus)
                 && replyId.equals(other.replyId);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.code, this.commentId, this.lookedAt, this.outcome, this.replyId);
+        return Objects.hash(
+                this.code,
+                this.commentId,
+                this.lookedAt,
+                this.outcome,
+                this.privateCode,
+                this.privateReplyId,
+                this.privateStatus,
+                this.replyId);
     }
 
     @java.lang.Override
@@ -154,6 +219,24 @@ public final class CommentRuleMatch {
 
         _FinalStage code(Nullable<String> code);
 
+        _FinalStage privateCode(Optional<String> privateCode);
+
+        _FinalStage privateCode(String privateCode);
+
+        _FinalStage privateCode(Nullable<String> privateCode);
+
+        _FinalStage privateReplyId(Optional<String> privateReplyId);
+
+        _FinalStage privateReplyId(String privateReplyId);
+
+        _FinalStage privateReplyId(Nullable<String> privateReplyId);
+
+        _FinalStage privateStatus(Optional<CommentRulePrivateStatus> privateStatus);
+
+        _FinalStage privateStatus(CommentRulePrivateStatus privateStatus);
+
+        _FinalStage privateStatus(Nullable<CommentRulePrivateStatus> privateStatus);
+
         _FinalStage replyId(Optional<String> replyId);
 
         _FinalStage replyId(String replyId);
@@ -171,6 +254,12 @@ public final class CommentRuleMatch {
 
         private Optional<String> replyId = Optional.empty();
 
+        private Optional<CommentRulePrivateStatus> privateStatus = Optional.empty();
+
+        private Optional<String> privateReplyId = Optional.empty();
+
+        private Optional<String> privateCode = Optional.empty();
+
         private Optional<String> code = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -183,6 +272,9 @@ public final class CommentRuleMatch {
             commentId(other.getCommentId());
             lookedAt(other.getLookedAt());
             outcome(other.getOutcome());
+            privateCode(other.getPrivateCode());
+            privateReplyId(other.getPrivateReplyId());
+            privateStatus(other.getPrivateStatus());
             replyId(other.getReplyId());
             return this;
         }
@@ -234,6 +326,81 @@ public final class CommentRuleMatch {
         }
 
         @java.lang.Override
+        public _FinalStage privateStatus(Nullable<CommentRulePrivateStatus> privateStatus) {
+            if (privateStatus.isNull()) {
+                this.privateStatus = null;
+            } else if (privateStatus.isEmpty()) {
+                this.privateStatus = Optional.empty();
+            } else {
+                this.privateStatus = Optional.of(privateStatus.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateStatus(CommentRulePrivateStatus privateStatus) {
+            this.privateStatus = Optional.ofNullable(privateStatus);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "privateStatus", nulls = Nulls.SKIP)
+        public _FinalStage privateStatus(Optional<CommentRulePrivateStatus> privateStatus) {
+            this.privateStatus = privateStatus;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReplyId(Nullable<String> privateReplyId) {
+            if (privateReplyId.isNull()) {
+                this.privateReplyId = null;
+            } else if (privateReplyId.isEmpty()) {
+                this.privateReplyId = Optional.empty();
+            } else {
+                this.privateReplyId = Optional.of(privateReplyId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReplyId(String privateReplyId) {
+            this.privateReplyId = Optional.ofNullable(privateReplyId);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "privateReplyId", nulls = Nulls.SKIP)
+        public _FinalStage privateReplyId(Optional<String> privateReplyId) {
+            this.privateReplyId = privateReplyId;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateCode(Nullable<String> privateCode) {
+            if (privateCode.isNull()) {
+                this.privateCode = null;
+            } else if (privateCode.isEmpty()) {
+                this.privateCode = Optional.empty();
+            } else {
+                this.privateCode = Optional.of(privateCode.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateCode(String privateCode) {
+            this.privateCode = Optional.ofNullable(privateCode);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "privateCode", nulls = Nulls.SKIP)
+        public _FinalStage privateCode(Optional<String> privateCode) {
+            this.privateCode = privateCode;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage code(Nullable<String> code) {
             if (code.isNull()) {
                 this.code = null;
@@ -260,7 +427,16 @@ public final class CommentRuleMatch {
 
         @java.lang.Override
         public CommentRuleMatch build() {
-            return new CommentRuleMatch(code, commentId, lookedAt, outcome, replyId, additionalProperties);
+            return new CommentRuleMatch(
+                    code,
+                    commentId,
+                    lookedAt,
+                    outcome,
+                    privateCode,
+                    privateReplyId,
+                    privateStatus,
+                    replyId,
+                    additionalProperties);
         }
 
         @JsonAnySetter
@@ -269,6 +445,9 @@ public final class CommentRuleMatch {
                     || key.equalsIgnoreCase("commentId")
                     || key.equalsIgnoreCase("lookedAt")
                     || key.equalsIgnoreCase("outcome")
+                    || key.equalsIgnoreCase("privateCode")
+                    || key.equalsIgnoreCase("privateReplyId")
+                    || key.equalsIgnoreCase("privateStatus")
                     || key.equalsIgnoreCase("replyId")) {
                 return;
             }

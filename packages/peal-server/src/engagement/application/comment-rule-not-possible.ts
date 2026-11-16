@@ -8,7 +8,9 @@ import { PlatformSchema } from "#shared/domain/platform.ts";
  * long (`keywords`), its reply is empty (`emptyReply`), it answers on no
  * channel of the workspace's inbox (`noChannel`), or no channel can carry
  * its reply, or it is too long for one that could (`channels`, each with
- * its reason).
+ * its reason); its private text is empty (`emptyPrivateReply`), or no
+ * channel that answers can carry it, or it is too long for one that could
+ * (`privateReply`, each channel with its reason).
  */
 export class CommentRuleNotPossible extends Schema.TaggedError<CommentRuleNotPossible>()(
   "CommentRuleNotPossible",
@@ -17,6 +19,14 @@ export class CommentRuleNotPossible extends Schema.TaggedError<CommentRuleNotPos
       Schema.Struct({
         channelId: ChannelIdSchema,
         platform: PlatformSchema,
+        privateReply: Schema.Literals([
+          "available",
+          "noApi",
+          "unsupported",
+          "messagesOff",
+          "reconnect",
+          "textTooLong",
+        ]),
         reply: Schema.Literals([
           "available",
           "noApi",
@@ -32,6 +42,8 @@ export class CommentRuleNotPossible extends Schema.TaggedError<CommentRuleNotPos
       "emptyReply",
       "noChannel",
       "channels",
+      "emptyPrivateReply",
+      "privateReply",
     ]),
   }
 ) {

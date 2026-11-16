@@ -19,6 +19,7 @@ const ruleWith = (keywords: readonly string[]) =>
     {
       id: CommentRuleIdSchema.make("00000000-0000-7000-8000-000000000601"),
       keywords: keywordsOf(keywords),
+      privateReply: Option.none(),
       reply: "The price list is on our site.",
       scope: {
         _tag: "channel",
@@ -85,5 +86,35 @@ describe("a comment rule", () => {
       x: "notAllowed",
       youtube: "notAllowed",
     });
+  });
+
+  it("keeps its private reply through a change, and drops it when told", () => {
+    const rule = ruleWith(["prix"]);
+
+    const given = Result.getOrThrow(
+      changeCommentRule(
+        rule,
+        { privateReply: Option.some("Here is the list, privately.") },
+        now
+      )
+    );
+
+    expect(given.privateReply).toStrictEqual(
+      Option.some("Here is the list, privately.")
+    );
+
+    const paused = Result.getOrThrow(
+      changeCommentRule(given, { paused: true }, now)
+    );
+
+    expect(paused.privateReply).toStrictEqual(given.privateReply);
+    expect(
+      Result.getOrThrow(
+        changeCommentRule(paused, { privateReply: Option.none() }, now)
+      ).privateReply
+    ).toStrictEqual(Option.none());
+    expect(endCommentRule(given, "stopped", now).privateReply).toStrictEqual(
+      given.privateReply
+    );
   });
 });

@@ -208,6 +208,8 @@ export * from "./CommentRuleNotFoundEncoded.js";
 export * from "./CommentRuleNotPossibleEncoded.js";
 export * from "./CommentRuleOutcome.js";
 export * from "./CommentRulePage.js";
+export * from "./CommentRulePrivateAbility.js";
+export * from "./CommentRulePrivateStatus.js";
 export * from "./CommentRuleRefusal.js";
 export * from "./CommentRuleStatus.js";
 export * from "./CommentSelection.js";

@@ -7,7 +7,8 @@ import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 
 // A workspace's comment rules, for members who read the inbox; starting,
-// pausing and stopping one takes engagement:reply.
+// pausing and stopping one takes engagement:reply, and giving one a
+// private message engagement:message too.
 const CommentRulesPage = async ({
   params,
 }: PageProps<"/[locale]/app/[workspaceId]/settings/comment-rules">) => {
@@ -26,6 +27,7 @@ const CommentRulesPage = async ({
 
   const t = await getTranslations("CommentRules");
   const mayChange = may.has("engagement:reply");
+  const mayMessage = may.has("engagement:message");
 
   return (
     <div className="flex flex-col gap-4">
@@ -33,7 +35,11 @@ const CommentRulesPage = async ({
       {mayChange ? null : (
         <p className="text-muted-foreground text-sm">{t("readOnly")}</p>
       )}
-      <CommentRulesSettings workspaceId={workspace.id} mayChange={mayChange} />
+      <CommentRulesSettings
+        workspaceId={workspace.id}
+        mayChange={mayChange}
+        mayMessage={mayMessage}
+      />
     </div>
   );
 };

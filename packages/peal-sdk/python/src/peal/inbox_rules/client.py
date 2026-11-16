@@ -38,7 +38,7 @@ class InboxRulesClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CommentRulePage:
         """
-        Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. Needs engagement:read.
+        Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 
         Parameters
         ----------
@@ -82,10 +82,11 @@ class InboxRulesClient:
         reply: str,
         channel_id: typing.Optional[str] = OMIT,
         post_id: typing.Optional[str] = OMIT,
+        private_reply: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CommentRule:
         """
-        Starts a rule on the comments of a post that went out (`postId`) or of every post of a channel (`channelId`), exactly one of them, with 1 to 10 `keywords` and a `reply`. A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its `reply`, once a comment and once a person, 25 replies a day at most, and 100 a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and `channels` says so. It never likes, follows or messages anyone privately. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected. It is refused when no channel it answers on can carry its reply (CommentRuleNotPossible, with each channel's reason). A workspace keeps 100 rules active or paused. Needs engagement:reply; never staff acting as a member.
+        Starts a rule on the comments of a post that went out (`postId`) or of every post of a channel (`channelId`), exactly one of them, with 1 to 10 `keywords`, a `reply` and, optionally, a `privateReply`. A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its `reply`, once a comment and once a person, 25 replies a day at most, and 100 a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and `channels` says so. It never likes or follows anyone. With a `privateReply`, it also sends the author of each comment it answered that one private message, once its public reply is out: only on Instagram and Facebook Pages, whose platforms let an account send a commenter one message within 7 days of the comment, only where the channel's messages are on (a channel that cannot carry it answers in public only, and the match's `privateCode` says why), never twice to a comment, whoever sent the first, and never to anyone who did not comment. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected. It is refused when no channel it answers on can carry its reply, or its private reply when it has one (CommentRuleNotPossible, with each channel's reason). A workspace keeps 100 rules active or paused. Needs engagement:reply, and engagement:message with a private reply (an application, the owner's consent for messages too); never staff acting as a member.
 
         Parameters
         ----------
@@ -98,6 +99,8 @@ class InboxRulesClient:
         channel_id : typing.Optional[str]
 
         post_id : typing.Optional[str]
+
+        private_reply : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -126,6 +129,7 @@ class InboxRulesClient:
             reply=reply,
             channel_id=channel_id,
             post_id=post_id,
+            private_reply=private_reply,
             request_options=request_options,
         )
         return _response.data
@@ -134,7 +138,7 @@ class InboxRulesClient:
         self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> CommentRule:
         """
-        Answers a comment rule of the workspace, what its channels can carry and what it matched. Needs engagement:read.
+        Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 
         Parameters
         ----------
@@ -206,11 +210,12 @@ class InboxRulesClient:
         *,
         keywords: typing.Optional[typing.Sequence[str]] = OMIT,
         paused: typing.Optional[bool] = OMIT,
+        private_reply: typing.Optional[str] = OMIT,
         reply: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CommentRule:
         """
-        Changes a rule's keywords or reply, or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, and answers no comment received while it was paused. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply.
+        Changes a rule's keywords, reply or private reply (`privateReply` null takes it off), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
 
         Parameters
         ----------
@@ -221,6 +226,8 @@ class InboxRulesClient:
         keywords : typing.Optional[typing.Sequence[str]]
 
         paused : typing.Optional[bool]
+
+        private_reply : typing.Optional[str]
 
         reply : typing.Optional[str]
 
@@ -245,7 +252,13 @@ class InboxRulesClient:
         )
         """
         _response = self._raw_client.update_comment_rule(
-            workspace_id, rule_id, keywords=keywords, paused=paused, reply=reply, request_options=request_options
+            workspace_id,
+            rule_id,
+            keywords=keywords,
+            paused=paused,
+            private_reply=private_reply,
+            reply=reply,
+            request_options=request_options,
         )
         return _response.data
 
@@ -275,7 +288,7 @@ class AsyncInboxRulesClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CommentRulePage:
         """
-        Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. Needs engagement:read.
+        Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 
         Parameters
         ----------
@@ -327,10 +340,11 @@ class AsyncInboxRulesClient:
         reply: str,
         channel_id: typing.Optional[str] = OMIT,
         post_id: typing.Optional[str] = OMIT,
+        private_reply: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CommentRule:
         """
-        Starts a rule on the comments of a post that went out (`postId`) or of every post of a channel (`channelId`), exactly one of them, with 1 to 10 `keywords` and a `reply`. A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its `reply`, once a comment and once a person, 25 replies a day at most, and 100 a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and `channels` says so. It never likes, follows or messages anyone privately. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected. It is refused when no channel it answers on can carry its reply (CommentRuleNotPossible, with each channel's reason). A workspace keeps 100 rules active or paused. Needs engagement:reply; never staff acting as a member.
+        Starts a rule on the comments of a post that went out (`postId`) or of every post of a channel (`channelId`), exactly one of them, with 1 to 10 `keywords`, a `reply` and, optionally, a `privateReply`. A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its `reply`, once a comment and once a person, 25 replies a day at most, and 100 a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and `channels` says so. It never likes or follows anyone. With a `privateReply`, it also sends the author of each comment it answered that one private message, once its public reply is out: only on Instagram and Facebook Pages, whose platforms let an account send a commenter one message within 7 days of the comment, only where the channel's messages are on (a channel that cannot carry it answers in public only, and the match's `privateCode` says why), never twice to a comment, whoever sent the first, and never to anyone who did not comment. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected. It is refused when no channel it answers on can carry its reply, or its private reply when it has one (CommentRuleNotPossible, with each channel's reason). A workspace keeps 100 rules active or paused. Needs engagement:reply, and engagement:message with a private reply (an application, the owner's consent for messages too); never staff acting as a member.
 
         Parameters
         ----------
@@ -343,6 +357,8 @@ class AsyncInboxRulesClient:
         channel_id : typing.Optional[str]
 
         post_id : typing.Optional[str]
+
+        private_reply : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -379,6 +395,7 @@ class AsyncInboxRulesClient:
             reply=reply,
             channel_id=channel_id,
             post_id=post_id,
+            private_reply=private_reply,
             request_options=request_options,
         )
         return _response.data
@@ -387,7 +404,7 @@ class AsyncInboxRulesClient:
         self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> CommentRule:
         """
-        Answers a comment rule of the workspace, what its channels can carry and what it matched. Needs engagement:read.
+        Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 
         Parameters
         ----------
@@ -475,11 +492,12 @@ class AsyncInboxRulesClient:
         *,
         keywords: typing.Optional[typing.Sequence[str]] = OMIT,
         paused: typing.Optional[bool] = OMIT,
+        private_reply: typing.Optional[str] = OMIT,
         reply: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CommentRule:
         """
-        Changes a rule's keywords or reply, or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, and answers no comment received while it was paused. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply.
+        Changes a rule's keywords, reply or private reply (`privateReply` null takes it off), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
 
         Parameters
         ----------
@@ -490,6 +508,8 @@ class AsyncInboxRulesClient:
         keywords : typing.Optional[typing.Sequence[str]]
 
         paused : typing.Optional[bool]
+
+        private_reply : typing.Optional[str]
 
         reply : typing.Optional[str]
 
@@ -522,6 +542,12 @@ class AsyncInboxRulesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update_comment_rule(
-            workspace_id, rule_id, keywords=keywords, paused=paused, reply=reply, request_options=request_options
+            workspace_id,
+            rule_id,
+            keywords=keywords,
+            paused=paused,
+            private_reply=private_reply,
+            reply=reply,
+            request_options=request_options,
         )
         return _response.data

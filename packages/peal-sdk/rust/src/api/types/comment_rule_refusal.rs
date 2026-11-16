@@ -7,6 +7,8 @@ pub enum CommentRuleRefusal {
     EmptyReply,
     NoChannel,
     Channels,
+    EmptyPrivateReply,
+    PrivateReply,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -19,6 +21,8 @@ impl Serialize for CommentRuleRefusal {
             Self::EmptyReply => serializer.serialize_str("emptyReply"),
             Self::NoChannel => serializer.serialize_str("noChannel"),
             Self::Channels => serializer.serialize_str("channels"),
+            Self::EmptyPrivateReply => serializer.serialize_str("emptyPrivateReply"),
+            Self::PrivateReply => serializer.serialize_str("privateReply"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -32,6 +36,8 @@ impl<'de> Deserialize<'de> for CommentRuleRefusal {
             "emptyReply" => Ok(Self::EmptyReply),
             "noChannel" => Ok(Self::NoChannel),
             "channels" => Ok(Self::Channels),
+            "emptyPrivateReply" => Ok(Self::EmptyPrivateReply),
+            "privateReply" => Ok(Self::PrivateReply),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -44,6 +50,8 @@ impl fmt::Display for CommentRuleRefusal {
             Self::EmptyReply => write!(f, "emptyReply"),
             Self::NoChannel => write!(f, "noChannel"),
             Self::Channels => write!(f, "channels"),
+            Self::EmptyPrivateReply => write!(f, "emptyPrivateReply"),
+            Self::PrivateReply => write!(f, "privateReply"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

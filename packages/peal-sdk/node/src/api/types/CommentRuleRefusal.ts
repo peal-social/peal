@@ -4,6 +4,8 @@ export const CommentRuleRefusal = {
         Keywords: "keywords",
         EmptyReply: "emptyReply",
         NoChannel: "noChannel",
-        Channels: "channels"
+        Channels: "channels",
+        EmptyPrivateReply: "emptyPrivateReply",
+        PrivateReply: "privateReply"
     } as const;
 export type CommentRuleRefusal = typeof CommentRuleRefusal[keyof typeof CommentRuleRefusal];

@@ -260,9 +260,12 @@ export interface CommentRuleRecord {
     readonly commentId: string;
     readonly lookedAt: DateTime.Utc;
     readonly outcome: string;
+    readonly privateCode: string | null;
+    readonly privateReplyId: string | null;
     readonly replyId: string | null;
   }[];
   readonly postId: string | null;
+  readonly privateReply: string | null;
   readonly reply: string;
   readonly scope: string;
   readonly status: string;

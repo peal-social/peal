@@ -23,6 +23,9 @@ public record CommentRule : IJsonOnDeserialized
     [JsonPropertyName("endedReason")]
     public CommentRuleEndReason? EndedReason { get; set; }
 
+    [JsonPropertyName("holdsPrivateReply")]
+    public required bool HoldsPrivateReply { get; set; }
+
     [JsonPropertyName("id")]
     public required string Id { get; set; }
 
@@ -34,6 +37,9 @@ public record CommentRule : IJsonOnDeserialized
 
     [JsonPropertyName("postId")]
     public string? PostId { get; set; }
+
+    [JsonPropertyName("privateReply")]
+    public string? PrivateReply { get; set; }
 
     [JsonPropertyName("reply")]
     public required string Reply { get; set; }

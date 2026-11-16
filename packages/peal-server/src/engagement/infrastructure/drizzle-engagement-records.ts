@@ -162,9 +162,12 @@ export const DrizzleEngagementRecords = Layer.effect(
             commentId: match.commentId,
             lookedAt: DateTime.fromDateUnsafe(match.lookedAt),
             outcome: match.outcome,
+            privateCode: match.privateCode,
+            privateReplyId: match.privateReplyId,
             replyId: match.replyId,
           })),
         postId: rule.postId,
+        privateReply: rule.privateReply,
         reply: rule.reply,
         scope: rule.scope,
         status: rule.status,
@@ -427,6 +430,21 @@ export const DrizzleEngagementRecords = Layer.effect(
         const unsent = yield* sql
           .withTransaction(
             Effect.gen(function* deleting() {
+              // The rules that may answer on the channel, before its box,
+              // in the order a rules' run takes them (the rule, then the
+              // box its private reply is journalled under): the two never
+              // wait on each other.
+              yield* sql`
+                SELECT id FROM engagement.comment_rules
+                WHERE status <> 'ended'
+                  AND (channel_id = ${channelId}::uuid OR post_id IN (
+                    SELECT post_id FROM engagement.threads
+                    WHERE channel_id = ${channelId}::uuid
+                  ))
+                ORDER BY id
+                FOR UPDATE
+              `;
+
               // The box first, which a message being journalled holds: it
               // is then found here, not deleted unseen.
               yield* sql`
@@ -494,6 +512,23 @@ export const DrizzleEngagementRecords = Layer.effect(
                   workspaceId: commentRules.workspaceId,
                 })
                 .pipe(Effect.mapError(failed));
+
+              // Their private replies still waiting go with them.
+              if (ended.length > 0) {
+                yield* db
+                  .update(commentRuleMatches)
+                  .set({ privateCode: "stopped" })
+                  .where(
+                    and(
+                      inArray(
+                        commentRuleMatches.ruleId,
+                        ended.map(({ id }) => id)
+                      ),
+                      eq(commentRuleMatches.privateCode, "waiting")
+                    )
+                  )
+                  .pipe(Effect.mapError(failed));
+              }
 
               yield* Effect.forEach(
                 ended,

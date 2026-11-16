@@ -18,6 +18,9 @@ public record CommentRuleChange
     [JsonPropertyName("paused")]
     public bool? Paused { get; set; }
 
+    [JsonPropertyName("privateReply")]
+    public string? PrivateReply { get; set; }
+
     [JsonPropertyName("reply")]
     public string? Reply { get; set; }
 
