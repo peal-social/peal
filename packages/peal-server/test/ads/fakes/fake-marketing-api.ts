@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 
-import { Effect, Redacted, Schema } from "effect";
+import { Effect, Option, Redacted, Schema } from "effect";
 
 import type { MetaApp } from "#shared/infrastructure/platforms/meta-apps.ts";
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
@@ -192,7 +192,25 @@ const formOf = (request: PlatformRequest) =>
 const version = "/v27.0";
 
 const decodeCreative = Schema.decodeUnknownSync(
-  Schema.fromJsonString(Schema.Record(Schema.String, Schema.String))
+  Schema.fromJsonString(
+    Schema.Struct({
+      object_story_id: Schema.optionalKey(Schema.String),
+      source_instagram_media_id: Schema.optionalKey(Schema.String),
+    })
+  )
+);
+
+// What an ad set's targeting says of Advantage+ audience.
+const decodeTargeting = Schema.decodeUnknownOption(
+  Schema.fromJsonString(
+    Schema.Struct({
+      targeting_automation: Schema.optionalKey(
+        Schema.Struct({
+          advantage_audience: Schema.optionalKey(Schema.Literals([0, 1])),
+        })
+      ),
+    })
+  )
 );
 
 const decodeStatuses = Schema.decodeUnknownSync(
@@ -210,15 +228,16 @@ const decodeRange = Schema.decodeUnknownSync(
 
 const kinds = { ads: "ad", adsets: "adset", campaigns: "campaign" } as const;
 
-const isEdge = (edge: string): edge is keyof typeof kinds => edge in kinds;
+const isEdge = (edge: string): edge is keyof typeof kinds =>
+  Object.hasOwn(kinds, edge);
 
 // What the creative of an ad says it shows.
 const creativeJson = (object: FakeObject): JsonValue => {
   const creative = decodeCreative(object.params["creative"] ?? "{}");
 
   return present([
-    ["effective_object_story_id", creative["object_story_id"]],
-    ["effective_instagram_media_id", creative["source_instagram_media_id"]],
+    ["effective_object_story_id", creative.object_story_id],
+    ["effective_instagram_media_id", creative.source_instagram_media_id],
   ]);
 };
 
@@ -243,6 +262,20 @@ const creationRefusal = (
   // "Budget is too low."
   if (budget < 100) {
     return marketingError(100, 1_885_272);
+  }
+
+  // From v23.0, a new ad set's targeting outside Meta's default and
+  // relaxed set-ups "requires an explicit value of either 1 or 0" for
+  // `targeting_automation.advantage_audience` ("Advantage+ audience",
+  // read 2026-11-16). Meta's subcode for it is the trial's to record.
+  const automation = Option.flatMap(
+    decodeTargeting(params["targeting"] ?? ""),
+    (targeting) =>
+      Option.fromUndefinedOr(targeting.targeting_automation?.advantage_audience)
+  );
+
+  if (Option.isNone(automation)) {
+    return marketingError(100);
   }
 
   // A lifetime budget needs an end time.
