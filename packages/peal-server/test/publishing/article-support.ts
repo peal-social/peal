@@ -10,6 +10,7 @@ import { TestClock } from "effect/testing";
 import { ArticleStore } from "#publishing/application/article-store.ts";
 import { Articles } from "#publishing/application/articles.ts";
 import { ArticleContent } from "#publishing/domain/article-content.ts";
+import type { ArticleId } from "#publishing/domain/article-id.ts";
 import type { Article } from "#publishing/domain/article.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import { fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
@@ -71,6 +72,28 @@ export const writer = (workspaceId: Parameters<typeof actorIn>[0]) =>
     "post:publish",
   ]);
 
+/**
+ * Waits until the article's job settled it: no longer scheduled or
+ * publishing. Its attempt has then given its channel's turn back, which
+ * the site holding its post does not say: an attempt still records the
+ * post it made, in its turn, after the site answered, and the channel's
+ * next attempt meanwhile finds the turn taken and asks again seconds
+ * later, a time `eventually` never moves the clock to.
+ */
+export const untilSent = (label: string, articleId: ArticleId) =>
+  eventually(
+    label,
+    ArticleStore.use((store) => store.get(articleId)).pipe(
+      Effect.map((found) =>
+        Option.exists(
+          found,
+          ({ state }) =>
+            state._tag !== "scheduled" && state._tag !== "publishing"
+        )
+      )
+    )
+  );
+
 // The article, scheduled now on a fresh site's channel, once its job ended.
 export const sentTo = Effect.fn("test.sentTo")(function* sentTo(
   options: FakeWordPressOptions = {},
@@ -94,18 +117,7 @@ export const sentTo = Effect.fn("test.sentTo")(function* sentTo(
     Option.some({ at: Option.none(), timeZone: zone })
   );
 
-  yield* eventually(
-    "the article is sent",
-    ArticleStore.use((store) => store.get(article.id)).pipe(
-      Effect.map((found) =>
-        Option.exists(
-          found,
-          ({ state }) =>
-            state._tag !== "scheduled" && state._tag !== "publishing"
-        )
-      )
-    )
-  );
+  yield* untilSent("the article is sent", article.id);
 
   const sent = yield* ArticleStore.use((store) => store.get(article.id)).pipe(
     Effect.map(Option.getOrThrow)

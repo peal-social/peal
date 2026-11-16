@@ -28,6 +28,7 @@ import {
   onArticles,
   sentTo,
   stateOf,
+  untilSent,
   writer,
   zone,
 } from "#test/publishing/article-support.ts";
@@ -439,19 +440,19 @@ describe("an article", () => {
               Option.some({ at: Option.none(), timeZone: zone })
             );
 
-          yield* send("First");
+          // Each sent once its job settled it, the first's turn given back
+          // before the second asks for it.
+          const sent = (title: string) =>
+            send(title).pipe(
+              Effect.flatMap((article) =>
+                untilSent(`the article "${title}" is sent`, article.id)
+              )
+            );
 
-          yield* eventually(
-            "the first article is on the site",
-            Effect.sync(() => site.posts().length === 1)
-          );
+          yield* sent("First");
+          yield* sent("Second");
 
-          yield* send("Second");
-
-          yield* eventually(
-            "the second article is on the site",
-            Effect.sync(() => site.posts().length === 2)
-          );
+          assert.lengthOf(site.posts(), 2);
 
           const [first, second] = site.posts();
 
