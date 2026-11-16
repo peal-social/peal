@@ -1,6 +1,9 @@
 import { describe, expect, it } from "@effect/vitest";
 
-import { refusedProviderFields } from "#workspace/infrastructure/auth/provider-sign-in.ts";
+import {
+  refusedProviderFields,
+  refusedStart,
+} from "#workspace/infrastructure/auth/provider-sign-in.ts";
 
 const invitation = "0b9f1c2e-4f2a-4d4b-9a51-3c1f6f0a2b7e";
 
@@ -65,5 +68,49 @@ describe("starting a provider's sign-in", () => {
     expect(refusedProviderFields({ ...start, ...fields })).toStrictEqual([
       refused,
     ]);
+  });
+});
+
+// Whatever a value the route itself drops: a refusal never rests on a
+// decode that could fail open.
+describe("a start whose other fields are odd", () => {
+  it.each([0, false, null, { query: "x" }])(
+    "still refuses what it asks for with oauth_query %j",
+    (oddity) => {
+      for (const field of [
+        { idToken: { token: "x" } },
+        { scopes: ["extra_scope"] },
+        { additionalParams: { foo: "bar" } },
+        { loginHint: "someone@example.test" },
+        { additionalData: { evil: "x" } },
+      ]) {
+        expect(
+          refusedStart({ ...start, ...field, oauth_query: oddity })
+        ).not.toStrictEqual([]);
+      }
+    }
+  );
+
+  it.each([null, 0, false, ""])(
+    "refuses a refused field even as %j",
+    (value) => {
+      expect(refusedStart({ ...start, idToken: value })).toStrictEqual([
+        "idToken",
+      ]);
+    }
+  );
+
+  it.each([
+    ["a list", []],
+    ["a string", "x"],
+    ["nothing", null],
+  ])("refuses a body that is %s", (_, body) => {
+    expect(refusedStart(body)).toStrictEqual(["body"]);
+  });
+
+  it("takes the pages' bodies", () => {
+    expect(
+      refusedStart({ ...start, oauth_query: "client_id=peal-cli" })
+    ).toStrictEqual([]);
   });
 });

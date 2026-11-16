@@ -311,22 +311,34 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), settings)(
       Effect.gen(function* fields() {
         const app = yield* TestApp;
 
-        for (const extra of [
-          { idToken: { token: "synthetic.id.token" } },
-          { scopes: ["offline_access"] },
-          { additionalParams: { prompt: "none" } },
-          { loginHint: "someone@example.test" },
-          { additionalData: { next: "/elsewhere" } },
+        // With a key the route drops, of any value, beside them too.
+        for (const oddity of [
+          {},
+          ...[0, false, null, { x: 1 }].map((value) => ({
+            oauth_query: value,
+          })),
         ]) {
-          const reply = yield* app.request("/api/auth/sign-in/social", {
-            body: { ...signInPage, ...extra },
-          });
+          for (const extra of [
+            { idToken: { token: "synthetic.id.token" } },
+            { scopes: ["offline_access"] },
+            { additionalParams: { prompt: "none" } },
+            { loginHint: "someone@example.test" },
+            { additionalData: { next: "/elsewhere" } },
+          ]) {
+            const reply = yield* app.request("/api/auth/sign-in/social", {
+              body: { ...signInPage, ...extra, ...oddity },
+            });
 
-          assert.strictEqual(reply.status, 400, JSON.stringify(extra));
-          assert.strictEqual(
-            Schema.decodeUnknownSync(ErrorSchema)(reply.body).code,
-            "PROVIDER_SIGN_IN_FIELD_NOT_ALLOWED"
-          );
+            assert.strictEqual(
+              reply.status,
+              400,
+              JSON.stringify({ ...extra, ...oddity })
+            );
+            assert.strictEqual(
+              Schema.decodeUnknownSync(ErrorSchema)(reply.body).code,
+              "PROVIDER_SIGN_IN_FIELD_NOT_ALLOWED"
+            );
+          }
         }
 
         for (const address of [

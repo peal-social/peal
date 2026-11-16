@@ -32,45 +32,47 @@ const decodeAdditionalData = Schema.decodeUnknownOption(AdditionalDataSchema, {
   onExcessProperty: "error",
 });
 
-const optionalJson = Schema.optional(Schema.Json);
+// The body as JSON gave it, every key kept whatever its value: the route's
+// own schema drops keys it does not know, so a decode of the fields Peal
+// reads could fail on one of those and refuse nothing.
+const BodySchema = Schema.Record(Schema.String, Schema.Json);
 
-// The body of `/sign-in/social`, as far as Peal reads it.
-const SignInStartSchema = Schema.Struct({
-  additionalData: optionalJson,
-  additionalParams: optionalJson,
-  callbackURL: Schema.optional(Schema.String),
-  disableRedirect: Schema.optional(Schema.Boolean),
-  errorCallbackURL: Schema.optional(Schema.String),
-  idToken: optionalJson,
-  loginHint: optionalJson,
-  newUserCallbackURL: Schema.optional(Schema.String),
-  oauth_query: Schema.optional(Schema.String),
-  provider: Schema.optional(Schema.String),
-  requestSignUp: Schema.optional(Schema.Boolean),
-  scopes: optionalJson,
-});
+const decodeBody = Schema.decodeUnknownOption(BodySchema);
 
-export type SignInStart = typeof SignInStartSchema.Type;
+/** What a client sent as a start's body, before anything reads it. */
+export type StartBody = Parameters<typeof decodeBody>[0];
 
-const decodeSignInStart = Schema.decodeUnknownOption(SignInStartSchema);
+/** A start's body: its keys and their values, as sent. */
+export type SignInStart = typeof BodySchema.Type;
 
-/** The fields of a sign-in's body Peal refuses, in the order checked. */
+/**
+ * The fields of a start's body Peal refuses, in the order checked: each
+ * refused field present at all, whatever its value, and state that is not
+ * exactly what the sign-up page keeps.
+ */
 export const refusedProviderFields = (
   start: SignInStart
 ): readonly string[] => {
-  const refused: string[] = refusedFields.filter(
-    (field) => start[field] !== undefined
+  const refused: string[] = refusedFields.filter((field) =>
+    Object.hasOwn(start, field)
   );
 
   if (
-    start.additionalData !== undefined &&
-    Option.isNone(decodeAdditionalData(start.additionalData))
+    Object.hasOwn(start, "additionalData") &&
+    Option.isNone(decodeAdditionalData(start["additionalData"]))
   ) {
     refused.push("additionalData");
   }
 
   return refused;
 };
+
+/** What a start refuses: `body` for one that is not a JSON object. */
+export const refusedStart = (body: StartBody): readonly string[] =>
+  Option.match(decodeBody(body), {
+    onNone: () => ["body"],
+    onSome: refusedProviderFields,
+  });
 
 /** The code a sign-in with a refused field answers with. */
 export const providerFieldCode = "PROVIDER_SIGN_IN_FIELD_NOT_ALLOWED";
@@ -85,11 +87,8 @@ export const guardProviderSignIn = (ctx: GenericEndpointContext): void => {
     return;
   }
 
-  // A body Peal cannot read is left to the route, which refuses it.
-  const refused = Option.match(decodeSignInStart(ctx.body), {
-    onNone: () => [],
-    onSome: refusedProviderFields,
-  });
+  // A body that is no JSON object is refused here too: nothing fails open.
+  const refused = refusedStart(ctx.body);
 
   if (refused.length > 0) {
     throw APIError.from("BAD_REQUEST", {
