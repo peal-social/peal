@@ -40,6 +40,7 @@ import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 
 import { forgetChannelMessages } from "./forget-channel-messages.ts";
+import { unfollowWait } from "./message-settings.ts";
 import { MessageOutcomes } from "./ports/message-outcomes.ts";
 import { MessageSource } from "./ports/message-source.ts";
 import type {
@@ -410,16 +411,37 @@ export class CollectMessages extends Context.Service<
             .follow({ channelId: box.channelId })
             .pipe(Effect.result);
 
-          yield* Result.isSuccess(followed)
-            ? store.markFollowed(box.channelId, now)
-            : Effect.logWarning(
-                "Could not ask a platform for a channel's message events"
-              ).pipe(
-                Effect.annotateLogs({
-                  channelId: box.channelId,
-                  reason: followed.failure._tag,
-                })
-              );
+          if (Result.isFailure(followed)) {
+            yield* Effect.logWarning(
+              "Could not ask a platform for a channel's message events"
+            ).pipe(
+              Effect.annotateLogs({
+                channelId: box.channelId,
+                reason: followed.failure._tag,
+              })
+            );
+
+            return;
+          }
+
+          // Its messages were turned off while the platform answered, after
+          // the platform was told to stop: it is told again.
+          yield* Option.isNone(yield* store.box(box.channelId))
+            ? source.unfollow({ channelId: box.channelId }).pipe(
+                Effect.timeout(unfollowWait),
+                Effect.catch((error) =>
+                  Effect.logWarning(
+                    "Could not tell a platform to stop a channel's message events"
+                  ).pipe(
+                    Effect.annotateLogs({
+                      channelId: box.channelId,
+                      reason: error._tag,
+                    })
+                  )
+                ),
+                Effect.asVoid
+              )
+            : store.markFollowed(box.channelId, now);
         });
 
       const readOne = (

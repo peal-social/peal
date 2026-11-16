@@ -1293,6 +1293,33 @@ describe("one box read now", () => {
   );
 
   it.effect(
+    "stops the events again when the box went while it asked for them",
+    () => {
+      const world = boxWorld();
+
+      // The channel's messages are turned off while the platform answers.
+      world.state.following = () =>
+        Effect.sync(() => {
+          world.state.boxes.delete(channelId(1));
+
+          return "done" as const;
+        });
+
+      return at(
+        Effect.gen(function* raced() {
+          yield* CollectMessages.use((collect) =>
+            collect.readBox(channelId(1), messagedAt)
+          );
+
+          assert.deepStrictEqual(world.state.follows, [channelId(1)]);
+          assert.deepStrictEqual(world.state.unfollows, [channelId(1)]);
+          assert.isFalse(world.state.boxes.has(channelId(1)));
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect(
     "reads all the same when the platform refuses the subscription",
     () => {
       const world = boxWorld();

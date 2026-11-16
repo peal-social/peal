@@ -1,5 +1,5 @@
 import { assert, describe, expect, it } from "@effect/vitest";
-import { DateTime, Effect, Layer, Result, Schema } from "effect";
+import { DateTime, Duration, Effect, Layer, Result, Schema } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import { TestClock } from "effect/testing";
@@ -19,6 +19,7 @@ import { refreshConversation } from "#engagement/domain/conversation.ts";
 import type { Permission } from "#shared/domain/access.ts";
 import { memberOf } from "#test/channels/support.ts";
 import {
+  facebookChannel,
   makeMessageWorld,
   mastodonChannel,
 } from "#test/engagement/fakes/message-world.ts";
@@ -32,6 +33,7 @@ import {
   workspaceId,
 } from "#test/engagement/support.ts";
 import { securityTest } from "#workspace/api/security.ts";
+import { withheldWhileImpersonating } from "#workspace/domain/membership.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
 // The direct messages endpoints on their real use cases, over the
@@ -375,4 +377,137 @@ describe("the direct messages endpoints", () => {
       ).pipe(Effect.provide(world.layer));
     }
   );
+});
+
+// A world with one Messenger conversation, someone's message in it.
+const messengerWorld = () => {
+  const world = makeMessageWorld(new Set(["mastodon", "facebook"]));
+  const started = conversation(1);
+  const kept = directMessage(1, {}, started);
+
+  const talk = refreshConversation(
+    started,
+    conversationReading(1),
+    [kept],
+    messagedAt
+  );
+
+  world.state.channels.set(channelId(1), facebookChannel);
+  world.state.conversations.set(talk.id, talk);
+  world.state.messages.set(kept.id, kept);
+
+  return { kept, talk, world };
+};
+
+describe("the direct messages endpoints on Messenger", () => {
+  it.effect(
+    "hold the same permissions: a viewer, an application without the owner's leave and staff acting as a member read nothing",
+    () => {
+      const { talk, world } = messengerWorld();
+      const editor = permissionsFor("editor");
+
+      return at(
+        Effect.gen(function* matrix() {
+          const target = { ...params, conversationId: talk.id };
+
+          const refusedTo = (member: Member) =>
+            clientAs(world, member.permissions, member).pipe(
+              Effect.flatMap((client) =>
+                client.inboxMessages
+                  .getConversation({ params: target, query: {} })
+                  .pipe(Effect.flip)
+              )
+            );
+
+          const viewer = memberOf(workspaceId, permissionsFor("viewer"));
+
+          const asEditor = memberOf(workspaceId, editor);
+
+          const userId =
+            asEditor.principal._tag === "user" ? asEditor.principal.userId : "";
+
+          const application: Member = {
+            ...asEditor,
+            principal: {
+              _tag: "user",
+              impersonatedBy: null,
+              oauth: {
+                clientId: "synthetic-unconsented-client",
+                scopes: ["workspace:publish"],
+                workspaceId,
+              },
+              userId,
+            },
+          };
+
+          const staff: Member = {
+            ...memberOf(
+              workspaceId,
+              editor.filter(
+                (permission) => !withheldWhileImpersonating.has(permission)
+              )
+            ),
+            principal: {
+              _tag: "user",
+              impersonatedBy: "01900000-0000-7000-8000-0000000000c1",
+              userId,
+            },
+          };
+
+          for (const member of [viewer, application, staff]) {
+            assert.instanceOf(yield* refusedTo(member), Forbidden);
+          }
+
+          const client = yield* clientAs(world, editor);
+
+          const detail = yield* client.inboxMessages.getConversation({
+            params: target,
+            query: {},
+          });
+
+          assert.strictEqual(detail.platform, "facebook");
+          assert.isTrue(detail.window.open);
+          assert.isNotNull(detail.window.closesAt);
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect("refuse a message past Meta's window, saying when it shut", () => {
+    const { kept, talk, world } = messengerWorld();
+
+    return TestClock.setTime(
+      DateTime.toEpochMillis(DateTime.addDuration(messagedAt, "2 days"))
+    ).pipe(
+      Effect.andThen(
+        Effect.gen(function* shut() {
+          const client = yield* clientAs(world, permissionsFor("editor"));
+
+          const refused = yield* client.inboxMessages
+            .sendMessage({
+              headers: {},
+              params: { ...params, conversationId: talk.id },
+              payload: { text: "Hi" },
+            })
+            .pipe(Effect.flip);
+
+          assert.instanceOf(refused, InboxActionUnavailable);
+
+          if (refused instanceof InboxActionUnavailable) {
+            assert.strictEqual(refused.reason, "windowClosed");
+            assert.deepStrictEqual(
+              refused.closedAt,
+              DateTime.addDuration(
+                kept.sentAt,
+                Duration.sum(Duration.hours(23), Duration.minutes(59))
+              )
+            );
+          }
+
+          assert.strictEqual(world.state.outgoing.size, 0);
+        })
+      ),
+      Effect.provide(world.layer)
+    );
+  });
 });
