@@ -111,6 +111,10 @@ describe("the addresses to register with each platform", () => {
     expect(addressesOf("metaAds")).toStrictEqual([
       "https://peal.example/connect/ads/meta/callback",
     ]);
+    // Google Ads, on an OAuth client of its own.
+    expect(addressesOf("googleAds")).toStrictEqual([
+      "https://peal.example/connect/ads/google/callback",
+    ]);
     expect(addressesOf("instagramLogin")).toStrictEqual([
       "https://peal.example/connect/instagram/callback",
       "https://peal.example/api/data-deletion/instagram",
@@ -158,6 +162,12 @@ describe("the addresses to register with each platform", () => {
     ).toStrictEqual({
       bluesky: ["BLUESKY_CLIENT_KEYS"],
       facebookLogin: ["META_APP_ID", "META_APP_SECRET"],
+      googleAds: [
+        "GOOGLE_ADS_CLIENT_ID",
+        "GOOGLE_ADS_CLIENT_SECRET",
+        "PEAL_ADS",
+        "PEAL_ADS_NETWORKS",
+      ],
       googleBusiness: [
         "GOOGLE_BUSINESS_CLIENT_ID",
         "GOOGLE_BUSINESS_CLIENT_SECRET",

@@ -2,6 +2,7 @@ import { DataDeletionApi } from "peal-contract";
 import type { MetaApp } from "peal-contract";
 
 import type { ChannelPlatform } from "#channels/domain/platform.ts";
+import { googleAdsCallbackPath } from "#shared/infrastructure/platforms/google-ads-paths.ts";
 import { metaAdsCallbackPath } from "#shared/infrastructure/platforms/meta-graph.ts";
 
 import { blueskyPaths } from "./bluesky/bluesky-client.ts";
@@ -39,6 +40,7 @@ export interface PlatformRegistration {
   readonly id:
     | "bluesky"
     | "facebookLogin"
+    | "googleAds"
     | "googleBusiness"
     | "instagramLogin"
     | "linkedin"
@@ -206,6 +208,24 @@ export const platformRegistrations = (
       platforms: [],
       registeredBy: "operator",
       settings: ["META_APP_ID", "META_APP_SECRET", "PEAL_ADS"],
+    },
+    {
+      addresses: [redirect("Authorized redirect URI", googleAdsCallbackPath)],
+      id: "googleAds",
+      name: "Google Ads: a Google OAuth client, as a web application",
+      notes: [
+        "Only when PEAL_ADS is read or spend and PEAL_ADS_NETWORKS names google: the read-only sign-in to Google Ads, which connects ad accounts, never a channel.",
+        "Enable the Google Ads API in the client's Cloud project: the access level Google gives is the project's (Test reads test accounts only; apply for Explorer on the Cloud console's Google Ads API page). No developer token: Google retired them on 9 September 2026.",
+      ],
+      // It connects ad accounts, which are no platform's channels.
+      platforms: [],
+      registeredBy: "operator",
+      settings: [
+        "GOOGLE_ADS_CLIENT_ID",
+        "GOOGLE_ADS_CLIENT_SECRET",
+        "PEAL_ADS",
+        "PEAL_ADS_NETWORKS",
+      ],
     },
     {
       addresses: [
