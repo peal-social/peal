@@ -410,7 +410,9 @@
   takes none (`publicReply…` codes), and one still `sending` waits. The
   public reply and its match, and each private reply and its match,
   are written in one transaction under the rule's row lock, which the
-  run takes and checks `active` before each send, so a member who stops
+  run takes and checks `active` before each send (always the rule's row
+  before the channel's box: `channelGone` locks the rules that answer on
+  the channel first), so a member who stops
   or pauses a rule meanwhile wins; `stop`, a pause, a private text taken
   off, `starterGone` and `channelGone` settle those waiting `stopped`
   (`stopWaiting`). A refusal of the private reply is its tag as the

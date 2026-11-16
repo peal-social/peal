@@ -1693,6 +1693,61 @@ describe("a comment rule's private reply", () => {
       }).pipe(Effect.provide(RulesTest))
   );
 
+  it.live(
+    "lets a channel's disconnection take the rule before the box, as a run does",
+    () =>
+      Effect.gen(function* lockOrder() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const { rule, thread } = yield* instagramRule(workspaceId);
+          const sql = yield* SqlClient.SqlClient;
+          const store = yield* CommentRuleStore;
+          const held = yield* Deferred.make<boolean>();
+          const go = yield* Deferred.make<boolean>();
+
+          // A run's transaction: the rule's row, then, later, the box.
+          const run = yield* sql
+            .withTransaction(
+              Effect.gen(function* running() {
+                yield* store.lock(workspaceId, rule.rule.id);
+                yield* Deferred.succeed(held, true);
+                yield* Deferred.await(go);
+
+                return yield* sql`SELECT 1 FROM engagement.message_boxes
+                  WHERE channel_id = ${thread.channelId} FOR UPDATE NOWAIT`.pipe(
+                  Effect.as("box taken"),
+                  Effect.catch(() => Effect.succeed("box held by another"))
+                );
+              })
+            )
+            .pipe(Effect.orDie, Effect.forkChild);
+
+          yield* Deferred.await(held);
+
+          // In the transaction that disconnects the channel, as the
+          // channels' events run it.
+          const gone = yield* EngagementRecords.use((records) =>
+            sql.withTransaction(
+              records.channelGone(
+                thread.channelId,
+                "instagram",
+                DateTime.nowUnsafe()
+              )
+            )
+          ).pipe(Effect.orDie, Effect.forkChild);
+
+          // Long enough for the disconnection to reach the lock it waits on.
+          yield* Effect.sleep("300 millis");
+          yield* Deferred.succeed(go, true);
+
+          assert.strictEqual(yield* Fiber.join(run), "box taken");
+
+          yield* Fiber.join(gone);
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      }).pipe(Effect.provide(RulesTest))
+  );
+
   it.live("answers nothing more in public once stopped mid-run", () =>
     Effect.gen(function* stopsPublic() {
       const workspaceId = yield* freshWorkspace;

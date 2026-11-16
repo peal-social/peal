@@ -430,6 +430,21 @@ export const DrizzleEngagementRecords = Layer.effect(
         const unsent = yield* sql
           .withTransaction(
             Effect.gen(function* deleting() {
+              // The rules that may answer on the channel, before its box,
+              // in the order a rules' run takes them (the rule, then the
+              // box its private reply is journalled under): the two never
+              // wait on each other.
+              yield* sql`
+                SELECT id FROM engagement.comment_rules
+                WHERE status <> 'ended'
+                  AND (channel_id = ${channelId}::uuid OR post_id IN (
+                    SELECT post_id FROM engagement.threads
+                    WHERE channel_id = ${channelId}::uuid
+                  ))
+                ORDER BY id
+                FOR UPDATE
+              `;
+
               // The box first, which a message being journalled holds: it
               // is then found here, not deleted unseen.
               yield* sql`
