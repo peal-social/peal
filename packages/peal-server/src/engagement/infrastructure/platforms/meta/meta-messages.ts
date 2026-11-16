@@ -657,12 +657,17 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
 
         after = nextCursor(listed.paging);
 
+        // Read to its end, and still not all Meta has: the list is read
+        // without `folder`, and its reference names no default, so a
+        // conversation a person moved to another folder in Meta's own
+        // inbox may leave it. Absence deletes nothing here: a conversation
+        // goes by its 30 days, or a message by Instagram's notice.
         if (Option.isNone(after)) {
           const batch: MessagesBatch = {
             conversations: readings,
             halted: false,
             listed: seen,
-            listedWhole: true,
+            listedWhole: false,
           };
 
           return batch;

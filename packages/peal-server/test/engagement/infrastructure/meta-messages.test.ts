@@ -213,7 +213,10 @@ describe("Meta's direct messages, read", () => {
           const batch = yield* Fiber.join(fiber);
 
           assert.isFalse(batch.halted);
-          assert.isTrue(batch.listedWhole);
+          // Read to its end, and never taken for all Meta has: a
+          // conversation moved out of the default folder in Meta's own
+          // inbox may leave the list, and is not deleted for it.
+          assert.isFalse(batch.listedWhole);
           assert.lengthOf(batch.listed, 60);
           assert.lengthOf(batch.conversations, 60);
 
