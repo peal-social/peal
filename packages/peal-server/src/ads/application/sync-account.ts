@@ -315,7 +315,14 @@ export class SyncAccount extends Context.Service<
           return { _tag: "unreachable" } as const;
         }
 
-        yield* accounts.setWays(account.workspaceId, account.network, [found]);
+        yield* accounts.setWays(
+          {
+            id: account.grantId,
+            network: account.network,
+            workspaceId: account.workspaceId,
+          },
+          [found]
+        );
 
         yield* Effect.logInfo(
           "An ad account is read another way: the one it was read through no longer reaches it"

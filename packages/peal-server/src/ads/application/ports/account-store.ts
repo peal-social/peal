@@ -3,7 +3,7 @@ import type { DateTime, Effect, Option } from "effect";
 
 import type { AdAccountFacts } from "#ads/domain/ad-account-facts.ts";
 import type { AdAccount } from "#ads/domain/ad-account.ts";
-import type { AdNetwork } from "#ads/domain/ad-network.ts";
+import type { AdGrant } from "#ads/domain/ad-grant.ts";
 import type { AdAccountId, AdGrantId } from "#ads/domain/ids.ts";
 import type { SpendAuthorization } from "#ads/domain/spend-authorization.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -102,13 +102,13 @@ export class AccountStore extends Context.Service<
       now: DateTime.Utc
     ) => Effect.Effect<number, DatabaseError>;
     /**
-     * Takes, for the workspace's accounts on a network, the way to each
-     * that a listing of the network gives: directly, or through a manager
-     * account.
+     * Takes, for the accounts a sign-in connects, the way to each that the
+     * sign-in's listing gives: directly, or through a manager account.
+     * Another member's sign-in, which reaches the same account its own
+     * way, changes nothing of it: each account is read with its own grant.
      */
     readonly setWays: (
-      workspaceId: WorkspaceId,
-      network: AdNetwork,
+      grant: Pick<AdGrant, "id" | "network" | "workspaceId">,
       ways: readonly Pick<AdAccountFacts, "externalId" | "reachedThrough">[]
     ) => Effect.Effect<void, DatabaseError>;
     /** Says that no way reaches the account, since then, if not said yet. */

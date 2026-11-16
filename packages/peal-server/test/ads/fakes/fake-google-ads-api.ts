@@ -313,6 +313,7 @@ export const fakeGoogleAdsApi = (options: FakeGoogleAdsOptions = {}) =>
     const days: FakeCampaignDay[] = [...(options.days ?? [])];
     const campaigns: FakeCampaign[] = [...(options.campaigns ?? [])];
     let refreshTokens = 0;
+    let signingIn = googleUserId;
 
     // Every customer under a manager, at any depth, as `customer_client`
     // lists them: the manager itself at level 0.
@@ -360,7 +361,7 @@ export const fakeGoogleAdsApi = (options: FakeGoogleAdsOptions = {}) =>
           present([
             ["access_token", googleAccessToken],
             ["expires_in", 3599],
-            ["id_token", idTokenOf(googleUserId)],
+            ["id_token", idTokenOf(signingIn)],
             [
               "refresh_token",
               options.refreshToken === false ? undefined : googleRefreshToken,
@@ -551,6 +552,10 @@ export const fakeGoogleAdsApi = (options: FakeGoogleAdsOptions = {}) =>
         days.splice(0, days.length, ...days.filter(keep));
       },
       endpoints,
+      /** The Google account the next sign-ins are of, by its `sub`. */
+      signInAs: (sub: string) => {
+        signingIn = sub;
+      },
       /** Changes the customers the person is a direct user of. */
       setAccessible: (ids: readonly string[]) => {
         accessible = [...ids];

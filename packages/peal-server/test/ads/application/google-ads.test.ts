@@ -19,6 +19,7 @@ import { Audience } from "#ads/domain/audience.ts";
 import { CurrencySchema } from "#ads/domain/money.ts";
 import { utcDayOf } from "#ads/infrastructure/drizzle-read-model.ts";
 import type { Actor } from "#shared/domain/access.ts";
+import { UserIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import {
   googleAdsError,
@@ -35,8 +36,10 @@ import {
   connected,
   eur,
   freshOwner,
+  member,
   onGoogle,
   returnedWith,
+  signIn,
   tagOf,
   TestNetworks,
 } from "#test/ads/support.ts";
@@ -672,6 +675,42 @@ layer(BillingTest, { excludeTestServices: true })(
           const [connection] = yield* connections.list(owner);
 
           assert.strictEqual(connection?.grant.access, "working");
+        })
+    );
+
+    it.effect(
+      "leave the way to another member's account alone when a sign-in lists it",
+      () =>
+        Effect.gen(function* twoSignIns() {
+          const api = yield* onGoogle(accounts);
+          const owner = yield* freshOwner;
+          const store = yield* AccountStore;
+          const { account } = yield* connectedGoogle(owner, "3333333333");
+
+          // Another member, with another Google account, uses the account
+          // directly: their sign-in lists it without its manager.
+          api.setAccessible(["1111111111", "2222222222", "3333333333"]);
+          api.signInAs("109876543210987654322");
+
+          yield* signIn(
+            member(
+              owner.workspaceId,
+              "admin",
+              UserIdSchema.make("0b1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e")
+            ),
+            "google"
+          );
+
+          const read = yield* store.get(account.id);
+
+          assert.deepStrictEqual(
+            read.pipe(
+              Option.map(({ account: now }) =>
+                String(Option.getOrNull(now.reachedThrough))
+              )
+            ),
+            Option.some("2222222222")
+          );
         })
     );
 

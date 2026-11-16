@@ -321,7 +321,7 @@ export const DrizzleAccountStore = Layer.effect(
           )
           .pipe(Effect.mapError(failed), Effect.asVoid),
       setWays: Effect.fn("AccountStore.setWays")(
-        function* setWays(workspaceId, network, ways) {
+        function* setWays(grant, ways) {
           for (const way of ways) {
             const through = Option.getOrNull(way.reachedThrough);
 
@@ -330,8 +330,9 @@ export const DrizzleAccountStore = Layer.effect(
               .set({ reachedThrough: through })
               .where(
                 and(
-                  eq(accounts.workspaceId, workspaceId),
-                  eq(accounts.network, network),
+                  eq(accounts.workspaceId, grant.workspaceId),
+                  eq(accounts.network, grant.network),
+                  eq(accounts.grantId, grant.id),
                   eq(accounts.externalId, way.externalId),
                   through === null
                     ? isNotNull(accounts.reachedThrough)

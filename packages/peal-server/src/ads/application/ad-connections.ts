@@ -313,11 +313,7 @@ export class AdConnections extends Context.Service<
         yield* pace.spent(grant.network, listing.operations);
 
         if (traitsOf(grant.network).readsThroughManagers) {
-          yield* accounts.setWays(
-            grant.workspaceId,
-            grant.network,
-            listing.accounts
-          );
+          yield* accounts.setWays(grant, listing.accounts);
         }
 
         yield* pace.remember(grant, listing.accounts);
