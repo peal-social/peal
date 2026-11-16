@@ -4,6 +4,7 @@ import {
   acceptedText,
   languageLabel,
   shortenablePlatforms,
+  shortenAction,
   writeAction,
   writablePlatforms,
 } from "#assistant/suggestion.ts";
@@ -89,6 +90,27 @@ describe(writeAction, () => {
       _tag: "write",
       platform: "x",
       tone: "witty",
+    });
+  });
+});
+
+describe("the actions for a post that shows media", () => {
+  it("asks for the platform's caption limit", () => {
+    expect(shortenAction("telegram", true)).toStrictEqual({
+      _tag: "shorten",
+      media: true,
+      platform: "telegram",
+    });
+    expect(shortenAction("telegram", false)).toStrictEqual({
+      _tag: "shorten",
+      platform: "telegram",
+    });
+    expect(
+      writeAction({ platform: "telegram", tone: null }, true)
+    ).toStrictEqual({ _tag: "write", media: true, platform: "telegram" });
+    // No platform, no limit: media changes nothing.
+    expect(writeAction({ platform: null, tone: null }, true)).toStrictEqual({
+      _tag: "write",
     });
   });
 });

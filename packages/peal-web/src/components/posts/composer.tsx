@@ -917,6 +917,7 @@ export const Composer = ({
                 disabled={locked}
                 permissions={permissions}
                 platforms={selected.map(({ platform }) => platform)}
+                showsMedia={media.length > 0}
                 text={text}
                 workspaceId={workspaceId}
                 onAccept={(suggested) => {

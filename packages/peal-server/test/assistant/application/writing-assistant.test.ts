@@ -115,6 +115,28 @@ layer(DatabaseTest)("the writing assistant", (it) => {
     }).pipe(Effect.provide(assistantTest()))
   );
 
+  it.effect("shortens a post with media to the platform's caption limit", () =>
+    Effect.gen(function* caption() {
+      const workspaceId = yield* freshWorkspace;
+
+      for (const media of [true, false]) {
+        yield* ask(
+          workspaceId,
+          {
+            action: { _tag: "shorten", media, platform: "telegram" },
+            text: "A long post. ".repeat(200),
+          },
+          answer({ text: "A short post." })
+        );
+      }
+
+      const [withMedia, alone] = yield* sentPrompts;
+
+      assert.include(messagesOf(withMedia)[0]?.text, "at most 1024");
+      assert.include(messagesOf(alone)[0]?.text, "at most 4096");
+    }).pipe(Effect.provide(assistantTest()))
+  );
+
   it.effect("translates a post into the language asked for", () =>
     Effect.gen(function* translates() {
       const workspaceId = yield* freshWorkspace;

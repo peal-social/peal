@@ -36,6 +36,7 @@ import {
   assistantBlockedBy,
   languageLabel,
   shortenablePlatforms,
+  shortenAction,
   writablePlatforms,
 } from "#assistant/suggestion.ts";
 import type { AssistantFailure } from "#assistant/suggestion.ts";
@@ -53,6 +54,11 @@ interface AssistantMenuProps {
   readonly permissions: readonly Permission[];
   /** The platforms of the channels the post goes to. */
   readonly platforms: readonly Platform[];
+  /**
+   * Whether the post shows images or videos, so a shortened or written
+   * text keeps to a caption's limit where the platform sets one.
+   */
+  readonly showsMedia: boolean;
   /** The text for all channels, which the assistant works on. */
   readonly text: string;
   readonly workspaceId: string;
@@ -73,10 +79,17 @@ interface ActionsProps {
   readonly names: Intl.DisplayNames;
   readonly onAction: (action: AssistantAction) => void;
   readonly platforms: readonly Platform[];
+  readonly showsMedia: boolean;
 }
 
 // What the assistant can do, each tone, platform or language in a submenu.
-const Actions = ({ locale, names, onAction, platforms }: ActionsProps) => {
+const Actions = ({
+  locale,
+  names,
+  onAction,
+  platforms,
+  showsMedia,
+}: ActionsProps) => {
   const t = useTranslations("Assistant");
   const tPosts = useTranslations("Posts");
 
@@ -104,7 +117,7 @@ const Actions = ({ locale, names, onAction, platforms }: ActionsProps) => {
             <DropdownMenuItem
               key={platform}
               onSelect={() => {
-                onAction({ _tag: "shorten", platform });
+                onAction(shortenAction(platform, showsMedia));
               }}
             >
               {tPosts("platform", { platform })}
@@ -157,6 +170,7 @@ const Controls = ({
   disabled,
   onAccept,
   platforms,
+  showsMedia,
   status,
   text,
   workspaceId,
@@ -285,6 +299,7 @@ const Controls = ({
               locale={locale}
               names={names}
               platforms={platforms}
+              showsMedia={showsMedia}
               onAction={run}
             />
           ) : (
@@ -305,6 +320,7 @@ const Controls = ({
             <AssistantWriteForm
               maxLength={status.maxTextLength}
               platforms={writablePlatforms(platforms)}
+              showsMedia={showsMedia}
               onCancel={close}
               onWrite={(action, subject) => {
                 setComposing(false);
@@ -342,6 +358,7 @@ const WhenAvailable = (props: Omit<AssistantMenuProps, "permissions">) => {
     <Controls
       disabled={props.disabled}
       platforms={props.platforms}
+      showsMedia={props.showsMedia}
       status={status.value}
       text={props.text}
       workspaceId={props.workspaceId}
@@ -362,6 +379,7 @@ export const AssistantMenu = ({
   onAccept,
   permissions,
   platforms,
+  showsMedia,
   text,
   workspaceId,
 }: AssistantMenuProps) =>
@@ -369,6 +387,7 @@ export const AssistantMenu = ({
     <WhenAvailable
       disabled={disabled}
       platforms={platforms}
+      showsMedia={showsMedia}
       text={text}
       workspaceId={workspaceId}
       onAccept={onAccept}
