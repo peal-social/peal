@@ -22,6 +22,13 @@
 # unset in the container rather than empty. The images are built from the
 # repository (`docker compose build`, or the release playbook) and tagged
 # PEAL_VERSION (PEAL_POSTGRES_VERSION for Postgres), `local` unless set.
+#
+# A service that mounts files of this folder carries a hash of them as the
+# label social.peal.config-hash, from PEAL_<SERVICE>_CONFIG_HASH: Compose
+# compares a service's definition, not the files it mounts, so it recreates
+# the service, and the service reads the files again, only when the label
+# changes. Peal's release sets each hash in release.env; after changing the
+# files by hand, change the hash, or `up --force-recreate` the service.
 
 x-service: &service
   restart: unless-stopped
@@ -255,6 +262,8 @@ services:
       # What the operator declares about its processing, for each user's
       # export: the file PEAL_PRIVACY_DECLARATION names, mounted below.
       PEAL_PRIVACY_DECLARATION_FILE: /etc/peal/privacy-declaration.json
+    labels:
+      social.peal.config-hash: ${PEAL_SERVER_CONFIG_HASH:-}
     volumes:
       # Declares nothing unless PEAL_PRIVACY_DECLARATION names a file of
       # the operator's, as self-host/privacy-declaration.example.json shows.
@@ -394,6 +403,8 @@ services:
   otel-collector:
     <<: *service
     image: otel/opentelemetry-collector-contrib:0.165.0@sha256:e40d61f10c9a617cca1ffd1be4d7e2b3a4b0f0001798ff07e58cabe82e618cea
+    labels:
+      social.peal.config-hash: ${PEAL_OTEL_COLLECTOR_CONFIG_HASH:-}
     volumes:
       - ./config/production/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
       # The host's filesystem, read-only, for its disk, memory and load.
@@ -419,6 +430,8 @@ services:
     <<: *service
     image: grafana/loki:3.7.9@sha256:0db216b630ae1f348a1584c67f3cead8b4c1fc839169a39501db664744158e28
     command: [-config.file=/etc/loki/config.yaml]
+    labels:
+      social.peal.config-hash: ${PEAL_LOKI_CONFIG_HASH:-}
     volumes:
       - ./config/production/loki.yaml:/etc/loki/config.yaml:ro
       - loki:/loki
@@ -431,6 +444,8 @@ services:
     <<: *service
     image: grafana/tempo:3.1.1@sha256:64e2fbd56d9c2b3412a4b430a58ea59e91a670b1e75f920a0c702213ad145044
     command: [-target=all, -config.file=/etc/tempo/config.yaml]
+    labels:
+      social.peal.config-hash: ${PEAL_TEMPO_CONFIG_HASH:-}
     volumes:
       - ./config/production/tempo.yaml:/etc/tempo/config.yaml:ro
       - tempo:/var/tempo
@@ -448,6 +463,8 @@ services:
       - --storage.tsdb.retention.size=5GB
       - --web.enable-remote-write-receiver
       - --enable-feature=exemplar-storage
+    labels:
+      social.peal.config-hash: ${PEAL_PROMETHEUS_CONFIG_HASH:-}
     volumes:
       - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
       - prometheus:/prometheus
@@ -497,6 +514,8 @@ services:
       # Read by the heartbeat, when it is mounted.
       PEAL_HEARTBEAT_URL:
       PEAL_HEARTBEAT_TOKEN:
+    labels:
+      social.peal.config-hash: ${PEAL_GRAFANA_CONFIG_HASH:-}
     volumes:
       - ./config/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
       - ./config/production/grafana/alerting/rules.yaml:/etc/grafana/provisioning/alerting/rules.yaml:ro
