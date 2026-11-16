@@ -541,7 +541,8 @@ export const googleAdsClient = (options: {
       // `adwords` nothing at all: the person refused.
       if (
         answer.refresh_token === undefined ||
-        !scopes.includes(adwordsScope)
+        // Scopes are compared whole, never as part of a text.
+        !new Set(scopes).has(adwordsScope)
       ) {
         return yield* new AdSignInFailed({ reason: "denied" });
       }
