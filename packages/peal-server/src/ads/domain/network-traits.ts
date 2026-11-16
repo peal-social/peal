@@ -16,6 +16,12 @@ import type { AdNetwork } from "./ad-network.ts";
  * - `syncEvery`: how long between two reads of one of its accounts.
  */
 export interface NetworkTraits {
+  /**
+   * Whether the network counts requests against a daily allowance every
+   * workspace of the server shares (Google Ads' operations, per Cloud
+   * project): listings then draw on a budget of them.
+   */
+  readonly dailyOperations: boolean;
   readonly days: "ad" | "campaign";
   /**
    * Whether an account may be read through a manager account
@@ -39,6 +45,7 @@ export const networkTraits = {
   // access gives 2,880), so an account is read every six hours, and what
   // is shown is never more than a day old.
   google: {
+    dailyOperations: true,
     days: "campaign",
     readsThroughManagers: true,
     reportsReach: false,
@@ -47,6 +54,7 @@ export const networkTraits = {
     syncEvery: Duration.hours(6),
   },
   meta: {
+    dailyOperations: false,
     days: "ad",
     readsThroughManagers: false,
     reportsReach: true,

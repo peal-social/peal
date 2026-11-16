@@ -189,7 +189,9 @@ describe("reading ad accounts", () => {
         pageSize: 1,
       });
 
-      const [euro, yen] = yield* client.accounts(token);
+      const [euro, yen] = yield* client
+        .accounts(token)
+        .pipe(Effect.map(({ accounts: listed }) => listed));
 
       assert.strictEqual(euro?.externalId, "1001");
       assert.strictEqual(euro?.currency, "EUR");
@@ -230,7 +232,11 @@ describe("reading ad accounts", () => {
 
       api.script({ answer: marketingError(190, 463, 401), when: () => true });
       assert.strictEqual(
-        (yield* Effect.flip(client.accounts(token)))._tag,
+        (yield* Effect.flip(
+          client
+            .accounts(token)
+            .pipe(Effect.map(({ accounts: listed }) => listed))
+        ))._tag,
         "TokenRejected"
       );
 
@@ -244,7 +250,11 @@ describe("reading ad accounts", () => {
         when: () => true,
       });
 
-      const limited = yield* Effect.flip(client.accounts(token));
+      const limited = yield* Effect.flip(
+        client
+          .accounts(token)
+          .pipe(Effect.map(({ accounts: listed }) => listed))
+      );
 
       assert.strictEqual(limited._tag, "RateLimited");
       assert.deepStrictEqual(
@@ -254,7 +264,11 @@ describe("reading ad accounts", () => {
 
       api.script({ answer: dropped, when: () => true });
       assert.strictEqual(
-        (yield* Effect.flip(client.accounts(token)))._tag,
+        (yield* Effect.flip(
+          client
+            .accounts(token)
+            .pipe(Effect.map(({ accounts: listed }) => listed))
+        ))._tag,
         "PlatformUnavailable"
       );
 
@@ -263,7 +277,11 @@ describe("reading ad accounts", () => {
         when: () => true,
       });
 
-      const refused = yield* Effect.flip(client.accounts(token));
+      const refused = yield* Effect.flip(
+        client
+          .accounts(token)
+          .pipe(Effect.map(({ accounts: listed }) => listed))
+      );
 
       assert.strictEqual(refused._tag, "AdNetworkRefused");
       assert.strictEqual(

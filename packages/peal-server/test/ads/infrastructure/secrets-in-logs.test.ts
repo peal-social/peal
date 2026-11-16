@@ -86,7 +86,9 @@ describe("what the server writes about the ad network", () => {
         const code = "good-code";
 
         const grant = yield* client.complete(code, Option.none());
-        const [account] = yield* client.accounts(grant.token);
+        const {
+          accounts: [account],
+        } = yield* client.accounts(grant.token);
 
         yield* client.snapshot(grant.token, {
           currency: CurrencySchema.make("EUR"),
@@ -103,7 +105,11 @@ describe("what the server writes about the ad network", () => {
           when: () => true,
         });
 
-        const refused = yield* Effect.exit(client.accounts(token));
+        const refused = yield* Effect.exit(
+          client
+            .accounts(token)
+            .pipe(Effect.map(({ accounts: listed }) => listed))
+        );
 
         assert.isTrue(Exit.isFailure(refused));
 
@@ -246,7 +252,7 @@ describe("what the server writes about the ad network", () => {
 
         // The calls were written about at all, and so was the listing.
         assert.isAbove(spans.length, 5);
-        assert.isAbove(reached.length, 1);
+        assert.isAbove(reached.accounts.length, 1);
 
         for (const [name, secret] of [
           ["the refresh token", googleRefreshToken],

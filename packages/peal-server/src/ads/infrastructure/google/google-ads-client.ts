@@ -5,6 +5,7 @@ import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import { AdNetworkRefused } from "#ads/application/ad-network-refused.ts";
 import { AdSignInFailed } from "#ads/application/ad-sign-in-failed.ts";
 import type {
+  AccountListing,
   AdNetworkClient,
   LookUp,
   ReadFailure,
@@ -491,15 +492,22 @@ export const googleAdsClient = (options: {
       // An account reachable twice is offered once, the direct way first.
       const seen = new Set<string>();
 
-      return [...direct, ...managed].filter((facts) => {
-        if (seen.has(facts.externalId)) {
-          return false;
-        }
+      const listing: AccountListing = {
+        accounts: [...direct, ...managed].filter((facts) => {
+          if (seen.has(facts.externalId)) {
+            return false;
+          }
 
-        seen.add(facts.externalId);
+          seen.add(facts.externalId);
 
-        return true;
-      });
+          return true;
+        }),
+        // `listAccessibleCustomers`, then one search a customer: pages
+        // after a search's first are not counted ("API limits and quotas").
+        operations: 1 + Math.min(ids.length, maxAccessible),
+      };
+
+      return listing;
     }
   );
 

@@ -31,6 +31,7 @@ import { AdNotices } from "./ports/ad-notices.ts";
 import { BoostStore } from "./ports/boost-store.ts";
 import { GrantSecrets } from "./ports/grant-secrets.ts";
 import { GrantStore } from "./ports/grant-store.ts";
+import { ListingPace } from "./ports/listing-pace.ts";
 import { PromotablePosts } from "./ports/promotable-posts.ts";
 import { ReadModel } from "./ports/read-model.ts";
 
@@ -75,6 +76,7 @@ export class SyncAccount extends Context.Service<
       const activeMonths = yield* ActiveAdMonths;
       const boostStore = yield* BoostStore;
       const meters = yield* MeteredUsage;
+      const pace = yield* ListingPace;
       const { transaction } = yield* TransactionRunner;
 
       // Counts each ad seen delivering or in review once a month, as one
@@ -266,11 +268,26 @@ export class SyncAccount extends Context.Service<
         client: AdNetworkClient,
         token: Redacted.Redacted
       ) {
-        const reached = yield* client
-          .accounts(token)
-          .pipe(Effect.orElseSucceed(() => []));
+        const grant = yield* grants.findIn(
+          account.workspaceId,
+          account.grantId
+        );
 
-        const found = reached.find(
+        // Without a listing to read, Peal cannot tell: nothing is said of
+        // the account, and the next read tries again.
+        const listing =
+          Option.isNone(grant) ||
+          Option.isNone(yield* pace.take(grant.value).pipe(Effect.option))
+            ? Option.none()
+            : yield* client.accounts(token).pipe(Effect.option);
+
+        if (Option.isNone(listing)) {
+          return { _tag: "unknown" } as const;
+        }
+
+        yield* pace.spent(account.network, listing.value.operations);
+
+        const found = listing.value.accounts.find(
           ({ externalId }) => externalId === account.externalId
         );
 
@@ -279,7 +296,7 @@ export class SyncAccount extends Context.Service<
           Option.getOrNull(found.reachedThrough) ===
             Option.getOrNull(account.reachedThrough)
         ) {
-          return Option.none<AdAccount>();
+          return { _tag: "unreachable" } as const;
         }
 
         yield* accounts.setWays(account.workspaceId, account.network, [found]);
@@ -289,9 +306,11 @@ export class SyncAccount extends Context.Service<
         ).pipe(Effect.annotateLogs({ accountId: account.id }));
 
         // The account as stored now, with the way just taken.
-        return (yield* accounts.get(account.id)).pipe(
-          Option.map(({ account: stored }) => stored)
-        );
+        const stored = yield* accounts.get(account.id);
+
+        return Option.isSome(stored)
+          ? ({ _tag: "rerouted", account: stored.value.account } as const)
+          : ({ _tag: "unknown" } as const);
       });
 
       const readWith = Effect.fn("SyncAccount.readWith")(function* readWith(
@@ -328,11 +347,13 @@ export class SyncAccount extends Context.Service<
           ) {
             const other = yield* rerouted(account, client, token);
 
-            if (Option.isSome(other)) {
-              return yield* readWith(other.value, client, token, true);
+            if (other._tag === "rerouted") {
+              return yield* readWith(other.account, client, token, true);
             }
 
-            yield* accounts.markUnreachable(account.id, now);
+            if (other._tag === "unreachable") {
+              yield* accounts.markUnreachable(account.id, now);
+            }
           }
 
           return yield* failedRead(account, failure);

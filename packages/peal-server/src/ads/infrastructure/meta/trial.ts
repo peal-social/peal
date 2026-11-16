@@ -442,7 +442,10 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
         .pipe(Effect.map((id) => ({ id, name: object.name })));
 
     return {
-      accounts: () => client.accounts(token),
+      accounts: () =>
+        client
+          .accounts(token)
+          .pipe(Effect.map(({ accounts: listed }) => listed)),
 
       account: (id: string) =>
         objectIdOf(id, "The ad account").pipe(

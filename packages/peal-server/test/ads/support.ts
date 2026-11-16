@@ -1,9 +1,10 @@
-import { Context, Effect, Layer, Option, Ref } from "effect";
+import { Context, Duration, Effect, Layer, Option, Ref } from "effect";
 
 import { AdConnections } from "#ads/application/ad-connections.ts";
 import { AdNetworks } from "#ads/application/ports/ad-network.ts";
 import type { AdNetworkClient } from "#ads/application/ports/ad-network.ts";
 import { AdNotices } from "#ads/application/ports/ad-notices.ts";
+import type { ListingPace } from "#ads/application/ports/listing-pace.ts";
 import { SpendAuthorizations } from "#ads/application/spend-authorizations.ts";
 import { adsWith } from "#ads/container.ts";
 import type { AdNetwork } from "#ads/domain/ad-network.ts";
@@ -17,6 +18,10 @@ import { DrizzleActiveAdMonths } from "#ads/infrastructure/drizzle-active-ad-mon
 import { DrizzleBoostStore } from "#ads/infrastructure/drizzle-boost-store.ts";
 import { DrizzleGrantStore } from "#ads/infrastructure/drizzle-grant-store.ts";
 import { DrizzleReadModel } from "#ads/infrastructure/drizzle-read-model.ts";
+import {
+  listingPaceDefaults,
+  memoryListingPace,
+} from "#ads/infrastructure/memory-listing-pace.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { Actor } from "#shared/domain/access.ts";
 import type { Permission } from "#shared/domain/access.ts";
@@ -142,9 +147,13 @@ export class TestNetworks extends Context.Service<
  * the workspace is told recorded (`TestNetworks.told`), on the meters
  * given.
  */
-export const adsTestWith = <M extends MeteredUsage>(meters: Layer.Layer<M>) =>
+export const adsTestWith = <M extends MeteredUsage>(
+  meters: Layer.Layer<M>,
+  pace: Layer.Layer<ListingPace> = UnkeptListings
+) =>
   adsWith(
     Layer.mergeAll(
+      pace,
       DrizzleGrantStore,
       DrizzleAccountStore,
       DrizzleBoostStore,
@@ -161,8 +170,18 @@ export const adsTestWith = <M extends MeteredUsage>(meters: Layer.Layer<M>) =>
     Layer.provideMerge(DatabaseTest)
   );
 
+/**
+ * The listing's pace the use cases' tests run on: Peal's limits, and no
+ * listing kept, so each step asks the fake again (the cache has its own
+ * tests).
+ */
+export const UnkeptListings = memoryListingPace({
+  ...listingPaceDefaults,
+  keptFor: Duration.zero,
+});
+
 /** The same, on a server that does not bill: no meter refuses. */
-export const AdsTest = adsTestWith(MeteredUsage.layerUnmetered);
+export const AdsTest = adsTestWith(MeteredUsage.layerUnmetered, UnkeptListings);
 
 /**
  * Starts a fake of Meta's Marketing API for the test, and has the use

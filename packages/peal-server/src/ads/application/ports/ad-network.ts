@@ -85,6 +85,16 @@ export type NewObject =
       readonly post: PromotedPost;
     };
 
+/**
+ * The ad accounts a sign-in reaches, and how many of the network's
+ * operations listing them spent (Google Ads counts each search against a
+ * daily allowance its project shares; 0 where none is counted).
+ */
+export interface AccountListing {
+  readonly accounts: readonly AdAccountFacts[];
+  readonly operations: number;
+}
+
 /** What a sync reads of an account. */
 export interface SnapshotRequest {
   readonly currency: Currency;
@@ -150,7 +160,7 @@ export interface AdNetworkClient {
   /** The ad accounts the grant's person can use. */
   readonly accounts: (
     token: Redacted.Redacted
-  ) => Effect.Effect<readonly AdAccountFacts[], ReadFailure>;
+  ) => Effect.Effect<AccountListing, ReadFailure>;
   /**
    * One ad account, as the network describes it now, reached directly or
    * through the manager account given (which Meta's adapter ignores).

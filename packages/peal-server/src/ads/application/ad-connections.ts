@@ -42,6 +42,7 @@ import { AdNotices } from "./ports/ad-notices.ts";
 import { BoostStore } from "./ports/boost-store.ts";
 import { GrantSecrets } from "./ports/grant-secrets.ts";
 import { GrantStore } from "./ports/grant-store.ts";
+import { ListingPace } from "./ports/listing-pace.ts";
 
 /** How long a sign-in may take between its start and its callback. */
 export const signInLifetime = Duration.minutes(15);
@@ -240,6 +241,7 @@ export class AdConnections extends Context.Service<
       const allowance = yield* AdAllowance;
       const notices = yield* AdNotices;
       const meters = yield* MeteredUsage;
+      const pace = yield* ListingPace;
       const ids = yield* Effect.context<Ids>();
 
       const clientFor = (network: AdNetwork) =>
@@ -280,21 +282,47 @@ export class AdConnections extends Context.Service<
 
       // What the sign-in reaches now, the way to each taken for the
       // workspace's accounts it already connects: a manager that let one
-      // go, or direct access given, changes how it is read.
+      // go, or direct access given, changes how it is read. A listing is
+      // paced and kept a few minutes (`ListingPace`): the next step of the
+      // same sign-in reads it rather than ask the network again, unless
+      // `fresh` asks for a new one.
       const listed = Effect.fn("AdConnections.listed")(function* listed(
         client: AdNetworkClient,
         grant: AdGrant,
-        token: Redacted.Redacted
+        token: Redacted.Redacted,
+        fresh: boolean
       ) {
-        const reached = yield* client
+        const kept = fresh ? Option.none() : yield* pace.recent(grant);
+
+        if (Option.isSome(kept)) {
+          return kept.value;
+        }
+
+        yield* pace
+          .take(grant)
+          .pipe(
+            Effect.catchTag("ListingLimited", ({ retryAfter }) =>
+              Effect.fail(new AdNetworkUnavailable({ retryAfter }))
+            )
+          );
+
+        const listing = yield* client
           .accounts(token)
           .pipe(Effect.catch(readFailed(grant)));
 
+        yield* pace.spent(grant.network, listing.operations);
+
         if (traitsOf(grant.network).readsThroughManagers) {
-          yield* accounts.setWays(grant.workspaceId, grant.network, reached);
+          yield* accounts.setWays(
+            grant.workspaceId,
+            grant.network,
+            listing.accounts
+          );
         }
 
-        return reached;
+        yield* pace.remember(grant, listing.accounts);
+
+        return listing.accounts;
       });
 
       const offered = Effect.fn("AdConnections.offered")(function* offered(
@@ -522,7 +550,7 @@ export class AdConnections extends Context.Service<
               sealing
             );
 
-            const reached = yield* listed(client, grant, issued.token);
+            const reached = yield* listed(client, grant, issued.token, true);
 
             return {
               accounts: yield* offered(grant, reached),
@@ -544,7 +572,7 @@ export class AdConnections extends Context.Service<
 
             // What the network says now, never what the request says: an
             // account the sign-in does not reach is not found.
-            const reached = (yield* listed(client, grant, token)).filter(
+            const reached = (yield* listed(client, grant, token, false)).filter(
               (facts) => wanted.has(facts.externalId)
             );
 
@@ -645,7 +673,7 @@ export class AdConnections extends Context.Service<
               connectionId
             );
 
-            const reached = yield* listed(client, grant, token);
+            const reached = yield* listed(client, grant, token, false);
 
             return yield* offered(grant, reached);
           }

@@ -220,7 +220,9 @@ describe("the accounts a Google sign-in reaches", () => {
             sent.path.includes("/6666666666/"),
         });
 
-        const accounts = yield* client.accounts(refreshToken);
+        const accounts = yield* client
+          .accounts(refreshToken)
+          .pipe(Effect.map(({ accounts: listed }) => listed));
 
         assert.deepStrictEqual(
           accounts.map((account) => [
@@ -301,7 +303,9 @@ describe("the accounts a Google sign-in reaches", () => {
         });
 
         assert.deepStrictEqual(
-          (yield* client.accounts(refreshToken)).map(
+          (yield* client
+            .accounts(refreshToken)
+            .pipe(Effect.map(({ accounts: listed }) => listed))).map(
             ({ externalId }) => externalId
           ),
           ["1111111111", "6666666666"]
@@ -313,7 +317,12 @@ describe("the accounts a Google sign-in reaches", () => {
             routeOf(sent) === "GET /v26/customers:listAccessibleCustomers",
         });
 
-        assert.deepStrictEqual(yield* client.accounts(refreshToken), []);
+        assert.deepStrictEqual(
+          yield* client
+            .accounts(refreshToken)
+            .pipe(Effect.map(({ accounts: listed }) => listed)),
+          []
+        );
       }).pipe(Effect.scoped)
   );
 
@@ -327,7 +336,9 @@ describe("the accounts a Google sign-in reaches", () => {
         });
 
         assert.deepStrictEqual(
-          (yield* client.accounts(refreshToken)).map(
+          (yield* client
+            .accounts(refreshToken)
+            .pipe(Effect.map(({ accounts: listed }) => listed))).map(
             ({ externalId }) => externalId
           ),
           ["1111111111", "6666666666", "3333333333", "5555555555"]
@@ -351,7 +362,12 @@ describe("the accounts a Google sign-in reaches", () => {
         pageSize: 500,
       });
 
-      assert.lengthOf(yield* client.accounts(refreshToken), 2000);
+      assert.lengthOf(
+        yield* client
+          .accounts(refreshToken)
+          .pipe(Effect.map(({ accounts: listed }) => listed)),
+        2000
+      );
     }).pipe(Effect.scoped)
   );
 
@@ -869,7 +885,13 @@ describe("Google's refusals", () => {
         api.script({ answer: oauthError("invalid_grant"), when: toToken });
 
         assert.deepInclude(
-          errorOf(yield* Effect.exit(client.accounts(refreshToken))),
+          errorOf(
+            yield* Effect.exit(
+              client
+                .accounts(refreshToken)
+                .pipe(Effect.map(({ accounts: listed }) => listed))
+            )
+          ),
           {
             _tag: "TokenRejected",
           }
@@ -881,7 +903,13 @@ describe("Google's refusals", () => {
         });
 
         assert.deepInclude(
-          errorOf(yield* Effect.exit(client.accounts(refreshToken))),
+          errorOf(
+            yield* Effect.exit(
+              client
+                .accounts(refreshToken)
+                .pipe(Effect.map(({ accounts: listed }) => listed))
+            )
+          ),
           {
             _tag: "PlatformUnavailable",
           }
@@ -906,7 +934,13 @@ describe("the token endpoint's other refusals", () => {
           api.script({ answer, when: toToken });
 
           assert.deepInclude(
-            errorOf(yield* Effect.exit(client.accounts(refreshToken))),
+            errorOf(
+              yield* Effect.exit(
+                client
+                  .accounts(refreshToken)
+                  .pipe(Effect.map(({ accounts: listed }) => listed))
+              )
+            ),
             { _tag: "PlatformUnavailable" }
           );
         }
@@ -932,7 +966,9 @@ describe("the adapter reads, and writes nothing", () => {
         });
 
         yield* client.complete("good-code", verifier);
-        yield* client.accounts(refreshToken);
+        yield* client
+          .accounts(refreshToken)
+          .pipe(Effect.map(({ accounts: listed }) => listed));
         yield* client.account(refreshToken, id("1111111111"), Option.none());
         yield* client.snapshot(refreshToken, request("1111111111"));
 
