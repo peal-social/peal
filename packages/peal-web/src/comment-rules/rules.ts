@@ -1,5 +1,5 @@
 import { maxKeywords } from "peal-contract";
-import type { NewCommentRule } from "peal-contract";
+import type { CommentRule, NewCommentRule } from "peal-contract";
 
 /** What the form holds while a member writes a rule. */
 export interface CommentRuleDraft {
@@ -25,6 +25,14 @@ export const freshCommentRule: CommentRuleDraft = {
  */
 export const carriesPrivately = (platform: string | undefined): boolean =>
   platform === "instagram" || platform === "facebook";
+
+/**
+ * Whether setting a paused rule going again is held back from the member:
+ * a rule that sends private messages resumes only for one who may send
+ * them, as the server refuses it otherwise.
+ */
+export const resumeHeld = (rule: CommentRule, mayMessage: boolean): boolean =>
+  rule.holdsPrivateReply && !mayMessage;
 
 /** The keywords a member typed, comma-separated, each trimmed. */
 export const keywordsTyped = (typed: string): readonly string[] =>

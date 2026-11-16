@@ -33,6 +33,7 @@ const matchView = ({
 /** What clients see of a comment rule, its channels and what it did. */
 export const commentRuleView = ({
   channels,
+  holdsPrivateReply,
   matches,
   rule,
 }: ListedCommentRule): CommentRuleView => ({
@@ -45,6 +46,7 @@ export const commentRuleView = ({
   })),
   createdAt: rule.createdAt,
   endedReason: rule.status._tag === "ended" ? rule.status.reason : null,
+  holdsPrivateReply,
   id: rule.id,
   keywords: rule.keywords,
   matches: matches.map(matchView),

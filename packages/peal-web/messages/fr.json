@@ -4671,6 +4671,7 @@
     "paused": "La règle est en pause.",
     "resume": "Reprendre",
     "resumed": "La règle reprend.",
+    "resumeHeld": "Elle envoie des messages privés : un propriétaire, ou un membre autorisé à envoyer des messages, peut la reprendre.",
     "stop": "Arrêter",
     "stopped": "La règle est arrêtée.",
     "removePrivate": "Retirer le message privé",

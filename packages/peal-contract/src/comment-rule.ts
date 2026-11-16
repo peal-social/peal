@@ -152,6 +152,9 @@ export const CommentRuleSchema = Schema.Struct({
   channels: Schema.Array(ChannelCommentRuleSchema),
   createdAt: Schema.DateTimeUtc,
   endedReason: Schema.NullOr(CommentRuleEndReasonSchema),
+  // Whether it holds a private reply, whoever reads it: what changing its
+  // keywords or reply, or setting it going again, takes.
+  holdsPrivateReply: Schema.Boolean,
   id: Schema.String,
   // As the rule matches them: lower case, without accents.
   keywords: Schema.Array(Schema.String),

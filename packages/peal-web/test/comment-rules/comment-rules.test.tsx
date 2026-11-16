@@ -8,11 +8,13 @@ import {
   commentRuleRequestOf,
   freshCommentRule,
   keywordsTyped,
+  resumeHeld,
 } from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
 import {
   CommentRuleFormView,
   CommentRuleView,
+  RuleActionsView,
 } from "#components/comment-rules/comment-rule-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
@@ -31,6 +33,7 @@ const rule: CommentRule = {
   ],
   createdAt: DateTime.makeUnsafe("2026-07-06T07:00:00Z"),
   endedReason: null,
+  holdsPrivateReply: false,
   id: "0190f3a0-0000-7000-8000-0000000c0001",
   keywords: ["price", "prix"],
   matches: [
@@ -96,6 +99,7 @@ const privateRule: CommentRule = {
       replyId: "0190f3a0-0000-7000-8000-0000000c0203",
     },
   ],
+  holdsPrivateReply: true,
   privateReply: "Here is the list. (Automatic message)",
 };
 
@@ -272,6 +276,45 @@ describe("the comment rule form", () => {
   it("reads a rule's private outcomes in French", async () => {
     await expect(render("fr", privateRule)).resolves.toContain(
       "Message privé envoyé"
+    );
+  });
+
+  it("holds back resuming a rule with a private message from who may not send messages, and says who can", async () => {
+    // As one who may not read it sees the rule: the text hidden, held.
+    const paused: CommentRule = {
+      ...privateRule,
+      privateReply: null,
+      status: "paused",
+    };
+
+    expect([
+      resumeHeld(paused, false),
+      resumeHeld(paused, true),
+      resumeHeld({ ...rule, status: "paused" }, false),
+    ]).toStrictEqual([true, false, false]);
+
+    const actions = async (held: boolean, locale: "en" | "fr" = "en") =>
+      await inLocale(
+        locale,
+        <RuleActionsView
+          busy={false}
+          held={held}
+          onPause={() => {}}
+          onRemovePrivate={() => {}}
+          onStop={() => {}}
+          rule={paused}
+        />
+      );
+
+    const heldBack = await actions(true);
+
+    expect(heldBack).not.toContain(">Resume<");
+    expect(heldBack).toContain(
+      "It sends private messages: an owner, or a member allowed to send messages, can resume it."
+    );
+    await expect(actions(false)).resolves.toContain(">Resume<");
+    await expect(actions(true, "fr")).resolves.toContain(
+      "Elle envoie des messages privés"
     );
   });
 });

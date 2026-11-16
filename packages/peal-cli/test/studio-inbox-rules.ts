@@ -129,6 +129,7 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               channels,
               createdAt: world.now,
               endedReason: null,
+              holdsPrivateReply: payload.privateReply !== undefined,
               id: `0190f3a0-0000-7000-8000-0000000c${String(rules.length + 1).padStart(4, "0")}`,
               keywords: payload.keywords.map((keyword) =>
                 keyword.toLowerCase()
@@ -199,6 +200,10 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               {
                 ...rule,
                 keywords: payload.keywords ?? rule.keywords,
+                holdsPrivateReply:
+                  payload.privateReply === undefined
+                    ? rule.holdsPrivateReply
+                    : payload.privateReply !== null,
                 privateReply:
                   payload.privateReply === undefined
                     ? rule.privateReply

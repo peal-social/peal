@@ -133,6 +133,71 @@ export const CommentRuleView = ({
   );
 };
 
+/**
+ * What a member may do with a rule that has not ended: pause or resume
+ * it, take its private message off, stop it. A rule that sends private
+ * messages resumes only for one who may send them (`held`): a note says
+ * who can, in place of the button.
+ */
+export const RuleActionsView = ({
+  busy,
+  held,
+  onPause,
+  onRemovePrivate,
+  onStop,
+  rule,
+}: {
+  readonly busy: boolean;
+  readonly held: boolean;
+  /** Pauses the rule (true) or sets it going again (false). */
+  readonly onPause: (paused: boolean) => void;
+  readonly onRemovePrivate: () => void;
+  readonly onStop: () => void;
+  readonly rule: CommentRule;
+}) => {
+  const t = useTranslations("CommentRules");
+
+  if (rule.status === "ended") {
+    return null;
+  }
+
+  const active = rule.status === "active";
+
+  return (
+    <>
+      {!active && held ? (
+        <p className="text-muted-foreground max-w-xs text-sm">
+          {t("resumeHeld")}
+        </p>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={busy}
+          onClick={() => {
+            onPause(active);
+          }}
+        >
+          {active ? t("pause") : t("resume")}
+        </Button>
+      )}
+      {rule.holdsPrivateReply ? (
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={busy}
+          onClick={onRemovePrivate}
+        >
+          {t("removePrivate")}
+        </Button>
+      ) : null}
+      <Button variant="outline" size="sm" disabled={busy} onClick={onStop}>
+        {t("stop")}
+      </Button>
+    </>
+  );
+};
+
 /** The form that starts a rule on a channel. */
 export const CommentRuleFormView = ({
   busy,

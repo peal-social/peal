@@ -6,7 +6,6 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { CommentRuleNotPossible } from "peal-contract";
 import type { CommentRule } from "peal-contract";
-import { Button } from "peal-ui/components/button";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -20,6 +19,7 @@ import {
 import {
   commentRuleRequestOf,
   freshCommentRule,
+  resumeHeld,
 } from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
@@ -29,7 +29,11 @@ import {
 } from "#components/settings/settings-status.tsx";
 import { workspaceChannels } from "#posts/api.ts";
 
-import { CommentRuleFormView, CommentRuleView } from "./comment-rule-views.tsx";
+import {
+  CommentRuleFormView,
+  CommentRuleView,
+  RuleActionsView,
+} from "./comment-rule-views.tsx";
 
 // The error tag a call ended with, or none if it worked.
 const failureOf = (exit: Exit.Exit<unknown, { readonly _tag: string }>) =>
@@ -61,9 +65,11 @@ const privateRefusalOf = (exit: Exit.Exit<unknown, unknown>) =>
       );
 
 const RuleActions = ({
+  mayMessage,
   rule,
   workspaceId,
 }: {
+  readonly mayMessage: boolean;
   readonly rule: CommentRule;
   readonly workspaceId: string;
 }) => {
@@ -84,63 +90,37 @@ const RuleActions = ({
     });
   };
 
-  if (rule.status === "ended") {
-    return null;
-  }
-
   return (
-    <>
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={busy}
-        onClick={() => {
-          const paused = rule.status === "active";
-
-          start(async () => {
-            answered(
-              await update({ params, payload: { paused }, reactivityKeys }),
-              paused ? t("paused") : t("resumed")
-            );
-          });
-        }}
-      >
-        {rule.status === "active" ? t("pause") : t("resume")}
-      </Button>
-      {rule.privateReply === null ? null : (
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={busy}
-          onClick={() => {
-            start(async () => {
-              answered(
-                await update({
-                  params,
-                  payload: { privateReply: null },
-                  reactivityKeys,
-                }),
-                t("removedPrivate")
-              );
-            });
-          }}
-        >
-          {t("removePrivate")}
-        </Button>
-      )}
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={busy}
-        onClick={() => {
-          start(async () => {
-            answered(await stop({ params, reactivityKeys }), t("stopped"));
-          });
-        }}
-      >
-        {t("stop")}
-      </Button>
-    </>
+    <RuleActionsView
+      busy={busy}
+      held={resumeHeld(rule, mayMessage)}
+      rule={rule}
+      onPause={(paused) => {
+        start(async () => {
+          answered(
+            await update({ params, payload: { paused }, reactivityKeys }),
+            paused ? t("paused") : t("resumed")
+          );
+        });
+      }}
+      onRemovePrivate={() => {
+        start(async () => {
+          answered(
+            await update({
+              params,
+              payload: { privateReply: null },
+              reactivityKeys,
+            }),
+            t("removedPrivate")
+          );
+        });
+      }}
+      onStop={() => {
+        start(async () => {
+          answered(await stop({ params, reactivityKeys }), t("stopped"));
+        });
+      }}
+    />
   );
 };
 
@@ -260,7 +240,11 @@ const RuleList = ({
               rule={rule}
               actions={
                 mayChange ? (
-                  <RuleActions rule={rule} workspaceId={workspaceId} />
+                  <RuleActions
+                    mayMessage={mayMessage}
+                    rule={rule}
+                    workspaceId={workspaceId}
+                  />
                 ) : null
               }
             />

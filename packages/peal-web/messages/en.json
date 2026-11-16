@@ -4671,6 +4671,7 @@
     "paused": "The rule is paused.",
     "resume": "Resume",
     "resumed": "The rule is going again.",
+    "resumeHeld": "It sends private messages: an owner, or a member allowed to send messages, can resume it.",
     "stop": "Stop",
     "stopped": "The rule is stopped.",
     "removePrivate": "Remove the private message",

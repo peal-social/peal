@@ -140,6 +140,8 @@ export interface ChannelCommentRule {
 /** A rule, with what its channels carry and what it did. */
 export interface ListedCommentRule {
   readonly channels: readonly ChannelCommentRule[];
+  /** Whether it holds a private text, shown or not. */
+  readonly holdsPrivateReply: boolean;
   readonly matches: readonly RuleMatch[];
   readonly rule: CommentRule;
 }
@@ -517,6 +519,7 @@ export class CommentRules extends Context.Service<
 
         const shown: ListedCommentRule = {
           channels: yield* channelsOf(rule),
+          holdsPrivateReply: Option.isSome(rule.privateReply),
           matches: mayRead ? matches : matches.map(withoutPrivate),
           rule: mayRead ? rule : withoutPrivateReply(rule),
         };

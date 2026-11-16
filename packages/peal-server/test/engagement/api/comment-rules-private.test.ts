@@ -186,6 +186,8 @@ describe("a comment rule's private text through the API", () => {
             });
 
             assert.isNull(shown.privateReply);
+            // That it holds one is the rule's setting, which they read.
+            assert.isTrue(shown.holdsPrivateReply);
             assert.deepStrictEqual(
               shown.matches.map(
                 ({ privateCode, privateReplyId, privateStatus }) => [
@@ -235,6 +237,7 @@ describe("a comment rule's private text through the API", () => {
           });
 
           assert.isNull(off.privateReply);
+          assert.isFalse(off.holdsPrivateReply);
         }).pipe(Effect.ensuring(forget(workspaceId)));
       }).pipe(Effect.provide(RulesTest))
   );
