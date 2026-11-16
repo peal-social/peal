@@ -17,7 +17,8 @@ export const AccessEngagementChannels = Layer.effect(
           .pipe(Effect.map(Option.contains(workspaceId))),
       describe: (channelId) =>
         access.account(channelId).pipe(
-          Effect.map(({ connection, platform, scopes }) => ({
+          Effect.map(({ accountId, connection, platform, scopes }) => ({
+            accountId,
             connection,
             platform,
             scopes,
