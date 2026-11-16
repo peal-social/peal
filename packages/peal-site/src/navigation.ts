@@ -136,14 +136,25 @@ const menuLinks = (
   rows: readonly Row[],
   t: Messages["nav"],
   settings: SiteSettings
-): SiteMenuLink[] =>
-  rows.flatMap((row) => {
+): SiteMenuLink[] => {
+  // The rows a menu preview introduces have an intro; the others none.
+  const intros: Partial<Record<LinkName, SiteMenuLink["intro"]>> = t.intros;
+
+  return rows.flatMap((row) => {
     const href = hrefOf(row.target, settings);
 
     return href === undefined
       ? []
-      : [{ ...t.links[row.name], href, icon: row.icon }];
+      : [
+          {
+            ...t.links[row.name],
+            href,
+            icon: row.icon,
+            intro: intros[row.name],
+          },
+        ];
   });
+};
 
 const nonEmpty = (groups: readonly SiteMenuGroup[]) =>
   groups.filter((group) => group.links.length > 0);
@@ -185,6 +196,7 @@ const navItems = (
           {
             ...t.links.discord,
             href: settings.discord,
+            intro: t.intros.discord,
             mark: discordMark,
           },
         ];

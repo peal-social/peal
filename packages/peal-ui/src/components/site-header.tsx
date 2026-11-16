@@ -97,6 +97,10 @@ type SiteMark =
  */
 interface SiteMenuLink {
   readonly description?: string | undefined;
+  /** What a menu's preview card says about the page, beside its art. */
+  readonly intro?:
+    | { readonly body: string; readonly headline: string }
+    | undefined;
   readonly href: string;
   readonly icon?: SiteIcon | undefined;
   readonly mark?: SiteMark | undefined;
@@ -125,8 +129,9 @@ interface SiteMenuFeature {
 interface SiteMenu {
   readonly feature?: SiteMenuFeature | undefined;
   /**
-   * Whether the feature card previews the hovered or focused row as pixel
-   * art, with the card's first mark as its own art.
+   * Whether the feature card becomes a preview of the hovered or focused
+   * row: pixel art and the row's intro, not a link, with the feature's
+   * first mark, title and description while no row is previewed.
    */
   readonly preview?: boolean | undefined;
   readonly groups: readonly SiteMenuGroup[];
@@ -357,13 +362,16 @@ const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => {
   if (menu.preview === true && feature !== undefined && art !== undefined) {
     return (
       <MenuPreview
-        fallback={{ ...feature, art: <Mark mark={art} /> }}
+        fallback={{
+          art: <Mark mark={art} />,
+          body: feature.description,
+          headline: feature.title,
+        }}
         items={menu.groups.flatMap((group) =>
           group.links.map((link) => ({
-            description: link.description ?? "",
-            href: link.href,
+            body: link.intro?.body ?? link.description ?? "",
+            headline: link.intro?.headline ?? link.title,
             key: link.href,
-            title: link.title,
           }))
         )}
       >

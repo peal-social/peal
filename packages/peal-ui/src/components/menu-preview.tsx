@@ -2,7 +2,6 @@
 
 import { definePrimitive } from "@ui-sdk/core";
 import { createParts } from "@ui-sdk/react/primitive";
-import { ArrowRightIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type * as React from "react";
 
@@ -10,7 +9,6 @@ import { createPixelArt, rasterise } from "../lib/pixel-icon";
 import type { PixelArt, PixelIcon } from "../lib/pixel-icon";
 import { cn } from "../lib/utils";
 import { BrandField } from "./brand-field";
-import { NavigationMenuLink } from "./navigation-menu";
 
 interface MenuPreviewState {
   /** The previewed row's key, or null for the card's own content. */
@@ -74,22 +72,21 @@ const menuPreview = Object.assign(definition, { options: {} });
 
 const { Root } = createParts(menuPreview, { root: "div" });
 
+/** What the card says under its art: a headline and a line or two. */
+interface MenuPreviewIntro {
+  readonly body: string;
+  readonly headline: string;
+}
+
 /** A row the preview can show, by the key its row carries. */
-interface MenuPreviewItem {
-  readonly description: string;
-  readonly href: string;
+interface MenuPreviewItem extends MenuPreviewIntro {
   readonly key: string;
-  readonly title: string;
 }
 
 /** What the card shows while no row is previewed. */
-interface MenuPreviewFallback {
+interface MenuPreviewFallback extends MenuPreviewIntro {
   /** Its art: an SVG, such as a brand's mark, which the card rasterises. */
   readonly art: React.ReactNode;
-  readonly caption: string;
-  readonly description: string;
-  readonly href: string;
-  readonly title: string;
 }
 
 const reducedMotion = () =>
@@ -175,11 +172,36 @@ const PreviewArt = ({ current }: MenuPreviewState) => {
   );
 };
 
+// Every intro sits in the same grid cell and only the current one shows,
+// so the card keeps the height of the longest and never jumps.
+const Intro = ({
+  intro,
+  shown,
+}: {
+  readonly intro: MenuPreviewIntro;
+  readonly shown: boolean;
+}) => (
+  <span
+    className={cn(
+      "col-start-1 row-start-1 flex flex-col gap-1",
+      shown ? undefined : "invisible"
+    )}
+  >
+    <span className="text-foreground text-[15px] font-semibold">
+      {intro.headline}
+    </span>
+    <span className="text-muted-foreground text-[13px] leading-snug">
+      {intro.body}
+    </span>
+  </span>
+);
+
 /**
  * A mega menu's preview (DESIGN.md, Site): its rows, then a card whose
- * pixel art and caption follow the row the pointer rests on or focus is
- * in, and show the card's own content otherwise. Rows name themselves with
- * `data-preview-key`, and their icon's SVG is the art.
+ * pixel art and intro follow the row the pointer rests on or focus is in,
+ * and show the card's own art and intro otherwise. The card is not a link
+ * and screen readers skip it: the rows are the links. Rows name themselves
+ * with `data-preview-key`, and their icon's SVG is the art.
  */
 const MenuPreview = ({
   children,
@@ -199,9 +221,10 @@ const MenuPreview = ({
       return (
         <>
           {children}
-          <NavigationMenuLink
-            href={item?.href ?? fallback.href}
-            className="bg-muted hover:bg-accent group/feature w-72 flex-col gap-3 border p-2"
+          <div
+            aria-hidden="true"
+            data-slot="menu-preview-card"
+            className="bg-muted flex w-72 flex-col gap-3 rounded-md border p-2"
           >
             <BrandField rails={false} className="min-h-56 flex-1 rounded-md">
               <PreviewArt current={item === undefined ? null : current} />
@@ -209,23 +232,17 @@ const MenuPreview = ({
             <span hidden data-preview-art="">
               {fallback.art}
             </span>
-            <span className="flex flex-col gap-1 px-2 pb-2">
-              <span className="text-muted-foreground font-mono text-xs tracking-[0.04em] lowercase">
-                {fallback.caption}
-              </span>
-              <span className="text-foreground flex items-center gap-1.5 text-[15px] font-semibold">
-                {item?.title ?? fallback.title}
-                <ArrowRightIcon
-                  aria-hidden="true"
-                  strokeWidth={1.75}
-                  className="size-4 transition-transform group-hover/feature:translate-x-0.5 motion-reduce:transition-none"
+            <span className="grid px-2 pb-2">
+              <Intro intro={fallback} shown={item === undefined} />
+              {items.map((candidate) => (
+                <Intro
+                  key={candidate.key}
+                  intro={candidate}
+                  shown={candidate === item}
                 />
-              </span>
-              <span className="text-muted-foreground text-[13px] leading-snug">
-                {item?.description ?? fallback.description}
-              </span>
+              ))}
             </span>
-          </NavigationMenuLink>
+          </div>
         </>
       );
     }}
@@ -234,4 +251,4 @@ const MenuPreview = ({
 
 export { MenuPreview };
 
-export type { MenuPreviewFallback, MenuPreviewItem };
+export type { MenuPreviewFallback, MenuPreviewIntro, MenuPreviewItem };

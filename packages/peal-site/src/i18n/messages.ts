@@ -86,6 +86,28 @@ const en = {
     getStarted: "Get started",
     github: "GitHub",
     home: "Peal home page",
+    intros: {
+      changelog: {
+        body: "The notes of each Peal release, published on GitHub, with a link to every change it brings.",
+        headline: "Every release, as it ships",
+      },
+      discord: {
+        body: "Ask for help, share what you build on the API or the MCP server, and hear what ships next.",
+        headline: "Talk with the people building Peal",
+      },
+      security: {
+        body: "How to report it privately, what to put in the report, and how we keep you informed while we fix it.",
+        headline: "Found a vulnerability?",
+      },
+      selfHosting: {
+        body: "A server needs Postgres, an S3-compatible store and a way to send email. The guide walks through each service and the settings it reads.",
+        headline: "Run Peal on your own server",
+      },
+      status: {
+        body: "Live checks of the app, the API, the docs and this site, with how each has answered lately.",
+        headline: "Is Peal up right now?",
+      },
+    },
     launch: {
       caption: "latest launch",
       description:
@@ -177,8 +199,8 @@ const en = {
     star: {
       caption: "fair source",
       description:
-        "The source is public: read it, run it yourself, and follow every release.",
-      title: "Star us on GitHub",
+        "Peal is fair source: read the code, run it yourself, and watch every change land.",
+      title: "The source is public",
     },
     stars: "stars",
     studio: "Studio, for marketing teams",
@@ -393,6 +415,28 @@ const fr: Messages = {
     getStarted: "Commencer",
     github: "GitHub",
     home: "Accueil de Peal",
+    intros: {
+      changelog: {
+        body: "Les notes de chaque version de Peal, publiées sur GitHub, avec un lien vers chaque changement qu’elle apporte.",
+        headline: "Chaque version, dès sa sortie",
+      },
+      discord: {
+        body: "Demandez de l’aide, montrez ce que vous construisez sur l’API ou le serveur MCP, et découvrez ce qui arrive ensuite.",
+        headline: "Échangez avec l’équipe qui construit Peal",
+      },
+      security: {
+        body: "Comment la signaler en privé, quoi mettre dans le signalement, et comment nous vous tenons informé pendant la correction.",
+        headline: "Vous avez trouvé une vulnérabilité ?",
+      },
+      selfHosting: {
+        body: "Un serveur a besoin de Postgres, d’un stockage compatible S3 et d’un moyen d’envoyer des e-mails. Le guide passe en revue chaque service et les réglages qu’il lit.",
+        headline: "Faites tourner Peal sur votre serveur",
+      },
+      status: {
+        body: "Des vérifications en direct de l’application, de l’API, de la documentation et de ce site, avec leurs réponses récentes.",
+        headline: "Peal fonctionne-t-il en ce moment ?",
+      },
+    },
     launch: {
       caption: "dernière nouveauté",
       description:
@@ -487,8 +531,8 @@ const fr: Messages = {
     star: {
       caption: "fair source",
       description:
-        "Le code est public : lisez-le, hébergez-le vous-même et suivez chaque version.",
-      title: "Une étoile sur GitHub",
+        "Peal est fair source : lisez le code, hébergez-le vous-même et voyez arriver chaque changement.",
+      title: "Le code est public",
     },
     stars: "étoiles",
     studio: "Studio, pour les équipes marketing",

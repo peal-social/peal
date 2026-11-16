@@ -295,16 +295,20 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   something (brands' marks in 40 px bordered tiles), a title, one line and
   an arrow, linking to what it features.
 - **Menu preview.** A mega menu may close on a preview card instead of a
-  featured card (Resources does): a brand field without rails, as tall as
-  the rows beside it, holding pixel art, then the caption, a title and one
-  line. The art is the icon of the row the pointer rests on or focus is in,
-  rasterised onto 5 px cells in blue, lavender and white by coverage,
-  Bayer-dithered and brighter toward the top, with yellow on the top rows;
-  with no row previewed, it shows the card's own mark and content. Moving
-  from one row to another dissolves the pixels in about 280 ms, and a
-  scanline sweeps the art while the menu is open; with reduced motion, the
-  art swaps at once and nothing sweeps. The card links to what it shows.
-  The drawer has no preview.
+  featured card (Resources does): a `muted` cell holding a brand field
+  without rails, as tall as the rows beside it, with pixel art, then an
+  intro: a headline (a sentence, 15 px, 600) and a line or two (13 px,
+  muted) about what the page holds, written for the card and never the
+  row's own description. The card is not a link and takes no hover or
+  focus; screen readers skip it, since the rows are the links. Its height
+  stays that of its longest intro, so it never jumps between rows. The art
+  is the icon of the row the pointer rests on or focus is in, rasterised
+  onto 5 px cells in blue, lavender and white by coverage, Bayer-dithered
+  and brighter toward the top, with yellow on the top rows; with no row
+  previewed, it shows the card's own mark and intro. Moving from one row
+  to another dissolves the pixels in about 280 ms, and a scanline sweeps
+  the art while the menu is open; with reduced motion, the art swaps at
+  once and nothing sweeps. The drawer has no preview.
 - **Platforms menu.** Every platform a channel connects to and every ad
   network, from the contract's lists, under Social (a wide cell of two
   columns), then Chat, Ads and Blog stacked in one column beside it, each
