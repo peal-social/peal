@@ -339,7 +339,8 @@ self-hoster needs only Postgres and an S3-compatible store:
   `DOCS_ASSISTANT_MODEL` (the assistant, which makes `dist/` a Node server,
   the `docs` image, instead of static files) and `DOCS_TURNSTILE_SITE_KEY`;
   site `SITE_URL`, `SITE_DOCS_URL`, `SITE_APP_URL`
-  (the footer's links to the app's contract functions),
+  (the header's Log in and Get started, and the footer's links to the
+  app's contract functions), `SITE_DISCORD_URL` (the Discord links),
   `SITE_PLAUSIBLE_DOMAIN`, `SITE_PLAUSIBLE_HOST`. Nx hashes them from the
   process environment only, not `.env` files: export them, or build with
   `--skip-nx-cache`.

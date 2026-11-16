@@ -6,6 +6,7 @@ change, the rules every change follows, and how to run Peal from source.
 
 ## Contents
 
+- [Values](#values)
 - [Before you start](#before-you-start)
 - [Ground rules](#ground-rules)
 - [Pull requests](#pull-requests)
@@ -18,6 +19,17 @@ change, the rules every change follows, and how to run Peal from source.
 - [Settings](#settings)
 - [Verify](#verify): checks, SDKs, end-to-end tests
 - [Build for production](#build-for-production) and [deploy](#deploy)
+
+## Values
+
+- **Be kind.** Assume good intent, explain rather than correct, and thank
+  people for their time.
+- **A person matters more than code.** No change, review or deadline is worth
+  making someone feel small.
+- **Ask in the right place.** Ideas and questions go to
+  [GitHub Discussions](https://github.com/peal-social/peal/discussions), bugs
+  to [issues](https://github.com/peal-social/peal/issues), and a chat to
+  [Discord](https://discord.gg/VBZ5pPT9ss).
 
 ## Before you start
 
@@ -530,8 +542,10 @@ environment:
 - `DOCS_SITE_URL` and `SITE_URL`: the public origins, for absolute and
   canonical links.
 - `SITE_DOCS_URL`: links the marketing site to the docs.
-- `SITE_APP_URL`: links the marketing site to the web app's pages to
-  cancel a contract and to withdraw from one.
+- `SITE_APP_URL`: links the marketing site to the web app: Log in, Get
+  started, and the pages to cancel a contract and to withdraw from one.
+- `SITE_DISCORD_URL`: the Discord server's invitation, which the marketing
+  site's header and footer link to.
 - `DOCS_PLAUSIBLE_DOMAIN` and `SITE_PLAUSIBLE_DOMAIN`: turn on Plausible.
 - `DOCS_PLAUSIBLE_HOST` and `SITE_PLAUSIBLE_HOST`: point Plausible at a
   self-hosted instance.

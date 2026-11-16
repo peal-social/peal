@@ -16,6 +16,7 @@ const en = {
     legal: "Legal",
     license:
       "Fair source under the Functional Source License (FSL-1.1-ALv2); the SDKs are under the Apache License 2.0.",
+    captions: { end: "fair source · self-hostable", start: "peal.social" },
     source: "Source code on GitHub",
     withdraw: "Withdraw from contract here",
   },
@@ -70,10 +71,108 @@ const en = {
     terms: "Terms of service",
   },
   nav: {
+    blog: "Blog",
     brand: "Peal",
+    developers: "For developers and agents",
+    discord: "Discord",
     docs: "Docs",
+    drawer: { close: "Close the menu", open: "Open the menu", title: "Menu" },
+    getStarted: "Get started",
+    github: "GitHub",
     home: "Peal home page",
+    launch: {
+      caption: "latest launch",
+      description:
+        "Post to a Discord channel or a Telegram chat from the same composer as every other platform.",
+      title: "Discord and Telegram",
+    },
+    links: {
+      agents: {
+        description: "Let an agent write and schedule, with your approval.",
+        title: "Agent skills",
+      },
+      analytics: {
+        description: "See how each post and account did, and export it.",
+        title: "Analytics",
+      },
+      api: {
+        description: "One HTTP API for every platform, with OpenAPI.",
+        title: "API",
+      },
+      approvals: {
+        description: "Get a client's approval before a post goes out.",
+        title: "Approvals",
+      },
+      calendar: {
+        description: "Schedule in your time zone, move posts on the calendar.",
+        title: "Calendar",
+      },
+      changelog: {
+        description: "Every release and what changed in it.",
+        title: "Changelog",
+      },
+      cli: {
+        description: "The peal command, with answers as JSON.",
+        title: "Command line",
+      },
+      composer: {
+        description: "Write once, adjust each platform, preview them all.",
+        title: "Composer",
+      },
+      discord: {
+        description: "Ask questions and talk with the team.",
+        title: "Discord",
+      },
+      embedding: {
+        description: "Peal inside your product, a workspace per customer.",
+        title: "Embedding kit",
+      },
+      inbox: {
+        description: "Answer comments, reviews and messages in one place.",
+        title: "Inbox",
+      },
+      mcp: {
+        description: "Connect an AI assistant, and choose if it may publish.",
+        title: "MCP server",
+      },
+      platforms: {
+        description: "Every network Peal posts to, and what each one takes.",
+        title: "Platforms",
+      },
+      sdks: {
+        description: "Typed clients in eight languages.",
+        title: "SDKs",
+      },
+      security: {
+        description: "How to report a vulnerability.",
+        title: "Security",
+      },
+      selfHosting: {
+        description: "Run Peal on your own server with Postgres and S3.",
+        title: "Self-hosting guide",
+      },
+      status: {
+        description: "Whether Peal is up, and past incidents.",
+        title: "Status",
+      },
+      webhooks: {
+        description: "Hear what happens in a workspace, without polling.",
+        title: "Webhooks",
+      },
+    },
     main: "Main",
+    products: "Products",
+    resources: "Resources",
+    resourcesGroup: "Learn and get help",
+    signIn: "Log in",
+    star: {
+      caption: "fair source",
+      description:
+        "The source is public: read it, run it yourself, and follow every release.",
+      title: "Star us on GitHub",
+    },
+    stars: "stars",
+    studio: "Studio, for marketing teams",
   },
   pricing: {
     coming: "Coming soon: prices to be announced",
@@ -215,6 +314,7 @@ const fr: Messages = {
     legal: "Informations juridiques",
     license:
       "Fair source sous la Functional Source License (FSL-1.1-ALv2) ; les SDK sont sous licence Apache 2.0.",
+    captions: { end: "fair source · auto-hébergeable", start: "peal.social" },
     source: "Code source sur GitHub",
     withdraw: "Renoncer au contrat ici",
   },
@@ -269,10 +369,111 @@ const fr: Messages = {
     terms: "Conditions d’utilisation",
   },
   nav: {
+    blog: "Blog",
     brand: "Peal",
+    developers: "Pour les développeurs et les agents",
+    discord: "Discord",
     docs: "Documentation",
+    drawer: { close: "Fermer le menu", open: "Ouvrir le menu", title: "Menu" },
+    getStarted: "Commencer",
+    github: "GitHub",
     home: "Accueil de Peal",
+    launch: {
+      caption: "dernière nouveauté",
+      description:
+        "Publiez dans un salon Discord ou une conversation Telegram depuis le même éditeur que pour les autres plateformes.",
+      title: "Discord et Telegram",
+    },
+    links: {
+      agents: {
+        description: "Un agent rédige et programme, avec votre accord.",
+        title: "Skills pour agents",
+      },
+      analytics: {
+        description: "Voir comment chaque publication a marché, et l’exporter.",
+        title: "Statistiques",
+      },
+      api: {
+        description: "Une API HTTP pour toutes les plateformes, avec OpenAPI.",
+        title: "API",
+      },
+      approvals: {
+        description: "L’accord d’un client avant qu’une publication parte.",
+        title: "Approbations",
+      },
+      calendar: {
+        description:
+          "Programmer dans votre fuseau, déplacer sur le calendrier.",
+        title: "Calendrier",
+      },
+      changelog: {
+        description: "Chaque version et ce qu’elle change.",
+        title: "Journal des modifications",
+      },
+      cli: {
+        description: "La commande peal, avec des réponses en JSON.",
+        title: "Ligne de commande",
+      },
+      composer: {
+        description:
+          "Écrire une fois, ajuster par plateforme, tout prévisualiser.",
+        title: "Éditeur",
+      },
+      discord: {
+        description: "Poser vos questions et échanger avec l’équipe.",
+        title: "Discord",
+      },
+      embedding: {
+        description: "Peal dans votre produit, un espace par client.",
+        title: "Kit d’intégration",
+      },
+      inbox: {
+        description:
+          "Répondre aux commentaires, avis et messages au même endroit.",
+        title: "Boîte de réception",
+      },
+      mcp: {
+        description: "Connecter un assistant IA, et choisir s’il peut publier.",
+        title: "Serveur MCP",
+      },
+      platforms: {
+        description: "Chaque réseau où Peal publie, et ce qu’il accepte.",
+        title: "Plateformes",
+      },
+      sdks: {
+        description: "Des clients typés dans huit langages.",
+        title: "SDK",
+      },
+      security: {
+        description: "Comment signaler une vulnérabilité.",
+        title: "Sécurité",
+      },
+      selfHosting: {
+        description: "Faire tourner Peal chez vous, avec Postgres et S3.",
+        title: "Guide d’auto-hébergement",
+      },
+      status: {
+        description: "Si Peal fonctionne, et les incidents passés.",
+        title: "État du service",
+      },
+      webhooks: {
+        description: "Savoir ce qui se passe dans un espace, sans interroger.",
+        title: "Webhooks",
+      },
+    },
     main: "Principal",
+    products: "Produits",
+    resources: "Ressources",
+    resourcesGroup: "Apprendre et trouver de l’aide",
+    signIn: "Se connecter",
+    star: {
+      caption: "fair source",
+      description:
+        "Le code est public : lisez-le, hébergez-le vous-même et suivez chaque version.",
+      title: "Une étoile sur GitHub",
+    },
+    stars: "étoiles",
+    studio: "Studio, pour les équipes marketing",
   },
   pricing: {
     coming: "Bientôt : tarifs à venir",

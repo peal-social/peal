@@ -17,6 +17,7 @@
   <a href="https://docs.peal.social/reference"><strong>API reference</strong></a> ·
   <a href="https://docs.peal.social/self-hosting"><strong>Self-hosting</strong></a> ·
   <a href="https://status.peal.social"><strong>Status</strong></a> ·
+  <a href="https://discord.gg/VBZ5pPT9ss"><strong>Discord</strong></a> ·
   <a href="https://github.com/peal-social/peal/issues/new/choose"><strong>Report an issue</strong></a>
 </p>
 
@@ -188,8 +189,12 @@ every setting.
 - [Documentation](https://docs.peal.social)
 - [API reference](https://docs.peal.social/reference)
 - [Self-hosting guide](https://docs.peal.social/self-hosting)
-- [Bug tracker](https://github.com/peal-social/peal/issues) (bugs, platform
-  quirks, feature requests, self-hosting help)
+- [Discord](https://discord.gg/VBZ5pPT9ss) (chat with the team and other
+  users)
+- [Discussions](https://github.com/peal-social/peal/discussions) (ideas and
+  questions)
+- [Bug tracker](https://github.com/peal-social/peal/issues) (bugs and
+  platform quirks)
 - [Contributing](.github/CONTRIBUTING.md) (developing Peal, running it from
   source)
 - [Security policy](SECURITY.md) (report a vulnerability privately)

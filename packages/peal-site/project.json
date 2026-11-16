@@ -40,6 +40,9 @@
           "env": "SITE_DOCS_URL"
         },
         {
+          "env": "SITE_DISCORD_URL"
+        },
+        {
           "env": "SITE_PLAUSIBLE_DOMAIN"
         },
         {

@@ -1,5 +1,6 @@
 import {
   SITE_APP_URL,
+  SITE_DISCORD_URL,
   SITE_DOCS_URL,
   SITE_PLAUSIBLE_DOMAIN,
   SITE_PLAUSIBLE_HOST,
@@ -51,8 +52,8 @@ export const appLink = (locale: Locale, path: string): string | undefined => {
   return `${appOrigin}${prefix}/${path}`;
 };
 
-/** The public repository, which the footer links to on every page. */
-export const repositoryUrl = "https://github.com/peal-social/peal";
+/** The Discord server's invitation, or `undefined` when none is set. */
+export const discordUrl = present(SITE_DISCORD_URL);
 
 export interface SocialAccount {
   readonly href: string;

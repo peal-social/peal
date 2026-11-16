@@ -1,13 +1,18 @@
 ---
+import { Font } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { SiteFooter } from "peal-ui/components/site-footer";
+import { SiteHeader } from "peal-ui/components/site-header";
 
-import Footer from "../components/footer.astro";
-import Header from "../components/header.astro";
+import { chrome } from "../components/chrome.ts";
 import { plausible } from "../config.ts";
+import type { PageLinks } from "../navigation.ts";
 import { defaultLocale, locales, pageLocale } from "../i18n/locales.ts";
 import "../styles/global.css";
 
 interface Props {
+  /** Which of the header's own pages this is, to mark it current. */
+  readonly current?: PageLinks["current"];
   readonly description: string;
   /** Keep the page out of search engines, as drafts are. */
   readonly noindex?: boolean;
@@ -16,9 +21,11 @@ interface Props {
   readonly title: string;
 }
 
-const { description, noindex = false, path, title } = Astro.props;
+const { current, description, noindex = false, path, title } = Astro.props;
 
 const locale = pageLocale(Astro.currentLocale);
+
+const { footer, header } = await chrome(locale, path, current);
 
 // Canonical and alternate links need absolute URLs, so they are only emitted
 // when SITE_URL gives the site its origin.
@@ -44,6 +51,8 @@ const fallback = absolute(defaultLocale);
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <Font cssVariable="--font-geist-sans" preload />
+    <Font cssVariable="--font-geist-mono" />
     {noindex && <meta name="robots" content="noindex" />}
     {canonical !== undefined && <link rel="canonical" href={canonical} />}
     {
@@ -70,13 +79,18 @@ const fallback = absolute(defaultLocale);
       )
     }
   </head>
-  <body
-    class="flex min-h-dvh flex-col bg-white text-neutral-900 antialiased"
-  >
-    <Header locale={locale} path={path} />
-    <main class="flex-1">
+  <body class="relative flex min-h-dvh flex-col antialiased">
+    <!-- The blueprint's rails (DESIGN.md, Site): the content column's edges,
+         from the header to the footer, under everything that has a fill. -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-6xl -translate-x-1/2 border-x"
+    >
+    </div>
+    <SiteHeader client:load {...header} />
+    <main class="relative flex-1">
       <slot />
     </main>
-    <Footer locale={locale} path={path} />
+    <SiteFooter {...footer} />
   </body>
 </html>
