@@ -23,6 +23,7 @@ export * from "./Ad.js";
 export * from "./AdAccess.js";
 export * from "./AdAccount.js";
 export * from "./AdAccountBusyEncoded.js";
+export * from "./AdAccountCapabilities.js";
 export * from "./AdAccountNotFoundEncoded.js";
 export * from "./AdAccountSpendCapExceededEncoded.js";
 export * from "./AdAccountStatus.js";

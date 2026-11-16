@@ -17,6 +17,12 @@ public class ListInsightsTest : BaseMockServerTest
               "account": {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -27,6 +33,7 @@ public class ListInsightsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",
@@ -88,6 +95,12 @@ public class ListInsightsTest : BaseMockServerTest
               "account": {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -98,6 +111,7 @@ public class ListInsightsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",

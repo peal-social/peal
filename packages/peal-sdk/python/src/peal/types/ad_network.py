@@ -2,4 +2,4 @@
 
 import typing
 
-AdNetwork = typing.Union[typing.Literal["meta"], typing.Any]
+AdNetwork = typing.Union[typing.Literal["meta", "google"], typing.Any]

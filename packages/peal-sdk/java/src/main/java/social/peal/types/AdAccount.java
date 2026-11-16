@@ -28,6 +28,8 @@ public final class AdAccount {
 
     private final Optional<Long> amountSpent;
 
+    private final AdAccountCapabilities capabilities;
+
     private final String connectedAt;
 
     private final String connectionId;
@@ -48,6 +50,8 @@ public final class AdAccount {
 
     private final Optional<String> newAdsUntrackedUntil;
 
+    private final Optional<String> reachedThrough;
+
     private final Optional<Long> spendCap;
 
     private final boolean spendingEnabled;
@@ -63,6 +67,7 @@ public final class AdAccount {
     private AdAccount(
             AdAccess access,
             Optional<Long> amountSpent,
+            AdAccountCapabilities capabilities,
             String connectedAt,
             String connectionId,
             String currency,
@@ -73,6 +78,7 @@ public final class AdAccount {
             String name,
             AdNetwork network,
             Optional<String> newAdsUntrackedUntil,
+            Optional<String> reachedThrough,
             Optional<Long> spendCap,
             boolean spendingEnabled,
             AdAccountStatus status,
@@ -81,6 +87,7 @@ public final class AdAccount {
             Map<String, Object> additionalProperties) {
         this.access = access;
         this.amountSpent = amountSpent;
+        this.capabilities = capabilities;
         this.connectedAt = connectedAt;
         this.connectionId = connectionId;
         this.currency = currency;
@@ -91,6 +98,7 @@ public final class AdAccount {
         this.name = name;
         this.network = network;
         this.newAdsUntrackedUntil = newAdsUntrackedUntil;
+        this.reachedThrough = reachedThrough;
         this.spendCap = spendCap;
         this.spendingEnabled = spendingEnabled;
         this.status = status;
@@ -113,6 +121,11 @@ public final class AdAccount {
             return Optional.empty();
         }
         return amountSpent;
+    }
+
+    @JsonProperty("capabilities")
+    public AdAccountCapabilities getCapabilities() {
+        return capabilities;
     }
 
     @JsonProperty("connectedAt")
@@ -177,6 +190,14 @@ public final class AdAccount {
         return newAdsUntrackedUntil;
     }
 
+    @JsonIgnore
+    public Optional<String> getReachedThrough() {
+        if (reachedThrough == null) {
+            return Optional.empty();
+        }
+        return reachedThrough;
+    }
+
     /**
      * @return An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's <code>minorUnitDigits</code> to show it.
      */
@@ -230,6 +251,12 @@ public final class AdAccount {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("reachedThrough")
+    private Optional<String> _getReachedThrough() {
+        return reachedThrough;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("spendCap")
     private Optional<Long> _getSpendCap() {
         return spendCap;
@@ -255,6 +282,7 @@ public final class AdAccount {
     private boolean equalTo(AdAccount other) {
         return access.equals(other.access)
                 && amountSpent.equals(other.amountSpent)
+                && capabilities.equals(other.capabilities)
                 && connectedAt.equals(other.connectedAt)
                 && connectionId.equals(other.connectionId)
                 && currency.equals(other.currency)
@@ -265,6 +293,7 @@ public final class AdAccount {
                 && name.equals(other.name)
                 && network.equals(other.network)
                 && newAdsUntrackedUntil.equals(other.newAdsUntrackedUntil)
+                && reachedThrough.equals(other.reachedThrough)
                 && spendCap.equals(other.spendCap)
                 && spendingEnabled == other.spendingEnabled
                 && status.equals(other.status)
@@ -277,6 +306,7 @@ public final class AdAccount {
         return Objects.hash(
                 this.access,
                 this.amountSpent,
+                this.capabilities,
                 this.connectedAt,
                 this.connectionId,
                 this.currency,
@@ -287,6 +317,7 @@ public final class AdAccount {
                 this.name,
                 this.network,
                 this.newAdsUntrackedUntil,
+                this.reachedThrough,
                 this.spendCap,
                 this.spendingEnabled,
                 this.status,
@@ -304,9 +335,13 @@ public final class AdAccount {
     }
 
     public interface AccessStage {
-        ConnectedAtStage access(@NotNull AdAccess access);
+        CapabilitiesStage access(@NotNull AdAccess access);
 
         Builder from(AdAccount other);
+    }
+
+    public interface CapabilitiesStage {
+        ConnectedAtStage capabilities(@NotNull AdAccountCapabilities capabilities);
     }
 
     public interface ConnectedAtStage {
@@ -387,6 +422,12 @@ public final class AdAccount {
 
         _FinalStage newAdsUntrackedUntil(Nullable<String> newAdsUntrackedUntil);
 
+        _FinalStage reachedThrough(Optional<String> reachedThrough);
+
+        _FinalStage reachedThrough(String reachedThrough);
+
+        _FinalStage reachedThrough(Nullable<String> reachedThrough);
+
         /**
          * <p>An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's <code>minorUnitDigits</code> to show it.</p>
          */
@@ -406,6 +447,7 @@ public final class AdAccount {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder
             implements AccessStage,
+                    CapabilitiesStage,
                     ConnectedAtStage,
                     ConnectionIdStage,
                     CurrencyStage,
@@ -419,6 +461,8 @@ public final class AdAccount {
                     TimeZoneStage,
                     _FinalStage {
         private AdAccess access;
+
+        private AdAccountCapabilities capabilities;
 
         private String connectedAt;
 
@@ -446,6 +490,8 @@ public final class AdAccount {
 
         private Optional<Long> spendCap = Optional.empty();
 
+        private Optional<String> reachedThrough = Optional.empty();
+
         private Optional<String> newAdsUntrackedUntil = Optional.empty();
 
         private Optional<Long> monthlyCeiling = Optional.empty();
@@ -460,6 +506,7 @@ public final class AdAccount {
         public Builder from(AdAccount other) {
             access(other.getAccess());
             amountSpent(other.getAmountSpent());
+            capabilities(other.getCapabilities());
             connectedAt(other.getConnectedAt());
             connectionId(other.getConnectionId());
             currency(other.getCurrency());
@@ -470,6 +517,7 @@ public final class AdAccount {
             name(other.getName());
             network(other.getNetwork());
             newAdsUntrackedUntil(other.getNewAdsUntrackedUntil());
+            reachedThrough(other.getReachedThrough());
             spendCap(other.getSpendCap());
             spendingEnabled(other.getSpendingEnabled());
             status(other.getStatus());
@@ -480,8 +528,15 @@ public final class AdAccount {
 
         @java.lang.Override
         @JsonSetter("access")
-        public ConnectedAtStage access(@NotNull AdAccess access) {
+        public CapabilitiesStage access(@NotNull AdAccess access) {
             this.access = Objects.requireNonNull(access, "access must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("capabilities")
+        public ConnectedAtStage capabilities(@NotNull AdAccountCapabilities capabilities) {
+            this.capabilities = Objects.requireNonNull(capabilities, "capabilities must not be null");
             return this;
         }
 
@@ -628,6 +683,31 @@ public final class AdAccount {
         }
 
         @java.lang.Override
+        public _FinalStage reachedThrough(Nullable<String> reachedThrough) {
+            if (reachedThrough.isNull()) {
+                this.reachedThrough = null;
+            } else if (reachedThrough.isEmpty()) {
+                this.reachedThrough = Optional.empty();
+            } else {
+                this.reachedThrough = Optional.of(reachedThrough.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage reachedThrough(String reachedThrough) {
+            this.reachedThrough = Optional.ofNullable(reachedThrough);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "reachedThrough", nulls = Nulls.SKIP)
+        public _FinalStage reachedThrough(Optional<String> reachedThrough) {
+            this.reachedThrough = reachedThrough;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage newAdsUntrackedUntil(Nullable<String> newAdsUntrackedUntil) {
             if (newAdsUntrackedUntil.isNull()) {
                 this.newAdsUntrackedUntil = null;
@@ -729,6 +809,7 @@ public final class AdAccount {
             return new AdAccount(
                     access,
                     amountSpent,
+                    capabilities,
                     connectedAt,
                     connectionId,
                     currency,
@@ -739,6 +820,7 @@ public final class AdAccount {
                     name,
                     network,
                     newAdsUntrackedUntil,
+                    reachedThrough,
                     spendCap,
                     spendingEnabled,
                     status,
@@ -751,6 +833,7 @@ public final class AdAccount {
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("access")
                     || key.equalsIgnoreCase("amountSpent")
+                    || key.equalsIgnoreCase("capabilities")
                     || key.equalsIgnoreCase("connectedAt")
                     || key.equalsIgnoreCase("connectionId")
                     || key.equalsIgnoreCase("currency")
@@ -761,6 +844,7 @@ public final class AdAccount {
                     || key.equalsIgnoreCase("name")
                     || key.equalsIgnoreCase("network")
                     || key.equalsIgnoreCase("newAdsUntrackedUntil")
+                    || key.equalsIgnoreCase("reachedThrough")
                     || key.equalsIgnoreCase("spendCap")
                     || key.equalsIgnoreCase("spendingEnabled")
                     || key.equalsIgnoreCase("status")

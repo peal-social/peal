@@ -38,7 +38,9 @@ import type {
 } from "#ads/application/spend-authorizations.ts";
 import { Audience } from "#ads/domain/audience.ts";
 import type { Boost } from "#ads/domain/boost.ts";
+import type { AdNetwork } from "#ads/domain/ad-network.ts";
 import { CurrencySchema, minorUnitDigits, Money } from "#ads/domain/money.ts";
+import { traitsOf } from "#ads/domain/network-traits.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 
@@ -90,12 +92,25 @@ export const toReachableView = ({
   unsupported: Option.getOrNull(unsupported),
 });
 
+/** What Peal reads and does on an account of a network. */
+export const capabilitiesOf = (network: AdNetwork) => {
+  const traits = traitsOf(network);
+
+  return {
+    ads: traits.days === "ad",
+    boosts: traits.spends,
+    reach: traits.reportsReach,
+    results: traits.reportsResults,
+  };
+};
+
 export const toAccountView = ({
   account,
   authorization,
 }: AuthorizedAccount): AdAccountView => ({
   access: account.access,
   amountSpent: Option.getOrNull(account.amountSpent),
+  capabilities: capabilitiesOf(account.network),
   connectedAt: account.connectedAt,
   connectionId: account.grantId,
   currency: account.currency,
@@ -106,6 +121,7 @@ export const toAccountView = ({
     authorization._tag === "on" ? authorization.monthlyCeiling : null,
   name: account.name,
   network: account.network,
+  reachedThrough: Option.getOrNull(account.reachedThrough),
   spendCap: Option.getOrNull(account.spendCap),
   spendingEnabled: authorization._tag === "on",
   status: account.status,
@@ -252,6 +268,7 @@ export const toCampaignView = (campaign: CampaignRow) => ({
   dailyBudget: Option.getOrNull(campaign.dailyBudget),
   endsAt: Option.getOrNull(campaign.endsAt),
   externalId: campaign.externalId,
+  kind: Option.getOrNull(campaign.kind),
   name: campaign.name,
   objective: campaign.objective,
   rawStatus: campaign.rawStatus,

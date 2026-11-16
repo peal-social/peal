@@ -30,6 +30,8 @@ public final class AdCampaign {
 
     private final String externalId;
 
+    private final Optional<String> kind;
+
     private final String name;
 
     private final CampaignObjective objective;
@@ -52,6 +54,7 @@ public final class AdCampaign {
             Optional<Long> dailyBudget,
             Optional<String> endsAt,
             String externalId,
+            Optional<String> kind,
             String name,
             CampaignObjective objective,
             String rawStatus,
@@ -64,6 +67,7 @@ public final class AdCampaign {
         this.dailyBudget = dailyBudget;
         this.endsAt = endsAt;
         this.externalId = externalId;
+        this.kind = kind;
         this.name = name;
         this.objective = objective;
         this.rawStatus = rawStatus;
@@ -97,6 +101,14 @@ public final class AdCampaign {
     @JsonProperty("externalId")
     public String getExternalId() {
         return externalId;
+    }
+
+    @JsonIgnore
+    public Optional<String> getKind() {
+        if (kind == null) {
+            return Optional.empty();
+        }
+        return kind;
     }
 
     @JsonProperty("name")
@@ -161,6 +173,12 @@ public final class AdCampaign {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("kind")
+    private Optional<String> _getKind() {
+        return kind;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("startsAt")
     private Optional<String> _getStartsAt() {
         return startsAt;
@@ -187,6 +205,7 @@ public final class AdCampaign {
         return dailyBudget.equals(other.dailyBudget)
                 && endsAt.equals(other.endsAt)
                 && externalId.equals(other.externalId)
+                && kind.equals(other.kind)
                 && name.equals(other.name)
                 && objective.equals(other.objective)
                 && rawStatus.equals(other.rawStatus)
@@ -203,6 +222,7 @@ public final class AdCampaign {
                 this.dailyBudget,
                 this.endsAt,
                 this.externalId,
+                this.kind,
                 this.name,
                 this.objective,
                 this.rawStatus,
@@ -274,6 +294,12 @@ public final class AdCampaign {
 
         _FinalStage endsAt(Nullable<String> endsAt);
 
+        _FinalStage kind(Optional<String> kind);
+
+        _FinalStage kind(String kind);
+
+        _FinalStage kind(Nullable<String> kind);
+
         _FinalStage startsAt(Optional<String> startsAt);
 
         _FinalStage startsAt(String startsAt);
@@ -318,6 +344,8 @@ public final class AdCampaign {
 
         private Optional<String> startsAt = Optional.empty();
 
+        private Optional<String> kind = Optional.empty();
+
         private Optional<String> endsAt = Optional.empty();
 
         private Optional<Long> dailyBudget = Optional.empty();
@@ -331,6 +359,7 @@ public final class AdCampaign {
             dailyBudget(other.getDailyBudget());
             endsAt(other.getEndsAt());
             externalId(other.getExternalId());
+            kind(other.getKind());
             name(other.getName());
             objective(other.getObjective());
             rawStatus(other.getRawStatus());
@@ -453,6 +482,31 @@ public final class AdCampaign {
         }
 
         @java.lang.Override
+        public _FinalStage kind(Nullable<String> kind) {
+            if (kind.isNull()) {
+                this.kind = null;
+            } else if (kind.isEmpty()) {
+                this.kind = Optional.empty();
+            } else {
+                this.kind = Optional.of(kind.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage kind(String kind) {
+            this.kind = Optional.ofNullable(kind);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "kind", nulls = Nulls.SKIP)
+        public _FinalStage kind(Optional<String> kind) {
+            this.kind = kind;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage endsAt(Nullable<String> endsAt) {
             if (endsAt.isNull()) {
                 this.endsAt = null;
@@ -519,6 +573,7 @@ public final class AdCampaign {
                     dailyBudget,
                     endsAt,
                     externalId,
+                    kind,
                     name,
                     objective,
                     rawStatus,
@@ -535,6 +590,7 @@ public final class AdCampaign {
             if (key.equalsIgnoreCase("dailyBudget")
                     || key.equalsIgnoreCase("endsAt")
                     || key.equalsIgnoreCase("externalId")
+                    || key.equalsIgnoreCase("kind")
                     || key.equalsIgnoreCase("name")
                     || key.equalsIgnoreCase("objective")
                     || key.equalsIgnoreCase("rawStatus")

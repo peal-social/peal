@@ -23,6 +23,9 @@ public record AdCampaign : IJsonOnDeserialized
     [JsonPropertyName("externalId")]
     public required string ExternalId { get; set; }
 
+    [JsonPropertyName("kind")]
+    public string? Kind { get; set; }
+
     [JsonPropertyName("name")]
     public required string Name { get; set; }
 

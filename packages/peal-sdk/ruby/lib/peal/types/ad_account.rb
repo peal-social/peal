@@ -9,6 +9,8 @@ module Peal
 
       field :amount_spent, -> { Integer }, optional: false, nullable: true, api_name: "amountSpent"
 
+      field :capabilities, -> { Peal::Types::AdAccountCapabilities }, optional: false, nullable: false
+
       field :connected_at, -> { String }, optional: false, nullable: false, api_name: "connectedAt"
 
       field :connection_id, -> { String }, optional: false, nullable: false, api_name: "connectionId"
@@ -28,6 +30,8 @@ module Peal
       field :network, -> { Peal::Types::AdNetwork }, optional: false, nullable: false
 
       field :new_ads_untracked_until, -> { String }, optional: true, nullable: true, api_name: "newAdsUntrackedUntil"
+
+      field :reached_through, -> { String }, optional: false, nullable: true, api_name: "reachedThrough"
 
       field :spend_cap, -> { Integer }, optional: false, nullable: true, api_name: "spendCap"
 

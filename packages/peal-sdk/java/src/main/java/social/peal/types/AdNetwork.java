@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class AdNetwork {
+    public static final AdNetwork GOOGLE = new AdNetwork(Value.GOOGLE, "google");
+
     public static final AdNetwork META = new AdNetwork(Value.META, "meta");
 
     private final Value value;
@@ -40,6 +42,8 @@ public final class AdNetwork {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case GOOGLE:
+                return visitor.visitGoogle();
             case META:
                 return visitor.visitMeta();
             case UNKNOWN:
@@ -51,6 +55,8 @@ public final class AdNetwork {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static AdNetwork valueOf(String value) {
         switch (value) {
+            case "google":
+                return GOOGLE;
             case "meta":
                 return META;
             default:
@@ -61,11 +67,15 @@ public final class AdNetwork {
     public enum Value {
         META,
 
+        GOOGLE,
+
         UNKNOWN
     }
 
     public interface Visitor<T> {
         T visitMeta();
+
+        T visitGoogle();
 
         T visitUnknown(String unknownType);
     }

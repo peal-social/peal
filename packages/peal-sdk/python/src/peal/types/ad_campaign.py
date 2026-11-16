@@ -28,6 +28,7 @@ class AdCampaign(UniversalBaseModel):
         typing.Optional[str], FieldMetadata(alias="endsAt"), pydantic.Field(alias="endsAt")
     ] = None
     external_id: typing_extensions.Annotated[str, FieldMetadata(alias="externalId"), pydantic.Field(alias="externalId")]
+    kind: typing.Optional[str] = None
     name: str
     objective: CampaignObjective
     raw_status: typing_extensions.Annotated[str, FieldMetadata(alias="rawStatus"), pydantic.Field(alias="rawStatus")]

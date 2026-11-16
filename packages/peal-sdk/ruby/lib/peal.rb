@@ -451,6 +451,7 @@ module Peal
     autoload :PaidTotals, ::File.join(__dir__, "peal/types/paid_totals")
     autoload :Ad, ::File.join(__dir__, "peal/types/ad")
     autoload :AdAccess, ::File.join(__dir__, "peal/types/ad_access")
+    autoload :AdAccountCapabilities, ::File.join(__dir__, "peal/types/ad_account_capabilities")
     autoload :AdAccountStatus, ::File.join(__dir__, "peal/types/ad_account_status")
     autoload :AdNetwork, ::File.join(__dir__, "peal/types/ad_network")
     autoload :AdAccount, ::File.join(__dir__, "peal/types/ad_account")

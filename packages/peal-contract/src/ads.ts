@@ -177,11 +177,32 @@ export const ReachableAdAccountSchema = Schema.Struct({
 
 export type ReachableAdAccount = typeof ReachableAdAccountSchema.Type;
 
+/** What Peal reads and does on an ad account, as its network allows. */
+export const AdAccountCapabilitiesSchema = Schema.Struct({
+  // Whether its ads are listed: false where the network's numbers are read
+  // by campaign (Google Ads), whose `listAds` answers none.
+  ads: Schema.Boolean,
+  // Whether posts may be boosted on it, and spending turned on: false on a
+  // network Peal only reads (Google Ads), whatever the server offers.
+  boosts: Schema.Boolean,
+  // Whether its numbers carry reach: where they do not, `reach` reads 0.
+  reach: Schema.Boolean,
+  // Whether its numbers carry results: where they do not, `results` is null.
+  results: Schema.Boolean,
+}).annotate({
+  description:
+    "What Peal reads and does on an ad account, as its network allows: a client hides what is false (the ads list, boosting and spending, reach, results).",
+  identifier: "AdAccountCapabilities",
+});
+
+export type AdAccountCapabilities = typeof AdAccountCapabilitiesSchema.Type;
+
 /** An ad account connected to the workspace. */
 export const AdAccountSchema = Schema.Struct({
   access: AdAccessSchema,
   // What the account spent against its own cap, as last read.
   amountSpent: Schema.NullOr(AmountSchema),
+  capabilities: AdAccountCapabilitiesSchema,
   connectedAt: Schema.DateTimeUtc,
   connectionId: Schema.String,
   currency: CurrencySchema,
@@ -202,12 +223,16 @@ export const AdAccountSchema = Schema.Struct({
   // UTC; null while they are. Given where the workspace's accounts are
   // listed or connected; older servers leave it out.
   newAdsUntrackedUntil: Schema.optionalKey(Schema.NullOr(Schema.DateTimeUtc)),
+  // The manager account it is read through, on Google Ads (the network's
+  // id, digits); null when reached directly, and on Meta.
+  reachedThrough: Schema.NullOr(Schema.String),
   // The account's own cap at its network; null without one.
   spendCap: Schema.NullOr(AmountSchema),
   // Whether an owner allowed it to spend through Peal.
   spendingEnabled: Schema.Boolean,
   status: AdAccountStatusSchema,
-  // When its campaigns and numbers were last read whole.
+  // When its campaigns and numbers were last read whole: every hour on
+  // Meta, every six hours on Google Ads.
   syncedAt: Schema.NullOr(Schema.DateTimeUtc),
   timeZone: Schema.String,
 }).annotate({ identifier: "AdAccount" });
@@ -276,6 +301,10 @@ export const AdCampaignSchema = Schema.Struct({
   dailyBudget: Schema.NullOr(AmountSchema),
   endsAt: Schema.NullOr(Schema.DateTimeUtc),
   externalId: Schema.String,
+  // The network's own word for the campaign's kind, where it gives one
+  // (Google Ads' channel: `SEARCH`, `PERFORMANCE_MAX`); null on Meta,
+  // whose `objective` says it.
+  kind: Schema.NullOr(Schema.String),
   name: Schema.String,
   objective: CampaignObjectiveSchema,
   rawStatus: Schema.String,
@@ -783,7 +812,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     }).annotateMerge(
       OpenApi.annotations({
         description:
-          "Decides whether an ad account may spend through Peal, and how much: `enabled` with a `monthlyCeiling` in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (`AdAccountBusy`). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.",
+          "Decides whether an ad account may spend through Peal, and how much: `enabled` with a `monthlyCeiling` in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (`AdAccountBusy`). Turning it on is refused (`AdSpendingUnavailable`) on a server that offers no spending, and on an account whose `capabilities.boosts` is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.",
         summary: "Allow an ad account to spend, with a monthly ceiling",
       })
     ),
@@ -794,7 +823,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
       success: AdCampaignReportSchema,
     }).annotateMerge(
       OpenApi.annotations({
-        description: `Lists an ad account's campaigns as last read from its network (every hour), those made outside Peal included, with what their ads did ${rangeNote}. A thousand at most. Needs ads:read.`,
+        description: `Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did ${rangeNote}: their ads' days, or their own on Google Ads, whose \`reach\` reads 0 and \`results\` null. A thousand at most. Needs ads:read.`,
         summary: "List an ad account's campaigns",
       })
     ),
@@ -805,7 +834,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
       success: AdReportSchema,
     }).annotateMerge(
       OpenApi.annotations({
-        description: `Lists an ad account's ads as last read, those of one campaign with \`campaignId\` (the network's id), each with the workspace's own post it promotes when it is one, and what it did ${rangeNote}. A thousand at most. Needs ads:read.`,
+        description: `Lists an ad account's ads as last read, those of one campaign with \`campaignId\` (the network's id), each with the workspace's own post it promotes when it is one, and what it did ${rangeNote}. A thousand at most. An account whose \`capabilities.ads\` is false (Google Ads, read by campaign) answers none. Needs ads:read.`,
         summary: "List an ad account's ads",
       })
     ),
@@ -816,7 +845,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
       success: AdInsightReportSchema,
     }).annotateMerge(
       OpenApi.annotations({
-        description: `Sums what an ad account's ads did each day: spend, impressions, reach, clicks and results, ${rangeNote}. A day is kept ${adInsightRetentionDays} days. Needs ads:read.`,
+        description: `Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, ${rangeNote}. A day is kept ${adInsightRetentionDays} days. Where \`capabilities.reach\` or \`capabilities.results\` is false, \`reach\` reads 0 and \`results\` null. Needs ads:read.`,
         summary: "Get an ad account's daily numbers",
       })
     ),
@@ -874,7 +903,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
       success: BoostSchema.pipe(HttpApiSchema.status(202)),
     }).annotateMerge(
       OpenApi.annotations({
-        description: `**Spends money.** Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until \`endsAt\`. The \`Idempotency-Key\` header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as \`requested\`, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads, the post cannot be boosted, the boost breaks Peal's rules (an end date within ${maxBoostRunDays} days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached \`paymentMethodRequired\`); running boosts are never touched. Needs ads:spend; never staff acting as a member.`,
+        description: `**Spends money.** Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until \`endsAt\`. The \`Idempotency-Key\` header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as \`requested\`, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose \`capabilities.boosts\` is false, Google Ads: \`AdAccountUnusable\`), the post cannot be boosted, the boost breaks Peal's rules (an end date within ${maxBoostRunDays} days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached \`paymentMethodRequired\`); running boosts are never touched. Needs ads:spend; never staff acting as a member.`,
         summary: "Boost a published post",
       })
     ),

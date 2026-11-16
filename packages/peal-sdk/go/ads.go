@@ -1254,21 +1254,23 @@ func (a AdAccess) Ptr() *AdAccess {
 var (
 	adAccountFieldAccess               = big.NewInt(1 << 0)
 	adAccountFieldAmountSpent          = big.NewInt(1 << 1)
-	adAccountFieldConnectedAt          = big.NewInt(1 << 2)
-	adAccountFieldConnectionID         = big.NewInt(1 << 3)
-	adAccountFieldCurrency             = big.NewInt(1 << 4)
-	adAccountFieldExternalID           = big.NewInt(1 << 5)
-	adAccountFieldID                   = big.NewInt(1 << 6)
-	adAccountFieldMinorUnitDigits      = big.NewInt(1 << 7)
-	adAccountFieldMonthlyCeiling       = big.NewInt(1 << 8)
-	adAccountFieldName                 = big.NewInt(1 << 9)
-	adAccountFieldNetwork              = big.NewInt(1 << 10)
-	adAccountFieldNewAdsUntrackedUntil = big.NewInt(1 << 11)
-	adAccountFieldSpendCap             = big.NewInt(1 << 12)
-	adAccountFieldSpendingEnabled      = big.NewInt(1 << 13)
-	adAccountFieldStatus               = big.NewInt(1 << 14)
-	adAccountFieldSyncedAt             = big.NewInt(1 << 15)
-	adAccountFieldTimeZone             = big.NewInt(1 << 16)
+	adAccountFieldCapabilities         = big.NewInt(1 << 2)
+	adAccountFieldConnectedAt          = big.NewInt(1 << 3)
+	adAccountFieldConnectionID         = big.NewInt(1 << 4)
+	adAccountFieldCurrency             = big.NewInt(1 << 5)
+	adAccountFieldExternalID           = big.NewInt(1 << 6)
+	adAccountFieldID                   = big.NewInt(1 << 7)
+	adAccountFieldMinorUnitDigits      = big.NewInt(1 << 8)
+	adAccountFieldMonthlyCeiling       = big.NewInt(1 << 9)
+	adAccountFieldName                 = big.NewInt(1 << 10)
+	adAccountFieldNetwork              = big.NewInt(1 << 11)
+	adAccountFieldNewAdsUntrackedUntil = big.NewInt(1 << 12)
+	adAccountFieldReachedThrough       = big.NewInt(1 << 13)
+	adAccountFieldSpendCap             = big.NewInt(1 << 14)
+	adAccountFieldSpendingEnabled      = big.NewInt(1 << 15)
+	adAccountFieldStatus               = big.NewInt(1 << 16)
+	adAccountFieldSyncedAt             = big.NewInt(1 << 17)
+	adAccountFieldTimeZone             = big.NewInt(1 << 18)
 )
 
 // adAccountNullableFields maps the wire names of AdAccount's nullable fields (required or optional) to their field bits.
@@ -1276,6 +1278,7 @@ var adAccountNullableFields = map[string]*big.Int{
 	"amountSpent":          adAccountFieldAmountSpent,
 	"monthlyCeiling":       adAccountFieldMonthlyCeiling,
 	"newAdsUntrackedUntil": adAccountFieldNewAdsUntrackedUntil,
+	"reachedThrough":       adAccountFieldReachedThrough,
 	"spendCap":             adAccountFieldSpendCap,
 	"syncedAt":             adAccountFieldSyncedAt,
 }
@@ -1283,9 +1286,10 @@ var adAccountNullableFields = map[string]*big.Int{
 type AdAccount struct {
 	Access AdAccess `json:"access" url:"access"`
 	// An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
-	AmountSpent  *int64 `json:"amountSpent,omitempty" url:"amountSpent,omitempty"`
-	ConnectedAt  string `json:"connectedAt" url:"connectedAt"`
-	ConnectionID string `json:"connectionId" url:"connectionId"`
+	AmountSpent  *int64                 `json:"amountSpent,omitempty" url:"amountSpent,omitempty"`
+	Capabilities *AdAccountCapabilities `json:"capabilities" url:"capabilities"`
+	ConnectedAt  string                 `json:"connectedAt" url:"connectedAt"`
+	ConnectionID string                 `json:"connectionId" url:"connectionId"`
 	// An ISO 4217 currency code, in capitals: `EUR`, `USD`.
 	Currency        string  `json:"currency" url:"currency"`
 	ExternalID      string  `json:"externalId" url:"externalId"`
@@ -1296,6 +1300,7 @@ type AdAccount struct {
 	Name                 string    `json:"name" url:"name"`
 	Network              AdNetwork `json:"network" url:"network"`
 	NewAdsUntrackedUntil *string   `json:"newAdsUntrackedUntil,omitempty" url:"newAdsUntrackedUntil,omitempty"`
+	ReachedThrough       *string   `json:"reachedThrough,omitempty" url:"reachedThrough,omitempty"`
 	// An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
 	SpendCap        *int64          `json:"spendCap,omitempty" url:"spendCap,omitempty"`
 	SpendingEnabled bool            `json:"spendingEnabled" url:"spendingEnabled"`
@@ -1322,6 +1327,13 @@ func (a *AdAccount) GetAmountSpent() *int64 {
 		return nil
 	}
 	return a.AmountSpent
+}
+
+func (a *AdAccount) GetCapabilities() *AdAccountCapabilities {
+	if a == nil {
+		return nil
+	}
+	return a.Capabilities
 }
 
 func (a *AdAccount) GetConnectedAt() string {
@@ -1394,6 +1406,13 @@ func (a *AdAccount) GetNewAdsUntrackedUntil() *string {
 	return a.NewAdsUntrackedUntil
 }
 
+func (a *AdAccount) GetReachedThrough() *string {
+	if a == nil {
+		return nil
+	}
+	return a.ReachedThrough
+}
+
 func (a *AdAccount) GetSpendCap() *int64 {
 	if a == nil {
 		return nil
@@ -1457,6 +1476,13 @@ func (a *AdAccount) SetAccess(access AdAccess) {
 func (a *AdAccount) SetAmountSpent(amountSpent *int64) {
 	a.AmountSpent = amountSpent
 	a.require(adAccountFieldAmountSpent)
+}
+
+// SetCapabilities sets the Capabilities field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AdAccount) SetCapabilities(capabilities *AdAccountCapabilities) {
+	a.Capabilities = capabilities
+	a.require(adAccountFieldCapabilities)
 }
 
 // SetConnectedAt sets the ConnectedAt field and marks it as non-optional;
@@ -1529,6 +1555,13 @@ func (a *AdAccount) SetNewAdsUntrackedUntil(newAdsUntrackedUntil *string) {
 	a.require(adAccountFieldNewAdsUntrackedUntil)
 }
 
+// SetReachedThrough sets the ReachedThrough field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AdAccount) SetReachedThrough(reachedThrough *string) {
+	a.ReachedThrough = reachedThrough
+	a.require(adAccountFieldReachedThrough)
+}
+
 // SetSpendCap sets the SpendCap field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (a *AdAccount) SetSpendCap(spendCap *int64) {
@@ -1599,6 +1632,141 @@ func (a *AdAccount) MarshalJSON() ([]byte, error) {
 }
 
 func (a *AdAccount) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	adAccountCapabilitiesFieldAds     = big.NewInt(1 << 0)
+	adAccountCapabilitiesFieldBoosts  = big.NewInt(1 << 1)
+	adAccountCapabilitiesFieldReach   = big.NewInt(1 << 2)
+	adAccountCapabilitiesFieldResults = big.NewInt(1 << 3)
+)
+
+// What Peal reads and does on an ad account, as its network allows: a client hides what is false (the ads list, boosting and spending, reach, results).
+type AdAccountCapabilities struct {
+	Ads     bool `json:"ads" url:"ads"`
+	Boosts  bool `json:"boosts" url:"boosts"`
+	Reach   bool `json:"reach" url:"reach"`
+	Results bool `json:"results" url:"results"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AdAccountCapabilities) GetAds() bool {
+	if a == nil {
+		return false
+	}
+	return a.Ads
+}
+
+func (a *AdAccountCapabilities) GetBoosts() bool {
+	if a == nil {
+		return false
+	}
+	return a.Boosts
+}
+
+func (a *AdAccountCapabilities) GetReach() bool {
+	if a == nil {
+		return false
+	}
+	return a.Reach
+}
+
+func (a *AdAccountCapabilities) GetResults() bool {
+	if a == nil {
+		return false
+	}
+	return a.Results
+}
+
+func (a *AdAccountCapabilities) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AdAccountCapabilities) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetAds sets the Ads field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AdAccountCapabilities) SetAds(ads bool) {
+	a.Ads = ads
+	a.require(adAccountCapabilitiesFieldAds)
+}
+
+// SetBoosts sets the Boosts field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AdAccountCapabilities) SetBoosts(boosts bool) {
+	a.Boosts = boosts
+	a.require(adAccountCapabilitiesFieldBoosts)
+}
+
+// SetReach sets the Reach field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AdAccountCapabilities) SetReach(reach bool) {
+	a.Reach = reach
+	a.require(adAccountCapabilitiesFieldReach)
+}
+
+// SetResults sets the Results field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AdAccountCapabilities) SetResults(results bool) {
+	a.Results = results
+	a.require(adAccountCapabilitiesFieldResults)
+}
+
+func (a *AdAccountCapabilities) UnmarshalJSON(data []byte) error {
+	type unmarshaler AdAccountCapabilities
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AdAccountCapabilities(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AdAccountCapabilities) MarshalJSON() ([]byte, error) {
+	type embed AdAccountCapabilities
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AdAccountCapabilities) String() string {
 	if a == nil {
 		return "<nil>"
 	}
@@ -2209,20 +2377,22 @@ var (
 	adCampaignFieldDailyBudget = big.NewInt(1 << 0)
 	adCampaignFieldEndsAt      = big.NewInt(1 << 1)
 	adCampaignFieldExternalID  = big.NewInt(1 << 2)
-	adCampaignFieldName        = big.NewInt(1 << 3)
-	adCampaignFieldObjective   = big.NewInt(1 << 4)
-	adCampaignFieldRawStatus   = big.NewInt(1 << 5)
-	adCampaignFieldStartsAt    = big.NewInt(1 << 6)
-	adCampaignFieldStatus      = big.NewInt(1 << 7)
-	adCampaignFieldSyncedAt    = big.NewInt(1 << 8)
-	adCampaignFieldTotalBudget = big.NewInt(1 << 9)
-	adCampaignFieldTotals      = big.NewInt(1 << 10)
+	adCampaignFieldKind        = big.NewInt(1 << 3)
+	adCampaignFieldName        = big.NewInt(1 << 4)
+	adCampaignFieldObjective   = big.NewInt(1 << 5)
+	adCampaignFieldRawStatus   = big.NewInt(1 << 6)
+	adCampaignFieldStartsAt    = big.NewInt(1 << 7)
+	adCampaignFieldStatus      = big.NewInt(1 << 8)
+	adCampaignFieldSyncedAt    = big.NewInt(1 << 9)
+	adCampaignFieldTotalBudget = big.NewInt(1 << 10)
+	adCampaignFieldTotals      = big.NewInt(1 << 11)
 )
 
 // adCampaignNullableFields maps the wire names of AdCampaign's nullable fields (required or optional) to their field bits.
 var adCampaignNullableFields = map[string]*big.Int{
 	"dailyBudget": adCampaignFieldDailyBudget,
 	"endsAt":      adCampaignFieldEndsAt,
+	"kind":        adCampaignFieldKind,
 	"startsAt":    adCampaignFieldStartsAt,
 	"totalBudget": adCampaignFieldTotalBudget,
 }
@@ -2232,6 +2402,7 @@ type AdCampaign struct {
 	DailyBudget *int64            `json:"dailyBudget,omitempty" url:"dailyBudget,omitempty"`
 	EndsAt      *string           `json:"endsAt,omitempty" url:"endsAt,omitempty"`
 	ExternalID  string            `json:"externalId" url:"externalId"`
+	Kind        *string           `json:"kind,omitempty" url:"kind,omitempty"`
 	Name        string            `json:"name" url:"name"`
 	Objective   CampaignObjective `json:"objective" url:"objective"`
 	RawStatus   string            `json:"rawStatus" url:"rawStatus"`
@@ -2268,6 +2439,13 @@ func (a *AdCampaign) GetExternalID() string {
 		return ""
 	}
 	return a.ExternalID
+}
+
+func (a *AdCampaign) GetKind() *string {
+	if a == nil {
+		return nil
+	}
+	return a.Kind
 }
 
 func (a *AdCampaign) GetName() string {
@@ -2361,6 +2539,13 @@ func (a *AdCampaign) SetEndsAt(endsAt *string) {
 func (a *AdCampaign) SetExternalID(externalID string) {
 	a.ExternalID = externalID
 	a.require(adCampaignFieldExternalID)
+}
+
+// SetKind sets the Kind field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AdCampaign) SetKind(kind *string) {
+	a.Kind = kind
+	a.require(adCampaignFieldKind)
 }
 
 // SetName sets the Name field and marks it as non-optional;
@@ -3137,17 +3322,20 @@ func (a *AdMoney) String() string {
 	return fmt.Sprintf("%#v", a)
 }
 
-// An ad network: `meta` is Meta's, for ads on Facebook and Instagram. Others may join it.
+// An ad network: `meta` is Meta's, for ads on Facebook and Instagram; `google` is Google Ads, read only (campaigns and their daily numbers, no ads, no boosts). Others may join them.
 type AdNetwork string
 
 const (
-	AdNetworkMeta AdNetwork = "meta"
+	AdNetworkMeta   AdNetwork = "meta"
+	AdNetworkGoogle AdNetwork = "google"
 )
 
 func NewAdNetworkFromString(s string) (AdNetwork, error) {
 	switch s {
 	case "meta":
 		return AdNetworkMeta, nil
+	case "google":
+		return AdNetworkGoogle, nil
 	}
 	var t AdNetwork
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

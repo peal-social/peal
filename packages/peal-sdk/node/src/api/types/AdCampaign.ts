@@ -7,6 +7,7 @@ export interface AdCampaign {
     dailyBudget: number | null;
     endsAt: string | null;
     externalId: string;
+    kind: string | null;
     name: string;
     objective: Peal.CampaignObjective;
     rawStatus: string;

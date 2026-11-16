@@ -11403,7 +11403,7 @@ $client->ads->removeAccount(
 <dl>
 <dd>
 
-Decides whether an ad account may spend through Peal, and how much: `enabled` with a `monthlyCeiling` in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (`AdAccountBusy`). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
+Decides whether an ad account may spend through Peal, and how much: `enabled` with a `monthlyCeiling` in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (`AdAccountBusy`). Turning it on is refused (`AdSpendingUnavailable`) on a server that offers no spending, and on an account whose `capabilities.boosts` is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
 </dd>
 </dl>
 </dd>
@@ -11487,7 +11487,7 @@ $client->ads->setSpending(
 <dl>
 <dd>
 
-Lists an ad account's campaigns as last read from its network (every hour), those made outside Peal included, with what their ads did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose `reach` reads 0 and `results` null. A thousand at most. Needs ads:read.
 </dd>
 </dl>
 </dd>
@@ -11569,7 +11569,7 @@ $client->ads->listCampaigns(
 <dl>
 <dd>
 
-Lists an ad account's ads as last read, those of one campaign with `campaignId` (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+Lists an ad account's ads as last read, those of one campaign with `campaignId` (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose `capabilities.ads` is false (Google Ads, read by campaign) answers none. Needs ads:read.
 </dd>
 </dl>
 </dd>
@@ -11659,7 +11659,7 @@ $client->ads->listAds(
 <dl>
 <dd>
 
-Sums what an ad account's ads did each day: spend, impressions, reach, clicks and results, over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Needs ads:read.
+Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where `capabilities.reach` or `capabilities.results` is false, `reach` reads 0 and `results` null. Needs ads:read.
 </dd>
 </dl>
 </dd>
@@ -11964,7 +11964,7 @@ $client->ads->listBoosts(
 <dl>
 <dd>
 
-**Spends money.** Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until `endsAt`. The `Idempotency-Key` header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as `requested`, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads, the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached `paymentMethodRequired`); running boosts are never touched. Needs ads:spend; never staff acting as a member.
+**Spends money.** Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until `endsAt`. The `Idempotency-Key` header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as `requested`, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose `capabilities.boosts` is false, Google Ads: `AdAccountUnusable`), the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached `paymentMethodRequired`); running boosts are never touched. Needs ads:spend; never staff acting as a member.
 </dd>
 </dl>
 </dd>

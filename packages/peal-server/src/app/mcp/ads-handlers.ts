@@ -18,9 +18,16 @@ import {
 import { AdConnections } from "#ads/application/ad-connections.ts";
 import { AdReports } from "#ads/application/ad-reports.ts";
 import { boostPageSize, Boosts } from "#ads/application/boosts.ts";
+import type { AuthorizedAccount } from "#ads/application/ports/account-store.ts";
 import { SpendAuthorizations } from "#ads/application/spend-authorizations.ts";
+import type { AdNetwork } from "#ads/domain/ad-network.ts";
 import { AdsTools } from "#app/mcp/ads-tools.ts";
-import { notAllowed, refuse, usageRefusal } from "#app/mcp/refusals.ts";
+import {
+  adNetworkNotOfferedText,
+  notAllowed,
+  refuse,
+  usageRefusal,
+} from "#app/mcp/refusals.ts";
 import { actorOf } from "#shared/api/actor.ts";
 
 // Why Peal refuses a boost before anything is reserved or sent, in words
@@ -41,6 +48,21 @@ const violations: Readonly<Record<BoostViolation, string>> = {
 };
 
 const noAccount = () => refuse("The workspace has no ad account with this id.");
+
+// The networks whose accounts the tools read: not Google Ads (decision 1
+// of U14), whose policy for tools names MCP servers.
+const offeredNetworks: ReadonlySet<AdNetwork> = new Set(["meta"]);
+
+const readHere = ({ account }: AuthorizedAccount) =>
+  offeredNetworks.has(account.network);
+
+// What a tool read of an account, unless its network is not offered here.
+const offeredOnly = <A extends { readonly account: AuthorizedAccount }>(
+  read: A
+) =>
+  readHere(read.account)
+    ? Effect.succeed(read)
+    : refuse(adNetworkNotOfferedText);
 
 const noBoost = () => refuse("The workspace has no boost with this id.");
 
@@ -226,6 +248,7 @@ export const AdsToolsLive = AdsTools.toLayer(
       get_ad_account: ({ accountId }) =>
         actor.pipe(
           Effect.flatMap((who) => spending.standing(who, accountId)),
+          Effect.flatMap(offeredOnly),
           Effect.map(toSpendingView),
           Effect.catchTags({
             AdAccountNotFound: noAccount,
@@ -238,6 +261,7 @@ export const AdsToolsLive = AdsTools.toLayer(
           Effect.flatMap((who) =>
             reports.days(who, accountId, askedRange(range))
           ),
+          Effect.flatMap(offeredOnly),
           Effect.map((report) => reportView(report, toDayView)),
           Effect.catchTags(readRefusals)
         ),
@@ -251,9 +275,9 @@ export const AdsToolsLive = AdsTools.toLayer(
 
           return {
             ...offered,
-            accounts: accounts.map((account) =>
-              toListedAccountView(account, until)
-            ),
+            accounts: accounts
+              .filter(readHere)
+              .map((account) => toListedAccountView(account, until)),
           };
         }).pipe(
           Effect.catchTags({
@@ -285,6 +309,7 @@ export const AdsToolsLive = AdsTools.toLayer(
           Effect.flatMap((who) =>
             reports.campaigns(who, accountId, askedRange(range))
           ),
+          Effect.flatMap(offeredOnly),
           Effect.map((report) => reportView(report, toCampaignView)),
           Effect.catchTags(readRefusals)
         ),

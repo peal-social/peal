@@ -7,6 +7,8 @@ pub struct AdAccount {
     #[serde(rename = "amountSpent")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub amount_spent: Option<i64>,
+    #[serde(default)]
+    pub capabilities: AdAccountCapabilities,
     #[serde(rename = "connectedAt")]
     #[serde(default)]
     pub connected_at: String,
@@ -35,6 +37,9 @@ pub struct AdAccount {
     #[serde(rename = "newAdsUntrackedUntil")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_ads_untracked_until: Option<String>,
+    #[serde(rename = "reachedThrough")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reached_through: Option<String>,
     /// An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
     #[serde(rename = "spendCap")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -62,6 +67,7 @@ impl AdAccount {
 pub struct AdAccountBuilder {
     access: Option<AdAccess>,
     amount_spent: Option<i64>,
+    capabilities: Option<AdAccountCapabilities>,
     connected_at: Option<String>,
     connection_id: Option<String>,
     currency: Option<String>,
@@ -72,6 +78,7 @@ pub struct AdAccountBuilder {
     name: Option<String>,
     network: Option<AdNetwork>,
     new_ads_untracked_until: Option<String>,
+    reached_through: Option<String>,
     spend_cap: Option<i64>,
     spending_enabled: Option<bool>,
     status: Option<AdAccountStatus>,
@@ -87,6 +94,11 @@ impl AdAccountBuilder {
 
     pub fn amount_spent(mut self, value: i64) -> Self {
         self.amount_spent = Some(value);
+        self
+    }
+
+    pub fn capabilities(mut self, value: AdAccountCapabilities) -> Self {
+        self.capabilities = Some(value);
         self
     }
 
@@ -140,6 +152,11 @@ impl AdAccountBuilder {
         self
     }
 
+    pub fn reached_through(mut self, value: impl Into<String>) -> Self {
+        self.reached_through = Some(value.into());
+        self
+    }
+
     pub fn spend_cap(mut self, value: i64) -> Self {
         self.spend_cap = Some(value);
         self
@@ -168,6 +185,7 @@ impl AdAccountBuilder {
     /// Consumes the builder and constructs a [`AdAccount`].
     /// This method will fail if any of the following fields are not set:
     /// - [`access`](AdAccountBuilder::access)
+    /// - [`capabilities`](AdAccountBuilder::capabilities)
     /// - [`connected_at`](AdAccountBuilder::connected_at)
     /// - [`connection_id`](AdAccountBuilder::connection_id)
     /// - [`currency`](AdAccountBuilder::currency)
@@ -185,6 +203,9 @@ impl AdAccountBuilder {
                 .access
                 .ok_or_else(|| BuildError::missing_field("access"))?,
             amount_spent: self.amount_spent,
+            capabilities: self
+                .capabilities
+                .ok_or_else(|| BuildError::missing_field("capabilities"))?,
             connected_at: self
                 .connected_at
                 .ok_or_else(|| BuildError::missing_field("connected_at"))?,
@@ -207,6 +228,7 @@ impl AdAccountBuilder {
                 .network
                 .ok_or_else(|| BuildError::missing_field("network"))?,
             new_ads_untracked_until: self.new_ads_untracked_until,
+            reached_through: self.reached_through,
             spend_cap: self.spend_cap,
             spending_enabled: self
                 .spending_enabled

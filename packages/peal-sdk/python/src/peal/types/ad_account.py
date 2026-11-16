@@ -7,6 +7,7 @@ import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .ad_access import AdAccess
+from .ad_account_capabilities import AdAccountCapabilities
 from .ad_account_status import AdAccountStatus
 from .ad_network import AdNetwork
 
@@ -25,6 +26,7 @@ class AdAccount(UniversalBaseModel):
     An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
     """
 
+    capabilities: AdAccountCapabilities
     connected_at: typing_extensions.Annotated[
         str, FieldMetadata(alias="connectedAt"), pydantic.Field(alias="connectedAt")
     ]
@@ -57,6 +59,9 @@ class AdAccount(UniversalBaseModel):
     network: AdNetwork
     new_ads_untracked_until: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="newAdsUntrackedUntil"), pydantic.Field(alias="newAdsUntrackedUntil")
+    ] = None
+    reached_through: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="reachedThrough"), pydantic.Field(alias="reachedThrough")
     ] = None
     spend_cap: typing_extensions.Annotated[
         typing.Optional[int],

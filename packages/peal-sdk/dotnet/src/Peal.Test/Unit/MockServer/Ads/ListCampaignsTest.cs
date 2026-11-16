@@ -17,6 +17,12 @@ public class ListCampaignsTest : BaseMockServerTest
               "account": {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -27,6 +33,7 @@ public class ListCampaignsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",
@@ -39,6 +46,7 @@ public class ListCampaignsTest : BaseMockServerTest
                   "dailyBudget": 1000000,
                   "endsAt": "endsAt",
                   "externalId": "externalId",
+                  "kind": "kind",
                   "name": "name",
                   "objective": "awareness",
                   "rawStatus": "rawStatus",
@@ -58,6 +66,7 @@ public class ListCampaignsTest : BaseMockServerTest
                   "dailyBudget": 1000000,
                   "endsAt": "endsAt",
                   "externalId": "externalId",
+                  "kind": "kind",
                   "name": "name",
                   "objective": "awareness",
                   "rawStatus": "rawStatus",
@@ -106,6 +115,12 @@ public class ListCampaignsTest : BaseMockServerTest
               "account": {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -116,6 +131,7 @@ public class ListCampaignsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",
@@ -128,6 +144,7 @@ public class ListCampaignsTest : BaseMockServerTest
                   "dailyBudget": 1000000,
                   "endsAt": "endsAt",
                   "externalId": "externalId",
+                  "kind": "kind",
                   "name": "name",
                   "objective": "awareness",
                   "rawStatus": "rawStatus",

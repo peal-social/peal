@@ -10,6 +10,8 @@ public readonly record struct AdNetwork : IStringEnum
 {
     public static readonly AdNetwork Meta = new(Values.Meta);
 
+    public static readonly AdNetwork Google = new(Values.Google);
+
     public AdNetwork(string value)
     {
         Value = value;
@@ -105,5 +107,7 @@ public readonly record struct AdNetwork : IStringEnum
     public static class Values
     {
         public const string Meta = "meta";
+
+        public const string Google = "google";
     }
 }

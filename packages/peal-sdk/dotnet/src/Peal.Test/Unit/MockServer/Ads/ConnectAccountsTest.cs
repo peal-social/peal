@@ -26,6 +26,12 @@ public class ConnectAccountsTest : BaseMockServerTest
               {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -36,6 +42,7 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",
@@ -45,6 +52,12 @@ public class ConnectAccountsTest : BaseMockServerTest
               {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -55,6 +68,7 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",
@@ -107,6 +121,12 @@ public class ConnectAccountsTest : BaseMockServerTest
               {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -117,6 +137,7 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",

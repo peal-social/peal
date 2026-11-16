@@ -20,6 +20,12 @@ class AdAccount extends JsonSerializableType
     public ?int $amountSpent;
 
     /**
+     * @var AdAccountCapabilities $capabilities
+     */
+    #[JsonProperty('capabilities')]
+    public AdAccountCapabilities $capabilities;
+
+    /**
      * @var string $connectedAt
      */
     #[JsonProperty('connectedAt')]
@@ -80,6 +86,12 @@ class AdAccount extends JsonSerializableType
     public ?string $newAdsUntrackedUntil;
 
     /**
+     * @var ?string $reachedThrough
+     */
+    #[JsonProperty('reachedThrough')]
+    public ?string $reachedThrough;
+
+    /**
      * @var ?int $spendCap An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
      */
     #[JsonProperty('spendCap')]
@@ -112,6 +124,7 @@ class AdAccount extends JsonSerializableType
     /**
      * @param array{
      *   access: value-of<AdAccess>,
+     *   capabilities: AdAccountCapabilities,
      *   connectedAt: string,
      *   connectionId: string,
      *   currency: string,
@@ -126,6 +139,7 @@ class AdAccount extends JsonSerializableType
      *   amountSpent?: ?int,
      *   monthlyCeiling?: ?int,
      *   newAdsUntrackedUntil?: ?string,
+     *   reachedThrough?: ?string,
      *   spendCap?: ?int,
      *   syncedAt?: ?string,
      * } $values
@@ -135,6 +149,7 @@ class AdAccount extends JsonSerializableType
     ) {
         $this->access = $values['access'];
         $this->amountSpent = $values['amountSpent'] ?? null;
+        $this->capabilities = $values['capabilities'];
         $this->connectedAt = $values['connectedAt'];
         $this->connectionId = $values['connectionId'];
         $this->currency = $values['currency'];
@@ -145,6 +160,7 @@ class AdAccount extends JsonSerializableType
         $this->name = $values['name'];
         $this->network = $values['network'];
         $this->newAdsUntrackedUntil = $values['newAdsUntrackedUntil'] ?? null;
+        $this->reachedThrough = $values['reachedThrough'] ?? null;
         $this->spendCap = $values['spendCap'] ?? null;
         $this->spendingEnabled = $values['spendingEnabled'];
         $this->status = $values['status'];
