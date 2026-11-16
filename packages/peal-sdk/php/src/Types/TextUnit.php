@@ -10,4 +10,5 @@ enum TextUnit: string
     case EmojiBytes = "emojiBytes";
     case Utf16Units = "utf16Units";
     case Weighted = "weighted";
+    case EscapedUtf16Units = "escapedUtf16Units";
 }

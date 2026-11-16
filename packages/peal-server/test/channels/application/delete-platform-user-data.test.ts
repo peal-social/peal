@@ -23,6 +23,7 @@ import type { WorkspaceId } from "#shared/domain/ids.ts";
 import type { InstagramConnection } from "#shared/domain/instagram-connection.ts";
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import { pinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
+import { slackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
 import { tiktokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 import {
   instagramApp,
@@ -55,6 +56,8 @@ const settings = (apps: { readonly threads: boolean }) =>
       pinterest: Option.none(),
       pinterestHosts,
       publicUrl: "https://peal.test",
+      slack: Option.none(),
+      slackHosts,
       threads: apps.threads ? Option.some(threadsApp) : Option.none(),
       tiktok: Option.none(),
       tiktokHosts,

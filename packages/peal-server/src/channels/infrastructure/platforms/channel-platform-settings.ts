@@ -28,6 +28,8 @@ import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import type { MetaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import { pinterestHostsConfig } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import type { PinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
+import { slackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
+import type { SlackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
 import { tiktokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 import type { TikTokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 
@@ -81,6 +83,10 @@ export interface ChannelPlatformSettings {
   readonly pinterestHosts: PinterestHosts;
   /** The web app's origin, where the platforms send members back. */
   readonly publicUrl: string;
+  /** Peal's Slack app, if the operator registered one. */
+  readonly slack: Option.Option<OAuthClient>;
+  /** Where Slack's Web API and install page are. */
+  readonly slackHosts: SlackHosts;
   /** The app's Threads credentials; none when this server has none. */
   readonly threads: Option.Option<MetaApp>;
   /** Peal's TikTok app (its client key and secret), if the operator has one. */
@@ -231,6 +237,10 @@ const blueskyModeOf = Effect.fnUntraced(function* blueskyModeOf(settings: {
  *   registered on Pinterest's developer site. Without them, Pinterest is
  *   not offered; one alone stops the server. `PINTEREST_SANDBOX` sends its
  *   calls to Pinterest's Sandbox.
+ * - `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`: the app the operator
+ *   registered on Slack (api.slack.com/apps), with its bot's scopes and
+ *   public distribution, for Slack channels. Not the alerts' webhook
+ *   (`SLACK_ALERTS_WEBHOOK_URL`). One half alone stops the server.
  */
 export const channelPlatformsConfig = Effect.gen(function* settings() {
   const publicUrl = yield* publicUrlConfig;
@@ -265,6 +275,7 @@ export const channelPlatformsConfig = Effect.gen(function* settings() {
   );
 
   const pinterestHosts = yield* pinterestHostsConfig;
+  const slack = yield* oauthClientConfig("slack", "SLACK");
 
   const googleBusiness = yield* oauthClientConfig(
     "googleBusiness",
@@ -291,6 +302,8 @@ export const channelPlatformsConfig = Effect.gen(function* settings() {
     pinterest,
     pinterestHosts,
     publicUrl,
+    slack,
+    slackHosts,
     threads,
     tiktok,
     tiktokHosts,

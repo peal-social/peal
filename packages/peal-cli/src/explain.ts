@@ -134,6 +134,7 @@ const providerRefusals: Readonly<
 export const units: Readonly<Record<TextUnit, string>> = {
   codePoints: "characters",
   emojiBytes: "characters, an emoji counting for its bytes",
+  escapedUtf16Units: "UTF-16 units, & counting 5 and < or > 4",
   graphemes: "characters",
   utf16Units: "UTF-16 units",
   utf8Bytes: "bytes",

@@ -186,6 +186,7 @@ describe("the options fields", () => {
       },
     ],
     ["telegram", { linkPreview: false, silent: true }],
+    ["slack", { unfurlLinks: true }],
     [
       "x",
       {
@@ -226,6 +227,7 @@ describe("the options fields", () => {
       "linkedin",
       "mastodon",
       "pinterest",
+      "slack",
       "telegram",
       "threads",
       "tiktok",

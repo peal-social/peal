@@ -109,6 +109,13 @@ export const livePostSupport = {
   // `PATCH /v5/pins/{pin_id}` is "currently in beta and not available to
   // all apps" there (v5.28.0): whether Peal's app has it is not known.
   pinterest: { edit: blockedBy("unverified"), unpublish: can },
+  // `chat.delete` and `chat.update` (`chat:write`) change a message the
+  // app posted, by its channel and `ts`; an update "cannot exceed 4,000
+  // characters" of text, and a workspace's settings may close edits
+  // (`edit_window_closed`). Read 2026-11-16.
+  // https://docs.slack.dev/reference/methods/chat.delete
+  // https://docs.slack.dev/reference/methods/chat.update
+  slack: { edit: can, unpublish: can },
   // `deleteMessages` ("A JSON-serialized list of 1-100 identifiers of
   // messages to delete"), under `deleteMessage`'s rules: "A message can
   // only be deleted if it was sent less than 48 hours ago", and "Bots

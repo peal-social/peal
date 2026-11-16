@@ -328,6 +328,30 @@ def test_the_sandbox_does_not() -> None:
     assert "PEAL_HEARTBEAT_TOKEN" not in _required("sandbox")
 
 
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_an_app_id_in_the_settings_requires_its_secret(environment: str) -> None:
+    """The server refuses to start with an app's id and no secret
+    (oauthClientConfig, Google sign-in): the release refuses it first."""
+    required = _required(environment)
+
+    for name in ["SLACK_CLIENT_SECRET", "X_CLIENT_SECRET", "YOUTUBE_CLIENT_SECRET",
+                 "WORDPRESS_COM_CLIENT_SECRET", "GOOGLE_SIGN_IN_CLIENT_SECRET"]:
+        assert name in required
+
+
+def test_no_secret_is_required_of_an_app_the_settings_do_not_name() -> None:
+    expression = role_file("peal_runtime", "vars")["peal_runtime_required_credentials"]
+    names = {**settings("sandbox"), "peal_settings": {"OTEL_TRACES_SAMPLER": "parentbased_always_on"}}
+    required = ansible_render(expression, **names)
+
+    assert [name for name in required if name.endswith(("_CLIENT_SECRET", "_APP_SECRET"))] == []
+
+    names["peal_settings"] = {"SLACK_CLIENT_ID": "synthetic.1", "PINTEREST_APP_ID": "1", "TIKTOK_CLIENT_KEY": "k"}
+    required = ansible_render(expression, **names)
+
+    assert {"SLACK_CLIENT_SECRET", "PINTEREST_APP_SECRET", "TIKTOK_CLIENT_SECRET"} <= set(required)
+
+
 def _unset(tmp_path: Path, credentials: str) -> list[str]:
     """Runs the role's check of a credentials.env written by hand, as root
     would on the server, and returns the names it reports unset."""

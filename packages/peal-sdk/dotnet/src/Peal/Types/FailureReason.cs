@@ -58,6 +58,8 @@ public readonly record struct FailureReason : IStringEnum
 
     public static readonly FailureReason ChatMigrated = new(Values.ChatMigrated);
 
+    public static readonly FailureReason CannotPost = new(Values.CannotPost);
+
     public FailureReason(string value)
     {
         Value = value;
@@ -199,5 +201,7 @@ public readonly record struct FailureReason : IStringEnum
         public const string ForumThreadNameRequired = "forumThreadNameRequired";
 
         public const string ChatMigrated = "chatMigrated";
+
+        public const string CannotPost = "cannotPost";
     }
 }

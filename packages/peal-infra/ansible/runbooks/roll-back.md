@@ -380,6 +380,42 @@ ignores: a person whose account has only such a row cannot sign in there
 until they reset a password through "Forgot password". Nothing else needs
 checking.
 
+## Past Slack
+
+The release that posts to Slack (no migration: platforms, options and
+failure reasons are text and JSON) stores what the release before cannot
+read:
+
+- a channel of Slack (`channels.channels.platform` `slack`): the release
+  before does not know the platform, so the workspace's channels, and the
+  jobs that walk every channel (analytics' collection, the inbox's, the
+  warnings that a channel must be reconnected soon), fail on that row for
+  every workspace;
+- a post's target with Slack's options (`publishing.post_targets.options`
+  of `platform` `slack`), or failed as `cannotPost` (`failure_reason`,
+  also in the attempts' results), which the release before fails to
+  decode where it reads the post;
+- the events and notices that name Slack, at their top (`data.platform`)
+  or among a post's targets (`data.targets[].platform`), or the reason
+  `cannotPost`, which it fails to decode where it reads them.
+
+1. **Channels of Slack:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM channels.channels WHERE platform = 'slack'"
+   ```
+
+2. **Posts, events and notices that name Slack or `cannotPost`:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT 'target' AS kind, id FROM publishing.post_targets WHERE options->>'platform' = 'slack' OR failure_reason = 'cannotPost' UNION ALL SELECT 'event', id FROM webhooks.events WHERE data->>'platform' = 'slack' OR data->>'failureReason' = 'cannotPost' OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'targets') = 'array' THEN data->'targets' ELSE '[]' END) t WHERE t->>'platform' = 'slack' OR t->>'failureReason' = 'cannotPost') UNION ALL SELECT 'notice', id FROM notifications.notices WHERE event->'channel'->>'platform' = 'slack' OR event->'channel'->'value'->>'platform' = 'slack' OR event->>'reason' = 'cannotPost'"
+   ```
+
+3. **Either lists a row:** do not roll back past this release; release a
+   fix forward instead. Never change the rows by hand.
+
 ## Past Messenger's and Instagram's direct messages
 
 The release that reads Facebook Pages' and Instagram's direct messages

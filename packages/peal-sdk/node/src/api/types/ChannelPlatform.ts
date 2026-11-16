@@ -15,6 +15,7 @@ export const ChannelPlatform = {
         GoogleBusiness: "googleBusiness",
         Discord: "discord",
         Telegram: "telegram",
+        Slack: "slack",
         Wordpress: "wordpress",
         Devto: "devto",
         Hashnode: "hashnode",

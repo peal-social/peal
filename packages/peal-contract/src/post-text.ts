@@ -33,10 +33,12 @@ export const maxPartDelaySeconds = 86_400;
 /**
  * How a platform measures text: graphemes (what a reader sees as one
  * character), Unicode code points, UTF-8 bytes, code points with each emoji
- * counted by its UTF-8 bytes (Threads), UTF-16 code units (TikTok), or X's
+ * counted by its UTF-8 bytes (Threads), UTF-16 code units (TikTok), X's
  * weighted count, where a link counts as 23 (`peal.social` too), an emoji as
  * 2, and a code point outside Latin, Greek, Cyrillic and common punctuation
- * as 2, once the text is normalized to NFC.
+ * as 2, once the text is normalized to NFC, or UTF-16 code units of the text
+ * as Slack is sent it (`escapedUtf16Units`), where `&` counts 5 (`&amp;`)
+ * and `<` and `>` 4 each (`&lt;`, `&gt;`).
  */
 export const TextUnitSchema = Schema.Literals([
   "graphemes",
@@ -45,6 +47,7 @@ export const TextUnitSchema = Schema.Literals([
   "emojiBytes",
   "utf16Units",
   "weighted",
+  "escapedUtf16Units",
 ]).annotate({
   description: "How a platform measures the length of a post's text.",
   identifier: "TextUnit",
@@ -150,9 +153,18 @@ const emojiBytesLength = (text: string): number =>
     0
   );
 
+// What `&`, `<` and `>` become in Slack's text: `&amp;`, `&lt;`, `&gt;`.
+const escapedLength = (text: string): number =>
+  text.length +
+  [...text.matchAll(/[&<>]/gu)].reduce(
+    (extra, [character]) => extra + (character === "&" ? 4 : 3),
+    0
+  );
+
 const measures: Readonly<Record<TextUnit, (text: string) => number>> = {
   codePoints: (text) => codePointsOf(text).length,
   emojiBytes: emojiBytesLength,
+  escapedUtf16Units: escapedLength,
   graphemes: (text) => segmentsOf(text).length,
   utf16Units: (text) => text.length,
   utf8Bytes: utf8BytesOf,
@@ -396,6 +408,21 @@ const telegramPhoto: FormatLimits = {
   maxByteSize: 10 * mebibyte,
   maxSideSum: 10_000,
 };
+
+// Slack (docs.slack.dev, read 2026-11-16): `chat.postMessage` asks to
+// "limit the `text` field to 4,000 characters", and `chat.update` refuses
+// more (`msg_too_long`: "The `text` field cannot exceed 4,000
+// characters"); a part with images sends its text in a section block,
+// whose text has a "maximum length is 3000 characters"
+// (reference/block-kit/blocks/section-block). The text is sent with `&`,
+// `<` and `>` as entities, which count as sent. Images go in image blocks
+// (`slack_file`), which take "`png`, `jpg`, `jpeg`, and `gif`" (reference/
+// block-kit/blocks/image-block): no video, no WebP. The upload states no
+// size for a file; 50 MiB an image is Peal's own ceiling. Alt text: the
+// upload's `alt_txt` refuses more than 1,000 characters
+// (`alt_txt_too_large`, methods/files.getUploadURLExternal), the image
+// block's `alt_text` 2,000.
+const slackImage: FormatLimits = { maxByteSize: 50 * mebibyte };
 
 const youtubeVideo: FormatLimits = {
   maxByteSize: 256 * 1024 * mebibyte,
@@ -688,6 +715,25 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     mediaRequired: true,
     textLimits: [{ maximum: 800, unit: "codePoints" }],
   },
+  // Slack's mrkdwn, sent with `&`, `<` and `>` escaped; a text with
+  // images is a section block's, of 3,000 at most. Images only.
+  slack: {
+    followUps: thread,
+    maxMedia: 10,
+    media: {
+      formats: {
+        "image/gif": slackImage,
+        "image/jpeg": slackImage,
+        "image/png": slackImage,
+      },
+      maxAltTextLength: 1000,
+      mixesKinds: true,
+      showsAltText: true,
+    },
+    mediaRequired: false,
+    textLimits: [{ maximum: 4000, unit: "escapedUtf16Units" }],
+    textLimitsWithMedia: [{ maximum: 3000, unit: "escapedUtf16Units" }],
+  },
   // Plain text; a text with media is a caption, of 1,024 at most. One
   // file, or an album of 2 to 10 photos and videos; a GIF alone.
   telegram: {
@@ -929,6 +975,7 @@ const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   linkedin: ["linkedin.com", "lnkd.in"],
   mastodon: [],
   pinterest: ["pinterest.com", "pin.it"],
+  slack: ["slack.com"],
   telegram: [],
   threads: ["threads.net", "threads.com"],
   tiktok: ["tiktok.com"],

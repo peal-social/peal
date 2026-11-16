@@ -30,6 +30,7 @@ module Peal
       X_THREAD_CUT = "xThreadCut"
       FORUM_THREAD_NAME_REQUIRED = "forumThreadNameRequired"
       CHAT_MIGRATED = "chatMigrated"
+      CANNOT_POST = "cannotPost"
     end
   end
 end

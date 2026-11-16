@@ -20,6 +20,8 @@ public readonly record struct TextUnit : IStringEnum
 
     public static readonly TextUnit Weighted = new(Values.Weighted);
 
+    public static readonly TextUnit EscapedUtf16Units = new(Values.EscapedUtf16Units);
+
     public TextUnit(string value)
     {
         Value = value;
@@ -125,5 +127,7 @@ public readonly record struct TextUnit : IStringEnum
         public const string Utf16Units = "utf16Units";
 
         public const string Weighted = "weighted";
+
+        public const string EscapedUtf16Units = "escapedUtf16Units";
     }
 }

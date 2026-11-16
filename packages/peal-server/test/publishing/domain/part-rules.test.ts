@@ -83,6 +83,7 @@ describe("the platforms that take the parts after a post's first", () => {
       ["youtube", "comment"],
       ["discord", "thread"],
       ["telegram", "thread"],
+      ["slack", "thread"],
     ]);
   });
 

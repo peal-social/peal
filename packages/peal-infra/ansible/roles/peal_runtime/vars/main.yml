@@ -57,9 +57,25 @@ peal_runtime_slack_alerts: >-
          else (peal_runtime_optional_set.stdout_lines | default([]))) }}
 
 # The credentials this server needs, by name: peal_required_credentials, the
-# heartbeat's token when Grafana sends one, and the docs' assistant's key
-# when the docs run as a server.
+# heartbeat's token when Grafana sends one, the docs' assistant's key
+# when the docs run as a server, and the secret of each app whose id
+# peal_settings gives, as the server refuses to start with one half of an
+# app alone (oauthClientConfig, Google sign-in): the release stops first.
 peal_runtime_required_credentials: >-
   {{ peal_required_credentials
      + (['PEAL_HEARTBEAT_TOKEN'] if peal_heartbeat_url else [])
-     + (['DOCS_ANTHROPIC_API_KEY'] if peal_docs_server | bool else []) }}
+     + (['DOCS_ANTHROPIC_API_KEY'] if peal_docs_server | bool else [])
+     + ({
+          'LINKEDIN_CLIENT_ID': 'LINKEDIN_CLIENT_SECRET',
+          'LINKEDIN_PAGES_CLIENT_ID': 'LINKEDIN_PAGES_CLIENT_SECRET',
+          'X_CLIENT_ID': 'X_CLIENT_SECRET',
+          'TIKTOK_CLIENT_KEY': 'TIKTOK_CLIENT_SECRET',
+          'YOUTUBE_CLIENT_ID': 'YOUTUBE_CLIENT_SECRET',
+          'PINTEREST_APP_ID': 'PINTEREST_APP_SECRET',
+          'GOOGLE_BUSINESS_CLIENT_ID': 'GOOGLE_BUSINESS_CLIENT_SECRET',
+          'WORDPRESS_COM_CLIENT_ID': 'WORDPRESS_COM_CLIENT_SECRET',
+          'SLACK_CLIENT_ID': 'SLACK_CLIENT_SECRET',
+          'GOOGLE_SIGN_IN_CLIENT_ID': 'GOOGLE_SIGN_IN_CLIENT_SECRET',
+        } | dict2items
+        | selectattr('key', 'in', (peal_settings | default({})).keys() | list)
+        | map(attribute='value') | list) }}

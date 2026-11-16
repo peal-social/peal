@@ -54,6 +54,7 @@ describe(shortenablePlatforms, () => {
       "googleBusiness",
       "discord",
       "telegram",
+      "slack",
     ]);
   });
 });

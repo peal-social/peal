@@ -621,6 +621,10 @@ describe("the platforms that delete or edit", () => {
           googleBusinessApi: new URL("http://127.0.0.1:9"),
           mastodonScheme: "http:",
           pinterestApi: new URL("http://127.0.0.1:9"),
+          slackHosts: {
+            api: "http://127.0.0.1:9",
+            uploads: "http://127.0.0.1:9",
+          },
           telegramHosts: { api: "http://127.0.0.1:9" },
           xApi: new URL("http://127.0.0.1:9"),
         }).pipe(Effect.provide(LiveRegistryTest));

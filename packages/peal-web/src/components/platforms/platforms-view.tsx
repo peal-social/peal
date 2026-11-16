@@ -40,7 +40,8 @@ import { BrandMark } from "#components/shell/brand-mark.tsx";
 import { rowMatches } from "#platforms/rows.ts";
 import type { PlatformRow } from "#platforms/rows.ts";
 
-// LinkedIn asked to be left out of simple-icons: a lettered tile stands in.
+// LinkedIn and Slack asked to be left out of simple-icons: a tile of their
+// letters stands in.
 const marks: Readonly<Record<Platform, SimpleIcon | null>> = {
   bluesky: siBluesky,
   discord: siDiscord,
@@ -50,11 +51,18 @@ const marks: Readonly<Record<Platform, SimpleIcon | null>> = {
   linkedin: null,
   mastodon: siMastodon,
   pinterest: siPinterest,
+  slack: null,
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,
   x: siX,
   youtube: siYoutube,
+};
+
+// The letters of the tiles that stand in for a mark.
+const letters: Readonly<Partial<Record<Platform, string>>> = {
+  linkedin: "in",
+  slack: "S",
 };
 
 const Capability = ({
@@ -154,7 +162,7 @@ export const PlatformsView = ({
                             aria-hidden
                             className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md text-xs font-bold"
                           >
-                            in
+                            {letters[row.platform]}
                           </span>
                         ) : (
                           <span className="bg-card ring-border flex size-6 items-center justify-center rounded-md ring-1">

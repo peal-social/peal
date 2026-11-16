@@ -34,6 +34,8 @@ public readonly record struct ChannelPlatform : IStringEnum
 
     public static readonly ChannelPlatform Telegram = new(Values.Telegram);
 
+    public static readonly ChannelPlatform Slack = new(Values.Slack);
+
     public static readonly ChannelPlatform Wordpress = new(Values.Wordpress);
 
     public static readonly ChannelPlatform Devto = new(Values.Devto);
@@ -163,6 +165,8 @@ public readonly record struct ChannelPlatform : IStringEnum
         public const string Discord = "discord";
 
         public const string Telegram = "telegram";
+
+        public const string Slack = "slack";
 
         public const string Wordpress = "wordpress";
 

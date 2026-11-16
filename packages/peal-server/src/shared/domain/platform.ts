@@ -19,6 +19,7 @@ export const PlatformSchema = Schema.Literals([
   "googleBusiness",
   "discord",
   "telegram",
+  "slack",
 ]);
 
 export type Platform = typeof PlatformSchema.Type;

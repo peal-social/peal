@@ -33,6 +33,7 @@ import { instagramAuthorizer } from "./meta/instagram-authorizer.ts";
 import { instagramLoginAuthorizer } from "./meta/instagram-login-authorizer.ts";
 import { threadsAuthorizer } from "./meta/threads-authorizer.ts";
 import { pinterestAuthorizer } from "./pinterest/pinterest-authorizer.ts";
+import { slackAuthorizer } from "./slack/slack-authorizer.ts";
 import { tiktokAuthorizer } from "./tiktok/tiktok-authorizer.ts";
 import { xAuthorizer, xEndpoints } from "./x/x-authorizer.ts";
 import {
@@ -116,7 +117,8 @@ export const registryOf = (
  * (preferred to Facebook Login when both are set), Threads with its
  * credentials, TikTok with its client key and secret, YouTube with a Google
  * OAuth client, Pinterest with its app's id and secret, Google Business
- * Profile with a Google OAuth client of its own. Needs an HttpClient, the outbound guard, the
+ * Profile with a Google OAuth client of its own, Slack with its app's id
+ * and secret. Needs an HttpClient, the outbound guard, the
  * database, the TokenCipher, SecureRandom, Digest and Mac.
  */
 export const PlatformAuthorizersLive = Layer.effect(
@@ -246,6 +248,17 @@ export const PlatformAuthorizersLive = Layer.effect(
         ]
       : [];
 
+    const slack = Option.isSome(settings.slack)
+      ? [
+          yield* slackAuthorizer({
+            client: settings.slack.value,
+            hosts: settings.slackHosts,
+            http,
+            publicUrl: settings.publicUrl,
+          }),
+        ]
+      : [];
+
     const configured = [
       mastodon,
       ...Option.toArray(bluesky),
@@ -259,6 +272,7 @@ export const PlatformAuthorizersLive = Layer.effect(
       ...Option.toArray(youtube),
       ...pinterest,
       ...Option.toArray(googleBusiness),
+      ...slack,
     ];
 
     // Platforms Peal supports, which this server lacks the settings for.
@@ -275,6 +289,7 @@ export const PlatformAuthorizersLive = Layer.effect(
           "youtube",
           "pinterest",
           "googleBusiness",
+          "slack",
         ] as const
       ).filter(
         (platform) =>

@@ -455,6 +455,26 @@ class TargetOptions_Telegram(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+class TargetOptions_Slack(UniversalBaseModel):
+    """
+    What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.
+    """
+
+    platform: typing.Literal["slack"] = "slack"
+    unfurl_links: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="unfurlLinks"), pydantic.Field(alias="unfurlLinks")
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 TargetOptions = typing_extensions.Annotated[
     typing.Union[
         TargetOptions_Youtube,
@@ -470,6 +490,7 @@ TargetOptions = typing_extensions.Annotated[
         TargetOptions_Facebook,
         TargetOptions_Discord,
         TargetOptions_Telegram,
+        TargetOptions_Slack,
     ],
     pydantic.Field(discriminator="platform"),
 ]

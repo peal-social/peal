@@ -1482,6 +1482,7 @@ const (
 	AttemptResultXThreadCut                AttemptResult = "xThreadCut"
 	AttemptResultForumThreadNameRequired   AttemptResult = "forumThreadNameRequired"
 	AttemptResultChatMigrated              AttemptResult = "chatMigrated"
+	AttemptResultCannotPost                AttemptResult = "cannotPost"
 )
 
 func NewAttemptResultFromString(s string) (AttemptResult, error) {
@@ -1532,6 +1533,8 @@ func NewAttemptResultFromString(s string) (AttemptResult, error) {
 		return AttemptResultForumThreadNameRequired, nil
 	case "chatMigrated":
 		return AttemptResultChatMigrated, nil
+	case "cannotPost":
+		return AttemptResultCannotPost, nil
 	}
 	var t AttemptResult
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

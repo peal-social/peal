@@ -19,6 +19,7 @@ export default defineMeta({
     "google-business",
     "discord",
     "telegram",
+    "slack",
     "wordpress-com",
     "devto",
     "hashnode",

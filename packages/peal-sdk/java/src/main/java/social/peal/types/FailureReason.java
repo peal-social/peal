@@ -24,6 +24,8 @@ public final class FailureReason {
     public static final FailureReason REPLIES_NOT_ALLOWED =
             new FailureReason(Value.REPLIES_NOT_ALLOWED, "repliesNotAllowed");
 
+    public static final FailureReason CANNOT_POST = new FailureReason(Value.CANNOT_POST, "cannotPost");
+
     public static final FailureReason CHAT_MIGRATED = new FailureReason(Value.CHAT_MIGRATED, "chatMigrated");
 
     public static final FailureReason MISSED = new FailureReason(Value.MISSED, "missed");
@@ -104,6 +106,8 @@ public final class FailureReason {
                 return visitor.visitUnavailable();
             case REPLIES_NOT_ALLOWED:
                 return visitor.visitRepliesNotAllowed();
+            case CANNOT_POST:
+                return visitor.visitCannotPost();
             case CHAT_MIGRATED:
                 return visitor.visitChatMigrated();
             case MISSED:
@@ -159,6 +163,8 @@ public final class FailureReason {
                 return UNAVAILABLE;
             case "repliesNotAllowed":
                 return REPLIES_NOT_ALLOWED;
+            case "cannotPost":
+                return CANNOT_POST;
             case "chatMigrated":
                 return CHAT_MIGRATED;
             case "missed":
@@ -243,6 +249,8 @@ public final class FailureReason {
 
         CHAT_MIGRATED,
 
+        CANNOT_POST,
+
         UNKNOWN
     }
 
@@ -292,6 +300,8 @@ public final class FailureReason {
         T visitForumThreadNameRequired();
 
         T visitChatMigrated();
+
+        T visitCannotPost();
 
         T visitUnknown(String unknownType);
     }
