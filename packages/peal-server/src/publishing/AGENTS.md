@@ -623,8 +623,10 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `chatMigrated`, any other 400 `telegram400` (no 400 can be told from
   another without its words: a reply's parent gone, an edit of the same
   text). An edit's 400 is `editRefusedOrSame`, which `editAfterRepeat`
-  takes as the edit applied after a try that got no answer, since the
-  lost try may have changed the text. Three rule additions serve them:
+  takes as the edit applied only after a try known to have reached
+  Telegram (`unansweredAfterSending`: sent and timed out, or a 5xx, which
+  the job counts in `EarlierRemovals.reached`), since that try may have
+  changed the text; a try that never left counts for nothing. Three rule additions serve them:
   `textLimitsWithMedia` (a caption's limit, read through `textLimitsOf`
   by `violationsOn`, `previewOn` and the composer), `maxTotalByteSize`
   (`mediaTotalTooLarge`) and `maxSideSum` (`sideSumTooLarge`). Tests set

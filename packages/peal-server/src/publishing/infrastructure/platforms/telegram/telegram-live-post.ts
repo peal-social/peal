@@ -3,6 +3,7 @@ import { HttpClientRequest } from "effect/http";
 
 import type { PublishingToken } from "#publishing/application/platform-credentials.ts";
 import { platformRefusalCodes } from "#publishing/domain/own-refusals.ts";
+import { unansweredAfterSending } from "#publishing/domain/removal-decision.ts";
 import { TelegramOptions } from "#publishing/domain/telegram-options.ts";
 import type { LivePostEditor } from "#publishing/infrastructure/platforms/live-post-editor.ts";
 import {
@@ -10,8 +11,9 @@ import {
   invalidPlatformId,
 } from "#publishing/infrastructure/platforms/live-post-remover.ts";
 import type { LivePostRemover } from "#publishing/infrastructure/platforms/live-post-remover.ts";
-import { unanswered } from "#publishing/infrastructure/platforms/platform-exchange.ts";
+import { sentUnanswered } from "#publishing/infrastructure/platforms/platform-exchange.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
+import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { PlatformPostId } from "#shared/domain/publish-result.ts";
 import { untraced } from "#shared/infrastructure/platforms/public-http.ts";
 import { telegramMethodUrl } from "#shared/infrastructure/platforms/telegram-api.ts";
@@ -24,7 +26,7 @@ import {
   messagesOf,
   telegramPostOf,
 } from "./telegram-message.ts";
-import { telegramRefusal, unavailable } from "./telegram-refusal.ts";
+import { telegramRefusal } from "./telegram-refusal.ts";
 
 const isTelegram = Schema.is(TelegramOptions);
 
@@ -45,6 +47,11 @@ interface ChangeBody {
   readonly text?: string;
 }
 
+// What is left of Telegram's answers is a 5xx, or one not Telegram's: the
+// request reached it.
+const reachedUnanswered = () =>
+  new PlatformUnavailable({ code: unansweredAfterSending });
+
 // One call of a method that changes a message, with the channel's bot.
 const changing = (
   options: { readonly api: TelegramHttp; readonly hosts: TelegramHosts },
@@ -61,13 +68,13 @@ const changing = (
       )
     ),
     Effect.catchTags({
-      HttpClientError: unanswered,
-      OutboundRequestRefused: unanswered,
+      HttpClientError: sentUnanswered,
+      OutboundRequestRefused: sentUnanswered,
     }),
     Effect.flatMap((response) =>
       response.status === 200
         ? Effect.void
-        : telegramRefusal(response, unavailable).pipe(
+        : telegramRefusal(response, reachedUnanswered).pipe(
             Effect.mapError(asRemovalFailure)
           )
     )

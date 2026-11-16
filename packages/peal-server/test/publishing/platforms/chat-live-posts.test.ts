@@ -1,12 +1,16 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Effect, Layer, Option, Schema } from "effect";
+import { Cause, Effect, Layer, Option, Schema } from "effect";
+import { HttpClientError, HttpClientRequest } from "effect/http";
 
 import type { PendingEdit } from "#publishing/application/live-post-edits.ts";
 import type { OutgoingPost } from "#publishing/application/platform-client.ts";
 import { DiscordOptions } from "#publishing/domain/discord-options.ts";
 import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.ts";
+import { unansweredAfterSending } from "#publishing/domain/removal-decision.ts";
+import { sentUnanswered } from "#publishing/infrastructure/platforms/platform-exchange.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
+import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
@@ -393,6 +397,57 @@ describe("deleting and editing on Telegram", () => {
     }).pipe(Effect.scoped)
   );
 
+  it.live("says an edit's 5xx may have reached Telegram", () =>
+    Effect.gen(function* serverError() {
+      const { client, live, telegram } = yield* onTelegram({
+        edit: { options: Option.none(), text: "Corrected" },
+      });
+
+      const platformPostId = yield* idOf(
+        yield* client.publish(yield* outgoing({ accountId: telegramAccount }))
+      );
+
+      telegram.script("editMessageText", [telegram.failed(502, "Bad Gateway")]);
+
+      assert.deepStrictEqual(
+        yield* live
+          .edit({ changeId, channelId, platformPostId })
+          .pipe(Effect.flip),
+        new PlatformUnavailable({ code: unansweredAfterSending })
+      );
+    }).pipe(Effect.scoped)
+  );
+
+  it.live("says an edit that never left did not reach Telegram", () =>
+    Effect.gen(function* refused() {
+      // Nothing listens on the port: the connection is refused.
+      const credentials = Layer.succeedContext(
+        yield* Layer.build(
+          credentialsOf({ accountId: telegramAccount, platform: "telegram" }, [
+            telegramBotToken,
+          ])
+        )
+      );
+
+      const live = yield* liveClientsOn({
+        credentials,
+        edits: new Map([[changeId, { options: Option.none(), text: "New" }]]),
+        platforms: { telegramHosts: { api: "http://127.0.0.1:9" } },
+      });
+
+      assert.deepStrictEqual(
+        yield* live
+          .edit({
+            changeId,
+            channelId,
+            platformPostId: PlatformPostIdSchema.make("t:1"),
+          })
+          .pipe(Effect.flip),
+        new PlatformUnavailable()
+      );
+    }).pipe(Effect.scoped)
+  );
+
   it.live("asks nothing of an id that is not a post of Peal's", () =>
     Effect.gen(function* invalid() {
       const { live, telegram } = yield* onTelegram();
@@ -409,4 +464,36 @@ describe("deleting and editing on Telegram", () => {
       assert.deepStrictEqual(telegram.requests(), []);
     }).pipe(Effect.scoped)
   );
+});
+
+describe(sentUnanswered, () => {
+  const request = HttpClientRequest.post("http://127.0.0.1:9/");
+
+  it("takes a request that timed out as one that may have reached the platform", () => {
+    const timedOut = new HttpClientError.HttpClientError({
+      reason: new HttpClientError.TransportError({
+        cause: new Cause.TimeoutError("Operation timed out"),
+        request,
+      }),
+    });
+
+    assert.deepStrictEqual(
+      Effect.runSync(Effect.flip(sentUnanswered(timedOut))),
+      new PlatformUnavailable({ code: unansweredAfterSending })
+    );
+  });
+
+  it("takes any other transport error as one that may never have left", () => {
+    const refused = new HttpClientError.HttpClientError({
+      reason: new HttpClientError.TransportError({
+        cause: new Error("connect ECONNREFUSED"),
+        request,
+      }),
+    });
+
+    assert.deepStrictEqual(
+      Effect.runSync(Effect.flip(sentUnanswered(refused))),
+      new PlatformUnavailable()
+    );
+  });
 });

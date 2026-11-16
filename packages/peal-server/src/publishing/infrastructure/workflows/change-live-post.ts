@@ -60,8 +60,15 @@ const callAt = (
 // is off the platform, or how the change ends.
 const removePart = Effect.fn("ChangeLivePostV1.removePart")(
   function* removePart(changeId: LivePostChangeId, part: number) {
+    const none: EarlierRemovals = {
+      reached: 0,
+      rateLimited: 0,
+      unavailable: 0,
+    };
+
     let attempt = 1;
-    let earlier: EarlierRemovals = { rateLimited: 0, unavailable: 0 };
+    let earlier = none;
+
     let decision = yield* callAt(changeId, part, attempt, earlier);
 
     while (decision._tag === "retry") {
@@ -73,7 +80,11 @@ const removePart = Effect.fn("ChangeLivePostV1.removePart")(
 
       earlier = decision.rateLimited
         ? { ...earlier, rateLimited: earlier.rateLimited + 1 }
-        : { ...earlier, unavailable: earlier.unavailable + 1 };
+        : {
+            ...earlier,
+            reached: earlier.reached + (decision.reached === true ? 1 : 0),
+            unavailable: earlier.unavailable + 1,
+          };
       attempt += 1;
       decision = yield* callAt(changeId, part, attempt, earlier);
     }

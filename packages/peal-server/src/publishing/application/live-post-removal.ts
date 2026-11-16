@@ -150,9 +150,7 @@ export const removalAttemptRun = Effect.fn("LivePostRemoval.attempt")(
 
     // An edit refused as perhaps the same text again, after a try that
     // may have landed, is that try's edit.
-    const attempt = isEdit
-      ? editAfterRepeat(made, call.earlier, started === "resumed")
-      : made;
+    const attempt = isEdit ? editAfterRepeat(made, call.earlier) : made;
 
     const finishedAt = yield* DateTime.now;
 

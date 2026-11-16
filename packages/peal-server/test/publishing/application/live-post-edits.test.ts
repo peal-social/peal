@@ -18,10 +18,12 @@ import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.t
 import type { LivePostChangeId } from "#publishing/domain/live-post-change-id.ts";
 import { editable, requestEdit } from "#publishing/domain/live-post-change.ts";
 import { MastodonOptions } from "#publishing/domain/mastodon-options.ts";
+import { platformRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import { PostContent, partsOn } from "#publishing/domain/post-content.ts";
 import { PostPart } from "#publishing/domain/post-part.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
+import { unansweredAfterSending } from "#publishing/domain/removal-decision.ts";
 import { ChangeLivePostV1 } from "#publishing/infrastructure/workflows/change-live-post.ts";
 import { newId } from "#shared/application/ids.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
@@ -467,6 +469,105 @@ describe("editing a live post", () => {
               ({ text }) => text
             ),
             ["Corrected."]
+          );
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "takes a refusal that may be the same text, after a try that reached the platform, as the edit made",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* repeated() {
+          const changes = yield* LivePostChanges;
+          const removals = yield* FakeRemovals;
+
+          const { actor, channelId, postId, target } =
+            yield* published("telegram");
+
+          // The first try timed out after it was sent; the second finds
+          // the text already there.
+          yield* removals.script(channelId, [
+            {
+              _tag: "fail",
+              failure: new PlatformUnavailable({
+                code: unansweredAfterSending,
+              }),
+            },
+            {
+              _tag: "fail",
+              failure: new BadRequest({
+                code: platformRefusalCodes.editRefusedOrSame,
+              }),
+            },
+          ]);
+
+          const change = yield* changes.editTarget(actor, postId, target.id, {
+            part: 0,
+            text: "Corrected.",
+          });
+
+          yield* eventually(
+            "the platform was called",
+            editsOn(channelId).pipe(Effect.map((calls) => calls.length === 1))
+          );
+          yield* eventually("the job waits", isWaiting(change.id));
+          yield* TestClock.adjust(Duration.minutes(1));
+
+          yield* eventually("the edit is done", hasStatus(change.id, "done"));
+
+          assert.deepStrictEqual(
+            partsOn(yield* contentOf(postId), channelId).map(
+              ({ text }) => text
+            ),
+            ["Corrected."]
+          );
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "keeps that refusal after a try that never left",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* neverLeft() {
+          const changes = yield* LivePostChanges;
+          const removals = yield* FakeRemovals;
+
+          const { actor, channelId, postId, target } =
+            yield* published("telegram");
+
+          yield* removals.script(channelId, [
+            { _tag: "fail", failure: new PlatformUnavailable() },
+            {
+              _tag: "fail",
+              failure: new BadRequest({
+                code: platformRefusalCodes.editRefusedOrSame,
+              }),
+            },
+          ]);
+
+          const change = yield* changes.editTarget(actor, postId, target.id, {
+            part: 0,
+            text: "Corrected.",
+          });
+
+          yield* eventually(
+            "the platform was called",
+            editsOn(channelId).pipe(Effect.map((calls) => calls.length === 1))
+          );
+          yield* eventually("the job waits", isWaiting(change.id));
+          yield* TestClock.adjust(Duration.minutes(1));
+
+          yield* eventually("the edit failed", hasStatus(change.id, "failed"));
+
+          assert.deepStrictEqual(
+            (yield* changeOf(change.id)).failureCode,
+            Option.some(platformRefusalCodes.editRefusedOrSame)
           );
         })
       ),
