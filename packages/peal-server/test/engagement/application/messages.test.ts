@@ -1372,7 +1372,39 @@ describe("one box read now", () => {
   );
 
   it.effect(
-    "asks the platform to stop before a channel's messages are turned off",
+    "asks the platform to stop once the channel's box is gone, so two channels of one account turned off at once both see the other gone",
+    () => {
+      const world = makeMessageWorld(new Set(["mastodon"]));
+      const admin = actorWith("channel:connect");
+      const boxThen: boolean[] = [];
+
+      world.state.channels.set(channelId(1), mastodonChannel);
+
+      world.state.following = (request) =>
+        Effect.sync(() => {
+          boxThen.push(world.state.boxes.has(request.channelId));
+
+          return "done" as const;
+        });
+
+      return at(
+        Effect.gen(function* afterwards() {
+          yield* MessageSettings.use((settings) =>
+            settings.switchChannel(admin, channelId(1), true)
+          );
+          yield* MessageSettings.use((settings) =>
+            settings.switchChannel(admin, channelId(1), false)
+          );
+
+          assert.deepStrictEqual(world.state.unfollows, [channelId(1)]);
+          assert.deepStrictEqual(boxThen, [false]);
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect(
+    "asks the platform to stop when a channel's messages are turned off",
     () => {
       const world = makeMessageWorld(new Set(["mastodon"]));
       const admin = actorWith("channel:connect");
