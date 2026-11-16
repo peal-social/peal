@@ -35,8 +35,10 @@ const EnvelopeSchema = Schema.Struct({
       id: IdSchema,
       messaging: Schema.optionalKey(Schema.Array(MessagingSchema)),
       // When Meta sent it: milliseconds since the epoch on Messenger's
-      // pages, read as seconds when it is too small to be milliseconds.
-      time: Schema.optionalKey(Schema.Number),
+      // pages, read as seconds when it is too small to be milliseconds. Read
+      // apart and leniently (`timeOf`): a time Peal cannot read is no time,
+      // never a reason to drop the batch.
+      time: Schema.optionalKey(Schema.Unknown),
     })
   ),
   object: Schema.Literals(["page", "instagram"]),
@@ -70,12 +72,19 @@ const smallestMillis = 100_000_000_000;
 
 type Entry = Envelope["entry"][number];
 
+// A number, or a number written as text.
+const decodeTime = Schema.decodeUnknownOption(
+  Schema.Union([Schema.Finite, Schema.FiniteFromString])
+);
+
 const isStale = (entry: Entry, now: DateTime.Utc): boolean => {
-  if (entry.time === undefined) {
+  const time = decodeTime(entry.time);
+
+  if (Option.isNone(time)) {
     return false;
   }
 
-  const millis = entry.time < smallestMillis ? entry.time * 1000 : entry.time;
+  const millis = time.value < smallestMillis ? time.value * 1000 : time.value;
 
   return DateTime.toEpochMillis(now) - millis > Duration.toMillis(maxEventAge);
 };

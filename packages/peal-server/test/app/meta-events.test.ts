@@ -308,4 +308,30 @@ describe(decodeMetaEvents, () => {
     );
     assert.strictEqual(read.stale, 2);
   });
+
+  it("reads a time written as text, and ignores one it cannot read", () => {
+    const read = Result.getOrThrow(
+      decodeMetaEvents(
+        bytes({
+          entry: [
+            { ...entry(sentAt, "as-number"), time: String(sentAt) },
+            {
+              ...entry(sentAt, "stale-text"),
+              time: String(sentAt - 2 * 24 * 60 * 60 * 1000),
+            },
+            { ...entry(sentAt, "not-a-time"), time: "synthetic" },
+            { ...entry(sentAt, "an-object"), time: { at: sentAt } },
+          ],
+          object: "page",
+        }),
+        now
+      )
+    );
+
+    assert.deepStrictEqual(
+      read.events.map(({ accountId }) => accountId),
+      ["as-number", "not-a-time", "an-object"]
+    );
+    assert.strictEqual(read.stale, 1);
+  });
 });
