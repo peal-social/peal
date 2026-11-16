@@ -7,8 +7,11 @@ import {
   Effect,
   Fiber,
   Layer,
+  Logger,
+  Metric,
   Option,
   Redacted,
+  References,
 } from "effect";
 import { Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
@@ -22,7 +25,10 @@ import type {
   MessagePlatform,
   OutgoingDirect,
 } from "#engagement/infrastructure/platforms/message-platform.ts";
-import { metaMessages } from "#engagement/infrastructure/platforms/meta/meta-messages.ts";
+import {
+  messagesFromUnknownSenders,
+  metaMessages,
+} from "#engagement/infrastructure/platforms/meta/meta-messages.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import {
   facebookMessageScopes,
@@ -389,6 +395,57 @@ describe("Meta's direct messages, read", () => {
           assert.include(batch.listed, "c_foreign");
         })
       )
+  );
+
+  it.effect(
+    "log a conversation without the account once a channel and hour, and count it at every read",
+    () => {
+      const lines: string[] = [];
+
+      const capture = Logger.layer([
+        Logger.make(({ fiber, message }) => {
+          const annotations = fiber.getRef(References.CurrentLogAnnotations);
+
+          if (annotations["reason"] === "accountNotAParticipant") {
+            lines.push(JSON.stringify(message));
+          }
+        }),
+      ]);
+
+      return atNow(
+        Effect.gen(function* throttled() {
+          const { account, graph, platform } = yield* onGraph();
+
+          graph.add({
+            ...conversation("c_foreign", [message(4)]),
+            participants: [{ id: reader.id, name: reader.name }],
+          });
+
+          const counted = Metric.value(messagesFromUnknownSenders).pipe(
+            Effect.map(({ count }) => count)
+          );
+
+          const before = yield* counted;
+
+          // Read every ten seconds while events come: logged once.
+          yield* platform.read(account, toRead);
+          yield* TestClock.adjust("10 seconds");
+          yield* platform.read(account, toRead);
+          yield* TestClock.adjust("59 minutes");
+          yield* platform.read(account, toRead);
+
+          assert.lengthOf(lines, 1);
+          assert.strictEqual((yield* counted) - before, 3);
+
+          // An hour on, once again.
+          yield* TestClock.adjust("1 minute");
+          yield* platform.read(account, toRead);
+
+          assert.lengthOf(lines, 2);
+          assert.strictEqual((yield* counted) - before, 4);
+        }).pipe(Effect.provide(capture))
+      );
+    }
   );
 
   it.effect("read back only a conversation whose revision changed", () =>

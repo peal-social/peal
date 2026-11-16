@@ -371,18 +371,56 @@ export const messagesFromUnknownSenders = Metric.counter(
   }
 );
 
-// Counted, and logged by the channel's id and a code alone.
-const unknownSenders = (
-  account: ChannelAccount,
-  reason: "accountNotAParticipant" | "senderOutside",
-  count: number
-) =>
-  Metric.update(messagesFromUnknownSenders, count).pipe(
-    Effect.andThen(
-      Effect.logWarning("Meta gave a direct message Peal could not place")
-    ),
-    Effect.annotateLogs({ channelId: account.channelId, reason })
-  );
+/**
+ * How often a channel's unplaced messages are logged, by reason: a read
+ * every ten seconds while events come would log the same conversations
+ * at each. The metric counts every one.
+ */
+export const unknownSendersLogEvery = Duration.hours(1);
+
+type UnplacedReason = "accountNotAParticipant" | "senderOutside";
+
+/**
+ * Counts what Peal could not place, at every read, and logs it by the
+ * channel's id and a code alone, once a channel, reason and
+ * `unknownSendersLogEvery`.
+ */
+const unknownSendersOf = Effect.fnUntraced(function* unknownSendersOf() {
+  const lastLogged = yield* Ref.make(new Map<string, DateTime.Utc>());
+
+  return Effect.fnUntraced(function* unknownSenders(
+    account: ChannelAccount,
+    reason: UnplacedReason,
+    count: number
+  ) {
+    yield* Metric.update(messagesFromUnknownSenders, count);
+
+    const now = yield* DateTime.now;
+    const key = `${account.channelId}:${reason}`;
+    const since = DateTime.subtractDuration(now, unknownSendersLogEvery);
+
+    const due = yield* Ref.modify(lastLogged, (logged) => {
+      // Lines an hour old are forgotten, so the map stays small.
+      const kept = new Map(
+        [...logged].filter(([, at]) => DateTime.isGreaterThan(at, since))
+      );
+
+      if (kept.has(key)) {
+        return [false, kept] as const;
+      }
+
+      kept.set(key, now);
+
+      return [true, kept] as const;
+    });
+
+    if (due) {
+      yield* Effect.logWarning(
+        "Meta gave a direct message Peal could not place"
+      ).pipe(Effect.annotateLogs({ channelId: account.channelId, reason }));
+    }
+  });
+});
 
 // The ids of a listed conversation's people, the account among them.
 const participantIdsOf = (listed: ListedConversation): ReadonlySet<string> =>
@@ -451,6 +489,7 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
     const deadlineAfter = options.deadline ?? defaultDeadline;
 
     const paced = options.paced ?? (yield* accountPace(pace));
+    const unknownSenders = yield* unknownSendersOf();
 
     // A Graph call as the account, once its slot came: its answer, or none
     // when nothing came back.
