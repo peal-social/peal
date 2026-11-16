@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Cause, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { CommentRuleNotPossible } from "peal-contract";
 import type { CommentRule } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { useState, useTransition } from "react";
@@ -38,6 +39,24 @@ const failureOf = (exit: Exit.Exit<unknown, { readonly _tag: string }>) =>
         Cause.findErrorOption(exit.cause).pipe(
           Option.map(({ _tag }) => _tag),
           Option.getOrElse(() => "unknown")
+        )
+      );
+
+// Why no channel can send a rule's private message, when that is why it
+// was refused: the first channel's reason, which the member can act on.
+const privateRefusalOf = (exit: Exit.Exit<unknown, unknown>) =>
+  Exit.isSuccess(exit)
+    ? Option.none<string>()
+    : Cause.findErrorOption(exit.cause).pipe(
+        Option.filter(
+          (error): error is CommentRuleNotPossible =>
+            error instanceof CommentRuleNotPossible &&
+            error.reason === "privateReply"
+        ),
+        Option.map(
+          ({ channels }) =>
+            channels.find(({ privateReply }) => privateReply !== "available")
+              ?.privateReply ?? "other"
         )
       );
 
@@ -88,6 +107,27 @@ const RuleActions = ({
       >
         {rule.status === "active" ? t("pause") : t("resume")}
       </Button>
+      {rule.privateReply === null ? null : (
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={busy}
+          onClick={() => {
+            start(async () => {
+              answered(
+                await update({
+                  params,
+                  payload: { privateReply: null },
+                  reactivityKeys,
+                }),
+                t("removedPrivate")
+              );
+            });
+          }}
+        >
+          {t("removePrivate")}
+        </Button>
+      )}
       <Button
         variant="outline"
         size="sm"
@@ -104,7 +144,13 @@ const RuleActions = ({
   );
 };
 
-const NewRule = ({ workspaceId }: { readonly workspaceId: string }) => {
+const NewRule = ({
+  mayMessage,
+  workspaceId,
+}: {
+  readonly mayMessage: boolean;
+  readonly workspaceId: string;
+}) => {
   const t = useTranslations("CommentRules");
   const channels = useAtomValue(workspaceChannels(workspaceId));
   const create = useAtomSet(startCommentRule, { mode: "promiseExit" });
@@ -133,6 +179,12 @@ const NewRule = ({ workspaceId }: { readonly workspaceId: string }) => {
       return;
     }
 
+    if (request === "privateReply") {
+      setError(t("form.missing.privateReply"));
+
+      return;
+    }
+
     start(async () => {
       const exit = await create({
         params: { workspaceId },
@@ -147,7 +199,12 @@ const NewRule = ({ workspaceId }: { readonly workspaceId: string }) => {
           setError(null);
         },
         onSome: (tag) => {
-          setError(t("errors.failed", { tag }));
+          setError(
+            Option.match(privateRefusalOf(exit), {
+              onNone: () => t("errors.failed", { tag }),
+              onSome: (reason) => t("errors.privateReply", { reason }),
+            })
+          );
         },
       });
     });
@@ -159,6 +216,7 @@ const NewRule = ({ workspaceId }: { readonly workspaceId: string }) => {
       channels={AsyncResult.isSuccess(channels) ? channels.value : []}
       draft={draft}
       error={error}
+      mayMessage={mayMessage}
       onChange={setDraft}
       onSubmit={submit}
     />
@@ -167,9 +225,11 @@ const NewRule = ({ workspaceId }: { readonly workspaceId: string }) => {
 
 const RuleList = ({
   mayChange,
+  mayMessage,
   workspaceId,
 }: {
   readonly mayChange: boolean;
+  readonly mayMessage: boolean;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("CommentRules");
@@ -187,7 +247,9 @@ const RuleList = ({
 
   return (
     <div className="flex flex-col gap-4">
-      {mayChange ? <NewRule workspaceId={workspaceId} /> : null}
+      {mayChange ? (
+        <NewRule mayMessage={mayMessage} workspaceId={workspaceId} />
+      ) : null}
       {result.value.items.length === 0 ? (
         <p className="text-muted-foreground">{t("empty")}</p>
       ) : (
@@ -212,5 +274,7 @@ const RuleList = ({
 /** The workspace's comment rules, read once the page has hydrated. */
 export const CommentRulesSettings = (props: {
   readonly mayChange: boolean;
+  /** Whether the member may send private messages: a rule's private one. */
+  readonly mayMessage: boolean;
   readonly workspaceId: string;
 }) => (useHydrated() ? <RuleList {...props} /> : <SettingsLoading />);

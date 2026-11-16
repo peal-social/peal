@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import type { Channel, CommentRule } from "peal-contract";
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
+import { Checkbox } from "peal-ui/components/checkbox";
 import { Input } from "peal-ui/components/input";
 import { Label } from "peal-ui/components/label";
 import {
@@ -17,11 +18,61 @@ import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ReactNode } from "react";
 
+import { carriesPrivately } from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
 
 // The views of comment rules: a rule with what it did, and the form that
 // starts one, whatever fetched them. Their state is in
 // comment-rules-settings.tsx.
+
+type Match = CommentRule["matches"][number];
+
+// What came of a match's private reply, as its line says it: none for a
+// rule without one, or a match it did not answer.
+const privateOutcomeOf = (match: Match) => {
+  if (match.privateReplyId !== null) {
+    return { status: match.privateStatus ?? "sent" } as const;
+  }
+
+  if (match.privateCode === "waiting") {
+    return { status: "waiting" } as const;
+  }
+
+  return match.privateCode === null
+    ? undefined
+    : ({ code: match.privateCode } as const);
+};
+
+/** What came of the private replies of the comments a rule answered. */
+const PrivateOutcomes = ({
+  matches,
+}: {
+  readonly matches: readonly Match[];
+}) => {
+  const t = useTranslations("CommentRules");
+
+  const lines = matches.flatMap((match) => {
+    const outcome = privateOutcomeOf(match);
+
+    return outcome === undefined ? [] : [{ match, outcome }];
+  });
+
+  if (lines.length === 0) {
+    return null;
+  }
+
+  return (
+    <ul className="flex flex-col gap-1">
+      {lines.map(({ match, outcome }) => (
+        <li key={match.commentId} className="text-muted-foreground text-sm">
+          {"status" in outcome
+            ? t("privateMade", { status: outcome.status })
+            : t("privateSkipped", { code: outcome.code })}
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 /** A rule as the list shows it, with its channels and what it matched. */
 export const CommentRuleView = ({
@@ -51,6 +102,14 @@ export const CommentRuleView = ({
             </Badge>
           </div>
           <p className="text-sm whitespace-pre-wrap">{rule.reply}</p>
+          {rule.privateReply === null ? null : (
+            <p className="text-sm whitespace-pre-wrap">
+              <span className="text-muted-foreground">
+                {t("privateReplyLabel")}
+              </span>{" "}
+              {rule.privateReply}
+            </p>
+          )}
           <p className="text-muted-foreground text-sm">
             {t("replied", { count: replied })}
           </p>
@@ -58,12 +117,17 @@ export const CommentRuleView = ({
         <div className="flex flex-wrap gap-2">{actions}</div>
       </div>
       <ul className="flex flex-col gap-1">
-        {rule.channels.map(({ channelId, platform, reply }) => (
+        {rule.channels.map(({ channelId, platform, privateReply, reply }) => (
           <li key={channelId} className="text-muted-foreground text-sm">
-            {t("carries", { platform, reply })}
+            {rule.privateReply === null
+              ? t("carries", { platform, reply })
+              : t("carriesPrivately", { platform, privateReply, reply })}
           </li>
         ))}
       </ul>
+      {rule.privateReply === null ? null : (
+        <PrivateOutcomes matches={rule.matches} />
+      )}
     </li>
   );
 };
@@ -74,6 +138,7 @@ export const CommentRuleFormView = ({
   channels,
   draft,
   error,
+  mayMessage,
   onChange,
   onSubmit,
 }: {
@@ -81,6 +146,8 @@ export const CommentRuleFormView = ({
   readonly channels: readonly Channel[];
   readonly draft: CommentRuleDraft;
   readonly error: string | null;
+  /** Whether the member may send private messages. */
+  readonly mayMessage: boolean;
   readonly onChange: (draft: CommentRuleDraft) => void;
   readonly onSubmit: () => void;
 }) => {
@@ -88,6 +155,27 @@ export const CommentRuleFormView = ({
   const channelId = useId();
   const keywordsId = useId();
   const replyId = useId();
+  const privateId = useId();
+  const privateTextId = useId();
+
+  // The draft on another channel: one without private replies takes none.
+  const onChannel = (chosen: string): CommentRuleDraft => ({
+    ...draft,
+    channelId: chosen,
+    privateReply: carriesPrivately(
+      channels.find(({ id }) => id === chosen)?.platform
+    )
+      ? draft.privateReply
+      : null,
+  });
+
+  // Offered only where the platform has private replies, to a member who
+  // may send messages; the server says whether the channel can now.
+  const offersPrivate =
+    mayMessage &&
+    carriesPrivately(
+      channels.find(({ id }) => id === draft.channelId)?.platform
+    );
 
   return (
     <form
@@ -102,7 +190,7 @@ export const CommentRuleFormView = ({
         <Select
           value={draft.channelId}
           onValueChange={(value) => {
-            onChange({ ...draft, channelId: value ?? "" });
+            onChange(onChannel(value ?? ""));
           }}
         >
           <SelectTrigger id={channelId}>
@@ -141,6 +229,42 @@ export const CommentRuleFormView = ({
         />
       </div>
       <p className="text-muted-foreground text-xs">{t("form.public")}</p>
+      {offersPrivate ? (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={privateId}
+              checked={draft.privateReply !== null}
+              onCheckedChange={(checked) => {
+                onChange({
+                  ...draft,
+                  privateReply: checked === true ? "" : null,
+                });
+              }}
+            />
+            <Label htmlFor={privateId}>{t("form.alsoPrivate")}</Label>
+          </div>
+          {draft.privateReply === null ? null : (
+            <div className="flex flex-col gap-1">
+              <Label htmlFor={privateTextId}>{t("form.privateReply")}</Label>
+              <Textarea
+                id={privateTextId}
+                aria-describedby={`${privateTextId}-hint`}
+                value={draft.privateReply}
+                onChange={(event) => {
+                  onChange({ ...draft, privateReply: event.target.value });
+                }}
+              />
+              <p
+                id={`${privateTextId}-hint`}
+                className="text-muted-foreground text-xs"
+              >
+                {t("form.privateHint")}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : null}
       {error === null ? null : (
         <p role="alert" className="text-destructive text-sm">
           {error}

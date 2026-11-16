@@ -4655,13 +4655,17 @@
   },
   "CommentRules": {
     "title": "Réponses aux commentaires",
-    "description": "Des règles qui répondent d’elles-mêmes, en public, aux commentaires sous les publications d’un canal qui contiennent un mot-clé que vous avez choisi : une fois par commentaire et une fois par personne, 25 réponses par jour au plus, 100 par jour pour toutes les règles d’un canal ensemble, chacune une réponse de votre boîte de réception. Elles répondent sur Mastodon, et sur les Pages Facebook et Instagram là où Peal lit leurs commentaires ; les règles de Bluesky, X, LinkedIn et YouTube interdisent à une application de répondre d’elle-même. Une règle n’aime, ne suit ni n’écrit jamais en privé à personne.",
+    "description": "Des règles qui répondent d’elles-mêmes, en public, aux commentaires sous les publications d’un canal qui contiennent un mot-clé que vous avez choisi : une fois par commentaire et une fois par personne, 25 réponses par jour au plus, 100 par jour pour toutes les règles d’un canal ensemble, chacune une réponse de votre boîte de réception. Elles répondent sur Mastodon, et sur les Pages Facebook et Instagram là où Peal lit leurs commentaires ; les règles de Bluesky, X, LinkedIn et YouTube interdisent à une application de répondre d’elle-même. Une règle n’aime ni ne suit jamais personne. Sur Instagram et les Pages Facebook, elle peut aussi envoyer à l’auteur de chaque commentaire auquel elle a répondu un message privé, après sa réponse publique, là où les messages privés du canal sont activés.",
     "readOnly": "Vous pouvez lire les règles : les modifier demande un rôle qui répond aux commentaires.",
     "empty": "Aucune règle ne répond d’elle-même aux commentaires.",
     "keywords": "Quand un commentaire dit : {keywords}",
     "status": "{status, select, active {Active} paused {En pause} ended {Terminée} other {Inconnu}}",
     "replied": "{count, plural, =0 {Aucune réponse pour l’instant} one {# réponse parmi les derniers commentaires} other {# réponses parmi les derniers commentaires}}",
     "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {Un canal}} : {reply, select, available {répond là} noApi {aucun commentaire que Peal lit} notAllowed {les règles de la plateforme interdisent à une application de répondre d’elle-même} unsupported {ce serveur ne lit pas ses commentaires} reconnect {reconnectez le canal} textTooLong {la réponse est trop longue} other {ne peut pas répondre}}",
+    "carriesPrivately": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {Un canal}} : {reply, select, available {répond là} noApi {aucun commentaire que Peal lit} notAllowed {les règles de la plateforme interdisent à une application de répondre d’elle-même} unsupported {ce serveur ne lit pas ses commentaires} reconnect {reconnectez le canal} textTooLong {la réponse est trop longue} other {ne peut pas répondre}} ; message privé : {privateReply, select, available {envoyé après la réponse publique} noApi {la plateforme n’a pas de réponses privées} unsupported {ce serveur ne lit pas ses messages privés} messagesOff {activez les messages privés du canal} reconnect {reconnectez le canal pour ses messages} textTooLong {le message est trop long} other {ne peut pas l’envoyer}}",
+    "privateReplyLabel": "Message privé :",
+    "privateMade": "{status, select, waiting {Message privé en attente de la réponse publique} sending {Message privé en cours d’envoi} sent {Message privé envoyé} failed {Message privé en échec} unconfirmed {Message privé non confirmé : vérifiez la conversation} other {Message privé}}",
+    "privateSkipped": "Pas de message privé : {code, select, stopped {la règle a été arrêtée, mise en pause ou a perdu son message avant} publicReplyFailed {la réponse publique n’est pas partie} publicReplyUnconfirmed {la réponse publique n’est pas confirmée} publicReplyWithdrawn {la réponse publique a été retirée} messagesOff {les messages privés du canal sont désactivés} noApi {la plateforme n’a pas de réponses privées} unsupported {ce serveur ne lit pas les messages privés de la plateforme} reconnect {reconnectez le canal pour ses messages} textTooLong {le message est trop long} MissingPermission {la personne qui a lancé la règle ne peut pas envoyer de messages} MessagesNeedConsent {le propriétaire de l’espace n’a pas permis à l’application d’envoyer des messages} PrivateReplyPending {le commentaire a déjà sa réponse privée} PrivateReplyNotPossible {le commentaire date de plus de 7 jours} AllowanceReached {le compte de facturation n’a plus de place pour un autre message} other {elle a été refusée ({code})}}",
     "started": "La règle est en place : elle répond aux commentaires qui arrivent à partir de maintenant.",
     "pause": "Mettre en pause",
     "paused": "La règle est en pause.",
@@ -4669,6 +4673,8 @@
     "resumed": "La règle reprend.",
     "stop": "Arrêter",
     "stopped": "La règle est arrêtée.",
+    "removePrivate": "Retirer le message privé",
+    "removedPrivate": "La règle n’envoie plus de message privé.",
     "form": {
       "channel": "Canal",
       "chooseChannel": "Choisissez un canal",
@@ -4676,15 +4682,20 @@
       "keywordsHelp": "Séparés par des virgules, jusqu’à 10 ; quelles que soient leur casse et leurs accents.",
       "reply": "Réponse",
       "public": "Elle répond en public, d’elle-même, sans que personne ne lise chaque commentaire avant.",
+      "alsoPrivate": "Envoyer aussi un message privé",
+      "privateReply": "Message privé",
+      "privateHint": "Envoyé une fois, en privé, à l’auteur de chaque commentaire auquel la règle répond, après sa réponse publique et dans les 7 jours qui suivent le commentaire. Il faut que les messages privés du canal soient activés, et la personne doit répondre avant que vous puissiez lui écrire à nouveau. Il part tout seul : indiquez-y que le message est automatique là où la loi le demande.",
       "start": "Lancer",
       "missing": {
         "channel": "Choisissez un canal.",
         "keywords": "Donnez de 1 à 10 mots-clés.",
-        "reply": "Écrivez la réponse."
+        "reply": "Écrivez la réponse.",
+        "privateReply": "Écrivez le message privé, ou décochez-le."
       }
     },
     "errors": {
-      "failed": "La modification n’a pas pu être faite ({tag})."
+      "failed": "La modification n’a pas pu être faite ({tag}).",
+      "privateReply": "Aucun canal ne peut envoyer ce message privé : {reason, select, messagesOff {activez d’abord les messages privés du canal} noApi {la plateforme n’a pas de réponses privées} unsupported {ce serveur ne lit pas les messages privés de la plateforme} reconnect {reconnectez le canal pour ses messages} textTooLong {il est trop long pour la plateforme} other {ce n’est pas possible là}}."
     }
   },
   "ShortLinks": {
