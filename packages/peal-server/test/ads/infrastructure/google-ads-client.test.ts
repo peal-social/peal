@@ -630,7 +630,12 @@ describe("reading a Google Ads account", () => {
           request("1111111111")
         );
 
-        assert.isTrue(Option.isSome(snapshot.haltedFor));
+        // Read again from the start, it would stop at the same place: it
+        // backs off to the longest wait.
+        assert.deepStrictEqual(
+          snapshot.haltedFor.pipe(Option.map(Duration.toHours)),
+          Option.some(6)
+        );
         assert.deepStrictEqual(
           snapshot.campaignDaysCover.pipe(Option.map(({ to }) => to.day)),
           Option.some(

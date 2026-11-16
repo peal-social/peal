@@ -129,10 +129,12 @@ interface Searched<A> {
 }
 
 /**
- * How long an account waits when a read was cut at the bound of pages: it
- * is not marked read, and the next run reads it again.
+ * How long an account waits when a read was still cut at the bound of
+ * pages after its continuations: it is not marked read, and read from the
+ * start again it would stop at the same place, so it backs off to the
+ * longest wait the sync gives (six hours), logged as an error each time.
  */
-const cutWait = Duration.hours(1);
+const cutWait = Duration.hours(6);
 
 // A search of days cut at the bound goes on from the last day it reached,
 // this many times in one read at most.
@@ -600,8 +602,8 @@ export const googleAdsClient = (options: {
         : yield* readDays(access, request);
 
       if (campaigns.cut || days.cut) {
-        yield* Effect.logWarning(
-          "A Google Ads account took more pages than a read takes: it is read again later, and not marked read"
+        yield* Effect.logError(
+          "A Google Ads account takes more pages than a read takes: it is not marked read, and waits six hours before it is read again"
         ).pipe(
           Effect.annotateLogs({
             campaigns: campaigns.cut,

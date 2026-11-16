@@ -202,12 +202,15 @@ weaken a rule below to make something pass.
 - Listings of what a sign-in reaches go through `ListingPace` (in
   process: ten a sign-in and thirty a workspace an hour, kept five
   minutes, and 300 of Google's operations a day for every workspace's
-  listings), and each one takes the way (`reachedThrough`) Google lists;
-  a read refused as a permission lists once to find another way, else the
-  account is `unreachableSince`, its history kept.
+  listings, 100 for one), and each one takes the way (`reachedThrough`)
+  Google lists to the accounts of its own sign-in (`setWays` matches the
+  grant); a read refused as a permission reads the sign-in's kept listing,
+  or lists once, to find another way, else the account is
+  `unreachableSince`, its history kept, and is not looked for again until
+  a member's listing finds it.
 - A read cut at the page bound is never taken for whole: days go on from
-  their last day a few times, and what stays cut halts the account (not
-  marked read). Cost is kept in micros (`campaign_days.spend_micros`) and
+  their last day a few times, and what stays cut halts the account six
+  hours (not marked read, logged as an error). Cost is kept in micros (`campaign_days.spend_micros`) and
   rounded once where days are summed.
 - A sweep's scheduled time travels with each sync (`runAt`): the next read
   counts from it, on every network.
