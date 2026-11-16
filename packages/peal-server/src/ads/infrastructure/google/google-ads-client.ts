@@ -644,7 +644,7 @@ export const googleAdsClient = (options: {
   return {
     account,
     accounts,
-    authorizationUrl: (state) => {
+    authorizationUrl: (state, codeChallenge) => {
       const url = new URL(endpoints.authorization);
 
       url.search = new URLSearchParams({
@@ -653,6 +653,10 @@ export const googleAdsClient = (options: {
         // Applications").
         access_type: "offline",
         client_id: settings.clientId,
+        // PKCE (RFC 7636, S256): a code taken from the browser redeems
+        // nothing without the verifier the sign-in keeps sealed.
+        code_challenge: codeChallenge,
+        code_challenge_method: "S256",
         include_granted_scopes: "false",
         prompt: "consent",
         redirect_uri: redirectUri,
@@ -663,48 +667,56 @@ export const googleAdsClient = (options: {
 
       return url.href;
     },
-    complete: Effect.fn("GoogleAds.complete")(function* complete(code) {
-      const answer = yield* exchanged(
-        tokenRequest({
-          code,
-          grant_type: "authorization_code",
-          redirect_uri: redirectUri,
-        })
-      ).pipe(
-        Effect.catchTag("TokenRejected", () =>
-          Effect.fail(new AdSignInFailed({ reason: "failed" }))
-        )
-      );
+    complete: Effect.fn("GoogleAds.complete")(
+      function* complete(code, codeVerifier) {
+        const answer = yield* exchanged(
+          tokenRequest({
+            code,
+            grant_type: "authorization_code",
+            redirect_uri: redirectUri,
+            ...Option.match(codeVerifier, {
+              onNone: () => ({}),
+              onSome: (verifier) => ({
+                code_verifier: Redacted.value(verifier),
+              }),
+            }),
+          })
+        ).pipe(
+          Effect.catchTag("TokenRejected", () =>
+            Effect.fail(new AdSignInFailed({ reason: "failed" }))
+          )
+        );
 
-      const scopes = (answer.scope ?? "")
-        .split(" ")
-        .filter((scope) => scope !== "");
+        const scopes = (answer.scope ?? "")
+          .split(" ")
+          .filter((scope) => scope !== "");
 
-      // Without a refresh token Peal could read nothing later, and without
-      // `adwords` nothing at all: the person refused.
-      if (
-        answer.refresh_token === undefined ||
-        // Scopes are compared whole, never as part of a text.
-        !new Set(scopes).has(adwordsScope)
-      ) {
-        return yield* new AdSignInFailed({ reason: "denied" });
+        // Without a refresh token Peal could read nothing later, and without
+        // `adwords` nothing at all: the person refused.
+        if (
+          answer.refresh_token === undefined ||
+          // Scopes are compared whole, never as part of a text.
+          !new Set(scopes).has(adwordsScope)
+        ) {
+          return yield* new AdSignInFailed({ reason: "denied" });
+        }
+
+        const subject = subjectOf(answer.id_token);
+
+        if (Option.isNone(subject)) {
+          return yield* new AdSignInFailed({ reason: "failed" });
+        }
+
+        return {
+          // A refresh token states no end: it lasts until revoked, unused
+          // six months, or seven days on a consent screen in Testing.
+          expiresAt: Option.none(),
+          platformUserId: subject.value,
+          scopes,
+          token: Redacted.make(answer.refresh_token),
+        };
       }
-
-      const subject = subjectOf(answer.id_token);
-
-      if (Option.isNone(subject)) {
-        return yield* new AdSignInFailed({ reason: "failed" });
-      }
-
-      return {
-        // A refresh token states no end: it lasts until revoked, unused
-        // six months, or seven days on a consent screen in Testing.
-        expiresAt: Option.none(),
-        platformUserId: subject.value,
-        scopes,
-        token: Redacted.make(answer.refresh_token),
-      };
-    }),
+    ),
     // Read only: nothing is ever made, found, run or paused at Google.
     create: readOnly,
     find: () => Effect.succeed(absentLookUp),

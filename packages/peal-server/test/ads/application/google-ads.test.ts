@@ -1,6 +1,8 @@
 // Google Ads accounts through the use cases, on Postgres, against the
 // loopback fake: read only, campaigns and their days, never an ad, never a
 // boost, read every six hours.
+import { createHash } from "node:crypto";
+
 import { assert, layer } from "@effect/vitest";
 import { DateTime, Duration, Effect, Layer, Option, Ref } from "effect";
 import { SqlClient } from "effect/sql";
@@ -21,6 +23,7 @@ import type { WorkspaceId } from "#shared/domain/ids.ts";
 import {
   googleAdsError,
   searching,
+  toToken,
 } from "#test/ads/fakes/fake-google-ads-api.ts";
 import type {
   FakeCampaignDay,
@@ -33,6 +36,7 @@ import {
   eur,
   freshOwner,
   onGoogle,
+  returnedWith,
   tagOf,
   TestNetworks,
 } from "#test/ads/support.ts";
@@ -220,6 +224,37 @@ layer(BillingTest, { excludeTestServices: true })(
             mode: "read",
             networks: ["google"],
           });
+        })
+    );
+
+    it.effect(
+      "sign in with PKCE: the code goes back with the verifier of the challenge sent",
+      () =>
+        Effect.gen(function* pkce() {
+          const api = yield* onGoogle(accounts);
+          const owner = yield* freshOwner;
+          const connections = yield* AdConnections;
+          const url = new URL(yield* connections.begin(owner, "google"));
+
+          yield* connections.complete(owner, returnedWith(url.href, "google"));
+
+          const sent = api.requests().find(toToken);
+
+          const verifier = new URLSearchParams(
+            sent === undefined ? "" : textOf(sent)
+          ).get("code_verifier");
+
+          assert.strictEqual(
+            url.searchParams.get("code_challenge_method"),
+            "S256"
+          );
+          assert.isNotNull(verifier);
+          assert.strictEqual(
+            url.searchParams.get("code_challenge"),
+            createHash("sha256")
+              .update(verifier ?? "")
+              .digest("base64url")
+          );
         })
     );
 
@@ -427,7 +462,11 @@ layer(BillingTest, { excludeTestServices: true })(
 
           yield* sync.run(account.id);
 
-          const campaigns = yield* reports.campaigns(owner, account.id, noRange);
+          const campaigns = yield* reports.campaigns(
+            owner,
+            account.id,
+            noRange
+          );
 
           assert.deepStrictEqual(
             campaigns.rows.map(({ externalId }) => externalId).toSorted(),

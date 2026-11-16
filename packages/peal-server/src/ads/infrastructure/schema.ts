@@ -68,11 +68,14 @@ export const grants = adsSchema.table(
 
 /**
  * Sign-ins in progress, under the SHA-256 of the state the network sends
- * back, for 15 minutes, taken once.
+ * back, for 15 minutes, taken once. `code_verifier` is the sign-in's PKCE
+ * verifier, sealed by the TokenCipher bound to `ads:sign-in:<state hash>`;
+ * null for one started before PKCE.
  */
 export const signInAttempts = adsSchema.table(
   "sign_in_attempts",
   {
+    codeVerifier: text("code_verifier"),
     expiresAt: instant("expires_at").notNull(),
     network: text("network").notNull(),
     startedBy: uuid("started_by").notNull(),

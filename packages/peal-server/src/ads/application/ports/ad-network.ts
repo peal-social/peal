@@ -131,11 +131,19 @@ export interface Snapshot extends AccountSnapshot {
  */
 export interface AdNetworkClient {
   readonly network: AdNetwork;
-  /** Where to send the browser to sign in, for a state Peal chose. */
-  readonly authorizationUrl: (state: string) => string;
-  /** Exchanges what the callback brought for the person's grant. */
+  /**
+   * Where to send the browser to sign in, for a state Peal chose and the
+   * S256 challenge of the sign-in's PKCE verifier (which a network without
+   * PKCE ignores).
+   */
+  readonly authorizationUrl: (state: string, codeChallenge: string) => string;
+  /**
+   * Exchanges what the callback brought for the person's grant, with the
+   * sign-in's PKCE verifier when it has one.
+   */
   readonly complete: (
-    code: string
+    code: string,
+    codeVerifier: Option.Option<Redacted.Redacted>
   ) => Effect.Effect<NetworkGrant, AdSignInFailed | PlatformUnavailable>;
   /** Whether a grant with these scopes may make and run ads. */
   readonly maySpend: (scopes: readonly string[]) => boolean;

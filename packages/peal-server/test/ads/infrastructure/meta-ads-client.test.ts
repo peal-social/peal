@@ -82,7 +82,9 @@ describe("signing in to Meta for ads", () => {
   it.live("asks for reading only on a server that only reads", () =>
     Effect.gen(function* reading() {
       const { client } = yield* metaAgainstFake({}, "read");
-      const url = new URL(client.authorizationUrl("state-1"));
+      const url = new URL(
+        client.authorizationUrl("state-1", "synthetic-challenge")
+      );
 
       assert.strictEqual(url.pathname, "/v27.0/dialog/oauth");
       assert.strictEqual(url.searchParams.get("scope"), "ads_read");
@@ -104,7 +106,9 @@ describe("signing in to Meta for ads", () => {
   it.live("asks for what running ads takes on a server that spends", () =>
     Effect.gen(function* spending() {
       const { client } = yield* metaAgainstFake();
-      const url = new URL(client.authorizationUrl("state-1"));
+      const url = new URL(
+        client.authorizationUrl("state-1", "synthetic-challenge")
+      );
 
       assert.strictEqual(
         url.searchParams.get("scope"),
@@ -119,7 +123,7 @@ describe("signing in to Meta for ads", () => {
       Effect.gen(function* exchanging() {
         const { client } = yield* metaAgainstFake({ expiresIn: 5_184_000 });
         const before = yield* DateTime.now;
-        const grant = yield* client.complete("good-code");
+        const grant = yield* client.complete("good-code", Option.none());
 
         assert.strictEqual(grant.platformUserId, adsUserId);
         assert.strictEqual(Redacted.value(grant.token), Redacted.value(token));
@@ -141,7 +145,9 @@ describe("signing in to Meta for ads", () => {
       const { client } = yield* metaAgainstFake();
 
       assert.isTrue(
-        Option.isNone((yield* client.complete("good-code")).expiresAt)
+        Option.isNone(
+          (yield* client.complete("good-code", Option.none())).expiresAt
+        )
       );
     }).pipe(Effect.scoped)
   );
@@ -149,7 +155,7 @@ describe("signing in to Meta for ads", () => {
   it.live("connects a person who allowed reading only, without spending", () =>
     Effect.gen(function* readOnly() {
       const { client } = yield* metaAgainstFake({ permissions: ["ads_read"] });
-      const grant = yield* client.complete("good-code");
+      const grant = yield* client.complete("good-code", Option.none());
 
       assert.isFalse(client.maySpend(grant.scopes));
     }).pipe(Effect.scoped)
@@ -162,11 +168,11 @@ describe("signing in to Meta for ads", () => {
         const { client } = yield* metaAgainstFake({ permissions: [] });
 
         assert.deepStrictEqual(
-          yield* Effect.flip(client.complete("good-code")),
+          yield* Effect.flip(client.complete("good-code", Option.none())),
           new AdSignInFailed({ reason: "denied" })
         );
         assert.deepStrictEqual(
-          yield* Effect.flip(client.complete("stale-code")),
+          yield* Effect.flip(client.complete("stale-code", Option.none())),
           new AdSignInFailed({ reason: "failed" })
         );
       }).pipe(Effect.scoped)

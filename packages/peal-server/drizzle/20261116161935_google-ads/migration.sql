@@ -11,6 +11,7 @@ CREATE TABLE "ads"."campaign_days" (
 --> statement-breakpoint
 ALTER TABLE "ads"."accounts" ADD COLUMN "reached_through" text;--> statement-breakpoint
 ALTER TABLE "ads"."campaigns" ADD COLUMN "kind" text;--> statement-breakpoint
+ALTER TABLE "ads"."sign_in_attempts" ADD COLUMN "code_verifier" text;--> statement-breakpoint
 CREATE INDEX "campaign_days_workspace_day" ON "ads"."campaign_days" ("workspace_id","day");--> statement-breakpoint
 CREATE INDEX "campaign_days_day" ON "ads"."campaign_days" ("day");--> statement-breakpoint
 ALTER TABLE "ads"."campaign_days" ADD CONSTRAINT "campaign_days_account_id_accounts_id_fkey" FOREIGN KEY ("account_id") REFERENCES "ads"."accounts"("id") ON DELETE CASCADE;

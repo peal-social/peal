@@ -7,6 +7,7 @@ import {
   Option,
   Schema,
 } from "effect";
+import type { Redacted } from "effect";
 
 import type { AdAccountFacts } from "#ads/domain/ad-account-facts.ts";
 import { AdAccount } from "#ads/domain/ad-account.ts";
@@ -416,9 +417,18 @@ export class AdConnections extends Context.Service<
             const userId = yield* personManaging(actor);
             const client = yield* clientFor(network);
             const { hash, state } = yield* secrets.newState;
+            const { challenge, verifier } = yield* secrets.newVerifier;
             const now = yield* DateTime.now;
 
+            // The verifier waits sealed for the callback, which only the
+            // browser that started the sign-in can bring with a code this
+            // verifier redeems (PKCE, RFC 7636).
+            const sealed = yield* secrets
+              .sealVerifier(verifier, hash)
+              .pipe(Effect.mapError(() => new AdsUnavailable()));
+
             yield* grants.saveAttempt({
+              codeVerifier: Option.some(sealed),
               expiresAt: DateTime.addDuration(now, signInLifetime),
               network,
               startedBy: userId,
@@ -426,7 +436,7 @@ export class AdConnections extends Context.Service<
               workspaceId: actor.workspaceId,
             });
 
-            return client.authorizationUrl(state);
+            return client.authorizationUrl(state, challenge);
           }
         ),
         complete: Effect.fn("AdConnections.complete")(
@@ -452,8 +462,19 @@ export class AdConnections extends Context.Service<
               return yield* new AdSignInFailed({ reason: "denied" });
             }
 
+            const verifier = yield* Option.match(attempt.value.codeVerifier, {
+              onNone: () => Effect.succeed(Option.none<Redacted.Redacted>()),
+              onSome: (sealed) =>
+                secrets.openVerifier(sealed, attempt.value.stateHash).pipe(
+                  Effect.map(Option.some),
+                  Effect.mapError(
+                    () => new AdSignInFailed({ reason: "expired" })
+                  )
+                ),
+            });
+
             const issued = yield* client
-              .complete(returned.code.value)
+              .complete(returned.code.value, verifier)
               .pipe(
                 Effect.catchTag("PlatformUnavailable", () =>
                   Effect.fail(new AdNetworkUnavailable({}))

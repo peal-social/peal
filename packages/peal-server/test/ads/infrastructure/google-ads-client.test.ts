@@ -20,9 +20,20 @@ import type {
   FakeGoogleAdsOptions,
 } from "#test/ads/fakes/fake-google-ads-api.ts";
 import { googleAgainstFake, refreshToken } from "#test/ads/google-client.ts";
-import { headerOf, rawJson } from "#test/publishing/fakes/platform-server.ts";
+import {
+  headerOf,
+  rawJson,
+  textOf,
+} from "#test/publishing/fakes/platform-server.ts";
 
 const id = (value: string) => NetworkObjectIdSchema.make(value);
+
+// The sign-in's PKCE verifier, as the use case hands it over.
+const synthesizedVerifier = Redacted.make(
+  "synthetic-verifier-0123456789012345678901"
+);
+
+const verifier = Option.some(synthesizedVerifier);
 
 const customer = (
   customerId: string,
@@ -97,7 +108,9 @@ describe("signing in to Google Ads", () => {
     () =>
       Effect.gen(function* signingIn() {
         const { client } = yield* googleAgainstFake();
-        const url = new URL(client.authorizationUrl("synthetic-state"));
+        const url = new URL(
+          client.authorizationUrl("synthetic-state", "synthetic-challenge")
+        );
 
         assert.strictEqual(url.pathname, "/o/oauth2/v2/auth");
         assert.strictEqual(
@@ -105,6 +118,9 @@ describe("signing in to Google Ads", () => {
           `?${new URLSearchParams({
             access_type: "offline",
             client_id: "synthetic-client.apps.googleusercontent.com",
+            // PKCE, S256 (RFC 7636): the verifier goes with the code.
+            code_challenge: "synthetic-challenge",
+            code_challenge_method: "S256",
             include_granted_scopes: "false",
             prompt: "consent",
             redirect_uri: "https://peal.example/connect/ads/google/callback",
@@ -122,8 +138,8 @@ describe("signing in to Google Ads", () => {
     "holds the refresh token, the account's sub and the scopes granted",
     () =>
       Effect.gen(function* completing() {
-        const { client } = yield* googleAgainstFake();
-        const grant = yield* client.complete("good-code");
+        const { api, client } = yield* googleAgainstFake();
+        const grant = yield* client.complete("good-code", verifier);
 
         assert.strictEqual(grant.platformUserId, googleUserId);
         assert.strictEqual(
@@ -132,6 +148,15 @@ describe("signing in to Google Ads", () => {
         );
         assert.deepStrictEqual(grant.scopes, ["openid", adwordsScope]);
         assert.isTrue(Option.isNone(grant.expiresAt));
+        assert.deepStrictEqual(
+          api
+            .requests()
+            .filter(toToken)
+            .map((sent) =>
+              new URLSearchParams(textOf(sent)).get("code_verifier")
+            ),
+          [Redacted.value(synthesizedVerifier)]
+        );
       }).pipe(Effect.scoped)
   );
 
@@ -142,7 +167,7 @@ describe("signing in to Google Ads", () => {
         { granted: ["openid"] },
       ] satisfies FakeGoogleAdsOptions[]) {
         const { client } = yield* googleAgainstFake(options);
-        const exit = yield* Effect.exit(client.complete("good-code"));
+        const exit = yield* Effect.exit(client.complete("good-code", verifier));
 
         assert.deepInclude(errorOf(exit), {
           _tag: "AdSignInFailed",
@@ -159,7 +184,7 @@ describe("signing in to Google Ads", () => {
         const { api, client } = yield* googleAgainstFake();
 
         assert.deepInclude(
-          errorOf(yield* Effect.exit(client.complete("bad-code"))),
+          errorOf(yield* Effect.exit(client.complete("bad-code", verifier))),
           {
             _tag: "AdSignInFailed",
             reason: "failed",
@@ -169,7 +194,7 @@ describe("signing in to Google Ads", () => {
         api.script({ answer: "dropped", when: toToken });
 
         assert.deepInclude(
-          errorOf(yield* Effect.exit(client.complete("good-code"))),
+          errorOf(yield* Effect.exit(client.complete("good-code", verifier))),
           { _tag: "PlatformUnavailable" }
         );
       }).pipe(Effect.scoped)
@@ -888,7 +913,7 @@ describe("the token endpoint's other refusals", () => {
         api.script({ answer: oauthError("invalid_request"), when: toToken });
 
         assert.deepInclude(
-          errorOf(yield* Effect.exit(client.complete("good-code"))),
+          errorOf(yield* Effect.exit(client.complete("good-code", verifier))),
           { _tag: "PlatformUnavailable" }
         );
       }).pipe(Effect.scoped)
@@ -905,7 +930,7 @@ describe("the adapter reads, and writes nothing", () => {
           campaigns: [campaign()],
         });
 
-        yield* client.complete("good-code");
+        yield* client.complete("good-code", verifier);
         yield* client.accounts(refreshToken);
         yield* client.account(refreshToken, id("1111111111"), Option.none());
         yield* client.snapshot(refreshToken, request("1111111111"));
