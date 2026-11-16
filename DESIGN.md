@@ -106,14 +106,24 @@ Numbers that line up use `tabular-nums`. Letter spacing is `-0.025em` at
 The marketing site speaks louder than the app, and only its headlines do:
 everything below them keeps the table above.
 
-| Role             | Size (phone) | Weight | Notes                                           |
-| ---------------- | ------------ | ------ | ----------------------------------------------- |
-| Hero headline    | 56 (36)      | 600    | One per page, line height 1.05.                 |
-| Section headline | 40 (30)      | 600    | Line height 1.1; a second sentence in muted.    |
-| Lead             | 18 (16)      | 400    | Under a headline, at most 40 rem wide.          |
-| Caption          | 12           | 400    | Geist Mono, lowercase, `0.04em`, in muted text. |
+| Role             | Size (phone) | Weight | Notes                                                                            |
+| ---------------- | ------------ | ------ | -------------------------------------------------------------------------------- |
+| Hero headline    | 56 (36)      | 600    | One per page, line height 1.05.                                                  |
+| Section headline | 40 (30)      | 600    | Line height 1.1; a second sentence in muted.                                     |
+| Lead             | 18 (16)      | 400    | Under a headline, at most 40 rem wide.                                           |
+| Caption          | 12           | 400    | Geist Mono, lowercase, `0.04em`, in muted text.                                  |
+| Figure           | 40 (30)      | 600    | Geist Mono, `tabular-nums`, for a stat; its label in the secondary role beneath. |
 
 Headlines keep `-0.025em`; "phone" is below 640 px.
+
+The hero headline is on the brand field on the home page, and on
+`background` on every other page, in ink, under a section label.
+
+A site section may open with a section label above its headline: the
+caption role inside square brackets with a space each side, such as
+`[ features ]`, or with its place on the page, `[ 02 / 06 · features ]`,
+the numbers in `tabular-nums`. One per section, never a link, never on its
+own without a headline.
 
 ## Shape and space
 
@@ -187,6 +197,18 @@ height.
 vertical ones: Captions are white at 60%, lowercase, `0.04em`, 12 px. One
 on each side at most, such as "peal.social" and "fair source ·
 self-hostable".
+
+## Pixel art
+
+Peal's illustration is pixel art: square cells of 5 px with no gap and no
+anti-aliasing, in four tones of the mark's blue, lavender and yellow mixed
+by a 4x4 Bayer dither, on `background` or on the brand field. No dots, no
+photographs left undithered inside an art cell. It draws four things: the
+cube, an icon or a brand's mark, an image, and the pixel field, a slow
+noise in the three colours. One art cell moves at a time on a screen; art
+stops when off screen and is one still frame under reduced motion. Art is
+decoration, hidden from screen readers, and never carries text a reader
+needs.
 
 ## The frame
 
@@ -274,6 +296,28 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   rules in `border`; where a rule meets a rail, a crosshair tick (±5 px) in
   `input` marks the joint. Content sits in bordered cells, never in
   floating cards.
+- **Cells.** A cell's surface is `background`, `card` or `muted`. An empty
+  cell that only holds the grid's shape may be hatched: 1 px lines in
+  `border` at 45°, 8 px apart, on `background`, with nothing on it. A cell
+  that holds art or a figure may carry a crosshair tick at each corner, as
+  the rails' joints do.
+- **Code on the site.** Code sits in a `muted` cell in Geist Mono at 13 px,
+  under a caption bar with a rule beneath it: a caption (the file, the
+  command or the format) and, where it helps, a copy button (icon-only,
+  with its `aria-label`). Code is ink; comments and line numbers are muted
+  text; strings and the one highlighted line use `brand-text` on
+  `brand-tint`. No other syntax colour. A request and its answer stand side
+  by side in two such cells, stacked on a phone.
+- **Comparison tables.** A comparison is a table in a bordered cell: rows
+  grouped under a small label, a check (lucide `Check`, 16 px, ink) or a
+  dash (muted) with its text for screen readers, or a short text. One
+  column may be marked, by a `muted` fill from its header to its foot, not
+  by colour. Below 640 px the table scrolls sideways inside its cell, its
+  first column fixed. A comparison never names another product.
+- **Tile row.** A row of 40 px bordered tiles, each a brand's mark or a
+  lucide icon with its name in a tooltip, sits in a cell and never floats.
+  As links, a tile takes the `accent` hover; as tabs, the selected tile has
+  an ink border. Tiles do not grow under the pointer.
 - **Header**, 56 px, on `background` with a rule under it: the mark and
   "Peal" on the left; Products, Platforms and Resources (each opening a
   mega menu), Pricing, Docs and Blog in the middle; on the right the
@@ -305,7 +349,8 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   is the icon of the row the pointer rests on or focus is in, rasterised
   onto 5 px cells in blue, lavender and white by coverage, Bayer-dithered
   and brighter toward the top, with yellow on the top rows; with no row
-  previewed, it shows the card's own mark and intro. Moving from one row
+  previewed, it shows the card's own mark and intro (see
+  [Pixel art](#pixel-art)). Moving from one row
   to another dissolves the pixels in about 280 ms, and a scanline sweeps
   the art while the menu is open; with reduced motion, the art swaps at
   once and nothing sweeps. A menu whose rows are all of a kind, such as
@@ -328,16 +373,24 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   licence's line and the language links in a first cell, then a bordered
   cell per column of links (legal, the contract's functions, Peal's
   accounts), and a caption row at the foot.
-- **Hero art.** The home page's hero shows Peal's cube rendered at low
-  resolution, each face in its own colour of the mark (yellow top, blue
-  left, lavender right), on `background`, with crisp edges and no
-  anti-aliasing. By default as square pixels of 5 px, with no gap, in four
-  tones of each face's colour mixed by a 4x4 Bayer dither and a darker
-  outline; or as Geist Mono glyphs in 6 by 8 px cells, chosen by
+- **Hero art.** The home page's hero shows Peal's cube in
+  [pixel art](#pixel-art), each face in its own colour of the mark (yellow
+  top, blue left, lavender right), on `background`. By default as square
+  pixels, in four tones of each face's colour and a darker outline; or as
+  Geist Mono glyphs in 6 by 8 px cells, chosen by
   brightness from `-=+x*%#@` (no dots). It starts with a short intro (cells
   switching on), turns slowly, spins a little with the scroll, stops when
   off screen, and is one still frame for readers who ask for reduced
   motion.
+
+## Motion on the site
+
+On the site, only art moves by itself, and what a reader operates moves
+when operated (a panel opening, a tab changing, 150 ms). Text and layout
+never animate in. A marquee is one row at a constant speed, about 40 px a
+second, cut by the rails with no fade; it pauses under the pointer and
+while focus is inside, has a pause button, and under reduced motion is a
+still, wrapped row. Nothing flashes, and nothing follows the pointer.
 
 ## Writing
 
