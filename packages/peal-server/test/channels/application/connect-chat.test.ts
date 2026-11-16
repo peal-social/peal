@@ -49,6 +49,17 @@ const discordAnswer = (
     return Effect.fail(new ChatRefused({ reason: "addressNotAWebhook" }));
   }
 
+  // Webhook 5, which a server's managers moved to channel 309.
+  if (address.includes("/webhooks/5/moved")) {
+    return Effect.succeed({
+      accountId: "200/309",
+      displayName: Option.some("Synthetic moved"),
+      handle: "Synthetic moved",
+      platform: "discord",
+      secret: Redacted.make("5/synthetic-token"),
+    });
+  }
+
   return Effect.succeed({
     accountId: match === "3" ? "200/302" : "200/301",
     displayName: Option.some("Synthetic \u0000news\uD800"),
@@ -277,6 +288,53 @@ layer(ConnectChatTest)("connecting a chat", (it) => {
           .pipe(Effect.flip);
 
         assert.strictEqual(missing._tag, "ChannelNotFound");
+      })
+  );
+
+  it.effect(
+    "follows a webhook moved to another channel, adding no channel",
+    () =>
+      Effect.gen(function* moved() {
+        const workspaceId = yield* freshWorkspace;
+        const chats = yield* ConnectChat;
+        const repository = yield* ChannelRepository;
+
+        const first = yield* chats.connect(
+          manager(workspaceId),
+          {
+            platform: "discord",
+            webhookUrl: Redacted.make(
+              "https://discord.com/api/webhooks/5/synthetic-token"
+            ),
+          },
+          Option.none()
+        );
+
+        const billed = (yield* Ref.get(counted)).length;
+
+        assert.strictEqual(first.accountId, "200/301");
+
+        for (const reconnecting of [Option.none(), Option.some(first.id)]) {
+          const again = yield* chats.connect(
+            manager(workspaceId),
+            {
+              platform: "discord",
+              webhookUrl: Redacted.make(
+                "https://discord.com/api/webhooks/5/moved"
+              ),
+            },
+            reconnecting
+          );
+
+          assert.strictEqual(again.id, first.id);
+          assert.strictEqual(again.accountId, "200/309");
+        }
+
+        const listed = yield* repository.list(workspaceId);
+
+        assert.lengthOf(listed, 1);
+        assert.strictEqual(listed[0]?.accountId, "200/309");
+        assert.lengthOf(yield* Ref.get(counted), billed);
       })
   );
 

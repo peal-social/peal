@@ -603,9 +603,13 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   answer is unconfirmed, never sent again, and no part follows it.
   Discord's Execute Webhook always sends `wait=true` and
   `allowed_mentions` (nothing parsed unless the options' `mentions`),
-  the post id is `<message's channel_id>/<id>`, so a later part, an edit
-  or a deletion sends `thread_id` when the first part is in a thread (a
-  forum post it opened with `threadName`); 220001 is
+  the post id is `<webhook>/<message's channel_id>/<id>[/thread]`, the
+  webhook that sent it and whether it is in a thread as Peal sent it
+  (never guessed from the channel: a server may move a webhook), so a
+  later part, an edit or a deletion sends `thread_id` only for a thread
+  (a forum post the first part opened with `threadName`), and an edit or
+  a deletion of a post another webhook sent is refused before any call
+  (`webhookChanged`: only the sending webhook changes its messages); 220001 is
   `forumThreadNameRequired`, 220003 `threadNameNotTaken`, 10015 or 50027
   a refused token, every other refusal its numeric code (`discord<code>`).
   Telegram sends a text with `sendMessage` (plain, no `parse_mode`), one

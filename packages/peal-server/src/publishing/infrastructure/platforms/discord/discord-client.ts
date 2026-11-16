@@ -42,6 +42,7 @@ import {
   accountOf,
   allowedMentionsOf,
   discordPostIdOf,
+  discordPostIdText,
   messageFlagsOf,
 } from "./discord-message.ts";
 import type { AllowedMentions, DiscordAccount } from "./discord-message.ts";
@@ -120,17 +121,21 @@ const payloadOf = (post: OutgoingPost): MessagePayload => {
   return payload;
 };
 
-// The thread the part goes into: the first part's channel, when it is
-// not the webhook's own.
-const threadOf = (post: OutgoingPost, webhookChannel: string) =>
+// The thread a later part goes into: the one the first part opened, as
+// its post id says. Never guessed from the channel: a webhook moved to
+// another channel answers there with the same token.
+const threadOf = (post: OutgoingPost) =>
   post.replyTo.pipe(
     Option.flatMap(({ root }) => discordPostIdOf(root)),
-    Option.map(({ channelId }) => channelId),
-    Option.filter((channel) => channel !== webhookChannel)
+    Option.filter(({ inThread }) => inThread),
+    Option.map(({ channelId }) => channelId)
   );
 
+// The message Discord made, named with the webhook that sent it and
+// whether it is in a thread.
 const answered = (
   account: DiscordAccount,
+  sent: { readonly inThread: boolean; readonly webhookId: string },
   response: HttpClientResponse.HttpClientResponse
 ): Effect.Effect<
   Published,
@@ -145,7 +150,14 @@ const answered = (
         Effect.map(({ channel_id: channel, id }): Published => ({
           _tag: "published",
           permalink: `https://discord.com/channels/${account.guildId}/${channel}/${id}`,
-          platformPostId: PlatformPostIdSchema.make(`${channel}/${id}`),
+          platformPostId: PlatformPostIdSchema.make(
+            discordPostIdText({
+              channelId: channel,
+              inThread: sent.inThread,
+              messageId: id,
+              webhookId: sent.webhookId,
+            })
+          ),
         }))
       )
     : discordRefusal(response, unknownOutcome);
@@ -158,9 +170,10 @@ const answered = (
  * attachment's `description`. Without `wait`, "a message that is not saved
  * does not return an error": Peal always waits. It always sends
  * `allowed_mentions`, so the text notifies nobody it mentions unless the
- * options say so. A later part goes after the part before it: in the
- * thread the first part is in (`thread_id`) when that is not the
- * webhook's own channel, as in a forum post the first part opened.
+ * options say so. A later part goes after the part before it, in the
+ * thread the first part opened (`thread_id`) when it opened one, as a
+ * forum post. The post id names the webhook that sent the message and
+ * whether it is in a thread (`discordPostIdText`).
  *
  * Discord keeps no idempotency key for a webhook (`nonce` is the bot's
  * Create Message's alone) and lists no message of one: a commit that may
@@ -178,7 +191,7 @@ export const discordClient = Effect.fn("DiscordClient.make")(
       post: OutgoingPost
     ) {
       const account = yield* accountOf(post.accountId);
-      const thread = threadOf(post, account.channelId);
+      const thread = threadOf(post);
 
       const query: Record<string, string> = Option.match(thread, {
         onNone: () => ({ wait: "true" }),
@@ -186,6 +199,10 @@ export const discordClient = Effect.fn("DiscordClient.make")(
       });
 
       const payload = payloadOf(post);
+
+      // In a thread: one the first part opens, or the first part's.
+      const inThread =
+        payload.thread_name !== undefined || Option.isSome(thread);
 
       return yield* Effect.scoped(
         Effect.gen(function* sending() {
@@ -248,7 +265,13 @@ export const discordClient = Effect.fn("DiscordClient.make")(
                   client
                     .execute(request(webhookUrl(hosts, webhook, "", query)))
                     .pipe(
-                      Effect.flatMap((response) => answered(account, response)),
+                      Effect.flatMap((response) =>
+                        answered(
+                          account,
+                          { inThread, webhookId: webhook.id },
+                          response
+                        )
+                      ),
                       Effect.catchTags({
                         HttpClientError: commitUnanswered,
                         OutboundRequestRefused: commitUnanswered,

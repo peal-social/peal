@@ -116,14 +116,21 @@ const LiveAction = (props: LivePostViewProps) => {
     ),
     // An edit is under way: the edit's own view says so.
     editing: () => null,
-    failed: ({ code }) => (
-      <div className="flex flex-wrap items-center gap-2">
+    failed: ({ code }) =>
+      // Only the webhook that sent the post may delete it: asking again
+      // would meet the same refusal.
+      code === "webhookChanged" ? (
         <p className="text-destructive text-sm">
-          {t("failed", { code: code ?? "unknown" })}
+          {t("webhookChanged", { platform })}
         </p>
-        <UnpublishDialog {...props} label={t("retry")} />
-      </div>
-    ),
+      ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-destructive text-sm">
+            {t("failed", { code: code ?? "unknown" })}
+          </p>
+          <UnpublishDialog {...props} label={t("retry")} />
+        </div>
+      ),
     none: () => null,
     offered: () => (
       <UnpublishDialog

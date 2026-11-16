@@ -97,10 +97,13 @@
   `discord`, `telegram`), checked by `ChatVerifier`
   (`platforms/chat-verifiers.ts`): Discord's webhook address is refused
   before any call unless it is `https://discord.com` or `discordapp.com`
-  `/api[/v<n>]/webhooks/<id>/<token>`, then read on Discord's own API
+  `/api[/v<n>]/webhooks/<id>/<token>` (from `canary.` and `ptb.` too, in any case), then read on Discord's own API
   (incoming webhooks only, `type` 1), the account id `<guild>/<channel>`
   so another webhook of the channel reconnects it, the token
-  `<id>/<token>`; Telegram's bot token and chat are checked for shape,
+  `<id>/<token>`; a webhook the workspace has, moved by its server to
+  another channel, reconnects its channel under the new account
+  (`chatMovedTo`, found by the webhook id in the sealed secrets), adding
+  and billing none; Telegram's bot token and chat are checked for shape,
   then `getMe`, `getChat` (no private chat) and `getChatMember` for the
   bot (an administrator with `can_post_messages` in a channel; in a group
   a member, an administrator, or restricted with `can_send_messages`),

@@ -25,33 +25,42 @@ import { untraced } from "#shared/infrastructure/platforms/public-http.ts";
 
 import type { DiscordHttp } from "./discord-client.ts";
 import { webhookIn } from "./discord-client.ts";
-import {
-  accountOf,
-  allowedMentionsOf,
-  discordPostIdOf,
-} from "./discord-message.ts";
+import { allowedMentionsOf, discordPostIdOf } from "./discord-message.ts";
 import { discordRefusal, unavailable } from "./discord-refusal.ts";
 
 const isDiscord = Schema.is(DiscordOptions);
 
-// The message a post id names, in the channel's webhook: refused before
-// any call when the id is not one of Peal's, and the thread it is in when
-// it is not the webhook's own channel.
+/**
+ * The code of a change of a post another webhook sent: a webhook edits and
+ * deletes only its own messages ("Deletes a message that was created by
+ * the webhook"), so after the channel was reconnected with another one,
+ * the member edits or removes the post on Discord.
+ */
+export const webhookChangedCode = "webhookChanged";
+
+// The message a post id names, and the webhook to change it with: refused
+// before any call when the id is not one of Peal's, or another webhook
+// sent it; in the thread the post id names.
 const messageOf = (token: PublishingToken, platformPostId: PlatformPostId) =>
   Effect.gen(function* message() {
-    const account = yield* accountOf(token.accountId);
     const id = discordPostIdOf(platformPostId);
 
     if (Option.isNone(id)) {
       return yield* new BadRequest({ code: invalidPlatformId });
     }
 
-    const { channelId, messageId } = id.value;
+    const webhook = yield* webhookIn(token.accessToken);
+    const { channelId, inThread, messageId, webhookId } = id.value;
 
-    const query: Record<string, string> =
-      channelId === account.channelId ? {} : { thread_id: channelId };
+    if (webhookId !== webhook.id) {
+      return yield* new BadRequest({ code: webhookChangedCode });
+    }
 
-    return { messageId, query };
+    const query: Record<string, string> = inThread
+      ? { thread_id: channelId }
+      : {};
+
+    return { messageId, query, webhook };
   });
 
 // Discord's "unknown message": the message is gone.
@@ -69,7 +78,8 @@ const isUnknownMessage = (response: HttpClientResponse.HttpClientResponse) =>
  * (docs.discord.com/developers/resources/webhook, read 2026-11-16).
  * Discord's unknown message (10008) is `alreadyGone`; an unknown webhook
  * (10015), the webhook deleted, is a refused token. A post Peal cannot
- * tell is a message of its own is refused before any call.
+ * tell is a message of its own, or one another webhook sent
+ * (`webhookChanged`), is refused before any call.
  */
 export const discordLivePost =
   (options: {
@@ -78,8 +88,10 @@ export const discordLivePost =
   }): LivePostRemover =>
   (token, platformPostId) =>
     Effect.gen(function* remove() {
-      const { messageId, query } = yield* messageOf(token, platformPostId);
-      const webhook = yield* webhookIn(token.accessToken);
+      const { messageId, query, webhook } = yield* messageOf(
+        token,
+        platformPostId
+      );
 
       const response = yield* untraced(options.api)
         .execute(
@@ -122,9 +134,11 @@ export const discordLiveEdit =
   }): LivePostEditor =>
   (token, edit) =>
     Effect.gen(function* edited() {
-      const { messageId, query } = yield* messageOf(token, edit.platformPostId);
+      const { messageId, query, webhook } = yield* messageOf(
+        token,
+        edit.platformPostId
+      );
 
-      const webhook = yield* webhookIn(token.accessToken);
       const chosen = edit.options.pipe(Option.filter(isDiscord));
 
       const response = yield* untraced(options.api)

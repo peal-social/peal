@@ -29,25 +29,50 @@ export const accountOf = (
     : Effect.succeed({ channelId, guildId });
 };
 
-/** A message of Peal's: the channel it is in (a thread's), and its id. */
+/**
+ * A message of Peal's: the webhook that sent it (only that webhook edits or
+ * deletes it), the channel it is in, a thread's when it went into one, its
+ * id, and whether it is in a thread, which a later part, an edit and a
+ * deletion name (`thread_id`). Whether it is in a thread is what Peal
+ * sent, never guessed from the channel: a server's managers may move a
+ * webhook to another channel, and the token stays the same.
+ */
 export interface DiscordPostId {
   readonly channelId: string;
+  readonly inThread: boolean;
   readonly messageId: string;
+  readonly webhookId: string;
 }
 
-const postIdPattern = /^(?<channel>\d{1,20})\/(?<message>\d{1,20})$/u;
+const postIdPattern =
+  /^(?<webhook>\d{1,20})\/(?<channel>\d{1,20})\/(?<message>\d{1,20})(?<thread>\/thread)?$/u;
 
-/** The message a post id names, `<channel>/<message>`, if it is one. */
+/**
+ * The post id Peal keeps for a message: `<webhook>/<channel>/<message>`,
+ * and `/thread` after it for one in a thread.
+ */
+export const discordPostIdText = (id: DiscordPostId): string =>
+  `${id.webhookId}/${id.channelId}/${id.messageId}${id.inThread ? "/thread" : ""}`;
+
+/** The message a post id names, if it is one of Peal's. */
 export const discordPostIdOf = (
   id: PlatformPostId | string
 ): Option.Option<DiscordPostId> => {
   const groups = postIdPattern.exec(id)?.groups;
+  const webhookId = groups?.["webhook"];
   const channelId = groups?.["channel"];
   const messageId = groups?.["message"];
 
-  return channelId === undefined || messageId === undefined
+  return webhookId === undefined ||
+    channelId === undefined ||
+    messageId === undefined
     ? Option.none()
-    : Option.some({ channelId, messageId });
+    : Option.some({
+        channelId,
+        inThread: groups?.["thread"] !== undefined,
+        messageId,
+        webhookId,
+      });
 };
 
 /** Who a message may notify, as `allowed_mentions` says it. */

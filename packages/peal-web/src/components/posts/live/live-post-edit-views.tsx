@@ -196,14 +196,20 @@ const EditAction = (props: LivePostEditViewProps) => {
     editing: () => (
       <output className="text-muted-foreground text-sm">{t("editing")}</output>
     ),
-    failed: ({ code }) => (
-      <div className="flex flex-wrap items-center gap-2">
+    failed: ({ code }) =>
+      // Only the webhook that sent the post may edit it.
+      code === "webhookChanged" ? (
         <p className="text-destructive text-sm">
-          {t("editFailed", { code: code ?? "unknown" })}
+          {t("editWebhookChanged", { platform })}
         </p>
-        <EditDialog {...props} label={t("retry")} />
-      </div>
-    ),
+      ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-destructive text-sm">
+            {t("editFailed", { code: code ?? "unknown" })}
+          </p>
+          <EditDialog {...props} label={t("retry")} />
+        </div>
+      ),
     none: () => null,
     offered: () => (
       <EditDialog {...props} label={busy ? t("editing") : t("edit")} />

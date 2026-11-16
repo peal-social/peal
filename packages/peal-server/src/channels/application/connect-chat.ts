@@ -1,6 +1,7 @@
-import { Context, DateTime, Effect, Layer, Option } from "effect";
+import { Context, DateTime, Effect, Layer, Option, Redacted } from "effect";
 
 import {
+  chatMovedTo,
   connectChannel,
   reconnect as reconnectChannel,
 } from "#channels/domain/channel.ts";
@@ -22,7 +23,7 @@ import { ChannelLocks } from "./channel-locks.ts";
 import { ChannelNotFound } from "./channel-not-found.ts";
 import { ChannelRepository } from "./channel-repository.ts";
 import { channelRoomOf } from "./channel-room.ts";
-import { encryptTokens } from "./channel-tokens.ts";
+import { decryptTokens, encryptTokens } from "./channel-tokens.ts";
 import type { ChatConnectLimited } from "./chat-connect-limited.ts";
 import { ChatConnectPace } from "./chat-connect-pace.ts";
 import type { ChatRefused } from "./chat-refused.ts";
@@ -57,6 +58,10 @@ const tokensOf = (chat: VerifiedChat): IssuedTokens => ({
   renewable: false,
   scopes: [],
 });
+
+// The Discord webhook a secret names, `<id>/<token>`: its id.
+const webhookIdOf = (secret: Redacted.Redacted) =>
+  Redacted.value(secret).split("/", 1)[0] ?? "";
 
 // What the platform told of the chat, made storable: its text may hold
 // anything a member typed.
@@ -114,8 +119,50 @@ export class ConnectChat extends Context.Service<
         allowance
       );
 
+      // The workspace's Discord channel the chat's webhook already posts
+      // for, under another account: the webhook was moved to another
+      // channel, with the same id and token. Read from the channels'
+      // sealed secrets, as nothing else keeps the webhook.
+      const sameWebhook = Effect.fn("ConnectChat.sameWebhook")(
+        function* sameWebhook(actor: Actor, chat: VerifiedChat) {
+          if (chat.platform !== "discord") {
+            return Option.none<Channel>();
+          }
+
+          const webhookId = webhookIdOf(chat.secret);
+
+          const chats = (yield* channels.list(actor.workspaceId)).filter(
+            (channel) =>
+              channel.platform === "discord" &&
+              channel.accountId !== chat.accountId
+          );
+
+          for (const channel of chats) {
+            const stored = yield* channels.credentials(channel.id);
+
+            if (Option.isSome(stored)) {
+              const tokens = yield* decryptTokens(
+                stored.value,
+                channel.id
+              ).pipe(withCipher, Effect.option);
+
+              if (
+                Option.exists(
+                  tokens,
+                  ({ accessToken }) => webhookIdOf(accessToken) === webhookId
+                )
+              ) {
+                return Option.some(channel);
+              }
+            }
+          }
+
+          return Option.none<Channel>();
+        }
+      );
+
       // The channel takes the new secret, under its lock, as a reconnected
-      // account's tokens are saved.
+      // account's tokens are saved; a chat that moved takes its new account.
       const reconnectTo = (existing: Channel, chat: VerifiedChat) =>
         locks.withLock(
           existing.id,
@@ -125,11 +172,16 @@ export class ConnectChat extends Context.Service<
               existing.id
             );
 
-            const channel = reconnectChannel(
+            const reconnected = reconnectChannel(
               Option.getOrElse(current, () => existing),
               connectedOf(chat),
               yield* DateTime.now
             );
+
+            const channel =
+              reconnected.accountId === chat.accountId
+                ? reconnected
+                : chatMovedTo(reconnected, chat.accountId);
 
             const credentials = yield* encryptTokens(
               tokensOf(chat),
@@ -249,8 +301,14 @@ export class ConnectChat extends Context.Service<
         if (Option.isSome(asked)) {
           const channel = asked.value;
 
-          // The secret must reach the channel's own chat again.
-          if (channel.accountId !== chat.accountId) {
+          // The secret must reach the channel's own chat again, or be its
+          // webhook, moved to another channel.
+          const moved = yield* sameWebhook(actor, chat);
+
+          if (
+            channel.accountId !== chat.accountId &&
+            !Option.exists(moved, ({ id }) => id === channel.id)
+          ) {
             return yield* new ReconnectAccountMismatch({
               channelId: channel.id,
             });
@@ -265,8 +323,16 @@ export class ConnectChat extends Context.Service<
           chat.accountId
         );
 
-        return Option.isSome(existing)
-          ? yield* reconnectTo(existing.value, chat)
+        if (Option.isSome(existing)) {
+          return yield* reconnectTo(existing.value, chat);
+        }
+
+        // A webhook the workspace has, moved to another channel: its
+        // channel follows it, and no channel is added or billed.
+        const moved = yield* sameWebhook(actor, chat);
+
+        return Option.isSome(moved)
+          ? yield* reconnectTo(moved.value, chat)
           : yield* addOrReconnect(actor, chat);
       });
 

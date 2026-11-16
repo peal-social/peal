@@ -62,6 +62,11 @@ export type DiscordScript =
   | { readonly _tag: "postThenFail"; readonly status: number };
 
 export interface FakeDiscordOptions {
+  /**
+   * The channel the webhook posts in now: the account's unless said, as
+   * when a server's managers moved the webhook to another channel.
+   */
+  readonly channel?: string;
   /** The webhook's channel is a forum, whose messages open posts. */
   readonly forum?: boolean;
   /** The webhook was deleted: every call answers 404, unknown webhook. */
@@ -136,6 +141,8 @@ export const fakeDiscordApi = Effect.fn("test.fakeDiscordApi")(
 
     const messagesPath = `${webhookPath}/messages/`;
 
+    const home = options.channel ?? discordChannel;
+
     // Where a message goes, as Discord decides: a forum's needs a thread's
     // name or id; a name opens a thread, an id goes into one. A refusal, or
     // the channel's id.
@@ -162,7 +169,7 @@ export const fakeDiscordApi = Effect.fn("test.fakeDiscordApi")(
       }
 
       if (threadName === undefined) {
-        return placed(discordChannel);
+        return placed(home);
       }
 
       const thread = newId();
@@ -211,7 +218,7 @@ export const fakeDiscordApi = Effect.fn("test.fakeDiscordApi")(
 
     const webhook = (): PlatformAnswer =>
       json({
-        channel_id: discordChannel,
+        channel_id: home,
         guild_id: discordGuild,
         id: discordWebhookId,
         name: options.name ?? "Synthetic announcements",
@@ -222,7 +229,7 @@ export const fakeDiscordApi = Effect.fn("test.fakeDiscordApi")(
     // Edit and Delete Webhook Message, in the thread the query names.
     const onMessage = (request: PlatformRequest): PlatformAnswer => {
       const id = request.path.slice(messagesPath.length);
-      const channelId = request.query.get("thread_id") ?? discordChannel;
+      const channelId = request.query.get("thread_id") ?? home;
 
       const message = messages.find(
         (held) => held.id === id && held.channelId === channelId

@@ -129,7 +129,7 @@ describe("deleting and editing on Discord", () => {
 
       assert.strictEqual(
         deletion?.query.get("thread_id"),
-        platformPostId.split("/")[0]
+        platformPostId.split("/")[1]
       );
     }).pipe(Effect.scoped)
   );
@@ -194,6 +194,46 @@ describe("deleting and editing on Discord", () => {
           new TokenExpired()
         );
       }).pipe(Effect.scoped)
+  );
+
+  it.live("refuses, before any call, a post another webhook sent", () =>
+    Effect.gen(function* otherWebhook() {
+      const { client, discord } = yield* onDiscord();
+
+      const platformPostId = yield* idOf(
+        yield* client.publish(yield* discordPost())
+      );
+
+      const sent = discord.requests().length;
+
+      // The channel was reconnected with another webhook of its channel.
+      const credentials = Layer.succeedContext(
+        yield* Layer.build(
+          credentialsOf({ accountId: discordAccount, platform: "discord" }, [
+            "400000000000000002/synthetic-other-token",
+          ])
+        )
+      );
+
+      const live = yield* liveClientsOn({
+        credentials,
+        edits: new Map([[changeId, { options: Option.none(), text: "New" }]]),
+        platforms: { discordHosts: { api: discord.url } },
+      });
+
+      for (const change of [
+        live.remove({ channelId, platformPostId }),
+        live.edit({ changeId, channelId, platformPostId }),
+      ]) {
+        assert.deepStrictEqual(
+          yield* change.pipe(Effect.flip),
+          new BadRequest({ code: "webhookChanged" })
+        );
+      }
+
+      assert.lengthOf(discord.requests(), sent);
+      assert.lengthOf(discord.messages(), 1);
+    }).pipe(Effect.scoped)
   );
 
   it.live("asks nothing of an id that is not a message of Peal's", () =>

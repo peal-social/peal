@@ -22,6 +22,25 @@ const postArgument = Argument.String("post-id").pipe(
   )
 );
 
+/**
+ * What a change refused for a reason the member fixes on the platform
+ * says, if it was: a Discord post another webhook sent, which only that
+ * webhook may change.
+ */
+export const refusedChangeText = (
+  kind: "edit" | "remove",
+  channel: string,
+  code: string | null | undefined
+): string | undefined => {
+  if (code !== "webhookChanged") {
+    return undefined;
+  }
+
+  return kind === "edit"
+    ? `Could not edit it on ${channel}: another webhook sent this post, and Discord lets only that one change it. Edit it on Discord.`
+    : `Could not delete it from ${channel}: another webhook sent this post, and Discord lets only that one change it. Remove it on Discord.`;
+};
+
 /** What a change of a live post did, or does, in a line. */
 export const changeLine = (
   change: LivePostChange,
@@ -41,7 +60,8 @@ export const changeLine = (
     }
 
     return change.status === "failed"
-      ? `Could not edit it on ${channel} (${change.code ?? "unknown"}): Peal kept the earlier text${change.code === "unavailable" || change.code === "rateLimited" ? `, though ${channel} may show the new one if an answer was lost: look there before you ask again` : ". Ask again to edit it"}.`
+      ? (refusedChangeText("edit", channel, change.code) ??
+          `Could not edit it on ${channel} (${change.code ?? "unknown"}): Peal kept the earlier text${change.code === "unavailable" || change.code === "rateLimited" ? `, though ${channel} may show the new one if an answer was lost: look there before you ask again` : ". Ask again to edit it"}.`)
       : `Editing it on ${channel}. peal posts changes ${change.postId} says how it goes.`;
   }
 
@@ -50,7 +70,10 @@ export const changeLine = (
   }
 
   if (change.status === "failed") {
-    return `Could not delete it from ${channel} (${change.code ?? "unknown"}), with ${String(change.partsLeft)} part(s) left: it may still be there. Ask again to delete what is left.`;
+    return (
+      refusedChangeText("remove", channel, change.code) ??
+      `Could not delete it from ${channel} (${change.code ?? "unknown"}), with ${String(change.partsLeft)} part(s) left: it may still be there. Ask again to delete what is left.`
+    );
   }
 
   return `Deleting it from ${channel}: ${String(change.partsLeft)} part(s) left. peal posts changes ${change.postId} says how it goes.`;

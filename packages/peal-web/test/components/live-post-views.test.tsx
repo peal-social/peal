@@ -129,6 +129,18 @@ describe("unpublishing a live post", () => {
     expect(failed).toContain("Réessayer");
   });
 
+  it("says a post another webhook sent is to delete on the platform, offering no retry", async () => {
+    const failed = await renderState("en", {
+      _tag: "failed",
+      code: "webhookChanged",
+    });
+
+    expect(failed).toContain(
+      "Another webhook sent this post, and only that one may delete it: remove it on Threads."
+    );
+    expect(failed).not.toContain("Try again");
+  });
+
   it("says why a platform does not let Peal delete", async () => {
     await expect(
       renderState("en", { _tag: "blocked", by: "permission" })

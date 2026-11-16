@@ -13,6 +13,7 @@ import {
   discordChannel,
   discordGuild,
   discordSecret,
+  discordWebhookId,
   fakeDiscordApi,
 } from "#test/publishing/fakes/fake-discord-api.ts";
 import type {
@@ -97,7 +98,7 @@ describe("publishing in a Discord channel through its webhook", () => {
           _tag: "published",
           permalink: `https://discord.com/channels/${discordGuild}/${discordChannel}/${message.id}`,
           platformPostId: PlatformPostIdSchema.make(
-            `${discordChannel}/${message.id}`
+            `${discordWebhookId}/${discordChannel}/${message.id}`
           ),
         });
         assert.deepStrictEqual(jsonBodyOf(PayloadSchema)(call), {
@@ -219,6 +220,43 @@ describe("publishing in a Discord channel through its webhook", () => {
   );
 
   it.live(
+    "keeps a thread in the webhook's channel after a server moved the webhook",
+    () =>
+      Effect.gen(function* moved() {
+        // The webhook now posts in another channel than the one connected.
+        const { client, discord } = yield* onDiscord({
+          api: { channel: "300000000000000009" },
+        });
+
+        const first = yield* client.publish(yield* post({ text: "One" }));
+
+        assert(first._tag === "published");
+
+        const second = yield* client.publish(
+          yield* post({
+            part: 1,
+            replyTo: Option.some({
+              parent: first.platformPostId,
+              root: first.platformPostId,
+            }),
+            text: "Two",
+          })
+        );
+
+        assert.strictEqual(second._tag, "published");
+
+        const [, call] = commits(discord);
+
+        assert(call !== undefined);
+        assert.isFalse(call.query.has("thread_id"));
+        assert.deepStrictEqual(
+          discord.messages().map(({ channelId }) => channelId),
+          ["300000000000000009", "300000000000000009"]
+        );
+      }).pipe(Effect.scoped)
+  );
+
+  it.live(
     "opens a forum post with its title, and puts the later parts in it",
     () =>
       Effect.gen(function* forum() {
@@ -239,9 +277,12 @@ describe("publishing in a Discord channel through its webhook", () => {
           opened.payload["thread_name"],
           "A synthetic forum post"
         );
+        // Named with the webhook that sent it, as the start of a thread.
         assert.strictEqual(
           first.platformPostId,
-          PlatformPostIdSchema.make(`${opened.channelId}/${opened.id}`)
+          PlatformPostIdSchema.make(
+            `${discordWebhookId}/${opened.channelId}/${opened.id}/thread`
+          )
         );
 
         yield* client.publish(
