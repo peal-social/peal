@@ -378,8 +378,8 @@ export const metaPrivateReplies = Effect.fn("MetaPrivateReplies.make")(
       if (
         only === undefined ||
         others.length > 0 ||
-        !(only.participants?.data ?? []).some(
-          ({ id }) => id === reply.commentAuthorId.value
+        !(only.participants?.data ?? []).some(({ id }) =>
+          Option.contains(reply.commentAuthorId, id)
         )
       ) {
         return undecided;
