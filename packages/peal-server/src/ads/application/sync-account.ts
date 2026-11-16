@@ -10,7 +10,7 @@ import {
 } from "effect";
 
 import type { AccountSnapshot } from "#ads/domain/account-snapshot.ts";
-import { AdAccount } from "#ads/domain/ad-account.ts";
+import type { AdAccount } from "#ads/domain/ad-account.ts";
 import type { AdAccountId } from "#ads/domain/ids.ts";
 import { firstSyncDays, resyncDays } from "#ads/domain/insight-retention.ts";
 import { traitsOf } from "#ads/domain/network-traits.ts";
@@ -288,8 +288,9 @@ export class SyncAccount extends Context.Service<
           "An ad account is read another way: the one it was read through no longer reaches it"
         ).pipe(Effect.annotateLogs({ accountId: account.id }));
 
-        return Option.some(
-          new AdAccount({ ...account, reachedThrough: found.reachedThrough })
+        // The account as stored now, with the way just taken.
+        return (yield* accounts.get(account.id)).pipe(
+          Option.map(({ account: stored }) => stored)
         );
       });
 
