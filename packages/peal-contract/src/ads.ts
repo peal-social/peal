@@ -202,7 +202,9 @@ export const AdAccountSchema = Schema.Struct({
   access: AdAccessSchema,
   // What the account spent against its own cap, as last read.
   amountSpent: Schema.NullOr(AmountSchema),
-  capabilities: AdAccountCapabilitiesSchema,
+  // What its network allows; older servers leave it out, and only knew
+  // Meta, which allows all of it.
+  capabilities: Schema.optionalKey(AdAccountCapabilitiesSchema),
   connectedAt: Schema.DateTimeUtc,
   connectionId: Schema.String,
   currency: CurrencySchema,
@@ -225,7 +227,8 @@ export const AdAccountSchema = Schema.Struct({
   newAdsUntrackedUntil: Schema.optionalKey(Schema.NullOr(Schema.DateTimeUtc)),
   // The manager account it is read through, on Google Ads (the network's
   // id, digits); null when reached directly, and on Meta.
-  reachedThrough: Schema.NullOr(Schema.String),
+  // Older servers leave it out.
+  reachedThrough: Schema.optionalKey(Schema.NullOr(Schema.String)),
   // The account's own cap at its network; null without one.
   spendCap: Schema.NullOr(AmountSchema),
   // Whether an owner allowed it to spend through Peal.
@@ -235,6 +238,11 @@ export const AdAccountSchema = Schema.Struct({
   // Meta, every six hours on Google Ads.
   syncedAt: Schema.NullOr(Schema.DateTimeUtc),
   timeZone: Schema.String,
+  // Since when no way reaches the account at its network (the manager it
+  // was read through no longer holds it, and the sign-in reaches it no
+  // other way): its reads are put off, and what was read of it is kept.
+  // Null while it is read; older servers leave it out.
+  unreachableSince: Schema.optionalKey(Schema.NullOr(Schema.DateTimeUtc)),
 }).annotate({ identifier: "AdAccount" });
 
 export type AdAccount = typeof AdAccountSchema.Type;
@@ -304,7 +312,8 @@ export const AdCampaignSchema = Schema.Struct({
   // The network's own word for the campaign's kind, where it gives one
   // (Google Ads' channel: `SEARCH`, `PERFORMANCE_MAX`); null on Meta,
   // whose `objective` says it.
-  kind: Schema.NullOr(Schema.String),
+  // Older servers leave it out.
+  kind: Schema.optionalKey(Schema.NullOr(Schema.String)),
   name: Schema.String,
   objective: CampaignObjectiveSchema,
   rawStatus: Schema.String,

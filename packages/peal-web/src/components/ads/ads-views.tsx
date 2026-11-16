@@ -37,6 +37,7 @@ import {
 import type { ReactNode, SubmitEvent } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
+import { capabilitiesOf } from "#ads/capabilities.ts";
 import type { AdsError } from "#ads/errors.ts";
 import { decimalOf, parseAmount } from "#ads/money.ts";
 import { useMoney } from "#ads/use-money.ts";
@@ -145,7 +146,7 @@ export const AdAccountView = ({
   const { currency, minorUnitDigits: digits } = account;
 
   const spendingText = (shown: AdAccount) => {
-    if (!shown.capabilities.boosts) {
+    if (!capabilitiesOf(shown).boosts) {
       return t("accounts.readOnly");
     }
 
@@ -172,6 +173,16 @@ export const AdAccountView = ({
           <AlertDescription>{t("accounts.reconnect")}</AlertDescription>
         </Alert>
       ) : null}
+      {account.unreachableSince === undefined ||
+      account.unreachableSince === null ? null : (
+        <Alert variant="destructive">
+          <AlertDescription>
+            {t("accounts.unreachable", {
+              date: DateTime.toDate(account.unreachableSince),
+            })}
+          </AlertDescription>
+        </Alert>
+      )}
       {account.newAdsUntrackedUntil === undefined ||
       account.newAdsUntrackedUntil === null ? null : (
         <Alert>
@@ -197,7 +208,8 @@ export const AdAccountView = ({
             {money(account.amountSpent, currency, digits)}
           </Fact>
         )}
-        {account.reachedThrough === null ? null : (
+        {account.reachedThrough === undefined ||
+        account.reachedThrough === null ? null : (
           <Fact label={t("accounts.reachedThrough")}>
             {account.reachedThrough}
           </Fact>
@@ -348,13 +360,8 @@ export const CampaignsTableView = ({
   const format = useFormatter();
   const money = useMoney();
 
-  const {
-    capabilities,
-    currency,
-    minorUnitDigits: digits,
-    name,
-    network,
-  } = report.account;
+  const { currency, minorUnitDigits: digits, name, network } = report.account;
+  const capabilities = capabilitiesOf(report.account);
 
   // Days are on the account's calendar, in no zone: written in UTC.
   const day = (key: string) =>
@@ -458,7 +465,8 @@ export const DailySpendView = ({
   const t = useTranslations("Ads.insights");
   const format = useFormatter();
   const money = useMoney();
-  const { capabilities, currency, minorUnitDigits: digits } = report.account;
+  const { currency, minorUnitDigits: digits } = report.account;
+  const capabilities = capabilitiesOf(report.account);
 
   const dayLabel = (day: string | number | undefined) =>
     format.dateTime(dayDate(String(day)), {

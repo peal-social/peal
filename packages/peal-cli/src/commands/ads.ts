@@ -16,7 +16,12 @@ import {
 import type { AdAccount } from "peal-contract";
 
 import { money } from "#ads-money.ts";
-import { amountsIn, boostRow, totalsCells } from "#ads-print.ts";
+import {
+  amountsIn,
+  boostRow,
+  capabilitiesOf,
+  totalsCells,
+} from "#ads-print.ts";
 import { apiErrorJson } from "#api-error.ts";
 import { usesApiKey } from "#api-key.ts";
 import { boost } from "#commands/ads-boosts.ts";
@@ -89,7 +94,7 @@ const written = (account: AdAccount, amount: number): string =>
 
 // Whether an ad account may spend through Peal, and how much a month.
 const spendingOf = (account: AdAccount): string => {
-  if (!account.capabilities.boosts) {
+  if (!capabilitiesOf(account).boosts) {
     return "read only";
   }
 
@@ -98,9 +103,20 @@ const spendingOf = (account: AdAccount): string => {
     : "spending off";
 };
 
+// Whether its reads work, for `peal ads account`.
+const readingOf = (read: AdAccount): string => {
+  if (read.access !== "working") {
+    return "the ad network refused its sign-in: its person signs in again, in the web app";
+  }
+
+  return read.unreachableSince === undefined || read.unreachableSince === null
+    ? "works"
+    : `unreachable since ${instant(read.unreachableSince)}: the manager account it was read through no longer holds it; what was read stays`;
+};
+
 // Whether, and how much, an account may spend, for `peal ads account`.
 const spendingLine = (read: AdAccount): string => {
-  if (!read.capabilities.boosts) {
+  if (!capabilitiesOf(read).boosts) {
     return "never: Peal only reads Google Ads accounts, and boosts nothing there";
   }
 
@@ -117,7 +133,7 @@ const readEvery: Readonly<Record<AdAccount["network"], string>> = {
 
 // What an account's numbers are of: its ads', or its campaigns' own.
 const whoseNumbers = (account: AdAccount) =>
-  account.capabilities.ads ? "what their ads did" : "what they did";
+  capabilitiesOf(account).ads ? "what their ads did" : "what they did";
 
 const status = Command.make(
   "status",
@@ -225,17 +241,12 @@ const account = Command.make(
       ["  Name", read.name],
       [
         "  Network",
-        `${read.network}, where its id is ${read.externalId}${read.reachedThrough === null ? "" : `, through the manager account ${read.reachedThrough}`}`,
+        `${read.network}, where its id is ${read.externalId}${(read.reachedThrough ?? null) === null ? "" : `, through the manager account ${read.reachedThrough}`}`,
       ],
       ["  Currency", read.currency],
       ["  Time zone", read.timeZone],
       ["  Status", read.status],
-      [
-        "  Reading",
-        read.access === "working"
-          ? "works"
-          : "the ad network refused its sign-in: its person signs in again, in the web app",
-      ],
+      ["  Reading", readingOf(read)],
       ["  Spending", spendingLine(read)],
       [
         "  Committed this month",
@@ -358,7 +369,7 @@ const list = Command.make(
       return;
     }
 
-    if (!report.account.capabilities.ads) {
+    if (!capabilitiesOf(report.account).ads) {
       yield* Console.log(
         `Peal reads the campaigns of ${report.account.name} and their days, not its ads: peal ads campaigns shows them.`
       );
@@ -431,7 +442,7 @@ const insights = Command.make(
     }
 
     yield* Console.log(
-      `What the ${report.account.capabilities.ads ? "ads" : "campaigns"} of ${report.account.name} did each day, from ${report.from} to ${report.to}:`
+      `What the ${capabilitiesOf(report.account).ads ? "ads" : "campaigns"} of ${report.account.name} did each day, from ${report.from} to ${report.to}:`
     );
 
     for (const line of columns(

@@ -33,6 +33,7 @@ import {
   setAdSpending,
   startAdSignIn,
 } from "#ads/api.ts";
+import { capabilitiesOf } from "#ads/capabilities.ts";
 import { adsErrorOf } from "#ads/errors.ts";
 import type { AdsError } from "#ads/errors.ts";
 import { parseAmount } from "#ads/money.ts";
@@ -424,7 +425,7 @@ const AccountSection = ({
   const spending = useAtomValue(adSpending(workspaceId, account.id));
   // A network Peal only reads (Google Ads) never spends, whatever the
   // server offers.
-  const spendsHere = spends && account.capabilities.boosts;
+  const spendsHere = spends && capabilitiesOf(account).boosts;
 
   return (
     <AdAccountView

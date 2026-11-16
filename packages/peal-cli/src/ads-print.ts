@@ -171,6 +171,18 @@ export const boostRow = (boost: Boost, amounts: Amounts): string[] => [
 ];
 
 /**
+ * What Peal reads and does on an account, as its network allows: all of
+ * it on an account an older server answers, which knew Meta alone.
+ */
+export const capabilitiesOf = (account: AdAccount) =>
+  account.capabilities ?? {
+    ads: true,
+    boosts: true,
+    reach: true,
+    results: true,
+  };
+
+/**
  * What some ads did, as cells: spend, then the counts; reach and results
  * only where the account's network reports them.
  */
@@ -180,7 +192,9 @@ export const totalsCells = (
 ): string[] => [
   `${money(totals.spend, account.currency, account.minorUnitDigits)} spent`,
   `${String(totals.impressions)} impressions`,
-  ...(account.capabilities.reach ? [`${String(totals.reach)} reach`] : []),
+  ...(capabilitiesOf(account).reach ? [`${String(totals.reach)} reach`] : []),
   `${String(totals.clicks)} clicks`,
-  ...(account.capabilities.results ? [`${count(totals.results)} results`] : []),
+  ...(capabilitiesOf(account).results
+    ? [`${count(totals.results)} results`]
+    : []),
 ];

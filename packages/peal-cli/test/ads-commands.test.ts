@@ -12,6 +12,7 @@ import {
   facebookPageId,
   runningBoostId,
   yenAccountId,
+  adsWorld,
   googleAccountId,
 } from "./studio-ads.ts";
 import type { AdsWorld } from "./studio-ads.ts";
@@ -277,6 +278,37 @@ describe("peal ads, reading", () => {
         assert.include(
           yield* session.printed(["ads", "list", googleAccountId, ...inStudio]),
           "Peal reads the campaigns of Studio search and their days, not its ads: peal ads campaigns shows them."
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
+    "reads an older server's account, which says nothing of what its network allows",
+    () =>
+      Effect.gen(function* older() {
+        const session = yield* signedIn();
+        const [euro] = adsWorld.accounts;
+
+        if (euro === undefined) {
+          return;
+        }
+
+        const {
+          capabilities: _capabilities,
+          reachedThrough: _reachedThrough,
+          ...asBefore
+        } = euro;
+
+        yield* setAds(session.studio, { accounts: [asBefore] });
+
+        assert.match(
+          yield* session.printed([
+            "ads",
+            "account",
+            euroAccountId,
+            ...inStudio,
+          ]),
+          /Spending\s+on: .* 300\.00 EUR in a calendar month/u
         );
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );

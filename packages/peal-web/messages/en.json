@@ -164,7 +164,8 @@
       "untracked": "This month's managed ads are used: new ads of this account are not tracked until {date, date, long}. Ads already counted, and boosts made through Peal, keep updating. A payment method on the billing page lifts it.",
       "readOnly": "Never: Peal only reads Google Ads accounts",
       "reachedThrough": "Read through the manager account",
-      "syncedEvery": "{network, select, google {Read every six hours} other {Read every hour}}"
+      "syncedEvery": "{network, select, google {Read every six hours} other {Read every hour}}",
+      "unreachable": "Unreachable since {date, date, medium}: the manager account it was read through no longer holds it, and the sign-in reaches it no other way. Nothing is read of it until someone who reaches it signs in; what was read stays."
     },
     "spending": {
       "title": "Spending through Peal",

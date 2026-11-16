@@ -127,6 +127,7 @@ export const toAccountView = ({
   status: account.status,
   syncedAt: Option.getOrNull(account.syncedAt),
   timeZone: account.timeZone,
+  unreachableSince: Option.getOrNull(account.unreachableSince),
 });
 
 /**

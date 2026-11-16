@@ -164,7 +164,8 @@
       "untracked": "Les publicités gérées du mois sont épuisées : les nouvelles publicités de ce compte ne sont pas suivies avant le {date, date, long}. Celles déjà comptées, et les boosts faits avec Peal, continuent d’être mis à jour. Un moyen de paiement sur la page de facturation lève cette limite.",
       "readOnly": "Jamais : Peal ne fait que lire les comptes Google Ads",
       "reachedThrough": "Lu par le compte administrateur",
-      "syncedEvery": "{network, select, google {Lu toutes les six heures} other {Lu toutes les heures}}"
+      "syncedEvery": "{network, select, google {Lu toutes les six heures} other {Lu toutes les heures}}",
+      "unreachable": "Inaccessible depuis le {date, date, medium} : le compte administrateur par lequel il était lu ne le gère plus, et la connexion ne l’atteint pas autrement. Rien n’en est lu tant qu’une personne qui y a accès ne s’est pas connectée ; ce qui a été lu reste."
     },
     "spending": {
       "title": "Dépenses via Peal",

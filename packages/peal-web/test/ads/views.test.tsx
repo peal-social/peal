@@ -488,6 +488,24 @@ describe(AdAccountView, () => {
     expect(html).toContain("Not synced yet");
   });
 
+  it("shows an older server's account, which says nothing of its network, as Meta's", async () => {
+    const {
+      capabilities: _capabilities,
+      reachedThrough: _reachedThrough,
+      ...asBefore
+    } = euroAccount;
+
+    const html = await render(
+      "en",
+      <ul>
+        <AdAccountView account={asBefore} committedThisMonth={12_000} />
+      </ul>
+    );
+
+    expect(html).toContain("On, up to €500.00 each calendar month");
+    expect(html).not.toContain("Read through the manager account");
+  });
+
   it("shows a Google Ads account read only, through its manager, read every six hours", async () => {
     const html = await render(
       "en",
