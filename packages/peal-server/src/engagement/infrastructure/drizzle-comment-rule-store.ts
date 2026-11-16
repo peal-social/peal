@@ -65,6 +65,7 @@ const decodeWaiting = Schema.decodeUnknownEffect(
     Schema.Struct({
       channelId: ChannelIdSchema,
       commentId: CommentIdSchema,
+      lookedAt: Schema.Date,
       replyId: ReplyIdSchema,
     })
   )
@@ -546,7 +547,7 @@ export const DrizzleCommentRuleStore = Layer.effect(
       waitingPrivate: (ruleId, limit) =>
         client`
           SELECT m.comment_id AS "commentId", m.reply_id AS "replyId",
-            c.channel_id AS "channelId"
+            c.channel_id AS "channelId", m.looked_at AS "lookedAt"
           FROM engagement.comment_rule_matches m
           JOIN engagement.comments c ON c.id = m.comment_id
           WHERE m.rule_id = ${ruleId}
@@ -554,7 +555,13 @@ export const DrizzleCommentRuleStore = Layer.effect(
             AND m.outcome = 'replied'
           ORDER BY m.looked_at, m.comment_id
           LIMIT ${limit}
-        `.pipe(Effect.flatMap(decodeWaiting), Effect.mapError(failed)),
+        `.pipe(
+          Effect.flatMap(decodeWaiting),
+          Effect.map((rows) =>
+            rows.map((row) => ({ ...row, lookedAt: utc(row.lookedAt) }))
+          ),
+          Effect.mapError(failed)
+        ),
     });
   })
 );

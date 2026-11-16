@@ -2,6 +2,7 @@ import { DateTime, Effect, Layer, Option, Ref } from "effect";
 import { MessageStorage, ShardingConfig } from "effect/cluster";
 import { SqlClient } from "effect/sql";
 
+import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
 import { CommentRules } from "#engagement/application/comment-rules.ts";
 import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import { EngagementReplies } from "#engagement/application/engagement-replies.ts";
@@ -144,14 +145,26 @@ export const connected = (platform: Platform): EngagedChannel => {
   };
 };
 
+// The channels whose token ran out, as a test says: unreadable until
+// connected again.
+export const expiredChannels = Ref.makeUnsafe<ReadonlySet<ChannelId>>(
+  new Set()
+);
+
 export const FakeChannels = Layer.succeed(
   EngagementChannels,
   EngagementChannels.of({
     belongs: (channelId) =>
       Ref.get(platformsOf).pipe(Effect.map((known) => known.has(channelId))),
     describe: (channelId) =>
-      Ref.get(platformsOf).pipe(
-        Effect.map((known) => connected(known.get(channelId) ?? "mastodon"))
+      Effect.all([Ref.get(platformsOf), Ref.get(expiredChannels)]).pipe(
+        Effect.flatMap(([known, expired]) => {
+          const platform = known.get(channelId) ?? "mastodon";
+
+          return expired.has(channelId)
+            ? Effect.fail(new ChannelUnreadable({ platform, reason: "paused" }))
+            : Effect.succeed(connected(platform));
+        })
       ),
   })
 );

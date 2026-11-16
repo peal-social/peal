@@ -64,6 +64,8 @@ export interface RuleMatch {
 export interface WaitingPrivateReply {
   readonly channelId: ChannelId;
   readonly commentId: CommentId;
+  /** When the rule answered the comment: the comment was written before. */
+  readonly lookedAt: DateTime.Utc;
   readonly replyId: ReplyId;
 }
 

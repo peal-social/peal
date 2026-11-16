@@ -39,6 +39,7 @@ import {
   chatOverflow,
   maxOutgoingMessageLength,
 } from "#engagement/domain/message-text.ts";
+import { privateReplyWindow } from "#engagement/domain/private-reply.ts";
 import { maxReplyLength } from "#engagement/domain/reply-text.ts";
 import type { Reply } from "#engagement/domain/reply.ts";
 import { CurrentInboxPlatforms } from "#shared/application/current-inbox-platforms.ts";
@@ -940,6 +941,32 @@ export class CommentRules extends Context.Service<
             yield* settle(privateCode(next));
 
             return "skipped" as const;
+          }
+
+          // A channel that cannot be read for now (its token ran out) or
+          // must be connected again keeps it waiting, while the comment's
+          // seven days may still be open: it was answered after it was
+          // written, so past them from its answer, they are past.
+          const ability = privateOn.get(waiting.channelId);
+
+          if (ability === undefined || ability === "reconnect") {
+            if (
+              DateTime.isLessThan(
+                DateTime.addDuration(waiting.lookedAt, privateReplyWindow),
+                now
+              )
+            ) {
+              yield* settle(
+                Option.some({
+                  _tag: "privateCode",
+                  code: "PrivateReplyNotPossible",
+                })
+              );
+
+              return "skipped" as const;
+            }
+
+            return "waiting" as const;
           }
 
           const planned = privatePlan(locked.value, waiting.channelId);

@@ -28,6 +28,7 @@ import { Actor } from "#shared/domain/access.ts";
 import { ChannelIdSchema, PostIdSchema } from "#shared/domain/ids.ts";
 import { freshWorkspace } from "#test/channels/support.ts";
 import {
+  expiredChannels,
   forget,
   instagramRule,
   meanwhile,
@@ -1801,6 +1802,62 @@ describe("a comment rule's private reply", () => {
             yield* privateOutcomes(workspaceId, paused.rule.rule.id),
             new Map([[onPaused?.id, "stopped"]])
           );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      }).pipe(Effect.provide(RulesTest))
+  );
+
+  it.live(
+    "keeps a private reply waiting while its channel's token has run out, and sends it once connected again",
+    () =>
+      Effect.gen(function* expired() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const { rule, thread } = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+
+          const [asks, old] = yield* received(thread, [
+            { author: 1, text: "price?" },
+            { author: 2, text: "price please" },
+          ]);
+
+          assert.isDefined(asks);
+          assert.isDefined(old);
+
+          yield* rules.runDue;
+          yield* publicRepliesEnd(workspaceId, "sent");
+
+          // One answered over a week ago: its seven days are past.
+          yield* SqlClient.SqlClient.use(
+            (sql) => sql`UPDATE engagement.comment_rule_matches
+              SET looked_at = now() - interval '8 days'
+              WHERE comment_id = ${old.id}`
+          ).pipe(Effect.orDie);
+          yield* Ref.update(
+            expiredChannels,
+            (all) => new Set([...all, thread.channelId])
+          );
+
+          yield* rules.runDue.pipe(
+            Effect.ensuring(
+              Ref.update(
+                expiredChannels,
+                (all) =>
+                  new Set([...all].filter((one) => one !== thread.channelId))
+              )
+            )
+          );
+
+          assert.deepStrictEqual(
+            yield* privateOutcomes(workspaceId, rule.rule.id),
+            new Map([
+              [asks.id, "waiting"],
+              [old.id, "PrivateReplyNotPossible"],
+            ])
+          );
+
+          // Connected again, it goes.
+          assert.strictEqual((yield* rules.runDue).privateReplied, 1);
         }).pipe(Effect.ensuring(forget(workspaceId)));
       }).pipe(Effect.provide(RulesTest))
   );
