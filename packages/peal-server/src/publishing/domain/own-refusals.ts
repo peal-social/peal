@@ -53,6 +53,11 @@ export const platformRefusalCodes = {
   // connected again with the new chat (Telegram: a group that became a
   // supergroup, `migrate_to_chat_id`).
   chatMigrated: "chatMigrated",
+  // A BadRequest of an edit the platform refuses without telling why, the
+  // same text again among the reasons (Telegram: "message is not
+  // modified", a 400 like any other). After a try that got no answer, it
+  // is the edit that landed (`editAfterRepeat`).
+  editRefusedOrSame: "editRefusedOrSame",
   // A BadRequest: the post names a title for a forum post, and the
   // channel is no forum (Discord: 220003). Its failure reason is
   // `contentRejected`; the code tells the member what to change.

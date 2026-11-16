@@ -2,6 +2,7 @@ import { Effect, Option, Schema } from "effect";
 import { HttpClientRequest } from "effect/http";
 
 import type { PublishingToken } from "#publishing/application/platform-credentials.ts";
+import { platformRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import { TelegramOptions } from "#publishing/domain/telegram-options.ts";
 import type { LivePostEditor } from "#publishing/infrastructure/platforms/live-post-editor.ts";
 import {
@@ -101,8 +102,10 @@ export const telegramLivePost =
  * Replaces a post's text: `editMessageText` for a text (`t:`),
  * `editMessageCaption` for the caption of a post with files (`m:`, its
  * first message, which holds an album's caption). The page states no time
- * limit on editing a bot's own message. A message gone answers a 400,
- * which no field tells from another: it fails as `telegram400`.
+ * limit on editing a bot's own message. A message gone, and the same text
+ * again ("message is not modified"), answer a 400 that no field tells from
+ * another: it is `editRefusedOrSame`, which is the edit applied after a
+ * try that got no answer (`editAfterRepeat`).
  */
 export const telegramLiveEdit =
   (options: {
@@ -142,5 +145,10 @@ export const telegramLiveEdit =
             : { ...target, text: edit.text }
         );
       }),
-      Effect.as("edited" as const)
+      Effect.as("edited" as const),
+      Effect.mapError((refusal) =>
+        refusal._tag === "BadRequest" && refusal.code === "telegram400"
+          ? new BadRequest({ code: platformRefusalCodes.editRefusedOrSame })
+          : refusal
+      )
     );

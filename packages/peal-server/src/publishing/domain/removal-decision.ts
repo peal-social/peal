@@ -5,7 +5,7 @@ import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
 
-import { ownRefusalCodes } from "./own-refusals.ts";
+import { ownRefusalCodes, platformRefusalCodes } from "./own-refusals.ts";
 import { defaultPublicationPolicy } from "./publication-policy.ts";
 import type { PublicationPolicy } from "./publication-policy.ts";
 
@@ -73,6 +73,24 @@ const channelRefusals: ReadonlySet<string> = new Set([
   ownRefusalCodes.channelDisconnected,
   ownRefusalCodes.channelDisabled,
 ]);
+
+/**
+ * An edit's attempt as it ended: a refusal that may be the platform
+ * finding the same text again (`editRefusedOrSame`) is the edit applied
+ * when an earlier try may have changed the text, as one that got no
+ * answer (`earlier.unavailable`) or a call resumed after a crash. Any
+ * other attempt stays as it is.
+ */
+export const editAfterRepeat = (
+  attempt: RemovalAttempt,
+  earlier: EarlierRemovals,
+  resumed: boolean
+): RemovalAttempt =>
+  attempt._tag === "BadRequest" &&
+  attempt.code === platformRefusalCodes.editRefusedOrSame &&
+  (resumed || earlier.unavailable > 0)
+    ? { _tag: "edited" }
+    : attempt;
 
 /**
  * Decides what follows a call. Deleting is safe to repeat (a post found

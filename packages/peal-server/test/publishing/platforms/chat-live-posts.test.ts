@@ -370,6 +370,29 @@ describe("deleting and editing on Telegram", () => {
     }).pipe(Effect.scoped)
   );
 
+  it.live("says an edit's 400 may be the same text again", () =>
+    Effect.gen(function* same() {
+      const { client, live, telegram } = yield* onTelegram({
+        edit: { options: Option.none(), text: "Corrected" },
+      });
+
+      const platformPostId = yield* idOf(
+        yield* client.publish(yield* outgoing({ accountId: telegramAccount }))
+      );
+
+      telegram.script("editMessageText", [
+        telegram.failed(400, "Bad Request: message is not modified"),
+      ]);
+
+      assert.deepStrictEqual(
+        yield* live
+          .edit({ changeId, channelId, platformPostId })
+          .pipe(Effect.flip),
+        new BadRequest({ code: "editRefusedOrSame" })
+      );
+    }).pipe(Effect.scoped)
+  );
+
   it.live("asks nothing of an id that is not a post of Peal's", () =>
     Effect.gen(function* invalid() {
       const { live, telegram } = yield* onTelegram();

@@ -1,9 +1,15 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Duration } from "effect";
 
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
+import {
+  ownRefusalCodes,
+  platformRefusalCodes,
+} from "#publishing/domain/own-refusals.ts";
 import { defaultPublicationPolicy } from "#publishing/domain/publication-policy.ts";
-import { decideRemoval } from "#publishing/domain/removal-decision.ts";
+import {
+  decideRemoval,
+  editAfterRepeat,
+} from "#publishing/domain/removal-decision.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
@@ -86,5 +92,32 @@ describe("deciding after a call that deletes a part", () => {
       _tag: "failed",
       code: "channelUnavailable",
     });
+  });
+});
+
+describe(editAfterRepeat, () => {
+  const sameOrRefused = new BadRequest({
+    code: platformRefusalCodes.editRefusedOrSame,
+  });
+
+  it("takes a refusal that may be the same text again as the edit landed, after a try that got no answer", () => {
+    expect(
+      editAfterRepeat(sameOrRefused, { rateLimited: 0, unavailable: 1 }, false)
+    ).toStrictEqual({ _tag: "edited" });
+    expect(editAfterRepeat(sameOrRefused, none, true)).toStrictEqual({
+      _tag: "edited",
+    });
+  });
+
+  it("keeps the refusal of a first try, and any other refusal", () => {
+    expect(editAfterRepeat(sameOrRefused, none, false)).toStrictEqual(
+      sameOrRefused
+    );
+
+    const other = new BadRequest({ code: "telegram400" });
+
+    expect(
+      editAfterRepeat(other, { rateLimited: 0, unavailable: 2 }, true)
+    ).toStrictEqual(other);
   });
 });

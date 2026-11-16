@@ -621,8 +621,10 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   (`deleteMessages`). It decides on `error_code` and `parameters` alone:
   401 and 403 are a refused token, 400 with `migrate_to_chat_id`
   `chatMigrated`, any other 400 `telegram400` (no 400 can be told from
-  another without its words: a deletion past 48 hours, a reply's parent
-  gone, an edit of the same text). Three rule additions serve them:
+  another without its words: a reply's parent gone, an edit of the same
+  text). An edit's 400 is `editRefusedOrSame`, which `editAfterRepeat`
+  takes as the edit applied after a try that got no answer, since the
+  lost try may have changed the text. Three rule additions serve them:
   `textLimitsWithMedia` (a caption's limit, read through `textLimitsOf`
   by `violationsOn`, `previewOn` and the composer), `maxTotalByteSize`
   (`mediaTotalTooLarge`) and `maxSideSum` (`sideSumTooLarge`). Tests set

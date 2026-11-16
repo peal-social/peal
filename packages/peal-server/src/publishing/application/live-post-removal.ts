@@ -10,7 +10,10 @@ import {
 import type { LivePostChange } from "#publishing/domain/live-post-change.ts";
 import { isOperatorRefusal } from "#publishing/domain/own-refusals.ts";
 import { PostTarget } from "#publishing/domain/post-target.ts";
-import { decideRemoval } from "#publishing/domain/removal-decision.ts";
+import {
+  decideRemoval,
+  editAfterRepeat,
+} from "#publishing/domain/removal-decision.ts";
 import type {
   EarlierRemovals,
   RemovalAttempt,
@@ -121,7 +124,7 @@ export const removalAttemptRun = Effect.fn("LivePostRemoval.attempt")(
 
     const isEdit = found.value.kind === "edit";
 
-    const attempt: RemovalAttempt = yield* (
+    const made: RemovalAttempt = yield* (
       isEdit
         ? clients
             .edit({
@@ -144,6 +147,12 @@ export const removalAttemptRun = Effect.fn("LivePostRemoval.attempt")(
               }))
             )
     ).pipe(Effect.catch((error) => Effect.succeed(error)));
+
+    // An edit refused as perhaps the same text again, after a try that
+    // may have landed, is that try's edit.
+    const attempt = isEdit
+      ? editAfterRepeat(made, call.earlier, started === "resumed")
+      : made;
 
     const finishedAt = yield* DateTime.now;
 
