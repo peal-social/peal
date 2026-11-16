@@ -123,15 +123,18 @@ const deleteFiles = (
     (file) =>
       changing(options, token, "files.delete", { file }).pipe(
         Effect.flatMap((answer) => settled(answer, fileGone)),
-        Effect.catch((error) =>
-          Effect.logWarning(
-            "Slack kept an image of a message Peal deleted"
-          ).pipe(
-            Effect.annotateLogs({
-              code: error._tag === "BadRequest" ? error.code : error._tag,
-            })
-          )
-        )
+        Effect.matchEffect({
+          onFailure: (refusal) =>
+            Effect.logWarning(
+              "Slack kept an image of a message Peal deleted"
+            ).pipe(
+              Effect.annotateLogs({
+                code:
+                  refusal._tag === "BadRequest" ? refusal.code : refusal._tag,
+              })
+            ),
+          onSuccess: () => Effect.void,
+        })
       ),
     { discard: true }
   );
