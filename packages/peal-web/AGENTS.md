@@ -785,6 +785,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   links on http, https or mailto) and `ArticleImage`, a library file by
   `mediaId` shown through the media API's address, never one kept in the
   article: add a node or a mark to the server's `article-body.ts` first.
+  A chat connects with `ChatFields` (`connect-chat.tsx`), offered from
+  the connectable platforms' `chats`: Discord's webhook address, or
+  Telegram's bot token and chat, typed in password fields, each refusal
+  worded with its fix (`chat.<reason>` in `ChannelsPage.errors`); the
+  card links the docs page where `PEAL_DOCS_URL` is set, and a chat's
+  channel reconnects through the same form (`ReconnectChat`).
   A website connects with `WebsiteFields` (`connect-website.tsx`): the
   application password goes to the server once, and a site's channel
   reconnects through the same form, as it has no sign-in.

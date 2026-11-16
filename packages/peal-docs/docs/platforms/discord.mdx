@@ -1,0 +1,70 @@
+---
+title: Discord
+description: "Connect a Discord channel to Peal by its webhook, what a post there may hold, and the options it takes."
+sidebar:
+  icon: /platform-marks/discord.svg
+---
+
+How to connect a Discord channel through a webhook, what a post there may hold, and the options it takes.
+
+## At a glance [#at-a-glance]
+
+|                     |                                     |
+| ------------------- | ----------------------------------- |
+| Text                | {{platform-discord-text-en}}        |
+| Images and videos   | {{platform-discord-media-en}}       |
+| Their size together | {{platform-discord-media-total-en}} |
+| Parts               | {{platform-discord-parts-en}}       |
+| Alt text            | {{platform-discord-alt-en}}         |
+
+What each file type must be is in [Images and videos](/guides/media#platforms). A Discord channel counts as one account on the [plan](/guides/workspace/billing).
+
+## Connect [#connect]
+
+<Steps>
+  <Step title="Make a webhook">
+    In Discord, open the channel's settings, then **Integrations**,
+    **Webhooks**, and make a webhook for Peal. Its name is what the channel
+    shows as the author of Peal's posts. Choose **Copy Webhook URL**.
+  </Step>
+  <Step title="Paste it in Peal">
+    On **Channels**, under **Discord**, paste the address into **Webhook
+    address** and choose **Connect Discord**. Peal reads the webhook on Discord
+    and keeps its address encrypted: it is never shown again.
+  </Step>
+</Steps>
+
+- The address starts with `https://discord.com/api/webhooks/`. Peal refuses any other before it calls anything.
+- Only an incoming webhook, the kind a channel's settings make, posts messages.
+- Another webhook of the same channel reconnects its channel with the new address.
+- To cut Peal off, delete the webhook in the channel's settings. Peal then marks the channel to reconnect and calls it no more.
+
+## What a post becomes [#posts]
+
+- The text is Discord's markdown, as you type it: `**bold**`, `> quote`, a link. Peal changes nothing in it.
+- A mention notifies nobody unless **Notify the people and roles it mentions** is on: `@everyone`, a role or a person typed in the text shows, and pings no one.
+- The parts of a [thread](/guides/posts#threads) are messages after one another in the channel.
+- In a forum or media channel, the first part opens a forum post titled with **Forum post title**, and the later parts go in it. Without a title, Discord refuses the post (`forumThreadNameRequired`); any other channel refuses a title.
+
+## Options [#options]
+
+No option is required, and each goes with every part but the title, which the first part takes.
+
+| Option                                      | API name         | Values                           | Left out |
+| ------------------------------------------- | ---------------- | -------------------------------- | -------- |
+| **Notify the people and roles it mentions** | `mentions`       | Yes or no                        | No       |
+| **Send without a notification**             | `silent`         | Yes or no                        | No       |
+| **Show no preview of its links**            | `suppressEmbeds` | Yes or no                        | No       |
+| **Forum post title**                        | `threadName`     | One line, 100 characters at most | None     |
+
+## Edit and delete [#live]
+
+Peal edits a post's text there and deletes it, every part of it: see [After a post is published](/guides/posts/published). An edit keeps the files.
+
+## When an answer is lost [#lost]
+
+Discord keeps no key to send a message again under, and lets a webhook list no message. When Discord takes a post and its answer never comes, the post is **To check**: look at the channel, then confirm it or send it again from its page. Peal never sends it again by itself, and sends no part after it.
+
+## What Peal does not do there [#limits]
+
+Peal reads nothing back from Discord: no counts, no replies, no inbox. It posts in no existing thread, and sends no embed, poll or button.

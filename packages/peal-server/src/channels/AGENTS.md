@@ -92,6 +92,34 @@
   site's id the account id, kept through `ConnectSite.connectSigned`.
   Every way a website connects shares one `SiteConnectPace`, and a
   password, a key or a sign-in for the other kind is `otherWayIn`.
+- A chat connects with a secret its member pastes, no sign-in page and no
+  authorizer (`ConnectChat`, `POST …/channels/chats`, `ChatPlatform`:
+  `discord`, `telegram`), checked by `ChatVerifier`
+  (`platforms/chat-verifiers.ts`): Discord's webhook address is refused
+  before any call unless it is `https://discord.com` or `discordapp.com`
+  `/api[/v<n>]/webhooks/<id>/<token>`, then read on Discord's own API
+  (incoming webhooks only, `type` 1), the account id `<guild>/<channel>`
+  so another webhook of the channel reconnects it, the token
+  `<id>/<token>`; Telegram's bot token and chat are checked for shape,
+  then `getMe`, `getChat` (no private chat) and `getChatMember` for the
+  bot (an administrator with `can_post_messages` in a channel; in a group
+  a member, an administrator, or restricted with `can_send_messages`),
+  the account id the chat's id, the token the bot's. Refusals are
+  `ChatRefused` (`ChatNotConnected` in the contract), decided on status
+  and the platforms' codes, never their words. The secret is kept as the
+  channel's token (`nonExpiring`, never renewed); with no authorizer, a
+  refused one marks the channel to reconnect (`ChannelAccess`) and is never
+  sent again, as Discord asks of a deleted webhook. A new chat needs room in
+  the plan before the platform is called when the workspace has no chat
+  of that platform; 30 tries an hour (`ChatConnectPace`,
+  `ChatConnectLimited`); `channelId` reconnects that channel only, with a
+  secret of its chat (`ReconnectAccountMismatch`). Connectable platforms
+  list them in `chats`, never `platforms`, which a client starts sign-ins
+  for; connect links refuse them (`notSupported`). Both secrets travel in
+  the path of their platform's addresses: requests make no span
+  (`untraced`), the address is built from the `Redacted` value as the
+  request is made, and every HTTP client error is typed where it happens
+  (`test/app/secrets-in-logs.test.ts` searches for both).
 - On a server that bills, an account of a platform whose calls are passed
   through at the platform's rates (X, on the `xApi` meter) is connected
   only on per-account pricing that pays: `ChannelAllowance.passedThrough`

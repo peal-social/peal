@@ -366,6 +366,10 @@ and no socket, for tests.
   reads channels (every workspace's collection jobs included), and the
   events and notices that name one: never roll back past them while any
   is stored; articles and their jobs it ignores (the runbook's checks).
+  Chats did too: a channel of `discord` or `telegram`, a target with
+  their options or failed as `forumThreadNameRequired` or `chatMigrated`,
+  and the events and notices that name one: never roll back past them
+  while any is stored (the runbook's "Past chats").
 
 ### Metrics and alerts
 

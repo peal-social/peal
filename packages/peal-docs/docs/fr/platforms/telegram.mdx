@@ -1,0 +1,74 @@
+---
+title: Telegram
+description: "Connecter un canal ou un groupe Telegram à Peal avec votre propre bot, ce qu’une publication peut y contenir, et les options qu’elle prend."
+sidebar:
+  icon: /platform-marks/telegram.svg
+---
+
+Comment connecter un canal ou un groupe Telegram avec un bot à vous, ce qu’une publication peut y contenir, et les options qu’elle prend.
+
+## En bref [#at-a-glance]
+
+|                       |                                     |
+| --------------------- | ----------------------------------- |
+| Texte                 | {{platform-telegram-text-fr}}       |
+| Texte avec des médias | {{platform-telegram-text-media-fr}} |
+| Images et vidéos      | {{platform-telegram-media-fr}}      |
+| Parties               | {{platform-telegram-parts-fr}}      |
+| Texte alternatif      | {{platform-telegram-alt-fr}}        |
+
+Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms) : des photos (JPEG, PNG), des vidéos MP4, et un GIF, qui part seul. Une discussion Telegram compte comme un compte dans l’[abonnement](/guides/workspace/billing).
+
+## Connecter [#connect]
+
+<Steps>
+  <Step title="Créer un bot">
+    Dans Telegram, ouvrez @BotFather, le bot de Telegram qui crée les bots,
+    envoyez `/newbot`, et suivez ses étapes. Il répond avec le jeton du bot.
+  </Step>
+  <Step title="Ajouter le bot à la discussion">
+    Dans un canal, ajoutez le bot comme administrateur qui peut publier des
+    messages. Dans un groupe, ajoutez-le comme membre.
+  </Step>
+  <Step title="Le coller dans Peal">
+    Sur **Canaux**, sous **Telegram**, collez le jeton dans **Jeton du bot**,
+    donnez la discussion dans **Discussion**, et choisissez **Connecter
+    Telegram**. Peal vérifie que le bot peut y publier, et garde le jeton
+    chiffré : il n’est plus jamais montré.
+  </Step>
+</Steps>
+
+- Nommez la discussion par son nom public, comme `@nom`, ou par son identifiant : celui d’un canal ou d’un supergroupe commence par `-100`.
+- Peal publie dans les canaux et les groupes, jamais dans une discussion privée avec une personne.
+- Pour couper l’accès de Peal, révoquez le jeton du bot avec @BotFather, ou retirez le bot de la discussion. Peal marque alors le canal à reconnecter.
+- Quand un groupe devient un supergroupe, Telegram lui donne un nouvel identifiant et les publications échouent (`chatMigrated`) : connectez à nouveau la discussion, comme un nouveau canal.
+
+## Ce que devient une publication [#posts]
+
+- Le texte est du texte brut : Telegram rend ses liens cliquables, et rien d’autre n’est mis en forme.
+- Un texte seul prend 4 096 caractères. Un texte avec des images ou des vidéos est leur légende, et en prend 1 024 : Peal le vérifie quand la publication est programmée.
+- Plusieurs fichiers partent en un album, le texte en légende du premier.
+- Les parties d’un [fil](/guides/posts#threads) sont des réponses, chacune à la partie d’avant.
+
+## Options [#options]
+
+Aucune option n’est nécessaire, et chacune va avec chaque partie.
+
+| Option                                    | Nom dans l’API | Valeurs    | Par défaut |
+| ----------------------------------------- | -------------- | ---------- | ---------- |
+| **Afficher l’aperçu de son premier lien** | `linkPreview`  | Oui ou non | Oui        |
+| **Envoyer sans son**                      | `silent`       | Oui ou non | Non        |
+
+Une partie avec des images ou des vidéos n’affiche aucun aperçu de lien, quoi qu’elle dise.
+
+## Modifier et supprimer [#live]
+
+Peal modifie le texte d’une publication, ou sa légende, et la supprime, chaque message d’un album compris : voir [Après la publication](/guides/posts/published). Telegram ne supprime un message que dans les 48 heures qui suivent son envoi.
+
+## Quand une réponse se perd [#lost]
+
+Telegram ne garde aucune clé sous laquelle renvoyer un message, et ne laisse un bot lire les messages d’aucune discussion. Quand Telegram prend une publication et que sa réponse ne vient jamais, la publication est **À vérifier** : regardez la discussion, puis confirmez-la ou renvoyez-la depuis sa page. Peal ne la renvoie jamais de lui-même, et n’envoie aucune partie après elle.
+
+## Ce que Peal n’y fait pas [#limits]
+
+Peal ne lit rien en retour sur Telegram : ni comptages, ni réponses, ni boîte de réception. Il ne publie dans aucun sujet d’un groupe forum, et n’envoie ni mise en forme, ni bouton, ni document.

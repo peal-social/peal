@@ -10,11 +10,13 @@ import path from "node:path";
 import type { SimpleIcon } from "simple-icons";
 import {
   siBluesky,
+  siDiscord,
   siFacebook,
   siGoogle,
   siInstagram,
   siMastodon,
   siPinterest,
+  siTelegram,
   siThreads,
   siTiktok,
   siX,
@@ -23,12 +25,14 @@ import {
 
 const marks = {
   bluesky: siBluesky,
+  discord: siDiscord,
   facebook: siFacebook,
   "google-business": siGoogle,
   instagram: siInstagram,
   linkedin: null,
   mastodon: siMastodon,
   pinterest: siPinterest,
+  telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,
   x: siX,
