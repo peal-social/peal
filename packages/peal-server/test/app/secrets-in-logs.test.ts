@@ -1,5 +1,6 @@
 // What the server writes about a request never holds a credential: a
-// connect link's token, a review link's, a partner key, a website's
+// platform's events' verify token and signature (nor what an event says of
+// a message), a connect link's token, a review link's, a partner key, a website's
 // application password, the token of a
 // link that applies a request to cancel, the value of a header a webhook
 // endpoint's deliveries carry, two-step verification's key, codes and
@@ -25,7 +26,8 @@ import {
   Schema,
   Tracer,
 } from "effect";
-import { SecureRandom } from "effect/crypto";
+import { Mac, SecureRandom } from "effect/crypto";
+import { Hex } from "effect/encoding";
 import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
 import sharp from "sharp";
@@ -1292,6 +1294,145 @@ layer(OwnImagesTest, { excludeTestServices: true, timeout: "120 seconds" })(
 
           assert.notInclude(all, new URL(host.url).host);
         }).pipe(Effect.provide(imagesTest({ providers: "loopback" })))
+    );
+  }
+);
+
+// Meta's events: the verify token, which the handshake carries in its
+// query, the app's secret and the signature, and what an event's body
+// says of a message (its text, its sender), are never written, whether
+// the request was refused or taken.
+const eventsVerifyToken = "synthetic-verify-token-never-written-0001";
+const eventsAppSecret = "synthetic-meta-app-secret-never-written";
+const eventText = "synthetic-private-words-never-written";
+const eventSender = "synthetic-sender-never-written";
+
+const eventsSettings = {
+  META_APP_ID: "1001",
+  META_APP_SECRET: eventsAppSecret,
+  META_WEBHOOK_VERIFY_TOKEN: eventsVerifyToken,
+};
+
+const EventsTest = TestApp.layerWith(
+  eventsSettings,
+  Layer.merge(capture, Layer.succeed(Tracer.Tracer, tracer))
+);
+
+layer(EventsTest, { excludeTestServices: true, timeout: "120 seconds" })(
+  "what the server writes about Meta's events",
+  (it) => {
+    it.effect(
+      "holds no verify token, secret, signature, text or sender, refused or taken",
+      () =>
+        Effect.gen(function* events() {
+          const app = yield* TestApp;
+          const path = "/api/platform-events/meta/facebook";
+
+          const body = new TextEncoder().encode(
+            JSON.stringify({
+              entry: [
+                {
+                  id: "synthetic-page-nobody-connected",
+                  messaging: [
+                    {
+                      message: { mid: "m_synthetic_logged", text: eventText },
+                      recipient: { id: "synthetic-page-nobody-connected" },
+                      sender: { id: eventSender },
+                    },
+                  ],
+                },
+              ],
+              object: "page",
+            })
+          );
+
+          const signature = yield* Effect.gen(function* signing() {
+            const mac = yield* Mac.Mac;
+
+            const key = yield* Mac.key(
+              Mac.hmacSha256,
+              new TextEncoder().encode(eventsAppSecret)
+            );
+
+            return Hex.encode(yield* mac.sign(key, body));
+          }).pipe(
+            Effect.provide(
+              Mac.layerWebCrypto.pipe(
+                Layer.provide(SecureRandom.layerWebCrypto)
+              )
+            ),
+            Effect.orDie
+          );
+
+          const forged = "0".repeat(64);
+
+          const send = (init: RequestInit, query = "") =>
+            Effect.promise(async () => {
+              const response = await app.handler(
+                new Request(`http://localhost:3001${path}${query}`, init)
+              );
+
+              return response.status;
+            });
+
+          const handshake = (token: string) =>
+            send(
+              { method: "GET" },
+              `?${new URLSearchParams({
+                "hub.challenge": "1158201444",
+                "hub.mode": "subscribe",
+                "hub.verify_token": token,
+              }).toString()}`
+            );
+
+          const event = (tag: string) =>
+            send({
+              body: new Uint8Array(body),
+              headers: {
+                "content-type": "application/json",
+                "x-hub-signature-256": `sha256=${tag}`,
+              },
+              method: "POST",
+            });
+
+          assert.deepStrictEqual(
+            [
+              yield* handshake(eventsVerifyToken),
+              yield* handshake(`${eventsVerifyToken}-wrong`),
+              yield* event(forged),
+              yield* event(signature),
+            ],
+            [200, 403, 403, 200]
+          );
+
+          // Refused again, at once: not written again, as a flood of
+          // refusals on a public address would fill the logs.
+          assert.deepStrictEqual(
+            [yield* event(forged), yield* event(forged)],
+            [403, 403]
+          );
+
+          const all = written();
+
+          // The requests were written about: their path and the refusal,
+          // once.
+          assert.include(all, path);
+          assert.strictEqual(
+            all.split("Refused a platform's unsigned event").length - 1,
+            1
+          );
+
+          for (const [name, secret] of [
+            ["the verify token", eventsVerifyToken],
+            ["the app's secret", eventsAppSecret],
+            ["the signature", signature],
+            ["the forged signature", forged],
+            ["a message's text", eventText],
+            ["a message's sender", eventSender],
+          ] as const) {
+            assert.notInclude(all, secret, name);
+          }
+        })
     );
   }
 );

@@ -4,6 +4,7 @@ import { assert, layer } from "@effect/vitest";
 import {
   DateTime,
   Deferred,
+  Duration,
   Effect,
   Fiber,
   Layer,
@@ -30,7 +31,11 @@ import type {
 import { DirectMessageIdSchema } from "#engagement/domain/direct-message-id.ts";
 import { receiveMessage } from "#engagement/domain/direct-message.ts";
 import type { MessageReading } from "#engagement/domain/direct-message.ts";
-import { followBox, recordBoxRead } from "#engagement/domain/message-box.ts";
+import {
+  followBox,
+  postponeBoxRead,
+  recordBoxRead,
+} from "#engagement/domain/message-box.ts";
 import type { MessageBox } from "#engagement/domain/message-box.ts";
 import { OutgoingMessageIdSchema } from "#engagement/domain/outgoing-message-id.ts";
 import {
@@ -918,6 +923,14 @@ layer(StoreTest)("the message store", (it) => {
         const talk = yield* conversationOn(box, 1, "2049-02-07T09:00:00.000Z");
 
         yield* store.saveConversations([talk]);
+
+        // Its subscription to the platform's events goes with the box: a
+        // channel moved to another workspace, gone here, is followed
+        // afresh there.
+        yield* store.markFollowed(
+          box.channelId,
+          utc("2049-02-07T09:30:00.000Z")
+        );
         yield* records.channelGone(
           box.channelId,
           "mastodon",
@@ -1201,6 +1214,216 @@ layer(StoreTest)("the message store", (it) => {
 
           assert.isTrue(Option.isSome(yield* store.conversation(talk.id)));
           assert.isTrue(Option.isSome(yield* store.outgoing(message.id)));
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
+    "brings a box's read forward, never later, and keeps when the platform was asked for its events",
+    () =>
+      Effect.gen(function* forward() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-20T10:00:00.000Z");
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box]);
+
+          const read = recordBoxRead(
+            box,
+            Option.none(),
+            utc("2049-02-20T10:01:00.000Z"),
+            utc("2049-02-20T10:00:00.000Z")
+          );
+
+          yield* store.saveBox(read);
+
+          // Due at 11:00: an event at 10:30 brings it to 10:30.
+          assert.isTrue(
+            yield* store.bringForward(
+              box.channelId,
+              utc("2049-02-20T10:30:00.000Z")
+            )
+          );
+
+          const nextReadAt = (yield* store.box(box.channelId)).pipe(
+            Option.map((kept) => DateTime.formatIso(kept.nextReadAt))
+          );
+
+          assert.deepStrictEqual(
+            nextReadAt,
+            Option.some("2049-02-20T10:30:00.000Z")
+          );
+
+          // A later event never puts it off.
+          assert.isTrue(
+            yield* store.bringForward(
+              box.channelId,
+              utc("2049-02-20T12:00:00.000Z")
+            )
+          );
+
+          assert.deepStrictEqual(
+            (yield* store.box(box.channelId)).pipe(
+              Option.map((kept) => DateTime.formatIso(kept.nextReadAt))
+            ),
+            Option.some("2049-02-20T10:30:00.000Z")
+          );
+
+          // A channel without a box is no box.
+          assert.isFalse(
+            yield* store.bringForward(
+              yield* newId(ChannelIdSchema),
+              utc("2049-02-20T10:30:00.000Z")
+            )
+          );
+
+          assert.deepStrictEqual(
+            (yield* store.box(box.channelId)).pipe(
+              Option.flatMap((kept) => kept.subscribedAt)
+            ),
+            Option.none()
+          );
+
+          yield* store.markFollowed(
+            box.channelId,
+            utc("2049-02-20T10:31:00.000Z")
+          );
+
+          // Saving the box's schedule leaves it as it is.
+          yield* store.saveBox(read);
+
+          assert.deepStrictEqual(
+            (yield* store.box(box.channelId)).pipe(
+              Option.flatMap((kept) => kept.subscribedAt),
+              Option.map(DateTime.formatIso)
+            ),
+            Option.some("2049-02-20T10:31:00.000Z")
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
+    "deletes the message a platform says was taken back, in that channel alone",
+    () =>
+      Effect.gen(function* takenBack() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-21T10:00:00.000Z");
+        const other = yield* boxOf(workspaceId, "2049-02-21T10:00:00.000Z");
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box, other]);
+
+          const here = yield* conversationOn(
+            box,
+            1,
+            "2049-02-21T09:00:00.000Z"
+          );
+
+          const there = yield* conversationOn(
+            other,
+            1,
+            "2049-02-21T09:00:00.000Z"
+          );
+
+          yield* store.saveConversations([here]);
+          yield* store.saveConversations([there]);
+
+          const gone = yield* messageOn(here, 1, "2049-02-21T09:00:00.000Z");
+          const kept = yield* messageOn(here, 2, "2049-02-21T09:01:00.000Z");
+          const twin = yield* messageOn(there, 1, "2049-02-21T09:00:00.000Z");
+
+          yield* store.saveMessages([gone, kept]);
+          yield* store.saveMessages([twin]);
+
+          assert.strictEqual(
+            yield* store.deleteTakenBack(box.channelId, "m1"),
+            1
+          );
+          assert.strictEqual(
+            yield* store.deleteTakenBack(box.channelId, "m-unknown"),
+            0
+          );
+
+          assert.deepStrictEqual(
+            (yield* store.messagesOf(here.id)).map(({ id }) => id),
+            [kept.id]
+          );
+          assert.deepStrictEqual(
+            (yield* store.messagesOf(there.id)).map(({ id }) => id),
+            [twin.id]
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
+    "brings a box forward no earlier than the hold a refusal put on it, and a read lifts the hold",
+    () =>
+      Effect.gen(function* held() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-22T10:00:00.000Z");
+
+        const nextOf = (channelId: typeof box.channelId) =>
+          store
+            .box(channelId)
+            .pipe(
+              Effect.map(
+                Option.map((kept) => DateTime.formatIso(kept.nextReadAt))
+              )
+            );
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box]);
+
+          // The platform asked to wait 15 minutes.
+          const postponed = postponeBoxRead(
+            box,
+            utc("2049-02-22T10:00:00.000Z"),
+            Duration.minutes(15)
+          );
+
+          yield* store.saveBox(postponed);
+
+          yield* store.bringForward(
+            box.channelId,
+            utc("2049-02-22T10:01:00.000Z")
+          );
+
+          assert.deepStrictEqual(
+            yield* nextOf(box.channelId),
+            Option.some("2049-02-22T10:15:00.000Z")
+          );
+          assert.deepStrictEqual(
+            (yield* store.box(box.channelId)).pipe(
+              Option.flatMap((kept) => kept.notBefore),
+              Option.map(DateTime.formatIso)
+            ),
+            Option.some("2049-02-22T10:15:00.000Z")
+          );
+
+          // Read since, the box waits for nothing: an event brings it to now.
+          yield* store.saveBox(
+            recordBoxRead(
+              postponed,
+              Option.none(),
+              utc("2049-02-22T10:16:00.000Z"),
+              utc("2049-02-22T10:15:00.000Z")
+            )
+          );
+
+          yield* store.bringForward(
+            box.channelId,
+            utc("2049-02-22T10:17:00.000Z")
+          );
+
+          assert.deepStrictEqual(
+            yield* nextOf(box.channelId),
+            Option.some("2049-02-22T10:17:00.000Z")
+          );
         }).pipe(Effect.ensuring(forget(workspaceId)));
       })
   );

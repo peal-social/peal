@@ -160,7 +160,7 @@ and no socket, for tests.
   of its status (`generalErrors`: `not_found`, `internal_error`…, never more
   than the status says, so the staff console's 404 and a missing route stay
   alike), and a request the API could not decode `InvalidRequest` with its
-  `issues`. Better Auth's routes and the MCP endpoint keep their own shapes.
+  `issues`. Better Auth's routes and the MCP endpoint keep their own shapes, and Meta's events answer bare statuses.
   `errorCatalogue()` (`peal-contract/errors`) reads the list from the
   contract: `test/app/fixtures/error-codes.json` freezes the published codes
   (`UPDATE_ERROR_CODES=1` adds new ones; never remove or rename one), and the
@@ -216,6 +216,29 @@ and no socket, for tests.
   cached, 404 and 410 in the general error envelope, 300 a minute per
   address in the process (429). A short domain's proxy rewrites `/<code>`
   to it, so the route rule holds.
+- `GET` and `POST /api/platform-events/meta/:app` (`src/app/platform-events/`,
+  `:app` `facebook` or `instagram`, that exact path alone) are Meta's
+  events, outside the contract and without credentials, read raw as
+  Stripe's meter errors are, and answered with a bare status (no
+  envelope, `otherAnswers`). Without `META_WEBHOOK_VERIFY_TOKEN`, or the
+  app's secret, both answer 404 and read nothing. `GET` echoes
+  `hub.challenge` (1 to 32 digits only) for `hub.mode=subscribe` and the
+  token, compared by its HMAC in constant time; 403 otherwise. `POST`
+  refuses (403) a missing or malformed `X-Hub-Signature-256` before
+  reading the body, reads at most 4 MiB (413), and checks the signature
+  over the bytes received before decoding anything: `facebook` with
+  `META_APP_SECRET`; `instagram` with `INSTAGRAM_APP_SECRET` or
+  `META_APP_SECRET`, each in constant time, until the sandbox's trial
+  says which Meta signs with (U9b keeps that one, and the log line
+  "Took an Instagram Login event" names it). Entries sent over a day ago
+  (`maxEventAge`, `entry[].time`) are left out and counted `stale`. A
+  signed body it cannot read is 200, a database failure 503, so Meta
+  sends again. `peal.platform_events` counts each by `app` and
+  `outcome`; refusals are logged once a minute a kind at most
+  (`refusalLogEvery`). `hub.verify_token` is a redacted query name
+  (`redactedQueryNames`). Never log a body or a signature
+  (`test/app/secrets-in-logs.test.ts`); the engagement guide says what an
+  event does.
 - `GET /api/health` is liveness: keep it free of the database.
   `GET /api/ready` is readiness: `SELECT 1` within 2 seconds, otherwise
   `DatabaseUnavailable` (503).

@@ -6,6 +6,7 @@ import {
   describeRegistrations,
   platformRegistrations,
 } from "#channels/infrastructure/platforms/platform-addresses.ts";
+import { metaEventsPath } from "#shared/infrastructure/platforms/meta-apps.ts";
 
 const publicUrl = "https://peal.example";
 const registrations = platformRegistrations(publicUrl);
@@ -16,9 +17,9 @@ const addressesOf = (id: string) =>
     .flatMap((registration) => registration.addresses)
     .map(({ url }) => url);
 
-// The routes of the contract that the platforms' own servers call, without
-// signing in: Meta's signed requests, for each of its apps, and the
-// documents Bluesky's servers read.
+// The routes that the platforms' own servers call, without signing in:
+// Meta's signed requests, for each of its apps, the documents Bluesky's
+// servers read, and Meta's events, outside the contract.
 const routesPlatformsCall = () => {
   const urls: string[] = [];
 
@@ -40,6 +41,11 @@ const routesPlatformsCall = () => {
       // Only endpoints matter.
     },
   });
+
+  // Meta's events, outside the contract, for each app that sends them.
+  for (const app of ["facebook", "instagram"]) {
+    urls.push(new URL(metaEventsPath.replace(":app", app), publicUrl).href);
+  }
 
   return urls;
 };
@@ -106,6 +112,7 @@ describe("the addresses to register with each platform", () => {
       "https://peal.example/connect/instagram/callback",
       "https://peal.example/api/data-deletion/facebook",
       "https://peal.example/api/data-deletion/facebook/deauthorize",
+      "https://peal.example/api/platform-events/meta/facebook",
     ]);
     // The sign-in to Meta's ad network, on the same app.
     expect(addressesOf("metaAds")).toStrictEqual([
@@ -115,6 +122,7 @@ describe("the addresses to register with each platform", () => {
       "https://peal.example/connect/instagram/callback",
       "https://peal.example/api/data-deletion/instagram",
       "https://peal.example/api/data-deletion/instagram/deauthorize",
+      "https://peal.example/api/platform-events/meta/instagram",
     ]);
     expect(addressesOf("threads")).toStrictEqual([
       "https://peal.example/connect/threads/callback",
@@ -148,6 +156,16 @@ describe("the addresses to register with each platform", () => {
     expect(called.map(({ url }) => url).toSorted()).toStrictEqual(
       routesPlatformsCall().toSorted()
     );
+  });
+
+  it("tell where Meta's events are checked", () => {
+    for (const id of ["facebookLogin", "instagramLogin"]) {
+      expect(
+        registrations
+          .find((registration) => registration.id === id)
+          ?.notes.join(" ")
+      ).toContain("META_WEBHOOK_VERIFY_TOKEN");
+    }
   });
 
   it("name the settings that hold each app's credentials", () => {

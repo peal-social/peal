@@ -66,6 +66,10 @@ export const sandboxResources = [
           type: "public",
           uri: "sandbox.example.test/api/data-deletion",
         },
+        {
+          type: "public",
+          uri: "sandbox.example.test/api/platform-events",
+        },
       ],
       domain: "sandbox.example.test/api/channels/oauth",
       name: "Peal sandbox callbacks",

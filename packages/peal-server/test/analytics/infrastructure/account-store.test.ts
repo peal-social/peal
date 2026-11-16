@@ -289,4 +289,63 @@ layer(StoreTest, { excludeTestServices: true })("the accounts' store", (it) => {
       });
     }).pipe(Effect.scoped)
   );
+
+  it.effect(
+    "finds the channels of one account on its platform, in every workspace",
+    () =>
+      Effect.gen(function* byAccount() {
+        const one = yield* freshWorkspace;
+        const two = yield* freshWorkspace;
+        const directory = yield* ChannelDirectory;
+        const sql = yield* SqlClient.SqlClient;
+
+        yield* Effect.addFinalizer(() =>
+          Effect.all([forgetWorkspace(one), forgetWorkspace(two)])
+        );
+
+        const page = `synthetic-page-${one}`;
+
+        const first = yield* seedChannel(one, "Page", { platform: "facebook" });
+
+        const second = yield* seedChannel(two, "Page", {
+          platform: "facebook",
+        });
+
+        const elsewhere = yield* seedChannel(one, "Account", {
+          platform: "instagram",
+        });
+
+        yield* sql`UPDATE channels.channels SET account_id = ${page} WHERE id IN (${first}, ${second}, ${elsewhere})`.pipe(
+          Effect.orDie
+        );
+
+        const found = yield* directory.withAccount("facebook", page);
+
+        assert.deepStrictEqual(
+          found.map(({ channelId, platform, workspaceId }) => ({
+            channelId: String(channelId),
+            platform,
+            workspaceId: String(workspaceId),
+          })),
+          [
+            {
+              channelId: first,
+              platform: "facebook" as const,
+              workspaceId: one,
+            },
+            {
+              channelId: second,
+              platform: "facebook" as const,
+              workspaceId: two,
+            },
+          ].toSorted((left, right) =>
+            left.channelId.localeCompare(right.channelId)
+          )
+        );
+        assert.deepStrictEqual(
+          yield* directory.withAccount("facebook", "synthetic-unknown"),
+          []
+        );
+      }).pipe(Effect.scoped)
+  );
 });

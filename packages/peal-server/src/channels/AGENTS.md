@@ -55,6 +55,9 @@
   (`DrizzleChannelDirectory`), so a website's row is never decoded as a
   `Platform`. `ChannelAccess.withToken` and `account` answer a website's
   channel `notFound`, `withSiteToken` a social one.
+  `ChannelDirectory.withAccount` finds one account's channels on a
+  platform (`channels_platform_account`), every workspace's, for a
+  platform's events: ids and platforms only, as `after`.
 - A website connects without a sign-in page (`ConnectSite`,
   `POST …/channels/websites`): its address, a user and an application
   password, checked on the site by `SiteVerifier`

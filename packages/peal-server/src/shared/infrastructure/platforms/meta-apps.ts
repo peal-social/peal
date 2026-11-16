@@ -73,3 +73,40 @@ export const threadsAppConfig = appConfig("THREADS");
  * only, with Meta's main app.
  */
 export const instagramAppConfig = appConfig("INSTAGRAM");
+
+/** The fewest characters of META_WEBHOOK_VERIFY_TOKEN: too long to guess. */
+export const minVerifyTokenLength = 32;
+
+/**
+ * `META_WEBHOOK_VERIFY_TOKEN`: what the operator types in Meta's dashboard
+ * as the events' "Verify Token", which Meta sends back once to check the
+ * callback address is the server's. None when unset or blank: the server
+ * then takes no event of Meta's. Shorter than `minVerifyTokenLength`
+ * characters, it stops the server.
+ */
+export const metaWebhookVerifyTokenConfig = Effect.gen(
+  function* readVerifyToken() {
+    const token = yield* nonBlankRedacted("META_WEBHOOK_VERIFY_TOKEN");
+
+    if (
+      Option.isSome(token) &&
+      Redacted.value(token.value).trim().length < minVerifyTokenLength
+    ) {
+      return yield* new InvalidMetaSettings({
+        reason: `META_WEBHOOK_VERIFY_TOKEN takes ${String(minVerifyTokenLength)} characters at least`,
+      });
+    }
+
+    // Read as Meta's dashboard is given it: without the spaces around.
+    return token.pipe(
+      Option.map((value) => Redacted.make(Redacted.value(value).trim()))
+    );
+  }
+);
+
+/**
+ * Where Meta sends the events of one of its apps (`facebook`, the main
+ * app's Pages and Instagram through a Page, or `instagram`, Instagram
+ * Login's): a route outside the contract, as its body is read raw.
+ */
+export const metaEventsPath = "/api/platform-events/meta/:app";

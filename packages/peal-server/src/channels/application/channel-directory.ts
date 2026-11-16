@@ -27,5 +27,14 @@ export class ChannelDirectory extends Context.Service<
       after: Option.Option<ChannelId>,
       limit: number
     ) => Effect.Effect<readonly ListedChannel[], DatabaseError>;
+    /**
+     * The channels of the account with this id on the platform, one a
+     * workspace that connected it, in the order of their ids: where a
+     * platform's event about the account goes.
+     */
+    readonly withAccount: (
+      platform: Platform,
+      accountId: string
+    ) => Effect.Effect<readonly ListedChannel[], DatabaseError>;
   }
 >()("peal-server/channels/application/ChannelDirectory") {}

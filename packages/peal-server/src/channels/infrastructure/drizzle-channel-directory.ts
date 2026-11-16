@@ -1,4 +1,4 @@
-import { and, asc, gt, inArray } from "drizzle-orm";
+import { and, asc, eq, gt, inArray } from "drizzle-orm";
 import { Effect, Layer, Option, Schema } from "effect";
 
 import { ChannelDirectory } from "#channels/application/channel-directory.ts";
@@ -52,6 +52,27 @@ export const DrizzleChannelDirectory = Layer.effect(
 
         return yield* decodeListed(rows).pipe(Effect.orDie);
       }),
+      withAccount: Effect.fn("ChannelDirectory.withAccount")(
+        function* withAccount(platform, accountId) {
+          const rows = yield* db
+            .select({
+              channelId: channels.id,
+              platform: channels.platform,
+              workspaceId: channels.workspaceId,
+            })
+            .from(channels)
+            .where(
+              and(
+                eq(channels.platform, platform),
+                eq(channels.accountId, accountId)
+              )
+            )
+            .orderBy(asc(channels.id))
+            .pipe(Effect.mapError(failed));
+
+          return yield* decodeListed(rows).pipe(Effect.orDie);
+        }
+      ),
     });
   })
 );

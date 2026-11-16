@@ -25,10 +25,15 @@ export const UntracedPathsLive = Layer.succeed(
  * `url.full` and `url.query`, besides Effect's own (signed storage
  * addresses' signatures): a sign-in provider sends the browser back to
  * `/api/auth/callback/:id` with its authorization code and the sign-in's
- * state in the address, and an OAuth client's authorization carries its
- * own state.
+ * state in the address, an OAuth client's authorization carries its own
+ * state, and Meta's events' handshake the operator's verify token
+ * (`/api/platform-events/meta/:app`).
  */
-export const redactedQueryNames: readonly string[] = ["code", "state"];
+export const redactedQueryNames: readonly string[] = [
+  "code",
+  "state",
+  "hub.verify_token",
+];
 
 /** Those names, beside Effect's, for the routes' layer. */
 export const RedactedQueryLive = Layer.succeed(UrlParams.CurrentRedactedNames)([

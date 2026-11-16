@@ -36,11 +36,15 @@ import type {
 import {
   MessageSource,
   MessagesBatchSchema,
+  MessagesFollowOutcomeSchema,
+  MessagesFollowRequestSchema,
   MessagesReadFailureSchema,
   MessagesRequestSchema,
 } from "#engagement/application/ports/message-source.ts";
 import type {
   MessagesBatch,
+  MessagesFollowOutcome,
+  MessagesFollowRequest,
   MessagesReadFailure,
 } from "#engagement/application/ports/message-source.ts";
 import {
@@ -129,8 +133,9 @@ import type { PublishResult } from "#shared/domain/publish-result.ts";
  * location's reviews, and `SendReviewReply`, `ResumeReviewReply` and
  * `WithdrawReviewReply` answer them, the same way, and `ReadMessages`,
  * `SendMessage` and `ResumeMessage` read a channel's direct messages and
- * answer them: their payloads are ids, and no message's text travels
- * through the cluster's tables. `RemoveLivePost` deletes a
+ * answer them, and `FollowMessages` and `UnfollowMessages` ask its
+ * platform to tell the server of them, or to stop: their payloads are
+ * ids, and no message's text travels through the cluster's tables. `RemoveLivePost` deletes a
  * post, or a part of one, that a member asked to unpublish, by the
  * platform's id for it: a removal never overlaps a publish on the channel.
  * `EditLivePost` replaces the text of a part a member asked to edit, by
@@ -211,6 +216,16 @@ export const ChannelGate = Entity.make("ChannelGate", [
     payload: { request: MessagesRequestSchema },
     success: MessagesBatchSchema,
   }),
+  Rpc.make("FollowMessages", {
+    error: MessagesReadFailureSchema,
+    payload: { request: MessagesFollowRequestSchema },
+    success: MessagesFollowOutcomeSchema,
+  }),
+  Rpc.make("UnfollowMessages", {
+    error: MessagesReadFailureSchema,
+    payload: { request: MessagesFollowRequestSchema },
+    success: MessagesFollowOutcomeSchema,
+  }),
   Rpc.make("SendMessage", {
     payload: { request: MessageSendRequestSchema },
     success: MessageSendOutcomeSchema,
@@ -261,6 +276,8 @@ export const ChannelGateLive = ChannelGate.toLayer(
 
     return ChannelGate.of({
       EditLivePost: ({ payload }) => live.edit(payload.request),
+      FollowMessages: ({ payload }) => messages.follow(payload.request),
+      UnfollowMessages: ({ payload }) => messages.unfollow(payload.request),
       ModerateComment: ({ payload }) => replies.moderate(payload.request),
       Publish: ({ payload }) => platforms.publish(payload.request),
       ReadAccount: ({ payload }) => metrics.account(payload.request),
@@ -323,7 +340,11 @@ export const UnreadReviews = Layer.mergeAll(
 export const UnreadMessages = Layer.mergeAll(
   Layer.succeed(
     MessageSource,
-    MessageSource.of({ read: () => Effect.fail(new PlatformUnavailable()) })
+    MessageSource.of({
+      follow: () => Effect.fail(new PlatformUnavailable()),
+      read: () => Effect.fail(new PlatformUnavailable()),
+      unfollow: () => Effect.fail(new PlatformUnavailable()),
+    })
   ),
   Layer.succeed(
     MessageSender,
@@ -885,6 +906,8 @@ export const GatedReviews = Layer.effectContext(
 const noMessages = (): Effect.Effect<never, MessagesReadFailure> =>
   Effect.fail(new PlatformUnavailable());
 
+const notSubscribed = noMessages;
+
 const messageNotSent = () =>
   Effect.succeed<MessageSendOutcome>({
     _tag: "failed",
@@ -965,7 +988,42 @@ export const GatedMessages = Layer.effectContext(
         )
       );
 
-    return Context.make(MessageSource, MessageSource.of({ read })).pipe(
+    // A subscription the gate did not take was not asked for: the next
+    // read asks again.
+    const subscription =
+      (mode: "FollowMessages" | "UnfollowMessages") =>
+      (request: MessagesFollowRequest) => {
+        const gate = gateFor(request.channelId);
+
+        const call =
+          mode === "FollowMessages"
+            ? gate.FollowMessages({ request })
+            : gate.UnfollowMessages({ request });
+
+        return call.pipe(
+          Effect.retry(taken),
+          Effect.catchTags({
+            AlreadyProcessingMessage: notSubscribed,
+            EntityNotAssignedToRunner: notSubscribed,
+            MailboxFull: notSubscribed,
+            PersistenceError: notSubscribed,
+          }),
+          Effect.catchDefect(() =>
+            Effect.logError(
+              "A direct messages subscription failed in its adapter"
+            ).pipe(Effect.andThen(notSubscribed()))
+          )
+        ) satisfies Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
+      };
+
+    return Context.make(
+      MessageSource,
+      MessageSource.of({
+        follow: subscription("FollowMessages"),
+        read,
+        unfollow: subscription("UnfollowMessages"),
+      })
+    ).pipe(
       Context.add(
         MessageSender,
         MessageSender.of({
