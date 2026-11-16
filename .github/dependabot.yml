@@ -97,6 +97,14 @@ updates:
         patterns:
           - e2e
           - "@e2e-dev/*"
+      # The site's hero art: three and its types move together.
+      three:
+        patterns:
+          - three
+          - "@types/three"
+      gsap:
+        patterns:
+          - gsap
       lint-tooling:
         patterns:
           - ultracite
