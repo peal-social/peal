@@ -15,6 +15,7 @@ import { assert, layer } from "@effect/vitest";
 import {
   Cause,
   ConfigProvider,
+  DateTime,
   Effect,
   Exit,
   Layer,
@@ -33,12 +34,15 @@ import sharp from "sharp";
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
 import { ChatVerifier } from "#channels/application/chat-verifier.ts";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
+import { ConnectAttempt } from "#channels/domain/connect-attempt.ts";
 import { chatVerifiersLive } from "#channels/infrastructure/platforms/chat-verifiers.ts";
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
+import { slackAuthorizer } from "#channels/infrastructure/platforms/slack/slack-authorizer.ts";
 import { wordpressComAuthorizer } from "#channels/infrastructure/platforms/wordpress-com/wordpress-com-authorizer.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
 import { S3MediaStorageLive } from "#media/infrastructure/s3-media-storage.ts";
 import { FacebookOptions } from "#publishing/domain/facebook-options.ts";
+import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
@@ -60,6 +64,7 @@ import {
   fakeHashnode,
   writerOnHashnode,
 } from "#test/channels/fakes/fake-hashnode.ts";
+import { fakeSlack, slackClient } from "#test/channels/fakes/fake-slack.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
   OpenOutboundGuard,
@@ -80,6 +85,11 @@ import {
   graphAppSecret,
 } from "#test/publishing/fakes/fake-meta-graph.ts";
 import {
+  fakeSlackApi,
+  slackAccount,
+  slackBotToken,
+} from "#test/publishing/fakes/fake-slack-api.ts";
+import {
   fakeTelegramApi,
   telegramAccount,
   telegramBotToken,
@@ -90,8 +100,10 @@ import {
   credentialsOf,
   discordClientWith,
   httpClientTimingOutAfter,
+  liveClientsOn,
   metaClientWith,
   outgoing,
+  slackClientWith,
   telegramClientWith,
   testFile,
 } from "#test/publishing/platforms/support.ts";
@@ -806,6 +818,158 @@ layer(
       assert.notInclude(written(), secret);
       assert.notInclude(written(), com.code);
       assert.notInclude(written(), com.token);
+    }).pipe(Effect.scoped)
+  );
+});
+
+const slackChangeId = LivePostChangeIdSchema.make(
+  "00000000-0000-7000-8000-0000000000e4"
+);
+
+const slackChannelId = ChannelIdSchema.make(
+  "00000000-0000-7000-8000-0000000000c4"
+);
+
+// Slack's install sends the app's secret and the member's code, and gets
+// the bot's token, and the incoming webhook's address, which Peal never
+// keeps; every call after sends the token in its header. What is written
+// about an install, a post that goes out, one with an image, one Slack
+// refuses, one never answered, an edit and a deletion holds none of them.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard),
+    SecureRandom.layerWebCrypto
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about Slack", (it) => {
+  it.effect("holds no client secret, code, bot token nor webhook address", () =>
+    Effect.gen(function* searched() {
+      const oauth = yield* fakeSlack();
+      const secret = slackClient.clientSecret;
+
+      const authorizer = yield* slackAuthorizer({
+        client: {
+          clientId: slackClient.clientId,
+          clientSecret: Redacted.make(secret),
+        },
+        hosts: oauth.hosts,
+        http: yield* publicHttpClient,
+        publicUrl: "https://peal.example.com",
+      });
+
+      const { authorizationUrl } = yield* authorizer.begin({
+        handle: Option.none(),
+        instance: Option.none(),
+        reconnecting: Option.none(),
+      });
+
+      const back = oauth.approve(authorizationUrl);
+      const now = DateTime.makeUnsafe("2026-11-16T09:00:00.000Z");
+
+      yield* authorizer
+        .complete({
+          attempt: new ConnectAttempt({
+            channelId: Option.none(),
+            connection: Option.none(),
+            createdAt: now,
+            expiresAt: DateTime.addDuration(now, "15 minutes"),
+            instance: Option.none(),
+            platform: "slack",
+            startedBy: "user:synthetic",
+            state: back.state,
+            workspaceId: WorkspaceIdSchema.make(
+              "01900000-0000-7000-8000-0000000000f3"
+            ),
+          }),
+          callback: {
+            code: Option.some(back.code),
+            error: Option.none(),
+            issuer: Option.none(),
+            state: back.state,
+          },
+          reconnecting: Option.none(),
+          secret: Redacted.make(""),
+        })
+        .pipe(Effect.withSpan("test.slack-install"));
+
+      const slack = yield* fakeSlackApi();
+      const slow = yield* httpClientTimingOutAfter("300 millis");
+      const image = testFile("image", 512);
+
+      const credentials = Layer.succeedContext(
+        yield* Layer.build(
+          credentialsOf({ accountId: slackAccount, platform: "slack" }, [
+            slackBotToken,
+          ])
+        )
+      );
+
+      const onSlack = yield* slackClientWith({
+        api: slack.url,
+        credentials,
+        files: [image],
+        http: slow,
+      });
+
+      slack.script("chat.postMessage", [
+        json({ error: "not_in_channel", ok: false }),
+        { _tag: "hang" },
+      ]);
+
+      const results = yield* Effect.all(
+        [
+          onSlack.publish(yield* outgoing({ accountId: slackAccount })),
+          onSlack.publish(yield* outgoing({ accountId: slackAccount })),
+          onSlack.publish(
+            yield* outgoing({
+              accountId: slackAccount,
+              media: [attached(image)],
+            })
+          ),
+          onSlack.publish(yield* outgoing({ accountId: slackAccount })),
+        ].map((publish) => publish.pipe(Effect.exit))
+      ).pipe(Effect.withSpan("test.slack-posts"));
+
+      const withImage = results.at(2);
+
+      assert(withImage !== undefined && withImage._tag === "Success");
+      assert(withImage.value._tag === "published");
+
+      const live = yield* liveClientsOn({
+        credentials,
+        edits: new Map([
+          [
+            slackChangeId,
+            { media: [], options: Option.none(), text: "Corrected" },
+          ],
+        ]),
+        platforms: { slackHosts: { api: slack.url, uploads: slack.url } },
+      });
+
+      yield* Effect.all([
+        live.edit({
+          changeId: slackChangeId,
+          channelId: slackChannelId,
+          platformPostId: withImage.value.platformPostId,
+        }),
+        live.remove({
+          channelId: slackChannelId,
+          platformPostId: withImage.value.platformPostId,
+        }),
+      ]).pipe(Effect.withSpan("test.slack-changes"));
+
+      const all = written();
+
+      assert.include(all, "/api/oauth.v2.access");
+      assert.include(all, "SlackClient.make");
+      assert.isAbove(slack.requests().length, 6);
+      assert.notInclude(all, secret);
+      assert.notInclude(all, back.code);
+      assert.notInclude(all, "xoxb-synthetic-installed-token");
+      assert.notInclude(all, "synthetic-webhook-secret");
+      assert.notInclude(all, slackBotToken);
     }).pipe(Effect.scoped)
   );
 });

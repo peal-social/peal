@@ -12,6 +12,7 @@ import { facebookLoginCallbackPath } from "./meta/facebook-login.ts";
 import { instagramCallbackPath } from "./meta/instagram-login-authorizer.ts";
 import { threadsCallbackPath } from "./meta/threads-authorizer.ts";
 import { pinterestCallbackPath } from "./pinterest/pinterest-authorizer.ts";
+import { slackCallbackPath } from "./slack/slack-authorizer.ts";
 import { tiktokCallbackPath } from "./tiktok/tiktok-authorizer.ts";
 import { wordpressComCallbackPath } from "./wordpress-com/wordpress-com-authorizer.ts";
 import { xCallbackPath } from "./x/x-authorizer.ts";
@@ -46,6 +47,7 @@ export interface PlatformRegistration {
     | "mastodon"
     | "metaAds"
     | "pinterest"
+    | "slack"
     | "threads"
     | "tiktok"
     | "wordpressCom"
@@ -288,6 +290,17 @@ export const platformRegistrations = (
       platforms: ["googleBusiness"],
       registeredBy: "operator",
       settings: ["GOOGLE_BUSINESS_CLIENT_ID", "GOOGLE_BUSINESS_CLIENT_SECRET"],
+    },
+    {
+      addresses: [redirect("Redirect URLs", slackCallbackPath)],
+      id: "slack",
+      name: "Slack: an app (api.slack.com/apps), with public distribution",
+      notes: [
+        "Bot token scopes: incoming-webhook, chat:write, chat:write.public, files:write. Leave token rotation off: it cannot be turned off again.",
+      ],
+      platforms: ["slack"],
+      registeredBy: "operator",
+      settings: ["SLACK_CLIENT_ID", "SLACK_CLIENT_SECRET"],
     },
   ];
 };

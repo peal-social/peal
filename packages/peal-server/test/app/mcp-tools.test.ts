@@ -1522,6 +1522,31 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [{ id: chat.id, platform: "discord" }]
           );
 
+          // A Slack channel, signed in to, is listed as any other.
+          const slackChannel = yield* freshChannel(workspaceId, {
+            platform: "slack",
+            token: { _tag: "nonExpiring" },
+          });
+
+          yield* channels.insert(
+            slackChannel,
+            syntheticCredentials(slackChannel)
+          );
+          yield* Effect.addFinalizer(() =>
+            channels.remove(workspaceId, slackChannel.id).pipe(Effect.orDie)
+          );
+
+          const onSlack = yield* reader.call(
+            "list_channels",
+            ChannelsJsonSchema,
+            { platform: "slack" }
+          );
+
+          assert.deepStrictEqual(
+            onSlack.channels.map(({ id, platform }) => ({ id, platform })),
+            [{ id: slackChannel.id, platform: "slack" }]
+          );
+
           // Every website is out of the counts as of the list.
           const active = yield* reader.call(
             "list_channels",

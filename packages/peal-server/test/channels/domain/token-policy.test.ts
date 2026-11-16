@@ -219,6 +219,7 @@ describe(isRefreshDue, () => {
       linkedinPage: "beforeExpiry",
       mastodon: "none",
       pinterest: "beforeExpiry",
+      slack: "none",
       threads: "beforeExpiry",
       tiktok: "keepAlive",
       x: "keepAlive",

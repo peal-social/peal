@@ -171,6 +171,7 @@ describe("the addresses to register with each platform", () => {
       mastodon: [],
       metaAds: ["META_APP_ID", "META_APP_SECRET", "PEAL_ADS"],
       pinterest: ["PINTEREST_APP_ID", "PINTEREST_APP_SECRET"],
+      slack: ["SLACK_CLIENT_ID", "SLACK_CLIENT_SECRET"],
       threads: ["THREADS_APP_ID", "THREADS_APP_SECRET"],
       tiktok: ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"],
       wordpressCom: ["WORDPRESS_COM_CLIENT_ID", "WORDPRESS_COM_CLIENT_SECRET"],

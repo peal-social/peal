@@ -106,6 +106,8 @@ const withoutApps = {
   LINKEDIN_PAGES_CLIENT_SECRET: "",
   PINTEREST_APP_ID: "",
   PINTEREST_APP_SECRET: "",
+  SLACK_CLIENT_ID: "",
+  SLACK_CLIENT_SECRET: "",
   TIKTOK_CLIENT_KEY: "",
   TIKTOK_CLIENT_SECRET: "",
   X_CLIENT_ID: "",
@@ -225,6 +227,7 @@ layer(channelsWith(""))("the channels context on a local server", (it) => {
           "instagram",
           "linkedin",
           "pinterest",
+          "slack",
           "threads",
           "tiktok",
           "x",
@@ -253,6 +256,8 @@ layer(DatabaseTest)(
                 LINKEDIN_CLIENT_SECRET: "synthetic-linkedin-secret",
                 PINTEREST_APP_ID: "1500000",
                 PINTEREST_APP_SECRET: "synthetic-pinterest-secret",
+                SLACK_CLIENT_ID: "1000000000001.2000000000001",
+                SLACK_CLIENT_SECRET: "synthetic-slack-secret",
                 TIKTOK_CLIENT_KEY: "awsynthetic",
                 TIKTOK_CLIENT_SECRET: "synthetic-tiktok-secret",
                 X_CLIENT_ID: "c3ludGhldGlj",
@@ -289,6 +294,11 @@ layer(DatabaseTest)(
             "googleBusiness"
           );
           assert.isFalse(authorizers.unconfigured.has("googleBusiness"));
+          assert.strictEqual(
+            Option.getOrThrow(authorizers.for("slack")).platform,
+            "slack"
+          );
+          assert.isFalse(authorizers.unconfigured.has("slack"));
           // The first app connects profiles, and no page.
           assert.deepStrictEqual(authorizers.linkedinConnections, [
             "linkedinProfile",
@@ -399,6 +409,10 @@ layer(DatabaseTest)(
               GOOGLE_BUSINESS_CLIENT_ID:
                 "synthetic-business.apps.googleusercontent.example",
             },
+          ],
+          [
+            "slack",
+            { ...withoutApps, SLACK_CLIENT_ID: "1000000000001.2000000000001" },
           ],
         ] as const) {
           const failure = yield* Layer.build(

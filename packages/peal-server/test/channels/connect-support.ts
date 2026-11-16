@@ -32,6 +32,7 @@ import { mastodonAuthorizer } from "#channels/infrastructure/platforms/mastodon/
 import { pinterestAuthorizer } from "#channels/infrastructure/platforms/pinterest/pinterest-authorizer.ts";
 import { registryOf } from "#channels/infrastructure/platforms/platform-authorizers.ts";
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
+import { slackAuthorizer } from "#channels/infrastructure/platforms/slack/slack-authorizer.ts";
 import { tiktokAuthorizer } from "#channels/infrastructure/platforms/tiktok/tiktok-authorizer.ts";
 import { xAuthorizer } from "#channels/infrastructure/platforms/x/x-authorizer.ts";
 import type { XEndpoints } from "#channels/infrastructure/platforms/x/x-authorizer.ts";
@@ -43,6 +44,7 @@ import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
 import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import type { PinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
+import type { SlackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
 import type { TikTokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 import { UnmeteredTest } from "#test/billing/support.ts";
 import { googleClient } from "#test/channels/fakes/fake-google.ts";
@@ -54,6 +56,7 @@ import {
 import { fakeMastodon } from "#test/channels/fakes/fake-mastodon.ts";
 import type { FakeMastodonOptions } from "#test/channels/fakes/fake-mastodon.ts";
 import { pinterestClient } from "#test/channels/fakes/fake-pinterest.ts";
+import { slackClient } from "#test/channels/fakes/fake-slack.ts";
 import { tiktokClient } from "#test/channels/fakes/fake-tiktok.ts";
 import { xClient } from "#test/channels/fakes/fake-x.ts";
 import {
@@ -331,6 +334,22 @@ export const pinterestAuthorizerOn = (hosts: PinterestHosts) =>
         client: {
           clientId: pinterestClient.appId,
           clientSecret: Redacted.make(pinterestClient.appSecret),
+        },
+        hosts,
+        http,
+        publicUrl: testPublicUrl,
+      })
+    ),
+    Effect.provide(AuthorizerServicesTest)
+  );
+
+export const slackAuthorizerOn = (hosts: SlackHosts) =>
+  publicHttpClient.pipe(
+    Effect.flatMap((http) =>
+      slackAuthorizer({
+        client: {
+          clientId: slackClient.clientId,
+          clientSecret: Redacted.make(slackClient.clientSecret),
         },
         hosts,
         http,
