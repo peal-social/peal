@@ -36,7 +36,7 @@ Peal lit le document de découverte du fournisseur à `<issuer>/.well-known/open
 
 ## Ce que le fournisseur doit envoyer [#claims]
 
-- `email`, et `email_verified` à `true`. Un fournisseur qui n’envoie pas `email_verified`, ou `false`, ne peut connecter personne : Peal dit à la personne que son fournisseur n’a pas confirmé l’adresse.
+- `email`, une adresse (Peal la prend sans les espaces qui l’entourent, et refuse tout le reste), et `email_verified` à `true`. Un fournisseur qui n’envoie pas `email_verified`, ou `false`, ne peut connecter personne : Peal dit à la personne que son fournisseur n’a pas confirmé l’adresse.
 - `sub`, que Peal conserve comme identifiant de la personne chez le fournisseur. Peal ne conserve aucun jeton du fournisseur, ni sa photo.
 - `name`, facultatif : sans lui, un nouveau compte prend le nom de l’adresse.
 

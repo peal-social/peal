@@ -55,6 +55,7 @@ describe(providerErrorKey, () => {
 
   it.each([
     ["provider_email_unverified", "PROVIDER_EMAIL_UNVERIFIED"],
+    ["provider_email_invalid", "PROVIDER_EMAIL_INVALID"],
     ["provider_email_not_authoritative", "PROVIDER_EMAIL_NOT_AUTHORITATIVE"],
     ["email_not_found", "PROVIDER_EMAIL_NOT_FOUND"],
     ["account_not_linked", "PROVIDER_ACCOUNT_NOT_LINKED"],

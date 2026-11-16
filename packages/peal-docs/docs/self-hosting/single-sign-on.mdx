@@ -34,7 +34,7 @@ Peal reads the provider's discovery document at `<issuer>/.well-known/openid-con
 
 ## What the provider must send [#claims]
 
-- `email`, and `email_verified` set to `true`. A provider that sends no `email_verified`, or `false`, cannot sign anyone in: Peal tells the person their provider has not confirmed the address.
+- `email`, an address (Peal takes it without the spaces around it, and refuses anything else), and `email_verified` set to `true`. A provider that sends no `email_verified`, or `false`, cannot sign anyone in: Peal tells the person their provider has not confirmed the address.
 - `sub`, which Peal keeps as the person's identifier at the provider. Peal keeps no token of the provider's, and never its picture.
 - `name`, optional: without it, a new account is named after the address.
 

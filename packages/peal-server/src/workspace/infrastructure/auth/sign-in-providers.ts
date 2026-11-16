@@ -92,7 +92,8 @@ const profileFromIdToken: NonNullable<
     : Option.getOrNull(
         readClaims(idToken).pipe(
           Option.map(({ email, email_verified, hd, name, sub }) => ({
-            email,
+            // Checked as an address by the admission (provider-admission.ts).
+            email: email?.trim(),
             hd,
             // As Better Auth reads the claim: true, or the string some
             // providers send. A missing claim, or any other value, is no

@@ -374,7 +374,8 @@ The staff context follows these rules too. What the law has a host keep is in
   provider may be on a private network, and no user input picks it. Leave
   it so.
 - `providerAdmission` (`provider-admission.ts`, `user.validateUserInfo`)
-  decides every provider sign-in, answering codes of
+  decides every provider sign-in (the address trimmed in the profile and
+  checked as one first, `provider_email_invalid`), answering codes of
   `providerRefusalCodes` into the callback's address: the provider must say
   it confirmed the address (`email_verified` true, a missing claim refused,
   no setting to trust a provider without it), on every action; an existing

@@ -122,4 +122,24 @@ describe("the sign-in providers", () => {
     );
     expect(oidcAccountId("https://id.example.test", "")).toBe("");
   });
+
+  it("take the address without the spaces around it", async () => {
+    const userInfo = googleProvider(client).getUserInfo;
+
+    const token = [
+      "eyJhbGciOiJub25lIn0",
+      Buffer.from(
+        JSON.stringify({
+          email: "  Ada@Example.test ",
+          email_verified: true,
+          sub: "s",
+        })
+      ).toString("base64url"),
+      "",
+    ].join(".");
+
+    await expect(userInfo?.({ idToken: token })).resolves.toMatchObject({
+      email: "Ada@Example.test",
+    });
+  });
 });

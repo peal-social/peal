@@ -15,6 +15,8 @@ import type { SignUpAdmission } from "./sign-up-gate.ts";
 export const providerRefusalCodes = [
   // The provider did not say it confirmed the address (`email_verified`).
   "provider_email_unverified",
+  // What the provider gave as the address is none.
+  "provider_email_invalid",
   // Google confirmed the address once, but is not its authority: neither a
   // Gmail address nor one of a domain Google Workspace manages (`hd`).
   "provider_email_not_authoritative",
@@ -96,6 +98,12 @@ export const googleVouchesFor = (
   return hd !== undefined && hd.trim().toLowerCase() === domain;
 };
 
+// An address as the sign-up form takes one: a local part and a domain with
+// a dot, no space or control character, 254 characters at most (RFC 5321).
+const isAddress = (email: string): boolean =>
+  email.length <= 254 &&
+  /^[^\s@\p{Cc}]+@[^\s@\p{Cc}]+\.[^\s@\p{Cc}]+$/u.test(email);
+
 const isBanned = (account: StoredStanding, now: Date): boolean =>
   account.banned &&
   (account.banExpires === null || account.banExpires.getTime() > now.getTime());
@@ -129,18 +137,18 @@ export const admitProviderUser = async (
 
   const { email, id } = user;
 
+  if (email === undefined || !isAddress(email)) {
+    return refusal("provider_email_invalid");
+  }
+
   if (
     source.oauth?.providerId === "google" &&
-    !googleVouchesFor(email ?? "", source.oauth.hd)
+    !googleVouchesFor(email, source.oauth.hd)
   ) {
     return refusal("provider_email_not_authoritative");
   }
 
   if (source.action === "create-user") {
-    if (email === undefined) {
-      return refusal("sign_up_by_invitation");
-    }
-
     const invitationId = await reads.invitationId();
 
     const admitted = await reads

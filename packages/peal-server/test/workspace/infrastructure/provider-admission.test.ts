@@ -236,10 +236,7 @@ describe("whom Google may vouch for", () => {
     "admits a Gmail address, whatever its case (%s)",
     async (action) => {
       await expect(
-        admitProviderUser(
-          fromGoogle(action, " Ada.Lovelace@GMAIL.com "),
-          reads()
-        )
+        admitProviderUser(fromGoogle(action, "Ada.Lovelace@GMAIL.com"), reads())
       ).resolves.toBeUndefined();
     }
   );
@@ -288,5 +285,31 @@ describe("whom Google may vouch for", () => {
         reads()
       )
     ).resolves.toBeUndefined();
+  });
+});
+
+describe("the address a provider gives", () => {
+  it.each([
+    "not an address",
+    "two@at@example.test",
+    "spaced out@example.test",
+    "@example.test",
+    "ada@",
+    `${"a".repeat(250)}@example.test`,
+    "ada\u0000@example.test",
+  ])("is refused when it is no address: %j", async (email) => {
+    await expect(
+      admitProviderUser(
+        {
+          source: {
+            action: "create-user",
+            method: "oauth",
+            oauth: { providerId: "oidc" },
+          },
+          user: { email, emailVerified: true },
+        },
+        reads()
+      )
+    ).resolves.toStrictEqual({ error: "provider_email_invalid" });
   });
 });
