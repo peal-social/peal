@@ -77,6 +77,7 @@ export const freshChannel = Effect.fn("freshChannel")(function* freshChannel(
     readonly accountId?: string | undefined;
     readonly connection?: ChannelConnection | undefined;
     readonly platform?: ChannelPlatform;
+    readonly scopes?: readonly string[];
     readonly token?: TokenLifetime;
   } = {}
 ) {
@@ -97,7 +98,7 @@ export const freshChannel = Effect.fn("freshChannel")(function* freshChannel(
       handle: "@peal_example",
       id,
       platform,
-      scopes: ["read", "write"],
+      scopes: options.scopes ?? ["read", "write"],
       token: options.token ?? nonRefreshable,
       workspaceId,
     },

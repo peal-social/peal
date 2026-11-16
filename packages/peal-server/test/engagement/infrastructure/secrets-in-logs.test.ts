@@ -5,7 +5,9 @@
 // read, a refused answer, an answer sent, a lost one, a resume, the
 // account's events asked for and stopped, and a disconnected channel's;
 // and a comment rule's private replies, run on Postgres, through a public
-// reply, a private one, a refusal and a database that refuses one.
+// reply, a private one, a refusal and a database that refuses one; and
+// the warning on an erased workspace's channel that Meta did not let
+// go, which names the channel's account and never its token or proof.
 import { createHmac } from "node:crypto";
 
 import { assert, describe, it } from "@effect/vitest";
@@ -29,7 +31,12 @@ import { SqlClient } from "effect/sql";
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelDirectory } from "#channels/application/channel-directory.ts";
+import { ChannelRecords } from "#channels/application/channel-records.ts";
+import { ChannelRepository } from "#channels/application/channel-repository.ts";
+import { encryptTokens } from "#channels/application/channel-tokens.ts";
 import { Channel } from "#channels/domain/channel.ts";
+import { DrizzleChannelRecords } from "#channels/infrastructure/drizzle-channel-records.ts";
+import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import { metaMessageDepartures } from "#channels/infrastructure/platforms/meta/meta-message-departures.ts";
 import { CommentRules } from "#engagement/application/comment-rules.ts";
 import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
@@ -45,7 +52,13 @@ import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import { channelAccessOf } from "#test/analytics/access-log.ts";
 import { metaApp } from "#test/channels/fakes/fake-meta.ts";
-import { freshWorkspace, OpenOutboundGuard } from "#test/channels/support.ts";
+import {
+  DatabaseTest,
+  freshChannel,
+  freshWorkspace,
+  OpenOutboundGuard,
+  TokenCipherTest,
+} from "#test/channels/support.ts";
 import {
   fakeMetaMessages,
   graphError,
@@ -117,6 +130,51 @@ const capturing = () => {
     text: () => [...lines, ...spans.map(spanText)].join("\n"),
   };
 };
+
+// Meta's departures against the loopback Graph at `url`, no other channel
+// reading the accounts they carry.
+const departuresAt = Effect.fnUntraced(function* departuresAt(url: URL) {
+  const http = yield* publicHttpClient.pipe(
+    Effect.provide(Layer.merge(FetchHttpClient.layer, OpenOutboundGuard))
+  );
+
+  return metaMessageDepartures({
+    hosts: { ...metaHosts, facebookGraph: url, instagramGraph: url },
+    http,
+    mainApp: Option.some(metaApp),
+    messages: new Set(["facebook"]),
+  }).pipe(
+    Layer.provide(
+      Layer.mergeAll(
+        Layer.succeed(
+          ChannelDirectory,
+          ChannelDirectory.of({
+            after: () => Effect.succeed([]),
+            withAccount: () => Effect.succeed([]),
+          })
+        ),
+        Layer.succeed(
+          EngagementRecords,
+          EngagementRecords.of({
+            channelGone: () => Effect.void,
+            ensureChannelIdle: () => Effect.void,
+            eraseWorkspace: () => Effect.void,
+            exportCommentRules: () => Effect.succeed([]),
+            exportUser: () => Effect.succeed([]),
+            exportUserMessages: () => Effect.succeed([]),
+            exportUserPrivateReplies: () => Effect.succeed([]),
+            exportUserReviewReplies: () => Effect.succeed([]),
+            forgetUser: () => Effect.void,
+            postRemoved: () => Effect.void,
+            readsMessages: () => Effect.succeed(false),
+            refollow: () => Effect.void,
+          })
+        ),
+        Mac.layerWebCrypto.pipe(Layer.provide(SecureRandom.layerWebCrypto))
+      )
+    )
+  );
+});
 
 describe("what the server writes about Meta's private replies", () => {
   it.live(
@@ -379,48 +437,7 @@ describe("what the server writes about Meta's direct messages", () => {
           ),
         });
 
-        const departures = metaMessageDepartures({
-          hosts: { ...metaHosts, facebookGraph: url, instagramGraph: url },
-          http: yield* publicHttpClient.pipe(
-            Effect.provide(
-              Layer.merge(FetchHttpClient.layer, OpenOutboundGuard)
-            )
-          ),
-          mainApp: Option.some(metaApp),
-          messages: new Set(["facebook"]),
-        }).pipe(
-          Layer.provide(
-            Layer.mergeAll(
-              Layer.succeed(
-                ChannelDirectory,
-                ChannelDirectory.of({
-                  after: () => Effect.succeed([]),
-                  withAccount: () => Effect.succeed([]),
-                })
-              ),
-              Layer.succeed(
-                EngagementRecords,
-                EngagementRecords.of({
-                  channelGone: () => Effect.void,
-                  ensureChannelIdle: () => Effect.void,
-                  eraseWorkspace: () => Effect.void,
-                  exportCommentRules: () => Effect.succeed([]),
-                  exportUser: () => Effect.succeed([]),
-                  exportUserMessages: () => Effect.succeed([]),
-                  exportUserPrivateReplies: () => Effect.succeed([]),
-                  exportUserReviewReplies: () => Effect.succeed([]),
-                  forgetUser: () => Effect.void,
-                  postRemoved: () => Effect.void,
-                  readsMessages: () => Effect.succeed(false),
-                  refollow: () => Effect.void,
-                })
-              ),
-              Mac.layerWebCrypto.pipe(
-                Layer.provide(SecureRandom.layerWebCrypto)
-              )
-            )
-          )
-        );
+        const departures = yield* departuresAt(url);
 
         yield* ChannelDepartures.use((service) =>
           service.departed(departing, {
@@ -548,5 +565,104 @@ describe("what the server writes about a comment rule's private replies", () => 
         }
       }).pipe(Effect.provide(Layer.merge(RulesTest, kept.layer)));
     }
+  );
+});
+
+describe("what the server writes about an erased workspace's channels", () => {
+  it.live(
+    "names the account Meta did not let go, never its token or proof",
+    () => {
+      const kept = capturing();
+
+      return Effect.gen(function* searched() {
+        const graph = yield* fakeMetaMessages([token], { me: facebookPageId });
+        const url = new URL(graph.url);
+
+        // Meta refuses to stop the Page's events.
+        graph.script.push("DELETE /v27.0/me/subscribed_apps", [
+          graphError(2, undefined, 500),
+        ]);
+
+        const departures = yield* departuresAt(url);
+
+        yield* Effect.gen(function* erased() {
+          const workspaceId = yield* freshWorkspace;
+
+          const channel = yield* freshChannel(workspaceId, {
+            accountId: facebookPageId,
+            platform: "facebook",
+            scopes: facebookMessageScopes,
+          });
+
+          const credentials = yield* encryptTokens(
+            {
+              accessToken: Redacted.make(token),
+              expiresAt: Option.none(),
+              refreshToken: Option.none(),
+              renewable: false,
+              scopes: channel.scopes,
+            },
+            channel.id
+          );
+
+          yield* ChannelRepository.use((channels) =>
+            channels.insert(channel, credentials)
+          );
+
+          yield* ChannelRecords.use((records) =>
+            records.releaseWorkspaces([workspaceId])
+          );
+
+          // The release's own fiber logs once Meta has answered.
+          for (
+            let tries = 0;
+            tries < 200 && !kept.text().includes("still sends");
+            tries += 1
+          ) {
+            yield* Effect.sleep("10 millis");
+          }
+
+          const proof = createHmac("sha256", Redacted.value(metaApp.appSecret))
+            .update(token)
+            .digest("hex");
+
+          const all = kept.text();
+
+          assert.include(
+            all,
+            "A channel's platform still sends its events after an erasure"
+          );
+          assert.include(
+            all,
+            JSON.stringify({
+              accountId: facebookPageId,
+              channelId: channel.id,
+              platform: "facebook",
+            })
+          );
+
+          for (const [name, secret] of [
+            ["the Page's token", token],
+            ["the proof of the app's secret", proof],
+          ] as const) {
+            assert.notInclude(all, secret, name);
+          }
+        }).pipe(
+          Effect.provide(
+            DrizzleChannelRecords.pipe(
+              Layer.provideMerge(
+                Layer.mergeAll(
+                  DrizzleChannelRepository,
+                  TokenCipherTest,
+                  departures
+                )
+              ),
+              Layer.provideMerge(DatabaseTest)
+            )
+          )
+        );
+      }).pipe(Effect.scoped, Effect.provide(kept.layer));
+    },
+    120_000
   );
 });

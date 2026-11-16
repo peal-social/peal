@@ -297,6 +297,30 @@ const cases: readonly Case[] = [
   },
   {
     expected: [
+      ["32m", true],
+      ["95m", false],
+    ],
+    interval: "1m",
+    name: "a channel left subscribed after an erasure, the counter born at 1",
+    series: { peal_channels_release_left_subscribed_total: "_x30 1x90" },
+    uid: "peal-erased-channels-subscribed",
+  },
+  {
+    expected: [["40m", true]],
+    interval: "1m",
+    name: "channels left subscribed after a restart, the counter higher an hour before",
+    series: { peal_channels_release_left_subscribed_total: "3x30 0x5 2x30" },
+    uid: "peal-erased-channels-subscribed",
+  },
+  {
+    expected: [["4h8m", false]],
+    interval: "1m",
+    name: "a channel left subscribed long ago, across a telemetry gap",
+    series: { peal_channels_release_left_subscribed_total: "1x180 _x10 1x80" },
+    uid: "peal-erased-channels-subscribed",
+  },
+  {
+    expected: [
       ["95m", false],
       ["155m", true],
     ],
