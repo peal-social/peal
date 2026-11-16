@@ -27,6 +27,10 @@ services:
       - 80:80
       - 443:443
       - 443:443/udp
+    # A change to the Caddyfile reaches Caddy once this changes, as in
+    # compose.production.yaml, or after `up --force-recreate caddy`.
+    labels:
+      social.peal.config-hash: ${PEAL_CADDY_CONFIG_HASH:-}
     volumes:
       - ./self-host/Caddyfile:/etc/caddy/Caddyfile:ro
       # Certificates and their keys.

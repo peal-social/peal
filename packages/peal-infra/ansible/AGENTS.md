@@ -54,6 +54,16 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   `uptime_environments`). Each environment's Pulumi stack makes its record
   in the peal.link zone; never `cloudflared tunnel route dns`, which can
   put it in peal.social's.
+- Compose recreates a container only when its service's definition
+  changes, and a mount names `/srv/peal/current/…` whatever release that
+  points at: `release.yml` hashes the files each service mounts from the
+  release folder (`files/config_hashes.py`, from `docker compose config`,
+  printing the hashes alone) into `release.env` as
+  `PEAL_<SERVICE>_CONFIG_HASH`, which the service's
+  `social.peal.config-hash` label reads, so exactly the services whose
+  files changed are recreated, on a roll-back too, and a second release of
+  the same commit changes nothing (`tests/test_release_config.py`, with
+  Docker).
 - `peal_preflight` checks the `PEAL_POSTGRES_*` memory settings in
   `peal_settings` (a whole number with `kB`, `MB`, `GB` or `TB`; a number
   for the page cost) before `release.yml` stops anything: Postgres stops at

@@ -37,6 +37,13 @@ under Development stack.
   mounts only. The same test covers it, the web, static, docs and
   Postgres images (CI's Node, the workspace's Bun, digests, nonroot) and
   `compose.self-host.yaml`, where Caddy alone publishes ports to the world.
+- A service that mounts a file or folder of the stack's folder (`./…`, or
+  a setting's `./…` default) carries the label
+  `social.peal.config-hash: ${PEAL_<SERVICE>_CONFIG_HASH:-}`, and no other
+  service does: Compose compares definitions, not mounted files, and the
+  release sets each hash so that a changed file recreates its service
+  (`packages/peal-infra/ansible/tests/test_release_config.py` checks the
+  labels).
 - The docs are static files in the `static` image unless
   `DOCS_ASSISTANT_MODEL` is set: their assistant then needs a server, the
   `docs` image (`docs.Dockerfile`, profile `docs`, 127.0.0.1:4323), and the

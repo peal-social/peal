@@ -317,14 +317,42 @@
     owner: root
     group: root
     mode: u=rwX,g=rX,o=rX
+  register: peal_release_files
+
+# A mount names /srv/peal/current/…, which reads the same whatever release
+# current points at, so Compose would keep a service on the files of the
+# release it was created under: a changed alert rule, dashboard or collector
+# setting would never reach it. Each service that mounts files of the
+# release carries a hash of them as a label (`social.peal.config-hash`),
+# from release.env: Compose recreates exactly the services whose files
+# changed, on a roll-back too, and a second release of the same commit
+# changes nothing (tests/test_release_config.py). Compose reads the env
+# files peal-compose names but release.env, which this writes; the script
+# prints the hashes alone, never a setting. Read-only, so it runs in check
+# mode too, once the release folder is there (before, release.env's diff
+# lists no hash).
+- name: Hash the files each service mounts from the release
+  ansible.builtin.script:
+    cmd: >-
+      config_hashes.py {{ peal_release_dir }}
+      {{ peal_root }}/host.env {{ peal_root }}/credentials.env {{ peal_root }}/secrets.env
+    executable: python3
+  register: peal_release_config_hashes
+  changed_when: false
+  check_mode: false
+  when: not (ansible_check_mode and peal_release_files is changed)
 
 - name: Name the release that runs
   ansible.builtin.copy:
     dest: "{{ peal_root }}/release.env"
     content: |
-      # Managed by Ansible (peal-infra): the images compose.production.yaml runs.
+      # Managed by Ansible (peal-infra): the images compose.production.yaml
+      # runs, and a hash of the files each service mounts from the release.
       PEAL_VERSION={{ peal_release_tag }}
       PEAL_POSTGRES_VERSION={{ peal_release_postgres_tag }}
+      {% for name, value in (peal_release_config_hashes.stdout | default('{}') | from_json | dictsort) %}
+      {{ name }}={{ value }}
+      {% endfor %}
     owner: root
     group: root
     mode: "0640"

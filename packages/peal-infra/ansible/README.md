@@ -120,7 +120,7 @@ Run each with `--limit production` or `--limit sandbox` (`--limit uptime` for
 | `/srv/peal/secrets.env`       | The database password, `BETTER_AUTH_SECRET`, `PEAL_TOKEN_KEYS`, Grafana's admin password and the Bluesky client keys, generated there once |
 | `/srv/peal/credentials.env`   | What outside services issued: R2 keys, the email key, the backup passphrase, Telegram's, Slack's webhook                                   |
 | `/srv/peal/host.env`          | Plain settings, written by Ansible                                                                                                         |
-| `/srv/peal/release.env`       | The image tags that run                                                                                                                    |
+| `/srv/peal/release.env`       | The image tags that run, and a hash of the files each service mounts from the release                                                      |
 | `/srv/peal/releases/<commit>` | Each release's Compose file and configuration, the last three kept                                                                         |
 | `/srv/peal/current`           | Link to the release that runs                                                                                                              |
 | `/etc/cloudflared/`           | The tunnel's routes and its token                                                                                                          |
@@ -794,6 +794,17 @@ server:
 4. the new server starts and applies its migrations before it listens;
 5. the rest of the stack starts, and the release is checked on the server and,
    for production, through the tunnel.
+
+A service's mounts name `/srv/peal/current/…`, which reads the same
+whatever release it points at, so Compose alone would keep a service on
+the files of the release it was created under. The release writes into
+`release.env` a hash of the files each service mounts from the release
+folder (`roles/peal_release/files/config_hashes.py`): Grafana's alert
+rules, dashboards and data sources, the settings of the collector, Loki,
+Tempo and Prometheus, and any file there that `host.env` names. Each such
+service carries its hash as a label, so Compose recreates the services
+whose files changed, and those alone. A second release of the same commit
+changes nothing, and a roll-back brings the older files back.
 
 Release the sandbox first. To roll back, release the previous commit; on
 a server that bills, after a release whose catalogue moved a lookup key,
