@@ -292,6 +292,10 @@ const badRequestReason = (code: string): RefusalReason => {
     return "chatMigrated";
   }
 
+  if (code === platformRefusalCodes.cannotPost) {
+    return "cannotPost";
+  }
+
   if (partRefusals.has(code)) {
     return "partsNotSent";
   }

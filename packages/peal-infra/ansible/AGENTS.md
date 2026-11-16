@@ -70,6 +70,10 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   `peal_settings` (a whole number with `kB`, `MB`, `GB` or `TB`; a number
   for the page cost) before `release.yml` stops anything: Postgres stops at
   start on a value it cannot read.
+- An app's id in `peal_settings` (`SLACK_CLIENT_ID`, `X_CLIENT_ID`…)
+  makes its secret a required credential (`peal_runtime_required_credentials`),
+  as the server refuses to start with one half of an app alone: a new
+  platform's pair joins that list.
 - Containers publish ports on 127.0.0.1 only, and the tunnel reaches them
   there; Docker's own rules would otherwise bypass ufw.
 - A separate server checks uptime (`uptime.yml`, inventory group

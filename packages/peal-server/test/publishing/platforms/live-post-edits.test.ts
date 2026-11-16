@@ -115,7 +115,11 @@ describe("editing posts on Mastodon", () => {
         const image = testFile("image", 2048);
 
         const { accountId, client, instance, live } = yield* onInstance(
-          { options: Option.some(warned), text: "A corrected synthetic post" },
+          {
+            media: [],
+            options: Option.some(warned),
+            text: "A corrected synthetic post",
+          },
           { files: [image] }
         );
 
@@ -179,6 +183,7 @@ describe("editing posts on Mastodon", () => {
   it.live("keeps the status's own warning when the options hold none", () =>
     Effect.gen(function* ownWarning() {
       const { accountId, client, instance, live } = yield* onInstance({
+        media: [],
         options: Option.none(),
         text: "Corrected",
       });
@@ -206,6 +211,7 @@ describe("editing posts on Mastodon", () => {
     () =>
       Effect.gen(function* changedThere() {
         const { accountId, client, instance, live } = yield* onInstance({
+          media: [],
           options: Option.some(warned),
           text: "Corrected",
         });
@@ -239,6 +245,7 @@ describe("editing posts on Mastodon", () => {
     () =>
       Effect.gen(function* notRecognised() {
         const { instance, live } = yield* onInstance({
+          media: [],
           options: Option.none(),
           text: "Corrected",
         });
@@ -270,6 +277,7 @@ describe("editing posts on Mastodon", () => {
   it.live("refuses a status with a poll before changing anything", () =>
     Effect.gen(function* poll() {
       const { accountId, client, instance, live } = yield* onInstance({
+        media: [],
         options: Option.none(),
         text: "Corrected",
       });
@@ -294,6 +302,7 @@ describe("editing posts on Mastodon", () => {
     () =>
       Effect.gen(function* gone() {
         const { instance, live } = yield* onInstance({
+          media: [],
           options: Option.none(),
           text: "Corrected",
         });
@@ -320,7 +329,7 @@ describe("editing posts on Mastodon", () => {
   it.live("refuses a token without read:statuses as a permission", () =>
     Effect.gen(function* scopes() {
       const { accountId, client, instance, live, log } = yield* onInstance(
-        { options: Option.none(), text: "Corrected" },
+        { media: [], options: Option.none(), text: "Corrected" },
         { instance: { readStatuses: false } }
       );
 
@@ -340,7 +349,7 @@ describe("editing posts on Mastodon", () => {
   it.live("renews a refused token once", () =>
     Effect.gen(function* renews() {
       const { accountId, client, instance, live, log } = yield* onInstance(
-        { options: Option.none(), text: "Corrected" },
+        { media: [], options: Option.none(), text: "Corrected" },
         { tokens: ["token-1", "token-2"] }
       );
 
@@ -364,6 +373,7 @@ describe("editing posts on Mastodon", () => {
     () =>
       Effect.gen(function* nothing() {
         const { instance, live } = yield* onInstance({
+          media: [],
           options: Option.none(),
           text: "Corrected",
         });
@@ -418,7 +428,10 @@ describe("editing posts on Google Business Profile", () => {
       const live = yield* liveClientsOn({
         credentials,
         edits: new Map([
-          [changeId, { options: Option.none(), text: "Corrected summary" }],
+          [
+            changeId,
+            { media: [], options: Option.none(), text: "Corrected summary" },
+          ],
         ]),
         platforms: { googleBusinessApi: new URL(google.url) },
       });

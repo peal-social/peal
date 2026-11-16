@@ -722,6 +722,19 @@ export const TelegramOptionsSchema = Schema.Struct({
 
 export type TelegramOptions = typeof TelegramOptionsSchema.Type;
 
+export const SlackOptionsSchema = Schema.Struct({
+  platform: Schema.Literal("slack"),
+  // True shows previews of the pages and the media the text links to.
+  // Left out, the message unfurls none.
+  unfurlLinks: Schema.optionalKey(Schema.Boolean),
+}).annotate({
+  description:
+    "How a post goes out on a Slack channel, on every part of a thread. Scheduling needs none of them.",
+  identifier: "SlackOptions",
+});
+
+export type SlackOptions = typeof SlackOptionsSchema.Type;
+
 export const TargetOptionsSchema = Schema.Union([
   YouTubeOptionsSchema,
   TikTokOptionsSchema,
@@ -736,6 +749,7 @@ export const TargetOptionsSchema = Schema.Union([
   FacebookOptionsSchema,
   DiscordOptionsSchema,
   TelegramOptionsSchema,
+  SlackOptionsSchema,
 ]).annotate({
   description:
     "What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.",

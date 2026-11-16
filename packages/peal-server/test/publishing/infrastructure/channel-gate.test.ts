@@ -247,6 +247,7 @@ describe("the channel's gate, with every context that calls through it", () => {
     assert.deepStrictEqual(calls.map(({ _tag }) => _tag).toSorted(), [
       "CheckReviewReply",
       "EditLivePost",
+      "FollowMessages",
       "ModerateComment",
       "Publish",
       "ReadAccount",
@@ -264,6 +265,7 @@ describe("the channel's gate, with every context that calls through it", () => {
       "SendMessage",
       "SendReply",
       "SendReviewReply",
+      "UnfollowMessages",
       "WithdrawReply",
       "WithdrawReviewReply",
     ]);

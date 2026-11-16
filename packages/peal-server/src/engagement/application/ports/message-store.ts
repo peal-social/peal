@@ -107,7 +107,33 @@ export class MessageStore extends Context.Service<
     readonly box: (
       channelId: ChannelId
     ) => Effect.Effect<Option.Option<MessageBox>, DatabaseError>;
-    /** Saves the box's schedule; one gone stays gone. */
+    /**
+     * Moves the box's next read to `at` when it was due later, but never
+     * before the hold a refusal put on it (`notBefore`): an event of its
+     * platform says something changed. False when the channel has no box,
+     * as its messages are off.
+     */
+    readonly bringForward: (
+      channelId: ChannelId,
+      at: DateTime.Utc
+    ) => Effect.Effect<boolean, DatabaseError>;
+    /**
+     * Records that the box's platform was asked at `at` to tell the server
+     * of the account's messages, or needs no asking.
+     */
+    readonly markFollowed: (
+      channelId: ChannelId,
+      at: DateTime.Utc
+    ) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Deletes the channel's message the platform says its author took
+     * back, by its id there. Answers how many went: 0 or 1.
+     */
+    readonly deleteTakenBack: (
+      channelId: ChannelId,
+      platformMessageId: string
+    ) => Effect.Effect<number, DatabaseError>;
+    /** Saves the box's schedule and hold; one gone stays gone. */
     readonly saveBox: (box: MessageBox) => Effect.Effect<void, DatabaseError>;
     /**
      * Takes the box until the transaction ends: whoever changes its

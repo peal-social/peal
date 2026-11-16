@@ -58,6 +58,8 @@ public readonly record struct AttemptResult : IStringEnum
 
     public static readonly AttemptResult ChatMigrated = new(Values.ChatMigrated);
 
+    public static readonly AttemptResult CannotPost = new(Values.CannotPost);
+
     public AttemptResult(string value)
     {
         Value = value;
@@ -199,5 +201,7 @@ public readonly record struct AttemptResult : IStringEnum
         public const string ForumThreadNameRequired = "forumThreadNameRequired";
 
         public const string ChatMigrated = "chatMigrated";
+
+        public const string CannotPost = "cannotPost";
     }
 }

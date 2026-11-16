@@ -33,6 +33,12 @@ credentials and how to adopt what exists.
   every resource the sandbox's stack makes, by name and inputs, so a change
   there is one its preview shows. Change it only with a change the sandbox
   is meant to take, and preview both stacks before `up`.
+- On the sandbox, what outside services call is opened by
+  `access-callbacks` (`publicCallbackPaths`): Bluesky's documents,
+  Stripe's events, Meta's data deletion requests and its events
+  (`api/platform-events`), each checked by the server. A path added there
+  joins the Ansible project's `peal_access_bypass_paths` and
+  `tests/test_cloudflared.py` in the same change.
 - Production is public but for its admin, Grafana and SSH: no Access
   application covers its app, site, docs or short links. Its admin
   application's paths (`adminPaths`) are the Ansible project's

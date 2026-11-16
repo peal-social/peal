@@ -22,6 +22,8 @@ public final class AttemptResult {
     public static final AttemptResult REPLIES_NOT_ALLOWED =
             new AttemptResult(Value.REPLIES_NOT_ALLOWED, "repliesNotAllowed");
 
+    public static final AttemptResult CANNOT_POST = new AttemptResult(Value.CANNOT_POST, "cannotPost");
+
     public static final AttemptResult CHAT_MIGRATED = new AttemptResult(Value.CHAT_MIGRATED, "chatMigrated");
 
     public static final AttemptResult MEDIA_REJECTED = new AttemptResult(Value.MEDIA_REJECTED, "mediaRejected");
@@ -102,6 +104,8 @@ public final class AttemptResult {
                 return visitor.visitUnavailable();
             case REPLIES_NOT_ALLOWED:
                 return visitor.visitRepliesNotAllowed();
+            case CANNOT_POST:
+                return visitor.visitCannotPost();
             case CHAT_MIGRATED:
                 return visitor.visitChatMigrated();
             case MEDIA_REJECTED:
@@ -157,6 +161,8 @@ public final class AttemptResult {
                 return UNAVAILABLE;
             case "repliesNotAllowed":
                 return REPLIES_NOT_ALLOWED;
+            case "cannotPost":
+                return CANNOT_POST;
             case "chatMigrated":
                 return CHAT_MIGRATED;
             case "mediaRejected":
@@ -243,6 +249,8 @@ public final class AttemptResult {
 
         CHAT_MIGRATED,
 
+        CANNOT_POST,
+
         UNKNOWN
     }
 
@@ -292,6 +300,8 @@ public final class AttemptResult {
         T visitForumThreadNameRequired();
 
         T visitChatMigrated();
+
+        T visitCannotPost();
 
         T visitUnknown(String unknownType);
     }

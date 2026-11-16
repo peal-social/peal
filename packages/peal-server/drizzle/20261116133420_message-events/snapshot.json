@@ -1,0 +1,133 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "44af3c69-bc07-41a4-9af7-0bd390a8e4d3",
+  "prevIds": [
+    "3c668ef8-7a1f-4d65-879e-9bef64a9acec"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "engagement",
+        "message_boxes",
+        "not_before"
+      ],
+      "writes": [
+        "s|col|engagement.message_boxes.not_before",
+        "n|col|engagement.message_boxes.not_before",
+        "e|col|engagement.message_boxes.not_before"
+      ],
+      "reads": [
+        "n|tbl|engagement.message_boxes",
+        "n|sch|engagement"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "engagement",
+        "message_boxes",
+        "subscribed_at"
+      ],
+      "writes": [
+        "s|col|engagement.message_boxes.subscribed_at",
+        "n|col|engagement.message_boxes.subscribed_at",
+        "e|col|engagement.message_boxes.subscribed_at"
+      ],
+      "reads": [
+        "n|tbl|engagement.message_boxes",
+        "n|sch|engagement"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "channels",
+        "channels",
+        "channels_platform_account"
+      ],
+      "writes": [
+        "s|idx|channels.channels_platform_account",
+        "n|idx|channels.channels_platform_account",
+        "e|idx|channels.channels_platform_account",
+        "n|rel|channels.channels_platform_account"
+      ],
+      "reads": [
+        "n|tbl|channels.channels",
+        "n|sch|channels",
+        "n|col|channels.channels.platform",
+        "n|col|channels.channels.account_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "engagement",
+        "table": "message_boxes",
+        "name": "not_before",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "engagement",
+        "table": "message_boxes",
+        "name": "subscribed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "channels",
+        "table": "channels",
+        "name": "channels_platform_account",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "platform",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    }
+  ]
+}

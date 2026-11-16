@@ -20,11 +20,12 @@ A self-hosted server offers a platform once you register an app for it on that p
 | [YouTube](#youtube)                         | `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`                                                                         | A published consent screen, verified by Google |
 | [Pinterest](#pinterest)                     | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | Pinterest's Standard access                    |
 | [Google Business Profile](#google-business) | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | Google's access to the Business Profile APIs   |
+| [Slack](#slack)                             | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`                                                                             | Public distribution, which Slack turns on      |
 | [WordPress websites](#wordpress)            | None: each member gives their site's application password                                                            | Nothing to register                            |
 | [WordPress.com](#wordpress-com)             | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Nothing known to review                        |
 | [DEV and Hashnode](#devto-hashnode)         | None: each member gives a key of their own                                                                           | Nothing to register                            |
 
-For LinkedIn, X, YouTube, Pinterest, Google Business Profile and WordPress.com, one of the two settings without the other stops the server at startup; without both, **Channels** does not offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
+For LinkedIn, X, YouTube, Pinterest, Google Business Profile, Slack and WordPress.com, one of the two settings without the other stops the server at startup; without both, **Channels** does not offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
 
 ### Token keys [#token-keys]
 
@@ -59,11 +60,12 @@ To publish an image or a video, the server reads it from the media store, whole,
 | Pinterest               | `api.pinterest.com` (or the Sandbox), and the address Pinterest names for each video, an object store's                                               | Videos sent as they are read, never held whole; images fetched by Pinterest                  |
 | Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` and `mybusiness.googleapis.com` | Photos fetched by Google from the media store                                                |
 | Google Ads              | `oauth2.googleapis.com` and `googleads.googleapis.com`, when `PEAL_ADS_NETWORKS` names `google`                                                       | None: it only reads                                                                          |
+| Slack                   | `slack.com`, and `files.slack.com`, where Slack has each image uploaded                                                                               | Images sent as they are read, never held whole                                               |
 | WordPress.com           | `public-api.wordpress.com`, whose API serves each site's core routes                                                                                  | Images read whole                                                                            |
 | DEV                     | `dev.to`                                                                                                                                              | Images read whole                                                                            |
 | Hashnode                | `gql-beta.hashnode.com`, and the upload address Hashnode gives for each image                                                                         | Images sent as they are read                                                                 |
 
-The platforms send people back to `PUBLIC_URL/connect/<platform>/callback`, through their browser. They never call the server themselves, apart from Bluesky reading Peal's client description, and Meta's data deletion requests.
+The platforms send people back to `PUBLIC_URL/connect/<platform>/callback`, through their browser. They never call the server themselves, apart from Bluesky reading Peal's client description, and Meta's data deletion requests and events.
 
 ### Addresses to register [#platform-addresses]
 
@@ -292,6 +294,8 @@ In the dashboard, give each use case the addresses [the command](#platform-addre
 | Instagram      | Its business login's OAuth redirect URIs; its data deletion request URL; its deauthorize callback URL                                         |
 | Threads        | Its redirect callback URL; its data deletion request URL; its deauthorize callback URL                                                        |
 
+The command also prints a **Webhooks** callback URL for Facebook Login and for Instagram, where Meta tells your server that an account's direct messages changed. The server takes those events only once `META_WEBHOOK_VERIFY_TOKEN` is set: give its value as the **Verify Token** beside the address, which must answer Meta without a login page in front. Meta sends events only from a published (Live) app. The server checks each one's signature with its app's secret before reading it, and reads nothing of it but ids.
+
 Meta fetches the images and videos it publishes from links to the media store, valid for two hours: the store must answer Meta's servers on the internet, through presigned links or `PEAL_MEDIA_PUBLIC_BASE_URL`. The server signs every call through Facebook Login with the main app's secret, so you may turn on **Require App Secret** in the app's advanced settings. Calls with an Instagram Login token carry no proof.
 
 While the app is in development mode, only people with a role on it can connect their accounts: add yourself, Instagram testers and Threads testers, under App roles. Serving other people needs Meta's App Review of each permission and Business Verification, for each use case. Instagram accounts must be professional ones (business or creator), and, through Facebook Login, linked to a Facebook Page. Each account publishes at most 100 posts in 24 hours through Meta's API, which Peal checks before each one.
@@ -499,6 +503,34 @@ Google fetches each photo from a link to the media store, valid for two hours: t
   post's name and address on Google, until the channel is disconnected or the
   workspace deleted: read the policies, and decide whether that suits your use.
 </Callout>
+
+## Slack [#slack]
+
+A server connects Slack channels once you register an app for it on Slack, and turn on its public distribution so that other Slack workspaces can install it.
+
+<Steps>
+  <Step title="Create an app">
+    At `api.slack.com/apps`, create an app from scratch, named after your
+    service, in a Slack workspace of yours.
+  </Step>
+  <Step title="Give it its scopes and redirect URL">
+    Under **OAuth & Permissions**, add the bot token scopes `incoming-webhook`,
+    `chat:write`, `chat:write.public` and `files:write`, and
+    `PUBLIC_URL/connect/slack/callback` as a redirect URL, such as
+    `https://peal.example.com/connect/slack/callback`. Leave token rotation off:
+    Slack cannot turn it off again, and Peal never renews a token.
+  </Step>
+  <Step title="Distribute it">
+    Under **Manage Distribution**, activate public distribution. A listing in
+    Slack's directory is not needed.
+  </Step>
+  <Step title="Set the credentials">
+    Put the app's client ID in `SLACK_CLIENT_ID` and its client secret in
+    `SLACK_CLIENT_SECRET`.
+  </Step>
+</Steps>
+
+Members add the app to their Slack workspace and pick, on Slack's page, the channel it posts to: Peal never lists a workspace's channels, and asks no scope that reads them, their messages or their files. The bot's token does not expire; one Slack refuses, as after the app is removed from the workspace, marks the channel **Reconnect**. Disconnecting a channel revokes nothing, as the same token serves every channel of that Slack workspace. These settings are not the alerts' `SLACK_ALERTS_WEBHOOK_URL`.
 
 ## WordPress websites [#wordpress]
 

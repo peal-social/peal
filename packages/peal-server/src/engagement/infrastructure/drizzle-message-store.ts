@@ -89,6 +89,8 @@ const boxOf = (row: BoxRow) =>
     createdAt: utc(row.createdAt),
     lastReadAt: instant(row.lastReadAt),
     nextReadAt: utc(row.nextReadAt),
+    notBefore: instant(row.notBefore),
+    subscribedAt: instant(row.subscribedAt),
     workspaceId: row.workspaceId,
   }).pipe(Effect.orDie);
 
@@ -97,6 +99,8 @@ const boxRowOf = (box: MessageBox) => ({
   createdAt: date(box.createdAt),
   lastReadAt: nullableDate(box.lastReadAt),
   nextReadAt: date(box.nextReadAt),
+  notBefore: nullableDate(box.notBefore),
+  subscribedAt: nullableDate(box.subscribedAt),
   workspaceId: box.workspaceId,
 });
 
@@ -411,9 +415,52 @@ export const DrizzleMessageStore = Layer.effect(
         .set({
           lastReadAt: nullableDate(saved.lastReadAt),
           nextReadAt: date(saved.nextReadAt),
+          notBefore: nullableDate(saved.notBefore),
         })
         .where(eq(messageBoxes.channelId, saved.channelId))
         .pipe(Effect.asVoid, Effect.mapError(failed));
+
+    // Never sooner than the box's hold.
+    const bringForward = Effect.fn("MessageStore.bringForward")(
+      function* bringForward(channelId: string, at: DateTime.Utc) {
+        const rows = yield* sql<{ readonly channelId: string }>`
+          UPDATE engagement.message_boxes
+          SET next_read_at = GREATEST(
+            LEAST(next_read_at, ${DateTime.formatIso(at)}::timestamptz),
+            COALESCE(not_before, '-infinity'::timestamptz)
+          )
+          WHERE channel_id = ${channelId}::uuid
+          RETURNING channel_id
+        `.pipe(Effect.mapError(failed));
+
+        return rows.length > 0;
+      }
+    );
+
+    const markFollowed = (channelId: string, at: DateTime.Utc) =>
+      db
+        .update(messageBoxes)
+        .set({ subscribedAt: date(at) })
+        .where(eq(messageBoxes.channelId, channelId))
+        .pipe(Effect.asVoid, Effect.mapError(failed));
+
+    // By the conversations of the channel, so the index of each
+    // conversation's ids finds it.
+    const deleteTakenBack = Effect.fn("MessageStore.deleteTakenBack")(
+      function* deleteTakenBack(channelId: string, platformMessageId: string) {
+        const rows = yield* sql<{ readonly id: string }>`
+          DELETE FROM engagement.direct_messages
+          WHERE platform_message_id = ${platformMessageId}
+            AND conversation_id IN (
+              SELECT id FROM engagement.conversations
+              WHERE channel_id = ${channelId}::uuid
+            )
+          RETURNING id
+        `.pipe(Effect.mapError(failed));
+
+        return rows.length;
+      }
+    );
 
     const lockBox = (channelId: string) =>
       sql`
@@ -1114,6 +1161,9 @@ export const DrizzleMessageStore = Layer.effect(
 
     return MessageStore.of({
       advanceMessage,
+      bringForward,
+      deleteTakenBack,
+      markFollowed,
       allowApplication,
       allows,
       applications,

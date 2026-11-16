@@ -5,12 +5,18 @@ import type {
   RemovalFailure,
 } from "#publishing/application/live-post-clients.ts";
 import type { PublishingToken } from "#publishing/application/platform-credentials.ts";
+import type { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import type { TargetOptions } from "#publishing/domain/target-options.ts";
 import type { PlatformPostId } from "#shared/domain/publish-result.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 
 /** What an edit replaces on the platform: one post's text, nothing else. */
 export interface TextEdit {
+  /**
+   * The part's media on the channel, with their alt text, which a platform
+   * may need sent again with the text (Slack's image blocks).
+   */
+  readonly media: readonly MediaAttachment[];
   /** The target's options, which a platform may need sent again. */
   readonly options: Option.Option<TargetOptions>;
   readonly platformPostId: PlatformPostId;

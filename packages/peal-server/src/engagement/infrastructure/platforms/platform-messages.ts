@@ -7,7 +7,11 @@ import { MessagesUngranted } from "#engagement/application/messages-ungranted.ts
 import { MessageSender } from "#engagement/application/ports/message-sender.ts";
 import type { MessageSendRequest } from "#engagement/application/ports/message-sender.ts";
 import { MessageSource } from "#engagement/application/ports/message-source.ts";
-import type { MessagesRequest } from "#engagement/application/ports/message-source.ts";
+import type {
+  MessagesFollowOutcome,
+  MessagesFollowRequest,
+  MessagesRequest,
+} from "#engagement/application/ports/message-source.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
 import { dueForCheck } from "#engagement/domain/conversation.ts";
 import {
@@ -169,6 +173,32 @@ export const platformMessagesWith = (settings: {
         });
       });
 
+      // Asks the channel's platform to tell the server of its account's
+      // messages, or to stop: only where the inbox reads them, and only on
+      // a platform that tells; elsewhere nothing is called.
+      const subscription = (mode: "follow" | "unfollow") =>
+        Effect.fn(`MessageSource.${mode}`)(function* subscribing(
+          request: MessagesFollowRequest
+        ) {
+          const account = yield* access.account(request.channelId).pipe(
+            Effect.catchTags({
+              ChannelUnusable: unusable,
+              DatabaseError: databaseDown,
+              TokenExpired: needsReconnect,
+            })
+          );
+
+          const { platform } = account;
+
+          const asked = readsMessagesOn(platform, messages)
+            ? platforms[platform][mode]
+            : undefined;
+
+          return asked === undefined
+            ? ("unneeded" satisfies MessagesFollowOutcome)
+            : yield* asked(account);
+        });
+
       // The channel's account, if it may send there, or why nothing can be
       // sent: each before any request to the platform.
       const reach = (request: MessageSendRequest) =>
@@ -267,7 +297,14 @@ export const platformMessagesWith = (settings: {
         );
 
       return Layer.mergeAll(
-        Layer.succeed(MessageSource, MessageSource.of({ read })),
+        Layer.succeed(
+          MessageSource,
+          MessageSource.of({
+            follow: subscription("follow"),
+            read,
+            unfollow: subscription("unfollow"),
+          })
+        ),
         Layer.succeed(
           MessageSender,
           MessageSender.of({

@@ -170,6 +170,7 @@ type ButtonPlatform =
   | "googleBusiness"
   | "linkedin"
   | "pinterest"
+  | "slack"
   | "tiktok"
   | "x"
   | "youtube";
@@ -181,6 +182,7 @@ const buttonPlatforms: readonly ButtonPlatform[] = [
   "youtube",
   "pinterest",
   "googleBusiness",
+  "slack",
 ];
 
 const ConnectWithButton = ({

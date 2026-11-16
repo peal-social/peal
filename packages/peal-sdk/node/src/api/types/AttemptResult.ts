@@ -23,6 +23,7 @@ export const AttemptResult = {
         PerAccountPricingRequired: "perAccountPricingRequired",
         XThreadCut: "xThreadCut",
         ForumThreadNameRequired: "forumThreadNameRequired",
-        ChatMigrated: "chatMigrated"
+        ChatMigrated: "chatMigrated",
+        CannotPost: "cannotPost"
     } as const;
 export type AttemptResult = typeof AttemptResult[keyof typeof AttemptResult];

@@ -20,6 +20,7 @@ module Peal
       GOOGLE_BUSINESS = "googleBusiness"
       DISCORD = "discord"
       TELEGRAM = "telegram"
+      SLACK = "slack"
     end
   end
 end

@@ -60,10 +60,12 @@ The sandbox has the same routes on its own names (`sandbox.peal.social`,
 `sandbox-grafana.peal.social`, `sandbox.peal.link`…), all behind Access but for what outside
 services call: `/api/channels/oauth/*`, which Bluesky's servers fetch, and
 Stripe's webhook (`/api/auth/stripe/webhook`) and its meter error events
-(`/api/stripe/meter-errors`), and Meta's data deletion and
+(`/api/stripe/meter-errors`), Meta's data deletion and
 deauthorize requests (`/api/data-deletion/<app>` and
-`/api/data-deletion/<app>/deauthorize`, for its three apps), which the
-server checks the signature of. A test keeps those paths equal to the
+`/api/data-deletion/<app>/deauthorize`, for its three apps), and Meta's
+events about accounts' messages (`/api/platform-events/meta/facebook` and
+`/api/platform-events/meta/instagram`), which the server checks the
+signature of (and the events' handshake, by the verify token). A test keeps those paths equal to the
 addresses the server lists as called by the platforms' servers
 ([The platforms' apps](#the-platforms-apps)). Cloudflare's free certificate covers the zone and
 its first-level subdomains only, so no name goes deeper than that.
@@ -334,7 +336,8 @@ copy run without Pulumi, and for what Pulumi does in their place.
      `sandbox.peal.social/api/channels/oauth` for Bluesky,
      `sandbox.peal.social/api/auth/stripe/webhook` and
      `sandbox.peal.social/api/stripe/meter-errors` for Stripe, and
-     `sandbox.peal.social/api/data-deletion` for Meta; and its own Grafana and
+     `sandbox.peal.social/api/data-deletion` and
+     `sandbox.peal.social/api/platform-events` for Meta; and its own Grafana and
      SSH applications. The uptime server's checks of the sandbox need a
      service token and a Service Auth policy on its application too (see
      [Uptime › Set it up](#set-it-up)).

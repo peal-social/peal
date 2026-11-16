@@ -34,6 +34,8 @@ public readonly record struct Platform : IStringEnum
 
     public static readonly Platform Telegram = new(Values.Telegram);
 
+    public static readonly Platform Slack = new(Values.Slack);
+
     public Platform(string value)
     {
         Value = value;
@@ -153,5 +155,7 @@ public readonly record struct Platform : IStringEnum
         public const string Discord = "discord";
 
         public const string Telegram = "telegram";
+
+        public const string Slack = "slack";
     }
 }

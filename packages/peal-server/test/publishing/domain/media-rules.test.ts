@@ -78,6 +78,7 @@ describe(mediaViolationsOn, () => {
       "linkedin",
       "mastodon",
       "pinterest",
+      "slack",
       "telegram",
       "threads",
       "tiktok",
@@ -85,9 +86,9 @@ describe(mediaViolationsOn, () => {
       "youtube",
     ]);
 
-    // A Google Business Profile post takes photos only.
+    // A Google Business Profile post and a Slack message take images only.
     for (const platform of withRules.filter(
-      (name) => name !== "googleBusiness"
+      (name) => name !== "googleBusiness" && name !== "slack"
     )) {
       expect(violations(platform, video(first))).toStrictEqual([]);
     }

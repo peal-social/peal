@@ -3,6 +3,7 @@ import type { MetaApp } from "peal-contract";
 
 import type { ChannelPlatform } from "#channels/domain/platform.ts";
 import { googleAdsCallbackPath } from "#shared/infrastructure/platforms/google-ads-paths.ts";
+import { metaEventsPath } from "#shared/infrastructure/platforms/meta-apps.ts";
 import { metaAdsCallbackPath } from "#shared/infrastructure/platforms/meta-graph.ts";
 
 import { blueskyPaths } from "./bluesky/bluesky-client.ts";
@@ -13,6 +14,7 @@ import { facebookLoginCallbackPath } from "./meta/facebook-login.ts";
 import { instagramCallbackPath } from "./meta/instagram-login-authorizer.ts";
 import { threadsCallbackPath } from "./meta/threads-authorizer.ts";
 import { pinterestCallbackPath } from "./pinterest/pinterest-authorizer.ts";
+import { slackCallbackPath } from "./slack/slack-authorizer.ts";
 import { tiktokCallbackPath } from "./tiktok/tiktok-authorizer.ts";
 import { wordpressComCallbackPath } from "./wordpress-com/wordpress-com-authorizer.ts";
 import { xCallbackPath } from "./x/x-authorizer.ts";
@@ -48,6 +50,7 @@ export interface PlatformRegistration {
     | "mastodon"
     | "metaAds"
     | "pinterest"
+    | "slack"
     | "threads"
     | "tiktok"
     | "wordpressCom"
@@ -73,7 +76,7 @@ export interface PlatformRegistration {
  * origin (PUBLIC_URL), each built from the path its sign-in or its route is
  * written with: the callback paths the authorizers send as `redirect_uri`,
  * Bluesky's client documents, and the contract's routes for Meta's signed
- * requests. A platform that gains a sign-in or a route joins this list, or
+ * requests, and the route Meta's events reach. A platform that gains a sign-in or a route joins this list, or
  * its tests fail (`test/channels/infrastructure/platform-addresses.test.ts`
  * and `test/channels/container.test.ts`).
  */
@@ -104,6 +107,17 @@ export const platformRegistrations = (
       url: at(deauthorize.path.replace(":app", app)),
     },
   ];
+
+  // Where an app's Webhooks product sends its events, checked with the
+  // operator's verify token, then signed with the app's secret.
+  const events = (app: "facebook" | "instagram"): PlatformAddress => ({
+    calledBy: "platform",
+    field: "Webhooks: callback URL",
+    url: at(metaEventsPath.replace(":app", app)),
+  });
+
+  const eventsNote =
+    "Webhooks (direct messages): the Verify Token is META_WEBHOOK_VERIFY_TOKEN, and the app must be published (Live) for Meta to send events.";
 
   return [
     {
@@ -189,10 +203,11 @@ export const platformRegistrations = (
           facebookLoginCallbackPath("instagram")
         ),
         ...signedRequests("facebook"),
+        events("facebook"),
       ],
       id: "facebookLogin",
       name: "Meta: Facebook Login, for Facebook Pages and Instagram through a Page",
-      notes: [],
+      notes: [eventsNote],
       platforms: ["facebook", "instagram"],
       registeredBy: "operator",
       settings: ["META_APP_ID", "META_APP_SECRET"],
@@ -234,10 +249,11 @@ export const platformRegistrations = (
           instagramCallbackPath
         ),
         ...signedRequests("instagram"),
+        events("instagram"),
       ],
       id: "instagramLogin",
       name: "Meta: Instagram, for Instagram with Instagram Login",
-      notes: [],
+      notes: [eventsNote],
       platforms: ["instagram"],
       registeredBy: "operator",
       settings: ["INSTAGRAM_APP_ID", "INSTAGRAM_APP_SECRET"],
@@ -308,6 +324,17 @@ export const platformRegistrations = (
       platforms: ["googleBusiness"],
       registeredBy: "operator",
       settings: ["GOOGLE_BUSINESS_CLIENT_ID", "GOOGLE_BUSINESS_CLIENT_SECRET"],
+    },
+    {
+      addresses: [redirect("Redirect URLs", slackCallbackPath)],
+      id: "slack",
+      name: "Slack: an app (api.slack.com/apps), with public distribution",
+      notes: [
+        "Bot token scopes: incoming-webhook, chat:write, chat:write.public, files:write. Leave token rotation off: it cannot be turned off again.",
+      ],
+      platforms: ["slack"],
+      registeredBy: "operator",
+      settings: ["SLACK_CLIENT_ID", "SLACK_CLIENT_SECRET"],
     },
   ];
 };

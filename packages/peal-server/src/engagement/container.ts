@@ -19,10 +19,12 @@ import type { ReviewSource } from "#engagement/application/ports/review-source.t
 import { PurgeEngagement } from "#engagement/application/purge-engagement.ts";
 import { PurgeMessages } from "#engagement/application/purge-messages.ts";
 import { PurgeReviews } from "#engagement/application/purge-reviews.ts";
+import { ReceiveMessageEvents } from "#engagement/application/receive-message-events.ts";
 import { SendMessage } from "#engagement/application/send-message.ts";
 import { SendReply } from "#engagement/application/send-reply.ts";
 import { SendReviewReply } from "#engagement/application/send-review-reply.ts";
 import { AccessEngagementChannels } from "#engagement/infrastructure/access-engagement-channels.ts";
+import { ChannelsMessageAccounts } from "#engagement/infrastructure/channels-message-accounts.ts";
 import { ChannelsReviewLocations } from "#engagement/infrastructure/channels-review-locations.ts";
 import { CommentsPaceLive } from "#engagement/infrastructure/collection-pace.ts";
 import { DrizzleCommentRuleStore } from "#engagement/infrastructure/drizzle-comment-rule-store.ts";
@@ -40,6 +42,7 @@ import { ToldReviewOutcomes } from "#engagement/infrastructure/told-review-outco
 import { WorkflowMessageJobs } from "#engagement/infrastructure/workflow-message-jobs.ts";
 import { WorkflowReplyJobs } from "#engagement/infrastructure/workflow-reply-jobs.ts";
 import { WorkflowReviewReplyJobs } from "#engagement/infrastructure/workflow-review-reply-jobs.ts";
+import { ReadMessageBoxV1Live } from "#engagement/infrastructure/workflows/read-message-box.ts";
 import { SendMessageV1Live } from "#engagement/infrastructure/workflows/send-message.ts";
 import { SendReplyV1Live } from "#engagement/infrastructure/workflows/send-reply.ts";
 import { SendReviewReplyV1Live } from "#engagement/infrastructure/workflows/send-review-reply.ts";
@@ -52,6 +55,8 @@ export { EngagementInbox } from "#engagement/application/engagement-inbox.ts";
 export { EngagementMessages } from "#engagement/application/engagement-messages.ts";
 
 export { MessageSettings } from "#engagement/application/message-settings.ts";
+
+export { ReceiveMessageEvents } from "#engagement/application/receive-message-events.ts";
 
 export { EngagementReplies } from "#engagement/application/engagement-replies.ts";
 
@@ -80,7 +85,8 @@ export const engagementWith = <ROut, E, R>(adapters: Layer.Layer<ROut, E, R>) =>
     EngagementMessages.layer,
     MessageSettings.layer,
     CollectMessages.layer.pipe(Layer.provideMerge(SendMessage.layer)),
-    PurgeMessages.layer
+    PurgeMessages.layer,
+    ReceiveMessageEvents.layer
   ).pipe(Layer.provideMerge(adapters));
 
 /**
@@ -119,6 +125,7 @@ export const engagementLive = <E, R>(
         DrizzleReviewStore,
         DrizzleMessageStore,
         ChannelsReviewLocations,
+        ChannelsMessageAccounts,
         WorkflowMessageJobs,
         ToldMessageOutcomes,
         WorkflowReviewReplyJobs,
@@ -176,12 +183,15 @@ export { PlatformEngagementLive } from "#engagement/infrastructure/platforms/pla
 
 /**
  * Registers the workflows that send replies, to comments and to reviews,
- * and direct messages. Needs SendReply, SendReviewReply and SendMessage.
+ * and direct messages, and the one that reads a box a platform's event
+ * names. Needs SendReply, SendReviewReply, SendMessage and
+ * CollectMessages.
  */
 export const EngagementWorkersLive = Layer.mergeAll(
   SendReplyV1Live,
   SendReviewReplyV1Live,
-  SendMessageV1Live
+  SendMessageV1Live,
+  ReadMessageBoxV1Live
 );
 
 /** The comments collection, every ten minutes, and the daily retention. */

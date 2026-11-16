@@ -54,10 +54,33 @@ export const MessagesReadFailureSchema = Schema.Union([
 
 export type MessagesReadFailure = typeof MessagesReadFailureSchema.Type;
 
+/** A channel whose platform to ask, or tell, about the account's events. */
+export const MessagesFollowRequestSchema = Schema.Struct({
+  channelId: ChannelIdSchema,
+});
+
+export type MessagesFollowRequest = typeof MessagesFollowRequestSchema.Type;
+
 /**
- * Reads a channel's conversations on its platform. The platform's reader
- * does it; the collection runs it through the channel's gate, one call at
- * a time with the channel's publishing.
+ * How asking a platform to tell the server of an account's messages, or
+ * to stop, ended: done, or not needed, as the platform tells nothing (it
+ * is read on a schedule alone) or, to stop, another channel of Peal's
+ * still follows the account.
+ */
+export const MessagesFollowOutcomeSchema = Schema.Literals([
+  "done",
+  "unneeded",
+]);
+
+export type MessagesFollowOutcome = typeof MessagesFollowOutcomeSchema.Type;
+
+/**
+ * Reads a channel's conversations on its platform, and asks the platform
+ * to tell the server when something changes there (`follow`, before a
+ * read, as a platform may drop the subscription) or to stop (`unfollow`,
+ * before its messages are turned off). The platform's reader does it; the
+ * collection runs it through the channel's gate, one call at a time with
+ * the channel's publishing.
  */
 export class MessageSource extends Context.Service<
   MessageSource,
@@ -65,5 +88,11 @@ export class MessageSource extends Context.Service<
     readonly read: (
       request: MessagesRequest
     ) => Effect.Effect<MessagesBatch, MessagesReadFailure>;
+    readonly follow: (
+      request: MessagesFollowRequest
+    ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
+    readonly unfollow: (
+      request: MessagesFollowRequest
+    ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
   }
 >()("peal-server/engagement/application/MessageSource") {}

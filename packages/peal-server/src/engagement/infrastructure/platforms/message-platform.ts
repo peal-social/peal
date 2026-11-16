@@ -3,6 +3,7 @@ import type { DateTime, Effect, Option } from "effect";
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import type {
   MessagesBatch,
+  MessagesFollowOutcome,
   MessagesReadFailure,
 } from "#engagement/application/ports/message-source.ts";
 import type { Participant } from "#engagement/domain/conversation.ts";
@@ -64,6 +65,14 @@ export interface OutgoingDirect {
  * `unconfirmed` whenever that request may have left without an answer.
  * `resume` first asks the platform whether the message is there, and
  * sends only when the platform proves it is not.
+ *
+ * A platform that tells the server when an account's messages change
+ * (Meta's events) has `follow`, which asks it to, and `unfollow`, which
+ * asks it to stop: the platform's subscription is the account's, so
+ * `unfollow` answers `unneeded`, and calls nothing, while another channel
+ * of Peal's still follows the account (a Page connected in two
+ * workspaces). One without them is read on the collection's schedule
+ * alone (Mastodon, Bluesky).
  */
 export interface MessagePlatform {
   readonly read: (
@@ -78,4 +87,10 @@ export interface MessagePlatform {
     account: ChannelAccount,
     message: OutgoingDirect
   ) => Effect.Effect<MessageSendOutcome>;
+  readonly follow?: (
+    account: ChannelAccount
+  ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
+  readonly unfollow?: (
+    account: ChannelAccount
+  ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
 }

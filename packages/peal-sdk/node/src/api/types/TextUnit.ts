@@ -7,6 +7,7 @@ export const TextUnit = {
         Utf8Bytes: "utf8Bytes",
         EmojiBytes: "emojiBytes",
         Utf16Units: "utf16Units",
-        Weighted: "weighted"
+        Weighted: "weighted",
+        EscapedUtf16Units: "escapedUtf16Units"
     } as const;
 export type TextUnit = typeof TextUnit[keyof typeof TextUnit];

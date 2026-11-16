@@ -236,6 +236,7 @@ export const FailureReasonSchema = Schema.Literals([
   "xThreadCut",
   "forumThreadNameRequired",
   "chatMigrated",
+  "cannotPost",
 ]).annotate({ identifier: "FailureReason" });
 
 export type FailureReason = typeof FailureReasonSchema.Type;
@@ -796,6 +797,7 @@ export const AttemptResultSchema = Schema.Literals([
   "xThreadCut",
   "forumThreadNameRequired",
   "chatMigrated",
+  "cannotPost",
 ]).annotate({ identifier: "AttemptResult" });
 
 export type AttemptResult = typeof AttemptResultSchema.Type;

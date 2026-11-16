@@ -209,6 +209,8 @@ export const english: EmailCatalog = {
       "the channel is a forum, whose posts need a title, and the post had none. Copy the post, give it a forum post title in its Discord options, then schedule it.",
     chatMigrated:
       "the chat moved to a new id, as a Telegram group does when it becomes a supergroup. Connect the chat again, then post it on its new channel.",
+    cannotPost:
+      "the app may not post in the channel: on Slack, it is not in the channel, the channel was archived, or it lets only some post there. Invite the app to the channel (type /invite and its name there), or let it post there, then post it again.",
     xThreadCut:
       "the thread was cut: its first parts are live, and X's meter refused the next one, as the billing account cannot be billed for it now (no payment method, a payment failing, a plan from before per-account pricing, or its monthly ceiling for X: the billing page says which). Once it can, send the rest again, or keep the live parts as the post.",
   },

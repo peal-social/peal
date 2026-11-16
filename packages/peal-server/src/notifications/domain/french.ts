@@ -216,6 +216,8 @@ export const french: EmailCatalog = {
       "le salon est un forum, dont les publications demandent un titre, et la publication n’en avait pas. Copiez la publication, donnez-lui un titre de post de forum dans ses options Discord, puis programmez-la.",
     chatMigrated:
       "la discussion a changé d’identifiant, comme un groupe Telegram qui devient un supergroupe. Connectez à nouveau la discussion, puis publiez sur son nouveau canal.",
+    cannotPost:
+      "l’application ne peut pas publier dans le canal : sur Slack, elle n’est pas dans le canal, le canal a été archivé, ou il ne laisse publier que certains. Invitez l’application dans le canal (tapez /invite suivi de son nom), ou laissez-la y publier, puis publiez à nouveau.",
     xThreadCut:
       "le fil a été coupé : ses premières parties sont en ligne, et le compteur de X a refusé la suivante, car le compte de facturation ne peut pas être facturé pour elle maintenant (pas de moyen de paiement, un paiement en échec, un abonnement antérieur au tarif par compte, ou son plafond mensuel pour X : la page de facturation dit lequel). Dès qu’il le peut, envoyez la suite à nouveau, ou gardez les parties en ligne comme publication.",
   },

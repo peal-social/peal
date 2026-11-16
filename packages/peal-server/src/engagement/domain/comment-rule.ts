@@ -261,6 +261,7 @@ export const commentRuleSupport = {
   linkedin: "notAllowed",
   mastodon: "available",
   pinterest: "noApi",
+  slack: "noApi",
   telegram: "noApi",
   threads: "noApi",
   tiktok: "noApi",

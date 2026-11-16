@@ -147,6 +147,7 @@ describe("the sandbox at Cloudflare", () => {
       { type: "public", uri: "sandbox.example.test/api/auth/stripe/webhook" },
       { type: "public", uri: "sandbox.example.test/api/stripe/meter-errors" },
       { type: "public", uri: "sandbox.example.test/api/data-deletion" },
+      { type: "public", uri: "sandbox.example.test/api/platform-events" },
     ]);
   });
 

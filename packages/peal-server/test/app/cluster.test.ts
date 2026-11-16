@@ -40,10 +40,17 @@ import { CollectComments } from "#engagement/application/collect-comments.ts";
 import { CollectMessages } from "#engagement/application/collect-messages.ts";
 import { CollectReviews } from "#engagement/application/collect-reviews.ts";
 import { CommentRules } from "#engagement/application/comment-rules.ts";
+import { MessageJobs } from "#engagement/application/ports/message-jobs.ts";
 import { PurgeEngagement } from "#engagement/application/purge-engagement.ts";
 import { PurgeMessages } from "#engagement/application/purge-messages.ts";
 import { PurgeReviews } from "#engagement/application/purge-reviews.ts";
+import { slotOf } from "#engagement/application/receive-message-events.ts";
 import { SendReply } from "#engagement/application/send-reply.ts";
+import { WorkflowMessageJobs } from "#engagement/infrastructure/workflow-message-jobs.ts";
+import {
+  ReadMessageBoxV1,
+  ReadMessageBoxV1Live,
+} from "#engagement/infrastructure/workflows/read-message-box.ts";
 import { PurgeLegalRecords } from "#legal/application/purge-legal-records.ts";
 import { MediaSweeps } from "#media/application/media-sweeps.ts";
 import { SendWeeklyDigests } from "#notifications/application/send-weekly-digests.ts";
@@ -307,6 +314,7 @@ const ChannelJobsTest = Layer.mergeAll(
   Layer.succeed(
     CollectMessages,
     CollectMessages.of({
+      readBox: () => Effect.succeed("missing"),
       run: () =>
         Effect.succeed({
           deferred: 0,
@@ -851,6 +859,62 @@ describe("the cluster on Postgres", () => {
           // Once the server has stopped.
           Effect.ensuring(Effect.orDie(forgetTicks)),
           Effect.provide(Database)
+        )
+      ),
+    30_000
+  );
+
+  it.live(
+    "starts a box's read in the event's transaction, once a channel and slot",
+    () =>
+      live(
+        Effect.gen(function* boxReads() {
+          const { transaction } = yield* TransactionRunner;
+          const jobs = yield* MessageJobs;
+          const channelId = yield* newId(ChannelIdSchema);
+
+          // A slot over already: the job reads at once (a box it finds
+          // missing), and leaves nothing waiting.
+          const slot = slotOf(
+            DateTime.subtractDuration(yield* DateTime.now, Duration.minutes(1))
+          );
+
+          const execution = yield* ReadMessageBoxV1.executionId({
+            channelId,
+            slot,
+          });
+
+          const rolledBack = yield* transaction(
+            jobs
+              .readBox(channelId, slot)
+              .pipe(Effect.andThen(Effect.fail("rolledBack" as const)))
+          ).pipe(Effect.flip);
+
+          assert.strictEqual(rolledBack, "rolledBack");
+          assert.strictEqual(yield* messagesOf(execution), 0);
+
+          // The execution's own requests to run, which a second start of
+          // the same slot would add to: the run may write others meanwhile.
+          const runs = SqlClient.SqlClient.use((sql) =>
+            count(
+              sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_id = ${execution} AND kind = 0 AND tag = 'run'`
+            )
+          );
+
+          yield* transaction(jobs.readBox(channelId, slot));
+          yield* transaction(jobs.readBox(channelId, slot));
+          yield* jobs.readBox(channelId, slot);
+
+          assert.strictEqual(yield* runs, 1);
+
+          yield* waitUntil("the read ends", hasEnded(execution));
+        }).pipe(
+          Effect.provide(
+            Layer.mergeAll(ReadMessageBoxV1Live, WorkflowMessageJobs).pipe(
+              Layer.provideMerge(serverWith(FakePlatformPublisher)),
+              Layer.provideMerge(Database)
+            )
+          )
         )
       ),
     30_000

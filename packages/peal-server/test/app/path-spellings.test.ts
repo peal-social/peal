@@ -74,6 +74,11 @@ const refused = [
   "/api/admin/..",
   "/api/health/.",
   "/api/health/..?x=1",
+  // Meta's events, whose address the tunnel opens on the sandbox.
+  "/api/platform-events/meta/facebook/..",
+  "/api/platform-events/meta/facebook/../../../admin/users",
+  "/api/platform-events/meta/facebook%2F..%2F..%2Fadmin",
+  "/api/platform-events/meta/.%2E/instagram",
 ];
 
 layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
@@ -109,6 +114,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             ["/api/admin/users/x..y", 404],
             ["/api/admin/users/...", 404],
             ["/api/admin/users/x%20y", 404],
+            // Meta's events' address, on a server without a verify
+            // token, and a path under it, which is no route.
+            ["/api/platform-events/meta/facebook", 404],
+            ["/api/platform-events/meta/facebook/x", 404],
           ] as const;
 
           for (const [path, expected] of kept) {

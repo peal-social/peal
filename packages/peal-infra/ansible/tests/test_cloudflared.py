@@ -215,6 +215,8 @@ SANDBOX_OPEN = [
     "/api/data-deletion/instagram/deauthorize",
     "/api/data-deletion/threads",
     "/api/data-deletion/threads/deauthorize",
+    "/api/platform-events/meta/facebook",
+    "/api/platform-events/meta/instagram",
 ]
 
 
@@ -288,6 +290,10 @@ SANDBOX_GUARDED = [
     "/api/data-deletion/facebook/deauthorize/../../../auth/admin/list-users",
     "/api/data-deletion/pinterest",
     "/api/data-deletion/facebook/other",
+    "/api/platform-events/meta/threads",
+    "/api/platform-events/meta/facebook/x",
+    "/api/platform-events/meta/facebook/../../../auth/admin/list-users",
+    "/api/platform-events",
     "/.well-known/oauth-authorization-server",
 ]
 

@@ -1,5 +1,6 @@
 // What the server writes about a request never holds a credential: a
-// connect link's token, a review link's, a partner key, a website's
+// platform's events' verify token and signature (nor what an event says of
+// a message), a connect link's token, a review link's, a partner key, a website's
 // application password, the token of a
 // link that applies a request to cancel, the value of a header a webhook
 // endpoint's deliveries carry, two-step verification's key, codes and
@@ -15,6 +16,7 @@ import { assert, layer } from "@effect/vitest";
 import {
   Cause,
   ConfigProvider,
+  DateTime,
   Effect,
   Exit,
   Layer,
@@ -25,7 +27,8 @@ import {
   Schema,
   Tracer,
 } from "effect";
-import { SecureRandom } from "effect/crypto";
+import { Mac, SecureRandom } from "effect/crypto";
+import { Hex } from "effect/encoding";
 import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
 import sharp from "sharp";
@@ -33,12 +36,15 @@ import sharp from "sharp";
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
 import { ChatVerifier } from "#channels/application/chat-verifier.ts";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
+import { ConnectAttempt } from "#channels/domain/connect-attempt.ts";
 import { chatVerifiersLive } from "#channels/infrastructure/platforms/chat-verifiers.ts";
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
+import { slackAuthorizer } from "#channels/infrastructure/platforms/slack/slack-authorizer.ts";
 import { wordpressComAuthorizer } from "#channels/infrastructure/platforms/wordpress-com/wordpress-com-authorizer.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
 import { S3MediaStorageLive } from "#media/infrastructure/s3-media-storage.ts";
 import { FacebookOptions } from "#publishing/domain/facebook-options.ts";
+import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
@@ -60,6 +66,7 @@ import {
   fakeHashnode,
   writerOnHashnode,
 } from "#test/channels/fakes/fake-hashnode.ts";
+import { fakeSlack, slackClient } from "#test/channels/fakes/fake-slack.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
   OpenOutboundGuard,
@@ -80,6 +87,12 @@ import {
   graphAppSecret,
 } from "#test/publishing/fakes/fake-meta-graph.ts";
 import {
+  fakeSlackApi,
+  slackAccount,
+  slackBotToken,
+  slackUploadTicket,
+} from "#test/publishing/fakes/fake-slack-api.ts";
+import {
   fakeTelegramApi,
   telegramAccount,
   telegramBotToken,
@@ -90,8 +103,10 @@ import {
   credentialsOf,
   discordClientWith,
   httpClientTimingOutAfter,
+  liveClientsOn,
   metaClientWith,
   outgoing,
+  slackClientWith,
   telegramClientWith,
   testFile,
 } from "#test/publishing/platforms/support.ts";
@@ -810,6 +825,174 @@ layer(
   );
 });
 
+const slackChangeId = LivePostChangeIdSchema.make(
+  "00000000-0000-7000-8000-0000000000e4"
+);
+
+const slackChannelId = ChannelIdSchema.make(
+  "00000000-0000-7000-8000-0000000000c4"
+);
+
+// Slack's install sends the app's secret and the member's code, and gets
+// the bot's token, and the incoming webhook's address, which Peal never
+// keeps; every call after sends the token in its header. What is written
+// about an install, a post that goes out, one with an image, one Slack
+// refuses, one never answered, an edit and a deletion holds none of them.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard),
+    SecureRandom.layerWebCrypto
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about Slack", (it) => {
+  it.effect("holds no client secret, code, bot token nor webhook address", () =>
+    Effect.gen(function* searched() {
+      const oauth = yield* fakeSlack();
+      const secret = slackClient.clientSecret;
+
+      const authorizer = yield* slackAuthorizer({
+        client: {
+          clientId: slackClient.clientId,
+          clientSecret: Redacted.make(secret),
+        },
+        hosts: oauth.hosts,
+        http: yield* publicHttpClient,
+        publicUrl: "https://peal.example.com",
+      });
+
+      const { authorizationUrl } = yield* authorizer.begin({
+        handle: Option.none(),
+        instance: Option.none(),
+        reconnecting: Option.none(),
+      });
+
+      const back = oauth.approve(authorizationUrl);
+      const now = DateTime.makeUnsafe("2026-11-16T09:00:00.000Z");
+
+      yield* authorizer
+        .complete({
+          attempt: new ConnectAttempt({
+            channelId: Option.none(),
+            connection: Option.none(),
+            createdAt: now,
+            expiresAt: DateTime.addDuration(now, "15 minutes"),
+            instance: Option.none(),
+            platform: "slack",
+            startedBy: "user:synthetic",
+            state: back.state,
+            workspaceId: WorkspaceIdSchema.make(
+              "01900000-0000-7000-8000-0000000000f3"
+            ),
+          }),
+          callback: {
+            code: Option.some(back.code),
+            error: Option.none(),
+            issuer: Option.none(),
+            state: back.state,
+          },
+          reconnecting: Option.none(),
+          secret: Redacted.make(""),
+        })
+        .pipe(Effect.withSpan("test.slack-install"));
+
+      const slack = yield* fakeSlackApi();
+      const slow = yield* httpClientTimingOutAfter("300 millis");
+      const image = testFile("image", 512);
+
+      const credentials = Layer.succeedContext(
+        yield* Layer.build(
+          credentialsOf({ accountId: slackAccount, platform: "slack" }, [
+            slackBotToken,
+          ])
+        )
+      );
+
+      const onSlack = yield* slackClientWith({
+        api: slack.url,
+        credentials,
+        files: [image],
+        http: slow,
+      });
+
+      slack.script("chat.postMessage", [
+        json({ error: "not_in_channel", ok: false }),
+        { _tag: "hang" },
+      ]);
+      // The fifth post's upload never gets an answer.
+      slack.script("upload", [
+        { _tag: "answer", status: 200 },
+        { _tag: "hang" },
+      ]);
+
+      const results = yield* Effect.all(
+        [
+          onSlack.publish(yield* outgoing({ accountId: slackAccount })),
+          onSlack.publish(yield* outgoing({ accountId: slackAccount })),
+          onSlack.publish(
+            yield* outgoing({
+              accountId: slackAccount,
+              media: [attached(image)],
+            })
+          ),
+          onSlack.publish(yield* outgoing({ accountId: slackAccount })),
+          onSlack.publish(
+            yield* outgoing({
+              accountId: slackAccount,
+              media: [attached(image)],
+            })
+          ),
+        ].map((publish) => publish.pipe(Effect.exit))
+      ).pipe(Effect.withSpan("test.slack-posts"));
+
+      const withImage = results.at(2);
+
+      assert(withImage !== undefined && withImage._tag === "Success");
+      assert(withImage.value._tag === "published");
+
+      const live = yield* liveClientsOn({
+        credentials,
+        edits: new Map([
+          [
+            slackChangeId,
+            { media: [], options: Option.none(), text: "Corrected" },
+          ],
+        ]),
+        platforms: { slackHosts: { api: slack.url, uploads: slack.url } },
+      });
+
+      yield* Effect.all([
+        live.edit({
+          changeId: slackChangeId,
+          channelId: slackChannelId,
+          platformPostId: withImage.value.platformPostId,
+        }),
+        live.remove({
+          channelId: slackChannelId,
+          platformPostId: withImage.value.platformPostId,
+        }),
+      ]).pipe(Effect.withSpan("test.slack-changes"));
+
+      const all = written();
+
+      assert.include(all, "/api/oauth.v2.access");
+      assert.include(all, "SlackClient.make");
+      assert.isAbove(slack.requests().length, 6);
+      assert.notInclude(all, secret);
+      assert.notInclude(all, back.code);
+      assert.notInclude(all, "xoxb-synthetic-installed-token");
+      assert.notInclude(all, "synthetic-webhook-secret");
+      assert.notInclude(all, slackBotToken);
+      assert.lengthOf(
+        slack.requests().filter(({ path }) => path.startsWith("/upload/")),
+        2
+      );
+      assert.notInclude(all, slackUploadTicket);
+    }).pipe(Effect.scoped)
+  );
+});
+
 const shortBase = "http://links.example.com/api/l/";
 
 const shortLinkSettings = {
@@ -1292,6 +1475,145 @@ layer(OwnImagesTest, { excludeTestServices: true, timeout: "120 seconds" })(
 
           assert.notInclude(all, new URL(host.url).host);
         }).pipe(Effect.provide(imagesTest({ providers: "loopback" })))
+    );
+  }
+);
+
+// Meta's events: the verify token, which the handshake carries in its
+// query, the app's secret and the signature, and what an event's body
+// says of a message (its text, its sender), are never written, whether
+// the request was refused or taken.
+const eventsVerifyToken = "synthetic-verify-token-never-written-0001";
+const eventsAppSecret = "synthetic-meta-app-secret-never-written";
+const eventText = "synthetic-private-words-never-written";
+const eventSender = "synthetic-sender-never-written";
+
+const eventsSettings = {
+  META_APP_ID: "1001",
+  META_APP_SECRET: eventsAppSecret,
+  META_WEBHOOK_VERIFY_TOKEN: eventsVerifyToken,
+};
+
+const EventsTest = TestApp.layerWith(
+  eventsSettings,
+  Layer.merge(capture, Layer.succeed(Tracer.Tracer, tracer))
+);
+
+layer(EventsTest, { excludeTestServices: true, timeout: "120 seconds" })(
+  "what the server writes about Meta's events",
+  (it) => {
+    it.effect(
+      "holds no verify token, secret, signature, text or sender, refused or taken",
+      () =>
+        Effect.gen(function* events() {
+          const app = yield* TestApp;
+          const path = "/api/platform-events/meta/facebook";
+
+          const body = new TextEncoder().encode(
+            JSON.stringify({
+              entry: [
+                {
+                  id: "synthetic-page-nobody-connected",
+                  messaging: [
+                    {
+                      message: { mid: "m_synthetic_logged", text: eventText },
+                      recipient: { id: "synthetic-page-nobody-connected" },
+                      sender: { id: eventSender },
+                    },
+                  ],
+                },
+              ],
+              object: "page",
+            })
+          );
+
+          const signature = yield* Effect.gen(function* signing() {
+            const mac = yield* Mac.Mac;
+
+            const key = yield* Mac.key(
+              Mac.hmacSha256,
+              new TextEncoder().encode(eventsAppSecret)
+            );
+
+            return Hex.encode(yield* mac.sign(key, body));
+          }).pipe(
+            Effect.provide(
+              Mac.layerWebCrypto.pipe(
+                Layer.provide(SecureRandom.layerWebCrypto)
+              )
+            ),
+            Effect.orDie
+          );
+
+          const forged = "0".repeat(64);
+
+          const send = (init: RequestInit, query = "") =>
+            Effect.promise(async () => {
+              const response = await app.handler(
+                new Request(`http://localhost:3001${path}${query}`, init)
+              );
+
+              return response.status;
+            });
+
+          const handshake = (token: string) =>
+            send(
+              { method: "GET" },
+              `?${new URLSearchParams({
+                "hub.challenge": "1158201444",
+                "hub.mode": "subscribe",
+                "hub.verify_token": token,
+              }).toString()}`
+            );
+
+          const event = (tag: string) =>
+            send({
+              body: new Uint8Array(body),
+              headers: {
+                "content-type": "application/json",
+                "x-hub-signature-256": `sha256=${tag}`,
+              },
+              method: "POST",
+            });
+
+          assert.deepStrictEqual(
+            [
+              yield* handshake(eventsVerifyToken),
+              yield* handshake(`${eventsVerifyToken}-wrong`),
+              yield* event(forged),
+              yield* event(signature),
+            ],
+            [200, 403, 403, 200]
+          );
+
+          // Refused again, at once: not written again, as a flood of
+          // refusals on a public address would fill the logs.
+          assert.deepStrictEqual(
+            [yield* event(forged), yield* event(forged)],
+            [403, 403]
+          );
+
+          const all = written();
+
+          // The requests were written about: their path and the refusal,
+          // once.
+          assert.include(all, path);
+          assert.strictEqual(
+            all.split("Refused a platform's unsigned event").length - 1,
+            1
+          );
+
+          for (const [name, secret] of [
+            ["the verify token", eventsVerifyToken],
+            ["the app's secret", eventsAppSecret],
+            ["the signature", signature],
+            ["the forged signature", forged],
+            ["a message's text", eventText],
+            ["a message's sender", eventSender],
+          ] as const) {
+            assert.notInclude(all, secret, name);
+          }
+        })
     );
   }
 );

@@ -175,6 +175,21 @@ describe("a chat's count", () => {
       unit: "utf16Units",
     });
   });
+
+  it("counts Slack's text as sent, & as five, up to 4,000 alone and 3,000 with images", () => {
+    expect(fitOn("slack", "&".repeat(800), 0).tightest).toStrictEqual({
+      length: 4000,
+      maximum: 4000,
+      remaining: 0,
+      unit: "escapedUtf16Units",
+    });
+    expect(fitOn("slack", "<!here>", 1).tightest).toStrictEqual({
+      length: "&lt;!here&gt;".length,
+      maximum: 3000,
+      remaining: 3000 - "&lt;!here&gt;".length,
+      unit: "escapedUtf16Units",
+    });
+  });
 });
 
 describe("the text of a story", () => {

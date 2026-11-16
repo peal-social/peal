@@ -27,4 +27,5 @@ enum FailureReason: string
     case XThreadCut = "xThreadCut";
     case ForumThreadNameRequired = "forumThreadNameRequired";
     case ChatMigrated = "chatMigrated";
+    case CannotPost = "cannotPost";
 }
