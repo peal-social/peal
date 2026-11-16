@@ -33,7 +33,7 @@ import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import type { Published } from "#shared/domain/publish-result.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
-  formBoundary,
+  randomBoundary,
   multipartBody,
 } from "#shared/infrastructure/platforms/multipart-stream.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
@@ -318,7 +318,7 @@ export const pinterestClient = Effect.fn("PinterestClient.make")(
           const bytes = yield* media.held(post.workspaceId, video.mediaId);
 
           const form = multipartBody({
-            boundary: formBoundary(post.idempotencyKey),
+            boundary: randomBoundary(),
             fields: Object.entries(registered.upload_parameters).map(
               ([name, value]) => ({ name, value })
             ),

@@ -1,4 +1,5 @@
 import { Stream } from "effect";
+import { SecureRandom } from "effect/crypto";
 
 /** A text field of a multipart form. */
 export interface MultipartField {
@@ -114,9 +115,12 @@ export const multipartBody = <E, R>(form: {
   });
 
 /**
- * A boundary for a form sent for the call `key` names (its idempotency
- * key): the same for every run of the call, and nothing a member typed can
- * hold it.
+ * A boundary for one form: 128 random bits, new for every request, so no
+ * text a member wrote can hold it and add a field of its own to the form
+ * (a caption that ends one part and starts another). A form is never sent
+ * twice the same, so it needs no stability.
  */
-export const formBoundary = (key: string): string =>
-  `peal-${key.replaceAll(/[^\dA-Za-z]/gu, "-").slice(0, 60)}`;
+export const randomBoundary = (): string =>
+  `peal-${Array.from(SecureRandom.randomBytesUnsafe(16), (byte) =>
+    byte.toString(16).padStart(2, "0")
+  ).join("")}`;

@@ -4,6 +4,7 @@ import { Effect, Stream } from "effect";
 import {
   multipartBody,
   multipartFormBody,
+  randomBoundary,
 } from "#shared/infrastructure/platforms/multipart-stream.ts";
 
 const encoder = new TextEncoder();
@@ -151,4 +152,18 @@ describe(multipartFormBody, () => {
       assert.deepStrictEqual(opened, ["a", "b"]);
     })
   );
+});
+
+describe(randomBoundary, () => {
+  it("is a new random one every time, so no text can foresee it", () => {
+    const boundaries = new Set(
+      Array.from({ length: 100 }, () => randomBoundary())
+    );
+
+    assert.strictEqual(boundaries.size, 100);
+
+    for (const boundary of boundaries) {
+      assert.match(boundary, /^peal-[\da-f]{32}$/u);
+    }
+  });
 });

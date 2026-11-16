@@ -29,7 +29,7 @@ import {
 } from "#shared/infrastructure/platforms/discord-api.ts";
 import type { DiscordHosts } from "#shared/infrastructure/platforms/discord-api.ts";
 import {
-  formBoundary,
+  randomBoundary,
   multipartFormBody,
 } from "#shared/infrastructure/platforms/multipart-stream.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
@@ -219,7 +219,7 @@ export const discordClient = Effect.fn("DiscordClient.make")(
             );
 
             const form = multipartFormBody({
-              boundary: formBoundary(post.idempotencyKey),
+              boundary: randomBoundary(),
               fields: [
                 {
                   name: "payload_json",

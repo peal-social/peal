@@ -31,7 +31,7 @@ import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import type { Published } from "#shared/domain/publish-result.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
-  formBoundary,
+  randomBoundary,
   multipartFormBody,
 } from "#shared/infrastructure/platforms/multipart-stream.ts";
 import type {
@@ -388,7 +388,7 @@ export const telegramClient = Effect.fn("TelegramClient.make")(
       const fields = withCaption(commonFields(post), post.text);
 
       const form = multipartFormBody({
-        boundary: formBoundary(post.idempotencyKey),
+        boundary: randomBoundary(),
         fields: formFields(
           kind.method === "sendVideo"
             ? withVideoFacts(fields, held.file)
@@ -416,7 +416,7 @@ export const telegramClient = Effect.fn("TelegramClient.make")(
       items: readonly AlbumItem[]
     ) => {
       const form = multipartFormBody({
-        boundary: formBoundary(post.idempotencyKey),
+        boundary: randomBoundary(),
         fields: formFields({ ...commonFields(post), media: items }),
         files: held.map((file, index) =>
           formFile(file, `file${String(index)}`)
