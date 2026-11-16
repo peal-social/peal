@@ -92,7 +92,9 @@ export class TestApp extends Context.Service<
     // What watches the app as an operator's stack would: with it, the app
     // logs each request as production does, to the loggers and the tracer
     // it brings.
-    observed?: Layer.Layer<never>
+    observed?: Layer.Layer<never>,
+    // What requests run with besides, such as a clock the test holds.
+    requestsRunWith: Layer.Layer<never> = Layer.empty
   ) =>
     Layer.effect(
       TestApp,
@@ -109,7 +111,8 @@ export class TestApp extends Context.Service<
                   })
                 ),
                 // In what requests run with, not only what builds the app.
-                Layer.provideMerge(observed ?? Layer.empty)
+                Layer.provideMerge(observed ?? Layer.empty),
+                Layer.provideMerge(requestsRunWith)
               ),
               { disableLogger: observed === undefined }
             )

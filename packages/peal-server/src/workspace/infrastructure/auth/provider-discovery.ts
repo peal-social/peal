@@ -1,7 +1,15 @@
 import { once } from "node:events";
 import { createServer } from "node:http";
 
-import { Duration, Effect, Option, Ref, Schedule, Schema } from "effect";
+import {
+  Duration,
+  Effect,
+  Metric,
+  Option,
+  Ref,
+  Schedule,
+  Schema,
+} from "effect";
 
 import type { SignInProviderSettings } from "./sign-in-provider-settings.ts";
 import { SignInProviderUnusable } from "./sign-in-provider-unusable.ts";
@@ -21,9 +29,11 @@ export interface DiscoveryTiming {
   readonly retryEvery: Duration.Input;
 }
 
-// Three tries within about ten seconds when the server starts. Then a try
-// every minute at most, each logged as an error: the server's error-log
-// alert (more than 5 in 10 minutes) fires while a provider stays off.
+// Three tries within about ten seconds when the server starts, which log
+// one error if they all fail. Then a try every minute at most, each
+// failure a warning: a provider that stays off would otherwise keep the
+// server's error-log alert lit and hide every other error. Its own alert
+// reads `providersUnavailable` (peal-sign-in-provider-unavailable).
 export const discoveryTiming: DiscoveryTiming = {
   attemptTimeout: "3 seconds",
   attempts: 3,
@@ -136,6 +146,25 @@ const relayServer = (
       })
   );
 
+/**
+ * 1 while a sign-in provider set is left out because its discovery could
+ * not be read, 0 once it answers, by `provider` (`google`, `oidc`): an
+ * alert rule reads it (peal-sign-in-provider-unavailable).
+ */
+export const providersUnavailable = Metric.gauge(
+  "peal.workspace.sign_in_providers.unavailable",
+  {
+    description:
+      "Whether a sign-in provider is left out because its discovery document could not be read (1) or is offered (0)",
+  }
+);
+
+const unavailableNow = (id: SignInProviderId, value: 0 | 1) =>
+  Metric.update(
+    Metric.withAttributes(providersUnavailable, { provider: id }),
+    value
+  );
+
 const formatted = (duration: Duration.Input) =>
   Duration.format(Duration.fromInputUnsafe(duration));
 
@@ -145,22 +174,17 @@ const formatted = (duration: Duration.Input) =>
  * at once: its own read, which has no time limit, never waits on the
  * provider. A provider that does not answer the start-up's tries is left
  * out of `offered`, and the relay answers 503 for it, so Better Auth skips
- * it; it is read again in the background, each failure logged as an error,
- * until it answers, when the relay serves it, Better Auth's own retry at
+ * it; it is logged as an error once and read again in the background, each
+ * failure a warning and `providersUnavailable` at 1, until it answers, when the relay serves it, Better Auth's own retry at
  * the next sign-in naming it installs it, and `offered` lists it again. A
- * document without what OpenID Connect requires stops the server.
+ * document without what OpenID Connect requires stops the server. With no
+ * provider set, no relay is opened.
  */
 export const discoveryRelay = Effect.fn("discoveryRelay")(
   function* discoveryRelay(
     settings: SignInProviderSettings,
     timing: DiscoveryTiming = discoveryTiming
   ) {
-    const documents = yield* Ref.make<ReadonlyMap<SignInProviderId, string>>(
-      new Map()
-    );
-
-    const relay = yield* relayServer(documents);
-
     const providers = [
       ...Option.match(settings.google, {
         onNone: () => [],
@@ -180,10 +204,27 @@ export const discoveryRelay = Effect.fn("discoveryRelay")(
       }),
     ];
 
+    if (providers.length === 0) {
+      return {
+        offered: Effect.succeed<readonly SignInProviderId[]>([]),
+        settings,
+      };
+    }
+
+    const documents = yield* Ref.make<ReadonlyMap<SignInProviderId, string>>(
+      new Map()
+    );
+
+    const relay = yield* relayServer(documents);
+
     const serve = (id: SignInProviderId, body: Json) =>
-      Ref.update(
-        documents,
-        (served) => new Map([...served, [id, JSON.stringify(body)]])
+      unavailableNow(id, 0).pipe(
+        Effect.andThen(
+          Ref.update(
+            documents,
+            (served) => new Map([...served, [id, JSON.stringify(body)]])
+          )
+        )
       );
 
     yield* Effect.forEach(
@@ -203,6 +244,7 @@ export const discoveryRelay = Effect.fn("discoveryRelay")(
           return;
         }
 
+        yield* unavailableNow(id, 1);
         yield* Effect.logError(
           `Sign-in with ${name} is off: its discovery document at ${url} could not be read in ${String(timing.attempts)} tries of ${formatted(timing.attemptTimeout)}. The server reads it again in the background until it answers.`
         );
@@ -212,7 +254,7 @@ export const discoveryRelay = Effect.fn("discoveryRelay")(
         yield* read(url, timing.attemptTimeout).pipe(
           Effect.flatMap((answer) => usable(name, url, answer)),
           Effect.tapError(() =>
-            Effect.logError(
+            Effect.logWarning(
               `Sign-in with ${name} is still off: its discovery document at ${url} could not be read, or lacks what OpenID Connect requires.`
             )
           ),

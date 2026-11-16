@@ -4,7 +4,7 @@ import { connection } from "next/server";
 
 import { signUpSettings } from "#auth/captcha.ts";
 import { providerErrorKey } from "#auth/errors.ts";
-import { signUpReturn } from "#auth/provider-return.ts";
+import { cameFromProvider, signUpReturn } from "#auth/provider-return.ts";
 import { invitationOf, signUpFormShown } from "#auth/sign-up-mode.ts";
 import { privacyUrlConfig, termsUrlConfig } from "#billing/terms.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
@@ -22,11 +22,11 @@ import { getPathname, Link } from "#i18n/navigation.ts";
 // went to. The providers to sign up with show where the form shows, above
 // it, and their sign-up carries the invitation too; the terms line under
 // the form covers both ways. A provider's refusal comes back here as
-// ?error=<code>, which only names a message.
+// ?error=<code>, which only names a message, with ?from=provider.
 const SignUpPage = async ({ searchParams }: PageProps<"/[locale]/sign-up">) => {
   await connection();
 
-  const { error, invitation } = await searchParams;
+  const { error, from, invitation } = await searchParams;
   const t = await getTranslations("SignUpPage");
   const locale = await getLocale();
   const invitationId = invitationOf(invitation);
@@ -56,6 +56,7 @@ const SignUpPage = async ({ searchParams }: PageProps<"/[locale]/sign-up">) => {
           <FormError
             error={Option.getOrNull(
               providerErrorKey(error, {
+                fromProvider: cameFromProvider(from),
                 providersOffered: providers.length > 0,
                 signUpOffered: true,
               })

@@ -2,9 +2,10 @@
 // account without a payment method sends 60 requests a minute, one that
 // pays the setting, and a workspace staff raised its own limit; each answer
 // names the policy, and the free tier's refusal says what a payment method
-// gives.
+// gives. The requests run on a clock the test holds still, so the
+// one-minute window never turns while they are counted.
 import { assert, layer } from "@effect/vitest";
-import { Config, Effect, Layer, Schema } from "effect";
+import { Clock, Config, Context, Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
 import {
@@ -20,18 +21,74 @@ const stripeMockUrl = Config.String("STRIPE_MOCK_URL").pipe(
   Config.withDefault("http://127.0.0.1:12111")
 );
 
+// The clock the app's requests read: the live one, unless the test pins
+// it to an instant, when time stands still for them (sleeps still pass).
+class RequestClock extends Context.Service<
+  RequestClock,
+  {
+    readonly clock: Clock.Clock;
+    /** Runs `effect` with the requests' clock pinned to `millis`. */
+    readonly pinnedAt: <A, E, R>(
+      millis: number,
+      effect: Effect.Effect<A, E, R>
+    ) => Effect.Effect<A, E, R>;
+  }
+>()("peal-server/test/app/RequestClock") {
+  static readonly layer = Layer.sync(RequestClock, () => {
+    const live = Clock.Clock.defaultValue();
+    let pinned: number | undefined;
+
+    const millis = () => pinned ?? live.currentTimeMillisUnsafe();
+
+    const nanos = () =>
+      pinned === undefined
+        ? live.currentTimeNanosUnsafe()
+        : BigInt(pinned) * 1_000_000n;
+
+    const clock: Clock.Clock = {
+      currentTimeMillis: Effect.sync(millis),
+      currentTimeMillisUnsafe: millis,
+      currentTimeNanos: Effect.sync(nanos),
+      currentTimeNanosUnsafe: nanos,
+      monotonicTimeNanos: live.monotonicTimeNanos,
+      monotonicTimeNanosUnsafe: () => live.monotonicTimeNanosUnsafe(),
+      sleep: (duration) => live.sleep(duration),
+    };
+
+    return RequestClock.of({
+      clock,
+      pinnedAt: (at, effect) =>
+        Effect.acquireUseRelease(
+          Effect.sync(() => {
+            pinned = at;
+          }),
+          () => effect,
+          () =>
+            Effect.sync(() => {
+              pinned = undefined;
+            })
+        ),
+    });
+  });
+}
+
 const BillingApp = Layer.unwrap(
   Effect.gen(function* billingApp() {
     const apiUrl = yield* stripeMockUrl;
+    const { clock } = yield* RequestClock;
 
-    return TestApp.layerWith({
-      ...unconfirmedEmails,
-      STRIPE_API_URL: apiUrl,
-      STRIPE_SECRET_KEY: "sk_test_0123456789syntheticratelimits",
-      STRIPE_WEBHOOK_SECRET: "whsec_synthetic_rate_limit_test_secret",
-    });
+    return TestApp.layerWith(
+      {
+        ...unconfirmedEmails,
+        STRIPE_API_URL: apiUrl,
+        STRIPE_SECRET_KEY: "sk_test_0123456789syntheticratelimits",
+        STRIPE_WEBHOOK_SECRET: "whsec_synthetic_rate_limit_test_secret",
+      },
+      undefined,
+      Layer.succeed(Clock.Clock, clock)
+    );
   })
-);
+).pipe(Layer.provideMerge(RequestClock.layer));
 
 const Test = Layer.mergeAll(BillingApp, MigratedSqlLive);
 
@@ -79,10 +136,16 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const { key, path } = yield* keyed("limit-free");
           const headers = { authorization: `Bearer ${key}` };
 
-          const replies = yield* Effect.forEach(
-            Array.from({ length: 61 }, (_, index) => index),
-            () => app.request(path, { headers }),
-            { concurrency: 4 }
+          const requests = yield* RequestClock;
+
+          // All in one window: the clock stands still while they are sent.
+          const replies = yield* requests.pinnedAt(
+            Date.now(),
+            Effect.forEach(
+              Array.from({ length: 61 }, (_, index) => index),
+              () => app.request(path, { headers }),
+              { concurrency: 4 }
+            )
           );
 
           assert.strictEqual(
@@ -90,24 +153,22 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             '"free";q=60;w=60'
           );
 
-          const refused = replies.filter(({ status }) => status === 429);
-
-          // The window may turn while the test runs: the count then starts
-          // again, and nothing is refused.
-          if (refused.length === 0) {
-            assert.include(
-              replies.map((reply) =>
+          // Each request counted once, sent together or not: 59 left after
+          // the first, none after the 60th, and none for the 61st.
+          assert.deepStrictEqual(
+            replies
+              .map((reply) =>
                 Number(
                   left.exec(reply.headers.get("ratelimit") ?? "")?.groups?.[
                     "remaining"
                   ]
                 )
-              ),
-              0
-            );
+              )
+              .toSorted((a, b) => a - b),
+            [0, ...Array.from({ length: 60 }, (_, index) => index)]
+          );
 
-            return;
-          }
+          const refused = replies.filter(({ status }) => status === 429);
 
           assert.strictEqual(refused.length, 1);
 

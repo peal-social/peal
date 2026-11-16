@@ -127,7 +127,8 @@ const providerFlowCodes: ReadonlySet<string> = new Set([
 
 // What the OAuth server answers an application's authorization it refuses
 // before the person is asked (RFC 6749 and OpenID Connect's codes, and Better
-// Auth's own), which it sends to the sign-in page as well.
+// Auth's own), which it sends to the sign-in page as well. A provider sends
+// some of them back to its callback too: those come marked.
 const authorizationErrorCodes: ReadonlySet<string> = new Set([
   "account_selection_required",
   "client_disabled",
@@ -159,16 +160,24 @@ export type ProviderErrorKey =
 /**
  * The catalogue key (under `Auth.errors`) that explains why a provider's
  * sign-in came back with `error`, or none when the address has none; a
- * plain failure where the server offers no provider. An
+ * plain failure where the server offers no provider. A code the
+ * authorization server and providers both send is the application's
+ * refusal unless the address carries a provider's mark. An
  * unknown code reads as a failure. Where the server takes no sign-up from
  * anyone, an unknown address is told so without being sent to sign up.
  */
 export const providerErrorKey = (
   error: string | readonly string[] | undefined,
   {
+    fromProvider,
     providersOffered,
     signUpOffered,
   }: {
+    /**
+     * Whether the address carries a provider's mark (`cameFromProvider`):
+     * else a code both send is the authorization server's.
+     */
+    readonly fromProvider: boolean;
     /** Whether the server offers a provider: else no error is a provider's. */
     readonly providersOffered: boolean;
     readonly signUpOffered: boolean;
@@ -181,7 +190,12 @@ export const providerErrorKey = (
   const code = Option.getOrUndefined(decodeCode(error));
 
   if (code !== undefined && authorizationErrorCodes.has(code)) {
-    return Option.some("AUTHORIZATION_FAILED");
+    // A provider sends the same codes back to its callback.
+    return Option.some(
+      fromProvider && providersOffered
+        ? "PROVIDER_FAILED"
+        : "AUTHORIZATION_FAILED"
+    );
   }
 
   // Better Auth sends its other errors here too (its own error page's): on

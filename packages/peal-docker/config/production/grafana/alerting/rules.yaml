@@ -113,6 +113,39 @@ groups:
                     type: gt
                     params: [5]
 
+      - uid: peal-sign-in-provider-unavailable
+        title: A sign-in provider is off
+        condition: B
+        for: 10m
+        # Set only where a provider is: GOOGLE_SIGN_IN_* or PEAL_OIDC_*.
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: The server could not read a sign-in provider's discovery document, so its button is off and nobody signs in with it (peal.workspace.sign_in_providers.unavailable, by provider). The server logged one error when it left the provider out ("Sign-in with ... is off") and reads the document again at least once a minute, each failure a warning; it offers the provider again once it answers. Check the provider's status and that the server reaches its issuer (Google's, or PEAL_OIDC_ISSUER).
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              refId: A
+              instant: true
+              # 1 while a provider is left out; 0 once it answers.
+              expr: max(peal_workspace_sign_in_providers_unavailable) or vector(0)
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+
       - uid: peal-app-refused
         title: A platform refuses the server's app until it is paid for
         condition: B

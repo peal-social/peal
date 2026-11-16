@@ -369,12 +369,16 @@ The staff context follows these rules too. What the law has a host keep is in
   the process, so the library's own read, which has no time limit and
   cannot be handed a document (`betterFetch` takes only http URLs), never
   waits on the provider. One that does not answer is left out (the relay
-  answers 503, Better Auth skips it) and read again in the background, at
-  least once a minute, each failure an error log line, which the server's
-  error-log alert (more than 5 in 10 minutes) picks up; once it answers the
-  relay serves it, `providersOffered` lists it and Better Auth's own retry
-  installs it at the next sign-in naming it. A document without OpenID
+  answers 503, Better Auth skips it), logged as an error once and read
+  again in the background, at least once a minute, each failure a warning
+  (an error a minute would keep the error-log alert lit and hide every
+  other error); `providersUnavailable`
+  (`peal.workspace.sign_in_providers.unavailable`, by provider) is 1 while
+  it is left out, which `peal-sign-in-provider-unavailable` alerts on. Once
+  it answers the relay serves it, `providersOffered` lists it and Better
+  Auth's own retry installs it at the next sign-in naming it. A document without OpenID
   Connect's required fields stops the server (`SignInProviderUnusable`).
+  With no provider set, no relay is opened.
 - Discovery, token and key requests go to the host the operator set,
   through the library's own fetch, not `publicHttpClient`: a company's
   provider may be on a private network, and no user input picks it. Leave
