@@ -62,7 +62,7 @@ To publish an image or a video, the server reads it from the media store, whole,
 | DEV                     | `dev.to`                                                                                                                                              | Images read whole                                                                            |
 | Hashnode                | `gql-beta.hashnode.com`, and the upload address Hashnode gives for each image                                                                         | Images sent as they are read                                                                 |
 
-The platforms send people back to `PUBLIC_URL/connect/<platform>/callback`, through their browser. They never call the server themselves, apart from Bluesky reading Peal's client description, and Meta's data deletion requests.
+The platforms send people back to `PUBLIC_URL/connect/<platform>/callback`, through their browser. They never call the server themselves, apart from Bluesky reading Peal's client description, and Meta's data deletion requests and events.
 
 ### Addresses to register [#platform-addresses]
 
@@ -290,6 +290,8 @@ In the dashboard, give each use case the addresses [the command](#platform-addre
 | Facebook Login | Its valid OAuth redirect URIs, two of them, for Facebook Pages and for Instagram; its data deletion request URL; its deauthorize callback URL |
 | Instagram      | Its business login's OAuth redirect URIs; its data deletion request URL; its deauthorize callback URL                                         |
 | Threads        | Its redirect callback URL; its data deletion request URL; its deauthorize callback URL                                                        |
+
+The command also prints a **Webhooks** callback URL for Facebook Login and for Instagram, where Meta tells your server that an account's direct messages changed. The server takes those events only once `META_WEBHOOK_VERIFY_TOKEN` is set: give its value as the **Verify Token** beside the address, which must answer Meta without a login page in front. Meta sends events only from a published (Live) app. The server checks each one's signature with its app's secret before reading it, and reads nothing of it but ids.
 
 Meta fetches the images and videos it publishes from links to the media store, valid for two hours: the store must answer Meta's servers on the internet, through presigned links or `PEAL_MEDIA_PUBLIC_BASE_URL`. The server signs every call through Facebook Login with the main app's secret, so you may turn on **Require App Secret** in the app's advanced settings. Calls with an Instagram Login token carry no proof.
 

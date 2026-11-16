@@ -485,6 +485,40 @@
   put off and counted (`peal.engagement.messages.box_failures`, alert
   `peal-messages-box-failing`); `.left` and `.unfinished` feed
   `peal-messages-behind`.
+- A platform's events are nudges, never content. Meta's reach
+  `/api/platform-events/meta/:app` (`src/app/platform-events/`, outside the
+  contract: the server's guide), which decodes ids alone
+  (`MessageEvent`: the account, a message's id, `deleted`) and hands them
+  to `ReceiveMessageEvents`: in one transaction, for every channel of the
+  account (`MessageChannelsOfAccount`, the channels context's
+  `ChannelDirectory.withAccount`; a Page may be in several workspaces)
+  that has a box, the messages taken back are deleted
+  (`deleteTakenBack`, under the box's row, which `bringForward` holds),
+  the box's next read brought to now (never later) and
+  `ReadMessageBoxV1` started (payload `channelId`, `slot`: the instant
+  floored to ten seconds, one execution a channel and slot; activity
+  `read`; persisted contract, fixture in `fixtures/persisted`). A channel
+  without a box (messages off) or an unknown account is `ignored`: an
+  event writes nothing else, checks no permission (the signature is the
+  authority), and tells nobody (the read does). The job runs
+  `CollectMessages.readBox`, the run's own turn for one box; a failure
+  ends it, and the schedule reads the box later: the collection stays
+  the backup, so a lost event costs latency only. Every message kept
+  still comes from the platform's read through the gate.
+- Before a box's read, `CollectMessages` asks its platform for the
+  account's events (`MessageSource.follow`, the gate's `FollowMessages`)
+  when `message_boxes.subscribed_at` is none or a day old
+  (`subscriptionDue`: Meta drops a subscription after an hour of failed
+  deliveries), then writes it; a refusal is logged by the channel's id
+  and the read goes on. Turning a channel's messages off asks it to stop
+  first (`unfollow`, `UnfollowMessages`, best effort, `unfollowWait`).
+  A `MessagePlatform` without `follow`/`unfollow` (Mastodon, Bluesky)
+  answers `unneeded` and calls nothing; one with them answers
+  `unneeded` to `unfollow` while another channel of Peal's follows the
+  account. `channelGone` asks nothing: it runs in the channels
+  context's transaction, and a moved channel's account is still
+  followed. Never run any of it against Meta before the setting names a
+  Meta platform anywhere: U9b's adapters, and the sandbox's trial first.
 - Mastodon (`platforms/mastodon/mastodon-messages.ts`, docs read
   2026-11-14): a message is a status of `direct` visibility;
   `/api/v1/conversations` (40 a page, 5 pages, the `Link` header's next

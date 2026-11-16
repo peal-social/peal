@@ -62,7 +62,7 @@ Pour publier une image ou une vidéo, le serveur la lit dans le stockage des mé
 | DEV                     | `dev.to`                                                                                                                                             | Images lues entières                                                                                        |
 | Hashnode                | `gql-beta.hashnode.com`, et l’adresse d’envoi que Hashnode donne pour chaque image                                                                   | Images envoyées à mesure qu’elles sont lues                                                                 |
 
-Les plateformes renvoient les personnes vers `PUBLIC_URL/connect/<plateforme>/callback`, par leur navigateur. Elles n’appellent jamais le serveur elles-mêmes, sauf Bluesky, qui lit la description du client de Peal, et les demandes de suppression de données de Meta.
+Les plateformes renvoient les personnes vers `PUBLIC_URL/connect/<plateforme>/callback`, par leur navigateur. Elles n’appellent jamais le serveur elles-mêmes, sauf Bluesky, qui lit la description du client de Peal, et les demandes de suppression de données et les événements de Meta.
 
 ### Adresses à enregistrer [#platform-addresses]
 
@@ -297,6 +297,8 @@ Dans le tableau de bord, donnez à chaque cas d’usage les adresses que [la com
 | Facebook Login | Ses URI de redirection OAuth valides, deux, pour les Pages Facebook et pour Instagram ; son URL de demande de suppression des données ; son URL de rappel d’annulation d’autorisation |
 | Instagram      | Les URI de redirection OAuth de sa connexion professionnelle ; son URL de demande de suppression des données ; son URL de rappel d’annulation d’autorisation                          |
 | Threads        | Son URL de rappel de redirection ; son URL de demande de suppression des données ; son URL de rappel d’annulation d’autorisation                                                      |
+
+La commande affiche aussi une URL de rappel **Webhooks** pour Facebook Login et pour Instagram, où Meta signale à votre serveur que les messages privés d’un compte ont changé. Le serveur ne prend ces événements qu’une fois `META_WEBHOOK_VERIFY_TOKEN` défini : donnez sa valeur comme **Verify Token** à côté de l’adresse, qui doit répondre à Meta sans page de connexion devant elle. Meta n’envoie d’événements que depuis une application publiée (Live). Le serveur vérifie la signature de chacun avec le secret de son application avant de le lire, et n’en lit rien que des identifiants.
 
 Meta va chercher les images et vidéos qu’il publie par des liens vers le stockage des médias, valables deux heures : le stockage doit répondre aux serveurs de Meta sur Internet, par des liens présignés ou `PEAL_MEDIA_PUBLIC_BASE_URL`. Le serveur signe chaque appel passant par Facebook Login avec le secret de l’application principale : vous pouvez activer **Exiger la clé secrète** dans les paramètres avancés de l’application. Les appels avec un jeton de connexion Instagram ne portent pas de preuve.
 

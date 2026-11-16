@@ -82,6 +82,9 @@ peal_credentials:
   # X_CLIENT_SECRET: REPLACE
   # META_APP_SECRET: REPLACE
   # INSTAGRAM_APP_SECRET: REPLACE
+  # The Verify Token typed in the Meta apps' Webhooks settings (openssl rand
+  # -hex 32, kept in the keychain): the server takes Meta's events with it.
+  # META_WEBHOOK_VERIFY_TOKEN: REPLACE
   # THREADS_APP_SECRET: REPLACE
   # TIKTOK_CLIENT_SECRET: REPLACE
   # YOUTUBE_CLIENT_SECRET: REPLACE
