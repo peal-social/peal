@@ -246,6 +246,29 @@ describe("the comment rule form", () => {
     );
   });
 
+  it("never says sent of a private reply no longer kept", async () => {
+    const purged: CommentRule = {
+      ...privateRule,
+      matches: [
+        {
+          code: null,
+          commentId: "0190f3a0-0000-7000-8000-0000000c0104",
+          lookedAt: DateTime.makeUnsafe("2026-06-01T08:00:00Z"),
+          outcome: "replied",
+          privateCode: null,
+          privateReplyId: "0190f3a0-0000-7000-8000-0000000c0304",
+          privateStatus: null,
+          replyId: "0190f3a0-0000-7000-8000-0000000c0204",
+        },
+      ],
+    };
+
+    const english = await render("en", purged);
+
+    expect(english).not.toContain("Private message sent");
+    expect(english).toContain("Private message made, no longer kept");
+  });
+
   it("reads a rule's private outcomes in French", async () => {
     await expect(render("fr", privateRule)).resolves.toContain(
       "Message privé envoyé"

@@ -31,7 +31,8 @@ type Match = CommentRule["matches"][number];
 // rule without one, or a match it did not answer.
 const privateOutcomeOf = (match: Match) => {
   if (match.privateReplyId !== null) {
-    return { status: match.privateStatus ?? "sent" } as const;
+    // Its row is purged 30 days after it settled: how it ended is gone.
+    return { status: match.privateStatus ?? "gone" } as const;
   }
 
   if (match.privateCode === "waiting") {
