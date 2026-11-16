@@ -210,11 +210,7 @@ licences:
 
 Peal is fair source, not open source: you may use, modify and self-host it for
 anything but offering it to others as a competing service, and each release
-becomes Apache-2.0 two years after it ships. Each release is named after
-the day it ships (`v2026.11.16`, in UTC), so its tag and
-[its GitHub release](https://github.com/peal-social/peal/releases) record
-the date its two years run from; the docs' Changelog lists each release
-with what changed. The SDKs are generated from the
+becomes Apache-2.0 two years after it ships. The SDKs are generated from the
 contract's OpenAPI document, so the contract is Apache-2.0 with them: what an
 SDK user installs, and the API description it comes from, carry no FSL terms.
 Each `package.json` says which licence applies, and each Apache-2.0 package

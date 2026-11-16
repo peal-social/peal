@@ -47,6 +47,22 @@ const sectionOf = (
   return scopes.includes("security") ? "security" : sectionOfType.get(type);
 };
 
+// A work package's code at the end of a title, which means nothing to
+// readers: a capital letter and digits, perhaps a letter, perhaps words
+// (`(U15a)`, `(T10)`, `(U4 steps 1-2)`, `(P1 to P3)`).
+const workPackage = /\s*\([A-Z]\d+[a-z]?(?:\s[^()]*)?\)$/u;
+
+/** A description without the work-package codes that end it. */
+export const withoutCodes = (description: string): string => {
+  let text = description.trim();
+
+  while (workPackage.test(text)) {
+    text = text.replace(workPackage, "");
+  }
+
+  return text;
+};
+
 /** The entry a commit's subject makes, or undefined for one left out. */
 export const entryOf = (subject: string): Entry | undefined => {
   const groups = title.exec(subject.trim())?.groups;
@@ -67,7 +83,7 @@ export const entryOf = (subject: string): Entry | undefined => {
     ? undefined
     : {
         breaking: breaking === "!",
-        description: description.trim(),
+        description: withoutCodes(description),
         pull: Number(pull),
         section,
       };

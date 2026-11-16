@@ -10,6 +10,8 @@
 //     history file the docs read, this release in it.
 //   bun packages/peal-docs/scripts/changelog.ts history --repo <checkout> --write <file>
 //     The history file with the releases tagged so far alone.
+//   --exclude "12 34" leaves those pull requests out (release.yml passes
+//   the ones labelled no-changelog).
 //   bun packages/peal-docs/scripts/changelog.ts fingerprint
 //     A hash of the history the docs would show, for Nx's cache.
 import { createHash } from "node:crypto";
@@ -18,7 +20,7 @@ import { parseArgs } from "node:util";
 
 import { historyFile } from "../changelog/file.ts";
 import { commitOf, historyFromGit, upcoming } from "../changelog/history.ts";
-import type { History } from "../changelog/history.ts";
+import type { History, Options } from "../changelog/history.ts";
 import { loadHistory } from "../changelog/load.ts";
 import { releaseNotes } from "../changelog/render.ts";
 import { isDate, today } from "../changelog/versions.ts";
@@ -28,6 +30,7 @@ const { positionals, values } = parseArgs({
   options: {
     commit: { default: "HEAD", type: "string" },
     date: { type: "string" },
+    exclude: { default: "", type: "string" },
     repo: { default: ".", type: "string" },
     write: { type: "string" },
   },
@@ -37,6 +40,18 @@ const fail = (message: string): never => {
   process.stderr.write(`changelog: ${message}\n`);
   process.exit(1);
 };
+
+// The pull requests labelled `no-changelog`, by number, separated by
+// spaces, commas or lines, as `gh pr list --jq '.[].number'` prints them.
+const excludedNumbers = values.exclude
+  .split(/[\s,]+/u)
+  .filter((part) => part !== "");
+
+if (excludedNumbers.some((part) => !/^[1-9]\d*$/u.test(part))) {
+  fail(`--exclude takes pull request numbers, not ${values.exclude}`);
+}
+
+const options: Options = { excluded: new Set(excludedNumbers.map(Number)) };
 
 const date = values.date ?? today();
 
@@ -79,7 +94,7 @@ const release = (asJson: boolean): void => {
     return;
   }
 
-  const next = upcoming(values.repo, commit, date);
+  const next = upcoming(values.repo, commit, date, options);
   const notes = releaseNotes(next.release, next.history.repository);
 
   if (asJson) {
@@ -112,7 +127,7 @@ switch (command) {
       fail("history needs --write <file>");
     }
 
-    write(historyFromGit(values.repo));
+    write(historyFromGit(values.repo, options));
     break;
   }
 

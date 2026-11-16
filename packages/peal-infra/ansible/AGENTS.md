@@ -76,7 +76,8 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   one generator, `packages/peal-docs/changelog` (run as
   `packages/peal-docs/scripts/changelog.ts`), which `release.yml` runs
   before the images build, writing the history into the checkout's
-  `packages/peal-docs/changelog.json` for the docs. `gh`'s right to push is
+  `packages/peal-docs/changelog.json` for the docs, without the pull
+  requests labelled `no-changelog` (read with `gh`). `gh`'s right to push is
   checked before anything changes; tags are fetched first, a tagged commit
   keeps its tag and an existing release is left alone, so a second run
   publishes nothing, and check mode reports instead

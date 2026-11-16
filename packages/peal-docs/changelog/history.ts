@@ -1,11 +1,14 @@
 // The release history, read from Git: each app tag (versions.ts) is a
 // release, holding the commits on main's first-parent line since the tag
-// before it. The first release, with no tag before it, holds the whole
-// history, of which only the squash-merged pull requests make entries
-// (entries.ts). Git is read only here, through its command line, and never
-// over the network: a clone without tags, a shallow one or no repository at
-// all gives an empty history, which the page says.
+// before it, of which only the squash-merged pull requests make entries
+// (entries.ts), but those labelled `no-changelog` when the caller names
+// them. The first release, with no tag before it, lists none: it has the
+// summary written by hand in first-release.md. Git is read only here,
+// through its command line, and never over the network: a clone without
+// tags, a shallow one or no repository at all gives an empty history,
+// which the page says.
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 import { entriesOf } from "./entries.ts";
 import type { Entry } from "./entries.ts";
@@ -25,6 +28,8 @@ export interface Release {
   /** The commit it deployed, in full. */
   readonly commit: string;
   readonly entries: readonly Entry[];
+  /** The first release's summary, in Markdown, in place of entries. */
+  readonly summary?: string;
 }
 
 export interface History {
@@ -37,6 +42,17 @@ export interface History {
 export const repository = "peal-social/peal";
 
 export const emptyHistory: History = { releases: [], repository };
+
+/** What a history leaves out: the pull requests labelled `no-changelog`. */
+export interface Options {
+  readonly excluded: ReadonlySet<number>;
+}
+
+const noOptions: Options = { excluded: new Set() };
+
+/** The first release's summary, as written in first-release.md. */
+export const firstReleaseSummary = (): string =>
+  readFileSync(new URL("first-release.md", import.meta.url), "utf-8").trim();
 
 const git = (folder: string, args: readonly string[]): string =>
   execFileSync("git", ["-C", folder, ...args], {
@@ -73,32 +89,44 @@ const appTags = (folder: string): readonly Tagged[] =>
 /** The subjects of main's commits after `from` up to `to`, newest first. */
 const subjects = (
   folder: string,
-  from: string | undefined,
+  from: string,
   to: string
 ): readonly string[] =>
-  git(folder, [
-    "log",
-    "--first-parent",
-    "--format=%s",
-    from === undefined ? to : `${from}..${to}`,
-  ])
+  git(folder, ["log", "--first-parent", "--format=%s", `${from}..${to}`])
     .split("\n")
     .filter((line) => line !== "");
 
 const releaseOf = (
   folder: string,
   tagged: Tagged,
-  before: Tagged | undefined
-): Release => ({
-  commit: tagged.commit,
-  date: tagged.version.date,
-  entries: entriesOf(subjects(folder, before?.commit, tagged.commit)),
-  tag: tagged.tag,
-});
+  before: Tagged | undefined,
+  options: Options
+): Release => {
+  const release = {
+    commit: tagged.commit,
+    date: tagged.version.date,
+    tag: tagged.tag,
+  };
 
-const historyOf = (folder: string, tags: readonly Tagged[]): History => ({
+  if (before === undefined) {
+    return { ...release, entries: [], summary: firstReleaseSummary() };
+  }
+
+  return {
+    ...release,
+    entries: entriesOf(subjects(folder, before.commit, tagged.commit)).filter(
+      (entry) => !options.excluded.has(entry.pull)
+    ),
+  };
+};
+
+const historyOf = (
+  folder: string,
+  tags: readonly Tagged[],
+  options: Options
+): History => ({
   releases: tags
-    .map((tagged, index) => releaseOf(folder, tagged, tags[index - 1]))
+    .map((tagged, index) => releaseOf(folder, tagged, tags[index - 1], options))
     .toReversed(),
   repository,
 });
@@ -118,9 +146,12 @@ export const commitOf = (folder: string, ref: string): string | undefined => {
 };
 
 /** The releases the repository's tags name, or none without Git or tags. */
-export const historyFromGit = (folder: string): History => {
+export const historyFromGit = (
+  folder: string,
+  options: Options = noOptions
+): History => {
   try {
-    return historyOf(folder, appTags(folder));
+    return historyOf(folder, appTags(folder), options);
   } catch {
     return emptyHistory;
   }
@@ -144,13 +175,14 @@ export interface Upcoming {
 export const upcoming = (
   folder: string,
   commit: string,
-  date: string
+  date: string,
+  options: Options = noOptions
 ): Upcoming => {
   const tags = appTags(folder);
   const own = tags.find((tagged) => tagged.commit === commit);
 
   if (own !== undefined) {
-    const history = historyOf(folder, tags);
+    const history = historyOf(folder, tags, options);
     const release = history.releases.find((found) => found.tag === own.tag);
 
     if (release !== undefined) {
@@ -173,11 +205,11 @@ export const upcoming = (
   }
 
   const pending: Tagged = { commit, tag: tagOf(version), version };
-  const history = historyOf(folder, [...tags, pending]);
+  const history = historyOf(folder, [...tags, pending], options);
 
   return {
     history,
-    release: releaseOf(folder, pending, newest),
+    release: releaseOf(folder, pending, newest, options),
     tagged: false,
   };
 };

@@ -81,6 +81,10 @@ from too: the release history file `changelog.json` when `release.yml`
 wrote one, else the app's tags in Git (`vYYYY.MM.DD`, `.2` for a second
 that day), else nothing, and the page says that nothing has been released
 yet (a shallow clone, as CI's, or the images' builds without the file).
-Entries are the pull requests' English titles; `entryText` in
-`changelog/render.ts` is where a translation plugs in. `nx run
+Entries are the pull requests' English titles, without a trailing
+work-package code (`(U4)`) and without those `release.yml` names as
+labelled `no-changelog`; the first release has instead the summary in
+`changelog/first-release.md`, plain English with no internal codes, names
+or addresses. `entryText` and `summaryText` in `changelog/render.ts` are
+where a translation plugs in. `nx run
 peal-docs:unit` tests it, on synthetic repositories.

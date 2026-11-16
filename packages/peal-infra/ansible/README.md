@@ -856,12 +856,15 @@ repository. You need Bun, which runs the generator, and, for production,
   `v2026.11.16.2`, `.3`… for the next ones that day, which a version sort
   (`git tag --sort=v:refname`) puts after the first. The SDKs keep their
   own tags (`sdk-<language>-v…`, `packages/peal-sdk/go/v…`), which the
-  pattern never matches. A release's day is the one its licence counts its
-  two years from ([Licensing](../../../README.md#licensing)).
+  pattern never matches.
 - **The notes** list the pull requests merged on `main` since the last app
   tag, by their titles (`feat`, `fix`, `perf`, and `security` or a
-  `security` scope), each linked to its pull request; the first release,
-  with no tag before it, lists every pull request. The generator is the
+  `security` scope), each linked to its pull request, without the
+  work-package code that may end a title (`(U4)`) and without the pull
+  requests labelled `no-changelog`, which `release.yml` reads with `gh`
+  (production only: the sandbox's docs list them). The first release, with
+  no tag before it, lists none: its notes are the summary written by hand
+  in `packages/peal-docs/changelog/first-release.md`. The generator is the
   docs' (`packages/peal-docs/changelog`, run as
   `packages/peal-docs/scripts/changelog.ts`), so the notes and the docs'
   Changelog page say the same. To see what the next release would hold:

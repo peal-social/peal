@@ -22,6 +22,7 @@ const ReleaseSchema = Schema.Struct({
   commit: Schema.String.check(Schema.isPattern(/^[0-9a-f]{40}$/u)),
   date: Schema.String.check(Schema.makeFilter(isDate)),
   entries: Schema.Array(EntrySchema),
+  summary: Schema.optionalKey(Schema.NonEmptyString),
   tag: Schema.String.check(
     Schema.makeFilter((tag: string) => versionOfTag(tag) !== undefined)
   ),

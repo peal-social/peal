@@ -1,7 +1,8 @@
 // The history in Markdown: a release's notes for GitHub, and the docs'
 // Changelog page in each language. The page's headings, dates and words are
-// the language's; the entries stay in English until entryText translates
-// them, the one place a translation plugs in.
+// the language's; the entries and the first release's summary stay in
+// English until entryText and summaryText translate them, the places a
+// translation plugs in.
 import { sections } from "./entries.ts";
 import type { Entry, Section } from "./entries.ts";
 import type { History, Release } from "./history.ts";
@@ -112,17 +113,37 @@ const sectionsOf = (
         ];
   });
 
+/**
+ * The first release's summary in a language: written by hand, in English,
+ * in first-release.md; a translation, once there is one, is returned here.
+ */
+export const summaryText = (summary: string, _locale: Locale): string =>
+  summary;
+
+/** A release's body: its summary, or its sections, or that it has none. */
+const bodyOf = (
+  release: Release,
+  locale: Locale,
+  repository: string,
+  heading: (section: Section) => string
+): readonly string[] => {
+  if (release.summary !== undefined) {
+    return [summaryText(release.summary, locale)];
+  }
+
+  const parts = sectionsOf(release, locale, repository, heading);
+
+  return parts.length === 0 ? [words[locale].empty] : parts;
+};
+
 /** The notes of a GitHub release: its sections, in English. */
-export const releaseNotes = (release: Release, repository: string): string => {
-  const parts = sectionsOf(
+export const releaseNotes = (release: Release, repository: string): string =>
+  `${bodyOf(
     release,
     "en",
     repository,
     (section) => `## ${words.en.sections[section]}`
-  );
-
-  return `${(parts.length === 0 ? [words.en.empty] : parts).join("\n\n")}\n`;
-};
+  ).join("\n\n")}\n`;
 
 const dayOf = (date: string, locale: Locale): string =>
   new Intl.DateTimeFormat(words[locale].dateLocale, {
@@ -140,18 +161,16 @@ const pageSection = (
 ): string => {
   const anchor = anchorOf(release.tag);
 
-  const parts = sectionsOf(
-    release,
-    locale,
-    repository,
-    (section) =>
-      `### ${words[locale].sections[section]} [#${anchor}-${section}]`
-  );
-
   return [
     `## ${release.tag} [#${anchor}]`,
     words[locale].released(dayOf(release.date, locale)),
-    ...(parts.length === 0 ? [words[locale].empty] : parts),
+    ...bodyOf(
+      release,
+      locale,
+      repository,
+      (section) =>
+        `### ${words[locale].sections[section]} [#${anchor}-${section}]`
+    ),
   ].join("\n\n");
 };
 

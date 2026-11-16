@@ -23,6 +23,7 @@ from conftest import INFRA, play_tasks, recap_of, settings
 CHECK = "Check that gh may publish the app's release"
 STOP = "Stop unless gh may publish the app's release"
 FETCH = "Fetch the app's release tags"
+LABELS = "Read the pull requests labelled no-changelog"
 NAME = "Name the app's release"
 READ = "Read the app's release"
 NAMED = "Stop unless the app's release has a name"
@@ -30,7 +31,7 @@ HISTORY = "Write the release history the docs show"
 VIEW = "Read whether GitHub has the app's release"
 PUBLISH = "Publish the app's release on GitHub"
 REPORT = "Report the app's release check mode leaves out"
-TASKS = [CHECK, STOP, FETCH, NAME, READ, NAMED, HISTORY, VIEW, PUBLISH, REPORT]
+TASKS = [CHECK, STOP, FETCH, LABELS, NAME, READ, NAMED, HISTORY, VIEW, PUBLISH, REPORT]
 
 BUN = shutil.which("bun")
 SCRIPT = INFRA.parent.parent / "peal-docs" / "scripts" / "changelog.ts"
@@ -39,8 +40,9 @@ DAY = "2026-11-16"
 pytestmark = pytest.mark.skipif(BUN is None, reason="Bun is not installed")
 
 # gh as the release needs it: `api` answers whether the account may push,
-# `release view` whether GitHub has a release, and `release create` makes
-# one, and its tag in the remote, as GitHub does. Each call is logged.
+# `pr list` the pull requests labelled no-changelog, `release view` whether
+# GitHub has a release, and `release create` makes one, and its tag in the
+# remote, as GitHub does. Each call is logged.
 FAKE_GH = """#!{python}
 import json, pathlib, subprocess, sys
 state = pathlib.Path({state!r})
@@ -50,6 +52,10 @@ with (state / "calls.jsonl").open("a") as log:
     log.write(json.dumps({{"args": args, "stdin": stdin}}) + "\\n")
 if args[0] == "api":
     print((state / "push").read_text().strip())
+elif args[:2] == ["pr", "list"]:
+    assert args[args.index("--label") + 1] == "no-changelog"
+    labelled = state / "labelled"
+    print(labelled.read_text().strip() if labelled.exists() else "")
 elif args[:2] == ["release", "view"]:
     if (state / "fail").exists():
         sys.stderr.write("HTTP 502: Bad Gateway\\n")
@@ -144,11 +150,13 @@ def _ok(ran: subprocess.CompletedProcess[str]) -> dict[str, int]:
     return recap_of(ran)
 
 
-def test_the_first_release_publishes_the_whole_history(release: Release) -> None:
+FIRST_RELEASE = (INFRA.parent.parent / "peal-docs" / "changelog" / "first-release.md").read_text().strip()
+
+
+def test_the_first_release_publishes_the_summary_written_by_hand(release: Release) -> None:
     commit = release.commit(
         "chore: set up the workspace",
         "feat(sdk): generate the clients (#1)",
-        "test: a test (#2)",
         "fix(web): keep the time zone (#3)",
     )
 
@@ -159,12 +167,24 @@ def test_the_first_release_publishes_the_whole_history(release: Release) -> None
         "release", "create", "v2026.11.16", "--repo", "peal-social/peal", "--target", commit,
         "--title", "v2026.11.16", "--notes-file", "-", "--latest",
     ]
-    assert created["stdin"] == (
-        "## Features\n\n- Generate the clients ([#1](https://github.com/peal-social/peal/pull/1))\n\n"
-        "## Fixes\n\n- Keep the time zone ([#3](https://github.com/peal-social/peal/pull/3))\n\n"
-    )
+    # The command module adds a newline to what it writes on stdin.
+    assert created["stdin"] == f"{FIRST_RELEASE}\n\n"
     assert recap["changed"] == 1
-    assert [found["tag"] for found in release.history()["releases"]] == ["v2026.11.16"]
+    [first] = release.history()["releases"]
+    assert first["tag"] == "v2026.11.16"
+    assert first["summary"] == FIRST_RELEASE
+    assert first["entries"] == []
+
+
+def test_a_release_leaves_out_the_pull_requests_labelled_no_changelog(release: Release) -> None:
+    _ok(release.run(release.commit("feat: a feature (#1)")))
+    commit = release.commit("feat: listed (#2)", "fix: unlisted (#3)", "feat: another unlisted (U4) (#4)")
+    (release.state / "labelled").write_text("3\n4\n")
+
+    _ok(release.run(commit))
+
+    second = release.created()[1]
+    assert second["stdin"] == "## Features\n\n- Listed ([#2](https://github.com/peal-social/peal/pull/2))\n\n"
 
 
 def test_releasing_the_same_commit_again_changes_nothing(release: Release) -> None:
@@ -269,7 +289,7 @@ def test_production_alone_publishes() -> None:
 def test_the_release_is_named_before_the_build_and_published_once_it_runs() -> None:
     names = [found["name"] for found in yaml.safe_load((INFRA / "roles" / "peal_release" / "tasks" / "main.yml").read_text())]
 
-    assert names.index(CHECK) < names.index(NAME) < names.index("Build and upload the images")
+    assert names.index(CHECK) < names.index(LABELS) < names.index(NAME) < names.index("Build and upload the images")
     assert names.index(HISTORY) < names.index("Build and upload the images")
     assert names.index(CHECK) < names.index("Create the release folder")
     assert names.index("Check the app through the tunnel") < names.index(VIEW) < names.index(PUBLISH)

@@ -110,7 +110,11 @@ release lists the titles of `feat` (Features), `fix` (Fixes), `perf`
 (Performance) and `security`, or any type with the scope `security`
 (Security), linked to their pull requests, on GitHub and on the docs'
 [Changelog](https://github.com/peal-social/peal/blob/main/packages/peal-docs/docs/changelog.mdx).
-The other types stay out of them.
+The other types stay out of them, and so does a pull request labelled
+`no-changelog`. A title is public release notes: write it for the people
+who use Peal, with no personal data (names, email addresses, accounts) and
+no internal codes. A work-package code at its end, such as `(U4)`, is
+dropped from the notes.
 
 A maintainer reviews each pull request, as
 [CODEOWNERS](CODEOWNERS) says. It merges through the merge queue, which runs

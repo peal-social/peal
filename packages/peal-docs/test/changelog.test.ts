@@ -12,6 +12,7 @@ import { entryOf } from "../changelog/entries.ts";
 import { historyFile, historyFromFile } from "../changelog/file.ts";
 import {
   emptyHistory,
+  firstReleaseSummary,
   historyFromGit,
   repository,
   upcoming,
@@ -97,6 +98,41 @@ describe("entries", () => {
       entryOf("chore(deps,security): bump a vulnerable package (#6)")?.section
     ).toBe("security");
     expect(entryOf("feat(sdk)!: rename a method (#7)")?.breaking).toBe(true);
+  });
+
+  it("drops the work-package codes that end a title", () => {
+    for (const [subject, description] of [
+      [
+        "feat(ads): Meta ads corrections and the trial command (U4 steps 1-2) (#127)",
+        "Meta ads corrections and the trial command",
+      ],
+      [
+        "feat: Discord and Telegram as chat destinations (U15a) (#120)",
+        "Discord and Telegram as chat destinations",
+      ],
+      [
+        "feat: the rate limit by standing (T10) (#104)",
+        "the rate limit by standing",
+      ],
+      ["feat: the site's frame (S0) (#70)", "the site's frame"],
+      ["docs: tabs (D3) (#90)", undefined],
+      [
+        "fix: the sign-in follow-ups (P1 to P3) (#125)",
+        "the sign-in follow-ups",
+      ],
+      ["fix: a follow-up (F1) (T2) (#9)", "a follow-up"],
+      [
+        "fix: alerts across gaps (#92 follow-up) (#95)",
+        "alerts across gaps (#92 follow-up)",
+      ],
+      [
+        "feat: a monthly ceiling (T9), with the follow-ups (#102)",
+        "a monthly ceiling (T9), with the follow-ups",
+      ],
+      ["feat: videos in H264 (#8)", "videos in H264"],
+    ] as const) {
+      expect(entryOf(subject)?.description).toBe(description);
+    }
   });
 
   it("leaves out the other types, and commits without a pull request", () => {
@@ -217,13 +253,26 @@ describe("history", () => {
     "feat(sdk)!: a breaking one (#4)",
   ];
 
-  it("makes the first release of the whole history, its pull requests alone", () => {
+  it("gives the first release the summary written by hand, and no entries", () => {
     const folder = repositoryOf(subjects);
     const next = upcoming(folder, headOf(folder), "2026-11-16");
 
     expect(next.tagged).toBe(false);
     expect(next.release.tag).toBe("v2026.11.16");
-    expect(next.release.entries.map((entry) => entry.pull)).toEqual([4, 2, 1]);
+    expect(next.release.entries).toEqual([]);
+    expect(next.release.summary).toBe(firstReleaseSummary());
+    expect(releaseNotes(next.release, repository)).toBe(
+      `${firstReleaseSummary()}\n`
+    );
+    expect(firstReleaseSummary()).toMatch(/^Peal's first public release/u);
+  });
+
+  it("lists the pull requests since the last tag, newest first, in their sections", () => {
+    const folder = repositoryOf(subjects);
+    git(folder, "tag", "v2026.11.15", "HEAD~4");
+
+    const next = upcoming(folder, headOf(folder), "2026-11-16");
+
     expect(releaseNotes(next.release, repository)).toBe(
       [
         "## Features",
@@ -237,6 +286,17 @@ describe("history", () => {
         "",
       ].join("\n")
     );
+  });
+
+  it("leaves out the pull requests it is told to", () => {
+    const folder = repositoryOf(subjects);
+    git(folder, "tag", "v2026.11.15", "HEAD~4");
+
+    const next = upcoming(folder, headOf(folder), "2026-11-16", {
+      excluded: new Set([1, 4]),
+    });
+
+    expect(next.release.entries.map((entry) => entry.pull)).toEqual([2]);
   });
 
   it("starts the next release after the last tag, a day's second one with .2", () => {
