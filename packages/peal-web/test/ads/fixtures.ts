@@ -7,6 +7,7 @@ export const at = (iso: string) => DateTime.makeUnsafe(iso);
 export const euroAccount: AdAccount = {
   access: "working",
   amountSpent: 12_000,
+  capabilities: { ads: true, boosts: true, reach: true, results: true },
   connectedAt: at("2026-11-01T09:00:00Z"),
   connectionId: "00000000-0000-7000-8000-0000000000c1",
   currency: "EUR",
@@ -16,6 +17,7 @@ export const euroAccount: AdAccount = {
   monthlyCeiling: 50_000,
   name: "Synthetic Bakery Ads",
   network: "meta",
+  reachedThrough: null,
   spendCap: 100_000,
   spendingEnabled: true,
   status: "active",
@@ -39,4 +41,19 @@ export const yenAccount: AdAccount = {
   status: "unsettled",
   syncedAt: null,
   timeZone: "Asia/Tokyo",
+};
+
+/** A synthetic Google Ads account, read through its manager: it never spends. */
+export const googleAccount: AdAccount = {
+  ...euroAccount,
+  amountSpent: null,
+  capabilities: { ads: false, boosts: false, reach: false, results: false },
+  externalId: "3333333333",
+  id: "00000000-0000-7000-8000-0000000000a3",
+  monthlyCeiling: null,
+  name: "Synthetic Search Ads",
+  network: "google",
+  reachedThrough: "2222222222",
+  spendCap: null,
+  spendingEnabled: false,
 };
