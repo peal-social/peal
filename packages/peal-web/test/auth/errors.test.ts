@@ -79,26 +79,53 @@ describe(providerErrorKey, () => {
     ).toStrictEqual(Option.some("PROVIDER_NO_ACCOUNT"));
   });
 
+  // What Better Auth's provider callback answers on its own.
+  it.each(["invalid_code", "state_mismatch", "unable_to_get_user_info"])(
+    "reads the provider flow's own %s as the provider's failure",
+    (code) => {
+      expect(providerErrorKey(code, offered)).toStrictEqual(
+        Option.some("PROVIDER_FAILED")
+      );
+    }
+  );
+
   // Anyone can write the address: what it says is never shown.
+  it.each(["Your account was suspended, call +1 555 0100", "<script>"])(
+    "reads an unknown code as a plain failure: %s",
+    (code) => {
+      expect(providerErrorKey(code, offered)).toStrictEqual(
+        Option.some("UNKNOWN")
+      );
+    }
+  );
+
+  // An application's authorization (an MCP client's, the command line's)
+  // that the server refused sends the browser here too.
   it.each([
-    "Your account was suspended, call +1 555 0100",
-    "invalid_code",
-    "<script>",
-  ])("reads an unknown code as a failure: %s", (code) => {
-    expect(providerErrorKey(code, offered)).toStrictEqual(
-      Option.some("PROVIDER_FAILED")
-    );
-  });
+    "invalid_client",
+    "invalid_redirect",
+    "invalid_scope",
+    "client_disabled",
+  ])(
+    "tells %s as the application's refused request, a provider or not",
+    (code) => {
+      for (const providersOffered of [true, false]) {
+        expect(
+          providerErrorKey(code, { providersOffered, signUpOffered: true })
+        ).toStrictEqual(Option.some("AUTHORIZATION_FAILED"));
+      }
+    }
+  );
 
   it("reads a repeated parameter as a failure", () => {
     expect(
       providerErrorKey(["two_step_password", "access_denied"], offered)
-    ).toStrictEqual(Option.some("PROVIDER_FAILED"));
+    ).toStrictEqual(Option.some("UNKNOWN"));
   });
 
   // Better Auth sends its other errors to the sign-in page too, such as an
   // OAuth client's: they are no provider's on a server without one.
-  it.each(["invalid_client", "two_step_password"])(
+  it.each(["unable_to_get_user_info", "two_step_password"])(
     "reads %s as a plain failure where no provider is offered",
     (code) => {
       expect(

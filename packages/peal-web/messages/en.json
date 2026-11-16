@@ -643,7 +643,8 @@
       "PROVIDER_ACCESS_DENIED": "You cancelled the sign-in at your provider.",
       "PROVIDER_FAILED": "The sign-in with your provider failed. Try again.",
       "PROVIDER_EMAIL_NOT_AUTHORITATIVE": "Sign in with your password: Google can't confirm this address is still yours.",
-      "PROVIDER_EMAIL_INVALID": "Your provider gave an email address Peal can't use. Sign in with your password."
+      "PROVIDER_EMAIL_INVALID": "Your provider gave an email address Peal can't use. Sign in with your password.",
+      "AUTHORIZATION_FAILED": "The application's sign-in request was refused. Go back to the application and start again."
     },
     "providers": {
       "continueWith": "Continue with {name}",

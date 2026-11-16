@@ -675,7 +675,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   sign-in with `requestSignUp`, the page's locale and the invitation in
   `additionalData`. Every address given is a path of this origin. The
   provider's callback comes back with `?error=<code>`, which
-  `providerErrorKey` reads into `Auth.errors`; anything else is a failure,
+  `providerErrorKey` reads into `Auth.errors` (an application's refused
+  authorization, OAuth's codes, its own `AUTHORIZATION_FAILED`; the provider's
+  failure only where a provider is offered); anything else is a plain failure,
   and `error_description` is never shown. Google's mark is
   `GoogleMark`, from Google's assets. Where `GET /api/me` says
   `hasPassword: false`, the account page offers `SetPassword` (the reset

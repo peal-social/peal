@@ -43,6 +43,7 @@ const KnownErrorSchema = Schema.Literals([
 export type AuthErrorKey =
   | typeof KnownErrorSchema.Type
   | ProviderErrorKey
+  | "AUTHORIZATION_FAILED"
   | "TOO_MANY_REQUESTS"
   | "UNKNOWN";
 
@@ -98,6 +99,58 @@ const ProviderCodeSchema = Schema.Literals([
 
 const decodeProviderCode = Schema.decodeUnknownOption(ProviderCodeSchema);
 
+const decodeCode = Schema.decodeUnknownOption(Schema.String);
+
+// What Better Auth's provider callback answers on its own: its state and
+// its exchange with the provider (`OAUTH_CALLBACK_ERROR_CODES`, `StateError`).
+const providerFlowCodes: ReadonlySet<string> = new Set([
+  "account_already_linked_to_different_user",
+  "email_does_not_match",
+  "email_not_verified",
+  "internal_server_error",
+  "invalid_callback_request",
+  "invalid_code",
+  "issuer_mismatch",
+  "issuer_missing",
+  "no_callback_url",
+  "no_code",
+  "nonce_binding_missing",
+  "oauth_provider_not_found",
+  "state_generation_error",
+  "state_invalid",
+  "state_mismatch",
+  "state_not_found",
+  "unable_to_create_user",
+  "unable_to_get_user_info",
+  "unable_to_link_account",
+]);
+
+// What the OAuth server answers an application's authorization it refuses
+// before the person is asked (RFC 6749 and OpenID Connect's codes, and Better
+// Auth's own), which it sends to the sign-in page as well.
+const authorizationErrorCodes: ReadonlySet<string> = new Set([
+  "account_selection_required",
+  "client_disabled",
+  "consent_required",
+  "interaction_required",
+  "invalid_client",
+  "invalid_redirect",
+  "invalid_redirect_uri",
+  "invalid_request",
+  "invalid_request_object",
+  "invalid_request_uri",
+  "invalid_scope",
+  "invalid_target",
+  "login_required",
+  "registration_not_supported",
+  "request_not_supported",
+  "request_uri_not_supported",
+  "server_error",
+  "temporarily_unavailable",
+  "unauthorized_client",
+  "unsupported_response_type",
+]);
+
 export type ProviderErrorKey =
   | (typeof providerErrorKeys)[keyof typeof providerErrorKeys]
   | "PROVIDER_FAILED"
@@ -120,28 +173,38 @@ export const providerErrorKey = (
     readonly providersOffered: boolean;
     readonly signUpOffered: boolean;
   }
-): Option.Option<ProviderErrorKey | "UNKNOWN"> => {
+): Option.Option<ProviderErrorKey | "AUTHORIZATION_FAILED" | "UNKNOWN"> => {
   if (error === undefined) {
     return Option.none();
   }
 
-  // Better Auth sends its other errors here too (an OAuth client's
-  // authorization, its own error page's): on a server without a provider,
-  // none of them is one.
-  if (!providersOffered) {
+  const code = Option.getOrUndefined(decodeCode(error));
+
+  if (code !== undefined && authorizationErrorCodes.has(code)) {
+    return Option.some("AUTHORIZATION_FAILED");
+  }
+
+  // Better Auth sends its other errors here too (its own error page's): on
+  // a server without a provider, none of them is one.
+  if (!providersOffered || code === undefined) {
     return Option.some("UNKNOWN");
   }
 
   return Option.some(
-    decodeProviderCode(error).pipe(
-      Option.map((code): ProviderErrorKey => {
-        const key = providerErrorKeys[code];
+    decodeProviderCode(code).pipe(
+      Option.map((known): ProviderErrorKey => {
+        const key = providerErrorKeys[known];
 
         return key === "PROVIDER_SIGN_UP_DISABLED" && !signUpOffered
           ? "PROVIDER_NO_ACCOUNT"
           : key;
       }),
-      Option.getOrElse((): ProviderErrorKey => "PROVIDER_FAILED")
+      Option.orElse(() =>
+        providerFlowCodes.has(code)
+          ? Option.some<ProviderErrorKey>("PROVIDER_FAILED")
+          : Option.none()
+      ),
+      Option.getOrElse((): ProviderErrorKey | "UNKNOWN" => "UNKNOWN")
     )
   );
 };

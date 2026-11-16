@@ -643,7 +643,8 @@
       "PROVIDER_ACCESS_DENIED": "Vous avez annulé la connexion chez votre fournisseur.",
       "PROVIDER_FAILED": "La connexion avec votre fournisseur a échoué. Réessayez.",
       "PROVIDER_EMAIL_NOT_AUTHORITATIVE": "Connectez-vous avec votre mot de passe : Google ne peut pas confirmer que cette adresse est toujours la vôtre.",
-      "PROVIDER_EMAIL_INVALID": "Votre fournisseur a donné une adresse e-mail que Peal ne peut pas utiliser. Connectez-vous avec votre mot de passe."
+      "PROVIDER_EMAIL_INVALID": "Votre fournisseur a donné une adresse e-mail que Peal ne peut pas utiliser. Connectez-vous avec votre mot de passe.",
+      "AUTHORIZATION_FAILED": "La demande de connexion de l’application a été refusée. Revenez à l’application et recommencez."
     },
     "providers": {
       "continueWith": "Continuer avec {name}",
