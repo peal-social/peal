@@ -87,6 +87,7 @@ const Tools = AdsToolsLive.pipe(
   Layer.provide(
     Layer.mergeAll(
       Layer.mock(AdConnections, {
+        account: (_actor, accountId) => Effect.succeed(byId(accountId)),
         accounts: () => Effect.succeed([meta, google]),
         status: () =>
           Effect.succeed({ mode: "read", networks: ["meta", "google"] }),
@@ -100,7 +101,11 @@ const Tools = AdsToolsLive.pipe(
         campaigns: (_actor, accountId) => report(accountId),
         days: (_actor, accountId) => report(accountId),
       }),
-      Layer.mock(Boosts, {}),
+      // Never reached for a Google Ads account.
+      Layer.mock(Boosts, {
+        quote: () => Effect.die("a quote was asked"),
+        request: () => Effect.die("a boost was asked"),
+      }),
       UpgradePaths.layerTest
     )
   )
@@ -133,6 +138,9 @@ const decodeStatus = Schema.decodeUnknownSync(
 const decodeAccount = Schema.decodeUnknownSync(
   Schema.Struct({ account: Schema.Struct({ network: Schema.String }) })
 );
+
+const noBoostOnGoogle =
+  "Google Ads accounts are read only in Peal: nothing is boosted on Google Ads, and nothing was reserved or sent. Tell the user so; a post can be boosted on a Meta ad account.";
 
 const notOffered =
   "Google Ads accounts are read in the web app, the API and the command line; they are not offered through MCP. Nothing was read. Tell the user so, and that they can see the account's campaigns and numbers there.";
@@ -204,5 +212,36 @@ describe("the ads tools and Google Ads", () => {
         notOffered
       );
     }).pipe(Effect.provide(Tools))
+  );
+
+  const asked = {
+    accountId: String(google.account.id),
+    audience: { ageMax: 65, ageMin: 18, countries: ["US"] },
+    budget: { amount: 5000, kind: "total" as const },
+    channelId: "019a6b2c-0000-7000-8000-0000000000c1",
+    currency: "EUR",
+    endsAt: "2026-12-01T00:00:00Z",
+    postId: "019a6b2c-0000-7000-8000-0000000000d1",
+    specialAdCategory: "none" as const,
+  };
+
+  it.effect(
+    "refuse a boost or a quote on a Google Ads account, as read only",
+    () =>
+      Effect.gen(function* boosting() {
+        const tools = yield* AdsTools;
+
+        for (const refused of [
+          yield* refusalOf(
+            tools.handle("boost_post", {
+              ...asked,
+              idempotencyKey: "synthetic-key-1",
+            })
+          ),
+          yield* refusalOf(tools.handle("quote_boost", asked)),
+        ]) {
+          assert.strictEqual(refused, noBoostOnGoogle);
+        }
+      }).pipe(Effect.provide(Tools))
   );
 });

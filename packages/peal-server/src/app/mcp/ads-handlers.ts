@@ -21,14 +21,17 @@ import { boostPageSize, Boosts } from "#ads/application/boosts.ts";
 import type { AuthorizedAccount } from "#ads/application/ports/account-store.ts";
 import { SpendAuthorizations } from "#ads/application/spend-authorizations.ts";
 import type { AdNetwork } from "#ads/domain/ad-network.ts";
+import { traitsOf } from "#ads/domain/network-traits.ts";
 import { AdsTools } from "#app/mcp/ads-tools.ts";
 import {
   adNetworkNotOfferedText,
+  boostNotOfferedText,
   notAllowed,
   refuse,
   usageRefusal,
 } from "#app/mcp/refusals.ts";
 import { actorOf } from "#shared/api/actor.ts";
+import type { Actor } from "#shared/domain/access.ts";
 
 // Why Peal refuses a boost before anything is reserved or sent, in words
 // the user can act on. Amounts stay in minor units, as the tools give them.
@@ -219,6 +222,23 @@ export const AdsToolsLive = AdsTools.toLayer(
 
     const actor = CurrentMember.pipe(Effect.map(actorOf));
 
+    // A boost asked on an account of a network Peal only reads (Google
+    // Ads) is refused in its own words, before anything is reserved; an
+    // account the actor cannot read is left to the use case to refuse.
+    const boostable = (who: Actor, accountId: string) =>
+      connections.account(who, accountId).pipe(
+        Effect.flatMap(({ account }) =>
+          traitsOf(account.network).spends
+            ? Effect.void
+            : refuse(boostNotOfferedText)
+        ),
+        Effect.catchTags({
+          AdAccountNotFound: () => Effect.void,
+          DatabaseError: Effect.die,
+          MissingPermission: () => Effect.void,
+        })
+      );
+
     const controlled =
       (action: "pause" | "resume" | "stop") =>
       ({ boostId }: { readonly boostId: string }) =>
@@ -231,6 +251,7 @@ export const AdsToolsLive = AdsTools.toLayer(
     return AdsTools.of({
       boost_post: ({ idempotencyKey, ...asked }) =>
         actor.pipe(
+          Effect.tap((who) => boostable(who, asked.accountId)),
           Effect.flatMap((who) =>
             boosts.request(who, askOf(asked), idempotencyKey).pipe(
               Effect.map(toBoostView),
@@ -336,6 +357,7 @@ export const AdsToolsLive = AdsTools.toLayer(
       pause_boost: controlled("pause"),
       quote_boost: (asked) =>
         actor.pipe(
+          Effect.tap((who) => boostable(who, asked.accountId)),
           Effect.flatMap((who) => boosts.quote(who, askOf(asked))),
           Effect.map(toQuoteView),
           Effect.catchTags(boostRefusals)

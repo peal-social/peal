@@ -313,3 +313,7 @@ export const messagesConsentText = (clientId: string): string =>
  */
 export const adNetworkNotOfferedText =
   "Google Ads accounts are read in the web app, the API and the command line; they are not offered through MCP. Nothing was read. Tell the user so, and that they can see the account's campaigns and numbers there.";
+
+/** Why the boost tools refuse a Google Ads account: Peal only reads it. */
+export const boostNotOfferedText =
+  "Google Ads accounts are read only in Peal: nothing is boosted on Google Ads, and nothing was reserved or sent. Tell the user so; a post can be boosted on a Meta ad account.";
