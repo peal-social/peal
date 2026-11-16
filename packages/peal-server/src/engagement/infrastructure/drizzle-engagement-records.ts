@@ -15,6 +15,7 @@ import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import type {
   CommentRuleRecord,
   SentMessageRecord,
+  SentPrivateReplyRecord,
   SentReplyRecord,
   SentReviewReplyRecord,
 } from "#shared/application/personal-data.ts";
@@ -33,6 +34,7 @@ import {
   messageBoxes,
   messageChannels,
   outgoingMessages,
+  privateReplies,
   replies,
   reviewReplies,
   reviewThreads,
@@ -73,6 +75,23 @@ export const DrizzleEngagementRecords = Layer.effect(
             where,
             eq(outgoingMessages.status, "sending"),
             isNull(outgoingMessages.attemptedAt)
+          )
+        )
+        .for("update");
+
+    // The private replies that never set out, locked alike.
+    const unsentPrivateWhere = (where: SQL | undefined) =>
+      db
+        .select({
+          createdAt: privateReplies.createdAt,
+          workspaceId: privateReplies.workspaceId,
+        })
+        .from(privateReplies)
+        .where(
+          and(
+            where,
+            eq(privateReplies.status, "sending"),
+            isNull(privateReplies.attemptedAt)
           )
         )
         .for("update");
@@ -226,6 +245,30 @@ export const DrizzleEngagementRecords = Layer.effect(
       }));
     });
 
+    const exportUserPrivateReplies = Effect.fn(
+      "EngagementRecords.exportUserPrivateReplies"
+    )(function* exportUserPrivateReplies(userId: string) {
+      const rows = yield* db
+        .select({
+          channelId: privateReplies.channelId,
+          commentId: privateReplies.commentId,
+          createdAt: privateReplies.createdAt,
+          id: privateReplies.id,
+          status: privateReplies.status,
+          text: privateReplies.text,
+          workspaceId: privateReplies.workspaceId,
+        })
+        .from(privateReplies)
+        .where(eq(privateReplies.authorId, userId))
+        .orderBy(asc(privateReplies.id))
+        .pipe(Effect.mapError(failed));
+
+      return rows.map((row): SentPrivateReplyRecord => ({
+        ...row,
+        createdAt: DateTime.fromDateUnsafe(row.createdAt),
+      }));
+    });
+
     const eraseWorkspace = Effect.fn("EngagementRecords.eraseWorkspace")(
       function* eraseWorkspace(workspaceId: string) {
         const now = yield* DateTime.now;
@@ -246,6 +289,11 @@ export const DrizzleEngagementRecords = Layer.effect(
 
               const found = yield* unsentWhere(
                 eq(outgoingMessages.workspaceId, workspaceId)
+              );
+
+              // Its private replies go with its threads' comments.
+              const replying = yield* unsentPrivateWhere(
+                eq(privateReplies.workspaceId, workspaceId)
               );
 
               yield* db
@@ -282,7 +330,7 @@ export const DrizzleEngagementRecords = Layer.effect(
                 .delete(conversations)
                 .where(eq(conversations.workspaceId, workspaceId));
 
-              return found;
+              return [...found, ...replying];
             })
           )
           .pipe(Effect.mapError(failed));
@@ -324,6 +372,12 @@ export const DrizzleEngagementRecords = Layer.effect(
           .update(outgoingMessages)
           .set({ authorId: null })
           .where(eq(outgoingMessages.authorId, userId))
+          .pipe(Effect.mapError(failed));
+
+        yield* db
+          .update(privateReplies)
+          .set({ authorId: null })
+          .where(eq(privateReplies.authorId, userId))
           .pipe(Effect.mapError(failed));
 
         yield* db
@@ -381,6 +435,17 @@ export const DrizzleEngagementRecords = Layer.effect(
                 eq(outgoingMessages.channelId, channelId)
               );
 
+              // Its private replies too, sent or not: what the channel's
+              // account sent is kept for the workspace only while it
+              // holds the channel.
+              const replying = yield* unsentPrivateWhere(
+                eq(privateReplies.channelId, channelId)
+              );
+
+              yield* db
+                .delete(privateReplies)
+                .where(eq(privateReplies.channelId, channelId));
+
               yield* db
                 .delete(messageChannels)
                 .where(eq(messageChannels.channelId, channelId));
@@ -393,7 +458,7 @@ export const DrizzleEngagementRecords = Layer.effect(
                 .delete(conversations)
                 .where(eq(conversations.channelId, channelId));
 
-              return found;
+              return [...found, ...replying];
             })
           )
           .pipe(Effect.mapError(failed));
@@ -518,7 +583,7 @@ export const DrizzleEngagementRecords = Layer.effect(
     const ensureChannelIdle = Effect.fn("EngagementRecords.ensureChannelIdle")(
       function* ensureChannelIdle(workspaceId: string, channelId: string) {
         const claimed = yield* Effect.forEach(
-          [replies, reviewReplies, outgoingMessages],
+          [replies, reviewReplies, outgoingMessages, privateReplies],
           (table) =>
             db
               .select({ claimedAt: table.callClaimedAt })
@@ -574,6 +639,7 @@ export const DrizzleEngagementRecords = Layer.effect(
       exportCommentRules,
       exportUser,
       exportUserMessages,
+      exportUserPrivateReplies,
       exportUserReviewReplies,
       forgetUser,
       postRemoved,

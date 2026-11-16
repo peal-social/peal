@@ -1,7 +1,10 @@
 import { assert, layer } from "@effect/vitest";
-import { DateTime, Effect, Layer, Option, Result } from "effect";
+import { DateTime, Effect, Layer, Option, Ref, Result } from "effect";
 import { SqlClient } from "effect/sql";
 
+import { EngagementRecords } from "#engagement/application/engagement-records.ts";
+import { forgetChannelMessages } from "#engagement/application/forget-channel-messages.ts";
+import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { EngagementStore } from "#engagement/application/ports/engagement-store.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
 import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
@@ -21,29 +24,47 @@ import type {
 } from "#engagement/domain/private-reply.ts";
 import { ThreadIdSchema } from "#engagement/domain/thread-id.ts";
 import { followPost } from "#engagement/domain/thread.ts";
+import { DrizzleEngagementRecords } from "#engagement/infrastructure/drizzle-engagement-records.ts";
 import { DrizzleEngagementStore } from "#engagement/infrastructure/drizzle-engagement-store.ts";
 import { DrizzleMessageStore } from "#engagement/infrastructure/drizzle-message-store.ts";
 import { DrizzlePrivateReplyStore } from "#engagement/infrastructure/drizzle-private-reply-store.ts";
 import { newId } from "#shared/application/ids.ts";
+import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
   PostTargetIdSchema,
+  UserIdSchema,
 } from "#shared/domain/ids.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import { DatabaseTest, freshWorkspace } from "#test/channels/support.ts";
-import { reading } from "#test/engagement/support.ts";
+import { memberId, reading } from "#test/engagement/support.ts";
+import { FakeMetersLedger, fakeMeters } from "#test/shared/support.ts";
 
 // The Postgres store of private replies, on the database DATABASE_URL
 // names. Each test writes rows of its own workspace, at instants no other
 // suite uses (2051; the purge in 1937), and deletes them after.
 
+// The records give back the outbound message of what never set out, on
+// meters that count in memory.
 const StoreTest = Layer.mergeAll(
   DrizzlePrivateReplyStore,
   DrizzleEngagementStore,
-  DrizzleMessageStore
-).pipe(Layer.provideMerge(DatabaseTest));
+  DrizzleMessageStore,
+  DrizzleEngagementRecords.pipe(Layer.provide(CommentRuleNotices.none))
+).pipe(
+  Layer.provideMerge(fakeMeters({ allowed: Option.none() })),
+  Layer.provideMerge(DatabaseTest)
+);
+
+// What the meters were given back for the workspace.
+const givenBackIn = (workspaceId: WorkspaceId) =>
+  FakeMetersLedger.use(Ref.get).pipe(
+    Effect.map(({ givenBack }) =>
+      givenBack.filter((claim) => claim.workspaceId === workspaceId)
+    )
+  );
 
 const utc = (iso: string) => DateTime.makeUnsafe(iso);
 
@@ -110,7 +131,7 @@ const writtenFor = Effect.fn("writtenFor")(function* writtenFor(
   return writePrivateReply(
     yield* newId(PrivateReplyIdSchema),
     comment,
-    Option.none(),
+    Option.some(memberId),
     text ?? "Here is the link you asked for.",
     Option.none(),
     at
@@ -478,5 +499,190 @@ layer(StoreTest)("the private reply store", (it) => {
         assert.isTrue(Option.isNone(yield* store.privateReply(sending.id)));
       }).pipe(Effect.ensuring(forget(workspaceId)));
     })
+  );
+  it.effect("goes with its channel, giving back what never set out", () =>
+    Effect.gen(function* channelGone() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const store = yield* PrivateReplyStore;
+        const records = yield* EngagementRecords;
+        const channelId = yield* newId(ChannelIdSchema);
+
+        const unsent = yield* writtenFor(
+          yield* commentIn(workspaceId, { channelId })
+        );
+
+        const sent = yield* writtenFor(
+          yield* commentIn(workspaceId, { channelId })
+        );
+
+        yield* journalled(unsent);
+        yield* journalled(sent);
+        yield* settled(sent, { _tag: "sent", platformMessageId: "m-3" });
+
+        yield* records.channelGone(channelId, "facebook", at);
+
+        assert.isTrue(Option.isNone(yield* store.privateReply(unsent.id)));
+        assert.isTrue(Option.isNone(yield* store.privateReply(sent.id)));
+        assert.deepStrictEqual(
+          (yield* givenBackIn(workspaceId)).map(({ at: claimedAt }) =>
+            DateTime.formatIso(claimedAt)
+          ),
+          [DateTime.formatIso(unsent.createdAt)]
+        );
+      }).pipe(Effect.ensuring(forget(workspaceId)));
+    })
+  );
+
+  it.effect("goes with its workspace, giving back what never set out", () =>
+    Effect.gen(function* erased() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const store = yield* PrivateReplyStore;
+        const records = yield* EngagementRecords;
+        const unsent = yield* writtenFor(yield* commentIn(workspaceId));
+
+        yield* journalled(unsent);
+        yield* records.eraseWorkspace(workspaceId);
+
+        assert.isTrue(Option.isNone(yield* store.privateReply(unsent.id)));
+        assert.strictEqual((yield* givenBackIn(workspaceId)).length, 1);
+      }).pipe(
+        Effect.ensuring(forget(workspaceId)),
+        Effect.ensuring(
+          SqlClient.SqlClient.use(
+            (sql) =>
+              sql`DELETE FROM engagement.erased_workspaces WHERE workspace_id = ${workspaceId}`
+          ).pipe(Effect.orDie)
+        )
+      );
+    })
+  );
+
+  it.effect(
+    "forgets its author once their account is closed, and lists it in their export",
+    () =>
+      Effect.gen(function* forgotten() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const store = yield* PrivateReplyStore;
+          const records = yield* EngagementRecords;
+          const author = UserIdSchema.make(yield* newId(ChannelIdSchema));
+          const comment = yield* commentIn(workspaceId);
+
+          const reply = writePrivateReply(
+            yield* newId(PrivateReplyIdSchema),
+            comment,
+            Option.some(author),
+            "Here is the link you asked for.",
+            Option.none(),
+            at
+          );
+
+          yield* journalled(reply);
+
+          const exported = yield* records.exportUserPrivateReplies(author);
+
+          assert.deepStrictEqual(exported, [
+            {
+              channelId: comment.channelId,
+              commentId: comment.id,
+              createdAt: at,
+              id: reply.id,
+              status: "sending",
+              text: "Here is the link you asked for.",
+              workspaceId,
+            },
+          ]);
+
+          yield* records.forgetUser(author);
+
+          assert.deepStrictEqual(
+            (yield* store.privateReply(reply.id)).pipe(
+              Option.map(({ authorId }) => authorId),
+              Option.getOrThrow
+            ),
+            Option.none()
+          );
+          assert.deepStrictEqual(
+            yield* records.exportUserPrivateReplies(author),
+            []
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect("holds a channel that moves while one is on its call", () =>
+    Effect.gen(function* inFlight() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const store = yield* PrivateReplyStore;
+        const records = yield* EngagementRecords;
+        const sql = yield* SqlClient.SqlClient;
+        const comment = yield* commentIn(workspaceId);
+        const reply = yield* writtenFor(comment);
+
+        yield* journalled(reply);
+
+        // On its way, no call claimed: the channel may move.
+        yield* sql.withTransaction(
+          records.ensureChannelIdle(workspaceId, comment.channelId)
+        );
+
+        const begun = Result.getOrThrow(beginPrivateReply(reply, at));
+
+        yield* store.advance(begun, reply);
+        yield* store.claimCall(begun.id, at);
+
+        const refused = yield* sql
+          .withTransaction(
+            records.ensureChannelIdle(workspaceId, comment.channelId)
+          )
+          .pipe(Effect.flip);
+
+        assert.strictEqual(refused._tag, "SendsInFlight");
+      }).pipe(Effect.ensuring(forget(workspaceId)));
+    })
+  );
+
+  it.effect(
+    "turned off with the channel's messages, gives back and drops what never set out",
+    () =>
+      Effect.gen(function* switchedOff() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const store = yield* PrivateReplyStore;
+          const messages = yield* MessageStore;
+          const meters = yield* MeteredUsage;
+          const sql = yield* SqlClient.SqlClient;
+          const channelId = yield* newId(ChannelIdSchema);
+
+          const unsent = yield* writtenFor(
+            yield* commentIn(workspaceId, { channelId })
+          );
+
+          const sent = yield* writtenFor(
+            yield* commentIn(workspaceId, { channelId })
+          );
+
+          yield* journalled(unsent);
+          yield* journalled(sent);
+          yield* settled(sent, { _tag: "sent", platformMessageId: "m-4" });
+
+          yield* sql.withTransaction(
+            forgetChannelMessages(messages, store, meters, channelId)
+          );
+
+          assert.isTrue(Option.isNone(yield* store.privateReply(unsent.id)));
+          // Sent stays until its purge.
+          assert.isTrue(Option.isSome(yield* store.privateReply(sent.id)));
+          assert.strictEqual((yield* givenBackIn(workspaceId)).length, 1);
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
   );
 });

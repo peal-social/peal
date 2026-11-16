@@ -476,6 +476,21 @@ export interface SentMessageRecord {
   readonly workspaceId: string;
 }
 
+/**
+ * The private reply a member sent from Peal to the author of a comment,
+ * while Peal keeps it. Never the comment it answered, which someone else
+ * wrote.
+ */
+export interface SentPrivateReplyRecord {
+  readonly channelId: string;
+  readonly commentId: string;
+  readonly createdAt: DateTime.Utc;
+  readonly id: string;
+  readonly status: string;
+  readonly text: string;
+  readonly workspaceId: string;
+}
+
 /** A comment on a post, as the review context keeps it. */
 export interface ReviewCommentRecord {
   /** member, apiKey or visitor. */

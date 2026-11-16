@@ -131,6 +131,7 @@ const departures = Effect.fnUntraced(function* departures(options: {
       exportCommentRules: () => Effect.succeed([]),
       exportUser: () => Effect.succeed([]),
       exportUserMessages: () => Effect.succeed([]),
+      exportUserPrivateReplies: () => Effect.succeed([]),
       exportUserReviewReplies: () => Effect.succeed([]),
       forgetUser: () => Effect.void,
       postRemoved: () => Effect.void,

@@ -393,6 +393,7 @@ describe("what the server writes about Meta's direct messages", () => {
                   exportCommentRules: () => Effect.succeed([]),
                   exportUser: () => Effect.succeed([]),
                   exportUserMessages: () => Effect.succeed([]),
+                  exportUserPrivateReplies: () => Effect.succeed([]),
                   exportUserReviewReplies: () => Effect.succeed([]),
                   forgetUser: () => Effect.void,
                   postRemoved: () => Effect.void,
