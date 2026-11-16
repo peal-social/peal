@@ -116,6 +116,10 @@ export interface MessageWorldState {
   /** The channels whose platform was asked to stop telling their events. */
   readonly unfollows: ChannelId[];
   readonly cancelled: OutgoingMessageId[];
+  /** When the gate last claimed each message's call. */
+  readonly claims: Map<string, DateTime.Utc>;
+  /** What happens just after the stranded messages are listed. */
+  afterListing: () => void;
   readonly channels: Map<ChannelId, EngagedChannel>;
   readonly applications: MessagesApplication[];
   readonly switchedOn: Map<ChannelId, MessagesSwitchedOn>;
@@ -156,6 +160,8 @@ export const makeMessageWorld = (
     following: () => Effect.succeed("unneeded"),
     unfollows: [],
     cancelled: [],
+    claims: new Map(),
+    afterListing: () => undefined,
     channels: new Map(),
     applications: [],
     switchedOn: new Map(),
@@ -187,6 +193,13 @@ export const makeMessageWorld = (
       (message) => message.conversationId === conversation.id
     ).length,
   });
+
+  // Whether the message's call was never claimed, or last by `bound`.
+  const claimedBy = (messageId: string, bound: DateTime.Utc) => {
+    const claimed = state.claims.get(messageId);
+
+    return claimed === undefined || millis(claimed) <= millis(bound);
+  };
 
   // The conversations a whole listing last missed.
   const unlisted = new Set<string>();
@@ -326,6 +339,7 @@ export const makeMessageWorld = (
             message.channelId === channelId &&
             message.status._tag === "sending" &&
             // Its call never claimed: the fake gate claims as it calls.
+            !state.claims.has(message.id) &&
             ![...state.sent, ...state.resumed].some(
               (request) => request.messageId === message.id
             )
@@ -425,10 +439,16 @@ export const makeMessageWorld = (
         }
       }),
     channelGone: (channelId) => Effect.sync(() => channelGone(channelId)),
-    claimCall: (messageId) =>
-      Effect.sync(
-        () => state.outgoing.get(messageId)?.status._tag === "sending"
-      ),
+    claimCall: (messageId, at) =>
+      Effect.sync(() => {
+        if (state.outgoing.get(messageId)?.status._tag !== "sending") {
+          return false;
+        }
+
+        state.claims.set(messageId, at);
+
+        return true;
+      }),
     conversation: (conversationId) =>
       Effect.sync(() =>
         Option.fromUndefinedOr(state.conversations.get(conversationId)).pipe(
@@ -669,11 +689,15 @@ export const makeMessageWorld = (
 
         return fresh;
       }),
-    handOver: (messageId, at) =>
+    handOver: (messageId, at, calledBefore) =>
       Effect.sync(() => {
         const message = state.outgoing.get(messageId);
 
-        if (message === undefined || message.status._tag !== "sending") {
+        if (
+          message === undefined ||
+          message.status._tag !== "sending" ||
+          !claimedBy(messageId, calledBefore)
+        ) {
           return Option.none<OutgoingMessage>();
         }
 
@@ -689,16 +713,21 @@ export const makeMessageWorld = (
 
         return Option.some(handed);
       }),
-    strandedMessages: (writtenBefore, _calledBefore, limit) =>
-      Effect.sync(() =>
-        [...state.outgoing.values()]
+    strandedMessages: (writtenBefore, calledBefore, limit) =>
+      Effect.sync(() => {
+        const stranded = [...state.outgoing.values()]
           .filter(
             (message) =>
               message.status._tag === "sending" &&
-              millis(message.createdAt) <= millis(writtenBefore)
+              millis(message.createdAt) <= millis(writtenBefore) &&
+              claimedBy(message.id, calledBefore)
           )
-          .slice(0, limit)
-      ),
+          .slice(0, limit);
+
+        state.afterListing();
+
+        return stranded;
+      }),
   });
 
   const ports = Layer.mergeAll(
