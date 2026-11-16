@@ -42,7 +42,7 @@ const reasons: Readonly<Record<InboxOutgoingMessageReason, string>> = {
   humanAgentNotGranted:
     "Meta refused Peal's Human Agent tag: the server's Meta app does not hold that feature, so a late answer by hand cannot go out",
   tagRestricted:
-    "Meta refused the tagged answer, warning that the app's use of message tags is restricted: the server's operator should check Meta's app",
+    "Meta warned that the app's use of message tags is restricted, and may have sent it all the same: check the platform, and the server's operator should check Meta's app",
 };
 
 const sentLine = (message: InboxOutgoingMessage): string =>

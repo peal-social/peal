@@ -680,7 +680,9 @@
   tagged send is counted (`peal.engagement.messages.tagged_sends`, by
   platform); Meta's refusals of the tag fail apart, logged by their codes:
   `humanAgentNotGranted` (`100`/`2018276`, `10`/`2534044`, as integrators
-  report them) and `tagRestricted` (`613`/`2018338`, logged as an error). `byPerson` is
+  report them) is `failed`, and `tagRestricted` (`613`/`2018338`, Meta's
+  warning, logged as an error) `unconfirmed` (`MessageDoubtSchema`), as the
+  message may have gone out. `byPerson` is
   `sending.inSession` (which only the API's `sendMessage` handler passes,
   from a session principal: no `oauth`, no `impersonatedBy`) and the actor
   the member themselves: an API key, an OAuth client (MCP, the command

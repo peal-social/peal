@@ -873,8 +873,10 @@ describe("Meta's direct messages, sent", () => {
             _tag: "failed",
             reason: "humanAgentNotGranted",
           });
+          // A warning: the message may have gone out, and is never sent
+          // again.
           assert.deepStrictEqual(yield* platform.send(account, tagged), {
-            _tag: "failed",
+            _tag: "unconfirmed",
             reason: "tagRestricted",
           });
           assert.deepStrictEqual(yield* platform.send(account, tagged), {

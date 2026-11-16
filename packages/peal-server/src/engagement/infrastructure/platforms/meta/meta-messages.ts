@@ -892,7 +892,14 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
           })
         );
 
-        return failed(byTag.value);
+        // A warning on tag use may follow a message that went out: never
+        // taken for not sent.
+        const outcome: MessageSendOutcome =
+          byTag.value === "tagRestricted"
+            ? { _tag: "unconfirmed", reason: "tagRestricted" }
+            : failed(byTag.value);
+
+        return outcome;
       }
 
       // Meta's own failure, or an answer that says nothing Peal knows:

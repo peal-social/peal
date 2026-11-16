@@ -146,12 +146,12 @@ export type InboxOutgoingMessageStatus =
  * the person last wrote, 24 hours on Messenger and Instagram, 7 for a
  * member's own answer with Meta's Human Agent tag, and it had passed),
  * `humanAgentNotGranted` (Meta refused a member's answer with its Human
- * Agent tag, as the server's app does not hold that feature),
- * `tagRestricted` (Meta refused a tagged answer, warning that the app's use
- * of message tags is restricted).
+ * Agent tag, as the server's app does not hold that feature).
  *
  * Unconfirmed, until a member checks the platform: `noResponse`,
- * `interrupted`, `adapterFailure`.
+ * `interrupted`, `adapterFailure`, `tagRestricted` (Meta answered a tagged
+ * answer with its warning that the app's use of message tags is
+ * restricted, which may follow a message that went out).
  */
 export const InboxOutgoingMessageReasonSchema = Schema.Literals([
   "channelUnavailable",

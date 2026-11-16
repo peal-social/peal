@@ -33,8 +33,6 @@ import { ReplyDoubtSchema } from "./reply.ts";
  *   person last wrote (Meta's 24 hours), and it had passed.
  * - `humanAgentNotGranted`: Meta refused a person's answer tagged
  *   `HUMAN_AGENT`, as the app does not hold the Human Agent feature.
- * - `tagRestricted`: Meta refused a tagged answer, warning that the app's
- *   use of message tags is restricted or abusive.
  *
  * Stored: add a member, never rename or remove one.
  */
@@ -48,16 +46,30 @@ export const MessageFailureSchema = Schema.Literals([
   "notSent",
   "windowClosed",
   "humanAgentNotGranted",
-  "tagRestricted",
 ]);
 
 export type MessageFailure = typeof MessageFailureSchema.Type;
+
+/**
+ * Why a message's outcome is not known: a reply's doubts, and
+ * `tagRestricted`, Meta's warning that the app's use of message tags is
+ * bothersome or abusive, which Meta calls a warning: the message may have
+ * gone out, so it is never sent again, and a member checks.
+ *
+ * Stored: add a member, never rename or remove one.
+ */
+export const MessageDoubtSchema = Schema.Union([
+  ReplyDoubtSchema,
+  Schema.Literal("tagRestricted"),
+]);
+
+export type MessageDoubt = typeof MessageDoubtSchema.Type;
 
 /** How sending a message ended, as the platform's adapter tells it. */
 export const MessageSendOutcomeSchema = Schema.Union([
   Schema.TaggedStruct("sent", { platformMessageId: PlatformMessageIdSchema }),
   Schema.TaggedStruct("failed", { reason: MessageFailureSchema }),
-  Schema.TaggedStruct("unconfirmed", { reason: ReplyDoubtSchema }),
+  Schema.TaggedStruct("unconfirmed", { reason: MessageDoubtSchema }),
 ]);
 
 export type MessageSendOutcome = typeof MessageSendOutcomeSchema.Type;
@@ -81,7 +93,7 @@ export const OutgoingMessageStatusSchema = Schema.Union([
   // It may be on the platform: never sent again, a member checks.
   Schema.TaggedStruct("unconfirmed", {
     at: Schema.DateTimeUtc,
-    reason: ReplyDoubtSchema,
+    reason: MessageDoubtSchema,
   }),
 ]);
 

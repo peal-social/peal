@@ -145,6 +145,8 @@ describe("the contract's direct messages", () => {
       [
         ...MessageFailureSchema.literals,
         ...ReplyDoubtSchema.literals,
+        // Meta's warning on tag use: a message's own doubt.
+        "tagRestricted",
       ].toSorted()
     );
     expect(InboxMessageAbilitiesSchema.fields).toHaveProperty("send");
