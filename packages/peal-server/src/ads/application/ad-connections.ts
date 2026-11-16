@@ -310,7 +310,7 @@ export class AdConnections extends Context.Service<
           .accounts(token)
           .pipe(Effect.catch(readFailed(grant)));
 
-        yield* pace.spent(grant.network, listing.operations);
+        yield* pace.spent(grant, listing.operations);
 
         if (traitsOf(grant.network).readsThroughManagers) {
           yield* accounts.setWays(grant, listing.accounts);

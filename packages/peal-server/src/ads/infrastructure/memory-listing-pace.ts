@@ -10,11 +10,15 @@ import { traitsOf } from "#ads/domain/network-traits.ts";
 export interface ListingPaceOptions {
   /** How long a sign-in's listing answers its next steps. */
   readonly keptFor: Duration.Duration;
+  /** How many sign-ins' listings are kept at most. */
+  readonly keptListings: number;
   /**
    * The operations a day the listings of a network whose allowance is
    * shared may spend (`networkTraits`' `dailyOperations`).
    */
   readonly operationsPerDay: number;
+  /** The share of those one workspace's listings may spend a day. */
+  readonly operationsPerWorkspaceDay: number;
   /** Listings a sign-in may make an hour. */
   readonly perGrantHour: number;
   /** Listings a workspace's sign-ins may make together an hour. */
@@ -22,14 +26,17 @@ export interface ListingPaceOptions {
 }
 
 /**
- * Peal's defaults: a listing kept five minutes, ten a sign-in and thirty a
- * workspace an hour, and 300 operations a day for Google Ads' listings,
- * about a tenth of what Explorer access gives (2,880): the rest goes to
- * the reads every six hours.
+ * Peal's defaults: a listing kept five minutes, a thousand sign-ins' at
+ * most, ten listings a sign-in and thirty a workspace an hour, and 300
+ * operations a day for Google Ads' listings, about a tenth of what
+ * Explorer access gives (2,880), of which one workspace may spend 100: the
+ * rest goes to the reads every six hours.
  */
 export const listingPaceDefaults: ListingPaceOptions = {
   keptFor: Duration.minutes(5),
+  keptListings: 1000,
   operationsPerDay: 300,
+  operationsPerWorkspaceDay: 100,
   perGrantHour: 10,
   perWorkspaceHour: 30,
 };
@@ -45,16 +52,45 @@ interface Kept {
   readonly version: number;
 }
 
+/** A count, its window's length, and its limit. */
+interface Limit {
+  readonly key: string;
+  readonly length: number;
+  readonly limit: number;
+}
+
 const hour = Duration.toMillis(Duration.hours(1));
 const day = Duration.toMillis(Duration.days(1));
 
 // A grant renewed by a new sign-in is another listing's.
 const versionOf = (grant: AdGrant) => DateTime.toEpochMillis(grant.updatedAt);
 
+// The window's count at `at`, and when it ends; a window past its end
+// starts again.
+const windowOf = (
+  all: ReadonlyMap<string, Window>,
+  key: string,
+  at: number,
+  length: number
+): Window => {
+  const found = all.get(key);
+
+  return found === undefined || found.endsAt <= at
+    ? { count: 0, endsAt: at + length }
+    : found;
+};
+
+// The windows still open at `at`: those past their end go.
+const stillOpen = (all: ReadonlyMap<string, Window>, at: number) =>
+  new Map([...all].filter(([, window]) => window.endsAt > at));
+
 /**
  * ListingPace counted in this process, in fixed windows: an hour for the
- * sign-ins and the workspaces, a day for a network's operations. The
- * server runs as one process; a server run as several would count each.
+ * sign-ins and the workspaces, a day for a network's operations, the
+ * server's and each workspace's share of them. A check and its count are
+ * one update, and every write drops the windows that ended and the
+ * listings past their time. The server runs as one process; a server run
+ * as several would count each.
  */
 export const memoryListingPace = (options: ListingPaceOptions) =>
   Layer.effect(
@@ -63,21 +99,25 @@ export const memoryListingPace = (options: ListingPaceOptions) =>
       const windows = yield* Ref.make(new Map<string, Window>());
       const kept = yield* Ref.make(new Map<string, Kept>());
       const now = DateTime.now.pipe(Effect.map(DateTime.toEpochMillis));
+      const keptMillis = Duration.toMillis(options.keptFor);
 
-      // The window's count now, and when it ends; a window past its end
-      // starts again.
-      const windowOf = (
-        all: ReadonlyMap<string, Window>,
-        key: string,
-        at: number,
-        length: number
-      ) => {
-        const found = all.get(key);
-
-        return found === undefined || found.endsAt <= at
-          ? { count: 0, endsAt: at + length }
-          : found;
-      };
+      // The day's operations of the network: the server's, then the
+      // workspace's share.
+      const operationsOf = (grant: AdGrant): readonly Limit[] =>
+        traitsOf(grant.network).dailyOperations
+          ? [
+              {
+                key: `operations:${grant.network}`,
+                length: day,
+                limit: options.operationsPerDay,
+              },
+              {
+                key: `operations:${grant.network}:${grant.workspaceId}`,
+                length: day,
+                limit: options.operationsPerWorkspaceDay,
+              },
+            ]
+          : [];
 
       return ListingPace.of({
         recent: (grant) =>
@@ -89,92 +129,111 @@ export const memoryListingPace = (options: ListingPaceOptions) =>
               Option.filter(
                 (entry) =>
                   entry.version === versionOf(grant) &&
-                  at - entry.at < Duration.toMillis(options.keptFor)
+                  at - entry.at < keptMillis
               ),
               Option.map((entry) => entry.accounts)
             );
           }),
         remember: (grant, accounts) =>
-          now.pipe(
-            Effect.flatMap((at) =>
-              Ref.update(kept, (all) =>
-                new Map(all).set(grant.id, {
-                  accounts,
-                  at,
-                  version: versionOf(grant),
-                })
-              )
-            )
-          ),
-        spent: (network, operations) =>
-          traitsOf(network).dailyOperations
-            ? now.pipe(
+          keptMillis <= 0
+            ? Effect.void
+            : now.pipe(
                 Effect.flatMap((at) =>
-                  Ref.update(windows, (all) => {
-                    const key = `operations:${network}`;
-                    const current = windowOf(all, key, at, day);
+                  Ref.update(kept, (all) => {
+                    // Those past their time go, then the oldest past the
+                    // bound: a map keeps the order it was written in.
+                    const fresh = [...all].filter(
+                      ([id, entry]) =>
+                        id !== grant.id && at - entry.at < keptMillis
+                    );
 
-                    return new Map(all).set(key, {
-                      count: current.count + operations,
-                      endsAt: current.endsAt,
-                    });
+                    return new Map([
+                      ...fresh.slice(
+                        Math.max(0, fresh.length - options.keptListings + 1)
+                      ),
+                      [
+                        grant.id,
+                        { accounts, at, version: versionOf(grant) },
+                      ] as const,
+                    ]);
                   })
                 )
-              )
-            : Effect.void,
+              ),
+        spent: (grant, operations) =>
+          now.pipe(
+            Effect.flatMap((at) =>
+              Ref.update(windows, (all) => {
+                const next = stillOpen(all, at);
+
+                for (const { key, length } of operationsOf(grant)) {
+                  const current = windowOf(next, key, at, length);
+
+                  next.set(key, {
+                    count: current.count + operations,
+                    endsAt: current.endsAt,
+                  });
+                }
+
+                return next;
+              })
+            )
+          ),
         take: (grant) =>
           Effect.gen(function* take() {
             const at = yield* now;
-            const all = yield* Ref.get(windows);
 
-            const limits = [
-              [`grant:${grant.id}`, hour, options.perGrantHour, 1],
-              [
-                `workspace:${grant.workspaceId}`,
-                hour,
-                options.perWorkspaceHour,
-                1,
-              ],
-              ...(traitsOf(grant.network).dailyOperations
-                ? ([
-                    [
-                      `operations:${grant.network}`,
-                      day,
-                      options.operationsPerDay,
-                      0,
-                    ],
-                  ] as const)
-                : []),
-            ] as const;
+            const counted: readonly Limit[] = [
+              {
+                key: `grant:${grant.id}`,
+                length: hour,
+                limit: options.perGrantHour,
+              },
+              {
+                key: `workspace:${grant.workspaceId}`,
+                length: hour,
+                limit: options.perWorkspaceHour,
+              },
+            ];
 
-            const reached = limits
-              .map(([key, length, limit]) => ({
-                current: windowOf(all, key, at, length),
-                limit,
-              }))
-              .find(({ current, limit }) => current.count >= limit);
+            const limits = [...counted, ...operationsOf(grant)];
 
-            yield* reached === undefined
-              ? Effect.void
-              : Effect.fail(
-                  new ListingLimited({
-                    retryAfter: Duration.millis(reached.current.endsAt - at),
-                  })
-                );
+            // Checked and counted in one update: two listings at once
+            // never both take the last place.
+            const refusedFor = yield* Ref.modify(windows, (all) => {
+              const next = stillOpen(all, at);
 
-            yield* Ref.update(windows, (latest) => {
-              const next = new Map(latest);
+              const reached = limits.find(
+                ({ key, length, limit }) =>
+                  windowOf(next, key, at, length).count >= limit
+              );
 
-              for (const [key, length, , taken] of limits) {
-                const current = windowOf(latest, key, at, length);
+              if (reached !== undefined) {
+                return [
+                  Option.some(
+                    windowOf(next, reached.key, at, reached.length).endsAt - at
+                  ),
+                  next,
+                ] as const;
+              }
+
+              for (const { key, length } of counted) {
+                const current = windowOf(next, key, at, length);
 
                 next.set(key, {
-                  count: current.count + taken,
+                  count: current.count + 1,
                   endsAt: current.endsAt,
                 });
               }
 
-              return next;
+              return [Option.none<number>(), next] as const;
+            });
+
+            yield* Option.match(refusedFor, {
+              onNone: () => Effect.void,
+              onSome: (wait) =>
+                Effect.fail(
+                  new ListingLimited({ retryAfter: Duration.millis(wait) })
+                ),
             });
           }),
       });

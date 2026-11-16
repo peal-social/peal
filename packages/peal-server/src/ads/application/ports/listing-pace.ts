@@ -4,7 +4,6 @@ import type { Effect, Option } from "effect";
 import type { ListingLimited } from "#ads/application/listing-limited.ts";
 import type { AdAccountFacts } from "#ads/domain/ad-account-facts.ts";
 import type { AdGrant } from "#ads/domain/ad-grant.ts";
-import type { AdNetwork } from "#ads/domain/ad-network.ts";
 
 /**
  * How often the accounts a sign-in reaches are listed from the network.
@@ -18,14 +17,15 @@ export class ListingPace extends Context.Service<
     /**
      * Takes one listing for the grant: refused past the grant's and the
      * workspace's listings an hour, or once the network's listings spent
-     * their budget of operations today.
+     * their budget of operations today, the server's or the workspace's
+     * share of it, so one workspace never keeps another from connecting.
      */
     readonly take: (grant: AdGrant) => Effect.Effect<void, ListingLimited>;
-    /** Counts what a listing spent against its network's daily budget. */
-    readonly spent: (
-      network: AdNetwork,
-      operations: number
-    ) => Effect.Effect<void>;
+    /**
+     * Counts what a listing spent against its network's daily budget, the
+     * server's and the workspace's share of it.
+     */
+    readonly spent: (grant: AdGrant, operations: number) => Effect.Effect<void>;
     /** The grant's last listing, while it is fresh. */
     readonly recent: (
       grant: AdGrant

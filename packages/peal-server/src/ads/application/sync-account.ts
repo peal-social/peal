@@ -289,21 +289,36 @@ export class SyncAccount extends Context.Service<
           account.grantId
         );
 
-        // Without a listing to read, Peal cannot tell: nothing is said of
-        // the account, and the next read tries again.
-        const listing =
-          Option.isNone(grant) ||
-          Option.isNone(yield* pace.take(grant.value).pipe(Effect.option))
-            ? Option.none()
-            : yield* client.accounts(token).pipe(Effect.option);
+        if (Option.isNone(grant)) {
+          return { _tag: "unknown" } as const;
+        }
+
+        // The sign-in's listing of a few minutes ago answers as well as a
+        // new one, and costs nothing; one asked now is kept for the next.
+        const kept = yield* pace.recent(grant.value);
+
+        const listing = Option.isSome(kept)
+          ? Option.some(kept.value)
+          : yield* pace.take(grant.value).pipe(
+              Effect.andThen(client.accounts(token)),
+              Effect.tap((listed) =>
+                pace
+                  .spent(grant.value, listed.operations)
+                  .pipe(
+                    Effect.andThen(pace.remember(grant.value, listed.accounts))
+                  )
+              ),
+              Effect.map(({ accounts: listed }) => listed),
+              // Without a listing to read, Peal cannot tell: nothing is
+              // said of the account, and the next read tries again.
+              Effect.option
+            );
 
         if (Option.isNone(listing)) {
           return { _tag: "unknown" } as const;
         }
 
-        yield* pace.spent(account.network, listing.value.operations);
-
-        const found = listing.value.accounts.find(
+        const found = listing.value.find(
           ({ externalId }) => externalId === account.externalId
         );
 
@@ -365,6 +380,9 @@ export class SyncAccount extends Context.Service<
 
           if (
             !rerouting &&
+            // An account no way reached is not looked for again at each
+            // read: a member's listing of the sign-in finds it if it can.
+            Option.isNone(account.unreachableSince) &&
             failure._tag === "AdNetworkRefused" &&
             failure.kind === "permission" &&
             traitsOf(account.network).readsThroughManagers
