@@ -122,10 +122,10 @@ interface Searched<A> {
 const absentLookUp: LookUp<never> = { _tag: "unknown" };
 
 // What the token endpoint's refusal means: Peal's client, which only
-// the operator can fix; otherwise the refresh token (revoked, unused six
-// months, past the seven days of a consent screen in Testing, or past
-// the hundred a Google account may hold), which only a new sign-in
-// replaces.
+// the operator can fix; `invalid_grant`, the refresh token or the code
+// (revoked, unused six months, past the seven days of a consent screen in
+// Testing, or past the hundred a Google account may hold), which only a
+// new sign-in replaces; anything else, Google unavailable.
 const tokenRefused = (
   response: HttpClientResponse.HttpClientResponse
 ): Effect.Effect<never, PlatformUnavailable | TokenRejected> =>
@@ -143,9 +143,21 @@ const tokenRefused = (
           );
         }
 
-        return response.status >= 500 || response.status === 429
-          ? Effect.fail(new PlatformUnavailable())
-          : Effect.fail(new TokenRejected());
+        // Only `invalid_grant` names the grant itself; any other refusal
+        // (a malformed request, a scope, a policy, a proxy's page) is no
+        // reason to ask the person to sign in again.
+        if (code === "invalid_grant") {
+          return Effect.fail(new TokenRejected());
+        }
+
+        return Effect.logWarning(
+          "Google's token endpoint refused a request"
+        ).pipe(
+          Effect.annotateLogs({
+            code: code === "" ? `http${response.status}` : code,
+          }),
+          Effect.andThen(Effect.fail(new PlatformUnavailable()))
+        );
       }
     )
   );

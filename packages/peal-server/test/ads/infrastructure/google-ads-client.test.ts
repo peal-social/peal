@@ -20,7 +20,10 @@ import type {
   FakeGoogleAdsOptions,
 } from "#test/ads/fakes/fake-google-ads-api.ts";
 import { googleAgainstFake, refreshToken } from "#test/ads/google-client.ts";
-import { headerOf } from "#test/publishing/fakes/platform-server.ts";
+import {
+  headerOf,
+  rawJson,
+} from "#test/publishing/fakes/platform-server.ts";
 
 const id = (value: string) => NetworkObjectIdSchema.make(value);
 
@@ -728,6 +731,37 @@ describe("Google's refusals", () => {
           {
             _tag: "PlatformUnavailable",
           }
+        );
+      }).pipe(Effect.scoped)
+  );
+});
+
+describe("the token endpoint's other refusals", () => {
+  it.live(
+    "are Google unavailable, never a rejected token: only invalid_grant rejects one",
+    () =>
+      Effect.gen(function* refreshing() {
+        const { api, client } = yield* googleAgainstFake(hierarchy);
+
+        for (const answer of [
+          oauthError("invalid_request"),
+          oauthError("invalid_scope"),
+          oauthError("access_denied", 403),
+          rawJson("<html>Forbidden</html>", 403),
+        ]) {
+          api.script({ answer, when: toToken });
+
+          assert.deepInclude(
+            errorOf(yield* Effect.exit(client.accounts(refreshToken))),
+            { _tag: "PlatformUnavailable" }
+          );
+        }
+
+        api.script({ answer: oauthError("invalid_request"), when: toToken });
+
+        assert.deepInclude(
+          errorOf(yield* Effect.exit(client.complete("good-code"))),
+          { _tag: "PlatformUnavailable" }
         );
       }).pipe(Effect.scoped)
   );
