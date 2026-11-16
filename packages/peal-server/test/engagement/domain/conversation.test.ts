@@ -146,6 +146,49 @@ describe("a conversation", () => {
   });
 });
 
+describe("Meta's answer window", () => {
+  it("closes a minute before Meta's 24 hours after the person last wrote", () => {
+    for (const platform of ["facebook", "instagram"] as const) {
+      const closesAt = DateTime.addDuration(
+        messagedAt,
+        Duration.sum(Duration.hours(23), Duration.minutes(59))
+      );
+
+      expect(
+        replyWindowOf(
+          platform,
+          Option.some(messagedAt),
+          DateTime.addDuration(
+            messagedAt,
+            Duration.sum(Duration.hours(23), Duration.minutes(58))
+          )
+        )
+      ).toStrictEqual({ closesAt: Option.some(closesAt), open: true });
+      expect(
+        replyWindowOf(
+          platform,
+          Option.some(messagedAt),
+          DateTime.addDuration(
+            messagedAt,
+            Duration.sum(
+              Duration.sum(Duration.hours(23), Duration.minutes(59)),
+              Duration.seconds(30)
+            )
+          )
+        )
+      ).toStrictEqual({ closesAt: Option.some(closesAt), open: false });
+    }
+  });
+
+  it("stays shut where nobody else wrote", () => {
+    for (const platform of ["facebook", "instagram"] as const) {
+      expect(
+        replyWindowOf(platform, Option.none(), messagedAt).open
+      ).toBeFalsy();
+    }
+  });
+});
+
 describe("a conversation's daily check", () => {
   it("is due once a day has passed since it was last read back whole", () => {
     const read = conversation(1);

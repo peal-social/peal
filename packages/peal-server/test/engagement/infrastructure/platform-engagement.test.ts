@@ -16,6 +16,7 @@ import { ChannelUnusable } from "#channels/application/channel-unusable.ts";
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
 import { MessagesUngranted } from "#engagement/application/messages-ungranted.ts";
 import { CommentSource } from "#engagement/application/ports/comment-source.ts";
+import { MessageChannelsOfAccount } from "#engagement/application/ports/message-channels-of-account.ts";
 import { MessageSource } from "#engagement/application/ports/message-source.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
 import { ReplySender } from "#engagement/application/ports/reply-sender.ts";
@@ -60,6 +61,12 @@ import {
   platformServer,
 } from "#test/publishing/fakes/platform-server.ts";
 import type { PlatformAnswer } from "#test/publishing/fakes/platform-server.ts";
+
+// No other channel of any account: what an unfollow asks after.
+const noOtherChannels = Layer.succeed(
+  MessageChannelsOfAccount,
+  MessageChannelsOfAccount.of({ channelsOf: () => Effect.succeed([]) })
+);
 
 const youtubeOnly: InboxPlatforms = new Set(["youtube"]);
 
@@ -195,6 +202,7 @@ const onServer = Effect.fnUntraced(function* onServer(
             world.ports,
             makeReviewWorld().ports,
             Layer.succeed(MessageStore, makeMessageWorld().store),
+            noOtherChannels,
             channelAccessOf(
               Option.getOrElse(failure, () => account),
               ["token-1"]
@@ -543,6 +551,7 @@ const messageSourceOn = (
             makeWorld().ports,
             makeReviewWorld().ports,
             Layer.succeed(MessageStore, store),
+            noOtherChannels,
             Layer.succeed(
               CurrentInboxMessages,
               new Set(["mastodon", "bluesky"] as const)

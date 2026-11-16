@@ -46,6 +46,7 @@ import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { blueskyChatScopes } from "#shared/domain/bluesky-scopes.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
+import { facebookMessageScopes } from "#shared/domain/inbox-message-platform.ts";
 import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
 
 // The direct message use cases on memory: a store that keeps what the
@@ -84,6 +85,13 @@ export const blueskyChannel: EngagedChannel = {
   connection: Option.none(),
   platform: "bluesky",
   scopes: ["atproto", ...blueskyChatScopes],
+};
+
+/** A Facebook Page that granted Meta's messaging permissions. */
+export const facebookChannel: EngagedChannel = {
+  connection: Option.none(),
+  platform: "facebook",
+  scopes: ["pages_show_list", ...facebookMessageScopes],
 };
 
 export interface MessageWorldState {
@@ -447,6 +455,27 @@ export const makeMessageWorld = (
         }
 
         return followed;
+      }),
+    madeWithKey: (message, key) =>
+      Effect.sync(() => {
+        const made = state.keys.get(`${message.workspaceId}:${key.key}`);
+
+        const earlier =
+          made === undefined ? undefined : state.outgoing.get(made);
+
+        if (
+          earlier === undefined ||
+          !DateTime.isGreaterThan(earlier.createdAt, key.since)
+        ) {
+          return Option.none<MessageJournalled>();
+        }
+
+        return Option.some<MessageJournalled>(
+          earlier.conversationId === message.conversationId &&
+            earlier.text === message.text
+            ? { _tag: "replayed", message: earlier }
+            : { _tag: "keyReused" }
+        );
       }),
     journalMessage: (message, key) =>
       Effect.sync((): MessageJournalled => {

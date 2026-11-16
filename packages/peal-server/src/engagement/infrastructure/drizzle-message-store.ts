@@ -3,6 +3,7 @@ import {
   asc,
   desc,
   eq,
+  gt,
   inArray,
   isNotNull,
   isNull,
@@ -295,7 +296,8 @@ export const DrizzleMessageStore = Layer.effect(
     // with the key now.
     const madeUnder = Effect.fn("MessageStore.madeUnder")(function* madeUnder(
       saved: OutgoingMessage,
-      keyDigest: string
+      keyDigest: string,
+      since: Option.Option<DateTime.Utc> = Option.none()
     ) {
       const [row] = yield* db
         .select()
@@ -303,7 +305,10 @@ export const DrizzleMessageStore = Layer.effect(
         .where(
           and(
             eq(outgoingMessages.workspaceId, saved.workspaceId),
-            eq(outgoingMessages.keyDigest, keyDigest)
+            eq(outgoingMessages.keyDigest, keyDigest),
+            ...Option.toArray(since).map((after) =>
+              gt(outgoingMessages.createdAt, date(after))
+            )
           )
         )
         .limit(1)
@@ -748,6 +753,17 @@ export const DrizzleMessageStore = Layer.effect(
       }
     );
 
+    // What a key made since its lifetime began, read and never changed.
+    const madeWithKey = Effect.fn("MessageStore.madeWithKey")(
+      function* madeWithKey(saved: OutgoingMessage, key: MessageKey) {
+        return yield* madeUnder(
+          saved,
+          yield* hashOf(key.key),
+          Option.some(key.since)
+        );
+      }
+    );
+
     const outgoing = Effect.fn("MessageStore.outgoing")(function* outgoing(
       messageId: string
     ) {
@@ -1184,6 +1200,7 @@ export const DrizzleMessageStore = Layer.effect(
       due,
       follow,
       journalMessage,
+      madeWithKey,
       listConversations,
       lockBox,
       messagesOf,

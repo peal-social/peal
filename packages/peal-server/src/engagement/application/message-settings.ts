@@ -164,12 +164,14 @@ export class MessageSettings extends Context.Service<
           }
 
           // An account that has not granted what reading takes (Bluesky's
-          // chat, asked only once a member asks for the channel's messages)
+          // chat, Meta's messaging permissions, asked only once a member
+          // asks for the channel's messages)
           // stays off until it is connected again with them.
           const { read } = messageAbilitiesOf(
             channel.value.platform,
             channel.value.scopes,
-            messages
+            messages,
+            channel.value.connection
           );
 
           if (read !== "available") {

@@ -241,8 +241,8 @@ export class EngagementMessages extends Context.Service<
       const abilitiesOf = (channel: Option.Option<EngagedChannel>) =>
         Option.match(channel, {
           onNone: () => unknownChannel,
-          onSome: ({ platform, scopes }) =>
-            messageAbilitiesOf(platform, scopes, messages),
+          onSome: ({ connection, platform, scopes }) =>
+            messageAbilitiesOf(platform, scopes, messages, connection),
         });
 
       // The channel, able to do this: a channel gone or off can do nothing.
@@ -408,15 +408,6 @@ export class EngagementMessages extends Context.Service<
 
         const now = yield* DateTime.now;
 
-        // Peal never makes a first contact, and a platform whose window
-        // closed takes no answer any more.
-        if (!replyWindowOf(channel.platform, talk.lastIncomingAt, now).open) {
-          return yield* new MessageAbilityUnavailable({
-            ability: "send",
-            standing: "unsupported",
-          });
-        }
-
         // What a member typed is made storable like any text from outside.
         const text = storableText(typed, maxOutgoingMessageLength + 1);
 
@@ -465,6 +456,60 @@ export class EngagementMessages extends Context.Service<
           }
         }
 
+        const written = writeMessage(
+          yield* newId(OutgoingMessageIdSchema).pipe(
+            Effect.provideService(Ids, ids)
+          ),
+          talk,
+          writerOf(actor),
+          outgoing,
+          now
+        );
+
+        const given = key.pipe(
+          Option.map((value) => ({
+            key: value,
+            since: DateTime.subtractDuration(now, messageKeyLifetime),
+          }))
+        );
+
+        // Peal never makes a first contact, and a platform whose window
+        // closed takes no answer any more: refused before anything is
+        // journalled or claimed. A key sent again answers what it made
+        // while the window was open.
+        const window = replyWindowOf(
+          channel.platform,
+          talk.lastIncomingAt,
+          now
+        );
+
+        if (!window.open) {
+          const made = Option.isSome(given)
+            ? yield* store.madeWithKey(written, given.value)
+            : Option.none();
+
+          if (Option.isSome(made)) {
+            return made.value._tag === "replayed"
+              ? made.value.message
+              : yield* new ReplyKeyReused();
+          }
+
+          return yield* Option.match(window.closesAt, {
+            onNone: () =>
+              new MessageAbilityUnavailable({
+                ability: "send",
+                standing: "unsupported",
+              }),
+            onSome: (closedAt) =>
+              new MessageAbilityUnavailable({
+                ability: "send",
+                closedAt,
+                reason: "windowClosed",
+                standing: "unsupported",
+              }),
+          });
+        }
+
         // A paused meter refuses before anything is journalled; a request
         // with a key goes to the journal first, which answers the message
         // the key made, however the meter stands now.
@@ -478,54 +523,34 @@ export class EngagementMessages extends Context.Service<
           return yield* paused.value;
         }
 
-        const written = writeMessage(
-          yield* newId(OutgoingMessageIdSchema).pipe(
-            Effect.provideService(Ids, ids)
-          ),
-          talk,
-          writerOf(actor),
-          outgoing,
-          now
-        );
-
         // The journal row, its outbound message, its job and the
         // conversation read, together. The database holds one message on
         // its way or unconfirmed a conversation, and one message a key. A
         // message the billing account has no allowance for undoes it all.
         const journalled = yield* transaction(
-          store
-            .journalMessage(
-              written,
-              key.pipe(
-                Option.map((given) => ({
-                  key: given,
-                  since: DateTime.subtractDuration(now, messageKeyLifetime),
-                }))
-              )
-            )
-            .pipe(
-              Effect.tap((made) =>
-                made._tag === "journalled"
-                  ? meters
-                      .claim(
-                        actor.workspaceId,
-                        "outboundMessages",
-                        1,
-                        written.createdAt
-                      )
-                      .pipe(
-                        Effect.andThen(jobs.start(written.id)),
-                        Effect.andThen(
-                          // Answered now: read, and its latest message, so
-                          // its retention runs from the answer.
-                          changedUnderLock(talk, (current) =>
-                            answeredAt(current, now)
-                          )
+          store.journalMessage(written, given).pipe(
+            Effect.tap((made) =>
+              made._tag === "journalled"
+                ? meters
+                    .claim(
+                      actor.workspaceId,
+                      "outboundMessages",
+                      1,
+                      written.createdAt
+                    )
+                    .pipe(
+                      Effect.andThen(jobs.start(written.id)),
+                      Effect.andThen(
+                        // Answered now: read, and its latest message, so
+                        // its retention runs from the answer.
+                        changedUnderLock(talk, (current) =>
+                          answeredAt(current, now)
                         )
                       )
-                  : Effect.void
-              )
+                    )
+                : Effect.void
             )
+          )
         );
 
         if (journalled._tag === "pending") {

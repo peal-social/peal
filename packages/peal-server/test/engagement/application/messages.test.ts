@@ -27,6 +27,7 @@ import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import {
   blueskyChannel,
+  facebookChannel,
   makeMessageWorld,
   mastodonChannel,
 } from "#test/engagement/fakes/message-world.ts";
@@ -91,8 +92,14 @@ const listing =
       listedWhole,
     });
 
+const channels = {
+  bluesky: blueskyChannel,
+  facebook: facebookChannel,
+  mastodon: mastodonChannel,
+} as const;
+
 const worldWith = (
-  platform: "bluesky" | "mastodon" = "mastodon",
+  platform: keyof typeof channels = "mastodon",
   world: MessageWorld = makeMessageWorld()
 ) => {
   const started = conversation(1, { participants: [participant(1)] });
@@ -108,10 +115,7 @@ const worldWith = (
 
   world.state.messages.set(incoming.id, incoming);
 
-  world.state.channels.set(
-    channelId(1),
-    platform === "mastodon" ? mastodonChannel : blueskyChannel
-  );
+  world.state.channels.set(channelId(1), channels[platform]);
   world.state.conversations.set(talk.id, talk);
 
   return world;
@@ -767,6 +771,80 @@ const billed = (allowed: number) => {
     world: worldWith("mastodon", makeMessageWorld(undefined, meters)),
   };
 };
+
+describe("a message past Meta's window", () => {
+  const meta = new Set(["mastodon", "bluesky", "facebook"] as const);
+
+  it.effect("is refused before anything is journalled or claimed", () => {
+    const meters = fakeMeters({ allowed: Option.some(5) });
+    const world = worldWith("facebook", makeMessageWorld(meta, meters));
+
+    // A minute before Meta's 24 hours after the person last wrote.
+    const closedAt = Option.map(
+      Option.flatMap(
+        Option.fromUndefinedOr(
+          world.state.conversations.get(conversationId(1))
+        ),
+        ({ lastIncomingAt }) => lastIncomingAt
+      ),
+      (last) =>
+        DateTime.addDuration(
+          last,
+          Duration.sum(Duration.hours(23), Duration.minutes(59))
+        )
+    ).pipe(Option.getOrThrow);
+
+    return at(
+      Effect.gen(function* shut() {
+        const refusal = yield* sending("Hello").pipe(Effect.flip);
+
+        assert.deepInclude(refusal, {
+          _tag: "MessageAbilityUnavailable",
+          closedAt,
+          reason: "windowClosed",
+          standing: "unsupported",
+        });
+        assert.strictEqual(world.state.outgoing.size, 0);
+        assert.lengthOf(world.state.jobs, 0);
+        assert.strictEqual(
+          (yield* FakeMetersLedger.use(Ref.get)).used.get("outboundMessages") ??
+            0,
+          0
+        );
+      }),
+      DateTime.addDuration(messagedAt, "24 hours")
+    ).pipe(Effect.provide(Layer.merge(world.layer, meters)));
+  });
+
+  it.effect(
+    "is open within it, and answers a key sent again once it shut",
+    () => {
+      const world = worldWith("facebook", makeMessageWorld(meta));
+
+      return Effect.gen(function* replayed() {
+        const first = yield* at(
+          sending("Hello", "synthetic-key-1"),
+          DateTime.addDuration(messagedAt, "23 hours")
+        );
+
+        const again = yield* at(
+          sending("Hello", "synthetic-key-1"),
+          DateTime.addDuration(messagedAt, "25 hours")
+        );
+
+        assert.strictEqual(again.id, first.id);
+        assert.lengthOf(world.state.jobs, 1);
+
+        const other = yield* at(
+          sending("Another", "synthetic-key-2"),
+          DateTime.addDuration(messagedAt, "25 hours")
+        ).pipe(Effect.flip);
+
+        assert.deepInclude(other, { reason: "windowClosed" });
+      }).pipe(Effect.provide(world.layer));
+    }
+  );
+});
 
 describe("a message on a server that bills", () => {
   const ledger = FakeMetersLedger.use(Ref.get);

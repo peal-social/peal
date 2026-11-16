@@ -56,6 +56,23 @@ export interface OutgoingDirect {
   readonly text: string;
 }
 
+/** An account on a platform whose events Peal may follow. */
+export interface FollowedAccount {
+  readonly accountId: string;
+  readonly platform: "facebook" | "instagram";
+}
+
+/**
+ * Whether another channel of Peal's, in any workspace, still reads the
+ * messages of one of these accounts: a platform's subscription is the
+ * account's, shared by every channel of it, and by those that share its
+ * Page. True when it cannot be told, so a subscription is never stopped
+ * on a doubt.
+ */
+export type FollowedElsewhere = (
+  accounts: readonly FollowedAccount[]
+) => Effect.Effect<boolean>;
+
 /**
  * One platform's direct messages: reading an account's conversations, and
  * answering one as the account. A platform joins by implementing this,
@@ -70,9 +87,10 @@ export interface OutgoingDirect {
  * (Meta's events) has `follow`, which asks it to, and `unfollow`, which
  * asks it to stop: the platform's subscription is the account's, so
  * `unfollow` answers `unneeded`, and calls nothing, while another channel
- * of Peal's still follows the account (a Page connected in two
- * workspaces). One without them is read on the collection's schedule
- * alone (Mastodon, Bluesky).
+ * of Peal's still follows the account (`followedElsewhere`: a Page
+ * connected in two workspaces, or the Instagram account it is linked to).
+ * One without them is read on the collection's schedule alone (Mastodon,
+ * Bluesky).
  */
 export interface MessagePlatform {
   readonly read: (
@@ -91,6 +109,7 @@ export interface MessagePlatform {
     account: ChannelAccount
   ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
   readonly unfollow?: (
-    account: ChannelAccount
+    account: ChannelAccount,
+    followedElsewhere: FollowedElsewhere
   ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
 }

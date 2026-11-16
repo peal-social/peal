@@ -32,13 +32,18 @@ import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
 
 // The inbox's direct messages: the private conversations of a workspace's
-// Mastodon and Bluesky channels, read from the platforms where the
+// Mastodon, Bluesky, Facebook Page and Instagram channels, read from the platforms where the
 // server's operator turned them on, and answered from Peal. The server's
 // engagement context is the source of every list below; a test keeps them
 // equal.
 
 /** The platforms whose direct messages Peal reads, where the server's operator turned them on. */
-export const inboxMessagePlatforms = ["mastodon", "bluesky"] as const;
+export const inboxMessagePlatforms = [
+  "mastodon",
+  "bluesky",
+  "facebook",
+  "instagram",
+] as const;
 
 /** How many days after it was sent Peal keeps a message; a conversation goes once its last message is that old. */
 export const inboxMessageRetentionDays = 30;
@@ -132,7 +137,9 @@ export type InboxOutgoingMessageStatus =
  * `conversationGone`, `refused` (the person takes no messages from the
  * account, the conversation is locked, or the text is not allowed),
  * `notSent` (its outcome was unknown, and a member found it never went
- * out).
+ * out), `windowClosed` (the platform takes answers only for a time after
+ * the person last wrote, 24 hours on Messenger and Instagram, and it had
+ * passed).
  *
  * Unconfirmed, until a member checks the platform: `noResponse`,
  * `interrupted`, `adapterFailure`.
@@ -148,6 +155,7 @@ export const InboxOutgoingMessageReasonSchema = Schema.Literals([
   "noResponse",
   "interrupted",
   "adapterFailure",
+  "windowClosed",
 ]).annotate({ identifier: "InboxOutgoingMessageReason" });
 
 export type InboxOutgoingMessageReason =
@@ -178,7 +186,10 @@ export type InboxOutgoingMessage = typeof InboxOutgoingMessageSchema.Type;
 
 /**
  * Whether the platform lets the account answer still, and until when:
- * Mastodon and Bluesky set no window, so `closesAt` is null.
+ * Mastodon and Bluesky set no window, so `closesAt` is null; Messenger and
+ * Instagram take an answer until 24 hours after the person's last message,
+ * which Peal ends a minute early, at `closesAt`. A conversation nobody
+ * else wrote in is never open.
  */
 export const InboxReplyWindowSchema = Schema.Struct({
   closesAt: Schema.NullOr(Schema.DateTimeUtc),
@@ -265,7 +276,7 @@ const acting =
 const inPerson =
   "Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).";
 
-const where = `Peal reads a channel's direct messages, on Mastodon and Bluesky where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message ${inboxMessageRetentionDays} days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). Peal never starts a conversation: it answers those someone else began.`;
+const where = `Peal reads a channel's direct messages, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message ${inboxMessageRetentionDays} days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). On Messenger and Instagram, Meta gives only a conversation's 20 latest messages, so a longer one is never read whole; a message taken back on Instagram is deleted when Meta tells of it, and Messenger tells of none, so one taken back there stays until its ${inboxMessageRetentionDays} days. Peal never starts a conversation: it answers those someone else began.`;
 
 /**
  * A workspace's direct messages: the private conversations of its
@@ -339,7 +350,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
       }
     ).annotateMerge(
       OpenApi.annotations({
-        description: `Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of \`direct\` visibility, which mentions every participant first, and a text that mentions any other account is refused (422 \`MessageMentionsOutside\`), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message \`sending\`, and the conversation shows how it ended. A message whose outcome is unknown is \`unconfirmed\` and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 \`MessagePending\`). With an \`Idempotency-Key\` header (${maxIdempotencyKeyLength} characters at most, new for each message), the request is safe to send again: within ${idempotencyKeyLifetimeHours} hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 \`IdempotencyKeyReused\`). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 \`UsageAllowanceReached\`); with one, it is billed past the allowance. A message that never went out is not counted. ${acting}`,
+        description: `Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of \`direct\` visibility, which mentions every participant first, and a text that mentions any other account is refused (422 \`MessageMentionsOutside\`), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept; on Messenger and Instagram a message sent only within 24 hours of the person's last one (\`window\`): past it, the message is refused before anything is journalled (409 \`InboxActionUnavailable\`, \`reason\` \`windowClosed\`, with \`closedAt\`), unless an \`Idempotency-Key\` names a message already made. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message \`sending\`, and the conversation shows how it ended. A message whose outcome is unknown is \`unconfirmed\` and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 \`MessagePending\`). With an \`Idempotency-Key\` header (${maxIdempotencyKeyLength} characters at most, new for each message), the request is safe to send again: within ${idempotencyKeyLifetimeHours} hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 \`IdempotencyKeyReused\`). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 \`UsageAllowanceReached\`); with one, it is billed past the allowance. A message that never went out is not counted. ${acting}`,
         summary: "Send a direct message",
       })
     ),
@@ -376,7 +387,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
       success: InboxMessageSettingsSchema,
     }).annotateMerge(
       OpenApi.annotations({
-        description: `Turns a channel's direct messages on (\`enabled: true\`): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 \`InboxActionUnavailable\`, \`unsupported\`), and a Bluesky channel whose account has not granted the chat methods' permissions too (\`reconnect\`): reconnect it with \`messages=true\`, then turn its messages on. Needs channel:connect. ${inPerson}`,
+        description: `Turns a channel's direct messages on (\`enabled: true\`): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 \`InboxActionUnavailable\`, \`unsupported\`), and a Bluesky, Facebook Page or Instagram channel whose account has not granted the permissions its messages take too (\`reconnect\`): reconnect it with \`messages=true\`, then turn its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access its messages in Instagram's settings. Needs channel:connect. ${inPerson}`,
         summary: "Turn a channel's direct messages on or off",
       })
     ),

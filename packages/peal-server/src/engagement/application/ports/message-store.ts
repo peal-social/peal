@@ -202,6 +202,15 @@ export class MessageStore extends Context.Service<
       message: OutgoingMessage,
       key: Option.Option<MessageKey>
     ) => Effect.Effect<MessageJournalled, DatabaseError>;
+    /**
+     * What a key made in the workspace since `key.since`, compared with
+     * `message`: the same message (`replayed`), another (`keyReused`), or
+     * none. Reads only: what a request refused before the journal answers.
+     */
+    readonly madeWithKey: (
+      message: OutgoingMessage,
+      key: MessageKey
+    ) => Effect.Effect<Option.Option<MessageJournalled>, DatabaseError>;
     readonly outgoing: (
       messageId: string
     ) => Effect.Effect<Option.Option<OutgoingMessage>, DatabaseError>;

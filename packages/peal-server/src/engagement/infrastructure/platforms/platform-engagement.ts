@@ -393,10 +393,13 @@ export const platformEngagementWith = (settings: EngagementSettings) =>
       return Layer.mergeAll(
         // A location's reviews, on Google Business Profile.
         platformReviewsWith({ businessApi: settings.businessApi, http }),
-        // A channel's direct messages, on Mastodon and Bluesky.
+        // A channel's direct messages, on Mastodon, Bluesky, Facebook Pages
+        // and Instagram.
         platformMessagesWith({
           http,
           mastodonScheme: settings.mastodonScheme,
+          metaAppSecret: settings.metaAppSecret,
+          metaHosts: settings.metaHosts,
           reader,
         }),
         Layer.succeed(CommentSource, CommentSource.of({ read })),
