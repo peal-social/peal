@@ -36,8 +36,8 @@ const markOf = (icon: SimpleIcon): SiteMark => ({
 });
 
 // Brands missing from simple-icons get a lettered tile, as in the web app
-// (DESIGN.md, Icons): LinkedIn asked to be left out, and Google Business
-// Profile has no mark there.
+// (DESIGN.md, Icons): LinkedIn and Slack asked to be left out, and Google
+// Business Profile has no mark there.
 const lettered = (letters: string): SiteMark => ({ kind: "letters", letters });
 
 export const githubMark = markOf(siGithub);
@@ -117,6 +117,7 @@ const channelEntries: Readonly<
     mark: markOf(siPinterest),
     name: "Pinterest",
   },
+  slack: { docs: "platforms/slack", mark: lettered("S"), name: "Slack" },
   telegram: {
     docs: "platforms/telegram",
     mark: telegramMark,
@@ -142,8 +143,17 @@ const adEntries: Readonly<Record<AdNetwork, Omit<PlatformEntry, "group">>> = {
   meta: { docs: "guides/engage/ads", mark: markOf(siMeta), name: "Meta ads" },
 };
 
+// The contract's chats are those connected with a pasted secret; Slack is
+// a chat too, connected by signing in.
+const signInChats: ReadonlySet<ChannelPlatform> = new Set<ChannelPlatform>([
+  "slack",
+]);
+
 const groupOf = (platform: ChannelPlatform): PlatformGroup => {
-  if (ChatPlatformSchema.literals.some((chat) => chat === platform)) {
+  if (
+    ChatPlatformSchema.literals.some((chat) => chat === platform) ||
+    signInChats.has(platform)
+  ) {
     return "chat";
   }
 

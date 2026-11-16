@@ -302,7 +302,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
 - **Marks on the site.** Brands' marks (platforms, GitHub, Discord) come
   from simple-icons, at the version the workspace pins, in `currentColor`:
   ink, or muted text in the drawer, never the brand's colour. A brand
-  missing from simple-icons (LinkedIn, Google Business Profile) is a
+  missing from simple-icons (LinkedIn, Slack, Google Business Profile) is a
   lettered tile in ink.
 - **Footer**, on `background` under a full-width rule: the mark, the
   licence's line and the language links in a first cell, then a bordered
