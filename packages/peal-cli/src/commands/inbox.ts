@@ -1,4 +1,4 @@
-import { Console, Effect, Option } from "effect";
+import { Console, DateTime, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import {
   idempotencyKeyLifetimeHours,
@@ -268,7 +268,10 @@ const thread = Command.make(
           `    private reply ${comment.privateReply.id}  ${privateReplyLine(comment.privateReply)}`
         );
         yield* Console.log(`      ${comment.privateReply.text}`);
-      } else if (comment.privateReplyUntil !== null) {
+      } else if (
+        comment.privateReplyUntil !== null &&
+        DateTime.isLessThan(DateTime.nowUnsafe(), comment.privateReplyUntil)
+      ) {
         yield* Console.log(
           `    a private reply may go until ${instant(comment.privateReplyUntil)}: peal inbox private-reply send ${comment.id}`
         );

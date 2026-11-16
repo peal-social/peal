@@ -61,6 +61,7 @@ export const toPrivateReplyView = (reply: PrivateReply): InboxPrivateReply => {
 
 // What a thread whose private replies were not asked after shows.
 const noPrivateReplies: ThreadPrivateReplies = {
+  now: DateTime.makeUnsafe(0),
   replies: [],
   standing: "unsupported",
 };
@@ -99,7 +100,8 @@ export const toCommentView = (
     privateReplyUntil:
       privateReplies.standing === "available" &&
       isOnPlatform(comment) &&
-      Option.isNone(comment.expiredAt)
+      Option.isNone(comment.expiredAt) &&
+      DateTime.isLessThan(privateReplies.now, privateReplyUntil(comment))
         ? privateReplyUntil(comment)
         : null,
     receivedAt: comment.receivedAt,

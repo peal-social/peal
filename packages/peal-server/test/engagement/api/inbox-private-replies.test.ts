@@ -267,6 +267,23 @@ describe("the private replies' endpoints", () => {
         ).pipe(Effect.flip);
 
         assert.instanceOf(old, PrivateReplyNotPossible);
+
+        // Past it, the thread no longer offers one.
+        const detail = yield* at(
+          clientAs(world, editor).pipe(
+            Effect.flatMap((client) =>
+              client.inbox.getThread({
+                params: { ...params, threadId: thread(1).id },
+              })
+            )
+          ),
+          DateTime.addDuration(
+            writtenAt,
+            Duration.sum(privateReplyWindow, Duration.minutes(1))
+          )
+        );
+
+        assert.isNull(detail.comments[0]?.privateReplyUntil);
         assert.strictEqual(
           old instanceof PrivateReplyNotPossible ? old.reason : "",
           "tooOld"

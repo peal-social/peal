@@ -132,6 +132,8 @@ const answerOf = (
 
 /** What a thread's view shows of private replies, for one actor. */
 export interface ThreadPrivateReplies {
+  /** When it was read: a comment past its window is offered none. */
+  readonly now: DateTime.Utc;
   /** Whether the thread's channel can send one now. */
   readonly standing: AbilityStanding;
   /**
@@ -521,7 +523,11 @@ export class EngagementPrivateReplies extends Context.Service<
               )
             : [];
 
-          const thread: ThreadPrivateReplies = { replies, standing };
+          const thread: ThreadPrivateReplies = {
+            now: yield* DateTime.now,
+            replies,
+            standing,
+          };
 
           return thread;
         }

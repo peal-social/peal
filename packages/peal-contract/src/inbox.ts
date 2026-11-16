@@ -268,8 +268,8 @@ export const InboxCommentSchema = Schema.Struct({
   privateReply: Schema.NullOr(InboxPrivateReplySchema),
   // Until when Peal offers a private reply to it: seven days after it was
   // written, less an hour. Null where its channel cannot send one now
-  // (the thread's `abilities.privateReply`), or the platform no longer
-  // shows it.
+  // (the thread's `abilities.privateReply`), the platform no longer shows
+  // it, or that time has passed.
   privateReplyUntil: Schema.NullOr(Schema.DateTimeUtc),
   // When Peal first read it.
   receivedAt: Schema.DateTimeUtc,
