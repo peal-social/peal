@@ -7,8 +7,10 @@ import type { RequestIssue } from "peal-contract";
 import { errorCodeOf, errorsByTag, generalErrorOf } from "peal-contract/errors";
 
 // Better Auth's routes and the MCP endpoint answer as their clients read
-// them (Better Auth's `code` and `message`, JSON-RPC errors).
-const otherAnswers = ["/api/auth/", "/api/mcp"];
+// them (Better Auth's `code` and `message`, JSON-RPC errors), and a
+// platform's events with a bare status, as the platform reads nothing
+// more and the address is public.
+const otherAnswers = ["/api/auth/", "/api/mcp", "/api/platform-events/"];
 
 /** Whether the answers to a path are the API's, in the envelope. */
 export const isEnveloped = (path: string): boolean =>

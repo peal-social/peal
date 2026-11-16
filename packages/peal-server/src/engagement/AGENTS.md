@@ -496,8 +496,13 @@
   (`deleteTakenBack`, under the box's row, which `bringForward` holds),
   the box's next read brought to now (never later) and
   `ReadMessageBoxV1` started (payload `channelId`, `slot`: the instant
-  floored to ten seconds, one execution a channel and slot; activity
-  `read`; persisted contract, fixture in `fixtures/persisted`). A channel
+  floored to ten seconds, one execution a channel and slot; clock `slot`,
+  activity `read`; persisted contract, fixture in `fixtures/persisted`),
+  which reads only once its slot is over, so every event of the slot is
+  in the read. An event never brings a box before the hold a refusal put
+  on it (`message_boxes.not_before`, `postponeBoxRead`; a read lifts it),
+  and `readBox` calls nothing while it lasts; a read that finds the
+  box's next read moved meanwhile keeps the earlier one. A channel
   without a box (messages off) or an unknown account is `ignored`: an
   event writes nothing else, checks no permission (the signature is the
   authority), and tells nobody (the read does). The job runs

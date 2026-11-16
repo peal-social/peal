@@ -4,7 +4,7 @@
 // "message_echoes" and "message_edits" events, Instagram's messaging
 // examples, read 2026-11-16), with synthetic values.
 import { assert, describe, it } from "@effect/vitest";
-import { Option, Result } from "effect";
+import { DateTime, Option, Result } from "effect";
 import type { Schema } from "effect";
 
 import { decodeMetaEvents } from "#app/platform-events/meta-events.ts";
@@ -15,6 +15,11 @@ const encoder = new TextEncoder();
 type Sample = typeof Schema.Json.Type;
 
 const bytes = (value: Sample) => encoder.encode(JSON.stringify(value));
+
+// When Meta sent the samples, in milliseconds as its pages write it, and
+// when the server reads them: a minute later.
+const sentAt = 1_763_288_400_000;
+const now = DateTime.makeUnsafe(sentAt + 60_000);
 
 const text = "Synthetic private words";
 const sender = "synthetic-sender-7001";
@@ -36,7 +41,7 @@ const messengerText = {
           timestamp: 1_458_692_752_478,
         },
       ],
-      time: 1_458_692_752_478,
+      time: sentAt,
     },
   ],
   object: "page",
@@ -116,7 +121,7 @@ const instagramStoryMention = {
           timestamp: 1_700_000_000_000,
         },
       ],
-      time: 1_700_000_000_000,
+      time: sentAt,
     },
   ],
   object: "instagram",
@@ -155,8 +160,15 @@ const instagramComment = {
   object: "instagram",
 };
 
+// An entry sent at `time`, of one message.
+const entry = (time: number, id: string) => ({
+  id,
+  messaging: [{ message: { mid: `m_${id}` } }],
+  time,
+});
+
 const decoded = (value: Sample) =>
-  Result.getOrThrow(decodeMetaEvents(bytes(value)));
+  Result.getOrThrow(decodeMetaEvents(bytes(value), now)).events;
 
 describe(decodeMetaEvents, () => {
   it("reads a Page's message, echo and edit as ids", () => {
@@ -267,7 +279,33 @@ describe(decodeMetaEvents, () => {
       bytes(null),
       new Uint8Array([0xff, 0xfe, 0x7b]),
     ]) {
-      assert.isTrue(Result.isFailure(decodeMetaEvents(raw)));
+      assert.isTrue(Result.isFailure(decodeMetaEvents(raw, now)));
     }
+  });
+
+  it("leaves out an entry Meta sent over a day ago, in milliseconds or seconds", () => {
+    const read = Result.getOrThrow(
+      decodeMetaEvents(
+        bytes({
+          entry: [
+            entry(sentAt, "fresh-millis"),
+            entry(Math.floor(sentAt / 1000), "fresh-seconds"),
+            entry(sentAt - 2 * 24 * 60 * 60 * 1000, "stale-millis"),
+            entry(
+              Math.floor(sentAt / 1000) - 2 * 24 * 60 * 60,
+              "stale-seconds"
+            ),
+          ],
+          object: "page",
+        }),
+        now
+      )
+    );
+
+    assert.deepStrictEqual(
+      read.events.map(({ accountId }) => accountId),
+      ["fresh-millis", "fresh-seconds"]
+    );
+    assert.strictEqual(read.stale, 2);
   });
 });

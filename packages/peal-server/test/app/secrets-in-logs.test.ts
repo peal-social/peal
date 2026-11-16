@@ -1405,11 +1405,22 @@ layer(EventsTest, { excludeTestServices: true, timeout: "120 seconds" })(
             [200, 403, 403, 200]
           );
 
+          // Refused again, at once: not written again, as a flood of
+          // refusals on a public address would fill the logs.
+          assert.deepStrictEqual(
+            [yield* event(forged), yield* event(forged)],
+            [403, 403]
+          );
+
           const all = written();
 
-          // The requests were written about: their path and the refusal.
+          // The requests were written about: their path and the refusal,
+          // once.
           assert.include(all, path);
-          assert.include(all, "unsigned event");
+          assert.strictEqual(
+            all.split("Refused a platform's unsigned event").length - 1,
+            1
+          );
 
           for (const [name, secret] of [
             ["the verify token", eventsVerifyToken],

@@ -1,10 +1,13 @@
 import {
   ByteSize,
+  DateTime,
+  Duration,
   Effect,
   Layer,
   Metric,
   Option,
   Redacted,
+  Ref,
   Result,
   Schema,
 } from "effect";
@@ -46,8 +49,9 @@ const decodeApp = Schema.decodeUnknownOption(MetaEventAppSchema);
 /**
  * Meta's events, by the app that sent them and how each ended: `taken`
  * (a box moved forward), `ignored` (no channel whose messages are on holds
- * the account), `unreadable` (signed, but not an event Peal reads) and
- * `unsigned` (refused before being read).
+ * the account), `unreadable` (signed, but not an event Peal reads), `stale`
+ * (signed, but sent over a day ago: entries left out) and `unsigned`
+ * (refused before being read).
  */
 export const platformEvents = Metric.counter("peal.platform_events", {
   description:
@@ -55,7 +59,13 @@ export const platformEvents = Metric.counter("peal.platform_events", {
   incremental: true,
 });
 
-type Outcome = "ignored" | "taken" | "unreadable" | "unsigned";
+type Outcome = "ignored" | "stale" | "taken" | "unreadable" | "unsigned";
+
+/**
+ * How often one kind of refusal is written to the logs at most: the
+ * address is public, and `peal.platform_events` counts every one.
+ */
+export const refusalLogEvery = Duration.minutes(1);
 
 const counted = (app: MetaEventApp, outcome: Outcome) =>
   Metric.update(Metric.withAttributes(platformEvents, { app, outcome }), 1);
@@ -81,6 +91,12 @@ const signaturePattern = /^sha256=(?<tag>[0-9a-f]{64})$/u;
 const encoder = new TextEncoder();
 
 const empty = (status: number) => HttpServerResponse.empty({ status });
+
+// The path an app's events come to, exactly: no other spelling is the
+// route's (`facebook;x`, a trailing slash, an encoded letter).
+const pathOf = (app: MetaEventApp) => metaEventsPath.replace(":app", app);
+
+const requestPath = (url: string) => url.split("?", 1)[0] ?? "";
 
 /**
  * `GET` and `POST /api/platform-events/meta/:app`, without credentials:
@@ -124,20 +140,66 @@ export const PlatformEventsLive = HttpRouter.use(
           .pipe(Effect.map(Option.some), Effect.orDie),
     });
 
-    const secretKeys = {
-      facebook: yield* keyOf(apps.facebook),
-      instagram: yield* keyOf(apps.instagram),
+    const mainKey = yield* keyOf(apps.facebook);
+
+    // The keys an app's events are taken under. Instagram Login's: its own
+    // secret, or the main app's, as Meta's "Set up Instagram Webhooks"
+    // (read 2026-11-16) says "your app's App Secret" and points at the
+    // app's basic settings without telling the two sign-ins apart. Both
+    // are the operator's; the sandbox's trial settles which Meta uses, and
+    // U9b keeps that one alone.
+    const keysOf: Readonly<
+      Record<
+        MetaEventApp,
+        Option.Option<readonly (readonly [string, Mac.Key])[]>
+      >
+    > = {
+      facebook: mainKey.pipe(
+        Option.map((key) => [["META_APP_SECRET", key] as const])
+      ),
+      instagram: (yield* keyOf(apps.instagram)).pipe(
+        Option.map((own) => [
+          ["INSTAGRAM_APP_SECRET", own] as const,
+          ...Option.toArray(mainKey).map(
+            (main) => ["META_APP_SECRET", main] as const
+          ),
+        ])
+      ),
     };
+
+    // When each kind of refusal was last written, so a flood writes one a
+    // minute.
+    const lastWritten = yield* Ref.make(new Map<string, number>());
+
+    const sampled = (kind: string, written: Effect.Effect<void>) =>
+      Effect.gen(function* sampling() {
+        const now = DateTime.toEpochMillis(yield* DateTime.now);
+
+        const due = yield* Ref.modify(lastWritten, (last) => {
+          const before = last.get(kind);
+
+          return before !== undefined &&
+            now - before < Duration.toMillis(refusalLogEvery)
+            ? [false, last]
+            : [true, new Map(last).set(kind, now)];
+        });
+
+        yield* due ? written : Effect.void;
+      });
 
     // The app the path names, when the server takes its events.
     const appOfPath = Effect.gen(function* appOfPath() {
+      const request = yield* HttpServerRequest.HttpServerRequest;
       const { app } = yield* HttpRouter.params;
-      const named = decodeApp(app);
+
+      const named = decodeApp(app).pipe(
+        Option.filter((known) => requestPath(request.url) === pathOf(known))
+      );
 
       return Option.isNone(tokenTag) || Option.isNone(named)
         ? Option.none()
-        : secretKeys[named.value].pipe(
-            Option.map((key) => ({ app: named.value, key }))
+        : keysOf[named.value].pipe(
+            Option.map((keys) => ({ app: named.value, keys }))
           );
     });
 
@@ -177,8 +239,11 @@ export const PlatformEventsLive = HttpRouter.use(
       );
 
       if (!subscribing || !tokenMatches || Option.isNone(challenge)) {
-        yield* Effect.logWarning("Refused a platform's events handshake").pipe(
-          Effect.annotateLogs({ app: reached.value.app })
+        yield* sampled(
+          `handshake:${reached.value.app}`,
+          Effect.logWarning("Refused a platform's events handshake").pipe(
+            Effect.annotateLogs({ app: reached.value.app })
+          )
         );
 
         return empty(403);
@@ -194,8 +259,31 @@ export const PlatformEventsLive = HttpRouter.use(
         return empty(404);
       }
 
-      const { app, key } = reached.value;
+      const { app, keys } = reached.value;
       const request = yield* HttpServerRequest.HttpServerRequest;
+
+      const refused = (reason: string) =>
+        counted(app, "unsigned").pipe(
+          Effect.andThen(
+            sampled(
+              `unsigned:${app}:${reason}`,
+              Effect.logWarning("Refused a platform's unsigned event").pipe(
+                Effect.annotateLogs({ app, reason })
+              )
+            )
+          ),
+          Effect.as(empty(403))
+        );
+
+      // The header's form first: without one, the body is never read.
+      const tag = Option.fromUndefinedOr(
+        signaturePattern.exec(request.headers["x-hub-signature-256"] ?? "")
+          ?.groups?.["tag"]
+      ).pipe(Option.flatMap((hex) => Result.getSuccess(Hex.decode(hex))));
+
+      if (Option.isNone(tag)) {
+        return yield* refused("no signature of the expected form");
+      }
 
       const body = yield* request.arrayBuffer.pipe(
         Effect.provideService(HttpIncomingMessage.MaxBodySize, bodyLimit),
@@ -216,33 +304,34 @@ export const PlatformEventsLive = HttpRouter.use(
         return empty(body.failure === "tooLarge" ? 413 : 400);
       }
 
-      const signature = signaturePattern.exec(
-        request.headers["x-hub-signature-256"] ?? ""
-      )?.groups?.["tag"];
+      // Every key is tried, each in constant time, whichever matches.
+      const matched = yield* Effect.all(
+        keys.map(([name, key]) =>
+          mac.verify(key, tag.value, body.success).pipe(
+            Effect.orDie,
+            Effect.map((valid) => (valid ? [name] : []))
+          )
+        )
+      ).pipe(Effect.map((names) => names.flat()));
 
-      const tag = Option.fromUndefinedOr(signature).pipe(
-        Option.flatMap((hex) => Result.getSuccess(Hex.decode(hex)))
-      );
+      const [secret] = matched;
 
-      const signed = Option.isSome(tag)
-        ? yield* mac.verify(key, tag.value, body.success).pipe(Effect.orDie)
-        : false;
-
-      if (!signed) {
-        yield* counted(app, "unsigned");
-        yield* Effect.logWarning("Refused a platform's unsigned event").pipe(
-          Effect.annotateLogs({
-            app,
-            reason: Option.isSome(tag)
-              ? "the signature does not match"
-              : "no signature of the expected form",
-          })
-        );
-
-        return empty(403);
+      if (secret === undefined) {
+        return yield* refused("the signature does not match");
       }
 
-      const events = decodeMetaEvents(body.success);
+      // For the sandbox's trial: which secret signed Instagram Login's
+      // events (never the signature).
+      if (app === "instagram") {
+        yield* sampled(
+          `secret:${secret}`,
+          Effect.logInfo("Took an Instagram Login event").pipe(
+            Effect.annotateLogs({ app, secret })
+          )
+        );
+      }
+
+      const events = decodeMetaEvents(body.success, yield* DateTime.now);
 
       if (Result.isFailure(events)) {
         yield* counted(app, "unreadable");
@@ -250,8 +339,16 @@ export const PlatformEventsLive = HttpRouter.use(
         return empty(200);
       }
 
+      if (events.success.stale > 0) {
+        yield* counted(app, "stale");
+      }
+
+      if (events.success.events.length === 0 && events.success.stale > 0) {
+        return empty(200);
+      }
+
       // Instagram Login's app tells of Instagram accounts alone.
-      const meant = events.success.filter(
+      const meant = events.success.events.filter(
         ({ platform }) => app === "facebook" || platform === "instagram"
       );
 

@@ -100,7 +100,7 @@ const pageEvent = (pageId: string) =>
               timestamp: 1_763_288_400_000,
             },
           ],
-          time: 1_763_288_400_000,
+          time: Date.now(),
         },
       ],
       object: "page",
@@ -228,30 +228,41 @@ layer(TestApp.layerWith(configured))("Meta's events", (it) => {
       })
   );
 
-  it.effect("verify the Instagram app's events with its own secret", () =>
-    Effect.gen(function* instagram() {
-      const body = encoder.encode(
-        JSON.stringify({
-          entry: [{ id: "synthetic-instagram-account", messaging: [] }],
-          object: "instagram",
-        })
-      );
+  // Which of the two secrets Meta signs Instagram Login's events with is
+  // for the sandbox's trial to settle: both are the operator's own, so
+  // either is taken until then. The main app's address takes its own.
+  it.effect(
+    "take the Instagram app's events signed with either of the operator's secrets, and no other",
+    () =>
+      Effect.gen(function* instagram() {
+        const body = encoder.encode(
+          JSON.stringify({
+            entry: [{ id: "synthetic-instagram-account", messaging: [] }],
+            object: "instagram",
+          })
+        );
 
-      const own = yield* post(
-        "instagram",
-        body,
-        yield* signatureOf(instagramSecret, body)
-      );
+        const statuses = [
+          yield* post(
+            "instagram",
+            body,
+            yield* signatureOf(instagramSecret, body)
+          ),
+          yield* post("instagram", body, yield* signatureOf(mainSecret, body)),
+          yield* post(
+            "instagram",
+            body,
+            yield* signatureOf("synthetic-other-secret", body)
+          ),
+          yield* post(
+            "facebook",
+            body,
+            yield* signatureOf(instagramSecret, body)
+          ),
+        ].map(({ status }) => status);
 
-      const main = yield* post(
-        "instagram",
-        body,
-        yield* signatureOf(mainSecret, body)
-      );
-
-      assert.strictEqual(own.status, 200);
-      assert.strictEqual(main.status, 403);
-    })
+        assert.deepStrictEqual(statuses, [200, 200, 403, 403]);
+      })
   );
 
   it.effect("refuse a body past 4 MiB, signed or not", () =>
@@ -271,7 +282,78 @@ layer(TestApp.layerWith(configured))("Meta's events", (it) => {
       );
 
       assert.strictEqual(answer.status, 413);
+
+      // Without a signature of the expected form, not even read.
+      const unsigned = yield* post("facebook", body, "sha256=forged");
+
+      assert.strictEqual(unsigned.status, 403);
     })
+  );
+
+  it.effect("answer their refusals with an empty body", () =>
+    Effect.gen(function* empty() {
+      const body = pageEvent("synthetic-page");
+
+      for (const answer of [
+        yield* post("facebook", body, "sha256=forged"),
+        yield* handshake("facebook", subscribe({ "hub.mode": "unsubscribe" })),
+        yield* handshake("threads", subscribe()),
+      ]) {
+        assert.include([403, 404], answer.status);
+        assert.strictEqual(answer.text, "");
+      }
+    })
+  );
+
+  it.effect("answer no other spelling of their address", () =>
+    Effect.gen(function* spellings() {
+      const body = pageEvent("synthetic-page");
+      const signature = yield* signatureOf(mainSecret, body);
+
+      for (const app of ["facebook;x", "facebook/", "%66acebook", "Facebook"]) {
+        assert.strictEqual(
+          (yield* post(app, body, signature)).status,
+          404,
+          app
+        );
+        assert.strictEqual(
+          (yield* handshake(app, subscribe())).status,
+          404,
+          app
+        );
+      }
+    })
+  );
+
+  it.effect(
+    "take an event older than a day, signed, without acting on it",
+    () =>
+      Effect.gen(function* stale() {
+        const before = yield* counted("facebook", "stale");
+
+        // Meta's `time`, in milliseconds: two days ago.
+        const body = encoder.encode(
+          JSON.stringify({
+            entry: [
+              {
+                id: "synthetic-page-stale",
+                messaging: [{ message: { mid: "m_synthetic_stale" } }],
+                time: Date.now() - 2 * 24 * 60 * 60 * 1000,
+              },
+            ],
+            object: "page",
+          })
+        );
+
+        const answer = yield* post(
+          "facebook",
+          body,
+          yield* signatureOf(mainSecret, body)
+        );
+
+        assert.strictEqual(answer.status, 200);
+        assert.strictEqual((yield* counted("facebook", "stale")) - before, 1);
+      })
   );
 
   it.effect(
