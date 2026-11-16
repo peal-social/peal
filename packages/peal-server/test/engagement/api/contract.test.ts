@@ -155,7 +155,7 @@ describe("the contract's direct messages", () => {
 });
 
 describe("the contract's private replies", () => {
-  it("names their states, reasons, refusals, window and limits as the domain does", () => {
+  it("names their states, reasons and refusals as the domain does", () => {
     expect(InboxPrivateReplyStatusSchema.literals).toStrictEqual(
       PrivateReplyStatusSchema.members.map(
         ({ fields }) => fields._tag.schema.literal
@@ -168,6 +168,9 @@ describe("the contract's private replies", () => {
     expect(PrivateReplyRefusalSchema.literals).toStrictEqual(
       DomainRefusalSchema.literals
     );
+  });
+
+  it("gives their window, key lifetime and limits as the domain does", () => {
     // Seven days, which Peal ends an hour early.
     expect(Duration.toHours(privateReplyWindow)).toBe(
       privateReplyWindowDays * 24 - 1
