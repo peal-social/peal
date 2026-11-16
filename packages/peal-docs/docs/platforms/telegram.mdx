@@ -40,11 +40,11 @@ What each file type must be is in [Images and videos](/guides/media#platforms): 
 - Name the chat by its public name, such as `@name`, or by its id: a channel's or a supergroup's starts with `-100`.
 - Peal posts in channels and groups, never in a private chat with a person.
 - To cut Peal off, revoke the bot's token with @BotFather, or remove the bot from the chat. Peal then marks the channel to reconnect.
-- When a group becomes a supergroup, Telegram gives it a new id and posts fail (`chatMigrated`): connect the chat again, as a new channel.
+- When a group becomes a supergroup, Telegram gives it a new id and posts fail (`chatMigrated`): connect the chat again, as a new channel, then disconnect the old one, which stays on your plan until you do.
 
 ## What a post becomes [#posts]
 
-- The text is plain text: Telegram makes its links clickable, and nothing else is formatted.
+- The text is plain text: no bold, italics or other formatting. Telegram still makes links, `@names`, hashtags and `/commands` clickable, and an `@name` in a group notifies that person: Peal cannot turn that off.
 - A text alone takes 4,096 characters. A text with images or videos is their caption, and takes 1,024: Peal checks it when the post is scheduled.
 - Several files go as one album, the text the first one's caption.
 - The parts of a [thread](/guides/posts#threads) are replies, each to the part before.

@@ -41,11 +41,11 @@ Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/me
 - Nommez la discussion par son nom public, comme `@nom`, ou par son identifiant : celui d’un canal ou d’un supergroupe commence par `-100`.
 - Peal publie dans les canaux et les groupes, jamais dans une discussion privée avec une personne.
 - Pour couper l’accès de Peal, révoquez le jeton du bot avec @BotFather, ou retirez le bot de la discussion. Peal marque alors le canal à reconnecter.
-- Quand un groupe devient un supergroupe, Telegram lui donne un nouvel identifiant et les publications échouent (`chatMigrated`) : connectez à nouveau la discussion, comme un nouveau canal.
+- Quand un groupe devient un supergroupe, Telegram lui donne un nouvel identifiant et les publications échouent (`chatMigrated`) : connectez à nouveau la discussion, comme un nouveau canal, puis déconnectez l’ancien, qui reste compté dans votre offre jusque-là.
 
 ## Ce que devient une publication [#posts]
 
-- Le texte est du texte brut : Telegram rend ses liens cliquables, et rien d’autre n’est mis en forme.
+- Le texte est du texte brut : ni gras, ni italique, ni autre mise en forme. Telegram rend tout de même cliquables les liens, les `@noms`, les hashtags et les `/commandes`, et un `@nom` dans un groupe notifie cette personne : Peal ne peut pas l’empêcher.
 - Un texte seul prend 4 096 caractères. Un texte avec des images ou des vidéos est leur légende, et en prend 1 024 : Peal le vérifie quand la publication est programmée.
 - Plusieurs fichiers partent en un album, le texte en légende du premier.
 - Les parties d’un [fil](/guides/posts#threads) sont des réponses, chacune à la partie d’avant.

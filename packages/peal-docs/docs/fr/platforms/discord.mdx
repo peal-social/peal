@@ -35,9 +35,10 @@ Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/me
   </Step>
 </Steps>
 
-- L’adresse commence par `https://discord.com/api/webhooks/`. Peal refuse toute autre avant d’appeler quoi que ce soit.
+- L’adresse commence par `https://discord.com/api/webhooks/`, ou l’ancienne `https://discordapp.com/api/webhooks/`, et peut venir des versions de test de Discord (`canary.discord.com`, `ptb.discord.com`). Peal refuse toute autre avant d’appeler quoi que ce soit, et appelle toujours l’API de Discord elle-même.
 - Seul un webhook entrant, celui que créent les paramètres d’un salon, publie des messages.
 - Un autre webhook du même salon reconnecte son canal avec la nouvelle adresse.
+- Un webhook que votre serveur a déplacé vers un autre salon reconnecte aussi son canal, qui publie désormais là : ce n’est pas un second canal de votre offre.
 - Pour couper l’accès de Peal, supprimez le webhook dans les paramètres du salon. Peal marque alors le canal à reconnecter et ne l’appelle plus.
 
 ## Ce que devient une publication [#posts]
@@ -61,6 +62,8 @@ Aucune option n’est nécessaire, et chacune va avec chaque partie, sauf le tit
 ## Modifier et supprimer [#live]
 
 Peal modifie le texte d’une publication et la supprime, chacune de ses parties : voir [Après la publication](/guides/posts/published). Une modification garde les fichiers.
+
+Seul le webhook qui a envoyé une publication peut la changer. Après avoir reconnecté le canal avec un autre webhook, Peal ne demande rien à Discord pour les publications envoyées par le précédent, et le dit (`webhookChanged`) : modifiez-les ou retirez-les sur Discord.
 
 ## Quand une réponse se perd [#lost]
 
