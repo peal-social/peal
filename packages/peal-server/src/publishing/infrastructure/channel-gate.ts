@@ -48,6 +48,15 @@ import type {
   MessagesReadFailure,
 } from "#engagement/application/ports/message-source.ts";
 import {
+  PrivateReplyOutcomeSchema,
+  PrivateReplyRequestSchema,
+  PrivateReplySender,
+} from "#engagement/application/ports/private-reply-sender.ts";
+import type {
+  PrivateReplyOutcome,
+  PrivateReplyRequest,
+} from "#engagement/application/ports/private-reply-sender.ts";
+import {
   ActionOutcomeSchema,
   ModerationRequestSchema,
   ReplySender,
@@ -133,7 +142,8 @@ import type { PublishResult } from "#shared/domain/publish-result.ts";
  * location's reviews, and `SendReviewReply`, `ResumeReviewReply` and
  * `WithdrawReviewReply` answer them, the same way, and `ReadMessages`,
  * `SendMessage` and `ResumeMessage` read a channel's direct messages and
- * answer them, and `FollowMessages` and `UnfollowMessages` ask its
+ * answer them, `SendPrivateReply` and `ResumePrivateReply` send the
+ * author of a comment its one private reply, and `FollowMessages` and `UnfollowMessages` ask its
  * platform to tell the server of them, or to stop: their payloads are
  * ids, and no message's text travels through the cluster's tables. `RemoveLivePost` deletes a
  * post, or a part of one, that a member asked to unpublish, by the
@@ -234,6 +244,14 @@ export const ChannelGate = Entity.make("ChannelGate", [
     payload: { request: MessageSendRequestSchema },
     success: MessageSendOutcomeSchema,
   }),
+  Rpc.make("SendPrivateReply", {
+    payload: { request: PrivateReplyRequestSchema },
+    success: PrivateReplyOutcomeSchema,
+  }),
+  Rpc.make("ResumePrivateReply", {
+    payload: { request: PrivateReplyRequestSchema },
+    success: PrivateReplyOutcomeSchema,
+  }),
   Rpc.make("RemoveLivePost", {
     error: RemovalFailureSchema,
     payload: { request: RemovalRequestSchema },
@@ -271,6 +289,7 @@ export const ChannelGateLive = ChannelGate.toLayer(
     const reviewReplies = yield* ReviewReplySender;
     const messages = yield* MessageSource;
     const messageSender = yield* MessageSender;
+    const privateReplies = yield* PrivateReplySender;
     const live = yield* LivePostClients;
     const followUps = yield* FollowUpPublisher;
 
@@ -290,10 +309,13 @@ export const ChannelGateLive = ChannelGate.toLayer(
       Resume: ({ payload }) => platforms.resume(payload.request),
       ResumeFollowUp: ({ payload }) => followUps.resume(payload.request),
       ResumeMessage: ({ payload }) => messageSender.resume(payload.request),
+      ResumePrivateReply: ({ payload }) =>
+        privateReplies.resume(payload.request),
       ResumeReply: ({ payload }) => replies.resume(payload.request),
       ResumeReviewReply: ({ payload }) => reviewReplies.resume(payload.request),
       SendFollowUp: ({ payload }) => followUps.send(payload.request),
       SendMessage: ({ payload }) => messageSender.send(payload.request),
+      SendPrivateReply: ({ payload }) => privateReplies.send(payload.request),
       SendReply: ({ payload }) => replies.send(payload.request),
       SendReviewReply: ({ payload }) => reviewReplies.send(payload.request),
       WithdrawReply: ({ payload }) => replies.withdraw(payload.request),
@@ -336,7 +358,10 @@ export const UnreadReviews = Layer.mergeAll(
   )
 );
 
-/** For gates that read no direct message and send none: as UnreadComments. */
+/**
+ * For gates that read no direct message and send none, nor a private
+ * reply: as UnreadComments.
+ */
 export const UnreadMessages = Layer.mergeAll(
   Layer.succeed(
     MessageSource,
@@ -349,6 +374,15 @@ export const UnreadMessages = Layer.mergeAll(
   Layer.succeed(
     MessageSender,
     MessageSender.of({
+      resume: () =>
+        Effect.succeed({ _tag: "unconfirmed", reason: "interrupted" }),
+      send: () =>
+        Effect.succeed({ _tag: "failed", reason: "platformUnavailable" }),
+    })
+  ),
+  Layer.succeed(
+    PrivateReplySender,
+    PrivateReplySender.of({
       resume: () =>
         Effect.succeed({ _tag: "unconfirmed", reason: "interrupted" }),
       send: () =>
@@ -914,6 +948,18 @@ const messageNotSent = () =>
     reason: "platformUnavailable",
   });
 
+const privateReplyNotSent = () =>
+  Effect.succeed<PrivateReplyOutcome>({
+    _tag: "failed",
+    reason: "platformUnavailable",
+  });
+
+const privateReplyUnchecked = () =>
+  Effect.succeed<PrivateReplyOutcome>({
+    _tag: "unconfirmed",
+    reason: "interrupted",
+  });
+
 const messageUnchecked = () =>
   Effect.succeed<MessageSendOutcome>({
     _tag: "unconfirmed",
@@ -922,7 +968,8 @@ const messageUnchecked = () =>
 
 /**
  * The MessageSource and MessageSender engagement reads and answers direct
- * messages with: each call goes through its channel's gate, in turn with
+ * messages with, and the PrivateReplySender it sends private replies
+ * with: each call goes through its channel's gate, in turn with
  * the channel's publishing. A message the gate did not take was not sent;
  * one it lost during the call, or whose adapter broke, may have gone out,
  * and a person checks. Provide ChannelGateLive, with the real adapters,
@@ -988,6 +1035,38 @@ export const GatedMessages = Layer.effectContext(
         )
       );
 
+    // A private reply the gate did not take was not sent; one it lost
+    // during the call, or whose adapter broke, may have gone out.
+    const privately = (
+      call: Effect.Effect<
+        PrivateReplyOutcome,
+        Effect.Error<ReturnType<ReturnType<typeof gateFor>["SendPrivateReply"]>>
+      >,
+      notTaken: () => Effect.Effect<PrivateReplyOutcome>
+    ): Effect.Effect<PrivateReplyOutcome> =>
+      call.pipe(
+        Effect.retry(taken),
+        Effect.catchTags({
+          AlreadyProcessingMessage: () =>
+            Effect.succeed<PrivateReplyOutcome>({
+              _tag: "unconfirmed",
+              reason: "noResponse",
+            }),
+          EntityNotAssignedToRunner: notTaken,
+          MailboxFull: notTaken,
+          PersistenceError: notTaken,
+        }),
+        // Logged without the cause, which may quote the message.
+        Effect.catchDefect(() =>
+          Effect.logError("A private reply failed in its adapter").pipe(
+            Effect.as<PrivateReplyOutcome>({
+              _tag: "unconfirmed",
+              reason: "adapterFailure",
+            })
+          )
+        )
+      );
+
     // A subscription the gate did not take was not asked for: the next
     // read asks again.
     const subscription =
@@ -1024,6 +1103,21 @@ export const GatedMessages = Layer.effectContext(
         unfollow: subscription("UnfollowMessages"),
       })
     ).pipe(
+      Context.add(
+        PrivateReplySender,
+        PrivateReplySender.of({
+          resume: (request: PrivateReplyRequest) =>
+            privately(
+              gateFor(request.channelId).ResumePrivateReply({ request }),
+              privateReplyUnchecked
+            ),
+          send: (request: PrivateReplyRequest) =>
+            privately(
+              gateFor(request.channelId).SendPrivateReply({ request }),
+              privateReplyNotSent
+            ),
+        })
+      ),
       Context.add(
         MessageSender,
         MessageSender.of({

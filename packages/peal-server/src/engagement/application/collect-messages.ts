@@ -48,6 +48,7 @@ import type {
   MessagesReadFailure,
 } from "./ports/message-source.ts";
 import { MessageStore } from "./ports/message-store.ts";
+import { PrivateReplyStore } from "./ports/private-reply-store.ts";
 import { SendMessage } from "./send-message.ts";
 
 /** What a run of the messages' collection did. */
@@ -177,6 +178,7 @@ export class CollectMessages extends Context.Service<
     CollectMessages,
     Effect.gen(function* CollectMessagesLive() {
       const store = yield* MessageStore;
+      const privateReplies = yield* PrivateReplyStore;
       const source = yield* MessageSource;
       const outcomes = yield* MessageOutcomes;
       const sending = yield* SendMessage;
@@ -390,7 +392,7 @@ export class CollectMessages extends Context.Service<
           failure.reason === "disconnected"
         ) {
           return transaction(
-            forgetChannelMessages(store, meters, box.channelId)
+            forgetChannelMessages(store, privateReplies, meters, box.channelId)
           );
         }
 
@@ -400,9 +402,12 @@ export class CollectMessages extends Context.Service<
         // effort: a grant that lacks the messages may still allow that.
         if (failure._tag === "MessagesUngranted") {
           return transaction(
-            forgetChannelMessages(store, meters, box.channelId).pipe(
-              Effect.andThen(outcomes.turnedOff(box))
-            )
+            forgetChannelMessages(
+              store,
+              privateReplies,
+              meters,
+              box.channelId
+            ).pipe(Effect.andThen(outcomes.turnedOff(box)))
           ).pipe(Effect.andThen(stopEvents(box.channelId)));
         }
 

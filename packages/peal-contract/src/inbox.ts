@@ -81,7 +81,9 @@ export const inboxPlatformsText = `${listed(inboxStandardPlatforms)}, and on ${l
 /**
  * What a channel's account can do about comments: `read` them, `reply` in
  * public, `withdraw` a reply sent from Peal, `like` a comment, `hide` one
- * under its own post, `delete` someone else's.
+ * under its own post, `delete` someone else's, and send its author one
+ * private message (`privateReply`, on Instagram and Facebook Pages, where
+ * the channel's direct messages are on).
  */
 export const InboxAbilitySchema = Schema.Literals([
   "read",
@@ -90,6 +92,7 @@ export const InboxAbilitySchema = Schema.Literals([
   "like",
   "hide",
   "delete",
+  "privateReply",
 ]).annotate({ identifier: "InboxAbility" });
 
 export type InboxAbility = typeof InboxAbilitySchema.Type;
@@ -113,6 +116,10 @@ export const InboxAbilitiesSchema = Schema.Struct({
   delete: InboxAbilityStandingSchema,
   hide: InboxAbilityStandingSchema,
   like: InboxAbilityStandingSchema,
+  // Whether the channel can send a comment's author its one private
+  // message: on Instagram and Facebook Pages, where the server reads the
+  // platform's direct messages and the workspace turned the channel's on.
+  privateReply: InboxAbilityStandingSchema,
   read: InboxAbilityStandingSchema,
   reply: InboxAbilityStandingSchema,
   withdraw: InboxAbilityStandingSchema,

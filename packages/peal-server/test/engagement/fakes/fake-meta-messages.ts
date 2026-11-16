@@ -64,6 +64,11 @@ export interface FakeMetaMessagesOptions {
   readonly me?: string;
   /** The Instagram account linked to the Page, on graph.facebook.com. */
   readonly linkedInstagram?: string;
+  /**
+   * Whether a private reply shows in the Conversations API before the
+   * person answers (not verified on Meta's side): yes unless false.
+   */
+  readonly privateRepliesListed?: boolean;
 }
 
 type Params = Readonly<Record<string, string>>;
@@ -145,6 +150,9 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
   options: FakeMetaMessagesOptions = {}
 ) {
   const conversations: FakeConversation[] = [];
+  // The comments a private reply may answer, by id, with their author and
+  // whether one answered them already: Meta takes one.
+  const comments = new Map<string, { authorId: string; answered: boolean }>();
   const subscriptions = new Map<string, string>();
   const script = scripted<PlatformAnswer>();
   const lost = scripted<"after" | "before">();
@@ -225,7 +233,13 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
 
     const start = Number(params["after"] ?? "0");
     const limit = Number(params["limit"] ?? "25");
-    const shown = conversations.filter(({ platform }) => platform === wanted);
+    const userId = params["user_id"];
+
+    const shown = conversations.filter(
+      ({ participants, platform }) =>
+        platform === wanted &&
+        (userId === undefined || participants.some(({ id }) => id === userId))
+    );
 
     const page = shown.slice(start, start + limit).map((conversation) =>
       asJson({
@@ -255,26 +269,95 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
   };
 
   const recipientOf = Schema.decodeUnknownSync(
-    Schema.fromJsonString(Schema.Struct({ id: Schema.String }))
+    Schema.fromJsonString(
+      Schema.Struct({
+        comment_id: Schema.optionalKey(Schema.String),
+        id: Schema.optionalKey(Schema.String),
+      })
+    )
   );
+
+  const sentAt = () => options.now ?? "2026-11-16T10:00:05+0000";
+
+  // A private reply: one a comment, never tagged, and the message then in
+  // the person's conversation with the account, unless told otherwise.
+  const privately = (commentId: string, text: string): PlatformAnswer => {
+    const comment = comments.get(commentId);
+
+    if (comment === undefined) {
+      return graphError(100, 2_534_025);
+    }
+
+    if (comment.answered) {
+      return graphError(10_900);
+    }
+
+    comment.answered = true;
+    issued += 1;
+
+    const id = `m_private_${String(issued)}`;
+
+    if (options.privateRepliesListed !== false) {
+      const existing = conversations.find(({ participants }) =>
+        participants.some(({ id: person }) => person === comment.authorId)
+      );
+
+      const conversation =
+        existing ??
+        (() => {
+          const started: FakeConversation = {
+            id: `c-private-${String(issued)}`,
+            messages: [],
+            participants: [{ id: comment.authorId }, { id: me }],
+            platform:
+              options.instagramLogin === true || me === instagramUserId
+                ? "instagram"
+                : "messenger",
+            updatedTime: sentAt(),
+          };
+
+          conversations.push(started);
+
+          return started;
+        })();
+
+      conversation.messages.push({
+        createdTime: sentAt(),
+        from: { id: me, name: "Synthetic Studio" },
+        id,
+        text,
+      });
+      conversation.updatedTime = sentAt();
+    }
+
+    return json({ message_id: id, recipient_id: comment.authorId });
+  };
 
   const textOfMessage = Schema.decodeUnknownSync(
     Schema.fromJsonString(Schema.Struct({ text: Schema.String }))
   );
 
   const sending = (params: Params): PlatformAnswer => {
+    const recipient = recipientOf(params["recipient"] ?? "");
+    const { text } = textOfMessage(params["message"] ?? "");
+
+    // A private reply is never tagged, and answers the comment.
+    if (recipient.comment_id !== undefined) {
+      return params["tag"] === undefined &&
+        params["messaging_type"] === undefined
+        ? privately(recipient.comment_id, text)
+        : graphError(100);
+    }
+
     if (params["messaging_type"] !== "RESPONSE") {
       return graphError(100);
     }
-
-    const recipient = recipientOf(params["recipient"] ?? "");
-    const { text } = textOfMessage(params["message"] ?? "");
 
     const conversation = conversations.find(({ participants }) =>
       participants.some(({ id }) => id === recipient.id)
     );
 
-    if (conversation === undefined) {
+    if (conversation === undefined || recipient.id === undefined) {
       return graphError(100, 2_534_014);
     }
 
@@ -405,6 +488,10 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
         ...conversation,
         messages: [...(conversation.messages ?? [])],
       });
+    },
+    /** Someone comments under the account's post: a private reply may answer it. */
+    comment: (commentId: string, authorId: string) => {
+      comments.set(commentId, { answered: false, authorId });
     },
     conversations: () => conversations,
     /** The next call of `route` reaches nothing: its answer is lost first. */

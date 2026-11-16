@@ -97,6 +97,7 @@ describe("the inbox endpoints", () => {
         delete: "unsupported",
         hide: "unsupported",
         like: "unsupported",
+        privateReply: "unsupported",
         read: "available",
         reply: "available",
         withdraw: "available",

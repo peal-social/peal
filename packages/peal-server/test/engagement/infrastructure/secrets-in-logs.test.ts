@@ -29,7 +29,11 @@ import { ChannelDirectory } from "#channels/application/channel-directory.ts";
 import { Channel } from "#channels/domain/channel.ts";
 import { metaMessageDepartures } from "#channels/infrastructure/platforms/meta/meta-message-departures.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
-import { metaMessages } from "#engagement/infrastructure/platforms/meta/meta-messages.ts";
+import {
+  accountPace,
+  metaMessages,
+} from "#engagement/infrastructure/platforms/meta/meta-messages.ts";
+import { metaPrivateReplies } from "#engagement/infrastructure/platforms/meta/meta-private-replies.ts";
 import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { facebookMessageScopes } from "#shared/domain/inbox-message-platform.ts";
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
@@ -41,7 +45,7 @@ import {
   fakeMetaMessages,
   graphError,
 } from "#test/engagement/fakes/fake-meta-messages.ts";
-import { outgoingMessageId } from "#test/engagement/support.ts";
+import { outgoingMessageId, privateReplyId } from "#test/engagement/support.ts";
 import {
   facebookPageId,
   graphAppSecret,
@@ -65,6 +69,153 @@ const spanText = (span: Tracer.NativeSpan): string =>
       ? Cause.pretty(span.status.exit.cause)
       : "",
   ].join("\n");
+
+// A logger and a tracer that keep everything a line or a span would
+// export, and what they kept, as one text.
+const capturing = () => {
+  const lines: string[] = [];
+  const spans: Tracer.NativeSpan[] = [];
+
+  const tracer = Tracer.make({
+    span: (options) => {
+      const span = new Tracer.NativeSpan(options);
+
+      spans.push(span);
+
+      return span;
+    },
+  });
+
+  const capture = Logger.layer([
+    Logger.make(({ cause, fiber, message }) => {
+      lines.push(
+        JSON.stringify(message),
+        Cause.pretty(cause),
+        JSON.stringify(fiber.getRef(References.CurrentLogAnnotations)),
+        JSON.stringify(fiber.getRef(References.CurrentLogSpans))
+      );
+    }),
+  ]);
+
+  return {
+    layer: Layer.merge(capture, Layer.succeed(Tracer.Tracer, tracer)),
+    spans,
+    text: () => [...lines, ...spans.map(spanText)].join("\n"),
+  };
+};
+
+describe("what the server writes about Meta's private replies", () => {
+  it.live(
+    "holds no comment, text, commenter, token or proof, through a send, each refusal, a lost answer and a resume",
+    () => {
+      const kept = capturing();
+      const comment = "synthetic comment words 5530";
+      const commenter = { id: "7299999999999931", name: "Synthetic Commenter" };
+      const reply = "synthetic private reply 6644";
+
+      return Effect.gen(function* searched() {
+        const graph = yield* fakeMetaMessages([token], { me: facebookPageId });
+        const url = new URL(graph.url);
+
+        graph.comment("c-1", commenter.id);
+        graph.add({
+          id: "c_1",
+          messages: [
+            {
+              createdTime: "2026-11-16T09:00:00+0000",
+              from: commenter,
+              id: "m_1",
+              text: comment,
+            },
+          ],
+          participants: [
+            { id: commenter.id, name: commenter.name },
+            { id: facebookPageId, name: "Synthetic Page" },
+          ],
+          platform: "messenger",
+          updatedTime: "2026-11-16T09:00:00+0000",
+        });
+
+        const account: ChannelAccount = {
+          accountId: facebookPageId,
+          channelId: ChannelIdSchema.make(
+            "01900000-0000-7000-8000-0000000000e7"
+          ),
+          connection: Option.none(),
+          platform: "facebook",
+          scopes: ["pages_read_user_content", ...facebookMessageScopes],
+        };
+
+        const platform = yield* Effect.gen(function* building() {
+          return yield* metaPrivateReplies({
+            appSecret: Option.some(Redacted.make(graphAppSecret)),
+            hosts: { ...metaHosts, facebookGraph: url, instagramGraph: url },
+            http: yield* publicHttpClient,
+            paced: yield* accountPace(Duration.zero),
+          });
+        }).pipe(
+          Effect.provide(
+            Layer.mergeAll(
+              channelAccessOf(account, [token]),
+              FetchHttpClient.layer,
+              OpenOutboundGuard,
+              Mac.layerWebCrypto.pipe(
+                Layer.provide(SecureRandom.layerWebCrypto)
+              )
+            )
+          )
+        );
+
+        const outgoing = {
+          commentAuthorId: Option.some(commenter.id),
+          createdAt: DateTime.makeUnsafe("2026-11-16T09:30:00.000Z"),
+          platformCommentId: "c-1",
+          privateReplyId: privateReplyId(1),
+          takenIds: [],
+          text: reply,
+        };
+
+        graph.script.push("POST /v27.0/me/messages", [
+          graphError(10_903),
+          graphError(10_904),
+          graphError(2),
+        ]);
+
+        for (let n = 0; n < 3; n += 1) {
+          yield* platform.send(account, outgoing);
+        }
+
+        graph.loseAnswer("POST /v27.0/me/messages");
+
+        yield* platform.send(account, outgoing);
+        yield* platform.resume(account, outgoing);
+        yield* platform.send(account, outgoing);
+
+        const proof = createHmac("sha256", graphAppSecret)
+          .update(token)
+          .digest("hex");
+
+        const all = kept.text();
+
+        // The calls were written about at all, and the refusals logged.
+        assert.isAbove(kept.spans.length, 3);
+        assert.include(all, "Meta refused a private reply");
+        assert.include(all, "/me/conversations");
+
+        for (const [name, secret] of [
+          ["what the person commented", comment],
+          ["what the account answered", reply],
+          ["who commented", commenter.id],
+          ["the commenter's name", commenter.name],
+          ["the Page's token", token],
+          ["the proof of the app's secret", proof],
+        ] as const) {
+          assert.notInclude(all, secret, name);
+        }
+      }).pipe(Effect.scoped, Effect.provide(kept.layer));
+    }
+  );
+});
 
 describe("what the server writes about Meta's direct messages", () => {
   it.live(

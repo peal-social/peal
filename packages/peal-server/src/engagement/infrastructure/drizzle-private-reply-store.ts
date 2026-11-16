@@ -446,4 +446,4 @@ export const DrizzlePrivateReplyStore = Layer.effect(
       stranded,
     });
   })
-);
+).pipe(Layer.provide(Digest.layerWebCrypto));

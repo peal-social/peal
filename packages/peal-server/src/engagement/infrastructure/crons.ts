@@ -14,6 +14,7 @@ import {
   PurgeReviews,
   reviewsRetentionFailures,
 } from "#engagement/application/purge-reviews.ts";
+import { SendPrivateReply } from "#engagement/application/send-private-reply.ts";
 import { SendReply } from "#engagement/application/send-reply.ts";
 
 /**
@@ -175,7 +176,7 @@ const ReviewsRetentionCron = ClusterCron.make({
 
 /**
  * At minutes 1 and 21 of every hour: hands to a person the direct
- * messages no job settled, follows the channels connected since, and
+ * messages and the private replies no job settled, follows the channels connected since, and
  * reads the conversations of the channels due, where the operator turned
  * a platform's messages on (`PEAL_INBOX_MESSAGES`). Off, it does nothing.
  * A run starts no read 8 minutes after its time; one more than 8 minutes
@@ -193,6 +194,17 @@ const CollectMessagesCron = ClusterCron.make({
       yield* Effect.logWarning(
         "Direct messages were still on their way an hour after they were written: their job gave up or was lost. They wait to be checked, and are never sent again"
       ).pipe(Effect.annotateLogs({ messages: report.stranded }));
+    }
+
+    // Private replies to comments are handed over beside them.
+    const strandedReplies = yield* SendPrivateReply.use(
+      (sending) => sending.settleStranded
+    );
+
+    if (strandedReplies > 0) {
+      yield* Effect.logWarning(
+        "Private replies were still on their way an hour after they were written: their job gave up or was lost. They wait to be checked, and are never sent again"
+      ).pipe(Effect.annotateLogs({ privateReplies: strandedReplies }));
     }
 
     if (Object.values(report).some((count) => count > 0)) {

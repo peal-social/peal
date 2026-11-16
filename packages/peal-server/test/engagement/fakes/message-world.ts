@@ -27,6 +27,7 @@ import type {
   MessagesApplication,
   MessagesSwitchedOn,
 } from "#engagement/application/ports/message-store.ts";
+import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
 import { ReplyLimits } from "#engagement/application/ports/reply-limits.ts";
 import { PurgeMessages } from "#engagement/application/purge-messages.ts";
 import { ReceiveMessageEvents } from "#engagement/application/receive-message-events.ts";
@@ -48,6 +49,8 @@ import { blueskyChatScopes } from "#shared/domain/bluesky-scopes.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import { facebookMessageScopes } from "#shared/domain/inbox-message-platform.ts";
 import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
+
+import { noPrivateReplies } from "./no-private-replies.ts";
 
 // The direct message use cases on memory: a store that keeps what the
 // Postgres one keeps, the channels the channels context lists, a platform
@@ -676,6 +679,7 @@ export const makeMessageWorld = (
 
   const ports = Layer.mergeAll(
     Layer.succeed(MessageStore, store),
+    Layer.succeed(PrivateReplyStore, noPrivateReplies),
     Layer.succeed(
       MessageSource,
       MessageSource.of({

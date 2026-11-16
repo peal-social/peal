@@ -1,6 +1,5 @@
 import { assert, layer } from "@effect/vitest";
 import { DateTime, Effect, Layer, Option, Result } from "effect";
-import { Digest } from "effect/crypto";
 import { SqlClient } from "effect/sql";
 
 import { EngagementStore } from "#engagement/application/ports/engagement-store.ts";
@@ -44,7 +43,7 @@ const StoreTest = Layer.mergeAll(
   DrizzlePrivateReplyStore,
   DrizzleEngagementStore,
   DrizzleMessageStore
-).pipe(Layer.provide(Digest.layerWebCrypto), Layer.provideMerge(DatabaseTest));
+).pipe(Layer.provideMerge(DatabaseTest));
 
 const utc = (iso: string) => DateTime.makeUnsafe(iso);
 
