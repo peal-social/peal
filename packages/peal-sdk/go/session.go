@@ -146,7 +146,8 @@ var (
 	meUserFieldImage          = big.NewInt(1 << 3)
 	meUserFieldLocale         = big.NewInt(1 << 4)
 	meUserFieldName           = big.NewInt(1 << 5)
-	meUserFieldTwoStepEnabled = big.NewInt(1 << 6)
+	meUserFieldHasPassword    = big.NewInt(1 << 6)
+	meUserFieldTwoStepEnabled = big.NewInt(1 << 7)
 )
 
 // meUserNullableFields maps the wire names of MeUser's nullable fields (required or optional) to their field bits.
@@ -161,6 +162,7 @@ type MeUser struct {
 	Image          *string      `json:"image,omitempty" url:"image,omitempty"`
 	Locale         MeUserLocale `json:"locale" url:"locale"`
 	Name           string       `json:"name" url:"name"`
+	HasPassword    *bool        `json:"hasPassword,omitempty" url:"hasPassword,omitempty"`
 	TwoStepEnabled bool         `json:"twoStepEnabled" url:"twoStepEnabled"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -210,6 +212,13 @@ func (m *MeUser) GetName() string {
 		return ""
 	}
 	return m.Name
+}
+
+func (m *MeUser) GetHasPassword() *bool {
+	if m == nil {
+		return nil
+	}
+	return m.HasPassword
 }
 
 func (m *MeUser) GetTwoStepEnabled() bool {
@@ -275,6 +284,13 @@ func (m *MeUser) SetLocale(locale MeUserLocale) {
 func (m *MeUser) SetName(name string) {
 	m.Name = name
 	m.require(meUserFieldName)
+}
+
+// SetHasPassword sets the HasPassword field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *MeUser) SetHasPassword(hasPassword *bool) {
+	m.HasPassword = hasPassword
+	m.require(meUserFieldHasPassword)
 }
 
 // SetTwoStepEnabled sets the TwoStepEnabled field and marks it as non-optional;

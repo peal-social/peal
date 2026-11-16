@@ -14,6 +14,9 @@ pub struct MeUser {
     pub locale: MeUserLocale,
     #[serde(default)]
     pub name: String,
+    #[serde(rename = "hasPassword")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_password: Option<bool>,
     #[serde(rename = "twoStepEnabled")]
     #[serde(default)]
     pub two_step_enabled: bool,
@@ -34,6 +37,7 @@ pub struct MeUserBuilder {
     image: Option<String>,
     locale: Option<MeUserLocale>,
     name: Option<String>,
+    has_password: Option<bool>,
     two_step_enabled: Option<bool>,
 }
 
@@ -68,6 +72,11 @@ impl MeUserBuilder {
         self
     }
 
+    pub fn has_password(mut self, value: bool) -> Self {
+        self.has_password = Some(value);
+        self
+    }
+
     pub fn two_step_enabled(mut self, value: bool) -> Self {
         self.two_step_enabled = Some(value);
         self
@@ -95,6 +104,7 @@ impl MeUserBuilder {
                 .locale
                 .ok_or_else(|| BuildError::missing_field("locale"))?,
             name: self.name.ok_or_else(|| BuildError::missing_field("name"))?,
+            has_password: self.has_password,
             two_step_enabled: self
                 .two_step_enabled
                 .ok_or_else(|| BuildError::missing_field("two_step_enabled"))?,

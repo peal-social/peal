@@ -67,6 +67,7 @@ updates:
           - "@better-auth/*"
           - better-call
           - "@better-fetch/*"
+          - jose
       tiptap:
         patterns:
           - "@tiptap/*"

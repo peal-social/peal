@@ -141,6 +141,7 @@ export const overviewOver = (
             ban,
             email: "someone@example.test",
             emailVerified: true,
+            hasPassword: true,
             id: userId,
             image: Option.none(),
             locale: "en",

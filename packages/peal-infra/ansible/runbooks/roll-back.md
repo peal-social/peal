@@ -371,3 +371,11 @@ before cannot read:
 
 3. **Either lists a row:** do not roll back past this release; release a
    fix forward instead. Never change the rows by hand.
+
+## Past sign-in providers
+
+The release that signs people in with Google or an OpenID Connect provider
+stores `auth.account` rows of `google` and `oidc`, which the release before
+ignores: a person whose account has only such a row cannot sign in there
+until they reset a password through "Forgot password". Nothing else needs
+checking.

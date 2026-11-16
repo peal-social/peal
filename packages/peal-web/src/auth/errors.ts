@@ -42,6 +42,8 @@ const KnownErrorSchema = Schema.Literals([
 
 export type AuthErrorKey =
   | typeof KnownErrorSchema.Type
+  | ProviderErrorKey
+  | "AUTHORIZATION_FAILED"
   | "TOO_MANY_REQUESTS"
   | "UNKNOWN";
 
@@ -64,3 +66,145 @@ export const authErrorKey = (error: AuthClientError): AuthErrorKey =>
       error.status === 429 ? "TOO_MANY_REQUESTS" : "UNKNOWN"
     )
   );
+
+// What a sign-in provider's callback writes into the address it sends the
+// browser back to (`?error=<code>`): Peal's admission's codes and Better
+// Auth's. The address can be written by anyone, so only these codes are
+// read, and never `error_description`.
+const providerErrorKeys = {
+  access_denied: "PROVIDER_ACCESS_DENIED",
+  account_banned: "PROVIDER_FAILED",
+  account_not_linked: "PROVIDER_ACCOUNT_NOT_LINKED",
+  email_not_found: "PROVIDER_EMAIL_NOT_FOUND",
+  provider_email_invalid: "PROVIDER_EMAIL_INVALID",
+  provider_email_not_authoritative: "PROVIDER_EMAIL_NOT_AUTHORITATIVE",
+  provider_email_unverified: "PROVIDER_EMAIL_UNVERIFIED",
+  sign_up_by_invitation: "SIGN_UP_BY_INVITATION",
+  signup_disabled: "PROVIDER_SIGN_UP_DISABLED",
+  two_step_password: "PROVIDER_TWO_STEP_PASSWORD",
+} as const;
+
+const ProviderCodeSchema = Schema.Literals([
+  "access_denied",
+  "account_banned",
+  "account_not_linked",
+  "email_not_found",
+  "provider_email_invalid",
+  "provider_email_not_authoritative",
+  "provider_email_unverified",
+  "sign_up_by_invitation",
+  "signup_disabled",
+  "two_step_password",
+]);
+
+const decodeProviderCode = Schema.decodeUnknownOption(ProviderCodeSchema);
+
+const decodeCode = Schema.decodeUnknownOption(Schema.String);
+
+// What Better Auth's provider callback answers on its own: its state and
+// its exchange with the provider (`OAUTH_CALLBACK_ERROR_CODES`, `StateError`).
+const providerFlowCodes: ReadonlySet<string> = new Set([
+  "account_already_linked_to_different_user",
+  "email_does_not_match",
+  "email_not_verified",
+  "internal_server_error",
+  "invalid_callback_request",
+  "invalid_code",
+  "issuer_mismatch",
+  "issuer_missing",
+  "no_callback_url",
+  "no_code",
+  "nonce_binding_missing",
+  "oauth_provider_not_found",
+  "state_generation_error",
+  "state_invalid",
+  "state_mismatch",
+  "state_not_found",
+  "unable_to_create_user",
+  "unable_to_get_user_info",
+  "unable_to_link_account",
+]);
+
+// What the OAuth server answers an application's authorization it refuses
+// before the person is asked (RFC 6749 and OpenID Connect's codes, and Better
+// Auth's own), which it sends to the sign-in page as well.
+const authorizationErrorCodes: ReadonlySet<string> = new Set([
+  "account_selection_required",
+  "client_disabled",
+  "consent_required",
+  "interaction_required",
+  "invalid_client",
+  "invalid_redirect",
+  "invalid_redirect_uri",
+  "invalid_request",
+  "invalid_request_object",
+  "invalid_request_uri",
+  "invalid_scope",
+  "invalid_target",
+  "login_required",
+  "registration_not_supported",
+  "request_not_supported",
+  "request_uri_not_supported",
+  "server_error",
+  "temporarily_unavailable",
+  "unauthorized_client",
+  "unsupported_response_type",
+]);
+
+export type ProviderErrorKey =
+  | (typeof providerErrorKeys)[keyof typeof providerErrorKeys]
+  | "PROVIDER_FAILED"
+  | "PROVIDER_NO_ACCOUNT";
+
+/**
+ * The catalogue key (under `Auth.errors`) that explains why a provider's
+ * sign-in came back with `error`, or none when the address has none; a
+ * plain failure where the server offers no provider. An
+ * unknown code reads as a failure. Where the server takes no sign-up from
+ * anyone, an unknown address is told so without being sent to sign up.
+ */
+export const providerErrorKey = (
+  error: string | readonly string[] | undefined,
+  {
+    providersOffered,
+    signUpOffered,
+  }: {
+    /** Whether the server offers a provider: else no error is a provider's. */
+    readonly providersOffered: boolean;
+    readonly signUpOffered: boolean;
+  }
+): Option.Option<ProviderErrorKey | "AUTHORIZATION_FAILED" | "UNKNOWN"> => {
+  if (error === undefined) {
+    return Option.none();
+  }
+
+  const code = Option.getOrUndefined(decodeCode(error));
+
+  if (code !== undefined && authorizationErrorCodes.has(code)) {
+    return Option.some("AUTHORIZATION_FAILED");
+  }
+
+  // Better Auth sends its other errors here too (its own error page's): on
+  // a server without a provider, none of them is one.
+  if (!providersOffered || code === undefined) {
+    return Option.some("UNKNOWN");
+  }
+
+  return Option.some(
+    decodeProviderCode(code).pipe(
+      Option.map((known): ProviderErrorKey => {
+        const key = providerErrorKeys[known];
+
+        return key === "PROVIDER_SIGN_UP_DISABLED" && !signUpOffered
+          ? "PROVIDER_NO_ACCOUNT"
+          : key;
+      }),
+      Option.orElse(() =>
+        providerFlowCodes.has(code)
+          ? Option.some<ProviderErrorKey>("PROVIDER_FAILED")
+          : Option.none()
+      ),
+      Option.getOrElse((): ProviderErrorKey | "UNKNOWN" => "UNKNOWN")
+    )
+  );
+};

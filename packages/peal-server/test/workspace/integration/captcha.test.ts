@@ -1,9 +1,14 @@
 // Turnstile on signing up and asking for a password reset, with Cloudflare's
 // test keys, checked by a fake siteverify endpoint; and a server without it.
 import { assert, layer } from "@effect/vitest";
-import { Effect, Schema } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { CaptchaSchema } from "peal-contract";
 
+import {
+  fakeOidcWith,
+  googleSettings,
+  oidcSettings,
+} from "#test/workspace/fakes/fake-oidc.ts";
 import {
   appWithTurnstile,
   dummyToken,
@@ -59,6 +64,7 @@ layer(appWithTurnstile(passingSecretKey), { timeout: "120 seconds" })(
     it.effect("tells clients the site key to show the widget with", () =>
       Effect.gen(function* siteKey() {
         assert.deepStrictEqual(yield* captchaSettings, {
+          signInProviders: [],
           signUp: "open",
           turnstileSiteKey: passingSiteKey,
         });
@@ -121,6 +127,7 @@ layer(TestApp.layerWith(unconfirmedEmails), { timeout: "120 seconds" })(
     it.effect("asks for no token", () =>
       Effect.gen(function* off() {
         assert.deepStrictEqual(yield* captchaSettings, {
+          signInProviders: [],
           signUp: "open",
           turnstileSiteKey: null,
         });
@@ -129,3 +136,48 @@ layer(TestApp.layerWith(unconfirmedEmails), { timeout: "120 seconds" })(
     );
   }
 );
+
+// Both providers, each a fake whose discovery answers.
+const withBothProviders = Layer.unwrap(
+  Effect.gen(function* bothProviders() {
+    const google = yield* fakeOidcWith({});
+    const oidc = yield* fakeOidcWith({});
+
+    return TestApp.layerWith({
+      ...googleSettings(google),
+      ...oidcSettings(oidc),
+      PEAL_OIDC_NAME: "Example Corp",
+    });
+  })
+);
+
+layer(withBothProviders, { timeout: "120 seconds" })(
+  "a server with sign-in providers",
+  (it) => {
+    it.effect("lists them, Google first", () =>
+      Effect.gen(function* providers() {
+        assert.deepStrictEqual((yield* captchaSettings).signInProviders, [
+          { id: "google", name: "Google" },
+          { id: "oidc", name: "Example Corp" },
+        ]);
+      })
+    );
+  }
+);
+
+// A provider whose discovery nobody answers is left out as the server
+// starts, which it does all the same.
+layer(
+  TestApp.layerWith({
+    PEAL_OIDC_CLIENT_ID: "synthetic-oidc-client",
+    PEAL_OIDC_CLIENT_SECRET: "synthetic-oidc-secret",
+    PEAL_OIDC_ISSUER: "http://127.0.0.1:9",
+  }),
+  { timeout: "120 seconds" }
+)("a server whose provider does not answer", (it) => {
+  it.effect("offers none", () =>
+    Effect.gen(function* unanswered() {
+      assert.deepStrictEqual((yield* captchaSettings).signInProviders, []);
+    })
+  );
+});

@@ -14,6 +14,7 @@ const toMe = ({ account, principal, workspaces }: CurrentAccount): Me => ({
   user: {
     email: account.email,
     emailVerified: account.emailVerified,
+    hasPassword: account.hasPassword,
     id: account.id,
     image: Option.getOrNull(account.image),
     locale: account.locale,

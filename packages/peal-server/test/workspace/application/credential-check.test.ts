@@ -35,6 +35,7 @@ const account = new Account({
   ban: Option.none(),
   email: "synthetic@example.test",
   emailVerified: true,
+  hasPassword: true,
   id: userId,
   image: Option.none(),
   locale: "en",

@@ -261,6 +261,8 @@ self-hoster needs only Postgres and an S3-compatible store:
   `/chat/completions`; the writing assistant is off until `PEAL_AI_PROVIDER`
   is set, and its images until `PEAL_AI_IMAGE_PROVIDER` names an
   OpenAI-compatible endpoint that serves `/images/generations`;
+- sign-in providers: Google (`GOOGLE_SIGN_IN_CLIENT_*`) and one OpenID
+  Connect provider (`PEAL_OIDC_*`), off until set, beside the password;
 - rate limit: `PEAL_API_REQUESTS_PER_MINUTE` per key and per application
   (600), on Postgres; where billing is on, the free tier gets the rate
   card's 60 per billing account, and staff may set a workspace's own;

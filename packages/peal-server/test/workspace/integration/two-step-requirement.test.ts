@@ -4,6 +4,7 @@ import { SqlClient } from "effect/sql";
 import { MeSchema } from "peal-contract";
 
 import { authorize, registeredClient } from "#test/app/mcp-support.ts";
+import { appWithOidc } from "#test/workspace/fakes/fake-oidc.ts";
 import { commandLineToken, enrolled, joined } from "#test/workspace/support.ts";
 
 import {
@@ -22,6 +23,7 @@ import {
 } from "./harness.ts";
 import type { Person, Reply } from "./harness.ts";
 import { bearer, customerOf, keyOf, partnerOf } from "./partner-support.ts";
+import { providerSignIn, signUpPage, verified } from "./provider-support.ts";
 
 // A workspace's owners require two-step verification of every member:
 // who may set it, and how every way a person reaches a workspace (a
@@ -415,6 +417,77 @@ layer(
       );
 
       assert.strictEqual(channels.status, 200);
+    })
+  );
+});
+
+// The requirement is read from the account, never from how its session was
+// opened: an account made through a provider, without two-step
+// verification, is refused as a password's would be.
+layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), {
+  excludeTestServices: true,
+  timeout: "180 seconds",
+})("a workspace that requires it, and a provider's account", (it) => {
+  it.effect("refuses the account a provider signed in", () =>
+    Effect.gen(function* providerMember() {
+      const app = yield* TestApp;
+      const owner = yield* signedUp("provider-require-owner");
+      const workspaceId = yield* workspaceOf(owner, "Guarded by provider");
+      const email = `provider-member-${workspaceId}@example.test`;
+
+      const member = yield* providerSignIn(verified(email), {
+        body: signUpPage(),
+      });
+
+      assert.isNull(member.error);
+
+      const sent = yield* app.request(
+        `/api/workspaces/${workspaceId}/invitations`,
+        {
+          body: { email, role: "editor" },
+          headers: asPerson(owner),
+        }
+      );
+
+      assert.strictEqual(sent.status, 201, JSON.stringify(sent.body));
+
+      const invitation = Schema.decodeUnknownSync(
+        Schema.Struct({ id: Schema.String })
+      )(sent.body);
+
+      const accepted = yield* app.request(
+        "/api/auth/organization/accept-invitation",
+        {
+          body: { invitationId: invitation.id },
+          headers: { cookie: member.cookies },
+        }
+      );
+
+      assert.strictEqual(accepted.status, 200, JSON.stringify(accepted.body));
+
+      const { cookies } = yield* enrolled(owner);
+      const set = yield* requiring(workspaceId, { cookie: cookies });
+
+      assert.strictEqual(set.status, 200, JSON.stringify(set.body));
+
+      const refused = yield* app.request(security(workspaceId), {
+        headers: { cookie: member.cookies },
+      });
+
+      assert.strictEqual(refused.status, 403);
+      assert.deepInclude(yield* refusalOf(refused), {
+        reason: "twoStepRequired",
+      });
+
+      const members = yield* app.request(
+        `/api/auth/organization/list-members?organizationId=${workspaceId}`,
+        { headers: { cookie: member.cookies } }
+      );
+
+      assert.strictEqual(members.status, 403);
+      assert.deepInclude(yield* refusalOf(members), {
+        code: "TWO_STEP_REQUIRED",
+      });
     })
   );
 });

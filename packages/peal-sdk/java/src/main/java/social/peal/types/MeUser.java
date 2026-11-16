@@ -36,6 +36,8 @@ public final class MeUser {
 
     private final String name;
 
+    private final Optional<Boolean> hasPassword;
+
     private final boolean twoStepEnabled;
 
     private final Map<String, Object> additionalProperties;
@@ -47,6 +49,7 @@ public final class MeUser {
             Optional<String> image,
             MeUserLocale locale,
             String name,
+            Optional<Boolean> hasPassword,
             boolean twoStepEnabled,
             Map<String, Object> additionalProperties) {
         this.email = email;
@@ -55,6 +58,7 @@ public final class MeUser {
         this.image = image;
         this.locale = locale;
         this.name = name;
+        this.hasPassword = hasPassword;
         this.twoStepEnabled = twoStepEnabled;
         this.additionalProperties = additionalProperties;
     }
@@ -92,6 +96,11 @@ public final class MeUser {
         return name;
     }
 
+    @JsonProperty("hasPassword")
+    public Optional<Boolean> getHasPassword() {
+        return hasPassword;
+    }
+
     @JsonProperty("twoStepEnabled")
     public boolean getTwoStepEnabled() {
         return twoStepEnabled;
@@ -121,13 +130,21 @@ public final class MeUser {
                 && image.equals(other.image)
                 && locale.equals(other.locale)
                 && name.equals(other.name)
+                && hasPassword.equals(other.hasPassword)
                 && twoStepEnabled == other.twoStepEnabled;
     }
 
     @java.lang.Override
     public int hashCode() {
         return Objects.hash(
-                this.email, this.emailVerified, this.id, this.image, this.locale, this.name, this.twoStepEnabled);
+                this.email,
+                this.emailVerified,
+                this.id,
+                this.image,
+                this.locale,
+                this.name,
+                this.hasPassword,
+                this.twoStepEnabled);
     }
 
     @java.lang.Override
@@ -177,6 +194,10 @@ public final class MeUser {
         _FinalStage image(String image);
 
         _FinalStage image(Nullable<String> image);
+
+        _FinalStage hasPassword(Optional<Boolean> hasPassword);
+
+        _FinalStage hasPassword(Boolean hasPassword);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -200,6 +221,8 @@ public final class MeUser {
 
         private boolean twoStepEnabled;
 
+        private Optional<Boolean> hasPassword = Optional.empty();
+
         private Optional<String> image = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -214,6 +237,7 @@ public final class MeUser {
             image(other.getImage());
             locale(other.getLocale());
             name(other.getName());
+            hasPassword(other.getHasPassword());
             twoStepEnabled(other.getTwoStepEnabled());
             return this;
         }
@@ -261,6 +285,19 @@ public final class MeUser {
         }
 
         @java.lang.Override
+        public _FinalStage hasPassword(Boolean hasPassword) {
+            this.hasPassword = Optional.ofNullable(hasPassword);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "hasPassword", nulls = Nulls.SKIP)
+        public _FinalStage hasPassword(Optional<Boolean> hasPassword) {
+            this.hasPassword = hasPassword;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage image(Nullable<String> image) {
             if (image.isNull()) {
                 this.image = null;
@@ -287,7 +324,8 @@ public final class MeUser {
 
         @java.lang.Override
         public MeUser build() {
-            return new MeUser(email, emailVerified, id, image, locale, name, twoStepEnabled, additionalProperties);
+            return new MeUser(
+                    email, emailVerified, id, image, locale, name, hasPassword, twoStepEnabled, additionalProperties);
         }
 
         @JsonAnySetter
@@ -298,6 +336,7 @@ public final class MeUser {
                     || key.equalsIgnoreCase("image")
                     || key.equalsIgnoreCase("locale")
                     || key.equalsIgnoreCase("name")
+                    || key.equalsIgnoreCase("hasPassword")
                     || key.equalsIgnoreCase("twoStepEnabled")) {
                 return;
             }

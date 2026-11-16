@@ -633,7 +633,22 @@
       "EMAIL_NOT_VERIFIED_FOR_TWO_STEP": "Confirm your email address before turning on two-step verification.",
       "TWO_STEP_REQUIRED_BY_WORKSPACE": "A workspace you belong to requires two-step verification: it stays on while you are a member.",
       "TWO_STEP_REQUIRED": "This workspace requires two-step verification. Turn it on in your account settings, then try again.",
-      "SIGN_UP_BY_INVITATION": "This server makes accounts by invitation only: open the link in the email that invited you, with the address it was sent to."
+      "SIGN_UP_BY_INVITATION": "This server makes accounts by invitation only: open the link in the email that invited you, with the address it was sent to.",
+      "PROVIDER_EMAIL_UNVERIFIED": "Your provider has not confirmed this email address. Confirm it there, or sign in with your password.",
+      "PROVIDER_EMAIL_NOT_FOUND": "Your provider gave no email address. Sign in with your password, or with an account that has an email address.",
+      "PROVIDER_ACCOUNT_NOT_LINKED": "An account already uses this address, and it could not be joined to your provider: the address must be confirmed both at your provider and on this account. Sign in with your password, or reset it, then try again.",
+      "PROVIDER_TWO_STEP_PASSWORD": "This account has two-step verification. Sign in with your password and your code.",
+      "PROVIDER_SIGN_UP_DISABLED": "No account uses this address. Create one on the sign-up page.",
+      "PROVIDER_NO_ACCOUNT": "No account uses this address.",
+      "PROVIDER_ACCESS_DENIED": "You cancelled the sign-in at your provider.",
+      "PROVIDER_FAILED": "The sign-in with your provider failed. Try again.",
+      "PROVIDER_EMAIL_NOT_AUTHORITATIVE": "Sign in with your password: Google can't confirm this address is still yours.",
+      "PROVIDER_EMAIL_INVALID": "Your provider gave an email address Peal can't use. Sign in with your password.",
+      "AUTHORIZATION_FAILED": "The application's sign-in request was refused. Go back to the application and start again."
+    },
+    "providers": {
+      "continueWith": "Continue with {name}",
+      "or": "or"
     }
   },
   "SignInPage": {
@@ -3259,7 +3274,13 @@
       "change": "Change the password",
       "changed": "Password changed.",
       "mismatch": "The two new passwords are not the same.",
-      "signOutOthers": "Sign out of my other sessions"
+      "signOutOthers": "Sign out of my other sessions",
+      "setTitle": "Set a password",
+      "setDescription": "This account signs in through a provider and has no password yet. We email you a link to set one; you then sign in either way.",
+      "setSend": "Email me a link",
+      "setSending": "Sending…",
+      "setSent": "We sent a link to {email}. It works for an hour.",
+      "neededFirst": "This needs a password, which this account does not have yet: set one above first."
     },
     "sessions": {
       "title": "Sessions",
