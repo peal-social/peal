@@ -108,6 +108,7 @@ describe("signing in to Google Ads", () => {
     () =>
       Effect.gen(function* signingIn() {
         const { client } = yield* googleAgainstFake();
+
         const url = new URL(
           client.authorizationUrl("synthetic-state", "synthetic-challenge")
         );

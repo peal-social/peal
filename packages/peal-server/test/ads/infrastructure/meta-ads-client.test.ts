@@ -82,6 +82,7 @@ describe("signing in to Meta for ads", () => {
   it.live("asks for reading only on a server that only reads", () =>
     Effect.gen(function* reading() {
       const { client } = yield* metaAgainstFake({}, "read");
+
       const url = new URL(
         client.authorizationUrl("state-1", "synthetic-challenge")
       );
@@ -106,6 +107,7 @@ describe("signing in to Meta for ads", () => {
   it.live("asks for what running ads takes on a server that spends", () =>
     Effect.gen(function* spending() {
       const { client } = yield* metaAgainstFake();
+
       const url = new URL(
         client.authorizationUrl("state-1", "synthetic-challenge")
       );
