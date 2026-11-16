@@ -372,6 +372,17 @@ describe("the accounts a Google sign-in reaches", () => {
   );
 });
 
+// Days of five campaigns, `dates` of them from 1 November.
+const manyDays = (dates: number) =>
+  Array.from({ length: dates }, (_, date) =>
+    ["901", "902", "903", "904", "905"].map((campaignId) => ({
+      campaignId,
+      clicks: "1",
+      customerId: "1111111111",
+      date: `2026-11-${String(date + 1).padStart(2, "0")}`,
+    }))
+  ).flat();
+
 describe("reading a Google Ads account", () => {
   it.live(
     "reads its campaigns and their days to the last page, in minor units",
@@ -526,17 +537,6 @@ describe("reading a Google Ads account", () => {
         assert.strictEqual(api.refreshes(), 1);
       }).pipe(Effect.scoped)
   );
-
-  // Days of five campaigns, `dates` of them from 1 November.
-  const manyDays = (dates: number) =>
-    Array.from({ length: dates }, (_, date) =>
-      ["901", "902", "903", "904", "905"].map((campaignId) => ({
-        campaignId,
-        clicks: "1",
-        customerId: "1111111111",
-        date: `2026-11-${String(date + 1).padStart(2, "0")}`,
-      }))
-    ).flat();
 
   it.live(
     "goes on from the last day it reached when the days take more pages than one search reads",

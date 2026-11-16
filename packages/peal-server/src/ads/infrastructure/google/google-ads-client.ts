@@ -537,9 +537,9 @@ export const googleAdsClient = (options: {
       rows.push(...part.rows);
 
       if (!part.cut) {
-        const read: DaysRead = { ...part, rows, wholeThrough };
+        const ended: DaysRead = { ...part, rows, wholeThrough };
 
-        return read;
+        return ended;
       }
 
       const last = part.rows
