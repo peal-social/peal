@@ -106,5 +106,12 @@ export class EngagementRecords extends Context.Service<
       targetId: PostTargetId,
       at: DateTime.Utc
     ) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Whether one of these channels has its direct messages on (a box):
+     * what keeps a platform's subscription to the account's events.
+     */
+    readonly readsMessages: (
+      channelIds: readonly ChannelId[]
+    ) => Effect.Effect<boolean, DatabaseError>;
   }
 >()("peal-server/engagement/application/EngagementRecords") {}
