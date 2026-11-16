@@ -42,13 +42,14 @@ import {
 // at most and never cuts short. Each channel its platform did not let go
 // by the end is logged by its id and counted.
 
-class Departed extends Context.Service<Departed, Ref.Ref<readonly string[]>>()(
-  "test/Departed"
-) {}
-
-class Finished extends Context.Service<Finished, Ref.Ref<readonly string[]>>()(
-  "test/Finished"
-) {}
+// The departures begun, and those that ended.
+class Departures extends Context.Service<
+  Departures,
+  {
+    readonly started: Ref.Ref<readonly string[]>;
+    readonly finished: Ref.Ref<readonly string[]>;
+  }
+>()("test/Departures") {}
 
 /** How the platform answers a departure. */
 type Platform = "answering" | "refusing" | "silent" | "slow";
@@ -57,8 +58,7 @@ const recordedDepartures = (platform: Platform) =>
   Layer.effect(
     ChannelDepartures,
     Effect.gen(function* RecordedDepartures() {
-      const departed = yield* Departed;
-      const finished = yield* Finished;
+      const { finished, started: departed } = yield* Departures;
 
       const answer: Effect.Effect<DepartureOutcome> = {
         answering: Effect.succeed("done" as const),
@@ -93,9 +93,12 @@ const recordsTest = (platform: Platform) =>
       )
     ),
     Layer.provideMerge(
-      Layer.mergeAll(
-        Layer.effect(Departed, Ref.make<readonly string[]>([])),
-        Layer.effect(Finished, Ref.make<readonly string[]>([]))
+      Layer.effect(
+        Departures,
+        Effect.all({
+          finished: Ref.make<readonly string[]>([]),
+          started: Ref.make<readonly string[]>([]),
+        })
       )
     ),
     Layer.provideMerge(DatabaseTest)
@@ -133,22 +136,26 @@ const twelve = Effect.gen(function* twelve() {
   const ids: string[] = [];
 
   for (let n = 0; n < 6; n += 1) {
-    ids.push((yield* connected(workspaceId, "facebook")).id);
-    ids.push((yield* connected(otherId, "facebook")).id);
+    ids.push(
+      (yield* connected(workspaceId, "facebook")).id,
+      (yield* connected(otherId, "facebook")).id
+    );
   }
 
   return { ids, workspaceIds: [workspaceId, otherId] };
 });
 
-const countOf = (ref: Effect.Effect<readonly string[]>) =>
-  ref.pipe(Effect.map((all) => all.length));
+const started = Departures.use(({ started: begun }) => Ref.get(begun)).pipe(
+  Effect.map((all) => all.length)
+);
 
-const started = countOf(Departed.use(Ref.get));
-const finished = countOf(Finished.use(Ref.get));
+const finished = Departures.use(({ finished: ended }) => Ref.get(ended)).pipe(
+  Effect.map((all) => all.length)
+);
 
 // Real time for the database, which works on its own clock, until `until`.
 const settle = Effect.fnUntraced(function* settle(
-  until: Effect.Effect<boolean, never, Departed | Finished>
+  until: Effect.Effect<boolean, never, Departures>
 ) {
   for (let tries = 0; tries < 250 && !(yield* until); tries += 1) {
     yield* Effect.promise(async () => {
@@ -167,11 +174,8 @@ const capture = (lines: string[]) =>
     Logger.make(({ fiber, message }) => {
       const { channelId } = fiber.getRef(References.CurrentLogAnnotations);
 
-      if (
-        typeof channelId === "string" &&
-        JSON.stringify(message).includes("still sends")
-      ) {
-        lines.push(`${channelId}:${JSON.stringify(message)}`);
+      if (JSON.stringify(message).includes("still sends")) {
+        lines.push(`${String(channelId)}:${JSON.stringify(message)}`);
       }
     }),
   ]);
@@ -194,7 +198,9 @@ layer(recordsTest("answering"))("workspaces about to be erased", (it) => {
         );
 
         assert.deepStrictEqual(
-          (yield* Departed.use(Ref.get)).toSorted(),
+          (yield* Departures.use(({ started: begun }) =>
+            Ref.get(begun)
+          )).toSorted(),
           [
             `${page.id}:synthetic-token-${page.id}:3`,
             `${status.id}:synthetic-token-${status.id}:3`,
@@ -272,7 +278,7 @@ layer(recordsTest("silent"))(
 
           assert.strictEqual((yield* left) - before, ids.length);
           assert.deepStrictEqual(
-            lines.map((line) => line.split(":")[0]).toSorted(),
+            lines.map((line) => line.split(":")[0] ?? "").toSorted(),
             ids.toSorted()
           );
           // By the channel's id alone: no token.

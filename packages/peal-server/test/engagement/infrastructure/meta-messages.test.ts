@@ -448,69 +448,63 @@ describe("Meta's direct messages, read", () => {
     }
   );
 
-  it.effect(
-    "log each channel and each reason apart within the hour",
-    () => {
-      const lines: string[] = [];
+  it.effect("log each channel and each reason apart within the hour", () => {
+    const lines: string[] = [];
 
-      const capture = Logger.layer([
-        Logger.make(({ fiber }) => {
-          const { channelId: logged, reason } = fiber.getRef(
-            References.CurrentLogAnnotations
-          );
+    const capture = Logger.layer([
+      Logger.make(({ fiber }) => {
+        const { channelId: logged, reason } = fiber.getRef(
+          References.CurrentLogAnnotations
+        );
 
-          if (
-            reason === "accountNotAParticipant" ||
-            reason === "senderOutside"
-          ) {
-            lines.push(`${String(logged)}:${reason}`);
-          }
-        }),
-      ]);
+        if (reason === "accountNotAParticipant" || reason === "senderOutside") {
+          lines.push(`${String(logged)}:${reason}`);
+        }
+      }),
+    ]);
 
-      return atNow(
-        Effect.gen(function* apart() {
-          const { account, graph, platform } = yield* onGraph();
+    return atNow(
+      Effect.gen(function* apart() {
+        const { account, graph, platform } = yield* onGraph();
 
-          // One conversation without the account, one with a sender
-          // outside it: one line each reason.
-          graph.add({
-            ...conversation("c_foreign", [message(4)]),
-            participants: [{ id: reader.id, name: reader.name }],
-          });
-          graph.add(
-            conversation("c_odd", [
-              message(1),
-              message(2, { from: { id: "7299999999999990", name: "Else" } }),
-            ])
-          );
+        // One conversation without the account, one with a sender
+        // outside it: one line each reason.
+        graph.add({
+          ...conversation("c_foreign", [message(4)]),
+          participants: [{ id: reader.id, name: reader.name }],
+        });
+        graph.add(
+          conversation("c_odd", [
+            message(1),
+            message(2, { from: { id: "7299999999999990", name: "Else" } }),
+          ])
+        );
 
-          // A second channel of the Page, in another workspace.
-          const other = {
-            ...account,
-            channelId: ChannelIdSchema.make(
-              "01900000-0000-7000-8000-0000000000ea"
-            ),
-          };
+        // A second channel of the Page, in another workspace.
+        const other = {
+          ...account,
+          channelId: ChannelIdSchema.make(
+            "01900000-0000-7000-8000-0000000000ea"
+          ),
+        };
 
-          yield* platform.read(account, toRead);
-          yield* platform.read(other, toRead);
-          yield* platform.read(account, toRead);
-          yield* platform.read(other, toRead);
+        yield* platform.read(account, toRead);
+        yield* platform.read(other, toRead);
+        yield* platform.read(account, toRead);
+        yield* platform.read(other, toRead);
 
-          assert.deepStrictEqual(
-            lines.toSorted(),
-            [
-              `${account.channelId}:accountNotAParticipant`,
-              `${account.channelId}:senderOutside`,
-              `${other.channelId}:accountNotAParticipant`,
-              `${other.channelId}:senderOutside`,
-            ].toSorted()
-          );
-        }).pipe(Effect.provide(capture))
-      );
-    }
-  );
+        assert.deepStrictEqual(
+          lines.toSorted(),
+          [
+            `${account.channelId}:accountNotAParticipant`,
+            `${account.channelId}:senderOutside`,
+            `${other.channelId}:accountNotAParticipant`,
+            `${other.channelId}:senderOutside`,
+          ].toSorted()
+        );
+      }).pipe(Effect.provide(capture))
+    );
+  });
 
   it.effect("read back only a conversation whose revision changed", () =>
     atNow(

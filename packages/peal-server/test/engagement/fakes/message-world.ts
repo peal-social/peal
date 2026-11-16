@@ -1,4 +1,5 @@
 import { DateTime, Effect, Layer, Option, Result } from "effect";
+import { constVoid } from "effect/Function";
 
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
 import { CollectMessages } from "#engagement/application/collect-messages.ts";
@@ -161,7 +162,7 @@ export const makeMessageWorld = (
     unfollows: [],
     cancelled: [],
     claims: new Map(),
-    afterListing: () => undefined,
+    afterListing: constVoid,
     channels: new Map(),
     applications: [],
     switchedOn: new Map(),
