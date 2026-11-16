@@ -46,6 +46,37 @@ describe("a message's text", () => {
   });
 });
 
+describe("a Meta message's length", () => {
+  it("is 1,000 UTF-8 bytes on Instagram", () => {
+    expect(chatOverflow("instagram", "a".repeat(1000))).toStrictEqual(
+      Option.none()
+    );
+    expect(chatOverflow("instagram", "é".repeat(501))).toStrictEqual(
+      Option.some({ length: 1002, maximum: 1000, unit: "utf8Bytes" })
+    );
+  });
+
+  it("is 2,000 characters on Messenger", () => {
+    expect(chatOverflow("facebook", "👋".repeat(1000))).toStrictEqual(
+      Option.none()
+    );
+    expect(chatOverflow("facebook", "👋".repeat(1001))).toStrictEqual(
+      Option.some({ length: 2002, maximum: 2000, unit: "characters" })
+    );
+    expect(chatOverflow("facebook", "a".repeat(2001))).toStrictEqual(
+      Option.some({ length: 2001, maximum: 2000, unit: "characters" })
+    );
+  });
+
+  it("goes out as written", () => {
+    for (const platform of ["facebook", "instagram"] as const) {
+      expect(outgoingMessageText(platform, [participant(1)], " Hi ")).toBe(
+        "Hi"
+      );
+    }
+  });
+});
+
 describe("a Mastodon message's mentions", () => {
   it("name the accounts outside the conversation the text would reach", () => {
     expect(

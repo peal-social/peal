@@ -26,6 +26,12 @@ public record InboxActionUnavailableEncoded : IJsonOnDeserialized
     [JsonPropertyName("ability")]
     public required string Ability { get; set; }
 
+    [JsonPropertyName("closedAt")]
+    public string? ClosedAt { get; set; }
+
+    [JsonPropertyName("reason")]
+    public InboxActionUnavailableReason? Reason { get; set; }
+
     [JsonPropertyName("standing")]
     public required InboxActionUnavailableEncodedStanding Standing { get; set; }
 

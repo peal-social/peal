@@ -506,10 +506,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `engagement:message`): text as text, never markup, a file count (never
   a file), the box only where `abilities.send` is `available` and the
   reply window is open, under an `Idempotency-Key` kept until the message
-  is made. Reading a conversation never marks it read. The settings
-  (`message-settings.tsx`) show to `channel:connect`: each Mastodon and
-  Bluesky channel's switch, and, for `organization:secure`, the
-  applications let read the messages, by client id.
+  is made; where the window has an end (Messenger's and Instagram's 24
+  hours) `ReplyWindowView` says until when, or why the box is gone.
+  Reading a conversation never marks it read. The settings
+  (`message-settings.tsx`) show to `channel:connect`: each Mastodon,
+  Bluesky, Facebook Page and Instagram channel's switch (a Meta one says
+  who may write before Meta's App Review, an Instagram one the Connected
+  tools setting; one refused `reconnect` offers the sign-in with
+  `messages=true`), and, for `organization:secure`, the applications let
+  read the messages, by client id.
 - The inbox (`components/inbox/`) lists threads with counts and never a
   comment's text (`ThreadsList`), and shows one whole (`ThreadScreen`):
   views in `inbox-views.tsx` take links as props, so tests render each

@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import type {
   SocialChannel,
   InboxConversation,
+  InboxConversationDetail,
   InboxDirectMessage,
   InboxOutgoingMessage,
 } from "peal-contract";
@@ -113,6 +114,34 @@ export const DirectMessageView = ({
         {message.text === "" ? t("noText") : message.text}
       </p>
     </li>
+  );
+};
+
+/**
+ * Until when the platform takes an answer, where it says (Messenger's and
+ * Instagram's 24 hours), or why it takes none: its time ended, or nobody
+ * else wrote yet, as Peal never writes first.
+ */
+export const ReplyWindowView = ({
+  window,
+}: {
+  readonly window: InboxConversationDetail["window"];
+}) => {
+  const t = useTranslations("InboxMessages.box");
+  const instant = useInstant();
+
+  if (window.closesAt === null) {
+    return window.open ? null : (
+      <p className="text-muted-foreground text-sm">{t("closed")}</p>
+    );
+  }
+
+  return (
+    <p className="text-muted-foreground text-sm">
+      {window.open
+        ? t("openUntil", { at: instant(window.closesAt) })
+        : t("windowClosed", { at: instant(window.closesAt) })}
+    </p>
   );
 };
 

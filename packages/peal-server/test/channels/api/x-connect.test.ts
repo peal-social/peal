@@ -7,6 +7,7 @@ import { HttpApiTest } from "effect/http-api";
 import { Api, UsageAllowanceReached } from "peal-contract";
 
 import { ChannelsHandlers } from "#channels/api/channels.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelSettings } from "#channels/application/channel-settings.ts";
 import { DisconnectChannel } from "#channels/application/disconnect-channel.ts";
 import { ListChannels } from "#channels/application/list-channels.ts";
@@ -37,7 +38,7 @@ const untouchedX: PlatformAuthorizer = {
 const FreeTierTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
-  DisconnectChannel.layer,
+  DisconnectChannel.layer.pipe(Layer.provide(ChannelDepartures.none)),
   WordPressSitesTest,
   chatsOn()
 ).pipe(

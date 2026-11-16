@@ -31,6 +31,10 @@ public final class InboxActionUnavailableEncoded {
 
     private final String ability;
 
+    private final Optional<String> closedAt;
+
+    private final Optional<InboxActionUnavailableReason> reason;
+
     private final InboxActionUnavailableEncodedStanding standing;
 
     private final Map<String, Object> additionalProperties;
@@ -41,6 +45,8 @@ public final class InboxActionUnavailableEncoded {
             Optional<String> message,
             Optional<String> requestId,
             String ability,
+            Optional<String> closedAt,
+            Optional<InboxActionUnavailableReason> reason,
             InboxActionUnavailableEncodedStanding standing,
             Map<String, Object> additionalProperties) {
         this.tag = tag;
@@ -48,6 +54,8 @@ public final class InboxActionUnavailableEncoded {
         this.message = message;
         this.requestId = requestId;
         this.ability = ability;
+        this.closedAt = closedAt;
+        this.reason = reason;
         this.standing = standing;
         this.additionalProperties = additionalProperties;
     }
@@ -77,6 +85,16 @@ public final class InboxActionUnavailableEncoded {
         return ability;
     }
 
+    @JsonProperty("closedAt")
+    public Optional<String> getClosedAt() {
+        return closedAt;
+    }
+
+    @JsonProperty("reason")
+    public Optional<InboxActionUnavailableReason> getReason() {
+        return reason;
+    }
+
     @JsonProperty("standing")
     public InboxActionUnavailableEncodedStanding getStanding() {
         return standing;
@@ -99,12 +117,22 @@ public final class InboxActionUnavailableEncoded {
                 && message.equals(other.message)
                 && requestId.equals(other.requestId)
                 && ability.equals(other.ability)
+                && closedAt.equals(other.closedAt)
+                && reason.equals(other.reason)
                 && standing.equals(other.standing);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.tag, this.code, this.message, this.requestId, this.ability, this.standing);
+        return Objects.hash(
+                this.tag,
+                this.code,
+                this.message,
+                this.requestId,
+                this.ability,
+                this.closedAt,
+                this.reason,
+                this.standing);
     }
 
     @java.lang.Override
@@ -148,6 +176,14 @@ public final class InboxActionUnavailableEncoded {
         _FinalStage requestId(Optional<String> requestId);
 
         _FinalStage requestId(String requestId);
+
+        _FinalStage closedAt(Optional<String> closedAt);
+
+        _FinalStage closedAt(String closedAt);
+
+        _FinalStage reason(Optional<InboxActionUnavailableReason> reason);
+
+        _FinalStage reason(InboxActionUnavailableReason reason);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -157,6 +193,10 @@ public final class InboxActionUnavailableEncoded {
         private String ability;
 
         private InboxActionUnavailableEncodedStanding standing;
+
+        private Optional<InboxActionUnavailableReason> reason = Optional.empty();
+
+        private Optional<String> closedAt = Optional.empty();
 
         private Optional<String> requestId = Optional.empty();
 
@@ -175,6 +215,8 @@ public final class InboxActionUnavailableEncoded {
             message(other.getMessage());
             requestId(other.getRequestId());
             ability(other.getAbility());
+            closedAt(other.getClosedAt());
+            reason(other.getReason());
             standing(other.getStanding());
             return this;
         }
@@ -197,6 +239,32 @@ public final class InboxActionUnavailableEncoded {
         @JsonSetter("standing")
         public _FinalStage standing(@NotNull InboxActionUnavailableEncodedStanding standing) {
             this.standing = Objects.requireNonNull(standing, "standing must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage reason(InboxActionUnavailableReason reason) {
+            this.reason = Optional.ofNullable(reason);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "reason", nulls = Nulls.SKIP)
+        public _FinalStage reason(Optional<InboxActionUnavailableReason> reason) {
+            this.reason = reason;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage closedAt(String closedAt) {
+            this.closedAt = Optional.ofNullable(closedAt);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "closedAt", nulls = Nulls.SKIP)
+        public _FinalStage closedAt(Optional<String> closedAt) {
+            this.closedAt = closedAt;
             return this;
         }
 
@@ -242,7 +310,7 @@ public final class InboxActionUnavailableEncoded {
         @java.lang.Override
         public InboxActionUnavailableEncoded build() {
             return new InboxActionUnavailableEncoded(
-                    tag, code, message, requestId, ability, standing, additionalProperties);
+                    tag, code, message, requestId, ability, closedAt, reason, standing, additionalProperties);
         }
 
         @JsonAnySetter
@@ -252,6 +320,8 @@ public final class InboxActionUnavailableEncoded {
                     || key.equalsIgnoreCase("message")
                     || key.equalsIgnoreCase("requestId")
                     || key.equalsIgnoreCase("ability")
+                    || key.equalsIgnoreCase("closedAt")
+                    || key.equalsIgnoreCase("reason")
                     || key.equalsIgnoreCase("standing")) {
                 return;
             }

@@ -15,6 +15,10 @@ module Peal
 
       field :ability, -> { String }, optional: false, nullable: false
 
+      field :closed_at, -> { String }, optional: true, nullable: false, api_name: "closedAt"
+
+      field :reason, -> { Peal::Types::InboxActionUnavailableReason }, optional: true, nullable: false
+
       field :standing, -> { Peal::Types::InboxActionUnavailableEncodedStanding }, optional: false, nullable: false
     end
   end

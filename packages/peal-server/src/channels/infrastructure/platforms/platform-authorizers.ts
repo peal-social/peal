@@ -206,6 +206,7 @@ export const PlatformAuthorizersLive = Layer.effect(
       hosts: settings.metaHosts,
       http,
       inbox,
+      messages: settings.messages,
       publicUrl: settings.publicUrl,
     });
 

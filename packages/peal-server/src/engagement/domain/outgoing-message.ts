@@ -29,6 +29,10 @@ import { ReplyDoubtSchema } from "./reply.ts";
  *   text is not allowed there.
  * - `notSent`: its outcome was unknown, and a member found it never went
  *   out.
+ * - `windowClosed`: the platform takes answers only for a time after the
+ *   person last wrote (Meta's 24 hours), and it had passed.
+ *
+ * Stored: add a member, never rename or remove one.
  */
 export const MessageFailureSchema = Schema.Literals([
   "channelUnavailable",
@@ -38,6 +42,7 @@ export const MessageFailureSchema = Schema.Literals([
   "conversationGone",
   "refused",
   "notSent",
+  "windowClosed",
 ]);
 
 export type MessageFailure = typeof MessageFailureSchema.Type;

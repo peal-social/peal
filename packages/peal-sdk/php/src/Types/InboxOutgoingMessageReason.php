@@ -14,4 +14,5 @@ enum InboxOutgoingMessageReason: string
     case NoResponse = "noResponse";
     case Interrupted = "interrupted";
     case AdapterFailure = "adapterFailure";
+    case WindowClosed = "windowClosed";
 }

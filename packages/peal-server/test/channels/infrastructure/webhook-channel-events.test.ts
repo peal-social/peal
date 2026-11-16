@@ -4,6 +4,7 @@ import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
 import { ChannelCredentials } from "#channels/application/channel-credentials.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelEvents } from "#channels/application/channel-events.ts";
 import { ChannelNotices } from "#channels/application/channel-notices.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
@@ -45,7 +46,7 @@ const SilentNotices = Layer.succeed(
 
 const Test = Layer.mergeAll(
   ChannelSettings.layer,
-  DisconnectChannel.layer,
+  DisconnectChannel.layer.pipe(Layer.provide(ChannelDepartures.none)),
   DrizzleDataDeletions,
   webhookChannelNotices(SilentNotices)
 ).pipe(

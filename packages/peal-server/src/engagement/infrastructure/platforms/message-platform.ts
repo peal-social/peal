@@ -1,4 +1,5 @@
-import type { DateTime, Effect, Option } from "effect";
+import { Option } from "effect";
+import type { DateTime, Effect } from "effect";
 
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import type {
@@ -9,6 +10,7 @@ import type {
 import type { Participant } from "#engagement/domain/conversation.ts";
 import type { OutgoingMessageId } from "#engagement/domain/outgoing-message-id.ts";
 import type { MessageSendOutcome } from "#engagement/domain/outgoing-message.ts";
+import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 
 /** What a read of a channel's conversations knows already. */
 export interface MessagesToRead {
@@ -57,6 +59,48 @@ export interface OutgoingDirect {
 }
 
 /**
+ * An account a platform's subscription carries, and the app whose
+ * subscription it is: Facebook Login's (a Page's, which carries the Page
+ * and the Instagram account linked to it) or Instagram Login's (the
+ * account's own).
+ */
+export interface FollowedAccount {
+  readonly accountId: string;
+  readonly connection: "facebookLogin" | "instagramLogin";
+  readonly platform: "facebook" | "instagram";
+}
+
+/** Whether a channel's events come through the subscription `account` names. */
+export const carriedBy = (
+  account: FollowedAccount,
+  channel: {
+    readonly connection: Option.Option<ChannelConnection>;
+    readonly platform: string;
+  }
+): boolean =>
+  channel.platform === account.platform &&
+  (account.platform === "facebook" ||
+    Option.getOrElse(channel.connection, () => "facebookLogin") ===
+      account.connection);
+
+/**
+ * What an unfollow asks of the other channels of Peal's, in any workspace:
+ * whether one still reads the messages of an account the subscription
+ * carries (`elsewhere`; true when it cannot be told, so a subscription is
+ * never stopped on a doubt), and, once it is stopped, to follow again at
+ * their next read those whose messages were turned on meanwhile
+ * (`stopped`).
+ */
+export interface Followers {
+  readonly elsewhere: (
+    accounts: readonly FollowedAccount[]
+  ) => Effect.Effect<boolean>;
+  readonly stopped: (
+    accounts: readonly FollowedAccount[]
+  ) => Effect.Effect<void>;
+}
+
+/**
  * One platform's direct messages: reading an account's conversations, and
  * answering one as the account. A platform joins by implementing this,
  * with its entry in `InboxMessagePlatformSchema` and `messageAbilitiesOf`.
@@ -70,9 +114,10 @@ export interface OutgoingDirect {
  * (Meta's events) has `follow`, which asks it to, and `unfollow`, which
  * asks it to stop: the platform's subscription is the account's, so
  * `unfollow` answers `unneeded`, and calls nothing, while another channel
- * of Peal's still follows the account (a Page connected in two
- * workspaces). One without them is read on the collection's schedule
- * alone (Mastodon, Bluesky).
+ * of Peal's still follows the account (`Followers`: a Page
+ * connected in two workspaces, or the Instagram account it is linked to).
+ * One without them is read on the collection's schedule alone (Mastodon,
+ * Bluesky).
  */
 export interface MessagePlatform {
   readonly read: (
@@ -91,6 +136,7 @@ export interface MessagePlatform {
     account: ChannelAccount
   ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
   readonly unfollow?: (
-    account: ChannelAccount
+    account: ChannelAccount,
+    followers: Followers
   ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
 }

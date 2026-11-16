@@ -1928,6 +1928,7 @@ const (
 	InboxOutgoingMessageReasonNoResponse          InboxOutgoingMessageReason = "noResponse"
 	InboxOutgoingMessageReasonInterrupted         InboxOutgoingMessageReason = "interrupted"
 	InboxOutgoingMessageReasonAdapterFailure      InboxOutgoingMessageReason = "adapterFailure"
+	InboxOutgoingMessageReasonWindowClosed        InboxOutgoingMessageReason = "windowClosed"
 )
 
 func NewInboxOutgoingMessageReasonFromString(s string) (InboxOutgoingMessageReason, error) {
@@ -1952,6 +1953,8 @@ func NewInboxOutgoingMessageReasonFromString(s string) (InboxOutgoingMessageReas
 		return InboxOutgoingMessageReasonInterrupted, nil
 	case "adapterFailure":
 		return InboxOutgoingMessageReasonAdapterFailure, nil
+	case "windowClosed":
+		return InboxOutgoingMessageReasonWindowClosed, nil
 	}
 	var t InboxOutgoingMessageReason
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

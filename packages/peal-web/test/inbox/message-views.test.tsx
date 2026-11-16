@@ -15,6 +15,7 @@ import {
   ConversationRowView,
   DirectMessageView,
   MessageBoxView,
+  ReplyWindowView,
 } from "#components/inbox/message-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
@@ -165,5 +166,57 @@ describe("the direct messages' views", () => {
 
     expect(html).toContain("Allow, on Bluesky");
     expect(html).not.toContain("Read its messages");
+  });
+
+  it("say until when Messenger and Instagram take an answer, and why the box is gone once they do not", async () => {
+    const open = await render(
+      "en",
+      <ReplyWindowView
+        window={{ closesAt: at("2026-11-15T08:59:00Z"), open: true }}
+      />
+    );
+
+    const shut = await render(
+      "fr",
+      <ReplyWindowView
+        window={{ closesAt: at("2026-11-15T08:59:00Z"), open: false }}
+      />
+    );
+
+    const first = await render(
+      "en",
+      <ReplyWindowView window={{ closesAt: null, open: false }} />
+    );
+
+    expect(open).toContain("You can answer until Nov 15, 2026, 8:59");
+    expect(shut).toContain("24 heures");
+    expect(first).toContain("never writes first");
+  });
+
+  it("offer to allow Meta's direct messages, and say who may write before Meta's review", async () => {
+    const page = await render(
+      "en",
+      <ChannelMessagesView
+        channel={{ ...channel, platform: "facebook" }}
+        disabled={false}
+        on={false}
+        onGrant={constVoid}
+        onSwitch={constVoid}
+      />
+    );
+
+    const instagram = await render(
+      "fr",
+      <ChannelMessagesView
+        channel={{ ...channel, platform: "instagram" }}
+        disabled={false}
+        on={false}
+        onSwitch={constVoid}
+      />
+    );
+
+    expect(page).toContain("Allow, on Facebook");
+    expect(page).toContain("App Review");
+    expect(instagram).toContain("Outils connectés");
   });
 });

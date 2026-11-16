@@ -124,10 +124,13 @@ describe("the contract's direct messages", () => {
         ({ fields }) => fields._tag.schema.literal
       )
     );
-    expect(InboxOutgoingMessageReasonSchema.literals).toStrictEqual([
-      ...MessageFailureSchema.literals,
-      ...ReplyDoubtSchema.literals,
-    ]);
+    // The contract only grows at its end, whichever kind is added.
+    expect(InboxOutgoingMessageReasonSchema.literals.toSorted()).toStrictEqual(
+      [
+        ...MessageFailureSchema.literals,
+        ...ReplyDoubtSchema.literals,
+      ].toSorted()
+    );
     expect(InboxMessageAbilitiesSchema.fields).toHaveProperty("send");
     expect(Object.keys(InboxMessageAbilitiesSchema.fields)).toStrictEqual(
       MessageAbilitySchema.literals

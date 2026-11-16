@@ -49,6 +49,8 @@ describe("a channel gone, as engagement hears it", () => {
           exportUserReviewReplies: () => Effect.succeed([]),
           forgetUser: () => Effect.void,
           postRemoved: () => Effect.void,
+          readsMessages: () => Effect.succeed(false),
+          refollow: () => Effect.void,
         })
       );
 

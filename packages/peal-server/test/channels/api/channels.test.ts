@@ -17,6 +17,7 @@ import {
   ChannelOAuthHandlers,
   ChannelsHandlers,
 } from "#channels/api/channels.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ChannelSettings } from "#channels/application/channel-settings.ts";
 import { ChatRefused } from "#channels/application/chat-refused.ts";
@@ -88,7 +89,7 @@ const ChatsTest = chatsWith(
 const UseCasesTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
-  DisconnectChannel.layer,
+  DisconnectChannel.layer.pipe(Layer.provide(ChannelDepartures.none)),
   WordPressSitesTest,
   ChatsTest
 ).pipe(
@@ -915,7 +916,7 @@ const RecordingAuthorizers = Layer.effect(
 const AskingTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
-  DisconnectChannel.layer,
+  DisconnectChannel.layer.pipe(Layer.provide(ChannelDepartures.none)),
   WordPressSitesTest,
   chatsOn()
 ).pipe(

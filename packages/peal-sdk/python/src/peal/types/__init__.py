@@ -540,6 +540,7 @@ if typing.TYPE_CHECKING:
     from .inbox_action_unavailable_encoded import InboxActionUnavailableEncoded
     from .inbox_action_unavailable_encoded_standing import InboxActionUnavailableEncodedStanding
     from .inbox_action_unavailable_encoded_tag import InboxActionUnavailableEncodedTag
+    from .inbox_action_unavailable_reason import InboxActionUnavailableReason
     from .inbox_author import InboxAuthor
     from .inbox_collection_end import InboxCollectionEnd
     from .inbox_comment import InboxComment
@@ -1705,6 +1706,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "InboxActionUnavailableEncoded": ".inbox_action_unavailable_encoded",
     "InboxActionUnavailableEncodedStanding": ".inbox_action_unavailable_encoded_standing",
     "InboxActionUnavailableEncodedTag": ".inbox_action_unavailable_encoded_tag",
+    "InboxActionUnavailableReason": ".inbox_action_unavailable_reason",
     "InboxAuthor": ".inbox_author",
     "InboxCollectionEnd": ".inbox_collection_end",
     "InboxComment": ".inbox_comment",
@@ -2879,6 +2881,7 @@ __all__ = [
     "InboxActionUnavailableEncoded",
     "InboxActionUnavailableEncodedStanding",
     "InboxActionUnavailableEncodedTag",
+    "InboxActionUnavailableReason",
     "InboxAuthor",
     "InboxCollectionEnd",
     "InboxComment",

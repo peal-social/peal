@@ -15,6 +15,9 @@ public final class InboxOutgoingMessageReason {
 
     public static final InboxOutgoingMessageReason NOT_SENT = new InboxOutgoingMessageReason(Value.NOT_SENT, "notSent");
 
+    public static final InboxOutgoingMessageReason WINDOW_CLOSED =
+            new InboxOutgoingMessageReason(Value.WINDOW_CLOSED, "windowClosed");
+
     public static final InboxOutgoingMessageReason ADAPTER_FAILURE =
             new InboxOutgoingMessageReason(Value.ADAPTER_FAILURE, "adapterFailure");
 
@@ -74,6 +77,8 @@ public final class InboxOutgoingMessageReason {
                 return visitor.visitConversationGone();
             case NOT_SENT:
                 return visitor.visitNotSent();
+            case WINDOW_CLOSED:
+                return visitor.visitWindowClosed();
             case ADAPTER_FAILURE:
                 return visitor.visitAdapterFailure();
             case CHANNEL_UNAVAILABLE:
@@ -103,6 +108,8 @@ public final class InboxOutgoingMessageReason {
                 return CONVERSATION_GONE;
             case "notSent":
                 return NOT_SENT;
+            case "windowClosed":
+                return WINDOW_CLOSED;
             case "adapterFailure":
                 return ADAPTER_FAILURE;
             case "channelUnavailable":
@@ -143,6 +150,8 @@ public final class InboxOutgoingMessageReason {
 
         ADAPTER_FAILURE,
 
+        WINDOW_CLOSED,
+
         UNKNOWN
     }
 
@@ -166,6 +175,8 @@ public final class InboxOutgoingMessageReason {
         T visitInterrupted();
 
         T visitAdapterFailure();
+
+        T visitWindowClosed();
 
         T visitUnknown(String unknownType);
     }

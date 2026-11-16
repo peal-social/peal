@@ -13,6 +13,11 @@ pub struct InboxActionUnavailableEncoded {
     pub request_id: Option<String>,
     #[serde(default)]
     pub ability: String,
+    #[serde(rename = "closedAt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub closed_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<InboxActionUnavailableReason>,
     pub standing: InboxActionUnavailableEncodedStanding,
 }
 
@@ -30,6 +35,8 @@ pub struct InboxActionUnavailableEncodedBuilder {
     message: Option<String>,
     request_id: Option<String>,
     ability: Option<String>,
+    closed_at: Option<String>,
+    reason: Option<InboxActionUnavailableReason>,
     standing: Option<InboxActionUnavailableEncodedStanding>,
 }
 
@@ -59,6 +66,16 @@ impl InboxActionUnavailableEncodedBuilder {
         self
     }
 
+    pub fn closed_at(mut self, value: impl Into<String>) -> Self {
+        self.closed_at = Some(value.into());
+        self
+    }
+
+    pub fn reason(mut self, value: InboxActionUnavailableReason) -> Self {
+        self.reason = Some(value);
+        self
+    }
+
     pub fn standing(mut self, value: InboxActionUnavailableEncodedStanding) -> Self {
         self.standing = Some(value);
         self
@@ -78,6 +95,8 @@ impl InboxActionUnavailableEncodedBuilder {
             ability: self
                 .ability
                 .ok_or_else(|| BuildError::missing_field("ability"))?,
+            closed_at: self.closed_at,
+            reason: self.reason,
             standing: self
                 .standing
                 .ok_or_else(|| BuildError::missing_field("standing"))?,

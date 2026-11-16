@@ -79,6 +79,8 @@ const Recording = Layer.effectContext(
           exportUserReviewReplies: () => Effect.succeed([]),
           forgetUser: () => Effect.void,
           postRemoved: stop("engagement"),
+          readsMessages: () => Effect.succeed(false),
+          refollow: () => Effect.void,
         })
       ),
       Context.add(Heard, {

@@ -14258,7 +14258,9 @@ var (
 	inboxActionUnavailableEncodedFieldMessage   = big.NewInt(1 << 2)
 	inboxActionUnavailableEncodedFieldRequestID = big.NewInt(1 << 3)
 	inboxActionUnavailableEncodedFieldAbility   = big.NewInt(1 << 4)
-	inboxActionUnavailableEncodedFieldStanding  = big.NewInt(1 << 5)
+	inboxActionUnavailableEncodedFieldClosedAt  = big.NewInt(1 << 5)
+	inboxActionUnavailableEncodedFieldReason    = big.NewInt(1 << 6)
+	inboxActionUnavailableEncodedFieldStanding  = big.NewInt(1 << 7)
 )
 
 type InboxActionUnavailableEncoded struct {
@@ -14267,6 +14269,8 @@ type InboxActionUnavailableEncoded struct {
 	Message   *string                               `json:"message,omitempty" url:"message,omitempty"`
 	RequestID *string                               `json:"requestId,omitempty" url:"requestId,omitempty"`
 	Ability   string                                `json:"ability" url:"ability"`
+	ClosedAt  *string                               `json:"closedAt,omitempty" url:"closedAt,omitempty"`
+	Reason    *InboxActionUnavailableReason         `json:"reason,omitempty" url:"reason,omitempty"`
 	Standing  InboxActionUnavailableEncodedStanding `json:"standing" url:"standing"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -14309,6 +14313,20 @@ func (i *InboxActionUnavailableEncoded) GetAbility() string {
 		return ""
 	}
 	return i.Ability
+}
+
+func (i *InboxActionUnavailableEncoded) GetClosedAt() *string {
+	if i == nil {
+		return nil
+	}
+	return i.ClosedAt
+}
+
+func (i *InboxActionUnavailableEncoded) GetReason() *InboxActionUnavailableReason {
+	if i == nil {
+		return nil
+	}
+	return i.Reason
 }
 
 func (i *InboxActionUnavailableEncoded) GetStanding() InboxActionUnavailableEncodedStanding {
@@ -14367,6 +14385,20 @@ func (i *InboxActionUnavailableEncoded) SetRequestID(requestID *string) {
 func (i *InboxActionUnavailableEncoded) SetAbility(ability string) {
 	i.Ability = ability
 	i.require(inboxActionUnavailableEncodedFieldAbility)
+}
+
+// SetClosedAt sets the ClosedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxActionUnavailableEncoded) SetClosedAt(closedAt *string) {
+	i.ClosedAt = closedAt
+	i.require(inboxActionUnavailableEncodedFieldClosedAt)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxActionUnavailableEncoded) SetReason(reason *InboxActionUnavailableReason) {
+	i.Reason = reason
+	i.require(inboxActionUnavailableEncodedFieldReason)
 }
 
 // SetStanding sets the Standing field and marks it as non-optional;
@@ -14456,6 +14488,25 @@ func NewInboxActionUnavailableEncodedTagFromString(s string) (InboxActionUnavail
 }
 
 func (i InboxActionUnavailableEncodedTag) Ptr() *InboxActionUnavailableEncodedTag {
+	return &i
+}
+
+type InboxActionUnavailableReason string
+
+const (
+	InboxActionUnavailableReasonWindowClosed InboxActionUnavailableReason = "windowClosed"
+)
+
+func NewInboxActionUnavailableReasonFromString(s string) (InboxActionUnavailableReason, error) {
+	switch s {
+	case "windowClosed":
+		return InboxActionUnavailableReasonWindowClosed, nil
+	}
+	var t InboxActionUnavailableReason
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxActionUnavailableReason) Ptr() *InboxActionUnavailableReason {
 	return &i
 }
 

@@ -49,6 +49,7 @@ const settings = (apps: { readonly threads: boolean }) =>
       instagram: Option.some(instagramApp),
       linkedin: Option.none(),
       linkedinPages: Option.none(),
+      messages: new Set(),
       linkedinVersion: "202610",
       meta: Option.some(metaApp),
       metaHosts,

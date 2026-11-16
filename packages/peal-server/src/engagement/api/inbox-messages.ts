@@ -48,8 +48,21 @@ const messageNotFound = () => Effect.fail(new InboxMessageNotFound());
 
 const badRequest = () => Effect.fail(new HttpApiError.BadRequest());
 
-const unavailable = ({ ability, standing }: MessageAbilityUnavailable) =>
-  Effect.fail(new InboxActionUnavailable({ ability, standing }));
+// A window that shut says when; every other refusal, its standing alone.
+const unavailable = (refusal: MessageAbilityUnavailable) => {
+  const { ability, closedAt, standing } = refusal;
+
+  return Effect.fail(
+    refusal.reason === "windowClosed" && closedAt !== undefined
+      ? new InboxActionUnavailable({
+          ability,
+          closedAt,
+          reason: "windowClosed",
+          standing,
+        })
+      : new InboxActionUnavailable({ ability, standing })
+  );
+};
 
 const pending = ({ messageId }: PendingMessage) =>
   Effect.fail(new MessagePending({ messageId }));

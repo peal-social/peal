@@ -4,6 +4,10 @@ import { Effect, Layer, Option, Schema } from "effect";
 import { ChannelDirectory } from "#channels/application/channel-directory.ts";
 import { platforms, PlatformSchema } from "#channels/domain/platform.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
+import {
+  ChannelConnectionSchema,
+  connectionOf,
+} from "#shared/domain/channel-connection.ts";
 import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
@@ -15,6 +19,17 @@ const decodeListed = Schema.decodeUnknownEffect(
   Schema.Array(
     Schema.Struct({
       channelId: ChannelIdSchema,
+      platform: PlatformSchema,
+      workspaceId: WorkspaceIdSchema,
+    })
+  )
+);
+
+const decodeOfAccount = Schema.decodeUnknownEffect(
+  Schema.Array(
+    Schema.Struct({
+      channelId: ChannelIdSchema,
+      connection: Schema.NullOr(ChannelConnectionSchema),
       platform: PlatformSchema,
       workspaceId: WorkspaceIdSchema,
     })
@@ -57,6 +72,7 @@ export const DrizzleChannelDirectory = Layer.effect(
           const rows = yield* db
             .select({
               channelId: channels.id,
+              connection: channels.connection,
               platform: channels.platform,
               workspaceId: channels.workspaceId,
             })
@@ -70,7 +86,16 @@ export const DrizzleChannelDirectory = Layer.effect(
             .orderBy(asc(channels.id))
             .pipe(Effect.mapError(failed));
 
-          return yield* decodeListed(rows).pipe(Effect.orDie);
+          const listed = yield* decodeOfAccount(rows).pipe(Effect.orDie);
+
+          // One stored without a way in came the first way there was.
+          return listed.map((channel) => ({
+            ...channel,
+            connection: connectionOf(
+              channel.platform,
+              Option.fromNullOr(channel.connection)
+            ),
+          }));
         }
       ),
     });

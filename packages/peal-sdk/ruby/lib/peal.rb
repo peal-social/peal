@@ -966,6 +966,7 @@ module Peal
     autoload :InboxActionFailedEncoded, ::File.join(__dir__, "peal/types/inbox_action_failed_encoded")
     autoload :InboxActionUnavailableEncodedTag, ::File.join(__dir__, "peal/types/inbox_action_unavailable_encoded_tag")
     autoload :InboxActionUnavailableEncodedStanding, ::File.join(__dir__, "peal/types/inbox_action_unavailable_encoded_standing")
+    autoload :InboxActionUnavailableReason, ::File.join(__dir__, "peal/types/inbox_action_unavailable_reason")
     autoload :InboxActionUnavailableEncoded, ::File.join(__dir__, "peal/types/inbox_action_unavailable_encoded")
     autoload :InboxAuthor, ::File.join(__dir__, "peal/types/inbox_author")
     autoload :InboxCollectionEnd, ::File.join(__dir__, "peal/types/inbox_collection_end")

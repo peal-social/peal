@@ -159,7 +159,9 @@ export class ContextRecords extends Context.Service<
      * every subscription that would be cancelled), and while Stripe cannot
      * be reached; then their open checkouts are expired at Stripe and, when
      * `options` says to, the subscriptions that may still bill them
-     * cancelled. Says how many were cancelled.
+     * cancelled; and what their channels set up on their platforms for
+     * Peal let go, best effort (Meta's message events). Says how many were
+     * cancelled.
      */
     readonly settleWorkspaces: (
       workspaceIds: readonly WorkspaceId[],

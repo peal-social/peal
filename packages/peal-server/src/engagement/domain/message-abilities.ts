@@ -1,11 +1,17 @@
-import { Schema } from "effect";
+import { Option, Schema } from "effect";
 
 import {
   allowsRpc,
   blueskyChatService,
 } from "#shared/domain/bluesky-scopes.ts";
 import type { BlueskyChatMethod } from "#shared/domain/bluesky-scopes.ts";
-import { InboxMessagePlatformSchema } from "#shared/domain/inbox-message-platform.ts";
+import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
+import {
+  facebookMessageScopes,
+  InboxMessagePlatformSchema,
+  instagramLoginMessageScope,
+  instagramPageMessageScopes,
+} from "#shared/domain/inbox-message-platform.ts";
 import type {
   InboxMessagePlatform,
   InboxMessagePlatforms,
@@ -70,16 +76,32 @@ const chat =
  *   `reconnect`. Reading takes
  *   `listConvos` and `getMessages`; answering also `sendMessage`, and
  *   `acceptConvo` for a conversation someone else began.
+ * - Facebook Pages and Instagram: the Conversations API and the Send API
+ *   take the same permissions, by the channel's way in
+ *   (`facebookMessageScopes`, `instagramPageMessageScopes` through a Page,
+ *   `instagramLoginMessageScope` through Instagram Login), asked only when
+ *   a member turns the channel's messages on, as Bluesky's are. A channel
+ *   without every one of them is `reconnect`.
  *
- * Off, or on any other platform, nothing is possible.
+ * Off, or on any other platform, nothing is possible. `connection` is the
+ * channel's way in, which decides Instagram's permissions: none is
+ * through a Page, as a channel stored without one came.
  */
 export const messageAbilitiesOf = (
   platform: Platform,
   scopes: readonly string[],
-  messages: InboxMessagePlatforms
+  messages: InboxMessagePlatforms,
+  connection: Option.Option<ChannelConnection> = Option.none()
 ): MessageAbilities => {
   if (!readsMessagesOn(platform, messages)) {
     return none;
+  }
+
+  if (platform === "facebook" || platform === "instagram") {
+    const needed: readonly string[] = metaMessageScopesOf(platform, connection);
+    const granted = standing(needed.every((scope) => scopes.includes(scope)));
+
+    return { read: granted, send: granted };
   }
 
   if (platform === "mastodon") {
@@ -111,17 +133,50 @@ export const messageAbilitiesOf = (
 };
 
 /**
+ * The permissions a Meta channel's messages take, by its way in: what its
+ * sign-in asks once a member turns them on.
+ */
+export const metaMessageScopesOf = (
+  platform: "facebook" | "instagram",
+  connection: Option.Option<ChannelConnection>
+): readonly string[] => {
+  if (platform === "facebook") {
+    return facebookMessageScopes;
+  }
+
+  return Option.contains(connection, "instagramLogin")
+    ? [instagramLoginMessageScope]
+    : instagramPageMessageScopes;
+};
+
+// The permissions of Meta's that name messages, in whichever way in.
+const metaMessagingScopes: ReadonlySet<string> = new Set([
+  "pages_messaging",
+  "instagram_manage_messages",
+  instagramLoginMessageScope,
+]);
+
+/**
  * Whether the scopes still name what reading the platform's messages
  * takes in some form, though `messageAbilitiesOf` does not read them as
  * granted: the form changed (a token refresh may answer them otherwise),
  * rather than the account granting none. Such a channel is paused, never
  * has its messages turned off. A Bluesky account that names nothing of
- * the chat, or a Mastodon one with no reading scope, granted none.
+ * the chat, or a Mastodon one with no reading scope, granted none; a
+ * Facebook or Instagram account that names no messaging permission of
+ * Meta's granted none.
  */
 export const namesMessageScopes = (
   platform: Platform,
   scopes: readonly string[]
-): boolean =>
-  platform === "bluesky"
-    ? scopes.some((scope) => scope.includes("chat.bsky"))
-    : scopes.some((scope) => scope === "read" || scope.startsWith("read:"));
+): boolean => {
+  if (platform === "bluesky") {
+    return scopes.some((scope) => scope.includes("chat.bsky"));
+  }
+
+  if (platform === "facebook" || platform === "instagram") {
+    return scopes.some((scope) => metaMessagingScopes.has(scope));
+  }
+
+  return scopes.some((scope) => scope === "read" || scope.startsWith("read:"));
+};

@@ -312,6 +312,38 @@ While the app is in development mode, only people with a role on it can connect 
     accounts your own app's people manage at once, and to anyone else's only
     after its App Review.
   </AccordionItem>
+  <AccordionItem title="Direct messages in the inbox">
+    To read and answer Messenger's and Instagram's direct messages in the
+    [inbox](/guides/engage/inbox#meta-messages), set `PEAL_INBOX_MESSAGES` to
+    include `facebook`, `instagram` or both, and set
+    `META_WEBHOOK_VERIFY_TOKEN`. Add the messaging permissions to the use
+    cases: `pages_messaging` and `pages_manage_metadata` to Facebook Login for
+    Pages; `instagram_manage_messages`, `pages_manage_metadata` and
+    `pages_messaging` to it for Instagram; `instagram_business_manage_messages`
+    to the Instagram use case. A sign-in asks for them only when a member turns
+    a channel's messages on.
+
+    Then, in the Webhooks settings, give each of the two callback addresses
+    [the command](#platform-addresses) prints the Verify Token, and subscribe to
+    the `messages` and `message_echoes` fields: for the Page object and the
+    Instagram object of Facebook Login, and for Instagram Login. The address
+    must answer Meta without a login page in front, and the app must be
+    published (Live): Meta sends events only from a published app. Peal also
+    asks Meta to send each account's events (`subscribed_apps`) when it first
+    reads it, then daily, and asks it to stop when the channel's messages are
+    turned off or the channel is disconnected.
+
+    Before its App Review, Meta lets an app read and answer only the messages
+    of people with a role on it, written to accounts they manage too. Its
+    review of `pages_messaging`, `pages_manage_metadata`,
+    `instagram_manage_messages` and `instagram_business_manage_messages` asks
+    for screen recordings of a sign-in, a message sent from the app and seen in
+    Meta's own inbox, and of how a member subscribes the account to its
+    events; reading Instagram's messages through a Page also needs your
+    business verified. Instagram's account owner turns on **Allow access to
+    messages** under its Connected tools settings.
+
+  </AccordionItem>
   <AccordionItem title="Data deletion requests">
     When one of its users asks Meta to delete what Peal holds about them, Meta
     calls the data deletion address with a request signed with that use case's

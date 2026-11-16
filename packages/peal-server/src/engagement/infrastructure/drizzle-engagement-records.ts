@@ -19,6 +19,7 @@ import type {
   SentReviewReplyRecord,
 } from "#shared/application/personal-data.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import type { ChannelId } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
@@ -540,6 +541,32 @@ export const DrizzleEngagementRecords = Layer.effect(
       }
     );
 
+    const readsMessages = Effect.fn("EngagementRecords.readsMessages")(
+      function* readsMessages(channelIds: readonly ChannelId[]) {
+        if (channelIds.length === 0) {
+          return false;
+        }
+
+        const found = yield* db
+          .select({ channelId: messageBoxes.channelId })
+          .from(messageBoxes)
+          .where(inArray(messageBoxes.channelId, [...channelIds]))
+          .limit(1)
+          .pipe(Effect.mapError(failed));
+
+        return found.length > 0;
+      }
+    );
+
+    const refollow = (channelIds: readonly ChannelId[]) =>
+      channelIds.length === 0
+        ? Effect.void
+        : db
+            .update(messageBoxes)
+            .set({ subscribedAt: null })
+            .where(inArray(messageBoxes.channelId, [...channelIds]))
+            .pipe(Effect.asVoid, Effect.mapError(failed));
+
     return EngagementRecords.of({
       channelGone,
       ensureChannelIdle,
@@ -550,6 +577,8 @@ export const DrizzleEngagementRecords = Layer.effect(
       exportUserReviewReplies,
       forgetUser,
       postRemoved,
+      readsMessages,
+      refollow,
     });
   })
 );

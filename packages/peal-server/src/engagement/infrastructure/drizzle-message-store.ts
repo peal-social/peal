@@ -3,6 +3,7 @@ import {
   asc,
   desc,
   eq,
+  gt,
   inArray,
   isNotNull,
   isNull,
@@ -38,7 +39,7 @@ import {
   UserIdSchema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
-import type { WorkspaceId } from "#shared/domain/ids.ts";
+import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { holdFollowingLock } from "./following-lock.ts";
@@ -295,7 +296,8 @@ export const DrizzleMessageStore = Layer.effect(
     // with the key now.
     const madeUnder = Effect.fn("MessageStore.madeUnder")(function* madeUnder(
       saved: OutgoingMessage,
-      keyDigest: string
+      keyDigest: string,
+      since: Option.Option<DateTime.Utc> = Option.none()
     ) {
       const [row] = yield* db
         .select()
@@ -303,7 +305,10 @@ export const DrizzleMessageStore = Layer.effect(
         .where(
           and(
             eq(outgoingMessages.workspaceId, saved.workspaceId),
-            eq(outgoingMessages.keyDigest, keyDigest)
+            eq(outgoingMessages.keyDigest, keyDigest),
+            ...Option.toArray(since).map((after) =>
+              gt(outgoingMessages.createdAt, date(after))
+            )
           )
         )
         .limit(1)
@@ -443,6 +448,15 @@ export const DrizzleMessageStore = Layer.effect(
         .set({ subscribedAt: date(at) })
         .where(eq(messageBoxes.channelId, channelId))
         .pipe(Effect.asVoid, Effect.mapError(failed));
+
+    const refollow = (channelIds: readonly ChannelId[]) =>
+      channelIds.length === 0
+        ? Effect.void
+        : db
+            .update(messageBoxes)
+            .set({ subscribedAt: null })
+            .where(inArray(messageBoxes.channelId, [...channelIds]))
+            .pipe(Effect.asVoid, Effect.mapError(failed));
 
     // By the conversations of the channel, so the index of each
     // conversation's ids finds it.
@@ -745,6 +759,17 @@ export const DrizzleMessageStore = Layer.effect(
               };
 
         return refused;
+      }
+    );
+
+    // What a key made since its lifetime began, read and never changed.
+    const madeWithKey = Effect.fn("MessageStore.madeWithKey")(
+      function* madeWithKey(saved: OutgoingMessage, key: MessageKey) {
+        return yield* madeUnder(
+          saved,
+          yield* hashOf(key.key),
+          Option.some(key.since)
+        );
       }
     );
 
@@ -1164,6 +1189,7 @@ export const DrizzleMessageStore = Layer.effect(
       bringForward,
       deleteTakenBack,
       markFollowed,
+      refollow,
       allowApplication,
       allows,
       applications,
@@ -1184,6 +1210,7 @@ export const DrizzleMessageStore = Layer.effect(
       due,
       follow,
       journalMessage,
+      madeWithKey,
       listConversations,
       lockBox,
       messagesOf,

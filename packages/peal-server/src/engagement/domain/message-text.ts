@@ -15,6 +15,20 @@ export const maxOutgoingMessageLength = 5000;
  */
 export const blueskyMessageLimits = { bytes: 10_000, graphemes: 1000 } as const;
 
+/**
+ * What Instagram takes in a message: "Message text must be UTF-8 and be
+ * 1,000 bytes or less" (developers.facebook.com/docs/messenger-platform/
+ * instagram/features/send-message, read 2026-11-16).
+ */
+export const instagramMessageBytes = 1000;
+
+/**
+ * What Messenger takes in a message: 2,000 characters. The Send API's
+ * reference, which states it, opens only once signed in to Meta
+ * (Not verified there: src/engagement/AGENTS.md).
+ */
+export const messengerMessageCharacters = 2000;
+
 const graphemes = new Intl.Segmenter("und", { granularity: "grapheme" });
 
 const encoder = new TextEncoder();
@@ -41,7 +55,8 @@ export interface MessageOverflow {
  * direct message is a status of `direct` visibility, which reaches only
  * the accounts it mentions: Peal puts the mention of every participant
  * the member did not write first, as Mastodon's own clients do. On
- * Bluesky the text goes out as written, to the conversation.
+ * Bluesky, Messenger and Instagram the text goes out as written, to the
+ * conversation.
  */
 export const outgoingMessageText = (
   platform: InboxMessagePlatform,
@@ -62,13 +77,39 @@ export const outgoingMessageText = (
 };
 
 /**
- * Bluesky's limits on a message, the first one `text` passes; none on
- * Mastodon, whose status length publishing's text rules check.
+ * The platform's limits on a message, the first one `text` passes:
+ * Bluesky's, Instagram's bytes, Messenger's characters; none on Mastodon,
+ * whose status length publishing's text rules check.
  */
 export const chatOverflow = (
   platform: InboxMessagePlatform,
   text: string
 ): Option.Option<MessageOverflow> => {
+  if (platform === "instagram") {
+    const bytes = encoder.encode(text).length;
+
+    return bytes > instagramMessageBytes
+      ? Option.some({
+          length: bytes,
+          maximum: instagramMessageBytes,
+          unit: "utf8Bytes",
+        })
+      : Option.none();
+  }
+
+  if (platform === "facebook") {
+    // Counted in UTF-16 units, which never count fewer than Meta can.
+    const characters = text.length;
+
+    return characters > messengerMessageCharacters
+      ? Option.some({
+          length: characters,
+          maximum: messengerMessageCharacters,
+          unit: "characters",
+        })
+      : Option.none();
+  }
+
   if (platform !== "bluesky") {
     return Option.none();
   }

@@ -38,6 +38,18 @@ class InboxActionUnavailableEncoded extends JsonSerializableType
     public string $ability;
 
     /**
+     * @var ?string $closedAt
+     */
+    #[JsonProperty('closedAt')]
+    public ?string $closedAt;
+
+    /**
+     * @var ?value-of<InboxActionUnavailableReason> $reason
+     */
+    #[JsonProperty('reason')]
+    public ?string $reason;
+
+    /**
      * @var value-of<InboxActionUnavailableEncodedStanding> $standing
      */
     #[JsonProperty('standing')]
@@ -51,6 +63,8 @@ class InboxActionUnavailableEncoded extends JsonSerializableType
      *   code?: ?string,
      *   message?: ?string,
      *   requestId?: ?string,
+     *   closedAt?: ?string,
+     *   reason?: ?value-of<InboxActionUnavailableReason>,
      * } $values
      */
     public function __construct(
@@ -61,6 +75,8 @@ class InboxActionUnavailableEncoded extends JsonSerializableType
         $this->message = $values['message'] ?? null;
         $this->requestId = $values['requestId'] ?? null;
         $this->ability = $values['ability'];
+        $this->closedAt = $values['closedAt'] ?? null;
+        $this->reason = $values['reason'] ?? null;
         $this->standing = $values['standing'];
     }
 

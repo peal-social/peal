@@ -4,6 +4,7 @@ import {
   Api,
   CurrentMember,
   Forbidden,
+  InboxActionUnavailable,
   InboxConversationNotFound,
   InboxMessageNotFound,
   MessagePending,
@@ -23,6 +24,11 @@ import type {
 const at = (iso: string) => DateTime.makeUnsafe(iso);
 
 export const conversationId = "0190f3a0-0000-7000-8000-00000000f001";
+
+/** A Messenger conversation whose 24 hours are over. */
+export const messengerConversationId = "0190f3a0-0000-7000-8000-00000000f002";
+
+const closedAt = at("2026-11-15T08:59:00Z");
 
 export const unconfirmedMessageId = "0190f3a0-0000-7000-8000-00000000f201";
 
@@ -90,7 +96,7 @@ const allowed = (permission: Permission) =>
   );
 
 const known = (id: string) =>
-  id === conversationId
+  id === conversationId || id === messengerConversationId
     ? Effect.void
     : Effect.fail(new InboxConversationNotFound());
 
@@ -132,15 +138,20 @@ export const studioMessagesLive = (state: Ref.Ref<MessagesState>) =>
           yield* known(params.conversationId);
 
           const current = yield* Ref.get(state);
+          const messenger = params.conversationId === messengerConversationId;
 
           return {
             abilities: { read: "available", send: "available" } as const,
-            conversation: current.conversation,
+            conversation: messenger
+              ? { ...current.conversation, id: messengerConversationId }
+              : current.conversation,
             messages: received,
             nextCursor: null,
-            platform: "mastodon" as const,
-            sent: current.sent,
-            window: { closesAt: null, open: true },
+            platform: messenger ? ("facebook" as const) : ("mastodon" as const),
+            sent: messenger ? [] : current.sent,
+            window: messenger
+              ? { closesAt: closedAt, open: false }
+              : { closesAt: null, open: true },
           };
         }),
       getMessageSettings: () =>
@@ -162,6 +173,15 @@ export const studioMessagesLive = (state: Ref.Ref<MessagesState>) =>
         Effect.gen(function* sendMessage() {
           yield* allowed("engagement:message");
           yield* known(params.conversationId);
+
+          if (params.conversationId === messengerConversationId) {
+            return yield* new InboxActionUnavailable({
+              ability: "send",
+              closedAt,
+              reason: "windowClosed",
+              standing: "unsupported",
+            });
+          }
 
           const current = yield* Ref.get(state);
 
