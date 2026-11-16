@@ -7,5 +7,8 @@ export interface CommentRuleMatch {
     commentId: string;
     lookedAt: string;
     outcome: Peal.CommentRuleOutcome;
+    privateCode: string | null;
+    privateReplyId: string | null;
+    privateStatus: Peal.CommentRulePrivateStatus | null;
     replyId: string | null;
 }

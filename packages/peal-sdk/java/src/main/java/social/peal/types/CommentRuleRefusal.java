@@ -13,7 +13,12 @@ public final class CommentRuleRefusal {
 
     public static final CommentRuleRefusal CHANNELS = new CommentRuleRefusal(Value.CHANNELS, "channels");
 
+    public static final CommentRuleRefusal EMPTY_PRIVATE_REPLY =
+            new CommentRuleRefusal(Value.EMPTY_PRIVATE_REPLY, "emptyPrivateReply");
+
     public static final CommentRuleRefusal NO_CHANNEL = new CommentRuleRefusal(Value.NO_CHANNEL, "noChannel");
+
+    public static final CommentRuleRefusal PRIVATE_REPLY = new CommentRuleRefusal(Value.PRIVATE_REPLY, "privateReply");
 
     private final Value value;
 
@@ -53,8 +58,12 @@ public final class CommentRuleRefusal {
                 return visitor.visitEmptyReply();
             case CHANNELS:
                 return visitor.visitChannels();
+            case EMPTY_PRIVATE_REPLY:
+                return visitor.visitEmptyPrivateReply();
             case NO_CHANNEL:
                 return visitor.visitNoChannel();
+            case PRIVATE_REPLY:
+                return visitor.visitPrivateReply();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -70,8 +79,12 @@ public final class CommentRuleRefusal {
                 return EMPTY_REPLY;
             case "channels":
                 return CHANNELS;
+            case "emptyPrivateReply":
+                return EMPTY_PRIVATE_REPLY;
             case "noChannel":
                 return NO_CHANNEL;
+            case "privateReply":
+                return PRIVATE_REPLY;
             default:
                 return new CommentRuleRefusal(Value.UNKNOWN, value);
         }
@@ -86,6 +99,10 @@ public final class CommentRuleRefusal {
 
         CHANNELS,
 
+        EMPTY_PRIVATE_REPLY,
+
+        PRIVATE_REPLY,
+
         UNKNOWN
     }
 
@@ -97,6 +114,10 @@ public final class CommentRuleRefusal {
         T visitNoChannel();
 
         T visitChannels();
+
+        T visitEmptyPrivateReply();
+
+        T visitPrivateReply();
 
         T visitUnknown(String unknownType);
     }

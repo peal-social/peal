@@ -613,6 +613,9 @@ export const commentRules = engagement.table(
     id: uuid("id").primaryKey(),
     keywords: text("keywords").array().notNull(),
     postId: uuid("post_id"),
+    // Sent privately to the author of each comment answered in public,
+    // on the channels that can carry it; null for none.
+    privateReply: text("private_reply"),
     reply: text("reply").notNull(),
     scope: text("scope").notNull(),
     startedBy: uuid("started_by"),
@@ -637,8 +640,11 @@ export const commentRules = engagement.table(
  * A comment a rule looked at, once: what came of it (`outcome`:
  * `claimed` while its reply is being made, `replied` with the reply,
  * `noMatch`, `samePerson` when the rule answered its author already,
- * `refused` with the inbox's refusal as `code`). Ids and words of Peal's
- * only, never what the comment says; it goes with the comment.
+ * `refused` with the inbox's refusal as `code`). A reply's private
+ * follow-up: `private_reply_id` once made, or `private_code` (`waiting`
+ * for the public reply to be out, or why none was made); neither when the
+ * rule had none. Ids and words of Peal's only, never what the comment
+ * says; it goes with the comment.
  */
 export const commentRuleMatches = engagement.table(
   "comment_rule_matches",
@@ -649,6 +655,10 @@ export const commentRuleMatches = engagement.table(
       .references(() => comments.id, { onDelete: "cascade" }),
     lookedAt: instant("looked_at").notNull(),
     outcome: text("outcome").notNull(),
+    privateCode: text("private_code"),
+    // No foreign key: the private reply goes 30 days after it settled,
+    // and the match says it was made.
+    privateReplyId: uuid("private_reply_id"),
     replyId: uuid("reply_id"),
     ruleId: uuid("rule_id")
       .notNull()
@@ -661,6 +671,9 @@ export const commentRuleMatches = engagement.table(
     ),
     index("comment_rule_matches_rule_looked").on(table.ruleId, table.lookedAt),
     index("comment_rule_matches_comment").on(table.commentId),
+    index("comment_rule_matches_waiting")
+      .on(table.ruleId, table.lookedAt)
+      .where(sql`${table.privateCode} = 'waiting'`),
   ]
 );
 

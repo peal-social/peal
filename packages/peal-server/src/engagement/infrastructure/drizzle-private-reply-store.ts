@@ -392,6 +392,37 @@ export const DrizzlePrivateReplyStore = Layer.effect(
       }
     );
 
+    const dropUnsentOfRule = Effect.fn("PrivateReplyStore.dropUnsentOfRule")(
+      function* dropUnsentOfRule(ruleId: string) {
+        // Under the boxes of their channels, after the rule's row the
+        // caller holds, in one order: none journalled meanwhile is
+        // deleted unseen.
+        yield* sql`
+          SELECT 1 FROM engagement.message_boxes
+          WHERE channel_id IN (
+            SELECT channel_id FROM engagement.private_replies
+            WHERE rule_id = ${ruleId}::uuid AND status = 'sending'
+          )
+          ORDER BY channel_id
+          FOR UPDATE
+        `.pipe(Effect.mapError(failed));
+
+        const rows = yield* db
+          .delete(privateReplies)
+          .where(
+            and(
+              eq(privateReplies.ruleId, ruleId),
+              eq(privateReplies.status, "sending"),
+              isNull(privateReplies.callClaimedAt)
+            )
+          )
+          .returning()
+          .pipe(Effect.mapError(failed));
+
+        return yield* Effect.all(rows.map(replyOf));
+      }
+    );
+
     const handOver = Effect.fn("PrivateReplyStore.handOver")(function* handOver(
       privateReplyId: string,
       at: DateTime.Utc,
@@ -487,6 +518,7 @@ export const DrizzlePrivateReplyStore = Layer.effect(
       claimCall,
       dropIfForgotten,
       dropUnsent,
+      dropUnsentOfRule,
       handOver,
       journal,
       madeWithKey,

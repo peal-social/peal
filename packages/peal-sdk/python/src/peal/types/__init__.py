@@ -299,6 +299,8 @@ if typing.TYPE_CHECKING:
     from .comment_rule_not_possible_encoded_tag import CommentRuleNotPossibleEncodedTag
     from .comment_rule_outcome import CommentRuleOutcome
     from .comment_rule_page import CommentRulePage
+    from .comment_rule_private_ability import CommentRulePrivateAbility
+    from .comment_rule_private_status import CommentRulePrivateStatus
     from .comment_rule_refusal import CommentRuleRefusal
     from .comment_rule_status import CommentRuleStatus
     from .comment_selection import CommentSelection
@@ -1475,6 +1477,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CommentRuleNotPossibleEncodedTag": ".comment_rule_not_possible_encoded_tag",
     "CommentRuleOutcome": ".comment_rule_outcome",
     "CommentRulePage": ".comment_rule_page",
+    "CommentRulePrivateAbility": ".comment_rule_private_ability",
+    "CommentRulePrivateStatus": ".comment_rule_private_status",
     "CommentRuleRefusal": ".comment_rule_refusal",
     "CommentRuleStatus": ".comment_rule_status",
     "CommentSelection": ".comment_selection",
@@ -2657,6 +2661,8 @@ __all__ = [
     "CommentRuleNotPossibleEncodedTag",
     "CommentRuleOutcome",
     "CommentRulePage",
+    "CommentRulePrivateAbility",
+    "CommentRulePrivateStatus",
     "CommentRuleRefusal",
     "CommentRuleStatus",
     "CommentSelection",

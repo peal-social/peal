@@ -10,6 +10,7 @@ import {
   maxOutgoingMessageLength,
 } from "#engagement/domain/message-text.ts";
 import { PrivateReplyIdSchema } from "#engagement/domain/private-reply-id.ts";
+import type { PrivateReplyId } from "#engagement/domain/private-reply-id.ts";
 import { privateReplyStanding } from "#engagement/domain/private-reply-standing.ts";
 import {
   confirmPrivateReply,
@@ -27,7 +28,7 @@ import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import type { AllowanceReached } from "#shared/domain/allowance-reached.ts";
 import { authorize } from "#shared/domain/authorize.ts";
-import type { ChannelId, UserId } from "#shared/domain/ids.ts";
+import type { ChannelId, UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import { storableText } from "#shared/domain/platform-text.ts";
@@ -130,6 +131,13 @@ const answerOf = (
   }
 };
 
+/**
+ * Whether a channel can send a private reply, with why not in full: its
+ * standing, or `messagesOff` where all it misses is its messages turned
+ * on in the workspace, which a member can do.
+ */
+export type PrivateReplyChannelStanding = AbilityStanding | "messagesOff";
+
 /** What a thread's view shows of private replies, for one actor. */
 export interface ThreadPrivateReplies {
   /** When it was read: a comment past its window is offered none. */
@@ -213,6 +221,35 @@ export class EngagementPrivateReplies extends Context.Service<
       actor: Actor,
       channelId: ChannelId
     ) => Effect.Effect<AbilityStanding, DatabaseError>;
+    /**
+     * Whether the channel can send a private reply now in the workspace,
+     * saying when its messages are off there: what a comment rule's view
+     * shows.
+     */
+    readonly channelStanding: (
+      workspaceId: WorkspaceId,
+      channelId: ChannelId
+    ) => Effect.Effect<PrivateReplyChannelStanding, DatabaseError>;
+    /**
+     * Whether the actor may send private replies: `engagement:message`,
+     * and an application the owner's leave. Staff acting as a member may
+     * not.
+     */
+    readonly mayWrite: (actor: Actor) => Effect.Effect<void, Refused>;
+    /**
+     * Whether the actor may see private replies: `engagement:readMessages`,
+     * and an application the owner's leave. Never fails.
+     */
+    readonly mayRead: (actor: Actor) => Effect.Effect<boolean, DatabaseError>;
+    /**
+     * Deletes a rule's private replies that never set out (their call
+     * not yet claimed) and gives their outbound messages back, in the
+     * caller's transaction, which holds the rule's row: a rule stopped or
+     * paused sends nothing more. Answers their ids.
+     */
+    readonly holdBack: (
+      ruleId: CommentRuleId
+    ) => Effect.Effect<readonly PrivateReplyId[], DatabaseError>;
   }
 >()("peal-server/engagement/application/EngagementPrivateReplies") {
   static readonly layer = Layer.effect(
@@ -278,39 +315,67 @@ export class EngagementPrivateReplies extends Context.Service<
           )
         );
 
-      // The channel's standing in the actor's workspace: its messages
-      // must be on there, which a Page in another workspace says nothing
-      // of.
-      const standingIn = Effect.fn("EngagementPrivateReplies.standingIn")(
-        function* standingIn(
-          actor: Actor,
-          channelId: ChannelId,
-          channel: Option.Option<EngagedChannel>
-        ) {
-          if (Option.isNone(channel)) {
-            return "unsupported" as const;
-          }
+      // The channel's standing in the workspace: its messages must be on
+      // there, which a Page in another workspace says nothing of. Where
+      // that is all it misses, `messagesOff`.
+      const fullStandingIn = Effect.fn(
+        "EngagementPrivateReplies.fullStandingIn"
+      )(function* fullStandingIn(
+        workspaceId: WorkspaceId,
+        channelId: ChannelId,
+        channel: Option.Option<EngagedChannel>
+      ) {
+        if (Option.isNone(channel)) {
+          return "unsupported" as const;
+        }
 
-          const { connection, platform, scopes } = channel.value;
+        const { connection, platform, scopes } = channel.value;
 
-          if (!readsMessagesOn(platform, messages)) {
-            return "unsupported" as const;
-          }
+        if (!readsMessagesOn(platform, messages)) {
+          return "unsupported" as const;
+        }
 
-          const on = (yield* messageStore.switchedOn(actor.workspaceId)).some(
-            (switched) => switched.channelId === channelId
-          );
+        const on = (yield* messageStore.switchedOn(workspaceId)).some(
+          (switched) => switched.channelId === channelId
+        );
 
-          return privateReplyStanding(
+        const standing = privateReplyStanding(
+          platform,
+          connection,
+          scopes,
+          inbox,
+          messages,
+          on
+        );
+
+        const offOnly =
+          !on &&
+          privateReplyStanding(
             platform,
             connection,
             scopes,
             inbox,
             messages,
-            on
-          );
-        }
-      );
+            true
+          ) !== "unsupported";
+
+        const full: PrivateReplyChannelStanding = offOnly
+          ? "messagesOff"
+          : standing;
+
+        return full;
+      });
+
+      const standingIn = (
+        actor: Actor,
+        channelId: ChannelId,
+        channel: Option.Option<EngagedChannel>
+      ) =>
+        fullStandingIn(actor.workspaceId, channelId, channel).pipe(
+          Effect.map((standing): AbilityStanding =>
+            standing === "messagesOff" ? "unsupported" : standing
+          )
+        );
 
       const commentOf = Effect.fn("EngagementPrivateReplies.comment")(
         function* commentOf(actor: Actor, commentId: CommentId) {
@@ -533,8 +598,44 @@ export class EngagementPrivateReplies extends Context.Service<
         }
       );
 
+      const channelStanding = Effect.fn(
+        "EngagementPrivateReplies.channelStanding"
+      )(function* channelStanding(
+        workspaceId: WorkspaceId,
+        channelId: ChannelId
+      ) {
+        return yield* fullStandingIn(
+          workspaceId,
+          channelId,
+          yield* channelOf(channelId)
+        );
+      });
+
+      const mayWrite = (actor: Actor) =>
+        Effect.fromResult(authorize(actor, "engagement:message")).pipe(
+          Effect.andThen(consented(actor))
+        );
+
+      const holdBack = Effect.fn("EngagementPrivateReplies.holdBack")(
+        function* holdBack(ruleId: CommentRuleId) {
+          const dropped = yield* store.dropUnsentOfRule(ruleId);
+
+          yield* Effect.forEach(
+            dropped,
+            (reply) => meters.giveBack(claimOfPrivateReply(reply)),
+            { discard: true }
+          );
+
+          return dropped.map(({ id }) => id);
+        }
+      );
+
       return EngagementPrivateReplies.of({
+        channelStanding,
+        holdBack,
         confirm,
+        mayRead,
+        mayWrite,
         ofThread,
         privateReply,
         send,

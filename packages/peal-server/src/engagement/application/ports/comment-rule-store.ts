@@ -7,6 +7,8 @@ import type {
   CommentRule,
   CommentRuleStatus,
 } from "#engagement/domain/comment-rule.ts";
+import type { PrivateReplyId } from "#engagement/domain/private-reply-id.ts";
+import type { PrivateReply } from "#engagement/domain/private-reply.ts";
 import type { ReplyId } from "#engagement/domain/reply-id.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { ChannelId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
@@ -26,11 +28,24 @@ export interface Candidate {
   readonly text: string;
 }
 
+/**
+ * What came of a rule's private reply to a comment it answered: the
+ * private reply made (`privateReplyId`), or why none was (`code`). Neither
+ * when the rule had none to send.
+ */
+export type PrivateOutcome =
+  | { readonly _tag: "privateReply"; readonly privateReplyId: PrivateReplyId }
+  | { readonly _tag: "privateCode"; readonly code: string };
+
 /** What came of a comment a rule looked at. */
 export type MatchOutcome =
   | { readonly _tag: "noMatch" }
   | { readonly _tag: "samePerson" }
-  | { readonly _tag: "replied"; readonly replyId: ReplyId }
+  | {
+      readonly _tag: "replied";
+      readonly replyId: ReplyId;
+      readonly private: Option.Option<PrivateOutcome>;
+    }
   | { readonly _tag: "refused"; readonly code: string };
 
 /** A comment a rule looked at, as a rule's view lists it. */
@@ -38,6 +53,20 @@ export interface RuleMatch {
   readonly commentId: CommentId;
   readonly lookedAt: DateTime.Utc;
   readonly outcome: MatchOutcome | { readonly _tag: "claimed" };
+  /** Where the private reply it made stands, if it made one. */
+  readonly privateStatus: Option.Option<PrivateReply["status"]["_tag"]>;
+}
+
+/**
+ * A comment a rule answered in public whose private reply waits for the
+ * public one to be out.
+ */
+export interface WaitingPrivateReply {
+  readonly channelId: ChannelId;
+  readonly commentId: CommentId;
+  /** When the rule answered the comment: the comment was written before. */
+  readonly lookedAt: DateTime.Utc;
+  readonly replyId: ReplyId;
 }
 
 /** The workspaces' comment rules and what they looked at. */
@@ -49,7 +78,10 @@ export class CommentRuleStore extends Context.Service<
       workspaceId: WorkspaceId
     ) => Effect.Effect<void, DatabaseError>;
     readonly insert: (rule: CommentRule) => Effect.Effect<void, DatabaseError>;
-    /** Writes what changes of a rule: its keywords, reply, status, starter. */
+    /**
+     * Writes what changes of a rule: its keywords, replies, status,
+     * starter.
+     */
     readonly update: (rule: CommentRule) => Effect.Effect<void, DatabaseError>;
     readonly rule: (
       workspaceId: WorkspaceId,
@@ -146,6 +178,38 @@ export class CommentRuleStore extends Context.Service<
       authorPlatformId: string,
       commentId: CommentId
     ) => Effect.Effect<boolean, DatabaseError>;
+    /**
+     * The comments the rule answered whose private reply waits for the
+     * public one (its code `waiting`), oldest first: `limit` at most.
+     */
+    readonly waitingPrivate: (
+      ruleId: CommentRuleId,
+      limit: number
+    ) => Effect.Effect<readonly WaitingPrivateReply[], DatabaseError>;
+    /**
+     * Writes what came of a waiting private reply: false when it no longer
+     * waits (another run settled it, or the rule stopped).
+     */
+    readonly settlePrivate: (
+      ruleId: CommentRuleId,
+      commentId: CommentId,
+      outcome: PrivateOutcome
+    ) => Effect.Effect<boolean, DatabaseError>;
+    /**
+     * Settles every private reply of the rule still waiting as `stopped`:
+     * a rule paused, ended or without its private text sends none after.
+     */
+    readonly stopWaiting: (
+      ruleId: CommentRuleId
+    ) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Settles `stopped` the matches whose private replies were held back
+     * before they set out (`privateReplyIds`).
+     */
+    readonly unmakePrivate: (
+      ruleId: CommentRuleId,
+      privateReplyIds: readonly PrivateReplyId[]
+    ) => Effect.Effect<void, DatabaseError>;
     /** What the rule looked at, newest first, but what matched nothing. */
     readonly matchesOf: (
       ruleId: CommentRuleId,

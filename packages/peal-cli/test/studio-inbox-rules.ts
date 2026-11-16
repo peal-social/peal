@@ -12,8 +12,9 @@ import type { CommentRule, CurrentMember } from "peal-contract";
 
 import type { Studio } from "./studio.ts";
 
-// The studio's comment rules. A channel carries a reply on Mastodon
-// alone here: the server's own tests cover the platforms.
+// The studio's comment rules. A channel carries a reply on Mastodon and
+// Instagram here, a private reply on Instagram alone: the server's own
+// tests cover the platforms.
 
 export interface InboxRulesWorld {
   readonly allowed: (
@@ -94,8 +95,12 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
             ).map((platform) => ({
               channelId,
               platform,
+              privateReply:
+                platform === "instagram"
+                  ? ("available" as const)
+                  : ("noApi" as const),
               reply:
-                platform === "mastodon"
+                platform === "mastodon" || platform === "instagram"
                   ? ("available" as const)
                   : ("notAllowed" as const),
             }));
@@ -107,6 +112,16 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               });
             }
 
+            if (
+              payload.privateReply !== undefined &&
+              !channels.some(({ privateReply }) => privateReply === "available")
+            ) {
+              return yield* new CommentRuleNotPossible({
+                channels,
+                reason: "privateReply",
+              });
+            }
+
             const rules = yield* Ref.get(rulesOf(studio));
 
             const rule: CommentRule = {
@@ -114,12 +129,14 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               channels,
               createdAt: world.now,
               endedReason: null,
+              holdsPrivateReply: payload.privateReply !== undefined,
               id: `0190f3a0-0000-7000-8000-0000000c${String(rules.length + 1).padStart(4, "0")}`,
               keywords: payload.keywords.map((keyword) =>
                 keyword.toLowerCase()
               ),
               matches: [],
               postId: payload.postId ?? null,
+              privateReply: payload.privateReply ?? null,
               reply: payload.reply,
               startedBy: studio.me.user.id,
               status: "active",
@@ -183,6 +200,14 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               {
                 ...rule,
                 keywords: payload.keywords ?? rule.keywords,
+                holdsPrivateReply:
+                  payload.privateReply === undefined
+                    ? rule.holdsPrivateReply
+                    : payload.privateReply !== null,
+                privateReply:
+                  payload.privateReply === undefined
+                    ? rule.privateReply
+                    : payload.privateReply,
                 reply: payload.reply ?? rule.reply,
                 status: pausedAs(rule.status, payload.paused),
               },

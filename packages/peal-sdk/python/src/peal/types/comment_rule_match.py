@@ -7,6 +7,7 @@ import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .comment_rule_outcome import CommentRuleOutcome
+from .comment_rule_private_status import CommentRulePrivateStatus
 
 
 class CommentRuleMatch(UniversalBaseModel):
@@ -14,6 +15,17 @@ class CommentRuleMatch(UniversalBaseModel):
     comment_id: typing_extensions.Annotated[str, FieldMetadata(alias="commentId"), pydantic.Field(alias="commentId")]
     looked_at: typing_extensions.Annotated[str, FieldMetadata(alias="lookedAt"), pydantic.Field(alias="lookedAt")]
     outcome: CommentRuleOutcome
+    private_code: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="privateCode"), pydantic.Field(alias="privateCode")
+    ] = None
+    private_reply_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="privateReplyId"), pydantic.Field(alias="privateReplyId")
+    ] = None
+    private_status: typing_extensions.Annotated[
+        typing.Optional[CommentRulePrivateStatus],
+        FieldMetadata(alias="privateStatus"),
+        pydantic.Field(alias="privateStatus"),
+    ] = None
     reply_id: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="replyId"), pydantic.Field(alias="replyId")
     ] = None

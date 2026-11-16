@@ -86,7 +86,11 @@ export { EngagementReviews } from "#engagement/application/engagement-reviews.ts
 export const engagementWith = <ROut, E, R>(adapters: Layer.Layer<ROut, E, R>) =>
   Layer.mergeAll(
     EngagementInbox.layer,
-    CommentRules.layer.pipe(Layer.provideMerge(EngagementReplies.layer)),
+    CommentRules.layer.pipe(
+      Layer.provideMerge(
+        Layer.merge(EngagementReplies.layer, EngagementPrivateReplies.layer)
+      )
+    ),
     CollectComments.layer,
     PurgeEngagement.layer,
     SendReply.layer,
@@ -98,7 +102,6 @@ export const engagementWith = <ROut, E, R>(adapters: Layer.Layer<ROut, E, R>) =>
     CollectMessages.layer.pipe(Layer.provideMerge(SendMessage.layer)),
     PurgeMessages.layer,
     ReceiveMessageEvents.layer,
-    EngagementPrivateReplies.layer,
     SendPrivateReply.layer
   ).pipe(Layer.provideMerge(adapters));
 

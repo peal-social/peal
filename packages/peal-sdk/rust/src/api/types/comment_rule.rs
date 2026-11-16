@@ -13,6 +13,9 @@ pub struct CommentRule {
     #[serde(rename = "endedReason")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ended_reason: Option<CommentRuleEndReason>,
+    #[serde(rename = "holdsPrivateReply")]
+    #[serde(default)]
+    pub holds_private_reply: bool,
     #[serde(default)]
     pub id: String,
     #[serde(default)]
@@ -22,6 +25,9 @@ pub struct CommentRule {
     #[serde(rename = "postId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub post_id: Option<String>,
+    #[serde(rename = "privateReply")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_reply: Option<String>,
     #[serde(default)]
     pub reply: String,
     #[serde(rename = "startedBy")]
@@ -43,10 +49,12 @@ pub struct CommentRuleBuilder {
     channels: Option<Vec<ChannelCommentRule>>,
     created_at: Option<String>,
     ended_reason: Option<CommentRuleEndReason>,
+    holds_private_reply: Option<bool>,
     id: Option<String>,
     keywords: Option<Vec<String>>,
     matches: Option<Vec<CommentRuleMatch>>,
     post_id: Option<String>,
+    private_reply: Option<String>,
     reply: Option<String>,
     started_by: Option<String>,
     status: Option<CommentRuleStatus>,
@@ -73,6 +81,11 @@ impl CommentRuleBuilder {
         self
     }
 
+    pub fn holds_private_reply(mut self, value: bool) -> Self {
+        self.holds_private_reply = Some(value);
+        self
+    }
+
     pub fn id(mut self, value: impl Into<String>) -> Self {
         self.id = Some(value.into());
         self
@@ -90,6 +103,11 @@ impl CommentRuleBuilder {
 
     pub fn post_id(mut self, value: impl Into<String>) -> Self {
         self.post_id = Some(value.into());
+        self
+    }
+
+    pub fn private_reply(mut self, value: impl Into<String>) -> Self {
+        self.private_reply = Some(value.into());
         self
     }
 
@@ -112,6 +130,7 @@ impl CommentRuleBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`channels`](CommentRuleBuilder::channels)
     /// - [`created_at`](CommentRuleBuilder::created_at)
+    /// - [`holds_private_reply`](CommentRuleBuilder::holds_private_reply)
     /// - [`id`](CommentRuleBuilder::id)
     /// - [`keywords`](CommentRuleBuilder::keywords)
     /// - [`matches`](CommentRuleBuilder::matches)
@@ -127,6 +146,9 @@ impl CommentRuleBuilder {
                 .created_at
                 .ok_or_else(|| BuildError::missing_field("created_at"))?,
             ended_reason: self.ended_reason,
+            holds_private_reply: self
+                .holds_private_reply
+                .ok_or_else(|| BuildError::missing_field("holds_private_reply"))?,
             id: self.id.ok_or_else(|| BuildError::missing_field("id"))?,
             keywords: self
                 .keywords
@@ -135,6 +157,7 @@ impl CommentRuleBuilder {
                 .matches
                 .ok_or_else(|| BuildError::missing_field("matches"))?,
             post_id: self.post_id,
+            private_reply: self.private_reply,
             reply: self
                 .reply
                 .ok_or_else(|| BuildError::missing_field("reply"))?,

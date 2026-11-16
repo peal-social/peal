@@ -171,11 +171,14 @@ const urlRefusals: Readonly<Record<WebhookUrlRefused["reason"], string>> = {
 const commentRuleRefusals: Readonly<Record<CommentRuleRefusal, string>> = {
   channels:
     "No channel can carry the rule's reply, or it is too long for one that could: each channel says why. Nothing was saved.",
+  emptyPrivateReply: "The private reply is empty: give it some text.",
   emptyReply: "The reply is empty: give it some text.",
   keywords:
     "Give 1 to 10 keywords of 60 characters at most, each with some letters or digits.",
   noChannel:
     "The rule answers on no channel of the inbox: a post's rule needs a post that went out, on a channel the inbox reads.",
+  privateReply:
+    "No channel the rule answers on can carry its private reply, or it is too long for one that could: each channel says why (messagesOff: turn the channel's direct messages on in the web app). Nothing was saved.",
 };
 
 // Why a follow-up rule was refused, as the user puts it right.
@@ -846,8 +849,8 @@ const reasonOf =
           [
             commentRuleRefusals[reason],
             ...channels.map(
-              ({ channelId, platform, reply }) =>
-                `  ${platform} ${channelId}: ${reply}`
+              ({ channelId, platform, privateReply, reply }) =>
+                `  ${platform} ${channelId}: ${reply}, private reply ${privateReply}`
             ),
           ].join("\n")
         ),

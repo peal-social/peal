@@ -7,10 +7,12 @@ export interface CommentRule {
     channels: Peal.ChannelCommentRule[];
     createdAt: string;
     endedReason: Peal.CommentRuleEndReason | null;
+    holdsPrivateReply: boolean;
     id: string;
     keywords: string[];
     matches: Peal.CommentRuleMatch[];
     postId: string | null;
+    privateReply: string | null;
     reply: string;
     startedBy: string | null;
     status: Peal.CommentRuleStatus;

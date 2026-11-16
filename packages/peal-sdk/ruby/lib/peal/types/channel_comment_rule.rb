@@ -9,6 +9,8 @@ module Peal
 
       field :platform, -> { Peal::Types::Platform }, optional: false, nullable: false
 
+      field :private_reply, -> { Peal::Types::CommentRulePrivateAbility }, optional: false, nullable: false, api_name: "privateReply"
+
       field :reply, -> { Peal::Types::CommentRuleAbility }, optional: false, nullable: false
     end
   end

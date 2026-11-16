@@ -335,7 +335,14 @@ const commentRuleId = Schema.String.annotate({
   description: "The comment rule's id, as list_comment_rules answers it.",
 });
 
-const rulesAnswer = `A comment rule answers by itself, in public, as the channel's account, a comment written after it started or was last set going again under a post it answers on that holds one of its keywords as a word (whatever its case and accents), with its \`reply\`: once a comment and once a person, ${String(maxRuleRepliesPerDay)} a day at most and ${String(maxChannelRepliesPerDay)} a day for every rule of a channel together, each reply one of the inbox's own, with their meter. It answers on Mastodon, and on Facebook Pages and Instagram where the server reads them; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself. It never likes, follows or messages anyone privately.`;
+const rulesAnswer = `A comment rule answers by itself, in public, as the channel's account, a comment written after it started or was last set going again under a post it answers on that holds one of its keywords as a word (whatever its case and accents), with its \`reply\`: once a comment and once a person, ${String(maxRuleRepliesPerDay)} a day at most and ${String(maxChannelRepliesPerDay)} a day for every rule of a channel together, each reply one of the inbox's own, with their meter. It answers on Mastodon, and on Facebook Pages and Instagram where the server reads them; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself. It never likes or follows anyone. With a \`privateReply\`, it also sends the author of each comment it answered one private message once its public reply is out, by itself: only on Instagram and Facebook Pages, within ${String(privateReplyWindowDays)} days of the comment, once a comment whoever sent the first, and only where the channel's direct messages are on (each channel's \`privateReply\` says whether it can; a match's \`privateCode\` says why one was not sent).`;
+
+const privateReplyText = Schema.String.check(
+  Schema.isMaxLength(maxInboxReplyLength)
+).annotate({
+  description:
+    "The private message sent to the author of each comment the rule answers, after its public reply: the user's own words. It goes to real people, privately, by itself: say in it that it is automatic where the law asks. Needs a role that sends direct messages, and the owner's consent for this application's messages.",
+});
 
 const keywords = Schema.Array(Schema.String).annotate({
   description: `1 to ${String(maxKeywords)} words or phrases, 60 characters each at most.`,
@@ -355,12 +362,13 @@ export const ListCommentRules = Tool.make("list_comment_rules", {
 
 export const StartCommentRule = Tool.make("start_comment_rule", {
   dependencies: [CurrentMember],
-  description: `Starts a comment rule on a post that went out (\`postId\`) or on every post of a channel (\`channelId\`), exactly one of them. ${rulesAnswer} What it sends is public and goes without anyone reading each first: start one only when the user asked, with their own words for the reply. Needs a role that answers comments.`,
+  description: `Starts a comment rule on a post that went out (\`postId\`) or on every post of a channel (\`channelId\`), exactly one of them. ${rulesAnswer} What it sends is public and goes without anyone reading each first: start one only when the user asked, with their own words for the reply. A rule with a \`privateReply\` sends private messages to real people by itself: give one only when the user asked for it, in their words. Needs a role that answers comments.`,
   failure: ToolRefused,
   parameters: Schema.Struct({
     channelId: Schema.optionalKey(Schema.String),
     keywords,
     postId: Schema.optionalKey(Schema.String),
+    privateReply: Schema.optionalKey(privateReplyText),
     reply: Schema.String.check(Schema.isMaxLength(maxInboxReplyLength)),
   }),
   success: CommentRuleSchema,
@@ -372,11 +380,12 @@ export const StartCommentRule = Tool.make("start_comment_rule", {
 
 export const UpdateCommentRule = Tool.make("update_comment_rule", {
   dependencies: [CurrentMember],
-  description: `Changes a comment rule's \`keywords\` or \`reply\`, or pauses it (\`paused\` true) or sets it going again (false). ${rulesAnswer}`,
+  description: `Changes a comment rule's \`keywords\`, \`reply\` or \`privateReply\` (null takes it off), or pauses it (\`paused\` true) or sets it going again (false). ${rulesAnswer} A rule with a \`privateReply\` sends private messages to real people by itself: give one only when the user asked for it, in their words.`,
   failure: ToolRefused,
   parameters: Schema.Struct({
     keywords: Schema.optionalKey(keywords),
     paused: Schema.optionalKey(Schema.Boolean),
+    privateReply: Schema.optionalKey(Schema.NullOr(privateReplyText)),
     reply: Schema.optionalKey(
       Schema.String.check(Schema.isMaxLength(maxInboxReplyLength))
     ),

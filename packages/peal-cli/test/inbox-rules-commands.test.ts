@@ -2,7 +2,7 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Ref } from "effect";
 
 import { filesLayer, signedIn } from "./signed-in.ts";
-import { blueskyId, mastodonId } from "./studio.ts";
+import { blueskyId, instagramId, mastodonId } from "./studio.ts";
 
 // peal inbox rules against the in-memory studio.
 
@@ -88,6 +88,79 @@ describe("peal inbox rules", () => {
             ...inStudio,
           ]),
           "Give 1 to 10 --keyword"
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
+    "gives a rule a private reply where a channel carries it, and takes it off",
+    () =>
+      Effect.gen(function* privately() {
+        const session = yield* signedIn();
+
+        const started = yield* session.printed([
+          "inbox",
+          "rules",
+          "start",
+          "--channel",
+          instagramId,
+          "--keyword",
+          "price",
+          "--reply",
+          "The list is in your messages.",
+          "--private-reply",
+          "Here is the list. (Automatic message)",
+          ...inStudio,
+        ]);
+
+        assert.include(
+          started,
+          "  private reply: Here is the list. (Automatic message)"
+        );
+        assert.include(
+          started,
+          `  instagram ${instagramId}: available, private reply available`
+        );
+
+        const taken = yield* session.printed([
+          "inbox",
+          "rules",
+          "update",
+          ruleId,
+          "--no-private-reply",
+          ...inStudio,
+        ]);
+
+        assert.notInclude(taken, "private reply:");
+        assert.include(
+          yield* session.refused([
+            "inbox",
+            "rules",
+            "update",
+            ruleId,
+            "--private-reply",
+            "Hi",
+            "--no-private-reply",
+            ...inStudio,
+          ]),
+          "Give --private-reply or --no-private-reply, not both"
+        );
+        assert.include(
+          yield* session.refused([
+            "inbox",
+            "rules",
+            "start",
+            "--channel",
+            mastodonId,
+            "--keyword",
+            "price",
+            "--reply",
+            "Hi",
+            "--private-reply",
+            "Hi privately",
+            ...inStudio,
+          ]),
+          `mastodon ${mastodonId}: available, private reply noApi`
         );
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );

@@ -23,14 +23,21 @@ public final class ChannelCommentRule {
 
     private final Platform platform;
 
+    private final CommentRulePrivateAbility privateReply;
+
     private final CommentRuleAbility reply;
 
     private final Map<String, Object> additionalProperties;
 
     private ChannelCommentRule(
-            String channelId, Platform platform, CommentRuleAbility reply, Map<String, Object> additionalProperties) {
+            String channelId,
+            Platform platform,
+            CommentRulePrivateAbility privateReply,
+            CommentRuleAbility reply,
+            Map<String, Object> additionalProperties) {
         this.channelId = channelId;
         this.platform = platform;
+        this.privateReply = privateReply;
         this.reply = reply;
         this.additionalProperties = additionalProperties;
     }
@@ -43,6 +50,11 @@ public final class ChannelCommentRule {
     @JsonProperty("platform")
     public Platform getPlatform() {
         return platform;
+    }
+
+    @JsonProperty("privateReply")
+    public CommentRulePrivateAbility getPrivateReply() {
+        return privateReply;
     }
 
     @JsonProperty("reply")
@@ -62,12 +74,15 @@ public final class ChannelCommentRule {
     }
 
     private boolean equalTo(ChannelCommentRule other) {
-        return channelId.equals(other.channelId) && platform.equals(other.platform) && reply.equals(other.reply);
+        return channelId.equals(other.channelId)
+                && platform.equals(other.platform)
+                && privateReply.equals(other.privateReply)
+                && reply.equals(other.reply);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.channelId, this.platform, this.reply);
+        return Objects.hash(this.channelId, this.platform, this.privateReply, this.reply);
     }
 
     @java.lang.Override
@@ -86,7 +101,11 @@ public final class ChannelCommentRule {
     }
 
     public interface PlatformStage {
-        ReplyStage platform(@NotNull Platform platform);
+        PrivateReplyStage platform(@NotNull Platform platform);
+    }
+
+    public interface PrivateReplyStage {
+        ReplyStage privateReply(@NotNull CommentRulePrivateAbility privateReply);
     }
 
     public interface ReplyStage {
@@ -102,10 +121,13 @@ public final class ChannelCommentRule {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder implements ChannelIdStage, PlatformStage, ReplyStage, _FinalStage {
+    public static final class Builder
+            implements ChannelIdStage, PlatformStage, PrivateReplyStage, ReplyStage, _FinalStage {
         private String channelId;
 
         private Platform platform;
+
+        private CommentRulePrivateAbility privateReply;
 
         private CommentRuleAbility reply;
 
@@ -117,6 +139,7 @@ public final class ChannelCommentRule {
         public Builder from(ChannelCommentRule other) {
             channelId(other.getChannelId());
             platform(other.getPlatform());
+            privateReply(other.getPrivateReply());
             reply(other.getReply());
             return this;
         }
@@ -130,8 +153,15 @@ public final class ChannelCommentRule {
 
         @java.lang.Override
         @JsonSetter("platform")
-        public ReplyStage platform(@NotNull Platform platform) {
+        public PrivateReplyStage platform(@NotNull Platform platform) {
             this.platform = Objects.requireNonNull(platform, "platform must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("privateReply")
+        public ReplyStage privateReply(@NotNull CommentRulePrivateAbility privateReply) {
+            this.privateReply = Objects.requireNonNull(privateReply, "privateReply must not be null");
             return this;
         }
 
@@ -144,13 +174,14 @@ public final class ChannelCommentRule {
 
         @java.lang.Override
         public ChannelCommentRule build() {
-            return new ChannelCommentRule(channelId, platform, reply, additionalProperties);
+            return new ChannelCommentRule(channelId, platform, privateReply, reply, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("channelId")
                     || key.equalsIgnoreCase("platform")
+                    || key.equalsIgnoreCase("privateReply")
                     || key.equalsIgnoreCase("reply")) {
                 return;
             }

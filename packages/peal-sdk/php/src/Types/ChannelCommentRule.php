@@ -20,6 +20,12 @@ class ChannelCommentRule extends JsonSerializableType
     public string $platform;
 
     /**
+     * @var value-of<CommentRulePrivateAbility> $privateReply
+     */
+    #[JsonProperty('privateReply')]
+    public string $privateReply;
+
+    /**
      * @var value-of<CommentRuleAbility> $reply
      */
     #[JsonProperty('reply')]
@@ -29,6 +35,7 @@ class ChannelCommentRule extends JsonSerializableType
      * @param array{
      *   channelId: string,
      *   platform: value-of<Platform>,
+     *   privateReply: value-of<CommentRulePrivateAbility>,
      *   reply: value-of<CommentRuleAbility>,
      * } $values
      */
@@ -37,6 +44,7 @@ class ChannelCommentRule extends JsonSerializableType
     ) {
         $this->channelId = $values['channelId'];
         $this->platform = $values['platform'];
+        $this->privateReply = $values['privateReply'];
         $this->reply = $values['reply'];
     }
 

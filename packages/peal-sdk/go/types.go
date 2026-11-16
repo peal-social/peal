@@ -8730,10 +8730,12 @@ func (c CommentRuleNotPossibleEncodedTag) Ptr() *CommentRuleNotPossibleEncodedTa
 type CommentRuleRefusal string
 
 const (
-	CommentRuleRefusalKeywords   CommentRuleRefusal = "keywords"
-	CommentRuleRefusalEmptyReply CommentRuleRefusal = "emptyReply"
-	CommentRuleRefusalNoChannel  CommentRuleRefusal = "noChannel"
-	CommentRuleRefusalChannels   CommentRuleRefusal = "channels"
+	CommentRuleRefusalKeywords          CommentRuleRefusal = "keywords"
+	CommentRuleRefusalEmptyReply        CommentRuleRefusal = "emptyReply"
+	CommentRuleRefusalNoChannel         CommentRuleRefusal = "noChannel"
+	CommentRuleRefusalChannels          CommentRuleRefusal = "channels"
+	CommentRuleRefusalEmptyPrivateReply CommentRuleRefusal = "emptyPrivateReply"
+	CommentRuleRefusalPrivateReply      CommentRuleRefusal = "privateReply"
 )
 
 func NewCommentRuleRefusalFromString(s string) (CommentRuleRefusal, error) {
@@ -8746,6 +8748,10 @@ func NewCommentRuleRefusalFromString(s string) (CommentRuleRefusal, error) {
 		return CommentRuleRefusalNoChannel, nil
 	case "channels":
 		return CommentRuleRefusalChannels, nil
+	case "emptyPrivateReply":
+		return CommentRuleRefusalEmptyPrivateReply, nil
+	case "privateReply":
+		return CommentRuleRefusalPrivateReply, nil
 	}
 	var t CommentRuleRefusal
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

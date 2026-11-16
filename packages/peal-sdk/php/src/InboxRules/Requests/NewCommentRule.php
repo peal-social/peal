@@ -27,6 +27,12 @@ class NewCommentRule extends JsonSerializableType
     public ?string $postId;
 
     /**
+     * @var ?string $privateReply
+     */
+    #[JsonProperty('privateReply')]
+    public ?string $privateReply;
+
+    /**
      * @var string $reply
      */
     #[JsonProperty('reply')]
@@ -38,6 +44,7 @@ class NewCommentRule extends JsonSerializableType
      *   reply: string,
      *   channelId?: ?string,
      *   postId?: ?string,
+     *   privateReply?: ?string,
      * } $values
      */
     public function __construct(
@@ -46,6 +53,7 @@ class NewCommentRule extends JsonSerializableType
         $this->channelId = $values['channelId'] ?? null;
         $this->keywords = $values['keywords'];
         $this->postId = $values['postId'] ?? null;
+        $this->privateReply = $values['privateReply'] ?? null;
         $this->reply = $values['reply'];
     }
 }

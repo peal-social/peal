@@ -397,8 +397,37 @@
   The account export holds the rules with the comments each looked at,
   by id.
   The approval policy does not apply, as it does not to a member's
-  reply; staff acting as a member start none. Never a private reply, a
-  like or a follow: decision 6.
+  reply; staff acting as a member start none. A rule may hold a
+  `privateReply` (`comment_rules.private_reply`): its public reply's match
+  is settled `private_code` `waiting` (or, at once, why not: the
+  starter without `engagement:message` as `MissingPermission`, the
+  channel's private ability, `noApi` off Instagram and Facebook,
+  `messagesOff` where the channel's messages are off in the rule's
+  workspace), and each run first takes those waiting (`waitingPrivate`):
+  once the public reply reads `sent`, `EngagementPrivateReplies.send` as
+  the starter under the key `comment-rule-private:<rule>:<comment>`,
+  with the rule's id; a public reply failed, unconfirmed or withdrawn
+  takes none (`publicReply…` codes), and one still `sending` waits. The
+  public reply and its match, and each private reply and its match,
+  are written in one transaction under the rule's row lock, which the
+  run takes and checks `active` before each send (always the rule's row
+  before the channel's box: `channelGone` locks the rules that answer on
+  the channel first), so a member who stops
+  or pauses a rule meanwhile wins; `stop`, a pause, a private text taken
+  off, `starterGone` and `channelGone` settle those waiting `stopped`
+  (`stopWaiting`); the first four also delete, under the rule's row, the
+  rule's private replies whose call was never claimed and give their
+  outbound message back (`EngagementPrivateReplies.holdBack`,
+  `dropUnsentOfRule`). A refusal of the private reply is its tag as the
+  code and never undoes the public one; the caps are the public
+  replies', as a private reply only follows one. Starting or changing a
+  rule with a private text takes `engagement:message` and an
+  application the owner's consent (`EngagementPrivateReplies.mayWrite`),
+  and a channel that answers and can carry it
+  (`CommentRuleNotPossible` `privateReply`, `emptyPrivateReply`). Test
+  the run on Postgres through `#test/engagement/rule-world.ts`. One
+  private reply a comment on Instagram and Facebook Pages, after the
+  public one; never a like or a follow, never a first contact: decision 6.
 - Direct messages are a model of their own beside comments and reviews:
   a `MessageBox` per channel (`engagement.message_boxes`, keyed by the
   channel: its schedule), a `Conversation` per conversation on the

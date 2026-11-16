@@ -8,4 +8,6 @@ enum CommentRuleRefusal: string
     case EmptyReply = "emptyReply";
     case NoChannel = "noChannel";
     case Channels = "channels";
+    case EmptyPrivateReply = "emptyPrivateReply";
+    case PrivateReply = "privateReply";
 }

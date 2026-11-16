@@ -526,3 +526,30 @@ read it.
 
 2. **It lists a row:** wait a few minutes for its job to settle it, and
    check again; roll back once it lists none.
+
+## Past rules' private replies
+
+The release that lets a comment rule send a private reply after its
+public one (migration `rule-private-replies`) adds a column the release
+before ignores (`engagement.comment_rules.private_reply`) and two
+(`engagement.comment_rule_matches.private_reply_id`, `private_code`) and
+an index on the second: the release before never sends a rule's private
+reply, and lists rules and their matches without them. A rule's private
+reply is a private reply as above, `SendPrivateReplyV1` included: roll
+back only once none is on its way, as [Past private
+replies](#past-private-replies) says. Those still waiting for their public
+reply (`private_code` `waiting`) are not sent while the release before
+runs; rolled forward again, those still within their 7 days go.
+
+1. **Rules' private replies on their way, or waiting:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT p.id, p.workspace_id, p.rule_id FROM engagement.private_replies p WHERE p.status = 'sending' AND p.rule_id IS NOT NULL"
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT rule_id, count(*) FROM engagement.comment_rule_matches WHERE private_code = 'waiting' GROUP BY rule_id"
+   ```
+
+2. **The first lists a row:** wait a few minutes for its job to settle
+   it, and check again; roll back once it lists none. The second needs no
+   wait.

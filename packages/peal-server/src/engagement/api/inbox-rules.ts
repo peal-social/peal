@@ -14,6 +14,7 @@ import { CommentRules } from "#engagement/application/comment-rules.ts";
 import type {
   ChangeCommentRuleRequest,
   ListedCommentRule,
+  StartCommentRuleRequest,
 } from "#engagement/application/comment-rules.ts";
 import { CommentRuleIdSchema } from "#engagement/domain/comment-rule-id.ts";
 import type { CommentRuleScope } from "#engagement/domain/comment-rule.ts";
@@ -44,11 +45,14 @@ const answered = Effect.map((listed: ListedCommentRule) =>
 const notPossible = ({ channels, reason }: NotPossible) =>
   Effect.fail(
     new CommentRuleNotPossible({
-      channels: channels.map(({ channelId, platform, reply }) => ({
-        channelId,
-        platform,
-        reply,
-      })),
+      channels: channels.map(
+        ({ channelId, platform, privateReply, reply }) => ({
+          channelId,
+          platform,
+          privateReply,
+          reply,
+        })
+      ),
       reason,
     })
   );
@@ -108,22 +112,27 @@ export const InboxRulesHandlers = HttpApiBuilder.group(
           const actor = actorOf(yield* CurrentMember);
           const scope = yield* scopeOf(payload);
 
-          return yield* rules
-            .start(actor, {
-              keywords: payload.keywords,
-              reply: payload.reply,
-              scope,
+          const request: Mutable<StartCommentRuleRequest> = {
+            keywords: payload.keywords,
+            reply: payload.reply,
+            scope,
+          };
+
+          if (payload.privateReply !== undefined) {
+            request.privateReply = payload.privateReply;
+          }
+
+          return yield* rules.start(actor, request).pipe(
+            answered,
+            Effect.catchTags({
+              CommentRuleNotPossible: notPossible,
+              DatabaseError: Effect.die,
+              MessagesNeedConsent: forbidden,
+              MissingPermission: forbidden,
+              TooManyCommentRules: ({ allowed }) =>
+                Effect.fail(new TooManyCommentRules({ allowed })),
             })
-            .pipe(
-              answered,
-              Effect.catchTags({
-                CommentRuleNotPossible: notPossible,
-                DatabaseError: Effect.die,
-                MissingPermission: forbidden,
-                TooManyCommentRules: ({ allowed }) =>
-                  Effect.fail(new TooManyCommentRules({ allowed })),
-              })
-            );
+          );
         }),
       deleteCommentRule: ({ params }) =>
         Effect.gen(function* stop() {
@@ -207,6 +216,10 @@ export const InboxRulesHandlers = HttpApiBuilder.group(
             change.reply = payload.reply;
           }
 
+          if (payload.privateReply !== undefined) {
+            change.privateReply = payload.privateReply;
+          }
+
           return yield* rules.change(actor, ruleId, change).pipe(
             answered,
             Effect.catchTags({
@@ -215,6 +228,7 @@ export const InboxRulesHandlers = HttpApiBuilder.group(
               CommentRuleNotFound: notFound,
               CommentRuleNotPossible: notPossible,
               DatabaseError: Effect.die,
+              MessagesNeedConsent: forbidden,
               MissingPermission: forbidden,
             })
           );
