@@ -480,7 +480,8 @@
 - `CollectMessages` runs on `engagement.collect-messages` (minutes 1 and
   21, the free minutes `test/app/cron-schedules.test.ts` leaves; 8
   minutes a run, 8 channels at once, through the gates: `ReadMessages`):
-  it hands stranded messages to a person (`SendMessage.settleStranded`)
+  it hands stranded messages to a person (`SendMessage.settleStranded`,
+  only while no call was claimed since it listed them: `handOver`)
   and reads the boxes due: every run while a message came in the last day,
   hourly otherwise. The adapter is given the revisions Peal holds and
   reads back only the conversations that changed, and those not read back
@@ -548,18 +549,23 @@
   A `MessagePlatform` without `follow`/`unfollow` (Mastodon, Bluesky)
   answers `unneeded` and calls nothing; one with them answers
   `unneeded` to `unfollow` while another channel of Peal's follows the
-  account (`FollowedElsewhere`: `platform-messages.ts` asks
-  `MessageChannelsOfAccount` and the boxes; Meta's adapter reads with the
-  Page's token which accounts its subscription carries, the Page and the
-  Instagram account linked to it). A follow that finds the box gone when
+  account, or the channel itself has a box again, its messages turned on
+  since they were turned off (`FollowedElsewhere`: `platform-messages.ts`
+  asks `MessageChannelsOfAccount` and the boxes; Meta's adapter reads with
+  the Page's token which accounts its subscription carries, the Page and
+  the Instagram account linked to it). Once stopped, the others and the
+  channel itself, turned on again while Meta stopped it, follow again at
+  their next read (`refollow`). A follow that finds the box gone when
   it returns unfollows again (a switch-off ran meanwhile).
   `channelGone` asks nothing: it runs in the channels context's
   transaction; a member's disconnect stops Meta's events afterwards with
   the tokens the channel held (the channels context's
   `ChannelDepartures`, which asks `EngagementRecords.readsMessages`, and
   `refollow`s the others after), as does a workspace's erasure before its
-  transaction (`ChannelRecords.releaseWorkspace`, from
-  `ContextRecords.settleWorkspaces`), and a moved channel's account stays
+  transaction (`ChannelRecords.releaseWorkspaces`, from
+  `ContextRecords.settleWorkspaces`, which waits ten seconds at most for
+  them all and leaves the rest to finish on its own),
+  and a moved channel's account stays
   followed (its events are `ignored` until the new workspace turns its
   messages on).
 - Mastodon (`platforms/mastodon/mastodon-messages.ts`, docs read
@@ -615,9 +621,11 @@
   share the limit unpaced between them), and the usage ceiling stops a
   read. A message whose sender is neither the account nor one of the
   conversation's people, or none, is kept nowhere, and a conversation
-  that does not name the account is not read back: counted
+  that does not name the account is not read back: counted at every read
   (`peal.engagement.messages.unknown_senders`) and logged by the
-  channel's id and a code, as whether a message is the account's own,
+  channel's id and a code, once a channel, code and hour
+  (`unknownSendersLogEvery`, as a read every ten seconds would log the
+  same conversations at each), as whether a message is the account's own,
   which opens the window, rests on Meta's ids matching Peal's. Files and
   a story are a count, never kept. Sending is `POST /me/messages`
   (`RESPONSE`) with no key: a resume looks among the 20 latest, and may
@@ -667,7 +675,8 @@
   or unconfirmed a conversation; `outgoing_messages_key` one a key
   (`messageKeyLifetime`, 24 hours). A message that ends failed, or a
   person finds never went out (`confirm`), gives its claim back, as does
-  each that never set out (`sending`, no call begun) when its channel's
+  each that never set out (`sending`, its call never claimed, an attempt
+  that waited for the gate's turn among them) when its channel's
   messages are turned off or found disconnected (`forgetChannelMessages`),
   its channel leaves or its workspace is erased (`EngagementRecords`, on
   the meters: `MetersContextLive` is built below the channels context in

@@ -6,12 +6,20 @@ import type { ChannelId } from "#shared/domain/ids.ts";
 import type { StoredTokens } from "./platform-authorizer.ts";
 
 /**
+ * How a departure ended: `done` when nothing is left on the platform for
+ * the channel (undone, kept for another channel, or nothing to undo),
+ * `failed` when the platform may still hold it.
+ */
+export type DepartureOutcome = "done" | "failed";
+
+/**
  * What a channel disconnected by a member set up on its platform for
  * Peal, undone with the tokens it held once it is gone: Meta's
  * subscription to its account's message events, while no other channel of
  * Peal's reads them. Best effort, after the channel's deletion committed
  * (or before a workspace's erasure, with `leaving` the channels that go
- * with it): it never fails, and logs a failure by the channel's id.
+ * with it): it never fails, logs a failure by the channel's id, and
+ * answers how it ended.
  */
 export class ChannelDepartures extends Context.Service<
   ChannelDepartures,
@@ -20,12 +28,12 @@ export class ChannelDepartures extends Context.Service<
       channel: Channel,
       tokens: StoredTokens,
       leaving?: readonly ChannelId[]
-    ) => Effect.Effect<void>;
+    ) => Effect.Effect<DepartureOutcome>;
   }
 >()("peal-server/channels/application/ChannelDepartures") {
   /** Nothing to undo: for servers and tests without such platforms. */
   static readonly none = Layer.succeed(
     ChannelDepartures,
-    ChannelDepartures.of({ departed: () => Effect.void })
+    ChannelDepartures.of({ departed: () => Effect.succeed("done") })
   );
 }

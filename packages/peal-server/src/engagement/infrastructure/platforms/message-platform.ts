@@ -84,12 +84,13 @@ export const carriedBy = (
       account.connection);
 
 /**
- * What an unfollow asks of the other channels of Peal's, in any workspace:
- * whether one still reads the messages of an account the subscription
- * carries (`elsewhere`; true when it cannot be told, so a subscription is
- * never stopped on a doubt), and, once it is stopped, to follow again at
- * their next read those whose messages were turned on meanwhile
- * (`stopped`).
+ * What an unfollow asks of Peal's channels, in any workspace, the one
+ * unfollowing included (its messages may have been turned on again since
+ * they were turned off): whether one still reads the messages of an
+ * account the subscription carries (`elsewhere`; true when it cannot be
+ * told, so a subscription is never stopped on a doubt), and, once it is
+ * stopped, to follow again at their next read those whose messages were
+ * turned on meanwhile, the one unfollowing among them (`stopped`).
  */
 export interface Followers {
   readonly elsewhere: (
@@ -113,9 +114,10 @@ export interface Followers {
  * A platform that tells the server when an account's messages change
  * (Meta's events) has `follow`, which asks it to, and `unfollow`, which
  * asks it to stop: the platform's subscription is the account's, so
- * `unfollow` answers `unneeded`, and calls nothing, while another channel
- * of Peal's still follows the account (`Followers`: a Page
- * connected in two workspaces, or the Instagram account it is linked to).
+ * `unfollow` answers `unneeded`, and calls nothing, while a channel of
+ * Peal's still follows the account (`Followers`: the channel itself turned
+ * on again, a Page connected in two workspaces, or the Instagram account
+ * it is linked to).
  * One without them is read on the collection's schedule alone (Mastodon,
  * Bluesky).
  */

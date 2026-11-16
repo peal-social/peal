@@ -3,6 +3,7 @@ import { Mac } from "effect/crypto";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 
 import { ChannelDepartures } from "#channels/application/channel-departures.ts";
+import type { DepartureOutcome } from "#channels/application/channel-departures.ts";
 import { ChannelDirectory } from "#channels/application/channel-directory.ts";
 import type { StoredTokens } from "#channels/application/platform-authorizer.ts";
 import type { Channel } from "#channels/domain/channel.ts";
@@ -249,13 +250,17 @@ export const metaMessageDepartures = (settings: {
         departed: (channel, tokens, leaving = []) =>
           departing(channel, tokens, leaving).pipe(
             Effect.timeout(departureWait),
+            Effect.as<DepartureOutcome>("done"),
             // Logged by the channel's id alone: an answer may name others.
             Effect.catch(() =>
               Effect.logWarning(
                 "Meta did not stop a disconnected channel's message events"
-              ).pipe(Effect.annotateLogs({ channelId: channel.id }))
+              ).pipe(
+                Effect.annotateLogs({ channelId: channel.id }),
+                Effect.as<DepartureOutcome>("failed")
+              )
             ),
-            Effect.catchDefect(() => Effect.void)
+            Effect.catchDefect(() => Effect.succeed<DepartureOutcome>("failed"))
           ),
       });
     })

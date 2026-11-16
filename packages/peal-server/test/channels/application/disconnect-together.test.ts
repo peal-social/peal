@@ -54,7 +54,9 @@ const WaitingDepartures = Layer.effect(
   Effect.gen(function* WaitingDepartures() {
     const started = yield* RevokeStarted;
 
-    return ChannelDepartures.of({ departed: () => Deferred.await(started) });
+    return ChannelDepartures.of({
+      departed: () => Deferred.await(started).pipe(Effect.as("done" as const)),
+    });
   })
 );
 

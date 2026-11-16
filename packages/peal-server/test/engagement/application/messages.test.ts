@@ -1035,6 +1035,41 @@ describe("sending a message", () => {
           "unconfirmed"
         );
         assert.deepStrictEqual(world.state.cancelled, [message.id]);
+        // The workspace is told how it ended, as for any other.
+        assert.deepStrictEqual(
+          world.state.settled.map(({ id, status }) => [id, status._tag]),
+          [[message.id, "unconfirmed"]]
+        );
+      }).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect(
+    "leaves a stranded message to the call its gate claimed after it was listed",
+    () => {
+      const world = worldWith();
+      const now = DateTime.addDuration(messagedAt, "2 hours");
+
+      return Effect.gen(function* claimedMeanwhile() {
+        const message = yield* at(sending("Hello"));
+
+        // Listed as stranded, then its gate claims the call at once.
+        world.state.afterListing = () => {
+          world.state.claims.set(message.id, now);
+        };
+
+        const handed = yield* at(
+          SendMessage.use((send) => send.settleStranded),
+          now
+        );
+
+        assert.strictEqual(handed, 0);
+        assert.strictEqual(
+          world.state.outgoing.get(message.id)?.status._tag,
+          "sending"
+        );
+        assert.deepStrictEqual(world.state.cancelled, []);
+        assert.deepStrictEqual(world.state.settled, []);
       }).pipe(Effect.provide(world.layer));
     }
   );

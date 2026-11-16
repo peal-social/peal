@@ -506,6 +506,82 @@ layer(StoreTest)("the message store", (it) => {
   );
 
   it.effect(
+    "hands over one stranded only while no call was claimed since it was listed",
+    () =>
+      Effect.gen(function* handOver() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-06T10:00:00.000Z");
+        const at = utc("2049-02-06T10:00:00.000Z");
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box]);
+
+          const talk = yield* conversationOn(
+            box,
+            1,
+            "2049-02-06T09:00:00.000Z"
+          );
+
+          yield* store.saveConversations([talk]);
+
+          const message = writeMessage(
+            yield* newId(OutgoingMessageIdSchema),
+            talk,
+            Option.none(),
+            "Hello",
+            at
+          );
+
+          yield* store.journalMessage(message, Option.none());
+          yield* store.advanceMessage(
+            Result.getOrThrow(beginMessage(message, at)),
+            message
+          );
+
+          const later = DateTime.addDuration(at, "2 hours");
+          const bound = DateTime.addDuration(at, "1 hour");
+
+          // Listed as stranded, then its gate claims the call.
+          assert.isTrue(
+            (yield* store.strandedMessages(bound, bound, 1000)).some(
+              ({ id }) => id === message.id
+            )
+          );
+          assert.isTrue(yield* store.claimCall(message.id, later));
+          assert.isTrue(
+            Option.isNone(yield* store.handOver(message.id, later, bound))
+          );
+          assert.strictEqual(
+            (yield* store.outgoing(message.id)).pipe(
+              Option.map(({ status }) => status._tag),
+              Option.getOrNull
+            ),
+            "sending"
+          );
+
+          // Its claim old enough: handed over.
+          const handed = yield* store.handOver(
+            message.id,
+            DateTime.addDuration(later, "1 hour"),
+            DateTime.addDuration(later, "10 minutes")
+          );
+
+          assert.deepStrictEqual(
+            handed.pipe(
+              Option.map(({ status }) =>
+                status._tag === "unconfirmed" ? status.reason : status._tag
+              ),
+              Option.getOrNull
+            ),
+            "interrupted"
+          );
+          assert.deepStrictEqual(yield* store.outgoing(message.id), handed);
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
     "deletes each message 30 days after it was sent, and a conversation once its last message is that old",
     () =>
       Effect.gen(function* purges() {
@@ -949,13 +1025,15 @@ layer(StoreTest)("the message store", (it) => {
     })
   );
 
-  // A message journalled on a conversation of the box: on its way, and
-  // begun (the call may have gone out) when `attempted`.
+  // A message journalled on a conversation of the box: on its way; begun
+  // (its attempt committed, its call waiting for the gate's turn) when
+  // `attempted`; its call claimed too (it may have gone out) when
+  // `claimed`.
   const pendingOn = Effect.fn("pendingOn")(function* pendingOn(
     box: MessageBox,
     n: number,
     at: string,
-    attempted: boolean
+    attempted: boolean | "claimed"
   ) {
     const store = yield* MessageStore;
     const talk = yield* conversationOn(box, n, at);
@@ -972,11 +1050,15 @@ layer(StoreTest)("the message store", (it) => {
 
     yield* store.journalMessage(message, Option.none());
 
-    if (attempted) {
+    if (attempted !== false) {
       yield* store.advanceMessage(
         Result.getOrThrow(beginMessage(message, utc(at))),
         message
       );
+    }
+
+    if (attempted === "claimed") {
+      yield* store.claimCall(message.id, utc(at));
     }
 
     return message;
@@ -996,8 +1078,8 @@ layer(StoreTest)("the message store", (it) => {
 
           const waiting = yield* pendingOn(box, 1, at, false);
 
-          // Begun: it may be on the platform, and stays counted.
-          yield* pendingOn(box, 2, at, true);
+          // Its call claimed: it may be on the platform, and stays counted.
+          yield* pendingOn(box, 2, at, "claimed");
 
           yield* records.channelGone(box.channelId, "mastodon", utc(at));
 
@@ -1028,6 +1110,77 @@ layer(StoreTest)("the message store", (it) => {
 
           assert.lengthOf(yield* givenBackIn(workspaceId), 1);
         }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
+    "gives back the outbound message of one attempted whose call was never claimed when its channel leaves or moves, its messages are turned off or its workspace is erased",
+    () =>
+      Effect.gen(function* attemptedOnly() {
+        const records = yield* EngagementRecords;
+        const store = yield* MessageStore;
+
+        // A move is the channel leaving its workspace: the same deletion.
+        const deletions = [
+          [
+            "leaves",
+            "2049-02-14T09:00:00.000Z",
+            (box: MessageBox) =>
+              records.channelGone(
+                box.channelId,
+                "facebook",
+                utc("2049-02-14T09:00:00.000Z")
+              ),
+          ],
+          [
+            "turned off",
+            "2049-02-15T09:00:00.000Z",
+            (box: MessageBox) =>
+              SqlClient.SqlClient.use((sql) =>
+                sql.withTransaction(
+                  Effect.gen(function* forgetting() {
+                    yield* forgetChannelMessages(
+                      store,
+                      yield* PrivateReplyStore,
+                      yield* MeteredUsage,
+                      box.channelId
+                    );
+                  })
+                )
+              ),
+          ],
+          [
+            "erased",
+            "2049-02-16T09:00:00.000Z",
+            (box: MessageBox) => records.eraseWorkspace(box.workspaceId),
+          ],
+        ] as const;
+
+        for (const [how, at, deletion] of deletions) {
+          const workspaceId = yield* freshWorkspace;
+          const box = yield* boxOf(workspaceId, at);
+
+          yield* Effect.gen(function* checks() {
+            yield* store.follow([box]);
+
+            // Its attempt committed, its call waiting for the gate's turn
+            // (behind a publication): it never set out.
+            const waiting = yield* pendingOn(box, 1, at, true);
+
+            // Its call claimed: it may be out, and stays counted.
+            yield* pendingOn(box, 2, at, "claimed");
+
+            yield* deletion(box);
+
+            assert.deepStrictEqual(
+              (yield* givenBackIn(workspaceId)).map((claim) =>
+                DateTime.formatIso(claim.at)
+              ),
+              [DateTime.formatIso(waiting.createdAt)],
+              how
+            );
+          }).pipe(Effect.ensuring(forget(workspaceId)));
+        }
       })
   );
 

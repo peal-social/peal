@@ -445,7 +445,13 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
     });
   };
 
-  const handle = (request: PlatformRequest, origin: string): PlatformAnswer => {
+  // What runs while one call of a route waits for its answer.
+  const during = new Map<string, () => Promise<void>>();
+
+  const answerOf = (
+    request: PlatformRequest,
+    origin: string
+  ): PlatformAnswer => {
     const name = `${request.method} ${request.path}`;
     const scriptedAnswer = script.next(name);
 
@@ -481,6 +487,22 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
     return when === "after" ? dropped : answer;
   };
 
+  const handle = (
+    request: PlatformRequest,
+    origin: string
+  ): PlatformAnswer | Promise<PlatformAnswer> => {
+    const name = `${request.method} ${request.path}`;
+    const meanwhile = during.get(name);
+
+    if (meanwhile === undefined) {
+      return answerOf(request, origin);
+    }
+
+    during.delete(name);
+
+    return meanwhile().then(() => answerOf(request, origin));
+  };
+
   const server = yield* platformServer(handle);
 
   return {
@@ -501,6 +523,10 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
       comments.set(commentId, { answered: false, authorId });
     },
     conversations: () => conversations,
+    /** The next call of `route` is answered once `meanwhile` is done. */
+    during: (route: string, meanwhile: () => Promise<void>) => {
+      during.set(route, meanwhile);
+    },
     /** The next call of `route` reaches nothing: its answer is lost first. */
     dropBefore: (route: string) => {
       lost.push(route, ["before"]);
