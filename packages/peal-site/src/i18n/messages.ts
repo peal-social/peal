@@ -149,7 +149,7 @@ const en = {
         },
       ],
       label: "FAQ",
-      lead: "Short answers from the docs. The docs have the details.",
+      lead: "Short answers here, and the details in the docs.",
       title: {
         muted: "Plain answers, before you start.",
         text: "Frequently asked questions.",
@@ -161,7 +161,7 @@ const en = {
       primary: "See how it works",
       secondary: "Run it yourself",
       status:
-        "In development: not released yet. This is what Peal is being built to do.",
+        "Peal is in development and not released yet. This page shows what it is being built to do.",
       title: "Write once. Schedule everywhere. See what works.",
     },
     sections: {
@@ -203,15 +203,15 @@ const en = {
     intros: {
       agents: {
         body: "Let an AI agent write, schedule or publish posts, choose whether it may publish, and read what it did.",
-        headline: "Hand the routine to an agent",
+        headline: "Let an agent post for you",
       },
       analytics: {
-        body: "How your posts and accounts did on each platform, which posts did best, and the figures to export.",
+        body: "See how your posts and accounts did on each platform and which posts did best, then export the figures.",
         headline: "See what worked",
       },
       api: {
         body: "Authenticate with a key and publish a post in five requests, with an OpenAPI document and a reference for the rest.",
-        headline: "Everything Peal does, over HTTP",
+        headline: "Peal over HTTP",
       },
       approvals: {
         body: "Show a post to a client who has no Peal account, collect their comments, and get their approval before it goes out.",
@@ -219,10 +219,10 @@ const en = {
       },
       calendar: {
         body: "Schedule in your own time zone, move or cancel a post on the calendar, and follow how it went on each channel.",
-        headline: "Plan the weeks ahead",
+        headline: "Schedule posts on a calendar",
       },
       changelog: {
-        body: "The notes of each Peal release, published on GitHub, with a link to every change it brings.",
+        body: "Release notes for each version of Peal, on GitHub, with a link to every change.",
         headline: "Every release, as it ships",
       },
       cli: {
@@ -243,7 +243,7 @@ const en = {
       },
       inbox: {
         body: "Comments under your posts, your Google Business Profile reviews, and your Mastodon and Bluesky direct messages, answered in one place.",
-        headline: "Answer people where they reply",
+        headline: "Reply from one inbox",
       },
       mcp: {
         body: "Connect an AI assistant or any MCP client to one workspace, and choose whether it may publish.",
@@ -262,7 +262,7 @@ const en = {
         headline: "Run Peal on your own server",
       },
       status: {
-        body: "Live checks of the app, the API, the docs and this site, with how each has answered lately.",
+        body: "Live checks of the app, the API, the docs and this site, with their recent results.",
         headline: "Is Peal up right now?",
       },
       webhooks: {
@@ -306,7 +306,7 @@ const en = {
         title: "Command line",
       },
       composer: {
-        description: "Write once, adjust each platform, preview them all.",
+        description: "Write once, then adjust and preview each platform.",
         title: "Composer",
       },
       discord: {
@@ -642,7 +642,7 @@ const fr: Messages = {
         },
       ],
       label: "FAQ",
-      lead: "Des réponses courtes, tirées de la documentation, qui donne le détail.",
+      lead: "Des réponses courtes ici, et le détail dans la documentation.",
       title: {
         muted: "Des réponses simples, avant de commencer.",
         text: "Questions fréquentes.",
@@ -654,7 +654,7 @@ const fr: Messages = {
       primary: "Voir comment ça marche",
       secondary: "L’héberger soi-même",
       status:
-        "En cours de développement : pas encore sorti. Voici ce que Peal est conçu pour faire.",
+        "Peal est en cours de développement et pas encore sorti. Cette page montre ce qu’il est conçu pour faire.",
       title: "Écrire une fois. Planifier partout. Voir ce qui marche.",
     },
     sections: {
@@ -696,15 +696,15 @@ const fr: Messages = {
     intros: {
       agents: {
         body: "Laissez un agent IA rédiger, programmer ou publier, choisissez s’il peut publier, et lisez ce qu’il a fait.",
-        headline: "Confiez la routine à un agent",
+        headline: "Laissez un agent publier pour vous",
       },
       analytics: {
-        body: "Comment vos publications et vos comptes ont marché sur chaque plateforme, lesquelles ont le mieux marché, et les chiffres à exporter.",
+        body: "Voyez comment vos publications et vos comptes ont marché sur chaque plateforme et lesquelles ont le mieux marché, puis exportez les chiffres.",
         headline: "Voyez ce qui a marché",
       },
       api: {
         body: "Authentifiez-vous avec une clé et publiez en cinq requêtes, avec un document OpenAPI et une référence pour le reste.",
-        headline: "Tout ce que fait Peal, en HTTP",
+        headline: "Peal en HTTP",
       },
       approvals: {
         body: "Montrez une publication à un client sans compte Peal, recueillez ses commentaires, et obtenez son accord avant qu’elle parte.",
@@ -712,10 +712,10 @@ const fr: Messages = {
       },
       calendar: {
         body: "Programmez dans votre fuseau horaire, déplacez ou annulez une publication sur le calendrier, et suivez comment elle s’est passée sur chaque canal.",
-        headline: "Planifiez les semaines à venir",
+        headline: "Programmez sur un calendrier",
       },
       changelog: {
-        body: "Les notes de chaque version de Peal, publiées sur GitHub, avec un lien vers chaque changement qu’elle apporte.",
+        body: "Les notes de chaque version de Peal, sur GitHub, avec un lien vers chaque changement.",
         headline: "Chaque version, dès sa sortie",
       },
       cli: {
@@ -736,7 +736,7 @@ const fr: Messages = {
       },
       inbox: {
         body: "Les commentaires sous vos publications, les avis de vos établissements Google Business Profile et vos messages privés Mastodon et Bluesky, traités au même endroit.",
-        headline: "Répondez là où l’on vous répond",
+        headline: "Répondez depuis une seule boîte",
       },
       mcp: {
         body: "Connectez un assistant IA ou tout client MCP à un espace de travail, et choisissez s’il peut publier.",
@@ -755,7 +755,7 @@ const fr: Messages = {
         headline: "Faites tourner Peal sur votre serveur",
       },
       status: {
-        body: "Des vérifications en direct de l’application, de l’API, de la documentation et de ce site, avec leurs réponses récentes.",
+        body: "Des vérifications en direct de l’application, de l’API, de la documentation et de ce site, avec leurs résultats récents.",
         headline: "Peal fonctionne-t-il en ce moment ?",
       },
       webhooks: {
@@ -801,7 +801,7 @@ const fr: Messages = {
       },
       composer: {
         description:
-          "Écrire une fois, ajuster par plateforme, tout prévisualiser.",
+          "Écrire une fois, puis ajuster et prévisualiser chaque plateforme.",
         title: "Éditeur",
       },
       discord: {
