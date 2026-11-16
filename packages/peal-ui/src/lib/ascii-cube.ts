@@ -80,8 +80,8 @@ const fragmentShader = `
   void main() {
     vec3 light = normalize(vec3(-0.2, 0.8, 1.0));
     float lambert = max(dot(normalize(vNormal), light), 0.0);
-    float across = 0.8 + 0.2 * vUv.y;
-    float shade = clamp(0.35 + 0.65 * lambert * across, 0.0, 1.0);
+    float across = 0.5 + 0.5 * (vUv.x + vUv.y) * 0.5;
+    float shade = clamp(0.25 + 0.95 * lambert * across, 0.0, 1.0);
     float inset = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
     gl_FragColor = vec4(face / 3.0, shade, step(inset, 0.045), 1.0);
   }
