@@ -496,6 +496,12 @@ describe("a member's private reply", () => {
           (yield* sending(editor, "  ").pipe(Effect.flip))._tag,
           "ReplyEmpty"
         );
+        // Control characters alone clean to nothing: a refusal, never a
+        // fault.
+        assert.strictEqual(
+          (yield* sending(editor, "\u0007\u0008").pipe(Effect.flip))._tag,
+          "ReplyEmpty"
+        );
         yield* reservedNothing(world);
       })
     ).pipe(Effect.provide(world.layer));

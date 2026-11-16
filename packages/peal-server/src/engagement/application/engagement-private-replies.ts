@@ -332,6 +332,13 @@ export class EngagementPrivateReplies extends Context.Service<
         // What a member typed is made storable like any text from outside.
         const text = storableText(typed, maxOutgoingMessageLength + 1);
 
+        // Checked before the reply is written, which takes a text: one
+        // that cleans to nothing is a refusal, never a fault. The
+        // platform's own length comes once its standing is known.
+        if (text.trim() === "") {
+          return yield* new ReplyEmpty();
+        }
+
         const written = writePrivateReply(
           yield* newId(PrivateReplyIdSchema).pipe(
             Effect.provideService(Ids, ids)

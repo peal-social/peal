@@ -69,6 +69,11 @@ export interface FakeMetaMessagesOptions {
    * person answers (not verified on Meta's side): yes unless false.
    */
   readonly privateRepliesListed?: boolean;
+  /**
+   * Whether the conversations' list ignores `user_id` (not verified on
+   * Meta's side), listing every conversation of the account.
+   */
+  readonly ignoresUserId?: boolean;
 }
 
 type Params = Readonly<Record<string, string>>;
@@ -233,7 +238,9 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
 
     const start = Number(params["after"] ?? "0");
     const limit = Number(params["limit"] ?? "25");
-    const userId = params["user_id"];
+
+    const userId =
+      options.ignoresUserId === true ? undefined : params["user_id"];
 
     const shown = conversations.filter(
       ({ participants, platform }) =>

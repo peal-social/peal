@@ -205,6 +205,8 @@ describe("Meta's private replies, sent", () => {
             [graphError(10_900), "alreadyAnswered"],
             [graphError(10_903), "refused"],
             [graphError(10_904), "refused"],
+            [graphError(368), "refused"],
+            [graphError(2022), "refused"],
             [graphError(551), "refused"],
             [graphError(10, 2_018_108), "refused"],
             [graphError(200, 2_018_028), "refused"],
@@ -375,6 +377,23 @@ describe("Meta's private replies, resumed", () => {
             unconfirmed("interrupted")
           );
 
+          // The person's own message with the same text is not the account's.
+          talk?.messages.splice(-1, 1);
+
+          const firstSent = talk?.messages.at(-1);
+
+          if (firstSent !== undefined) {
+            talk?.messages.splice(-1, 1, {
+              ...firstSent,
+              from: { id: commenter, name: "Synthetic Commenter" },
+            });
+          }
+
+          assert.deepStrictEqual(
+            yield* platform.resume(account, outgoing()),
+            unconfirmed("interrupted")
+          );
+
           // A read Meta refuses.
           graph.script.push("GET /v27.0/me/conversations", [graphError(2)]);
 
@@ -388,6 +407,60 @@ describe("Meta's private replies, resumed", () => {
               .requests()
               .slice(1)
               .some(({ method }) => method === "POST")
+          );
+        })
+      )
+  );
+
+  it.effect(
+    "leave unconfirmed when more than one conversation is listed, or the only one is someone else's",
+    () =>
+      atNow(
+        Effect.gen(function* conversations() {
+          const { account, graph, platform } = yield* onGraph();
+
+          yield* platform.send(account, outgoing());
+
+          // A second conversation with the commenter: which is it?
+          graph.add({
+            id: "c-other",
+            messages: [],
+            participants: [{ id: commenter }, { id: facebookPageId }],
+            platform: "messenger",
+            updatedTime: "2026-11-16T10:00:05+0000",
+          });
+
+          assert.deepStrictEqual(
+            yield* platform.resume(account, outgoing()),
+            unconfirmed("interrupted")
+          );
+
+          // Meta lists the account's conversations without filtering by the
+          // commenter: the only one is with someone else, whose own message
+          // from the account holds the same text.
+          const loose = yield* onGraph("messenger", {
+            ignoresUserId: true,
+            privateRepliesListed: false,
+          });
+
+          loose.graph.add({
+            id: "c-someone",
+            messages: [
+              {
+                createdTime: "2026-11-16T10:00:05+0000",
+                from: { id: facebookPageId, name: "Synthetic Studio" },
+                id: "m-someone",
+                text: "Here is the link you asked for.",
+              },
+            ],
+            participants: [{ id: "7200000000000777" }, { id: facebookPageId }],
+            platform: "messenger",
+            updatedTime: "2026-11-16T10:00:05+0000",
+          });
+
+          assert.deepStrictEqual(
+            yield* loose.platform.resume(loose.account, outgoing()),
+            unconfirmed("interrupted")
           );
         })
       )

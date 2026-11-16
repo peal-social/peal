@@ -121,7 +121,16 @@ const errorOf = (response: Response.HttpClientResponse) =>
   );
 
 const ConversationsSchema = Schema.Struct({
-  data: Schema.Array(Schema.Struct({ id: Schema.NonEmptyString })),
+  data: Schema.Array(
+    Schema.Struct({
+      id: Schema.NonEmptyString,
+      participants: Schema.optionalKey(
+        Schema.Struct({
+          data: Schema.Array(Schema.Struct({ id: Schema.String })),
+        })
+      ),
+    })
+  ),
 });
 
 const conversationsOf = HttpClientResponse.schemaBodyJson(ConversationsSchema);
@@ -193,12 +202,16 @@ export const privateReplyRefusal = (
   }
 
   // The person may not get one (`10903`), the Page's messages are off
-  // (`10904`), the person takes no message from the account (`551`,
+  // (`10904`), Meta deems the action abusive or otherwise disallowed
+  // (`368`), or refuses it as the Graph reference of `/{page-id}/messages`
+  // lists it beside them (`2022`), the person takes no message from the account (`551`,
   // `10`/`2018108`), the app may not write to them before its review
   // (`200`/`2018028`), or the request is invalid as sent (10, 100, 200 to
   // 299).
   return code === 10_903 ||
     code === 10_904 ||
+    code === 368 ||
+    code === 2022 ||
     code === 551 ||
     code === 10 ||
     code === 100 ||
@@ -344,7 +357,7 @@ export const metaPrivateReplies = Effect.fn("MetaPrivateReplies.make")(
       }
 
       const listed = yield* read(account, token, "/me/conversations", {
-        fields: "id",
+        fields: "id,participants",
         platform: listedPlatform(account),
         // Who commented, hidden from the call's span as a token is.
         user_id: Redacted.make(reply.commentAuthorId.value),
@@ -360,7 +373,15 @@ export const metaPrivateReplies = Effect.fn("MetaPrivateReplies.make")(
         onSome: ({ data }) => data,
       });
 
-      if (only === undefined || others.length > 0) {
+      // The one conversation, and the commenter in it: Meta is not
+      // trusted to have filtered the list by them.
+      if (
+        only === undefined ||
+        others.length > 0 ||
+        !(only.participants?.data ?? []).some(
+          ({ id }) => id === reply.commentAuthorId.value
+        )
+      ) {
         return undecided;
       }
 
