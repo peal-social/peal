@@ -303,25 +303,24 @@ describe("the media of a story or a reel", () => {
 });
 
 describe("the chats' media", () => {
-  it("refuses Discord files that weigh more than 25 MiB together", () => {
+  // The request's 25 MiB, less 64 KiB for the rest of the request.
+  it("refuses Discord files that leave no room in the 25 MiB request", () => {
+    const most = 25 * mebibyte - 64 * 1024;
+
     const fits = [
       loaded(file("a", { byteSize: 15 * mebibyte })),
-      loaded(file("b", { byteSize: 10 * mebibyte })),
+      loaded(file("b", { byteSize: most - 15 * mebibyte })),
     ];
 
     expect(mediaFitOn("discord", fits).problems).toStrictEqual([]);
 
     const over = [
       loaded(file("a", { byteSize: 15 * mebibyte })),
-      loaded(file("b", { byteSize: 10 * mebibyte + 1 })),
+      loaded(file("b", { byteSize: most - 15 * mebibyte + 1 })),
     ];
 
     expect(mediaFitOn("discord", over).problems).toStrictEqual([
-      {
-        _tag: "mediaTotalTooLarge",
-        maximum: 25 * mebibyte,
-        total: 25 * mebibyte + 1,
-      },
+      { _tag: "mediaTotalTooLarge", maximum: most, total: most + 1 },
     ]);
   });
 

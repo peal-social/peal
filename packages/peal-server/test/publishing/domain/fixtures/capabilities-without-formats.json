@@ -1552,7 +1552,7 @@
           }
         },
         "maxAltTextLength": 1024,
-        "maxTotalByteSize": 26214400,
+        "maxTotalByteSize": 26148864,
         "mixesKinds": true,
         "showsAltText": true
       },
@@ -1645,6 +1645,7 @@
             "maxByteSize": 52428800
           }
         },
+        "maxTotalByteSize": 209715200,
         "mixesKinds": true,
         "showsAltText": false
       },

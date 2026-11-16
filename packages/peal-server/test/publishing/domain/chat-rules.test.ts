@@ -109,14 +109,24 @@ describe("Discord's rules", () => {
     ]);
   });
 
-  it("refuses files that weigh more than 25 MiB together", () => {
-    const fits = [video(image, 15 * mebibyte), video(clip, 10 * mebibyte)];
+  // Discord's 25 MiB is the whole request's: the files keep 64 KiB for
+  // the form's framing and its `payload_json`.
+  it("refuses files that leave no room in the 25 MiB request for the rest", () => {
+    const most = 25 * mebibyte - 64 * 1024;
+
+    const fits = [
+      video(image, 15 * mebibyte),
+      video(clip, most - 15 * mebibyte),
+    ];
 
     expect(
       mediaViolationsOn(contentOf("", { media: [image, clip] }), discord, fits)
     ).toStrictEqual([]);
 
-    const over = [video(image, 15 * mebibyte), video(clip, 10 * mebibyte + 1)];
+    const over = [
+      video(image, 15 * mebibyte),
+      video(clip, most - 15 * mebibyte + 1),
+    ];
 
     expect(
       mediaViolationsOn(contentOf("", { media: [image, clip] }), discord, over)
@@ -124,8 +134,8 @@ describe("Discord's rules", () => {
       {
         _tag: "mediaTotalTooLarge",
         ...discord,
-        maximum: 25 * mebibyte,
-        total: 25 * mebibyte + 1,
+        maximum: most,
+        total: most + 1,
       },
     ]);
   });
@@ -141,6 +151,12 @@ describe("Discord's rules", () => {
 });
 
 describe("Telegram's rules", () => {
+  // One request carries an album: it stays within what the uploads
+  // client sends before its timeout.
+  it("holds an album to 200 MiB together", () => {
+    expect(platformRules.telegram.media?.maxTotalByteSize).toBe(200 * mebibyte);
+  });
+
   it("takes 4,096 UTF-16 units of text alone", () => {
     expect(violationsOn(contentOf("a".repeat(4096)), telegram)).toStrictEqual(
       []

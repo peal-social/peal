@@ -551,7 +551,10 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
         "video/quicktime": discordFile,
       },
       maxAltTextLength: 1024,
-      maxTotalByteSize: 25 * mebibyte,
+      // Discord's 25 MiB is the request's ("The maximum request size when
+      // sending a message is 25 MiB"): the files leave 64 KiB for the
+      // form's framing and its `payload_json`.
+      maxTotalByteSize: 25 * mebibyte - 64 * 1024,
       mixesKinds: true,
       showsAltText: true,
     },
@@ -697,6 +700,10 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
         "image/png": telegramPhoto,
         "video/mp4": { maxByteSize: 50 * mebibyte },
       },
+      // An album is one request: at most what the uploads client sends
+      // before its timeout on a modest link, rather than a request of
+      // 500 MiB that ends unconfirmed (Telegram sets no total).
+      maxTotalByteSize: 200 * mebibyte,
       mixesKinds: true,
       showsAltText: false,
     },
