@@ -20,10 +20,10 @@ class AdAccount extends JsonSerializableType
     public ?int $amountSpent;
 
     /**
-     * @var AdAccountCapabilities $capabilities
+     * @var ?AdAccountCapabilities $capabilities
      */
     #[JsonProperty('capabilities')]
-    public AdAccountCapabilities $capabilities;
+    public ?AdAccountCapabilities $capabilities;
 
     /**
      * @var string $connectedAt
@@ -122,9 +122,14 @@ class AdAccount extends JsonSerializableType
     public string $timeZone;
 
     /**
+     * @var ?string $unreachableSince
+     */
+    #[JsonProperty('unreachableSince')]
+    public ?string $unreachableSince;
+
+    /**
      * @param array{
      *   access: value-of<AdAccess>,
-     *   capabilities: AdAccountCapabilities,
      *   connectedAt: string,
      *   connectionId: string,
      *   currency: string,
@@ -137,11 +142,13 @@ class AdAccount extends JsonSerializableType
      *   status: value-of<AdAccountStatus>,
      *   timeZone: string,
      *   amountSpent?: ?int,
+     *   capabilities?: ?AdAccountCapabilities,
      *   monthlyCeiling?: ?int,
      *   newAdsUntrackedUntil?: ?string,
      *   reachedThrough?: ?string,
      *   spendCap?: ?int,
      *   syncedAt?: ?string,
+     *   unreachableSince?: ?string,
      * } $values
      */
     public function __construct(
@@ -149,7 +156,7 @@ class AdAccount extends JsonSerializableType
     ) {
         $this->access = $values['access'];
         $this->amountSpent = $values['amountSpent'] ?? null;
-        $this->capabilities = $values['capabilities'];
+        $this->capabilities = $values['capabilities'] ?? null;
         $this->connectedAt = $values['connectedAt'];
         $this->connectionId = $values['connectionId'];
         $this->currency = $values['currency'];
@@ -166,6 +173,7 @@ class AdAccount extends JsonSerializableType
         $this->status = $values['status'];
         $this->syncedAt = $values['syncedAt'] ?? null;
         $this->timeZone = $values['timeZone'];
+        $this->unreachableSince = $values['unreachableSince'] ?? null;
     }
 
     /**

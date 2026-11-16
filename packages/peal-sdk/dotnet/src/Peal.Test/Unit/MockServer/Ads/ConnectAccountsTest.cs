@@ -47,7 +47,8 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               },
               {
                 "access": "working",
@@ -73,7 +74,8 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               }
             ]
             """;
@@ -142,7 +144,8 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               }
             ]
             """;

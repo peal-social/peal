@@ -1271,6 +1271,7 @@ var (
 	adAccountFieldStatus               = big.NewInt(1 << 16)
 	adAccountFieldSyncedAt             = big.NewInt(1 << 17)
 	adAccountFieldTimeZone             = big.NewInt(1 << 18)
+	adAccountFieldUnreachableSince     = big.NewInt(1 << 19)
 )
 
 // adAccountNullableFields maps the wire names of AdAccount's nullable fields (required or optional) to their field bits.
@@ -1281,13 +1282,14 @@ var adAccountNullableFields = map[string]*big.Int{
 	"reachedThrough":       adAccountFieldReachedThrough,
 	"spendCap":             adAccountFieldSpendCap,
 	"syncedAt":             adAccountFieldSyncedAt,
+	"unreachableSince":     adAccountFieldUnreachableSince,
 }
 
 type AdAccount struct {
 	Access AdAccess `json:"access" url:"access"`
 	// An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
 	AmountSpent  *int64                 `json:"amountSpent,omitempty" url:"amountSpent,omitempty"`
-	Capabilities *AdAccountCapabilities `json:"capabilities" url:"capabilities"`
+	Capabilities *AdAccountCapabilities `json:"capabilities,omitempty" url:"capabilities,omitempty"`
 	ConnectedAt  string                 `json:"connectedAt" url:"connectedAt"`
 	ConnectionID string                 `json:"connectionId" url:"connectionId"`
 	// An ISO 4217 currency code, in capitals: `EUR`, `USD`.
@@ -1302,11 +1304,12 @@ type AdAccount struct {
 	NewAdsUntrackedUntil *string   `json:"newAdsUntrackedUntil,omitempty" url:"newAdsUntrackedUntil,omitempty"`
 	ReachedThrough       *string   `json:"reachedThrough,omitempty" url:"reachedThrough,omitempty"`
 	// An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
-	SpendCap        *int64          `json:"spendCap,omitempty" url:"spendCap,omitempty"`
-	SpendingEnabled bool            `json:"spendingEnabled" url:"spendingEnabled"`
-	Status          AdAccountStatus `json:"status" url:"status"`
-	SyncedAt        *string         `json:"syncedAt,omitempty" url:"syncedAt,omitempty"`
-	TimeZone        string          `json:"timeZone" url:"timeZone"`
+	SpendCap         *int64          `json:"spendCap,omitempty" url:"spendCap,omitempty"`
+	SpendingEnabled  bool            `json:"spendingEnabled" url:"spendingEnabled"`
+	Status           AdAccountStatus `json:"status" url:"status"`
+	SyncedAt         *string         `json:"syncedAt,omitempty" url:"syncedAt,omitempty"`
+	TimeZone         string          `json:"timeZone" url:"timeZone"`
+	UnreachableSince *string         `json:"unreachableSince,omitempty" url:"unreachableSince,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1446,6 +1449,13 @@ func (a *AdAccount) GetTimeZone() string {
 		return ""
 	}
 	return a.TimeZone
+}
+
+func (a *AdAccount) GetUnreachableSince() *string {
+	if a == nil {
+		return nil
+	}
+	return a.UnreachableSince
 }
 
 func (a *AdAccount) GetExtraProperties() map[string]interface{} {
@@ -1595,6 +1605,13 @@ func (a *AdAccount) SetSyncedAt(syncedAt *string) {
 func (a *AdAccount) SetTimeZone(timeZone string) {
 	a.TimeZone = timeZone
 	a.require(adAccountFieldTimeZone)
+}
+
+// SetUnreachableSince sets the UnreachableSince field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AdAccount) SetUnreachableSince(unreachableSince *string) {
+	a.UnreachableSince = unreachableSince
+	a.require(adAccountFieldUnreachableSince)
 }
 
 func (a *AdAccount) UnmarshalJSON(data []byte) error {

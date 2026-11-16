@@ -26,7 +26,7 @@ class AdAccount(UniversalBaseModel):
     An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
     """
 
-    capabilities: AdAccountCapabilities
+    capabilities: typing.Optional[AdAccountCapabilities] = None
     connected_at: typing_extensions.Annotated[
         str, FieldMetadata(alias="connectedAt"), pydantic.Field(alias="connectedAt")
     ]
@@ -83,6 +83,9 @@ class AdAccount(UniversalBaseModel):
         typing.Optional[str], FieldMetadata(alias="syncedAt"), pydantic.Field(alias="syncedAt")
     ] = None
     time_zone: typing_extensions.Annotated[str, FieldMetadata(alias="timeZone"), pydantic.Field(alias="timeZone")]
+    unreachable_since: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="unreachableSince"), pydantic.Field(alias="unreachableSince")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

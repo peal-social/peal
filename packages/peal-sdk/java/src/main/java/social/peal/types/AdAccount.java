@@ -28,7 +28,7 @@ public final class AdAccount {
 
     private final Optional<Long> amountSpent;
 
-    private final AdAccountCapabilities capabilities;
+    private final Optional<AdAccountCapabilities> capabilities;
 
     private final String connectedAt;
 
@@ -62,12 +62,14 @@ public final class AdAccount {
 
     private final String timeZone;
 
+    private final Optional<String> unreachableSince;
+
     private final Map<String, Object> additionalProperties;
 
     private AdAccount(
             AdAccess access,
             Optional<Long> amountSpent,
-            AdAccountCapabilities capabilities,
+            Optional<AdAccountCapabilities> capabilities,
             String connectedAt,
             String connectionId,
             String currency,
@@ -84,6 +86,7 @@ public final class AdAccount {
             AdAccountStatus status,
             Optional<String> syncedAt,
             String timeZone,
+            Optional<String> unreachableSince,
             Map<String, Object> additionalProperties) {
         this.access = access;
         this.amountSpent = amountSpent;
@@ -104,6 +107,7 @@ public final class AdAccount {
         this.status = status;
         this.syncedAt = syncedAt;
         this.timeZone = timeZone;
+        this.unreachableSince = unreachableSince;
         this.additionalProperties = additionalProperties;
     }
 
@@ -124,7 +128,7 @@ public final class AdAccount {
     }
 
     @JsonProperty("capabilities")
-    public AdAccountCapabilities getCapabilities() {
+    public Optional<AdAccountCapabilities> getCapabilities() {
         return capabilities;
     }
 
@@ -232,6 +236,14 @@ public final class AdAccount {
         return timeZone;
     }
 
+    @JsonIgnore
+    public Optional<String> getUnreachableSince() {
+        if (unreachableSince == null) {
+            return Optional.empty();
+        }
+        return unreachableSince;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("amountSpent")
     private Optional<Long> _getAmountSpent() {
@@ -268,6 +280,12 @@ public final class AdAccount {
         return syncedAt;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("unreachableSince")
+    private Optional<String> _getUnreachableSince() {
+        return unreachableSince;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -298,7 +316,8 @@ public final class AdAccount {
                 && spendingEnabled == other.spendingEnabled
                 && status.equals(other.status)
                 && syncedAt.equals(other.syncedAt)
-                && timeZone.equals(other.timeZone);
+                && timeZone.equals(other.timeZone)
+                && unreachableSince.equals(other.unreachableSince);
     }
 
     @java.lang.Override
@@ -322,7 +341,8 @@ public final class AdAccount {
                 this.spendingEnabled,
                 this.status,
                 this.syncedAt,
-                this.timeZone);
+                this.timeZone,
+                this.unreachableSince);
     }
 
     @java.lang.Override
@@ -335,13 +355,9 @@ public final class AdAccount {
     }
 
     public interface AccessStage {
-        CapabilitiesStage access(@NotNull AdAccess access);
+        ConnectedAtStage access(@NotNull AdAccess access);
 
         Builder from(AdAccount other);
-    }
-
-    public interface CapabilitiesStage {
-        ConnectedAtStage capabilities(@NotNull AdAccountCapabilities capabilities);
     }
 
     public interface ConnectedAtStage {
@@ -407,6 +423,10 @@ public final class AdAccount {
 
         _FinalStage amountSpent(Nullable<Long> amountSpent);
 
+        _FinalStage capabilities(Optional<AdAccountCapabilities> capabilities);
+
+        _FinalStage capabilities(AdAccountCapabilities capabilities);
+
         /**
          * <p>An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's <code>minorUnitDigits</code> to show it.</p>
          */
@@ -442,12 +462,17 @@ public final class AdAccount {
         _FinalStage syncedAt(String syncedAt);
 
         _FinalStage syncedAt(Nullable<String> syncedAt);
+
+        _FinalStage unreachableSince(Optional<String> unreachableSince);
+
+        _FinalStage unreachableSince(String unreachableSince);
+
+        _FinalStage unreachableSince(Nullable<String> unreachableSince);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder
             implements AccessStage,
-                    CapabilitiesStage,
                     ConnectedAtStage,
                     ConnectionIdStage,
                     CurrencyStage,
@@ -461,8 +486,6 @@ public final class AdAccount {
                     TimeZoneStage,
                     _FinalStage {
         private AdAccess access;
-
-        private AdAccountCapabilities capabilities;
 
         private String connectedAt;
 
@@ -486,6 +509,8 @@ public final class AdAccount {
 
         private String timeZone;
 
+        private Optional<String> unreachableSince = Optional.empty();
+
         private Optional<String> syncedAt = Optional.empty();
 
         private Optional<Long> spendCap = Optional.empty();
@@ -495,6 +520,8 @@ public final class AdAccount {
         private Optional<String> newAdsUntrackedUntil = Optional.empty();
 
         private Optional<Long> monthlyCeiling = Optional.empty();
+
+        private Optional<AdAccountCapabilities> capabilities = Optional.empty();
 
         private Optional<Long> amountSpent = Optional.empty();
 
@@ -523,20 +550,14 @@ public final class AdAccount {
             status(other.getStatus());
             syncedAt(other.getSyncedAt());
             timeZone(other.getTimeZone());
+            unreachableSince(other.getUnreachableSince());
             return this;
         }
 
         @java.lang.Override
         @JsonSetter("access")
-        public CapabilitiesStage access(@NotNull AdAccess access) {
+        public ConnectedAtStage access(@NotNull AdAccess access) {
             this.access = Objects.requireNonNull(access, "access must not be null");
-            return this;
-        }
-
-        @java.lang.Override
-        @JsonSetter("capabilities")
-        public ConnectedAtStage capabilities(@NotNull AdAccountCapabilities capabilities) {
-            this.capabilities = Objects.requireNonNull(capabilities, "capabilities must not be null");
             return this;
         }
 
@@ -618,6 +639,31 @@ public final class AdAccount {
         @JsonSetter("timeZone")
         public _FinalStage timeZone(@NotNull String timeZone) {
             this.timeZone = Objects.requireNonNull(timeZone, "timeZone must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage unreachableSince(Nullable<String> unreachableSince) {
+            if (unreachableSince.isNull()) {
+                this.unreachableSince = null;
+            } else if (unreachableSince.isEmpty()) {
+                this.unreachableSince = Optional.empty();
+            } else {
+                this.unreachableSince = Optional.of(unreachableSince.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage unreachableSince(String unreachableSince) {
+            this.unreachableSince = Optional.ofNullable(unreachableSince);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "unreachableSince", nulls = Nulls.SKIP)
+        public _FinalStage unreachableSince(Optional<String> unreachableSince) {
+            this.unreachableSince = unreachableSince;
             return this;
         }
 
@@ -768,6 +814,19 @@ public final class AdAccount {
             return this;
         }
 
+        @java.lang.Override
+        public _FinalStage capabilities(AdAccountCapabilities capabilities) {
+            this.capabilities = Optional.ofNullable(capabilities);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "capabilities", nulls = Nulls.SKIP)
+        public _FinalStage capabilities(Optional<AdAccountCapabilities> capabilities) {
+            this.capabilities = capabilities;
+            return this;
+        }
+
         /**
          * <p>An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's <code>minorUnitDigits</code> to show it.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
@@ -826,6 +885,7 @@ public final class AdAccount {
                     status,
                     syncedAt,
                     timeZone,
+                    unreachableSince,
                     additionalProperties);
         }
 
@@ -849,7 +909,8 @@ public final class AdAccount {
                     || key.equalsIgnoreCase("spendingEnabled")
                     || key.equalsIgnoreCase("status")
                     || key.equalsIgnoreCase("syncedAt")
-                    || key.equalsIgnoreCase("timeZone")) {
+                    || key.equalsIgnoreCase("timeZone")
+                    || key.equalsIgnoreCase("unreachableSince")) {
                 return;
             }
             this.additionalProperties.put(key, value);

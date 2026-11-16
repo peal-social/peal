@@ -21,7 +21,7 @@ public record AdAccount : IJsonOnDeserialized
     public long? AmountSpent { get; set; }
 
     [JsonPropertyName("capabilities")]
-    public required AdAccountCapabilities Capabilities { get; set; }
+    public AdAccountCapabilities? Capabilities { get; set; }
 
     [JsonPropertyName("connectedAt")]
     public required string ConnectedAt { get; set; }
@@ -79,6 +79,9 @@ public record AdAccount : IJsonOnDeserialized
 
     [JsonPropertyName("timeZone")]
     public required string TimeZone { get; set; }
+
+    [JsonPropertyName("unreachableSince")]
+    public string? UnreachableSince { get; set; }
 
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();

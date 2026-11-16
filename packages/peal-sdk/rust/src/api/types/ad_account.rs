@@ -7,8 +7,8 @@ pub struct AdAccount {
     #[serde(rename = "amountSpent")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub amount_spent: Option<i64>,
-    #[serde(default)]
-    pub capabilities: AdAccountCapabilities,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub capabilities: Option<AdAccountCapabilities>,
     #[serde(rename = "connectedAt")]
     #[serde(default)]
     pub connected_at: String,
@@ -54,6 +54,9 @@ pub struct AdAccount {
     #[serde(rename = "timeZone")]
     #[serde(default)]
     pub time_zone: String,
+    #[serde(rename = "unreachableSince")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unreachable_since: Option<String>,
 }
 
 impl AdAccount {
@@ -84,6 +87,7 @@ pub struct AdAccountBuilder {
     status: Option<AdAccountStatus>,
     synced_at: Option<String>,
     time_zone: Option<String>,
+    unreachable_since: Option<String>,
 }
 
 impl AdAccountBuilder {
@@ -182,10 +186,14 @@ impl AdAccountBuilder {
         self
     }
 
+    pub fn unreachable_since(mut self, value: impl Into<String>) -> Self {
+        self.unreachable_since = Some(value.into());
+        self
+    }
+
     /// Consumes the builder and constructs a [`AdAccount`].
     /// This method will fail if any of the following fields are not set:
     /// - [`access`](AdAccountBuilder::access)
-    /// - [`capabilities`](AdAccountBuilder::capabilities)
     /// - [`connected_at`](AdAccountBuilder::connected_at)
     /// - [`connection_id`](AdAccountBuilder::connection_id)
     /// - [`currency`](AdAccountBuilder::currency)
@@ -203,9 +211,7 @@ impl AdAccountBuilder {
                 .access
                 .ok_or_else(|| BuildError::missing_field("access"))?,
             amount_spent: self.amount_spent,
-            capabilities: self
-                .capabilities
-                .ok_or_else(|| BuildError::missing_field("capabilities"))?,
+            capabilities: self.capabilities,
             connected_at: self
                 .connected_at
                 .ok_or_else(|| BuildError::missing_field("connected_at"))?,
@@ -240,6 +246,7 @@ impl AdAccountBuilder {
             time_zone: self
                 .time_zone
                 .ok_or_else(|| BuildError::missing_field("time_zone"))?,
+            unreachable_since: self.unreachable_since,
         })
     }
 }

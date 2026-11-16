@@ -38,7 +38,8 @@ public class ListAccountsTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               },
               {
                 "access": "working",
@@ -64,7 +65,8 @@ public class ListAccountsTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               }
             ]
             """;
@@ -118,7 +120,8 @@ public class ListAccountsTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               }
             ]
             """;

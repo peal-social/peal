@@ -44,7 +44,8 @@ public class SetSpendingTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               },
               "committedThisMonth": 1000000
             }
@@ -113,7 +114,8 @@ public class SetSpendingTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               },
               "committedThisMonth": 1000000
             }

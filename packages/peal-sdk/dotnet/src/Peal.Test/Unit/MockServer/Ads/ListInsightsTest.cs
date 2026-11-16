@@ -38,7 +38,8 @@ public class ListInsightsTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               },
               "from": "from",
               "rows": [
@@ -116,7 +117,8 @@ public class ListInsightsTest : BaseMockServerTest
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               },
               "from": "from",
               "rows": [

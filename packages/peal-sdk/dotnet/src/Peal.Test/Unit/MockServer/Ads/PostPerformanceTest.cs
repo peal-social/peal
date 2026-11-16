@@ -124,7 +124,8 @@ public class PostPerformanceTest : BaseMockServerTest
                     "spendingEnabled": true,
                     "status": "active",
                     "syncedAt": "syncedAt",
-                    "timeZone": "timeZone"
+                    "timeZone": "timeZone",
+                    "unreachableSince": "unreachableSince"
                   },
                   "ads": 1,
                   "totals": {
@@ -160,7 +161,8 @@ public class PostPerformanceTest : BaseMockServerTest
                     "spendingEnabled": true,
                     "status": "active",
                     "syncedAt": "syncedAt",
-                    "timeZone": "timeZone"
+                    "timeZone": "timeZone",
+                    "unreachableSince": "unreachableSince"
                   },
                   "ads": 1,
                   "totals": {
@@ -247,12 +249,6 @@ public class PostPerformanceTest : BaseMockServerTest
                 {
                   "account": {
                     "access": "working",
-                    "capabilities": {
-                      "ads": true,
-                      "boosts": true,
-                      "reach": true,
-                      "results": true
-                    },
                     "connectedAt": "connectedAt",
                     "connectionId": "connectionId",
                     "currency": "currency",

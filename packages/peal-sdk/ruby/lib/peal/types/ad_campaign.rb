@@ -11,7 +11,7 @@ module Peal
 
       field :external_id, -> { String }, optional: false, nullable: false, api_name: "externalId"
 
-      field :kind, -> { String }, optional: false, nullable: true
+      field :kind, -> { String }, optional: true, nullable: true
 
       field :name, -> { String }, optional: false, nullable: false
 

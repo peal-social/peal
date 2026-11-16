@@ -9,7 +9,7 @@ module Peal
 
       field :amount_spent, -> { Integer }, optional: false, nullable: true, api_name: "amountSpent"
 
-      field :capabilities, -> { Peal::Types::AdAccountCapabilities }, optional: false, nullable: false
+      field :capabilities, -> { Peal::Types::AdAccountCapabilities }, optional: true, nullable: false
 
       field :connected_at, -> { String }, optional: false, nullable: false, api_name: "connectedAt"
 
@@ -31,7 +31,7 @@ module Peal
 
       field :new_ads_untracked_until, -> { String }, optional: true, nullable: true, api_name: "newAdsUntrackedUntil"
 
-      field :reached_through, -> { String }, optional: false, nullable: true, api_name: "reachedThrough"
+      field :reached_through, -> { String }, optional: true, nullable: true, api_name: "reachedThrough"
 
       field :spend_cap, -> { Integer }, optional: false, nullable: true, api_name: "spendCap"
 
@@ -42,6 +42,8 @@ module Peal
       field :synced_at, -> { String }, optional: false, nullable: true, api_name: "syncedAt"
 
       field :time_zone, -> { String }, optional: false, nullable: false, api_name: "timeZone"
+
+      field :unreachable_since, -> { String }, optional: true, nullable: true, api_name: "unreachableSince"
     end
   end
 end
