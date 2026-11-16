@@ -303,6 +303,38 @@ const sendRefusal = (
     : Option.none();
 };
 
+/**
+ * Messages, and conversations, Peal kept nothing of because a sender, or
+ * the account itself, was not one of the conversation's people: what the
+ * sandbox's trial watches for, as Meta's ids for each way in are not
+ * verified (src/engagement/AGENTS.md).
+ */
+export const messagesFromUnknownSenders = Metric.counter(
+  "peal.engagement.messages.unknown_senders",
+  {
+    description:
+      "Direct messages and conversations Meta gave with a sender, or without the account, Peal does not know",
+    incremental: true,
+  }
+);
+
+// Counted, and logged by the channel's id and a code alone.
+const unknownSenders = (
+  account: ChannelAccount,
+  reason: "accountNotAParticipant" | "senderOutside",
+  count: number
+) =>
+  Metric.update(messagesFromUnknownSenders, count).pipe(
+    Effect.andThen(
+      Effect.logWarning("Meta gave a direct message Peal could not place")
+    ),
+    Effect.annotateLogs({ channelId: account.channelId, reason })
+  );
+
+// The ids of a listed conversation's people, the account among them.
+const participantIdsOf = (listed: ListedConversation): ReadonlySet<string> =>
+  new Set((listed.participants?.data ?? []).map(({ id }) => id));
+
 const isInstagramLogin = (account: ChannelAccount) =>
   account.platform === "instagram" &&
   Option.contains(account.connection, "instagramLogin");
@@ -469,12 +501,23 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
 
       const data = thread.messages?.data ?? [];
       const messages: MessageReading[] = [];
+      const inConversation = participantIdsOf(listed);
       let detailedAll = true;
+      let outside = 0;
 
       for (const message of data) {
         const reading = readingOf(account, message);
 
-        if (Option.isNone(reading)) {
+        // A sender who is neither the account nor one of the conversation's
+        // people, or none: the ids Peal holds may not be Meta's for this
+        // way in, so the message is kept nowhere, and opens no window.
+        if (
+          message.from === undefined ||
+          !inConversation.has(message.from.id)
+        ) {
+          outside += 1;
+          detailedAll = false;
+        } else if (Option.isNone(reading)) {
           detailedAll = false;
         } else if (
           DateTime.isGreaterThanOrEqualTo(
@@ -484,6 +527,10 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
         ) {
           messages.push(reading.value);
         }
+      }
+
+      if (outside > 0) {
+        yield* unknownSenders(account, "senderOutside", outside);
       }
 
       const reading: ConversationReading = {
@@ -573,6 +620,15 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
             toRead.known.get(conversation.id) ===
               String(conversation.updated_time ?? "")
           ) {
+            continue;
+          }
+
+          // A conversation that does not name the account: the id Peal
+          // holds may not be the one Meta uses for this way in, so
+          // nothing of it is trusted, nor kept.
+          if (!participantIdsOf(conversation).has(account.accountId)) {
+            yield* unknownSenders(account, "accountNotAParticipant", 1);
+
             continue;
           }
 

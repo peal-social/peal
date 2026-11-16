@@ -337,6 +337,49 @@ describe("Meta's direct messages, read", () => {
       )
   );
 
+  it.effect(
+    "keep no message from an account outside its conversation, nor one without a sender, nor a conversation without the account",
+    () =>
+      atNow(
+        Effect.gen(function* outside() {
+          const { account, graph, platform } = yield* onGraph();
+
+          const { from: _, ...anonymous } = message(3);
+
+          graph.add(
+            conversation("c_odd", [
+              message(1),
+              message(2, { from: { id: "7299999999999990", name: "Else" } }),
+              anonymous,
+            ])
+          );
+          graph.add({
+            ...conversation("c_foreign", [message(4)]),
+            participants: [{ id: reader.id, name: reader.name }],
+          });
+
+          const batch = yield* platform.read(account, toRead);
+
+          const odd = batch.conversations.find(
+            ({ platformConversationId }) => platformConversationId === "c_odd"
+          );
+
+          assert.deepStrictEqual(
+            odd?.messages.map(({ platformMessageId }) => platformMessageId),
+            ["m_1"]
+          );
+          assert.isFalse(odd?.complete);
+          assert.isFalse(
+            batch.conversations.some(
+              ({ platformConversationId }) =>
+                platformConversationId === "c_foreign"
+            )
+          );
+          assert.include(batch.listed, "c_foreign");
+        })
+      )
+  );
+
   it.effect("read back only a conversation whose revision changed", () =>
     atNow(
       Effect.gen(function* known() {

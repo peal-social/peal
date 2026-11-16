@@ -31,7 +31,8 @@ import type {
 /** A message the fake keeps, the latest last. */
 export interface FakeDirect {
   readonly id: string;
-  readonly from: { readonly id: string; readonly name: string };
+  /** Who sent it; none where Meta would not say. */
+  readonly from?: { readonly id: string; readonly name: string };
   readonly text: string;
   readonly createdTime: string;
   /** Files attached, by id; their addresses are made up from the id. */
@@ -86,7 +87,7 @@ interface MessageJson {
     data: { id: string; image_data: { url: string } }[];
   };
   created_time: string;
-  from: { id: string; name?: string; username?: string };
+  from?: { id: string; name?: string; username?: string };
   id: string;
   message: string;
   story?: { mention: { id: string; link: string } };
@@ -158,13 +159,16 @@ export const fakeMetaMessages = Effect.fnUntraced(function* fakeMetaMessages(
 
     const shown: MessageJson = {
       created_time: message.createdTime,
-      from:
-        message.from.id.startsWith("ig") || options.instagramLogin === true
-          ? { id: message.from.id, username: message.from.name }
-          : { id: message.from.id, name: message.from.name },
       id: message.id,
       message: message.text,
     };
+
+    if (message.from !== undefined) {
+      shown.from =
+        message.from.id.startsWith("ig") || options.instagramLogin === true
+          ? { id: message.from.id, username: message.from.name }
+          : { id: message.from.id, name: message.from.name };
+    }
 
     if (attachments.length > 0) {
       shown.attachments = {
