@@ -191,6 +191,9 @@ require_relative "peal/inbox_messages/client"
 require_relative "peal/inbox_messages/types/list_conversations_inbox_messages_request"
 require_relative "peal/inbox_messages/types/get_conversation_inbox_messages_request"
 require_relative "peal/inbox_messages/types/new_inbox_message"
+require_relative "peal/inbox_messages/types/new_inbox_private_reply"
+require_relative "peal/inbox_messages/types/get_private_reply_inbox_messages_request"
+require_relative "peal/inbox_messages/types/confirm_private_reply_inbox_messages_request"
 require_relative "peal/inbox_messages/types/set_conversation_read_inbox_messages_request"
 require_relative "peal/inbox_messages/types/get_message_settings_inbox_messages_request"
 require_relative "peal/inbox_messages/types/set_channel_messages_inbox_messages_request"
@@ -972,6 +975,9 @@ module Peal
     autoload :InboxCollectionEnd, ::File.join(__dir__, "peal/types/inbox_collection_end")
     autoload :InboxCommentForgotten, ::File.join(__dir__, "peal/types/inbox_comment_forgotten")
     autoload :InboxCommentState, ::File.join(__dir__, "peal/types/inbox_comment_state")
+    autoload :InboxPrivateReplyReason, ::File.join(__dir__, "peal/types/inbox_private_reply_reason")
+    autoload :InboxPrivateReplyStatus, ::File.join(__dir__, "peal/types/inbox_private_reply_status")
+    autoload :InboxPrivateReply, ::File.join(__dir__, "peal/types/inbox_private_reply")
     autoload :InboxComment, ::File.join(__dir__, "peal/types/inbox_comment")
     autoload :InboxCommentGoneEncodedTag, ::File.join(__dir__, "peal/types/inbox_comment_gone_encoded_tag")
     autoload :InboxCommentGoneEncoded, ::File.join(__dir__, "peal/types/inbox_comment_gone_encoded")
@@ -994,6 +1000,7 @@ module Peal
     autoload :InboxModerationAction, ::File.join(__dir__, "peal/types/inbox_moderation_action")
     autoload :InboxOwnerReplyModeration, ::File.join(__dir__, "peal/types/inbox_owner_reply_moderation")
     autoload :InboxOwnerReply, ::File.join(__dir__, "peal/types/inbox_owner_reply")
+    autoload :InboxPrivateReplyNotFoundEncoded, ::File.join(__dir__, "peal/types/inbox_private_reply_not_found_encoded")
     autoload :InboxReplyReason, ::File.join(__dir__, "peal/types/inbox_reply_reason")
     autoload :InboxReplyStatus, ::File.join(__dir__, "peal/types/inbox_reply_status")
     autoload :InboxReply, ::File.join(__dir__, "peal/types/inbox_reply")
@@ -1184,6 +1191,9 @@ module Peal
     autoload :UploadTarget, ::File.join(__dir__, "peal/types/upload_target")
     autoload :PreparedUpload, ::File.join(__dir__, "peal/types/prepared_upload")
     autoload :PreviewSlot, ::File.join(__dir__, "peal/types/preview_slot")
+    autoload :PrivateReplyRefusal, ::File.join(__dir__, "peal/types/private_reply_refusal")
+    autoload :PrivateReplyNotPossibleEncoded, ::File.join(__dir__, "peal/types/private_reply_not_possible_encoded")
+    autoload :PrivateReplyPendingEncoded, ::File.join(__dir__, "peal/types/private_reply_pending_encoded")
     autoload :PublicationAttempt, ::File.join(__dir__, "peal/types/publication_attempt")
     autoload :SlotTime, ::File.join(__dir__, "peal/types/slot_time")
     autoload :QueueSlot, ::File.join(__dir__, "peal/types/queue_slot")

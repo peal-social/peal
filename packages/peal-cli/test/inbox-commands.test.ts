@@ -58,6 +58,15 @@ describe("peal inbox", () => {
         );
         assert.match(shown, /like\s+reconnect the channel to allow it/u);
         assert.match(shown, /hide\s+unsupported/u);
+        // A private reply is offered until its time, never after.
+        assert.include(
+          shown,
+          `a private reply may go until 2099-01-01T00:00:00Z: peal inbox private-reply send ${answeredCommentId}`
+        );
+        assert.notInclude(
+          shown,
+          `peal inbox private-reply send ${waitingCommentId}`
+        );
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 

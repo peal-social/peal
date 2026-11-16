@@ -26,6 +26,12 @@ class InboxAbilities extends JsonSerializableType
     public string $like;
 
     /**
+     * @var value-of<InboxAbilityStanding> $privateReply
+     */
+    #[JsonProperty('privateReply')]
+    public string $privateReply;
+
+    /**
      * @var value-of<InboxAbilityStanding> $read
      */
     #[JsonProperty('read')]
@@ -48,6 +54,7 @@ class InboxAbilities extends JsonSerializableType
      *   delete: value-of<InboxAbilityStanding>,
      *   hide: value-of<InboxAbilityStanding>,
      *   like: value-of<InboxAbilityStanding>,
+     *   privateReply: value-of<InboxAbilityStanding>,
      *   read: value-of<InboxAbilityStanding>,
      *   reply: value-of<InboxAbilityStanding>,
      *   withdraw: value-of<InboxAbilityStanding>,
@@ -59,6 +66,7 @@ class InboxAbilities extends JsonSerializableType
         $this->delete = $values['delete'];
         $this->hide = $values['hide'];
         $this->like = $values['like'];
+        $this->privateReply = $values['privateReply'];
         $this->read = $values['read'];
         $this->reply = $values['reply'];
         $this->withdraw = $values['withdraw'];

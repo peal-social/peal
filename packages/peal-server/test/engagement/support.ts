@@ -19,6 +19,7 @@ import type {
 import { followBox } from "#engagement/domain/message-box.ts";
 import type { MessageBox } from "#engagement/domain/message-box.ts";
 import { OutgoingMessageIdSchema } from "#engagement/domain/outgoing-message-id.ts";
+import { PrivateReplyIdSchema } from "#engagement/domain/private-reply-id.ts";
 import { ReplyIdSchema } from "#engagement/domain/reply-id.ts";
 import { ReviewIdSchema } from "#engagement/domain/review-id.ts";
 import { ReviewReplyIdSchema } from "#engagement/domain/review-reply-id.ts";
@@ -51,6 +52,9 @@ export const threadId = (n: number) => ThreadIdSchema.make(uuid7(n));
 export const commentId = (n: number) => CommentIdSchema.make(uuid7(n));
 
 export const replyId = (n: number) => ReplyIdSchema.make(uuid7(n));
+
+export const privateReplyId = (n: number) =>
+  PrivateReplyIdSchema.make(uuid7(6000 + n));
 
 export const channelId = (n: number) => ChannelIdSchema.make(uuid7(n));
 

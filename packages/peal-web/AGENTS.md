@@ -522,6 +522,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   moderation only where the thread's `abilities` say `available`, show a
   reply's journal status, and for an `unconfirmed` one only the two
   answers a person gives after checking the platform: never a resend.
+- A comment's private reply (`PrivateReplyPart` in `thread-screen.tsx`,
+  `PrivateReplyView` and `PrivateReplyFormView` in `inbox-views.tsx`):
+  its state shows to who may read messages (the server answers it null
+  otherwise); "Reply privately" opens a dialog only for
+  `engagement:message`, while `abilities.privateReply` is `available`,
+  the comment is shown and before its `privateReplyUntil`, and none holds
+  the comment (a failed one lets another through). The dialog counts the
+  text as Meta does (`privateReplyFit`: Instagram's bytes, Messenger's
+  characters), sends under an `Idempotency-Key` kept until the reply is
+  made, says one message within seven days and that the person answers
+  first, and that saying the message is automatic is the member's to
+  write: Peal appends nothing. An `unconfirmed` one offers the two
+  answers after checking the conversation, never a resend; `reconnect`
+  links to the inbox's message settings.
 - `AssistantMenu` sits in the composer's text section and works on the text
   for all channels. Render it only for members with `assistant:use`, and
   only while `GET …/assistant` answers `available`; refresh that status after

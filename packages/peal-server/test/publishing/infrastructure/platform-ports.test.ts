@@ -53,6 +53,7 @@ const refusingAccess = (failure: AccessFailure) =>
               : Effect.fail(failure),
           withSiteToken: () => Effect.die("No website here"),
           withToken: () => Effect.fail(failure),
+          platformOf: () => Effect.succeed(Option.none()),
           workspaceOf: () => Effect.succeed(Option.none()),
         })
       )
@@ -89,6 +90,7 @@ const grantingAccess = ChannelAccessCredentials.pipe(
         account: () => Effect.succeed(account),
         withSiteToken: () => Effect.die("No website here"),
         withToken: withOneToken,
+        platformOf: () => Effect.succeed(Option.none()),
         workspaceOf: () => Effect.succeed(Option.none()),
       })
     )

@@ -19,17 +19,20 @@ import {
 
 import type { AbilityUnavailable } from "#engagement/application/ability-unavailable.ts";
 import { EngagementInbox } from "#engagement/application/engagement-inbox.ts";
+import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import { EngagementReplies } from "#engagement/application/engagement-replies.ts";
 import type { ModerationFailed } from "#engagement/application/moderation-failed.ts";
 import type { ReplyPending as Pending } from "#engagement/application/reply-pending.ts";
 import type { ReplyTooLong } from "#engagement/application/reply-too-long.ts";
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
+import type { Comment } from "#engagement/domain/comment.ts";
 import type { InvalidReplyTransition } from "#engagement/domain/invalid-reply-transition.ts";
 import { ReplyIdSchema } from "#engagement/domain/reply-id.ts";
 import { ThreadIdSchema } from "#engagement/domain/thread-id.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { allowanceRefusal } from "#shared/api/allowance-reached.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
+import type { Actor } from "#shared/domain/access.ts";
 import { ChannelIdSchema, PostIdSchema } from "#shared/domain/ids.ts";
 
 import {
@@ -114,7 +117,14 @@ export const InboxHandlers = HttpApiBuilder.group(
   Effect.fn(function* inboxHandlers(handlers) {
     const inbox = yield* EngagementInbox;
     const replies = yield* EngagementReplies;
+    const privateReplies = yield* EngagementPrivateReplies;
     const allowanceReached = yield* allowanceRefusal;
+
+    // A comment as the actor sees it, with its private reply.
+    const commentView = (actor: Actor, comment: Comment) =>
+      privateReplies
+        .ofThread(actor, comment.channelId, [comment.id])
+        .pipe(Effect.map((shown) => toCommentView(comment, new Map(), shown)));
 
     return handlers.handleAll({
       confirmReply: ({ params, payload }) =>
@@ -146,7 +156,13 @@ export const InboxHandlers = HttpApiBuilder.group(
           );
 
           return yield* inbox.abilities(actor, channelId).pipe(
-            Effect.map(toAbilitiesView),
+            Effect.flatMap((abilities) =>
+              privateReplies
+                .standingOf(actor, channelId)
+                .pipe(
+                  Effect.map((standing) => toAbilitiesView(abilities, standing))
+                )
+            ),
             Effect.catchTags({
               DatabaseError: Effect.die,
               MissingPermission: forbidden,
@@ -163,7 +179,15 @@ export const InboxHandlers = HttpApiBuilder.group(
           );
 
           return yield* inbox.thread(actor, threadId).pipe(
-            Effect.map(toThreadDetailView),
+            Effect.flatMap((detail) =>
+              privateReplies
+                .ofThread(
+                  actor,
+                  detail.summary.thread.channelId,
+                  detail.comments.map(({ id }) => id)
+                )
+                .pipe(Effect.map((shown) => toThreadDetailView(detail, shown)))
+            ),
             Effect.catchTags({
               DatabaseError: Effect.die,
               MissingPermission: forbidden,
@@ -202,7 +226,7 @@ export const InboxHandlers = HttpApiBuilder.group(
           );
 
           return yield* replies.moderate(actor, commentId, payload.action).pipe(
-            Effect.map((comment) => toCommentView(comment)),
+            Effect.flatMap((comment) => commentView(actor, comment)),
             Effect.catchTags({
               AbilityUnavailable: unavailable,
               CommentGone: commentGone,
@@ -257,7 +281,7 @@ export const InboxHandlers = HttpApiBuilder.group(
           return yield* replies
             .setAnswered(actor, commentId, payload.answered)
             .pipe(
-              Effect.map((comment) => toCommentView(comment)),
+              Effect.flatMap((comment) => commentView(actor, comment)),
               Effect.catchTags({
                 CommentGone: commentGone,
                 CommentNotFound: commentNotFound,

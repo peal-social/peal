@@ -76,6 +76,72 @@ func (c *ConfirmMessageInboxMessagesRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	confirmPrivateReplyInboxMessagesRequestFieldWorkspaceID    = big.NewInt(1 << 0)
+	confirmPrivateReplyInboxMessagesRequestFieldPrivateReplyID = big.NewInt(1 << 1)
+	confirmPrivateReplyInboxMessagesRequestFieldWent           = big.NewInt(1 << 2)
+)
+
+type ConfirmPrivateReplyInboxMessagesRequest struct {
+	WorkspaceID    string `json:"-" url:"-"`
+	PrivateReplyID string `json:"-" url:"-"`
+	Went           bool   `json:"went" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (c *ConfirmPrivateReplyInboxMessagesRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConfirmPrivateReplyInboxMessagesRequest) SetWorkspaceID(workspaceID string) {
+	c.WorkspaceID = workspaceID
+	c.require(confirmPrivateReplyInboxMessagesRequestFieldWorkspaceID)
+}
+
+// SetPrivateReplyID sets the PrivateReplyID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConfirmPrivateReplyInboxMessagesRequest) SetPrivateReplyID(privateReplyID string) {
+	c.PrivateReplyID = privateReplyID
+	c.require(confirmPrivateReplyInboxMessagesRequestFieldPrivateReplyID)
+}
+
+// SetWent sets the Went field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConfirmPrivateReplyInboxMessagesRequest) SetWent(went bool) {
+	c.Went = went
+	c.require(confirmPrivateReplyInboxMessagesRequestFieldWent)
+}
+
+func (c *ConfirmPrivateReplyInboxMessagesRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler ConfirmPrivateReplyInboxMessagesRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*c = ConfirmPrivateReplyInboxMessagesRequest(body)
+	return nil
+}
+
+func (c *ConfirmPrivateReplyInboxMessagesRequest) MarshalJSON() ([]byte, error) {
+	type embed ConfirmPrivateReplyInboxMessagesRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	getConversationInboxMessagesRequestFieldWorkspaceID    = big.NewInt(1 << 0)
 	getConversationInboxMessagesRequestFieldConversationID = big.NewInt(1 << 1)
 	getConversationInboxMessagesRequestFieldCursor         = big.NewInt(1 << 2)
@@ -154,6 +220,42 @@ func (g *GetMessageSettingsInboxMessagesRequest) require(field *big.Int) {
 func (g *GetMessageSettingsInboxMessagesRequest) SetWorkspaceID(workspaceID string) {
 	g.WorkspaceID = workspaceID
 	g.require(getMessageSettingsInboxMessagesRequestFieldWorkspaceID)
+}
+
+var (
+	getPrivateReplyInboxMessagesRequestFieldWorkspaceID    = big.NewInt(1 << 0)
+	getPrivateReplyInboxMessagesRequestFieldPrivateReplyID = big.NewInt(1 << 1)
+)
+
+type GetPrivateReplyInboxMessagesRequest struct {
+	WorkspaceID    string `json:"-" url:"-"`
+	PrivateReplyID string `json:"-" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (g *GetPrivateReplyInboxMessagesRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if g.explicitFields != nil {
+		next.Set(g.explicitFields)
+	}
+	next.Or(next, field)
+	g.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (g *GetPrivateReplyInboxMessagesRequest) SetWorkspaceID(workspaceID string) {
+	g.WorkspaceID = workspaceID
+	g.require(getPrivateReplyInboxMessagesRequestFieldWorkspaceID)
+}
+
+// SetPrivateReplyID sets the PrivateReplyID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (g *GetPrivateReplyInboxMessagesRequest) SetPrivateReplyID(privateReplyID string) {
+	g.PrivateReplyID = privateReplyID
+	g.require(getPrivateReplyInboxMessagesRequestFieldPrivateReplyID)
 }
 
 var (
@@ -285,6 +387,81 @@ func (n *NewInboxMessage) UnmarshalJSON(data []byte) error {
 
 func (n *NewInboxMessage) MarshalJSON() ([]byte, error) {
 	type embed NewInboxMessage
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*n),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, n.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
+	newInboxPrivateReplyFieldIdempotencyKey = big.NewInt(1 << 0)
+	newInboxPrivateReplyFieldWorkspaceID    = big.NewInt(1 << 1)
+	newInboxPrivateReplyFieldCommentID      = big.NewInt(1 << 2)
+	newInboxPrivateReplyFieldText           = big.NewInt(1 << 3)
+)
+
+type NewInboxPrivateReply struct {
+	IdempotencyKey *string `json:"-" url:"-"`
+	WorkspaceID    string  `json:"-" url:"-"`
+	CommentID      string  `json:"commentId" url:"-"`
+	Text           string  `json:"text" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (n *NewInboxPrivateReply) require(field *big.Int) {
+	next := new(big.Int)
+	if n.explicitFields != nil {
+		next.Set(n.explicitFields)
+	}
+	next.Or(next, field)
+	n.explicitFields = next
+}
+
+// SetIdempotencyKey sets the IdempotencyKey field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewInboxPrivateReply) SetIdempotencyKey(idempotencyKey *string) {
+	n.IdempotencyKey = idempotencyKey
+	n.require(newInboxPrivateReplyFieldIdempotencyKey)
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewInboxPrivateReply) SetWorkspaceID(workspaceID string) {
+	n.WorkspaceID = workspaceID
+	n.require(newInboxPrivateReplyFieldWorkspaceID)
+}
+
+// SetCommentID sets the CommentID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewInboxPrivateReply) SetCommentID(commentID string) {
+	n.CommentID = commentID
+	n.require(newInboxPrivateReplyFieldCommentID)
+}
+
+// SetText sets the Text field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewInboxPrivateReply) SetText(text string) {
+	n.Text = text
+	n.require(newInboxPrivateReplyFieldText)
+}
+
+func (n *NewInboxPrivateReply) UnmarshalJSON(data []byte) error {
+	type unmarshaler NewInboxPrivateReply
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*n = NewInboxPrivateReply(body)
+	return nil
+}
+
+func (n *NewInboxPrivateReply) MarshalJSON() ([]byte, error) {
+	type embed NewInboxPrivateReply
 	var marshaler = struct {
 		embed
 	}{

@@ -5,6 +5,7 @@ import type { DatabaseError } from "#shared/application/database-error.ts";
 
 import { MessageStore } from "./ports/message-store.ts";
 import type { MessagesPurged } from "./ports/message-store.ts";
+import { PrivateReplyStore } from "./ports/private-reply-store.ts";
 
 /**
  * Purges of conversations that failed: conversations past their time then
@@ -24,9 +25,9 @@ const perPass = 1000;
 
 /**
  * Keeps no message longer than `conversationsKeptFor` after it was sent:
- * it is deleted, a message sent from Peal once settled that long ago, and
- * a conversation once its last message is that old, unless a message to
- * it is still on its way. Run hourly, so nothing outlives its time by
+ * it is deleted, a message sent from Peal, or a private reply to a
+ * comment, once settled that long ago, and a conversation once its last
+ * message is that old, unless a message to it is still on its way. Run hourly, so nothing outlives its time by
  * more than an hour.
  */
 export class PurgeMessages extends Context.Service<
@@ -37,6 +38,7 @@ export class PurgeMessages extends Context.Service<
     PurgeMessages,
     Effect.gen(function* PurgeMessagesLive() {
       const store = yield* MessageStore;
+      const privateReplies = yield* PrivateReplyStore;
 
       const purge = Effect.gen(function* purge() {
         const since = conversationsKeptSince(yield* DateTime.now);
@@ -45,11 +47,16 @@ export class PurgeMessages extends Context.Service<
 
         for (;;) {
           const pass = yield* store.purge(since, perPass);
+          const replies = yield* privateReplies.purge(since, perPass);
 
           conversations += pass.conversations;
-          messages += pass.messages;
+          messages += pass.messages + replies;
 
-          if (pass.conversations < perPass && pass.messages < perPass) {
+          if (
+            pass.conversations < perPass &&
+            pass.messages < perPass &&
+            replies < perPass
+          ) {
             const purged: MessagesPurged = { conversations, messages };
 
             return purged;

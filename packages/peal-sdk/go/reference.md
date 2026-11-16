@@ -10775,6 +10775,239 @@ _, err := client.InboxMessages.SendMessage(
 </dl>
 </details>
 
+<details><summary><code>client.InboxMessages.SendPrivateReply(WorkspaceID, request) -> *peal.InboxPrivateReply</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's `abilities.privateReply`): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's `privateReplyUntil`), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 `InboxActionUnavailable`, `privateReply`, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 `PrivateReplyNotPossible`, with `reason`), and a text longer than the platform takes (422 `ReplyInvalid`). The message is journalled and sent by a job: the answer is the private reply `sending`; the comment shows how it ended. One whose outcome is unknown is `unconfirmed` and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 `PrivateReplyPending`), whichever request came first; one that failed lets another through. With an `Idempotency-Key` header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 `IdempotencyKeyReused`). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 `UsageAllowanceReached`); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &peal.NewInboxPrivateReply{
+    WorkspaceID: "workspaceId",
+    CommentID: "commentId",
+    Text: "text",
+}
+_, err := client.InboxMessages.SendPrivateReply(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspaceID:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**commentID:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `string` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.InboxMessages.GetPrivateReply(WorkspaceID, PrivateReplyID) -> *peal.InboxPrivateReply</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &peal.GetPrivateReplyInboxMessagesRequest{
+    WorkspaceID: "workspaceId",
+    PrivateReplyID: "privateReplyId",
+}
+_, err := client.InboxMessages.GetPrivateReply(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspaceID:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**privateReplyID:** `string` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.InboxMessages.ConfirmPrivateReply(WorkspaceID, PrivateReplyID, request) -> *peal.InboxPrivateReply</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &peal.ConfirmPrivateReplyInboxMessagesRequest{
+    WorkspaceID: "workspaceId",
+    PrivateReplyID: "privateReplyId",
+    Went: true,
+}
+_, err := client.InboxMessages.ConfirmPrivateReply(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspaceID:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**privateReplyID:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**went:** `bool` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.InboxMessages.SetConversationRead(WorkspaceID, ConversationID, request) -> *peal.InboxConversation</code></summary>
 <dl>
 <dd>

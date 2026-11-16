@@ -4561,7 +4561,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"abilities\": {\n    \"delete\": \"available\",\n    \"hide\": \"available\",\n    \"like\": \"available\",\n    \"read\": \"available\",\n    \"reply\": \"available\",\n    \"withdraw\": \"available\"\n  },\n  \"comments\": [\n    {\n      \"author\": {\n        \"displayName\": null,\n        \"handle\": \"handle\",\n        \"platformId\": \"platformId\"\n      },\n      \"forgotten\": \"expired\",\n      \"id\": \"id\",\n      \"liked\": true,\n      \"parentId\": \"parentId\",\n      \"permalink\": \"permalink\",\n      \"receivedAt\": \"receivedAt\",\n      \"state\": \"new\",\n      \"text\": \"text\",\n      \"threadId\": \"threadId\",\n      \"writtenAt\": \"writtenAt\"\n    }\n  ],\n  \"platform\": \"x\",\n  \"replies\": [\n    {\n      \"authorId\": \"authorId\",\n      \"commentId\": \"commentId\",\n      \"createdAt\": \"createdAt\",\n      \"id\": \"id\",\n      \"permalink\": \"permalink\",\n      \"reason\": \"channelUnavailable\",\n      \"settledAt\": \"settledAt\",\n      \"status\": \"sending\",\n      \"text\": \"text\",\n      \"threadId\": \"threadId\"\n    }\n  ],\n  \"thread\": {\n    \"channelId\": \"channelId\",\n    \"collectionEnded\": \"window\",\n    \"comments\": 1,\n    \"id\": \"id\",\n    \"lastCollectedAt\": \"lastCollectedAt\",\n    \"lastCommentAt\": \"lastCommentAt\",\n    \"permalink\": \"permalink\",\n    \"postId\": \"postId\",\n    \"publishedAt\": \"publishedAt\",\n    \"targetId\": \"targetId\",\n    \"unanswered\": 1\n  }\n}",
+        "body": "{\n  \"abilities\": {\n    \"delete\": \"available\",\n    \"hide\": \"available\",\n    \"like\": \"available\",\n    \"privateReply\": \"available\",\n    \"read\": \"available\",\n    \"reply\": \"available\",\n    \"withdraw\": \"available\"\n  },\n  \"comments\": [\n    {\n      \"author\": {\n        \"displayName\": null,\n        \"handle\": \"handle\",\n        \"platformId\": \"platformId\"\n      },\n      \"forgotten\": \"expired\",\n      \"id\": \"id\",\n      \"liked\": true,\n      \"parentId\": \"parentId\",\n      \"permalink\": \"permalink\",\n      \"privateReply\": {\n        \"authorId\": null,\n        \"commentId\": \"commentId\",\n        \"createdAt\": \"createdAt\",\n        \"id\": \"id\",\n        \"reason\": null,\n        \"ruleId\": null,\n        \"settledAt\": null,\n        \"status\": \"sending\",\n        \"text\": \"text\"\n      },\n      \"privateReplyUntil\": \"privateReplyUntil\",\n      \"receivedAt\": \"receivedAt\",\n      \"state\": \"new\",\n      \"text\": \"text\",\n      \"threadId\": \"threadId\",\n      \"writtenAt\": \"writtenAt\"\n    }\n  ],\n  \"platform\": \"x\",\n  \"replies\": [\n    {\n      \"authorId\": \"authorId\",\n      \"commentId\": \"commentId\",\n      \"createdAt\": \"createdAt\",\n      \"id\": \"id\",\n      \"permalink\": \"permalink\",\n      \"reason\": \"channelUnavailable\",\n      \"settledAt\": \"settledAt\",\n      \"status\": \"sending\",\n      \"text\": \"text\",\n      \"threadId\": \"threadId\"\n    }\n  ],\n  \"thread\": {\n    \"channelId\": \"channelId\",\n    \"collectionEnded\": \"window\",\n    \"comments\": 1,\n    \"id\": \"id\",\n    \"lastCollectedAt\": \"lastCollectedAt\",\n    \"lastCommentAt\": \"lastCommentAt\",\n    \"permalink\": \"permalink\",\n    \"postId\": \"postId\",\n    \"publishedAt\": \"publishedAt\",\n    \"targetId\": \"targetId\",\n    \"unanswered\": 1\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -4600,7 +4600,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"delete\": \"available\",\n  \"hide\": \"available\",\n  \"like\": \"available\",\n  \"read\": \"available\",\n  \"reply\": \"available\",\n  \"withdraw\": \"available\"\n}",
+        "body": "{\n  \"delete\": \"available\",\n  \"hide\": \"available\",\n  \"like\": \"available\",\n  \"privateReply\": \"available\",\n  \"read\": \"available\",\n  \"reply\": \"available\",\n  \"withdraw\": \"available\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -4678,7 +4678,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"author\": {\n    \"displayName\": \"displayName\",\n    \"handle\": \"handle\",\n    \"platformId\": \"platformId\"\n  },\n  \"forgotten\": \"expired\",\n  \"id\": \"id\",\n  \"liked\": true,\n  \"parentId\": \"parentId\",\n  \"permalink\": \"permalink\",\n  \"receivedAt\": \"receivedAt\",\n  \"state\": \"new\",\n  \"text\": \"text\",\n  \"threadId\": \"threadId\",\n  \"writtenAt\": \"writtenAt\"\n}",
+        "body": "{\n  \"author\": {\n    \"displayName\": \"displayName\",\n    \"handle\": \"handle\",\n    \"platformId\": \"platformId\"\n  },\n  \"forgotten\": \"expired\",\n  \"id\": \"id\",\n  \"liked\": true,\n  \"parentId\": \"parentId\",\n  \"permalink\": \"permalink\",\n  \"privateReply\": {\n    \"authorId\": \"authorId\",\n    \"commentId\": \"commentId\",\n    \"createdAt\": \"createdAt\",\n    \"id\": \"id\",\n    \"reason\": \"channelUnavailable\",\n    \"ruleId\": \"ruleId\",\n    \"settledAt\": \"settledAt\",\n    \"status\": \"sending\",\n    \"text\": \"text\"\n  },\n  \"privateReplyUntil\": \"privateReplyUntil\",\n  \"receivedAt\": \"receivedAt\",\n  \"state\": \"new\",\n  \"text\": \"text\",\n  \"threadId\": \"threadId\",\n  \"writtenAt\": \"writtenAt\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -4717,7 +4717,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"author\": {\n    \"displayName\": \"displayName\",\n    \"handle\": \"handle\",\n    \"platformId\": \"platformId\"\n  },\n  \"forgotten\": \"expired\",\n  \"id\": \"id\",\n  \"liked\": true,\n  \"parentId\": \"parentId\",\n  \"permalink\": \"permalink\",\n  \"receivedAt\": \"receivedAt\",\n  \"state\": \"new\",\n  \"text\": \"text\",\n  \"threadId\": \"threadId\",\n  \"writtenAt\": \"writtenAt\"\n}",
+        "body": "{\n  \"author\": {\n    \"displayName\": \"displayName\",\n    \"handle\": \"handle\",\n    \"platformId\": \"platformId\"\n  },\n  \"forgotten\": \"expired\",\n  \"id\": \"id\",\n  \"liked\": true,\n  \"parentId\": \"parentId\",\n  \"permalink\": \"permalink\",\n  \"privateReply\": {\n    \"authorId\": \"authorId\",\n    \"commentId\": \"commentId\",\n    \"createdAt\": \"createdAt\",\n    \"id\": \"id\",\n    \"reason\": \"channelUnavailable\",\n    \"ruleId\": \"ruleId\",\n    \"settledAt\": \"settledAt\",\n    \"status\": \"sending\",\n    \"text\": \"text\"\n  },\n  \"privateReplyUntil\": \"privateReplyUntil\",\n  \"receivedAt\": \"receivedAt\",\n  \"state\": \"new\",\n  \"text\": \"text\",\n  \"threadId\": \"threadId\",\n  \"writtenAt\": \"writtenAt\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5107,6 +5107,120 @@
         }
       },
       "uuid": "ab71d6fd-c4d9-48a2-ac8c-c5b13aae221c",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "b5f7d97c-a077-4fe2-bf48-a4ca8f72989a",
+      "name": "Send a private reply to a comment - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/inbox/messages/private-replies",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"commentId\": \"commentId\",\n  \"createdAt\": \"createdAt\",\n  \"id\": \"id\",\n  \"reason\": \"channelUnavailable\",\n  \"ruleId\": \"ruleId\",\n  \"settledAt\": \"settledAt\",\n  \"status\": \"sending\",\n  \"text\": \"text\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "b5f7d97c-a077-4fe2-bf48-a4ca8f72989a",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "34288bfd-c65f-49a8-a552-cc20a1c4faf7",
+      "name": "Get a private reply - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "privateReplyId": {
+            "equalTo": "privateReplyId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"commentId\": \"commentId\",\n  \"createdAt\": \"createdAt\",\n  \"id\": \"id\",\n  \"reason\": \"channelUnavailable\",\n  \"ruleId\": \"ruleId\",\n  \"settledAt\": \"settledAt\",\n  \"status\": \"sending\",\n  \"text\": \"text\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "34288bfd-c65f-49a8-a552-cc20a1c4faf7",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "6a638883-3212-4583-9553-7fc652948321",
+      "name": "Confirm an unconfirmed private reply - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}/confirm",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "privateReplyId": {
+            "equalTo": "privateReplyId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"commentId\": \"commentId\",\n  \"createdAt\": \"createdAt\",\n  \"id\": \"id\",\n  \"reason\": \"channelUnavailable\",\n  \"ruleId\": \"ruleId\",\n  \"settledAt\": \"settledAt\",\n  \"status\": \"sending\",\n  \"text\": \"text\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "6a638883-3212-4583-9553-7fc652948321",
       "persistent": true,
       "priority": 3,
       "metadata": {
@@ -9317,6 +9431,6 @@
     }
   ],
   "meta": {
-    "total": 248
+    "total": 251
   }
 }

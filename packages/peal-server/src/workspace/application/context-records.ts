@@ -27,6 +27,7 @@ import type {
   ReviewRecord,
   SentReplyRecord,
   SentMessageRecord,
+  SentPrivateReplyRecord,
   SentReviewReplyRecord,
   SavedItemsRecord,
   ShortLinkRecord,
@@ -115,6 +116,11 @@ export interface UserContent {
   readonly messages: readonly SentMessageRecord[];
   readonly notices: readonly NoticeRecord[];
   readonly preferences: PreferencesRecord;
+  /**
+   * The private replies they sent from Peal to the authors of comments,
+   * while Peal keeps them; never the comments, which other people wrote.
+   */
+  readonly privateReplies: readonly SentPrivateReplyRecord[];
   /**
    * The replies they sent from Peal to comments under posts, in any
    * workspace; never the comments, which other people wrote.

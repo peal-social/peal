@@ -24,6 +24,7 @@ import type {
   MessagesApplication,
   MessagesSwitchedOn,
 } from "./ports/message-store.ts";
+import { PrivateReplyStore } from "./ports/private-reply-store.ts";
 
 type Refused = DatabaseError | MessagesNeedPerson | MissingPermission;
 
@@ -81,6 +82,7 @@ export class MessageSettings extends Context.Service<
     MessageSettings,
     Effect.gen(function* MessageSettingsLive() {
       const store = yield* MessageStore;
+      const privateReplies = yield* PrivateReplyStore;
       const source = yield* MessageSource;
       const channels = yield* EngagementChannels;
       const messages = yield* CurrentInboxMessages;
@@ -122,7 +124,9 @@ export class MessageSettings extends Context.Service<
 
             // What was on its way and never set out is not sent: its
             // outbound message is given back as its row goes.
-            yield* transaction(forgetChannelMessages(store, meters, channelId));
+            yield* transaction(
+              forgetChannelMessages(store, privateReplies, meters, channelId)
+            );
 
             // Its platform is then told to stop sending the account's
             // events, once and best effort, while the channel's token is

@@ -9,6 +9,7 @@ from ..types.inbox_conversation_detail import InboxConversationDetail
 from ..types.inbox_conversation_page import InboxConversationPage
 from ..types.inbox_message_settings import InboxMessageSettings
 from ..types.inbox_outgoing_message import InboxOutgoingMessage
+from ..types.inbox_private_reply import InboxPrivateReply
 from .raw_client import AsyncRawInboxMessagesClient, RawInboxMessagesClient
 from .types.list_conversations_inbox_messages_request_unread import ListConversationsInboxMessagesRequestUnread
 
@@ -177,6 +178,138 @@ class InboxMessagesClient:
         """
         _response = self._raw_client.send_message(
             workspace_id, conversation_id, text=text, idempotency_key=idempotency_key, request_options=request_options
+        )
+        return _response.data
+
+    def send_private_reply(
+        self,
+        workspace_id: str,
+        *,
+        comment_id: str,
+        text: str,
+        idempotency_key: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> InboxPrivateReply:
+        """
+        Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's `abilities.privateReply`): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's `privateReplyUntil`), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 `InboxActionUnavailable`, `privateReply`, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 `PrivateReplyNotPossible`, with `reason`), and a text longer than the platform takes (422 `ReplyInvalid`). The message is journalled and sent by a job: the answer is the private reply `sending`; the comment shows how it ended. One whose outcome is unknown is `unconfirmed` and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 `PrivateReplyPending`), whichever request came first; one that failed lets another through. With an `Idempotency-Key` header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 `IdempotencyKeyReused`). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 `UsageAllowanceReached`); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        comment_id : str
+
+        text : str
+
+        idempotency_key : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        InboxPrivateReply
+            InboxPrivateReply
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.inbox_messages.send_private_reply(
+            workspace_id="workspaceId",
+            comment_id="commentId",
+            text="text",
+        )
+        """
+        _response = self._raw_client.send_private_reply(
+            workspace_id,
+            comment_id=comment_id,
+            text=text,
+            idempotency_key=idempotency_key,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def get_private_reply(
+        self, workspace_id: str, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> InboxPrivateReply:
+        """
+        Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        private_reply_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        InboxPrivateReply
+            InboxPrivateReply
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.inbox_messages.get_private_reply(
+            workspace_id="workspaceId",
+            private_reply_id="privateReplyId",
+        )
+        """
+        _response = self._raw_client.get_private_reply(workspace_id, private_reply_id, request_options=request_options)
+        return _response.data
+
+    def confirm_private_reply(
+        self,
+        workspace_id: str,
+        private_reply_id: str,
+        *,
+        went: bool,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> InboxPrivateReply:
+        """
+        Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        private_reply_id : str
+
+        went : bool
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        InboxPrivateReply
+            InboxPrivateReply
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.inbox_messages.confirm_private_reply(
+            workspace_id="workspaceId",
+            private_reply_id="privateReplyId",
+            went=True,
+        )
+        """
+        _response = self._raw_client.confirm_private_reply(
+            workspace_id, private_reply_id, went=went, request_options=request_options
         )
         return _response.data
 
@@ -573,6 +706,164 @@ class AsyncInboxMessagesClient:
         """
         _response = await self._raw_client.send_message(
             workspace_id, conversation_id, text=text, idempotency_key=idempotency_key, request_options=request_options
+        )
+        return _response.data
+
+    async def send_private_reply(
+        self,
+        workspace_id: str,
+        *,
+        comment_id: str,
+        text: str,
+        idempotency_key: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> InboxPrivateReply:
+        """
+        Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's `abilities.privateReply`): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's `privateReplyUntil`), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 `InboxActionUnavailable`, `privateReply`, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 `PrivateReplyNotPossible`, with `reason`), and a text longer than the platform takes (422 `ReplyInvalid`). The message is journalled and sent by a job: the answer is the private reply `sending`; the comment shows how it ended. One whose outcome is unknown is `unconfirmed` and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 `PrivateReplyPending`), whichever request came first; one that failed lets another through. With an `Idempotency-Key` header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 `IdempotencyKeyReused`). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 `UsageAllowanceReached`); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        comment_id : str
+
+        text : str
+
+        idempotency_key : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        InboxPrivateReply
+            InboxPrivateReply
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.inbox_messages.send_private_reply(
+                workspace_id="workspaceId",
+                comment_id="commentId",
+                text="text",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.send_private_reply(
+            workspace_id,
+            comment_id=comment_id,
+            text=text,
+            idempotency_key=idempotency_key,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def get_private_reply(
+        self, workspace_id: str, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> InboxPrivateReply:
+        """
+        Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        private_reply_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        InboxPrivateReply
+            InboxPrivateReply
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.inbox_messages.get_private_reply(
+                workspace_id="workspaceId",
+                private_reply_id="privateReplyId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_private_reply(
+            workspace_id, private_reply_id, request_options=request_options
+        )
+        return _response.data
+
+    async def confirm_private_reply(
+        self,
+        workspace_id: str,
+        private_reply_id: str,
+        *,
+        went: bool,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> InboxPrivateReply:
+        """
+        Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        private_reply_id : str
+
+        went : bool
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        InboxPrivateReply
+            InboxPrivateReply
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.inbox_messages.confirm_private_reply(
+                workspace_id="workspaceId",
+                private_reply_id="privateReplyId",
+                went=True,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.confirm_private_reply(
+            workspace_id, private_reply_id, went=went, request_options=request_options
         )
         return _response.data
 

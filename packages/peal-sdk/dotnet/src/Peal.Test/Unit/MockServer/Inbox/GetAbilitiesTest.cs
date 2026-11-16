@@ -17,6 +17,7 @@ public class GetAbilitiesTest : BaseMockServerTest
               "delete": "available",
               "hide": "available",
               "like": "available",
+              "privateReply": "available",
               "read": "available",
               "reply": "available",
               "withdraw": "available"
@@ -51,6 +52,7 @@ public class GetAbilitiesTest : BaseMockServerTest
               "delete": "available",
               "hide": "available",
               "like": "available",
+              "privateReply": "available",
               "read": "available",
               "reply": "available",
               "withdraw": "available"

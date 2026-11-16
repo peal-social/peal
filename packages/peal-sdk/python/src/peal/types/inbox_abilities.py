@@ -3,7 +3,9 @@
 import typing
 
 import pydantic
+import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
 from .inbox_ability_standing import InboxAbilityStanding
 
 
@@ -11,6 +13,9 @@ class InboxAbilities(UniversalBaseModel):
     delete: InboxAbilityStanding
     hide: InboxAbilityStanding
     like: InboxAbilityStanding
+    private_reply: typing_extensions.Annotated[
+        InboxAbilityStanding, FieldMetadata(alias="privateReply"), pydantic.Field(alias="privateReply")
+    ]
     read: InboxAbilityStanding
     reply: InboxAbilityStanding
     withdraw: InboxAbilityStanding

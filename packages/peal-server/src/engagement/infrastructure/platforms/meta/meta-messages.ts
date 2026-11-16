@@ -107,13 +107,65 @@ import type { MetaEngagementOptions } from "./meta-comments.ts";
 // Written from those pages and never run against Meta: the trial on the
 // sandbox checks what src/engagement/AGENTS.md lists as Not verified.
 
+/** Half a second: two calls a second, Meta's limit for one account. */
+export const conversationsPace = Duration.millis(500);
+
 export interface MetaMessagesOptions extends MetaEngagementOptions {
   /** How long the process waits between two calls of one account. */
   readonly pace?: Duration.Duration;
+  /**
+   * The pace to keep, shared with the private replies' adapter, so every
+   * call of one account from the process takes its turn; one of its own
+   * at `pace` otherwise.
+   */
+  readonly paced?: Paced;
 }
 
-/** Half a second: two calls a second, Meta's limit for one account. */
-export const conversationsPace = Duration.millis(500);
+/** Waits for the account's next slot, and takes it. */
+export type Paced = (account: ChannelAccount) => Effect.Effect<void>;
+
+/**
+ * When each account may next be called, for every read, resume and
+ * subscription of the process: Meta's limit is the app's for the Page or
+ * account, whichever channel calls (a Page in two workspaces). Each call
+ * waits for its account's slot, `pace` after the last one.
+ */
+export const accountPace = Effect.fnUntraced(function* accountPace(
+  pace: Duration.Duration = conversationsPace
+) {
+  const nextCall = yield* Ref.make(new Map<string, DateTime.Utc>());
+
+  const paced: Paced = Effect.fnUntraced(function* paced(
+    account: ChannelAccount
+  ) {
+    const now = yield* DateTime.now;
+    const key = `${account.platform}:${account.accountId}`;
+
+    const slot = yield* Ref.modify(nextCall, (slots) => {
+      const earliest = slots.get(key);
+
+      const taken =
+        earliest === undefined || DateTime.isLessThan(earliest, now)
+          ? now
+          : earliest;
+
+      // Slots long past are forgotten, so the map stays small.
+      const kept = new Map(
+        [...slots].filter(([, at]) => DateTime.isGreaterThanOrEqualTo(at, now))
+      );
+
+      kept.set(key, DateTime.addDuration(taken, pace));
+
+      return [taken, kept] as const;
+    });
+
+    if (DateTime.isLessThan(now, slot)) {
+      yield* Effect.sleep(DateTime.distance(now, slot));
+    }
+  });
+
+  return paced;
+});
 
 // Fifty conversations a page, five pages: 250 a read, past which the read
 // halts and is counted.
@@ -152,7 +204,8 @@ const decodeText = Schema.decodeUnknownOption(Schema.String);
 // Below this, an instant is seconds, not milliseconds (before 1973 as ms).
 const smallestMillis = 100_000_000_000;
 
-const instantFrom = (
+/** An instant as Meta writes it in the Conversations API. */
+export const instantFrom = (
   written: typeof InstantSchema.Type
 ): Option.Option<DateTime.Utc> =>
   decodeEpoch(written).pipe(
@@ -397,42 +450,7 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
     const pace = options.pace ?? conversationsPace;
     const deadlineAfter = options.deadline ?? defaultDeadline;
 
-    // A Graph call as the account, half a second after its last one in
-    // this read: its answer, or none when nothing came back.
-    // When each account may next be called, for every read, resume and
-    // subscription of the process: Meta's limit is the app's for the Page
-    // or account, whichever channel calls (a Page in two workspaces).
-    const nextCall = yield* Ref.make(new Map<string, DateTime.Utc>());
-
-    // Waits for the account's next slot, and takes it.
-    const paced = Effect.fnUntraced(function* paced(account: ChannelAccount) {
-      const now = yield* DateTime.now;
-      const key = `${account.platform}:${account.accountId}`;
-
-      const slot = yield* Ref.modify(nextCall, (slots) => {
-        const earliest = slots.get(key);
-
-        const taken =
-          earliest === undefined || DateTime.isLessThan(earliest, now)
-            ? now
-            : earliest;
-
-        // Slots long past are forgotten, so the map stays small.
-        const kept = new Map(
-          [...slots].filter(([, at]) =>
-            DateTime.isGreaterThanOrEqualTo(at, now)
-          )
-        );
-
-        kept.set(key, DateTime.addDuration(taken, pace));
-
-        return [taken, kept] as const;
-      });
-
-      if (DateTime.isLessThan(now, slot)) {
-        yield* Effect.sleep(DateTime.distance(now, slot));
-      }
-    });
+    const paced = options.paced ?? (yield* accountPace(pace));
 
     // A Graph call as the account, once its slot came: its answer, or none
     // when nothing came back.

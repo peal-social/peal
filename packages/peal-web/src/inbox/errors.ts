@@ -3,9 +3,11 @@ import {
   InboxActionFailed,
   InboxActionUnavailable,
   MessageMentionsOutside,
+  PrivateReplyNotPossible,
   ReplyInvalid,
   ReplyStatusConflict,
 } from "peal-contract";
+import type { PrivateReplyRefusal } from "peal-contract";
 
 // Why an inbox action failed, as the Inbox.errors catalogue explains it,
 // from the API's errors.
@@ -18,6 +20,9 @@ export const InboxErrorKeySchema = Schema.Literals([
   "forbidden",
   "messagePending",
   "messagesUsed",
+  // The comment has its one private reply already.
+  "privateReplyPending",
+  "privateReplyNotFound",
   "replyEmpty",
   "replyNotFound",
   "replyPending",
@@ -47,6 +52,11 @@ export type InboxError =
   | {
       readonly key: "unavailable";
       readonly standing: InboxActionUnavailable["standing"];
+    }
+  // The comment cannot get a private reply: `reason` says why.
+  | {
+      readonly key: "privateReplyNotPossible";
+      readonly reason: PrivateReplyRefusal;
     };
 
 // The API's errors that need nothing more to be explained, by tag.
@@ -60,7 +70,9 @@ const reasons = new Map<string, InboxErrorKey>([
   ["InboxReviewNotFound", "reviewNotFound"],
   ["InboxReviewThreadNotFound", "threadNotFound"],
   ["InboxThreadNotFound", "threadNotFound"],
+  ["InboxPrivateReplyNotFound", "privateReplyNotFound"],
   ["MessagePending", "messagePending"],
+  ["PrivateReplyPending", "privateReplyPending"],
   ["ReplyPending", "replyPending"],
   // The billing account's messages of the month: the upgrade dialog
   // opens beside.
@@ -76,6 +88,8 @@ const isFailed = Schema.is(InboxActionFailed);
 const isConflict = Schema.is(ReplyStatusConflict);
 
 const isOutside = Schema.is(MessageMentionsOutside);
+
+const isNotPossible = Schema.is(PrivateReplyNotPossible);
 
 const explain = (error: { readonly _tag: string }): InboxError => {
   if (isInvalid(error)) {
@@ -102,6 +116,10 @@ const explain = (error: { readonly _tag: string }): InboxError => {
 
   if (isConflict(error)) {
     return { key: "statusConflict", status: error.status };
+  }
+
+  if (isNotPossible(error)) {
+    return { key: "privateReplyNotPossible", reason: error.reason };
   }
 
   return { key: reasons.get(error._tag) ?? "unknown" };

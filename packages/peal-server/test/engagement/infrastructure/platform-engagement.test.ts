@@ -19,6 +19,7 @@ import { CommentSource } from "#engagement/application/ports/comment-source.ts";
 import { MessageChannelsOfAccount } from "#engagement/application/ports/message-channels-of-account.ts";
 import { MessageSource } from "#engagement/application/ports/message-source.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
+import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
 import { ReplySender } from "#engagement/application/ports/reply-sender.ts";
 import type { SendRequest } from "#engagement/application/ports/reply-sender.ts";
 import { followBox } from "#engagement/domain/message-box.ts";
@@ -48,6 +49,7 @@ import { OpenOutboundGuard } from "#test/channels/support.ts";
 import { fakeMetaMessages } from "#test/engagement/fakes/fake-meta-messages.ts";
 import { memoryQuota } from "#test/engagement/fakes/fake-youtube-comments.ts";
 import { makeMessageWorld } from "#test/engagement/fakes/message-world.ts";
+import { noPrivateReplies } from "#test/engagement/fakes/no-private-replies.ts";
 import { makeReviewWorld } from "#test/engagement/fakes/review-world.ts";
 import { makeWorld } from "#test/engagement/fakes/world.ts";
 import type { World } from "#test/engagement/fakes/world.ts";
@@ -211,6 +213,7 @@ const onServer = Effect.fnUntraced(function* onServer(
             world.ports,
             makeReviewWorld().ports,
             Layer.succeed(MessageStore, makeMessageWorld().store),
+            Layer.succeed(PrivateReplyStore, noPrivateReplies),
             noOtherChannels,
             channelAccessOf(
               Option.getOrElse(failure, () => account),
@@ -564,6 +567,7 @@ const messageSourceOn = (
             makeWorld().ports,
             makeReviewWorld().ports,
             Layer.succeed(MessageStore, store),
+            Layer.succeed(PrivateReplyStore, noPrivateReplies),
             meta?.others ?? noOtherChannels,
             Layer.succeed(
               CurrentInboxMessages,

@@ -15018,6 +15018,433 @@ func (i *InboxMessageNotFoundEncoded) String() string {
 }
 
 var (
+	inboxPrivateReplyFieldAuthorID  = big.NewInt(1 << 0)
+	inboxPrivateReplyFieldCommentID = big.NewInt(1 << 1)
+	inboxPrivateReplyFieldCreatedAt = big.NewInt(1 << 2)
+	inboxPrivateReplyFieldID        = big.NewInt(1 << 3)
+	inboxPrivateReplyFieldReason    = big.NewInt(1 << 4)
+	inboxPrivateReplyFieldRuleID    = big.NewInt(1 << 5)
+	inboxPrivateReplyFieldSettledAt = big.NewInt(1 << 6)
+	inboxPrivateReplyFieldStatus    = big.NewInt(1 << 7)
+	inboxPrivateReplyFieldText      = big.NewInt(1 << 8)
+)
+
+// inboxPrivateReplyNullableFields maps the wire names of InboxPrivateReply's nullable fields (required or optional) to their field bits.
+var inboxPrivateReplyNullableFields = map[string]*big.Int{
+	"authorId":  inboxPrivateReplyFieldAuthorID,
+	"reason":    inboxPrivateReplyFieldReason,
+	"ruleId":    inboxPrivateReplyFieldRuleID,
+	"settledAt": inboxPrivateReplyFieldSettledAt,
+}
+
+type InboxPrivateReply struct {
+	AuthorID  *string                  `json:"authorId,omitempty" url:"authorId,omitempty"`
+	CommentID string                   `json:"commentId" url:"commentId"`
+	CreatedAt string                   `json:"createdAt" url:"createdAt"`
+	ID        string                   `json:"id" url:"id"`
+	Reason    *InboxPrivateReplyReason `json:"reason,omitempty" url:"reason,omitempty"`
+	RuleID    *string                  `json:"ruleId,omitempty" url:"ruleId,omitempty"`
+	SettledAt *string                  `json:"settledAt,omitempty" url:"settledAt,omitempty"`
+	Status    InboxPrivateReplyStatus  `json:"status" url:"status"`
+	Text      string                   `json:"text" url:"text"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxPrivateReply) GetAuthorID() *string {
+	if i == nil {
+		return nil
+	}
+	return i.AuthorID
+}
+
+func (i *InboxPrivateReply) GetCommentID() string {
+	if i == nil {
+		return ""
+	}
+	return i.CommentID
+}
+
+func (i *InboxPrivateReply) GetCreatedAt() string {
+	if i == nil {
+		return ""
+	}
+	return i.CreatedAt
+}
+
+func (i *InboxPrivateReply) GetID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ID
+}
+
+func (i *InboxPrivateReply) GetReason() *InboxPrivateReplyReason {
+	if i == nil {
+		return nil
+	}
+	return i.Reason
+}
+
+func (i *InboxPrivateReply) GetRuleID() *string {
+	if i == nil {
+		return nil
+	}
+	return i.RuleID
+}
+
+func (i *InboxPrivateReply) GetSettledAt() *string {
+	if i == nil {
+		return nil
+	}
+	return i.SettledAt
+}
+
+func (i *InboxPrivateReply) GetStatus() InboxPrivateReplyStatus {
+	if i == nil {
+		return ""
+	}
+	return i.Status
+}
+
+func (i *InboxPrivateReply) GetText() string {
+	if i == nil {
+		return ""
+	}
+	return i.Text
+}
+
+func (i *InboxPrivateReply) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxPrivateReply) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetAuthorID sets the AuthorID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetAuthorID(authorID *string) {
+	i.AuthorID = authorID
+	i.require(inboxPrivateReplyFieldAuthorID)
+}
+
+// SetCommentID sets the CommentID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetCommentID(commentID string) {
+	i.CommentID = commentID
+	i.require(inboxPrivateReplyFieldCommentID)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetCreatedAt(createdAt string) {
+	i.CreatedAt = createdAt
+	i.require(inboxPrivateReplyFieldCreatedAt)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetID(id string) {
+	i.ID = id
+	i.require(inboxPrivateReplyFieldID)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetReason(reason *InboxPrivateReplyReason) {
+	i.Reason = reason
+	i.require(inboxPrivateReplyFieldReason)
+}
+
+// SetRuleID sets the RuleID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetRuleID(ruleID *string) {
+	i.RuleID = ruleID
+	i.require(inboxPrivateReplyFieldRuleID)
+}
+
+// SetSettledAt sets the SettledAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetSettledAt(settledAt *string) {
+	i.SettledAt = settledAt
+	i.require(inboxPrivateReplyFieldSettledAt)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetStatus(status InboxPrivateReplyStatus) {
+	i.Status = status
+	i.require(inboxPrivateReplyFieldStatus)
+}
+
+// SetText sets the Text field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReply) SetText(text string) {
+	i.Text = text
+	i.require(inboxPrivateReplyFieldText)
+}
+
+func (i *InboxPrivateReply) UnmarshalJSON(data []byte) error {
+	type unmarshaler InboxPrivateReply
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*i = InboxPrivateReply(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, inboxPrivateReplyNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		i.require(presentFields)
+	}
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxPrivateReply) MarshalJSON() ([]byte, error) {
+	type embed InboxPrivateReply
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*i),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxPrivateReply) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+var (
+	inboxPrivateReplyNotFoundEncodedFieldCode      = big.NewInt(1 << 0)
+	inboxPrivateReplyNotFoundEncodedFieldMessage   = big.NewInt(1 << 1)
+	inboxPrivateReplyNotFoundEncodedFieldRequestID = big.NewInt(1 << 2)
+)
+
+type InboxPrivateReplyNotFoundEncoded struct {
+	Code      *string `json:"code,omitempty" url:"code,omitempty"`
+	Message   *string `json:"message,omitempty" url:"message,omitempty"`
+	RequestID *string `json:"requestId,omitempty" url:"requestId,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxPrivateReplyNotFoundEncoded) GetCode() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Code
+}
+
+func (i *InboxPrivateReplyNotFoundEncoded) GetMessage() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Message
+}
+
+func (i *InboxPrivateReplyNotFoundEncoded) GetRequestID() *string {
+	if i == nil {
+		return nil
+	}
+	return i.RequestID
+}
+
+func (i *InboxPrivateReplyNotFoundEncoded) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxPrivateReplyNotFoundEncoded) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReplyNotFoundEncoded) SetCode(code *string) {
+	i.Code = code
+	i.require(inboxPrivateReplyNotFoundEncodedFieldCode)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReplyNotFoundEncoded) SetMessage(message *string) {
+	i.Message = message
+	i.require(inboxPrivateReplyNotFoundEncodedFieldMessage)
+}
+
+// SetRequestID sets the RequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxPrivateReplyNotFoundEncoded) SetRequestID(requestID *string) {
+	i.RequestID = requestID
+	i.require(inboxPrivateReplyNotFoundEncodedFieldRequestID)
+}
+
+func (i *InboxPrivateReplyNotFoundEncoded) UnmarshalJSON(data []byte) error {
+	type unmarshaler InboxPrivateReplyNotFoundEncoded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*i = InboxPrivateReplyNotFoundEncoded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxPrivateReplyNotFoundEncoded) MarshalJSON() ([]byte, error) {
+	type embed InboxPrivateReplyNotFoundEncoded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*i),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxPrivateReplyNotFoundEncoded) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+type InboxPrivateReplyReason string
+
+const (
+	InboxPrivateReplyReasonChannelUnavailable  InboxPrivateReplyReason = "channelUnavailable"
+	InboxPrivateReplyReasonReconnectNeeded     InboxPrivateReplyReason = "reconnectNeeded"
+	InboxPrivateReplyReasonRateLimited         InboxPrivateReplyReason = "rateLimited"
+	InboxPrivateReplyReasonPlatformUnavailable InboxPrivateReplyReason = "platformUnavailable"
+	InboxPrivateReplyReasonCommentGone         InboxPrivateReplyReason = "commentGone"
+	InboxPrivateReplyReasonAlreadyAnswered     InboxPrivateReplyReason = "alreadyAnswered"
+	InboxPrivateReplyReasonRefused             InboxPrivateReplyReason = "refused"
+	InboxPrivateReplyReasonWindowClosed        InboxPrivateReplyReason = "windowClosed"
+	InboxPrivateReplyReasonNotSent             InboxPrivateReplyReason = "notSent"
+	InboxPrivateReplyReasonNoResponse          InboxPrivateReplyReason = "noResponse"
+	InboxPrivateReplyReasonInterrupted         InboxPrivateReplyReason = "interrupted"
+	InboxPrivateReplyReasonAdapterFailure      InboxPrivateReplyReason = "adapterFailure"
+)
+
+func NewInboxPrivateReplyReasonFromString(s string) (InboxPrivateReplyReason, error) {
+	switch s {
+	case "channelUnavailable":
+		return InboxPrivateReplyReasonChannelUnavailable, nil
+	case "reconnectNeeded":
+		return InboxPrivateReplyReasonReconnectNeeded, nil
+	case "rateLimited":
+		return InboxPrivateReplyReasonRateLimited, nil
+	case "platformUnavailable":
+		return InboxPrivateReplyReasonPlatformUnavailable, nil
+	case "commentGone":
+		return InboxPrivateReplyReasonCommentGone, nil
+	case "alreadyAnswered":
+		return InboxPrivateReplyReasonAlreadyAnswered, nil
+	case "refused":
+		return InboxPrivateReplyReasonRefused, nil
+	case "windowClosed":
+		return InboxPrivateReplyReasonWindowClosed, nil
+	case "notSent":
+		return InboxPrivateReplyReasonNotSent, nil
+	case "noResponse":
+		return InboxPrivateReplyReasonNoResponse, nil
+	case "interrupted":
+		return InboxPrivateReplyReasonInterrupted, nil
+	case "adapterFailure":
+		return InboxPrivateReplyReasonAdapterFailure, nil
+	}
+	var t InboxPrivateReplyReason
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxPrivateReplyReason) Ptr() *InboxPrivateReplyReason {
+	return &i
+}
+
+type InboxPrivateReplyStatus string
+
+const (
+	InboxPrivateReplyStatusSending     InboxPrivateReplyStatus = "sending"
+	InboxPrivateReplyStatusSent        InboxPrivateReplyStatus = "sent"
+	InboxPrivateReplyStatusFailed      InboxPrivateReplyStatus = "failed"
+	InboxPrivateReplyStatusUnconfirmed InboxPrivateReplyStatus = "unconfirmed"
+)
+
+func NewInboxPrivateReplyStatusFromString(s string) (InboxPrivateReplyStatus, error) {
+	switch s {
+	case "sending":
+		return InboxPrivateReplyStatusSending, nil
+	case "sent":
+		return InboxPrivateReplyStatusSent, nil
+	case "failed":
+		return InboxPrivateReplyStatusFailed, nil
+	case "unconfirmed":
+		return InboxPrivateReplyStatusUnconfirmed, nil
+	}
+	var t InboxPrivateReplyStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxPrivateReplyStatus) Ptr() *InboxPrivateReplyStatus {
+	return &i
+}
+
+var (
 	inboxReplyNotFoundEncodedFieldCode      = big.NewInt(1 << 0)
 	inboxReplyNotFoundEncodedFieldMessage   = big.NewInt(1 << 1)
 	inboxReplyNotFoundEncodedFieldRequestID = big.NewInt(1 << 2)
@@ -25131,6 +25558,299 @@ func NewPostStatusConflictEncodedTagFromString(s string) (PostStatusConflictEnco
 }
 
 func (p PostStatusConflictEncodedTag) Ptr() *PostStatusConflictEncodedTag {
+	return &p
+}
+
+var (
+	privateReplyNotPossibleEncodedFieldCode      = big.NewInt(1 << 0)
+	privateReplyNotPossibleEncodedFieldMessage   = big.NewInt(1 << 1)
+	privateReplyNotPossibleEncodedFieldRequestID = big.NewInt(1 << 2)
+	privateReplyNotPossibleEncodedFieldReason    = big.NewInt(1 << 3)
+)
+
+type PrivateReplyNotPossibleEncoded struct {
+	Code      *string             `json:"code,omitempty" url:"code,omitempty"`
+	Message   *string             `json:"message,omitempty" url:"message,omitempty"`
+	RequestID *string             `json:"requestId,omitempty" url:"requestId,omitempty"`
+	Reason    PrivateReplyRefusal `json:"reason" url:"reason"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (p *PrivateReplyNotPossibleEncoded) GetCode() *string {
+	if p == nil {
+		return nil
+	}
+	return p.Code
+}
+
+func (p *PrivateReplyNotPossibleEncoded) GetMessage() *string {
+	if p == nil {
+		return nil
+	}
+	return p.Message
+}
+
+func (p *PrivateReplyNotPossibleEncoded) GetRequestID() *string {
+	if p == nil {
+		return nil
+	}
+	return p.RequestID
+}
+
+func (p *PrivateReplyNotPossibleEncoded) GetReason() PrivateReplyRefusal {
+	if p == nil {
+		return ""
+	}
+	return p.Reason
+}
+
+func (p *PrivateReplyNotPossibleEncoded) GetExtraProperties() map[string]interface{} {
+	if p == nil {
+		return nil
+	}
+	return p.extraProperties
+}
+
+func (p *PrivateReplyNotPossibleEncoded) require(field *big.Int) {
+	next := new(big.Int)
+	if p.explicitFields != nil {
+		next.Set(p.explicitFields)
+	}
+	next.Or(next, field)
+	p.explicitFields = next
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PrivateReplyNotPossibleEncoded) SetCode(code *string) {
+	p.Code = code
+	p.require(privateReplyNotPossibleEncodedFieldCode)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PrivateReplyNotPossibleEncoded) SetMessage(message *string) {
+	p.Message = message
+	p.require(privateReplyNotPossibleEncodedFieldMessage)
+}
+
+// SetRequestID sets the RequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PrivateReplyNotPossibleEncoded) SetRequestID(requestID *string) {
+	p.RequestID = requestID
+	p.require(privateReplyNotPossibleEncodedFieldRequestID)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PrivateReplyNotPossibleEncoded) SetReason(reason PrivateReplyRefusal) {
+	p.Reason = reason
+	p.require(privateReplyNotPossibleEncodedFieldReason)
+}
+
+func (p *PrivateReplyNotPossibleEncoded) UnmarshalJSON(data []byte) error {
+	type unmarshaler PrivateReplyNotPossibleEncoded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*p = PrivateReplyNotPossibleEncoded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *p)
+	if err != nil {
+		return err
+	}
+	p.extraProperties = extraProperties
+	p.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (p *PrivateReplyNotPossibleEncoded) MarshalJSON() ([]byte, error) {
+	type embed PrivateReplyNotPossibleEncoded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*p),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (p *PrivateReplyNotPossibleEncoded) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	if len(p.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(p); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", p)
+}
+
+var (
+	privateReplyPendingEncodedFieldCode           = big.NewInt(1 << 0)
+	privateReplyPendingEncodedFieldMessage        = big.NewInt(1 << 1)
+	privateReplyPendingEncodedFieldRequestID      = big.NewInt(1 << 2)
+	privateReplyPendingEncodedFieldPrivateReplyID = big.NewInt(1 << 3)
+)
+
+type PrivateReplyPendingEncoded struct {
+	Code           *string `json:"code,omitempty" url:"code,omitempty"`
+	Message        *string `json:"message,omitempty" url:"message,omitempty"`
+	RequestID      *string `json:"requestId,omitempty" url:"requestId,omitempty"`
+	PrivateReplyID string  `json:"privateReplyId" url:"privateReplyId"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (p *PrivateReplyPendingEncoded) GetCode() *string {
+	if p == nil {
+		return nil
+	}
+	return p.Code
+}
+
+func (p *PrivateReplyPendingEncoded) GetMessage() *string {
+	if p == nil {
+		return nil
+	}
+	return p.Message
+}
+
+func (p *PrivateReplyPendingEncoded) GetRequestID() *string {
+	if p == nil {
+		return nil
+	}
+	return p.RequestID
+}
+
+func (p *PrivateReplyPendingEncoded) GetPrivateReplyID() string {
+	if p == nil {
+		return ""
+	}
+	return p.PrivateReplyID
+}
+
+func (p *PrivateReplyPendingEncoded) GetExtraProperties() map[string]interface{} {
+	if p == nil {
+		return nil
+	}
+	return p.extraProperties
+}
+
+func (p *PrivateReplyPendingEncoded) require(field *big.Int) {
+	next := new(big.Int)
+	if p.explicitFields != nil {
+		next.Set(p.explicitFields)
+	}
+	next.Or(next, field)
+	p.explicitFields = next
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PrivateReplyPendingEncoded) SetCode(code *string) {
+	p.Code = code
+	p.require(privateReplyPendingEncodedFieldCode)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PrivateReplyPendingEncoded) SetMessage(message *string) {
+	p.Message = message
+	p.require(privateReplyPendingEncodedFieldMessage)
+}
+
+// SetRequestID sets the RequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PrivateReplyPendingEncoded) SetRequestID(requestID *string) {
+	p.RequestID = requestID
+	p.require(privateReplyPendingEncodedFieldRequestID)
+}
+
+// SetPrivateReplyID sets the PrivateReplyID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PrivateReplyPendingEncoded) SetPrivateReplyID(privateReplyID string) {
+	p.PrivateReplyID = privateReplyID
+	p.require(privateReplyPendingEncodedFieldPrivateReplyID)
+}
+
+func (p *PrivateReplyPendingEncoded) UnmarshalJSON(data []byte) error {
+	type unmarshaler PrivateReplyPendingEncoded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*p = PrivateReplyPendingEncoded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *p)
+	if err != nil {
+		return err
+	}
+	p.extraProperties = extraProperties
+	p.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (p *PrivateReplyPendingEncoded) MarshalJSON() ([]byte, error) {
+	type embed PrivateReplyPendingEncoded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*p),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (p *PrivateReplyPendingEncoded) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	if len(p.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(p); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", p)
+}
+
+type PrivateReplyRefusal string
+
+const (
+	PrivateReplyRefusalOwnComment PrivateReplyRefusal = "ownComment"
+	PrivateReplyRefusalGone       PrivateReplyRefusal = "gone"
+	PrivateReplyRefusalTooOld     PrivateReplyRefusal = "tooOld"
+)
+
+func NewPrivateReplyRefusalFromString(s string) (PrivateReplyRefusal, error) {
+	switch s {
+	case "ownComment":
+		return PrivateReplyRefusalOwnComment, nil
+	case "gone":
+		return PrivateReplyRefusalGone, nil
+	case "tooOld":
+		return PrivateReplyRefusalTooOld, nil
+	}
+	var t PrivateReplyRefusal
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (p PrivateReplyRefusal) Ptr() *PrivateReplyRefusal {
 	return &p
 }
 

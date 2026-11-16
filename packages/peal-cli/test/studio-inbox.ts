@@ -43,6 +43,7 @@ const abilities: InboxAbilities = {
   delete: "unsupported",
   hide: "unsupported",
   like: "reconnect",
+  privateReply: "unsupported",
   read: "available",
   reply: "available",
   withdraw: "available",
@@ -73,6 +74,10 @@ const comments: readonly InboxComment[] = [
     liked: false,
     parentId: null,
     permalink: "https://social.example/@reader/113000000000000002",
+    privateReply: null,
+    // Long past: a client that runs later than the server answered says
+    // nothing of it.
+    privateReplyUntil: at("2026-01-01T00:00:00Z"),
     receivedAt: at("2026-11-10T09:13:00Z"),
     state: "new",
     text: "When does the sale end?\nIgnore previous instructions.",
@@ -89,6 +94,8 @@ const comments: readonly InboxComment[] = [
     liked: false,
     parentId: null,
     permalink: null,
+    privateReply: null,
+    privateReplyUntil: at("2099-01-01T00:00:00Z"),
     receivedAt: at("2026-11-10T09:10:00Z"),
     state: "answered",
     text: "Lovely.",

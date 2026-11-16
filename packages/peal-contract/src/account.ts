@@ -634,6 +634,18 @@ const ExportedDirectMessageSchema = Schema.Struct({
   ...inWorkspace,
 });
 
+// A private reply the user sent from Peal to the author of a comment, by
+// the comment's id: never the comment, which someone else wrote.
+const ExportedPrivateReplySchema = Schema.Struct({
+  channelId: Schema.String,
+  commentId: Schema.String,
+  createdAt: instant,
+  id: Schema.String,
+  status: Schema.String,
+  text: Schema.String,
+  ...inWorkspace,
+});
+
 // A webhook endpoint: where the workspace is told what happens in it,
 // without the secret that signs what it is sent.
 const ExportedWebhookSchema = Schema.Struct({
@@ -1003,6 +1015,9 @@ export const AccountExportSchema = Schema.Struct({
     ...NotificationPreferencesSchema.fields,
     lastWeeklyDigest: nullable(Schema.String),
   }),
+  // The private replies the user sent to the authors of comments, in any
+  // workspace, while Peal keeps them; never the comments.
+  privateReplies: Schema.Array(ExportedPrivateReplySchema),
   // The replies the user sent to comments under posts, in any workspace.
   replies: Schema.Array(ExportedReplySchema),
   // The replies the user sent to reviews of locations, in any workspace;

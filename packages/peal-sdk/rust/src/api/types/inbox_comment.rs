@@ -15,6 +15,12 @@ pub struct InboxComment {
     pub parent_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub permalink: Option<String>,
+    #[serde(rename = "privateReply")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_reply: Option<InboxPrivateReply>,
+    #[serde(rename = "privateReplyUntil")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_reply_until: Option<String>,
     #[serde(rename = "receivedAt")]
     #[serde(default)]
     pub received_at: String,
@@ -44,6 +50,8 @@ pub struct InboxCommentBuilder {
     liked: Option<bool>,
     parent_id: Option<String>,
     permalink: Option<String>,
+    private_reply: Option<InboxPrivateReply>,
+    private_reply_until: Option<String>,
     received_at: Option<String>,
     state: Option<InboxCommentState>,
     text: Option<String>,
@@ -79,6 +87,16 @@ impl InboxCommentBuilder {
 
     pub fn permalink(mut self, value: impl Into<String>) -> Self {
         self.permalink = Some(value.into());
+        self
+    }
+
+    pub fn private_reply(mut self, value: InboxPrivateReply) -> Self {
+        self.private_reply = Some(value);
+        self
+    }
+
+    pub fn private_reply_until(mut self, value: impl Into<String>) -> Self {
+        self.private_reply_until = Some(value.into());
         self
     }
 
@@ -126,6 +144,8 @@ impl InboxCommentBuilder {
                 .ok_or_else(|| BuildError::missing_field("liked"))?,
             parent_id: self.parent_id,
             permalink: self.permalink,
+            private_reply: self.private_reply,
+            private_reply_until: self.private_reply_until,
             received_at: self
                 .received_at
                 .ok_or_else(|| BuildError::missing_field("received_at"))?,

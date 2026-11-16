@@ -11,6 +11,8 @@ module Peal
 
       field :like, -> { Peal::Types::InboxAbilityStanding }, optional: false, nullable: false
 
+      field :private_reply, -> { Peal::Types::InboxAbilityStanding }, optional: false, nullable: false, api_name: "privateReply"
+
       field :read, -> { Peal::Types::InboxAbilityStanding }, optional: false, nullable: false
 
       field :reply, -> { Peal::Types::InboxAbilityStanding }, optional: false, nullable: false

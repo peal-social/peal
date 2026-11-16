@@ -101,6 +101,7 @@ const viewOf = Effect.fn("AccountExport.view")(function* viewOf(
     messages: exported.messages,
     notices,
     notificationPreferences: exported.preferences,
+    privateReplies: exported.privateReplies,
     replies: exported.replies,
     reviewReplies: exported.reviewReplies,
     review: exported.review,

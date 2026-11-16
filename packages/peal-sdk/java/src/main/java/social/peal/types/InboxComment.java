@@ -36,6 +36,10 @@ public final class InboxComment {
 
     private final Optional<String> permalink;
 
+    private final Optional<InboxPrivateReply> privateReply;
+
+    private final Optional<String> privateReplyUntil;
+
     private final String receivedAt;
 
     private final InboxCommentState state;
@@ -55,6 +59,8 @@ public final class InboxComment {
             boolean liked,
             Optional<String> parentId,
             Optional<String> permalink,
+            Optional<InboxPrivateReply> privateReply,
+            Optional<String> privateReplyUntil,
             String receivedAt,
             InboxCommentState state,
             String text,
@@ -67,6 +73,8 @@ public final class InboxComment {
         this.liked = liked;
         this.parentId = parentId;
         this.permalink = permalink;
+        this.privateReply = privateReply;
+        this.privateReplyUntil = privateReplyUntil;
         this.receivedAt = receivedAt;
         this.state = state;
         this.text = text;
@@ -114,6 +122,22 @@ public final class InboxComment {
         return permalink;
     }
 
+    @JsonIgnore
+    public Optional<InboxPrivateReply> getPrivateReply() {
+        if (privateReply == null) {
+            return Optional.empty();
+        }
+        return privateReply;
+    }
+
+    @JsonIgnore
+    public Optional<String> getPrivateReplyUntil() {
+        if (privateReplyUntil == null) {
+            return Optional.empty();
+        }
+        return privateReplyUntil;
+    }
+
     @JsonProperty("receivedAt")
     public String getReceivedAt() {
         return receivedAt;
@@ -157,6 +181,18 @@ public final class InboxComment {
         return permalink;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privateReply")
+    private Optional<InboxPrivateReply> _getPrivateReply() {
+        return privateReply;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privateReplyUntil")
+    private Optional<String> _getPrivateReplyUntil() {
+        return privateReplyUntil;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -175,6 +211,8 @@ public final class InboxComment {
                 && liked == other.liked
                 && parentId.equals(other.parentId)
                 && permalink.equals(other.permalink)
+                && privateReply.equals(other.privateReply)
+                && privateReplyUntil.equals(other.privateReplyUntil)
                 && receivedAt.equals(other.receivedAt)
                 && state.equals(other.state)
                 && text.equals(other.text)
@@ -191,6 +229,8 @@ public final class InboxComment {
                 this.liked,
                 this.parentId,
                 this.permalink,
+                this.privateReply,
+                this.privateReplyUntil,
                 this.receivedAt,
                 this.state,
                 this.text,
@@ -265,6 +305,18 @@ public final class InboxComment {
         _FinalStage permalink(String permalink);
 
         _FinalStage permalink(Nullable<String> permalink);
+
+        _FinalStage privateReply(Optional<InboxPrivateReply> privateReply);
+
+        _FinalStage privateReply(InboxPrivateReply privateReply);
+
+        _FinalStage privateReply(Nullable<InboxPrivateReply> privateReply);
+
+        _FinalStage privateReplyUntil(Optional<String> privateReplyUntil);
+
+        _FinalStage privateReplyUntil(String privateReplyUntil);
+
+        _FinalStage privateReplyUntil(Nullable<String> privateReplyUntil);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -291,6 +343,10 @@ public final class InboxComment {
 
         private String writtenAt;
 
+        private Optional<String> privateReplyUntil = Optional.empty();
+
+        private Optional<InboxPrivateReply> privateReply = Optional.empty();
+
         private Optional<String> permalink = Optional.empty();
 
         private Optional<String> parentId = Optional.empty();
@@ -311,6 +367,8 @@ public final class InboxComment {
             liked(other.getLiked());
             parentId(other.getParentId());
             permalink(other.getPermalink());
+            privateReply(other.getPrivateReply());
+            privateReplyUntil(other.getPrivateReplyUntil());
             receivedAt(other.getReceivedAt());
             state(other.getState());
             text(other.getText());
@@ -365,6 +423,56 @@ public final class InboxComment {
         @JsonSetter("writtenAt")
         public _FinalStage writtenAt(@NotNull String writtenAt) {
             this.writtenAt = Objects.requireNonNull(writtenAt, "writtenAt must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReplyUntil(Nullable<String> privateReplyUntil) {
+            if (privateReplyUntil.isNull()) {
+                this.privateReplyUntil = null;
+            } else if (privateReplyUntil.isEmpty()) {
+                this.privateReplyUntil = Optional.empty();
+            } else {
+                this.privateReplyUntil = Optional.of(privateReplyUntil.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReplyUntil(String privateReplyUntil) {
+            this.privateReplyUntil = Optional.ofNullable(privateReplyUntil);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "privateReplyUntil", nulls = Nulls.SKIP)
+        public _FinalStage privateReplyUntil(Optional<String> privateReplyUntil) {
+            this.privateReplyUntil = privateReplyUntil;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReply(Nullable<InboxPrivateReply> privateReply) {
+            if (privateReply.isNull()) {
+                this.privateReply = null;
+            } else if (privateReply.isEmpty()) {
+                this.privateReply = Optional.empty();
+            } else {
+                this.privateReply = Optional.of(privateReply.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReply(InboxPrivateReply privateReply) {
+            this.privateReply = Optional.ofNullable(privateReply);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "privateReply", nulls = Nulls.SKIP)
+        public _FinalStage privateReply(Optional<InboxPrivateReply> privateReply) {
+            this.privateReply = privateReply;
             return this;
         }
 
@@ -465,6 +573,8 @@ public final class InboxComment {
                     liked,
                     parentId,
                     permalink,
+                    privateReply,
+                    privateReplyUntil,
                     receivedAt,
                     state,
                     text,
@@ -481,6 +591,8 @@ public final class InboxComment {
                     || key.equalsIgnoreCase("liked")
                     || key.equalsIgnoreCase("parentId")
                     || key.equalsIgnoreCase("permalink")
+                    || key.equalsIgnoreCase("privateReply")
+                    || key.equalsIgnoreCase("privateReplyUntil")
                     || key.equalsIgnoreCase("receivedAt")
                     || key.equalsIgnoreCase("state")
                     || key.equalsIgnoreCase("text")

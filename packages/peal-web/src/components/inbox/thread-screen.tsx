@@ -1,13 +1,14 @@
 "use client";
 
 import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
-import { Cause, Exit, Option } from "effect";
+import { Cause, DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import type {
   SocialChannel,
   InboxComment,
   InboxModerationAction,
+  InboxPrivateReply,
   InboxReply,
   InboxThreadDetail,
   Platform,
@@ -26,6 +27,13 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "peal-ui/components/dialog";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { useId, useState, useTransition } from "react";
 import type { ReactNode } from "react";
@@ -37,14 +45,17 @@ import { useHydrated } from "#components/media/use-hydrated.ts";
 import { Link } from "#i18n/navigation.ts";
 import {
   confirmInboxReply,
+  confirmPrivateReply,
   inboxChanged,
   inboxThread,
   moderateComment,
   replyToComment,
+  sendPrivateReply,
   setCommentAnswered,
   withdrawInboxReply,
 } from "#inbox/atoms.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";
+import { privateReplyFit } from "#inbox/private-reply-text.ts";
 import { replyFit } from "#inbox/reply-text.ts";
 import {
   anySending,
@@ -60,6 +71,8 @@ import {
   isNameless,
   namelessKey,
   handleOf,
+  PrivateReplyFormView,
+  PrivateReplyView,
   ReplyAbilityNotice,
   ReplyBoxView,
   ReplyView,
@@ -82,6 +95,8 @@ const appLink = (href: string, label: string) => (
 /** What the page knows of the thread a comment or a reply belongs to. */
 interface ThreadContext {
   readonly detail: InboxThreadDetail;
+  /** Whether the reader holds engagement:message: a private reply. */
+  readonly mayMessage: boolean;
   /** Whether the reader holds engagement:reply. */
   readonly mayReply: boolean;
   readonly workspaceId: string;
@@ -330,6 +345,233 @@ const ReplyActions = ({
   ) : null;
 };
 
+// Who a comment's answer goes to: their handle, their name where the
+// platform gives no handle, or what the inbox calls someone it has no
+// name for.
+const useAuthorName = () => {
+  const t = useTranslations("Inbox");
+
+  return (comment: InboxComment, platform: Platform): string => {
+    const named = comment.author !== null && !isNameless(comment.author);
+
+    const shown =
+      comment.author !== null && comment.author.handle === ""
+        ? (comment.author.displayName ?? "")
+        : comment.author && handleOf(comment.author);
+
+    return named
+      ? (shown ?? "")
+      : t(`comment.${namelessKey(comment.author, platform)}`);
+  };
+};
+
+// What a member says they found for a private reply Peal could not
+// confirm, in the person's conversation.
+const PrivateReplyActions = ({
+  context,
+  reply,
+  threadId,
+}: {
+  readonly context: ThreadContext;
+  readonly reply: InboxPrivateReply;
+  readonly threadId: string;
+}) => {
+  const t = useTranslations("Inbox.privateReply");
+  const explain = useInboxErrorText();
+  const confirm = useAtomSet(confirmPrivateReply, { mode: "promiseExit" });
+  const [isBusy, startRequest] = useTransition();
+
+  const handleConfirm = (went: boolean) => {
+    startRequest(async () => {
+      const exit = await confirm({
+        params: { privateReplyId: reply.id, workspaceId: context.workspaceId },
+        payload: { went },
+        reactivityKeys: inboxChanged(context.workspaceId, threadId),
+      });
+
+      Option.match(inboxErrorOf(exit), {
+        onNone: () => {
+          toast.success(t("confirmed", { went: went ? "true" : "false" }));
+        },
+        onSome: (error) => {
+          toast.error(explain(error));
+        },
+      });
+    });
+  };
+
+  return reply.status === "unconfirmed" ? (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={isBusy}
+        focusableWhenDisabled
+        onClick={() => {
+          handleConfirm(true);
+        }}
+      >
+        {t("confirmSent")}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={isBusy}
+        focusableWhenDisabled
+        onClick={() => {
+          handleConfirm(false);
+        }}
+      >
+        {t("confirmNotSent")}
+      </Button>
+    </>
+  ) : null;
+};
+
+// The button that opens the private reply's dialog, and the dialog: one
+// message to the comment's author, under an idempotency key kept until
+// the server made it, so a lost answer retried sends no second one.
+const PrivateReplyAction = ({
+  comment,
+  context,
+  platform,
+  until,
+}: {
+  readonly comment: InboxComment;
+  readonly context: ThreadContext;
+  readonly platform: Platform;
+  readonly until: DateTime.Utc;
+}) => {
+  const t = useTranslations("Inbox.privateReply");
+  const explain = useInboxErrorText();
+  const send = useAtomSet(sendPrivateReply, { mode: "promiseExit" });
+  const offerUpgrade = useOfferUpgrade();
+  const authorName = useAuthorName()(comment, platform);
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [key, setKey] = useState(() => crypto.randomUUID());
+  const [error, setError] = useState<string | null>(null);
+  const [isSending, startSending] = useTransition();
+
+  const handleSend = () => {
+    setError(null);
+    startSending(async () => {
+      const exit = await send({
+        headers: { "idempotency-key": key },
+        params: { workspaceId: context.workspaceId },
+        payload: { commentId: comment.id, text },
+        reactivityKeys: inboxChanged(context.workspaceId, comment.threadId),
+      });
+
+      offerUpgrade(exit);
+
+      if (Exit.isSuccess(exit)) {
+        setOpen(false);
+        setText("");
+        setKey(crypto.randomUUID());
+        toast.success(t("sent"));
+
+        return;
+      }
+
+      setError(
+        inboxErrorOf(exit).pipe(
+          Option.map(explain),
+          Option.getOrElse(() => explain({ key: "unknown" }))
+        )
+      );
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="outline" size="sm" />}>
+        {t("open")}
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("title")}</DialogTitle>
+        </DialogHeader>
+        <PrivateReplyFormView
+          author={authorName}
+          error={error}
+          fit={privateReplyFit(platform, text)}
+          sending={isSending}
+          text={text}
+          until={until}
+          onCancel={() => {
+            setOpen(false);
+          }}
+          onChange={(changed) => {
+            // Another text is another message, under a key of its own.
+            setText(changed);
+            setKey(crypto.randomUUID());
+          }}
+          onSend={handleSend}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// What a comment shows of its private reply: the one sent, and, while
+// none holds the comment and the platform still takes one, what sends it.
+const PrivateReplyPart = ({
+  comment,
+  context,
+}: {
+  readonly comment: InboxComment;
+  readonly context: ThreadContext;
+}) => {
+  const { detail, mayMessage } = context;
+  const reply = comment.privateReply;
+  const until = comment.privateReplyUntil;
+
+  const offered =
+    mayMessage &&
+    detail.platform !== null &&
+    detail.abilities.privateReply === "available" &&
+    comment.state !== "deleted" &&
+    until !== null &&
+    DateTime.isLessThan(DateTime.nowUnsafe(), until) &&
+    (reply === null || reply.status === "failed");
+
+  if (reply === null && !offered) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {reply === null ? null : (
+        <PrivateReplyView
+          reply={reply}
+          {...(mayMessage
+            ? {
+                actions: (
+                  <PrivateReplyActions
+                    context={context}
+                    reply={reply}
+                    threadId={comment.threadId}
+                  />
+                ),
+              }
+            : {})}
+        />
+      )}
+      {offered && detail.platform !== null && until !== null ? (
+        <div>
+          <PrivateReplyAction
+            comment={comment}
+            context={context}
+            platform={detail.platform}
+            until={until}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
 // The box that answers one comment. What it sends shows at once, as the
 // server answered it: on its way.
 const ReplyBox = ({
@@ -383,18 +625,7 @@ const ReplyBox = ({
     });
   };
 
-  // Who the box answers: their handle, their name where the platform
-  // gives no handle, or what the inbox calls someone it has no name for.
-  const named = comment.author !== null && !isNameless(comment.author);
-
-  const shown =
-    comment.author !== null && comment.author.handle === ""
-      ? (comment.author.displayName ?? "")
-      : comment.author && handleOf(comment.author);
-
-  const authorName = named
-    ? (shown ?? "")
-    : t(`comment.${namelessKey(comment.author, platform)}`);
+  const authorName = useAuthorName()(comment, platform);
 
   return (
     <ReplyBoxView
@@ -441,6 +672,7 @@ const CommentItem = ({
     <CommentView
       comment={comment}
       platform={detail.platform}
+      privateReply={<PrivateReplyPart comment={comment} context={context} />}
       {...(mayReply && present
         ? { actions: <CommentActions comment={comment} context={context} /> }
         : {})}
@@ -484,12 +716,14 @@ const CommentItem = ({
 const LoadedThread = ({
   channels,
   detail,
+  mayMessage,
   mayReply,
   onRefresh,
   workspaceId,
 }: {
   readonly channels: readonly SocialChannel[];
   readonly detail: InboxThreadDetail;
+  readonly mayMessage: boolean;
   readonly mayReply: boolean;
   readonly onRefresh: () => void;
   readonly workspaceId: string;
@@ -499,11 +733,22 @@ const LoadedThread = ({
   // The replies this page sent, until the thread lists them itself.
   const [sent, setSent] = useState<readonly InboxReply[]>([]);
   const replies = withSentReplies(detail.replies, sent);
-  const context: ThreadContext = { detail, mayReply, workspaceId };
+
+  const context: ThreadContext = {
+    detail,
+    mayMessage,
+    mayReply,
+    workspaceId,
+  };
+
+  // A private reply on its way is shown as the journal settles it too.
+  const privateSending = detail.comments.some(
+    ({ privateReply }) => privateReply?.status === "sending"
+  );
 
   useRefreshWhileVisible(
     onRefresh,
-    anySending(replies) ? whileSending : whileIdle
+    anySending(replies) || privateSending ? whileSending : whileIdle
   );
 
   const handleSent = (reply: InboxReply) => {
@@ -530,6 +775,14 @@ const LoadedThread = ({
       ) : (
         <p className="text-muted-foreground text-sm">{t("readOnly")}</p>
       )}
+      {mayMessage && detail.abilities.privateReply === "reconnect" ? (
+        <p className="text-muted-foreground text-sm">
+          {t.rich("privateReply.reconnect", {
+            settings: () =>
+              appLink(`/app/${workspaceId}/inbox`, t("privateReply.settings")),
+          })}
+        </p>
+      ) : null}
       <section aria-labelledby={listId} className="flex flex-col gap-4">
         <h2 id={listId} className="text-xl font-semibold">
           {t("thread.listTitle")}
@@ -574,10 +827,13 @@ const LoadedThread = ({
  * zone is known.
  */
 export const ThreadScreen = ({
+  mayMessage,
   mayReply,
   threadId,
   workspaceId,
 }: {
+  /** Whether the reader holds engagement:message: a private reply. */
+  readonly mayMessage: boolean;
   /** Whether the reader holds engagement:reply. */
   readonly mayReply: boolean;
   readonly threadId: string;
@@ -629,6 +885,7 @@ export const ThreadScreen = ({
           : []
       }
       detail={result.value}
+      mayMessage={mayMessage}
       mayReply={mayReply}
       workspaceId={workspaceId}
       onRefresh={reload}

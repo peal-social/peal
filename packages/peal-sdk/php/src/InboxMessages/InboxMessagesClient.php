@@ -17,6 +17,9 @@ use Peal\InboxMessages\Requests\GetConversationInboxMessagesRequest;
 use Peal\Types\InboxConversationDetail;
 use Peal\InboxMessages\Requests\NewInboxMessage;
 use Peal\Types\InboxOutgoingMessage;
+use Peal\InboxMessages\Requests\NewInboxPrivateReply;
+use Peal\Types\InboxPrivateReply;
+use Peal\InboxMessages\Requests\ConfirmPrivateReplyInboxMessagesRequest;
 use Peal\InboxMessages\Requests\SetConversationReadInboxMessagesRequest;
 use Peal\Types\InboxConversation;
 use Peal\Types\InboxMessageSettings;
@@ -253,6 +256,193 @@ class InboxMessagesClient
                     return null;
                 }
                 return InboxOutgoingMessage::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's `abilities.privateReply`): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's `privateReplyUntil`), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 `InboxActionUnavailable`, `privateReply`, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 `PrivateReplyNotPossible`, with `reason`), and a text longer than the platform takes (422 `ReplyInvalid`). The message is journalled and sent by a job: the answer is the private reply `sending`; the comment shows how it ended. One whose outcome is unknown is `unconfirmed` and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 `PrivateReplyPending`), whichever request came first; one that failed lets another through. With an `Idempotency-Key` header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 `IdempotencyKeyReused`). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 `UsageAllowanceReached`); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     *
+     * Example:
+     * ```php
+     * $client->inboxMessages->sendPrivateReply(
+     *     'workspaceId',
+     *     new NewInboxPrivateReply([
+     *         'commentId' => 'commentId',
+     *         'text' => 'text',
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $workspaceId
+     * @param NewInboxPrivateReply $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?InboxPrivateReply
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function sendPrivateReply(string $workspaceId, NewInboxPrivateReply $request, ?array $options = null): ?InboxPrivateReply
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        $headers = [];
+        if ($request->idempotencyKey != null) {
+            $headers['idempotency-key'] = $request->idempotencyKey;
+        }
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/workspaces/{$workspaceId}/inbox/messages/private-replies",
+                    method: HttpMethod::POST,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return InboxPrivateReply::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
+     *
+     * Example:
+     * ```php
+     * $client->inboxMessages->getPrivateReply(
+     *     'workspaceId',
+     *     'privateReplyId',
+     * );
+     * ```
+     *
+     * @param string $workspaceId
+     * @param string $privateReplyId
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?InboxPrivateReply
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function getPrivateReply(string $workspaceId, string $privateReplyId, ?array $options = null): ?InboxPrivateReply
+    {
+        $options = array_merge($this->options, $options ?? []);
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/workspaces/{$workspaceId}/inbox/messages/private-replies/{$privateReplyId}",
+                    method: HttpMethod::GET,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return InboxPrivateReply::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     *
+     * Example:
+     * ```php
+     * $client->inboxMessages->confirmPrivateReply(
+     *     'workspaceId',
+     *     'privateReplyId',
+     *     new ConfirmPrivateReplyInboxMessagesRequest([
+     *         'went' => true,
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $workspaceId
+     * @param string $privateReplyId
+     * @param ConfirmPrivateReplyInboxMessagesRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?InboxPrivateReply
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function confirmPrivateReply(string $workspaceId, string $privateReplyId, ConfirmPrivateReplyInboxMessagesRequest $request, ?array $options = null): ?InboxPrivateReply
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/workspaces/{$workspaceId}/inbox/messages/private-replies/{$privateReplyId}/confirm",
+                    method: HttpMethod::POST,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return InboxPrivateReply::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

@@ -5,6 +5,7 @@ import type { DatabaseError } from "#shared/application/database-error.ts";
 import type {
   CommentRuleRecord,
   SentMessageRecord,
+  SentPrivateReplyRecord,
   SentReplyRecord,
   SentReviewReplyRecord,
 } from "#shared/application/personal-data.ts";
@@ -70,6 +71,13 @@ export class EngagementRecords extends Context.Service<
       userId: UserId
     ) => Effect.Effect<readonly SentReviewReplyRecord[], DatabaseError>;
     /** The direct messages the user sent from Peal, oldest first. */
+    /**
+     * The private replies the user sent to the authors of comments, in
+     * any workspace, oldest first; never the comments.
+     */
+    readonly exportUserPrivateReplies: (
+      userId: UserId
+    ) => Effect.Effect<readonly SentPrivateReplyRecord[], DatabaseError>;
     readonly exportUserMessages: (
       userId: UserId
     ) => Effect.Effect<readonly SentMessageRecord[], DatabaseError>;

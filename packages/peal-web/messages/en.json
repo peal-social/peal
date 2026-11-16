@@ -4318,7 +4318,33 @@
       "conversationNotFound": "This conversation no longer exists: it went with its channel, or past the time Peal keeps one.",
       "messagePending": "A message to this conversation is on its way, or may have gone out. Wait until it is settled before writing another, so the same message never goes twice.",
       "mentionsOutside": "The message mentions accounts outside the conversation ({mentions}), which a Mastodon direct message would reach too. Take the mentions out: nothing was sent.",
-      "windowClosed": "The platform takes no answer to this conversation any more: Messenger and Instagram take one only within 24 hours of the person’s last message. Nothing was sent."
+      "windowClosed": "The platform takes no answer to this conversation any more: Messenger and Instagram take one only within 24 hours of the person’s last message. Nothing was sent.",
+      "privateReplyPending": "This comment has its one private reply already, on its way, to check or sent: the platform takes one a comment, so nothing more was sent.",
+      "privateReplyNotFound": "This private reply no longer exists: it went with its comment.",
+      "privateReplyNotPossible": "{reason, select, ownComment {The channel’s own account wrote this comment: a private reply goes to someone else’s.} gone {The comment is no longer on its platform.} tooOld {The comment was written more than seven days ago, less Peal’s hour: the platform takes no private reply to it any more.} other {This comment cannot get a private reply.}} Nothing was sent."
+    },
+    "privateReply": {
+      "open": "Reply privately",
+      "title": "Reply privately",
+      "description": "One private message to {author}, as the channel’s account. The platform takes one a comment, within seven days of it: you may send this one until {until}. The person must answer before you can write to them again, and on Instagram it lands in their message requests unless they follow the account.",
+      "label": "Your message",
+      "automatic": "Where the law asks an automated message to say so, say it in your text: Peal adds nothing to it.",
+      "count": "{length, number} of {maximum, number} {unit, select, utf8Bytes {bytes} other {characters}}",
+      "tooLong": "{over, number} too many",
+      "send": "Send privately",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "sent": "The private reply is on its way.",
+      "from": "Private reply sent from Peal on {at}",
+      "status": "{status, select, sending {Sending…} sent {Sent} failed {Not sent} unconfirmed {To check} other {{status}}}",
+      "failed": "Nothing went out: {reason}",
+      "unconfirmed": "This private reply may have reached the person: {reason} Peal never sends it again. Check the conversation in the platform’s inbox, then say what you found.",
+      "reason": "{reason, select, channelUnavailable {the channel was disconnected or turned off, or its messages were turned off.} reconnectNeeded {the platform refuses the account’s authorization. Connect the account again for its messages.} rateLimited {the platform kept turning requests away.} platformUnavailable {the platform could not be reached.} commentGone {the platform no longer takes the comment for a private reply.} alreadyAnswered {the platform says the comment had its one private reply already, sent from somewhere else.} refused {the platform refused it: the person may take no messages from the account, or the Page’s messages are off.} windowClosed {the platform’s seven days had passed.} notSent {someone checked and did not find it.} noResponse {the request left and no answer came.} interrupted {Peal stopped during the call, and the platform could not say afterwards.} adapterFailure {a fault in Peal happened after the request may have left.} other {{reason}}}",
+      "confirmSent": "It went out",
+      "confirmNotSent": "It did not go out",
+      "confirmed": "{went, select, true {The private reply is recorded as sent.} other {The private reply is recorded as not sent: the comment may get another.}}",
+      "reconnect": "Private replies need the channel’s messages, with their permissions: {settings}.",
+      "settings": "connect the channel again for its messages in the inbox’s settings"
     }
   },
   "InboxReviews": {

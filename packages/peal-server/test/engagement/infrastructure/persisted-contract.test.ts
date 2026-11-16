@@ -13,6 +13,10 @@ import {
   SendMessageV1,
 } from "#engagement/infrastructure/workflows/send-message.ts";
 import {
+  PrivateReplySendResultSchema,
+  SendPrivateReplyV1,
+} from "#engagement/infrastructure/workflows/send-private-reply.ts";
+import {
   SendReplyV1,
   SendResultSchema,
 } from "#engagement/infrastructure/workflows/send-reply.ts";
@@ -146,6 +150,33 @@ describe("the persisted contract of ReadMessageBoxV1", () => {
 
       assert.strictEqual(
         yield* ReadMessageBoxV1.executionId(payload),
+        keys.executionId
+      );
+    })
+  );
+});
+
+describe("the persisted contract of SendPrivateReplyV1", () => {
+  it("keeps its tag, and how a run leaves its private reply", () => {
+    assert.strictEqual(SendPrivateReplyV1._tag, "SendPrivateReplyV1");
+    assert.deepStrictEqual(PrivateReplySendResultSchema.literals, [
+      "settled",
+      "superseded",
+      "unrecorded",
+    ]);
+  });
+
+  it.effect("decodes its payloads, and derives the same execution ids", () =>
+    Effect.gen(function* derivesTheSameIds() {
+      const payload = yield* fixture(
+        "SendPrivateReplyV1/payload.json",
+        SendPrivateReplyV1.payloadSchema
+      );
+
+      const keys = yield* fixture("SendPrivateReplyV1/keys.json", KeysSchema);
+
+      assert.strictEqual(
+        yield* SendPrivateReplyV1.executionId(payload),
         keys.executionId
       );
     })

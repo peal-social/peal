@@ -217,6 +217,8 @@ const workspaceRows = {
     sql`SELECT count(*)::int AS count FROM engagement.message_channels WHERE workspace_id = ${id}`,
   "engagement.outgoing_messages": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM engagement.outgoing_messages WHERE workspace_id = ${id}`,
+  "engagement.private_replies": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM engagement.private_replies WHERE workspace_id = ${id}`,
   "engagement.replies": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM engagement.replies WHERE workspace_id = ${id}`,
   "engagement.review_replies": (sql, id) =>
@@ -409,6 +411,8 @@ const userRows = {
     sql`SELECT count(*)::int AS count FROM engagement.message_channels WHERE enabled_by = ${id}`,
   "engagement.outgoing_messages": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM engagement.outgoing_messages WHERE author_id = ${id}`,
+  "engagement.private_replies": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM engagement.private_replies WHERE author_id = ${id}`,
   "engagement.replies": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM engagement.replies WHERE author_id = ${id}`,
   "engagement.review_replies": (sql, id) =>
@@ -851,6 +855,10 @@ const fill = Effect.fn("fill")(function* fill(
 
   yield* sql`INSERT INTO engagement.outgoing_messages (id, conversation_id, workspace_id, channel_id, author_id, text, created_at, status, settled_at)
     VALUES (${uuid7()}, ${conversationId}, ${workspaceId}, ${messageChannelId}, ${person.id}, 'A synthetic answer', now(), 'sent', now())`;
+
+  // The private reply the person sent to the comment's author.
+  yield* sql`INSERT INTO engagement.private_replies (id, workspace_id, channel_id, comment_id, thread_id, text, author_id, created_at, status, settled_at)
+    VALUES (${uuid7()}, ${workspaceId}, ${uuid7()}, ${commentId}, ${threadId}, 'A synthetic private reply', ${person.id}, now(), 'sent', now())`;
   // A sign-in to an ad network, an ad account it connects that an owner
   // allowed to spend, what was read of it, a boost that was stopped with
   // its journal, and the audit trail's line of it.

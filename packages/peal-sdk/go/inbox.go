@@ -427,21 +427,23 @@ func (s *SetAnsweredInboxRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	inboxAbilitiesFieldDelete   = big.NewInt(1 << 0)
-	inboxAbilitiesFieldHide     = big.NewInt(1 << 1)
-	inboxAbilitiesFieldLike     = big.NewInt(1 << 2)
-	inboxAbilitiesFieldRead     = big.NewInt(1 << 3)
-	inboxAbilitiesFieldReply    = big.NewInt(1 << 4)
-	inboxAbilitiesFieldWithdraw = big.NewInt(1 << 5)
+	inboxAbilitiesFieldDelete       = big.NewInt(1 << 0)
+	inboxAbilitiesFieldHide         = big.NewInt(1 << 1)
+	inboxAbilitiesFieldLike         = big.NewInt(1 << 2)
+	inboxAbilitiesFieldPrivateReply = big.NewInt(1 << 3)
+	inboxAbilitiesFieldRead         = big.NewInt(1 << 4)
+	inboxAbilitiesFieldReply        = big.NewInt(1 << 5)
+	inboxAbilitiesFieldWithdraw     = big.NewInt(1 << 6)
 )
 
 type InboxAbilities struct {
-	Delete   InboxAbilityStanding `json:"delete" url:"delete"`
-	Hide     InboxAbilityStanding `json:"hide" url:"hide"`
-	Like     InboxAbilityStanding `json:"like" url:"like"`
-	Read     InboxAbilityStanding `json:"read" url:"read"`
-	Reply    InboxAbilityStanding `json:"reply" url:"reply"`
-	Withdraw InboxAbilityStanding `json:"withdraw" url:"withdraw"`
+	Delete       InboxAbilityStanding `json:"delete" url:"delete"`
+	Hide         InboxAbilityStanding `json:"hide" url:"hide"`
+	Like         InboxAbilityStanding `json:"like" url:"like"`
+	PrivateReply InboxAbilityStanding `json:"privateReply" url:"privateReply"`
+	Read         InboxAbilityStanding `json:"read" url:"read"`
+	Reply        InboxAbilityStanding `json:"reply" url:"reply"`
+	Withdraw     InboxAbilityStanding `json:"withdraw" url:"withdraw"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -469,6 +471,13 @@ func (i *InboxAbilities) GetLike() InboxAbilityStanding {
 		return ""
 	}
 	return i.Like
+}
+
+func (i *InboxAbilities) GetPrivateReply() InboxAbilityStanding {
+	if i == nil {
+		return ""
+	}
+	return i.PrivateReply
 }
 
 func (i *InboxAbilities) GetRead() InboxAbilityStanding {
@@ -527,6 +536,13 @@ func (i *InboxAbilities) SetHide(hide InboxAbilityStanding) {
 func (i *InboxAbilities) SetLike(like InboxAbilityStanding) {
 	i.Like = like
 	i.require(inboxAbilitiesFieldLike)
+}
+
+// SetPrivateReply sets the PrivateReply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxAbilities) SetPrivateReply(privateReply InboxAbilityStanding) {
+	i.PrivateReply = privateReply
+	i.require(inboxAbilitiesFieldPrivateReply)
 }
 
 // SetRead sets the Read field and marks it as non-optional;
@@ -754,38 +770,44 @@ func (i InboxCollectionEnd) Ptr() *InboxCollectionEnd {
 }
 
 var (
-	inboxCommentFieldAuthor     = big.NewInt(1 << 0)
-	inboxCommentFieldForgotten  = big.NewInt(1 << 1)
-	inboxCommentFieldID         = big.NewInt(1 << 2)
-	inboxCommentFieldLiked      = big.NewInt(1 << 3)
-	inboxCommentFieldParentID   = big.NewInt(1 << 4)
-	inboxCommentFieldPermalink  = big.NewInt(1 << 5)
-	inboxCommentFieldReceivedAt = big.NewInt(1 << 6)
-	inboxCommentFieldState      = big.NewInt(1 << 7)
-	inboxCommentFieldText       = big.NewInt(1 << 8)
-	inboxCommentFieldThreadID   = big.NewInt(1 << 9)
-	inboxCommentFieldWrittenAt  = big.NewInt(1 << 10)
+	inboxCommentFieldAuthor            = big.NewInt(1 << 0)
+	inboxCommentFieldForgotten         = big.NewInt(1 << 1)
+	inboxCommentFieldID                = big.NewInt(1 << 2)
+	inboxCommentFieldLiked             = big.NewInt(1 << 3)
+	inboxCommentFieldParentID          = big.NewInt(1 << 4)
+	inboxCommentFieldPermalink         = big.NewInt(1 << 5)
+	inboxCommentFieldPrivateReply      = big.NewInt(1 << 6)
+	inboxCommentFieldPrivateReplyUntil = big.NewInt(1 << 7)
+	inboxCommentFieldReceivedAt        = big.NewInt(1 << 8)
+	inboxCommentFieldState             = big.NewInt(1 << 9)
+	inboxCommentFieldText              = big.NewInt(1 << 10)
+	inboxCommentFieldThreadID          = big.NewInt(1 << 11)
+	inboxCommentFieldWrittenAt         = big.NewInt(1 << 12)
 )
 
 // inboxCommentNullableFields maps the wire names of InboxComment's nullable fields (required or optional) to their field bits.
 var inboxCommentNullableFields = map[string]*big.Int{
-	"author":    inboxCommentFieldAuthor,
-	"parentId":  inboxCommentFieldParentID,
-	"permalink": inboxCommentFieldPermalink,
+	"author":            inboxCommentFieldAuthor,
+	"parentId":          inboxCommentFieldParentID,
+	"permalink":         inboxCommentFieldPermalink,
+	"privateReply":      inboxCommentFieldPrivateReply,
+	"privateReplyUntil": inboxCommentFieldPrivateReplyUntil,
 }
 
 type InboxComment struct {
-	Author     *InboxAuthor           `json:"author,omitempty" url:"author,omitempty"`
-	Forgotten  *InboxCommentForgotten `json:"forgotten,omitempty" url:"forgotten,omitempty"`
-	ID         string                 `json:"id" url:"id"`
-	Liked      bool                   `json:"liked" url:"liked"`
-	ParentID   *string                `json:"parentId,omitempty" url:"parentId,omitempty"`
-	Permalink  *string                `json:"permalink,omitempty" url:"permalink,omitempty"`
-	ReceivedAt string                 `json:"receivedAt" url:"receivedAt"`
-	State      InboxCommentState      `json:"state" url:"state"`
-	Text       string                 `json:"text" url:"text"`
-	ThreadID   string                 `json:"threadId" url:"threadId"`
-	WrittenAt  string                 `json:"writtenAt" url:"writtenAt"`
+	Author            *InboxAuthor           `json:"author,omitempty" url:"author,omitempty"`
+	Forgotten         *InboxCommentForgotten `json:"forgotten,omitempty" url:"forgotten,omitempty"`
+	ID                string                 `json:"id" url:"id"`
+	Liked             bool                   `json:"liked" url:"liked"`
+	ParentID          *string                `json:"parentId,omitempty" url:"parentId,omitempty"`
+	Permalink         *string                `json:"permalink,omitempty" url:"permalink,omitempty"`
+	PrivateReply      *InboxPrivateReply     `json:"privateReply,omitempty" url:"privateReply,omitempty"`
+	PrivateReplyUntil *string                `json:"privateReplyUntil,omitempty" url:"privateReplyUntil,omitempty"`
+	ReceivedAt        string                 `json:"receivedAt" url:"receivedAt"`
+	State             InboxCommentState      `json:"state" url:"state"`
+	Text              string                 `json:"text" url:"text"`
+	ThreadID          string                 `json:"threadId" url:"threadId"`
+	WrittenAt         string                 `json:"writtenAt" url:"writtenAt"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -834,6 +856,20 @@ func (i *InboxComment) GetPermalink() *string {
 		return nil
 	}
 	return i.Permalink
+}
+
+func (i *InboxComment) GetPrivateReply() *InboxPrivateReply {
+	if i == nil {
+		return nil
+	}
+	return i.PrivateReply
+}
+
+func (i *InboxComment) GetPrivateReplyUntil() *string {
+	if i == nil {
+		return nil
+	}
+	return i.PrivateReplyUntil
 }
 
 func (i *InboxComment) GetReceivedAt() string {
@@ -927,6 +963,20 @@ func (i *InboxComment) SetParentID(parentID *string) {
 func (i *InboxComment) SetPermalink(permalink *string) {
 	i.Permalink = permalink
 	i.require(inboxCommentFieldPermalink)
+}
+
+// SetPrivateReply sets the PrivateReply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxComment) SetPrivateReply(privateReply *InboxPrivateReply) {
+	i.PrivateReply = privateReply
+	i.require(inboxCommentFieldPrivateReply)
+}
+
+// SetPrivateReplyUntil sets the PrivateReplyUntil field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxComment) SetPrivateReplyUntil(privateReplyUntil *string) {
+	i.PrivateReplyUntil = privateReplyUntil
+	i.require(inboxCommentFieldPrivateReplyUntil)
 }
 
 // SetReceivedAt sets the ReceivedAt field and marks it as non-optional;

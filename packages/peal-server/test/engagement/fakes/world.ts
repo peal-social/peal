@@ -41,6 +41,7 @@ import { Ids } from "#shared/application/ids.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
+import type { Platform } from "#shared/domain/platform.ts";
 
 // The engagement use cases on memory: a store that keeps what the Postgres
 // one keeps, publishing's posts, a platform that answers what a test says,
@@ -85,6 +86,8 @@ export interface WorldState {
   /** The workspace of a channel that is not the tests' own. */
   readonly channelOwners: Map<ChannelId, WorkspaceId>;
   readonly channels: Map<ChannelId, EngagedChannel>;
+  /** The channels whose token ran out, by their platform: to reconnect. */
+  readonly expired: Map<ChannelId, Platform>;
   /** When a gate claimed each reply's call, by reply. */
   readonly claims: Map<string, DateTime.Utc>;
   readonly comments: Map<string, Comment>;
@@ -150,6 +153,7 @@ export const makeWorld = (
     channelOwners: new Map(),
     channels: new Map(),
     claims: new Map(),
+    expired: new Map(),
     comments: new Map(),
     jobs: [],
     keys: new Map(),
@@ -590,8 +594,18 @@ export const makeWorld = (
           ),
         describe: (channelId) =>
           Option.match(Option.fromUndefinedOr(state.channels.get(channelId)), {
-            onNone: () =>
-              Effect.fail(new ChannelUnreadable({ reason: "disconnected" })),
+            onNone: () => {
+              const expired = state.expired.get(channelId);
+
+              return Effect.fail(
+                expired === undefined
+                  ? new ChannelUnreadable({ reason: "disconnected" })
+                  : new ChannelUnreadable({
+                      platform: expired,
+                      reason: "paused",
+                    })
+              );
+            },
             onSome: (channel) => Effect.succeed(channel),
           }),
       })

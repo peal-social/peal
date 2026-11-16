@@ -18,6 +18,7 @@ import { EngagementRecords } from "#engagement/application/engagement-records.ts
 import { forgetChannelMessages } from "#engagement/application/forget-channel-messages.ts";
 import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
+import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
 import { ConversationIdSchema } from "#engagement/domain/conversation-id.ts";
 import {
   markConversationRead,
@@ -45,6 +46,7 @@ import {
 } from "#engagement/domain/outgoing-message.ts";
 import { DrizzleEngagementRecords } from "#engagement/infrastructure/drizzle-engagement-records.ts";
 import { DrizzleMessageStore } from "#engagement/infrastructure/drizzle-message-store.ts";
+import { DrizzlePrivateReplyStore } from "#engagement/infrastructure/drizzle-private-reply-store.ts";
 import { newId } from "#shared/application/ids.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { ChannelIdSchema, UserIdSchema } from "#shared/domain/ids.ts";
@@ -64,6 +66,7 @@ import { FakeMetersLedger, fakeMeters } from "#test/shared/support.ts";
 // meters that count in memory.
 const StoreTest = Layer.mergeAll(
   DrizzleMessageStore,
+  DrizzlePrivateReplyStore,
   DrizzleEngagementRecords.pipe(Layer.provide(CommentRuleNotices.none))
 ).pipe(
   Layer.provideMerge(fakeMeters({ allowed: Option.none() })),
@@ -1118,9 +1121,16 @@ layer(StoreTest)("the message store", (it) => {
             "turned off",
             "2049-02-11T09:00:00.000Z",
             (box: MessageBox) =>
-              MeteredUsage.use((meters) =>
-                forgetChannelMessages(store, meters, box.channelId)
-              ),
+              Effect.gen(function* forgetting() {
+                const meters = yield* MeteredUsage;
+
+                yield* forgetChannelMessages(
+                  store,
+                  yield* PrivateReplyStore,
+                  meters,
+                  box.channelId
+                );
+              }),
           ],
           [
             "erased",

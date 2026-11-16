@@ -1,4 +1,5 @@
 import { Cron, Duration, Effect, Layer, Metric } from "effect";
+import type { DateTime } from "effect";
 import { ClusterCron } from "effect/cluster";
 
 import { CollectComments } from "#engagement/application/collect-comments.ts";
@@ -14,6 +15,7 @@ import {
   PurgeReviews,
   reviewsRetentionFailures,
 } from "#engagement/application/purge-reviews.ts";
+import { SendPrivateReply } from "#engagement/application/send-private-reply.ts";
 import { SendReply } from "#engagement/application/send-reply.ts";
 
 /**
@@ -175,7 +177,7 @@ const ReviewsRetentionCron = ClusterCron.make({
 
 /**
  * At minutes 1 and 21 of every hour: hands to a person the direct
- * messages no job settled, follows the channels connected since, and
+ * messages and the private replies no job settled, follows the channels connected since, and
  * reads the conversations of the channels due, where the operator turned
  * a platform's messages on (`PEAL_INBOX_MESSAGES`). Off, it does nothing.
  * A run starts no read 8 minutes after its time; one more than 8 minutes
@@ -183,26 +185,53 @@ const ReviewsRetentionCron = ClusterCron.make({
  * (`test/app/cron-schedules.test.ts`, which leaves few): a channel whose
  * messages are read every run waits 40 minutes at most, from :21 to :01.
  */
+/**
+ * What the messages' cron does at `at`: hands stranded private replies to
+ * a person first, then collects; each with its own catch, so one that
+ * fails or reads long never holds the other. Exported for its test.
+ */
+export const collectMessagesAt = (at: DateTime.Utc) =>
+  Effect.gen(function* collectMessages() {
+    // Private replies to comments, handed over before the collection
+    // reads, which may take its 8 minutes.
+    yield* SendPrivateReply.use((sending) => sending.settleStranded).pipe(
+      Effect.tap((stranded) =>
+        stranded > 0
+          ? Effect.logWarning(
+              "Private replies were still on their way an hour after they were written: their job gave up or was lost. They wait to be checked, and are never sent again"
+            ).pipe(Effect.annotateLogs({ privateReplies: stranded }))
+          : Effect.void
+      ),
+      // Logged without the cause, which may quote what people wrote.
+      Effect.catchCause(() =>
+        Effect.logWarning("Handing stranded private replies over failed")
+      )
+    );
+
+    yield* Effect.gen(function* collecting() {
+      const report = yield* CollectMessages.use((collect) => collect.run(at));
+
+      if (report.stranded > 0) {
+        yield* Effect.logWarning(
+          "Direct messages were still on their way an hour after they were written: their job gave up or was lost. They wait to be checked, and are never sent again"
+        ).pipe(Effect.annotateLogs({ messages: report.stranded }));
+      }
+
+      if (Object.values(report).some((count) => count > 0)) {
+        yield* Effect.logInfo("Collected direct messages", report);
+      }
+    }).pipe(
+      // Logged without the cause, which may quote what people wrote.
+      Effect.catchCause(() =>
+        Effect.logWarning("The direct messages collection failed")
+      )
+    );
+  });
+
 const CollectMessagesCron = ClusterCron.make({
   cron: Cron.parseUnsafe("1,21 * * * *", "UTC"),
-  execute: Effect.gen(function* collectMessages() {
-    const at = yield* ClusterCron.CurrentScheduledTime;
-    const report = yield* CollectMessages.use((collect) => collect.run(at));
-
-    if (report.stranded > 0) {
-      yield* Effect.logWarning(
-        "Direct messages were still on their way an hour after they were written: their job gave up or was lost. They wait to be checked, and are never sent again"
-      ).pipe(Effect.annotateLogs({ messages: report.stranded }));
-    }
-
-    if (Object.values(report).some((count) => count > 0)) {
-      yield* Effect.logInfo("Collected direct messages", report);
-    }
-  }).pipe(
-    // Logged without the cause, which may quote what people wrote.
-    Effect.catchCause(() =>
-      Effect.logWarning("The direct messages collection failed")
-    )
+  execute: ClusterCron.CurrentScheduledTime.pipe(
+    Effect.flatMap(collectMessagesAt)
   ),
   name: "engagement.collect-messages",
   skipIfOlderThan: Duration.minutes(8),

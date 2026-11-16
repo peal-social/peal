@@ -1958,6 +1958,9 @@ export {
   inboxPlatforms,
   inboxPlatformsText,
   inboxStandardPlatforms,
+  InboxPrivateReplyReasonSchema,
+  InboxPrivateReplySchema,
+  InboxPrivateReplyStatusSchema,
   InboxReplyReasonSchema,
   InboxReplySchema,
   InboxReplyStatusSchema,
@@ -1980,6 +1983,9 @@ export type {
   InboxComment,
   InboxCommentState,
   InboxModerationAction,
+  InboxPrivateReply,
+  InboxPrivateReplyReason,
+  InboxPrivateReplyStatus,
   InboxReply,
   InboxReplyReason,
   InboxReplyStatus,
@@ -2041,6 +2047,9 @@ export {
   maxInboxMessageLength,
   maxInboxMessagesPerPage,
   NewInboxMessageSchema,
+  NewInboxPrivateReplySchema,
+  privateReplyLimits,
+  privateReplyWindowDays,
 } from "./inbox-messages.ts";
 
 export type {
@@ -2055,7 +2064,19 @@ export type {
   InboxMessageSettings,
   InboxParticipant,
   NewInboxMessage,
+  NewInboxPrivateReply,
 } from "./inbox-messages.ts";
+
+export {
+  PrivateReplyNotPossible,
+  PrivateReplyRefusalSchema,
+} from "./private-reply-not-possible.ts";
+
+export type { PrivateReplyRefusal } from "./private-reply-not-possible.ts";
+
+export { PrivateReplyPending } from "./private-reply-pending.ts";
+
+export { InboxPrivateReplyNotFound } from "./inbox-private-reply-not-found.ts";
 
 export { MessageMentionsOutside } from "./message-mentions-outside.ts";
 

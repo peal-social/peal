@@ -45,6 +45,7 @@ import { PurgeEngagement } from "#engagement/application/purge-engagement.ts";
 import { PurgeMessages } from "#engagement/application/purge-messages.ts";
 import { PurgeReviews } from "#engagement/application/purge-reviews.ts";
 import { slotOf } from "#engagement/application/receive-message-events.ts";
+import { SendPrivateReply } from "#engagement/application/send-private-reply.ts";
 import { SendReply } from "#engagement/application/send-reply.ts";
 import { WorkflowMessageJobs } from "#engagement/infrastructure/workflow-message-jobs.ts";
 import {
@@ -334,6 +335,13 @@ const ChannelJobsTest = Layer.mergeAll(
   Layer.succeed(
     SendReply,
     SendReply.of({
+      run: () => Effect.succeed("superseded"),
+      settleStranded: Effect.succeed(0),
+    })
+  ),
+  Layer.succeed(
+    SendPrivateReply,
+    SendPrivateReply.of({
       run: () => Effect.succeed("superseded"),
       settleStranded: Effect.succeed(0),
     })

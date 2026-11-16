@@ -4318,7 +4318,33 @@
       "conversationNotFound": "Cette conversation n’existe plus : elle est partie avec son canal, ou a dépassé la durée pendant laquelle Peal la conserve.",
       "messagePending": "Un message à cette conversation est en route, ou est peut-être parti. Attendez qu’il soit réglé avant d’en écrire un autre, pour que le même message ne parte jamais deux fois.",
       "mentionsOutside": "Le message mentionne des comptes extérieurs à la conversation ({mentions}), qu’un message privé Mastodon atteindrait aussi. Retirez ces mentions : rien n’a été envoyé.",
-      "windowClosed": "La plateforme n’accepte plus de réponse dans cette conversation : Messenger et Instagram n’en acceptent que dans les 24 heures qui suivent le dernier message de la personne. Rien n’a été envoyé."
+      "windowClosed": "La plateforme n’accepte plus de réponse dans cette conversation : Messenger et Instagram n’en acceptent que dans les 24 heures qui suivent le dernier message de la personne. Rien n’a été envoyé.",
+      "privateReplyPending": "Ce commentaire a déjà sa seule réponse privée, en route, à vérifier ou envoyée : la plateforme en prend une par commentaire, rien de plus n’a été envoyé.",
+      "privateReplyNotFound": "Cette réponse privée n’existe plus : elle est partie avec son commentaire.",
+      "privateReplyNotPossible": "{reason, select, ownComment {Le compte de la chaîne a écrit ce commentaire : une réponse privée va au commentaire de quelqu’un d’autre.} gone {Le commentaire n’est plus sur sa plateforme.} tooOld {Le commentaire a été écrit il y a plus de sept jours, moins l’heure de Peal : la plateforme n’y prend plus de réponse privée.} other {Ce commentaire ne peut pas recevoir de réponse privée.}} Rien n’a été envoyé."
+    },
+    "privateReply": {
+      "open": "Répondre en privé",
+      "title": "Répondre en privé",
+      "description": "Un seul message privé à {author}, au nom du compte de la chaîne. La plateforme en prend un par commentaire, dans les sept jours qui le suivent : vous pouvez envoyer celui-ci jusqu’au {until}. La personne doit répondre avant que vous puissiez lui écrire de nouveau, et sur Instagram il arrive dans ses demandes de messages si elle ne suit pas le compte.",
+      "label": "Votre message",
+      "automatic": "Là où la loi demande qu’un message automatique le dise, dites-le dans votre texte : Peal n’y ajoute rien.",
+      "count": "{length, number} sur {maximum, number} {unit, select, utf8Bytes {octets} other {caractères}}",
+      "tooLong": "{over, number} de trop",
+      "send": "Envoyer en privé",
+      "sending": "Envoi…",
+      "cancel": "Annuler",
+      "sent": "La réponse privée est en route.",
+      "from": "Réponse privée envoyée depuis Peal le {at}",
+      "status": "{status, select, sending {Envoi…} sent {Envoyée} failed {Non envoyée} unconfirmed {À vérifier} other {{status}}}",
+      "failed": "Rien n’est parti : {reason}",
+      "unconfirmed": "Cette réponse privée est peut-être arrivée à la personne : {reason} Peal ne l’envoie jamais de nouveau. Vérifiez la conversation dans la messagerie de la plateforme, puis dites ce que vous avez trouvé.",
+      "reason": "{reason, select, channelUnavailable {la chaîne a été déconnectée ou désactivée, ou ses messages ont été désactivés.} reconnectNeeded {la plateforme refuse l’autorisation du compte. Connectez de nouveau le compte pour ses messages.} rateLimited {la plateforme a continué de refuser les requêtes.} platformUnavailable {la plateforme était injoignable.} commentGone {la plateforme ne prend plus le commentaire pour une réponse privée.} alreadyAnswered {la plateforme dit que le commentaire avait déjà sa seule réponse privée, envoyée d’ailleurs.} refused {la plateforme l’a refusée : la personne ne reçoit peut-être aucun message du compte, ou les messages de la Page sont désactivés.} windowClosed {les sept jours de la plateforme étaient passés.} notSent {quelqu’un a vérifié et ne l’a pas trouvée.} noResponse {la requête est partie et aucune réponse n’est revenue.} interrupted {Peal s’est arrêté pendant l’appel, et la plateforme n’a rien pu dire ensuite.} adapterFailure {une erreur de Peal est survenue après que la requête est peut-être partie.} other {{reason}}}",
+      "confirmSent": "Elle est partie",
+      "confirmNotSent": "Elle n’est pas partie",
+      "confirmed": "{went, select, true {La réponse privée est enregistrée comme envoyée.} other {La réponse privée est enregistrée comme non envoyée : le commentaire peut en recevoir une autre.}}",
+      "reconnect": "Les réponses privées demandent les messages de la chaîne, avec leurs autorisations : {settings}.",
+      "settings": "connectez de nouveau la chaîne pour ses messages dans les réglages de la boîte de réception"
     }
   },
   "InboxReviews": {

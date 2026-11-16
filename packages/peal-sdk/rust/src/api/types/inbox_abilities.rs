@@ -5,6 +5,8 @@ pub struct InboxAbilities {
     pub delete: InboxAbilityStanding,
     pub hide: InboxAbilityStanding,
     pub like: InboxAbilityStanding,
+    #[serde(rename = "privateReply")]
+    pub private_reply: InboxAbilityStanding,
     pub read: InboxAbilityStanding,
     pub reply: InboxAbilityStanding,
     pub withdraw: InboxAbilityStanding,
@@ -22,6 +24,7 @@ pub struct InboxAbilitiesBuilder {
     delete: Option<InboxAbilityStanding>,
     hide: Option<InboxAbilityStanding>,
     like: Option<InboxAbilityStanding>,
+    private_reply: Option<InboxAbilityStanding>,
     read: Option<InboxAbilityStanding>,
     reply: Option<InboxAbilityStanding>,
     withdraw: Option<InboxAbilityStanding>,
@@ -40,6 +43,11 @@ impl InboxAbilitiesBuilder {
 
     pub fn like(mut self, value: InboxAbilityStanding) -> Self {
         self.like = Some(value);
+        self
+    }
+
+    pub fn private_reply(mut self, value: InboxAbilityStanding) -> Self {
+        self.private_reply = Some(value);
         self
     }
 
@@ -63,6 +71,7 @@ impl InboxAbilitiesBuilder {
     /// - [`delete`](InboxAbilitiesBuilder::delete)
     /// - [`hide`](InboxAbilitiesBuilder::hide)
     /// - [`like`](InboxAbilitiesBuilder::like)
+    /// - [`private_reply`](InboxAbilitiesBuilder::private_reply)
     /// - [`read`](InboxAbilitiesBuilder::read)
     /// - [`reply`](InboxAbilitiesBuilder::reply)
     /// - [`withdraw`](InboxAbilitiesBuilder::withdraw)
@@ -73,6 +82,9 @@ impl InboxAbilitiesBuilder {
                 .ok_or_else(|| BuildError::missing_field("delete"))?,
             hide: self.hide.ok_or_else(|| BuildError::missing_field("hide"))?,
             like: self.like.ok_or_else(|| BuildError::missing_field("like"))?,
+            private_reply: self
+                .private_reply
+                .ok_or_else(|| BuildError::missing_field("private_reply"))?,
             read: self.read.ok_or_else(|| BuildError::missing_field("read"))?,
             reply: self
                 .reply
