@@ -356,6 +356,7 @@ export const fakeMarketingApi = (options: FakeMarketingOptions = {}) =>
 
       return present([
         ["id", object.id],
+        ["account_id", object.accountId],
         ["name", params["name"] ?? ""],
         ["status", object.status],
         ["effective_status", effectiveStatus(object)],
@@ -603,7 +604,9 @@ export const fakeMarketingApi = (options: FakeMarketingOptions = {}) =>
 
       const status = formOf(request).get("status");
 
-      if (status !== "ACTIVE" && status !== "PAUSED") {
+      // "DELETED" too, which the trial's cleaning sends ("Manage Your Ad
+      // Object's Status").
+      if (status !== "ACTIVE" && status !== "PAUSED" && status !== "DELETED") {
         return marketingError(100);
       }
 

@@ -129,6 +129,16 @@ weaken a rule below to make something pass.
   (`dropped`). Use cases are tested on Postgres with `AdsTest`
   (`test/ads/support.ts`): `onMeta` starts a fake for the test, and boosts'
   jobs are recorded, never run: a test places a boost itself.
+- The trial (`nx run peal-server:ads-trial`, `scripts/ads-trial.ts`
+  over `infrastructure/meta/trial.ts`) runs the adapter's own requests
+  against Meta from the operator's machine: the one place a network's
+  message is shown, on that terminal and in the Git-ignored
+  `ads-trial.log`, with the token, the app secret and the proof masked
+  (`printing`). It makes everything paused; `activate` runs an object
+  only in the account given as `--sandbox-account` and only on the day
+  `PEAL_ADS_TRIAL_ACTIVATE` names (`activationRefusal`). Never give it a
+  way to run anything elsewhere, and keep its tests
+  (`test/ads/infrastructure/ads-trial.test.ts`) on the fake.
 - Handlers map each refusal to its contract error and `DatabaseError` to a
   defect inside `catchTags`: never `Effect.orDie` after it, which turns
   every refusal into a 500.
