@@ -527,6 +527,98 @@ describe("reading a Google Ads account", () => {
       }).pipe(Effect.scoped)
   );
 
+  // Days of five campaigns, `dates` of them from 1 November.
+  const manyDays = (dates: number) =>
+    Array.from({ length: dates }, (_, date) =>
+      ["901", "902", "903", "904", "905"].map((campaignId) => ({
+        campaignId,
+        clicks: "1",
+        customerId: "1111111111",
+        date: `2026-11-${String(date + 1).padStart(2, "0")}`,
+      }))
+    ).flat();
+
+  it.live(
+    "goes on from the last day it reached when the days take more pages than one search reads",
+    () =>
+      Effect.gen(function* continuing() {
+        const { api, client } = yield* googleAgainstFake({
+          ...hierarchy,
+          campaigns: [campaign()],
+          days: manyDays(10),
+          pageSize: 1,
+        });
+
+        const snapshot = yield* client.snapshot(
+          refreshToken,
+          request("1111111111")
+        );
+
+        assert.lengthOf(snapshot.campaignDays, 50);
+        assert.isTrue(Option.isNone(snapshot.haltedFor));
+        assert.isTrue(Option.isSome(snapshot.campaignDaysCover));
+        assert.isAbove(
+          api.requests().filter(searching("campaign", true)).length,
+          40
+        );
+      }).pipe(Effect.scoped)
+  );
+
+  it.live(
+    "never takes days it could not read whole for a whole read: it says to come back",
+    () =>
+      Effect.gen(function* cut() {
+        const { client } = yield* googleAgainstFake({
+          ...hierarchy,
+          campaigns: [campaign()],
+          days: manyDays(10).flatMap((day) =>
+            // 30 rows a day: each search reads a day whole, and part of
+            // the next.
+            Array.from({ length: 6 }, (_, copy) => ({
+              ...day,
+              campaignId: `${day.campaignId}${String(copy)}`,
+            }))
+          ),
+          pageSize: 1,
+        });
+
+        const snapshot = yield* client.snapshot(
+          refreshToken,
+          request("1111111111")
+        );
+
+        assert.isTrue(Option.isSome(snapshot.haltedFor));
+        assert.deepStrictEqual(
+          snapshot.campaignDaysCover.pipe(Option.map(({ to }) => to.day)),
+          Option.some(
+            Math.max(...snapshot.campaignDays.map(({ day }) => day.day)) - 1
+          )
+        );
+      }).pipe(Effect.scoped)
+  );
+
+  it.live(
+    "says to come back when the campaigns take more pages than it reads",
+    () =>
+      Effect.gen(function* tooMany() {
+        const { client } = yield* googleAgainstFake({
+          ...hierarchy,
+          campaigns: Array.from({ length: 41 }, (_, index) =>
+            campaign({ id: String(800 + index) })
+          ),
+          pageSize: 1,
+        });
+
+        const snapshot = yield* client.snapshot(
+          refreshToken,
+          request("1111111111")
+        );
+
+        assert.isFalse(snapshot.complete);
+        assert.isTrue(Option.isSome(snapshot.haltedFor));
+      }).pipe(Effect.scoped)
+  );
+
   it.live("counts yen in whole units, through the manager", () =>
     Effect.gen(function* yen() {
       const { api, client } = yield* googleAgainstFake({

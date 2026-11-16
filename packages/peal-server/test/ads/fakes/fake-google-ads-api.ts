@@ -431,11 +431,20 @@ export const fakeGoogleAdsApi = (options: FakeGoogleAdsOptions = {}) =>
         const since = range?.["since"] ?? "";
         const until = range?.["until"] ?? "";
 
-        return days.flatMap((day) =>
-          day.customerId === customer && day.date >= since && day.date <= until
-            ? [dayRow(customer, day)]
-            : []
+        const inRange = days.filter(
+          (day) =>
+            day.customerId === customer &&
+            day.date >= since &&
+            day.date <= until
         );
+
+        return (
+          query.includes("ORDER BY segments.date")
+            ? inRange.toSorted((left, right) =>
+                left.date.localeCompare(right.date)
+              )
+            : inRange
+        ).map((day) => dayRow(customer, day));
       }
 
       return campaigns.flatMap((campaign) =>

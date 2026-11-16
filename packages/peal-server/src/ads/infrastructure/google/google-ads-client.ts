@@ -8,11 +8,13 @@ import type {
   AdNetworkClient,
   LookUp,
   ReadFailure,
+  SnapshotRequest,
 } from "#ads/application/ports/ad-network.ts";
 import type { AdAccountFacts } from "#ads/domain/ad-account-facts.ts";
 import type { NetworkObjectId } from "#ads/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
+import { addDays } from "#shared/domain/wall-clock.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 import { googleAdsCallbackPath } from "#shared/infrastructure/platforms/google-ads-paths.ts";
 
@@ -24,6 +26,7 @@ import {
   clientFactsOf,
   customerFactsOf,
   customerIdOf,
+  dayOf,
   levelOf,
 } from "./google-ads-mapping.ts";
 import {
@@ -91,7 +94,7 @@ const campaignsQuery =
 // day whose selected metrics are all zero is not returned ("Zero
 // metrics").
 const daysQuery = (since: LocalDate, until: LocalDate) =>
-  `SELECT campaign.id, segments.date, metrics.cost_micros, metrics.impressions, metrics.clicks FROM campaign WHERE segments.date BETWEEN '${dayText(since)}' AND '${dayText(until)}'`;
+  `SELECT campaign.id, segments.date, metrics.cost_micros, metrics.impressions, metrics.clicks FROM campaign WHERE segments.date BETWEEN '${dayText(since)}' AND '${dayText(until)}' ORDER BY segments.date`;
 
 const decodeClaims = Schema.decodeUnknownOption(
   Schema.fromJsonString(IdTokenClaimsSchema)
@@ -118,11 +121,46 @@ const subjectOf = (idToken: string | undefined): Option.Option<string> =>
 /** What a page-by-page search read, and whether it went to its end. */
 interface Searched<A> {
   readonly complete: boolean;
+  /** Whether it stopped at the bound of pages, with more to read. */
+  readonly cut: boolean;
   readonly halted: Option.Option<Duration.Duration>;
   readonly rows: readonly A[];
 }
 
+/**
+ * How long an account waits when a read was cut at the bound of pages: it
+ * is not marked read, and the next run reads it again.
+ */
+const cutWait = Duration.hours(1);
+
+// A search of days cut at the bound goes on from the last day it reached,
+// this many times in one read at most.
+const maxDayContinuations = 5;
+
 const absentLookUp: LookUp<never> = { _tag: "unknown" };
+
+/** The days a read took, and, when it was cut, which it read whole. */
+interface DaysRead extends Searched<typeof DayRowSchema.Type> {
+  readonly wholeThrough: Option.Option<LocalDate>;
+}
+
+// The days read whole: all those asked, when the search ended; up to the
+// last whole day, when it was cut; none when Google asked to wait.
+const coverOf = (
+  days: Searched<typeof DayRowSchema.Type> & {
+    readonly wholeThrough?: Option.Option<LocalDate>;
+  },
+  request: SnapshotRequest
+) => {
+  if (days.complete) {
+    return Option.some({ from: request.since, to: request.until });
+  }
+
+  return (days.cut ? (days.wholeThrough ?? Option.none()) : Option.none()).pipe(
+    Option.filter((to) => dayText(to) >= dayText(request.since)),
+    Option.map((to) => ({ from: request.since, to }))
+  );
+};
 
 // What the token endpoint's refusal means: Peal's client, which only
 // the operator can fix; `invalid_grant`, the refresh token or the code
@@ -174,6 +212,7 @@ const unlessLimited = <A>(
     Effect.catchTag("RateLimited", (limited) =>
       Effect.succeed<Searched<A>>({
         complete: false,
+        cut: false,
         halted: Option.some(limited.retryAfter ?? Duration.minutes(15)),
         rows: [],
       })
@@ -283,6 +322,7 @@ export const googleAdsClient = (options: {
         if (failure._tag === "RateLimited" && page > 0) {
           const searchedSoFar: Searched<A> = {
             complete: false,
+            cut: false,
             halted: Option.some(failure.retryAfter ?? Duration.minutes(15)),
             rows,
           };
@@ -304,7 +344,12 @@ export const googleAdsClient = (options: {
       }
     }
 
-    const all: Searched<A> = { complete, halted: Option.none(), rows };
+    const all: Searched<A> = {
+      complete,
+      cut: !complete,
+      halted: Option.none(),
+      rows,
+    };
 
     return all;
   });
@@ -464,6 +509,65 @@ export const googleAdsClient = (options: {
       Effect.withSpan("GoogleAds.account")
     );
 
+  /**
+   * The days asked, ordered by date. A search cut at the bound of pages
+   * may hold its last day in part: the next search starts again from that
+   * day, a few times at most. What stays cut says which days were read
+   * whole (`wholeThrough`), and nothing else is taken for whole.
+   */
+  const readDays = Effect.fn("GoogleAds.readDays")(function* readDays(
+    access: Redacted.Redacted,
+    request: SnapshotRequest
+  ) {
+    const rows: (typeof DayRowSchema.Type)[] = [];
+    let from = request.since;
+    let wholeThrough = Option.none<LocalDate>();
+
+    for (let search = 0; search <= maxDayContinuations; search += 1) {
+      const part = yield* unlessLimited(
+        searched(
+          access,
+          request.externalId,
+          request.reachedThrough,
+          daysQuery(from, request.until),
+          DayRowSchema
+        )
+      );
+
+      rows.push(...part.rows);
+
+      if (!part.cut) {
+        const read: DaysRead = { ...part, rows, wholeThrough };
+
+        return read;
+      }
+
+      const last = part.rows
+        .flatMap((row) => Option.toArray(dayOf(row.segments.date)))
+        .map(dayText)
+        .toSorted()
+        .at(-1);
+
+      // One day alone fills every page: nothing more can be read whole.
+      if (last === undefined || last === dayText(from)) {
+        break;
+      }
+
+      from = Option.getOrThrow(dayOf(last));
+      wholeThrough = Option.some(addDays(from, -1));
+    }
+
+    const cut: DaysRead = {
+      complete: false,
+      cut: true,
+      halted: Option.none(),
+      rows,
+      wholeThrough,
+    };
+
+    return cut;
+  });
+
   const snapshot: AdNetworkClient["snapshot"] = Effect.fn("GoogleAds.snapshot")(
     function* snapshot(token, request) {
       const { currency, externalId, reachedThrough, timeZone } = request;
@@ -484,16 +588,20 @@ export const googleAdsClient = (options: {
       const days: Searched<typeof DayRowSchema.Type> = Option.isSome(
         campaigns.halted
       )
-        ? { complete: false, halted: Option.none(), rows: [] }
-        : yield* unlessLimited(
-            searched(
-              access,
-              externalId,
-              reachedThrough,
-              daysQuery(request.since, request.until),
-              DayRowSchema
-            )
-          );
+        ? { complete: false, cut: false, halted: Option.none(), rows: [] }
+        : yield* readDays(access, request);
+
+      if (campaigns.cut || days.cut) {
+        yield* Effect.logWarning(
+          "A Google Ads account took more pages than a read takes: it is read again later, and not marked read"
+        ).pipe(
+          Effect.annotateLogs({
+            campaigns: campaigns.cut,
+            days: days.cut,
+            rows: campaigns.rows.length + days.rows.length,
+          })
+        );
+      }
 
       const kept = days.rows.flatMap((row) =>
         Option.toArray(campaignDayOf(row, currency))
@@ -517,15 +625,17 @@ export const googleAdsClient = (options: {
             )
           ).values(),
         ],
-        campaignDaysCover: days.complete
-          ? Option.some({ from: request.since, to: request.until })
-          : Option.none(),
+        campaignDaysCover: coverOf(days, request),
         campaigns: campaigns.rows.flatMap((row) =>
           Option.toArray(campaignOf(row, currency, timeZone))
         ),
         complete: campaigns.complete,
         facts: Option.some(facts),
-        haltedFor: Option.orElse(campaigns.halted, () => days.halted),
+        haltedFor: Option.orElse(campaigns.halted, () => days.halted).pipe(
+          Option.orElse(() =>
+            campaigns.cut || days.cut ? Option.some(cutWait) : Option.none()
+          )
+        ),
         insights: [],
       };
     }
