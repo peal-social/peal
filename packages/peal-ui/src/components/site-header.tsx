@@ -29,6 +29,7 @@ import { useId } from "react";
 
 import { cn } from "../lib/utils";
 import { Button, buttonVariants } from "./button";
+import { MenuPreview } from "./menu-preview";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -123,6 +124,11 @@ interface SiteMenuFeature {
 
 interface SiteMenu {
   readonly feature?: SiteMenuFeature | undefined;
+  /**
+   * Whether the feature card previews the hovered or focused row as pixel
+   * art, with the card's first mark as its own art.
+   */
+  readonly preview?: boolean | undefined;
   readonly groups: readonly SiteMenuGroup[];
   readonly kind: "menu";
   readonly label: string;
@@ -219,12 +225,20 @@ const RowIcon = ({ link }: { readonly link: SiteMenuLink }) => {
 // platform's, sits beside it without a description.
 const MenuRow = ({ link }: { readonly link: SiteMenuLink }) =>
   link.description === undefined ? (
-    <NavigationMenuLink href={link.href} className="items-center">
+    <NavigationMenuLink
+      href={link.href}
+      data-preview-key={link.href}
+      className="items-center"
+    >
       <RowIcon link={link} />
       <span className="text-foreground font-medium">{link.title}</span>
     </NavigationMenuLink>
   ) : (
-    <NavigationMenuLink href={link.href} className="items-start">
+    <NavigationMenuLink
+      href={link.href}
+      data-preview-key={link.href}
+      className="items-start"
+    >
       <RowIcon link={link} />
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="text-foreground font-medium">{link.title}</span>
@@ -327,18 +341,44 @@ const FeatureCard = ({ feature }: { readonly feature: SiteMenuFeature }) => (
   </NavigationMenuLink>
 );
 
-const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => (
-  <div className="flex gap-2">
-    {columnsOf(menu.groups).map((column) => (
-      <div key={column[0]?.label} className="flex flex-col gap-2">
-        {column.map((group) => (
-          <MenuGroup key={group.label} group={group} />
-        ))}
-      </div>
-    ))}
-    {menu.feature === undefined ? null : <FeatureCard feature={menu.feature} />}
-  </div>
-);
+const MenuColumns = ({ menu }: { readonly menu: SiteMenu }) =>
+  columnsOf(menu.groups).map((column) => (
+    <div key={column[0]?.label} className="flex flex-col gap-2">
+      {column.map((group) => (
+        <MenuGroup key={group.label} group={group} />
+      ))}
+    </div>
+  ));
+
+const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => {
+  const { feature } = menu;
+  const art = feature?.marks?.[0];
+
+  if (menu.preview === true && feature !== undefined && art !== undefined) {
+    return (
+      <MenuPreview
+        fallback={{ ...feature, art: <Mark mark={art} /> }}
+        items={menu.groups.flatMap((group) =>
+          group.links.map((link) => ({
+            description: link.description ?? "",
+            href: link.href,
+            key: link.href,
+            title: link.title,
+          }))
+        )}
+      >
+        <MenuColumns menu={menu} />
+      </MenuPreview>
+    );
+  }
+
+  return (
+    <div className="flex gap-2">
+      <MenuColumns menu={menu} />
+      {feature === undefined ? null : <FeatureCard feature={feature} />}
+    </div>
+  );
+};
 
 const RepositoryLink = ({
   className,

@@ -148,9 +148,10 @@ deep blue, drawn exactly as Peal's social banners are. peal-ui's
 `BrandField` renders it, from the `--field-*` tokens.
 
 **Where.** Only on the site's hero, a closing call-to-action band at the
-foot of a site page, and covers and social images (blog covers, Open Graph
-images, the social banners). Never in the app or the docs, and never twice
-on one screen.
+foot of a site page, the art area of a site menu's preview card, and covers
+and social images (blog covers, Open Graph images, the social banners).
+Never in the app or the docs, and never twice on one screen but for a menu
+open over the hero.
 
 **On it.** White text only (`#FFFFFF`), over the base and the blue glow
 (5:1 or better there), never over the lavender or yellow glows, which sit
@@ -293,6 +294,17 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   to the groups: a `muted` cell with a caption, a picture where one says
   something (brands' marks in 40 px bordered tiles), a title, one line and
   an arrow, linking to what it features.
+- **Menu preview.** A mega menu may close on a preview card instead of a
+  featured card (Resources does): a brand field without rails, as tall as
+  the rows beside it, holding pixel art, then the caption, a title and one
+  line. The art is the icon of the row the pointer rests on or focus is in,
+  rasterised onto 5 px cells in blue, lavender and white by coverage,
+  Bayer-dithered and brighter toward the top, with yellow on the top rows;
+  with no row previewed, it shows the card's own mark and content. Moving
+  from one row to another dissolves the pixels in about 280 ms, and a
+  scanline sweeps the art while the menu is open; with reduced motion, the
+  art swaps at once and nothing sweeps. The card links to what it shows.
+  The drawer has no preview.
 - **Platforms menu.** Every platform a channel connects to and every ad
   network, from the contract's lists, under Social (a wide cell of two
   columns), then Chat, Ads and Blog stacked in one column beside it, each

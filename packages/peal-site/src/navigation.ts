@@ -234,6 +234,7 @@ const navItems = (
       ],
       kind: "menu",
       label: t.resources,
+      preview: true,
       value: "resources",
     },
     {
