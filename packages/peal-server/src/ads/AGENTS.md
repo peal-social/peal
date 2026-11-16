@@ -184,8 +184,8 @@ weaken a rule below to make something pass.
   them (9 September 2026), and the access level is the client's Cloud
   project's. Refusals are kept as `google.<kind>.<VALUE>`, never with
   Google's message (it quotes the query); money is micros, read with
-  `minorUnitsOfMicros`, and `minorUnitDigits("google", …)` follows ISO
-  4217. A client account is read through its manager
+  `minorUnitsOfMicros`, and `minorUnitDigits("google", …)` follows the
+  ISO 4217 table. A client account is read through its manager
   (`reachedThrough`, the `login-customer-id` header). The API version is
   `googleAdsApiVersion` (v26, which Google ends in November 2027):
   nothing upgrades it by itself. It was never run against Google: before

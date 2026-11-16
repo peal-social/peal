@@ -36,9 +36,9 @@ import type {
   SpendDecision,
   SpendStanding,
 } from "#ads/application/spend-authorizations.ts";
+import type { AdNetwork } from "#ads/domain/ad-network.ts";
 import { Audience } from "#ads/domain/audience.ts";
 import type { Boost } from "#ads/domain/boost.ts";
-import type { AdNetwork } from "#ads/domain/ad-network.ts";
 import { CurrencySchema, minorUnitDigits, Money } from "#ads/domain/money.ts";
 import { traitsOf } from "#ads/domain/network-traits.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
