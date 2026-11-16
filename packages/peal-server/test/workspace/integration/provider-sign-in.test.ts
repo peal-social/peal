@@ -9,7 +9,11 @@ import { SqlClient } from "effect/sql";
 import { CaptchaSchema } from "peal-contract";
 
 import { mcpResource, registeredClient } from "#test/app/mcp-support.ts";
-import { appWithOidc, FakeOidc } from "#test/workspace/fakes/fake-oidc.ts";
+import {
+  appWithGoogle,
+  appWithOidc,
+  FakeOidc,
+} from "#test/workspace/fakes/fake-oidc.ts";
 import { enrolled } from "#test/workspace/support.ts";
 
 import {
@@ -659,3 +663,78 @@ layer(
     })
   );
 });
+
+// Google vouches for a Gmail address, or one of a domain Google Workspace
+// manages (`hd`): any other address it once confirmed may have changed
+// hands since, so it reaches no account and makes none.
+layer(Layer.mergeAll(appWithGoogle(), MigratedSqlLive), settings)(
+  "signing in with Google",
+  (it) => {
+    const googleSignIn = { ...signInPage, provider: "google" };
+    const googleSignUp = { ...signUpPage(), provider: "google" };
+
+    it.effect(
+      "joins no account to an address Google is not the authority for",
+      () =>
+        Effect.gen(function* notAuthoritative() {
+          const email = `marketing-${newSubject()}@corp.example`;
+
+          yield* existingAccount(email);
+
+          const identity = verified(email);
+
+          const finished = yield* providerSignIn(identity, {
+            body: googleSignIn,
+          });
+
+          assert.strictEqual(
+            finished.error,
+            "provider_email_not_authoritative"
+          );
+          assert.isFalse(setsSession(finished.reply));
+          assert.deepStrictEqual(yield* ownersOf(identity.sub, "google"), []);
+          assert.strictEqual((yield* accountOf(email))?.sessions, 0);
+
+          const stranger = `stranger-${newSubject()}@corp.example`;
+
+          const signedUp = yield* providerSignIn(verified(stranger), {
+            body: googleSignUp,
+          });
+
+          assert.strictEqual(
+            signedUp.error,
+            "provider_email_not_authoritative"
+          );
+          assert.isUndefined(yield* accountOf(stranger));
+        })
+    );
+
+    it.effect("joins the account of an address Google Workspace manages", () =>
+      Effect.gen(function* workspaceDomain() {
+        const email = `ada-${newSubject()}@corp.example`;
+        const id = yield* existingAccount(email);
+        const identity = { ...verified(email), hd: "corp.example" };
+
+        const finished = yield* providerSignIn(identity, {
+          body: googleSignIn,
+        });
+
+        assert.isNull(finished.error);
+        assert.deepStrictEqual(yield* ownersOf(identity.sub, "google"), [id]);
+      })
+    );
+
+    it.effect("makes an account for a Gmail address", () =>
+      Effect.gen(function* gmail() {
+        const email = `synthetic.${newSubject()}@gmail.com`;
+
+        const finished = yield* providerSignIn(verified(email), {
+          body: googleSignUp,
+        });
+
+        assert.isNull(finished.error);
+        assert.isTrue((yield* accountOf(email))?.email_verified);
+      })
+    );
+  }
+);

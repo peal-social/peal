@@ -3,7 +3,7 @@
 // callback the browser then opens, with the cookies it holds.
 import { randomUUID } from "node:crypto";
 
-import { Effect, Schema } from "effect";
+import { Effect, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
 import type { JsonValue } from "#test/channels/fakes/fake-http-server.ts";
@@ -19,6 +19,8 @@ const StartedSchema = Schema.Struct({ url: Schema.String });
 /** A sign-in the browser was sent to the provider for. */
 export interface Started {
   readonly authorization: URL;
+  /** The provider's id, which names its callback. */
+  readonly provider: string;
   readonly cookies: string;
   readonly nonce: string;
   readonly state: string;
@@ -57,6 +59,8 @@ export const signUpPage = (
   requestSignUp: true,
 });
 
+const decodeProvider = Schema.decodeUnknownOption(Schema.String);
+
 export const startSignIn = Effect.fn("startSignIn")(function* startSignIn(
   body: StartBody = signInPage,
   given?: string
@@ -79,6 +83,7 @@ export const startSignIn = Effect.fn("startSignIn")(function* startSignIn(
 
   const started: Started = {
     authorization,
+    provider: Option.getOrElse(decodeProvider(body["provider"]), () => "oidc"),
     cookies: withCookies(cookies, reply),
     nonce: authorization.searchParams.get("nonce") ?? "",
     state: authorization.searchParams.get("state") ?? "",
@@ -96,7 +101,7 @@ export const finishSignIn = Effect.fn("finishSignIn")(function* finishSignIn(
   const query = new URLSearchParams({ code, state: started.state });
 
   const reply = yield* app.request(
-    `/api/auth/callback/oidc?${query.toString()}`,
+    `/api/auth/callback/${started.provider}?${query.toString()}`,
     {
       // As a browser opens the address the provider sends it back to.
       headers:
@@ -196,13 +201,16 @@ export const accountOf = Effect.fn("accountOf")(function* accountOf(
 
 /** The users the provider's subject is linked to. */
 export const ownersOf = Effect.fn("ownersOf")(function* ownersOf(
-  subject: string
+  subject: string,
+  provider = "oidc"
 ) {
   const sql = yield* SqlClient.SqlClient;
 
   const rows = yield* sql<{ readonly user_id: string }>`
     SELECT user_id FROM auth.account
-    WHERE provider_id = 'oidc' AND account_id = ${subject}`.pipe(Effect.orDie);
+    WHERE provider_id = ${provider} AND account_id = ${subject}`.pipe(
+    Effect.orDie
+  );
 
   return rows.map(({ user_id: userId }) => userId);
 });

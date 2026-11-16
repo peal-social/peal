@@ -15,6 +15,9 @@ import type { SignUpAdmission } from "./sign-up-gate.ts";
 export const providerRefusalCodes = [
   // The provider did not say it confirmed the address (`email_verified`).
   "provider_email_unverified",
+  // Google confirmed the address once, but is not its authority: neither a
+  // Gmail address nor one of a domain Google Workspace manages (`hd`).
+  "provider_email_not_authoritative",
   // The account has two-step verification: it signs in with its password
   // and its code, which a provider's sign-in never asks.
   "two_step_password",
@@ -46,7 +49,15 @@ export interface AdmissionReads {
 
 /** What the admission reads of the user Better Auth is about to admit. */
 export interface ProvisionedUser {
-  readonly source: Pick<ValidateUserInfoSource, "action" | "method">;
+  readonly source: Pick<ValidateUserInfoSource, "action" | "method"> & {
+    /**
+     * The provider, and what its ID token says of the address's domain:
+     * Google's `hd`, the domain Google Workspace manages it for.
+     */
+    readonly oauth?:
+      | { readonly hd?: string | undefined; readonly providerId: string }
+      | undefined;
+  };
   readonly user: {
     readonly email?: string | undefined;
     readonly emailVerified?: boolean | undefined;
@@ -65,6 +76,26 @@ const InvitationIdSchema = Schema.String.check(
 
 const isInvitationId = Schema.is(InvitationIdSchema);
 
+/**
+ * Whether Google is the authority for the address, as Google's own guide
+ * to its ID tokens says: a Gmail address, or one whose domain Google
+ * Workspace manages (`hd`, the same domain). For any other, Google once
+ * confirmed the address, but the mailbox may have changed hands since.
+ */
+export const googleVouchesFor = (
+  email: string,
+  hd: string | undefined
+): boolean => {
+  const address = email.trim().toLowerCase();
+  const domain = address.slice(address.lastIndexOf("@") + 1);
+
+  if (address.endsWith("@gmail.com")) {
+    return true;
+  }
+
+  return hd !== undefined && hd.trim().toLowerCase() === domain;
+};
+
 const isBanned = (account: StoredStanding, now: Date): boolean =>
   account.banned &&
   (account.banExpires === null || account.banExpires.getTime() > now.getTime());
@@ -78,6 +109,7 @@ const isBanned = (account: StoredStanding, now: Date): boolean =>
  *
  * 1. The provider must have confirmed the address (`email_verified`
  *    true), on every action: an address it did not confirm proves nothing.
+ *    Google must also be the address's authority (`googleVouchesFor`).
  * 2. An existing account with two-step verification signs in with its
  *    password: the provider's sign-in has no second step.
  * 3. A new account passes the server's sign-up gate, with the invitation
@@ -96,6 +128,13 @@ export const admitProviderUser = async (
   }
 
   const { email, id } = user;
+
+  if (
+    source.oauth?.providerId === "google" &&
+    !googleVouchesFor(email ?? "", source.oauth.hd)
+  ) {
+    return refusal("provider_email_not_authoritative");
+  }
 
   if (source.action === "create-user") {
     if (email === undefined) {
@@ -137,10 +176,47 @@ const InvitationStateSchema = Schema.Struct({ invitation: Schema.String });
 const decodeInvitationState = Schema.decodeUnknownOption(InvitationStateSchema);
 
 /** The admission, as Better Auth's `user.validateUserInfo`. */
+// What Better Auth hands `user.validateUserInfo`: the provider's profile
+// is the raw ID token claims sign-in-providers.ts kept.
+interface ValidatedUser {
+  readonly source: Pick<ValidateUserInfoSource, "action" | "method"> & {
+    readonly oauth?:
+      | {
+          readonly profile?: unknown;
+          readonly providerId: string;
+        }
+      | undefined;
+  };
+  readonly user: ProvisionedUser["user"];
+}
+
+const decodeDomainClaim = Schema.decodeUnknownOption(
+  Schema.Struct({ hd: Schema.String })
+);
+
+const provisioned = ({ source, user }: ValidatedUser): ProvisionedUser => ({
+  source: {
+    action: source.action,
+    method: source.method,
+    oauth:
+      source.oauth === undefined
+        ? undefined
+        : {
+            hd: Option.getOrUndefined(
+              decodeDomainClaim(source.oauth.profile).pipe(
+                Option.map(({ hd }) => hd)
+              )
+            ),
+            providerId: source.oauth.providerId,
+          },
+  },
+  user,
+});
+
 export const providerAdmission =
   (signUp: SignUpAdmission) =>
-  async (data: ProvisionedUser, ctx: GenericEndpointContext) =>
-    await admitProviderUser(data, {
+  async (data: ValidatedUser, ctx: GenericEndpointContext) =>
+    await admitProviderUser(provisioned(data), {
       // From the database, never a session's cached user: a flag turned on
       // a moment ago holds at once.
       account: async (userId) => {

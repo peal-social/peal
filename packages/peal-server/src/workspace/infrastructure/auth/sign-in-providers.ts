@@ -58,6 +58,9 @@ export const profileToUser = ({ email, name }: ProviderProfile) => {
 const ClaimsSchema = Schema.Struct({
   email: Schema.optional(Schema.String),
   email_verified: Schema.optional(Schema.Unknown),
+  // Google's: the domain Google Workspace manages the address for, which
+  // makes Google its authority (provider-admission.ts).
+  hd: Schema.optional(Schema.String),
   name: Schema.optional(Schema.String),
   sub: Schema.String,
 });
@@ -88,8 +91,9 @@ const profileFromIdToken: NonNullable<
     ? null
     : Option.getOrNull(
         readClaims(idToken).pipe(
-          Option.map(({ email, email_verified, name, sub }) => ({
+          Option.map(({ email, email_verified, hd, name, sub }) => ({
             email,
+            hd,
             // As Better Auth reads the claim: true, or the string some
             // providers send. A missing claim, or any other value, is no
             // confirmation.
@@ -134,7 +138,7 @@ const common = (client: SignInProviderClient, issuer: string) =>
 export const googleProvider = (
   client: SignInProviderClient
 ): GenericOAuthConfig<"google"> => ({
-  ...common(client, googleIssuer),
+  ...common(client, client.issuer ?? googleIssuer),
   name: "Google",
   prompt: "select_account",
   providerId: "google",

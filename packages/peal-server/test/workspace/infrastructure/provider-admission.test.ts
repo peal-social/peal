@@ -195,3 +195,98 @@ describe("who a provider may sign in", () => {
     }
   });
 });
+
+// Google is the authority for an address only when it is a Gmail address,
+// or when Google Workspace manages its domain (`hd`): any other address
+// Google once confirmed may have changed hands since.
+const fromGoogle = (
+  action: Action,
+  email: string,
+  hd?: string
+): Parameters<typeof admitProviderUser>[0] => ({
+  source: {
+    action,
+    method: "oauth",
+    oauth: {
+      hd,
+      providerId: "google",
+    },
+  },
+  user:
+    action === "create-user"
+      ? { email, emailVerified: true }
+      : {
+          email,
+          emailVerified: true,
+          id: "8d3f5b8e-6a51-4c58-9d1e-0f3e2b6a7c90",
+        },
+});
+
+describe("whom Google may vouch for", () => {
+  it.each(["create-user", "link-account", "sign-in"] as const)(
+    "refuses an address on a domain Google does not manage (%s)",
+    async (action) => {
+      await expect(
+        admitProviderUser(fromGoogle(action, "marketing@corp.example"), reads())
+      ).resolves.toStrictEqual({ error: "provider_email_not_authoritative" });
+    }
+  );
+
+  it.each(["create-user", "link-account", "sign-in"] as const)(
+    "admits a Gmail address, whatever its case (%s)",
+    async (action) => {
+      await expect(
+        admitProviderUser(
+          fromGoogle(action, " Ada.Lovelace@GMAIL.com "),
+          reads()
+        )
+      ).resolves.toBeUndefined();
+    }
+  );
+
+  it.each(["create-user", "link-account", "sign-in"] as const)(
+    "admits an address of the domain Google Workspace manages (%s)",
+    async (action) => {
+      await expect(
+        admitProviderUser(
+          fromGoogle(action, "ada@corp.example", "Corp.Example"),
+          reads()
+        )
+      ).resolves.toBeUndefined();
+    }
+  );
+
+  it("refuses an address of another domain than the one Google manages", async () => {
+    await expect(
+      admitProviderUser(
+        fromGoogle("link-account", "ada@corp.example", "other.example"),
+        reads()
+      )
+    ).resolves.toStrictEqual({ error: "provider_email_not_authoritative" });
+    await expect(
+      admitProviderUser(
+        fromGoogle("link-account", "ada@sub.corp.example", "corp.example"),
+        reads()
+      )
+    ).resolves.toStrictEqual({ error: "provider_email_not_authoritative" });
+    await expect(
+      admitProviderUser(fromGoogle("link-account", "ada@notgmail.com"), reads())
+    ).resolves.toStrictEqual({ error: "provider_email_not_authoritative" });
+  });
+
+  it("leaves the operator's own provider to its email_verified", async () => {
+    await expect(
+      admitProviderUser(
+        {
+          ...fromGoogle("link-account", "marketing@corp.example"),
+          source: {
+            action: "link-account",
+            method: "oauth",
+            oauth: { providerId: "oidc" },
+          },
+        },
+        reads()
+      )
+    ).resolves.toBeUndefined();
+  });
+});

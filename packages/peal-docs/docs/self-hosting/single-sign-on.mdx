@@ -54,4 +54,6 @@ An account with two-step verification on signs in with its password and its code
 
 ## Google [#google]
 
+Google vouches for fewer addresses than your own provider. Peal takes Google's word for an address only when it is a Gmail address (`@gmail.com`), or when Google Workspace manages its domain (the ID token's `hd`, the same domain as the address). Any other address Google once confirmed may have changed hands since, so it joins no account, makes none and accepts no invitation: its owner signs in with their password, and is told "Sign in with your password: Google can't confirm this address is still yours". Your own provider is its users' authority: its `email_verified` is enough.
+
 Google is set the same way, with its own two variables, `GOOGLE_SIGN_IN_CLIENT_ID` and `GOOGLE_SIGN_IN_CLIENT_SECRET`. In the Google Cloud console, create an OAuth client of type "Web application" with the redirect URI `<PUBLIC_URL>/api/auth/callback/google`, and a consent screen that asks for `openid`, `email` and `profile` only. Google and your own provider can both be on.

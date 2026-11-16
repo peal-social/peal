@@ -371,7 +371,10 @@ The staff context follows these rules too. What the law has a host keep is in
   no setting to trust a provider without it), on every action; an existing
   account with two-step verification is refused (`two_step_password`),
   before anything is linked or a session made (the plugin gates password
-  sign-ins only); a banned one too; a new account passes `SignUpGate` with
+  sign-ins only); a banned one too; for `google`, Google must be the
+  address's authority (`googleVouchesFor`: `@gmail.com`, or `hd` the
+  address's domain, as Google's ID token guide says), on every action,
+  else `provider_email_not_authoritative`; a new account passes `SignUpGate` with
   the invitation the sign-up page put in the state (`additionalData`, a
   lower-case UUID). An account is made only when the sign-up page asks
   (`disableImplicitSignUp`, `requestSignUp`). Linking is implicit only, by

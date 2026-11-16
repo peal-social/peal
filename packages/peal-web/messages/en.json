@@ -641,7 +641,8 @@
       "PROVIDER_SIGN_UP_DISABLED": "No account uses this address. Create one on the sign-up page.",
       "PROVIDER_NO_ACCOUNT": "No account uses this address.",
       "PROVIDER_ACCESS_DENIED": "You cancelled the sign-in at your provider.",
-      "PROVIDER_FAILED": "The sign-in with your provider failed. Try again."
+      "PROVIDER_FAILED": "The sign-in with your provider failed. Try again.",
+      "PROVIDER_EMAIL_NOT_AUTHORITATIVE": "Sign in with your password: Google can't confirm this address is still yours."
     },
     "providers": {
       "continueWith": "Continue with {name}",

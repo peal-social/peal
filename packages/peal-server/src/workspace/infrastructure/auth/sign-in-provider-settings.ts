@@ -6,6 +6,11 @@ import { storableLine } from "#shared/domain/platform-text.ts";
 export interface SignInProviderClient {
   readonly clientId: string;
   readonly clientSecret: Redacted.Redacted;
+  /**
+   * Google's only: another issuer than Google's, such as a fake in tests
+   * (`GOOGLE_SIGN_IN_ISSUER`).
+   */
+  readonly issuer?: string;
 }
 
 /** The OpenID Connect provider a self-hoster chose, and its client there. */
@@ -122,7 +127,22 @@ const googleConfig = Config.all({
       : Config.all({
           clientId: requiredString("GOOGLE_SIGN_IN_CLIENT_ID"),
           clientSecret: requiredSecret("GOOGLE_SIGN_IN_CLIENT_SECRET"),
-        }).pipe(Config.map((client) => Option.some(client)))
+          issuer: Config.option(
+            Config.schema(IssuerSchema, "GOOGLE_SIGN_IN_ISSUER")
+          ),
+        }).pipe(
+          Config.map(({ issuer, ...client }) =>
+            Option.some<SignInProviderClient>(
+              Option.match(issuer, {
+                onNone: () => client,
+                onSome: (other) => ({
+                  ...client,
+                  issuer: other.replace(/\/+$/u, ""),
+                }),
+              })
+            )
+          )
+        )
   )
 );
 

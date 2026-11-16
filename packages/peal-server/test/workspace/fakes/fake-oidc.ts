@@ -27,6 +27,8 @@ const algorithm = "ES256";
 export interface Identity {
   readonly email?: string;
   readonly email_verified?: boolean | string | undefined;
+  /** Google's: the domain Google Workspace manages the address for. */
+  readonly hd?: string;
   readonly name?: string;
   readonly sub: string;
 }
@@ -162,6 +164,10 @@ const fakeOidc = Effect.gen(function* fakeOidc() {
       claims["email_verified"] = identity.email_verified;
     }
 
+    if (identity.hd !== undefined) {
+      claims["hd"] = identity.hd;
+    }
+
     if (identity.name !== undefined) {
       claims["name"] = identity.name;
     }
@@ -223,6 +229,24 @@ export const appWithOidc = (
 
       return Layer.merge(
         TestApp.layerWith({ ...oidcSettings(provider), ...env }, observed),
+        Layer.succeed(FakeOidc, provider)
+      );
+    })
+  );
+
+/** The server signing people in with the fake as Google, and the fake. */
+export const appWithGoogle = (env: Readonly<Record<string, string>> = {}) =>
+  Layer.unwrap(
+    Effect.gen(function* withGoogle() {
+      const provider = yield* fakeOidc;
+
+      return Layer.merge(
+        TestApp.layerWith({
+          GOOGLE_SIGN_IN_CLIENT_ID: oidcClientId,
+          GOOGLE_SIGN_IN_CLIENT_SECRET: oidcClientSecret,
+          GOOGLE_SIGN_IN_ISSUER: provider.server.url,
+          ...env,
+        }),
         Layer.succeed(FakeOidc, provider)
       );
     })

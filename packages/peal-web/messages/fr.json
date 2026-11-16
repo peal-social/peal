@@ -641,7 +641,8 @@
       "PROVIDER_SIGN_UP_DISABLED": "Aucun compte n’utilise cette adresse. Créez-en un sur la page d’inscription.",
       "PROVIDER_NO_ACCOUNT": "Aucun compte n’utilise cette adresse.",
       "PROVIDER_ACCESS_DENIED": "Vous avez annulé la connexion chez votre fournisseur.",
-      "PROVIDER_FAILED": "La connexion avec votre fournisseur a échoué. Réessayez."
+      "PROVIDER_FAILED": "La connexion avec votre fournisseur a échoué. Réessayez.",
+      "PROVIDER_EMAIL_NOT_AUTHORITATIVE": "Connectez-vous avec votre mot de passe : Google ne peut pas confirmer que cette adresse est toujours la vôtre."
     },
     "providers": {
       "continueWith": "Continuer avec {name}",

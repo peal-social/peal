@@ -61,6 +61,27 @@ describe("the sign-in providers' settings", () => {
     })
   );
 
+  it.effect("read another issuer for Google, as tests point it at a fake", () =>
+    Effect.gen(function* googleIssuer() {
+      const settings = yield* settingsFrom({
+        ...google,
+        GOOGLE_SIGN_IN_ISSUER: "http://127.0.0.1:8080/",
+      });
+
+      assert.deepStrictEqual(
+        settings.google.pipe(Option.map(({ issuer }) => issuer)),
+        Option.some("http://127.0.0.1:8080")
+      );
+      assert.include(
+        yield* failureOf({
+          ...google,
+          GOOGLE_SIGN_IN_ISSUER: "http://id.example.test",
+        }),
+        "GOOGLE_SIGN_IN_ISSUER"
+      );
+    })
+  );
+
   it.effect("read the operator's provider, with the defaults", () =>
     Effect.gen(function* readsOidc() {
       const settings = yield* settingsFrom(oidc);
