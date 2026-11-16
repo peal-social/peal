@@ -927,7 +927,7 @@ export const OrderButton = ({
   return (
     <div className="flex flex-col items-start gap-2">
       <Button
-        className="h-auto min-h-8 whitespace-normal"
+        className="h-auto min-h-8.5 whitespace-normal"
         disabled={!consented || ordering}
         focusableWhenDisabled
         onClick={onOrder}
