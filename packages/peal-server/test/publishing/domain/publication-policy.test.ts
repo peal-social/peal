@@ -352,6 +352,10 @@ describe(decide, () => {
       outcome: new BadRequest({ code: "chatMigrated" }),
       reason: "chatMigrated",
     },
+    {
+      outcome: new BadRequest({ code: "cannotPost" }),
+      reason: "cannotPost",
+    },
   ])(
     "fails at once with $reason when Peal could not use the channel or media",
     ({ outcome, reason }) => {

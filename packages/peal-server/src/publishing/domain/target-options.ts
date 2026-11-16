@@ -20,6 +20,7 @@ import { MastodonOptions } from "./mastodon-options.ts";
 import type { OptionConstraint } from "./option-constraint.ts";
 import type { OptionProblem } from "./option-problem.ts";
 import { PinterestOptions } from "./pinterest-options.ts";
+import { SlackOptions } from "./slack-options.ts";
 import { TelegramOptions } from "./telegram-options.ts";
 import { ThreadsOptions } from "./threads-options.ts";
 import { TikTokOptions } from "./tiktok-options.ts";
@@ -52,6 +53,7 @@ export const TargetOptionsSchema = Schema.Union([
   FacebookOptions,
   DiscordOptions,
   TelegramOptions,
+  SlackOptions,
 ]);
 
 export type TargetOptions = typeof TargetOptionsSchema.Type;

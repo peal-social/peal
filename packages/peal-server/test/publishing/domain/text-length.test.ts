@@ -20,6 +20,7 @@ const combiningAccent = "é";
 const lengths = (text: string): Record<TextUnit, number> => ({
   codePoints: measureText(text, "codePoints"),
   emojiBytes: measureText(text, "emojiBytes"),
+  escapedUtf16Units: measureText(text, "escapedUtf16Units"),
   graphemes: measureText(text, "graphemes"),
   utf16Units: measureText(text, "utf16Units"),
   utf8Bytes: measureText(text, "utf8Bytes"),
@@ -32,6 +33,7 @@ describe(measureText, () => {
       expected: {
         codePoints: 5,
         emojiBytes: 5,
+        escapedUtf16Units: 5,
         graphemes: 5,
         utf16Units: 5,
         utf8Bytes: 5,
@@ -44,6 +46,7 @@ describe(measureText, () => {
       expected: {
         codePoints: 0,
         emojiBytes: 0,
+        escapedUtf16Units: 0,
         graphemes: 0,
         utf16Units: 0,
         utf8Bytes: 0,
@@ -56,6 +59,7 @@ describe(measureText, () => {
       expected: {
         codePoints: 2,
         emojiBytes: 8,
+        escapedUtf16Units: 4,
         graphemes: 1,
         utf16Units: 4,
         utf8Bytes: 8,
@@ -68,6 +72,7 @@ describe(measureText, () => {
       expected: {
         codePoints: 5,
         emojiBytes: 18,
+        escapedUtf16Units: 8,
         graphemes: 1,
         utf16Units: 8,
         utf8Bytes: 18,
@@ -81,6 +86,7 @@ describe(measureText, () => {
       expected: {
         codePoints: 2,
         emojiBytes: 2,
+        escapedUtf16Units: 2,
         graphemes: 1,
         utf16Units: 2,
         utf8Bytes: 3,
@@ -93,6 +99,7 @@ describe(measureText, () => {
       expected: {
         codePoints: 3,
         emojiBytes: 3,
+        escapedUtf16Units: 3,
         graphemes: 3,
         utf16Units: 3,
         utf8Bytes: 9,
@@ -105,6 +112,7 @@ describe(measureText, () => {
       expected: {
         codePoints: 3,
         emojiBytes: 3,
+        escapedUtf16Units: 3,
         graphemes: 3,
         utf16Units: 3,
         utf8Bytes: 6,
@@ -118,6 +126,7 @@ describe(measureText, () => {
       expected: {
         codePoints: 2,
         emojiBytes: 2,
+        escapedUtf16Units: 2,
         graphemes: 2,
         utf16Units: 2,
         utf8Bytes: 6,

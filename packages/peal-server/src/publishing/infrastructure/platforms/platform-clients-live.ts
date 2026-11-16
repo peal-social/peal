@@ -16,6 +16,8 @@ import {
   publicHttpClient,
   publicHttpClientWith,
 } from "#shared/infrastructure/platforms/public-http.ts";
+import { slackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
+import type { SlackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
 import { telegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 import type { TelegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 import { tiktokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
@@ -29,6 +31,7 @@ import { facebookClient } from "./meta/facebook-client.ts";
 import { instagramClient } from "./meta/instagram-client.ts";
 import { threadsClient } from "./meta/threads-client.ts";
 import { pinterestClient } from "./pinterest/pinterest-client.ts";
+import { slackClient } from "./slack/slack-client.ts";
 import { telegramClient } from "./telegram/telegram-client.ts";
 import { tiktokClient } from "./tiktok/tiktok-client.ts";
 import { tiktokMediaUrlConfig } from "./tiktok/tiktok-settings.ts";
@@ -43,6 +46,8 @@ import {
 export interface PlatformClientSettings {
   /** Discord's API, which takes webhooks' messages and their files. */
   readonly discordHosts: DiscordHosts;
+  /** Slack's Web API, and the host its upload addresses are on. */
+  readonly slackHosts: SlackHosts;
   /** Telegram's Bot API, which takes bots' messages and their files. */
   readonly telegramHosts: TelegramHosts;
   /** The My Business API, which makes and lists local posts. */
@@ -86,7 +91,7 @@ const uploadTimeout = Duration.minutes(10);
 /**
  * The platforms Peal publishes to: Mastodon, Bluesky, LinkedIn, X, Threads,
  * Instagram, Facebook Pages, TikTok, YouTube, Pinterest, Google Business
- * Profile, Discord and Telegram. Every request goes through
+ * Profile, Discord, Telegram and Slack. Every request goes through
  * the public HTTP client, so the outbound guard checks the servers users
  * chose. Needs an HttpClient, the OutboundGuard, SecureRandom and Digest
  * (for DPoP proofs), Mac (for Meta's proofs), PlatformCredentials,
@@ -179,6 +184,12 @@ export const platformClientsWith = (settings: PlatformClientSettings) =>
           uploads,
           ...timing,
         }),
+        yield* slackClient({
+          api,
+          hosts: settings.slackHosts,
+          uploads,
+          ...timing,
+        }),
       ];
 
       const byPlatform: ReadonlyMap<Platform, PlatformClient> = new Map(
@@ -214,6 +225,7 @@ export const PlatformClientsLive = Layer.unwrap(
       metaAppSecret: meta.pipe(Option.map(({ appSecret }) => appSecret)),
       metaHosts,
       pinterestApi: pinterest.api,
+      slackHosts,
       telegramHosts,
       tiktokApi: tiktokHosts.api,
       tiktokPullFrom,

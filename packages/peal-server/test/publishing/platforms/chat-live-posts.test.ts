@@ -144,6 +144,7 @@ describe("deleting and editing on Discord", () => {
       Effect.gen(function* edits() {
         const { client, discord, live } = yield* onDiscord({
           edit: {
+            media: [],
             options: Option.some(new DiscordOptions({ mentions: false })),
             text: "Corrected @everyone",
           },
@@ -175,7 +176,7 @@ describe("deleting and editing on Discord", () => {
     () =>
       Effect.gen(function* refusals() {
         const { client, discord, live } = yield* onDiscord({
-          edit: { options: Option.none(), text: "Corrected" },
+          edit: { media: [], options: Option.none(), text: "Corrected" },
         });
 
         const platformPostId = yield* idOf(
@@ -221,7 +222,9 @@ describe("deleting and editing on Discord", () => {
 
       const live = yield* liveClientsOn({
         credentials,
-        edits: new Map([[changeId, { options: Option.none(), text: "New" }]]),
+        edits: new Map([
+          [changeId, { media: [], options: Option.none(), text: "New" }],
+        ]),
         platforms: { discordHosts: { api: discord.url } },
       });
 
@@ -345,7 +348,7 @@ describe("deleting and editing on Telegram", () => {
       const image = testFile("image", 1024);
 
       const { client, live, telegram } = yield* onTelegram({
-        edit: { options: Option.none(), text: "Corrected" },
+        edit: { media: [], options: Option.none(), text: "Corrected" },
         files: [image],
       });
 
@@ -377,7 +380,7 @@ describe("deleting and editing on Telegram", () => {
   it.live("says an edit's 400 may be the same text again", () =>
     Effect.gen(function* same() {
       const { client, live, telegram } = yield* onTelegram({
-        edit: { options: Option.none(), text: "Corrected" },
+        edit: { media: [], options: Option.none(), text: "Corrected" },
       });
 
       const platformPostId = yield* idOf(
@@ -400,7 +403,7 @@ describe("deleting and editing on Telegram", () => {
   it.live("says an edit's 5xx may have reached Telegram", () =>
     Effect.gen(function* serverError() {
       const { client, live, telegram } = yield* onTelegram({
-        edit: { options: Option.none(), text: "Corrected" },
+        edit: { media: [], options: Option.none(), text: "Corrected" },
       });
 
       const platformPostId = yield* idOf(
@@ -431,7 +434,9 @@ describe("deleting and editing on Telegram", () => {
 
       const live = yield* liveClientsOn({
         credentials,
-        edits: new Map([[changeId, { options: Option.none(), text: "New" }]]),
+        edits: new Map([
+          [changeId, { media: [], options: Option.none(), text: "New" }],
+        ]),
         platforms: { telegramHosts: { api: "http://127.0.0.1:9" } },
       });
 

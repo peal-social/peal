@@ -49,6 +49,7 @@ const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   linkedin: ["linkedin.com", "lnkd.in"],
   mastodon: [],
   pinterest: ["pinterest.com", "pin.it"],
+  slack: ["slack.com"],
   telegram: [],
   threads: ["threads.net", "threads.com"],
   tiktok: ["tiktok.com"],

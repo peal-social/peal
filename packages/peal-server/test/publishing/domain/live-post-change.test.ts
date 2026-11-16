@@ -445,6 +445,7 @@ describe("live post support", () => {
       "googleBusiness",
       "discord",
       "telegram",
+      "slack",
     ]);
   });
 });
@@ -624,6 +625,12 @@ describe("live post editing support", () => {
   it("edits only where the platform and Peal's permissions allow", () => {
     expect(
       platforms.filter((platform) => Option.isNone(editBlocker(platform)))
-    ).toStrictEqual(["mastodon", "googleBusiness", "discord", "telegram"]);
+    ).toStrictEqual([
+      "mastodon",
+      "googleBusiness",
+      "discord",
+      "telegram",
+      "slack",
+    ]);
   });
 });

@@ -16,6 +16,8 @@ import type { DiscordHosts } from "#shared/infrastructure/platforms/discord-api.
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import { pinterestHostsConfig } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
+import { slackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
+import type { SlackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
 import { telegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 import type { TelegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 
@@ -35,6 +37,7 @@ import {
   mastodonLivePost,
 } from "./mastodon/mastodon-live-post.ts";
 import { pinterestLivePost } from "./pinterest/pinterest-live-post.ts";
+import { slackLiveEdit, slackLivePost } from "./slack/slack-live-post.ts";
 import {
   telegramLiveEdit,
   telegramLivePost,
@@ -48,6 +51,7 @@ export interface LivePostSettings {
   /** `https:`; `http:` only for tests against local fakes. */
   readonly mastodonScheme: "http:" | "https:";
   readonly pinterestApi: URL;
+  readonly slackHosts: SlackHosts;
   readonly telegramHosts: TelegramHosts;
   readonly xApi: URL;
 }
@@ -92,6 +96,7 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
 
     const discord = { api, hosts: settings.discordHosts };
     const google = { api, apiUrl: settings.googleBusinessApi };
+    const slack = { api, hosts: settings.slackHosts };
     const telegram = { api, hosts: settings.telegramHosts };
     const mastodon = { api, scheme: settings.mastodonScheme };
 
@@ -116,6 +121,7 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
         edit: notEditing,
         remove: pinterestLivePost({ api, apiUrl: settings.pinterestApi }),
       },
+      slack: { edit: slackLiveEdit(slack), remove: slackLivePost(slack) },
       telegram: {
         edit: telegramLiveEdit(telegram),
         remove: telegramLivePost(telegram),
@@ -169,10 +175,10 @@ export const livePostClientsWith = (settings: LivePostSettings) =>
               return yield* new BadRequest({ code: editEndedCode });
             }
 
-            const { options, text } = pending.value;
+            const { media, options, text } = pending.value;
 
             return yield* credentials.withToken(channelId, (token) =>
-              editor(token, { options, platformPostId, text })
+              editor(token, { media, options, platformPostId, text })
             );
           }),
         remove: ({ channelId, platformPostId }) =>
@@ -208,6 +214,7 @@ export const LivePostClientsLive = Layer.unwrap(
         googleBusinessApi: new URL("https://mybusiness.googleapis.com"),
         mastodonScheme: "https:",
         pinterestApi: pinterest.api,
+        slackHosts,
         telegramHosts,
         xApi: new URL("https://api.x.com"),
       })

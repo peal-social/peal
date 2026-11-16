@@ -17,6 +17,9 @@ import { xLinksIn } from "./x-links.ts";
  *   "Posts" page says "Emojis are counted as the number of UTF-8 bytes").
  * - `utf16Units`: UTF-16 code units, as JavaScript counts a string's
  *   length, so most emoji count 2 (TikTok's "UTF-16 runes").
+ * - `escapedUtf16Units`: UTF-16 code units of the text as Slack is sent
+ *   it, `&`, `<` and `>` written as `&amp;`, `&lt;` and `&gt;` (Slack
+ *   reads them as its markup otherwise), so each counts 5 or 4.
  * - `weighted`: X's open text-counting rules (twitter-text's `parseTweet`).
  *   The text is normalized to NFC; a link counts as 23, whatever its length,
  *   with or without a scheme (`peal.social` too, see `./x-links.ts`); an
@@ -31,6 +34,7 @@ export const TextUnitSchema = Schema.Literals([
   "emojiBytes",
   "utf16Units",
   "weighted",
+  "escapedUtf16Units",
 ]);
 
 export type TextUnit = typeof TextUnitSchema.Type;
@@ -139,9 +143,18 @@ const emojiBytesLength = (text: string): number =>
     0
   );
 
+// What `&`, `<` and `>` become in Slack's text: `&amp;`, `&lt;`, `&gt;`.
+const escapedLength = (text: string): number =>
+  text.length +
+  [...text.matchAll(/[&<>]/gu)].reduce(
+    (extra, [character]) => extra + (character === "&" ? 4 : 3),
+    0
+  );
+
 const measures: Readonly<Record<TextUnit, (text: string) => number>> = {
   codePoints: (text) => codePointsOf(text).length,
   emojiBytes: emojiBytesLength,
+  escapedUtf16Units: escapedLength,
   graphemes: (text) => segmentsOf(text).length,
   utf16Units: (text) => text.length,
   utf8Bytes: utf8BytesOf,

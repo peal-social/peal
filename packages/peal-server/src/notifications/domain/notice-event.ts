@@ -77,6 +77,7 @@ export const PostFailureReasonSchema = Schema.Literals([
   "xThreadCut",
   "forumThreadNameRequired",
   "chatMigrated",
+  "cannotPost",
 ]);
 
 export type PostFailureReason = typeof PostFailureReasonSchema.Type;

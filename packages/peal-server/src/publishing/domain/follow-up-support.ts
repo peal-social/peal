@@ -61,6 +61,7 @@ export const followUpSupport = {
   linkedin: { comment: "notAllowed", repost: "notAllowed" },
   mastodon: { comment: "available", repost: "available" },
   pinterest: { comment: "noApi", repost: "noApi" },
+  slack: { comment: "noApi", repost: "noApi" },
   telegram: { comment: "noApi", repost: "noApi" },
   threads: { comment: "review", repost: "notBuilt" },
   tiktok: { comment: "noApi", repost: "noApi" },

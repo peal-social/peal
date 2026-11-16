@@ -42,6 +42,7 @@ import { facebookClient } from "#publishing/infrastructure/platforms/meta/facebo
 import { instagramClient } from "#publishing/infrastructure/platforms/meta/instagram-client.ts";
 import { threadsClient } from "#publishing/infrastructure/platforms/meta/threads-client.ts";
 import { pinterestClient } from "#publishing/infrastructure/platforms/pinterest/pinterest-client.ts";
+import { slackClient } from "#publishing/infrastructure/platforms/slack/slack-client.ts";
 import { telegramClient } from "#publishing/infrastructure/platforms/telegram/telegram-client.ts";
 import { tiktokClient } from "#publishing/infrastructure/platforms/tiktok/tiktok-client.ts";
 import { xClient } from "#publishing/infrastructure/platforms/x/x-client.ts";
@@ -460,6 +461,33 @@ export const telegramClientWith = Effect.fn("test.telegramClient")(
   }
 );
 
+/** The Slack client, with the fake as Slack's Web API and uploads. */
+export const slackClientWith = Effect.fn("test.slackClient")(
+  function* slackClientWith(options: {
+    readonly api: string;
+    readonly credentials: Layer.Layer<CredentialLog | PlatformCredentials>;
+    readonly files?: readonly TestFile[];
+    /** A client of its own, as one that gives up sooner. */
+    readonly http?: Effect.Success<typeof httpClient> | undefined;
+    /** The origin upload addresses must have: the fake's by default. */
+    readonly uploads?: string;
+  }) {
+    const api = options.http ?? (yield* httpClient);
+
+    return yield* slackClient({
+      api,
+      hosts: { api: options.api, uploads: options.uploads ?? options.api },
+      settle: Duration.zero,
+      timing: testTiming,
+      uploads: api,
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(options.credentials, mediaOf(options.files ?? []))
+      )
+    );
+  }
+);
+
 /** The public client with a timeout of its own, against loopback fakes. */
 export const httpClientTimingOutAfter = (timeout: Duration.Input) =>
   publicHttpClientWith({ timeout }).pipe(Effect.provide(HttpTest));
@@ -835,6 +863,10 @@ export const liveClientsOn = (options: {
         mastodonScheme: "http:",
         pinterestApi:
           options.platforms.pinterestApi ?? new URL("http://127.0.0.1:9"),
+        slackHosts: options.platforms.slackHosts ?? {
+          api: "http://127.0.0.1:9",
+          uploads: "http://127.0.0.1:9",
+        },
         telegramHosts: options.platforms.telegramHosts ?? {
           api: "http://127.0.0.1:9",
         },
