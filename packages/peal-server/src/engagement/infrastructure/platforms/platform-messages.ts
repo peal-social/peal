@@ -1,4 +1,4 @@
-import { DateTime, Effect, Layer, Option } from "effect";
+import { DateTime, Duration, Effect, Layer, Option } from "effect";
 import type { Redacted } from "effect";
 
 import { ChannelAccess } from "#channels/application/channel-access.ts";
@@ -16,6 +16,7 @@ import type {
 } from "#engagement/application/ports/message-source.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
 import { dueForCheck } from "#engagement/domain/conversation.ts";
+import type { DirectMessage } from "#engagement/domain/direct-message.ts";
 import {
   messageAbilitiesOf,
   namesMessageScopes,
@@ -40,6 +41,50 @@ import { blueskyMessages } from "./bluesky/bluesky-messages.ts";
 import { mastodonMessages } from "./mastodon/mastodon-messages.ts";
 import type { FollowedElsewhere, MessagePlatform } from "./message-platform.ts";
 import { metaMessages } from "./meta/meta-messages.ts";
+
+/** How far apart the platform's clock and Peal's may be. */
+const clockSkew = Duration.minutes(1);
+
+/**
+ * The platform's ids a resumed message may not take for its own: the
+ * account's messages sent before it was written (less `skew`), and those
+ * another message of Peal's went out as. One of the account's sent since,
+ * that nothing of Peal's claims, may be this very message, read back from
+ * its echo (Meta's `message_echoes`): it stays free, and the platform's
+ * look-up still asks for exactly one, with the text.
+ */
+export const takenIdsOf = (
+  kept: readonly Pick<
+    DirectMessage,
+    "fromAccount" | "platformMessageId" | "sentAt"
+  >[],
+  others: readonly {
+    readonly id: string;
+    readonly platformMessageId: Option.Option<string>;
+  }[],
+  message: { readonly createdAt: DateTime.Utc; readonly id: string },
+  skew: Duration.Duration = clockSkew
+): readonly string[] => {
+  const since = DateTime.subtractDuration(message.createdAt, skew);
+
+  const claimed = new Set(
+    others.flatMap((other) =>
+      other.id === message.id ? [] : Option.toArray(other.platformMessageId)
+    )
+  );
+
+  return [
+    ...new Set([
+      ...kept.flatMap(({ fromAccount, platformMessageId, sentAt }) =>
+        fromAccount &&
+        (DateTime.isLessThan(sentAt, since) || claimed.has(platformMessageId))
+          ? [platformMessageId]
+          : []
+      ),
+      ...claimed,
+    ]),
+  ];
+};
 
 // What the gate answers for a message it did not call the platform for
 // and cannot tell the fate of: one no longer on its way, whose job then
@@ -330,16 +375,17 @@ export const platformMessagesWith = (settings: {
             participants: conversation.participants,
             platformConversationId: conversation.platformConversationId,
             request: conversation.request,
-            takenIds: [
-              ...kept
-                .filter(({ fromAccount }) => fromAccount)
-                .map(({ platformMessageId }) => platformMessageId),
-              ...others.flatMap((other) =>
-                other.id !== message.value.id && other.status._tag === "sent"
-                  ? Option.toArray(other.status.platformMessageId)
-                  : []
-              ),
-            ],
+            takenIds: takenIdsOf(
+              kept,
+              others.map((other) => ({
+                id: other.id,
+                platformMessageId:
+                  other.status._tag === "sent"
+                    ? other.status.platformMessageId
+                    : Option.none(),
+              })),
+              message.value
+            ),
             text: message.value.text,
           });
         }).pipe(

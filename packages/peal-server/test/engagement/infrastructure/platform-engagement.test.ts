@@ -586,7 +586,8 @@ const messageSourceOn = (
   );
 
 describe("the gate's message source", () => {
-  it.effect(
+  // On the live clock: Meta's calls of one account are half a second apart.
+  it.live(
     "keeps a Page's events while its channel in another workspace reads its messages",
     () =>
       Effect.gen(function* twoWorkspaces() {
