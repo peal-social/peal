@@ -24,6 +24,7 @@ import {
   mastodonChannel,
 } from "#test/engagement/fakes/message-world.ts";
 import type { MessageWorld } from "#test/engagement/fakes/message-world.ts";
+import { makePrivateReplyWorld } from "#test/engagement/fakes/private-reply-world.ts";
 import {
   channelId,
   conversation,
@@ -50,7 +51,12 @@ const clientAs = (
       Layer.mergeAll(
         InboxMessagesApiLive.pipe(
           Layer.provideMerge(securityTest(member)),
-          Layer.provide(world.layer)
+          Layer.provide(
+            Layer.merge(
+              world.layer,
+              makePrivateReplyWorld({ boxes: world }).layer
+            )
+          )
         ),
         HttpServer.layerServices
       )

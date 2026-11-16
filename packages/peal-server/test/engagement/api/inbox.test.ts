@@ -17,6 +17,7 @@ import { SendReply } from "#engagement/application/send-reply.ts";
 import { InboxApiLive } from "#engagement/container.ts";
 import type { Permission } from "#shared/domain/access.ts";
 import { memberOf } from "#test/channels/support.ts";
+import { makePrivateReplyWorld } from "#test/engagement/fakes/private-reply-world.ts";
 import { makeWorld } from "#test/engagement/fakes/world.ts";
 import type { World } from "#test/engagement/fakes/world.ts";
 import {
@@ -39,7 +40,12 @@ const clientAs = (world: World, permissions: readonly Permission[]) =>
       Layer.mergeAll(
         InboxApiLive.pipe(
           Layer.provideMerge(securityTest(memberOf(workspaceId, permissions))),
-          Layer.provide(world.layer)
+          Layer.provide(
+            Layer.merge(
+              world.layer,
+              makePrivateReplyWorld({ comments: world }).layer
+            )
+          )
         ),
         HttpServer.layerServices
       )

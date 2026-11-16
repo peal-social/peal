@@ -20,7 +20,9 @@ import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platfor
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
 
 import { makeMessageWorld } from "./message-world.ts";
+import type { MessageWorld } from "./message-world.ts";
 import { makeWorld } from "./world.ts";
+import type { World } from "./world.ts";
 
 // The private replies' use cases on memory: the comments' world (its
 // comments, channels, meters and ids), the messages' store (which
@@ -48,13 +50,17 @@ export const makePrivateReplyWorld = (
     readonly inbox?: InboxPlatforms;
     readonly messages?: InboxMessagePlatforms;
     readonly meters?: Layer.Layer<MeteredUsage>;
+    /** The comments' world to share, as the inbox's endpoints run on it. */
+    readonly comments?: World;
+    /** The messages' world to share, as their endpoints run on it. */
+    readonly boxes?: MessageWorld;
   } = {}
 ) => {
   const meters = options.meters ?? MeteredUsage.layerUnmetered;
   const messages = options.messages ?? new Set(["facebook", "instagram"]);
   const inbox = options.inbox ?? new Set(["facebook", "instagram"]);
-  const comments = makeWorld(meters);
-  const boxes = makeMessageWorld(messages, meters);
+  const comments = options.comments ?? makeWorld(meters);
+  const boxes = options.boxes ?? makeMessageWorld(messages, meters);
 
   const state: PrivateReplyWorldState = {
     cancelled: [],

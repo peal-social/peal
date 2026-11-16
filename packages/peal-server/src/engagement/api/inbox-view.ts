@@ -2,6 +2,7 @@ import { DateTime, Option, Schema } from "effect";
 import type {
   InboxAbilities,
   InboxComment,
+  InboxPrivateReply,
   InboxReply,
   InboxThread,
   InboxThreadDetail,
@@ -12,29 +13,72 @@ import type {
   ThreadDetail,
   ThreadsPage,
 } from "#engagement/application/engagement-inbox.ts";
+import type { ThreadPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import type {
   ThreadCursor,
   ThreadSummary,
 } from "#engagement/application/ports/engagement-store.ts";
+import { isOnPlatform } from "#engagement/domain/comment.ts";
 import type { Comment } from "#engagement/domain/comment.ts";
-import type { EngagementAbilities } from "#engagement/domain/engagement-abilities.ts";
+import type {
+  AbilityStanding,
+  EngagementAbilities,
+} from "#engagement/domain/engagement-abilities.ts";
+import { privateReplyUntil } from "#engagement/domain/private-reply.ts";
+import type { PrivateReply } from "#engagement/domain/private-reply.ts";
 import type { Reply } from "#engagement/domain/reply.ts";
 import { ThreadIdSchema } from "#engagement/domain/thread-id.ts";
 
 // What the API and the MCP tools answer about the inbox.
 
+/**
+ * A channel's abilities, with whether it can send a private reply now,
+ * which its scopes alone do not decide.
+ */
 export const toAbilitiesView = (
-  abilities: EngagementAbilities
-): InboxAbilities => ({ ...abilities });
+  abilities: EngagementAbilities,
+  privateReply: AbilityStanding = abilities.privateReply
+): InboxAbilities => ({ ...abilities, privateReply });
+
+export const toPrivateReplyView = (reply: PrivateReply): InboxPrivateReply => {
+  const { status } = reply;
+
+  return {
+    authorId: Option.getOrNull(reply.authorId),
+    commentId: reply.commentId,
+    createdAt: reply.createdAt,
+    id: reply.id,
+    reason:
+      status._tag === "failed" || status._tag === "unconfirmed"
+        ? status.reason
+        : null,
+    ruleId: Option.getOrNull(reply.ruleId),
+    settledAt: status._tag === "sending" ? null : status.at,
+    status: status._tag,
+    text: reply.text,
+  };
+};
+
+// What a thread whose private replies were not asked after shows.
+const noPrivateReplies: ThreadPrivateReplies = {
+  replies: [],
+  standing: "unsupported",
+};
 
 /**
- * A comment, with the id in Peal of the comment it answers: `ids` maps
- * each comment of its thread from its id on the platform.
+ * A comment, with the id in Peal of the comment it answers (`ids` maps
+ * each comment of its thread from its id on the platform), its latest
+ * private reply among `privateReplies`, and until when one may be sent.
  */
 export const toCommentView = (
   comment: Comment,
-  ids: ReadonlyMap<string, string> = new Map()
+  ids: ReadonlyMap<string, string> = new Map(),
+  privateReplies: ThreadPrivateReplies = noPrivateReplies
 ): InboxComment => {
+  const latest = privateReplies.replies.findLast(
+    ({ commentId }) => commentId === comment.id
+  );
+
   const view: InboxComment = {
     author: comment.author.pipe(
       Option.map(({ displayName, handle, platformId }) => ({
@@ -51,6 +95,13 @@ export const toCommentView = (
       Option.getOrNull
     ),
     permalink: Option.getOrNull(comment.permalink),
+    privateReply: latest === undefined ? null : toPrivateReplyView(latest),
+    privateReplyUntil:
+      privateReplies.standing === "available" &&
+      isOnPlatform(comment) &&
+      Option.isNone(comment.expiredAt)
+        ? privateReplyUntil(comment)
+        : null,
     receivedAt: comment.receivedAt,
     state: comment.state,
     text: comment.text,
@@ -145,14 +196,19 @@ export const toThreadPageView = (page: ThreadsPage): InboxThreadPage => ({
   nextCursor: page.next.pipe(Option.map(encodeCursor), Option.getOrNull),
 });
 
-export const toThreadDetailView = (detail: ThreadDetail): InboxThreadDetail => {
+export const toThreadDetailView = (
+  detail: ThreadDetail,
+  privateReplies: ThreadPrivateReplies = noPrivateReplies
+): InboxThreadDetail => {
   const ids = new Map(
     detail.comments.map((comment) => [comment.platformCommentId, comment.id])
   );
 
   return {
-    abilities: toAbilitiesView(detail.abilities),
-    comments: detail.comments.map((comment) => toCommentView(comment, ids)),
+    abilities: toAbilitiesView(detail.abilities, privateReplies.standing),
+    comments: detail.comments.map((comment) =>
+      toCommentView(comment, ids, privateReplies)
+    ),
     platform: Option.getOrNull(detail.platform),
     replies: detail.replies.map(toReplyView),
     thread: toThreadView(detail.summary),
