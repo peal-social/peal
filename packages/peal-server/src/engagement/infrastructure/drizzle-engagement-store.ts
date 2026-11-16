@@ -612,6 +612,21 @@ export const DrizzleEngagementStore = Layer.effect(
                     expired_at = excluded.expired_at
               `;
 
+              // A comment its platform no longer shows takes its settled
+              // private replies with it; one on its way goes once its job
+              // settles it (PrivateReplyStore.dropIfForgotten).
+              const forgotten = saved
+                .filter(({ state }) => state === "deleted")
+                .map(({ id }) => id);
+
+              if (forgotten.length > 0) {
+                yield* sql`
+                  DELETE FROM engagement.private_replies
+                  WHERE comment_id = ANY(string_to_array(${forgotten.join(",")}, ',')::uuid[])
+                    AND status <> 'sending'
+                `;
+              }
+
               yield* sql`
                 UPDATE engagement.threads AS thread
                 SET comment_count = counted.shown,

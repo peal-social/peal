@@ -9,7 +9,7 @@ import { EngagementStore } from "#engagement/application/ports/engagement-store.
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
 import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
-import { receiveComment } from "#engagement/domain/comment.ts";
+import { forgetComment, receiveComment } from "#engagement/domain/comment.ts";
 import type { Comment } from "#engagement/domain/comment.ts";
 import { followBox } from "#engagement/domain/message-box.ts";
 import { PrivateReplyIdSchema } from "#engagement/domain/private-reply-id.ts";
@@ -449,56 +449,83 @@ layer(StoreTest)("the private reply store", (it) => {
     })
   );
 
-  it.effect("goes 30 days after it settled, and with its comment", () =>
-    Effect.gen(function* purges() {
-      const workspaceId = yield* freshWorkspace;
+  it.effect(
+    "goes 30 days after it settled, and with its comment forgotten",
+    () =>
+      Effect.gen(function* purges() {
+        const workspaceId = yield* freshWorkspace;
 
-      yield* Effect.gen(function* checks() {
-        const store = yield* PrivateReplyStore;
-        const comments = yield* EngagementStore;
-        const old = yield* commentIn(workspaceId);
-        const settledReply = yield* writtenFor(old);
+        yield* Effect.gen(function* checks() {
+          const store = yield* PrivateReplyStore;
+          const comments = yield* EngagementStore;
+          const old = yield* commentIn(workspaceId);
+          const settledReply = yield* writtenFor(old);
 
-        yield* journalled(settledReply);
-        // Settled at an instant no other suite's rows are before.
-        const purgedAt = utc("1937-03-02T10:00:00.000Z");
+          yield* journalled(settledReply);
+          // Settled at an instant no other suite's rows are before.
+          const purgedAt = utc("1937-03-02T10:00:00.000Z");
 
-        yield* settled(
-          settledReply,
-          { _tag: "failed", reason: "refused" },
-          purgedAt
-        );
+          yield* settled(
+            settledReply,
+            { _tag: "failed", reason: "refused" },
+            purgedAt
+          );
 
-        const sending = yield* writtenFor(yield* commentIn(workspaceId));
+          const sending = yield* writtenFor(yield* commentIn(workspaceId));
 
-        yield* journalled(sending);
+          yield* journalled(sending);
 
-        assert.strictEqual(
-          yield* store.purge(DateTime.addDuration(purgedAt, "1 second"), 100),
-          1
-        );
-        assert.isTrue(
-          Option.isNone(yield* store.privateReply(settledReply.id))
-        );
-        assert.isTrue(Option.isSome(yield* store.privateReply(sending.id)));
+          assert.strictEqual(
+            yield* store.purge(DateTime.addDuration(purgedAt, "1 second"), 100),
+            1
+          );
+          assert.isTrue(
+            Option.isNone(yield* store.privateReply(settledReply.id))
+          );
+          assert.isTrue(Option.isSome(yield* store.privateReply(sending.id)));
 
-        // The thread deleted takes its comments, and their private replies.
-        const thread = yield* comments.thread(
-          ThreadIdSchema.make(
-            (yield* store.privateReply(sending.id)).pipe(
-              Option.map(({ threadId }) => threadId),
-              Option.getOrThrow
-            )
-          )
-        );
+          // A comment its platform no longer shows takes its settled
+          // private replies at once; one still on its way is left to its
+          // job, and goes once it settles.
+          const forgotten = yield* commentIn(workspaceId);
+          const sent = yield* writtenFor(forgotten);
 
-        assert.isTrue(Option.isSome(thread));
+          yield* journalled(sent);
+          yield* settled(sent, { _tag: "sent", platformMessageId: "m-9" });
 
-        yield* forget(workspaceId);
+          const onItsWay = yield* writtenFor(yield* commentIn(workspaceId));
 
-        assert.isTrue(Option.isNone(yield* store.privateReply(sending.id)));
-      }).pipe(Effect.ensuring(forget(workspaceId)));
-    })
+          yield* journalled(onItsWay);
+
+          const onItsWayComment = (yield* comments.comment(
+            onItsWay.commentId
+          )).pipe(Option.getOrThrow);
+
+          yield* comments.saveComments([
+            forgetComment(forgotten),
+            forgetComment(onItsWayComment),
+          ]);
+
+          assert.isTrue(Option.isNone(yield* store.privateReply(sent.id)));
+          assert.isTrue(Option.isSome(yield* store.privateReply(onItsWay.id)));
+
+          const ended = yield* settled(onItsWay, {
+            _tag: "failed",
+            reason: "commentGone",
+          });
+
+          assert.isTrue(yield* store.dropIfForgotten(ended.id));
+          assert.isTrue(Option.isNone(yield* store.privateReply(onItsWay.id)));
+          // One whose comment is still shown stays.
+          const shown = yield* writtenFor(yield* commentIn(workspaceId));
+
+          yield* journalled(shown);
+          yield* settled(shown, { _tag: "sent", platformMessageId: "m-10" });
+
+          assert.isFalse(yield* store.dropIfForgotten(shown.id));
+          assert.isTrue(Option.isSome(yield* store.privateReply(shown.id)));
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
   );
   it.effect("goes with its channel, giving back what never set out", () =>
     Effect.gen(function* channelGone() {

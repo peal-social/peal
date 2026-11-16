@@ -528,6 +528,30 @@ describe("a member's private reply", () => {
 });
 
 describe("a private reply's job", () => {
+  it.effect(
+    "drops one whose comment was forgotten while it was on its way, once it settles",
+    () => {
+      const world = worldWith();
+
+      world.state.sending = { _tag: "failed", reason: "commentGone" };
+
+      return at(
+        Effect.gen(function* forgotten() {
+          const reply = yield* sending();
+
+          world.comments.state.comments.set(
+            commentId(1),
+            forgetComment(answered())
+          );
+
+          yield* SendPrivateReply.use((send) => send.run(reply.id));
+
+          assert.isFalse(world.state.replies.has(reply.id));
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
   it.effect("gives the outbound message back when it failed", () => {
     const { meters, world } = billed(5);
 

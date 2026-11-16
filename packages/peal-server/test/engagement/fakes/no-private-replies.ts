@@ -11,6 +11,7 @@ import { PrivateReplyStore } from "#engagement/application/ports/private-reply-s
 export const noPrivateReplies = PrivateReplyStore.of({
   advance: () => Effect.succeed(false),
   claimCall: () => Effect.succeed(false),
+  dropIfForgotten: () => Effect.succeed(false),
   dropUnsent: () => Effect.succeed([]),
   journal: () => Effect.succeed({ _tag: "dropped" }),
   madeWithKey: () => Effect.succeed(Option.none()),

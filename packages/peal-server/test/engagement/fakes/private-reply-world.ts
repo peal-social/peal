@@ -106,6 +106,21 @@ export const makePrivateReplyWorld = (
       Effect.sync(
         () => state.replies.get(privateReplyId)?.status._tag === "sending"
       ),
+    dropIfForgotten: (privateReplyId) =>
+      Effect.sync(() => {
+        const reply = state.replies.get(privateReplyId);
+
+        const gone =
+          reply !== undefined &&
+          reply.status._tag !== "sending" &&
+          comments.state.comments.get(reply.commentId)?.state === "deleted";
+
+        if (gone) {
+          state.replies.delete(privateReplyId);
+        }
+
+        return gone;
+      }),
     dropUnsent: (channelId) =>
       Effect.sync(() => {
         const unsent = [...state.replies.values()].filter(

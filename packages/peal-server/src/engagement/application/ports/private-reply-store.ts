@@ -104,6 +104,14 @@ export class PrivateReplyStore extends Context.Service<
       channelId: ChannelId,
       except: PrivateReplyId
     ) => Effect.Effect<readonly string[], DatabaseError>;
+    /**
+     * Deletes the private reply once it settled when the platform no
+     * longer shows its comment (forgotten): it goes with its comment.
+     * True when it was deleted.
+     */
+    readonly dropIfForgotten: (
+      privateReplyId: PrivateReplyId
+    ) => Effect.Effect<boolean, DatabaseError>;
     /** Deletes, `limit` at most, those settled before `keptSince`. */
     readonly purge: (
       keptSince: DateTime.Utc,

@@ -106,6 +106,9 @@ export class SendPrivateReply extends Context.Service<
           yield* meters.giveBack(claimOfPrivateReply(settled.success));
         }
 
+        // Its comment forgotten meanwhile, it goes with it.
+        yield* store.dropIfForgotten(settled.success.id);
+
         return "settled" as const;
       });
 

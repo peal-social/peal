@@ -414,6 +414,22 @@ export const DrizzlePrivateReplyStore = Layer.effect(
       }
     );
 
+    const dropIfForgotten = Effect.fn("PrivateReplyStore.dropIfForgotten")(
+      function* dropIfForgotten(privateReplyId: string) {
+        const dropped = yield* sql`
+          DELETE FROM engagement.private_replies AS reply
+          USING engagement.comments AS comment
+          WHERE reply.id = ${privateReplyId}::uuid
+            AND reply.status <> 'sending'
+            AND comment.id = reply.comment_id
+            AND comment.state = 'deleted'
+          RETURNING reply.id
+        `.pipe(Effect.mapError(failed));
+
+        return dropped.length === 1;
+      }
+    );
+
     const purge = Effect.fn("PrivateReplyStore.purge")(function* purge(
       keptSince: DateTime.Utc,
       limit: number
@@ -436,6 +452,7 @@ export const DrizzlePrivateReplyStore = Layer.effect(
     return PrivateReplyStore.of({
       advance,
       claimCall,
+      dropIfForgotten,
       dropUnsent,
       journal,
       madeWithKey,
