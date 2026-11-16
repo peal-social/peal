@@ -69,7 +69,7 @@ peal posts unpublish <post-id> --channel <channel-id> --wait 30 --yes
 
 `alreadyGone: true` indique que la plateforme n’avait déjà plus une partie.
 
-- Avant tout appel, une requête impossible répond 409 `live_post_not_changeable`, avec `reason` : `notPublished`, `alreadyRemoved`, `noPlatformId` (une publication confirmée à la main), `notSupported` (les capacités de la plateforme disent pourquoi, dans `livePost`), `changeInProgress`, `channelUnavailable` ou `boostRunning`.
+- Avant tout appel, une requête impossible répond 409 `live_post_not_changeable`, avec `reason` : `notPublished`, `alreadyRemoved`, `noPlatformId` (une publication confirmée à la main), `notSupported` (les capacités de la plateforme disent pourquoi, dans `livePost`), `changeInProgress`, `channelUnavailable`, `boostRunning` ou `deletionWindowPassed` (la plateforme ne supprime une publication que pendant un temps après sa mise en ligne : 48 heures sur Telegram).
 - Les webhooks reçoivent `post.unpublished` ou `post.unpublish_failed` ([Webhooks](/developers/webhooks/events/posts#post-unpublished)).
 - `GET …/platforms/capabilities` dit d’avance où Peal supprime des publications : `livePost.unpublish`, et `livePost.unpublishBlockedBy` (`noApi`, `permission` ou `unverified`) là où il ne le fait pas.
 

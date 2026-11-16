@@ -16,6 +16,8 @@ export const livePostRefusalWords: Readonly<Record<LivePostRefusal, string>> = {
     "its channel is disconnected, turned off or must be reconnected",
   noPlatformId:
     "Peal has no id for it, or for that part, on the platform, as for a post confirmed by hand: change it there",
+  deletionWindowPassed:
+    "the platform deletes a post only for a time after it went out (Telegram: 48 hours), and that time has passed: delete it there",
   notPublished: "it is not live there",
   notSupported:
     "the platform does not let Peal make that change (peal channels capabilities says why): make it there",

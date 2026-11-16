@@ -1,6 +1,8 @@
-import { Option, Schema } from "effect";
+import { DateTime, Duration, Option, Schema } from "effect";
 
 import type { Platform } from "#shared/domain/platform.ts";
+
+import type { PostTarget } from "./post-target.ts";
 
 /**
  * Why Peal cannot change a post once it is live on a platform:
@@ -151,3 +153,34 @@ export const unpublishBlocker = (
 export const editBlocker = (
   platform: Platform
 ): Option.Option<LivePostBlocker> => livePostSupport[platform].edit;
+
+/**
+ * How long after a post went out the platform still deletes it, on a
+ * platform that sets a limit: Telegram deletes a bot's message "only if it
+ * was sent less than 48 hours ago" (Bot API 10.4, `deleteMessage`, read
+ * 2026-11-16). Clients show it as the deletion window.
+ */
+export const deletionWindows: ReadonlyMap<Platform, Duration.Duration> =
+  new Map([["telegram", Duration.hours(48)]]);
+
+/**
+ * Whether the platform's deletion window for a published target has
+ * closed at `now`, so Peal refuses before any call rather than ask for a
+ * deletion the platform refuses.
+ */
+export const deletionWindowPassed = (
+  target: PostTarget,
+  platform: Platform,
+  now: DateTime.Utc
+): boolean => {
+  const window = deletionWindows.get(platform);
+
+  return (
+    window !== undefined &&
+    target.status._tag === "published" &&
+    DateTime.isGreaterThan(
+      now,
+      DateTime.addDuration(target.status.publishedAt, window)
+    )
+  );
+};

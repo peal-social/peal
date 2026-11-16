@@ -15,6 +15,7 @@ import {
 } from "#publishing/domain/live-post-change.ts";
 import type { PartToRemove } from "#publishing/domain/live-post-change.ts";
 import {
+  deletionWindowPassed,
   editBlocker,
   livePostSupport,
   unpublishBlocker,
@@ -229,6 +230,25 @@ describe("the parts a removal takes", () => {
     expect(
       removable(target, Option.some("mastodon"), Option.some(failed))
     ).toStrictEqual(Result.succeed([{ index: 0, platformPostId: id("1") }]));
+  });
+});
+
+describe(deletionWindowPassed, () => {
+  const target = targetWith(published);
+
+  it("refuses a Telegram post sent more than 48 hours ago, before any call", () => {
+    expect(
+      deletionWindowPassed(target, "telegram", utc("2026-06-17T08:00:00Z"))
+    ).toBeFalsy();
+    expect(
+      deletionWindowPassed(target, "telegram", utc("2026-06-17T08:00:01Z"))
+    ).toBeTruthy();
+  });
+
+  it("knows no window on a platform that deletes at any age", () => {
+    expect(
+      deletionWindowPassed(target, "discord", utc("2027-06-15T08:00:00Z"))
+    ).toBeFalsy();
   });
 });
 

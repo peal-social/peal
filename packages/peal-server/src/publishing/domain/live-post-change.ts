@@ -89,6 +89,8 @@ export type PartToRemove = typeof PartToRemoveSchema.Type;
  * - `boostRunning`: a boost that is not over shows the post.
  * - `approvalRequired`: the member's posts wait for an approval, and an
  *   edit would put words nobody reviewed out at once.
+ * - `deletionWindowPassed`: the platform deletes a post only for a time
+ *   after it went out (`deletionWindows`), and it has passed.
  *
  * An edit is refused `noPlatformId` too for a part the post does not have
  * live there.
@@ -102,6 +104,7 @@ export const LivePostRefusalSchema = Schema.Literals([
   "channelUnavailable",
   "boostRunning",
   "approvalRequired",
+  "deletionWindowPassed",
 ]);
 
 export type LivePostRefusal = typeof LivePostRefusalSchema.Type;
