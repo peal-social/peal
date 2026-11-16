@@ -24,7 +24,11 @@ const SignInPage = async ({ searchParams }: PageProps<"/[locale]/sign-in">) => {
   const t = await getTranslations("SignInPage");
   const locale = await getLocale();
   const nextPath = Option.getOrElse(nextPathOf(next), () => "/app");
-  const refused = providerErrorKey(error, offersSignUp(mode));
+
+  const refused = providerErrorKey(error, {
+    providersOffered: providers.length > 0,
+    signUpOffered: offersSignUp(mode),
+  });
 
   return (
     <AuthCard

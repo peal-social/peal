@@ -9,24 +9,9 @@ import { useState, useTransition } from "react";
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";
 import type { AuthErrorKey } from "#auth/errors.ts";
+import type { ProviderReturn } from "#auth/provider-return.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { GoogleMark } from "#components/auth/google-mark.tsx";
-
-/**
- * Where a provider's sign-in sends the browser back to, as paths of this
- * origin, which the server checks against its trusted origins: once signed
- * in (`next`), after a refusal (the page itself, which explains the
- * `?error=`), and, from the sign-up page, once a new account is made.
- */
-export interface ProviderReturn {
-  readonly errorPath: string;
-  readonly next: string;
-  /** Only on the sign-up page, which alone makes accounts. */
-  readonly signUp?: {
-    readonly invitationId: string | null;
-    readonly newUserPath: string;
-  };
-}
 
 /** The buttons, as markup: one per provider, then "or" before the form. */
 export const ProviderButtonsView = ({

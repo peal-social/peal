@@ -105,16 +105,31 @@ export type ProviderErrorKey =
 
 /**
  * The catalogue key (under `Auth.errors`) that explains why a provider's
- * sign-in came back with `error`, or none when the address has none. An
+ * sign-in came back with `error`, or none when the address has none; a
+ * plain failure where the server offers no provider. An
  * unknown code reads as a failure. Where the server takes no sign-up from
  * anyone, an unknown address is told so without being sent to sign up.
  */
 export const providerErrorKey = (
   error: string | readonly string[] | undefined,
-  signUpOffered: boolean
-): Option.Option<ProviderErrorKey> => {
+  {
+    providersOffered,
+    signUpOffered,
+  }: {
+    /** Whether the server offers a provider: else no error is a provider's. */
+    readonly providersOffered: boolean;
+    readonly signUpOffered: boolean;
+  }
+): Option.Option<ProviderErrorKey | "UNKNOWN"> => {
   if (error === undefined) {
     return Option.none();
+  }
+
+  // Better Auth sends its other errors here too (an OAuth client's
+  // authorization, its own error page's): on a server without a provider,
+  // none of them is one.
+  if (!providersOffered) {
+    return Option.some("UNKNOWN");
   }
 
   return Option.some(

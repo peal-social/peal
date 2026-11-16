@@ -4,6 +4,7 @@ import { connection } from "next/server";
 
 import { signUpSettings } from "#auth/captcha.ts";
 import { providerErrorKey } from "#auth/errors.ts";
+import { signUpReturn } from "#auth/provider-return.ts";
 import { invitationOf, signUpFormShown } from "#auth/sign-up-mode.ts";
 import { privacyUrlConfig, termsUrlConfig } from "#billing/terms.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
@@ -52,32 +53,19 @@ const SignUpPage = async ({ searchParams }: PageProps<"/[locale]/sign-up">) => {
     >
       {signUpFormShown(mode, invitation) ? (
         <div className="flex flex-col gap-4">
-          <FormError error={Option.getOrNull(providerErrorKey(error, true))} />
+          <FormError
+            error={Option.getOrNull(
+              providerErrorKey(error, {
+                providersOffered: providers.length > 0,
+                signUpOffered: true,
+              })
+            )}
+          />
           <ProviderButtons
             providers={providers}
-            returnTo={{
-              errorPath: getPathname({
-                href:
-                  invitationId === null
-                    ? "/sign-up"
-                    : {
-                        pathname: "/sign-up",
-                        query: { invitation: invitationId },
-                      },
-                locale,
-              }),
-              next: getPathname({ href: "/app", locale }),
-              signUp: {
-                invitationId,
-                newUserPath: getPathname({
-                  href:
-                    invitationId === null
-                      ? "/app"
-                      : `/invitations/${invitationId}`,
-                  locale,
-                }),
-              },
-            }}
+            returnTo={signUpReturn(invitationId, (href) =>
+              getPathname({ href, locale })
+            )}
           />
           <SignUpForm
             captchaSiteKey={Option.getOrNull(siteKey)}

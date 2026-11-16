@@ -48,9 +48,11 @@ describe(authErrorKey, () => {
   });
 });
 
+const offered = { providersOffered: true, signUpOffered: true };
+
 describe(providerErrorKey, () => {
   it("reads nothing from an address without an error", () => {
-    expect(providerErrorKey(undefined, true)).toStrictEqual(Option.none());
+    expect(providerErrorKey(undefined, offered)).toStrictEqual(Option.none());
   });
 
   it.each([
@@ -65,13 +67,16 @@ describe(providerErrorKey, () => {
     ["access_denied", "PROVIDER_ACCESS_DENIED"],
     ["account_banned", "PROVIDER_FAILED"],
   ])("explains %s", (code, key) => {
-    expect(providerErrorKey(code, true)).toStrictEqual(Option.some(key));
+    expect(providerErrorKey(code, offered)).toStrictEqual(Option.some(key));
   });
 
   it("sends nobody to sign up where the server takes no sign-up", () => {
-    expect(providerErrorKey("signup_disabled", false)).toStrictEqual(
-      Option.some("PROVIDER_NO_ACCOUNT")
-    );
+    expect(
+      providerErrorKey("signup_disabled", {
+        providersOffered: true,
+        signUpOffered: false,
+      })
+    ).toStrictEqual(Option.some("PROVIDER_NO_ACCOUNT"));
   });
 
   // Anyone can write the address: what it says is never shown.
@@ -80,14 +85,25 @@ describe(providerErrorKey, () => {
     "invalid_code",
     "<script>",
   ])("reads an unknown code as a failure: %s", (code) => {
-    expect(providerErrorKey(code, true)).toStrictEqual(
+    expect(providerErrorKey(code, offered)).toStrictEqual(
       Option.some("PROVIDER_FAILED")
     );
   });
 
   it("reads a repeated parameter as a failure", () => {
     expect(
-      providerErrorKey(["two_step_password", "access_denied"], true)
+      providerErrorKey(["two_step_password", "access_denied"], offered)
     ).toStrictEqual(Option.some("PROVIDER_FAILED"));
   });
+
+  // Better Auth sends its other errors to the sign-in page too, such as an
+  // OAuth client's: they are no provider's on a server without one.
+  it.each(["invalid_client", "two_step_password"])(
+    "reads %s as a plain failure where no provider is offered",
+    (code) => {
+      expect(
+        providerErrorKey(code, { providersOffered: false, signUpOffered: true })
+      ).toStrictEqual(Option.some("UNKNOWN"));
+    }
+  );
 });
