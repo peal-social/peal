@@ -11,9 +11,11 @@ import { EngagementMessages } from "#engagement/application/engagement-messages.
 import { MessageSettings } from "#engagement/application/message-settings.ts";
 import { MessagesUngranted } from "#engagement/application/messages-ungranted.ts";
 import { PurgeMessages } from "#engagement/application/purge-messages.ts";
+import { ReceiveMessageEvents } from "#engagement/application/receive-message-events.ts";
+import type { MessageEvent } from "#engagement/application/receive-message-events.ts";
 import { SendMessage } from "#engagement/application/send-message.ts";
 import { refreshConversation } from "#engagement/domain/conversation.ts";
-import { followBox } from "#engagement/domain/message-box.ts";
+import { followBox, recordBoxRead } from "#engagement/domain/message-box.ts";
 import { beginMessage } from "#engagement/domain/outgoing-message.ts";
 import { Actor } from "#shared/domain/access.ts";
 import type { Permission } from "#shared/domain/access.ts";
@@ -1153,6 +1155,294 @@ describe("a workspace's conversations", () => {
           });
           assert.lengthOf(world.state.jobs, 0);
         })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+});
+
+// A box never followed for its platform's events.
+const boxWorld = () => {
+  const world = makeMessageWorld();
+
+  world.state.boxes.set(
+    channelId(1),
+    followBox({ channelId: channelId(1), workspaceId }, messagedAt)
+  );
+
+  return world;
+};
+
+const readNow = (when: DateTime.Utc) =>
+  at(
+    CollectMessages.use((collect) => collect.readBox(channelId(1), when)),
+    when
+  );
+
+describe("one box read now", () => {
+  it.effect(
+    "asks the platform for the account's events first, then once a day",
+    () => {
+      const world = boxWorld();
+
+      return at(
+        Effect.gen(function* reads() {
+          assert.strictEqual(yield* readNow(messagedAt), "read");
+          assert.deepStrictEqual(world.state.follows, [channelId(1)]);
+          assert.deepStrictEqual(
+            world.state.reads.map((request) => request.channelId),
+            [channelId(1)]
+          );
+          assert.deepStrictEqual(
+            world.state.boxes.get(channelId(1))?.subscribedAt,
+            Option.some(messagedAt)
+          );
+
+          yield* readNow(DateTime.addDuration(messagedAt, "23 hours"));
+
+          assert.lengthOf(world.state.follows, 1);
+          assert.lengthOf(world.state.reads, 2);
+
+          yield* readNow(DateTime.addDuration(messagedAt, "24 hours"));
+
+          assert.lengthOf(world.state.follows, 2);
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect(
+    "reads all the same when the platform refuses the subscription",
+    () => {
+      const world = boxWorld();
+
+      world.state.following = () => Effect.fail(new PlatformUnavailable());
+
+      return at(
+        Effect.gen(function* refused() {
+          assert.strictEqual(
+            yield* CollectMessages.use((collect) =>
+              collect.readBox(channelId(1), messagedAt)
+            ),
+            "read"
+          );
+          assert.lengthOf(world.state.reads, 1);
+          assert.deepStrictEqual(
+            world.state.boxes.get(channelId(1))?.subscribedAt,
+            Option.none()
+          );
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect(
+    "reads nothing of a channel without a box, nor where the server reads no messages",
+    () => {
+      const off = boxWorld();
+      const empty = makeMessageWorld();
+
+      return at(
+        Effect.gen(function* nothing() {
+          assert.strictEqual(
+            yield* CollectMessages.use((collect) =>
+              collect.readBox(channelId(1), messagedAt)
+            ).pipe(Effect.provide(makeMessageWorld(new Set()).layer)),
+            "off"
+          );
+          assert.strictEqual(
+            yield* CollectMessages.use((collect) =>
+              collect.readBox(channelId(1), messagedAt)
+            ).pipe(Effect.provide(empty.layer)),
+            "missing"
+          );
+          assert.lengthOf(empty.state.reads, 0);
+          assert.lengthOf(off.state.reads, 0);
+        })
+      );
+    }
+  );
+
+  it.effect(
+    "asks the platform to stop before a channel's messages are turned off",
+    () => {
+      const world = makeMessageWorld(new Set(["mastodon"]));
+      const admin = actorWith("channel:connect");
+
+      world.state.channels.set(channelId(1), mastodonChannel);
+
+      return at(
+        Effect.gen(function* stops() {
+          yield* MessageSettings.use((settings) =>
+            settings.switchChannel(admin, channelId(1), true)
+          );
+
+          assert.lengthOf(world.state.unfollows, 0);
+
+          // A platform that cannot be reached does not keep them on.
+          world.state.following = () => Effect.fail(new PlatformUnavailable());
+
+          yield* MessageSettings.use((settings) =>
+            settings.switchChannel(admin, channelId(1), false)
+          );
+
+          assert.deepStrictEqual(world.state.unfollows, [channelId(1)]);
+          assert.isFalse(world.state.boxes.has(channelId(1)));
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+});
+
+const otherWorkspace = WorkspaceIdSchema.make(
+  "33333333-3333-4333-8333-333333333333"
+);
+
+// A Facebook Page connected in two workspaces, each with its messages on
+// and a conversation holding messages m1 and m2; and a channel whose
+// messages are off.
+const pageWorld = () => {
+  const world = makeMessageWorld();
+
+  world.state.accounts.set("facebook:page-1", [
+    { channelId: channelId(1), workspaceId },
+    { channelId: channelId(2), workspaceId: otherWorkspace },
+  ]);
+  world.state.accounts.set("facebook:page-off", [
+    { channelId: channelId(3), workspaceId },
+  ]);
+
+  for (const [n, inWorkspace] of [
+    [1, workspaceId],
+    [2, otherWorkspace],
+  ] as const) {
+    const box = followBox(
+      { channelId: channelId(n), workspaceId: inWorkspace },
+      messagedAt
+    );
+
+    world.state.boxes.set(
+      channelId(n),
+      recordBoxRead(box, Option.none(), messagedAt, messagedAt)
+    );
+
+    const talk = conversation(n, {}, box);
+
+    world.state.conversations.set(talk.id, talk);
+
+    for (const m of [1, 2]) {
+      const message = directMessage(
+        10 * n + m,
+        { platformMessageId: `m${m}` },
+        talk
+      );
+
+      world.state.messages.set(message.id, message);
+    }
+  }
+
+  return world;
+};
+
+const receive = (events: readonly MessageEvent[]) =>
+  ReceiveMessageEvents.use((receiving) => receiving.receive(events));
+
+const event = (changed: Partial<MessageEvent> = {}): MessageEvent => ({
+  accountId: "page-1",
+  deleted: false,
+  messageId: Option.some("m1"),
+  platform: "facebook",
+  ...changed,
+});
+
+describe("a platform's events", () => {
+  it.effect("bring the box forward, and start one read of it a slot", () => {
+    const world = pageWorld();
+    const when = DateTime.addDuration(messagedAt, "3 seconds");
+
+    return at(
+      Effect.gen(function* nudged() {
+        assert.strictEqual(yield* receive([event(), event()]), "taken");
+
+        assert.deepStrictEqual(
+          world.state.boxes.get(channelId(1))?.nextReadAt,
+          when
+        );
+        assert.deepStrictEqual(
+          world.state.boxes.get(channelId(2))?.nextReadAt,
+          when
+        );
+
+        // Four seconds later, in the same ten: no second read.
+        yield* at(receive([event()]), DateTime.addDuration(when, "4 seconds"));
+
+        assert.deepStrictEqual(world.state.boxReads, [
+          { channelId: channelId(1), slot: "2026-11-12T10:00:00.000Z" },
+          { channelId: channelId(2), slot: "2026-11-12T10:00:00.000Z" },
+        ]);
+
+        // Ten seconds on, another.
+        yield* at(receive([event()]), DateTime.addDuration(when, "10 seconds"));
+
+        assert.lengthOf(world.state.boxReads, 4);
+
+        // Nothing that was kept changed.
+        assert.strictEqual(world.state.messages.size, 4);
+      }),
+      when
+    ).pipe(Effect.provide(world.layer));
+  });
+
+  it.effect(
+    "delete the message taken back, in every workspace that connected the account, and no other",
+    () => {
+      const world = pageWorld();
+
+      return at(
+        Effect.gen(function* deleted() {
+          yield* receive([event({ deleted: true })]);
+
+          assert.deepStrictEqual(
+            [...world.state.messages.values()]
+              .map(
+                ({ channelId: id, platformMessageId }) =>
+                  `${id}:${platformMessageId}`
+              )
+              .toSorted(),
+            [`${channelId(1)}:m2`, `${channelId(2)}:m2`]
+          );
+
+          // A deletion without a message's id deletes nothing.
+          yield* receive([event({ deleted: true, messageId: Option.none() })]);
+
+          assert.strictEqual(world.state.messages.size, 2);
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect(
+    "write nothing for an account unknown, or a channel whose messages are off",
+    () => {
+      const world = pageWorld();
+
+      return at(
+        Effect.gen(function* ignored() {
+          const before = new Map(world.state.boxes);
+
+          assert.strictEqual(
+            yield* receive([
+              event({ accountId: "page-unknown", deleted: true }),
+              event({ accountId: "page-off", deleted: true }),
+              event({ platform: "instagram", deleted: true }),
+            ]),
+            "ignored"
+          );
+
+          assert.deepStrictEqual(world.state.boxes, before);
+          assert.lengthOf(world.state.boxReads, 0);
+          assert.strictEqual(world.state.messages.size, 4);
+        }),
+        DateTime.addDuration(messagedAt, "1 minute")
       ).pipe(Effect.provide(world.layer));
     }
   );

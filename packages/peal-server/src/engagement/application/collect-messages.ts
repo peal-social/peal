@@ -28,6 +28,7 @@ import {
 import {
   postponeBoxRead,
   recordBoxRead,
+  subscriptionDue,
 } from "#engagement/domain/message-box.ts";
 import type { MessageBox } from "#engagement/domain/message-box.ts";
 import { CurrentInboxMessages } from "#shared/application/current-inbox-messages.ts";
@@ -35,6 +36,7 @@ import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
+import type { ChannelId } from "#shared/domain/ids.ts";
 
 import { forgetChannelMessages } from "./forget-channel-messages.ts";
 import { MessageOutcomes } from "./ports/message-outcomes.ts";
@@ -126,6 +128,13 @@ const emptyReport: MessagesReport = {
 type Turn = "deferred" | "read" | "unreached";
 
 /**
+ * What reading one box now came to: read, put off (the platform did not
+ * answer, or the channel cannot be read), `missing` when the channel has
+ * no box (its messages are off), `off` where the server reads no messages.
+ */
+export type BoxReadOutcome = "deferred" | "missing" | "off" | "read";
+
+/**
  * Reads the direct messages of every channel on a platform the operator
  * turned on (`PEAL_INBOX_MESSAGES`): off, it follows nothing and calls
  * nothing, and a channel is read only once its workspace turned its
@@ -143,6 +152,14 @@ export class CollectMessages extends Context.Service<
     readonly run: (
       at: DateTime.Utc
     ) => Effect.Effect<MessagesReport, DatabaseError>;
+    /**
+     * Reads one channel's box now, as a run reads a box due: what its
+     * platform's event asked for.
+     */
+    readonly readBox: (
+      channelId: ChannelId,
+      at: DateTime.Utc
+    ) => Effect.Effect<BoxReadOutcome, DatabaseError>;
   }
 >()("peal-server/engagement/application/CollectMessages") {
   static readonly layer = Layer.effect(
@@ -353,6 +370,35 @@ export class CollectMessages extends Context.Service<
         );
       };
 
+      // Asks the box's platform to tell the server of the account's
+      // messages, as one may drop the subscription (Meta, after an hour of
+      // failed deliveries): before the first read, then once a day. A
+      // refusal is logged by the channel's id and changes nothing else, as
+      // the box is read on its schedule all the same.
+      const followIfDue = (box: MessageBox) =>
+        Effect.gen(function* following() {
+          const now = yield* DateTime.now;
+
+          if (!subscriptionDue(box, now)) {
+            return;
+          }
+
+          const followed = yield* source
+            .follow({ channelId: box.channelId })
+            .pipe(Effect.result);
+
+          yield* Result.isSuccess(followed)
+            ? store.markFollowed(box.channelId, now)
+            : Effect.logWarning(
+                "Could not ask a platform for a channel's message events"
+              ).pipe(
+                Effect.annotateLogs({
+                  channelId: box.channelId,
+                  reason: followed.failure._tag,
+                })
+              );
+        });
+
       const readOne = (
         box: MessageBox,
         at: DateTime.Utc,
@@ -362,6 +408,8 @@ export class CollectMessages extends Context.Service<
           if (DateTime.isGreaterThanOrEqualTo(yield* DateTime.now, deadline)) {
             return "unreached" as const;
           }
+
+          yield* followIfDue(box);
 
           const read = yield* source
             .read({
@@ -449,7 +497,30 @@ export class CollectMessages extends Context.Service<
         return report;
       });
 
-      return CollectMessages.of({ run });
+      const readBox = Effect.fn("CollectMessages.readBox")(function* readBox(
+        channelId: ChannelId,
+        at: DateTime.Utc
+      ) {
+        if (messages.size === 0) {
+          return "off" as const;
+        }
+
+        const box = yield* store.box(channelId);
+
+        if (Option.isNone(box)) {
+          return "missing" as const;
+        }
+
+        const turn = yield* readOne(
+          box.value,
+          at,
+          DateTime.addDuration(at, pace.budget)
+        );
+
+        return turn === "read" ? ("read" as const) : ("deferred" as const);
+      });
+
+      return CollectMessages.of({ readBox, run });
     })
   );
 }

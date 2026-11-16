@@ -1,0 +1,2 @@
+ALTER TABLE "engagement"."message_boxes" ADD COLUMN "subscribed_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "channels_platform_account" ON "channels"."channels" ("platform","account_id");

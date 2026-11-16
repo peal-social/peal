@@ -6,6 +6,8 @@ import { EngagementMessages } from "#engagement/application/engagement-messages.
 import { MessageSettings } from "#engagement/application/message-settings.ts";
 import { EngagementChannels } from "#engagement/application/ports/engagement-channels.ts";
 import type { EngagedChannel } from "#engagement/application/ports/engagement-channels.ts";
+import { MessageChannelsOfAccount } from "#engagement/application/ports/message-channels-of-account.ts";
+import type { AccountChannel } from "#engagement/application/ports/message-channels-of-account.ts";
 import { MessageJobs } from "#engagement/application/ports/message-jobs.ts";
 import { MessageOutcomes } from "#engagement/application/ports/message-outcomes.ts";
 import { MessageSender } from "#engagement/application/ports/message-sender.ts";
@@ -13,6 +15,8 @@ import type { MessageSendRequest } from "#engagement/application/ports/message-s
 import { MessageSource } from "#engagement/application/ports/message-source.ts";
 import type {
   MessagesBatch,
+  MessagesFollowOutcome,
+  MessagesFollowRequest,
   MessagesReadFailure,
   MessagesRequest,
 } from "#engagement/application/ports/message-source.ts";
@@ -25,6 +29,7 @@ import type {
 } from "#engagement/application/ports/message-store.ts";
 import { ReplyLimits } from "#engagement/application/ports/reply-limits.ts";
 import { PurgeMessages } from "#engagement/application/purge-messages.ts";
+import { ReceiveMessageEvents } from "#engagement/application/receive-message-events.ts";
 import { SendMessage } from "#engagement/application/send-message.ts";
 import { isUnread } from "#engagement/domain/conversation.ts";
 import type { Conversation } from "#engagement/domain/conversation.ts";
@@ -50,6 +55,22 @@ import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platfor
 
 const millis = (at: DateTime.Utc) => DateTime.toEpochMillis(at);
 
+// The box with some of its fields changed.
+const boxWith = (
+  box: MessageBox,
+  changed: Partial<
+    Pick<MessageBox, "lastReadAt" | "nextReadAt" | "subscribedAt">
+  >
+) =>
+  new MessageBox({
+    channelId: box.channelId,
+    createdAt: box.createdAt,
+    lastReadAt: changed.lastReadAt ?? box.lastReadAt,
+    nextReadAt: changed.nextReadAt ?? box.nextReadAt,
+    subscribedAt: changed.subscribedAt ?? box.subscribedAt,
+    workspaceId: box.workspaceId,
+  });
+
 /** A Mastodon channel that granted what Peal's sign-in asks. */
 export const mastodonChannel: EngagedChannel = {
   connection: Option.none(),
@@ -65,7 +86,22 @@ export const blueskyChannel: EngagedChannel = {
 };
 
 export interface MessageWorldState {
+  /** The channels of each account, by `<platform>:<account id>`. */
+  readonly accounts: Map<string, AccountChannel[]>;
   readonly boxes: Map<ChannelId, MessageBox>;
+  /**
+   * The reads of one box started, once a channel and slot, as the
+   * workflow engine starts one execution an idempotency key.
+   */
+  readonly boxReads: { readonly channelId: ChannelId; readonly slot: string }[];
+  /** The channels whose platform was asked to tell their events. */
+  readonly follows: ChannelId[];
+  /** What asking a platform for, or to stop, its events answers. */
+  following: (
+    request: MessagesFollowRequest
+  ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
+  /** The channels whose platform was asked to stop telling their events. */
+  readonly unfollows: ChannelId[];
   readonly cancelled: OutgoingMessageId[];
   readonly channels: Map<ChannelId, EngagedChannel>;
   readonly applications: MessagesApplication[];
@@ -100,7 +136,12 @@ export const makeMessageWorld = (
   meters: Layer.Layer<MeteredUsage> = MeteredUsage.layerUnmetered
 ) => {
   const state: MessageWorldState = {
+    accounts: new Map(),
+    boxReads: [],
     boxes: new Map(),
+    follows: [],
+    following: () => Effect.succeed("unneeded"),
+    unfollows: [],
     cancelled: [],
     channels: new Map(),
     applications: [],
@@ -316,7 +357,7 @@ export const makeMessageWorld = (
         }
 
         if (millis(at) < millis(box.nextReadAt)) {
-          state.boxes.set(channelId, new MessageBox({ ...box, nextReadAt: at }));
+          state.boxes.set(channelId, boxWith(box, { nextReadAt: at }));
         }
 
         return true;
@@ -344,7 +385,7 @@ export const makeMessageWorld = (
         if (box !== undefined) {
           state.boxes.set(
             channelId,
-            new MessageBox({ ...box, subscribedAt: Option.some(at) })
+            boxWith(box, { subscribedAt: Option.some(at) })
           );
         }
       }),
@@ -525,7 +566,7 @@ export const makeMessageWorld = (
         if (kept !== undefined) {
           state.boxes.set(
             box.channelId,
-            new MessageBox({ ...box, subscribedAt: kept.subscribedAt })
+            boxWith(box, { subscribedAt: kept.subscribedAt })
           );
         }
       }),
@@ -589,10 +630,20 @@ export const makeMessageWorld = (
     Layer.succeed(
       MessageSource,
       MessageSource.of({
+        follow: (request) => {
+          state.follows.push(request.channelId);
+
+          return state.following(request);
+        },
         read: (request) => {
           state.reads.push(request);
 
           return state.read(request);
+        },
+        unfollow: (request) => {
+          state.unfollows.push(request.channelId);
+
+          return state.following(request);
         },
       })
     ),
@@ -619,6 +670,20 @@ export const makeMessageWorld = (
         cancel: (messageId) =>
           Effect.sync(() => {
             state.cancelled.push(messageId);
+          }),
+        readBox: (channelId, slot) =>
+          Effect.sync(() => {
+            const started = { channelId, slot: DateTime.formatIso(slot) };
+
+            if (
+              !state.boxReads.some(
+                (read) =>
+                  read.channelId === started.channelId &&
+                  read.slot === started.slot
+              )
+            ) {
+              state.boxReads.push(started);
+            }
           }),
         start: (messageId) =>
           Effect.sync(() => {
@@ -678,6 +743,15 @@ export const makeMessageWorld = (
       TransactionRunner,
       TransactionRunner.of({ transaction: (effect) => effect })
     ),
+    Layer.succeed(
+      MessageChannelsOfAccount,
+      MessageChannelsOfAccount.of({
+        channelsOf: (platform, accountId) =>
+          Effect.sync(() => [
+            ...(state.accounts.get(`${platform}:${accountId}`) ?? []),
+          ]),
+      })
+    ),
     Layer.succeed(CurrentInboxMessages, messages),
     Ids.layerTest,
     meters
@@ -687,7 +761,8 @@ export const makeMessageWorld = (
     EngagementMessages.layer,
     MessageSettings.layer,
     CollectMessages.layer.pipe(Layer.provideMerge(SendMessage.layer)),
-    PurgeMessages.layer
+    PurgeMessages.layer,
+    ReceiveMessageEvents.layer
   ).pipe(Layer.provideMerge(ports));
 
   return { layer, state, store };

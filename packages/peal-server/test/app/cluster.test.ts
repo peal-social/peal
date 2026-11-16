@@ -307,6 +307,7 @@ const ChannelJobsTest = Layer.mergeAll(
   Layer.succeed(
     CollectMessages,
     CollectMessages.of({
+      readBox: () => Effect.succeed("missing"),
       run: () =>
         Effect.succeed({
           deferred: 0,

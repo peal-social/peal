@@ -101,6 +101,8 @@ export const channels = channelsSchema.table(
       .where(
         sql`${table.status} = 'active' AND ${table.tokenKind} <> 'nonExpiring'`
       ),
+    // A platform's events, which name the account they concern.
+    index("channels_platform_account").on(table.platform, table.accountId),
     // Meta's data deletion requests: the channels a user's grant holds up.
     index("channels_granted_by")
       .on(table.grantedBy)

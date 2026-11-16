@@ -5,6 +5,10 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 
 import {
+  BoxReadResultSchema,
+  ReadMessageBoxV1,
+} from "#engagement/infrastructure/workflows/read-message-box.ts";
+import {
   MessageSendResultSchema,
   SendMessageV1,
 } from "#engagement/infrastructure/workflows/send-message.ts";
@@ -113,6 +117,35 @@ describe("the persisted contract of SendMessageV1", () => {
 
       assert.strictEqual(
         yield* SendMessageV1.executionId(payload),
+        keys.executionId
+      );
+    })
+  );
+});
+
+describe("the persisted contract of ReadMessageBoxV1", () => {
+  it("keeps its tag, and how a run leaves the box", () => {
+    assert.strictEqual(ReadMessageBoxV1._tag, "ReadMessageBoxV1");
+    assert.deepStrictEqual(BoxReadResultSchema.literals, [
+      "deferred",
+      "missing",
+      "off",
+      "read",
+      "unrecorded",
+    ]);
+  });
+
+  it.effect("decodes its payloads, and derives the same execution ids", () =>
+    Effect.gen(function* derivesTheSameIds() {
+      const payload = yield* fixture(
+        "ReadMessageBoxV1/payload.json",
+        ReadMessageBoxV1.payloadSchema
+      );
+
+      const keys = yield* fixture("ReadMessageBoxV1/keys.json", KeysSchema);
+
+      assert.strictEqual(
+        yield* ReadMessageBoxV1.executionId(payload),
         keys.executionId
       );
     })

@@ -1303,7 +1303,12 @@ layer(StoreTest)("the message store", (it) => {
         yield* Effect.gen(function* checks() {
           yield* store.follow([box, other]);
 
-          const here = yield* conversationOn(box, 1, "2049-02-21T09:00:00.000Z");
+          const here = yield* conversationOn(
+            box,
+            1,
+            "2049-02-21T09:00:00.000Z"
+          );
+
           const there = yield* conversationOn(
             other,
             1,

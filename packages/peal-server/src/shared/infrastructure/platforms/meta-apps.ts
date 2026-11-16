@@ -98,8 +98,8 @@ export const metaWebhookVerifyTokenConfig = Effect.gen(
     }
 
     // Read as Meta's dashboard is given it: without the spaces around.
-    return Option.map(token, (value) =>
-      Redacted.make(Redacted.value(value).trim())
+    return token.pipe(
+      Option.map((value) => Redacted.make(Redacted.value(value).trim()))
     );
   }
 );

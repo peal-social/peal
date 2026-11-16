@@ -1,4 +1,4 @@
-import { Context, DateTime, Effect, Layer, Option } from "effect";
+import { Context, DateTime, Duration, Effect, Layer, Option } from "effect";
 
 import {
   messageAbilitiesOf,
@@ -18,6 +18,7 @@ import { forgetChannelMessages } from "./forget-channel-messages.ts";
 import { MessageAbilityUnavailable } from "./message-ability-unavailable.ts";
 import { MessagesNeedPerson } from "./messages-need-person.ts";
 import { EngagementChannels } from "./ports/engagement-channels.ts";
+import { MessageSource } from "./ports/message-source.ts";
 import { MessageStore } from "./ports/message-store.ts";
 import type {
   MessagesApplication,
@@ -25,6 +26,12 @@ import type {
 } from "./ports/message-store.ts";
 
 type Refused = DatabaseError | MessagesNeedPerson | MissingPermission;
+
+/**
+ * How long turning a channel's messages off waits for its platform to be
+ * told to stop sending its events, through the channel's gate.
+ */
+export const unfollowWait = Duration.seconds(10);
 
 /** What a workspace decided about its direct messages. */
 export interface MessageSettingsView {
@@ -74,6 +81,7 @@ export class MessageSettings extends Context.Service<
     MessageSettings,
     Effect.gen(function* MessageSettingsLive() {
       const store = yield* MessageStore;
+      const source = yield* MessageSource;
       const channels = yield* EngagementChannels;
       const messages = yield* CurrentInboxMessages;
       const { transaction } = yield* TransactionRunner;
@@ -110,6 +118,27 @@ export class MessageSettings extends Context.Service<
           }
 
           if (!on) {
+            // Its platform is told to stop sending the account's events,
+            // once and best effort, while the channel's token is there: a
+            // refusal, or a gate too busy to answer in time, is logged by
+            // the channel's id, and the messages go all the same.
+            if (Option.isSome(yield* store.box(channelId))) {
+              yield* source.unfollow({ channelId }).pipe(
+                Effect.timeout(unfollowWait),
+                Effect.catch((error) =>
+                  Effect.logWarning(
+                    "Could not tell a platform to stop a channel's message events"
+                  ).pipe(
+                    Effect.annotateLogs({
+                      channelId,
+                      reason: error._tag,
+                    })
+                  )
+                ),
+                Effect.asVoid
+              );
+            }
+
             // What was on its way and never set out is not sent: its
             // outbound message is given back as its row goes.
             yield* transaction(forgetChannelMessages(store, meters, channelId));
