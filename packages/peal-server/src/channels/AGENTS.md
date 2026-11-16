@@ -244,9 +244,13 @@
   with the tokens read before, beside the revoke (ten seconds for both),
   and `ChannelRecords.releaseWorkspaces` does it for every channel before
   the erasure of one or more workspaces, every channel of them leaving
-  with each, eight side by side under one bound for them all
-  (`releaseWait`, ten seconds: an erasure never waits on Meta once a
-  channel): `metaMessageDepartures` deletes Meta's
+  with each: it reads their tokens first (`Redacted`), then lets them go
+  eight side by side in a detached fiber bounded at `releaseLimit` (two
+  minutes), which the erasure waits for `releaseWait` (ten seconds) at
+  most and never cuts short, so an erasure never waits on Meta once a
+  channel. `departed` answers `done` or `failed`; each channel not let go
+  by the end is logged by its id and counted
+  (`peal.channels.release.left_subscribed`): `metaMessageDepartures` deletes Meta's
   `subscribed_apps` while no other channel reads an account the app's
   subscription carries (`ChannelDirectory.withAccount` gives each
   channel's way in; `EngagementRecords.readsMessages`), then tells the

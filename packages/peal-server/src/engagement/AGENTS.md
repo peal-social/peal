@@ -539,7 +539,8 @@
   `ChannelDepartures`, which asks `EngagementRecords.readsMessages`, and
   `refollow`s the others after), as does a workspace's erasure before its
   transaction (`ChannelRecords.releaseWorkspaces`, from
-  `ContextRecords.settleWorkspaces`, ten seconds at most for them all),
+  `ContextRecords.settleWorkspaces`, which waits ten seconds at most for
+  them all and leaves the rest to finish on its own),
   and a moved channel's account stays
   followed (its events are `ignored` until the new workspace turns its
   messages on).
