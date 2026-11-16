@@ -5,6 +5,7 @@ import {
   googleIssuer,
   googleProvider,
   oidcAccountId,
+  issuerKey,
   oidcProvider,
   profileToUser,
   signInProviderConfigs,
@@ -141,5 +142,18 @@ describe("the sign-in providers", () => {
     await expect(userInfo?.({ idToken: token })).resolves.toMatchObject({
       email: "Ada@Example.test",
     });
+  });
+
+  it.each([
+    "https://ID.Example.test/realms/peal/",
+    "https://id.example.test:443/realms/peal",
+    "https://id.example.test/realms/peal//",
+    " https://id.example.test/realms/peal ",
+  ])("spell one issuer one way in the key: %s", (issuer) => {
+    expect(issuerKey(issuer)).toBe("https://id.example.test/realms/peal");
+  });
+
+  it("keep a port that is no default", () => {
+    expect(issuerKey("http://127.0.0.1:8080/")).toBe("http://127.0.0.1:8080");
   });
 });

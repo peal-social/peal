@@ -123,6 +123,17 @@ const subjectOf = (idToken: string | undefined): string =>
  * the accounts the old one's joined (they join again by a confirmed
  * address). Google's is its `sub` alone: its issuer never changes.
  */
+/**
+ * An issuer as the key spells it, whatever the setting's spelling: the host
+ * lower-cased and the default port dropped (as a URL is read), no trailing
+ * slash.
+ */
+export const issuerKey = (issuer: string): string => {
+  const url = new URL(issuer.trim());
+
+  return `${url.protocol}//${url.host}${url.pathname.replace(/\/+$/u, "")}`;
+};
+
 export const oidcAccountId = (issuer: string, subject: string): string =>
   // No subject is no account: Better Auth refuses an empty id.
   subject === "" ? "" : `${issuer}|${subject}`;
@@ -175,10 +186,7 @@ export const oidcProvider = (
   ...common(settings, settings.issuer.replace(/\/+$/u, "")),
   discoveryUrl: settings.discoveryUrl,
   accountSubject: ({ tokens }) =>
-    oidcAccountId(
-      settings.issuer.replace(/\/+$/u, ""),
-      subjectOf(tokens.idToken)
-    ),
+    oidcAccountId(issuerKey(settings.issuer), subjectOf(tokens.idToken)),
   name: settings.name,
   providerId: "oidc",
   scopes: [...settings.scopes],
