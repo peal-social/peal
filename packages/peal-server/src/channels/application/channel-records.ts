@@ -34,14 +34,16 @@ export class ChannelRecords extends Context.Service<
      */
     readonly eraseUser: (userId: UserId) => Effect.Effect<void, DatabaseError>;
     /**
-     * Before the workspace's erasure, outside its transaction: what its
+     * Before the workspaces' erasure, outside its transaction: what their
      * channels set up on their platforms for Peal is undone with the
      * tokens they hold (ChannelDepartures: Meta's message events), every
-     * channel of the workspace counted as leaving with it. Best effort: it
-     * never fails, and a channel's own failure is logged by its id.
+     * channel of them counted as leaving with it. The channels go side by
+     * side, under one bound for them all, so an erasure never waits on a
+     * platform once a channel. Best effort: it never fails, and a
+     * channel's own failure is logged by its id.
      */
-    readonly releaseWorkspace: (
-      workspaceId: WorkspaceId
+    readonly releaseWorkspaces: (
+      workspaceIds: readonly WorkspaceId[]
     ) => Effect.Effect<void>;
   }
 >()("peal-server/channels/application/ChannelRecords") {}

@@ -1,5 +1,5 @@
 import { asc, eq } from "drizzle-orm";
-import { DateTime, Effect, Layer, Option } from "effect";
+import { DateTime, Duration, Effect, Layer, Option } from "effect";
 
 import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelRecords } from "#channels/application/channel-records.ts";
@@ -21,6 +21,15 @@ import {
 const failed = (cause: unknown) => new DatabaseError({ cause });
 
 /**
+ * How long an erasure waits at most for its channels' platforms to let
+ * them go, all of them together.
+ */
+export const releaseWait = Duration.seconds(10);
+
+// The channels let go at once: a platform's two calls each.
+const releaseConcurrency = 8;
+
+/**
  * ChannelRecords on the channels schema. Needs the ChannelRepository, the
  * TokenCipher and ChannelDepartures, for what an erasure lets go first.
  */
@@ -32,9 +41,14 @@ export const DrizzleChannelRecords = Layer.effect(
     const cipher = yield* TokenCipher;
     const departures = yield* ChannelDepartures;
 
-    const releaseWorkspace = Effect.fn("ChannelRecords.releaseWorkspace")(
-      function* releaseWorkspace(workspaceId: WorkspaceId) {
-        const listed = yield* repository.list(workspaceId);
+    const releaseWorkspaces = Effect.fn("ChannelRecords.releaseWorkspaces")(
+      function* releaseWorkspaces(workspaceIds: readonly WorkspaceId[]) {
+        const listed = (
+          yield* Effect.forEach(workspaceIds, (workspaceId) =>
+            repository.list(workspaceId)
+          )
+        ).flat();
+
         const leaving = listed.map(({ id }) => id);
 
         yield* Effect.forEach(
@@ -59,7 +73,7 @@ export const DrizzleChannelRecords = Layer.effect(
                 ).pipe(Effect.annotateLogs({ channelId: channel.id }))
               )
             ),
-          { discard: true }
+          { concurrency: releaseConcurrency, discard: true }
         );
       },
       // Whatever the database says, the erasure goes on.
@@ -67,11 +81,23 @@ export const DrizzleChannelRecords = Layer.effect(
         Effect.logWarning(
           "Could not list a workspace's channels before its erasure"
         )
+      ),
+      // One bound for every channel: past it, what is left is the
+      // platform's to forget, and the erasure goes on.
+      Effect.timeoutOption(releaseWait),
+      Effect.flatMap(
+        Option.match({
+          onNone: () =>
+            Effect.logWarning(
+              "Could not let every channel's platform go before an erasure in time"
+            ),
+          onSome: () => Effect.void,
+        })
       )
     );
 
     return ChannelRecords.of({
-      releaseWorkspace,
+      releaseWorkspaces,
       eraseUser: Effect.fn("ChannelRecords.eraseUser")(
         function* eraseUser(userId) {
           const starter = userStarter(userId);
