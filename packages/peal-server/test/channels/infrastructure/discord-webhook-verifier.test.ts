@@ -69,6 +69,10 @@ layer(Http)("checking a Discord webhook", (it) => {
         `https://discordapp.com/api/webhooks/${discordWebhookId}/${discordWebhookToken}`,
         `https://discord.com/api/v10/webhooks/${discordWebhookId}/${discordWebhookToken}`,
         `  ${address}/ `,
+        // Discord's test builds, and any case of scheme and host.
+        `https://canary.discord.com/api/webhooks/${discordWebhookId}/${discordWebhookToken}`,
+        `https://ptb.discord.com/api/webhooks/${discordWebhookId}/${discordWebhookToken}`,
+        `HTTPS://DISCORD.COM/api/webhooks/${discordWebhookId}/${discordWebhookToken}`,
       ]) {
         assert.strictEqual((yield* verify(written)).accountId, discordAccount);
       }
