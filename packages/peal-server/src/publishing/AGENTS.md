@@ -644,17 +644,30 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   text goes escaped (`escapedForSlack`: `&`, `<`, `>`, nothing else), so
   no member's text is a `<!here>` or a `<@user>`, and is counted as sent
   (`escapedUtf16Units`, the contract's too): 4,000 alone, 3,000 beside
-  images (a section block's). Later parts reply in the first part's
+  images (a section block's). A section's text object is always
+  `verbatim` (`blocksOf`, posting and editing), as Slack parses `@here`,
+  `@channel`, `#channel` and names in a block's text otherwise; its
+  http(s) addresses are written as `<address>` (`linkedForSlack`) unless
+  that passes the 3,000. An images-only message's `text`, the
+  notification's, is its images' alt text (`fallbackTextOf`).
+  `unfurl_links` and `unfurl_media` both follow `unfurlLinks`. A definite
+  refusal of the commit deletes the uploaded files, best effort; an
+  unknown outcome never does, as the message may show them.
+  `invalid_blocks` beside images is posted again after each of
+  `notReadyWaits` (about three and a half minutes), then the images are
+  refused (`MediaRejected` `slack:invalid_blocks`) and deleted. Later parts reply in the first part's
   thread (`thread_ts`). The post id is `<channel>/<ts>[/<file>,…]`, the
   files kept so an edit sends the image blocks again (`chat.update` drops
   blocks sent a text alone; the edit's `TextEdit.media`, read by
   `LivePostEdits`, gives their alt text) and a deletion deletes them
-  (`files.delete`); an id of another channel is `invalidPlatformId`. A
+  (`files.delete`, best effort: once the message is gone the removal is
+  done, a file Slack keeps logged); an id of another channel is
+  `invalidPlatformId`. A
   channel the app may not post in (`not_in_channel`, `channel_not_found`,
-  `is_archived`, `restricted_action`…) is `cannotPost`, which tells the
-  member to invite the app; `invalid_blocks` beside images is Slack
-  unavailable, tried again later; other codes are kept as
-  `slack:<code>`. Tests set the fake's addresses through `slackHosts`.
+  `is_archived`, `restricted_action` and its kinds…) is `cannotPost`,
+  which tells the member to invite the app or let it post (an upload's
+  `no_permission` stays `slack:no_permission`), `message_limit_exceeded`
+  a rate limit; other codes are kept as `slack:<code>`. Tests set the fake's addresses through `slackHosts`.
 - Pinterest's adapter (`platforms/pinterest/`) makes a Pin with one
   request, pins/create: an image by the public media URL Pinterest fetches
   (`MediaForPublishing.publicUrl`, two hours), two to five as a carousel

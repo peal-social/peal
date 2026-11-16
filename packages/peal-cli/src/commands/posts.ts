@@ -96,7 +96,7 @@ const failureReasons: Readonly<Record<FailureReason, string>> = {
   chatMigrated:
     "the Telegram group became a supergroup with a new id: connect the chat again (peal channels connect-chat), then post on the new channel",
   cannotPost:
-    "the app may not post in the channel (on Slack: invite the app to the channel with /invite, or the channel was archived), then repost",
+    "the app may not post in the channel (on Slack: invite the app to the channel with /invite, or let it post there; or the channel was archived), then repost",
   xThreadCut:
     "the thread was cut: X's meter refused the next part, as the billing account cannot be billed for it now (the billing page says why); once it can, repost to send the rest",
 };

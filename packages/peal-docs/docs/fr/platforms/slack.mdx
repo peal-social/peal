@@ -35,24 +35,29 @@ Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/me
 </Steps>
 
 - Une installation connecte un canal. Pour publier dans un autre canal de l’espace de travail, connectez Slack à nouveau et choisissez-le : chaque canal est un canal à part dans Peal, et dans l’abonnement.
-- Dans un canal privé, invitez aussi l’application : tapez `/invite` dans le canal, puis le nom de l’application. Une publication dans un canal où l’application n’est pas échoue (`cannotPost`), et le dit.
+- Choisissez un canal : Peal refuse un message direct.
+- Dans un canal privé, invitez aussi l’application : tapez `/invite` dans le canal, puis le nom de l’application. Une publication dans un canal où l’application n’est pas, ou qui ne laisse publier que certains, échoue (`cannotPost`), et le dit.
 - Peal demande à Slack de publier des messages (`chat:write`), dans un canal public qu’il n’a pas rejoint aussi (`chat:write.public`), d’envoyer les images qu’une publication montre (`files:write`), et le choix du canal (`incoming-webhook`). Il ne lit aucun canal, message ou fichier de l’espace de travail.
 - Peal garde le jeton de l’application chiffré. Pour couper l’accès de Peal, retirez l’application de l’espace de travail Slack, dans ses réglages d’applications : chaque canal de cet espace de travail s’arrête, et Peal les marque à reconnecter.
+- Après que l’application a été retirée puis ajoutée à nouveau, reconnectez chaque canal depuis sa ligne sur **Canaux**, en choisissant ce même canal sur la page de Slack : un autre canal y est refusé.
+- Chaque connexion ajoute à l’espace de travail Slack un webhook entrant, que Peal n’utilise pas : vous pouvez le retirer dans les réglages de l’application dans Slack.
 
 ## Ce que devient une publication [#posts]
 
-- Le texte suit la mise en forme de Slack : `*gras*`, `_italique_`, `~barré~` et `` `code` `` restent tels que Slack les montre. Peal envoie `&`, `<` et `>` comme Slack les prend, si bien que rien de ce que vous tapez ne mentionne le canal, `@here` ou une personne : cela reste du texte. Slack fait des liens des adresses.
+- Le texte suit la mise en forme de Slack : `*gras*`, `_italique_`, `~barré~` et `` `code` `` restent tels que Slack les montre. Peal envoie `&`, `<` et `>` comme Slack les prend, et demande à Slack de lire le texte d’une publication avec images tel qu’il est écrit, si bien que rien de ce que vous tapez ne notifie personne : `@here`, `@channel`, `@everyone`, le nom d’une personne et `#canal` restent du texte, avec ou sans images. Les adresses qui commencent par `http://` ou `https://` sont des liens, avec ou sans images.
 - Un texte seul prend 4 000 caractères, un texte avec des images 3 000, comptés comme Slack les reçoit : `&` compte 5, `<` et `>` 4 chacun. Peal le vérifie quand la publication est programmée.
-- Les images vont sous le texte, dans le même message, avec leur texte alternatif.
+- Les images vont sous le texte, dans le même message, avec leur texte alternatif, qui est aussi ce que dit la notification d’une publication d’images seules. Une image que Slack ne montre jamais fait échouer la publication comme une image refusée, et Peal supprime les images qu’il a envoyées pour une publication que Slack a refusée.
 - Les parties d’un [fil](/guides/posts#threads) sont des réponses dans le fil de la première partie.
 
 ## Options [#options]
 
 Aucune option n’est nécessaire, et elle vaut pour chaque partie.
 
-| Option                                        | Nom dans l’API | Valeurs    | Par défaut |
-| --------------------------------------------- | -------------- | ---------- | ---------- |
-| **Afficher un aperçu des pages de ses liens** | `unfurlLinks`  | Oui ou non | Non        |
+| Option                              | Nom dans l’API | Valeurs    | Par défaut |
+| ----------------------------------- | -------------- | ---------- | ---------- |
+| **Afficher un aperçu de ses liens** | `unfurlLinks`  | Oui ou non | Non        |
+
+Par défaut, Slack ne montre aucun aperçu des pages, images ou vidéos vers lesquelles le texte renvoie.
 
 ## Modifier et supprimer [#live]
 

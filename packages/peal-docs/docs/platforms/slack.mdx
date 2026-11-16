@@ -35,24 +35,29 @@ What each file type must be is in [Images and videos](/guides/media#platforms-sl
 </Steps>
 
 - One install connects one channel. To post to another channel of the workspace, connect Slack again and pick it: each channel is a channel of its own in Peal, and on the plan.
-- In a private channel, invite the app too: type `/invite` in the channel, then the app's name. A post to a channel the app is not in fails (`cannotPost`), and says so.
+- Pick a channel: Peal refuses a direct message.
+- In a private channel, invite the app too: type `/invite` in the channel, then the app's name. A post to a channel the app is not in, or that lets only some post there, fails (`cannotPost`), and says so.
 - Peal asks Slack to post messages (`chat:write`), in a public channel it has not joined too (`chat:write.public`), to upload the images a post shows (`files:write`), and for the channel picker (`incoming-webhook`). It reads no channel, message or file of the workspace.
 - Peal keeps the app's token encrypted. To cut Peal off, remove the app from the Slack workspace, in its app settings: every channel of that workspace stops, and Peal marks them to reconnect.
+- After the app was removed and added back, reconnect each channel from its row on **Channels**, picking that same channel on Slack's page: another channel is refused there.
+- Each connection adds an incoming webhook to the Slack workspace, which Peal does not use: you may remove it in the app's settings in Slack.
 
 ## What a post becomes [#posts]
 
-- The text is Slack's formatting: `*bold*`, `_italic_`, `~strikethrough~` and `` `code` `` stay as Slack shows them. Peal sends `&`, `<` and `>` as Slack takes them, so nothing you type mentions the channel, `@here` or a person: it stays text. Slack links the addresses.
+- The text is Slack's formatting: `*bold*`, `_italic_`, `~strikethrough~` and `` `code` `` stay as Slack shows them. Peal sends `&`, `<` and `>` as Slack takes them, and asks Slack to read the text of a post with images as it is written, so nothing you type notifies anyone: `@here`, `@channel`, `@everyone`, a person's name and `#channel` stay text, with or without images. Addresses starting with `http://` or `https://` are links, with or without images.
 - A text alone takes 4,000 characters, a text with images 3,000, counted as Slack receives them: `&` counts 5, `<` and `>` 4 each. Peal checks it when the post is scheduled.
-- Images go under the text, in the same message, with their alt text.
+- Images go under the text, in the same message, with their alt text, which is also what a notification of a post of images alone says. An image Slack never shows fails the post as a refused image, and Peal deletes the images it uploaded for a post Slack refused.
 - The parts of a [thread](/guides/posts#threads) are replies in the thread of the first part.
 
 ## Options [#options]
 
 No option is required, and it goes with every part.
 
-| Option                                 | API name      | Values    | Left out |
-| -------------------------------------- | ------------- | --------- | -------- |
-| **Show a preview of its links’ pages** | `unfurlLinks` | Yes or no | No       |
+| Option                         | API name      | Values    | Left out |
+| ------------------------------ | ------------- | --------- | -------- |
+| **Show previews of its links** | `unfurlLinks` | Yes or no | No       |
+
+Left out, Slack shows no preview of the pages, images or videos the text links to.
 
 ## Edit and delete [#live]
 
