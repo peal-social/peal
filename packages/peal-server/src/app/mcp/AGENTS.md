@@ -94,7 +94,11 @@
 - `list_comment_rules` (reading), `start_comment_rule` (open world),
   `update_comment_rule` and `stop_comment_rule` are in `InboxTools` and
   `publishingTools`, check engagement:reply before reading anything, and
-  list what a rule matched by id, never a comment's text.
+  list what a rule matched by id, never a comment's text. The start and
+  update tools take a `privateReply`, whose descriptions say that a rule
+  with one sends private messages to real people by itself, to give only
+  in the user's words; it takes engagement:message and the owner's
+  consent for the client's messages, as `send_private_reply` does.
 - `get_media`, `get_media_usage` (reading), `describe_media` (not
   destructive, idempotent) and `delete_media` (destructive: its
   description says an agent calls it only when the user asked for that
