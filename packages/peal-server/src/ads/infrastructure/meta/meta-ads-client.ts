@@ -105,6 +105,33 @@ interface Listing<A> {
 
 const decodeObjectId = Schema.decodeUnknownOption(NetworkObjectIdSchema);
 
+/**
+ * What a boost's creative opts out of, so that it shows the post the
+ * member chose and nothing else (Marketing API v27.0, read 2026-11-16):
+ *
+ * - multi-advertiser ads: "Ads created on or after August 19, 2024 that do
+ *   not specify the `enroll_status` field will be opted into
+ *   multi-advertiser ads by default" ("Multi-advertiser ads");
+ * - product showcase: from v27.0 "Meta may now turn on Product showcase"
+ *   on a creative without `product_extensions`, opted out as the
+ *   changelog's example writes it, `action_metadata` included ("Version
+ *   27.0", Ad Creative).
+ *
+ * v27.0's wider device reach applies to Sales campaigns with device
+ * targeting only, never to a boost's engagement campaign.
+ */
+const shownAlone = {
+  contextual_multi_ads: { enroll_status: "OPT_OUT" },
+  degrees_of_freedom_spec: {
+    creative_features_spec: {
+      product_extensions: {
+        action_metadata: { type: "MANUAL" },
+        enroll_status: "OPT_OUT",
+      },
+    },
+  },
+} as const;
+
 const absent: LookUp<never> = { _tag: "absent" };
 const unknown: LookUp<never> = { _tag: "unknown" };
 
@@ -465,6 +492,7 @@ export const metaAdsClient = Effect.fn("MetaAds.client")(
       if (shown.platform === "facebook") {
         // "ID of a Facebook Page post to use in an ad": `<page>_<post>`.
         return {
+          ...shownAlone,
           object_story_id: shown.platformPostId.includes("_")
             ? shown.platformPostId
             : `${shown.accountId}_${shown.platformPostId}`,
@@ -472,6 +500,7 @@ export const metaAdsClient = Effect.fn("MetaAds.client")(
       }
 
       return {
+        ...shownAlone,
         instagram_user_id: shown.accountId,
         object_id: yield* pageOf(token, shown.accountId),
         source_instagram_media_id: shown.platformPostId,
@@ -516,6 +545,12 @@ export const metaAdsClient = Effect.fn("MetaAds.client")(
               age_max: audience.ageMax,
               age_min: audience.ageMin,
               geo_locations: { countries: audience.countries },
+              // The audience is the member's choice, never widened. From
+              // v23.0 a new ad set "defaults to 1 or requires an explicit
+              // value of either 1 or 0", and with 1 "age_max is fixed at
+              // 65" ("Advantage+ audience", Marketing API v27.0, read
+              // 2026-11-16).
+              targeting_automation: { advantage_audience: 0 },
             }),
             ...(budget._tag === "total"
               ? { lifetime_budget: String(budget.amount) }
