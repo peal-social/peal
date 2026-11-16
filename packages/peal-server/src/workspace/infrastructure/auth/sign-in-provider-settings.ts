@@ -91,6 +91,20 @@ const IssuerSchema = Schema.Trim.check(
   })
 );
 
+// Tests' alone: a fake Google on this machine. Any other issuer behind
+// "Continue with Google" would vouch for Gmail addresses, and Google's
+// identities are kept by subject alone.
+const LoopbackIssuerSchema = IssuerSchema.check(
+  Schema.makeFilter(
+    (text: string) => {
+      const url = parsedUrl(text);
+
+      return url !== undefined && url.protocol === "http:";
+    },
+    { expected: "an http URL on a loopback host, for tests" }
+  )
+);
+
 const isStorableName = (name: string): boolean =>
   name.length <= maxProviderNameLength &&
   storableLine(name, maxProviderNameLength) === name;
@@ -128,7 +142,7 @@ const googleConfig = Config.all({
           clientId: requiredString("GOOGLE_SIGN_IN_CLIENT_ID"),
           clientSecret: requiredSecret("GOOGLE_SIGN_IN_CLIENT_SECRET"),
           issuer: Config.option(
-            Config.schema(IssuerSchema, "GOOGLE_SIGN_IN_ISSUER")
+            Config.schema(LoopbackIssuerSchema, "GOOGLE_SIGN_IN_ISSUER")
           ),
         }).pipe(
           Config.map(({ issuer, ...client }) =>

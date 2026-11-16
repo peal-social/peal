@@ -409,6 +409,9 @@ The staff context follows these rules too. What the law has a host keep is in
 - The HTTP tracer redacts `code` and `state` in `url.full` and
   `url.query` (`RedactedQueryLive`, `src/app/untraced-paths.ts`): the
   callback's address carries both (`test/app/secrets-in-logs.test.ts`).
+- `GOOGLE_SIGN_IN_ISSUER` is a test setting, refused but as `http://` on a
+  loopback host: it puts the fake behind Google's button
+  (`appWithGoogle`). It is in no docs table and no compose file.
 - Tests sign in through `test/workspace/fakes/fake-oidc.ts`, an OpenID
   Provider on a loopback port that signs ID tokens with a key made for the
   run (`provider-support.ts` drives a sign-in as the pages do, the

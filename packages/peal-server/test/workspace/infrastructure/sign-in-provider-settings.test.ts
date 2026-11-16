@@ -72,13 +72,19 @@ describe("the sign-in providers' settings", () => {
         settings.google.pipe(Option.map(({ issuer }) => issuer)),
         Option.some("http://127.0.0.1:8080")
       );
-      assert.include(
-        yield* failureOf({
-          ...google,
-          GOOGLE_SIGN_IN_ISSUER: "http://id.example.test",
-        }),
-        "GOOGLE_SIGN_IN_ISSUER"
-      );
+
+      // A test's setting: any other issuer behind "Continue with Google"
+      // would vouch for Gmail addresses.
+      for (const issuer of [
+        "http://id.example.test",
+        "https://id.example.test",
+        "https://accounts.google.com",
+      ]) {
+        assert.include(
+          yield* failureOf({ ...google, GOOGLE_SIGN_IN_ISSUER: issuer }),
+          "GOOGLE_SIGN_IN_ISSUER"
+        );
+      }
     })
   );
 
