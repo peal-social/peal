@@ -128,8 +128,8 @@
   as Basic): the bot's scopes `incoming-webhook`, `chat:write`,
   `chat:write.public`, `files:write`, comma-separated, and nothing that
   reads a channel, a message or a file. The channel is the one Slack's page
-  had the member pick (`incoming_webhook.channel_id`), so Peal never lists
-  a workspace's channels; the webhook's address in the answer is never
+  had the member pick (`incoming_webhook.channel_id`; a direct message,
+  `D…`, is refused), so Peal never lists a workspace's channels; the webhook's address in the answer is never
   kept. The account id is `<team id>/<channel id>` (another channel of the
   workspace is another channel of Peal's, a reconnection through another
   channel `ReconnectAccountMismatch`), the handle `#<channel>`, the display

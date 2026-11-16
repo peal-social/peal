@@ -179,6 +179,15 @@ export const slackAuthorizer = Effect.fn("SlackAuthorizer.make")(
         const { access_token: token, incoming_webhook: webhook } =
           install.value;
 
+        // Slack's picker offers direct messages too (`D…`): Peal posts to
+        // channels only, and no app can be invited to a person's messages.
+        if (webhook.channel_id.startsWith("D")) {
+          return yield* new AuthorizationFailed({
+            reason:
+              "a direct message was picked on Slack's page: pick a channel",
+          });
+        }
+
         const scopes = install.value.scope
           .split(",")
           .map((scope) => scope.trim())

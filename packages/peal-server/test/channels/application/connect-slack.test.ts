@@ -217,6 +217,23 @@ layer(AdaptersTest)("connecting a Slack channel", (it) => {
     }).pipe(Effect.scoped)
   );
 
+  it.effect(
+    "refuses a direct message picked on Slack's page: Peal posts to channels",
+    () =>
+      Effect.gen(function* direct() {
+        const on = yield* onSlack();
+        const workspaceId = yield* freshWorkspace;
+
+        const refused = yield* signIn(on, workspaceId, {
+          id: "D0SYNTH01",
+          name: "@synthetic.person",
+        }).pipe(Effect.flip);
+
+        assert.strictEqual(refused._tag, "AuthorizationFailed");
+        assert.include(refused.message, "direct message");
+      }).pipe(Effect.scoped)
+  );
+
   it.effect("takes a refusal on Slack's page as the member refusing", () =>
     Effect.gen(function* denied() {
       const on = yield* onSlack();
