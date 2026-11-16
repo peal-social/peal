@@ -17,6 +17,12 @@ import type { AdNetwork } from "./ad-network.ts";
  */
 export interface NetworkTraits {
   readonly days: "ad" | "campaign";
+  /**
+   * Whether an account may be read through a manager account
+   * (`reachedThrough`), a way that can change: each listing then takes the
+   * way it lists, and a read refused as a permission looks again once.
+   */
+  readonly readsThroughManagers: boolean;
   readonly reportsReach: boolean;
   readonly reportsResults: boolean;
   readonly spends: boolean;
@@ -34,6 +40,7 @@ export const networkTraits = {
   // is shown is never more than a day old.
   google: {
     days: "campaign",
+    readsThroughManagers: true,
     reportsReach: false,
     reportsResults: false,
     spends: false,
@@ -41,6 +48,7 @@ export const networkTraits = {
   },
   meta: {
     days: "ad",
+    readsThroughManagers: false,
     reportsReach: true,
     reportsResults: true,
     spends: true,

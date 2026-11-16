@@ -1,3 +1,4 @@
+import type { Redacted } from "effect";
 import {
   Context,
   DateTime,
@@ -9,10 +10,11 @@ import {
 } from "effect";
 
 import type { AccountSnapshot } from "#ads/domain/account-snapshot.ts";
-import type { AdAccount } from "#ads/domain/ad-account.ts";
+import { AdAccount } from "#ads/domain/ad-account.ts";
 import type { AdAccountId } from "#ads/domain/ids.ts";
 import { firstSyncDays, resyncDays } from "#ads/domain/insight-retention.ts";
 import { traitsOf } from "#ads/domain/network-traits.ts";
+import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
@@ -24,7 +26,7 @@ import { AccountStore } from "./ports/account-store.ts";
 import type { SyncOutcome } from "./ports/account-syncer.ts";
 import { ActiveAdMonths } from "./ports/active-ad-months.ts";
 import { AdNetworks } from "./ports/ad-network.ts";
-import type { ReadFailure } from "./ports/ad-network.ts";
+import type { AdNetworkClient, ReadFailure } from "./ports/ad-network.ts";
 import { AdNotices } from "./ports/ad-notices.ts";
 import { BoostStore } from "./ports/boost-store.ts";
 import { GrantSecrets } from "./ports/grant-secrets.ts";
@@ -253,11 +255,55 @@ export class SyncAccount extends Context.Service<
           return yield* failedRead(account, new TokenRejected());
         }
 
+        return yield* readWith(account, client.value, token.value, false);
+      });
+
+      // An account read through a manager that refuses it may have been
+      // handed over: the sign-in's listing names the way to it now. That
+      // way, when it is another, is taken; none means no way reaches it.
+      const rerouted = Effect.fn("SyncAccount.rerouted")(function* rerouted(
+        account: AdAccount,
+        client: AdNetworkClient,
+        token: Redacted.Redacted
+      ) {
+        const reached = yield* client
+          .accounts(token)
+          .pipe(Effect.orElseSucceed(() => []));
+
+        const found = reached.find(
+          ({ externalId }) => externalId === account.externalId
+        );
+
+        if (
+          found === undefined ||
+          Option.getOrNull(found.reachedThrough) ===
+            Option.getOrNull(account.reachedThrough)
+        ) {
+          return Option.none<AdAccount>();
+        }
+
+        yield* accounts.setWays(account.workspaceId, account.network, [found]);
+
+        yield* Effect.logInfo(
+          "An ad account is read another way: the one it was read through no longer reaches it"
+        ).pipe(Effect.annotateLogs({ accountId: account.id }));
+
+        return Option.some(
+          new AdAccount({ ...account, reachedThrough: found.reachedThrough })
+        );
+      });
+
+      const readWith = Effect.fn("SyncAccount.readWith")(function* readWith(
+        account: AdAccount,
+        client: AdNetworkClient,
+        token: Redacted.Redacted,
+        rerouting: boolean
+      ): Effect.fn.Return<SyncOutcome, DatabaseError> {
         const now = yield* DateTime.now;
         const today = localDateOf(now, account.timeZone);
 
-        const snapshot = yield* client.value
-          .snapshot(token.value, {
+        const snapshot = yield* client
+          .snapshot(token, {
             currency: account.currency,
             externalId: account.externalId,
             reachedThrough: account.reachedThrough,
@@ -271,7 +317,24 @@ export class SyncAccount extends Context.Service<
           .pipe(Effect.result);
 
         if (Result.isFailure(snapshot)) {
-          return yield* failedRead(account, snapshot.failure);
+          const { failure } = snapshot;
+
+          if (
+            !rerouting &&
+            failure._tag === "AdNetworkRefused" &&
+            failure.kind === "permission" &&
+            traitsOf(account.network).readsThroughManagers
+          ) {
+            const other = yield* rerouted(account, client, token);
+
+            if (Option.isSome(other)) {
+              return yield* readWith(other.value, client, token, true);
+            }
+
+            yield* accounts.markUnreachable(account.id, now);
+          }
+
+          return yield* failedRead(account, failure);
         }
 
         const taken = yield* metered(account, snapshot.success, now);

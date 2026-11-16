@@ -99,7 +99,8 @@ export const signInAttempts = adsSchema.table(
  *   network and what it spent against it, as last read.
  * - `next_sync_at` is when its campaigns and numbers are next read.
  * - `reached_through` is the manager account a Google Ads account is read
- *   through; null when reached directly, and on Meta.
+ *   through; null when reached directly, and on Meta; `unreachable_since`
+ *   says since when no way reaches it.
  */
 export const accounts = adsSchema.table(
   "accounts",
@@ -120,6 +121,7 @@ export const accounts = adsSchema.table(
     network: text("network").notNull(),
     nextSyncAt: instant("next_sync_at").notNull(),
     reachedThrough: text("reached_through"),
+    unreachableSince: instant("unreachable_since"),
     spendCap: money("spend_cap"),
     spendingEnabled: boolean("spending_enabled").notNull().default(false),
     status: text("status").notNull(),

@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "0d0cc204-5ffc-4e09-a956-2855c16cc736",
+  "id": "00890b9e-9380-47b8-b384-d99a22384b03",
   "prevIds": [
     "44af3c69-bc07-41a4-9af7-0bd390a8e4d3"
   ],
@@ -38,6 +38,24 @@
         "s|col|ads.accounts.reached_through",
         "n|col|ads.accounts.reached_through",
         "e|col|ads.accounts.reached_through"
+      ],
+      "reads": [
+        "n|tbl|ads.accounts",
+        "n|sch|ads"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "ads",
+        "accounts",
+        "unreachable_since"
+      ],
+      "writes": [
+        "s|col|ads.accounts.unreachable_since",
+        "n|col|ads.accounts.unreachable_since",
+        "e|col|ads.accounts.unreachable_since"
       ],
       "reads": [
         "n|tbl|ads.accounts",
@@ -162,6 +180,22 @@
         "table": "accounts",
         "name": "reached_through",
         "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "accounts",
+        "name": "unreachable_since",
+        "type": "timestamp with time zone",
         "typeSchema": null,
         "notNull": false,
         "dimensions": 0,

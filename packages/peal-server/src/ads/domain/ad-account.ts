@@ -50,5 +50,12 @@ export class AdAccount extends Schema.Class<AdAccount>(
   /** When a sync last read it whole; none before the first. */
   syncedAt: Schema.Option(Schema.DateTimeUtc),
   timeZone: TimeZoneIdSchema,
+  /**
+   * Since when no way Peal knows reaches it (the manager it was read
+   * through no longer holds it, and the sign-in reaches it no other way):
+   * reads are put off, and nothing read of it is deleted. None while it
+   * is read.
+   */
+  unreachableSince: Schema.Option(Schema.DateTimeUtc),
   workspaceId: WorkspaceIdSchema,
 }) {}

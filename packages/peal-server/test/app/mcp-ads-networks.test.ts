@@ -61,6 +61,7 @@ const accountOn = (network: AdNetwork, id: string): AuthorizedAccount => ({
     status: "active",
     syncedAt: Option.none(),
     timeZone: TimeZoneIdSchema.make("Europe/Paris"),
+    unreachableSince: Option.none(),
     workspaceId,
   }),
   authorization: { _tag: "off" },

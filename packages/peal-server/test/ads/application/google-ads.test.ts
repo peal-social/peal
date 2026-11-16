@@ -571,6 +571,117 @@ layer(BillingTest, { excludeTestServices: true })(
         })
     );
 
+    it.effect(
+      "find the new way to an account whose manager no longer reaches it, and read through it",
+      () =>
+        Effect.gen(function* rerouted() {
+          const api = yield* onGoogle({
+            ...accounts,
+            days: [
+              day(yield* dayAgo(1), {
+                customerId: "3333333333",
+                campaignId: "931",
+              }),
+            ],
+          });
+
+          const owner = yield* freshOwner;
+          const sync = yield* SyncAccount;
+          const store = yield* AccountStore;
+          const { account } = yield* connectedGoogle(owner, "3333333333");
+
+          assert.strictEqual(yield* sync.run(account.id), "synced");
+
+          // The agency hands the account over: the person now uses it
+          // directly, and the manager no longer holds it.
+          api.setClients("2222222222", []);
+          api.setAccessible(["1111111111", "2222222222", "3333333333"]);
+
+          assert.strictEqual(yield* sync.run(account.id), "synced");
+
+          const read = yield* store.get(account.id);
+
+          assert.deepStrictEqual(
+            read.pipe(
+              Option.map(({ account: now }) => [
+                Option.getOrNull(now.reachedThrough),
+                Option.getOrNull(now.unreachableSince),
+              ])
+            ),
+            Option.some([null, null])
+          );
+        })
+    );
+
+    it.effect(
+      "say an account no way reaches any more is unreachable, and keep its days",
+      () =>
+        Effect.gen(function* unreachable() {
+          const api = yield* onGoogle({
+            ...accounts,
+            days: [
+              day(yield* dayAgo(1), {
+                customerId: "3333333333",
+                campaignId: "931",
+              }),
+            ],
+          });
+
+          const owner = yield* freshOwner;
+          const sync = yield* SyncAccount;
+          const store = yield* AccountStore;
+          const connections = yield* AdConnections;
+          const { account } = yield* connectedGoogle(owner, "3333333333");
+
+          yield* sync.run(account.id);
+          api.setClients("2222222222", []);
+
+          assert.strictEqual(yield* sync.run(account.id), "postponed");
+
+          const read = yield* store.get(account.id);
+
+          assert.isTrue(
+            read.pipe(
+              Option.exists(({ account: now }) =>
+                Option.isSome(now.unreachableSince)
+              )
+            )
+          );
+          assert.strictEqual(yield* campaignDaysOf(owner.workspaceId), 1);
+
+          const [connection] = yield* connections.list(owner);
+
+          assert.strictEqual(connection?.grant.access, "working");
+        })
+    );
+
+    it.effect("take the way Google lists to an account at each listing", () =>
+      Effect.gen(function* listing() {
+        const api = yield* onGoogle(accounts);
+        const owner = yield* freshOwner;
+        const store = yield* AccountStore;
+        const connections = yield* AdConnections;
+        const { account, connection } = yield* connectedGoogle(
+          owner,
+          "3333333333"
+        );
+
+        api.setClients("2222222222", []);
+        api.setAccessible(["1111111111", "2222222222", "3333333333"]);
+        yield* connections.reachable(owner, connection.grant.id);
+
+        const read = yield* store.get(account.id);
+
+        assert.isTrue(
+          read.pipe(
+            Option.exists(({ account: now }) =>
+              Option.isNone(now.reachedThrough)
+            )
+          )
+        );
+      })
+    );
+
     it.effect("mark a refused sign-in once, and tell once", () =>
       Effect.gen(function* refused() {
         const api = yield* onGoogle(accounts);

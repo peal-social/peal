@@ -307,7 +307,7 @@ export const fakeGoogleAdsApi = (options: FakeGoogleAdsOptions = {}) =>
       (options.customers ?? []).map((customer) => [customer.id, customer])
     );
 
-    const accessible = options.accessible ?? [...customers.keys()];
+    let accessible = options.accessible ?? [...customers.keys()];
     const scripts: GoogleScripted[] = [];
     const pageSize = options.pageSize ?? 10_000;
     const days: FakeCampaignDay[] = [...(options.days ?? [])];
@@ -551,6 +551,18 @@ export const fakeGoogleAdsApi = (options: FakeGoogleAdsOptions = {}) =>
         days.splice(0, days.length, ...days.filter(keep));
       },
       endpoints,
+      /** Changes the customers the person is a direct user of. */
+      setAccessible: (ids: readonly string[]) => {
+        accessible = [...ids];
+      },
+      /** Changes the clients a manager manages directly. */
+      setClients: (managerId: string, clients: readonly string[]) => {
+        const manager = customers.get(managerId);
+
+        if (manager !== undefined) {
+          customers.set(managerId, { ...manager, clients: [...clients] });
+        }
+      },
       /** How many refreshes the token endpoint answered. */
       refreshes: () => refreshTokens,
       requests: server.requests,

@@ -10,6 +10,7 @@ CREATE TABLE "ads"."campaign_days" (
 );
 --> statement-breakpoint
 ALTER TABLE "ads"."accounts" ADD COLUMN "reached_through" text;--> statement-breakpoint
+ALTER TABLE "ads"."accounts" ADD COLUMN "unreachable_since" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "ads"."campaigns" ADD COLUMN "kind" text;--> statement-breakpoint
 ALTER TABLE "ads"."sign_in_attempts" ADD COLUMN "code_verifier" text;--> statement-breakpoint
 CREATE INDEX "campaign_days_workspace_day" ON "ads"."campaign_days" ("workspace_id","day");--> statement-breakpoint

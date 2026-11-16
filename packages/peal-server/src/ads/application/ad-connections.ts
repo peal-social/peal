@@ -16,6 +16,7 @@ import type { AdNetwork } from "#ads/domain/ad-network.ts";
 import type { AdsMode } from "#ads/domain/ads-mode.ts";
 import { AdAccountIdSchema, AdGrantIdSchema } from "#ads/domain/ids.ts";
 import type { AdAccountId } from "#ads/domain/ids.ts";
+import { traitsOf } from "#ads/domain/network-traits.ts";
 import { PersonRequired } from "#ads/domain/person-required.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
@@ -277,6 +278,25 @@ export class AdConnections extends Context.Service<
             );
           });
 
+      // What the sign-in reaches now, the way to each taken for the
+      // workspace's accounts it already connects: a manager that let one
+      // go, or direct access given, changes how it is read.
+      const listed = Effect.fn("AdConnections.listed")(function* listed(
+        client: AdNetworkClient,
+        grant: AdGrant,
+        token: Redacted.Redacted
+      ) {
+        const reached = yield* client
+          .accounts(token)
+          .pipe(Effect.catch(readFailed(grant)));
+
+        if (traitsOf(grant.network).readsThroughManagers) {
+          yield* accounts.setWays(grant.workspaceId, grant.network, reached);
+        }
+
+        return reached;
+      });
+
       const offered = Effect.fn("AdConnections.offered")(function* offered(
         grant: AdGrant,
         facts: readonly AdAccountFacts[]
@@ -502,9 +522,7 @@ export class AdConnections extends Context.Service<
               sealing
             );
 
-            const reached = yield* client
-              .accounts(issued.token)
-              .pipe(Effect.catch(readFailed(grant)));
+            const reached = yield* listed(client, grant, issued.token);
 
             return {
               accounts: yield* offered(grant, reached),
@@ -526,10 +544,8 @@ export class AdConnections extends Context.Service<
 
             // What the network says now, never what the request says: an
             // account the sign-in does not reach is not found.
-            const reached = (yield* client
-              .accounts(token)
-              .pipe(Effect.catch(readFailed(grant)))).filter((facts) =>
-              wanted.has(facts.externalId)
+            const reached = (yield* listed(client, grant, token)).filter(
+              (facts) => wanted.has(facts.externalId)
             );
 
             if (
@@ -588,6 +604,7 @@ export class AdConnections extends Context.Service<
                       status: facts.status,
                       syncedAt: Option.none(),
                       timeZone: Option.getOrThrow(facts.timeZone),
+                      unreachableSince: Option.none(),
                       workspaceId: actor.workspaceId,
                     })
                   );
@@ -628,9 +645,7 @@ export class AdConnections extends Context.Service<
               connectionId
             );
 
-            const reached = yield* client
-              .accounts(token)
-              .pipe(Effect.catch(readFailed(grant)));
+            const reached = yield* listed(client, grant, token);
 
             return yield* offered(grant, reached);
           }
