@@ -63,7 +63,9 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   `social.peal.config-hash` label reads, so exactly the services whose
   files changed are recreated, on a roll-back too, and a second release of
   the same commit changes nothing (`tests/test_release_config.py`, with
-  Docker).
+  Docker). It runs from a copy on the server with the command module:
+  over SSH, `ansible.builtin.script` runs in a pseudo-terminal, which
+  mixes stderr into the stdout a task parses.
 - `peal_preflight` checks the `PEAL_POSTGRES_*` memory settings in
   `peal_settings` (a whole number with `kB`, `MB`, `GB` or `TB`; a number
   for the page cost) before `release.yml` stops anything: Postgres stops at

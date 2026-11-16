@@ -326,21 +326,41 @@
 # release carries a hash of them as a label (`social.peal.config-hash`),
 # from release.env: Compose recreates exactly the services whose files
 # changed, on a roll-back too, and a second release of the same commit
-# changes nothing (tests/test_release_config.py). Compose reads the env
-# files peal-compose names but release.env, which this writes; the script
-# prints the hashes alone, never a setting. Read-only, so it runs in check
-# mode too, once the release folder is there (before, release.env's diff
-# lists no hash).
+# changes nothing (tests/test_release_config.py).
+- name: Install the script that hashes the release's mounted files
+  ansible.builtin.copy:
+    src: config_hashes.py
+    dest: "{{ peal_root }}/config-hashes.py"
+    owner: root
+    group: root
+    mode: "0644"
+  register: peal_release_hash_script
+
+# Compose reads the env files and profiles peal-compose names, but
+# release.env, which this writes. The script prints the hashes alone, and
+# on a failure words of its own and the names of missing settings, never
+# Compose's text, which may quote a value. Run with the command module,
+# which keeps stderr apart from the JSON: the script module runs in a
+# pseudo-terminal over SSH, which mixes them. Read-only, so it runs in check
+# mode too, once the release folder and the script are there.
 - name: Hash the files each service mounts from the release
-  ansible.builtin.script:
-    cmd: >-
-      config_hashes.py {{ peal_release_dir }}
-      {{ peal_root }}/host.env {{ peal_root }}/credentials.env {{ peal_root }}/secrets.env
-    executable: python3
+  ansible.builtin.command:
+    argv: >-
+      {{ ['python3', peal_root ~ '/config-hashes.py', peal_release_dir]
+         + (['--env-file'] | product([peal_root ~ '/host.env', peal_root ~ '/credentials.env', peal_root ~ '/secrets.env']) | flatten)
+         + (['--profile'] | product(peal_compose_profiles) | flatten) }}
   register: peal_release_config_hashes
   changed_when: false
   check_mode: false
-  when: not (ansible_check_mode and peal_release_files is changed)
+  when: not (ansible_check_mode and (peal_release_files is changed or peal_release_hash_script is changed))
+
+- name: Report the hashes check mode could not read
+  ansible.builtin.debug:
+    msg: >-
+      Check mode has not uploaded the release to {{ peal_release_dir }}, so
+      it cannot hash the files its services mount: release.env's diff lists
+      no hash, and the release writes them.
+  when: peal_release_config_hashes is skipped
 
 - name: Name the release that runs
   ansible.builtin.copy:

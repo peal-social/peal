@@ -32,7 +32,9 @@ SCRIPT = INFRA / "roles" / "peal_release" / "files" / "config_hashes.py"
 DOCKER = INFRA.parent.parent / "peal-docker"
 LABEL = "social.peal.config-hash"
 
+INSTALL = "Install the script that hashes the release's mounted files"
 HASH = "Hash the files each service mounts from the release"
+REPORT = "Report the hashes check mode could not read"
 NAME = "Name the release that runs"
 POINT = "Point current at the release"
 START = "Start the rest of the stack"
@@ -202,10 +204,39 @@ def test_services_that_mount_none_carry_no_hash() -> None:
 def test_the_hashes_are_read_after_the_upload_and_before_release_env() -> None:
     names = [found["name"] for found in yaml.safe_load((INFRA / "roles" / "peal_release" / "tasks" / "main.yml").read_text())]
 
-    assert names.index("Upload the stack's files") < names.index(HASH) < names.index(NAME)
+    assert names.index("Upload the stack's files") < names.index(INSTALL) < names.index(HASH) < names.index(REPORT) < names.index(NAME)
 
 
-# --- With Docker: the release's own tasks, on a stack of three services.
+def test_the_hashes_are_read_with_the_command_module() -> None:
+    """Over SSH, the script module runs in a pseudo-terminal, which has no
+    stderr: a warning there would land in the JSON the release reads. The
+    command module keeps the two apart."""
+    found = task("peal_release", HASH)
+
+    assert "ansible.builtin.command" in found
+    assert "ansible.builtin.script" not in found
+
+
+def test_the_hashes_are_read_for_the_profiles_the_server_runs() -> None:
+    argv = task("peal_release", HASH)["ansible.builtin.command"]["argv"]
+
+    assert "peal_compose_profiles" in argv
+    assert "'*'" not in argv
+
+
+# --- With Docker: the script on Compose, and the release's own tasks, on a
+# stack of three services.
+
+
+def _hash(release: Path | str, env_files: list[Path], *options: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    """Runs the script as the release does."""
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), str(release), *[part for env in env_files for part in ("--env-file", str(env))], *options],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=cwd,
+    )
 
 
 def _docker_runs() -> bool:
@@ -258,7 +289,14 @@ STACK = {
 }
 
 
-def _play(folder: Path, names: list[str], **settings: Any) -> subprocess.CompletedProcess[str]:
+def _play(
+    folder: Path,
+    names: list[str],
+    *,
+    check: bool = False,
+    environment: dict[str, str] | None = None,
+    **settings: Any,
+) -> subprocess.CompletedProcess[str]:
     """Runs the role's tasks as play_tasks does, as this user: without the
     files' owner and group (root on a server), and with the role's script
     where a play finds it, in files/ beside it."""
@@ -277,12 +315,19 @@ def _play(folder: Path, names: list[str], **settings: Any) -> subprocess.Complet
         "gather_facts": False,
         "connection": "local",
         "vars": {"ansible_python_interpreter": "{{ ansible_playbook_python }}", **settings},
+        "environment": environment or {},
         "tasks": tasks,
     }
     playbook = folder / "tasks.yml"
     playbook.write_text(yaml.safe_dump([play], sort_keys=False))
     return subprocess.run(
-        [str(Path(sys.executable).parent / "ansible-playbook"), "--inventory", committed_inventory(), str(playbook)],
+        [
+            str(Path(sys.executable).parent / "ansible-playbook"),
+            "--inventory",
+            committed_inventory(),
+            str(playbook),
+            *(["--check"] if check else []),
+        ],
         cwd=INFRA,
         check=False,
         capture_output=True,
@@ -298,7 +343,13 @@ class Server:
     root: Path
     project: str
 
-    def release(self, commit: str, files: dict[str, str]) -> dict[str, int]:
+    def release(
+        self,
+        commit: str,
+        files: dict[str, str],
+        *,
+        environment: dict[str, str] | None = None,
+    ) -> dict[str, int]:
         """Uploads a release folder as release.yml does, then runs the
         release's tasks from the hashes to the stack's start."""
         folder = self.root / "releases" / commit
@@ -306,16 +357,27 @@ class Server:
             _release(folder, files)
         ran = _play(
             self.root.parent,
-            [HASH, NAME, POINT, START],
-            peal_root=str(self.root),
-            peal_compose_bin=str(self.root / "peal-compose"),
-            peal_release_dir=str(folder),
-            peal_release_tag=commit,
-            peal_release_postgres_tag="synthetic",
-            peal_release_files={"changed": True},
+            [INSTALL, HASH, REPORT, NAME, POINT, START],
+            environment=environment,
+            **self.settings(folder, commit),
         )
         assert ran.returncode == 0, ran.stdout + ran.stderr
         return recap_of(ran)
+
+    def settings(self, folder: Path, commit: str) -> dict[str, Any]:
+        return {
+            "peal_root": str(self.root),
+            "peal_compose_bin": str(self.root / "peal-compose"),
+            "peal_compose_profiles": [],
+            "peal_release_dir": str(folder),
+            "peal_release_tag": commit,
+            "peal_release_postgres_tag": "synthetic",
+            "peal_release_files": {"changed": True},
+        }
+
+    @property
+    def env_files(self) -> list[Path]:
+        return [self.root / name for name in ("host.env", "credentials.env", "secrets.env")]
 
     def container(self, service: str) -> str:
         return subprocess.run(
@@ -419,29 +481,135 @@ def test_a_roll_back_restores_the_older_rules(server: Server) -> None:
 
 
 @docker
-def test_a_file_host_env_names_counts_as_the_service_s_own(server: Server) -> None:
-    server.release("aaaaaaaaaaaa", STACK)
-    before = server.containers()
+def test_a_changed_file_host_env_names_recreates_its_service(server: Server) -> None:
+    """host.env names the same file in both releases, so the mount's source
+    reads the same: only its hash tells Compose the file changed."""
     with (server.root / "host.env").open("a") as host_env:
         host_env.write("PEAL_GRAFANA_CONTACT_POINTS='./config/grafana/alerting/telegram.yaml'\n")
-
     server.release("aaaaaaaaaaaa", STACK)
+    before = server.containers()
+
+    changed = "apiVersion: 1\ncontactPoints: [{name: synthetic-changed}]\n"
+    server.release("bbbbbbbbbbbb", {**STACK, "config/grafana/alerting/telegram.yaml": changed})
 
     assert server.container("grafana") != before["grafana"]
     assert server.container("loki") == before["loki"]
-    assert "contactPoints" in server.read("grafana", "/etc/grafana/provisioning/alerting/contact-points.yaml")
+    assert "synthetic-changed" in server.read("grafana", "/etc/grafana/provisioning/alerting/contact-points.yaml")
+
+
+@docker
+def test_noise_on_stderr_leaves_the_hashes_readable(server: Server) -> None:
+    """Python's verbose imports, on stderr, stand for a warning there."""
+    server.release("aaaaaaaaaaaa", STACK, environment={"PYTHONVERBOSE": "1"})
+
+    release_env = (server.root / "release.env").read_text()
+
+    assert re.search(r"^PEAL_GRAFANA_CONFIG_HASH=[0-9a-f]{16}$", release_env, re.MULTILINE), release_env
+
+
+@docker
+def test_check_mode_says_why_release_env_lists_no_hash(server: Server) -> None:
+    """Before the upload, check mode has no release folder to hash."""
+    folder = server.root / "releases" / "aaaaaaaaaaaa"
+
+    ran = _play(server.root.parent, [INSTALL, HASH, REPORT, NAME], check=True, **server.settings(folder, "aaaaaaaaaaaa"))
+
+    assert ran.returncode == 0, ran.stdout + ran.stderr
+    assert "Check mode has not uploaded the release" in ran.stdout
 
 
 @docker
 def test_the_script_prints_hashes_and_no_setting(server: Server) -> None:
     folder = _release(server.root / "releases" / "aaaaaaaaaaaa", STACK)
 
-    ran = subprocess.run(
-        [sys.executable, str(SCRIPT), str(folder), *(str(server.root / name) for name in ("host.env", "credentials.env", "secrets.env"))],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+    ran = _hash(folder, server.env_files)
 
+    assert ran.returncode == 0, ran.stderr
     assert sorted(json.loads(ran.stdout)) == ["PEAL_GRAFANA_CONFIG_HASH", "PEAL_LOKI_CONFIG_HASH"]
     assert "synthetic-password" not in ran.stdout + ran.stderr
+
+
+@docker
+def test_compose_s_error_text_is_never_printed(server: Server) -> None:
+    """Compose quotes a malformed value in its error: the script says what
+    failed in words of its own."""
+    folder = _release(server.root / "releases" / "aaaaaaaaaaaa", STACK)
+    (server.root / "secrets.env").write_text('POSTGRES_PASSWORD="synthetic${leak-me"\n')
+
+    ran = _hash(folder, server.env_files)
+
+    assert ran.returncode != 0
+    assert "leak-me" not in ran.stdout + ran.stderr
+    assert "docker compose config failed" in ran.stderr
+
+
+@docker
+def test_a_missing_setting_is_named(server: Server) -> None:
+    folder = _release(server.root / "releases" / "aaaaaaaaaaaa", STACK)
+    (server.root / "secrets.env").write_text("")
+
+    ran = _hash(folder, server.env_files)
+
+    assert ran.returncode != 0
+    assert "POSTGRES_PASSWORD" in ran.stderr
+
+
+@docker
+def test_a_relative_release_folder_hashes_the_same(server: Server) -> None:
+    folder = _release(server.root / "releases" / "aaaaaaaaaaaa", STACK)
+
+    absolute = _hash(folder, server.env_files)
+    relative = _hash(Path("releases") / "aaaaaaaaaaaa", server.env_files, cwd=server.root)
+
+    assert relative.returncode == 0, relative.stderr
+    assert json.loads(relative.stdout) == json.loads(absolute.stdout)
+
+
+@docker
+def test_a_stack_with_no_mount_of_the_release_fails(server: Server) -> None:
+    """No hash at all would leave every label empty, as before the fix."""
+    compose = COMPOSE.split("  loki:", 1)[0]
+    folder = _release(server.root / "releases" / "aaaaaaaaaaaa", {"compose.production.yaml": compose})
+
+    ran = _hash(folder, server.env_files)
+
+    assert ran.returncode != 0
+    assert ran.stdout == ""
+    assert "no service mounts files of the release folder" in ran.stderr
+
+
+@docker
+def test_only_the_profiles_given_are_read(server: Server) -> None:
+    """The services the server runs, as peal-compose names its profiles: a
+    service of another profile gets no hash."""
+    compose = COMPOSE + "  docs:\n    <<: *service\n    profiles: [docs]\n    volumes:\n      - ./config/docs.yaml:/etc/docs.yaml:ro\n"
+    folder = _release(server.root / "releases" / "aaaaaaaaaaaa", {**STACK, "compose.production.yaml": compose, "config/docs.yaml": "{}\n"})
+
+    without = _hash(folder, server.env_files)
+    with_docs = _hash(folder, server.env_files, "--profile", "docs")
+
+    assert without.returncode == 0, without.stderr
+    assert "PEAL_DOCS_CONFIG_HASH" not in json.loads(without.stdout)
+    assert "PEAL_DOCS_CONFIG_HASH" in json.loads(with_docs.stdout)
+
+
+@docker
+def test_the_production_stack_hashes_its_telemetry(tmp_path: Path) -> None:
+    """compose.production.yaml itself, with synthetic settings and the
+    privacy declaration outside the release, as on Peal's servers."""
+    release = tmp_path / "release"
+    shutil.copytree(DOCKER, release, ignore=shutil.ignore_patterns("node_modules", "test"))
+    required = sorted(set(re.findall(r"\$\{([A-Z0-9_]+):\?", (DOCKER / "compose.production.yaml").read_text())))
+    env = tmp_path / "synthetic.env"
+    env.write_text("".join(f"{name}=synthetic\n" for name in required) + "PEAL_PRIVACY_DECLARATION=/srv/peal/privacy-declaration.json\n")
+
+    ran = _hash(release, [env], "--profile", "static")
+
+    assert ran.returncode == 0, ran.stderr
+    assert sorted(json.loads(ran.stdout)) == [
+        "PEAL_GRAFANA_CONFIG_HASH",
+        "PEAL_LOKI_CONFIG_HASH",
+        "PEAL_OTEL_COLLECTOR_CONFIG_HASH",
+        "PEAL_PROMETHEUS_CONFIG_HASH",
+        "PEAL_TEMPO_CONFIG_HASH",
+    ]
