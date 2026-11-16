@@ -10,6 +10,7 @@ export const InboxOutgoingMessageReason = {
         NotSent: "notSent",
         NoResponse: "noResponse",
         Interrupted: "interrupted",
-        AdapterFailure: "adapterFailure"
+        AdapterFailure: "adapterFailure",
+        WindowClosed: "windowClosed"
     } as const;
 export type InboxOutgoingMessageReason = typeof InboxOutgoingMessageReason[keyof typeof InboxOutgoingMessageReason];

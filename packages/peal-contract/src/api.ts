@@ -2071,7 +2071,12 @@ export { InboxReviewThreadNotFound } from "./inbox-review-thread-not-found.ts";
 
 export { InboxActionFailed } from "./inbox-action-failed.ts";
 
-export { InboxActionUnavailable } from "./inbox-action-unavailable.ts";
+export {
+  InboxActionUnavailable,
+  InboxActionUnavailableReasonSchema,
+} from "./inbox-action-unavailable.ts";
+
+export type { InboxActionUnavailableReason } from "./inbox-action-unavailable.ts";
 
 export { InboxCommentGone } from "./inbox-comment-gone.ts";
 
