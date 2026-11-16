@@ -9,6 +9,8 @@ module Peal
 
       field :limits, -> { Internal::Types::Array[Peal::Types::TextLimit] }, optional: false, nullable: false
 
+      field :limits_with_media, -> { Internal::Types::Array[Peal::Types::TextLimit] }, optional: true, nullable: false, api_name: "limitsWithMedia"
+
       field :max_hashtags, -> { Integer }, optional: false, nullable: true, api_name: "maxHashtags"
 
       field :max_links, -> { Integer }, optional: false, nullable: true, api_name: "maxLinks"

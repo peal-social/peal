@@ -9,21 +9,25 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public final class Platform {
     public static final Platform BLUESKY = new Platform(Value.BLUESKY, "bluesky");
 
-    public static final Platform INSTAGRAM = new Platform(Value.INSTAGRAM, "instagram");
-
     public static final Platform FACEBOOK = new Platform(Value.FACEBOOK, "facebook");
 
     public static final Platform YOUTUBE = new Platform(Value.YOUTUBE, "youtube");
 
+    public static final Platform DISCORD = new Platform(Value.DISCORD, "discord");
+
     public static final Platform GOOGLE_BUSINESS = new Platform(Value.GOOGLE_BUSINESS, "googleBusiness");
+
+    public static final Platform TELEGRAM = new Platform(Value.TELEGRAM, "telegram");
+
+    public static final Platform X = new Platform(Value.X, "x");
+
+    public static final Platform INSTAGRAM = new Platform(Value.INSTAGRAM, "instagram");
 
     public static final Platform MASTODON = new Platform(Value.MASTODON, "mastodon");
 
     public static final Platform THREADS = new Platform(Value.THREADS, "threads");
 
     public static final Platform LINKEDIN = new Platform(Value.LINKEDIN, "linkedin");
-
-    public static final Platform X = new Platform(Value.X, "x");
 
     public static final Platform PINTEREST = new Platform(Value.PINTEREST, "pinterest");
 
@@ -62,22 +66,26 @@ public final class Platform {
         switch (value) {
             case BLUESKY:
                 return visitor.visitBluesky();
-            case INSTAGRAM:
-                return visitor.visitInstagram();
             case FACEBOOK:
                 return visitor.visitFacebook();
             case YOUTUBE:
                 return visitor.visitYoutube();
+            case DISCORD:
+                return visitor.visitDiscord();
             case GOOGLE_BUSINESS:
                 return visitor.visitGoogleBusiness();
+            case TELEGRAM:
+                return visitor.visitTelegram();
+            case X:
+                return visitor.visitX();
+            case INSTAGRAM:
+                return visitor.visitInstagram();
             case MASTODON:
                 return visitor.visitMastodon();
             case THREADS:
                 return visitor.visitThreads();
             case LINKEDIN:
                 return visitor.visitLinkedin();
-            case X:
-                return visitor.visitX();
             case PINTEREST:
                 return visitor.visitPinterest();
             case TIKTOK:
@@ -93,22 +101,26 @@ public final class Platform {
         switch (value) {
             case "bluesky":
                 return BLUESKY;
-            case "instagram":
-                return INSTAGRAM;
             case "facebook":
                 return FACEBOOK;
             case "youtube":
                 return YOUTUBE;
+            case "discord":
+                return DISCORD;
             case "googleBusiness":
                 return GOOGLE_BUSINESS;
+            case "telegram":
+                return TELEGRAM;
+            case "x":
+                return X;
+            case "instagram":
+                return INSTAGRAM;
             case "mastodon":
                 return MASTODON;
             case "threads":
                 return THREADS;
             case "linkedin":
                 return LINKEDIN;
-            case "x":
-                return X;
             case "pinterest":
                 return PINTEREST;
             case "tiktok":
@@ -141,6 +153,10 @@ public final class Platform {
 
         GOOGLE_BUSINESS,
 
+        DISCORD,
+
+        TELEGRAM,
+
         UNKNOWN
     }
 
@@ -166,6 +182,10 @@ public final class Platform {
         T visitPinterest();
 
         T visitGoogleBusiness();
+
+        T visitDiscord();
+
+        T visitTelegram();
 
         T visitUnknown(String unknownType);
     }

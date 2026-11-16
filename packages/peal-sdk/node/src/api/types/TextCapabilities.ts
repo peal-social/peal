@@ -5,6 +5,7 @@ import * as Peal from "../index.js";
 export interface TextCapabilities {
     forbiddenCharacters: string[];
     limits: Peal.TextLimit[];
+    limitsWithMedia?: Peal.TextLimit[] | undefined;
     maxHashtags: number | null;
     maxLinks: number | null;
     maxMentions: number | null;

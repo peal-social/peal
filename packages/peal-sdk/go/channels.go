@@ -346,6 +346,47 @@ func (c *ConnectChannel) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	connectChatChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
+)
+
+type ConnectChatChannelsRequest struct {
+	WorkspaceID string       `json:"-" url:"-"`
+	Body        *ConnectChat `json:"-" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (c *ConnectChatChannelsRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectChatChannelsRequest) SetWorkspaceID(workspaceID string) {
+	c.WorkspaceID = workspaceID
+	c.require(connectChatChannelsRequestFieldWorkspaceID)
+}
+
+func (c *ConnectChatChannelsRequest) UnmarshalJSON(data []byte) error {
+	body := new(ConnectChat)
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	c.Body = body
+	return nil
+}
+
+func (c *ConnectChatChannelsRequest) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.Body)
+}
+
+var (
 	connectSiteFieldWorkspaceID         = big.NewInt(1 << 0)
 	connectSiteFieldAddress             = big.NewInt(1 << 1)
 	connectSiteFieldApplicationPassword = big.NewInt(1 << 2)
@@ -1217,6 +1258,29 @@ func (c ChannelStatusName) Ptr() *ChannelStatusName {
 	return &c
 }
 
+// A chat a channel posts to, connected with a secret.
+type ChatPlatform string
+
+const (
+	ChatPlatformDiscord  ChatPlatform = "discord"
+	ChatPlatformTelegram ChatPlatform = "telegram"
+)
+
+func NewChatPlatformFromString(s string) (ChatPlatform, error) {
+	switch s {
+	case "discord":
+		return ChatPlatformDiscord, nil
+	case "telegram":
+		return ChatPlatformTelegram, nil
+	}
+	var t ChatPlatform
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (c ChatPlatform) Ptr() *ChatPlatform {
+	return &c
+}
+
 var (
 	choosableAccountFieldAccountID   = big.NewInt(1 << 0)
 	choosableAccountFieldAvatarURL   = big.NewInt(1 << 1)
@@ -1366,6 +1430,234 @@ func (c *ChoosableAccount) MarshalJSON() ([]byte, error) {
 }
 
 func (c *ChoosableAccount) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	if len(c.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(c); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", c)
+}
+
+type ConnectChat struct {
+	Platform string
+	Discord  *ConnectDiscordChat
+	Telegram *ConnectTelegramChat
+
+	rawJSON json.RawMessage
+}
+
+func (c *ConnectChat) GetPlatform() string {
+	if c == nil {
+		return ""
+	}
+	return c.Platform
+}
+
+func (c *ConnectChat) GetDiscord() *ConnectDiscordChat {
+	if c == nil {
+		return nil
+	}
+	return c.Discord
+}
+
+func (c *ConnectChat) GetTelegram() *ConnectTelegramChat {
+	if c == nil {
+		return nil
+	}
+	return c.Telegram
+}
+
+func (c *ConnectChat) UnmarshalJSON(data []byte) error {
+	var unmarshaler struct {
+		Platform string `json:"platform"`
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	c.Platform = unmarshaler.Platform
+	if unmarshaler.Platform == "" {
+		return fmt.Errorf("%T did not include discriminant platform", c)
+	}
+	switch unmarshaler.Platform {
+	case "discord":
+		value := new(ConnectDiscordChat)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		c.Discord = value
+	case "telegram":
+		value := new(ConnectTelegramChat)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		c.Telegram = value
+	}
+	c.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (c ConnectChat) MarshalJSON() ([]byte, error) {
+	if err := c.validate(); err != nil {
+		return nil, err
+	}
+	if c.Discord != nil {
+		return internal.MarshalJSONWithExtraProperty(c.Discord, "platform", "discord")
+	}
+	if c.Telegram != nil {
+		return internal.MarshalJSONWithExtraProperty(c.Telegram, "platform", "telegram")
+	}
+	if len(c.rawJSON) > 0 {
+		return c.rawJSON, nil
+	}
+	return nil, fmt.Errorf("type %T does not define a non-empty union type", c)
+}
+
+type ConnectChatVisitor interface {
+	VisitDiscord(*ConnectDiscordChat) error
+	VisitTelegram(*ConnectTelegramChat) error
+}
+
+func (c *ConnectChat) Accept(visitor ConnectChatVisitor) error {
+	if c.Discord != nil {
+		return visitor.VisitDiscord(c.Discord)
+	}
+	if c.Telegram != nil {
+		return visitor.VisitTelegram(c.Telegram)
+	}
+	return fmt.Errorf("type %T does not define a non-empty union type", c)
+}
+
+func (c *ConnectChat) validate() error {
+	if c == nil {
+		return fmt.Errorf("type %T is nil", c)
+	}
+	var fields []string
+	if c.Discord != nil {
+		fields = append(fields, "discord")
+	}
+	if c.Telegram != nil {
+		fields = append(fields, "telegram")
+	}
+	if len(fields) == 0 {
+		if c.Platform != "" {
+			if len(c.rawJSON) > 0 {
+				return nil
+			}
+			return fmt.Errorf("type %T defines a discriminant set to %q but the field is not set", c, c.Platform)
+		}
+		return fmt.Errorf("type %T is empty", c)
+	}
+	if len(fields) > 1 {
+		return fmt.Errorf("type %T defines values for %s, but only one value is allowed", c, fields)
+	}
+	if c.Platform != "" {
+		field := fields[0]
+		if c.Platform != field {
+			return fmt.Errorf(
+				"type %T defines a discriminant set to %q, but it does not match the %T field; either remove or update the discriminant to match",
+				c,
+				c.Platform,
+				c,
+			)
+		}
+	}
+	return nil
+}
+
+var (
+	connectDiscordChatFieldChannelID  = big.NewInt(1 << 0)
+	connectDiscordChatFieldWebhookURL = big.NewInt(1 << 1)
+)
+
+type ConnectDiscordChat struct {
+	ChannelID  *string `json:"channelId,omitempty" url:"channelId,omitempty"`
+	WebhookURL string  `json:"webhookUrl" url:"webhookUrl"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (c *ConnectDiscordChat) GetChannelID() *string {
+	if c == nil {
+		return nil
+	}
+	return c.ChannelID
+}
+
+func (c *ConnectDiscordChat) GetWebhookURL() string {
+	if c == nil {
+		return ""
+	}
+	return c.WebhookURL
+}
+
+func (c *ConnectDiscordChat) GetExtraProperties() map[string]interface{} {
+	if c == nil {
+		return nil
+	}
+	return c.extraProperties
+}
+
+func (c *ConnectDiscordChat) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetChannelID sets the ChannelID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectDiscordChat) SetChannelID(channelID *string) {
+	c.ChannelID = channelID
+	c.require(connectDiscordChatFieldChannelID)
+}
+
+// SetWebhookURL sets the WebhookURL field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectDiscordChat) SetWebhookURL(webhookURL string) {
+	c.WebhookURL = webhookURL
+	c.require(connectDiscordChatFieldWebhookURL)
+}
+
+func (c *ConnectDiscordChat) UnmarshalJSON(data []byte) error {
+	type unmarshaler ConnectDiscordChat
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*c = ConnectDiscordChat(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *c)
+	if err != nil {
+		return err
+	}
+	c.extraProperties = extraProperties
+	c.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (c *ConnectDiscordChat) MarshalJSON() ([]byte, error) {
+	type embed ConnectDiscordChat
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (c *ConnectDiscordChat) String() string {
 	if c == nil {
 		return "<nil>"
 	}
@@ -1711,16 +2003,136 @@ func (c *ConnectOutcomeConnected) String() string {
 }
 
 var (
+	connectTelegramChatFieldBotToken  = big.NewInt(1 << 0)
+	connectTelegramChatFieldChat      = big.NewInt(1 << 1)
+	connectTelegramChatFieldChannelID = big.NewInt(1 << 2)
+)
+
+type ConnectTelegramChat struct {
+	BotToken  string  `json:"botToken" url:"botToken"`
+	Chat      string  `json:"chat" url:"chat"`
+	ChannelID *string `json:"channelId,omitempty" url:"channelId,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (c *ConnectTelegramChat) GetBotToken() string {
+	if c == nil {
+		return ""
+	}
+	return c.BotToken
+}
+
+func (c *ConnectTelegramChat) GetChat() string {
+	if c == nil {
+		return ""
+	}
+	return c.Chat
+}
+
+func (c *ConnectTelegramChat) GetChannelID() *string {
+	if c == nil {
+		return nil
+	}
+	return c.ChannelID
+}
+
+func (c *ConnectTelegramChat) GetExtraProperties() map[string]interface{} {
+	if c == nil {
+		return nil
+	}
+	return c.extraProperties
+}
+
+func (c *ConnectTelegramChat) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetBotToken sets the BotToken field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectTelegramChat) SetBotToken(botToken string) {
+	c.BotToken = botToken
+	c.require(connectTelegramChatFieldBotToken)
+}
+
+// SetChat sets the Chat field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectTelegramChat) SetChat(chat string) {
+	c.Chat = chat
+	c.require(connectTelegramChatFieldChat)
+}
+
+// SetChannelID sets the ChannelID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectTelegramChat) SetChannelID(channelID *string) {
+	c.ChannelID = channelID
+	c.require(connectTelegramChatFieldChannelID)
+}
+
+func (c *ConnectTelegramChat) UnmarshalJSON(data []byte) error {
+	type unmarshaler ConnectTelegramChat
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*c = ConnectTelegramChat(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *c)
+	if err != nil {
+		return err
+	}
+	c.extraProperties = extraProperties
+	c.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (c *ConnectTelegramChat) MarshalJSON() ([]byte, error) {
+	type embed ConnectTelegramChat
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (c *ConnectTelegramChat) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	if len(c.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(c); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", c)
+}
+
+var (
 	connectablePlatformsFieldInstagramConnections = big.NewInt(1 << 0)
 	connectablePlatformsFieldLinkedinConnections  = big.NewInt(1 << 1)
 	connectablePlatformsFieldPlatforms            = big.NewInt(1 << 2)
-	connectablePlatformsFieldSites                = big.NewInt(1 << 3)
+	connectablePlatformsFieldChats                = big.NewInt(1 << 3)
+	connectablePlatformsFieldSites                = big.NewInt(1 << 4)
 )
 
 type ConnectablePlatforms struct {
 	InstagramConnections []InstagramConnection `json:"instagramConnections" url:"instagramConnections"`
 	LinkedinConnections  []LinkedInConnection  `json:"linkedinConnections" url:"linkedinConnections"`
 	Platforms            []Platform            `json:"platforms" url:"platforms"`
+	Chats                []ChatPlatform        `json:"chats,omitempty" url:"chats,omitempty"`
 	Sites                []SitePlatform        `json:"sites,omitempty" url:"sites,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -1749,6 +2161,13 @@ func (c *ConnectablePlatforms) GetPlatforms() []Platform {
 		return nil
 	}
 	return c.Platforms
+}
+
+func (c *ConnectablePlatforms) GetChats() []ChatPlatform {
+	if c == nil {
+		return nil
+	}
+	return c.Chats
 }
 
 func (c *ConnectablePlatforms) GetSites() []SitePlatform {
@@ -1793,6 +2212,13 @@ func (c *ConnectablePlatforms) SetLinkedinConnections(linkedinConnections []Link
 func (c *ConnectablePlatforms) SetPlatforms(platforms []Platform) {
 	c.Platforms = platforms
 	c.require(connectablePlatformsFieldPlatforms)
+}
+
+// SetChats sets the Chats field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectablePlatforms) SetChats(chats []ChatPlatform) {
+	c.Chats = chats
+	c.require(connectablePlatformsFieldChats)
 }
 
 // SetSites sets the Sites field and marks it as non-optional;

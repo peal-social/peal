@@ -16,6 +16,9 @@ class MediaCapabilities(UniversalBaseModel):
     ]
     formats: typing.Optional[typing.List[MediaFormat]] = None
     max_count: typing_extensions.Annotated[int, FieldMetadata(alias="maxCount"), pydantic.Field(alias="maxCount")]
+    max_total_byte_size: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="maxTotalByteSize"), pydantic.Field(alias="maxTotalByteSize")
+    ] = None
     max_videos: typing_extensions.Annotated[
         typing.Optional[int], FieldMetadata(alias="maxVideos"), pydantic.Field(alias="maxVideos")
     ] = None

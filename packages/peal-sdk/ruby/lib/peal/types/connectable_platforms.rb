@@ -11,6 +11,8 @@ module Peal
 
       field :platforms, -> { Internal::Types::Array[Peal::Types::Platform] }, optional: false, nullable: false
 
+      field :chats, -> { Internal::Types::Array[Peal::Types::ChatPlatform] }, optional: true, nullable: false
+
       field :sites, -> { Internal::Types::Array[Peal::Types::SitePlatform] }, optional: true, nullable: false
     end
   end

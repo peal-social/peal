@@ -21,6 +21,12 @@ class TextCapabilities extends JsonSerializableType
     public array $limits;
 
     /**
+     * @var ?array<TextLimit> $limitsWithMedia
+     */
+    #[JsonProperty('limitsWithMedia'), ArrayType([TextLimit::class])]
+    public ?array $limitsWithMedia;
+
+    /**
      * @var ?int $maxHashtags
      */
     #[JsonProperty('maxHashtags')]
@@ -42,6 +48,7 @@ class TextCapabilities extends JsonSerializableType
      * @param array{
      *   forbiddenCharacters: array<string>,
      *   limits: array<TextLimit>,
+     *   limitsWithMedia?: ?array<TextLimit>,
      *   maxHashtags?: ?int,
      *   maxLinks?: ?int,
      *   maxMentions?: ?int,
@@ -52,6 +59,7 @@ class TextCapabilities extends JsonSerializableType
     ) {
         $this->forbiddenCharacters = $values['forbiddenCharacters'];
         $this->limits = $values['limits'];
+        $this->limitsWithMedia = $values['limitsWithMedia'] ?? null;
         $this->maxHashtags = $values['maxHashtags'] ?? null;
         $this->maxLinks = $values['maxLinks'] ?? null;
         $this->maxMentions = $values['maxMentions'] ?? null;

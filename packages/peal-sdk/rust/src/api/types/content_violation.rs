@@ -493,6 +493,41 @@ pub enum ContentViolation {
         minimum: i64,
     },
 
+    #[serde(rename = "sideSumTooLarge")]
+    #[non_exhaustive]
+    SideSumTooLarge {
+        #[serde(rename = "channelId")]
+        #[serde(default)]
+        channel_id: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        part: Option<i64>,
+        platform: Platform,
+        #[serde(rename = "mediaId")]
+        #[serde(default)]
+        media_id: String,
+        #[serde(default)]
+        height: i64,
+        #[serde(default)]
+        width: i64,
+        #[serde(default)]
+        maximum: i64,
+    },
+
+    #[serde(rename = "mediaTotalTooLarge")]
+    #[non_exhaustive]
+    MediaTotalTooLarge {
+        #[serde(rename = "channelId")]
+        #[serde(default)]
+        channel_id: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        part: Option<i64>,
+        platform: Platform,
+        #[serde(default)]
+        maximum: i64,
+        #[serde(default)]
+        total: i64,
+    },
+
     #[serde(rename = "aspectRatioUnsupported")]
     #[non_exhaustive]
     AspectRatioUnsupported {
@@ -966,6 +1001,40 @@ impl ContentViolation {
             width,
             maximum,
             minimum,
+        }
+    }
+
+    pub fn side_sum_too_large(
+        channel_id: String,
+        platform: Platform,
+        media_id: String,
+        height: i64,
+        width: i64,
+        maximum: i64,
+    ) -> Self {
+        Self::SideSumTooLarge {
+            channel_id,
+            part: None,
+            platform,
+            media_id,
+            height,
+            width,
+            maximum,
+        }
+    }
+
+    pub fn media_total_too_large(
+        channel_id: String,
+        platform: Platform,
+        maximum: i64,
+        total: i64,
+    ) -> Self {
+        Self::MediaTotalTooLarge {
+            channel_id,
+            part: None,
+            platform,
+            maximum,
+            total,
         }
     }
 
@@ -1470,6 +1539,42 @@ impl ContentViolation {
             width,
             maximum,
             minimum,
+        }
+    }
+
+    pub fn side_sum_too_large_with_part(
+        channel_id: String,
+        part: i64,
+        platform: Platform,
+        media_id: String,
+        height: i64,
+        width: i64,
+        maximum: i64,
+    ) -> Self {
+        Self::SideSumTooLarge {
+            channel_id,
+            part: Some(part),
+            platform,
+            media_id,
+            height,
+            width,
+            maximum,
+        }
+    }
+
+    pub fn media_total_too_large_with_part(
+        channel_id: String,
+        part: i64,
+        platform: Platform,
+        maximum: i64,
+        total: i64,
+    ) -> Self {
+        Self::MediaTotalTooLarge {
+            channel_id,
+            part: Some(part),
+            platform,
+            maximum,
+            total,
         }
     }
 

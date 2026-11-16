@@ -575,7 +575,7 @@ client.api_keys.revoke(
 </details>
 
 ## channels
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L41-L71">list</a>(...) -> typing.List[Channel]</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L42-L72">list</a>(...) -> typing.List[Channel]</code></summary>
 <dl>
 <dd>
 
@@ -648,7 +648,7 @@ client.channels.list(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L73-L129">find</a>(...) -> ChannelPage</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L74-L130">find</a>(...) -> ChannelPage</code></summary>
 <dl>
 <dd>
 
@@ -761,7 +761,7 @@ client.channels.find(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L131-L161">platforms</a>(...) -> ConnectablePlatforms</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L132-L162">platforms</a>(...) -> ConnectablePlatforms</code></summary>
 <dl>
 <dd>
 
@@ -773,7 +773,7 @@ client.channels.find(
 <dl>
 <dd>
 
-Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
 </dd>
 </dl>
 </dd>
@@ -834,7 +834,7 @@ client.channels.platforms(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L163-L219">connect_site</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L164-L220">connect_site</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -943,7 +943,7 @@ client.channels.connect_site(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L221-L267">connect_site_with_key</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L222-L268">connect_site_with_key</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1042,7 +1042,91 @@ client.channels.connect_site_with_key(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L269-L311">start_site_sign_in</a>(...) -> Authorization</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L270-L305">connect_chat</a>(...) -> Channel</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from peal import Peal, ConnectChat_Discord
+from peal.environment import PealEnvironment
+
+client = Peal(
+    token="<token>",
+    environment=PealEnvironment.DEFAULT,
+)
+
+client.channels.connect_chat(
+    workspace_id="workspaceId",
+    request=ConnectChat_Discord(
+        webhook_url="webhookUrl",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**workspace_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `ConnectChat` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L307-L349">start_site_sign_in</a>(...) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1132,7 +1216,7 @@ client.channels.start_site_sign_in(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L313-L362">complete_site_sign_in</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L351-L400">complete_site_sign_in</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1239,7 +1323,7 @@ client.channels.complete_site_sign_in(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L364-L417">connect</a>(...) -> Authorization</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L402-L455">connect</a>(...) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1345,7 +1429,7 @@ client.channels.connect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L419-L471">complete_connect</a>(...) -> ConnectOutcome</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L457-L509">complete_connect</a>(...) -> ConnectOutcome</code></summary>
 <dl>
 <dd>
 
@@ -1460,7 +1544,7 @@ client.channels.complete_connect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L473-L520">choose_accounts</a>(...) -> typing.List[Channel]</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L511-L558">choose_accounts</a>(...) -> typing.List[Channel]</code></summary>
 <dl>
 <dd>
 
@@ -1562,7 +1646,7 @@ client.channels.choose_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L522-L567">reconnect</a>(...) -> Authorization</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L560-L605">reconnect</a>(...) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1660,7 +1744,7 @@ client.channels.reconnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L569-L601">disconnect</a>(...)</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L607-L639">disconnect</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1742,7 +1826,7 @@ client.channels.disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L603-L643">update</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L641-L681">update</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1833,7 +1917,7 @@ client.channels.update(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L645-L678">disable</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L683-L716">disable</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1915,7 +1999,7 @@ client.channels.disable(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L680-L713">enable</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L718-L751">enable</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 

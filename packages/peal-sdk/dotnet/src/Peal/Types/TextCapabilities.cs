@@ -17,6 +17,9 @@ public record TextCapabilities : IJsonOnDeserialized
     [JsonPropertyName("limits")]
     public IEnumerable<TextLimit> Limits { get; set; } = new List<TextLimit>();
 
+    [JsonPropertyName("limitsWithMedia")]
+    public IEnumerable<TextLimit>? LimitsWithMedia { get; set; }
+
     [JsonPropertyName("maxHashtags")]
     public int? MaxHashtags { get; set; }
 

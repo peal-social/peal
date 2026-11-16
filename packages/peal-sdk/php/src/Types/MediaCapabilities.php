@@ -27,6 +27,12 @@ class MediaCapabilities extends JsonSerializableType
     public int $maxCount;
 
     /**
+     * @var ?int $maxTotalByteSize
+     */
+    #[JsonProperty('maxTotalByteSize')]
+    public ?int $maxTotalByteSize;
+
+    /**
      * @var ?int $maxVideos
      */
     #[JsonProperty('maxVideos')]
@@ -50,6 +56,7 @@ class MediaCapabilities extends JsonSerializableType
      *   maxCount: int,
      *   required: bool,
      *   formats?: ?array<MediaFormat>,
+     *   maxTotalByteSize?: ?int,
      *   maxVideos?: ?int,
      *   mixesKinds?: ?bool,
      * } $values
@@ -60,6 +67,7 @@ class MediaCapabilities extends JsonSerializableType
         $this->altText = $values['altText'];
         $this->formats = $values['formats'] ?? null;
         $this->maxCount = $values['maxCount'];
+        $this->maxTotalByteSize = $values['maxTotalByteSize'] ?? null;
         $this->maxVideos = $values['maxVideos'] ?? null;
         $this->mixesKinds = $values['mixesKinds'] ?? null;
         $this->required = $values['required'];

@@ -56,6 +56,12 @@ class MediaFormat extends JsonSerializableType
     public ?int $maxSide;
 
     /**
+     * @var ?int $maxSideSum
+     */
+    #[JsonProperty('maxSideSum')]
+    public ?int $maxSideSum;
+
+    /**
      * @var ?float $minAspectRatio
      */
     #[JsonProperty('minAspectRatio')]
@@ -89,6 +95,7 @@ class MediaFormat extends JsonSerializableType
      *   maxMediaWith?: ?int,
      *   maxPixels?: ?int,
      *   maxSide?: ?int,
+     *   maxSideSum?: ?int,
      *   minAspectRatio?: ?float,
      *   minByteSize?: ?int,
      *   minDurationMs?: ?int,
@@ -106,6 +113,7 @@ class MediaFormat extends JsonSerializableType
         $this->maxMediaWith = $values['maxMediaWith'] ?? null;
         $this->maxPixels = $values['maxPixels'] ?? null;
         $this->maxSide = $values['maxSide'] ?? null;
+        $this->maxSideSum = $values['maxSideSum'] ?? null;
         $this->minAspectRatio = $values['minAspectRatio'] ?? null;
         $this->minByteSize = $values['minByteSize'] ?? null;
         $this->minDurationMs = $values['minDurationMs'] ?? null;

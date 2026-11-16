@@ -40,6 +40,8 @@ public final class MediaFormat {
 
     private final Optional<Integer> maxSide;
 
+    private final Optional<Integer> maxSideSum;
+
     private final Optional<Double> minAspectRatio;
 
     private final Optional<Long> minByteSize;
@@ -59,6 +61,7 @@ public final class MediaFormat {
             Optional<Integer> maxMediaWith,
             Optional<Integer> maxPixels,
             Optional<Integer> maxSide,
+            Optional<Integer> maxSideSum,
             Optional<Double> minAspectRatio,
             Optional<Long> minByteSize,
             Optional<Integer> minDurationMs,
@@ -72,6 +75,7 @@ public final class MediaFormat {
         this.maxMediaWith = maxMediaWith;
         this.maxPixels = maxPixels;
         this.maxSide = maxSide;
+        this.maxSideSum = maxSideSum;
         this.minAspectRatio = minAspectRatio;
         this.minByteSize = minByteSize;
         this.minDurationMs = minDurationMs;
@@ -135,6 +139,11 @@ public final class MediaFormat {
             return Optional.empty();
         }
         return maxSide;
+    }
+
+    @JsonProperty("maxSideSum")
+    public Optional<Integer> getMaxSideSum() {
+        return maxSideSum;
     }
 
     @JsonIgnore
@@ -249,6 +258,7 @@ public final class MediaFormat {
                 && maxMediaWith.equals(other.maxMediaWith)
                 && maxPixels.equals(other.maxPixels)
                 && maxSide.equals(other.maxSide)
+                && maxSideSum.equals(other.maxSideSum)
                 && minAspectRatio.equals(other.minAspectRatio)
                 && minByteSize.equals(other.minByteSize)
                 && minDurationMs.equals(other.minDurationMs)
@@ -266,6 +276,7 @@ public final class MediaFormat {
                 this.maxMediaWith,
                 this.maxPixels,
                 this.maxSide,
+                this.maxSideSum,
                 this.minAspectRatio,
                 this.minByteSize,
                 this.minDurationMs,
@@ -334,6 +345,10 @@ public final class MediaFormat {
 
         _FinalStage maxSide(Nullable<Integer> maxSide);
 
+        _FinalStage maxSideSum(Optional<Integer> maxSideSum);
+
+        _FinalStage maxSideSum(Integer maxSideSum);
+
         _FinalStage minAspectRatio(Optional<Double> minAspectRatio);
 
         _FinalStage minAspectRatio(Double minAspectRatio);
@@ -373,6 +388,8 @@ public final class MediaFormat {
 
         private Optional<Double> minAspectRatio = Optional.empty();
 
+        private Optional<Integer> maxSideSum = Optional.empty();
+
         private Optional<Integer> maxSide = Optional.empty();
 
         private Optional<Integer> maxPixels = Optional.empty();
@@ -399,6 +416,7 @@ public final class MediaFormat {
             maxMediaWith(other.getMaxMediaWith());
             maxPixels(other.getMaxPixels());
             maxSide(other.getMaxSide());
+            maxSideSum(other.getMaxSideSum());
             minAspectRatio(other.getMinAspectRatio());
             minByteSize(other.getMinByteSize());
             minDurationMs(other.getMinDurationMs());
@@ -517,6 +535,19 @@ public final class MediaFormat {
         @JsonSetter(value = "minAspectRatio", nulls = Nulls.SKIP)
         public _FinalStage minAspectRatio(Optional<Double> minAspectRatio) {
             this.minAspectRatio = minAspectRatio;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage maxSideSum(Integer maxSideSum) {
+            this.maxSideSum = Optional.ofNullable(maxSideSum);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "maxSideSum", nulls = Nulls.SKIP)
+        public _FinalStage maxSideSum(Optional<Integer> maxSideSum) {
+            this.maxSideSum = maxSideSum;
             return this;
         }
 
@@ -681,6 +712,7 @@ public final class MediaFormat {
                     maxMediaWith,
                     maxPixels,
                     maxSide,
+                    maxSideSum,
                     minAspectRatio,
                     minByteSize,
                     minDurationMs,
@@ -698,6 +730,7 @@ public final class MediaFormat {
                     || key.equalsIgnoreCase("maxMediaWith")
                     || key.equalsIgnoreCase("maxPixels")
                     || key.equalsIgnoreCase("maxSide")
+                    || key.equalsIgnoreCase("maxSideSum")
                     || key.equalsIgnoreCase("minAspectRatio")
                     || key.equalsIgnoreCase("minByteSize")
                     || key.equalsIgnoreCase("minDurationMs")

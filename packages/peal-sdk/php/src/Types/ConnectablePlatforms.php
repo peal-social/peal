@@ -27,6 +27,12 @@ class ConnectablePlatforms extends JsonSerializableType
     public array $platforms;
 
     /**
+     * @var ?array<value-of<ChatPlatform>> $chats
+     */
+    #[JsonProperty('chats'), ArrayType(['string'])]
+    public ?array $chats;
+
+    /**
      * @var ?array<value-of<SitePlatform>> $sites
      */
     #[JsonProperty('sites'), ArrayType(['string'])]
@@ -37,6 +43,7 @@ class ConnectablePlatforms extends JsonSerializableType
      *   instagramConnections: array<value-of<InstagramConnection>>,
      *   linkedinConnections: array<value-of<LinkedInConnection>>,
      *   platforms: array<value-of<Platform>>,
+     *   chats?: ?array<value-of<ChatPlatform>>,
      *   sites?: ?array<value-of<SitePlatform>>,
      * } $values
      */
@@ -46,6 +53,7 @@ class ConnectablePlatforms extends JsonSerializableType
         $this->instagramConnections = $values['instagramConnections'];
         $this->linkedinConnections = $values['linkedinConnections'];
         $this->platforms = $values['platforms'];
+        $this->chats = $values['chats'] ?? null;
         $this->sites = $values['sites'] ?? null;
     }
 

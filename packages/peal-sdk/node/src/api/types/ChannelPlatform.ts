@@ -13,6 +13,8 @@ export const ChannelPlatform = {
         Youtube: "youtube",
         Pinterest: "pinterest",
         GoogleBusiness: "googleBusiness",
+        Discord: "discord",
+        Telegram: "telegram",
         Wordpress: "wordpress",
         Devto: "devto",
         Hashnode: "hashnode",

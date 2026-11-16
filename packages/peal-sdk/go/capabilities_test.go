@@ -2004,6 +2004,14 @@ func TestSettersMediaCapabilities(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetMaxTotalByteSize", func(t *testing.T) {
+		obj := &MediaCapabilities{}
+		var fernTestValueMaxTotalByteSize *int64
+		obj.SetMaxTotalByteSize(fernTestValueMaxTotalByteSize)
+		assert.Equal(t, fernTestValueMaxTotalByteSize, obj.MaxTotalByteSize)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetMaxVideos", func(t *testing.T) {
 		obj := &MediaCapabilities{}
 		var fernTestValueMaxVideos *int
@@ -2118,6 +2126,39 @@ func TestGettersMediaCapabilities(t *testing.T) {
 			}
 		}()
 		_ = obj.GetMaxCount() // Should return zero value
+	})
+
+	t.Run("GetMaxTotalByteSize", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MediaCapabilities{}
+		var expected *int64
+		obj.MaxTotalByteSize = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMaxTotalByteSize(), "getter should return the property value")
+	})
+
+	t.Run("GetMaxTotalByteSize_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MediaCapabilities{}
+		obj.MaxTotalByteSize = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMaxTotalByteSize(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMaxTotalByteSize_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *MediaCapabilities
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMaxTotalByteSize() // Should return zero value
 	})
 
 	t.Run("GetMaxVideos", func(t *testing.T) {
@@ -2282,6 +2323,37 @@ func TestSettersMarkExplicitMediaCapabilities(t *testing.T) {
 
 		// Act
 		obj.SetMaxCount(fernTestValueMaxCount)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMaxTotalByteSize_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MediaCapabilities{}
+		var fernTestValueMaxTotalByteSize *int64
+
+		// Act
+		obj.SetMaxTotalByteSize(fernTestValueMaxTotalByteSize)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -2608,6 +2680,14 @@ func TestSettersMediaFormat(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetMaxSideSum", func(t *testing.T) {
+		obj := &MediaFormat{}
+		var fernTestValueMaxSideSum *int
+		obj.SetMaxSideSum(fernTestValueMaxSideSum)
+		assert.Equal(t, fernTestValueMaxSideSum, obj.MaxSideSum)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetMinAspectRatio", func(t *testing.T) {
 		obj := &MediaFormat{}
 		var fernTestValueMinAspectRatio *float64
@@ -2885,6 +2965,39 @@ func TestGettersMediaFormat(t *testing.T) {
 			}
 		}()
 		_ = obj.GetMaxSide() // Should return zero value
+	})
+
+	t.Run("GetMaxSideSum", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MediaFormat{}
+		var expected *int
+		obj.MaxSideSum = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMaxSideSum(), "getter should return the property value")
+	})
+
+	t.Run("GetMaxSideSum_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MediaFormat{}
+		obj.MaxSideSum = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMaxSideSum(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMaxSideSum_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *MediaFormat
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMaxSideSum() // Should return zero value
 	})
 
 	t.Run("GetMinAspectRatio", func(t *testing.T) {
@@ -3247,6 +3360,37 @@ func TestSettersMarkExplicitMediaFormat(t *testing.T) {
 
 		// Act
 		obj.SetMaxSide(fernTestValueMaxSide)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMaxSideSum_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MediaFormat{}
+		var fernTestValueMaxSideSum *int
+
+		// Act
+		obj.SetMaxSideSum(fernTestValueMaxSideSum)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -6207,6 +6351,14 @@ func TestSettersTextCapabilities(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetLimitsWithMedia", func(t *testing.T) {
+		obj := &TextCapabilities{}
+		var fernTestValueLimitsWithMedia []*TextLimit
+		obj.SetLimitsWithMedia(fernTestValueLimitsWithMedia)
+		assert.Equal(t, fernTestValueLimitsWithMedia, obj.LimitsWithMedia)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetMaxHashtags", func(t *testing.T) {
 		obj := &TextCapabilities{}
 		var fernTestValueMaxHashtags *int
@@ -6298,6 +6450,39 @@ func TestGettersTextCapabilities(t *testing.T) {
 			}
 		}()
 		_ = obj.GetLimits() // Should return zero value
+	})
+
+	t.Run("GetLimitsWithMedia", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &TextCapabilities{}
+		var expected []*TextLimit
+		obj.LimitsWithMedia = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetLimitsWithMedia(), "getter should return the property value")
+	})
+
+	t.Run("GetLimitsWithMedia_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &TextCapabilities{}
+		obj.LimitsWithMedia = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetLimitsWithMedia(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetLimitsWithMedia_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *TextCapabilities
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetLimitsWithMedia() // Should return zero value
 	})
 
 	t.Run("GetMaxHashtags", func(t *testing.T) {
@@ -6441,6 +6626,37 @@ func TestSettersMarkExplicitTextCapabilities(t *testing.T) {
 
 		// Act
 		obj.SetLimits(fernTestValueLimits)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetLimitsWithMedia_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &TextCapabilities{}
+		var fernTestValueLimitsWithMedia []*TextLimit
+
+		// Act
+		obj.SetLimitsWithMedia(fernTestValueLimitsWithMedia)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)

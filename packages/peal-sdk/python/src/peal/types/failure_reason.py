@@ -25,6 +25,8 @@ FailureReason = typing.Union[
         "paymentFailed",
         "perAccountPricingRequired",
         "xThreadCut",
+        "forumThreadNameRequired",
+        "chatMigrated",
     ],
     typing.Any,
 ]

@@ -31,6 +31,8 @@ public final class MediaCapabilities {
 
     private final int maxCount;
 
+    private final Optional<Long> maxTotalByteSize;
+
     private final Optional<Integer> maxVideos;
 
     private final Optional<Boolean> mixesKinds;
@@ -43,6 +45,7 @@ public final class MediaCapabilities {
             MediaCapabilitiesAltText altText,
             Optional<List<MediaFormat>> formats,
             int maxCount,
+            Optional<Long> maxTotalByteSize,
             Optional<Integer> maxVideos,
             Optional<Boolean> mixesKinds,
             boolean required,
@@ -50,6 +53,7 @@ public final class MediaCapabilities {
         this.altText = altText;
         this.formats = formats;
         this.maxCount = maxCount;
+        this.maxTotalByteSize = maxTotalByteSize;
         this.maxVideos = maxVideos;
         this.mixesKinds = mixesKinds;
         this.required = required;
@@ -72,6 +76,11 @@ public final class MediaCapabilities {
     @JsonProperty("maxCount")
     public int getMaxCount() {
         return maxCount;
+    }
+
+    @JsonProperty("maxTotalByteSize")
+    public Optional<Long> getMaxTotalByteSize() {
+        return maxTotalByteSize;
     }
 
     @JsonIgnore
@@ -128,6 +137,7 @@ public final class MediaCapabilities {
         return altText.equals(other.altText)
                 && formats.equals(other.formats)
                 && maxCount == other.maxCount
+                && maxTotalByteSize.equals(other.maxTotalByteSize)
                 && maxVideos.equals(other.maxVideos)
                 && mixesKinds.equals(other.mixesKinds)
                 && required == other.required;
@@ -135,7 +145,14 @@ public final class MediaCapabilities {
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.altText, this.formats, this.maxCount, this.maxVideos, this.mixesKinds, this.required);
+        return Objects.hash(
+                this.altText,
+                this.formats,
+                this.maxCount,
+                this.maxTotalByteSize,
+                this.maxVideos,
+                this.mixesKinds,
+                this.required);
     }
 
     @java.lang.Override
@@ -174,6 +191,10 @@ public final class MediaCapabilities {
 
         _FinalStage formats(Nullable<List<MediaFormat>> formats);
 
+        _FinalStage maxTotalByteSize(Optional<Long> maxTotalByteSize);
+
+        _FinalStage maxTotalByteSize(Long maxTotalByteSize);
+
         _FinalStage maxVideos(Optional<Integer> maxVideos);
 
         _FinalStage maxVideos(Integer maxVideos);
@@ -199,6 +220,8 @@ public final class MediaCapabilities {
 
         private Optional<Integer> maxVideos = Optional.empty();
 
+        private Optional<Long> maxTotalByteSize = Optional.empty();
+
         private Optional<List<MediaFormat>> formats = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -210,6 +233,7 @@ public final class MediaCapabilities {
             altText(other.getAltText());
             formats(other.getFormats());
             maxCount(other.getMaxCount());
+            maxTotalByteSize(other.getMaxTotalByteSize());
             maxVideos(other.getMaxVideos());
             mixesKinds(other.getMixesKinds());
             required(other.getRequired());
@@ -288,6 +312,19 @@ public final class MediaCapabilities {
         }
 
         @java.lang.Override
+        public _FinalStage maxTotalByteSize(Long maxTotalByteSize) {
+            this.maxTotalByteSize = Optional.ofNullable(maxTotalByteSize);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "maxTotalByteSize", nulls = Nulls.SKIP)
+        public _FinalStage maxTotalByteSize(Optional<Long> maxTotalByteSize) {
+            this.maxTotalByteSize = maxTotalByteSize;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage formats(Nullable<List<MediaFormat>> formats) {
             if (formats.isNull()) {
                 this.formats = null;
@@ -315,7 +352,14 @@ public final class MediaCapabilities {
         @java.lang.Override
         public MediaCapabilities build() {
             return new MediaCapabilities(
-                    altText, formats, maxCount, maxVideos, mixesKinds, required, additionalProperties);
+                    altText,
+                    formats,
+                    maxCount,
+                    maxTotalByteSize,
+                    maxVideos,
+                    mixesKinds,
+                    required,
+                    additionalProperties);
         }
 
         @JsonAnySetter
@@ -323,6 +367,7 @@ public final class MediaCapabilities {
             if (key.equalsIgnoreCase("altText")
                     || key.equalsIgnoreCase("formats")
                     || key.equalsIgnoreCase("maxCount")
+                    || key.equalsIgnoreCase("maxTotalByteSize")
                     || key.equalsIgnoreCase("maxVideos")
                     || key.equalsIgnoreCase("mixesKinds")
                     || key.equalsIgnoreCase("required")) {

@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class FailureReason {
+    public static final FailureReason FORUM_THREAD_NAME_REQUIRED =
+            new FailureReason(Value.FORUM_THREAD_NAME_REQUIRED, "forumThreadNameRequired");
+
     public static final FailureReason CONTENT_REJECTED = new FailureReason(Value.CONTENT_REJECTED, "contentRejected");
 
     public static final FailureReason PER_ACCOUNT_PRICING_REQUIRED =
@@ -20,6 +23,8 @@ public final class FailureReason {
 
     public static final FailureReason REPLIES_NOT_ALLOWED =
             new FailureReason(Value.REPLIES_NOT_ALLOWED, "repliesNotAllowed");
+
+    public static final FailureReason CHAT_MIGRATED = new FailureReason(Value.CHAT_MIGRATED, "chatMigrated");
 
     public static final FailureReason MISSED = new FailureReason(Value.MISSED, "missed");
 
@@ -85,6 +90,8 @@ public final class FailureReason {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case FORUM_THREAD_NAME_REQUIRED:
+                return visitor.visitForumThreadNameRequired();
             case CONTENT_REJECTED:
                 return visitor.visitContentRejected();
             case PER_ACCOUNT_PRICING_REQUIRED:
@@ -97,6 +104,8 @@ public final class FailureReason {
                 return visitor.visitUnavailable();
             case REPLIES_NOT_ALLOWED:
                 return visitor.visitRepliesNotAllowed();
+            case CHAT_MIGRATED:
+                return visitor.visitChatMigrated();
             case MISSED:
                 return visitor.visitMissed();
             case MEDIA_REJECTED:
@@ -136,6 +145,8 @@ public final class FailureReason {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static FailureReason valueOf(String value) {
         switch (value) {
+            case "forumThreadNameRequired":
+                return FORUM_THREAD_NAME_REQUIRED;
             case "contentRejected":
                 return CONTENT_REJECTED;
             case "perAccountPricingRequired":
@@ -148,6 +159,8 @@ public final class FailureReason {
                 return UNAVAILABLE;
             case "repliesNotAllowed":
                 return REPLIES_NOT_ALLOWED;
+            case "chatMigrated":
+                return CHAT_MIGRATED;
             case "missed":
                 return MISSED;
             case "mediaRejected":
@@ -226,6 +239,10 @@ public final class FailureReason {
 
         X_THREAD_CUT,
 
+        FORUM_THREAD_NAME_REQUIRED,
+
+        CHAT_MIGRATED,
+
         UNKNOWN
     }
 
@@ -271,6 +288,10 @@ public final class FailureReason {
         T visitPerAccountPricingRequired();
 
         T visitXThreadCut();
+
+        T visitForumThreadNameRequired();
+
+        T visitChatMigrated();
 
         T visitUnknown(String unknownType);
     }

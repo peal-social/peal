@@ -37,6 +37,7 @@ import social.peal.resources.channels.requests.ChannelUpdate;
 import social.peal.resources.channels.requests.ChooseAccounts;
 import social.peal.resources.channels.requests.ConnectCallback;
 import social.peal.resources.channels.requests.ConnectChannel;
+import social.peal.resources.channels.requests.ConnectChatChannelsRequest;
 import social.peal.resources.channels.requests.ConnectSite;
 import social.peal.resources.channels.requests.ConnectSiteWithKey;
 import social.peal.resources.channels.requests.DisableChannelsRequest;
@@ -271,21 +272,21 @@ public class RawChannelsClient {
     }
 
     /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
      */
     public PealClientHttpResponse<ConnectablePlatforms> platforms(String workspaceId) {
         return platforms(workspaceId, PlatformsChannelsRequest.builder().build());
     }
 
     /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
      */
     public PealClientHttpResponse<ConnectablePlatforms> platforms(String workspaceId, RequestOptions requestOptions) {
         return platforms(workspaceId, PlatformsChannelsRequest.builder().build(), requestOptions);
     }
 
     /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
      */
     public PealClientHttpResponse<ConnectablePlatforms> platforms(
             String workspaceId, PlatformsChannelsRequest request) {
@@ -293,7 +294,7 @@ public class RawChannelsClient {
     }
 
     /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
      */
     public PealClientHttpResponse<ConnectablePlatforms> platforms(
             String workspaceId, PlatformsChannelsRequest request, RequestOptions requestOptions) {
@@ -483,6 +484,98 @@ public class RawChannelsClient {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
                             request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Channel.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 402:
+                        throw new PaymentRequiredError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 422:
+                        throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 502:
+                        throw new BadGatewayError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (<code>discord</code>) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (<code>telegram</code>) by the token of the member's own bot and the chat, its public name (<code>@name</code>) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected <code>addressNotAWebhook</code>, before any call; a webhook Discord does not have <code>webhookNotFound</code>, one that does not post messages <code>webhookKindNotSupported</code>; a bot's token Telegram refuses <code>credentialsRefused</code>, a chat it does not know or the bot is not in <code>chatNotFound</code>, a private chat <code>chatKindNotSupported</code>, and a chat the bot may not post in <code>cannotPost</code> (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With <code>channelId</code>, it reconnects that channel, and the secret must reach its chat again (ConnectFailed <code>accountMismatch</code>). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed <code>notConfigured</code>. Needs channel:connect.
+     */
+    public PealClientHttpResponse<Channel> connectChat(String workspaceId, ConnectChatChannelsRequest request) {
+        return connectChat(workspaceId, request, null);
+    }
+
+    /**
+     * Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (<code>discord</code>) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (<code>telegram</code>) by the token of the member's own bot and the chat, its public name (<code>@name</code>) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected <code>addressNotAWebhook</code>, before any call; a webhook Discord does not have <code>webhookNotFound</code>, one that does not post messages <code>webhookKindNotSupported</code>; a bot's token Telegram refuses <code>credentialsRefused</code>, a chat it does not know or the bot is not in <code>chatNotFound</code>, a private chat <code>chatKindNotSupported</code>, and a chat the bot may not post in <code>cannotPost</code> (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With <code>channelId</code>, it reconnects that channel, and the secret must reach its chat again (ConnectFailed <code>accountMismatch</code>). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed <code>notConfigured</code>. Needs channel:connect.
+     */
+    public PealClientHttpResponse<Channel> connectChat(
+            String workspaceId, ConnectChatChannelsRequest request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("channels")
+                .addPathSegments("chats");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);

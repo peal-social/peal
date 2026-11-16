@@ -18,6 +18,7 @@ use Peal\Types\ChannelPage;
 use Peal\Types\ConnectablePlatforms;
 use Peal\Channels\Requests\ConnectSite;
 use Peal\Channels\Requests\ConnectSiteWithKey;
+use Peal\Channels\Requests\ConnectChatChannelsRequest;
 use Peal\Types\OAuthSitePlatform;
 use Peal\Channels\Requests\StartSiteSignIn;
 use Peal\Types\Authorization;
@@ -196,7 +197,7 @@ class ChannelsClient
     }
 
     /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
      *
      * Example:
      * ```php
@@ -353,6 +354,69 @@ class ChannelsClient
                     path: "api/workspaces/{$workspaceId}/channels/websites/keys",
                     method: HttpMethod::POST,
                     body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return Channel::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
+     *
+     * Example:
+     * ```php
+     * $client->channels->connectChat(
+     *     'workspaceId',
+     *     new ConnectChatChannelsRequest([
+     *         'body' => ConnectChat::discord(new ConnectDiscordChat([
+     *             'webhookUrl' => 'webhookUrl',
+     *         ])),
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $workspaceId
+     * @param ConnectChatChannelsRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?Channel
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function connectChat(string $workspaceId, ConnectChatChannelsRequest $request, ?array $options = null): ?Channel
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/workspaces/{$workspaceId}/channels/chats",
+                    method: HttpMethod::POST,
+                    body: $request->body,
                 ),
                 $options,
             );

@@ -30,6 +30,10 @@ public readonly record struct Platform : IStringEnum
 
     public static readonly Platform GoogleBusiness = new(Values.GoogleBusiness);
 
+    public static readonly Platform Discord = new(Values.Discord);
+
+    public static readonly Platform Telegram = new(Values.Telegram);
+
     public Platform(string value)
     {
         Value = value;
@@ -145,5 +149,9 @@ public readonly record struct Platform : IStringEnum
         public const string Pinterest = "pinterest";
 
         public const string GoogleBusiness = "googleBusiness";
+
+        public const string Discord = "discord";
+
+        public const string Telegram = "telegram";
     }
 }

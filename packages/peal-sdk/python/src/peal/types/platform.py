@@ -15,6 +15,8 @@ Platform = typing.Union[
         "youtube",
         "pinterest",
         "googleBusiness",
+        "discord",
+        "telegram",
     ],
     typing.Any,
 ]

@@ -6,6 +6,7 @@ export interface MediaCapabilities {
     altText: MediaCapabilities.AltText;
     formats: Peal.MediaFormat[] | null;
     maxCount: number;
+    maxTotalByteSize?: number | undefined;
     maxVideos: number | null;
     mixesKinds: boolean | null;
     required: boolean;

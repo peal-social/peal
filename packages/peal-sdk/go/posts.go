@@ -1480,6 +1480,8 @@ const (
 	AttemptResultPaymentFailed             AttemptResult = "paymentFailed"
 	AttemptResultPerAccountPricingRequired AttemptResult = "perAccountPricingRequired"
 	AttemptResultXThreadCut                AttemptResult = "xThreadCut"
+	AttemptResultForumThreadNameRequired   AttemptResult = "forumThreadNameRequired"
+	AttemptResultChatMigrated              AttemptResult = "chatMigrated"
 )
 
 func NewAttemptResultFromString(s string) (AttemptResult, error) {
@@ -1526,6 +1528,10 @@ func NewAttemptResultFromString(s string) (AttemptResult, error) {
 		return AttemptResultPerAccountPricingRequired, nil
 	case "xThreadCut":
 		return AttemptResultXThreadCut, nil
+	case "forumThreadNameRequired":
+		return AttemptResultForumThreadNameRequired, nil
+	case "chatMigrated":
+		return AttemptResultChatMigrated, nil
 	}
 	var t AttemptResult
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -2645,6 +2651,8 @@ type ContentViolation struct {
 	VideoTooShort           *ContentViolationVideoTooShort
 	TooManyPixels           *ContentViolationTooManyPixels
 	SideOutOfRange          *ContentViolationSideOutOfRange
+	SideSumTooLarge         *ContentViolationSideSumTooLarge
+	MediaTotalTooLarge      *ContentViolationMediaTotalTooLarge
 	AspectRatioUnsupported  *ContentViolationAspectRatioUnsupported
 	AltTextTooLong          *ContentViolationAltTextTooLong
 
@@ -2896,6 +2904,20 @@ func (c *ContentViolation) GetSideOutOfRange() *ContentViolationSideOutOfRange {
 	return c.SideOutOfRange
 }
 
+func (c *ContentViolation) GetSideSumTooLarge() *ContentViolationSideSumTooLarge {
+	if c == nil {
+		return nil
+	}
+	return c.SideSumTooLarge
+}
+
+func (c *ContentViolation) GetMediaTotalTooLarge() *ContentViolationMediaTotalTooLarge {
+	if c == nil {
+		return nil
+	}
+	return c.MediaTotalTooLarge
+}
+
 func (c *ContentViolation) GetAspectRatioUnsupported() *ContentViolationAspectRatioUnsupported {
 	if c == nil {
 		return nil
@@ -3126,6 +3148,18 @@ func (c *ContentViolation) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		c.SideOutOfRange = value
+	case "sideSumTooLarge":
+		value := new(ContentViolationSideSumTooLarge)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		c.SideSumTooLarge = value
+	case "mediaTotalTooLarge":
+		value := new(ContentViolationMediaTotalTooLarge)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		c.MediaTotalTooLarge = value
 	case "aspectRatioUnsupported":
 		value := new(ContentViolationAspectRatioUnsupported)
 		if err := json.Unmarshal(data, &value); err != nil {
@@ -3249,6 +3283,12 @@ func (c ContentViolation) MarshalJSON() ([]byte, error) {
 	if c.SideOutOfRange != nil {
 		return internal.MarshalJSONWithExtraProperty(c.SideOutOfRange, "_tag", "sideOutOfRange")
 	}
+	if c.SideSumTooLarge != nil {
+		return internal.MarshalJSONWithExtraProperty(c.SideSumTooLarge, "_tag", "sideSumTooLarge")
+	}
+	if c.MediaTotalTooLarge != nil {
+		return internal.MarshalJSONWithExtraProperty(c.MediaTotalTooLarge, "_tag", "mediaTotalTooLarge")
+	}
 	if c.AspectRatioUnsupported != nil {
 		return internal.MarshalJSONWithExtraProperty(c.AspectRatioUnsupported, "_tag", "aspectRatioUnsupported")
 	}
@@ -3296,6 +3336,8 @@ type ContentViolationVisitor interface {
 	VisitVideoTooShort(*ContentViolationVideoTooShort) error
 	VisitTooManyPixels(*ContentViolationTooManyPixels) error
 	VisitSideOutOfRange(*ContentViolationSideOutOfRange) error
+	VisitSideSumTooLarge(*ContentViolationSideSumTooLarge) error
+	VisitMediaTotalTooLarge(*ContentViolationMediaTotalTooLarge) error
 	VisitAspectRatioUnsupported(*ContentViolationAspectRatioUnsupported) error
 	VisitAltTextTooLong(*ContentViolationAltTextTooLong) error
 }
@@ -3402,6 +3444,12 @@ func (c *ContentViolation) Accept(visitor ContentViolationVisitor) error {
 	}
 	if c.SideOutOfRange != nil {
 		return visitor.VisitSideOutOfRange(c.SideOutOfRange)
+	}
+	if c.SideSumTooLarge != nil {
+		return visitor.VisitSideSumTooLarge(c.SideSumTooLarge)
+	}
+	if c.MediaTotalTooLarge != nil {
+		return visitor.VisitMediaTotalTooLarge(c.MediaTotalTooLarge)
 	}
 	if c.AspectRatioUnsupported != nil {
 		return visitor.VisitAspectRatioUnsupported(c.AspectRatioUnsupported)
@@ -3518,6 +3566,12 @@ func (c *ContentViolation) validate() error {
 	}
 	if c.SideOutOfRange != nil {
 		fields = append(fields, "sideOutOfRange")
+	}
+	if c.SideSumTooLarge != nil {
+		fields = append(fields, "sideSumTooLarge")
+	}
+	if c.MediaTotalTooLarge != nil {
+		fields = append(fields, "mediaTotalTooLarge")
 	}
 	if c.AspectRatioUnsupported != nil {
 		fields = append(fields, "aspectRatioUnsupported")
@@ -4861,6 +4915,156 @@ func (c *ContentViolationMediaTooSmall) MarshalJSON() ([]byte, error) {
 }
 
 func (c *ContentViolationMediaTooSmall) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	if len(c.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(c); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", c)
+}
+
+var (
+	contentViolationMediaTotalTooLargeFieldChannelID = big.NewInt(1 << 0)
+	contentViolationMediaTotalTooLargeFieldPart      = big.NewInt(1 << 1)
+	contentViolationMediaTotalTooLargeFieldPlatform  = big.NewInt(1 << 2)
+	contentViolationMediaTotalTooLargeFieldMaximum   = big.NewInt(1 << 3)
+	contentViolationMediaTotalTooLargeFieldTotal     = big.NewInt(1 << 4)
+)
+
+type ContentViolationMediaTotalTooLarge struct {
+	ChannelID string   `json:"channelId" url:"channelId"`
+	Part      *int     `json:"part,omitempty" url:"part,omitempty"`
+	Platform  Platform `json:"platform" url:"platform"`
+	Maximum   int64    `json:"maximum" url:"maximum"`
+	Total     int64    `json:"total" url:"total"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (c *ContentViolationMediaTotalTooLarge) GetChannelID() string {
+	if c == nil {
+		return ""
+	}
+	return c.ChannelID
+}
+
+func (c *ContentViolationMediaTotalTooLarge) GetPart() *int {
+	if c == nil {
+		return nil
+	}
+	return c.Part
+}
+
+func (c *ContentViolationMediaTotalTooLarge) GetPlatform() Platform {
+	if c == nil {
+		return ""
+	}
+	return c.Platform
+}
+
+func (c *ContentViolationMediaTotalTooLarge) GetMaximum() int64 {
+	if c == nil {
+		return 0
+	}
+	return c.Maximum
+}
+
+func (c *ContentViolationMediaTotalTooLarge) GetTotal() int64 {
+	if c == nil {
+		return 0
+	}
+	return c.Total
+}
+
+func (c *ContentViolationMediaTotalTooLarge) GetExtraProperties() map[string]interface{} {
+	if c == nil {
+		return nil
+	}
+	return c.extraProperties
+}
+
+func (c *ContentViolationMediaTotalTooLarge) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetChannelID sets the ChannelID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationMediaTotalTooLarge) SetChannelID(channelID string) {
+	c.ChannelID = channelID
+	c.require(contentViolationMediaTotalTooLargeFieldChannelID)
+}
+
+// SetPart sets the Part field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationMediaTotalTooLarge) SetPart(part *int) {
+	c.Part = part
+	c.require(contentViolationMediaTotalTooLargeFieldPart)
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationMediaTotalTooLarge) SetPlatform(platform Platform) {
+	c.Platform = platform
+	c.require(contentViolationMediaTotalTooLargeFieldPlatform)
+}
+
+// SetMaximum sets the Maximum field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationMediaTotalTooLarge) SetMaximum(maximum int64) {
+	c.Maximum = maximum
+	c.require(contentViolationMediaTotalTooLargeFieldMaximum)
+}
+
+// SetTotal sets the Total field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationMediaTotalTooLarge) SetTotal(total int64) {
+	c.Total = total
+	c.require(contentViolationMediaTotalTooLargeFieldTotal)
+}
+
+func (c *ContentViolationMediaTotalTooLarge) UnmarshalJSON(data []byte) error {
+	type unmarshaler ContentViolationMediaTotalTooLarge
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*c = ContentViolationMediaTotalTooLarge(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *c)
+	if err != nil {
+		return err
+	}
+	c.extraProperties = extraProperties
+	c.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (c *ContentViolationMediaTotalTooLarge) MarshalJSON() ([]byte, error) {
+	type embed ContentViolationMediaTotalTooLarge
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (c *ContentViolationMediaTotalTooLarge) String() string {
 	if c == nil {
 		return "<nil>"
 	}
@@ -7254,6 +7458,188 @@ func (c *ContentViolationSideOutOfRange) MarshalJSON() ([]byte, error) {
 }
 
 func (c *ContentViolationSideOutOfRange) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	if len(c.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(c); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", c)
+}
+
+var (
+	contentViolationSideSumTooLargeFieldChannelID = big.NewInt(1 << 0)
+	contentViolationSideSumTooLargeFieldPart      = big.NewInt(1 << 1)
+	contentViolationSideSumTooLargeFieldPlatform  = big.NewInt(1 << 2)
+	contentViolationSideSumTooLargeFieldMediaID   = big.NewInt(1 << 3)
+	contentViolationSideSumTooLargeFieldHeight    = big.NewInt(1 << 4)
+	contentViolationSideSumTooLargeFieldWidth     = big.NewInt(1 << 5)
+	contentViolationSideSumTooLargeFieldMaximum   = big.NewInt(1 << 6)
+)
+
+type ContentViolationSideSumTooLarge struct {
+	ChannelID string   `json:"channelId" url:"channelId"`
+	Part      *int     `json:"part,omitempty" url:"part,omitempty"`
+	Platform  Platform `json:"platform" url:"platform"`
+	MediaID   string   `json:"mediaId" url:"mediaId"`
+	Height    int      `json:"height" url:"height"`
+	Width     int      `json:"width" url:"width"`
+	Maximum   int      `json:"maximum" url:"maximum"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (c *ContentViolationSideSumTooLarge) GetChannelID() string {
+	if c == nil {
+		return ""
+	}
+	return c.ChannelID
+}
+
+func (c *ContentViolationSideSumTooLarge) GetPart() *int {
+	if c == nil {
+		return nil
+	}
+	return c.Part
+}
+
+func (c *ContentViolationSideSumTooLarge) GetPlatform() Platform {
+	if c == nil {
+		return ""
+	}
+	return c.Platform
+}
+
+func (c *ContentViolationSideSumTooLarge) GetMediaID() string {
+	if c == nil {
+		return ""
+	}
+	return c.MediaID
+}
+
+func (c *ContentViolationSideSumTooLarge) GetHeight() int {
+	if c == nil {
+		return 0
+	}
+	return c.Height
+}
+
+func (c *ContentViolationSideSumTooLarge) GetWidth() int {
+	if c == nil {
+		return 0
+	}
+	return c.Width
+}
+
+func (c *ContentViolationSideSumTooLarge) GetMaximum() int {
+	if c == nil {
+		return 0
+	}
+	return c.Maximum
+}
+
+func (c *ContentViolationSideSumTooLarge) GetExtraProperties() map[string]interface{} {
+	if c == nil {
+		return nil
+	}
+	return c.extraProperties
+}
+
+func (c *ContentViolationSideSumTooLarge) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetChannelID sets the ChannelID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationSideSumTooLarge) SetChannelID(channelID string) {
+	c.ChannelID = channelID
+	c.require(contentViolationSideSumTooLargeFieldChannelID)
+}
+
+// SetPart sets the Part field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationSideSumTooLarge) SetPart(part *int) {
+	c.Part = part
+	c.require(contentViolationSideSumTooLargeFieldPart)
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationSideSumTooLarge) SetPlatform(platform Platform) {
+	c.Platform = platform
+	c.require(contentViolationSideSumTooLargeFieldPlatform)
+}
+
+// SetMediaID sets the MediaID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationSideSumTooLarge) SetMediaID(mediaID string) {
+	c.MediaID = mediaID
+	c.require(contentViolationSideSumTooLargeFieldMediaID)
+}
+
+// SetHeight sets the Height field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationSideSumTooLarge) SetHeight(height int) {
+	c.Height = height
+	c.require(contentViolationSideSumTooLargeFieldHeight)
+}
+
+// SetWidth sets the Width field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationSideSumTooLarge) SetWidth(width int) {
+	c.Width = width
+	c.require(contentViolationSideSumTooLargeFieldWidth)
+}
+
+// SetMaximum sets the Maximum field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationSideSumTooLarge) SetMaximum(maximum int) {
+	c.Maximum = maximum
+	c.require(contentViolationSideSumTooLargeFieldMaximum)
+}
+
+func (c *ContentViolationSideSumTooLarge) UnmarshalJSON(data []byte) error {
+	type unmarshaler ContentViolationSideSumTooLarge
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*c = ContentViolationSideSumTooLarge(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *c)
+	if err != nil {
+		return err
+	}
+	c.extraProperties = extraProperties
+	c.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (c *ContentViolationSideSumTooLarge) MarshalJSON() ([]byte, error) {
+	type embed ContentViolationSideSumTooLarge
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (c *ContentViolationSideSumTooLarge) String() string {
 	if c == nil {
 		return "<nil>"
 	}

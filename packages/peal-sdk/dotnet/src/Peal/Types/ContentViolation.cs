@@ -325,6 +325,24 @@ public record ContentViolation
     }
 
     /// <summary>
+    /// Create an instance of ContentViolation with <see cref="ContentViolation.SideSumTooLarge"/>.
+    /// </summary>
+    public ContentViolation(ContentViolation.SideSumTooLarge value)
+    {
+        Type = "sideSumTooLarge";
+        Value = value.Value;
+    }
+
+    /// <summary>
+    /// Create an instance of ContentViolation with <see cref="ContentViolation.MediaTotalTooLarge"/>.
+    /// </summary>
+    public ContentViolation(ContentViolation.MediaTotalTooLarge value)
+    {
+        Type = "mediaTotalTooLarge";
+        Value = value.Value;
+    }
+
+    /// <summary>
     /// Create an instance of ContentViolation with <see cref="ContentViolation.AspectRatioUnsupported"/>.
     /// </summary>
     public ContentViolation(ContentViolation.AspectRatioUnsupported value)
@@ -522,6 +540,16 @@ public record ContentViolation
     /// Returns true if <see cref="Type"/> is "sideOutOfRange"
     /// </summary>
     public bool IsSideOutOfRange => Type == "sideOutOfRange";
+
+    /// <summary>
+    /// Returns true if <see cref="Type"/> is "sideSumTooLarge"
+    /// </summary>
+    public bool IsSideSumTooLarge => Type == "sideSumTooLarge";
+
+    /// <summary>
+    /// Returns true if <see cref="Type"/> is "mediaTotalTooLarge"
+    /// </summary>
+    public bool IsMediaTotalTooLarge => Type == "mediaTotalTooLarge";
 
     /// <summary>
     /// Returns true if <see cref="Type"/> is "aspectRatioUnsupported"
@@ -860,6 +888,26 @@ public record ContentViolation
             : throw new global::System.Exception("ContentViolation.Type is not 'sideOutOfRange'");
 
     /// <summary>
+    /// Returns the value as a <see cref="Peal.ContentViolationSideSumTooLarge"/> if <see cref="Type"/> is 'sideSumTooLarge', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'sideSumTooLarge'.</exception>
+    public Peal.ContentViolationSideSumTooLarge AsSideSumTooLarge() =>
+        IsSideSumTooLarge
+            ? (Peal.ContentViolationSideSumTooLarge)Value!
+            : throw new global::System.Exception("ContentViolation.Type is not 'sideSumTooLarge'");
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.ContentViolationMediaTotalTooLarge"/> if <see cref="Type"/> is 'mediaTotalTooLarge', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'mediaTotalTooLarge'.</exception>
+    public Peal.ContentViolationMediaTotalTooLarge AsMediaTotalTooLarge() =>
+        IsMediaTotalTooLarge
+            ? (Peal.ContentViolationMediaTotalTooLarge)Value!
+            : throw new global::System.Exception(
+                "ContentViolation.Type is not 'mediaTotalTooLarge'"
+            );
+
+    /// <summary>
     /// Returns the value as a <see cref="Peal.ContentViolationAspectRatioUnsupported"/> if <see cref="Type"/> is 'aspectRatioUnsupported', otherwise throws an exception.
     /// </summary>
     /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'aspectRatioUnsupported'.</exception>
@@ -914,6 +962,8 @@ public record ContentViolation
         Func<Peal.ContentViolationVideoTooShort, T> onVideoTooShort,
         Func<Peal.ContentViolationTooManyPixels, T> onTooManyPixels,
         Func<Peal.ContentViolationSideOutOfRange, T> onSideOutOfRange,
+        Func<Peal.ContentViolationSideSumTooLarge, T> onSideSumTooLarge,
+        Func<Peal.ContentViolationMediaTotalTooLarge, T> onMediaTotalTooLarge,
         Func<Peal.ContentViolationAspectRatioUnsupported, T> onAspectRatioUnsupported,
         Func<Peal.ContentViolationAltTextTooLong, T> onAltTextTooLong,
         Func<string, object?, T> onUnknown_
@@ -955,6 +1005,8 @@ public record ContentViolation
             "videoTooShort" => onVideoTooShort(AsVideoTooShort()),
             "tooManyPixels" => onTooManyPixels(AsTooManyPixels()),
             "sideOutOfRange" => onSideOutOfRange(AsSideOutOfRange()),
+            "sideSumTooLarge" => onSideSumTooLarge(AsSideSumTooLarge()),
+            "mediaTotalTooLarge" => onMediaTotalTooLarge(AsMediaTotalTooLarge()),
             "aspectRatioUnsupported" => onAspectRatioUnsupported(AsAspectRatioUnsupported()),
             "altTextTooLong" => onAltTextTooLong(AsAltTextTooLong()),
             _ => onUnknown_(Type, Value),
@@ -996,6 +1048,8 @@ public record ContentViolation
         Action<Peal.ContentViolationVideoTooShort> onVideoTooShort,
         Action<Peal.ContentViolationTooManyPixels> onTooManyPixels,
         Action<Peal.ContentViolationSideOutOfRange> onSideOutOfRange,
+        Action<Peal.ContentViolationSideSumTooLarge> onSideSumTooLarge,
+        Action<Peal.ContentViolationMediaTotalTooLarge> onMediaTotalTooLarge,
         Action<Peal.ContentViolationAspectRatioUnsupported> onAspectRatioUnsupported,
         Action<Peal.ContentViolationAltTextTooLong> onAltTextTooLong,
         Action<string, object?> onUnknown_
@@ -1104,6 +1158,12 @@ public record ContentViolation
                 break;
             case "sideOutOfRange":
                 onSideOutOfRange(AsSideOutOfRange());
+                break;
+            case "sideSumTooLarge":
+                onSideSumTooLarge(AsSideSumTooLarge());
+                break;
+            case "mediaTotalTooLarge":
+                onMediaTotalTooLarge(AsMediaTotalTooLarge());
                 break;
             case "aspectRatioUnsupported":
                 onAspectRatioUnsupported(AsAspectRatioUnsupported());
@@ -1596,6 +1656,34 @@ public record ContentViolation
     }
 
     /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.ContentViolationSideSumTooLarge"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsSideSumTooLarge(out Peal.ContentViolationSideSumTooLarge? value)
+    {
+        if (Type == "sideSumTooLarge")
+        {
+            value = (Peal.ContentViolationSideSumTooLarge)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.ContentViolationMediaTotalTooLarge"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsMediaTotalTooLarge(out Peal.ContentViolationMediaTotalTooLarge? value)
+    {
+        if (Type == "mediaTotalTooLarge")
+        {
+            value = (Peal.ContentViolationMediaTotalTooLarge)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
     /// Attempts to cast the value to a <see cref="Peal.ContentViolationAspectRatioUnsupported"/> and returns true if successful.
     /// </summary>
     public bool TryAsAspectRatioUnsupported(out Peal.ContentViolationAspectRatioUnsupported? value)
@@ -1728,6 +1816,12 @@ public record ContentViolation
         new(value);
 
     public static implicit operator ContentViolation(ContentViolation.SideOutOfRange value) =>
+        new(value);
+
+    public static implicit operator ContentViolation(ContentViolation.SideSumTooLarge value) =>
+        new(value);
+
+    public static implicit operator ContentViolation(ContentViolation.MediaTotalTooLarge value) =>
         new(value);
 
     public static implicit operator ContentViolation(
@@ -2006,6 +2100,20 @@ public record ContentViolation
                         ?? throw new JsonException(
                             "Failed to deserialize Peal.ContentViolationSideOutOfRange"
                         ),
+                "sideSumTooLarge" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.ContentViolationSideSumTooLarge?>(
+                        options
+                    )
+                        ?? throw new JsonException(
+                            "Failed to deserialize Peal.ContentViolationSideSumTooLarge"
+                        ),
+                "mediaTotalTooLarge" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.ContentViolationMediaTotalTooLarge?>(
+                        options
+                    )
+                        ?? throw new JsonException(
+                            "Failed to deserialize Peal.ContentViolationMediaTotalTooLarge"
+                        ),
                 "aspectRatioUnsupported" =>
                     jsonWithoutDiscriminator.Deserialize<Peal.ContentViolationAspectRatioUnsupported?>(
                         options
@@ -2077,6 +2185,8 @@ public record ContentViolation
                     "videoTooShort" => JsonSerializer.SerializeToNode(value.Value, options),
                     "tooManyPixels" => JsonSerializer.SerializeToNode(value.Value, options),
                     "sideOutOfRange" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "sideSumTooLarge" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "mediaTotalTooLarge" => JsonSerializer.SerializeToNode(value.Value, options),
                     "aspectRatioUnsupported" => JsonSerializer.SerializeToNode(
                         value.Value,
                         options
@@ -2786,6 +2896,46 @@ public record ContentViolation
 
         public static implicit operator ContentViolation.SideOutOfRange(
             Peal.ContentViolationSideOutOfRange value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for sideSumTooLarge
+    /// </summary>
+    [Serializable]
+    public struct SideSumTooLarge
+    {
+        public SideSumTooLarge(Peal.ContentViolationSideSumTooLarge value)
+        {
+            Value = value;
+        }
+
+        internal Peal.ContentViolationSideSumTooLarge Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator ContentViolation.SideSumTooLarge(
+            Peal.ContentViolationSideSumTooLarge value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for mediaTotalTooLarge
+    /// </summary>
+    [Serializable]
+    public struct MediaTotalTooLarge
+    {
+        public MediaTotalTooLarge(Peal.ContentViolationMediaTotalTooLarge value)
+        {
+            Value = value;
+        }
+
+        internal Peal.ContentViolationMediaTotalTooLarge Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator ContentViolation.MediaTotalTooLarge(
+            Peal.ContentViolationMediaTotalTooLarge value
         ) => new(value);
     }
 

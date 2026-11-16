@@ -21,6 +21,8 @@ module Peal
 
       field :max_side, -> { Integer }, optional: false, nullable: true, api_name: "maxSide"
 
+      field :max_side_sum, -> { Integer }, optional: true, nullable: false, api_name: "maxSideSum"
+
       field :min_aspect_ratio, -> { Float }, optional: false, nullable: true, api_name: "minAspectRatio"
 
       field :min_byte_size, -> { Integer }, optional: false, nullable: true, api_name: "minByteSize"

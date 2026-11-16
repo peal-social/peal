@@ -32,6 +32,10 @@ module Peal
       member -> { Peal::Types::InstagramOptions }, key: "INSTAGRAM"
 
       member -> { Peal::Types::FacebookOptions }, key: "FACEBOOK"
+
+      member -> { Peal::Types::DiscordOptions }, key: "DISCORD"
+
+      member -> { Peal::Types::TelegramOptions }, key: "TELEGRAM"
     end
   end
 end

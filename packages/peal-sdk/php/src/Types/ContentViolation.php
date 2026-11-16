@@ -43,6 +43,8 @@ class ContentViolation extends JsonSerializableType
      *   |'videoTooShort'
      *   |'tooManyPixels'
      *   |'sideOutOfRange'
+     *   |'sideSumTooLarge'
+     *   |'mediaTotalTooLarge'
      *   |'aspectRatioUnsupported'
      *   |'altTextTooLong'
      *   |'_unknown'
@@ -86,6 +88,8 @@ class ContentViolation extends JsonSerializableType
      *   |ContentViolationVideoTooShort
      *   |ContentViolationTooManyPixels
      *   |ContentViolationSideOutOfRange
+     *   |ContentViolationSideSumTooLarge
+     *   |ContentViolationMediaTotalTooLarge
      *   |ContentViolationAspectRatioUnsupported
      *   |ContentViolationAltTextTooLong
      *   |mixed
@@ -130,6 +134,8 @@ class ContentViolation extends JsonSerializableType
      *   |'videoTooShort'
      *   |'tooManyPixels'
      *   |'sideOutOfRange'
+     *   |'sideSumTooLarge'
+     *   |'mediaTotalTooLarge'
      *   |'aspectRatioUnsupported'
      *   |'altTextTooLong'
      *   |'_unknown'
@@ -169,6 +175,8 @@ class ContentViolation extends JsonSerializableType
      *   |ContentViolationVideoTooShort
      *   |ContentViolationTooManyPixels
      *   |ContentViolationSideOutOfRange
+     *   |ContentViolationSideSumTooLarge
+     *   |ContentViolationMediaTotalTooLarge
      *   |ContentViolationAspectRatioUnsupported
      *   |ContentViolationAltTextTooLong
      *   |mixed
@@ -587,6 +595,30 @@ class ContentViolation extends JsonSerializableType
         return new ContentViolation([
             'type' => 'sideOutOfRange',
             'value' => $sideOutOfRange,
+        ]);
+    }
+
+    /**
+     * @param ContentViolationSideSumTooLarge $sideSumTooLarge
+     * @return ContentViolation
+     */
+    public static function sideSumTooLarge(ContentViolationSideSumTooLarge $sideSumTooLarge): ContentViolation
+    {
+        return new ContentViolation([
+            'type' => 'sideSumTooLarge',
+            'value' => $sideSumTooLarge,
+        ]);
+    }
+
+    /**
+     * @param ContentViolationMediaTotalTooLarge $mediaTotalTooLarge
+     * @return ContentViolation
+     */
+    public static function mediaTotalTooLarge(ContentViolationMediaTotalTooLarge $mediaTotalTooLarge): ContentViolation
+    {
+        return new ContentViolation([
+            'type' => 'mediaTotalTooLarge',
+            'value' => $mediaTotalTooLarge,
         ]);
     }
 
@@ -1365,6 +1397,50 @@ class ContentViolation extends JsonSerializableType
     /**
      * @return bool
      */
+    public function isSideSumTooLarge(): bool
+    {
+        return $this->value instanceof ContentViolationSideSumTooLarge && $this->type === 'sideSumTooLarge';
+    }
+
+    /**
+     * @return ContentViolationSideSumTooLarge
+     */
+    public function asSideSumTooLarge(): ContentViolationSideSumTooLarge
+    {
+        if (!($this->value instanceof ContentViolationSideSumTooLarge && $this->type === 'sideSumTooLarge')) {
+            throw new Exception(
+                "Expected sideSumTooLarge; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMediaTotalTooLarge(): bool
+    {
+        return $this->value instanceof ContentViolationMediaTotalTooLarge && $this->type === 'mediaTotalTooLarge';
+    }
+
+    /**
+     * @return ContentViolationMediaTotalTooLarge
+     */
+    public function asMediaTotalTooLarge(): ContentViolationMediaTotalTooLarge
+    {
+        if (!($this->value instanceof ContentViolationMediaTotalTooLarge && $this->type === 'mediaTotalTooLarge')) {
+            throw new Exception(
+                "Expected mediaTotalTooLarge; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
     public function isAspectRatioUnsupported(): bool
     {
         return $this->value instanceof ContentViolationAspectRatioUnsupported && $this->type === 'aspectRatioUnsupported';
@@ -1562,6 +1638,14 @@ class ContentViolation extends JsonSerializableType
                 $value = $this->asSideOutOfRange()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
+            case 'sideSumTooLarge':
+                $value = $this->asSideSumTooLarge()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'mediaTotalTooLarge':
+                $value = $this->asMediaTotalTooLarge()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
             case 'aspectRatioUnsupported':
                 $value = $this->asAspectRatioUnsupported()->jsonSerialize();
                 $result = array_merge($value, $result);
@@ -1707,6 +1791,12 @@ class ContentViolation extends JsonSerializableType
                 break;
             case 'sideOutOfRange':
                 $args['value'] = ContentViolationSideOutOfRange::jsonDeserialize($data);
+                break;
+            case 'sideSumTooLarge':
+                $args['value'] = ContentViolationSideSumTooLarge::jsonDeserialize($data);
+                break;
+            case 'mediaTotalTooLarge':
+                $args['value'] = ContentViolationMediaTotalTooLarge::jsonDeserialize($data);
                 break;
             case 'aspectRatioUnsupported':
                 $args['value'] = ContentViolationAspectRatioUnsupported::jsonDeserialize($data);

@@ -28,6 +28,8 @@ public final class ConnectablePlatforms {
 
     private final List<Platform> platforms;
 
+    private final Optional<List<ChatPlatform>> chats;
+
     private final Optional<List<SitePlatform>> sites;
 
     private final Map<String, Object> additionalProperties;
@@ -36,11 +38,13 @@ public final class ConnectablePlatforms {
             List<InstagramConnection> instagramConnections,
             List<LinkedInConnection> linkedinConnections,
             List<Platform> platforms,
+            Optional<List<ChatPlatform>> chats,
             Optional<List<SitePlatform>> sites,
             Map<String, Object> additionalProperties) {
         this.instagramConnections = instagramConnections;
         this.linkedinConnections = linkedinConnections;
         this.platforms = platforms;
+        this.chats = chats;
         this.sites = sites;
         this.additionalProperties = additionalProperties;
     }
@@ -58,6 +62,11 @@ public final class ConnectablePlatforms {
     @JsonProperty("platforms")
     public List<Platform> getPlatforms() {
         return platforms;
+    }
+
+    @JsonProperty("chats")
+    public Optional<List<ChatPlatform>> getChats() {
+        return chats;
     }
 
     @JsonProperty("sites")
@@ -80,12 +89,14 @@ public final class ConnectablePlatforms {
         return instagramConnections.equals(other.instagramConnections)
                 && linkedinConnections.equals(other.linkedinConnections)
                 && platforms.equals(other.platforms)
+                && chats.equals(other.chats)
                 && sites.equals(other.sites);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.instagramConnections, this.linkedinConnections, this.platforms, this.sites);
+        return Objects.hash(
+                this.instagramConnections, this.linkedinConnections, this.platforms, this.chats, this.sites);
     }
 
     @java.lang.Override
@@ -105,6 +116,8 @@ public final class ConnectablePlatforms {
 
         private List<Platform> platforms = new ArrayList<>();
 
+        private Optional<List<ChatPlatform>> chats = Optional.empty();
+
         private Optional<List<SitePlatform>> sites = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -115,6 +128,7 @@ public final class ConnectablePlatforms {
             instagramConnections(other.getInstagramConnections());
             linkedinConnections(other.getLinkedinConnections());
             platforms(other.getPlatforms());
+            chats(other.getChats());
             sites(other.getSites());
             return this;
         }
@@ -182,6 +196,17 @@ public final class ConnectablePlatforms {
             return this;
         }
 
+        @JsonSetter(value = "chats", nulls = Nulls.SKIP)
+        public Builder chats(Optional<List<ChatPlatform>> chats) {
+            this.chats = chats;
+            return this;
+        }
+
+        public Builder chats(List<ChatPlatform> chats) {
+            this.chats = Optional.ofNullable(chats);
+            return this;
+        }
+
         @JsonSetter(value = "sites", nulls = Nulls.SKIP)
         public Builder sites(Optional<List<SitePlatform>> sites) {
             this.sites = sites;
@@ -195,7 +220,7 @@ public final class ConnectablePlatforms {
 
         public ConnectablePlatforms build() {
             return new ConnectablePlatforms(
-                    instagramConnections, linkedinConnections, platforms, sites, additionalProperties);
+                    instagramConnections, linkedinConnections, platforms, chats, sites, additionalProperties);
         }
 
         @JsonAnySetter
@@ -203,6 +228,7 @@ public final class ConnectablePlatforms {
             if (key.equalsIgnoreCase("instagramConnections")
                     || key.equalsIgnoreCase("linkedinConnections")
                     || key.equalsIgnoreCase("platforms")
+                    || key.equalsIgnoreCase("chats")
                     || key.equalsIgnoreCase("sites")) {
                 return;
             }

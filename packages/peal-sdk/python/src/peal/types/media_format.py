@@ -33,6 +33,9 @@ class MediaFormat(UniversalBaseModel):
     max_side: typing_extensions.Annotated[
         typing.Optional[int], FieldMetadata(alias="maxSide"), pydantic.Field(alias="maxSide")
     ] = None
+    max_side_sum: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="maxSideSum"), pydantic.Field(alias="maxSideSum")
+    ] = None
     min_aspect_ratio: typing_extensions.Annotated[
         typing.Optional[float], FieldMetadata(alias="minAspectRatio"), pydantic.Field(alias="minAspectRatio")
     ] = None

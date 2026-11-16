@@ -10,6 +10,9 @@ pub struct MediaCapabilities {
     #[serde(rename = "maxCount")]
     #[serde(default)]
     pub max_count: i64,
+    #[serde(rename = "maxTotalByteSize")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_total_byte_size: Option<i64>,
     #[serde(rename = "maxVideos")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_videos: Option<i64>,
@@ -32,6 +35,7 @@ pub struct MediaCapabilitiesBuilder {
     alt_text: Option<MediaCapabilitiesAltText>,
     formats: Option<Vec<MediaFormat>>,
     max_count: Option<i64>,
+    max_total_byte_size: Option<i64>,
     max_videos: Option<i64>,
     mixes_kinds: Option<bool>,
     required: Option<bool>,
@@ -50,6 +54,11 @@ impl MediaCapabilitiesBuilder {
 
     pub fn max_count(mut self, value: i64) -> Self {
         self.max_count = Some(value);
+        self
+    }
+
+    pub fn max_total_byte_size(mut self, value: i64) -> Self {
+        self.max_total_byte_size = Some(value);
         self
     }
 
@@ -82,6 +91,7 @@ impl MediaCapabilitiesBuilder {
             max_count: self
                 .max_count
                 .ok_or_else(|| BuildError::missing_field("max_count"))?,
+            max_total_byte_size: self.max_total_byte_size,
             max_videos: self.max_videos,
             mixes_kinds: self.mixes_kinds,
             required: self

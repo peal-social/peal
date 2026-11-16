@@ -7,6 +7,9 @@ pub struct TextCapabilities {
     pub forbidden_characters: Vec<String>,
     #[serde(default)]
     pub limits: Vec<TextLimit>,
+    #[serde(rename = "limitsWithMedia")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limits_with_media: Option<Vec<TextLimit>>,
     #[serde(rename = "maxHashtags")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_hashtags: Option<i64>,
@@ -29,6 +32,7 @@ impl TextCapabilities {
 pub struct TextCapabilitiesBuilder {
     forbidden_characters: Option<Vec<String>>,
     limits: Option<Vec<TextLimit>>,
+    limits_with_media: Option<Vec<TextLimit>>,
     max_hashtags: Option<i64>,
     max_links: Option<i64>,
     max_mentions: Option<i64>,
@@ -42,6 +46,11 @@ impl TextCapabilitiesBuilder {
 
     pub fn limits(mut self, value: Vec<TextLimit>) -> Self {
         self.limits = Some(value);
+        self
+    }
+
+    pub fn limits_with_media(mut self, value: Vec<TextLimit>) -> Self {
+        self.limits_with_media = Some(value);
         self
     }
 
@@ -72,6 +81,7 @@ impl TextCapabilitiesBuilder {
             limits: self
                 .limits
                 .ok_or_else(|| BuildError::missing_field("limits"))?,
+            limits_with_media: self.limits_with_media,
             max_hashtags: self.max_hashtags,
             max_links: self.max_links,
             max_mentions: self.max_mentions,

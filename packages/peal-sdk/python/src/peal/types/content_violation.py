@@ -687,6 +687,48 @@ class ContentViolation_SideOutOfRange(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+class ContentViolation_SideSumTooLarge(UniversalBaseModel):
+    type: typing_extensions.Annotated[
+        typing.Literal["sideSumTooLarge"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "sideSumTooLarge"
+    channel_id: typing_extensions.Annotated[str, FieldMetadata(alias="channelId"), pydantic.Field(alias="channelId")]
+    part: typing.Optional[int] = None
+    platform: Platform
+    media_id: typing_extensions.Annotated[str, FieldMetadata(alias="mediaId"), pydantic.Field(alias="mediaId")]
+    height: int
+    width: int
+    maximum: int
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class ContentViolation_MediaTotalTooLarge(UniversalBaseModel):
+    type: typing_extensions.Annotated[
+        typing.Literal["mediaTotalTooLarge"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "mediaTotalTooLarge"
+    channel_id: typing_extensions.Annotated[str, FieldMetadata(alias="channelId"), pydantic.Field(alias="channelId")]
+    part: typing.Optional[int] = None
+    platform: Platform
+    maximum: int
+    total: int
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 class ContentViolation_AspectRatioUnsupported(UniversalBaseModel):
     type: typing_extensions.Annotated[
         typing.Literal["aspectRatioUnsupported"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
@@ -767,6 +809,8 @@ ContentViolation = typing_extensions.Annotated[
         ContentViolation_VideoTooShort,
         ContentViolation_TooManyPixels,
         ContentViolation_SideOutOfRange,
+        ContentViolation_SideSumTooLarge,
+        ContentViolation_MediaTotalTooLarge,
         ContentViolation_AspectRatioUnsupported,
         ContentViolation_AltTextTooLong,
     ],

@@ -35,6 +35,9 @@ public record MediaFormat : IJsonOnDeserialized
     [JsonPropertyName("maxSide")]
     public int? MaxSide { get; set; }
 
+    [JsonPropertyName("maxSideSum")]
+    public int? MaxSideSum { get; set; }
+
     [JsonPropertyName("minAspectRatio")]
     public double? MinAspectRatio { get; set; }
 
