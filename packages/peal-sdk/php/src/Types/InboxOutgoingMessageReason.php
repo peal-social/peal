@@ -15,4 +15,6 @@ enum InboxOutgoingMessageReason: string
     case Interrupted = "interrupted";
     case AdapterFailure = "adapterFailure";
     case WindowClosed = "windowClosed";
+    case HumanAgentNotGranted = "humanAgentNotGranted";
+    case TagRestricted = "tagRestricted";
 }

@@ -18,6 +18,8 @@ module Peal
       INTERRUPTED = "interrupted"
       ADAPTER_FAILURE = "adapterFailure"
       WINDOW_CLOSED = "windowClosed"
+      HUMAN_AGENT_NOT_GRANTED = "humanAgentNotGranted"
+      TAG_RESTRICTED = "tagRestricted"
     end
   end
 end

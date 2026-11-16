@@ -5889,6 +5889,20 @@ func TestEnumInboxOutgoingMessageReason(t *testing.T) {
 		assert.Equal(t, InboxOutgoingMessageReason("windowClosed"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_humanAgentNotGranted", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewInboxOutgoingMessageReasonFromString("humanAgentNotGranted")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, InboxOutgoingMessageReason("humanAgentNotGranted"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_tagRestricted", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewInboxOutgoingMessageReasonFromString("tagRestricted")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, InboxOutgoingMessageReason("tagRestricted"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewInboxOutgoingMessageReasonFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)

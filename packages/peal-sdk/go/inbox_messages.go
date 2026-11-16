@@ -2095,17 +2095,19 @@ func (i *InboxOutgoingMessage) String() string {
 type InboxOutgoingMessageReason string
 
 const (
-	InboxOutgoingMessageReasonChannelUnavailable  InboxOutgoingMessageReason = "channelUnavailable"
-	InboxOutgoingMessageReasonReconnectNeeded     InboxOutgoingMessageReason = "reconnectNeeded"
-	InboxOutgoingMessageReasonRateLimited         InboxOutgoingMessageReason = "rateLimited"
-	InboxOutgoingMessageReasonPlatformUnavailable InboxOutgoingMessageReason = "platformUnavailable"
-	InboxOutgoingMessageReasonConversationGone    InboxOutgoingMessageReason = "conversationGone"
-	InboxOutgoingMessageReasonRefused             InboxOutgoingMessageReason = "refused"
-	InboxOutgoingMessageReasonNotSent             InboxOutgoingMessageReason = "notSent"
-	InboxOutgoingMessageReasonNoResponse          InboxOutgoingMessageReason = "noResponse"
-	InboxOutgoingMessageReasonInterrupted         InboxOutgoingMessageReason = "interrupted"
-	InboxOutgoingMessageReasonAdapterFailure      InboxOutgoingMessageReason = "adapterFailure"
-	InboxOutgoingMessageReasonWindowClosed        InboxOutgoingMessageReason = "windowClosed"
+	InboxOutgoingMessageReasonChannelUnavailable   InboxOutgoingMessageReason = "channelUnavailable"
+	InboxOutgoingMessageReasonReconnectNeeded      InboxOutgoingMessageReason = "reconnectNeeded"
+	InboxOutgoingMessageReasonRateLimited          InboxOutgoingMessageReason = "rateLimited"
+	InboxOutgoingMessageReasonPlatformUnavailable  InboxOutgoingMessageReason = "platformUnavailable"
+	InboxOutgoingMessageReasonConversationGone     InboxOutgoingMessageReason = "conversationGone"
+	InboxOutgoingMessageReasonRefused              InboxOutgoingMessageReason = "refused"
+	InboxOutgoingMessageReasonNotSent              InboxOutgoingMessageReason = "notSent"
+	InboxOutgoingMessageReasonNoResponse           InboxOutgoingMessageReason = "noResponse"
+	InboxOutgoingMessageReasonInterrupted          InboxOutgoingMessageReason = "interrupted"
+	InboxOutgoingMessageReasonAdapterFailure       InboxOutgoingMessageReason = "adapterFailure"
+	InboxOutgoingMessageReasonWindowClosed         InboxOutgoingMessageReason = "windowClosed"
+	InboxOutgoingMessageReasonHumanAgentNotGranted InboxOutgoingMessageReason = "humanAgentNotGranted"
+	InboxOutgoingMessageReasonTagRestricted        InboxOutgoingMessageReason = "tagRestricted"
 )
 
 func NewInboxOutgoingMessageReasonFromString(s string) (InboxOutgoingMessageReason, error) {
@@ -2132,6 +2134,10 @@ func NewInboxOutgoingMessageReasonFromString(s string) (InboxOutgoingMessageReas
 		return InboxOutgoingMessageReasonAdapterFailure, nil
 	case "windowClosed":
 		return InboxOutgoingMessageReasonWindowClosed, nil
+	case "humanAgentNotGranted":
+		return InboxOutgoingMessageReasonHumanAgentNotGranted, nil
+	case "tagRestricted":
+		return InboxOutgoingMessageReasonTagRestricted, nil
 	}
 	var t InboxOutgoingMessageReason
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
