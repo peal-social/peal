@@ -132,6 +132,11 @@ const LiveAction = (props: LivePostViewProps) => {
         </div>
       ),
     none: () => null,
+    windowPassed: () => (
+      <p className="text-muted-foreground text-sm">
+        {t("windowPassed", { platform })}
+      </p>
+    ),
     offered: () => (
       <UnpublishDialog
         {...props}

@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { DateTime, Option } from "effect";
 import type {
   Platform,
   LivePostBlocker,
@@ -21,6 +21,8 @@ import type {
  *   is left.
  * - `offered`: it can be removed.
  * - `blocked`: the platform does not let Peal (`by` says why).
+ * - `windowPassed`: the platform deletes a post only for a time after it
+ *   went out, and that time has passed: it is deleted there.
  */
 export type LiveState =
   | { readonly _tag: "none" }
@@ -29,7 +31,8 @@ export type LiveState =
   | { readonly _tag: "editing" }
   | { readonly _tag: "failed"; readonly code: string | null }
   | { readonly _tag: "offered" }
-  | { readonly _tag: "blocked"; readonly by: LivePostBlocker | null };
+  | { readonly _tag: "blocked"; readonly by: LivePostBlocker | null }
+  | { readonly _tag: "windowPassed" };
 
 /**
  * Where an edit of a channel's text stands for a member who may make it:
@@ -64,12 +67,14 @@ export const latestChangeOf = (
 /**
  * Where the target stands, from its status, the changes asked of it and
  * what its platform lets Peal do (`livePost` of its capabilities, none
- * while they are not read).
+ * while they are not read), and whether its platform's deletion window
+ * has passed (`deletionWindowPassed`).
  */
 export const liveStateOf = (
   target: PostTarget,
   changes: readonly LivePostChange[],
-  ability: Option.Option<PlatformCapabilities["livePost"]>
+  ability: Option.Option<PlatformCapabilities["livePost"]>,
+  windowPassed = false
 ): LiveState => {
   if (target.status !== "published") {
     return { _tag: "none" };
@@ -93,6 +98,11 @@ export const liveStateOf = (
 
   if (!ability.value.unpublish) {
     return { _tag: "blocked", by: ability.value.unpublishBlockedBy ?? null };
+  }
+
+  // The server would refuse it: nothing to ask again.
+  if (windowPassed) {
+    return { _tag: "windowPassed" };
   }
 
   // A failed edit leaves the post as it was, and removal offered.
@@ -225,3 +235,23 @@ export const isRemovedEverywhere = (post: Pick<Post, "targets">): boolean => {
  */
 export const deletionWindowOf = (platform: Platform): number | undefined =>
   platform === "telegram" ? 48 : undefined;
+
+/**
+ * Whether the platform's deletion window for the target has passed at
+ * `now`, as the server judges it before it refuses the removal
+ * (`deletionWindowPassed`).
+ */
+export const deletionWindowPassed = (
+  target: PostTarget,
+  platform: Platform,
+  now: Date
+): boolean => {
+  const hours = deletionWindowOf(platform);
+
+  return (
+    hours !== undefined &&
+    target.publishedAt !== null &&
+    now.getTime() >
+      DateTime.toEpochMillis(target.publishedAt) + hours * 3_600_000
+  );
+};

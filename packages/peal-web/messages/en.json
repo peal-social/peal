@@ -1065,7 +1065,8 @@
       "editRefused": "{reason, select, notPublished {The post is not live on this channel.} alreadyRemoved {The post was removed from this channel.} noPlatformId {Peal has no id for this part on the platform: edit it there.} notSupported {The platform does not let Peal edit this post: edit it there.} changeInProgress {Another change of this post is under way.} channelUnavailable {The channel is disconnected, turned off or must be reconnected.} approvalRequired {Your posts need approval: ask an approver to make this change.} invalid {The platform would refuse this text: check its length and characters.} forbidden {Your role does not let you edit published posts.} other {The post could not be edited. Try again.}}",
       "deletesWithin": "{platform} deletes a post only within {hours} hours of sending it.",
       "webhookChanged": "Another webhook sent this post, and only that one may delete it: remove it on {platform}.",
-      "editWebhookChanged": "Another webhook sent this post, and only that one may edit it: edit it on {platform}."
+      "editWebhookChanged": "Another webhook sent this post, and only that one may edit it: edit it on {platform}.",
+      "windowPassed": "{platform} deletes a post only for a time after it went out, and that time has passed: delete it on {platform}."
     },
     "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} other {{platform}}}",
     "status": "{status, select, draft {Draft} awaitingApproval {Awaiting approval} scheduled {Scheduled} publishing {Publishing} finished {Finished} cancelled {Cancelled} other {{status}}}",

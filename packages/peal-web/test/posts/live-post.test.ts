@@ -3,6 +3,7 @@ import { DateTime, Option } from "effect";
 import type { LivePostChange, PostTarget } from "peal-contract";
 
 import {
+  deletionWindowPassed,
   editStateOf,
   endedSince,
   isRemovedEverywhere,
@@ -95,6 +96,36 @@ describe("where a channel of a live post stands", () => {
 
 // The changes as a read of them answered them.
 const read = (changes: readonly LivePostChange[]) => Option.some(changes);
+
+// A time `hours` and `seconds` after the post went out.
+const later = (hours: number, seconds = 0) =>
+  new Date(
+    Date.parse("2026-06-15T08:00:00Z") + hours * 3_600_000 + seconds * 1000
+  );
+
+describe("a post past its platform's deletion window", () => {
+  it("is past it 48 hours after it went out on Telegram, and never elsewhere", () => {
+    expect(deletionWindowPassed(target(), "telegram", later(48))).toBeFalsy();
+    expect(
+      deletionWindowPassed(target(), "telegram", later(48, 1))
+    ).toBeTruthy();
+    expect(deletionWindowPassed(target(), "discord", later(480))).toBeFalsy();
+  });
+
+  it("offers no removal then, and says to delete it on the platform", () => {
+    expect(liveStateOf(target(), [], deletes, true)).toStrictEqual({
+      _tag: "windowPassed",
+    });
+    expect(
+      liveStateOf(
+        target(),
+        [change("2", "failed", "unavailable")],
+        deletes,
+        true
+      )
+    ).toStrictEqual({ _tag: "windowPassed" });
+  });
+});
 
 describe("a change of the channel that ended since the page last read the changes", () => {
   it("is one that was pending and no longer is, whatever its kind", () => {

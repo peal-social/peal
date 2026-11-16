@@ -141,6 +141,15 @@ describe("unpublishing a live post", () => {
     expect(failed).not.toContain("Try again");
   });
 
+  it("says a post past the platform's deletion window is to delete there", async () => {
+    const markup = await renderState("en", { _tag: "windowPassed" });
+
+    expect(markup).toContain(
+      "Threads deletes a post only for a time after it went out, and that time has passed: delete it on Threads."
+    );
+    expect(markup).not.toContain("Unpublish");
+  });
+
   it("says why a platform does not let Peal delete", async () => {
     await expect(
       renderState("en", { _tag: "blocked", by: "permission" })
