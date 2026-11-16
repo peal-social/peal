@@ -320,7 +320,7 @@ describe("the accounts a Google sign-in reaches", () => {
         accessible: ["2222222222"],
         customers: [
           customer("2222222222", { clients, manager: true }),
-          ...clients.map((id) => customer(id)),
+          ...clients.map((clientId) => customer(clientId)),
         ],
         pageSize: 500,
       });
