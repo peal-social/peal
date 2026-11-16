@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { signUpSettings } from "#auth/captcha.ts";
 import { providerErrorKey } from "#auth/errors.ts";
 import { nextPathOf } from "#auth/next-path.ts";
+import { cameFromProvider, signInReturn } from "#auth/provider-return.ts";
 import { offersSignUp } from "#auth/sign-up-mode.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
 import { FormError } from "#components/auth/form-error.tsx";
@@ -15,17 +16,19 @@ import { getPathname, Link } from "#i18n/navigation.ts";
 // ?next= names where to go once signed in, as the /device page asks. The
 // link to sign up shows only where anyone may, which the server says at
 // request time, as it says the providers to sign in with. A provider's
-// refusal comes back here as ?error=<code>, which only names a message.
+// refusal comes back here as ?error=<code>, which only names a message,
+// with ?from=provider; the authorization server's comes without it.
 const SignInPage = async ({ searchParams }: PageProps<"/[locale]/sign-in">) => {
   await connection();
 
-  const { error, next } = await searchParams;
+  const { error, from, next } = await searchParams;
   const { mode, providers } = await signUpSettings();
   const t = await getTranslations("SignInPage");
   const locale = await getLocale();
   const nextPath = Option.getOrElse(nextPathOf(next), () => "/app");
 
   const refused = providerErrorKey(error, {
+    fromProvider: cameFromProvider(from),
     providersOffered: providers.length > 0,
     signUpOffered: offersSignUp(mode),
   });
@@ -54,14 +57,9 @@ const SignInPage = async ({ searchParams }: PageProps<"/[locale]/sign-in">) => {
         <FormError error={Option.getOrNull(refused)} />
         <ProviderButtons
           providers={providers}
-          returnTo={{
-            errorPath: getPathname({
-              href: { pathname: "/sign-in", query: { next: nextPath } },
-              locale,
-            }),
-            // As the password's sign-in opens it: the language follows.
-            next: nextPath,
-          }}
+          returnTo={signInReturn(nextPath, (href) =>
+            getPathname({ href, locale })
+          )}
         />
         <SignInForm next={nextPath} />
       </div>

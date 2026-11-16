@@ -48,7 +48,11 @@ describe(authErrorKey, () => {
   });
 });
 
-const offered = { providersOffered: true, signUpOffered: true };
+const offered = {
+  fromProvider: true,
+  providersOffered: true,
+  signUpOffered: true,
+};
 
 describe(providerErrorKey, () => {
   it("reads nothing from an address without an error", () => {
@@ -73,6 +77,7 @@ describe(providerErrorKey, () => {
   it("sends nobody to sign up where the server takes no sign-up", () => {
     expect(
       providerErrorKey("signup_disabled", {
+        fromProvider: true,
         providersOffered: true,
         signUpOffered: false,
       })
@@ -100,20 +105,44 @@ describe(providerErrorKey, () => {
   );
 
   // An application's authorization (an MCP client's, the command line's)
-  // that the server refused sends the browser here too.
+  // that the server refused sends the browser here too, unmarked.
   it.each([
     "invalid_client",
     "invalid_redirect",
     "invalid_scope",
     "client_disabled",
+    "server_error",
+    "login_required",
   ])(
     "tells %s as the application's refused request, a provider or not",
     (code) => {
       for (const providersOffered of [true, false]) {
         expect(
-          providerErrorKey(code, { providersOffered, signUpOffered: true })
+          providerErrorKey(code, {
+            fromProvider: false,
+            providersOffered,
+            signUpOffered: true,
+          })
         ).toStrictEqual(Option.some("AUTHORIZATION_FAILED"));
       }
+    }
+  );
+
+  // A provider sends the same codes back to its callback, which passes
+  // them on to the page the sign-in started from, marked.
+  it.each([
+    "server_error",
+    "temporarily_unavailable",
+    "login_required",
+    "consent_required",
+    "interaction_required",
+    "invalid_request",
+  ])(
+    "tells %s from the provider's callback as the provider's failure",
+    (code) => {
+      expect(providerErrorKey(code, offered)).toStrictEqual(
+        Option.some("PROVIDER_FAILED")
+      );
     }
   );
 
@@ -129,7 +158,11 @@ describe(providerErrorKey, () => {
     "reads %s as a plain failure where no provider is offered",
     (code) => {
       expect(
-        providerErrorKey(code, { providersOffered: false, signUpOffered: true })
+        providerErrorKey(code, {
+          fromProvider: false,
+          providersOffered: false,
+          signUpOffered: true,
+        })
       ).toStrictEqual(Option.some("UNKNOWN"));
     }
   );

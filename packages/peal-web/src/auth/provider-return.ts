@@ -1,3 +1,25 @@
+import { Option, Schema } from "effect";
+
+/**
+ * The mark a provider's sign-in puts in the address its refusals come back
+ * to (`from=provider`): the authorization server sends its own refusals of
+ * an application to the sign-in page as well, unmarked, with some of the
+ * same codes (`server_error`, `login_required`…), and the page explains
+ * each as what it is. Anyone can write the address; the mark only picks a
+ * message.
+ */
+const providerMark = ["from", "provider"] as const;
+
+const decodeMark = Schema.decodeUnknownOption(Schema.Literal(providerMark[1]));
+
+/** Whether a page's `from` parameter is a provider's mark. */
+export const cameFromProvider = (
+  from: string | readonly string[] | undefined
+): boolean => Option.isSome(decodeMark(from));
+
+const marked = (path: string, query: Readonly<Record<string, string>>) =>
+  `${path}?${new URLSearchParams({ ...query, [providerMark[0]]: providerMark[1] }).toString()}`;
+
 /**
  * Where a provider's sign-in sends the browser back to, as paths of this
  * origin, which the server checks against its trusted origins: once signed
@@ -27,11 +49,24 @@ export const signUpReturn = (
 
   return {
     errorPath: localized(
-      invitationId === null
-        ? "/sign-up"
-        : `/sign-up?${new URLSearchParams({ invitation: invitationId }).toString()}`
+      marked(
+        "/sign-up",
+        invitationId === null ? {} : { invitation: invitationId }
+      )
     ),
     next: localized(landing),
     signUp: { invitationId, newUserPath: localized(landing) },
   };
 };
+
+/**
+ * The sign-in page's: on to `next` once signed in, as the password's
+ * sign-in goes (the language follows), and a refusal back to the page.
+ */
+export const signInReturn = (
+  next: string,
+  localized: (href: string) => string
+): ProviderReturn => ({
+  errorPath: localized(marked("/sign-in", { next })),
+  next,
+});
