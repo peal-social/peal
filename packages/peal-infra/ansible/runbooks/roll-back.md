@@ -501,7 +501,10 @@ by default): it journals its own messages with the default and never
 tags one. A message a member wrote past the 24 hours that is still on
 its way when the release goes back is sent untagged, which Meta refuses
 as outside its window: it fails `windowClosed` and gives its outbound
-message back, so nothing goes out that Meta did not take. Remove
+message back, so nothing goes out that Meta did not take. It also stores
+two reasons the release before cannot decode
+(`engagement.outgoing_messages.reason` `humanAgentNotGranted` and
+`tagRestricted`), where it reads the conversation. Remove
 `PEAL_META_HUMAN_AGENT` before rolling back: the release before does not
 read it.
 
@@ -510,6 +513,15 @@ read it.
    ```sh
    sudo peal-compose exec postgres psql --username peal --dbname peal --command \
      "SELECT id, workspace_id FROM engagement.outgoing_messages WHERE by_person AND status = 'sending'"
+   ```
+
+   And the reasons it cannot decode, which hold it until they are gone (30
+   days after they settled, `PurgeMessages`; release a fix forward
+   instead, and never change the rows by hand):
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM engagement.outgoing_messages WHERE reason IN ('humanAgentNotGranted', 'tagRestricted')"
    ```
 
 2. **It lists a row:** wait a few minutes for its job to settle it, and

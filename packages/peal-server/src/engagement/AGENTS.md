@@ -673,8 +673,14 @@
   (`outgoing_messages.by_person`) is held to `personWindowOf` (7 days after
   the person's last message, less `metaWindowSkew`) through
   `answerWindowOf` once the 24 hours shut, and the gate sends it with
-  `messaging_type: MESSAGE_TAG`, `tag: HUMAN_AGENT` (`OutgoingDirect.humanAgent`;
-  Meta's `page/messages` reference, read 2026-11-16). `byPerson` is
+  `messaging_type: MESSAGE_TAG`, `tag: HUMAN_AGENT` (`OutgoingDirect.humanAgent`)
+  only when `replyWindowOf` is shut at the call: inside the 24 hours it goes
+  as `RESPONSE`, as Meta keeps the tag for messages "sent outside the 24-hour
+  messaging window" (`page/messages` reference, read 2026-11-16). Each
+  tagged send is counted (`peal.engagement.messages.tagged_sends`, by
+  platform); Meta's refusals of the tag fail apart, logged by their codes:
+  `humanAgentNotGranted` (`100`/`2018276`, `10`/`2534044`, as integrators
+  report them) and `tagRestricted` (`613`/`2018338`, logged as an error). `byPerson` is
   `sending.inSession` (which only the API's `sendMessage` handler passes,
   from a session principal: no `oauth`, no `impersonatedBy`) and the actor
   the member themselves: an API key, an OAuth client (MCP, the command
@@ -682,11 +688,14 @@
   looks like the member, which is why the handler, not the actor, vouches
   for the session) never pass, are refused past the 24 hours, and never
   tag. Keep it so: no job, cron, rule or tool calls `send` with
-  `inSession`. The conversation's view gives `personWindow`
+  `inSession` (`test/engagement/api/in-session-callers.test.ts` holds it to
+  the handler). A member's export carries `byPerson`. The conversation's view gives `personWindow`
   (`window.personClosesAt`) where the feature is on and the channel can
-  send. A private reply is never tagged. Not verified: whether
-  graph.instagram.com takes the tag in the same form, and which code Meta
-  answers an app without the feature (the fake answers 200, `refused`).
+  send, and the web app shows none of it to staff acting as a member. A
+  private reply is never tagged. Not verified: whether graph.instagram.com
+  takes the tag in the same form, the codes Meta answers an app without
+  the feature, and whether Standard Access lets the sandbox send a tag at
+  all before Meta's review.
 - Retention: each message is deleted `conversationsKeptFor` (30 days)
   after it was sent, a settled outgoing message (`sent`, `failed` or
   left `unconfirmed`) 30 days after it settled, and a conversation once
