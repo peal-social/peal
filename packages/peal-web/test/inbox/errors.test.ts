@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Exit, Option } from "effect";
+import { DateTime, Exit, Option } from "effect";
 import {
   Forbidden,
   InboxActionFailed,
@@ -60,6 +60,21 @@ describe(inboxErrorOf, () => {
         )
       )
     ).toStrictEqual(Option.some({ key: "unavailable", standing: "reconnect" }));
+  });
+
+  it("says when a platform's answer window shut", () => {
+    expect(
+      inboxErrorOf(
+        Exit.fail(
+          new InboxActionUnavailable({
+            ability: "send",
+            closedAt: DateTime.makeUnsafe("2026-11-15T08:59:00Z"),
+            reason: "windowClosed",
+            standing: "unsupported",
+          })
+        )
+      )
+    ).toStrictEqual(Option.some({ key: "windowClosed" }));
   });
 
   it("keeps why the platform did not do it, and where a reply stands", () => {

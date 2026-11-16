@@ -28,7 +28,16 @@ import {
 import { useChannelName } from "./inbox-views.tsx";
 
 // The platforms whose direct messages Peal may read.
-const messagePlatforms: ReadonlySet<string> = new Set(["mastodon", "bluesky"]);
+const messagePlatforms: ReadonlySet<string> = new Set([
+  "mastodon",
+  "bluesky",
+  "facebook",
+  "instagram",
+]);
+
+// Whether the channel is Meta's, whose messages its review gates.
+const isMeta = (channel: SocialChannel) =>
+  channel.platform === "facebook" || channel.platform === "instagram";
 
 // Whether the switch was refused until the account allows its messages.
 const needsGrant = <A, E extends { readonly _tag: string }>(
@@ -43,8 +52,10 @@ const needsGrant = <A, E extends { readonly _tag: string }>(
 
 /**
  * One channel's switch: its messages read, or not. `onGrant`, for an
- * account that must allow its messages first (Bluesky's chat), starts the
- * sign-in that asks for them.
+ * account that must allow its messages first (Bluesky's chat, Meta's
+ * messaging permissions), starts the sign-in that asks for them. A Meta
+ * channel says who may write before Meta's review, and an Instagram one
+ * the setting its owner turns on in Instagram.
  */
 export const ChannelMessagesView = ({
   channel,
@@ -61,14 +72,27 @@ export const ChannelMessagesView = ({
 }) => {
   const t = useTranslations("InboxMessages.settings");
   const channelName = useChannelName();
+  const meta = isMeta(channel);
 
   return (
     <li className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-      <span className="flex items-center gap-2">
-        <span className="font-medium">{channelName(channel)}</span>
-        <Badge variant={on ? "default" : "outline"}>
-          {on ? t("on") : t("off")}
-        </Badge>
+      <span className="flex flex-col gap-1">
+        <span className="flex items-center gap-2">
+          <span className="font-medium">{channelName(channel)}</span>
+          <Badge variant={on ? "default" : "outline"}>
+            {on ? t("on") : t("off")}
+          </Badge>
+        </span>
+        {meta ? (
+          <span className="text-muted-foreground text-sm">
+            {t("metaReview")}
+          </span>
+        ) : null}
+        {channel.platform === "instagram" ? (
+          <span className="text-muted-foreground text-sm">
+            {t("instagramConnectedTools")}
+          </span>
+        ) : null}
       </span>
       {onGrant === undefined ? (
         <Button
@@ -84,10 +108,17 @@ export const ChannelMessagesView = ({
       ) : (
         <span className="flex flex-wrap items-center gap-2">
           <span className="text-muted-foreground text-sm">
-            {t("grantNeeded")}
+            {meta ? t("metaGrantNeeded") : t("grantNeeded")}
           </span>
           <Button size="sm" disabled={disabled} onClick={onGrant}>
-            {t("grant")}
+            {meta
+              ? t("metaGrant", {
+                  app:
+                    channel.connection === "instagramLogin"
+                      ? "instagram"
+                      : "facebook",
+                })
+              : t("grant")}
           </Button>
         </span>
       )}

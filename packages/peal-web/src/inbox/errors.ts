@@ -24,6 +24,8 @@ export const InboxErrorKeySchema = Schema.Literals([
   "reviewNotFound",
   "threadNotFound",
   "unknown",
+  // A platform's answer window shut (Messenger's and Instagram's 24 hours).
+  "windowClosed",
 ]);
 
 export type InboxErrorKey = typeof InboxErrorKeySchema.Type;
@@ -85,7 +87,9 @@ const explain = (error: { readonly _tag: string }): InboxError => {
   }
 
   if (isUnavailable(error)) {
-    return { key: "unavailable", standing: error.standing };
+    return error.reason === "windowClosed"
+      ? { key: "windowClosed" }
+      : { key: "unavailable", standing: error.standing };
   }
 
   if (isFailed(error)) {
