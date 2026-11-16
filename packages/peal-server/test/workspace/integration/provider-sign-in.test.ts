@@ -590,7 +590,10 @@ layer(
           holds[0]?.sign_in_methods
             .map(({ accountId, provider }) => `${provider}:${accountId}`)
             .toSorted(),
-          [`oidc:${sub}`, `credential:${id}`].toSorted()
+          [
+            `oidc:${(yield* FakeOidc).server.url}|${sub}`,
+            `credential:${id}`,
+          ].toSorted()
         );
       })
   );
@@ -734,6 +737,39 @@ layer(Layer.mergeAll(appWithGoogle(), MigratedSqlLive), settings)(
 
         assert.isNull(finished.error);
         assert.isTrue((yield* accountOf(email))?.email_verified);
+      })
+    );
+  }
+);
+
+// An identity belongs to the provider that issued it: a server that moves
+// to another provider (`PEAL_OIDC_ISSUER`) never signs the new provider's
+// subjects in to the accounts the old one's made, whatever they collide on.
+layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), settings)(
+  "an identity of one issuer",
+  (it) => {
+    it.effect("reaches nothing once the server trusts another issuer", () =>
+      Effect.gen(function* issuerMoved() {
+        const sub = newSubject();
+        const first = newEmail("first-issuer");
+
+        const created = yield* providerSignIn(verified(first, sub), {
+          body: signUpPage(),
+        });
+
+        assert.isNull(created.error);
+
+        const firstId = (yield* accountOf(first))?.id;
+        const other = newEmail("second-issuer");
+
+        const moved = yield* providerSignIn(verified(other, sub)).pipe(
+          Effect.provide(appWithOidc())
+        );
+
+        assert.strictEqual(moved.error, "signup_disabled");
+        assert.isFalse(setsSession(moved.reply));
+        assert.strictEqual((yield* accountOf(first))?.sessions, 1);
+        assert.deepStrictEqual(yield* ownersOf(sub), [firstId]);
       })
     );
   }

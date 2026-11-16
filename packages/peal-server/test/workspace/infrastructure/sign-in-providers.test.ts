@@ -4,6 +4,7 @@ import { Option, Redacted } from "effect";
 import {
   googleIssuer,
   googleProvider,
+  oidcAccountId,
   oidcProvider,
   profileToUser,
   signInProviderConfigs,
@@ -113,5 +114,12 @@ describe("the sign-in providers", () => {
         name: "x".repeat(500),
       }).name
     ).toHaveLength(100);
+  });
+
+  it("keep an operator's provider's identity under its issuer", () => {
+    expect(oidcAccountId("https://id.example.test", "1042")).toBe(
+      "https://id.example.test|1042"
+    );
+    expect(oidcAccountId("https://id.example.test", "")).toBe("");
   });
 });

@@ -105,6 +105,27 @@ const profileFromIdToken: NonNullable<
       );
 };
 
+// Who the person is at the provider: the verified ID token's `sub`, which
+// Better Auth checked before it asks (an answer without one names nobody).
+const subjectOf = (idToken: string | undefined): string =>
+  idToken === undefined
+    ? ""
+    : Option.getOrElse(
+        readClaims(idToken).pipe(Option.map(({ sub }) => sub)),
+        () => ""
+      );
+
+/**
+ * The account id an operator's provider's identity is kept under:
+ * `<issuer>|<sub>`. A subject is unique at its issuer only, so a server
+ * that moves to another provider never signs the new one's subjects in to
+ * the accounts the old one's joined (they join again by a confirmed
+ * address). Google's is its `sub` alone: its issuer never changes.
+ */
+export const oidcAccountId = (issuer: string, subject: string): string =>
+  // No subject is no account: Better Auth refuses an empty id.
+  subject === "" ? "" : `${issuer}|${subject}`;
+
 const mapProfileToUser: NonNullable<
   GenericOAuthConfig["mapProfileToUser"]
 > = async (profile) => {
@@ -139,6 +160,7 @@ export const googleProvider = (
   client: SignInProviderClient
 ): GenericOAuthConfig<"google"> => ({
   ...common(client, client.issuer ?? googleIssuer),
+  accountSubject: ({ tokens }) => subjectOf(tokens.idToken),
   name: "Google",
   prompt: "select_account",
   providerId: "google",
@@ -151,6 +173,11 @@ export const oidcProvider = (
 ): GenericOAuthConfig<"oidc"> => ({
   ...common(settings, settings.issuer.replace(/\/+$/u, "")),
   discoveryUrl: settings.discoveryUrl,
+  accountSubject: ({ tokens }) =>
+    oidcAccountId(
+      settings.issuer.replace(/\/+$/u, ""),
+      subjectOf(tokens.idToken)
+    ),
   name: settings.name,
   providerId: "oidc",
   scopes: [...settings.scopes],

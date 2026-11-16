@@ -54,6 +54,10 @@ Un compte créé par un fournisseur n’a pas de mot de passe. Son titulaire en 
 
 Un compte où la validation en deux étapes est activée se connecte avec son mot de passe et son code : la connexion par un fournisseur lui est refusée. Un espace de travail qui exige la validation en deux étapes refuse un membre qui ne l’a pas, quelle que soit sa façon de se connecter : dans un tel espace, les membres se connectent avec leur mot de passe.
 
+## Changer de fournisseur [#change-provider]
+
+Une identité est gardée avec l’émetteur qui l’a créée (`<issuer>|<sub>`) : l’identifiant d’un fournisseur n’atteint jamais un compte qu’a rejoint l’identifiant d’un autre, même s’ils s’écrivent pareil. Après un changement de `PEAL_OIDC_ISSUER`, la connexion suivante de chacun relie de nouveau son compte par le nouveau fournisseur, par une adresse que le nouveau fournisseur et Peal ont confirmée, comme une première connexion ; les identités de l’ancien fournisseur restent inutilisées. Un compte créé par l’ancien fournisseur a une adresse confirmée : il est relié lui aussi.
+
 ## Google [#google]
 
 Google se porte garant de moins d’adresses que votre propre fournisseur. Peal ne croit Google sur une adresse que s’il s’agit d’une adresse Gmail (`@gmail.com`), ou si Google Workspace gère son domaine (le `hd` du jeton d’identité, le même domaine que l’adresse). Toute autre adresse que Google a confirmée un jour a pu changer de mains depuis : elle ne rejoint aucun compte, n’en crée aucun et n’accepte aucune invitation ; son titulaire se connecte avec son mot de passe, et lit « Connectez-vous avec votre mot de passe : Google ne peut pas confirmer que cette adresse est toujours la vôtre ». Votre propre fournisseur fait autorité pour ses utilisateurs : son `email_verified` suffit.

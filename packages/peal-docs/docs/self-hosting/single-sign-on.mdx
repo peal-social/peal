@@ -52,6 +52,10 @@ An account a provider made has no password. Its owner sets one with **Forgot you
 
 An account with two-step verification on signs in with its password and its code: a provider's sign-in is refused for it. A workspace that requires two-step verification refuses a member without it, however they signed in, so in such a workspace members sign in with their password.
 
+## Changing the provider [#change-provider]
+
+An identity is kept with the issuer that made it (`<issuer>|<sub>`), so a subject of one provider never reaches an account another provider's subject joined, even when the two are spelled alike. After you change `PEAL_OIDC_ISSUER`, each person's next sign-in joins their account again through the new provider, by an address both the new provider and Peal confirmed, as a first sign-in does; the old provider's identities stay unused. An account the old provider made has a confirmed address, so it joins too.
+
 ## Google [#google]
 
 Google vouches for fewer addresses than your own provider. Peal takes Google's word for an address only when it is a Gmail address (`@gmail.com`), or when Google Workspace manages its domain (the ID token's `hd`, the same domain as the address). Any other address Google once confirmed may have changed hands since, so it joins no account, makes none and accepts no invitation: its owner signs in with their password, and is told "Sign in with your password: Google can't confirm this address is still yours". Your own provider is its users' authority: its `email_verified` is enough.

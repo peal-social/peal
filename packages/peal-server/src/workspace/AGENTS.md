@@ -359,7 +359,10 @@ The staff context follows these rules too. What the law has a host keep is in
   `requireIdTokenVerification`: the profile is the ID token's claims alone,
   checked for signature, issuer, audience and nonce, never the userinfo
   endpoint (`getUserInfo`); PKCE on; no offline access. The name is made
-  storable (`profileToUser`), the picture never kept.
+  storable (`profileToUser`), the picture never kept. The account id is
+  the verified token's `sub` (`accountSubject`), `<issuer>|<sub>` for
+  `oidc` (`oidcAccountId`): a subject belongs to its issuer, so a new
+  `PEAL_OIDC_ISSUER` reaches no account the old one's subjects joined.
 - Discovery, token and key requests go to the host the operator set,
   through the library's own fetch, not `publicHttpClient`: a company's
   provider may be on a private network, and no user input picks it. Leave

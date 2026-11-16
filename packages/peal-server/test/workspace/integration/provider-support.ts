@@ -208,7 +208,8 @@ export const ownersOf = Effect.fn("ownersOf")(function* ownersOf(
 
   const rows = yield* sql<{ readonly user_id: string }>`
     SELECT user_id FROM auth.account
-    WHERE provider_id = ${provider} AND account_id = ${subject}`.pipe(
+    WHERE provider_id = ${provider}
+      AND (account_id = ${subject} OR account_id LIKE ${`%|${subject}`})`.pipe(
     Effect.orDie
   );
 
