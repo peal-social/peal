@@ -166,6 +166,9 @@ const coverage = {
   ),
   "inboxMessages.listConversations": by("inbox messages list"),
   "inboxMessages.sendMessage": by("inbox messages send"),
+  "inboxMessages.sendPrivateReply": by("inbox private-reply send"),
+  "inboxMessages.getPrivateReply": by("inbox private-reply show"),
+  "inboxMessages.confirmPrivateReply": by("inbox private-reply confirm"),
   "inboxMessages.setChannelMessages": exempt(
     "Only a member in person, in the web app, turns a channel's direct messages on or off."
   ),

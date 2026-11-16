@@ -6,6 +6,7 @@ import {
   duplicateWindowHours,
   imageRequestCost,
   maxImportRows,
+  privateReplyWindowDays,
   queueHorizonDays,
 } from "peal-contract";
 import type {
@@ -22,6 +23,7 @@ import type {
   FollowUpRefusal,
   NotRecyclableReason,
   PostNotPromotable,
+  PrivateReplyRefusal,
   TextProviderAddressRefused,
   TextProviderRefused,
   WebhookUrlRefused,
@@ -48,6 +50,14 @@ export type ApiFailure =
   | HttpApiError.BadRequest
   | HttpClientError.HttpClientError
   | Schema.SchemaError;
+
+// Why a comment gets no private reply, in words.
+const privateReplyRefusals: Readonly<Record<PrivateReplyRefusal, string>> = {
+  gone: "The comment is no longer on its platform: nothing was sent.",
+  ownComment:
+    "The channel's own account wrote this comment: a private reply goes to someone else's. Nothing was sent.",
+  tooOld: `The comment was written more than ${String(privateReplyWindowDays)} days ago, less Peal's hour: the platform takes no private reply to it any more. Nothing was sent.`,
+};
 
 const mebibyte = 1024 * 1024;
 
@@ -693,6 +703,10 @@ const reasonOf =
         refused(
           "The workspace sent no such message from Peal: peal inbox messages show lists a conversation's."
         ),
+      InboxPrivateReplyNotFound: () =>
+        refused(
+          "The workspace sent no such private reply, or it went with its comment: peal inbox thread shows each comment's."
+        ),
       InboxReplyNotFound: () =>
         refused(
           "The workspace has no such reply: peal inbox thread shows a thread's."
@@ -895,6 +909,12 @@ const reasonOf =
       MessagePending: ({ messageId }) =>
         refused(
           `A message to this conversation is on its way, or may have gone out (${messageId}): nothing more was sent. If it is unconfirmed, check the platform, then run peal inbox messages confirm.`
+        ),
+      PrivateReplyNotPossible: ({ reason }) =>
+        refused(privateReplyRefusals[reason]),
+      PrivateReplyPending: ({ privateReplyId }) =>
+        refused(
+          `The comment has its private reply already (${privateReplyId}), on its way, unconfirmed or sent: the platform takes one a comment, so nothing more was sent. If it is unconfirmed, check the person's conversation, then run peal inbox private-reply confirm.`
         ),
       ReplyPending: ({ replyId }) =>
         refused(
