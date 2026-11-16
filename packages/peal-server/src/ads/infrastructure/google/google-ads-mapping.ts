@@ -215,6 +215,13 @@ export const campaignOf = (
     })
   );
 
+// Micros as Google writes them, a whole number in a string; zero when left
+// out, and none past what a number holds exactly.
+const microsOf = (written = "0"): Option.Option<number> =>
+  /^\d{1,16}$/u.test(written) && Number(written) <= Number.MAX_SAFE_INTEGER
+    ? Option.some(Number(written))
+    : Option.none();
+
 // A count Google left out is zero.
 const count = (written = "0"): Option.Option<number> =>
   /^\d{1,10}$/u.test(written) && Number(written) <= maxCount
@@ -237,25 +244,17 @@ export const dayOf = (written: string | undefined): Option.Option<LocalDate> =>
 
 /**
  * A day of a campaign's numbers; none when a value cannot be kept as it is
- * written (a count past what the columns hold, an amount past the largest
- * Peal keeps), and the row is then left out rather than clamped. Cost is
- * in micros of the account's currency, rounded up to its minor unit.
+ * written (a count past what the columns hold, an amount past what a number
+ * holds exactly), and the row is then left out rather than clamped. Cost
+ * is kept in micros of the account's currency, as written.
  */
-export const campaignDayOf = (
-  row: DayRow,
-  currency: Currency
-): Option.Option<CampaignDay> =>
+export const campaignDayOf = (row: DayRow): Option.Option<CampaignDay> =>
   Option.gen(function* mappingDay() {
     return new CampaignDay({
       campaignExternalId: yield* numericId(row.campaign.id),
       clicks: yield* count(row.metrics?.clicks),
       day: yield* dayOf(row.segments.date),
       impressions: yield* count(row.metrics?.impressions),
-      spend: yield* Option.fromUndefinedOr(
-        minorUnitsOfMicros(
-          row.metrics?.costMicros ?? "0",
-          minorUnitDigits("google", currency)
-        )
-      ),
+      spendMicros: yield* microsOf(row.metrics?.costMicros),
     });
   });

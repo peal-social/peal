@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "bd51103b-fb8c-4ffd-a54e-5ba517078249",
+  "id": "bdabd911-f5ef-41ea-bb08-ad0ecd88d903",
   "prevIds": [
     "44af3c69-bc07-41a4-9af7-0bd390a8e4d3"
   ],
@@ -238,7 +238,7 @@
       "row": {
         "schema": "ads",
         "table": "campaign_days",
-        "name": "spend",
+        "name": "spend_micros",
         "type": "bigint",
         "typeSchema": null,
         "notNull": true,

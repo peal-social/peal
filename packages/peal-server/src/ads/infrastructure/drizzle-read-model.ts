@@ -13,11 +13,13 @@ import type {
   DayTotals,
   PaidTotals,
 } from "#ads/application/ports/read-model.ts";
+import type { AdAccount } from "#ads/domain/ad-account.ts";
 import {
   AdObjectStatusSchema,
   CampaignObjectiveSchema,
 } from "#ads/domain/ad-object.ts";
 import { AdAccountIdSchema, NetworkObjectIdSchema } from "#ads/domain/ids.ts";
+import { microsPerMinorUnit, minorUnitDigits } from "#ads/domain/money.ts";
 import { traitsOf } from "#ads/domain/network-traits.ts";
 import { PostIdSchema, PostTargetIdSchema } from "#shared/domain/ids.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
@@ -186,9 +188,11 @@ export const DrizzleReadModel = Layer.effect(
     const campaignBetween = (range: DayRange) =>
       client`d.day BETWEEN ${dayText(range.from)}::date AND ${dayText(range.to)}::date`;
 
-    // A campaign's own days carry no reach and no results.
-    const campaignSums = client`
-      coalesce(sum(d.spend), 0)::float8 AS spend,
+    // A campaign's own days carry no reach and no results. Their cost is
+    // in micros, summed whole, then rounded up once to the account's minor
+    // unit: never a sum of rounded days.
+    const campaignSums = (account: AdAccount) => client`
+      ceil(coalesce(sum(d.spend_micros), 0) / ${microsPerMinorUnit(minorUnitDigits(account.network, account.currency))}::numeric)::float8 AS spend,
       coalesce(sum(d.impressions), 0)::float8 AS impressions,
       0::float8 AS reach,
       coalesce(sum(d.clicks), 0)::float8 AS clicks,
@@ -244,7 +248,7 @@ export const DrizzleReadModel = Layer.effect(
               c.total_budget::float8 AS "totalBudget",
               c.starts_at AS "startsAt", c.ends_at AS "endsAt",
               c.synced_at AS "syncedAt",
-              ${traitsOf(account.network).days === "campaign" ? campaignSums : sums}
+              ${traitsOf(account.network).days === "campaign" ? campaignSums(account) : sums}
             FROM ads.campaigns c
             ${
               traitsOf(account.network).days === "campaign"
@@ -287,7 +291,7 @@ export const DrizzleReadModel = Layer.effect(
         query(
           traitsOf(account.network).days === "campaign"
             ? client`
-                SELECT to_char(d.day, 'YYYY-MM-DD') AS day, ${campaignSums}
+                SELECT to_char(d.day, 'YYYY-MM-DD') AS day, ${campaignSums(account)}
                 FROM ads.campaign_days d
                 WHERE d.workspace_id = ${account.workspaceId} AND d.account_id = ${account.id}
                   AND ${campaignBetween(range)}
@@ -532,12 +536,12 @@ export const DrizzleReadModel = Layer.effect(
                   clicks: day.clicks,
                   day: dayText(day.day),
                   impressions: day.impressions,
-                  spend: day.spend,
+                  spendMicros: day.spendMicros,
                   workspaceId: account.workspaceId,
                 }))
               )
               .onConflictDoUpdate({
-                set: reread(["clicks", "impressions", "spend"]),
+                set: reread(["clicks", "impressions", "spend_micros"]),
                 target: [
                   campaignDays.accountId,
                   campaignDays.campaignExternalId,

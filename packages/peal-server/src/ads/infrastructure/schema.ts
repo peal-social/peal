@@ -259,7 +259,9 @@ export const campaignDays = adsSchema.table(
     clicks: integer("clicks").notNull(),
     day: date("day", { mode: "string" }).notNull(),
     impressions: integer("impressions").notNull(),
-    spend: money("spend").notNull(),
+    // Micros of the account's currency, as Google writes cost: rounded up
+    // to the minor unit once, where days are summed.
+    spendMicros: bigint("spend_micros", { mode: "number" }).notNull(),
     workspaceId: uuid("workspace_id").notNull(),
   },
   (table) => [

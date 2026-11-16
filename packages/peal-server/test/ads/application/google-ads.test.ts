@@ -251,7 +251,9 @@ layer(BillingTest, { excludeTestServices: true })(
           const api = yield* onGoogle({
             ...accounts,
             days: [
-              day(yield* dayAgo(1)),
+              // 100.0001 cents each day: 200.0002 in all, which is 201 cents
+              // rounded once, where two rounded days would make 202.
+              day(yield* dayAgo(1), { costMicros: "1000001" }),
               day(yield* dayAgo(2), { costMicros: "1000001" }),
               day(yield* dayAgo(2), { campaignId: "902", clicks: undefined }),
               // Before what the first read asks.
@@ -290,7 +292,7 @@ layer(BillingTest, { excludeTestServices: true })(
                 "active",
                 "SEARCH",
                 1000,
-                351,
+                201,
                 8,
                 600,
                 0,
@@ -317,7 +319,7 @@ layer(BillingTest, { excludeTestServices: true })(
             days.rows.map((row) => [row.spend, row.clicks, row.reach]),
             [
               [351, 4, 0],
-              [250, 4, 0],
+              [101, 4, 0],
             ]
           );
 

@@ -509,12 +509,13 @@ describe("reading a Google Ads account", () => {
             day.day,
             day.clicks,
             day.impressions,
-            day.spend,
+            day.spendMicros,
           ]),
           [
-            ["901", { day: 9, month: 11, year: 2026 }, 12, 400, 1235],
+            // Micros as Google writes them: rounded only once summed.
+            ["901", { day: 9, month: 11, year: 2026 }, 12, 400, 12_345_001],
             ["901", { day: 10, month: 11, year: 2026 }, 0, 3, 0],
-            ["902", { day: 10, month: 11, year: 2026 }, 1, 0, 99],
+            ["902", { day: 10, month: 11, year: 2026 }, 1, 0, 990_000],
           ]
         );
 
@@ -651,7 +652,7 @@ describe("reading a Google Ads account", () => {
         ),
         [5]
       );
-      assert.strictEqual(snapshot.campaignDays[0]?.spend, 6);
+      assert.strictEqual(snapshot.campaignDays[0]?.spendMicros, 5_000_001);
 
       for (const sent of api.requests().filter(searching("campaign"))) {
         assert.strictEqual(headerOf(sent, "login-customer-id"), "2222222222");

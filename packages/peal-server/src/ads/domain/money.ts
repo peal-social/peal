@@ -118,6 +118,19 @@ export const minorUnitsOf = (
   return amount > maxAmount ? undefined : amount;
 };
 
+/**
+ * An amount in millionths of the currency's unit, as Google Ads counts
+ * money: a whole number no float loses, so a day's cost is kept as
+ * written and rounded only once days are summed.
+ */
+export const MicrosSchema = Schema.Int.check(
+  Schema.isBetween({ maximum: Number.MAX_SAFE_INTEGER, minimum: 0 })
+);
+
+/** How many micros one minor unit holds, for a currency's digits. */
+export const microsPerMinorUnit = (digits: 0 | 2): number =>
+  digits === 0 ? 1_000_000 : 10_000;
+
 const micros = /^\d{1,25}$/u;
 
 /**

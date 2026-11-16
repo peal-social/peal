@@ -4,7 +4,7 @@ import { LocalDateSchema } from "#shared/domain/wall-clock.ts";
 
 import { NetworkObjectIdSchema } from "./ids.ts";
 import { CountSchema } from "./insight-day.ts";
-import { AmountSchema } from "./money.ts";
+import { MicrosSchema } from "./money.ts";
 
 /**
  * What one campaign did on one day of its account's calendar, on a
@@ -18,6 +18,9 @@ export class CampaignDay extends Schema.Class<CampaignDay>(
   clicks: CountSchema,
   day: LocalDateSchema,
   impressions: CountSchema,
-  /** What the day cost, in the account's minor units. */
-  spend: AmountSchema,
+  /**
+   * What the day cost, in micros of the account's currency, as Google
+   * writes it: rounded to the minor unit only where days are summed, once.
+   */
+  spendMicros: MicrosSchema,
 }) {}

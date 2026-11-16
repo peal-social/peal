@@ -4,7 +4,7 @@ CREATE TABLE "ads"."campaign_days" (
 	"clicks" integer NOT NULL,
 	"day" date,
 	"impressions" integer NOT NULL,
-	"spend" bigint NOT NULL,
+	"spend_micros" bigint NOT NULL,
 	"workspace_id" uuid NOT NULL,
 	CONSTRAINT "campaign_days_pkey" PRIMARY KEY("account_id","campaign_external_id","day")
 );

@@ -604,7 +604,7 @@ export const googleAdsClient = (options: {
       }
 
       const kept = days.rows.flatMap((row) =>
-        Option.toArray(campaignDayOf(row, currency))
+        Option.toArray(campaignDayOf(row))
       );
 
       if (kept.length < days.rows.length) {
