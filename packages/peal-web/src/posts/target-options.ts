@@ -703,6 +703,15 @@ export const optionFields = {
       name: "dominantColor",
     },
   ],
+  slack: [
+    {
+      hint: "slack.unfurlLinksHint",
+      initial: false,
+      kind: "toggle",
+      label: "slack.unfurlLinks",
+      name: "unfurlLinks",
+    },
+  ],
   telegram: [
     {
       hint: "telegram.linkPreviewHint",

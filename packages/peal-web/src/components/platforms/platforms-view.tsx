@@ -40,7 +40,8 @@ import { BrandMark } from "#components/shell/brand-mark.tsx";
 import { rowMatches } from "#platforms/rows.ts";
 import type { PlatformRow } from "#platforms/rows.ts";
 
-// LinkedIn asked to be left out of simple-icons: a lettered tile stands in.
+// LinkedIn and Slack asked to be left out of simple-icons: a lettered tile
+// stands in.
 const marks: Readonly<Record<Platform, SimpleIcon | null>> = {
   bluesky: siBluesky,
   discord: siDiscord,
@@ -50,6 +51,7 @@ const marks: Readonly<Record<Platform, SimpleIcon | null>> = {
   linkedin: null,
   mastodon: siMastodon,
   pinterest: siPinterest,
+  slack: null,
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,

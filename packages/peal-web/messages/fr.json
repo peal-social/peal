@@ -736,7 +736,7 @@
     "retry": "Réessayer",
     "empty": "Aucun compte n’est encore connecté.",
     "listTitle": "Comptes connectés",
-    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} devto {DEV} hashnode {Hashnode} wordpressCom {WordPress.com} x {X} youtube {YouTube} other {{platform}}}",
+    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} devto {DEV} hashnode {Hashnode} wordpressCom {WordPress.com} x {X} youtube {YouTube} other {{platform}}}",
     "platformVia": "{platform, select, instagram {Instagram} linkedin {LinkedIn} other {{platform}}} ({connection, select, instagramLogin {connexion Instagram} facebookLogin {via une Page Facebook} linkedinProfile {profil} linkedinPage {page d’entreprise} other {{connection}}})",
     "status": {
       "active": "Connecté",
@@ -751,7 +751,7 @@
     "disconnectAccount": "Déconnecter {handle}",
     "disconnecting": "Déconnexion…",
     "disconnectTitle": "Déconnecter {handle} ?",
-    "disconnectDescription": "Peal supprime les jetons qu’il détient pour ce compte {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} et n’y publie plus rien. Vous pourrez le reconnecter plus tard.",
+    "disconnectDescription": "Peal supprime les jetons qu’il détient pour ce compte {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} et n’y publie plus rien. Vous pourrez le reconnecter plus tard.",
     "cancel": "Annuler",
     "disconnected": "{handle} est déconnecté.",
     "offHint": "{who, select, you {Rien ne part sur ce canal tant qu’il est désactivé. Choisissez Réactiver pour y publier à nouveau.} other {Rien ne part sur ce canal tant qu’il est désactivé. Un propriétaire ou un administrateur de l’espace de travail peut le réactiver.}}{reconnect, select, yes { L’autorisation de son compte a cessé de fonctionner entre-temps : il faudra le reconnecter une fois le canal réactivé.} other {}}",
@@ -919,6 +919,11 @@
       "description": "Votre compte Pinterest. Vous vous connectez sur Pinterest et autorisez Peal à créer des épingles sur vos tableaux et à lire leurs statistiques.",
       "connect": "Connecter Pinterest"
     },
+    "slack": {
+      "title": "Slack",
+      "description": "Un canal de votre espace de travail Slack. Vous ajoutez Peal à l’espace de travail sur Slack, y choisissez le canal où il publie, et l’autorisez à publier des messages et des images. Dans un canal privé, invitez aussi l’application.",
+      "connect": "Connecter Slack"
+    },
     "googleBusiness": {
       "title": "Google Business Profile",
       "description": "Votre établissement dans la recherche Google et sur Maps. Vous vous connectez avec Google, autorisez Peal à gérer votre fiche d’établissement, puis choisissez les établissements validés où cet espace de travail publie.",
@@ -939,9 +944,9 @@
     "title": "Connecter un compte",
     "headingSeveral": "Connecter vos comptes",
     "asksSeveral": "{host} demande à connecter vos comptes sur ces plateformes, pour y publier pour vous.",
-    "platformName": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
+    "platformName": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
     "platformConnected": "Connecté",
-    "connectPlatform": "Connecter {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
+    "connectPlatform": "Connecter {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
     "left": "Il reste {platforms} à connecter.",
     "connectAnother": "Connecter un autre compte",
     "heading": "Connecter votre compte {platform, select, bluesky {Bluesky} facebook {Facebook} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
@@ -1083,7 +1088,7 @@
       "editWebhookChanged": "Un autre webhook a envoyé cette publication, et lui seul peut la modifier : modifiez-la sur {platform}.",
       "windowPassed": "{platform} ne supprime une publication que pendant un temps après sa mise en ligne, et ce temps est passé : supprimez-la sur {platform}."
     },
-    "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} other {{platform}}}",
+    "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {{platform}}}",
     "status": "{status, select, draft {Brouillon} awaitingApproval {En attente d’approbation} scheduled {Programmé} publishing {En cours de publication} finished {Terminé} cancelled {Annulé} other {{status}}}",
     "targetStatus": "{status, select, pending {En attente} publishing {En cours} published {Publié} failed {Échec} unconfirmed {À vérifier} cancelled {Annulé} other {{status}}}",
     "outcome": "{outcome, select, published {Publié} partiallyPublished {Publié en partie} unconfirmed {À vérifier} failed {Échec} cancelled {Annulé} other {{outcome}}}",
@@ -1625,6 +1630,10 @@
         "linkPreviewHint": "Sur une partie sans image ni vidéo.",
         "silent": "Envoyer sans son",
         "silentHint": "Les membres reçoivent la notification sans son."
+      },
+      "slack": {
+        "unfurlLinks": "Afficher un aperçu des pages de ses liens",
+        "unfurlLinksHint": "Slack déploie un aperçu des pages vers lesquelles le texte renvoie."
       }
     },
     "Formats": {
@@ -2175,7 +2184,7 @@
     }
   },
   "Notices": {
-    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
+    "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
     "channel": "{platform} ({handle})",
     "unknownChannel": "un canal déconnecté",
     "unknownWorkspace": "un espace de travail que vous avez quitté",
@@ -2326,9 +2335,9 @@
         "loadFailed": "L’utilisation n’a pas pu être chargée.",
         "retry": "Réessayer",
         "published": "{count, plural, one {# publication mise en ligne} other {# publications mises en ligne}}",
-        "onPlatform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} {count, number}",
+        "onPlatform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} {count, number}",
         "channelDays": "{count, plural, one {# jour-canal} other {# jours-canal}}, sur {days, plural, one {# jour compté} other {# jours comptés}}",
-        "metered": "{count, plural, one {# publication} other {# publications}} sur {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} en {month}, dont {withLinks, number} avec un lien",
+        "metered": "{count, plural, one {# publication} other {# publications}} sur {platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}} en {month}, dont {withLinks, number} avec un lien",
         "shared": "Les canaux de cet espace de travail comptent dans l’offre de l’espace de travail de son partenaire.",
         "nothing": "Rien n’a encore été compté sur cette période.",
         "views": "Afficher l’utilisation en",
@@ -3881,7 +3890,7 @@
       "hint": "Ce que chaque canal recevra. Ce n’est pas la mise en page de la plateforme.",
       "hintSelect": "Ce que chaque canal recevra. Ce n’est pas la mise en page de la plateforme. Sélectionnez des mots pour les commenter.",
       "disconnected": "Un canal déconnecté",
-      "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
+      "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} x {X} youtube {YouTube} other {{platform}}}",
       "noText": "Pas de texte sur ce canal.",
       "mediaLabel": "Images, vidéos et documents",
       "channelMediaLabel": "Images, vidéos et documents sur {handle}",
@@ -4548,7 +4557,7 @@
     "status": "{status, select, active {Active} paused {En pause} ended {Terminée} other {Inconnu}}",
     "awaitingApproval": "En attente d’approbation",
     "ended": "Terminée : {reason, select, stopped {arrêtée par un membre} completed {tout ce qu’elle préparait est terminé} starterGone {la personne qui l’a lancée ne peut plus publier} channelGone {son canal a été déconnecté} other {pour une autre raison}}.",
-    "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} other {Un canal}} : commentaire {comment, select, available {oui} notAsked {non demandé} noApi {impossible là} review {attend l’examen de la plateforme} notBuilt {pas encore} notAllowed {interdit par les règles de la plateforme} turnedOff {désactivé sur ce serveur} reconnect {reconnectez le canal} notCounted {aucune mention J’aime comptée là} textTooLong {trop long} other {non}}, repartage {repost, select, available {oui} notAsked {non demandé} noApi {impossible là} review {attend l’examen de la plateforme} notBuilt {pas encore} notAllowed {interdit par les règles de la plateforme} turnedOff {désactivé sur ce serveur} reconnect {reconnectez le canal} notCounted {aucune mention J’aime comptée là} textTooLong {trop long} other {non}}",
+    "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {Un canal}} : commentaire {comment, select, available {oui} notAsked {non demandé} noApi {impossible là} review {attend l’examen de la plateforme} notBuilt {pas encore} notAllowed {interdit par les règles de la plateforme} turnedOff {désactivé sur ce serveur} reconnect {reconnectez le canal} notCounted {aucune mention J’aime comptée là} textTooLong {trop long} other {non}}, repartage {repost, select, available {oui} notAsked {non demandé} noApi {impossible là} review {attend l’examen de la plateforme} notBuilt {pas encore} notAllowed {interdit par les règles de la plateforme} turnedOff {désactivé sur ce serveur} reconnect {reconnectez le canal} notCounted {aucune mention J’aime comptée là} textTooLong {trop long} other {non}}",
     "allowReposts": "Autoriser les repartages",
     "allowRepostsFailed": "Le canal n’a pas pu être reconnecté : réessayez.",
     "repostsNeedReconnect": "Bluesky demande de reconnecter le canal avant que Peal repartage depuis celui-ci.",
@@ -4604,7 +4613,7 @@
     "keywords": "Quand un commentaire dit : {keywords}",
     "status": "{status, select, active {Active} paused {En pause} ended {Terminée} other {Inconnu}}",
     "replied": "{count, plural, =0 {Aucune réponse pour l’instant} one {# réponse parmi les derniers commentaires} other {# réponses parmi les derniers commentaires}}",
-    "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} other {Un canal}} : {reply, select, available {répond là} noApi {aucun commentaire que Peal lit} notAllowed {les règles de la plateforme interdisent à une application de répondre d’elle-même} unsupported {ce serveur ne lit pas ses commentaires} reconnect {reconnectez le canal} textTooLong {la réponse est trop longue} other {ne peut pas répondre}}",
+    "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {Un canal}} : {reply, select, available {répond là} noApi {aucun commentaire que Peal lit} notAllowed {les règles de la plateforme interdisent à une application de répondre d’elle-même} unsupported {ce serveur ne lit pas ses commentaires} reconnect {reconnectez le canal} textTooLong {la réponse est trop longue} other {ne peut pas répondre}}",
     "started": "La règle est en place : elle répond aux commentaires qui arrivent à partir de maintenant.",
     "pause": "Mettre en pause",
     "paused": "La règle est en pause.",
@@ -4796,7 +4805,7 @@
       "channels": "Canaux"
     },
     "noLimit": "Non vérifié",
-    "textLimit": "{maximum, number} {unit, select, graphemes {caractères} codePoints {points de code} utf8Bytes {octets} emojiBytes {caractères pondérés} utf16Units {unités UTF-16} weighted {caractères pondérés} other {{unit}}}",
+    "textLimit": "{maximum, number} {unit, select, graphemes {caractères} codePoints {points de code} utf8Bytes {octets} emojiBytes {caractères pondérés} utf16Units {unités UTF-16} weighted {caractères pondérés} escapedUtf16Units {unités UTF-16, telles qu’envoyées} other {{unit}}}",
     "media": "{count, plural, =0 {Aucune} one {# par publication} other {# par publication}}",
     "followUps": {
       "thread": "Fils",
