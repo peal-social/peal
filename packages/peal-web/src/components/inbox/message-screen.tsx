@@ -1,7 +1,7 @@
 "use client";
 
 import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
-import { Exit, Option } from "effect";
+import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { maxInboxMessageLength } from "peal-contract";
@@ -129,8 +129,19 @@ const LoadedConversation = ({
 
   const params = { conversationId: conversation.id, workspaceId };
 
+  // Past Meta's 24 hours, a member answering by hand has until
+  // `personClosesAt`, where the server's Meta app holds the Human Agent
+  // feature: this page is the member's own session, the one place that may.
+  const { personClosesAt } = detail.window;
+
+  const personOpen =
+    personClosesAt !== null &&
+    DateTime.isLessThan(DateTime.nowUnsafe(), personClosesAt);
+
   const answers =
-    mayAnswer && detail.abilities.send === "available" && detail.window.open;
+    mayAnswer &&
+    detail.abilities.send === "available" &&
+    (detail.window.open || personOpen);
 
   const handleSend = () => {
     setError(null);
@@ -243,7 +254,7 @@ const LoadedConversation = ({
         <p className="text-muted-foreground text-sm">{t("thread.request")}</p>
       ) : null}
       {mayAnswer && detail.abilities.send === "available" ? (
-        <ReplyWindowView window={detail.window} />
+        <ReplyWindowView personOpen={personOpen} window={detail.window} />
       ) : null}
       {answers ? (
         <MessageBoxView

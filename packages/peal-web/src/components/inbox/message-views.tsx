@@ -120,11 +120,16 @@ export const DirectMessageView = ({
 /**
  * Until when the platform takes an answer, where it says (Messenger's and
  * Instagram's 24 hours), or why it takes none: its time ended, or nobody
- * else wrote yet, as Peal never writes first.
+ * else wrote yet, as Peal never writes first. Where the server's Meta app
+ * holds Meta's Human Agent feature (`personClosesAt`), a member answering
+ * by hand has until 7 days after the person's last message:
+ * `personOpen` says whether that time is still running.
  */
 export const ReplyWindowView = ({
+  personOpen = false,
   window,
 }: {
+  readonly personOpen?: boolean;
   readonly window: InboxConversationDetail["window"];
 }) => {
   const t = useTranslations("InboxMessages.box");
@@ -136,11 +141,32 @@ export const ReplyWindowView = ({
     );
   }
 
+  const byHand = window.personClosesAt;
+
+  if (window.open) {
+    return (
+      <p className="text-muted-foreground text-sm">
+        {t("openUntil", { at: instant(window.closesAt) })}
+        {byHand === null
+          ? null
+          : ` ${t("personAfter", { at: instant(byHand) })}`}
+      </p>
+    );
+  }
+
+  if (byHand === null) {
+    return (
+      <p className="text-muted-foreground text-sm">
+        {t("windowClosed", { at: instant(window.closesAt) })}
+      </p>
+    );
+  }
+
   return (
     <p className="text-muted-foreground text-sm">
-      {window.open
-        ? t("openUntil", { at: instant(window.closesAt) })
-        : t("windowClosed", { at: instant(window.closesAt) })}
+      {personOpen
+        ? t("personOpenUntil", { at: instant(byHand) })
+        : t("personWindowClosed", { at: instant(byHand) })}
     </p>
   );
 };

@@ -219,6 +219,13 @@ const show = Command.make(
         `${detail.window.open ? "Answers until" : "Answers closed at"} ${instant(detail.window.closesAt)}: Messenger and Instagram take one only within 24 hours of the person's last message.`
       );
     }
+
+    // A person, in the web app, may answer for longer: never this command.
+    if (detail.window.personClosesAt !== null && !detail.window.open) {
+      yield* Console.log(
+        `A member signed in to Peal's web app may answer in person until ${instant(detail.window.personClosesAt)}, with Meta's Human Agent tag: the command line cannot.`
+      );
+    }
   })
 ).pipe(
   Command.withDescription(

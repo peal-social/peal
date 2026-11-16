@@ -109,6 +109,10 @@ describe("peal inbox messages", () => {
           shown,
           "Answers closed at 2026-11-15T08:59:00Z: Messenger and Instagram take one only within 24 hours of the person's last message."
         );
+        assert.include(
+          shown,
+          "A member signed in to Peal's web app may answer in person until 2026-11-21T08:59:00Z, with Meta's Human Agent tag: the command line cannot."
+        );
 
         const late = yield* session.refused([
           "inbox",
@@ -123,6 +127,10 @@ describe("peal inbox messages", () => {
         assert.include(
           late,
           "The platform takes no answer to this conversation since 2026-11-15T08:59:00Z"
+        );
+        assert.include(
+          late,
+          "a member signed in to Peal's web app may answer in person for up to 7 days"
         );
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
