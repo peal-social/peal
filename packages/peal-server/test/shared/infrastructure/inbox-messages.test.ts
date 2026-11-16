@@ -7,6 +7,20 @@ import { inboxMessagesConfig } from "#shared/infrastructure/inbox-messages.ts";
 // messages are private correspondence, read on no platform unless named,
 // and a name the inbox cannot read stops the server.
 
+const mainApp = {
+  META_APP_ID: "1000000000000001",
+  META_APP_SECRET: "synthetic-meta-secret",
+};
+
+const instagramApp = {
+  INSTAGRAM_APP_ID: "1000000000000002",
+  INSTAGRAM_APP_SECRET: "synthetic-instagram-secret",
+};
+
+const verifyToken = {
+  META_WEBHOOK_VERIFY_TOKEN: "synthetic-verify-token-0000000000000000",
+};
+
 const read = (env: Record<string, string>) =>
   inboxMessagesConfig.pipe(
     Effect.provide(ConfigProvider.layer(ConfigProvider.fromUnknown(env))),
@@ -40,14 +54,80 @@ describe("the inbox's direct messages", () => {
 
   it.effect("stop the server for a platform they are not read on", () =>
     Effect.gen(function* refused() {
-      const result = yield* read({ PEAL_INBOX_MESSAGES: "mastodon,facebook" });
+      const result = yield* read({ PEAL_INBOX_MESSAGES: "mastodon,threads" });
 
       assert.isTrue(Result.isFailure(result));
 
       if (Result.isFailure(result)) {
         assert.strictEqual(result.failure._tag, "InvalidInboxSettings");
-        assert.include(result.failure.message, "mastodon and bluesky");
+        assert.include(
+          result.failure.message,
+          "mastodon, bluesky, facebook and instagram"
+        );
       }
     })
+  );
+
+  it.effect(
+    "are read on Facebook Pages and Instagram with the apps and the verify token",
+    () =>
+      Effect.gen(function* meta() {
+        assert.deepStrictEqual(
+          yield* read({
+            ...mainApp,
+            ...verifyToken,
+            PEAL_INBOX_MESSAGES: "facebook,instagram",
+          }),
+          Result.succeed(["facebook", "instagram"])
+        );
+        assert.deepStrictEqual(
+          yield* read({
+            ...instagramApp,
+            ...verifyToken,
+            PEAL_INBOX_MESSAGES: "instagram",
+          }),
+          Result.succeed(["instagram"])
+        );
+      })
+  );
+
+  it.effect(
+    "stop the server for a Meta platform without its app or the verify token",
+    () =>
+      Effect.gen(function* refusedMeta() {
+        const refusals = [
+          [
+            {
+              ...instagramApp,
+              ...verifyToken,
+              PEAL_INBOX_MESSAGES: "facebook",
+            },
+            "META_APP_ID",
+          ],
+          [
+            { ...verifyToken, PEAL_INBOX_MESSAGES: "instagram" },
+            "INSTAGRAM_APP_ID",
+          ],
+          [
+            { ...mainApp, PEAL_INBOX_MESSAGES: "facebook" },
+            "META_WEBHOOK_VERIFY_TOKEN",
+          ],
+          [
+            { ...instagramApp, PEAL_INBOX_MESSAGES: "instagram" },
+            "META_WEBHOOK_VERIFY_TOKEN",
+          ],
+        ] as const;
+
+        for (const [env, named] of refusals) {
+          const result = yield* read(env);
+
+          assert.isTrue(Result.isFailure(result));
+
+          if (Result.isFailure(result)) {
+            assert.strictEqual(result.failure._tag, "InvalidInboxSettings");
+            assert.include(result.failure.message, named);
+          }
+        }
+      })
   );
 });

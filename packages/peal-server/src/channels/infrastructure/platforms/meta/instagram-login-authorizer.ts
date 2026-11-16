@@ -10,6 +10,8 @@ import type {
   PlatformAuthorizer,
 } from "#channels/application/platform-authorizer.ts";
 import { tokenPolicies } from "#channels/domain/token-policy.ts";
+import { instagramLoginMessageScope } from "#shared/domain/inbox-message-platform.ts";
+import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
 import { instagramLoginCommentScope } from "#shared/domain/inbox-platform.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
 import type { MetaApp } from "#shared/infrastructure/platforms/meta-apps.ts";
@@ -32,7 +34,9 @@ export const instagramCallbackPath = "/connect/instagram/callback";
 // Reading the account and publishing for it, without which nothing can be
 // posted, and the insights analytics reads, which an account may decline;
 // where the server reads Instagram's comments, the comments permission,
-// which it may decline too. Messages are not asked for. Meta retired the
+// which it may decline too; and where it reads Instagram's direct
+// messages, their permission, only for a sign-in that asks for them.
+// Meta retired the
 // older `business_*` names on 2025-01-27.
 const requiredScopes = [
   "instagram_business_basic",
@@ -144,6 +148,8 @@ export const instagramLoginAuthorizer = Effect.fn(
   readonly http: MetaHttp;
   /** The optional platforms the inbox reads; none when not given. */
   readonly inbox?: InboxPlatforms;
+  /** The platforms the inbox reads messages on; none when not given. */
+  readonly messages?: InboxMessagePlatforms;
   readonly publicUrl: string;
 }) {
   const random = yield* SecureRandom.SecureRandom;
@@ -152,10 +158,25 @@ export const instagramLoginAuthorizer = Effect.fn(
   const instagramScopes = instagramLoginScopes(options.inbox ?? new Set());
   const redirectUri = new URL(instagramCallbackPath, options.publicUrl).href;
 
-  const begin: PlatformAuthorizer["begin"] = () =>
+  // What one sign-in asks: the messages' permission too where the server
+  // reads Instagram's, for a member who turns the channel's messages on or
+  // a reconnect of a channel that granted it.
+  const askedBy = (
+    request: Parameters<PlatformAuthorizer["begin"]>[0]
+  ): readonly string[] =>
+    options.messages?.has("instagram") === true &&
+    (request.messages === true ||
+      Option.exists(request.reconnecting, (channel) =>
+        channel.scopes.includes(instagramLoginMessageScope)
+      ))
+      ? [...instagramScopes, instagramLoginMessageScope]
+      : instagramScopes;
+
+  const begin: PlatformAuthorizer["begin"] = (request) =>
     Effect.gen(function* beginning() {
       const state = Base64Url.encode(yield* random.randomBytes(32));
       const url = new URL("/oauth/authorize", hosts.instagramAuthorize);
+      const asked = askedBy(request);
 
       url.search = new URLSearchParams({
         client_id: app.appId,
@@ -165,19 +186,30 @@ export const instagramLoginAuthorizer = Effect.fn(
         force_reauth: "true",
         redirect_uri: redirectUri,
         response_type: "code",
-        scope: instagramScopes.join(","),
+        scope: asked.join(","),
         state,
       }).toString();
 
       return {
         authorizationUrl: url.href,
         instance: Option.none(),
-        // Nothing is kept between the two ends of the sign-in but the
-        // state, which the attempt is stored under.
-        secret: Redacted.make(""),
+        // What was asked, which an answer that lists no permission
+        // granted, kept with the attempt (stored under the state) until the
+        // callback.
+        secret: Redacted.make(asked.join(",")),
         state,
       };
     });
+
+  // What a sign-in asked, from its attempt: an attempt begun before Peal
+  // kept it asked the server's scopes.
+  const askedOf = (secret: Redacted.Redacted): readonly string[] => {
+    const kept = Redacted.value(secret)
+      .split(",")
+      .filter((scope) => scope !== "");
+
+    return kept.length === 0 ? instagramScopes : kept;
+  };
 
   const appUserOf = (token: Redacted.Redacted) =>
     exchange(
@@ -211,7 +243,7 @@ export const instagramLoginAuthorizer = Effect.fn(
     return tokens;
   });
 
-  const complete: PlatformAuthorizer["complete"] = ({ callback }) =>
+  const complete: PlatformAuthorizer["complete"] = ({ callback, secret }) =>
     Effect.gen(function* completing() {
       if (Option.isNone(callback.code)) {
         return yield* new AuthorizationFailed({
@@ -236,7 +268,7 @@ export const instagramLoginAuthorizer = Effect.fn(
 
       // An answer that lists no permissions granted what was asked.
       const listed = permissionsOf(grant.permissions);
-      const granted = listed.length === 0 ? instagramScopes : listed;
+      const granted = listed.length === 0 ? askedOf(secret) : listed;
 
       if (!requiredScopes.every((scope) => granted.includes(scope))) {
         return yield* new AuthorizationDenied();

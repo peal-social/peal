@@ -415,3 +415,27 @@ read:
 
 3. **Either lists a row:** do not roll back past this release; release a
    fix forward instead. Never change the rows by hand.
+
+## Past Messenger's and Instagram's direct messages
+
+The release that reads Facebook Pages' and Instagram's direct messages
+(`PEAL_INBOX_MESSAGES` with `facebook` or `instagram`) stores one value the
+release before cannot decode: an outgoing message failed because Meta's
+answer window had shut (`engagement.outgoing_messages.reason`
+`windowClosed`), which it fails on where it reads the conversation. It
+adds no column. The boxes and conversations of Meta channels are harmless
+there: the release before reads none of their messages (`unsupported`),
+and its retention deletes them in their time. Set `PEAL_INBOX_MESSAGES`
+back to the names the release before takes before rolling back, or it
+does not start.
+
+1. **Outgoing messages with the new reason:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM engagement.outgoing_messages WHERE reason = 'windowClosed'"
+   ```
+
+2. **It lists a row:** do not roll back past this release until those rows
+   are gone (30 days after they settled, `PurgeMessages`); release a fix
+   forward instead. Never change the rows by hand.

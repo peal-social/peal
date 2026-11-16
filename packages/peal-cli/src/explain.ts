@@ -38,6 +38,7 @@ import { PealApi } from "#api.ts";
 import { CredentialStore } from "#credentials.ts";
 import { livePostRefusalWords } from "#live-post-refusals.ts";
 import { planLimitReason, usageLimitReason } from "#plan-limit.ts";
+import { instant } from "#print.ts";
 import { Refused } from "#refused.ts";
 import { SignInExpired } from "#sign-in-expired.ts";
 
@@ -663,12 +664,19 @@ const reasonOf =
         refused(
           `The platform did not do it (${reason}), and nothing changed in Peal: asking again is safe.`
         ),
-      InboxActionUnavailable: ({ ability, standing }) =>
-        refused(
+      InboxActionUnavailable: ({ ability, closedAt, reason, standing }) => {
+        if (reason === "windowClosed" && closedAt !== undefined) {
+          return refused(
+            `The platform takes no answer to this conversation since ${instant(closedAt)}: Messenger and Instagram take one only within 24 hours of the person's last message. Nothing was journalled or counted, and Peal never starts a conversation.`
+          );
+        }
+
+        return refused(
           standing === "reconnect"
             ? `This channel may not ${ability} yet: disconnect it and connect the account again, which asks for what it takes, or the channel was disconnected or turned off. Nothing was asked of the platform.`
             : `This channel's platform does not let the account ${ability} here. Nothing was asked of it.`
-        ),
+        );
+      },
       InboxCommentGone: () =>
         refused(
           "The comment is no longer on its platform: it can be neither answered nor moderated."

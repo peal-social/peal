@@ -1,4 +1,4 @@
-import { Effect, Option, Schema } from "effect";
+import { DateTime, Effect, Option, Schema } from "effect";
 import { CurrentMember, defaultInboxPageSize } from "peal-contract";
 
 import { InboxTools } from "#app/mcp/inbox-tools.ts";
@@ -75,12 +75,23 @@ const noConversation = () =>
     "The workspace has no such conversation: it may have gone with its channel, or be older than Peal keeps one. list_conversations lists them."
   );
 
-const cannotMessage = ({ standing }: MessageAbilityUnavailable) =>
-  refuse(
+const cannotMessage = ({
+  closedAt,
+  reason,
+  standing,
+}: MessageAbilityUnavailable) => {
+  if (reason === "windowClosed" && closedAt !== undefined) {
+    return refuse(
+      `Nothing was sent: the platform takes no answer to this conversation since ${DateTime.formatIso(closedAt)}, as Messenger and Instagram take one only within 24 hours of the person's last message. Do not call this tool again for it; the user may answer from the platform's own inbox if its rules allow.`
+    );
+  }
+
+  return refuse(
     standing === "reconnect"
       ? "This channel may not send direct messages yet: its account was connected before Peal asked for what that takes, or the channel was disconnected or turned off. The user disconnects it and connects the account again, in the web app. Nothing was sent."
       : "Nothing was sent: this server does not send direct messages on this channel's platform, or nobody else wrote in the conversation yet, and Peal never starts one."
   );
+};
 
 const noLocation = () =>
   refuse(

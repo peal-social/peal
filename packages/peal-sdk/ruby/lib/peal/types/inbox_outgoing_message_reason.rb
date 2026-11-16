@@ -17,6 +17,7 @@ module Peal
       NO_RESPONSE = "noResponse"
       INTERRUPTED = "interrupted"
       ADAPTER_FAILURE = "adapterFailure"
+      WINDOW_CLOSED = "windowClosed"
     end
   end
 end

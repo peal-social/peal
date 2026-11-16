@@ -319,6 +319,42 @@ Tant que l’application est en mode développement, seules les personnes qui y 
     accorde aussitôt pour les comptes que gèrent les personnes de votre propre
     application, et pour ceux des autres seulement après son App Review.
   </AccordionItem>
+  <AccordionItem title="Messages privés dans la boîte de réception">
+    Pour lire les messages privés de Messenger et d’Instagram et y répondre
+    dans la [boîte de réception](/guides/engage/inbox#meta-messages), ajoutez
+    `facebook`, `instagram` ou les deux à `PEAL_INBOX_MESSAGES`, et définissez
+    `META_WEBHOOK_VERIFY_TOKEN`. Ajoutez les autorisations de messagerie aux
+    cas d’usage : `pages_messaging` et `pages_manage_metadata` à Facebook Login
+    pour les Pages ; `instagram_manage_messages`, `pages_manage_metadata` et
+    `pages_messaging` à celui-ci pour Instagram ;
+    `instagram_business_manage_messages` au cas d’usage Instagram. Une
+    connexion ne les demande que lorsqu’un membre active les messages d’un
+    canal.
+
+    Ensuite, dans les réglages des Webhooks, donnez à chacune des deux adresses
+    de rappel qu’affiche [la commande](#platform-addresses) le Verify Token, et
+    abonnez-vous aux champs `messages` et `message_echoes` : pour l’objet Page
+    et l’objet Instagram de Facebook Login, et pour la connexion Instagram.
+    L’adresse doit répondre à Meta sans page de connexion devant elle, et
+    l’application doit être publiée (Live) : Meta n’envoie d’événements que
+    depuis une application publiée. Peal demande aussi à Meta d’envoyer les
+    événements de chaque compte (`subscribed_apps`) à sa première lecture, puis
+    chaque jour, et lui demande d’arrêter quand les messages du canal sont
+    désactivés ou que le canal est déconnecté.
+
+    Avant son App Review, Meta ne laisse une application lire et répondre
+    qu’aux messages des personnes ayant un rôle sur elle, écrits à des comptes
+    qu’elles gèrent aussi. Son examen de `pages_messaging`,
+    `pages_manage_metadata`, `instagram_manage_messages` et
+    `instagram_business_manage_messages` demande des enregistrements d’écran
+    d’une connexion, d’un message envoyé depuis l’application et vu dans la
+    messagerie de Meta, et de la façon dont un membre abonne le compte à ses
+    événements ; lire les messages d’Instagram par une Page demande aussi que
+    votre entreprise soit vérifiée. La personne propriétaire du compte
+    Instagram active **Autoriser l’accès aux messages** dans ses réglages
+    d’outils connectés.
+
+  </AccordionItem>
   <AccordionItem title="Demandes de suppression des données">
     Quand l’une de ses utilisatrices ou l’un de ses utilisateurs demande à Meta
     de supprimer ce que Peal détient sur elle ou lui, Meta appelle l’adresse de

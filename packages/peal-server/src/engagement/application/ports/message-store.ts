@@ -129,6 +129,14 @@ export class MessageStore extends Context.Service<
      * Deletes the channel's message the platform says its author took
      * back, by its id there. Answers how many went: 0 or 1.
      */
+    /**
+     * Makes these channels' boxes ask their platform for the account's
+     * events again at their next read (`subscribed_at` none): the
+     * subscription they relied on was stopped for another channel.
+     */
+    readonly refollow: (
+      channelIds: readonly ChannelId[]
+    ) => Effect.Effect<void, DatabaseError>;
     readonly deleteTakenBack: (
       channelId: ChannelId,
       platformMessageId: string
@@ -202,6 +210,15 @@ export class MessageStore extends Context.Service<
       message: OutgoingMessage,
       key: Option.Option<MessageKey>
     ) => Effect.Effect<MessageJournalled, DatabaseError>;
+    /**
+     * What a key made in the workspace since `key.since`, compared with
+     * `message`: the same message (`replayed`), another (`keyReused`), or
+     * none. Reads only: what a request refused before the journal answers.
+     */
+    readonly madeWithKey: (
+      message: OutgoingMessage,
+      key: MessageKey
+    ) => Effect.Effect<Option.Option<MessageJournalled>, DatabaseError>;
     readonly outgoing: (
       messageId: string
     ) => Effect.Effect<Option.Option<OutgoingMessage>, DatabaseError>;

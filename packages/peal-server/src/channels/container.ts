@@ -36,6 +36,7 @@ import { MemorySiteConnectPace } from "#channels/infrastructure/memory-site-conn
 import { NotifiedChannelNotices } from "#channels/infrastructure/notified-channel-notices.ts";
 import { PartnerLinkHosts } from "#channels/infrastructure/partner-link-hosts.ts";
 import { AccountChannelAllowanceLive } from "#channels/infrastructure/plan-channel-allowance.ts";
+import { ChannelDeparturesLive } from "#channels/infrastructure/platforms/channel-departures-live.ts";
 import { ChannelPlatformsLive } from "#channels/infrastructure/platforms/channel-platform-settings.ts";
 import { chatVerifiersLive } from "#channels/infrastructure/platforms/chat-verifiers.ts";
 import { MetaSignedRequestsLive } from "#channels/infrastructure/platforms/meta/meta-signed-requests.ts";
@@ -94,12 +95,24 @@ const PlatformsLive = Layer.mergeAll(
   )
 );
 
+// What a disconnected channel set up on its platform, undone: Meta's
+// message events, where the inbox reads them. Needs EngagementRecords.
+const DeparturesLive = ChannelDeparturesLive.pipe(
+  Layer.provide(ChannelPlatformsLive),
+  Layer.provide(DrizzleChannelDirectory),
+  Layer.provide(OutboundGuard.layer),
+  Layer.provide(FetchHttpClient.layer)
+);
+
 // The adapters behind the context's ports. The cipher reads PEAL_TOKEN_KEYS
 // when the server starts: it may be unset, as on a server that connects no
 // channel, but a malformed keyring stops the server there, as do malformed
 // Bluesky client keys or Meta app settings.
 const AdaptersLive = Layer.mergeAll(
-  DrizzleChannelRecords,
+  // An erasure lets go first what the channels set up on their platforms.
+  DrizzleChannelRecords.pipe(
+    Layer.provide(Layer.merge(DrizzleChannelRepository, DeparturesLive))
+  ),
   DrizzleChannelRepository,
   DrizzleChannelDirectory,
   DrizzleConnectAttempts,
@@ -114,6 +127,7 @@ const AdaptersLive = Layer.mergeAll(
   webhookChannelNotices(NotifiedChannelNotices),
   ChannelEventsLive,
   AccountChannelAllowanceLive,
+  DeparturesLive,
   PlatformsLive
 ).pipe(Layer.provideMerge(TokenCipherLive));
 

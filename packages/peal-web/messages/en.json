@@ -4302,7 +4302,8 @@
       "reviewNotFound": "This review no longer exists: it may have gone from Google, or be older than Peal keeps one.",
       "conversationNotFound": "This conversation no longer exists: it went with its channel, or past the time Peal keeps one.",
       "messagePending": "A message to this conversation is on its way, or may have gone out. Wait until it is settled before writing another, so the same message never goes twice.",
-      "mentionsOutside": "The message mentions accounts outside the conversation ({mentions}), which a Mastodon direct message would reach too. Take the mentions out: nothing was sent."
+      "mentionsOutside": "The message mentions accounts outside the conversation ({mentions}), which a Mastodon direct message would reach too. Take the mentions out: nothing was sent.",
+      "windowClosed": "The platform takes no answer to this conversation any more: Messenger and Instagram take one only within 24 hours of the person’s last message. Nothing was sent."
     }
   },
   "InboxReviews": {
@@ -4351,7 +4352,7 @@
   },
   "InboxMessages": {
     "title": "Direct messages",
-    "description": "The private conversations people hold with your Mastodon and Bluesky accounts, for the channels whose messages your workspace turned on. Peal keeps each message {days, number} days after it was sent, and never starts a conversation.",
+    "description": "The private conversations people hold with your Mastodon, Bluesky, Facebook Page and Instagram accounts, for the channels whose messages your workspace turned on. Peal keeps each message {days, number} days after it was sent, and never starts a conversation.",
     "loadFailed": "The conversations could not be loaded.",
     "retry": "Try again",
     "row": {
@@ -4389,7 +4390,9 @@
       "sending": "Sending…",
       "sentToast": "The message is on its way.",
       "pending": "A message to this conversation is on its way. Wait until it has gone out to write another.",
-      "closed": "Nobody else wrote in this conversation yet: Peal answers, and never writes first."
+      "closed": "Nobody else wrote in this conversation yet: Peal answers, and never writes first.",
+      "openUntil": "You can answer until {at}: Messenger and Instagram take an answer only within 24 hours of the person’s last message.",
+      "windowClosed": "Messenger and Instagram take an answer only within 24 hours of the person’s last message, and this conversation’s time ended {at}. Answer from the platform’s own inbox if its rules allow it, or wait for the person to write again."
     },
     "settings": {
       "title": "Direct messages: what Peal reads",
@@ -4400,14 +4403,18 @@
       "turnOff": "Stop, and delete what was kept",
       "grantNeeded": "Bluesky asks the account to allow Peal its direct messages first.",
       "grant": "Allow, on Bluesky",
-      "none": "No Mastodon or Bluesky channel in this workspace.",
+      "none": "No Mastodon, Bluesky, Facebook Page or Instagram channel in this workspace.",
       "applications": "Applications that may read and answer them",
       "applicationsDescription": "An application connected through OAuth, such as an AI assistant, lists conversations, and reads or answers them only once you let it. Give the client id it shows in its refusal.",
       "clientId": "Client id",
       "allow": "Allow",
       "revoke": "Take back",
       "noApplications": "No application may read them.",
-      "failed": "The settings could not be saved."
+      "failed": "The settings could not be saved.",
+      "metaGrantNeeded": "Meta asks the account to allow Peal its direct messages first.",
+      "metaGrant": "Allow, on {app, select, instagram {Instagram} other {Facebook}}",
+      "metaReview": "Until Meta reviews Peal’s app (its App Review), only people with a role on the app can write to the account through Peal.",
+      "instagramConnectedTools": "In Instagram, the account’s owner also turns on Settings → Messages and story replies → Message controls → Connected tools → Allow access to messages."
     }
   },
   "TwoStep": {

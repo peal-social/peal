@@ -33,5 +33,15 @@ export class ChannelRecords extends Context.Service<
      * they created do, without them.
      */
     readonly eraseUser: (userId: UserId) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Before the workspace's erasure, outside its transaction: what its
+     * channels set up on their platforms for Peal is undone with the
+     * tokens they hold (ChannelDepartures: Meta's message events), every
+     * channel of the workspace counted as leaving with it. Best effort: it
+     * never fails, and a channel's own failure is logged by its id.
+     */
+    readonly releaseWorkspace: (
+      workspaceId: WorkspaceId
+    ) => Effect.Effect<void>;
   }
 >()("peal-server/channels/application/ChannelRecords") {}

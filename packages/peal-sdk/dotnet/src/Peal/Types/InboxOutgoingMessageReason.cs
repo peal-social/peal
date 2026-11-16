@@ -34,6 +34,8 @@ public readonly record struct InboxOutgoingMessageReason : IStringEnum
 
     public static readonly InboxOutgoingMessageReason AdapterFailure = new(Values.AdapterFailure);
 
+    public static readonly InboxOutgoingMessageReason WindowClosed = new(Values.WindowClosed);
+
     public InboxOutgoingMessageReason(string value)
     {
         Value = value;
@@ -149,5 +151,7 @@ public readonly record struct InboxOutgoingMessageReason : IStringEnum
         public const string Interrupted = "interrupted";
 
         public const string AdapterFailure = "adapterFailure";
+
+        public const string WindowClosed = "windowClosed";
     }
 }

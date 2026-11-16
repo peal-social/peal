@@ -537,7 +537,7 @@ const abilities = Command.make(
 
 export const inbox = Command.make("inbox").pipe(
   Command.withDescription(
-    `The comments people leave under a workspace's published posts, on ${inboxPlatformsText}, the reviews of its Google Business Profile locations, and the direct messages its Mastodon and Bluesky accounts receive: read them, and answer as the channel's account.`
+    `The comments people leave under a workspace's published posts, on ${inboxPlatformsText}, the reviews of its Google Business Profile locations, and the direct messages its Mastodon, Bluesky, Facebook Page and Instagram accounts receive: read them, and answer as the channel's account.`
   ),
   Command.withSubcommands([
     threads,

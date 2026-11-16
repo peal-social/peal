@@ -11,6 +11,7 @@ import {
 import { Base64Url } from "effect/encoding";
 
 import { InvalidBlueskySettings } from "#channels/infrastructure/invalid-bluesky-settings.ts";
+import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
 import {
   isProduction,
   publicUrlConfig,
@@ -68,6 +69,12 @@ export interface ChannelPlatformSettings {
    * Instagram accounts; none when this server connects neither.
    */
   readonly meta: Option.Option<MetaApp>;
+  /**
+   * The platforms the inbox reads direct messages on
+   * (`PEAL_INBOX_MESSAGES`), whose sign-ins ask their messaging
+   * permissions of a member who turns a channel's messages on.
+   */
+  readonly messages: InboxMessagePlatforms;
   /** Where Meta's services are. */
   readonly metaHosts: MetaHosts;
   /** Peal's Pinterest app, if the operator registered one. */
@@ -247,7 +254,8 @@ export const channelPlatformsConfig = Effect.gen(function* settings() {
 
   const mode = yield* blueskyModeOf({ keys, production, publicUrl });
   // Where the inbox reads Bluesky's messages, its sign-in asks the chat
-  // scopes too; off, what it asked before.
+  // scopes too, and Meta's sign-ins their messaging permissions; off,
+  // what they asked before.
   const messages = yield* inboxMessagesConfig;
   const linkedin = yield* oauthClientConfig("linkedin", "LINKEDIN");
   const linkedinPages = yield* oauthClientConfig("linkedin", "LINKEDIN_PAGES");
@@ -288,6 +296,7 @@ export const channelPlatformsConfig = Effect.gen(function* settings() {
     linkedin,
     linkedinPages,
     linkedinVersion,
+    messages,
     meta,
     metaHosts,
     pinterest,

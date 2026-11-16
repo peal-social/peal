@@ -16,8 +16,9 @@ export const ChannelsMessageAccounts = Layer.effect(
       channelsOf: (platform, accountId) =>
         directory.withAccount(platform, accountId).pipe(
           Effect.map((listed) =>
-            listed.map(({ channelId, workspaceId }) => ({
+            listed.map(({ channelId, connection, workspaceId }) => ({
               channelId,
+              connection,
               workspaceId,
             }))
           )

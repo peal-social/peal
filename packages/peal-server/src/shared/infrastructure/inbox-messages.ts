@@ -8,10 +8,15 @@ import type {
 } from "#shared/domain/inbox-message-platform.ts";
 
 import { InvalidInboxSettings } from "./invalid-inbox-settings.ts";
+import {
+  instagramAppConfig,
+  metaAppConfig,
+  metaWebhookVerifyTokenConfig,
+} from "./platforms/meta-apps.ts";
 
 const decodePlatform = Schema.decodeUnknownOption(InboxMessagePlatformSchema);
 
-// The names the setting takes, as a sentence: "a and b".
+// The names the setting takes, as a sentence: "a, b and c".
 const takenNames = (() => {
   const names = [...InboxMessagePlatformSchema.literals];
   const last = names.pop();
@@ -23,10 +28,15 @@ const takenNames = (() => {
 
 /**
  * `PEAL_INBOX_MESSAGES`: the platforms whose direct messages the inbox
- * reads and answers, comma-separated among `mastodon` and `bluesky`; none
- * when unset or blank. Any other name stops the server. Off, no
- * conversation is read, Bluesky's sign-in asks what it asked before, and
- * a channel can do nothing with messages.
+ * reads and answers, comma-separated among `mastodon`, `bluesky`,
+ * `facebook` and `instagram`; none when unset or blank. Any other name
+ * stops the server, as does a Meta platform without what it takes:
+ * Facebook Pages Meta's main app (`META_APP_ID`, `META_APP_SECRET`),
+ * Instagram either of its ways in (Meta's main app, or `INSTAGRAM_APP_ID`
+ * and `INSTAGRAM_APP_SECRET`), and both `META_WEBHOOK_VERIFY_TOKEN`, as
+ * Meta tells the server of new messages through its events. Off, no
+ * conversation is read, the sign-ins ask what they asked before, and a
+ * channel can do nothing with messages.
  */
 export const inboxMessagesConfig = Effect.gen(function* inboxMessages() {
   const written = yield* Config.option(Config.String("PEAL_INBOX_MESSAGES"));
@@ -48,6 +58,35 @@ export const inboxMessagesConfig = Effect.gen(function* inboxMessages() {
     }
 
     platforms.add(platform.value);
+  }
+
+  const meta = platforms.has("facebook") || platforms.has("instagram");
+
+  if (meta && Option.isNone(yield* metaWebhookVerifyTokenConfig)) {
+    return yield* new InvalidInboxSettings({
+      reason:
+        "facebook or instagram in PEAL_INBOX_MESSAGES needs META_WEBHOOK_VERIFY_TOKEN",
+    });
+  }
+
+  const mainApp = yield* metaAppConfig;
+
+  if (platforms.has("facebook") && Option.isNone(mainApp)) {
+    return yield* new InvalidInboxSettings({
+      reason:
+        "facebook in PEAL_INBOX_MESSAGES needs META_APP_ID and META_APP_SECRET",
+    });
+  }
+
+  if (
+    platforms.has("instagram") &&
+    Option.isNone(mainApp) &&
+    Option.isNone(yield* instagramAppConfig)
+  ) {
+    return yield* new InvalidInboxSettings({
+      reason:
+        "instagram in PEAL_INBOX_MESSAGES needs META_APP_ID and META_APP_SECRET, or INSTAGRAM_APP_ID and INSTAGRAM_APP_SECRET",
+    });
   }
 
   const read: InboxMessagePlatforms = platforms;

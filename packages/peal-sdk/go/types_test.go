@@ -24771,6 +24771,22 @@ func TestSettersInboxActionUnavailableEncoded(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetClosedAt", func(t *testing.T) {
+		obj := &InboxActionUnavailableEncoded{}
+		var fernTestValueClosedAt *string
+		obj.SetClosedAt(fernTestValueClosedAt)
+		assert.Equal(t, fernTestValueClosedAt, obj.ClosedAt)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetReason", func(t *testing.T) {
+		obj := &InboxActionUnavailableEncoded{}
+		var fernTestValueReason *InboxActionUnavailableReason
+		obj.SetReason(fernTestValueReason)
+		assert.Equal(t, fernTestValueReason, obj.Reason)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetStanding", func(t *testing.T) {
 		obj := &InboxActionUnavailableEncoded{}
 		var fernTestValueStanding InboxActionUnavailableEncodedStanding
@@ -24925,6 +24941,72 @@ func TestGettersInboxActionUnavailableEncoded(t *testing.T) {
 			}
 		}()
 		_ = obj.GetAbility() // Should return zero value
+	})
+
+	t.Run("GetClosedAt", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxActionUnavailableEncoded{}
+		var expected *string
+		obj.ClosedAt = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetClosedAt(), "getter should return the property value")
+	})
+
+	t.Run("GetClosedAt_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxActionUnavailableEncoded{}
+		obj.ClosedAt = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetClosedAt(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetClosedAt_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *InboxActionUnavailableEncoded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetClosedAt() // Should return zero value
+	})
+
+	t.Run("GetReason", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxActionUnavailableEncoded{}
+		var expected *InboxActionUnavailableReason
+		obj.Reason = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetReason(), "getter should return the property value")
+	})
+
+	t.Run("GetReason_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxActionUnavailableEncoded{}
+		obj.Reason = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetReason(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetReason_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *InboxActionUnavailableEncoded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetReason() // Should return zero value
 	})
 
 	t.Run("GetStanding", func(t *testing.T) {
@@ -25085,6 +25167,68 @@ func TestSettersMarkExplicitInboxActionUnavailableEncoded(t *testing.T) {
 
 		// Act
 		obj.SetAbility(fernTestValueAbility)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetClosedAt_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxActionUnavailableEncoded{}
+		var fernTestValueClosedAt *string
+
+		// Act
+		obj.SetClosedAt(fernTestValueClosedAt)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetReason_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &InboxActionUnavailableEncoded{}
+		var fernTestValueReason *InboxActionUnavailableReason
+
+		// Act
+		obj.SetReason(fernTestValueReason)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -81648,6 +81792,28 @@ func TestEnumInboxActionUnavailableEncodedTag(t *testing.T) {
 
 	t.Run("Ptr", func(t *testing.T) {
 		val, err := NewInboxActionUnavailableEncodedTagFromString("InboxActionUnavailable")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumInboxActionUnavailableReason(t *testing.T) {
+	t.Run("NewFromString_windowClosed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewInboxActionUnavailableReasonFromString("windowClosed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, InboxActionUnavailableReason("windowClosed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewInboxActionUnavailableReasonFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewInboxActionUnavailableReasonFromString("windowClosed")
 		assert.NoError(t, err)
 		ptr := val.Ptr()
 		assert.NotNil(t, ptr)

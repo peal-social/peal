@@ -33,6 +33,7 @@ import {
   DirectMessageView,
   MessageBoxView,
   OutgoingMessageView,
+  ReplyWindowView,
 } from "./message-views.tsx";
 
 // How often the conversation is read again while the tab is visible, so a
@@ -241,8 +242,8 @@ const LoadedConversation = ({
       {conversation.request && answers ? (
         <p className="text-muted-foreground text-sm">{t("thread.request")}</p>
       ) : null}
-      {mayAnswer && !detail.window.open ? (
-        <p className="text-muted-foreground text-sm">{t("box.closed")}</p>
+      {mayAnswer && detail.abilities.send === "available" ? (
+        <ReplyWindowView window={detail.window} />
       ) : null}
       {answers ? (
         <MessageBoxView

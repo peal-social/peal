@@ -366,6 +366,7 @@ export * from "./InboxAbilities.js";
 export * from "./InboxAbilityStanding.js";
 export * from "./InboxActionFailedEncoded.js";
 export * from "./InboxActionUnavailableEncoded.js";
+export * from "./InboxActionUnavailableReason.js";
 export * from "./InboxAuthor.js";
 export * from "./InboxCollectionEnd.js";
 export * from "./InboxComment.js";

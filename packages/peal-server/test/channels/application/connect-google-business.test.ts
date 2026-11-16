@@ -2,6 +2,7 @@ import { assert, layer } from "@effect/vitest";
 import { DateTime, Duration, Effect, Layer, Option } from "effect";
 
 import { ChannelAccess } from "#channels/application/channel-access.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { DisconnectChannel } from "#channels/application/disconnect-channel.ts";
 import { PlatformAuthorizers } from "#channels/application/platform-authorizer.ts";
@@ -452,6 +453,7 @@ layer(AdaptersTest)("connecting a Google Business Profile location", (it) => {
       ).pipe(
         Effect.provide(
           DisconnectChannel.layer.pipe(
+            Layer.provide(ChannelDepartures.none),
             Layer.provide(
               Layer.succeed(PlatformAuthorizers, authorizersOf(on.authorizer))
             )
