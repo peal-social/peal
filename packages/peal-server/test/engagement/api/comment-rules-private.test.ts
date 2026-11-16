@@ -7,6 +7,7 @@ import type { Member } from "peal-contract";
 
 import { InboxToolsLive } from "#app/mcp/inbox-handlers.ts";
 import { InboxTools } from "#app/mcp/inbox-tools.ts";
+import { CommentRules } from "#engagement/application/comment-rules.ts";
 import { EngagementInbox } from "#engagement/application/engagement-inbox.ts";
 import { EngagementMessages } from "#engagement/application/engagement-messages.ts";
 import { EngagementReviews } from "#engagement/application/engagement-reviews.ts";
@@ -18,6 +19,7 @@ import {
   forget,
   messagesOn,
   privateText,
+  received,
   RulesTest,
   threadOn,
 } from "#test/engagement/rule-world.ts";
@@ -151,7 +153,22 @@ describe("a comment rule's private text through the API", () => {
             assert.instanceOf(refused, Forbidden);
           }
 
-          // Reading it takes the messages' reading permission and consent.
+          // A comment it answered: its private reply waits for the public.
+          yield* Effect.sleep("5 millis");
+          yield* received(thread, [{ author: 1, text: "price?" }]);
+          yield* CommentRules.use((rules) => rules.runDue);
+
+          const mine = yield* editor.inboxRules.getCommentRule({
+            params: { ...params, ruleId: made.id },
+          });
+
+          assert.deepStrictEqual(
+            mine.matches.map(({ privateCode }) => privateCode),
+            ["waiting"]
+          );
+
+          // Reading it takes the messages' reading permission and consent:
+          // the text, and which comments got or will get one.
           for (const member of [
             others.viewer,
             others.partnerKey,
@@ -169,6 +186,16 @@ describe("a comment rule's private text through the API", () => {
             });
 
             assert.isNull(shown.privateReply);
+            assert.deepStrictEqual(
+              shown.matches.map(
+                ({ privateCode, privateReplyId, privateStatus }) => [
+                  privateCode,
+                  privateReplyId,
+                  privateStatus,
+                ]
+              ),
+              [[null, null, null]]
+            );
             assert.deepStrictEqual(
               listed.items.map(({ privateReply }) => privateReply),
               [null]

@@ -129,7 +129,7 @@ export const CommentRulePrivateStatusSchema = Schema.Literals([
  * longer send private replies, `PrivateReplyPending` when the comment
  * has one already, `PrivateReplyNotPossible` past the 7 days,
  * `AllowanceReached`, …). Both null for a rule without one;
- * `privateReplyId` and `privateStatus` null too to a reader who may not
+ * `privateReplyId`, `privateCode` and `privateStatus` all null to a reader who may not
  * read private replies (engagement:readMessages, and an application the
  * owner's consent).
  */

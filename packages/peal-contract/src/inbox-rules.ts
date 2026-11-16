@@ -48,7 +48,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
       success: CommentRulePageSchema,
     }).annotateMerge(
       OpenApi.annotations({
-        description: `Lists the workspace's comment rules, oldest first, 50 a page unless \`limit\` (at most 100) says otherwise, those with \`status\` alone when given, each with what its channels can carry and the latest ${String(commentRuleMatchesShown)} comments it matched. A rule's \`privateReply\`, and each match's \`privateReplyId\` and \`privateStatus\`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.`,
+        description: `Lists the workspace's comment rules, oldest first, 50 a page unless \`limit\` (at most 100) says otherwise, those with \`status\` alone when given, each with what its channels can carry and the latest ${String(commentRuleMatchesShown)} comments it matched. A rule's \`privateReply\`, and each match's \`privateCode\`, \`privateReplyId\` and \`privateStatus\`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.`,
         summary: "List comment rules",
       })
     ),
@@ -75,7 +75,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
     }).annotateMerge(
       OpenApi.annotations({
         description:
-          "Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.",
+          "Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.",
         summary: "Get a comment rule",
       })
     ),
