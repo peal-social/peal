@@ -36,6 +36,7 @@ import type {
 } from "#engagement/domain/outgoing-message.ts";
 import { privateReplyStanding } from "#engagement/domain/private-reply-standing.ts";
 import type { PrivateReplyFailure } from "#engagement/domain/private-reply.ts";
+import { replyWindowOf } from "#engagement/domain/reply-window.ts";
 import {
   databaseDown,
   needsReconnect,
@@ -125,7 +126,7 @@ const failedWith = (reason: MessageFailure): MessageSendOutcome => ({
 // Why nothing was sent, when the channels context gave no token.
 const accessFailureOf = (failure: {
   readonly _tag: string;
-}): MessageFailure => {
+}): "channelUnavailable" | "platformUnavailable" | "reconnectNeeded" => {
   if (failure._tag === "ChannelUnusable") {
     return "channelUnavailable";
   }
@@ -433,13 +434,22 @@ export const platformMessagesWith = (settings: {
           const kept = yield* store.messagesOf(conversation.id);
           const others = yield* store.outgoingOf(conversation.id);
 
+          const now = yield* DateTime.now;
+
           // Claimed just before the call, and only while the message is on
           // its way: one handed over meanwhile is not sent.
-          if (
-            !(yield* store.claimCall(request.messageId, yield* DateTime.now))
-          ) {
+          if (!(yield* store.claimCall(request.messageId, now))) {
             return notClaimed;
           }
+
+          // Meta's tag is for a message "sent outside the 24-hour messaging
+          // window": a member's own answer carries it only once the window
+          // has shut at the call, whenever it was written.
+          const tagged =
+            humanAgent &&
+            message.value.byPerson &&
+            (platform === "facebook" || platform === "instagram") &&
+            !replyWindowOf(platform, conversation.lastIncomingAt, now).open;
 
           return yield* platforms[platform][mode](account, {
             createdAt: message.value.createdAt,
@@ -451,11 +461,9 @@ export const platformMessagesWith = (settings: {
             platformConversationId: conversation.platformConversationId,
             request: conversation.request,
             // Only a member's own answer, in their session, on Messenger
-            // or Instagram where the operator's app holds the feature.
-            humanAgent:
-              humanAgent &&
-              message.value.byPerson &&
-              (platform === "facebook" || platform === "instagram"),
+            // or Instagram where the operator's app holds the feature, past
+            // the standard window.
+            humanAgent: tagged,
             takenIds: takenIdsOf(
               kept,
               others.map((other) => ({
@@ -521,11 +529,7 @@ export const platformMessagesWith = (settings: {
             .pipe(Effect.mapError(accessFailureOf), Effect.result);
 
           if (reached._tag === "Failure") {
-            return stopped(
-              reached.failure === "conversationGone"
-                ? "platformUnavailable"
-                : reached.failure
-            );
+            return stopped(reached.failure);
           }
 
           const account = reached.success;

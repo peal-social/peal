@@ -51,8 +51,9 @@ export interface OutgoingDirect {
   readonly request: boolean;
   /**
    * Whether it goes out with Meta's Human Agent tag: a member's own answer,
-   * in person, on a server whose Meta app holds the feature, which Meta
-   * takes until 7 days after the person's last message. Never for a rule,
+   * in person, on a server whose Meta app holds the feature, once the
+   * standard window has shut at the call; Meta takes it until 7 days after
+   * the person's last message. Never for a rule,
    * a tool or a key; only Messenger and Instagram read it.
    */
   readonly humanAgent: boolean;

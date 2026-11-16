@@ -1,5 +1,5 @@
 import { assert, layer } from "@effect/vitest";
-import { DateTime, Effect, Layer, Option, Redacted } from "effect";
+import { DateTime, Duration, Effect, Layer, Option, Redacted } from "effect";
 import { Digest, Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
@@ -10,7 +10,12 @@ import { MessageChannelsOfAccount } from "#engagement/application/ports/message-
 import { MessageSender } from "#engagement/application/ports/message-sender.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
 import { ConversationIdSchema } from "#engagement/domain/conversation-id.ts";
-import { startConversation } from "#engagement/domain/conversation.ts";
+import {
+  refreshConversation,
+  startConversation,
+} from "#engagement/domain/conversation.ts";
+import { DirectMessageIdSchema } from "#engagement/domain/direct-message-id.ts";
+import { receiveMessage } from "#engagement/domain/direct-message.ts";
 import { followBox } from "#engagement/domain/message-box.ts";
 import { OutgoingMessageIdSchema } from "#engagement/domain/outgoing-message-id.ts";
 import { writeMessage } from "#engagement/domain/outgoing-message.ts";
@@ -33,7 +38,10 @@ import {
   OpenOutboundGuard,
 } from "#test/channels/support.ts";
 import { fakeMetaMessages } from "#test/engagement/fakes/fake-meta-messages.ts";
-import { conversationReading } from "#test/engagement/support.ts";
+import {
+  conversationReading,
+  messageReading,
+} from "#test/engagement/support.ts";
 import {
   facebookPageId,
   graphAppSecret,
@@ -76,12 +84,17 @@ const pageAccount = (
   scopes: ["pages_show_list", ...facebookMessageScopes],
 });
 
-// A Page's conversation with reader 7001, its messages on, and an answer
-// journalled: by a member in person, or not.
+// A Page's conversation with reader 7001, who last wrote `ago` before
+// now (the live clock), its messages on, and an answer journalled
+// `written` before now: by a member in person, or not.
 const journalled = Effect.fn("journalled")(function* journalled(
   workspaceId: WorkspaceId,
-  byPerson: boolean
+  byPerson: boolean,
+  ago: Duration.Input = "2 days",
+  written: Duration.Input = "1 minute"
 ) {
+  const now = yield* DateTime.now;
+  const lastIncoming = DateTime.subtractDuration(now, ago);
   const store = yield* MessageStore;
   const channelId = yield* newId(ChannelIdSchema);
   const box = followBox({ channelId, workspaceId }, at);
@@ -91,13 +104,31 @@ const journalled = Effect.fn("journalled")(function* journalled(
     box
   );
 
-  const talk = startConversation(
+  const reading = conversationReading(1, {
+    lastMessageAt: lastIncoming,
+    messages: [messageReading(1, { sentAt: lastIncoming })],
+    platformConversationId: "c_1",
+  });
+
+  const started = startConversation(
     yield* newId(ConversationIdSchema),
     box,
-    conversationReading(1, {
-      lastMessageAt: at,
-      platformConversationId: "c_1",
-    }),
+    reading,
+    at
+  );
+
+  // The person's message, read: what the window counts from.
+  const talk = refreshConversation(
+    started,
+    reading,
+    [
+      receiveMessage(
+        yield* newId(DirectMessageIdSchema),
+        started,
+        messageReading(1, { sentAt: lastIncoming }),
+        at
+      ),
+    ],
     at
   );
 
@@ -108,7 +139,7 @@ const journalled = Effect.fn("journalled")(function* journalled(
     talk,
     Option.none(),
     "Back on Monday, sorry for the wait",
-    at,
+    DateTime.subtractDuration(now, written),
     byPerson
   );
 
@@ -231,6 +262,54 @@ layer(StoreTest, { excludeTestServices: true })(
               type: "MESSAGE_TAG",
             });
           }).pipe(Effect.ensuring(forget(workspaceId)));
+        })
+    );
+
+    it.effect(
+      "send a member's own answer within the 24 hours as a response, untagged, and tag it only past them",
+      () =>
+        Effect.gen(function* windowed() {
+          for (const [ago, written, tagged] of [
+            ["1 hour", "1 minute", false],
+            [
+              Duration.sum(Duration.hours(23), Duration.minutes(57)),
+              "1 minute",
+              false,
+            ],
+            // Written at 23 h 58, inside the 24 hours, and sent at 24 h 01:
+            // the gate reads the window at the call.
+            [
+              Duration.sum(Duration.hours(24), Duration.minutes(1)),
+              "3 minutes",
+              true,
+            ],
+            ["2 days", "1 minute", true],
+          ] as const) {
+            const workspaceId = yield* freshWorkspace;
+
+            yield* Effect.gen(function* checks() {
+              const { channelId, message } = yield* journalled(
+                workspaceId,
+                true,
+                ago,
+                written
+              );
+
+              const { graph, sender } = yield* gateFor(
+                pageAccount(channelId),
+                true
+              );
+
+              yield* sender.send({ channelId, messageId: message.id });
+
+              assert.deepStrictEqual(
+                sentAs(graph),
+                tagged
+                  ? { tag: "HUMAN_AGENT", type: "MESSAGE_TAG" }
+                  : { tag: null, type: "RESPONSE" }
+              );
+            }).pipe(Effect.ensuring(forget(workspaceId)));
+          }
         })
     );
 
