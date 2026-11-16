@@ -304,15 +304,22 @@ export const platformMessagesWith = (settings: {
           )
         ).pipe(Effect.map((found) => found.flat()));
 
-      // Whether a channel of Peal's other than `channelId` reads the
-      // messages of one of the accounts: it has a box. Unknown when the
-      // database does not answer, which keeps the subscription. Once it
-      // is stopped, the others follow again at their next read.
+      // Whether a channel of Peal's reads the messages of one of the
+      // accounts: it has a box, `channelId` itself among them, as its
+      // messages may have been turned on again since they were turned
+      // off. Unknown when the database does not answer, which keeps the
+      // subscription. Once it is stopped, the others, and `channelId`
+      // turned on again while Meta stopped it, follow again at their next
+      // read.
       const followersOf = (channelId: ChannelId): Followers => ({
         elsewhere: (followed) =>
           othersOf(channelId, followed).pipe(
             Effect.flatMap((others) =>
-              Effect.all(others.map((other) => store.box(other.channelId)))
+              Effect.all(
+                [channelId, ...others.map((other) => other.channelId)].map(
+                  (reading) => store.box(reading)
+                )
+              )
             ),
             Effect.map((boxes) => boxes.some(Option.isSome)),
             Effect.orElseSucceed(() => true)
@@ -320,7 +327,10 @@ export const platformMessagesWith = (settings: {
         stopped: (followed) =>
           othersOf(channelId, followed).pipe(
             Effect.flatMap((others) =>
-              store.refollow(others.map((other) => other.channelId))
+              store.refollow([
+                channelId,
+                ...others.map((other) => other.channelId),
+              ])
             ),
             Effect.catch(() =>
               Effect.logWarning(

@@ -61,7 +61,7 @@ export const DrizzleEngagementRecords = Layer.effect(
     const ruleNotices = yield* CommentRuleNotices;
 
     // The messages sent from Peal that never set out (on their way, no
-    // call begun), locked until the caller's transaction ends, so a job
+    // call claimed), locked until the caller's transaction ends, so a job
     // that would begin one waits and then finds it gone.
     const unsentWhere = (where: SQL | undefined) =>
       db
@@ -74,7 +74,9 @@ export const DrizzleEngagementRecords = Layer.effect(
           and(
             where,
             eq(outgoingMessages.status, "sending"),
-            isNull(outgoingMessages.attemptedAt)
+            // Its call never claimed: an attempt that waited for the
+            // gate's turn never left either.
+            isNull(outgoingMessages.callClaimedAt)
           )
         )
         .for("update");

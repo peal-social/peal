@@ -36,4 +36,24 @@ describe("the ids a resumed message may not take", () => {
       [before.platformMessageId, claimed.platformMessageId].toSorted()
     );
   });
+
+  it("take the id another message of Peal's went out as, though the box has not read it yet", () => {
+    // Another message of Peal's in the conversation went out as `m_9`,
+    // which no read has brought in yet: a resume may never adopt it.
+    const echo = own(2, DateTime.addDuration(writtenAt, "5 seconds"));
+
+    expect(
+      takenIdsOf(
+        [echo],
+        [
+          {
+            id: outgoingMessageId(2),
+            platformMessageId: Option.some("m_9"),
+          },
+        ],
+        { createdAt: writtenAt, id: outgoingMessageId(1) },
+        Duration.minutes(1)
+      )
+    ).toStrictEqual(["m_9"]);
+  });
 });

@@ -242,8 +242,15 @@
   answer that lists no permission. `DisconnectChannel` tells
   `ChannelDepartures` (`channel-departures.ts`) once the channel is gone,
   with the tokens read before, beside the revoke (ten seconds for both),
-  and `ChannelRecords.releaseWorkspace` does it for every channel before
-  a workspace's erasure: `metaMessageDepartures` deletes Meta's
+  and `ChannelRecords.releaseWorkspaces` does it for every channel before
+  the erasure of one or more workspaces, every channel of them leaving
+  with each: it reads their tokens first (`Redacted`), then lets them go
+  eight side by side in a detached fiber bounded at `releaseLimit` (two
+  minutes), which the erasure waits for `releaseWait` (ten seconds) at
+  most and never cuts short, so an erasure never waits on Meta once a
+  channel. `departed` answers `done` or `failed`; each channel not let go
+  by the end is logged by its id and counted
+  (`peal.channels.release.left_subscribed`): `metaMessageDepartures` deletes Meta's
   `subscribed_apps` while no other channel reads an account the app's
   subscription carries (`ChannelDirectory.withAccount` gives each
   channel's way in; `EngagementRecords.readsMessages`), then tells the

@@ -238,10 +238,9 @@ export const ContextRecordsLive = Layer.effect(
 
           // Settled, they let go what their channels set up on their
           // platforms for Peal (Meta's message events), with the tokens
-          // the erasure is about to delete: best effort, never refused.
-          yield* Effect.forEach(workspaceIds, channels.releaseWorkspace, {
-            discard: true,
-          });
+          // the erasure is about to delete: all at once, bounded, best
+          // effort, never refused.
+          yield* channels.releaseWorkspaces(workspaceIds);
 
           const erased: ErasedWorkspace = {
             subscriptionsCancelled: settled.reduce(

@@ -37,7 +37,7 @@ const RecordedDepartures = Layer.effect(
         Ref.update(departed, (all) => [
           ...all,
           `${channel.id}:${Redacted.value(tokens.accessToken)}`,
-        ]),
+        ]).pipe(Effect.as("done" as const)),
     });
   })
 );

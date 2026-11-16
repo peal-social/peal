@@ -164,10 +164,14 @@ const departures = Effect.fnUntraced(function* departures(options: {
   return { asked, graph, layer, refollowed };
 });
 
-const depart = (channel: Channel, layer: Layer.Layer<ChannelDepartures>) =>
-  ChannelDepartures.use((service) => service.departed(channel, tokens)).pipe(
-    Effect.provide(layer)
-  );
+const depart = (
+  channel: Channel,
+  layer: Layer.Layer<ChannelDepartures>,
+  leaving: readonly ChannelId[] = []
+) =>
+  ChannelDepartures.use((service) =>
+    service.departed(channel, tokens, leaving)
+  ).pipe(Effect.provide(layer));
 
 const Services = Layer.mergeAll(
   FetchHttpClient.layer,
@@ -220,6 +224,38 @@ describe("a Meta channel disconnected", () => {
         assert.isFalse(
           on.graph.requests().some(({ method }) => method === "DELETE")
         );
+      }).pipe(Effect.scoped, Effect.provide(Services))
+  );
+
+  it.effect(
+    "stops them when the Instagram account linked to the Page leaves with it, as an erased workspace's do",
+    () =>
+      Effect.gen(function* together() {
+        // The Page's linked Instagram account has a box in the same
+        // workspace: each of the two would keep the subscription for the
+        // other, unless both are counted as leaving.
+        const on = yield* departures({
+          others: {
+            [`instagram:${instagramUserId}`]: [{ channelId: otherId }],
+          },
+          reading: [otherId],
+        });
+
+        yield* depart(
+          channelOf("facebook", ["pages_show_list", ...facebookMessageScopes]),
+          on.layer,
+          [otherId]
+        );
+
+        assert.isTrue(
+          on.graph
+            .requests()
+            .some(
+              ({ method, path }) =>
+                method === "DELETE" && path === "/v27.0/me/subscribed_apps"
+            )
+        );
+        assert.deepStrictEqual(on.refollowed, []);
       }).pipe(Effect.scoped, Effect.provide(Services))
   );
 
