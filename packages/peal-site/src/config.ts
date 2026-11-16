@@ -1,5 +1,6 @@
 import {
   SITE_APP_URL,
+  SITE_BLOCKS,
   SITE_DISCORD_URL,
   SITE_DOCS_URL,
   SITE_PLAUSIBLE_DOMAIN,
@@ -51,6 +52,13 @@ export const appLink = (locale: Locale, path: string): string | undefined => {
 
   return `${appOrigin}${prefix}/${path}`;
 };
+
+/**
+ * Whether the blocks showcase is built at /blocks: always in `astro dev`,
+ * and in a build when SITE_BLOCKS is `on`.
+ */
+export const blocksShowcase =
+  import.meta.env.DEV || present(SITE_BLOCKS) === "on";
 
 /** The Discord server's invitation, or `undefined` when none is set. */
 export const discordUrl = present(SITE_DISCORD_URL);

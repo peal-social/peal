@@ -1,0 +1,108 @@
+---
+// The blocks showcase (src/showcase/pages.ts): every peal-ui block with
+// synthetic content, for review. English only, kept out of search engines,
+// and built only in `astro dev` or with SITE_BLOCKS=on.
+import type { GetStaticPaths } from "astro";
+import { Section } from "peal-ui/blocks/blueprint/section";
+import { SectionLabel } from "peal-ui/blocks/text/section-label";
+
+import { blocksShowcase } from "../../config.ts";
+import Base from "../../layouts/base.astro";
+import { syntheticNote } from "../../showcase/fixtures.ts";
+import {
+  showcaseEntry,
+  showcaseHref,
+  showcasePaths,
+} from "../../showcase/pages.ts";
+import { IndexGrid } from "../../showcase/index-grid.tsx";
+import { Specimen } from "../../showcase/specimen.tsx";
+
+export const getStaticPaths = (() =>
+  showcasePaths(blocksShowcase)) satisfies GetStaticPaths;
+
+const entry = showcaseEntry(Astro.params.block);
+---
+
+<Base
+  description="Peal's marketing blocks, with synthetic content, for review."
+  noindex
+  path=""
+  title={entry === undefined ? "Blocks · Peal" : `${entry.slug} · Blocks · Peal`}
+  translated={false}
+>
+  {
+    entry === undefined ? (
+      <>
+        <Section labelledBy="blocks-title" rule="none">
+          <div class="px-6 pt-12 pb-8">
+            <SectionLabel text="showcase" />
+            <h1
+              id="blocks-title"
+              class="mt-4 text-[30px] leading-[1.1] font-semibold tracking-[-0.025em] sm:text-[40px]"
+            >
+              Blocks.{" "}
+              <span class="text-muted-foreground">
+                Reviewed here before a page uses them.
+              </span>
+            </h1>
+            <p class="text-muted-foreground mt-4 max-w-[40rem] text-base sm:text-lg">
+              Every block in peal-ui, by the kinds of block asked for.{" "}
+              {syntheticNote}
+            </p>
+          </div>
+        </Section>
+        <Section rule="both">
+          <IndexGrid />
+        </Section>
+      </>
+    ) : (
+      <>
+        <Section labelledBy="block-title" rule="none">
+          <div class="px-6 pt-12 pb-8">
+            <p class="text-muted-foreground font-mono text-xs tracking-[0.04em] lowercase">
+              <a href={showcaseHref()} class="hover:text-foreground">
+                blocks
+              </a>{" "}
+              / {entry.interactive ? "i · island" : "s · static"}
+              {entry.contentPending && " · showcase only"}
+            </p>
+            <h1
+              id="block-title"
+              class="mt-4 font-mono text-[30px] leading-[1.1] font-semibold tracking-[-0.025em] sm:text-[40px]"
+            >
+              {entry.slug}
+            </h1>
+            <p class="text-muted-foreground mt-4 max-w-[40rem] text-base sm:text-lg">
+              {entry.purpose}
+            </p>
+            <p class="text-muted-foreground mt-2 text-[13px]">
+              {entry.categories.join(", ")}. {syntheticNote}
+            </p>
+          </div>
+        </Section>
+        {entry.specimens.map((specimen, place) => (
+          <section aria-label={specimen.name} class="border-t">
+            <div class="mx-auto max-w-6xl">
+              <p class="text-muted-foreground border-b px-6 py-3 font-mono text-xs tracking-[0.04em] lowercase">
+                {specimen.name}
+              </p>
+              <div class="py-10">
+                {entry.interactive ? (
+                  <Specimen client:visible index={place} slug={entry.slug} />
+                ) : (
+                  <Specimen index={place} slug={entry.slug} />
+                )}
+              </div>
+              <details class="border-t">
+                <summary class="text-muted-foreground cursor-pointer px-6 py-3 font-mono text-xs">
+                  props
+                </summary>
+                <pre class="bg-muted overflow-x-auto border-t px-6 py-4 font-mono text-[13px]">{specimen.json}</pre>
+              </details>
+            </div>
+          </section>
+        ))}
+      </>
+    )
+  }
+</Base>

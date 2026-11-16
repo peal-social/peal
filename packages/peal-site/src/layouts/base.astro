@@ -19,9 +19,21 @@ interface Props {
   /** The page's path below its locale prefix: "" for the home page. */
   readonly path: string;
   readonly title: string;
+  /**
+   * Whether the page exists in every language, as the site's pages do; the
+   * blocks showcase, in English only, has no alternates or canonical link.
+   */
+  readonly translated?: boolean;
 }
 
-const { current, description, noindex = false, path, title } = Astro.props;
+const {
+  current,
+  description,
+  noindex = false,
+  path,
+  title,
+  translated = true,
+} = Astro.props;
 
 const locale = pageLocale(Astro.currentLocale);
 
@@ -30,7 +42,7 @@ const { footer, header } = await chrome(locale, path, current);
 // Canonical and alternate links need absolute URLs, so they are only emitted
 // when SITE_URL gives the site its origin.
 const absolute = (code: string): string | undefined =>
-  Astro.site === undefined
+  Astro.site === undefined || !translated
     ? undefined
     : new URL(getRelativeLocaleUrl(code, path), Astro.site).href;
 

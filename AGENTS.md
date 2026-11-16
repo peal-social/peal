@@ -75,7 +75,10 @@ several:
 - [`packages/peal-server/AGENTS.md`](packages/peal-server/AGENTS.md): the
   server's architecture, the HTTP API and its middlewares, the cluster, the
   database, and the list of the contexts' guides.
-- [`packages/peal-web/AGENTS.md`](packages/peal-web/AGENTS.md): the web front.
+- [`packages/peal-web/AGENTS.md`](packages/peal-web/AGENTS.md): the web front,
+  and peal-ui's components.
+- [`packages/peal-ui/AGENTS.md`](packages/peal-ui/AGENTS.md): the marketing
+  blocks.
 - [`packages/peal-contract/AGENTS.md`](packages/peal-contract/AGENTS.md):
   the API contract, and how it may change.
 - [`packages/peal-cli/AGENTS.md`](packages/peal-cli/AGENTS.md): the command
@@ -341,7 +344,9 @@ self-hoster needs only Postgres and an S3-compatible store:
   site `SITE_URL`, `SITE_DOCS_URL`, `SITE_APP_URL`
   (the header's Log in and Get started, and the footer's links to the
   app's contract functions), `SITE_DISCORD_URL` (the Discord links),
-  `SITE_PLAUSIBLE_DOMAIN`, `SITE_PLAUSIBLE_HOST`. Nx hashes them from the
+  `SITE_PLAUSIBLE_DOMAIN`, `SITE_PLAUSIBLE_HOST`, `SITE_BLOCKS` (`on`
+  builds the blocks showcase at `/blocks`, which `astro dev` always
+  serves and the `static` image never does). Nx hashes them from the
   process environment only, not `.env` files: export them, or build with
   `--skip-nx-cache`.
 - The site serves `/.well-known/security.txt` (`public/.well-known/`) for

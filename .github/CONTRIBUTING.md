@@ -549,6 +549,9 @@ environment:
 - `DOCS_PLAUSIBLE_DOMAIN` and `SITE_PLAUSIBLE_DOMAIN`: turn on Plausible.
 - `DOCS_PLAUSIBLE_HOST` and `SITE_PLAUSIBLE_HOST`: point Plausible at a
   self-hosted instance.
+- `SITE_BLOCKS`: `on` builds the blocks showcase at `/blocks`: every
+  peal-ui block with synthetic content, for review, with `noindex`. The
+  site's dev server always serves it; a build without it has no such page.
 - `DOCS_APP_URL`: the web app's origin, which the docs' sidebar links to
   with an **Open Peal** button.
 - `DOCS_ASSISTANT_MODEL`: turns on the docs' assistant with this Anthropic

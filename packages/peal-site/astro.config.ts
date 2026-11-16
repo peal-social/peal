@@ -25,6 +25,10 @@ const config = defineConfig({
       // and to withdraw from one, which the app serves, to the foot of
       // every page.
       SITE_APP_URL: optional,
+      // `on` builds the blocks showcase at /blocks, which `astro dev` always
+      // serves: every peal-ui block with synthetic content, for review,
+      // kept out of search engines. Off, the build has no such page.
+      SITE_BLOCKS: optional,
       // The Discord server's invitation, such as https://discord.gg/…: adds
       // Discord to the header, the Resources menu and the footer.
       SITE_DISCORD_URL: optional,
