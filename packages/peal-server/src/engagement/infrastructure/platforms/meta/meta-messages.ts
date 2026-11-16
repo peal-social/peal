@@ -357,6 +357,45 @@ const sendRefusal = (
 };
 
 /**
+ * Why Meta refused an answer tagged `HUMAN_AGENT`, where that tag is the
+ * cause: `100`/`2018276` on Messenger ("Cannot tag messages with
+ * 'HUMAN_AGENT' without prior approval") and `10`/`2534044` on Instagram
+ * ("App doesn't have Human Agent Tag Access"), as integrators report them
+ * (not on Meta's error codes page, read 2026-11-17: unverified), and
+ * Meta's `613`/`2018338`, its warning that message tag use is bothersome
+ * or abusive, before it restricts the Page.
+ */
+const tagRefusal = (
+  code: number,
+  subcode: number
+): Option.Option<"humanAgentNotGranted" | "tagRestricted"> => {
+  if (
+    (code === 100 && subcode === 2_018_276) ||
+    (code === 10 && subcode === 2_534_044)
+  ) {
+    return Option.some("humanAgentNotGranted");
+  }
+
+  return code === 613 && subcode === 2_018_338
+    ? Option.some("tagRestricted")
+    : Option.none();
+};
+
+/**
+ * The answers sent with Meta's Human Agent tag, by platform: what Meta's
+ * review of the feature and its warnings on tag use read, which an
+ * operator watches beside them.
+ */
+export const taggedMessageSends = Metric.counter(
+  "peal.engagement.messages.tagged_sends",
+  {
+    description:
+      "Direct messages Peal sent with Meta's HUMAN_AGENT tag, a person's answer past the 24 hours",
+    incremental: true,
+  }
+);
+
+/**
  * Messages, and conversations, Peal kept nothing of because a sender, or
  * the account itself, was not one of the conversation's people: what the
  * sandbox's trial watches for, as Meta's ids for each way in are not
@@ -776,7 +815,8 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
         return failed("conversationGone");
       }
 
-      // A person's own answer carries the Human Agent tag, which Meta
+      // A person's own answer past the 24 hours (the gate decides) carries
+      // the Human Agent tag, which Meta
       // takes "within 7 days after a customer's last message", and the
       // only tag Instagram takes (`MESSAGE_TAG`: "A non-promotional message
       // that is being sent outside the 24-hour messaging window with a
@@ -786,6 +826,15 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
       const kind = message.humanAgent
         ? { messaging_type: "MESSAGE_TAG", tag: "HUMAN_AGENT" }
         : { messaging_type: "RESPONSE" };
+
+      if (message.humanAgent) {
+        yield* Metric.update(
+          Metric.withAttributes(taggedMessageSends, {
+            platform: account.platform,
+          }),
+          1
+        );
+      }
 
       const sent = yield* request(account, token, "POST", "/me/messages", {
         message: JSON.stringify({ text: message.text }),
@@ -819,6 +868,31 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
       // Refused before anything was made: a renewed token may be tried.
       if (code === 190 || code === 102) {
         return yield* new TokenRejected();
+      }
+
+      const byTag = message.humanAgent
+        ? tagRefusal(code, subcode)
+        : Option.none();
+
+      // A warning on the app's use of tags: an operator's to see at once,
+      // before Meta restricts the Page. Codes alone, as below.
+      if (Option.isSome(byTag)) {
+        const logged =
+          byTag.value === "tagRestricted"
+            ? Effect.logError("Meta refused a tagged direct message")
+            : Effect.logWarning("Meta refused a tagged direct message");
+
+        yield* logged.pipe(
+          Effect.annotateLogs({
+            channelId: account.channelId,
+            code,
+            messageId: message.messageId,
+            refusal: byTag.value,
+            subcode,
+          })
+        );
+
+        return failed(byTag.value);
       }
 
       // Meta's own failure, or an answer that says nothing Peal knows:

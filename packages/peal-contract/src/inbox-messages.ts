@@ -144,7 +144,11 @@ export type InboxOutgoingMessageStatus =
  * `notSent` (its outcome was unknown, and a member found it never went
  * out), `windowClosed` (the platform takes answers only for a time after
  * the person last wrote, 24 hours on Messenger and Instagram, 7 for a
- * member's own answer with Meta's Human Agent tag, and it had passed).
+ * member's own answer with Meta's Human Agent tag, and it had passed),
+ * `humanAgentNotGranted` (Meta refused a member's answer with its Human
+ * Agent tag, as the server's app does not hold that feature),
+ * `tagRestricted` (Meta refused a tagged answer, warning that the app's use
+ * of message tags is restricted).
  *
  * Unconfirmed, until a member checks the platform: `noResponse`,
  * `interrupted`, `adapterFailure`.
@@ -161,6 +165,8 @@ export const InboxOutgoingMessageReasonSchema = Schema.Literals([
   "interrupted",
   "adapterFailure",
   "windowClosed",
+  "humanAgentNotGranted",
+  "tagRestricted",
 ]).annotate({ identifier: "InboxOutgoingMessageReason" });
 
 export type InboxOutgoingMessageReason =

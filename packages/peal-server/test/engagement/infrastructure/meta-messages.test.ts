@@ -27,6 +27,7 @@ import type {
 } from "#engagement/infrastructure/platforms/message-platform.ts";
 import {
   messagesFromUnknownSenders,
+  taggedMessageSends,
   metaMessages,
 } from "#engagement/infrastructure/platforms/meta/meta-messages.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
@@ -822,6 +823,77 @@ describe("Meta's direct messages, sent", () => {
           }
         })
       )
+  );
+
+  it.effect(
+    "say apart why Meta refuses a tagged answer, count tagged sends, and log a warning on tag use as an error",
+    () => {
+      const lines: { readonly level: string; readonly refusal: unknown }[] = [];
+
+      const capture = Logger.layer([
+        Logger.make(({ fiber, logLevel }) => {
+          const annotations = fiber.getRef(References.CurrentLogAnnotations);
+
+          if (annotations["code"] !== undefined) {
+            lines.push({ level: logLevel, refusal: annotations["refusal"] });
+          }
+        }),
+      ]);
+
+      return atNow(
+        Effect.gen(function* refusals() {
+          const { account, graph, platform } = yield* onGraph("messenger", {
+            humanAgent: true,
+          });
+
+          graph.add(conversation("c_1", [message(1)]));
+
+          const counted = Metric.value(
+            Metric.withAttributes(taggedMessageSends, { platform: "facebook" })
+          ).pipe(Effect.map(({ count }) => count));
+
+          const before = yield* counted;
+
+          // As integrators report them (not on Meta's page): Messenger's
+          // `100`/`2018276` and Instagram's `10`/`2534044` for an app
+          // without the feature; Meta's `613`/`2018338` on tag use.
+          graph.script.push("POST /v27.0/me/messages", [
+            graphError(100, 2_018_276),
+            graphError(10, 2_534_044),
+            graphError(613, 2_018_338),
+          ]);
+
+          const tagged = outgoing({ humanAgent: true });
+
+          assert.deepStrictEqual(yield* platform.send(account, tagged), {
+            _tag: "failed",
+            reason: "humanAgentNotGranted",
+          });
+          assert.deepStrictEqual(yield* platform.send(account, tagged), {
+            _tag: "failed",
+            reason: "humanAgentNotGranted",
+          });
+          assert.deepStrictEqual(yield* platform.send(account, tagged), {
+            _tag: "failed",
+            reason: "tagRestricted",
+          });
+          assert.deepStrictEqual(yield* platform.send(account, tagged), {
+            _tag: "sent",
+            platformMessageId: "m_sent_1",
+          });
+
+          // An untagged send counts nothing.
+          yield* platform.send(account, outgoing());
+
+          assert.strictEqual((yield* counted) - before, 4);
+          assert.deepStrictEqual(
+            lines.map(({ level }) => level),
+            ["Warn", "Warn", "Error"]
+          );
+          assert.strictEqual(lines[2]?.refusal, "tagRestricted");
+        }).pipe(Effect.provide(capture))
+      );
+    }
   );
 
   it.effect(

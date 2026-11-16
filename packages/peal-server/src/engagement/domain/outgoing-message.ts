@@ -31,6 +31,10 @@ import { ReplyDoubtSchema } from "./reply.ts";
  *   out.
  * - `windowClosed`: the platform takes answers only for a time after the
  *   person last wrote (Meta's 24 hours), and it had passed.
+ * - `humanAgentNotGranted`: Meta refused a person's answer tagged
+ *   `HUMAN_AGENT`, as the app does not hold the Human Agent feature.
+ * - `tagRestricted`: Meta refused a tagged answer, warning that the app's
+ *   use of message tags is restricted or abusive.
  *
  * Stored: add a member, never rename or remove one.
  */
@@ -43,6 +47,8 @@ export const MessageFailureSchema = Schema.Literals([
   "refused",
   "notSent",
   "windowClosed",
+  "humanAgentNotGranted",
+  "tagRestricted",
 ]);
 
 export type MessageFailure = typeof MessageFailureSchema.Type;

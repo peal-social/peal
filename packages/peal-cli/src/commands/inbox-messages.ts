@@ -1,4 +1,4 @@
-import { Console, Effect, Option } from "effect";
+import { Console, DateTime, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import {
   idempotencyKeyLifetimeHours,
@@ -39,6 +39,10 @@ const reasons: Readonly<Record<InboxOutgoingMessageReason, string>> = {
     "the platform refused it: the person may take no messages from the account",
   windowClosed:
     "the platform takes no answer any more: Messenger and Instagram take one only within 24 hours of the person's last message",
+  humanAgentNotGranted:
+    "Meta refused Peal's Human Agent tag: the server's Meta app does not hold that feature, so a late answer by hand cannot go out",
+  tagRestricted:
+    "Meta refused the tagged answer, warning that the app's use of message tags is restricted: the server's operator should check Meta's app",
 };
 
 const sentLine = (message: InboxOutgoingMessage): string =>
@@ -221,9 +225,15 @@ const show = Command.make(
     }
 
     // A person, in the web app, may answer for longer: never this command.
-    if (detail.window.personClosesAt !== null && !detail.window.open) {
+    const { personClosesAt } = detail.window;
+
+    if (
+      personClosesAt !== null &&
+      !detail.window.open &&
+      DateTime.isLessThan(yield* DateTime.now, personClosesAt)
+    ) {
       yield* Console.log(
-        `A member signed in to Peal's web app may answer in person until ${instant(detail.window.personClosesAt)}, with Meta's Human Agent tag: the command line cannot.`
+        `A member signed in to Peal's web app may answer in person until ${instant(personClosesAt)}, with Meta's Human Agent tag: the command line cannot.`
       );
     }
   })
