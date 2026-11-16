@@ -333,6 +333,15 @@ export const googleAdsClient = (options: {
           Option.none()
         ),
         AccessibleSchema
+      ).pipe(
+        // A Google account with no Google Ads account reaches none: the
+        // sign-in works, and offers nothing.
+        Effect.catchIf(
+          (failure) =>
+            failure._tag === "AdNetworkRefused" &&
+            failure.code === "google.authenticationError.NOT_ADS_USER",
+          () => Effect.succeed<typeof AccessibleSchema.Type>({})
+        )
       );
 
       const ids = (listed.resourceNames ?? []).flatMap((name) =>

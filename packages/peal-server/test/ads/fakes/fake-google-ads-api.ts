@@ -122,16 +122,40 @@ const present = (
     )
   );
 
+// The values each of Google's error enums holds, as v26's reference lists
+// them (AuthenticationError, AuthorizationError, QuotaError, read
+// 2026-11-16): a test can only send a value under the enum Google puts it
+// in.
+interface GoogleErrorEnums {
+  readonly authenticationError:
+    | "ADVANCED_PROTECTION_NOT_ENROLLED"
+    | "AUTHENTICATION_ERROR"
+    | "CUSTOMER_NOT_FOUND"
+    | "GOOGLE_ACCOUNT_DELETED"
+    | "NOT_ADS_USER"
+    | "OAUTH_TOKEN_EXPIRED"
+    | "OAUTH_TOKEN_INVALID"
+    | "OAUTH_TOKEN_REVOKED"
+    | "TWO_STEP_VERIFICATION_NOT_ENROLLED";
+  readonly authorizationError:
+    | "CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION"
+    | "CUSTOMER_NOT_ENABLED"
+    | "USER_PERMISSION_DENIED";
+  readonly internalError: "INTERNAL_ERROR";
+  readonly queryError: "UNRECOGNIZED_FIELD";
+  readonly quotaError: "RESOURCE_EXHAUSTED" | "RESOURCE_TEMPORARILY_EXHAUSTED";
+}
+
 /**
  * A Google Ads API refusal as REST writes it: a Status in `error`, its
  * GoogleAdsFailure in `details`, with one error of `key` and `value`, a
  * message that quotes what was sent, and the quota's `retryDelay` when
  * given ("Understand API errors", QuotaErrorDetails).
  */
-export const googleAdsError = (
+export const googleAdsError = <K extends keyof GoogleErrorEnums>(
   status: keyof typeof statusNames,
-  key: string,
-  value: string,
+  key: K,
+  value: GoogleErrorEnums[K],
   retryDelay?: string
 ): PlatformAnswer =>
   json(

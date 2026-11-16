@@ -453,6 +453,39 @@ layer(BillingTest, { excludeTestServices: true })(
         })
     );
 
+    it.effect(
+      "put off an account Google cannot find, and leave its sign-in working",
+      () =>
+        Effect.gen(function* notFound() {
+          const api = yield* onGoogle(accounts);
+          const owner = yield* freshOwner;
+          const sync = yield* SyncAccount;
+          const connections = yield* AdConnections;
+          const { account } = yield* connectedGoogle(owner);
+
+          api.script({
+            answer: googleAdsError(
+              401,
+              "authenticationError",
+              "CUSTOMER_NOT_FOUND"
+            ),
+            when: searching("customer"),
+          });
+
+          assert.strictEqual(yield* sync.run(account.id), "postponed");
+
+          const [connection] = yield* connections.list(owner);
+
+          assert.strictEqual(connection?.grant.access, "working");
+          assert.deepStrictEqual(
+            yield* TestNetworks.use((networks) =>
+              networks.told(owner.workspaceId)
+            ),
+            []
+          );
+        })
+    );
+
     it.effect("mark a refused sign-in once, and tell once", () =>
       Effect.gen(function* refused() {
         const api = yield* onGoogle(accounts);

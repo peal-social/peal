@@ -104,21 +104,39 @@ const delayOf = (written: string | undefined) =>
  */
 export const dailyQuotaWait = Duration.hours(6);
 
-// What the first error names, sorted for the code that acts on it.
-const kindOf = (key: string, value: string): NetworkRefusalKind => {
-  if (key !== "authorizationError") {
-    return "other";
-  }
+// The values of `AuthenticationError` that mean the token no longer works
+// (v26 reference, read 2026-11-16): only these send the person to sign in
+// again. The enum's other values name the account or the person.
+const tokenErrors: ReadonlySet<string> = new Set([
+  "AUTHENTICATION_ERROR",
+  "GOOGLE_ACCOUNT_AUTHENTICATION_FAILED",
+  "GOOGLE_ACCOUNT_DELETED",
+  "OAUTH_TOKEN_DISABLED",
+  "OAUTH_TOKEN_EXPIRED",
+  "OAUTH_TOKEN_HEADER_INVALID",
+  "OAUTH_TOKEN_INVALID",
+  "OAUTH_TOKEN_REVOKED",
+]);
 
-  if (value === "CUSTOMER_NOT_ENABLED") {
-    return "accountUnusable";
-  }
+// What the first error names, sorted for the code that acts on it:
+//
+// - a permission the person lacks on the account: `USER_PERMISSION_DENIED`,
+//   or a manager asking for 2-step verification or Advanced Protection,
+//   which are `AuthenticationError`'s;
+// - an account that cannot be read: not enabled (`CUSTOMER_NOT_ENABLED`),
+//   not found, or a Google account with no Google Ads account at all
+//   (`NOT_ADS_USER`).
+const kinds: ReadonlyMap<string, NetworkRefusalKind> = new Map([
+  ["authorizationError.USER_PERMISSION_DENIED", "permission"],
+  ["authenticationError.TWO_STEP_VERIFICATION_NOT_ENROLLED", "permission"],
+  ["authenticationError.ADVANCED_PROTECTION_NOT_ENROLLED", "permission"],
+  ["authorizationError.CUSTOMER_NOT_ENABLED", "accountUnusable"],
+  ["authenticationError.CUSTOMER_NOT_FOUND", "accountUnusable"],
+  ["authenticationError.NOT_ADS_USER", "accountUnusable"],
+]);
 
-  return value === "USER_PERMISSION_DENIED" ||
-    value === "TWO_STEP_VERIFICATION_NOT_ENROLLED"
-    ? "permission"
-    : "other";
-};
+const kindOf = (key: string, value: string): NetworkRefusalKind =>
+  kinds.get(`${key}.${value}`) ?? "other";
 
 /**
  * What a Google Ads API answer that is not a success means: kept as
@@ -164,7 +182,7 @@ export const refusalOf = Effect.fn("GoogleAds.refusalOf")(function* refusalOf(
   const [key, value] = named.value;
   const code = `google.${key}.${value}`;
 
-  if (key === "authenticationError" || status === 401) {
+  if (key === "authenticationError" && tokenErrors.has(value)) {
     return new TokenRejected();
   }
 

@@ -258,6 +258,40 @@ describe("the accounts a Google sign-in reaches", () => {
   );
 
   it.live(
+    "leaves out a manager that asks for 2-step verification, and lists nothing for a person without Google Ads",
+    () =>
+      Effect.gen(function* refusing() {
+        const { api, client } = yield* googleAgainstFake(hierarchy);
+
+        api.script({
+          answer: googleAdsError(
+            401,
+            "authenticationError",
+            "TWO_STEP_VERIFICATION_NOT_ENROLLED"
+          ),
+          when: (sent) =>
+            searching("customer_client")(sent) &&
+            sent.path.includes("/2222222222/"),
+        });
+
+        assert.deepStrictEqual(
+          (yield* client.accounts(refreshToken)).map(
+            ({ externalId }) => externalId
+          ),
+          ["1111111111", "6666666666"]
+        );
+
+        api.script({
+          answer: googleAdsError(401, "authenticationError", "NOT_ADS_USER"),
+          when: (sent) =>
+            routeOf(sent) === "GET /v26/customers:listAccessibleCustomers",
+        });
+
+        assert.deepStrictEqual(yield* client.accounts(refreshToken), []);
+      }).pipe(Effect.scoped)
+  );
+
+  it.live(
     "reads an account through its manager, and a direct one without",
     () =>
       Effect.gen(function* reading() {
@@ -583,8 +617,29 @@ describe("Google's refusals", () => {
       "TokenRejected",
     ],
     [
-      googleAdsError(401, "authenticationError", "NOT_ADS_USER"),
+      googleAdsError(401, "authenticationError", "OAUTH_TOKEN_EXPIRED"),
       "TokenRejected",
+    ],
+    [
+      googleAdsError(401, "authenticationError", "GOOGLE_ACCOUNT_DELETED"),
+      "TokenRejected",
+    ],
+    // Not about the token: the person, or one account, cannot be read.
+    [
+      googleAdsError(401, "authenticationError", "NOT_ADS_USER"),
+      "AdNetworkRefused google.authenticationError.NOT_ADS_USER accountUnusable",
+    ],
+    [
+      googleAdsError(401, "authenticationError", "CUSTOMER_NOT_FOUND"),
+      "AdNetworkRefused google.authenticationError.CUSTOMER_NOT_FOUND accountUnusable",
+    ],
+    [
+      googleAdsError(
+        401,
+        "authenticationError",
+        "ADVANCED_PROTECTION_NOT_ENROLLED"
+      ),
+      "AdNetworkRefused google.authenticationError.ADVANCED_PROTECTION_NOT_ENROLLED permission",
     ],
     [
       googleAdsError(
@@ -605,11 +660,11 @@ describe("Google's refusals", () => {
     ],
     [
       googleAdsError(
-        403,
-        "authorizationError",
+        401,
+        "authenticationError",
         "TWO_STEP_VERIFICATION_NOT_ENROLLED"
       ),
-      "AdNetworkRefused google.authorizationError.TWO_STEP_VERIFICATION_NOT_ENROLLED permission",
+      "AdNetworkRefused google.authenticationError.TWO_STEP_VERIFICATION_NOT_ENROLLED permission",
     ],
     [
       googleAdsError(403, "authorizationError", "CUSTOMER_NOT_ENABLED"),
