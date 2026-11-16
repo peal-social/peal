@@ -349,7 +349,11 @@ layer(BillingTest, { excludeTestServices: true })(
 
           const api = yield* onGoogle({
             ...accounts,
-            days: [day(yesterday), day(before)],
+            days: [
+              day(yesterday),
+              day(before),
+              day(before, { campaignId: "902", costMicros: "1000000" }),
+            ],
           });
 
           const owner = yield* freshOwner;
@@ -377,7 +381,7 @@ layer(BillingTest, { excludeTestServices: true })(
 
           assert.deepStrictEqual(
             days.rows.map((row) => row.spend),
-            [250]
+            [350]
           );
 
           const campaigns = yield* reports.campaigns(owner, accountId, noRange);
@@ -388,6 +392,46 @@ layer(BillingTest, { excludeTestServices: true })(
               ["901", "active"],
               ["902", "archived"],
             ]
+          );
+        })
+    );
+
+    it.effect(
+      "leave out of the report a removed campaign that did nothing in its days",
+      () =>
+        Effect.gen(function* removed() {
+          yield* onGoogle({
+            ...accounts,
+            campaigns: [
+              ...(accounts.campaigns ?? []),
+              {
+                customerId: "1111111111",
+                id: "903",
+                name: "Removed long ago",
+                status: "REMOVED",
+              },
+              {
+                customerId: "1111111111",
+                id: "904",
+                name: "Removed this week",
+                status: "REMOVED",
+              },
+            ],
+            days: [day(yield* dayAgo(2), { campaignId: "904" })],
+          });
+
+          const owner = yield* freshOwner;
+          const sync = yield* SyncAccount;
+          const reports = yield* AdReports;
+          const { account } = yield* connectedGoogle(owner);
+
+          yield* sync.run(account.id);
+
+          const campaigns = yield* reports.campaigns(owner, account.id, noRange);
+
+          assert.deepStrictEqual(
+            campaigns.rows.map(({ externalId }) => externalId).toSorted(),
+            ["901", "902", "904"]
           );
         })
     );

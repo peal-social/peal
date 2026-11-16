@@ -1,5 +1,5 @@
-import { and, eq, gte, lt, lte, notInArray, sql } from "drizzle-orm";
-import type { SQL } from "drizzle-orm";
+import { and, eq, getColumns, gte, lt, lte, sql } from "drizzle-orm";
+import type { Column, SQL, Table } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
@@ -48,10 +48,20 @@ const batches = <A>(rows: readonly A[]): readonly (readonly A[])[] =>
   );
 
 // What an object's row takes of what was just read, when it is there.
-const reread = (columns: readonly string[]): Record<string, SQL> =>
-  Object.fromEntries(
-    columns.map((column) => [column, sql.raw(`excluded.${column}`)] as const)
+// Drizzle's `set` is keyed by the table's properties (`syncedAt`), and
+// `excluded` by its columns (`synced_at`): each property names its column.
+const reread = <T extends Table>(
+  table: T,
+  keys: readonly (keyof T["_"]["columns"] & string)[]
+): Record<string, SQL> => {
+  const columns: Readonly<Record<string, Column>> = getColumns(table);
+
+  return Object.fromEntries(
+    keys.map(
+      (key) => [key, sql.raw(`excluded.${columns[key]?.name ?? key}`)] as const
+    )
   );
+};
 
 // Sums come back as float8 or int8 text; a missing sum is null.
 const amount = Schema.Union([Schema.Number, Schema.NumberFromString]);
@@ -145,17 +155,11 @@ const localDate = (written: string): LocalDate => {
   };
 };
 
-// Every row but those just listed: all of them when nothing was listed.
-const others = (
-  column: AnyPgColumn,
-  listed: readonly { readonly externalId: string }[]
-) =>
-  listed.length === 0
-    ? undefined
-    : notInArray(
-        column,
-        listed.map(({ externalId }) => externalId)
-      );
+// Every row of the account a save did not just write: those it wrote
+// carry its instant. One parameter, however many objects the account
+// holds (a list of ids would bind one each, past what Postgres takes).
+const others = (column: AnyPgColumn, savedAt: Date) =>
+  sql`${column} <> ${savedAt.toISOString()}::timestamptz`;
 
 // A statement's rows, decoded: a row the schema could not have written
 // fails loudly instead of being trusted.
@@ -265,6 +269,18 @@ export const DrizzleReadModel = Layer.effect(
             }
             WHERE c.workspace_id = ${account.workspaceId} AND c.account_id = ${account.id}
             GROUP BY c.account_id, c.external_id
+            ${
+              // A network that lists its removed campaigns too (Google Ads)
+              // keeps them for their numbers: those that did nothing in the
+              // days asked are left out, so the thousand rows go to those
+              // that count.
+              traitsOf(account.network).days === "campaign"
+                ? client`HAVING c.status NOT IN ('deleted', 'archived')
+                    OR coalesce(sum(d.spend_micros), 0) > 0
+                    OR coalesce(sum(d.impressions), 0) > 0
+                    OR coalesce(sum(d.clicks), 0) > 0`
+                : client``
+            }
             ORDER BY c.starts_at DESC NULLS LAST, c.external_id DESC
             LIMIT 1000`,
           decodeCampaigns
@@ -370,13 +386,13 @@ export const DrizzleReadModel = Layer.effect(
           workspaceId: account.workspaceId,
         };
 
-        const state = ["name", "raw_status", "status", "synced_at"] as const;
+        const state = ["name", "rawStatus", "status", "syncedAt"] as const;
 
         const budget = [
-          "daily_budget",
-          "total_budget",
-          "starts_at",
-          "ends_at",
+          "dailyBudget",
+          "totalBudget",
+          "startsAt",
+          "endsAt",
         ] as const;
 
         const saving = Effect.gen(function* saving() {
@@ -399,7 +415,12 @@ export const DrizzleReadModel = Layer.effect(
                 }))
               )
               .onConflictDoUpdate({
-                set: reread([...state, ...budget, "kind", "objective"]),
+                set: reread(campaigns, [
+                  ...state,
+                  ...budget,
+                  "kind",
+                  "objective",
+                ]),
                 target: [campaigns.accountId, campaigns.externalId],
               });
           }
@@ -422,7 +443,11 @@ export const DrizzleReadModel = Layer.effect(
                 }))
               )
               .onConflictDoUpdate({
-                set: reread([...state, ...budget, "campaign_external_id"]),
+                set: reread(adSets, [
+                  ...state,
+                  ...budget,
+                  "campaignExternalId",
+                ]),
                 target: [adSets.accountId, adSets.externalId],
               });
           }
@@ -465,14 +490,14 @@ export const DrizzleReadModel = Layer.effect(
                 })
               )
               .onConflictDoUpdate({
-                set: reread([
+                set: reread(ads, [
                   ...state,
-                  "ad_set_external_id",
-                  "campaign_external_id",
-                  "post_id",
-                  "promoted_instagram_media_id",
-                  "promoted_page_post_id",
-                  "target_id",
+                  "adSetExternalId",
+                  "campaignExternalId",
+                  "postId",
+                  "promotedInstagramMediaId",
+                  "promotedPagePostId",
+                  "targetId",
                 ]),
                 target: [ads.accountId, ads.externalId],
               });
@@ -495,7 +520,7 @@ export const DrizzleReadModel = Layer.effect(
                 }))
               )
               .onConflictDoUpdate({
-                set: reread([
+                set: reread(insightDays, [
                   "clicks",
                   "impressions",
                   "reach",
@@ -541,7 +566,11 @@ export const DrizzleReadModel = Layer.effect(
                 }))
               )
               .onConflictDoUpdate({
-                set: reread(["clicks", "impressions", "spend_micros"]),
+                set: reread(campaignDays, [
+                  "clicks",
+                  "impressions",
+                  "spendMicros",
+                ]),
                 target: [
                   campaignDays.accountId,
                   campaignDays.campaignExternalId,
@@ -561,7 +590,7 @@ export const DrizzleReadModel = Layer.effect(
               .where(
                 and(
                   eq(campaigns.accountId, account.id),
-                  others(campaigns.externalId, snapshot.campaigns)
+                  others(campaigns.syncedAt, common.syncedAt)
                 )
               );
             yield* db
@@ -570,7 +599,7 @@ export const DrizzleReadModel = Layer.effect(
               .where(
                 and(
                   eq(adSets.accountId, account.id),
-                  others(adSets.externalId, snapshot.adSets)
+                  others(adSets.syncedAt, common.syncedAt)
                 )
               );
             yield* db
@@ -579,7 +608,7 @@ export const DrizzleReadModel = Layer.effect(
               .where(
                 and(
                   eq(ads.accountId, account.id),
-                  others(ads.externalId, snapshot.ads)
+                  others(ads.syncedAt, common.syncedAt)
                 )
               );
           }
