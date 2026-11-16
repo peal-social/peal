@@ -948,17 +948,18 @@ const messageNotSent = () =>
     reason: "platformUnavailable",
   });
 
-const privateReplyNotSent = () =>
-  Effect.succeed<PrivateReplyOutcome>({
-    _tag: "failed",
-    reason: "platformUnavailable",
-  });
-
-const privateReplyUnchecked = () =>
-  Effect.succeed<PrivateReplyOutcome>({
-    _tag: "unconfirmed",
-    reason: "interrupted",
-  });
+/**
+ * What a private reply the gate did not take answers: a send was not
+ * made; a resume checked nothing, and the earlier run may have sent it.
+ */
+export const privateReplyNotTaken = (
+  mode: "resume" | "send"
+): Effect.Effect<PrivateReplyOutcome> =>
+  Effect.succeed<PrivateReplyOutcome>(
+    mode === "send"
+      ? { _tag: "failed", reason: "platformUnavailable" }
+      : { _tag: "unconfirmed", reason: "interrupted" }
+  );
 
 const messageUnchecked = () =>
   Effect.succeed<MessageSendOutcome>({
@@ -1109,12 +1110,12 @@ export const GatedMessages = Layer.effectContext(
           resume: (request: PrivateReplyRequest) =>
             privately(
               gateFor(request.channelId).ResumePrivateReply({ request }),
-              privateReplyUnchecked
+              () => privateReplyNotTaken("resume")
             ),
           send: (request: PrivateReplyRequest) =>
             privately(
               gateFor(request.channelId).SendPrivateReply({ request }),
-              privateReplyNotSent
+              () => privateReplyNotTaken("send")
             ),
         })
       ),

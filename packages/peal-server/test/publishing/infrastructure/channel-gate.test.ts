@@ -16,6 +16,7 @@ import {
   GatedMetricsReader,
   GatedPlatformPublisher,
   GatedReplySender,
+  privateReplyNotTaken,
   UnreadMessages,
   UnreadReviews,
 } from "#publishing/infrastructure/channel-gate.ts";
@@ -402,5 +403,20 @@ describe("the channel's gate, with every context that calls through it", () => {
         )
       ),
     timeout
+  );
+});
+
+describe("a private reply the gate did not take", () => {
+  it.effect("was not sent, and a resume of it checked nothing", () =>
+    Effect.gen(function* notTaken() {
+      assert.deepStrictEqual(yield* privateReplyNotTaken("send"), {
+        _tag: "failed",
+        reason: "platformUnavailable",
+      });
+      assert.deepStrictEqual(yield* privateReplyNotTaken("resume"), {
+        _tag: "unconfirmed",
+        reason: "interrupted",
+      });
+    })
   );
 });
