@@ -230,6 +230,7 @@ export const DrizzleEngagementRecords = Layer.effect(
     )(function* exportUserMessages(userId: string) {
       const rows = yield* db
         .select({
+          byPerson: outgoingMessages.byPerson,
           channelId: outgoingMessages.channelId,
           conversationId: outgoingMessages.conversationId,
           createdAt: outgoingMessages.createdAt,

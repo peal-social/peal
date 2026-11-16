@@ -1015,14 +1015,18 @@ layer(StoreTest)("the message store", (it) => {
             talk,
             Option.some(userId),
             "Hello",
-            at
+            at,
+            true
           );
 
           yield* store.journalMessage(sent, Option.none());
 
+          // With whether they wrote it themselves, which Peal keeps of them.
           assert.deepStrictEqual(
-            (yield* records.exportUserMessages(userId)).map(({ id }) => id),
-            [sent.id]
+            (yield* records.exportUserMessages(userId)).map(
+              ({ byPerson, id }) => ({ byPerson, id })
+            ),
+            [{ byPerson: true, id: sent.id }]
           );
 
           yield* records.forgetUser(userId);
