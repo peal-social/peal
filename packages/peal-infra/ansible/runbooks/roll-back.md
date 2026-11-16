@@ -490,3 +490,27 @@ forward again, the messages' collection hands it to a person
 
 2. **It lists a row:** wait a few minutes for its job to settle it, and
    check again; roll back once it lists none.
+
+## Past a person's answer within Meta's 7 days
+
+The release that lets a member answer a Messenger or Instagram
+conversation by hand for 7 days with Meta's Human Agent tag (migration
+`person-replies`, `PEAL_META_HUMAN_AGENT`) adds one column the release
+before ignores (`engagement.outgoing_messages.by_person`, not null, false
+by default): it journals its own messages with the default and never
+tags one. A message a member wrote past the 24 hours that is still on
+its way when the release goes back is sent untagged, which Meta refuses
+as outside its window: it fails `windowClosed` and gives its outbound
+message back, so nothing goes out that Meta did not take. Remove
+`PEAL_META_HUMAN_AGENT` before rolling back: the release before does not
+read it.
+
+1. **Messages by a person on their way:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM engagement.outgoing_messages WHERE by_person AND status = 'sending'"
+   ```
+
+2. **It lists a row:** wait a few minutes for its job to settle it, and
+   check again; roll back once it lists none.

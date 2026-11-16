@@ -355,6 +355,15 @@ Tant que l’application est en mode développement, seules les personnes qui y 
     Instagram active **Autoriser l’accès aux messages** dans ses réglages
     d’outils connectés.
 
+    Passées les 24 heures de Meta, un membre peut encore répondre à la main
+    pendant 7 jours après le dernier message de la personne, avec la balise
+    `HUMAN_AGENT` de Meta, une fois que Meta a examiné à part la fonctionnalité
+    Human Agent de votre application (qui demande aussi que votre entreprise
+    soit vérifiée) : définissez alors `PEAL_META_HUMAN_AGENT` à `true`. Seul un
+    membre connecté à l’application web envoie une telle réponse ; l’examen de
+    Meta demande de voir cette personne répondre dans votre boîte de
+    réception. Laissez le réglage non défini jusque-là.
+
   </AccordionItem>
   <AccordionItem title="Demandes de suppression des données">
     Quand l’une de ses utilisatrices ou l’un de ses utilisateurs demande à Meta

@@ -343,6 +343,13 @@ While the app is in development mode, only people with a role on it can connect 
     business verified. Instagram's account owner turns on **Allow access to
     messages** under its Connected tools settings.
 
+    Past Meta's 24 hours, a member may still answer by hand for 7 days after
+    the person's last message, with Meta's `HUMAN_AGENT` tag, once Meta has
+    reviewed your app's Human Agent feature apart (it also needs your business
+    verified): then set `PEAL_META_HUMAN_AGENT` to `true`. Only a member signed
+    in to the web app sends such an answer; Meta's review asks to see that
+    person answer in your inbox. Leave the setting unset until then.
+
   </AccordionItem>
   <AccordionItem title="Data deletion requests">
     When one of its users asks Meta to delete what Peal holds about them, Meta
