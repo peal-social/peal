@@ -335,14 +335,28 @@ While the app is in development mode, only people with a role on it can connect 
 
     Deleting a workspace asks the same for each of its channels, in the
     background, for two minutes at most. A channel Meta has not let go by
-    then is logged as a warning with its id ("A channel's platform still
-    sends its events after an erasure") and counted in the metric
-    `peal.channels.release.left_subscribed`, which the alert "Meta still
-    sends an erased workspace's messages" reports. Meta then goes on sending
-    that account's messages, which Peal ignores and never stores, until the
-    app is removed from the Page: find the channel ids in the server's logs,
-    and remove the app from those Pages in Meta's settings (the Page's
-    Business integrations).
+    then is counted in the metric `peal.channels.release.left_subscribed`,
+    which the alert "Meta still sends an erased workspace's messages"
+    reports, and logged as a warning ("A channel's platform still sends its
+    events after an erasure") with its `channelId`, its `platform`, its
+    `accountId` (a Facebook Page's id, or an Instagram account's) and, on
+    Instagram, its `connection` (`facebookLogin` through the Page linked to
+    it, `instagramLogin` on its own). Meta then goes on sending that
+    account's messages, which Peal ignores and never stores, until the app
+    is removed:
+
+    1. Find the account's id in the warning.
+    2. Ask the Page's or the account's owner, or the organisation whose
+       workspace was deleted, to remove the app under the Page's **Business
+       integrations** settings (for Instagram Login, the account's **Apps
+       and websites**).
+    3. Or, for a Page, remove the subscription from your app's side: call
+       `DELETE /{page-id}/subscribed_apps` on the Graph API with your app's
+       app access token. Meta's
+       [reference](https://developers.facebook.com/docs/graph-api/reference/page/subscribed_apps/)
+       says "An app can remove its own webhook subscription from a Page with
+       an App Access Token". Meta documents no such call for Instagram
+       Login.
 
     Before its App Review, Meta lets an app read and answer only the messages
     of people with a role on it, written to accounts they manage too. Its

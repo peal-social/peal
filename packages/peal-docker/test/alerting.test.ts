@@ -236,8 +236,17 @@ describe("the production alert rules", () => {
     expect(rule?.data.find((step) => step.refId === "A")?.model.expr).toBe(
       "(sum(increase(peal_channels_release_left_subscribed_total[1h])) or vector(0)) + (sum(peal_channels_release_left_subscribed_total unless peal_channels_release_left_subscribed_total offset 1h unless peal_channels_release_left_subscribed_total offset 5m) or vector(0))"
     );
-    expect(rule?.annotations.summary).toContain("channelId");
-    expect(rule?.annotations.summary).toContain("remove the app");
+
+    // The account's id from the warning, then its owner, or the app's own
+    // side (Meta's Graph reference of /{page-id}/subscribed_apps).
+    for (const step of [
+      "accountId",
+      "Business integrations",
+      "DELETE /{page-id}/subscribed_apps",
+      "app access token",
+    ]) {
+      expect(rule?.annotations.summary).toContain(step);
+    }
   });
 
   it("never tell the operator to report usage by hand", () => {

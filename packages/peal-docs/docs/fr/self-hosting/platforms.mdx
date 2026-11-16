@@ -345,15 +345,29 @@ Tant que l’application est en mode développement, seules les personnes qui y 
 
     Supprimer un espace de travail le demande aussi pour chacun de ses canaux,
     en arrière-plan, pendant deux minutes au plus. Un canal que Meta n’a pas
-    lâché d’ici là est consigné comme un avertissement avec son identifiant
-    (« A channel's platform still sends its events after an erasure ») et
-    compté dans la métrique `peal.channels.release.left_subscribed`, que
-    l’alerte « Meta still sends an erased workspace's messages » signale.
-    Meta continue alors d’envoyer les messages de ce compte, que Peal ignore
-    et ne conserve jamais, jusqu’à ce que l’application soit retirée de la
-    Page : trouvez les identifiants des canaux dans les journaux du serveur,
-    puis retirez l’application de ces Pages dans les réglages de Meta (les
-    intégrations professionnelles de la Page).
+    lâché d’ici là est compté dans la métrique
+    `peal.channels.release.left_subscribed`, que l’alerte « Meta still sends
+    an erased workspace's messages » signale, et consigné comme un
+    avertissement (« A channel's platform still sends its events after an
+    erasure ») avec son `channelId`, sa `platform`, son `accountId`
+    (l’identifiant d’une Page Facebook, ou d’un compte Instagram) et, sur
+    Instagram, sa `connection` (`facebookLogin` par la Page qui lui est
+    liée, `instagramLogin` seul). Meta continue alors d’envoyer les messages
+    de ce compte, que Peal ignore et ne conserve jamais, jusqu’à ce que
+    l’application soit retirée :
+
+    1. Trouvez l’identifiant du compte dans l’avertissement.
+    2. Demandez à la personne propriétaire de la Page ou du compte, ou à
+       l’organisation dont l’espace de travail a été supprimé, de retirer
+       l’application dans les réglages **Intégrations professionnelles** de
+       la Page (pour Instagram Login, **Apps et sites web** du compte).
+    3. Ou, pour une Page, retirez l’abonnement du côté de votre application :
+       appelez `DELETE /{page-id}/subscribed_apps` sur l’API Graph avec le
+       jeton d’accès d’application de votre application. La
+       [référence](https://developers.facebook.com/docs/graph-api/reference/page/subscribed_apps/)
+       de Meta indique « An app can remove its own webhook subscription from
+       a Page with an App Access Token ». Meta ne documente aucun appel de ce
+       genre pour Instagram Login.
 
     Avant son App Review, Meta ne laisse une application lire et répondre
     qu’aux messages des personnes ayant un rôle sur elle, écrits à des comptes
