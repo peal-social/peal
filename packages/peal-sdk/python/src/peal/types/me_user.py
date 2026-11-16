@@ -18,6 +18,9 @@ class MeUser(UniversalBaseModel):
     image: typing.Optional[str] = None
     locale: MeUserLocale
     name: str
+    has_password: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="hasPassword"), pydantic.Field(alias="hasPassword")
+    ] = None
     two_step_enabled: typing_extensions.Annotated[
         bool, FieldMetadata(alias="twoStepEnabled"), pydantic.Field(alias="twoStepEnabled")
     ]

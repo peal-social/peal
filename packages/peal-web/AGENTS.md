@@ -668,6 +668,21 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   hides its link to sign up (`offersSignUp`). The server answers `open`
   while it has no account, so the first one can be made. The server decides: its
   `SIGN_UP_BY_INVITATION` reads from `Auth.errors`.
+- The sign-in and sign-up pages show the server's sign-in providers
+  (`signUpSettings().providers`, `GET /api/captcha`'s `signInProviders`)
+  above the form (`ProviderButtons`, its view `ProviderButtonsView`), as
+  DESIGN.md's Icons say; the sign-up page only where its form shows, its
+  sign-in with `requestSignUp`, the page's locale and the invitation in
+  `additionalData`. Every address given is a path of this origin. The
+  provider's callback comes back with `?error=<code>`, which
+  `providerErrorKey` reads into `Auth.errors` (an application's refused
+  authorization, OAuth's codes, its own `AUTHORIZATION_FAILED`; the provider's
+  failure only where a provider is offered); anything else is a plain failure,
+  and `error_description` is never shown. Google's mark is
+  `GoogleMark`, from Google's assets. Where `GET /api/me` says
+  `hasPassword: false`, the account page offers `SetPassword` (the reset
+  link to the account's address) in place of the password form, and says
+  two-step verification and closing need it first (`needsPassword`).
 - Creating an account accepts the terms of service: the sign-up form says
   so under its button, linking `PEAL_TERMS_URL` and, when set,
   `PEAL_PRIVACY_URL` (`#billing/terms.ts`, read at request time). Keep

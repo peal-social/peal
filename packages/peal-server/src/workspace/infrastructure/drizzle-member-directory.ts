@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, exists } from "drizzle-orm";
 import { DateTime, Effect, Layer, Option } from "effect";
 
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -12,7 +12,12 @@ import { Account } from "#workspace/domain/account.ts";
 import type { Ban } from "#workspace/domain/ban.ts";
 import type { Membership } from "#workspace/domain/membership.ts";
 
-import { member, organization, user } from "./auth-schema.generated.ts";
+import {
+  account as signInMethod,
+  member,
+  organization,
+  user,
+} from "./auth-schema.generated.ts";
 import { securityPolicies } from "./schema.ts";
 
 const banOf = (
@@ -116,16 +121,32 @@ export const MemberDirectoryLive = Layer.effect(
     const account = Effect.fn("MemberDirectory.account")(function* account(
       userId: UserId
     ) {
-      const [found] = yield* db
-        .select()
+      // Whether it has a password comes with the user, in the same query.
+      const [row] = yield* db
+        .select({
+          found: user,
+          hasPassword: exists(
+            db
+              .select({ id: signInMethod.id })
+              .from(signInMethod)
+              .where(
+                and(
+                  eq(signInMethod.userId, user.id),
+                  eq(signInMethod.providerId, "credential")
+                )
+              )
+          ),
+        })
         .from(user)
         .where(eq(user.id, userId))
         .limit(1)
         .pipe(unavailable);
 
-      if (found === undefined) {
+      if (row === undefined) {
         return Option.none();
       }
+
+      const { found, hasPassword } = row;
 
       const workspaces = yield* db
         .select({
@@ -145,6 +166,7 @@ export const MemberDirectoryLive = Layer.effect(
           ban: banOf(found.banned, found.banExpires),
           email: found.email,
           emailVerified: found.emailVerified,
+          hasPassword: hasPassword === true,
           id: userId,
           image: Option.fromNullishOr(found.image),
           locale: found.locale ?? defaultLocale,

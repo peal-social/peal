@@ -10,8 +10,20 @@ import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 import { CaptchaSchema, signUpInvitationHeader } from "peal-contract";
 
+import { appWithOidc } from "#test/workspace/fakes/fake-oidc.ts";
+
 import { MigratedSqlLive, newEmail, password, TestApp } from "./harness.ts";
 import type { Reply } from "./harness.ts";
+import {
+  accountOf,
+  existingAccount,
+  newSubject,
+  providerSignIn,
+  setsSession,
+  signInPage,
+  signUpPage,
+  verified,
+} from "./provider-support.ts";
 
 const SignedUpSchema = Schema.Struct({
   token: Schema.NullOr(Schema.String),
@@ -103,7 +115,11 @@ layer(
 
       assert.deepStrictEqual(
         yield* Schema.decodeUnknownEffect(CaptchaSchema)(reply.body),
-        { signUp: "invitation", turnstileSiteKey: null }
+        {
+          signInProviders: [],
+          signUp: "invitation",
+          turnstileSiteKey: null,
+        }
       );
     })
   );
@@ -254,3 +270,84 @@ layer(TestApp.layerWith({ PEAL_SIGN_UP: "open" }), settings)(
     );
   }
 );
+
+const providerSignUp = (email: string, invitationId?: string) =>
+  providerSignIn(verified(email, newSubject()), {
+    body: signUpPage("en", invitationId),
+  });
+
+// A sign-up through a provider passes the same gate: the sign-up page puts
+// the invitation's id in the sign-in's state, and the address the provider
+// confirmed must be the one it went to.
+layer(
+  Layer.mergeAll(appWithOidc({ PEAL_SIGN_UP: "invitation" }), MigratedSqlLive),
+  settings
+)("a server by invitation, with a sign-in provider", (it) => {
+  it.effect("refuses a stranger, writing nothing", () =>
+    Effect.gen(function* stranger() {
+      const email = newEmail("provider-stranger");
+      const finished = yield* providerSignUp(email);
+
+      assert.strictEqual(finished.error, "sign_up_by_invitation");
+      assert.isFalse(setsSession(finished.reply));
+      assert.isUndefined(yield* accountOf(email));
+    })
+  );
+
+  it.effect("admits the address an invitation went to, with its id", () =>
+    Effect.gen(function* invited() {
+      const email = newEmail("provider-invited");
+      const invitationId = yield* invite(email);
+
+      const finished = yield* providerSignUp(email, invitationId);
+
+      assert.isNull(finished.error);
+      assert.isTrue(setsSession(finished.reply));
+      assert.isTrue((yield* accountOf(email))?.email_verified);
+    })
+  );
+
+  it.effect("refuses an invitation's id with another address", () =>
+    Effect.gen(function* otherAddress() {
+      const invitationId = yield* invite(newEmail("provider-elsewhere"));
+      const email = newEmail("provider-other");
+
+      const finished = yield* providerSignUp(email, invitationId);
+
+      assert.strictEqual(finished.error, "sign_up_by_invitation");
+      assert.isUndefined(yield* accountOf(email));
+    })
+  );
+
+  it.effect("refuses an invitation answered or expired", () =>
+    Effect.gen(function* notPending() {
+      for (const options of [
+        { status: "accepted" as const },
+        { expired: true },
+      ]) {
+        const email = newEmail("provider-not-pending");
+        const invitationId = yield* invite(email, options);
+
+        const finished = yield* providerSignUp(email, invitationId);
+
+        assert.strictEqual(finished.error, "sign_up_by_invitation");
+        assert.isUndefined(yield* accountOf(email));
+      }
+    })
+  );
+
+  it.effect("still signs an existing account in", () =>
+    Effect.gen(function* existing() {
+      const email = newEmail("provider-member");
+
+      yield* existingAccount(email);
+
+      const finished = yield* providerSignIn(verified(email), {
+        body: signInPage,
+      });
+
+      assert.isNull(finished.error);
+      assert.isTrue(setsSession(finished.reply));
+    })
+  );
+});

@@ -11,7 +11,9 @@ import {
 } from "peal-ui/components/card";
 import type { ReactNode } from "react";
 
+import { captchaSiteKey } from "#auth/captcha.ts";
 import { accountClosure } from "#auth/closure.ts";
+import { needsPassword } from "#auth/password-state.ts";
 import { currentUser } from "#auth/session.ts";
 import { ConnectedAppsList } from "#components/account/connected-apps-list.tsx";
 import { DeleteAccount } from "#components/account/delete-account.tsx";
@@ -21,6 +23,7 @@ import { LegalHoldNotice } from "#components/account/legal-hold-notice.tsx";
 import { PasswordForm } from "#components/account/password-form.tsx";
 import { ProfileForm } from "#components/account/profile-form.tsx";
 import { SessionsList } from "#components/account/sessions-list.tsx";
+import { SetPassword } from "#components/account/set-password.tsx";
 import { TimeFormatForm } from "#components/account/time-format-form.tsx";
 import { TwoStepSection } from "#components/account/two-step-section.tsx";
 import { redirect } from "#i18n/navigation.ts";
@@ -66,6 +69,16 @@ const AccountPage = async ({ params }: PageProps<"/[locale]/app/account">) => {
   const twoStep = await getTranslations("TwoStep");
   // What this server keeps of a closed account for the law, if anything.
   const { legalHold } = await accountClosure();
+  const passwordless = needsPassword(user);
+
+  const siteKey = passwordless
+    ? Option.getOrNull(await captchaSiteKey())
+    : null;
+
+  // One action, in the password's section, so a captcha shows once.
+  const passwordFirst = (
+    <p className="text-muted-foreground text-sm">{t("password.neededFirst")}</p>
+  );
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -93,14 +106,31 @@ const AccountPage = async ({ params }: PageProps<"/[locale]/app/account">) => {
       >
         <TimeFormatForm />
       </Section>
-      <Section
-        title={t("password.title")}
-        description={t("password.description")}
-      >
-        <PasswordForm />
-      </Section>
+      {passwordless ? (
+        <Section
+          title={t("password.setTitle")}
+          description={t("password.description")}
+        >
+          <SetPassword
+            captchaSiteKey={siteKey}
+            email={user.email}
+            lead={t("password.setDescription")}
+          />
+        </Section>
+      ) : (
+        <Section
+          title={t("password.title")}
+          description={t("password.description")}
+        >
+          <PasswordForm />
+        </Section>
+      )}
       <Section title={twoStep("title")} description={twoStep("about")}>
-        <TwoStepSection emailVerified={user.emailVerified} />
+        {passwordless ? (
+          passwordFirst
+        ) : (
+          <TwoStepSection emailVerified={user.emailVerified} />
+        )}
       </Section>
       <Section
         title={t("sessions.title")}
@@ -122,7 +152,13 @@ const AccountPage = async ({ params }: PageProps<"/[locale]/app/account">) => {
         <ExportData />
       </Section>
       <Section title={t("delete.title")} description={t("delete.description")}>
-        <DeleteAccount legalHold={<LegalHoldNotice legalHold={legalHold} />} />
+        {passwordless ? (
+          passwordFirst
+        ) : (
+          <DeleteAccount
+            legalHold={<LegalHoldNotice legalHold={legalHold} />}
+          />
+        )}
       </Section>
     </div>
   );

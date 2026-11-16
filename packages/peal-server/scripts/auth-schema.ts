@@ -78,6 +78,7 @@ const auth = makeAuth({
     publicUrl: "http://localhost:3001",
     requireEmailVerification: true,
     secret: Redacted.make("auth-schema-generator-only-0123456789abcdef"),
+    signInProviders: { google: Option.none(), oidc: Option.none() },
     stripe: Option.some({
       apiUrl: Option.none(),
       catalogue: catalogueKeysOf("schema_only"),

@@ -54,6 +54,7 @@ const DirectoryTest = Layer.succeed(
                 ban: Option.none(),
                 email: `digest+${userId}@example.test`,
                 emailVerified: true,
+                hasPassword: true,
                 id: userId,
                 image: Option.none(),
                 locale: "fr",

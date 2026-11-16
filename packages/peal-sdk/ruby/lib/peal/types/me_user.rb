@@ -17,6 +17,8 @@ module Peal
 
       field :name, -> { String }, optional: false, nullable: false
 
+      field :has_password, -> { Internal::Types::Boolean }, optional: true, nullable: false, api_name: "hasPassword"
+
       field :two_step_enabled, -> { Internal::Types::Boolean }, optional: false, nullable: false, api_name: "twoStepEnabled"
     end
   end

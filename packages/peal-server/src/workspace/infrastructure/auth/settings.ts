@@ -9,6 +9,10 @@ import {
 } from "#shared/infrastructure/environment.ts";
 import { stripeSettingsConfig } from "#shared/infrastructure/stripe-settings.ts";
 
+import { discoveryRelay } from "./provider-discovery.ts";
+import { signInProvidersConfig } from "./sign-in-provider-settings.ts";
+import type { SignInProviderId } from "./sign-in-providers.ts";
+
 // A comma-separated list, without the spaces around its entries or empty ones.
 const trimmed = (entries: readonly string[]): readonly string[] =>
   entries.flatMap((entry) => {
@@ -32,6 +36,9 @@ const trimmed = (entries: readonly string[]): readonly string[] =>
  * | `MCP_DYNAMIC_REGISTRATION`        | `false`                          |
  * | `TURNSTILE_SECRET_KEY`, `TURNSTILE_SITE_KEY` | none: no captcha      |
  * | `STRIPE_SECRET_KEY` and the rest  | none: no billing (see `#shared/infrastructure/stripe-settings.ts`) |
+ * | `GOOGLE_SIGN_IN_CLIENT_ID`, `GOOGLE_SIGN_IN_CLIENT_SECRET` | none: no Google sign-in |
+ * | `PEAL_OIDC_ISSUER`, `PEAL_OIDC_CLIENT_ID`, `PEAL_OIDC_CLIENT_SECRET` | none: no OpenID Connect sign-in |
+ * | `PEAL_OIDC_NAME`, `PEAL_OIDC_SCOPES` | `Single sign-on`, `openid email profile` (see `sign-in-provider-settings.ts`) |
  */
 export const authSettingsConfig = Config.all({
   captcha: captchaConfig,
@@ -62,6 +69,8 @@ export const authSettingsConfig = Config.all({
     "AUTH_REQUIRE_EMAIL_VERIFICATION"
   ).pipe(Config.withDefault(true)),
   secret: authSecretConfig,
+  // The identity providers people may sign in and sign up with.
+  signInProviders: signInProvidersConfig,
   // Billing through Stripe's plugin, with organization subscriptions.
   stripe: stripeSettingsConfig,
   // Other origins allowed to send authenticated requests, besides PUBLIC_URL.
@@ -82,12 +91,27 @@ export type AuthConfiguration = Config.Success<typeof authSettingsConfig>;
 
 export class AuthSettings extends Context.Service<
   AuthSettings,
-  AuthConfiguration
+  AuthConfiguration & {
+    /** The providers whose discovery has answered, now. */
+    readonly providersOffered: Effect.Effect<readonly SignInProviderId[]>;
+  }
 >()("peal-server/workspace/infrastructure/AuthSettings") {
+  /**
+   * The settings, with the sign-in providers' discovery read when the
+   * server starts and served to Better Auth from the relay
+   * (provider-discovery.ts), which lives as long as the server.
+   */
   static readonly layer = Layer.effect(
     AuthSettings,
     Effect.gen(function* authSettings() {
-      return yield* authSettingsConfig;
+      const settings = yield* authSettingsConfig;
+      const relay = yield* discoveryRelay(settings.signInProviders);
+
+      return {
+        ...settings,
+        providersOffered: relay.offered,
+        signInProviders: relay.settings,
+      };
     })
   );
 }
