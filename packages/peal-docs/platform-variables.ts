@@ -31,6 +31,7 @@ const pages: Readonly<Record<Platform, { name: string; slug: string }>> = {
   linkedin: { name: "LinkedIn", slug: "linkedin" },
   mastodon: { name: "Mastodon", slug: "mastodon" },
   pinterest: { name: "Pinterest", slug: "pinterest" },
+  slack: { name: "Slack", slug: "slack" },
   telegram: { name: "Telegram", slug: "telegram" },
   threads: { name: "Threads", slug: "threads" },
   tiktok: { name: "TikTok", slug: "tiktok" },
@@ -82,6 +83,7 @@ const unitReading: Readonly<Record<TextUnit, "bytes" | "characters" | "own">> =
   {
     codePoints: "characters",
     emojiBytes: "own",
+    escapedUtf16Units: "own",
     graphemes: "characters",
     utf16Units: "own",
     utf8Bytes: "bytes",

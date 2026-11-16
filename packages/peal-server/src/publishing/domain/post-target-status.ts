@@ -86,6 +86,10 @@ export const FailureReasonSchema = Schema.Literals([
   // supergroup), which the channel does not reach: connect the chat
   // again, as a new channel.
   "chatMigrated",
+  // The app may not post in the chat's channel (Slack: it is not in the
+  // channel, or the channel was archived or restricted): invite the app
+  // there, then post it again.
+  "cannotPost",
 ]);
 
 export type FailureReason = typeof FailureReasonSchema.Type;

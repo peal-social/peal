@@ -20,11 +20,12 @@ Un serveur auto-hébergé propose une plateforme une fois que vous y avez enregi
 | [YouTube](#youtube)                            | `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`                                                                         | Un écran de consentement publié, vérifié par Google     |
 | [Pinterest](#pinterest)                        | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | L’accès Standard de Pinterest                           |
 | [Google Business Profile](#google-business)    | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | L’accès de Google aux API Business Profile              |
+| [Slack](#slack)                                | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`                                                                             | La distribution publique, que Slack active              |
 | [Sites WordPress](#wordpress)                  | Aucun : chaque membre donne le mot de passe d’application de son site                                                | Rien à enregistrer                                      |
 | [WordPress.com](#wordpress-com)                | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Aucun examen connu                                      |
 | [DEV et Hashnode](#devto-hashnode)             | Aucun : chaque membre donne une clé à lui                                                                            | Rien à enregistrer                                      |
 
-Pour LinkedIn, X, YouTube, Pinterest, Google Business Profile et WordPress.com, l’un des deux réglages sans l’autre arrête le serveur au démarrage ; sans les deux, **Canaux** ne propose pas la plateforme. [Variables d’environnement](/self-hosting/environment-variables#channels) liste chaque réglage des plateformes, avec sa valeur par défaut.
+Pour LinkedIn, X, YouTube, Pinterest, Google Business Profile, Slack et WordPress.com, l’un des deux réglages sans l’autre arrête le serveur au démarrage ; sans les deux, **Canaux** ne propose pas la plateforme. [Variables d’environnement](/self-hosting/environment-variables#channels) liste chaque réglage des plateformes, avec sa valeur par défaut.
 
 ### Clés des jetons [#token-keys]
 
@@ -58,6 +59,7 @@ Pour publier une image ou une vidéo, le serveur la lit dans le stockage des mé
 | YouTube                 | `oauth2.googleapis.com` et `www.googleapis.com`                                                                                                      | Vidéos par parties de 8 Mio, une seule gardée à la fois                                                     |
 | Pinterest               | `api.pinterest.com` (ou le bac à sable), et l’adresse que Pinterest nomme pour chaque vidéo, celle d’un stockage d’objets                            | Vidéos envoyées à mesure qu’elles sont lues, jamais gardées entières ; images que Pinterest va chercher     |
 | Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` et `mybusiness.googleapis.com` | Photos que Google va chercher dans le stockage des médias                                                   |
+| Slack                   | `slack.com`, et `files.slack.com`, où Slack fait envoyer chaque image                                                                                | Images envoyées à mesure qu’elles sont lues, jamais gardées entières                                        |
 | WordPress.com           | `public-api.wordpress.com`, dont l’API sert les routes de base de chaque site                                                                        | Images lues entières                                                                                        |
 | DEV                     | `dev.to`                                                                                                                                             | Images lues entières                                                                                        |
 | Hashnode                | `gql-beta.hashnode.com`, et l’adresse d’envoi que Hashnode donne pour chaque image                                                                   | Images envoyées à mesure qu’elles sont lues                                                                 |
@@ -521,6 +523,35 @@ Google va chercher chaque photo par un lien vers le stockage des médias, valabl
   suppression de l’espace de travail : lisez ces règles, et jugez si cela
   convient à votre usage.
 </Callout>
+
+## Slack [#slack]
+
+Un serveur connecte les canaux Slack une fois que vous y avez enregistré une application, et activé sa distribution publique pour que d’autres espaces de travail Slack puissent l’installer.
+
+<Steps>
+  <Step title="Créer une application">
+    Sur `api.slack.com/apps`, créez une application de zéro, au nom de votre
+    service, dans un espace de travail Slack à vous.
+  </Step>
+  <Step title="Lui donner ses portées et son adresse de redirection">
+    Sous **OAuth & Permissions**, ajoutez les portées du jeton du bot
+    `incoming-webhook`, `chat:write`, `chat:write.public` et `files:write`, et
+    `PUBLIC_URL/connect/slack/callback` comme adresse de redirection, comme
+    `https://peal.example.com/connect/slack/callback`. Laissez la rotation des
+    jetons désactivée : Slack ne peut plus la désactiver ensuite, et Peal ne
+    renouvelle jamais un jeton.
+  </Step>
+  <Step title="La distribuer">
+    Sous **Manage Distribution**, activez la distribution publique. Une fiche
+    dans l’annuaire de Slack n’est pas nécessaire.
+  </Step>
+  <Step title="Renseigner les identifiants">
+    Mettez l’identifiant client de l’application dans `SLACK_CLIENT_ID` et son
+    secret dans `SLACK_CLIENT_SECRET`.
+  </Step>
+</Steps>
+
+Les membres ajoutent l’application à leur espace de travail Slack et choisissent, sur la page de Slack, le canal où elle publie : Peal ne liste jamais les canaux d’un espace de travail, et ne demande aucune portée qui les lise, eux, leurs messages ou leurs fichiers. Le jeton du bot n’expire pas ; un jeton que Slack refuse, comme après le retrait de l’application de l’espace de travail, marque le canal **Reconnecter**. Déconnecter un canal ne révoque rien, car le même jeton sert chaque canal de cet espace de travail Slack. Ces réglages ne sont pas le `SLACK_ALERTS_WEBHOOK_URL` des alertes.
 
 ## Sites WordPress [#wordpress]
 

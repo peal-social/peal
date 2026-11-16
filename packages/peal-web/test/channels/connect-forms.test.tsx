@@ -190,6 +190,16 @@ describe(ConnectForms, () => {
     expect(html).not.toContain("company pages");
   });
 
+  it("offers Slack as a sign-in on a server with its app, in both languages", async () => {
+    const english = await render("en", ["mastodon", "slack"]);
+    const french = await render("fr", ["slack"]);
+
+    expect(english).toContain(">Connect Slack<");
+    expect(english).toContain("choose the channel it posts to there");
+    expect(french).toContain(">Connecter Slack<");
+    await expect(render("en", ["mastodon"])).resolves.not.toContain("Slack");
+  });
+
   it("writes the buttons in French", async () => {
     const html = await render("fr", ["linkedin", "x"]);
 

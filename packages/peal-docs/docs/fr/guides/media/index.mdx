@@ -235,6 +235,17 @@ Pinterest recommande des images en 2:3, comme 1 000 sur 1 500 pixels, et demande
 
 Peal envoie chaque fichier à Discord et à Telegram avec la publication. Sur Telegram, un texte avec des images ou des vidéos est leur légende, de 1 024 caractères au plus.
 
+### Slack [#platforms-slack]
+
+| Limite                      | Slack                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| Images dans une publication | 10                                                                                   |
+| Images                      | PNG, JPEG et GIF, les types que Slack montre dans un message, jusqu’à 50 Mio chacune |
+| Vidéos                      | Non prises                                                                           |
+| Texte alternatif            | Montré aux personnes qui en ont besoin, jusqu’à 1 000 caractères                     |
+
+Peal envoie chaque image à Slack, partagée nulle part, avant le message qui la montre, sous son texte de 3 000 caractères au plus.
+
 Peal ne vérifie que ce qu’il a lu de chaque fichier : un fait qu’il n’a pas pu lire, comme la durée d’une vidéo, n’est pas vérifié, et la plateforme peut encore refuser le fichier.
 
 ## Quand vous programmez [#schedule]

@@ -8,6 +8,7 @@ import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
 import { LivePostChangeStore } from "#publishing/application/live-post-change-store.ts";
 import { LivePostChanges } from "#publishing/application/live-post-changes.ts";
+import { LivePostEdits } from "#publishing/application/live-post-edits.ts";
 import { LivePostJobs } from "#publishing/application/live-post-jobs.ts";
 import { LivePostNotChangeable } from "#publishing/application/live-post-not-changeable.ts";
 import { PostEvents } from "#publishing/application/post-events.ts";
@@ -18,6 +19,7 @@ import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.t
 import type { LivePostChangeId } from "#publishing/domain/live-post-change-id.ts";
 import { editable, requestEdit } from "#publishing/domain/live-post-change.ts";
 import { MastodonOptions } from "#publishing/domain/mastodon-options.ts";
+import { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import { platformRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import { PostContent, partsOn } from "#publishing/domain/post-content.ts";
@@ -317,6 +319,61 @@ describe("editing a live post", () => {
           // The job's history names the change, never its text.
           assert.isTrue(yield* clusterHolds(change.id));
           assert.isFalse(yield* clusterHolds("Part 2, corrected."));
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "hands the platform the part's media on the channel, with their alt text",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* partMedia() {
+          const changes = yield* LivePostChanges;
+          const workspaceId = yield* freshWorkspace;
+          const actor = actorIn(workspaceId);
+          const channelId = yield* connect(workspaceId, "slack");
+
+          const chart = new MediaAttachment({
+            altText: "A synthetic chart",
+            mediaId: attachableImage,
+          });
+
+          const { post } = yield* (yield* PostScheduling).send(actor, {
+            channelIds: [channelId],
+            content: new PostContent({
+              followUps: [],
+              media: [chart],
+              overrides: [],
+              text: "A synthetic post, with a typo.",
+            }),
+            idempotency: Option.none(),
+            options: [],
+            placement: { _tag: "now" },
+            timeZone: TimeZoneIdSchema.make("Europe/Paris"),
+          });
+
+          yield* eventually("the post went out", isFinished(post.id));
+
+          const target = yield* targetOn(post.id, channelId);
+
+          const change = yield* changes.editTarget(actor, post.id, target.id, {
+            part: 0,
+            text: "A synthetic post, corrected.",
+          });
+
+          const pending = yield* LivePostEdits.use((edits) =>
+            edits.of(change.id)
+          ).pipe(Effect.provide(LivePostEdits.layer));
+
+          assert.deepStrictEqual(
+            pending.pipe(Option.map(({ media, text }) => ({ media, text }))),
+            Option.some({
+              media: [chart],
+              text: "A synthetic post, corrected.",
+            })
+          );
         })
       ),
     timeout

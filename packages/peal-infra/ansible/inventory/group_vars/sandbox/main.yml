@@ -40,6 +40,8 @@ peal_settings:
   X_CLIENT_ID: aG1fSFFkWUF1OGJYM2ZZQktRbEk6MTpjaQ
   # One WordPress.com app serves both environments, with both callbacks.
   WORDPRESS_COM_CLIENT_ID: "153160"
+  # One Slack app serves both environments, with both redirect URLs.
+  SLACK_CLIENT_ID: "12606763099492.12617179827665"
   # Google sign-in: its own OAuth client, "Peal: Google sign-in", in this
   # environment's project; the consent screen is in Testing until published.
   GOOGLE_SIGN_IN_CLIENT_ID: 342335857798-hn185gb2jd5d4cj7t8vc3ce3t93rcj8j.apps.googleusercontent.com

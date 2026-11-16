@@ -60,6 +60,7 @@ const platformNames: Readonly<Record<Platform, string>> = {
   linkedin: "LinkedIn",
   mastodon: "Mastodon",
   pinterest: "Pinterest",
+  slack: "Slack",
   telegram: "Telegram",
   threads: "Threads",
   tiktok: "TikTok",

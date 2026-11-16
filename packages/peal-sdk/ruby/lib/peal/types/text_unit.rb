@@ -13,6 +13,7 @@ module Peal
       EMOJI_BYTES = "emojiBytes"
       UTF16UNITS = "utf16Units"
       WEIGHTED = "weighted"
+      ESCAPED_UTF16UNITS = "escapedUtf16Units"
     end
   end
 end

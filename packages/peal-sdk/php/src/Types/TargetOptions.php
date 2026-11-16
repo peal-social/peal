@@ -25,6 +25,7 @@ class TargetOptions extends JsonSerializableType
      *   |'facebook'
      *   |'discord'
      *   |'telegram'
+     *   |'slack'
      *   |'_unknown'
      * ) $platform
      */
@@ -45,6 +46,7 @@ class TargetOptions extends JsonSerializableType
      *   |FacebookOptions
      *   |DiscordOptions
      *   |TelegramOptions
+     *   |SlackOptions
      *   |mixed
      * ) $value
      */
@@ -66,6 +68,7 @@ class TargetOptions extends JsonSerializableType
      *   |'facebook'
      *   |'discord'
      *   |'telegram'
+     *   |'slack'
      *   |'_unknown'
      * ),
      *   value: (
@@ -82,6 +85,7 @@ class TargetOptions extends JsonSerializableType
      *   |FacebookOptions
      *   |DiscordOptions
      *   |TelegramOptions
+     *   |SlackOptions
      *   |mixed
      * ),
      * } $values
@@ -246,6 +250,18 @@ class TargetOptions extends JsonSerializableType
         return new TargetOptions([
             'platform' => 'telegram',
             'value' => $telegram,
+        ]);
+    }
+
+    /**
+     * @param SlackOptions $slack
+     * @return TargetOptions
+     */
+    public static function slack(SlackOptions $slack): TargetOptions
+    {
+        return new TargetOptions([
+            'platform' => 'slack',
+            'value' => $slack,
         ]);
     }
 
@@ -536,6 +552,28 @@ class TargetOptions extends JsonSerializableType
     }
 
     /**
+     * @return bool
+     */
+    public function isSlack(): bool
+    {
+        return $this->value instanceof SlackOptions && $this->platform === 'slack';
+    }
+
+    /**
+     * @return SlackOptions
+     */
+    public function asSlack(): SlackOptions
+    {
+        if (!($this->value instanceof SlackOptions && $this->platform === 'slack')) {
+            throw new Exception(
+                "Expected slack; got " . $this->platform . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
@@ -605,6 +643,10 @@ class TargetOptions extends JsonSerializableType
                 break;
             case 'telegram':
                 $value = $this->asTelegram()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'slack':
+                $value = $this->asSlack()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case '_unknown':
@@ -681,6 +723,9 @@ class TargetOptions extends JsonSerializableType
                 break;
             case 'telegram':
                 $args['value'] = TelegramOptions::jsonDeserialize($data);
+                break;
+            case 'slack':
+                $args['value'] = SlackOptions::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

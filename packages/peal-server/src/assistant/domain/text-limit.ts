@@ -4,7 +4,8 @@ import { Schema } from "effect";
  * How a platform measures a post's text, as publishing counts it: graphemes
  * (what a reader sees as one character), Unicode code points, UTF-8 bytes,
  * code points with each emoji counted by its UTF-8 bytes, UTF-16 code
- * units, or X's weighted count.
+ * units, X's weighted count, or UTF-16 code units of the text as Slack is
+ * sent it, `&`, `<` and `>` as entities.
  */
 export const TextUnitSchema = Schema.Literals([
   "graphemes",
@@ -13,6 +14,7 @@ export const TextUnitSchema = Schema.Literals([
   "emojiBytes",
   "utf16Units",
   "weighted",
+  "escapedUtf16Units",
 ]);
 
 export type TextUnit = typeof TextUnitSchema.Type;
@@ -30,6 +32,8 @@ const unitDescriptions: Readonly<Record<TextUnit, string>> = {
   codePoints: "characters",
   emojiBytes:
     "characters, where an emoji counts as the bytes it takes in UTF-8, 4 for most",
+  escapedUtf16Units:
+    "characters, where an emoji counts as 2, an & as 5, a < or a > as 4, and most other characters as 1",
   graphemes: "characters, counting what a reader sees as one character",
   utf16Units:
     "characters, where an emoji counts as 2 and most other characters as 1",

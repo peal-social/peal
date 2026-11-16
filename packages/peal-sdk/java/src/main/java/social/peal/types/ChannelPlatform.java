@@ -41,6 +41,8 @@ public final class ChannelPlatform {
 
     public static final ChannelPlatform TIKTOK = new ChannelPlatform(Value.TIKTOK, "tiktok");
 
+    public static final ChannelPlatform SLACK = new ChannelPlatform(Value.SLACK, "slack");
+
     private final Value value;
 
     private final String string;
@@ -107,6 +109,8 @@ public final class ChannelPlatform {
                 return visitor.visitPinterest();
             case TIKTOK:
                 return visitor.visitTiktok();
+            case SLACK:
+                return visitor.visitSlack();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -150,6 +154,8 @@ public final class ChannelPlatform {
                 return PINTEREST;
             case "tiktok":
                 return TIKTOK;
+            case "slack":
+                return SLACK;
             default:
                 return new ChannelPlatform(Value.UNKNOWN, value);
         }
@@ -181,6 +187,8 @@ public final class ChannelPlatform {
         DISCORD,
 
         TELEGRAM,
+
+        SLACK,
 
         WORDPRESS,
 
@@ -219,6 +227,8 @@ public final class ChannelPlatform {
         T visitDiscord();
 
         T visitTelegram();
+
+        T visitSlack();
 
         T visitWordpress();
 

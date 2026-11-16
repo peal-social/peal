@@ -157,6 +157,12 @@ export const tokenPolicies = {
       sweep: { _tag: "beforeExpiry", ahead: Duration.days(7) },
     },
   }),
+  // A bot token never expires while the app's token rotation is off,
+  // which it is: it stops working when the app is uninstalled.
+  slack: new TokenPolicy({
+    lifetime: Option.none(),
+    refresh: { _tag: "none" },
+  }),
   // Long-lived tokens last 60 days, and are renewed once at least a day old.
   threads: new TokenPolicy({
     lifetime: Option.some(Duration.days(60)),

@@ -20,11 +20,12 @@ A self-hosted server offers a platform once you register an app for it on that p
 | [YouTube](#youtube)                         | `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`                                                                         | A published consent screen, verified by Google |
 | [Pinterest](#pinterest)                     | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | Pinterest's Standard access                    |
 | [Google Business Profile](#google-business) | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | Google's access to the Business Profile APIs   |
+| [Slack](#slack)                             | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`                                                                             | Public distribution, which Slack turns on      |
 | [WordPress websites](#wordpress)            | None: each member gives their site's application password                                                            | Nothing to register                            |
 | [WordPress.com](#wordpress-com)             | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Nothing known to review                        |
 | [DEV and Hashnode](#devto-hashnode)         | None: each member gives a key of their own                                                                           | Nothing to register                            |
 
-For LinkedIn, X, YouTube, Pinterest, Google Business Profile and WordPress.com, one of the two settings without the other stops the server at startup; without both, **Channels** does not offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
+For LinkedIn, X, YouTube, Pinterest, Google Business Profile, Slack and WordPress.com, one of the two settings without the other stops the server at startup; without both, **Channels** does not offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
 
 ### Token keys [#token-keys]
 
@@ -58,6 +59,7 @@ To publish an image or a video, the server reads it from the media store, whole,
 | YouTube                 | `oauth2.googleapis.com` and `www.googleapis.com`                                                                                                      | Videos in parts of 8 MiB, one held at a time                                                 |
 | Pinterest               | `api.pinterest.com` (or the Sandbox), and the address Pinterest names for each video, an object store's                                               | Videos sent as they are read, never held whole; images fetched by Pinterest                  |
 | Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` and `mybusiness.googleapis.com` | Photos fetched by Google from the media store                                                |
+| Slack                   | `slack.com`, and `files.slack.com`, where Slack has each image uploaded                                                                               | Images sent as they are read, never held whole                                               |
 | WordPress.com           | `public-api.wordpress.com`, whose API serves each site's core routes                                                                                  | Images read whole                                                                            |
 | DEV                     | `dev.to`                                                                                                                                              | Images read whole                                                                            |
 | Hashnode                | `gql-beta.hashnode.com`, and the upload address Hashnode gives for each image                                                                         | Images sent as they are read                                                                 |
@@ -500,6 +502,34 @@ Google fetches each photo from a link to the media store, valid for two hours: t
   post's name and address on Google, until the channel is disconnected or the
   workspace deleted: read the policies, and decide whether that suits your use.
 </Callout>
+
+## Slack [#slack]
+
+A server connects Slack channels once you register an app for it on Slack, and turn on its public distribution so that other Slack workspaces can install it.
+
+<Steps>
+  <Step title="Create an app">
+    At `api.slack.com/apps`, create an app from scratch, named after your
+    service, in a Slack workspace of yours.
+  </Step>
+  <Step title="Give it its scopes and redirect URL">
+    Under **OAuth & Permissions**, add the bot token scopes `incoming-webhook`,
+    `chat:write`, `chat:write.public` and `files:write`, and
+    `PUBLIC_URL/connect/slack/callback` as a redirect URL, such as
+    `https://peal.example.com/connect/slack/callback`. Leave token rotation off:
+    Slack cannot turn it off again, and Peal never renews a token.
+  </Step>
+  <Step title="Distribute it">
+    Under **Manage Distribution**, activate public distribution. A listing in
+    Slack's directory is not needed.
+  </Step>
+  <Step title="Set the credentials">
+    Put the app's client ID in `SLACK_CLIENT_ID` and its client secret in
+    `SLACK_CLIENT_SECRET`.
+  </Step>
+</Steps>
+
+Members add the app to their Slack workspace and pick, on Slack's page, the channel it posts to: Peal never lists a workspace's channels, and asks no scope that reads them, their messages or their files. The bot's token does not expire; one Slack refuses, as after the app is removed from the workspace, marks the channel **Reconnect**. Disconnecting a channel revokes nothing, as the same token serves every channel of that Slack workspace. These settings are not the alerts' `SLACK_ALERTS_WEBHOOK_URL`.
 
 ## WordPress websites [#wordpress]
 

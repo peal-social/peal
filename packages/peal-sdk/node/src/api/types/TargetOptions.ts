@@ -18,7 +18,8 @@ export type TargetOptions =
     | Peal.TargetOptions.Instagram
     | Peal.TargetOptions.Facebook
     | Peal.TargetOptions.Discord
-    | Peal.TargetOptions.Telegram;
+    | Peal.TargetOptions.Telegram
+    | Peal.TargetOptions.Slack;
 
 export namespace TargetOptions {
     export interface Youtube extends Peal.YouTubeOptions {
@@ -71,5 +72,9 @@ export namespace TargetOptions {
 
     export interface Telegram extends Peal.TelegramOptions {
         platform: "telegram";
+    }
+
+    export interface Slack extends Peal.SlackOptions {
+        platform: "slack";
     }
 }

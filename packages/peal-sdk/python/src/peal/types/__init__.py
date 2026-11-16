@@ -1003,6 +1003,7 @@ if typing.TYPE_CHECKING:
     from .site_not_connected_encoded import SiteNotConnectedEncoded
     from .site_not_connected_reason import SiteNotConnectedReason
     from .site_platform import SitePlatform
+    from .slack_options import SlackOptions
     from .slot_time import SlotTime
     from .special_ad_category import SpecialAdCategory
     from .spend_ceiling_exceeded_encoded import SpendCeilingExceededEncoded
@@ -1033,6 +1034,7 @@ if typing.TYPE_CHECKING:
         TargetOptions_Linkedin,
         TargetOptions_Mastodon,
         TargetOptions_Pinterest,
+        TargetOptions_Slack,
         TargetOptions_Telegram,
         TargetOptions_Threads,
         TargetOptions_Tiktok,
@@ -2148,6 +2150,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SiteNotConnectedEncoded": ".site_not_connected_encoded",
     "SiteNotConnectedReason": ".site_not_connected_reason",
     "SitePlatform": ".site_platform",
+    "SlackOptions": ".slack_options",
     "SlotTime": ".slot_time",
     "SpecialAdCategory": ".special_ad_category",
     "SpendCeilingExceededEncoded": ".spend_ceiling_exceeded_encoded",
@@ -2181,6 +2184,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "TargetOptions_Linkedin": ".target_options",
     "TargetOptions_Mastodon": ".target_options",
     "TargetOptions_Pinterest": ".target_options",
+    "TargetOptions_Slack": ".target_options",
     "TargetOptions_Telegram": ".target_options",
     "TargetOptions_Threads": ".target_options",
     "TargetOptions_Tiktok": ".target_options",
@@ -3319,6 +3323,7 @@ __all__ = [
     "SiteNotConnectedEncoded",
     "SiteNotConnectedReason",
     "SitePlatform",
+    "SlackOptions",
     "SlotTime",
     "SpecialAdCategory",
     "SpendCeilingExceededEncoded",
@@ -3352,6 +3357,7 @@ __all__ = [
     "TargetOptions_Linkedin",
     "TargetOptions_Mastodon",
     "TargetOptions_Pinterest",
+    "TargetOptions_Slack",
     "TargetOptions_Telegram",
     "TargetOptions_Threads",
     "TargetOptions_Tiktok",

@@ -78,6 +78,10 @@ public final class TargetOptions {
         return new TargetOptions(new TelegramValue(value));
     }
 
+    public static TargetOptions slack(SlackOptions value) {
+        return new TargetOptions(new SlackValue(value));
+    }
+
     public boolean isYoutube() {
         return value instanceof YoutubeValue;
     }
@@ -128,6 +132,10 @@ public final class TargetOptions {
 
     public boolean isTelegram() {
         return value instanceof TelegramValue;
+    }
+
+    public boolean isSlack() {
+        return value instanceof SlackValue;
     }
 
     public boolean _isUnknown() {
@@ -225,6 +233,13 @@ public final class TargetOptions {
         return Optional.empty();
     }
 
+    public Optional<SlackOptions> getSlack() {
+        if (isSlack()) {
+            return Optional.of(((SlackValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<Object> _getUnknown() {
         if (_isUnknown()) {
             return Optional.of(((_UnknownValue) value).value);
@@ -280,6 +295,8 @@ public final class TargetOptions {
 
         T visitTelegram(TelegramOptions telegram);
 
+        T visitSlack(SlackOptions slack);
+
         T _visitUnknown(Object unknownType);
     }
 
@@ -297,7 +314,8 @@ public final class TargetOptions {
         @JsonSubTypes.Type(InstagramValue.class),
         @JsonSubTypes.Type(FacebookValue.class),
         @JsonSubTypes.Type(DiscordValue.class),
-        @JsonSubTypes.Type(TelegramValue.class)
+        @JsonSubTypes.Type(TelegramValue.class),
+        @JsonSubTypes.Type(SlackValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
@@ -810,6 +828,46 @@ public final class TargetOptions {
         }
 
         private boolean equalTo(TelegramValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TargetOptions{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("slack")
+    @JsonIgnoreProperties("platform")
+    private static final class SlackValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "platform", allowSetters = true)
+        private SlackOptions value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private SlackValue() {}
+
+        private SlackValue(SlackOptions value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitSlack(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof SlackValue && equalTo((SlackValue) other);
+        }
+
+        private boolean equalTo(SlackValue other) {
             return value.equals(other.value);
         }
 

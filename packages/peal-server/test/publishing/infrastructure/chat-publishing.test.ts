@@ -77,6 +77,7 @@ const platformsOn = (url: string) => {
           threadsGraph: elsewhere,
         },
         pinterestApi: elsewhere,
+        slackHosts: { api: elsewhere.origin, uploads: elsewhere.origin },
         telegramHosts: { api: elsewhere.origin },
         tiktokApi: elsewhere,
         tiktokPullFrom: Option.none(),

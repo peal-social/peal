@@ -292,6 +292,7 @@ describe("the platforms' capabilities endpoint", () => {
           ["mastodon", "thread"],
           ["discord", "thread"],
           ["telegram", "thread"],
+          ["slack", "thread"],
         ]
       );
       assert.deepStrictEqual(bluesky?.followUps, {
@@ -319,7 +320,7 @@ describe("the platforms' capabilities endpoint", () => {
           all.flatMap(({ followUps, platform }) =>
             followUps === null ? [] : [platform]
           ),
-          ["bluesky", "mastodon", "discord", "telegram"]
+          ["bluesky", "mastodon", "discord", "telegram", "slack"]
         );
       })
   );
@@ -385,6 +386,7 @@ describe("the platforms' capabilities endpoint", () => {
             ["youtube", "comment"],
             ["discord", "thread"],
             ["telegram", "thread"],
+            ["slack", "thread"],
           ]
         );
         // A LinkedIn page comments through its administrator.

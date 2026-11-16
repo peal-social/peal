@@ -53,6 +53,10 @@ export const platformRefusalCodes = {
   // connected again with the new chat (Telegram: a group that became a
   // supergroup, `migrate_to_chat_id`).
   chatMigrated: "chatMigrated",
+  // A BadRequest: the app may not post in the chat's channel, which the
+  // member fixes on the platform (Slack: the app is not in the channel,
+  // `not_in_channel`, or the channel was archived or restricted).
+  cannotPost: "cannotPost",
   // A BadRequest of an edit the platform refuses without telling why, the
   // same text again among the reasons (Telegram: "message is not
   // modified", a 400 like any other). After a try that got no answer, it

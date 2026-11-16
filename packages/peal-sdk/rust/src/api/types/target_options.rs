@@ -293,6 +293,14 @@ pub enum TargetOptions {
         silent: Option<bool>,
     },
 
+    #[serde(rename = "slack")]
+    #[non_exhaustive]
+    Slack {
+        #[serde(rename = "unfurlLinks")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        unfurl_links: Option<bool>,
+    },
+
     /// Catch-all variant for unrecognized discriminant values.
     /// If the server sends a discriminant not recognized by the current SDK
     /// version, the raw payload is captured here so callers can still inspect it.
@@ -446,6 +454,10 @@ impl TargetOptions {
             link_preview: None,
             silent: None,
         }
+    }
+
+    pub fn slack() -> Self {
+        Self::Slack { unfurl_links: None }
     }
 
     pub fn youtube_with_category_id(
@@ -2245,6 +2257,12 @@ impl TargetOptions {
         Self::Telegram {
             link_preview,
             silent: Some(silent),
+        }
+    }
+
+    pub fn slack_with_unfurl_links(unfurl_links: bool) -> Self {
+        Self::Slack {
+            unfurl_links: Some(unfurl_links),
         }
     }
 

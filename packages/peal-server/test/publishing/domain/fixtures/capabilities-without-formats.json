@@ -1684,5 +1684,93 @@
         "unit": "utf16Units"
       }
     ]
+  },
+  {
+    "counted": {
+      "account": [],
+      "post": []
+    },
+    "countsPosts": true,
+    "livePost": {
+      "edit": {
+        "_id": "Option",
+        "_tag": "None"
+      },
+      "unpublish": {
+        "_id": "Option",
+        "_tag": "None"
+      }
+    },
+    "lookups": [],
+    "maxAltTextLength": 1000,
+    "maxMedia": 10,
+    "optionConstraints": [],
+    "options": [
+      {
+        "ifLeftOut": false,
+        "name": "unfurlLinks",
+        "required": false,
+        "type": "boolean",
+        "values": []
+      }
+    ],
+    "platform": "slack",
+    "rules": {
+      "followUps": {
+        "kind": "thread",
+        "maximum": 24
+      },
+      "maxMedia": 10,
+      "media": {
+        "formats": {
+          "image/gif": {
+            "maxByteSize": 52428800
+          },
+          "image/jpeg": {
+            "maxByteSize": 52428800
+          },
+          "image/png": {
+            "maxByteSize": 52428800
+          }
+        },
+        "maxAltTextLength": 1000,
+        "mixesKinds": true,
+        "showsAltText": true
+      },
+      "mediaRequired": false,
+      "textLimits": [
+        {
+          "maximum": 4000,
+          "unit": "escapedUtf16Units"
+        }
+      ],
+      "textLimitsWithMedia": [
+        {
+          "maximum": 3000,
+          "unit": "escapedUtf16Units"
+        }
+      ]
+    },
+    "textLimits": [
+      {
+        "maximum": 4000,
+        "unit": "escapedUtf16Units"
+      },
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ],
+    "version": 1,
+    "textLimitsWithMedia": [
+      {
+        "maximum": 3000,
+        "unit": "escapedUtf16Units"
+      },
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ]
   }
 ]
