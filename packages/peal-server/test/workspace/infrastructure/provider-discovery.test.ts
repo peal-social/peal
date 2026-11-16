@@ -7,10 +7,21 @@ import { once } from "node:events";
 import { createServer } from "node:http";
 
 import { assert, describe, it } from "@effect/vitest";
-import { Effect, Option, Redacted, Schedule, Schema } from "effect";
+import {
+  Effect,
+  Logger,
+  Metric,
+  Option,
+  Redacted,
+  Schedule,
+  Schema,
+} from "effect";
 
 import { fakeOidcWith } from "#test/workspace/fakes/fake-oidc.ts";
-import { discoveryRelay } from "#workspace/infrastructure/auth/provider-discovery.ts";
+import {
+  discoveryRelay,
+  providersUnavailable,
+} from "#workspace/infrastructure/auth/provider-discovery.ts";
 import type { DiscoveryTiming } from "#workspace/infrastructure/auth/provider-discovery.ts";
 import type { SignInProviderSettings } from "#workspace/infrastructure/auth/sign-in-provider-settings.ts";
 
@@ -82,7 +93,38 @@ const discoveryReadsOf = (
   requests().filter(({ path }) => path === "/.well-known/openid-configuration")
     .length;
 
+// Whether the gauge says the provider is off, now.
+const unavailable = Metric.value(
+  Metric.withAttributes(providersUnavailable, { provider: "oidc" })
+).pipe(Effect.map(({ value }) => value));
+
+// The servers this process listens with, now.
+const listeners = () =>
+  process
+    .getActiveResourcesInfo()
+    .filter((resource) => resource === "TCPServerWrap").length;
+
 describe("the sign-in providers' discovery", () => {
+  it.live("opens no relay where no provider is set", () =>
+    Effect.scoped(
+      Effect.gen(function* none() {
+        const before = listeners();
+
+        const relay = yield* discoveryRelay(
+          { google: Option.none(), oidc: Option.none() },
+          quick
+        );
+
+        assert.strictEqual(listeners(), before);
+        assert.deepStrictEqual(relay.settings, {
+          google: Option.none(),
+          oidc: Option.none(),
+        });
+        assert.deepStrictEqual(yield* relay.offered, []);
+      })
+    )
+  );
+
   it.live("serves a provider's document from this machine", () =>
     Effect.scoped(
       Effect.gen(function* serves() {
@@ -132,6 +174,73 @@ describe("the sign-in providers' discovery", () => {
 
         assert.deepStrictEqual(later, ["oidc"]);
         assert.strictEqual((yield* relayed(relay.settings)).status, 200);
+      })
+    )
+  );
+
+  // A provider down for a day would otherwise keep the server's error-log
+  // alert lit all day, hiding every other error: its own alert reads the
+  // gauge.
+  it.live(
+    "logs a provider left out as an error once, its repeats as warnings, and says so in a gauge",
+    () =>
+      Effect.gen(function* repeats() {
+        const levels: string[] = [];
+
+        const capture = Logger.layer([
+          Logger.make(({ logLevel, message }) => {
+            if (String(message).includes("Sign-in with")) {
+              levels.push(logLevel);
+            }
+          }),
+        ]);
+
+        yield* Effect.scoped(
+          Effect.gen(function* down() {
+            const fake = yield* fakeOidcWith({ unavailableFor: 6 });
+            const relay = yield* discoveryRelay(at(fake.server.url), quick);
+
+            assert.strictEqual(yield* unavailable, 1);
+
+            yield* relay.offered.pipe(
+              Effect.filterOrFail((offered) => offered.length > 0),
+              Effect.retry(Schedule.spaced("20 millis")),
+              Effect.timeout("5 seconds")
+            );
+
+            assert.strictEqual(yield* unavailable, 0);
+
+            // The line that says it is back follows.
+            yield* Effect.sync(() => levels.at(-1)).pipe(
+              Effect.filterOrFail((last) => last === "Info"),
+              Effect.retry(Schedule.spaced("20 millis")),
+              Effect.timeout("5 seconds")
+            );
+          })
+        ).pipe(Effect.provide(capture));
+
+        assert.deepStrictEqual(levels, [
+          "Error",
+          "Warn",
+          "Warn",
+          "Warn",
+          "Info",
+        ]);
+      })
+  );
+
+  it.live("says in the gauge that a provider which answers is on", () =>
+    Effect.scoped(
+      Effect.gen(function* on() {
+        const fake = yield* fakeOidcWith({});
+
+        yield* Metric.update(
+          Metric.withAttributes(providersUnavailable, { provider: "oidc" }),
+          1
+        );
+        yield* discoveryRelay(at(fake.server.url), quick);
+
+        assert.strictEqual(yield* unavailable, 0);
       })
     )
   );

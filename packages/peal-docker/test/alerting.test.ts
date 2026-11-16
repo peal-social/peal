@@ -50,6 +50,7 @@ const watched = [
   "peal_billing_retirements_untold_age",
   "peal_billing_retirements_unconfirmed",
   "peal_billing_meter_errors_total",
+  "peal_workspace_sign_in_providers_unavailable",
 ];
 
 const RuleSchema = Schema.Struct({
@@ -203,6 +204,22 @@ describe("the production alert rules", () => {
       expect(rules).toContain(`params: [${threshold}]`);
     }
   );
+
+  // The server logs one error when a provider is left out, and warnings
+  // after: a provider down for long has this alert, not the error-log one.
+  it("alert from peal-sign-in-provider-unavailable while a provider stays off, quiet where none is set", () => {
+    const rule = ruleOf("peal-sign-in-provider-unavailable");
+
+    expect(rule).toMatchObject({
+      execErrState: "Error",
+      for: "10m",
+      labels: { severity: "warning" },
+      noDataState: "OK",
+    });
+    expect(rule?.data.find((step) => step.refId === "A")?.model.expr).toBe(
+      "max(peal_workspace_sign_in_providers_unavailable) or vector(0)"
+    );
+  });
 
   it("never tell the operator to report usage by hand", () => {
     expect(ruleOf("peal-usage-report-refused")?.annotations.summary).toContain(
