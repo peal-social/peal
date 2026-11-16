@@ -489,7 +489,12 @@ export const platformMessagesWith = (settings: {
             onSome: ({ commentId }) => comments.comment(commentId),
           });
 
-          if (Option.isNone(reply) || Option.isNone(comment)) {
+          // A comment the platform no longer shows takes no private reply.
+          if (
+            Option.isNone(reply) ||
+            Option.isNone(comment) ||
+            comment.value.state === "deleted"
+          ) {
             return stopped("commentGone");
           }
 
