@@ -245,6 +245,41 @@ describe(deletionWindowPassed, () => {
     ).toBeTruthy();
   });
 
+  it("counts from each part's own time, the oldest deciding", () => {
+    // The thread's parts went out six hours apart, a rate limit's wait.
+    // The target went live with its last part.
+    const thread = targetWith(
+      { ...published, publishedAt: utc("2026-06-15T14:00:00Z") },
+      [
+        livePart(0, Option.some("t:1")),
+        {
+          ...livePart(1, Option.some("t:2")),
+          publishedAt: utc("2026-06-15T14:00:00Z"),
+        },
+      ]
+    );
+
+    expect(
+      deletionWindowPassed(thread, "telegram", utc("2026-06-17T08:00:01Z"))
+    ).toBeTruthy();
+  });
+
+  it("checks a target whose later parts did not go out", () => {
+    const partial = targetWith(
+      {
+        _tag: "failed",
+        code: Option.none(),
+        failedAt: publishedAt,
+        reason: "partsNotSent",
+      },
+      [livePart(0, Option.some("t:1"))]
+    );
+
+    expect(
+      deletionWindowPassed(partial, "telegram", utc("2026-06-17T08:00:01Z"))
+    ).toBeTruthy();
+  });
+
   it("knows no window on a platform that deletes at any age", () => {
     expect(
       deletionWindowPassed(target, "discord", utc("2027-06-15T08:00:00Z"))

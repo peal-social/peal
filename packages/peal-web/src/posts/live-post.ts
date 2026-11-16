@@ -237,9 +237,10 @@ export const deletionWindowOf = (platform: Platform): number | undefined =>
   platform === "telegram" ? 48 : undefined;
 
 /**
- * Whether the platform's deletion window for the target has passed at
- * `now`, as the server judges it before it refuses the removal
- * (`deletionWindowPassed`).
+ * Whether the platform's deletion window has passed at `now` for any live
+ * part of the target, each from when it went out (the target's own time
+ * for one that lists none), as the server judges it before it refuses the
+ * removal (`deletionWindowPassed`).
  */
 export const deletionWindowPassed = (
   target: PostTarget,
@@ -248,10 +249,16 @@ export const deletionWindowPassed = (
 ): boolean => {
   const hours = deletionWindowOf(platform);
 
-  return (
-    hours !== undefined &&
-    target.publishedAt !== null &&
-    now.getTime() >
-      DateTime.toEpochMillis(target.publishedAt) + hours * 3_600_000
+  if (hours === undefined) {
+    return false;
+  }
+
+  const sent =
+    target.parts.live.length > 0
+      ? target.parts.live.map(({ publishedAt }) => publishedAt)
+      : [target.publishedAt].filter((at) => at !== null);
+
+  return sent.some(
+    (at) => now.getTime() > DateTime.toEpochMillis(at) + hours * 3_600_000
   );
 };

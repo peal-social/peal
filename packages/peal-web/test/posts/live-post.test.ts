@@ -112,6 +112,26 @@ describe("a post past its platform's deletion window", () => {
     expect(deletionWindowPassed(target(), "discord", later(480))).toBeFalsy();
   });
 
+  it("counts from each live part's own time, the oldest deciding", () => {
+    const thread = target({
+      parts: {
+        count: 2,
+        live: [
+          { index: 0, permalink: null, platformPostId: "t:1", publishedAt: at },
+          {
+            index: 1,
+            permalink: null,
+            platformPostId: "t:2",
+            publishedAt: DateTime.makeUnsafe("2026-06-15T14:00:00Z"),
+          },
+        ],
+      },
+      publishedAt: DateTime.makeUnsafe("2026-06-15T14:00:00Z"),
+    });
+
+    expect(deletionWindowPassed(thread, "telegram", later(48, 1))).toBeTruthy();
+  });
+
   it("offers no removal then, and says to delete it on the platform", () => {
     expect(liveStateOf(target(), [], deletes, true)).toStrictEqual({
       _tag: "windowPassed",

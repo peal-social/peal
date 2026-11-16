@@ -2,6 +2,7 @@ import { DateTime, Duration, Option, Schema } from "effect";
 
 import type { Platform } from "#shared/domain/platform.ts";
 
+import { livePartsOf } from "./post-target.ts";
 import type { PostTarget } from "./post-target.ts";
 
 /**
@@ -164,9 +165,11 @@ export const deletionWindows: ReadonlyMap<Platform, Duration.Duration> =
   new Map([["telegram", Duration.hours(48)]]);
 
 /**
- * Whether the platform's deletion window for a published target has
- * closed at `now`, so Peal refuses before any call rather than ask for a
- * deletion the platform refuses.
+ * Whether the platform's deletion window has closed at `now` for any part
+ * of the target that is live: each part counts from when it went out, so
+ * the oldest decides, and a target whose later parts never went out is
+ * judged by those that did. Peal refuses the whole removal before any
+ * call, rather than leave a thread half deleted.
  */
 export const deletionWindowPassed = (
   target: PostTarget,
@@ -177,10 +180,8 @@ export const deletionWindowPassed = (
 
   return (
     window !== undefined &&
-    target.status._tag === "published" &&
-    DateTime.isGreaterThan(
-      now,
-      DateTime.addDuration(target.status.publishedAt, window)
+    livePartsOf(target).some(({ publishedAt }) =>
+      DateTime.isGreaterThan(now, DateTime.addDuration(publishedAt, window))
     )
   );
 };
