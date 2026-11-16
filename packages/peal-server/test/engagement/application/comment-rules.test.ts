@@ -1748,6 +1748,63 @@ describe("a comment rule's private reply", () => {
       }).pipe(Effect.provide(RulesTest))
   );
 
+  it.live(
+    "holds back, once stopped or paused, a private reply journalled whose call was not yet claimed",
+    () =>
+      Effect.gen(function* holdsBack() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const stopped = yield* instagramRule(workspaceId);
+          const paused = yield* instagramRule(workspaceId);
+          const rules = yield* CommentRules;
+          const sql = yield* SqlClient.SqlClient;
+
+          const [onStopped, onTheWay] = yield* received(stopped.thread, [
+            { author: 1, text: "price?" },
+            { author: 2, text: "price please" },
+          ]);
+
+          const [onPaused] = yield* received(paused.thread, [
+            { author: 3, text: "price?" },
+          ]);
+
+          yield* rules.runDue;
+          yield* publicRepliesEnd(workspaceId, "sent");
+          yield* rules.runDue;
+
+          assert.strictEqual((yield* privateRepliesIn(workspaceId)).length, 3);
+
+          // One's call is claimed: it may be leaving, so it stays.
+          yield* sql`UPDATE engagement.private_replies SET call_claimed_at = now()
+            WHERE comment_id = ${onTheWay?.id ?? ""}::uuid`.pipe(Effect.orDie);
+
+          yield* rules.stop(actorIn(workspaceId), stopped.rule.rule.id);
+          yield* rules.change(actorIn(workspaceId), paused.rule.rule.id, {
+            paused: true,
+          });
+
+          assert.deepStrictEqual(
+            (yield* privateRepliesIn(workspaceId)).map(
+              ({ commentId }) => commentId
+            ),
+            [String(onTheWay?.id)]
+          );
+          assert.deepStrictEqual(
+            yield* privateOutcomes(workspaceId, stopped.rule.rule.id),
+            new Map([
+              [onStopped?.id, "stopped"],
+              [onTheWay?.id, "made"],
+            ])
+          );
+          assert.deepStrictEqual(
+            yield* privateOutcomes(workspaceId, paused.rule.rule.id),
+            new Map([[onPaused?.id, "stopped"]])
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      }).pipe(Effect.provide(RulesTest))
+  );
+
   it.live("answers nothing more in public once stopped mid-run", () =>
     Effect.gen(function* stopsPublic() {
       const workspaceId = yield* freshWorkspace;

@@ -200,6 +200,14 @@ export class CommentRuleStore extends Context.Service<
     readonly stopWaiting: (
       ruleId: CommentRuleId
     ) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Settles `stopped` the matches whose private replies were held back
+     * before they set out (`privateReplyIds`).
+     */
+    readonly unmakePrivate: (
+      ruleId: CommentRuleId,
+      privateReplyIds: readonly PrivateReplyId[]
+    ) => Effect.Effect<void, DatabaseError>;
     /** What the rule looked at, newest first, but what matched nothing. */
     readonly matchesOf: (
       ruleId: CommentRuleId,

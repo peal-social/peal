@@ -13,6 +13,7 @@ export const noPrivateReplies = PrivateReplyStore.of({
   claimCall: () => Effect.succeed(false),
   dropIfForgotten: () => Effect.succeed(false),
   dropUnsent: () => Effect.succeed([]),
+  dropUnsentOfRule: () => Effect.succeed([]),
   handOver: () => Effect.succeed(Option.none()),
   journal: () => Effect.succeed({ _tag: "dropped" }),
   madeWithKey: () => Effect.succeed(Option.none()),

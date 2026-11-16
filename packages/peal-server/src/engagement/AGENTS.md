@@ -415,7 +415,10 @@
   the channel first), so a member who stops
   or pauses a rule meanwhile wins; `stop`, a pause, a private text taken
   off, `starterGone` and `channelGone` settle those waiting `stopped`
-  (`stopWaiting`). A refusal of the private reply is its tag as the
+  (`stopWaiting`); the first four also delete, under the rule's row, the
+  rule's private replies whose call was never claimed and give their
+  outbound message back (`EngagementPrivateReplies.holdBack`,
+  `dropUnsentOfRule`). A refusal of the private reply is its tag as the
   code and never undoes the public one; the caps are the public
   replies', as a private reply only follows one. Starting or changing a
   rule with a private text takes `engagement:message` and an

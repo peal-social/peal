@@ -2,6 +2,7 @@ import { Context } from "effect";
 import type { DateTime, Effect, Option } from "effect";
 
 import type { CommentId } from "#engagement/domain/comment-id.ts";
+import type { CommentRuleId } from "#engagement/domain/comment-rule-id.ts";
 import type { PrivateReplyId } from "#engagement/domain/private-reply-id.ts";
 import type { PrivateReply } from "#engagement/domain/private-reply.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -105,6 +106,14 @@ export class PrivateReplyStore extends Context.Service<
      */
     readonly dropUnsent: (
       channelId: ChannelId
+    ) => Effect.Effect<readonly PrivateReply[], DatabaseError>;
+    /**
+     * The same for the private replies a comment rule sent: those of its
+     * that never set out, under their channels' boxes, which the caller
+     * takes after the rule's row.
+     */
+    readonly dropUnsentOfRule: (
+      ruleId: CommentRuleId
     ) => Effect.Effect<readonly PrivateReply[], DatabaseError>;
     /**
      * The platform's ids of the channel's messages Peal sent as its

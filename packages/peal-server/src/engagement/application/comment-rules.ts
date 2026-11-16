@@ -602,6 +602,19 @@ export class CommentRules extends Context.Service<
         return yield* listed(actor, yield* found(actor, ruleId, false));
       });
 
+      // Under the rule's row: its private replies still waiting for their
+      // public reply, and those journalled that never set out, go no
+      // further.
+      const holdBack = Effect.fn("CommentRules.holdBack")(function* holdBack(
+        ruleId: CommentRuleId
+      ) {
+        yield* store.stopWaiting(ruleId);
+        yield* store.unmakePrivate(
+          ruleId,
+          yield* privateReplies.holdBack(ruleId)
+        );
+      });
+
       // A private text as a rule keeps it: given, it must not be empty,
       // and whoever gives it must be one who may send private replies;
       // null takes it off; left out, nothing changes.
@@ -772,12 +785,13 @@ export class CommentRules extends Context.Service<
             yield* store.update(changed);
 
             // Paused, or without its private text, it sends none of those
-            // still waiting for their public reply.
+            // still waiting for their public reply, nor those journalled
+            // whose call is not yet claimed.
             if (
               changed.status._tag !== "active" ||
               Option.isNone(changed.privateReply)
             ) {
-              yield* store.stopWaiting(changed.id);
+              yield* holdBack(changed.id);
             }
 
             return changed;
@@ -800,7 +814,7 @@ export class CommentRules extends Context.Service<
             const rule = yield* found(actor, ruleId, true);
 
             yield* store.update(endCommentRule(rule, "stopped", now));
-            yield* store.stopWaiting(rule.id);
+            yield* holdBack(rule.id);
           })
         );
       });
@@ -837,7 +851,7 @@ export class CommentRules extends Context.Service<
               yield* store.update(
                 endCommentRule(locked.value, "starterGone", now)
               );
-              yield* store.stopWaiting(rule.id);
+              yield* holdBack(rule.id);
               yield* ruleNotices.stopped(locked.value, "starterGone");
 
               return true;

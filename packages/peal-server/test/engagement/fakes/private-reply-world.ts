@@ -138,6 +138,20 @@ export const makePrivateReplyWorld = (
 
         return unsent;
       }),
+    dropUnsentOfRule: (ruleId) =>
+      Effect.sync(() => {
+        const unsent = [...state.replies.values()].filter(
+          (reply) =>
+            Option.contains(reply.ruleId, ruleId) &&
+            reply.status._tag === "sending"
+        );
+
+        for (const reply of unsent) {
+          state.replies.delete(reply.id);
+        }
+
+        return unsent;
+      }),
     handOver: (privateReplyId, at) =>
       Effect.sync(() => {
         const reply = state.replies.get(privateReplyId);

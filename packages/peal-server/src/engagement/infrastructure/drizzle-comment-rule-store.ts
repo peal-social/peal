@@ -522,6 +522,21 @@ export const DrizzleCommentRuleStore = Layer.effect(
             )
           )
           .pipe(Effect.asVoid, Effect.mapError(failed)),
+      unmakePrivate: (ruleId, privateReplyIds) =>
+        privateReplyIds.length === 0
+          ? Effect.void
+          : db
+              .update(commentRuleMatches)
+              .set({ privateCode: stoppedCode, privateReplyId: null })
+              .where(
+                and(
+                  eq(commentRuleMatches.ruleId, ruleId),
+                  inArray(commentRuleMatches.privateReplyId, [
+                    ...privateReplyIds,
+                  ])
+                )
+              )
+              .pipe(Effect.asVoid, Effect.mapError(failed)),
       update: (rule) =>
         db
           .update(commentRules)

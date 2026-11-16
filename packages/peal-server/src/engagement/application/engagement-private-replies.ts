@@ -10,6 +10,7 @@ import {
   maxOutgoingMessageLength,
 } from "#engagement/domain/message-text.ts";
 import { PrivateReplyIdSchema } from "#engagement/domain/private-reply-id.ts";
+import type { PrivateReplyId } from "#engagement/domain/private-reply-id.ts";
 import { privateReplyStanding } from "#engagement/domain/private-reply-standing.ts";
 import {
   confirmPrivateReply,
@@ -240,6 +241,15 @@ export class EngagementPrivateReplies extends Context.Service<
      * and an application the owner's leave. Never fails.
      */
     readonly mayRead: (actor: Actor) => Effect.Effect<boolean, DatabaseError>;
+    /**
+     * Deletes a rule's private replies that never set out (their call
+     * not yet claimed) and gives their outbound messages back, in the
+     * caller's transaction, which holds the rule's row: a rule stopped or
+     * paused sends nothing more. Answers their ids.
+     */
+    readonly holdBack: (
+      ruleId: CommentRuleId
+    ) => Effect.Effect<readonly PrivateReplyId[], DatabaseError>;
   }
 >()("peal-server/engagement/application/EngagementPrivateReplies") {
   static readonly layer = Layer.effect(
@@ -606,8 +616,23 @@ export class EngagementPrivateReplies extends Context.Service<
           Effect.andThen(consented(actor))
         );
 
+      const holdBack = Effect.fn("EngagementPrivateReplies.holdBack")(
+        function* holdBack(ruleId: CommentRuleId) {
+          const dropped = yield* store.dropUnsentOfRule(ruleId);
+
+          yield* Effect.forEach(
+            dropped,
+            (reply) => meters.giveBack(claimOfPrivateReply(reply)),
+            { discard: true }
+          );
+
+          return dropped.map(({ id }) => id);
+        }
+      );
+
       return EngagementPrivateReplies.of({
         channelStanding,
+        holdBack,
         confirm,
         mayRead,
         mayWrite,
