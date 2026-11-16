@@ -13,6 +13,9 @@ pub struct CommentRule {
     #[serde(rename = "endedReason")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ended_reason: Option<CommentRuleEndReason>,
+    #[serde(rename = "holdsPrivateReply")]
+    #[serde(default)]
+    pub holds_private_reply: bool,
     #[serde(default)]
     pub id: String,
     #[serde(default)]
@@ -46,6 +49,7 @@ pub struct CommentRuleBuilder {
     channels: Option<Vec<ChannelCommentRule>>,
     created_at: Option<String>,
     ended_reason: Option<CommentRuleEndReason>,
+    holds_private_reply: Option<bool>,
     id: Option<String>,
     keywords: Option<Vec<String>>,
     matches: Option<Vec<CommentRuleMatch>>,
@@ -74,6 +78,11 @@ impl CommentRuleBuilder {
 
     pub fn ended_reason(mut self, value: CommentRuleEndReason) -> Self {
         self.ended_reason = Some(value);
+        self
+    }
+
+    pub fn holds_private_reply(mut self, value: bool) -> Self {
+        self.holds_private_reply = Some(value);
         self
     }
 
@@ -121,6 +130,7 @@ impl CommentRuleBuilder {
     /// This method will fail if any of the following fields are not set:
     /// - [`channels`](CommentRuleBuilder::channels)
     /// - [`created_at`](CommentRuleBuilder::created_at)
+    /// - [`holds_private_reply`](CommentRuleBuilder::holds_private_reply)
     /// - [`id`](CommentRuleBuilder::id)
     /// - [`keywords`](CommentRuleBuilder::keywords)
     /// - [`matches`](CommentRuleBuilder::matches)
@@ -136,6 +146,9 @@ impl CommentRuleBuilder {
                 .created_at
                 .ok_or_else(|| BuildError::missing_field("created_at"))?,
             ended_reason: self.ended_reason,
+            holds_private_reply: self
+                .holds_private_reply
+                .ok_or_else(|| BuildError::missing_field("holds_private_reply"))?,
             id: self.id.ok_or_else(|| BuildError::missing_field("id"))?,
             keywords: self
                 .keywords

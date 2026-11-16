@@ -33,6 +33,12 @@ class CommentRule extends JsonSerializableType
     public ?string $endedReason;
 
     /**
+     * @var bool $holdsPrivateReply
+     */
+    #[JsonProperty('holdsPrivateReply')]
+    public bool $holdsPrivateReply;
+
+    /**
      * @var string $id
      */
     #[JsonProperty('id')]
@@ -84,6 +90,7 @@ class CommentRule extends JsonSerializableType
      * @param array{
      *   channels: array<ChannelCommentRule>,
      *   createdAt: string,
+     *   holdsPrivateReply: bool,
      *   id: string,
      *   keywords: array<string>,
      *   matches: array<CommentRuleMatch>,
@@ -103,6 +110,7 @@ class CommentRule extends JsonSerializableType
         $this->channels = $values['channels'];
         $this->createdAt = $values['createdAt'];
         $this->endedReason = $values['endedReason'] ?? null;
+        $this->holdsPrivateReply = $values['holdsPrivateReply'];
         $this->id = $values['id'];
         $this->keywords = $values['keywords'];
         $this->matches = $values['matches'];

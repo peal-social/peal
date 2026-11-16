@@ -363,18 +363,19 @@ func (c *ChannelCommentRule) String() string {
 }
 
 var (
-	commentRuleFieldChannelID    = big.NewInt(1 << 0)
-	commentRuleFieldChannels     = big.NewInt(1 << 1)
-	commentRuleFieldCreatedAt    = big.NewInt(1 << 2)
-	commentRuleFieldEndedReason  = big.NewInt(1 << 3)
-	commentRuleFieldID           = big.NewInt(1 << 4)
-	commentRuleFieldKeywords     = big.NewInt(1 << 5)
-	commentRuleFieldMatches      = big.NewInt(1 << 6)
-	commentRuleFieldPostID       = big.NewInt(1 << 7)
-	commentRuleFieldPrivateReply = big.NewInt(1 << 8)
-	commentRuleFieldReply        = big.NewInt(1 << 9)
-	commentRuleFieldStartedBy    = big.NewInt(1 << 10)
-	commentRuleFieldStatus       = big.NewInt(1 << 11)
+	commentRuleFieldChannelID         = big.NewInt(1 << 0)
+	commentRuleFieldChannels          = big.NewInt(1 << 1)
+	commentRuleFieldCreatedAt         = big.NewInt(1 << 2)
+	commentRuleFieldEndedReason       = big.NewInt(1 << 3)
+	commentRuleFieldHoldsPrivateReply = big.NewInt(1 << 4)
+	commentRuleFieldID                = big.NewInt(1 << 5)
+	commentRuleFieldKeywords          = big.NewInt(1 << 6)
+	commentRuleFieldMatches           = big.NewInt(1 << 7)
+	commentRuleFieldPostID            = big.NewInt(1 << 8)
+	commentRuleFieldPrivateReply      = big.NewInt(1 << 9)
+	commentRuleFieldReply             = big.NewInt(1 << 10)
+	commentRuleFieldStartedBy         = big.NewInt(1 << 11)
+	commentRuleFieldStatus            = big.NewInt(1 << 12)
 )
 
 // commentRuleNullableFields maps the wire names of CommentRule's nullable fields (required or optional) to their field bits.
@@ -387,18 +388,19 @@ var commentRuleNullableFields = map[string]*big.Int{
 }
 
 type CommentRule struct {
-	ChannelID    *string               `json:"channelId,omitempty" url:"channelId,omitempty"`
-	Channels     []*ChannelCommentRule `json:"channels" url:"channels"`
-	CreatedAt    string                `json:"createdAt" url:"createdAt"`
-	EndedReason  *CommentRuleEndReason `json:"endedReason,omitempty" url:"endedReason,omitempty"`
-	ID           string                `json:"id" url:"id"`
-	Keywords     []string              `json:"keywords" url:"keywords"`
-	Matches      []*CommentRuleMatch   `json:"matches" url:"matches"`
-	PostID       *string               `json:"postId,omitempty" url:"postId,omitempty"`
-	PrivateReply *string               `json:"privateReply,omitempty" url:"privateReply,omitempty"`
-	Reply        string                `json:"reply" url:"reply"`
-	StartedBy    *string               `json:"startedBy,omitempty" url:"startedBy,omitempty"`
-	Status       CommentRuleStatus     `json:"status" url:"status"`
+	ChannelID         *string               `json:"channelId,omitempty" url:"channelId,omitempty"`
+	Channels          []*ChannelCommentRule `json:"channels" url:"channels"`
+	CreatedAt         string                `json:"createdAt" url:"createdAt"`
+	EndedReason       *CommentRuleEndReason `json:"endedReason,omitempty" url:"endedReason,omitempty"`
+	HoldsPrivateReply bool                  `json:"holdsPrivateReply" url:"holdsPrivateReply"`
+	ID                string                `json:"id" url:"id"`
+	Keywords          []string              `json:"keywords" url:"keywords"`
+	Matches           []*CommentRuleMatch   `json:"matches" url:"matches"`
+	PostID            *string               `json:"postId,omitempty" url:"postId,omitempty"`
+	PrivateReply      *string               `json:"privateReply,omitempty" url:"privateReply,omitempty"`
+	Reply             string                `json:"reply" url:"reply"`
+	StartedBy         *string               `json:"startedBy,omitempty" url:"startedBy,omitempty"`
+	Status            CommentRuleStatus     `json:"status" url:"status"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -433,6 +435,13 @@ func (c *CommentRule) GetEndedReason() *CommentRuleEndReason {
 		return nil
 	}
 	return c.EndedReason
+}
+
+func (c *CommentRule) GetHoldsPrivateReply() bool {
+	if c == nil {
+		return false
+	}
+	return c.HoldsPrivateReply
 }
 
 func (c *CommentRule) GetID() string {
@@ -533,6 +542,13 @@ func (c *CommentRule) SetCreatedAt(createdAt string) {
 func (c *CommentRule) SetEndedReason(endedReason *CommentRuleEndReason) {
 	c.EndedReason = endedReason
 	c.require(commentRuleFieldEndedReason)
+}
+
+// SetHoldsPrivateReply sets the HoldsPrivateReply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CommentRule) SetHoldsPrivateReply(holdsPrivateReply bool) {
+	c.HoldsPrivateReply = holdsPrivateReply
+	c.require(commentRuleFieldHoldsPrivateReply)
 }
 
 // SetID sets the ID field and marks it as non-optional;

@@ -13,6 +13,8 @@ module Peal
 
       field :ended_reason, -> { Peal::Types::CommentRuleEndReason }, optional: false, nullable: true, api_name: "endedReason"
 
+      field :holds_private_reply, -> { Internal::Types::Boolean }, optional: false, nullable: false, api_name: "holdsPrivateReply"
+
       field :id, -> { String }, optional: false, nullable: false
 
       field :keywords, -> { Internal::Types::Array[String] }, optional: false, nullable: false

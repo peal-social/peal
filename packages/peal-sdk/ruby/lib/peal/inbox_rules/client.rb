@@ -12,9 +12,9 @@ module Peal
 
       # Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those
       # with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. A
-      # rule's `privateReply`, and each match's `privateReplyId` and `privateStatus`, are null to a reader who may not
-      # read private replies: one without engagement:readMessages, or an application the owner did not let read the
-      # workspace's messages. Needs engagement:read.
+      # rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a
+      # reader who may not read private replies: one without engagement:readMessages, or an application the owner did
+      # not let read the workspace's messages. Needs engagement:read.
       #
       # @param request_options [Hash]
       # @param params [Hash]
@@ -134,9 +134,9 @@ module Peal
       end
 
       # Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's
-      # `privateReply`, and each match's `privateReplyId` and `privateStatus`, are null to a reader who may not read
-      # private replies: one without engagement:readMessages, or an application the owner did not let read the
-      # workspace's messages. Needs engagement:read.
+      # `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who
+      # may not read private replies: one without engagement:readMessages, or an application the owner did not let read
+      # the workspace's messages. Needs engagement:read.
       #
       # @param request_options [Hash]
       # @param params [Hash]

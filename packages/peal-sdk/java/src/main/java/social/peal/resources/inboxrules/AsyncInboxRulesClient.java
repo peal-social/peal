@@ -33,7 +33,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRulePage> listCommentRules(String workspaceId) {
         CompletableFuture<PealClientHttpResponse<CommentRulePage>> rawFuture =
@@ -48,7 +48,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRulePage> listCommentRules(String workspaceId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CommentRulePage>> rawFuture =
@@ -63,7 +63,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRulePage> listCommentRules(
             String workspaceId, ListCommentRulesInboxRulesRequest request) {
@@ -79,7 +79,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRulePage> listCommentRules(
             String workspaceId, ListCommentRulesInboxRulesRequest request, RequestOptions requestOptions) {
@@ -126,7 +126,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRule> getCommentRule(String workspaceId, String ruleId) {
         CompletableFuture<PealClientHttpResponse<CommentRule>> rawFuture =
@@ -141,7 +141,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRule> getCommentRule(
             String workspaceId, String ruleId, RequestOptions requestOptions) {
@@ -157,7 +157,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRule> getCommentRule(
             String workspaceId, String ruleId, GetCommentRuleInboxRulesRequest request) {
@@ -173,7 +173,7 @@ public class AsyncInboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<CommentRule> getCommentRule(
             String workspaceId, String ruleId, GetCommentRuleInboxRulesRequest request, RequestOptions requestOptions) {

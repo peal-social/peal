@@ -35,6 +35,7 @@ public class UpdateCommentRuleTest : BaseMockServerTest
               ],
               "createdAt": "createdAt",
               "endedReason": "stopped",
+              "holdsPrivateReply": true,
               "id": "id",
               "keywords": [
                 "keywords",
@@ -120,6 +121,7 @@ public class UpdateCommentRuleTest : BaseMockServerTest
               ],
               "createdAt": "createdAt",
               "endedReason": "stopped",
+              "holdsPrivateReply": true,
               "id": "id",
               "keywords": [
                 "keywords"

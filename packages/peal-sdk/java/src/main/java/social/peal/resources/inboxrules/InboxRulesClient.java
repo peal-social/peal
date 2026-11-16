@@ -31,28 +31,28 @@ public class InboxRulesClient {
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CommentRulePage listCommentRules(String workspaceId) {
         return this.rawClient.listCommentRules(workspaceId).body();
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CommentRulePage listCommentRules(String workspaceId, RequestOptions requestOptions) {
         return this.rawClient.listCommentRules(workspaceId, requestOptions).body();
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CommentRulePage listCommentRules(String workspaceId, ListCommentRulesInboxRulesRequest request) {
         return this.rawClient.listCommentRules(workspaceId, request).body();
     }
 
     /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CommentRulePage listCommentRules(
             String workspaceId, ListCommentRulesInboxRulesRequest request, RequestOptions requestOptions) {
@@ -78,14 +78,14 @@ public class InboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CommentRule getCommentRule(String workspaceId, String ruleId) {
         return this.rawClient.getCommentRule(workspaceId, ruleId).body();
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CommentRule getCommentRule(String workspaceId, String ruleId, RequestOptions requestOptions) {
         return this.rawClient
@@ -94,14 +94,14 @@ public class InboxRulesClient {
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CommentRule getCommentRule(String workspaceId, String ruleId, GetCommentRuleInboxRulesRequest request) {
         return this.rawClient.getCommentRule(workspaceId, ruleId, request).body();
     }
 
     /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CommentRule getCommentRule(
             String workspaceId, String ruleId, GetCommentRuleInboxRulesRequest request, RequestOptions requestOptions) {
