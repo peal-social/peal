@@ -61,6 +61,23 @@ export const channelsLeftSubscribed = Metric.counter(
 );
 
 /**
+ * What the warning on a channel left subscribed names, for the operator to
+ * reach its account once the channel is gone: its id, its platform, its
+ * account's id there (a Page's, or an Instagram account's, a business
+ * account's public id) and, on Instagram, its way in (`facebookLogin`
+ * through a Page, `instagramLogin`). Never its tokens.
+ */
+const leftBehind = (channel: Channel) => ({
+  accountId: channel.accountId,
+  channelId: channel.id,
+  platform: channel.platform,
+  ...Option.match(channel.connection, {
+    onNone: () => ({}),
+    onSome: (connection) => ({ connection }),
+  }),
+});
+
+/**
  * ChannelRecords on the channels schema. Needs the ChannelRepository, the
  * TokenCipher and ChannelDepartures, for what an erasure lets go first.
  */
@@ -141,7 +158,7 @@ export const DrizzleChannelRecords = Layer.effect(
                   ({ channel }) =>
                     Effect.logWarning(
                       "A channel's platform still sends its events after an erasure"
-                    ).pipe(Effect.annotateLogs({ channelId: channel.id })),
+                    ).pipe(Effect.annotateLogs(leftBehind(channel))),
                   { discard: true }
                 )
               )

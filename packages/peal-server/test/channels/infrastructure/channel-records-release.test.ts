@@ -20,6 +20,7 @@ import type { DepartureOutcome } from "#channels/application/channel-departures.
 import { ChannelRecords } from "#channels/application/channel-records.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { encryptTokens } from "#channels/application/channel-tokens.ts";
+import type { Channel } from "#channels/domain/channel.ts";
 import {
   channelsLeftSubscribed,
   DrizzleChannelRecords,
@@ -40,7 +41,8 @@ import {
 // events), every channel of them counted as leaving with it: eight side by
 // side, in a fiber of their own, which the erasure waits for ten seconds
 // at most and never cuts short. Each channel its platform did not let go
-// by the end is logged by its id and counted.
+// by the end is logged by its id, its platform and its account's id there
+// (a Page's, an Instagram account's), and counted.
 
 // The departures begun, and those that ended.
 class Departures extends Context.Service<
@@ -129,20 +131,27 @@ const connected = Effect.fn("connected")(function* connected(
   return channel;
 });
 
-// Twelve channels of two workspaces, about to be erased.
+// Twelve channels of two workspaces, about to be erased, and how a line
+// names each: its id, its platform and its account's id there.
 const twelve = Effect.gen(function* twelve() {
   const workspaceId = yield* freshWorkspace;
   const otherId = yield* freshWorkspace;
-  const ids: string[] = [];
+  const all: Channel[] = [];
 
   for (let n = 0; n < 6; n += 1) {
-    ids.push(
-      (yield* connected(workspaceId, "facebook")).id,
-      (yield* connected(otherId, "facebook")).id
+    all.push(
+      yield* connected(workspaceId, "facebook"),
+      yield* connected(otherId, "facebook")
     );
   }
 
-  return { ids, workspaceIds: [workspaceId, otherId] };
+  return {
+    ids: all.map(({ id }) => id),
+    named: all.map(
+      ({ accountId, id, platform }) => `${id}:${platform}:${accountId}`
+    ),
+    workspaceIds: [workspaceId, otherId],
+  };
 });
 
 const started = Departures.use(({ started: begun }) => Ref.get(begun)).pipe(
@@ -168,14 +177,24 @@ const left = Metric.value(channelsLeftSubscribed).pipe(
   Effect.map(({ count }) => count)
 );
 
-// The lines that name a channel left subscribed, by its id.
+// The lines that name a channel left subscribed: its id, its platform and
+// its account's id there, then everything else the line holds.
 const capture = (lines: string[]) =>
   Logger.layer([
     Logger.make(({ fiber, message }) => {
-      const { channelId } = fiber.getRef(References.CurrentLogAnnotations);
+      const annotations = fiber.getRef(References.CurrentLogAnnotations);
+      const { accountId, channelId, platform } = annotations;
 
       if (JSON.stringify(message).includes("still sends")) {
-        lines.push(`${String(channelId)}:${JSON.stringify(message)}`);
+        lines.push(
+          [
+            String(channelId),
+            String(platform),
+            String(accountId),
+            JSON.stringify(message),
+            JSON.stringify(annotations),
+          ].join(":")
+        );
       }
     }),
   ]);
@@ -256,7 +275,7 @@ layer(recordsTest("silent"))(
         const lines: string[] = [];
 
         return Effect.gen(function* silent() {
-          const { ids, workspaceIds } = yield* twelve;
+          const { ids, named, workspaceIds } = yield* twelve;
           const before = yield* left;
 
           const releasing = yield* ChannelRecords.use((records) =>
@@ -277,11 +296,15 @@ layer(recordsTest("silent"))(
           );
 
           assert.strictEqual((yield* left) - before, ids.length);
+          // Each by its id, its platform and its account's id there, which
+          // the operator needs once the channel is gone.
           assert.deepStrictEqual(
-            lines.map((line) => line.split(":")[0] ?? "").toSorted(),
-            ids.toSorted()
+            lines
+              .map((line) => line.split(":").slice(0, 3).join(":"))
+              .toSorted(),
+            named.toSorted()
           );
-          // By the channel's id alone: no token.
+          // Never its token.
           assert.isFalse(
             lines.some((line) => line.includes("synthetic-token"))
           );
