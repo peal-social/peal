@@ -163,7 +163,12 @@ const en = {
       },
     },
     main: "Main",
-    platformGroups: { articles: "Articles", chat: "Chat", social: "Social" },
+    platformGroups: {
+      ads: "Ads",
+      blog: "Blog",
+      chat: "Chat",
+      social: "Social",
+    },
     platforms: "Platforms",
     products: "Products",
     resources: "Resources",
@@ -469,7 +474,8 @@ const fr: Messages = {
     },
     main: "Principal",
     platformGroups: {
-      articles: "Articles",
+      ads: "Publicité",
+      blog: "Blog",
       chat: "Messageries",
       social: "Réseaux sociaux",
     },

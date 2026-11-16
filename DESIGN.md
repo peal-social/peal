@@ -286,19 +286,24 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   muted), in bordered cells side by side. A row is a 16 px lucide icon in
   a bordered 32 px tile, a title (14 px, 500) and a one-line description
   (13 px, muted), with the `accent` hover; a row that names a brand, such
-  as a platform, is its 16 px mark and its name alone. A featured card
+  as a platform, has its 16 px mark in the same tile and its name alone.
+  Cells side by side are as tall as each other; cells stacked in one
+  column share its height, the last one taking what is left. A featured card
   closes the panel on the right, as tall as its content, never stretched
   to the groups: a `muted` cell with a caption, a picture where one says
   something (brands' marks in 40 px bordered tiles), a title, one line and
   an arrow, linking to what it features.
-- **Platforms menu.** Every platform a channel connects to, from the
-  contract's list, under Social (two columns), Chat and Articles, each
-  row linking to the platform's docs page; its card compares the
-  platforms.
+- **Platforms menu.** Every platform a channel connects to and every ad
+  network, from the contract's lists, under Social (a wide cell of two
+  columns), then Chat, Ads and Blog stacked in one column beside it, each
+  row linking to the platform's docs page; both kinds of WordPress site
+  are one entry. Its card compares the platforms. The panel fits from
+  1024 px up.
 - **Marks on the site.** Brands' marks (platforms, GitHub, Discord) come
   from simple-icons, at the version the workspace pins, in `currentColor`:
   ink, or muted text in the drawer, never the brand's colour. A brand
-  missing from simple-icons, such as LinkedIn, is a lettered tile in ink.
+  missing from simple-icons (LinkedIn, Google Business Profile) is a
+  lettered tile in ink.
 - **Footer**, on `background` under a full-width rule: the mark, the
   licence's line and the language links in a first cell, then a bordered
   cell per column of links (legal, the contract's functions, Peal's

@@ -3,6 +3,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 
+import { ChannelPlatformSchema } from "peal-contract";
 import type { SiteHeaderProps } from "peal-ui/components/site-header";
 import { describe, expect, it } from "vitest";
 
@@ -20,7 +21,7 @@ import {
   studioRows,
 } from "../src/navigation.ts";
 import type { PageLinks, SiteSettings } from "../src/navigation.ts";
-import { sitePlatforms } from "../src/platforms.ts";
+import { entryOf, siteEntries } from "../src/platforms.ts";
 
 const docsRoot = path.join(import.meta.dirname, "../../peal-docs/docs");
 
@@ -30,7 +31,7 @@ const docsPaths = [
   ),
   launchPage,
   platformsPage,
-  ...sitePlatforms.map((platform) => platform.docs),
+  ...siteEntries.map((entry) => entry.docs),
 ];
 
 const pageExists = (locale: Locale, page: string) => {
@@ -93,7 +94,7 @@ describe("the site's navigation", () => {
     expect(pageExists(locale, page)).toBe(true);
   });
 
-  it("lists every platform the contract has, in its group", () => {
+  it("lists every platform the contract has, once each, in its group", () => {
     const header = headerProps(messages("en"), pages, everything);
     const menu = header.items.find((item) => item.label === "Platforms");
 
@@ -103,13 +104,24 @@ describe("the site's navigation", () => {
         : [];
 
     expect(listed.toSorted()).toStrictEqual(
-      sitePlatforms.map((platform) => platform.name).toSorted()
+      siteEntries.map((entry) => entry.name).toSorted()
     );
+    expect(new Set(listed).size).toBe(listed.length);
+
+    for (const platform of ChannelPlatformSchema.literals) {
+      expect(listed).toContain(entryOf(platform).name);
+    }
+
     expect(
-      sitePlatforms
-        .filter((platform) => platform.group === "chat")
-        .map((platform) => platform.name)
-    ).toStrictEqual(["Discord", "Telegram"]);
+      menu?.kind === "menu" ? menu.groups.map((group) => group.label) : []
+    ).toStrictEqual(["Social", "Chat", "Ads", "Blog"]);
+  });
+
+  it("makes both kinds of WordPress site one entry", () => {
+    expect(entryOf("wordpress")).toStrictEqual(entryOf("wordpressCom"));
+    expect(
+      siteEntries.filter((entry) => entry.name === "WordPress")
+    ).toHaveLength(1);
   });
 
   it("offers every menu and the way into the app with every setting", () => {

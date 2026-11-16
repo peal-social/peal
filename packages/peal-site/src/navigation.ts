@@ -20,10 +20,10 @@ import type { LegalDocument } from "./legal.ts";
 import {
   discordMark,
   githubMark,
-  sitePlatforms,
+  platformGroups,
+  siteEntries,
   telegramMark,
 } from "./platforms.ts";
-import type { PlatformGroup } from "./platforms.ts";
 
 // The header's and the footer's props for a page, from its language and
 // the build's settings. Kept apart from config.ts, which reads astro:env,
@@ -83,8 +83,6 @@ export const developerRows: readonly Row[] = [
 
 /** The page every platform's own page hangs from. */
 export const platformsPage = "platforms";
-
-const platformGroups: readonly PlatformGroup[] = ["social", "chat", "articles"];
 
 /** The latest launch, which the Products menu features. */
 export const launchPage = "platforms/discord";
@@ -160,11 +158,12 @@ const navItems = (
   const launch = settings.docs(launchPage);
   const overview = settings.docs(platformsPage);
 
+  // Social takes a wide cell; the other groups stack beside it.
   const platforms = nonEmpty(
     platformGroups.map((group) => ({
       columns: group === "social" ? (2 as const) : (1 as const),
       label: t.platformGroups[group],
-      links: sitePlatforms
+      links: siteEntries
         .filter((platform) => platform.group === group)
         .flatMap(({ docs, mark, name }) => {
           const href = settings.docs(docs);
@@ -172,7 +171,7 @@ const navItems = (
           return href === undefined ? [] : [{ href, mark, title: name }];
         }),
     }))
-  );
+  ).map((group, index) => ({ ...group, stack: index > 1 }));
 
   const products = nonEmpty([
     { label: t.studio, links: menuLinks(studioRows, t, settings) },

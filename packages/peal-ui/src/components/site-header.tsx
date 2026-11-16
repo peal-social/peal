@@ -105,6 +105,8 @@ interface SiteMenuLink {
 interface SiteMenuGroup {
   /** Rows side by side in the group's cell, for long lists of names. */
   readonly columns?: 1 | 2 | undefined;
+  /** Stacks the cell under the previous group's, in one column. */
+  readonly stack?: boolean | undefined;
   readonly label: string;
   readonly links: readonly SiteMenuLink[];
 }
@@ -213,16 +215,12 @@ const RowIcon = ({ link }: { readonly link: SiteMenuLink }) => {
   );
 };
 
-// A row with a description gets the icon's tile; a name alone, such as a
-// platform's, gets its 16 px mark.
+// Every row has its icon or mark in a 32 px tile; a name alone, such as a
+// platform's, sits beside it without a description.
 const MenuRow = ({ link }: { readonly link: SiteMenuLink }) =>
   link.description === undefined ? (
-    <NavigationMenuLink href={link.href} className="items-center py-1.5">
-      {link.mark === undefined ? (
-        <RowIcon link={link} />
-      ) : (
-        <Mark mark={link.mark} className="text-foreground" />
-      )}
+    <NavigationMenuLink href={link.href} className="items-center">
+      <RowIcon link={link} />
       <span className="text-foreground font-medium">{link.title}</span>
     </NavigationMenuLink>
   ) : (
@@ -239,11 +237,11 @@ const MenuRow = ({ link }: { readonly link: SiteMenuLink }) =>
 
 const groupWidth = (group: SiteMenuGroup) => {
   if (group.columns === 2) {
-    return "w-[23rem]";
+    return "w-[26rem]";
   }
 
   return group.links.every((link) => link.description === undefined)
-    ? "w-44"
+    ? "w-52"
     : "w-72";
 };
 
@@ -254,7 +252,7 @@ const MenuGroup = ({ group }: { readonly group: SiteMenuGroup }) => {
     <section
       aria-labelledby={id}
       className={cn(
-        "bg-card flex flex-col gap-1 rounded-md border p-2",
+        "bg-card flex flex-col gap-1 rounded-md border p-2 last:flex-1",
         groupWidth(group)
       )}
     >
@@ -272,6 +270,25 @@ const MenuGroup = ({ group }: { readonly group: SiteMenuGroup }) => {
       </ul>
     </section>
   );
+};
+
+// The groups in columns: a group starts a column unless it stacks under
+// the previous one. Columns share the panel's height, so the cells of a
+// row are as tall as each other.
+const columnsOf = (groups: readonly SiteMenuGroup[]) => {
+  const columns: SiteMenuGroup[][] = [];
+
+  for (const group of groups) {
+    const last = columns.at(-1);
+
+    if (group.stack === true && last !== undefined) {
+      last.push(group);
+    } else {
+      columns.push([group]);
+    }
+  }
+
+  return columns;
 };
 
 const FeatureCard = ({ feature }: { readonly feature: SiteMenuFeature }) => (
@@ -311,9 +328,13 @@ const FeatureCard = ({ feature }: { readonly feature: SiteMenuFeature }) => (
 );
 
 const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => (
-  <div className="flex items-start gap-2">
-    {menu.groups.map((group) => (
-      <MenuGroup key={group.label} group={group} />
+  <div className="flex gap-2">
+    {columnsOf(menu.groups).map((column) => (
+      <div key={column[0]?.label} className="flex flex-col gap-2">
+        {column.map((group) => (
+          <MenuGroup key={group.label} group={group} />
+        ))}
+      </div>
     ))}
     {menu.feature === undefined ? null : <FeatureCard feature={menu.feature} />}
   </div>

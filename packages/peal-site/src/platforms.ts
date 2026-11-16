@@ -1,9 +1,10 @@
 import {
+  AdNetworkSchema,
   ChannelPlatformSchema,
   ChatPlatformSchema,
   SitePlatformSchema,
 } from "peal-contract";
-import type { ChannelPlatform } from "peal-contract";
+import type { AdNetwork, ChannelPlatform } from "peal-contract";
 import type { SiteMark } from "peal-ui/components/site-header";
 import {
   siBluesky,
@@ -11,10 +12,10 @@ import {
   siDiscord,
   siFacebook,
   siGithub,
-  siGoogle,
   siHashnode,
   siInstagram,
   siMastodon,
+  siMeta,
   siPinterest,
   siTelegram,
   siThreads,
@@ -25,8 +26,8 @@ import {
 } from "simple-icons";
 import type { SimpleIcon } from "simple-icons";
 
-// The platforms the header's Platforms menu lists: every one a channel can
-// connect to, from the contract's own list, so a platform Peal adds shows
+// The header's Platforms menu: every platform a channel connects to and
+// every ad network, from the contract's own lists, so one Peal adds shows
 // up by itself (its entry below is then required to compile).
 
 const markOf = (icon: SimpleIcon): SiteMark => ({
@@ -34,9 +35,10 @@ const markOf = (icon: SimpleIcon): SiteMark => ({
   path: icon.path,
 });
 
-// LinkedIn asked to be left out of simple-icons: a lettered tile stands in,
-// as in the web app (DESIGN.md, Icons).
-const linkedin: SiteMark = { kind: "letters", letters: "in" };
+// Brands missing from simple-icons get a lettered tile, as in the web app
+// (DESIGN.md, Icons): LinkedIn asked to be left out, and Google Business
+// Profile has no mark there.
+const lettered = (letters: string): SiteMark => ({ kind: "letters", letters });
 
 export const githubMark = markOf(siGithub);
 
@@ -44,15 +46,35 @@ export const discordMark = markOf(siDiscord);
 
 export const telegramMark = markOf(siTelegram);
 
-interface PlatformPage {
+export type PlatformGroup = "ads" | "blog" | "chat" | "social";
+
+/** The menu's groups, in the order it shows them. */
+export const platformGroups: readonly PlatformGroup[] = [
+  "social",
+  "chat",
+  "ads",
+  "blog",
+];
+
+export interface PlatformEntry {
   /** Its page below the docs' root. */
   readonly docs: string;
+  readonly group: PlatformGroup;
   readonly mark: SiteMark;
   /** Its own name, the same in every language. */
   readonly name: string;
 }
 
-const pages: Readonly<Record<ChannelPlatform, PlatformPage>> = {
+const wordpress: Omit<PlatformEntry, "group"> = {
+  docs: "platforms/wordpress",
+  mark: markOf(siWordpress),
+  name: "WordPress",
+};
+
+// Both kinds of WordPress site are one entry, whose page leads to each.
+const channelEntries: Readonly<
+  Record<ChannelPlatform, Omit<PlatformEntry, "group">>
+> = {
   bluesky: {
     docs: "platforms/bluesky",
     mark: markOf(siBluesky),
@@ -67,7 +89,7 @@ const pages: Readonly<Record<ChannelPlatform, PlatformPage>> = {
   },
   googleBusiness: {
     docs: "platforms/google-business",
-    mark: markOf(siGoogle),
+    mark: lettered("G"),
     name: "Google Business Profile",
   },
   hashnode: {
@@ -80,7 +102,11 @@ const pages: Readonly<Record<ChannelPlatform, PlatformPage>> = {
     mark: markOf(siInstagram),
     name: "Instagram",
   },
-  linkedin: { docs: "platforms/linkedin", mark: linkedin, name: "LinkedIn" },
+  linkedin: {
+    docs: "platforms/linkedin",
+    mark: lettered("in"),
+    name: "LinkedIn",
+  },
   mastodon: {
     docs: "platforms/mastodon",
     mark: markOf(siMastodon),
@@ -102,18 +128,8 @@ const pages: Readonly<Record<ChannelPlatform, PlatformPage>> = {
     name: "Threads",
   },
   tiktok: { docs: "platforms/tiktok", mark: markOf(siTiktok), name: "TikTok" },
-  // A WordPress site of the member's own has no platform page: the
-  // websites guide says how to connect one.
-  wordpress: {
-    docs: "guides/channels/websites",
-    mark: markOf(siWordpress),
-    name: "WordPress",
-  },
-  wordpressCom: {
-    docs: "platforms/wordpress-com",
-    mark: markOf(siWordpress),
-    name: "WordPress.com",
-  },
+  wordpress,
+  wordpressCom: wordpress,
   x: { docs: "platforms/x", mark: markOf(siX), name: "X" },
   youtube: {
     docs: "platforms/youtube",
@@ -122,7 +138,9 @@ const pages: Readonly<Record<ChannelPlatform, PlatformPage>> = {
   },
 };
 
-export type PlatformGroup = "articles" | "chat" | "social";
+const adEntries: Readonly<Record<AdNetwork, Omit<PlatformEntry, "group">>> = {
+  meta: { docs: "guides/engage/ads", mark: markOf(siMeta), name: "Meta ads" },
+};
 
 const groupOf = (platform: ChannelPlatform): PlatformGroup => {
   if (ChatPlatformSchema.literals.some((chat) => chat === platform)) {
@@ -130,19 +148,26 @@ const groupOf = (platform: ChannelPlatform): PlatformGroup => {
   }
 
   return SitePlatformSchema.literals.some((site) => site === platform)
-    ? "articles"
+    ? "blog"
     : "social";
 };
 
-export interface SitePlatform extends PlatformPage {
-  readonly group: PlatformGroup;
-  readonly platform: ChannelPlatform;
-}
+const channels = ChannelPlatformSchema.literals.map((platform) => ({
+  ...channelEntries[platform],
+  group: groupOf(platform),
+}));
 
-/** Every platform Peal connects to, in the contract's order. */
-export const sitePlatforms: readonly SitePlatform[] =
-  ChannelPlatformSchema.literals.map((platform) => ({
-    ...pages[platform],
-    group: groupOf(platform),
-    platform,
-  }));
+/**
+ * Every entry of the Platforms menu, in the contract's order, once each:
+ * the channels' platforms, then the ad networks.
+ */
+export const siteEntries: readonly PlatformEntry[] = [
+  ...channels.filter(
+    (entry, index) =>
+      channels.findIndex((other) => other.docs === entry.docs) === index
+  ),
+  { ...adEntries[AdNetworkSchema.literal], group: "ads" },
+];
+
+/** The menu's entry for a channel's platform. */
+export const entryOf = (platform: ChannelPlatform) => channelEntries[platform];
