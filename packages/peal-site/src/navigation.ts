@@ -17,6 +17,13 @@ import type { Messages } from "./i18n/messages.ts";
 import { localeNames } from "./i18n/messages.ts";
 import { legalDocuments } from "./legal.ts";
 import type { LegalDocument } from "./legal.ts";
+import {
+  discordMark,
+  githubMark,
+  sitePlatforms,
+  telegramMark,
+} from "./platforms.ts";
+import type { PlatformGroup } from "./platforms.ts";
 
 // The header's and the footer's props for a page, from its language and
 // the build's settings. Kept apart from config.ts, which reads astro:env,
@@ -74,11 +81,10 @@ export const developerRows: readonly Row[] = [
   },
 ];
 
-export const platformsRow: Row = {
-  icon: "globe",
-  name: "platforms",
-  target: { docs: "platforms" },
-};
+/** The page every platform's own page hangs from. */
+export const platformsPage = "platforms";
+
+const platformGroups: readonly PlatformGroup[] = ["social", "chat", "articles"];
 
 /** The latest launch, which the Products menu features. */
 export const launchPage = "platforms/discord";
@@ -144,7 +150,7 @@ const menuLinks = (
 const nonEmpty = (groups: readonly SiteMenuGroup[]) =>
   groups.filter((group) => group.links.length > 0);
 
-/** The header's items: the two menus, then Pricing, Docs and Blog. */
+/** The header's items: the three menus, then Pricing, Docs and Blog. */
 const navItems = (
   t: Messages["nav"],
   pages: PageLinks,
@@ -152,7 +158,21 @@ const navItems = (
   settings: SiteSettings
 ): SiteNavItem[] => {
   const launch = settings.docs(launchPage);
-  const [platforms] = menuLinks([platformsRow], t, settings);
+  const overview = settings.docs(platformsPage);
+
+  const platforms = nonEmpty(
+    platformGroups.map((group) => ({
+      columns: group === "social" ? (2 as const) : (1 as const),
+      label: t.platformGroups[group],
+      links: sitePlatforms
+        .filter((platform) => platform.group === group)
+        .flatMap(({ docs, mark, name }) => {
+          const href = settings.docs(docs);
+
+          return href === undefined ? [] : [{ href, mark, title: name }];
+        }),
+    }))
+  );
 
   const products = nonEmpty([
     { label: t.studio, links: menuLinks(studioRows, t, settings) },
@@ -166,7 +186,7 @@ const navItems = (
           {
             ...t.links.discord,
             href: settings.discord,
-            icon: "messages" as const,
+            mark: discordMark,
           },
         ];
 
@@ -178,16 +198,35 @@ const navItems = (
       : [
           {
             feature:
-              launch === undefined ? undefined : { ...t.launch, href: launch },
+              launch === undefined
+                ? undefined
+                : {
+                    ...t.launch,
+                    href: launch,
+                    marks: [discordMark, telegramMark],
+                  },
             groups: products,
             kind: "menu" as const,
             label: t.products,
-            more: platforms,
             value: "products",
           },
         ]),
+    ...(platforms.length === 0
+      ? []
+      : [
+          {
+            feature:
+              overview === undefined
+                ? undefined
+                : { ...t.allPlatforms, href: overview },
+            groups: platforms,
+            kind: "menu" as const,
+            label: t.platforms,
+            value: "platforms",
+          },
+        ]),
     {
-      feature: { ...t.star, href: repository },
+      feature: { ...t.star, href: repository, marks: [githubMark] },
       groups: [
         {
           label: t.resourcesGroup,
@@ -224,13 +263,14 @@ export const headerProps = (
     discord:
       settings.discord === undefined
         ? undefined
-        : { href: settings.discord, label: t.discord },
+        : { href: settings.discord, label: t.discord, mark: discordMark },
     drawer: t.drawer,
     getStarted:
       signUp === undefined ? undefined : { href: signUp, label: t.getStarted },
     github: {
       href: repository,
       label: t.github,
+      mark: githubMark,
       stars: settings.stars,
       starsLabel: t.stars,
     },

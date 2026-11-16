@@ -14,20 +14,23 @@ import {
   footerProps,
   headerProps,
   launchPage,
-  platformsRow,
+  platformsPage,
   repository,
   resourceRows,
   studioRows,
 } from "../src/navigation.ts";
 import type { PageLinks, SiteSettings } from "../src/navigation.ts";
+import { sitePlatforms } from "../src/platforms.ts";
 
 const docsRoot = path.join(import.meta.dirname, "../../peal-docs/docs");
 
 const docsPaths = [
-  ...[...studioRows, ...developerRows, platformsRow, ...resourceRows].flatMap(
-    ({ target }) => ("docs" in target ? [target.docs] : [])
+  ...[...studioRows, ...developerRows, ...resourceRows].flatMap(({ target }) =>
+    "docs" in target ? [target.docs] : []
   ),
   launchPage,
+  platformsPage,
+  ...sitePlatforms.map((platform) => platform.docs),
 ];
 
 const pageExists = (locale: Locale, page: string) => {
@@ -74,7 +77,6 @@ const hrefs = (header: SiteHeaderProps) =>
           ...item.groups.flatMap((group) =>
             group.links.map((link) => link.href)
           ),
-          ...(item.more === undefined ? [] : [item.more.href]),
           ...(item.feature === undefined ? [] : [item.feature.href]),
         ]
   );
@@ -91,11 +93,31 @@ describe("the site's navigation", () => {
     expect(pageExists(locale, page)).toBe(true);
   });
 
+  it("lists every platform the contract has, in its group", () => {
+    const header = headerProps(messages("en"), pages, everything);
+    const menu = header.items.find((item) => item.label === "Platforms");
+
+    const listed =
+      menu?.kind === "menu"
+        ? menu.groups.flatMap((group) => group.links.map((link) => link.title))
+        : [];
+
+    expect(listed.toSorted()).toStrictEqual(
+      sitePlatforms.map((platform) => platform.name).toSorted()
+    );
+    expect(
+      sitePlatforms
+        .filter((platform) => platform.group === "chat")
+        .map((platform) => platform.name)
+    ).toStrictEqual(["Discord", "Telegram"]);
+  });
+
   it("offers every menu and the way into the app with every setting", () => {
     const header = headerProps(messages("en"), pages, everything);
 
     expect(header.items.map((item) => item.label)).toStrictEqual([
       "Products",
+      "Platforms",
       "Resources",
       "Pricing",
       "Docs",

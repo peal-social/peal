@@ -24,6 +24,7 @@
     "peal-ui": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "simple-icons": "16.37.0",
     "tailwindcss": "4.3.5"
   },
   "devDependencies": {

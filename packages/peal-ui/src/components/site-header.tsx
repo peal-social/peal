@@ -81,24 +81,41 @@ interface SiteLink {
   readonly label: string;
 }
 
-/** A row of a mega menu: an icon, a title and a one-line description. */
+/**
+ * A brand's own mark (DESIGN.md, Icons): a simple-icons path, drawn in
+ * currentColor, or the letters of a lettered tile for a brand that has no
+ * mark there. The page passes the path, so the header holds no logo.
+ */
+type SiteMark =
+  | { readonly kind: "path"; readonly path: string }
+  | { readonly kind: "letters"; readonly letters: string };
+
+/**
+ * A row of a mega menu: an icon or a brand's mark, a title, and a one-line
+ * description where the title alone does not say enough.
+ */
 interface SiteMenuLink {
-  readonly description: string;
+  readonly description?: string | undefined;
   readonly href: string;
-  readonly icon: SiteIcon;
+  readonly icon?: SiteIcon | undefined;
+  readonly mark?: SiteMark | undefined;
   readonly title: string;
 }
 
 interface SiteMenuGroup {
+  /** Rows side by side in the group's cell, for long lists of names. */
+  readonly columns?: 1 | 2 | undefined;
   readonly label: string;
   readonly links: readonly SiteMenuLink[];
 }
 
-/** The card that closes a mega menu on the right. */
+/** The card that closes a mega menu on the right, sized to its content. */
 interface SiteMenuFeature {
   readonly caption: string;
   readonly description: string;
   readonly href: string;
+  /** Brands' marks shown at the card's top, as its picture. */
+  readonly marks?: readonly SiteMark[] | undefined;
   readonly title: string;
 }
 
@@ -107,8 +124,6 @@ interface SiteMenu {
   readonly groups: readonly SiteMenuGroup[];
   readonly kind: "menu";
   readonly label: string;
-  /** A row under the groups, across them, such as every platform. */
-  readonly more?: SiteMenuLink | undefined;
   readonly value: string;
 }
 
@@ -121,7 +136,8 @@ type SiteNavItem = SiteMenu | SiteNavLink;
 
 interface SiteHeaderProps {
   readonly className?: string | undefined;
-  readonly discord?: SiteLink | undefined;
+  /** An icon-only button: `label` is its name for screen readers. */
+  readonly discord?: (SiteLink & { readonly mark: SiteMark }) | undefined;
   /** The drawer's names, in the reader's language, for screens below 1024 px. */
   readonly drawer: {
     readonly close: string;
@@ -129,8 +145,10 @@ interface SiteHeaderProps {
     readonly title: string;
   };
   readonly getStarted?: SiteLink | undefined;
+  /** The repository: its mark, then its star count; `label` names it. */
   readonly github?:
     | (SiteLink & {
+        readonly mark: SiteMark;
         /** The star count as shown, or nothing when it is unknown. */
         readonly stars?: string | undefined;
         /** What the count is, for screen readers, such as "stars". */
@@ -149,8 +167,44 @@ interface SiteHeaderProps {
   readonly signIn?: SiteLink | undefined;
 }
 
-const RowIcon = ({ icon }: { readonly icon: SiteIcon }) => {
-  const Icon = siteIcons[icon];
+const Mark = ({
+  className,
+  mark,
+}: {
+  readonly className?: string | undefined;
+  readonly mark: SiteMark;
+}) =>
+  mark.kind === "path" ? (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="currentColor"
+      className={cn("size-4 shrink-0", className)}
+    >
+      <path d={mark.path} />
+    </svg>
+  ) : (
+    <span
+      aria-hidden="true"
+      className={cn(
+        className,
+        "bg-foreground text-background flex size-4 shrink-0 items-center justify-center rounded-sm text-[9px] leading-none font-semibold"
+      )}
+    >
+      {mark.letters}
+    </span>
+  );
+
+const RowIcon = ({ link }: { readonly link: SiteMenuLink }) => {
+  if (link.mark !== undefined) {
+    return (
+      <span className="bg-card text-foreground flex size-8 shrink-0 items-center justify-center rounded-md border">
+        <Mark mark={link.mark} />
+      </span>
+    );
+  }
+
+  const Icon = siteIcons[link.icon ?? "globe"];
 
   return (
     <span className="bg-card text-foreground flex size-8 shrink-0 items-center justify-center rounded-md border">
@@ -159,17 +213,39 @@ const RowIcon = ({ icon }: { readonly icon: SiteIcon }) => {
   );
 };
 
-const MenuRow = ({ link }: { readonly link: SiteMenuLink }) => (
-  <NavigationMenuLink href={link.href} className="items-start">
-    <RowIcon icon={link.icon} />
-    <span className="flex min-w-0 flex-col gap-0.5">
+// A row with a description gets the icon's tile; a name alone, such as a
+// platform's, gets its 16 px mark.
+const MenuRow = ({ link }: { readonly link: SiteMenuLink }) =>
+  link.description === undefined ? (
+    <NavigationMenuLink href={link.href} className="items-center py-1.5">
+      {link.mark === undefined ? (
+        <RowIcon link={link} />
+      ) : (
+        <Mark mark={link.mark} className="text-foreground" />
+      )}
       <span className="text-foreground font-medium">{link.title}</span>
-      <span className="text-muted-foreground text-[13px] leading-snug">
-        {link.description}
+    </NavigationMenuLink>
+  ) : (
+    <NavigationMenuLink href={link.href} className="items-start">
+      <RowIcon link={link} />
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-foreground font-medium">{link.title}</span>
+        <span className="text-muted-foreground text-[13px] leading-snug">
+          {link.description}
+        </span>
       </span>
-    </span>
-  </NavigationMenuLink>
-);
+    </NavigationMenuLink>
+  );
+
+const groupWidth = (group: SiteMenuGroup) => {
+  if (group.columns === 2) {
+    return "w-[23rem]";
+  }
+
+  return group.links.every((link) => link.description === undefined)
+    ? "w-44"
+    : "w-72";
+};
 
 const MenuGroup = ({ group }: { readonly group: SiteMenuGroup }) => {
   const id = useId();
@@ -177,12 +253,17 @@ const MenuGroup = ({ group }: { readonly group: SiteMenuGroup }) => {
   return (
     <section
       aria-labelledby={id}
-      className="bg-card flex w-72 flex-col gap-1 rounded-md border p-2"
+      className={cn(
+        "bg-card flex flex-col gap-1 rounded-md border p-2",
+        groupWidth(group)
+      )}
     >
       <h2 id={id} className="text-muted-foreground px-2 pt-1 text-xs">
         {group.label}
       </h2>
-      <ul className="flex flex-col">
+      <ul
+        className={group.columns === 2 ? "grid grid-cols-2" : "flex flex-col"}
+      >
         {group.links.map((link) => (
           <li key={link.href}>
             <MenuRow link={link} />
@@ -193,65 +274,85 @@ const MenuGroup = ({ group }: { readonly group: SiteMenuGroup }) => {
   );
 };
 
-const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => (
-  <div className="flex gap-2">
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
-        {menu.groups.map((group) => (
-          <MenuGroup key={group.label} group={group} />
+const FeatureCard = ({ feature }: { readonly feature: SiteMenuFeature }) => (
+  <NavigationMenuLink
+    href={feature.href}
+    className="bg-muted hover:bg-accent group/feature w-60 flex-col gap-4 self-start border p-4"
+  >
+    <span className="text-muted-foreground font-mono text-xs tracking-[0.04em] lowercase">
+      {feature.caption}
+    </span>
+    {feature.marks === undefined || feature.marks.length === 0 ? null : (
+      <span className="flex gap-2">
+        {feature.marks.map((mark) => (
+          <span
+            key={mark.kind === "path" ? mark.path : mark.letters}
+            className="bg-card text-foreground flex size-10 items-center justify-center rounded-md border"
+          >
+            <Mark mark={mark} className="size-5" />
+          </span>
         ))}
-      </div>
-      {menu.more === undefined ? null : (
-        <div className="bg-card rounded-md border p-2">
-          <MenuRow link={menu.more} />
-        </div>
-      )}
-    </div>
-    {menu.feature === undefined ? null : (
-      <NavigationMenuLink
-        href={menu.feature.href}
-        className="bg-muted hover:bg-accent group/feature w-60 flex-col justify-between gap-6 border p-4"
-      >
-        <span className="text-muted-foreground font-mono text-xs tracking-[0.04em] lowercase">
-          {menu.feature.caption}
-        </span>
-        <span className="flex flex-col gap-1">
-          <span className="text-foreground text-[15px] font-semibold">
-            {menu.feature.title}
-          </span>
-          <span className="text-muted-foreground text-[13px] leading-snug">
-            {menu.feature.description}
-          </span>
-          <ArrowRightIcon
-            aria-hidden="true"
-            strokeWidth={1.75}
-            className="text-foreground mt-2 size-4 transition-transform group-hover/feature:translate-x-0.5 motion-reduce:transition-none"
-          />
-        </span>
-      </NavigationMenuLink>
+      </span>
     )}
+    <span className="flex flex-col gap-1">
+      <span className="text-foreground text-[15px] font-semibold">
+        {feature.title}
+      </span>
+      <span className="text-muted-foreground text-[13px] leading-snug">
+        {feature.description}
+      </span>
+    </span>
+    <ArrowRightIcon
+      aria-hidden="true"
+      strokeWidth={1.75}
+      className="text-foreground size-4 transition-transform group-hover/feature:translate-x-0.5 motion-reduce:transition-none"
+    />
+  </NavigationMenuLink>
+);
+
+const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => (
+  <div className="flex items-start gap-2">
+    {menu.groups.map((group) => (
+      <MenuGroup key={group.label} group={group} />
+    ))}
+    {menu.feature === undefined ? null : <FeatureCard feature={menu.feature} />}
   </div>
 );
 
-const GitHubLink = ({
+const RepositoryLink = ({
   className,
-  github,
+  repository,
 }: {
   readonly className?: string | undefined;
-  readonly github: NonNullable<SiteHeaderProps["github"]>;
+  readonly repository: NonNullable<SiteHeaderProps["github"]>;
 }) => (
   <a
-    href={github.href}
+    href={repository.href}
     className={cn(navigationMenuTriggerClassName, "gap-1.5", className)}
   >
-    {github.label}
-    {github.stars === undefined ? null : (
+    <Mark mark={repository.mark} className="text-foreground" />
+    <span className="sr-only">{repository.label}</span>
+    {repository.stars === undefined ? null : (
       <span className="text-foreground inline-flex items-center gap-1 font-mono text-xs tabular-nums">
         <StarIcon aria-hidden="true" strokeWidth={1.75} className="size-3.5" />
-        {github.stars}
-        <span className="sr-only">{github.starsLabel}</span>
+        {repository.stars}
+        <span className="sr-only">{repository.starsLabel}</span>
       </span>
     )}
+  </a>
+);
+
+const DiscordLink = ({
+  discord,
+}: {
+  readonly discord: NonNullable<SiteHeaderProps["discord"]>;
+}) => (
+  <a
+    href={discord.href}
+    aria-label={discord.label}
+    className={cn(navigationMenuTriggerClassName, "w-8 px-0")}
+  >
+    <Mark mark={discord.mark} className="text-foreground" />
   </a>
 );
 
@@ -259,7 +360,7 @@ const MobileMenu = ({
   discord,
   drawer,
   getStarted,
-  github,
+  github: repository,
   items,
   label,
   signIn,
@@ -293,21 +394,16 @@ const MobileMenu = ({
               <h2 className="text-foreground text-[15px] font-semibold">
                 {item.label}
               </h2>
-              {[
-                ...item.groups,
-                ...(item.more === undefined
-                  ? []
-                  : [{ label: "", links: [item.more] }]),
-              ].map((group) => (
+              {item.groups.map((group) => (
                 <div key={group.label} className="flex flex-col gap-1">
-                  {group.label === "" ? null : (
-                    <p className="text-muted-foreground text-xs">
-                      {group.label}
-                    </p>
-                  )}
-                  <ul className="flex flex-col">
+                  <p className="text-muted-foreground text-xs">{group.label}</p>
+                  <ul
+                    className={
+                      group.columns === 2 ? "grid grid-cols-2" : "flex flex-col"
+                    }
+                  >
                     {group.links.map((link) => {
-                      const Icon = siteIcons[link.icon];
+                      const Icon = siteIcons[link.icon ?? "globe"];
 
                       return (
                         <li key={link.href}>
@@ -315,11 +411,18 @@ const MobileMenu = ({
                             href={link.href}
                             className="hover:bg-accent -mx-2 flex items-center gap-2 rounded-md px-2 py-1.5"
                           >
-                            <Icon
-                              aria-hidden="true"
-                              strokeWidth={1.75}
-                              className="text-muted-foreground size-4"
-                            />
+                            {link.mark === undefined ? (
+                              <Icon
+                                aria-hidden="true"
+                                strokeWidth={1.75}
+                                className="text-muted-foreground size-4"
+                              />
+                            ) : (
+                              <Mark
+                                mark={link.mark}
+                                className="text-muted-foreground"
+                              />
+                            )}
                             {link.title}
                           </a>
                         </li>
@@ -334,17 +437,13 @@ const MobileMenu = ({
       </nav>
       <div className="mt-auto flex flex-col gap-2 border-t p-4">
         <div className="flex items-center gap-1">
-          {github === undefined ? null : (
-            <GitHubLink github={github} className="-ms-2.5" />
+          {repository === undefined ? null : (
+            <RepositoryLink repository={repository} className="-ms-2.5" />
           )}
-          {github === undefined || discord === undefined ? null : (
+          {repository === undefined || discord === undefined ? null : (
             <Separator orientation="vertical" className="h-5 self-center!" />
           )}
-          {discord === undefined ? null : (
-            <a href={discord.href} className={navigationMenuTriggerClassName}>
-              {discord.label}
-            </a>
-          )}
+          {discord === undefined ? null : <DiscordLink discord={discord} />}
         </div>
         {signIn === undefined ? null : (
           <a
@@ -419,18 +518,14 @@ const SiteHeader = (props: SiteHeaderProps) => {
           <NavigationMenuViewport />
         </NavigationMenu>
         <div className="ms-auto hidden items-center gap-1 lg:flex">
-          {github === undefined ? null : <GitHubLink github={github} />}
+          {github === undefined ? null : <RepositoryLink repository={github} />}
           {github === undefined || discord === undefined ? null : (
             <Separator
               orientation="vertical"
               className="mx-1 h-5 self-center!"
             />
           )}
-          {discord === undefined ? null : (
-            <a href={discord.href} className={navigationMenuTriggerClassName}>
-              {discord.label}
-            </a>
-          )}
+          {discord === undefined ? null : <DiscordLink discord={discord} />}
           {signIn === undefined ? null : (
             <a
               href={signIn.href}
@@ -464,6 +559,7 @@ export type {
   SiteMenuFeature,
   SiteMenuGroup,
   SiteMenuLink,
+  SiteMark,
   SiteNavItem,
   SiteNavLink,
 };

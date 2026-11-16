@@ -274,18 +274,31 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   `input` marks the joint. Content sits in bordered cells, never in
   floating cards.
 - **Header**, 56 px, on `background` with a rule under it: the mark and
-  "Peal" on the left; Products and Resources (each opening a mega menu),
-  Pricing, Docs and Blog in the middle; on the right the GitHub star count
-  (Geist Mono, hidden when unknown), a vertical divider, Discord, Log in
-  (a ghost button) and Get started (the primary button). Below 1024 px the
-  middle and right collapse into a menu button that opens a drawer from
-  the right, with the same items.
+  "Peal" on the left; Products, Platforms and Resources (each opening a
+  mega menu), Pricing, Docs and Blog in the middle; on the right the
+  GitHub mark with the star count (Geist Mono, hidden when unknown), a
+  vertical divider, the Discord mark alone (an icon-only button with its
+  `aria-label`), Log in (a ghost button) and Get started (the primary
+  button). Below 1024 px the middle and right collapse into a menu button
+  that opens a drawer from the right, with the same items.
 - **Mega menu.** One floating panel (the shadow of a popover), white, with
-  the 6 px radius. Its links are grouped under a small label (12 px, muted);
-  each row is a 16 px lucide icon in a bordered 32 px tile, a title (14 px, 500) and a one-line description (13 px, muted), with the `accent` hover.
-  The groups are bordered cells, side by side, and a featured card closes
-  the panel on the right: a `muted` cell with a caption, a title and one
-  line, linking to what it features.
+  the 6 px radius. Its links are grouped under a small label (12 px,
+  muted), in bordered cells side by side. A row is a 16 px lucide icon in
+  a bordered 32 px tile, a title (14 px, 500) and a one-line description
+  (13 px, muted), with the `accent` hover; a row that names a brand, such
+  as a platform, is its 16 px mark and its name alone. A featured card
+  closes the panel on the right, as tall as its content, never stretched
+  to the groups: a `muted` cell with a caption, a picture where one says
+  something (brands' marks in 40 px bordered tiles), a title, one line and
+  an arrow, linking to what it features.
+- **Platforms menu.** Every platform a channel connects to, from the
+  contract's list, under Social (two columns), Chat and Articles, each
+  row linking to the platform's docs page; its card compares the
+  platforms.
+- **Marks on the site.** Brands' marks (platforms, GitHub, Discord) come
+  from simple-icons, at the version the workspace pins, in `currentColor`:
+  ink, or muted text in the drawer, never the brand's colour. A brand
+  missing from simple-icons, such as LinkedIn, is a lettered tile in ink.
 - **Footer**, on `background` under a full-width rule: the mark, the
   licence's line and the language links in a first cell, then a bordered
   cell per column of links (legal, the contract's functions, Peal's

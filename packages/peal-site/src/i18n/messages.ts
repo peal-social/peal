@@ -71,6 +71,12 @@ const en = {
     terms: "Terms of service",
   },
   nav: {
+    allPlatforms: {
+      caption: "every platform",
+      description:
+        "What a post may hold on each platform, and how to connect it.",
+      title: "Compare the platforms",
+    },
     blog: "Blog",
     brand: "Peal",
     developers: "For developers and agents",
@@ -135,10 +141,6 @@ const en = {
         description: "Connect an AI assistant, and choose if it may publish.",
         title: "MCP server",
       },
-      platforms: {
-        description: "Every network Peal posts to, and what each one takes.",
-        title: "Platforms",
-      },
       sdks: {
         description: "Typed clients in eight languages.",
         title: "SDKs",
@@ -161,6 +163,8 @@ const en = {
       },
     },
     main: "Main",
+    platformGroups: { articles: "Articles", chat: "Chat", social: "Social" },
+    platforms: "Platforms",
     products: "Products",
     resources: "Resources",
     resourcesGroup: "Learn and get help",
@@ -369,6 +373,12 @@ const fr: Messages = {
     terms: "Conditions d’utilisation",
   },
   nav: {
+    allPlatforms: {
+      caption: "toutes les plateformes",
+      description:
+        "Ce qu’une publication peut contenir sur chaque plateforme, et comment la connecter.",
+      title: "Comparer les plateformes",
+    },
     blog: "Blog",
     brand: "Peal",
     developers: "Pour les développeurs et les agents",
@@ -436,10 +446,6 @@ const fr: Messages = {
         description: "Connecter un assistant IA, et choisir s’il peut publier.",
         title: "Serveur MCP",
       },
-      platforms: {
-        description: "Chaque réseau où Peal publie, et ce qu’il accepte.",
-        title: "Plateformes",
-      },
       sdks: {
         description: "Des clients typés dans huit langages.",
         title: "SDK",
@@ -462,6 +468,12 @@ const fr: Messages = {
       },
     },
     main: "Principal",
+    platformGroups: {
+      articles: "Articles",
+      chat: "Messageries",
+      social: "Réseaux sociaux",
+    },
+    platforms: "Plateformes",
     products: "Produits",
     resources: "Ressources",
     resourcesGroup: "Apprendre et trouver de l’aide",
