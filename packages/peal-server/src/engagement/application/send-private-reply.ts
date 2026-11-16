@@ -166,19 +166,23 @@ export class SendPrivateReply extends Context.Service<
           strandedPerRun
         );
 
+        const calledBefore = DateTime.subtractDuration(now, callBound);
         let settled = 0;
 
-        // One transaction each, its job stopped in it.
+        // One transaction each, its job stopped in it. One whose gate
+        // claimed its call since it was listed is left to that call.
         for (const { id } of stranded) {
-          const result = yield* transaction(
-            settle(id, { _tag: "unconfirmed", reason: "interrupted" }).pipe(
-              Effect.tap((ended) =>
-                ended === "settled" ? jobs.cancel(id) : Effect.void
+          const handed = yield* transaction(
+            store
+              .handOver(id, now, calledBefore)
+              .pipe(
+                Effect.tap((found) =>
+                  Option.isSome(found) ? jobs.cancel(id) : Effect.void
+                )
               )
-            )
           );
 
-          settled += result === "settled" ? 1 : 0;
+          settled += Option.isSome(handed) ? 1 : 0;
         }
 
         yield* counted("unconfirmed", settled);

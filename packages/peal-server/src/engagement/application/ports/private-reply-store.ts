@@ -87,8 +87,19 @@ export class PrivateReplyStore extends Context.Service<
       limit: number
     ) => Effect.Effect<readonly PrivateReply[], DatabaseError>;
     /**
+     * Hands a stranded private reply to a person (`unconfirmed`,
+     * `interrupted`, at `at`), only while it is still on its way and no
+     * call was claimed after `calledBefore`: one whose gate claimed its
+     * call since it was listed is left to that call.
+     */
+    readonly handOver: (
+      privateReplyId: PrivateReplyId,
+      at: DateTime.Utc,
+      calledBefore: DateTime.Utc
+    ) => Effect.Effect<Option.Option<PrivateReply>, DatabaseError>;
+    /**
      * Deletes the channel's private replies that never set out (on their
-     * way, no call begun), under its box, locked until the caller's
+     * way, no call claimed), under its box, locked until the caller's
      * transaction ends, and answers them: their outbound messages are
      * given back. Those that may have gone out stay until their purge.
      */

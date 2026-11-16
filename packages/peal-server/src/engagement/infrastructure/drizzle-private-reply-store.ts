@@ -380,7 +380,9 @@ export const DrizzlePrivateReplyStore = Layer.effect(
             and(
               eq(privateReplies.channelId, channelId),
               eq(privateReplies.status, "sending"),
-              isNull(privateReplies.attemptedAt)
+              // Its call never claimed: an attempt recorded that waited
+              // for the gate's turn never left either.
+              isNull(privateReplies.callClaimedAt)
             )
           )
           .returning()
@@ -389,6 +391,37 @@ export const DrizzlePrivateReplyStore = Layer.effect(
         return yield* Effect.all(rows.map(replyOf));
       }
     );
+
+    const handOver = Effect.fn("PrivateReplyStore.handOver")(function* handOver(
+      privateReplyId: string,
+      at: DateTime.Utc,
+      calledBefore: DateTime.Utc
+    ) {
+      const [row] = yield* db
+        .update(privateReplies)
+        .set({
+          attemptedAt: null,
+          reason: "interrupted",
+          settledAt: date(at),
+          status: "unconfirmed",
+        })
+        .where(
+          and(
+            eq(privateReplies.id, privateReplyId),
+            eq(privateReplies.status, "sending"),
+            or(
+              isNull(privateReplies.callClaimedAt),
+              lte(privateReplies.callClaimedAt, date(calledBefore))
+            )
+          )
+        )
+        .returning()
+        .pipe(Effect.mapError(failed));
+
+      return row === undefined
+        ? Option.none<PrivateReply>()
+        : Option.some(yield* replyOf(row));
+    });
 
     const sentIdsOf = Effect.fn("PrivateReplyStore.sentIdsOf")(
       function* sentIdsOf(channelId: string, except: string) {
@@ -454,6 +487,7 @@ export const DrizzlePrivateReplyStore = Layer.effect(
       claimCall,
       dropIfForgotten,
       dropUnsent,
+      handOver,
       journal,
       madeWithKey,
       ofComments,

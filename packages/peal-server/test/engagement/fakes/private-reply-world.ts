@@ -1,4 +1,4 @@
-import { DateTime, Effect, Layer, Option } from "effect";
+import { DateTime, Effect, Layer, Option, Result } from "effect";
 
 import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
@@ -12,6 +12,7 @@ import { PrivateReplyStore } from "#engagement/application/ports/private-reply-s
 import type { PrivateReplyJournalled } from "#engagement/application/ports/private-reply-store.ts";
 import { SendPrivateReply } from "#engagement/application/send-private-reply.ts";
 import type { PrivateReplyId } from "#engagement/domain/private-reply-id.ts";
+import { settlePrivateReply } from "#engagement/domain/private-reply.ts";
 import type { PrivateReply } from "#engagement/domain/private-reply.ts";
 import { CurrentInboxMessages } from "#shared/application/current-inbox-messages.ts";
 import { CurrentInboxPlatforms } from "#shared/application/current-inbox-platforms.ts";
@@ -125,9 +126,7 @@ export const makePrivateReplyWorld = (
       Effect.sync(() => {
         const unsent = [...state.replies.values()].filter(
           (reply) =>
-            reply.channelId === channelId &&
-            reply.status._tag === "sending" &&
-            Option.isNone(reply.status.attemptedAt)
+            reply.channelId === channelId && reply.status._tag === "sending"
         );
 
         for (const reply of unsent) {
@@ -135,6 +134,26 @@ export const makePrivateReplyWorld = (
         }
 
         return unsent;
+      }),
+    handOver: (privateReplyId, at) =>
+      Effect.sync(() => {
+        const reply = state.replies.get(privateReplyId);
+
+        if (reply === undefined || reply.status._tag !== "sending") {
+          return Option.none<PrivateReply>();
+        }
+
+        const handed = Result.getOrThrow(
+          settlePrivateReply(
+            reply,
+            { _tag: "unconfirmed", reason: "interrupted" },
+            at
+          )
+        );
+
+        state.replies.set(privateReplyId, handed);
+
+        return Option.some(handed);
       }),
     journal: (reply, key) =>
       Effect.sync((): PrivateReplyJournalled => {

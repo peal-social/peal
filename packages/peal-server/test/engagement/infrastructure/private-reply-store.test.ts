@@ -410,43 +410,59 @@ layer(StoreTest)("the private reply store", (it) => {
       })
   );
 
-  it.effect("drops what never set out, and keeps what may have gone", () =>
-    Effect.gen(function* drops() {
-      const workspaceId = yield* freshWorkspace;
+  it.effect(
+    "drops what never set out, its call never claimed, and keeps what may have gone",
+    () =>
+      Effect.gen(function* drops() {
+        const workspaceId = yield* freshWorkspace;
 
-      yield* Effect.gen(function* checks() {
-        const store = yield* PrivateReplyStore;
-        const sql = yield* SqlClient.SqlClient;
-        const channelId = yield* newId(ChannelIdSchema);
+        yield* Effect.gen(function* checks() {
+          const store = yield* PrivateReplyStore;
+          const sql = yield* SqlClient.SqlClient;
+          const channelId = yield* newId(ChannelIdSchema);
 
-        const unsent = yield* writtenFor(
-          yield* commentIn(workspaceId, { channelId })
-        );
+          const unsent = yield* writtenFor(
+            yield* commentIn(workspaceId, { channelId })
+          );
 
-        const begun = yield* writtenFor(
-          yield* commentIn(workspaceId, { channelId })
-        );
+          const begun = yield* writtenFor(
+            yield* commentIn(workspaceId, { channelId })
+          );
 
-        yield* journalled(unsent);
-        yield* journalled(begun);
+          yield* journalled(unsent);
+          yield* journalled(begun);
 
-        assert.isTrue(
-          yield* store.advance(
-            Result.getOrThrow(beginPrivateReply(begun, at)),
-            begun
-          )
-        );
+          // Attempted, its call waiting for the gate's turn: never claimed,
+          // so it never set out either.
+          const waiting = yield* writtenFor(
+            yield* commentIn(workspaceId, { channelId })
+          );
 
-        const dropped = yield* sql.withTransaction(store.dropUnsent(channelId));
+          yield* journalled(waiting);
 
-        assert.deepStrictEqual(
-          dropped.map(({ id }) => id),
-          [unsent.id]
-        );
-        assert.isTrue(Option.isNone(yield* store.privateReply(unsent.id)));
-        assert.isTrue(Option.isSome(yield* store.privateReply(begun.id)));
-      }).pipe(Effect.ensuring(forget(workspaceId)));
-    })
+          const waitingBegun = Result.getOrThrow(
+            beginPrivateReply(waiting, at)
+          );
+
+          assert.isTrue(yield* store.advance(waitingBegun, waiting));
+
+          const begunNow = Result.getOrThrow(beginPrivateReply(begun, at));
+
+          assert.isTrue(yield* store.advance(begunNow, begun));
+          assert.isTrue(yield* store.claimCall(begun.id, at));
+
+          const dropped = yield* sql.withTransaction(
+            store.dropUnsent(channelId)
+          );
+
+          assert.deepStrictEqual(
+            dropped.map(({ id }) => id).toSorted(),
+            [unsent.id, waiting.id].toSorted()
+          );
+          assert.isTrue(Option.isNone(yield* store.privateReply(unsent.id)));
+          assert.isTrue(Option.isSome(yield* store.privateReply(begun.id)));
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
   );
 
   it.effect(
@@ -544,20 +560,25 @@ layer(StoreTest)("the private reply store", (it) => {
           yield* commentIn(workspaceId, { channelId })
         );
 
+        // Attempted, its call never claimed: it never set out either.
+        const waiting = yield* writtenFor(
+          yield* commentIn(workspaceId, { channelId })
+        );
+
         yield* journalled(unsent);
         yield* journalled(sent);
+        yield* journalled(waiting);
         yield* settled(sent, { _tag: "sent", platformMessageId: "m-3" });
+        yield* store.advance(
+          Result.getOrThrow(beginPrivateReply(waiting, at)),
+          waiting
+        );
 
         yield* records.channelGone(channelId, "facebook", at);
 
         assert.isTrue(Option.isNone(yield* store.privateReply(unsent.id)));
         assert.isTrue(Option.isNone(yield* store.privateReply(sent.id)));
-        assert.deepStrictEqual(
-          (yield* givenBackIn(workspaceId)).map(({ at: claimedAt }) =>
-            DateTime.formatIso(claimedAt)
-          ),
-          [DateTime.formatIso(unsent.createdAt)]
-        );
+        assert.strictEqual((yield* givenBackIn(workspaceId)).length, 2);
       }).pipe(Effect.ensuring(forget(workspaceId)));
     })
   );
@@ -711,5 +732,144 @@ layer(StoreTest)("the private reply store", (it) => {
           assert.strictEqual((yield* givenBackIn(workspaceId)).length, 1);
         }).pipe(Effect.ensuring(forget(workspaceId)));
       })
+  );
+  it.effect(
+    "hands over one stranded only while no call was claimed since",
+    () =>
+      Effect.gen(function* handOver() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const store = yield* PrivateReplyStore;
+          const reply = yield* writtenFor(yield* commentIn(workspaceId));
+
+          yield* journalled(reply);
+
+          const begun = Result.getOrThrow(beginPrivateReply(reply, at));
+
+          yield* store.advance(begun, reply);
+
+          const later = DateTime.addDuration(at, "2 hours");
+          const bound = DateTime.addDuration(at, "1 hour");
+
+          // Listed as stranded, then its gate claims the call.
+          assert.isTrue(
+            (yield* store.stranded(bound, bound, 100)).some(
+              ({ id }) => id === reply.id
+            )
+          );
+          assert.isTrue(yield* store.claimCall(reply.id, later));
+          assert.isTrue(
+            Option.isNone(yield* store.handOver(reply.id, later, bound))
+          );
+
+          // Its claim old enough: handed over.
+          const handed = yield* store.handOver(
+            reply.id,
+            DateTime.addDuration(later, "1 hour"),
+            DateTime.addDuration(later, "10 minutes")
+          );
+
+          assert.strictEqual(
+            handed.pipe(
+              Option.map(({ status }) => status._tag),
+              Option.getOrNull
+            ),
+            "unconfirmed"
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect("moves only from the status it was read in", () =>
+    Effect.gen(function* fromRead() {
+      const workspaceId = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const store = yield* PrivateReplyStore;
+        const reply = yield* writtenFor(yield* commentIn(workspaceId));
+
+        yield* journalled(reply);
+
+        const sent = yield* settled(reply, {
+          _tag: "sent",
+          platformMessageId: "m-11",
+        });
+
+        // A second outcome, from the reply as first read: nothing moves.
+        const failed = Result.getOrThrow(
+          settlePrivateReply(reply, { _tag: "failed", reason: "refused" }, at)
+        );
+
+        assert.isFalse(yield* store.advance(failed, reply));
+        assert.deepStrictEqual(
+          (yield* store.privateReply(reply.id)).pipe(
+            Option.map(({ status }) => status),
+            Option.getOrNull
+          ),
+          sent.status
+        );
+      }).pipe(Effect.ensuring(forget(workspaceId)));
+    })
+  );
+
+  it.effect(
+    "takes the channel's direct messages sent from Peal for taken",
+    () =>
+      Effect.gen(function* taken() {
+        const workspaceId = yield* freshWorkspace;
+
+        yield* Effect.gen(function* checks() {
+          const store = yield* PrivateReplyStore;
+          const sql = yield* SqlClient.SqlClient;
+          const comment = yield* commentIn(workspaceId);
+          const conversationId = yield* newId(ChannelIdSchema);
+          const messageId = yield* newId(ChannelIdSchema);
+
+          yield* sql`INSERT INTO engagement.conversations (id, workspace_id, channel_id, platform_conversation_id, participants, revision, last_message_at, created_at)
+          VALUES (${conversationId}, ${workspaceId}, ${comment.channelId}, 'c-taken', '[]'::jsonb, 'r1', ${DateTime.formatIso(at)}::timestamptz, ${DateTime.formatIso(at)}::timestamptz)`;
+
+          yield* sql`INSERT INTO engagement.outgoing_messages (id, conversation_id, workspace_id, channel_id, text, created_at, status, settled_at, platform_message_id)
+          VALUES (${messageId}, ${conversationId}, ${workspaceId}, ${comment.channelId}, 'A synthetic answer', ${DateTime.formatIso(at)}::timestamptz, 'sent', ${DateTime.formatIso(at)}::timestamptz, 'm-direct')`;
+
+          assert.deepStrictEqual(
+            yield* store.sentIdsOf(
+              comment.channelId,
+              PrivateReplyIdSchema.make("00000000-0000-7000-8000-000000000000")
+            ),
+            ["m-direct"]
+          );
+        }).pipe(
+          Effect.ensuring(
+            SqlClient.SqlClient.use(
+              (sql) =>
+                sql`DELETE FROM engagement.conversations WHERE workspace_id = ${workspaceId}`
+            ).pipe(Effect.orDie)
+          ),
+          Effect.ensuring(forget(workspaceId))
+        );
+      })
+  );
+
+  it.effect("reads a key in its own workspace only", () =>
+    Effect.gen(function* ownKey() {
+      const workspaceId = yield* freshWorkspace;
+      const otherWorkspace = yield* freshWorkspace;
+
+      yield* Effect.gen(function* checks() {
+        const key = Option.some("synthetic-shared-key");
+        const mine = yield* writtenFor(yield* commentIn(workspaceId));
+
+        assert.strictEqual((yield* journalled(mine, key))._tag, "journalled");
+
+        // The same key in another workspace makes its own.
+        const theirs = yield* writtenFor(yield* commentIn(otherWorkspace));
+
+        assert.strictEqual((yield* journalled(theirs, key))._tag, "journalled");
+      }).pipe(
+        Effect.ensuring(forget(workspaceId)),
+        Effect.ensuring(forget(otherWorkspace))
+      );
+    })
   );
 });

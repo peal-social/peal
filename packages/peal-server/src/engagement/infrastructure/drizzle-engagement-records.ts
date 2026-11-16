@@ -91,7 +91,9 @@ export const DrizzleEngagementRecords = Layer.effect(
           and(
             where,
             eq(privateReplies.status, "sending"),
-            isNull(privateReplies.attemptedAt)
+            // Its call never claimed: an attempt that waited for the
+            // gate's turn never left either.
+            isNull(privateReplies.callClaimedAt)
           )
         )
         .for("update");
