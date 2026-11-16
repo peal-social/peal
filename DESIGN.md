@@ -324,6 +324,22 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   ink, or muted text in the drawer, never the brand's colour. A brand
   missing from simple-icons (LinkedIn, Slack, Google Business Profile) is a
   lettered tile in ink.
+- **Section counter.** Every section of a page below its hero opens with
+  its number and name in Geist Mono, 12 px, muted, `0.04em`: `[ 01 / 03 ]
+  · Product`. Sections are counted in order, and the total is the page's.
+- **FAQ.** A band on the grid, in two cells: on the left, quiet pixel art
+  filling the cell (an icon rasterised onto 5 px cells in the blue and
+  lavender tints, `#E8ECFD` and `#EDE7FF`, with lavender on the brightest
+  cells, so it reads as texture) behind a small mono label, `// [icon] FAQ
+  \\`, on `background`; on the right, the section headline with its second
+  sentence in muted text, and a lead. Blue stays for links and selection,
+  never a headline's accent word. Then a row per group: its title (15 px, 600) in the left cell and its questions in the right, as ui-sdk's
+  accordion: full-width rows between hairlines, the question at 16 px, 500,
+  a chevron at the end that turns as it opens, and the answer in muted
+  text, 14 px, under a hairline. Several answers may be open at once;
+  closed ones stay in the page, found by the browser's search. Below
+  768 px the cells stack and the art becomes a strip 96 px tall. The
+  questions are also the page's FAQPage JSON-LD.
 - **Footer**, on `background` under a full-width rule: the mark, the
   licence's line and the language links in a first cell, then a bordered
   cell per column of links (legal, the contract's functions, Peal's

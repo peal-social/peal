@@ -45,6 +45,116 @@ const en = {
         title: "Work as a team",
       },
     ],
+    faq: {
+      groups: [
+        {
+          questions: [
+            {
+              answer:
+                "A social media scheduling platform for teams: write a post once, schedule it across platforms, and follow its results in one place.",
+              question: "What is Peal?",
+            },
+            {
+              answer:
+                "Not yet. Peal is in development, and this site describes what it is being built to do.",
+              question: "Can I use Peal today?",
+            },
+            {
+              answer:
+                "Marketing teams, who work in the Studio, and developers, who build on its API, command line, SDKs and webhooks, or embed it in their own product.",
+              question: "Who is it for?",
+            },
+            {
+              answer:
+                "Yes. An AI assistant connects through the MCP server, signed in to one workspace, and you choose whether it may publish.",
+              question: "Can an AI agent use Peal?",
+            },
+          ],
+          title: "General",
+        },
+        {
+          questions: [
+            {
+              answer:
+                "Social networks: {social}. Chats: {chat}. Blogs: {blog}. Meta ad accounts can be connected too, on a server that turns ads on.",
+              question: "Which platforms does Peal publish to?",
+            },
+            {
+              answer:
+                "Yes. A post has one text, and any channel can have its own text and options. Peal counts each platform's limits and shows a preview for each.",
+              question: "Can a post differ from one platform to another?",
+            },
+            {
+              answer:
+                "A client without a Peal account can see the post, comment on it, and approve it before it goes out.",
+              question: "Can a client approve a post first?",
+            },
+            {
+              answer:
+                "Peal marks it unconfirmed and asks you to check, instead of posting it again blindly.",
+              question: "What if a platform does not confirm a post?",
+            },
+          ],
+          title: "Platforms and publishing",
+        },
+        {
+          questions: [
+            {
+              answer:
+                "Yes. A server needs Postgres and an S3-compatible store; email, billing, captcha, AI and telemetry are optional, and each has a self-hostable choice.",
+              question: "Can I run Peal on my own server?",
+            },
+            {
+              answer:
+                "The Functional Source License (FSL-1.1-ALv2): use, change and run it for anything but a competing service. Each release becomes Apache 2.0 two years after it ships.",
+              question: "Under which licence is the source?",
+            },
+            {
+              answer:
+                "The SDKs, in eight languages, are under the Apache License 2.0, as is the API contract they are generated from.",
+              question: "Are the SDKs under the same licence?",
+            },
+            {
+              answer:
+                "No. A server without a payment provider configured bills nothing and limits nothing.",
+              question: "Does a self-hosted server charge for accounts?",
+            },
+          ],
+          title: "Self-hosting and licence",
+        },
+        {
+          questions: [
+            {
+              answer:
+                "By connected account, counted by the day, in US dollars. Your first {free} accounts are free, and each further band costs less.",
+              question: "How is Peal Cloud priced?",
+            },
+            {
+              answer:
+                "Members, workspaces and posts are unlimited, and every account has every platform, the calendar, analytics, the API, the MCP server and the command line.",
+              question: "What comes with every account?",
+            },
+            {
+              answer:
+                "Some uses that cost Peal money, such as the writing assistant or X's API, have a monthly allowance. Past it, they pause until the next month, or are billed if you added a payment method.",
+              question: "Is anything billed by use?",
+            },
+            {
+              answer:
+                "Yes, online at any time. You are billed each month for the month past, and billing ends with the month.",
+              question: "Can I cancel?",
+            },
+          ],
+          title: "Pricing",
+        },
+      ],
+      label: "FAQ",
+      lead: "Short answers from the docs. The docs have the details.",
+      title: {
+        muted: "Plain answers, before you start.",
+        text: "Frequently asked questions.",
+      },
+    },
     featuresTitle: "What we are building",
     hero: {
       lead: "Peal is a social media scheduling platform for teams. Write a post once, schedule it across platforms and follow its results in one place.",
@@ -53,6 +163,11 @@ const en = {
       status:
         "In development: not released yet. This is what Peal is being built to do.",
       title: "Write once. Schedule everywhere. See what works.",
+    },
+    sections: {
+      faq: "FAQ",
+      features: "Product",
+      selfHost: "Self-hosting",
     },
     selfHost: {
       body: "A self-hosted instance needs only Postgres and an S3-compatible store. Email, billing, captcha, AI and telemetry are optional, and each one has a self-hostable choice.",
@@ -421,6 +536,118 @@ const fr: Messages = {
         title: "Travailler en équipe",
       },
     ],
+    faq: {
+      groups: [
+        {
+          questions: [
+            {
+              answer:
+                "Une plateforme de planification pour les réseaux sociaux, pensée pour les équipes : écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats au même endroit.",
+              question: "Qu’est-ce que Peal ?",
+            },
+            {
+              answer:
+                "Pas encore. Peal est en cours de développement, et ce site décrit ce qu’il est conçu pour faire.",
+              question: "Puis-je utiliser Peal aujourd’hui ?",
+            },
+            {
+              answer:
+                "Les équipes marketing, qui travaillent dans le Studio, et les développeurs, qui construisent sur son API, sa ligne de commande, ses SDK et ses webhooks, ou l’intègrent à leur propre produit.",
+              question: "À qui s’adresse Peal ?",
+            },
+            {
+              answer:
+                "Oui. Un assistant IA se connecte par le serveur MCP, à un espace de travail, et vous choisissez s’il peut publier.",
+              question: "Un agent IA peut-il utiliser Peal ?",
+            },
+          ],
+          title: "Général",
+        },
+        {
+          questions: [
+            {
+              answer:
+                "Réseaux sociaux : {social}. Messageries : {chat}. Blogs : {blog}. Des comptes publicitaires Meta peuvent aussi être connectés, sur un serveur qui active la publicité.",
+              question: "Sur quelles plateformes Peal publie-t-il ?",
+            },
+            {
+              answer:
+                "Oui. Une publication a un texte, et chaque canal peut avoir son propre texte et ses options. Peal compte les limites de chaque plateforme et montre un aperçu pour chacune.",
+              question:
+                "Une publication peut-elle varier d’une plateforme à l’autre ?",
+            },
+            {
+              answer:
+                "Un client sans compte Peal peut voir la publication, la commenter et l’approuver avant qu’elle parte.",
+              question: "Un client peut-il approuver une publication d’abord ?",
+            },
+            {
+              answer:
+                "Peal la marque comme non confirmée et vous demande de vérifier, au lieu de la republier à l’aveugle.",
+              question:
+                "Et si une plateforme ne confirme pas une publication ?",
+            },
+          ],
+          title: "Plateformes et publication",
+        },
+        {
+          questions: [
+            {
+              answer:
+                "Oui. Un serveur a besoin de Postgres et d’un stockage compatible S3 ; l’e-mail, la facturation, le captcha, l’IA et la télémétrie sont facultatifs, et chacun a une option auto-hébergeable.",
+              question: "Puis-je faire tourner Peal sur mon propre serveur ?",
+            },
+            {
+              answer:
+                "La Functional Source License (FSL-1.1-ALv2) : utilisez-le, modifiez-le et faites-le tourner pour tout usage sauf un service concurrent. Chaque version passe sous licence Apache 2.0 deux ans après sa sortie.",
+              question: "Sous quelle licence est le code ?",
+            },
+            {
+              answer:
+                "Les SDK, dans huit langages, sont sous licence Apache 2.0, comme le contrat d’API dont ils sont générés.",
+              question: "Les SDK sont-ils sous la même licence ?",
+            },
+            {
+              answer:
+                "Non. Un serveur sans prestataire de paiement configuré ne facture rien et ne limite rien.",
+              question: "Un serveur auto-hébergé facture-t-il les comptes ?",
+            },
+          ],
+          title: "Auto-hébergement et licence",
+        },
+        {
+          questions: [
+            {
+              answer:
+                "Par compte connecté, compté au jour, en dollars américains. Vos {free} premiers comptes sont gratuits, et chaque tranche suivante coûte moins cher.",
+              question: "Comment Peal Cloud est-il facturé ?",
+            },
+            {
+              answer:
+                "Membres, espaces de travail et publications illimités, et chaque compte a toutes les plateformes, le calendrier, les statistiques, l’API, le serveur MCP et la ligne de commande.",
+              question: "Qu’est-ce qui vient avec chaque compte ?",
+            },
+            {
+              answer:
+                "Certains usages qui coûtent à Peal, comme l’assistant de rédaction ou l’API de X, ont un quota mensuel. Au-delà, ils sont suspendus jusqu’au mois suivant, ou facturés si vous avez ajouté un moyen de paiement.",
+              question: "Y a-t-il une facturation à l’usage ?",
+            },
+            {
+              answer:
+                "Oui, en ligne, à tout moment. Vous êtes facturé chaque mois pour le mois écoulé, et la facturation s’arrête avec le mois.",
+              question: "Puis-je résilier ?",
+            },
+          ],
+          title: "Tarifs",
+        },
+      ],
+      label: "FAQ",
+      lead: "Des réponses courtes, tirées de la documentation, qui donne le détail.",
+      title: {
+        muted: "Des réponses simples, avant de commencer.",
+        text: "Questions fréquentes.",
+      },
+    },
     featuresTitle: "Ce que nous construisons",
     hero: {
       lead: "Peal est une plateforme de planification pour les réseaux sociaux, pensée pour les équipes. Écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats au même endroit.",
@@ -429,6 +656,11 @@ const fr: Messages = {
       status:
         "En cours de développement : pas encore sorti. Voici ce que Peal est conçu pour faire.",
       title: "Écrire une fois. Planifier partout. Voir ce qui marche.",
+    },
+    sections: {
+      faq: "FAQ",
+      features: "Produit",
+      selfHost: "Auto-hébergement",
     },
     selfHost: {
       body: "Une instance auto-hébergée n’a besoin que de Postgres et d’un stockage compatible S3. L’e-mail, la facturation, le captcha, l’IA et la télémétrie sont facultatifs, et chacun a une option auto-hébergeable.",
