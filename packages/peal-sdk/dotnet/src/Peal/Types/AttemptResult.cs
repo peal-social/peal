@@ -52,6 +52,12 @@ public readonly record struct AttemptResult : IStringEnum
 
     public static readonly AttemptResult XThreadCut = new(Values.XThreadCut);
 
+    public static readonly AttemptResult ForumThreadNameRequired = new(
+        Values.ForumThreadNameRequired
+    );
+
+    public static readonly AttemptResult ChatMigrated = new(Values.ChatMigrated);
+
     public AttemptResult(string value)
     {
         Value = value;
@@ -189,5 +195,9 @@ public readonly record struct AttemptResult : IStringEnum
         public const string PerAccountPricingRequired = "perAccountPricingRequired";
 
         public const string XThreadCut = "xThreadCut";
+
+        public const string ForumThreadNameRequired = "forumThreadNameRequired";
+
+        public const string ChatMigrated = "chatMigrated";
     }
 }

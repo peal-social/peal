@@ -52,6 +52,12 @@ public readonly record struct FailureReason : IStringEnum
 
     public static readonly FailureReason XThreadCut = new(Values.XThreadCut);
 
+    public static readonly FailureReason ForumThreadNameRequired = new(
+        Values.ForumThreadNameRequired
+    );
+
+    public static readonly FailureReason ChatMigrated = new(Values.ChatMigrated);
+
     public FailureReason(string value)
     {
         Value = value;
@@ -189,5 +195,9 @@ public readonly record struct FailureReason : IStringEnum
         public const string PerAccountPricingRequired = "perAccountPricingRequired";
 
         public const string XThreadCut = "xThreadCut";
+
+        public const string ForumThreadNameRequired = "forumThreadNameRequired";
+
+        public const string ChatMigrated = "chatMigrated";
     }
 }

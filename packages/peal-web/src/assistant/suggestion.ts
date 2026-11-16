@@ -112,12 +112,36 @@ export interface WriteChoices {
 
 type WriteAction = Extract<AssistantAction, { readonly _tag: "write" }>;
 
-/** The action that writes a post, naming only what the person chose. */
-export const writeAction = ({ platform, tone }: WriteChoices): WriteAction => {
+type ShortenAction = Extract<AssistantAction, { readonly _tag: "shorten" }>;
+
+/**
+ * The action that shortens the post for a platform: to a caption's limit
+ * when the post shows media, where the platform sets one.
+ */
+export const shortenAction = (
+  platform: Platform,
+  showsMedia: boolean
+): ShortenAction =>
+  showsMedia
+    ? { _tag: "shorten", media: true, platform }
+    : { _tag: "shorten", platform };
+
+/**
+ * The action that writes a post, naming only what the person chose, and
+ * that the post shows media when it does and a platform is named.
+ */
+export const writeAction = (
+  { platform, tone }: WriteChoices,
+  showsMedia = false
+): WriteAction => {
   const action: Types.Mutable<WriteAction> = { _tag: "write" };
 
   if (platform !== null) {
     action.platform = platform;
+
+    if (showsMedia) {
+      action.media = true;
+    }
   }
 
   if (tone !== null) {

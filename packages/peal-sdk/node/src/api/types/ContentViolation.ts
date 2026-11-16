@@ -37,6 +37,8 @@ export type ContentViolation =
     | Peal.ContentViolation.VideoTooShort
     | Peal.ContentViolation.TooManyPixels
     | Peal.ContentViolation.SideOutOfRange
+    | Peal.ContentViolation.SideSumTooLarge
+    | Peal.ContentViolation.MediaTotalTooLarge
     | Peal.ContentViolation.AspectRatioUnsupported
     | Peal.ContentViolation.AltTextTooLong;
 
@@ -175,6 +177,14 @@ export namespace ContentViolation {
 
     export interface SideOutOfRange extends Peal.ContentViolationSideOutOfRange {
         _tag: "sideOutOfRange";
+    }
+
+    export interface SideSumTooLarge extends Peal.ContentViolationSideSumTooLarge {
+        _tag: "sideSumTooLarge";
+    }
+
+    export interface MediaTotalTooLarge extends Peal.ContentViolationMediaTotalTooLarge {
+        _tag: "mediaTotalTooLarge";
     }
 
     export interface AspectRatioUnsupported extends Peal.ContentViolationAspectRatioUnsupported {

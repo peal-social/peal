@@ -26,6 +26,10 @@ public class PlatformsTest : BaseMockServerTest
                 "x",
                 "x"
               ],
+              "chats": [
+                "discord",
+                "discord"
+              ],
               "sites": [
                 "wordpress",
                 "wordpress"
@@ -66,6 +70,9 @@ public class PlatformsTest : BaseMockServerTest
               ],
               "platforms": [
                 "x"
+              ],
+              "chats": [
+                "discord"
               ],
               "sites": [
                 "wordpress"

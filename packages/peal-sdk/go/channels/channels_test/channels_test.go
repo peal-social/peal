@@ -213,6 +213,37 @@ func TestChannelsConnectSiteWithKeyWithWireMock(
 	VerifyRequestCount(t, "TestChannelsConnectSiteWithKeyWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites/keys", nil, 1)
 }
 
+func TestChannelsConnectChatWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.ConnectChatChannelsRequest{
+		WorkspaceID: "workspaceId",
+		Body: &peal.ConnectChat{
+			Discord: &peal.ConnectDiscordChat{
+				WebhookURL: "webhookUrl",
+			},
+		},
+	}
+	_, invocationErr := client.Channels.ConnectChat(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestChannelsConnectChatWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestChannelsConnectChatWithWireMock", "POST", "/api/workspaces/workspaceId/channels/chats", nil, 1)
+}
+
 func TestChannelsStartSiteSignInWithWireMock(
 	t *testing.T,
 ) {

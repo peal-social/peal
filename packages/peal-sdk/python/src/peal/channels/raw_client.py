@@ -10,6 +10,7 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_gateway_error import BadGatewayError
 from ..errors.bad_request_error import BadRequestError
 from ..errors.forbidden_error import ForbiddenError
@@ -23,6 +24,7 @@ from ..types.channel import Channel
 from ..types.channel_connection import ChannelConnection
 from ..types.channel_page import ChannelPage
 from ..types.channel_status_name import ChannelStatusName
+from ..types.connect_chat import ConnectChat
 from ..types.connect_outcome import ConnectOutcome
 from ..types.connectable_platforms import ConnectablePlatforms
 from ..types.key_site_platform import KeySitePlatform
@@ -254,7 +256,7 @@ class RawChannelsClient:
         self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ConnectablePlatforms]:
         """
-        Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+        Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
 
         Parameters
         ----------
@@ -524,6 +526,135 @@ class RawChannelsClient:
                 "platform": platform,
                 "publication": publication,
             },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=_request_options_with_retries_disabled,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Channel,
+                    parse_obj_as(
+                        type_=Channel,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        UnauthenticatedEncoded,
+                        parse_obj_as(
+                            type_=UnauthenticatedEncoded,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def connect_chat(
+        self, workspace_id: str, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[Channel]:
+        """
+        Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        request : ConnectChat
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Channel]
+            Channel
+        """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
+        _response = self._client_wrapper.httpx_client.request(
+            f"api/workspaces/{encode_path_param(workspace_id)}/channels/chats",
+            method="POST",
+            json=convert_and_respect_annotation_metadata(object_=request, annotation=ConnectChat, direction="write"),
             headers={
                 "content-type": "application/json",
             },
@@ -2059,7 +2190,7 @@ class AsyncRawChannelsClient:
         self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ConnectablePlatforms]:
         """
-        Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+        Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
 
         Parameters
         ----------
@@ -2329,6 +2460,135 @@ class AsyncRawChannelsClient:
                 "platform": platform,
                 "publication": publication,
             },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=_request_options_with_retries_disabled,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Channel,
+                    parse_obj_as(
+                        type_=Channel,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        UnauthenticatedEncoded,
+                        parse_obj_as(
+                            type_=UnauthenticatedEncoded,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 402:
+                raise PaymentRequiredError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def connect_chat(
+        self, workspace_id: str, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[Channel]:
+        """
+        Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        request : ConnectChat
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[Channel]
+            Channel
+        """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
+        _response = await self._client_wrapper.httpx_client.request(
+            f"api/workspaces/{encode_path_param(workspace_id)}/channels/chats",
+            method="POST",
+            json=convert_and_respect_annotation_metadata(object_=request, annotation=ConnectChat, direction="write"),
             headers={
                 "content-type": "application/json",
             },

@@ -88,6 +88,9 @@ const integers = integersIn(
 const byteNames = new Set([
   "byteSize",
   "maxByteSize",
+  // The most a part's files weigh together (Discord's 25 MiB), and what
+  // they weighed (`mediaTotalTooLarge`).
+  "maxTotalByteSize",
   "mediaStorage",
   "minByteSize",
 ]);
@@ -194,6 +197,9 @@ describe("the integers of the OpenAPI document", () => {
       "scheduledPosts",
       "spend",
       "spendCap",
+      // What a part's files weighed together, in bytes, beside its
+      // maximum (`mediaTotalTooLarge`); elsewhere `total` counts items.
+      "total",
       "totalBudget",
       // An exported report of usage to the payment provider: units of a
       // meter, as messages sent.

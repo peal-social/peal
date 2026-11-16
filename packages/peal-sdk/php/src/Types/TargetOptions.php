@@ -23,6 +23,8 @@ class TargetOptions extends JsonSerializableType
      *   |'x'
      *   |'instagram'
      *   |'facebook'
+     *   |'discord'
+     *   |'telegram'
      *   |'_unknown'
      * ) $platform
      */
@@ -41,6 +43,8 @@ class TargetOptions extends JsonSerializableType
      *   |XOptions
      *   |InstagramOptions
      *   |FacebookOptions
+     *   |DiscordOptions
+     *   |TelegramOptions
      *   |mixed
      * ) $value
      */
@@ -60,6 +64,8 @@ class TargetOptions extends JsonSerializableType
      *   |'x'
      *   |'instagram'
      *   |'facebook'
+     *   |'discord'
+     *   |'telegram'
      *   |'_unknown'
      * ),
      *   value: (
@@ -74,6 +80,8 @@ class TargetOptions extends JsonSerializableType
      *   |XOptions
      *   |InstagramOptions
      *   |FacebookOptions
+     *   |DiscordOptions
+     *   |TelegramOptions
      *   |mixed
      * ),
      * } $values
@@ -214,6 +222,30 @@ class TargetOptions extends JsonSerializableType
         return new TargetOptions([
             'platform' => 'facebook',
             'value' => $facebook,
+        ]);
+    }
+
+    /**
+     * @param DiscordOptions $discord
+     * @return TargetOptions
+     */
+    public static function discord(DiscordOptions $discord): TargetOptions
+    {
+        return new TargetOptions([
+            'platform' => 'discord',
+            'value' => $discord,
+        ]);
+    }
+
+    /**
+     * @param TelegramOptions $telegram
+     * @return TargetOptions
+     */
+    public static function telegram(TelegramOptions $telegram): TargetOptions
+    {
+        return new TargetOptions([
+            'platform' => 'telegram',
+            'value' => $telegram,
         ]);
     }
 
@@ -460,6 +492,50 @@ class TargetOptions extends JsonSerializableType
     }
 
     /**
+     * @return bool
+     */
+    public function isDiscord(): bool
+    {
+        return $this->value instanceof DiscordOptions && $this->platform === 'discord';
+    }
+
+    /**
+     * @return DiscordOptions
+     */
+    public function asDiscord(): DiscordOptions
+    {
+        if (!($this->value instanceof DiscordOptions && $this->platform === 'discord')) {
+            throw new Exception(
+                "Expected discord; got " . $this->platform . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTelegram(): bool
+    {
+        return $this->value instanceof TelegramOptions && $this->platform === 'telegram';
+    }
+
+    /**
+     * @return TelegramOptions
+     */
+    public function asTelegram(): TelegramOptions
+    {
+        if (!($this->value instanceof TelegramOptions && $this->platform === 'telegram')) {
+            throw new Exception(
+                "Expected telegram; got " . $this->platform . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
@@ -521,6 +597,14 @@ class TargetOptions extends JsonSerializableType
                 break;
             case 'facebook':
                 $value = $this->asFacebook()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'discord':
+                $value = $this->asDiscord()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'telegram':
+                $value = $this->asTelegram()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case '_unknown':
@@ -591,6 +675,12 @@ class TargetOptions extends JsonSerializableType
                 break;
             case 'facebook':
                 $args['value'] = FacebookOptions::jsonDeserialize($data);
+                break;
+            case 'discord':
+                $args['value'] = DiscordOptions::jsonDeserialize($data);
+                break;
+            case 'telegram':
+                $args['value'] = TelegramOptions::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

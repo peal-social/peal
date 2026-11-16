@@ -101,20 +101,27 @@ export const lookupDescriptionView = (
 const formatView = (
   contentType: MediaFormatView["contentType"],
   limits: FormatLimits
-): MediaFormatView => ({
-  contentType,
-  kind: mediaKinds[contentType],
-  maxAspectRatio: orNull(limits.aspectRatio?.maximum),
-  maxByteSize: orNull(limits.maxByteSize),
-  maxDurationMs: orNull(limits.maxDurationMs),
-  maxMediaWith: orNull(limits.maxMediaWith),
-  maxPixels: orNull(limits.maxPixels),
-  maxSide: orNull(limits.sideRange?.maximum),
-  minAspectRatio: orNull(limits.aspectRatio?.minimum),
-  minByteSize: orNull(limits.minByteSize),
-  minDurationMs: orNull(limits.minDurationMs),
-  minSide: orNull(limits.sideRange?.minimum),
-});
+): MediaFormatView => {
+  const view: MediaFormatView = {
+    contentType,
+    kind: mediaKinds[contentType],
+    maxAspectRatio: orNull(limits.aspectRatio?.maximum),
+    maxByteSize: orNull(limits.maxByteSize),
+    maxDurationMs: orNull(limits.maxDurationMs),
+    maxMediaWith: orNull(limits.maxMediaWith),
+    maxPixels: orNull(limits.maxPixels),
+    maxSide: orNull(limits.sideRange?.maximum),
+    minAspectRatio: orNull(limits.aspectRatio?.minimum),
+    minByteSize: orNull(limits.minByteSize),
+    minDurationMs: orNull(limits.minDurationMs),
+    minSide: orNull(limits.sideRange?.minimum),
+  };
+
+  // Width plus height, only where the platform limits it.
+  return limits.maxSideSum === undefined
+    ? view
+    : { ...view, maxSideSum: limits.maxSideSum };
+};
 
 // The file types the platform takes, in the order Peal lists its own.
 const formatsView = (media: MediaRules): readonly MediaFormatView[] =>
@@ -129,17 +136,24 @@ const formatsView = (media: MediaRules): readonly MediaFormatView[] =>
 const mediaView = (
   rules: PlatformRules,
   limits: { readonly maxAltTextLength: number; readonly maxMedia: number }
-): PlatformCapabilitiesView["media"] => ({
-  altText: {
-    maxLength: limits.maxAltTextLength,
-    shown: orNull(rules.media?.showsAltText),
-  },
-  formats: rules.media === undefined ? null : formatsView(rules.media),
-  maxCount: limits.maxMedia,
-  maxVideos: orNull(rules.media?.maxVideos),
-  mixesKinds: orNull(rules.media?.mixesKinds),
-  required: rules.mediaRequired,
-});
+): PlatformCapabilitiesView["media"] => {
+  const view: PlatformCapabilitiesView["media"] = {
+    altText: {
+      maxLength: limits.maxAltTextLength,
+      shown: orNull(rules.media?.showsAltText),
+    },
+    formats: rules.media === undefined ? null : formatsView(rules.media),
+    maxCount: limits.maxMedia,
+    maxVideos: orNull(rules.media?.maxVideos),
+    mixesKinds: orNull(rules.media?.mixesKinds),
+    required: rules.mediaRequired,
+  };
+
+  const total = rules.media?.maxTotalByteSize;
+
+  // The files' weight together, only where the platform limits it.
+  return total === undefined ? view : { ...view, maxTotalByteSize: total };
+};
 
 // The poll the platform takes, as the contract describes it.
 const pollView = (poll: PollRules) => ({
@@ -155,6 +169,28 @@ const pollView = (poll: PollRules) => ({
   minChoices: poll.minChoices,
   multipleChoice: poll.multipleChoice,
 });
+
+// What the platform takes of a post's text, with the limits on a caption
+// where the platform has them apart.
+const textView = (
+  capabilities: PlatformCapabilities
+): PlatformCapabilitiesView["text"] => {
+  const { rules } = capabilities;
+
+  const view: PlatformCapabilitiesView["text"] = {
+    forbiddenCharacters: rules.forbiddenCharacters ?? [],
+    limits: capabilities.textLimits,
+    maxHashtags: orNull(rules.maxHashtags),
+    maxLinks: orNull(rules.maxLinks),
+    maxMentions: orNull(rules.maxMentions),
+  };
+
+  const withMedia = capabilities.textLimitsWithMedia;
+
+  return withMedia === undefined
+    ? view
+    : { ...view, limitsWithMedia: withMedia };
+};
 
 const isPostCount = Schema.is(Schema.Literals(postCountNames));
 
@@ -184,13 +220,7 @@ export const platformCapabilitiesView = (
       fields: capabilities.options.map(fieldView),
     },
     platform: capabilities.platform,
-    text: {
-      forbiddenCharacters: rules.forbiddenCharacters ?? [],
-      limits: capabilities.textLimits,
-      maxHashtags: orNull(rules.maxHashtags),
-      maxLinks: orNull(rules.maxLinks),
-      maxMentions: orNull(rules.maxMentions),
-    },
+    text: textView(capabilities),
     version: capabilities.version,
   };
 

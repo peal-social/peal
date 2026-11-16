@@ -177,6 +177,16 @@ describe("the options fields", () => {
     ],
     ["facebook", { videoTitle: "A synthetic launch video" }],
     [
+      "discord",
+      {
+        mentions: true,
+        silent: true,
+        suppressEmbeds: true,
+        threadName: "A synthetic forum post",
+      },
+    ],
+    ["telegram", { linkPreview: false, silent: true }],
+    [
       "x",
       {
         communityId: "1700000000000000001",
@@ -209,12 +219,14 @@ describe("the options fields", () => {
   it("cover every platform that takes options in the test above", () => {
     expect([...optionsPlatforms].toSorted()).toStrictEqual([
       "bluesky",
+      "discord",
       "facebook",
       "googleBusiness",
       "instagram",
       "linkedin",
       "mastodon",
       "pinterest",
+      "telegram",
       "threads",
       "tiktok",
       "x",

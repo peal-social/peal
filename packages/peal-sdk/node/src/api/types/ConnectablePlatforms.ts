@@ -6,5 +6,6 @@ export interface ConnectablePlatforms {
     instagramConnections: Peal.InstagramConnection[];
     linkedinConnections: Peal.LinkedInConnection[];
     platforms: Peal.Platform[];
+    chats?: Peal.ChatPlatform[] | undefined;
     sites?: Peal.SitePlatform[] | undefined;
 }

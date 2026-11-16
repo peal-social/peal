@@ -343,6 +343,15 @@ describe(decide, () => {
       outcome: new BadRequest({ code: "repliesNotAllowed" }),
       reason: "repliesNotAllowed",
     },
+    // A chat's own refusals, which the member fixes outside the post.
+    {
+      outcome: new BadRequest({ code: "forumThreadNameRequired" }),
+      reason: "forumThreadNameRequired",
+    },
+    {
+      outcome: new BadRequest({ code: "chatMigrated" }),
+      reason: "chatMigrated",
+    },
   ])(
     "fails at once with $reason when Peal could not use the channel or media",
     ({ outcome, reason }) => {

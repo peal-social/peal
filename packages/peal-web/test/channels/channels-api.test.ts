@@ -2,6 +2,8 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Exit, Option } from "effect";
 import {
   ChannelNotFound,
+  ChatConnectLimited,
+  ChatNotConnected,
   ConnectFailed,
   Forbidden,
   PlanLimitReached,
@@ -53,6 +55,29 @@ describe(failureOf, () => {
     });
 
     expect(failureOf(Exit.fail(refused))).toStrictEqual(Option.some(key));
+  });
+
+  it.each([
+    ["addressNotAWebhook"],
+    ["webhookNotFound"],
+    ["webhookKindNotSupported"],
+    ["credentialsRefused"],
+    ["chatNotFound"],
+    ["chatKindNotSupported"],
+    ["cannotPost"],
+  ] as const)(
+    "explains a chat refused for %s, apart from websites",
+    (reason) => {
+      expect(
+        failureOf(Exit.fail(new ChatNotConnected({ reason })))
+      ).toStrictEqual(Option.some(`chat.${reason}`));
+    }
+  );
+
+  it("explains too many tries at chats in their own words", () => {
+    expect(failureOf(Exit.fail(new ChatConnectLimited()))).toStrictEqual(
+      Option.some("chatTooManyTries")
+    );
   });
 
   it("calls anything else, as a server that is down, unknown", () => {

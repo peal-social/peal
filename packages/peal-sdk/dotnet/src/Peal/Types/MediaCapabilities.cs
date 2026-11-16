@@ -20,6 +20,9 @@ public record MediaCapabilities : IJsonOnDeserialized
     [JsonPropertyName("maxCount")]
     public required int MaxCount { get; set; }
 
+    [JsonPropertyName("maxTotalByteSize")]
+    public long? MaxTotalByteSize { get; set; }
+
     [JsonPropertyName("maxVideos")]
     public int? MaxVideos { get; set; }
 

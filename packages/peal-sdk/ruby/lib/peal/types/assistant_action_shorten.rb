@@ -5,6 +5,8 @@ require_relative "../../peal"
 module Peal
   module Types
     class AssistantActionShorten < Internal::Types::Model
+      field :media, -> { Internal::Types::Boolean }, optional: true, nullable: false
+
       field :platform, -> { Peal::Types::Platform }, optional: false, nullable: false
     end
   end

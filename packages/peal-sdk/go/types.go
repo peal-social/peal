@@ -7069,6 +7069,8 @@ const (
 	ChannelPlatformYoutube        ChannelPlatform = "youtube"
 	ChannelPlatformPinterest      ChannelPlatform = "pinterest"
 	ChannelPlatformGoogleBusiness ChannelPlatform = "googleBusiness"
+	ChannelPlatformDiscord        ChannelPlatform = "discord"
+	ChannelPlatformTelegram       ChannelPlatform = "telegram"
 	ChannelPlatformWordpress      ChannelPlatform = "wordpress"
 	ChannelPlatformDevto          ChannelPlatform = "devto"
 	ChannelPlatformHashnode       ChannelPlatform = "hashnode"
@@ -7099,6 +7101,10 @@ func NewChannelPlatformFromString(s string) (ChannelPlatform, error) {
 		return ChannelPlatformPinterest, nil
 	case "googleBusiness":
 		return ChannelPlatformGoogleBusiness, nil
+	case "discord":
+		return ChannelPlatformDiscord, nil
+	case "telegram":
+		return ChannelPlatformTelegram, nil
 	case "wordpress":
 		return ChannelPlatformWordpress, nil
 	case "devto":
@@ -7637,6 +7643,295 @@ func (c *ChannelStatusRefreshNeeded) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", c)
+}
+
+var (
+	chatConnectLimitedEncodedFieldCode      = big.NewInt(1 << 0)
+	chatConnectLimitedEncodedFieldMessage   = big.NewInt(1 << 1)
+	chatConnectLimitedEncodedFieldRequestID = big.NewInt(1 << 2)
+)
+
+type ChatConnectLimitedEncoded struct {
+	Code      *string `json:"code,omitempty" url:"code,omitempty"`
+	Message   *string `json:"message,omitempty" url:"message,omitempty"`
+	RequestID *string `json:"requestId,omitempty" url:"requestId,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (c *ChatConnectLimitedEncoded) GetCode() *string {
+	if c == nil {
+		return nil
+	}
+	return c.Code
+}
+
+func (c *ChatConnectLimitedEncoded) GetMessage() *string {
+	if c == nil {
+		return nil
+	}
+	return c.Message
+}
+
+func (c *ChatConnectLimitedEncoded) GetRequestID() *string {
+	if c == nil {
+		return nil
+	}
+	return c.RequestID
+}
+
+func (c *ChatConnectLimitedEncoded) GetExtraProperties() map[string]interface{} {
+	if c == nil {
+		return nil
+	}
+	return c.extraProperties
+}
+
+func (c *ChatConnectLimitedEncoded) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChatConnectLimitedEncoded) SetCode(code *string) {
+	c.Code = code
+	c.require(chatConnectLimitedEncodedFieldCode)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChatConnectLimitedEncoded) SetMessage(message *string) {
+	c.Message = message
+	c.require(chatConnectLimitedEncodedFieldMessage)
+}
+
+// SetRequestID sets the RequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChatConnectLimitedEncoded) SetRequestID(requestID *string) {
+	c.RequestID = requestID
+	c.require(chatConnectLimitedEncodedFieldRequestID)
+}
+
+func (c *ChatConnectLimitedEncoded) UnmarshalJSON(data []byte) error {
+	type unmarshaler ChatConnectLimitedEncoded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*c = ChatConnectLimitedEncoded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *c)
+	if err != nil {
+		return err
+	}
+	c.extraProperties = extraProperties
+	c.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (c *ChatConnectLimitedEncoded) MarshalJSON() ([]byte, error) {
+	type embed ChatConnectLimitedEncoded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (c *ChatConnectLimitedEncoded) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	if len(c.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(c); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", c)
+}
+
+var (
+	chatNotConnectedEncodedFieldCode      = big.NewInt(1 << 0)
+	chatNotConnectedEncodedFieldMessage   = big.NewInt(1 << 1)
+	chatNotConnectedEncodedFieldRequestID = big.NewInt(1 << 2)
+	chatNotConnectedEncodedFieldReason    = big.NewInt(1 << 3)
+)
+
+type ChatNotConnectedEncoded struct {
+	Code      *string                `json:"code,omitempty" url:"code,omitempty"`
+	Message   *string                `json:"message,omitempty" url:"message,omitempty"`
+	RequestID *string                `json:"requestId,omitempty" url:"requestId,omitempty"`
+	Reason    ChatNotConnectedReason `json:"reason" url:"reason"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (c *ChatNotConnectedEncoded) GetCode() *string {
+	if c == nil {
+		return nil
+	}
+	return c.Code
+}
+
+func (c *ChatNotConnectedEncoded) GetMessage() *string {
+	if c == nil {
+		return nil
+	}
+	return c.Message
+}
+
+func (c *ChatNotConnectedEncoded) GetRequestID() *string {
+	if c == nil {
+		return nil
+	}
+	return c.RequestID
+}
+
+func (c *ChatNotConnectedEncoded) GetReason() ChatNotConnectedReason {
+	if c == nil {
+		return ""
+	}
+	return c.Reason
+}
+
+func (c *ChatNotConnectedEncoded) GetExtraProperties() map[string]interface{} {
+	if c == nil {
+		return nil
+	}
+	return c.extraProperties
+}
+
+func (c *ChatNotConnectedEncoded) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChatNotConnectedEncoded) SetCode(code *string) {
+	c.Code = code
+	c.require(chatNotConnectedEncodedFieldCode)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChatNotConnectedEncoded) SetMessage(message *string) {
+	c.Message = message
+	c.require(chatNotConnectedEncodedFieldMessage)
+}
+
+// SetRequestID sets the RequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChatNotConnectedEncoded) SetRequestID(requestID *string) {
+	c.RequestID = requestID
+	c.require(chatNotConnectedEncodedFieldRequestID)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ChatNotConnectedEncoded) SetReason(reason ChatNotConnectedReason) {
+	c.Reason = reason
+	c.require(chatNotConnectedEncodedFieldReason)
+}
+
+func (c *ChatNotConnectedEncoded) UnmarshalJSON(data []byte) error {
+	type unmarshaler ChatNotConnectedEncoded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*c = ChatNotConnectedEncoded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *c)
+	if err != nil {
+		return err
+	}
+	c.extraProperties = extraProperties
+	c.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (c *ChatNotConnectedEncoded) MarshalJSON() ([]byte, error) {
+	type embed ChatNotConnectedEncoded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (c *ChatNotConnectedEncoded) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	if len(c.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(c); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", c)
+}
+
+type ChatNotConnectedReason string
+
+const (
+	ChatNotConnectedReasonAddressNotAWebhook      ChatNotConnectedReason = "addressNotAWebhook"
+	ChatNotConnectedReasonWebhookNotFound         ChatNotConnectedReason = "webhookNotFound"
+	ChatNotConnectedReasonWebhookKindNotSupported ChatNotConnectedReason = "webhookKindNotSupported"
+	ChatNotConnectedReasonCredentialsRefused      ChatNotConnectedReason = "credentialsRefused"
+	ChatNotConnectedReasonChatNotFound            ChatNotConnectedReason = "chatNotFound"
+	ChatNotConnectedReasonChatKindNotSupported    ChatNotConnectedReason = "chatKindNotSupported"
+	ChatNotConnectedReasonCannotPost              ChatNotConnectedReason = "cannotPost"
+)
+
+func NewChatNotConnectedReasonFromString(s string) (ChatNotConnectedReason, error) {
+	switch s {
+	case "addressNotAWebhook":
+		return ChatNotConnectedReasonAddressNotAWebhook, nil
+	case "webhookNotFound":
+		return ChatNotConnectedReasonWebhookNotFound, nil
+	case "webhookKindNotSupported":
+		return ChatNotConnectedReasonWebhookKindNotSupported, nil
+	case "credentialsRefused":
+		return ChatNotConnectedReasonCredentialsRefused, nil
+	case "chatNotFound":
+		return ChatNotConnectedReasonChatNotFound, nil
+	case "chatKindNotSupported":
+		return ChatNotConnectedReasonChatKindNotSupported, nil
+	case "cannotPost":
+		return ChatNotConnectedReasonCannotPost, nil
+	}
+	var t ChatNotConnectedReason
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (c ChatNotConnectedReason) Ptr() *ChatNotConnectedReason {
+	return &c
 }
 
 var (
@@ -9958,6 +10253,141 @@ func (d DeletionIncompleteEncodedTag) Ptr() *DeletionIncompleteEncodedTag {
 }
 
 var (
+	discordOptionsFieldMentions       = big.NewInt(1 << 0)
+	discordOptionsFieldSilent         = big.NewInt(1 << 1)
+	discordOptionsFieldSuppressEmbeds = big.NewInt(1 << 2)
+	discordOptionsFieldThreadName     = big.NewInt(1 << 3)
+)
+
+// How a post goes out on a Discord channel, on every part of a thread. Scheduling needs none of them; a forum channel needs a thread name.
+type DiscordOptions struct {
+	Mentions       *bool   `json:"mentions,omitempty" url:"mentions,omitempty"`
+	Silent         *bool   `json:"silent,omitempty" url:"silent,omitempty"`
+	SuppressEmbeds *bool   `json:"suppressEmbeds,omitempty" url:"suppressEmbeds,omitempty"`
+	ThreadName     *string `json:"threadName,omitempty" url:"threadName,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (d *DiscordOptions) GetMentions() *bool {
+	if d == nil {
+		return nil
+	}
+	return d.Mentions
+}
+
+func (d *DiscordOptions) GetSilent() *bool {
+	if d == nil {
+		return nil
+	}
+	return d.Silent
+}
+
+func (d *DiscordOptions) GetSuppressEmbeds() *bool {
+	if d == nil {
+		return nil
+	}
+	return d.SuppressEmbeds
+}
+
+func (d *DiscordOptions) GetThreadName() *string {
+	if d == nil {
+		return nil
+	}
+	return d.ThreadName
+}
+
+func (d *DiscordOptions) GetExtraProperties() map[string]interface{} {
+	if d == nil {
+		return nil
+	}
+	return d.extraProperties
+}
+
+func (d *DiscordOptions) require(field *big.Int) {
+	next := new(big.Int)
+	if d.explicitFields != nil {
+		next.Set(d.explicitFields)
+	}
+	next.Or(next, field)
+	d.explicitFields = next
+}
+
+// SetMentions sets the Mentions field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DiscordOptions) SetMentions(mentions *bool) {
+	d.Mentions = mentions
+	d.require(discordOptionsFieldMentions)
+}
+
+// SetSilent sets the Silent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DiscordOptions) SetSilent(silent *bool) {
+	d.Silent = silent
+	d.require(discordOptionsFieldSilent)
+}
+
+// SetSuppressEmbeds sets the SuppressEmbeds field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DiscordOptions) SetSuppressEmbeds(suppressEmbeds *bool) {
+	d.SuppressEmbeds = suppressEmbeds
+	d.require(discordOptionsFieldSuppressEmbeds)
+}
+
+// SetThreadName sets the ThreadName field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DiscordOptions) SetThreadName(threadName *string) {
+	d.ThreadName = threadName
+	d.require(discordOptionsFieldThreadName)
+}
+
+func (d *DiscordOptions) UnmarshalJSON(data []byte) error {
+	type unmarshaler DiscordOptions
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*d = DiscordOptions(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *d)
+	if err != nil {
+		return err
+	}
+	d.extraProperties = extraProperties
+	d.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (d *DiscordOptions) MarshalJSON() ([]byte, error) {
+	type embed DiscordOptions
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*d),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (d *DiscordOptions) String() string {
+	if d == nil {
+		return "<nil>"
+	}
+	if len(d.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(d); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", d)
+}
+
+var (
 	effectHttpApiErrorBadRequestEncodedFieldTag = big.NewInt(1 << 0)
 )
 
@@ -10501,6 +10931,8 @@ const (
 	FailureReasonPaymentFailed             FailureReason = "paymentFailed"
 	FailureReasonPerAccountPricingRequired FailureReason = "perAccountPricingRequired"
 	FailureReasonXThreadCut                FailureReason = "xThreadCut"
+	FailureReasonForumThreadNameRequired   FailureReason = "forumThreadNameRequired"
+	FailureReasonChatMigrated              FailureReason = "chatMigrated"
 )
 
 func NewFailureReasonFromString(s string) (FailureReason, error) {
@@ -10547,6 +10979,10 @@ func NewFailureReasonFromString(s string) (FailureReason, error) {
 		return FailureReasonPerAccountPricingRequired, nil
 	case "xThreadCut":
 		return FailureReasonXThreadCut, nil
+	case "forumThreadNameRequired":
+		return FailureReasonForumThreadNameRequired, nil
+	case "chatMigrated":
+		return FailureReasonChatMigrated, nil
 	}
 	var t FailureReason
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -23152,6 +23588,8 @@ const (
 	PlatformYoutube        Platform = "youtube"
 	PlatformPinterest      Platform = "pinterest"
 	PlatformGoogleBusiness Platform = "googleBusiness"
+	PlatformDiscord        Platform = "discord"
+	PlatformTelegram       Platform = "telegram"
 )
 
 func NewPlatformFromString(s string) (Platform, error) {
@@ -23178,6 +23616,10 @@ func NewPlatformFromString(s string) (Platform, error) {
 		return PlatformPinterest, nil
 	case "googleBusiness":
 		return PlatformGoogleBusiness, nil
+	case "discord":
+		return PlatformDiscord, nil
+	case "telegram":
+		return PlatformTelegram, nil
 	}
 	var t Platform
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -27471,6 +27913,8 @@ type TargetOptions struct {
 	X              *XOptions
 	Instagram      *InstagramOptions
 	Facebook       *FacebookOptions
+	Discord        *DiscordOptions
+	Telegram       *TelegramOptions
 
 	rawJSON json.RawMessage
 }
@@ -27559,6 +28003,20 @@ func (t *TargetOptions) GetFacebook() *FacebookOptions {
 	return t.Facebook
 }
 
+func (t *TargetOptions) GetDiscord() *DiscordOptions {
+	if t == nil {
+		return nil
+	}
+	return t.Discord
+}
+
+func (t *TargetOptions) GetTelegram() *TelegramOptions {
+	if t == nil {
+		return nil
+	}
+	return t.Telegram
+}
+
 func (t *TargetOptions) UnmarshalJSON(data []byte) error {
 	var unmarshaler struct {
 		Platform string `json:"platform"`
@@ -27637,6 +28095,18 @@ func (t *TargetOptions) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		t.Facebook = value
+	case "discord":
+		value := new(DiscordOptions)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		t.Discord = value
+	case "telegram":
+		value := new(TelegramOptions)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		t.Telegram = value
 	}
 	t.rawJSON = json.RawMessage(data)
 	return nil
@@ -27679,6 +28149,12 @@ func (t TargetOptions) MarshalJSON() ([]byte, error) {
 	if t.Facebook != nil {
 		return internal.MarshalJSONWithExtraProperty(t.Facebook, "platform", "facebook")
 	}
+	if t.Discord != nil {
+		return internal.MarshalJSONWithExtraProperty(t.Discord, "platform", "discord")
+	}
+	if t.Telegram != nil {
+		return internal.MarshalJSONWithExtraProperty(t.Telegram, "platform", "telegram")
+	}
 	if len(t.rawJSON) > 0 {
 		return t.rawJSON, nil
 	}
@@ -27697,6 +28173,8 @@ type TargetOptionsVisitor interface {
 	VisitX(*XOptions) error
 	VisitInstagram(*InstagramOptions) error
 	VisitFacebook(*FacebookOptions) error
+	VisitDiscord(*DiscordOptions) error
+	VisitTelegram(*TelegramOptions) error
 }
 
 func (t *TargetOptions) Accept(visitor TargetOptionsVisitor) error {
@@ -27732,6 +28210,12 @@ func (t *TargetOptions) Accept(visitor TargetOptionsVisitor) error {
 	}
 	if t.Facebook != nil {
 		return visitor.VisitFacebook(t.Facebook)
+	}
+	if t.Discord != nil {
+		return visitor.VisitDiscord(t.Discord)
+	}
+	if t.Telegram != nil {
+		return visitor.VisitTelegram(t.Telegram)
 	}
 	return fmt.Errorf("type %T does not define a non-empty union type", t)
 }
@@ -27773,6 +28257,12 @@ func (t *TargetOptions) validate() error {
 	}
 	if t.Facebook != nil {
 		fields = append(fields, "facebook")
+	}
+	if t.Discord != nil {
+		fields = append(fields, "discord")
+	}
+	if t.Telegram != nil {
+		fields = append(fields, "telegram")
 	}
 	if len(fields) == 0 {
 		if t.Platform != "" {
@@ -27920,6 +28410,109 @@ func (t *TargetStatusConflictEncoded) MarshalJSON() ([]byte, error) {
 }
 
 func (t *TargetStatusConflictEncoded) String() string {
+	if t == nil {
+		return "<nil>"
+	}
+	if len(t.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(t); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", t)
+}
+
+var (
+	telegramOptionsFieldLinkPreview = big.NewInt(1 << 0)
+	telegramOptionsFieldSilent      = big.NewInt(1 << 1)
+)
+
+// How a post goes out on a Telegram channel or group, on every part of a thread. Scheduling needs none of them.
+type TelegramOptions struct {
+	LinkPreview *bool `json:"linkPreview,omitempty" url:"linkPreview,omitempty"`
+	Silent      *bool `json:"silent,omitempty" url:"silent,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (t *TelegramOptions) GetLinkPreview() *bool {
+	if t == nil {
+		return nil
+	}
+	return t.LinkPreview
+}
+
+func (t *TelegramOptions) GetSilent() *bool {
+	if t == nil {
+		return nil
+	}
+	return t.Silent
+}
+
+func (t *TelegramOptions) GetExtraProperties() map[string]interface{} {
+	if t == nil {
+		return nil
+	}
+	return t.extraProperties
+}
+
+func (t *TelegramOptions) require(field *big.Int) {
+	next := new(big.Int)
+	if t.explicitFields != nil {
+		next.Set(t.explicitFields)
+	}
+	next.Or(next, field)
+	t.explicitFields = next
+}
+
+// SetLinkPreview sets the LinkPreview field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (t *TelegramOptions) SetLinkPreview(linkPreview *bool) {
+	t.LinkPreview = linkPreview
+	t.require(telegramOptionsFieldLinkPreview)
+}
+
+// SetSilent sets the Silent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (t *TelegramOptions) SetSilent(silent *bool) {
+	t.Silent = silent
+	t.require(telegramOptionsFieldSilent)
+}
+
+func (t *TelegramOptions) UnmarshalJSON(data []byte) error {
+	type unmarshaler TelegramOptions
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*t = TelegramOptions(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *t)
+	if err != nil {
+		return err
+	}
+	t.extraProperties = extraProperties
+	t.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (t *TelegramOptions) MarshalJSON() ([]byte, error) {
+	type embed TelegramOptions
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*t),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, t.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (t *TelegramOptions) String() string {
 	if t == nil {
 		return "<nil>"
 	}

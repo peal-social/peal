@@ -9,12 +9,15 @@ import {
 
 import { Authentication } from "./authentication.ts";
 import { ChannelNotFound } from "./channel-not-found.ts";
+import { ChatConnectLimited } from "./chat-connect-limited.ts";
+import { ChatNotConnected } from "./chat-not-connected.ts";
 import { ConnectFailed } from "./connect-failed.ts";
 import { Forbidden } from "./forbidden.ts";
 import { PlanLimitReached } from "./plan-limit-reached.ts";
 import { PlatformUnreachable } from "./platform-unreachable.ts";
 import {
   ChannelConnectionSchema,
+  ChatPlatformSchema,
   InstagramConnectionSchema,
   ChannelPlatformSchema,
   LinkedInConnectionSchema,
@@ -183,7 +186,12 @@ export const ConnectablePlatformsSchema = Schema.Struct({
   // What this server connects on LinkedIn: profiles, pages, or both; empty
   // when LinkedIn is not among the platforms.
   linkedinConnections: Schema.Array(LinkedInConnectionSchema),
+  // The platforms with a sign-in page: a client starts one for each. The
+  // chats connect with a secret instead, and are in `chats`.
   platforms: Schema.Array(PlatformSchema),
+  // The chats this server connects, each with a secret its member pastes
+  // (`connectChat`), never a sign-in: Discord and Telegram.
+  chats: Schema.optionalKey(Schema.Array(ChatPlatformSchema)),
   // The websites this server connects: those by address, by key, and
   // those it has the sign-in app of (WordPress.com).
   sites: Schema.optionalKey(Schema.Array(SitePlatformSchema)),
@@ -301,6 +309,47 @@ export const SiteSignInCallbackSchema = Schema.Struct({
 
 export type SiteSignInCallback = typeof SiteSignInCallbackSchema.Type;
 
+/** The longest secret or chat name a chat connects with. */
+export const maxChatSecretLength = 512;
+
+/**
+ * A Discord channel to connect, by its webhook's address, as the channel's
+ * settings give it (Integrations, Webhooks, Copy Webhook URL).
+ */
+export const ConnectDiscordChatSchema = Schema.Struct({
+  // The channel to reconnect: the webhook must post in its channel.
+  channelId: Schema.optionalKey(Schema.String),
+  platform: Schema.Literal("discord"),
+  // `https://discord.com/api/webhooks/<id>/<token>`. Kept encrypted, and
+  // never shown again.
+  webhookUrl: Schema.String.check(
+    Schema.isBetweenLength(1, maxChatSecretLength)
+  ),
+}).annotate({ identifier: "ConnectDiscordChat" });
+
+/**
+ * A Telegram channel or group to connect, by the member's own bot, made
+ * with Telegram's bot for making bots, and the chat it posts in.
+ */
+export const ConnectTelegramChatSchema = Schema.Struct({
+  // The bot's token. Kept encrypted, and never shown again.
+  botToken: Schema.String.check(Schema.isBetweenLength(1, 128)),
+  // The chat: its public name (`@name`), or its id (a channel's or a
+  // supergroup's starts with -100).
+  chat: Schema.String.check(Schema.isBetweenLength(1, 128)),
+  // The channel to reconnect: the bot must reach its chat again.
+  channelId: Schema.optionalKey(Schema.String),
+  platform: Schema.Literal("telegram"),
+}).annotate({ identifier: "ConnectTelegramChat" });
+
+/** A chat to connect, with its platform's secret, by `platform`. */
+export const ConnectChatSchema = Schema.Union([
+  ConnectDiscordChatSchema,
+  ConnectTelegramChatSchema,
+]).annotate({ identifier: "ConnectChat" });
+
+export type ConnectChat = typeof ConnectChatSchema.Type;
+
 /** A sign-in on a website's platform, for a new site or to reconnect one. */
 export const StartSiteSignInSchema = Schema.Struct({
   // The channel to reconnect: the sign-in must reach its site again.
@@ -369,7 +418,7 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     }).annotateMerge(
       OpenApi.annotations({
         description:
-          "Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.",
+          "Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.",
         summary: "List connectable platforms",
       })
     ),
@@ -395,6 +444,23 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
         description:
           "Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (`devto`), an API key from the account's settings (Extensions); on Hashnode (`hashnode`), a personal access token from the account's settings (Developer) and the publication's address in `publication`, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected `credentialsRefused`; a Hashnode publication that is not found is `publicationNotFound`, one of a team that lists the member as a contributor `cannotPublish` (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several `publicationRequired`, and one without Hashnode's Pro plan, which its API needs for every request, `planRequired`; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.",
         summary: "Connect a website with a key",
+      })
+    ),
+    HttpApiEndpoint.post("connectChat", "/chats", {
+      error: [
+        ...connectErrors,
+        ChannelNotFound,
+        ChatNotConnected,
+        ChatConnectLimited,
+      ],
+      params: workspace,
+      payload: ConnectChatSchema,
+      success: ChannelSchema,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description:
+          "Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.",
+        summary: "Connect a chat",
       })
     ),
     HttpApiEndpoint.post("startSiteSignIn", "/websites/sign-in/:platform", {

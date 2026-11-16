@@ -28,6 +28,8 @@ module Peal
       PAYMENT_FAILED = "paymentFailed"
       PER_ACCOUNT_PRICING_REQUIRED = "perAccountPricingRequired"
       X_THREAD_CUT = "xThreadCut"
+      FORUM_THREAD_NAME_REQUIRED = "forumThreadNameRequired"
+      CHAT_MIGRATED = "chatMigrated"
     end
   end
 end

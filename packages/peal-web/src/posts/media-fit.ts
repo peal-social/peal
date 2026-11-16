@@ -34,6 +34,11 @@ export type MediaProblem =
       readonly maximum: number;
     }
   | { readonly _tag: "mixedMedia" }
+  | {
+      readonly _tag: "mediaTotalTooLarge";
+      readonly maximum: number;
+      readonly total: number;
+    }
   | (MediaPlace &
       (
         | {
@@ -71,6 +76,12 @@ export type MediaProblem =
             readonly height: number;
             readonly maximum: number;
             readonly minimum: number;
+            readonly width: number;
+          }
+        | {
+            readonly _tag: "sideSumTooLarge";
+            readonly height: number;
+            readonly maximum: number;
             readonly width: number;
           }
         | {
@@ -126,13 +137,24 @@ const durationProblems = (
 ];
 
 const dimensionProblems = (
-  { aspectRatio, maxPixels, sideRange }: FormatLimits,
+  { aspectRatio, maxPixels, maxSideSum, sideRange }: FormatLimits,
   place: MediaPlace,
   { height, width }: { readonly height: number; readonly width: number }
 ): readonly MediaProblem[] => {
   const ratio = width / height;
 
   return [
+    ...(maxSideSum !== undefined && width + height > maxSideSum
+      ? [
+          {
+            ...place,
+            _tag: "sideSumTooLarge" as const,
+            height,
+            maximum: maxSideSum,
+            width,
+          },
+        ]
+      : []),
     ...(sideRange !== undefined &&
     [width, height].some(
       (side) => side < sideRange.minimum || side > sideRange.maximum
@@ -302,6 +324,9 @@ export const mediaFitOn = (
     known.length > fewest &&
     (maxMedia === undefined || attached.length <= maxMedia);
 
+  const total = known.reduce((sum, { file }) => sum + file.byteSize, 0);
+  const { maxTotalByteSize } = rules;
+
   return {
     // A document has no alt text to miss.
     missingAltText: rules.showsAltText
@@ -321,6 +346,15 @@ export const mediaFitOn = (
               _tag: "tooManyMedia" as const,
               count: known.length,
               maximum: fewest,
+            },
+          ]
+        : []),
+      ...(maxTotalByteSize !== undefined && total > maxTotalByteSize
+        ? [
+            {
+              _tag: "mediaTotalTooLarge" as const,
+              maximum: maxTotalByteSize,
+              total,
             },
           ]
         : []),

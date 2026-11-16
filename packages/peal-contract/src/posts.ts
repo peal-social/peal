@@ -234,6 +234,8 @@ export const FailureReasonSchema = Schema.Literals([
   "paymentFailed",
   "perAccountPricingRequired",
   "xThreadCut",
+  "forumThreadNameRequired",
+  "chatMigrated",
 ]).annotate({ identifier: "FailureReason" });
 
 export type FailureReason = typeof FailureReasonSchema.Type;
@@ -792,6 +794,8 @@ export const AttemptResultSchema = Schema.Literals([
   "paymentFailed",
   "perAccountPricingRequired",
   "xThreadCut",
+  "forumThreadNameRequired",
+  "chatMigrated",
 ]).annotate({ identifier: "AttemptResult" });
 
 export type AttemptResult = typeof AttemptResultSchema.Type;

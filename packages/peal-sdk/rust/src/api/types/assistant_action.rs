@@ -10,7 +10,11 @@ pub enum AssistantAction {
 
     #[serde(rename = "shorten")]
     #[non_exhaustive]
-    Shorten { platform: Platform },
+    Shorten {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        media: Option<bool>,
+        platform: Platform,
+    },
 
     #[serde(rename = "translate")]
     #[non_exhaustive]
@@ -25,6 +29,8 @@ pub enum AssistantAction {
     Write {
         #[serde(skip_serializing_if = "Option::is_none")]
         language: Option<TranslationLanguage>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        media: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none")]
         platform: Option<Platform>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -44,7 +50,10 @@ impl AssistantAction {
     }
 
     pub fn shorten(platform: Platform) -> Self {
-        Self::Shorten { platform }
+        Self::Shorten {
+            media: None,
+            platform,
+        }
     }
 
     pub fn translate(language: TranslationLanguage) -> Self {
@@ -58,18 +67,42 @@ impl AssistantAction {
     pub fn write() -> Self {
         Self::Write {
             language: None,
+            media: None,
             platform: None,
             tone: None,
         }
     }
 
+    pub fn shorten_with_media(media: bool, platform: Platform) -> Self {
+        Self::Shorten {
+            media: Some(media),
+            platform,
+        }
+    }
+
     pub fn write_with_language(
         language: TranslationLanguage,
+        media: Option<bool>,
         platform: Option<Platform>,
         tone: Option<AssistantTone>,
     ) -> Self {
         Self::Write {
             language: Some(language),
+            media,
+            platform,
+            tone,
+        }
+    }
+
+    pub fn write_with_media(
+        language: Option<TranslationLanguage>,
+        media: bool,
+        platform: Option<Platform>,
+        tone: Option<AssistantTone>,
+    ) -> Self {
+        Self::Write {
+            language,
+            media: Some(media),
             platform,
             tone,
         }
@@ -77,11 +110,13 @@ impl AssistantAction {
 
     pub fn write_with_platform(
         language: Option<TranslationLanguage>,
+        media: Option<bool>,
         platform: Platform,
         tone: Option<AssistantTone>,
     ) -> Self {
         Self::Write {
             language,
+            media,
             platform: Some(platform),
             tone,
         }
@@ -89,11 +124,13 @@ impl AssistantAction {
 
     pub fn write_with_tone(
         language: Option<TranslationLanguage>,
+        media: Option<bool>,
         platform: Option<Platform>,
         tone: AssistantTone,
     ) -> Self {
         Self::Write {
             language,
+            media,
             platform,
             tone: Some(tone),
         }

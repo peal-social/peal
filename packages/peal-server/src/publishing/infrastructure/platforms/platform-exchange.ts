@@ -1,8 +1,9 @@
-import { Effect, Match, Option } from "effect";
+import { Cause, Effect, Match, Option } from "effect";
 import type { Schema } from "effect";
 import type { HttpClientError } from "effect/http";
 
 import { OutcomeUnknown } from "#publishing/application/outcome-unknown.ts";
+import { unansweredAfterSending } from "#publishing/domain/removal-decision.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
@@ -40,6 +41,23 @@ export const unanswered = (
     OutboundRequestRefused: (refused) => Effect.fail(refusedHost(refused)),
     SchemaError: () => Effect.fail(new PlatformUnavailable()),
   });
+
+/**
+ * A call that changes a live post got no usable answer, told by whether it
+ * may have reached the platform: a request that timed out was sent, and
+ * is `unansweredAfterSending`, which lets a repeat that finds the change
+ * made count it (`editAfterRepeat`); any other transport error (a name
+ * that did not resolve, a connection refused) may never have left, and is
+ * a plain PlatformUnavailable.
+ */
+export const sentUnanswered = (
+  error: ExchangeError
+): Effect.Effect<never, BadRequest | PlatformUnavailable> =>
+  error._tag === "HttpClientError" &&
+  error.reason._tag === "TransportError" &&
+  Cause.isTimeoutError(error.reason.cause)
+    ? Effect.fail(new PlatformUnavailable({ code: unansweredAfterSending }))
+    : unanswered(error);
 
 /**
  * The call that makes a post live got no usable answer: the request may

@@ -493,6 +493,54 @@ layer(FileTest)("ChannelAccess", (it) => {
   );
 
   it.effect(
+    "marks a chat whose secret the platform refused, once, and calls it no more",
+    () =>
+      Effect.gen(function* chat() {
+        const workspaceId = yield* freshWorkspace;
+        // The server has no authorizer for a chat, which connects with a
+        // secret and is never renewed.
+        const { authorizer, calls } = yield* scripted("x");
+        const used = yield* Ref.make(0);
+
+        for (const platform of ["discord", "telegram"] as const) {
+          const channel = yield* stored(workspaceId, {
+            platform,
+            token: { _tag: "nonExpiring" },
+          });
+
+          const call = ChannelAccess.use((access) =>
+            access.withToken(channel.id, () =>
+              Ref.update(used, (count) => count + 1).pipe(
+                Effect.andThen(Effect.fail(new TokenRejected()))
+              )
+            )
+          ).pipe(Effect.provide(accessWith(authorizer)), Effect.flip);
+
+          const before = yield* Ref.get(used);
+
+          assert.deepStrictEqual(yield* call, new TokenExpired());
+          assert.strictEqual(yield* statusOf(channel.id), "refreshNeeded");
+          // The refused secret was used once, and never renewed.
+          assert.strictEqual(yield* Ref.get(used), before + 1);
+
+          // Marked to reconnect: the platform is not called again.
+          assert.deepStrictEqual(yield* call, new TokenExpired());
+          assert.strictEqual(yield* Ref.get(used), before + 1);
+        }
+
+        const notices = yield* RecordedNotices.use((recorded) =>
+          recorded.of(workspaceId)
+        );
+
+        assert.lengthOf(notices, 2);
+        assert.isTrue(
+          notices.every(({ kind }) => kind === "reconnectRequired")
+        );
+        assert.strictEqual(yield* calls, 0);
+      })
+  );
+
+  it.effect(
     "asks for a reconnect when a token that cannot renew has run out",
     () =>
       Effect.gen(function* nonRefreshable() {

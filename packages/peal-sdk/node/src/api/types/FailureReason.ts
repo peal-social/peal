@@ -21,6 +21,8 @@ export const FailureReason = {
         XCeilingReached: "xCeilingReached",
         PaymentFailed: "paymentFailed",
         PerAccountPricingRequired: "perAccountPricingRequired",
-        XThreadCut: "xThreadCut"
+        XThreadCut: "xThreadCut",
+        ForumThreadNameRequired: "forumThreadNameRequired",
+        ChatMigrated: "chatMigrated"
     } as const;
 export type FailureReason = typeof FailureReason[keyof typeof FailureReason];

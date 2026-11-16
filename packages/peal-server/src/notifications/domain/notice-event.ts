@@ -75,6 +75,8 @@ export const PostFailureReasonSchema = Schema.Literals([
   "paymentFailed",
   "perAccountPricingRequired",
   "xThreadCut",
+  "forumThreadNameRequired",
+  "chatMigrated",
 ]);
 
 export type PostFailureReason = typeof PostFailureReasonSchema.Type;

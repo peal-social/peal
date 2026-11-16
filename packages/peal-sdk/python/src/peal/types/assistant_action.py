@@ -33,6 +33,7 @@ class AssistantAction_Shorten(UniversalBaseModel):
     type: typing_extensions.Annotated[
         typing.Literal["shorten"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
     ] = "shorten"
+    media: typing.Optional[bool] = None
     platform: Platform
 
     if IS_PYDANTIC_V2:
@@ -81,6 +82,7 @@ class AssistantAction_Write(UniversalBaseModel):
         typing.Literal["write"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
     ] = "write"
     language: typing.Optional[TranslationLanguage] = None
+    media: typing.Optional[bool] = None
     platform: typing.Optional[Platform] = None
     tone: typing.Optional[AssistantTone] = None
 

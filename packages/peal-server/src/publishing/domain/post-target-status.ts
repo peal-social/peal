@@ -78,6 +78,14 @@ export const FailureReasonSchema = Schema.Literals([
   // plan, or the ceiling, as the billing page says). Repost it once the
   // billing account can pay, or keep the live parts as the post.
   "xThreadCut",
+  // The channel is a forum, whose posts need a title, and the post has
+  // none there (Discord: a forum or media channel's webhook). Copy the
+  // post, give it a title, and schedule it again.
+  "forumThreadNameRequired",
+  // The chat moved to a new id (Telegram: a group that became a
+  // supergroup), which the channel does not reach: connect the chat
+  // again, as a new channel.
+  "chatMigrated",
 ]);
 
 export type FailureReason = typeof FailureReasonSchema.Type;

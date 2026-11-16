@@ -268,6 +268,31 @@ pub enum TargetOptions {
         video_title: Option<String>,
     },
 
+    #[serde(rename = "discord")]
+    #[non_exhaustive]
+    Discord {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        mentions: Option<bool>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        silent: Option<bool>,
+        #[serde(rename = "suppressEmbeds")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        suppress_embeds: Option<bool>,
+        #[serde(rename = "threadName")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        thread_name: Option<String>,
+    },
+
+    #[serde(rename = "telegram")]
+    #[non_exhaustive]
+    Telegram {
+        #[serde(rename = "linkPreview")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        link_preview: Option<bool>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        silent: Option<bool>,
+    },
+
     /// Catch-all variant for unrecognized discriminant values.
     /// If the server sends a discriminant not recognized by the current SDK
     /// version, the raw payload is captured here so callers can still inspect it.
@@ -404,6 +429,22 @@ impl TargetOptions {
         Self::Facebook {
             format: None,
             video_title: None,
+        }
+    }
+
+    pub fn discord() -> Self {
+        Self::Discord {
+            mentions: None,
+            silent: None,
+            suppress_embeds: None,
+            thread_name: None,
+        }
+    }
+
+    pub fn telegram() -> Self {
+        Self::Telegram {
+            link_preview: None,
+            silent: None,
         }
     }
 
@@ -2134,6 +2175,76 @@ impl TargetOptions {
         Self::Facebook {
             format,
             video_title: Some(video_title),
+        }
+    }
+
+    pub fn discord_with_mentions(
+        mentions: bool,
+        silent: Option<bool>,
+        suppress_embeds: Option<bool>,
+        thread_name: Option<String>,
+    ) -> Self {
+        Self::Discord {
+            mentions: Some(mentions),
+            silent,
+            suppress_embeds,
+            thread_name,
+        }
+    }
+
+    pub fn discord_with_silent(
+        mentions: Option<bool>,
+        silent: bool,
+        suppress_embeds: Option<bool>,
+        thread_name: Option<String>,
+    ) -> Self {
+        Self::Discord {
+            mentions,
+            silent: Some(silent),
+            suppress_embeds,
+            thread_name,
+        }
+    }
+
+    pub fn discord_with_suppress_embeds(
+        mentions: Option<bool>,
+        silent: Option<bool>,
+        suppress_embeds: bool,
+        thread_name: Option<String>,
+    ) -> Self {
+        Self::Discord {
+            mentions,
+            silent,
+            suppress_embeds: Some(suppress_embeds),
+            thread_name,
+        }
+    }
+
+    pub fn discord_with_thread_name(
+        mentions: Option<bool>,
+        silent: Option<bool>,
+        suppress_embeds: Option<bool>,
+        thread_name: String,
+    ) -> Self {
+        Self::Discord {
+            mentions,
+            silent,
+            suppress_embeds,
+            thread_name: Some(thread_name),
+        }
+    }
+
+    pub fn telegram_with_link_preview(link_preview: bool, silent: Option<bool>) -> Self {
+        Self::Telegram {
+            link_preview: Some(link_preview),
+            silent,
+        }
+    }
+
+    pub fn telegram_with_silent(link_preview: Option<bool>, silent: bool) -> Self {
+        Self::Telegram {
+            link_preview,
+            silent: Some(silent),
         }
     }
 

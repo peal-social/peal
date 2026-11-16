@@ -43,7 +43,7 @@ import {
 } from "#shared/infrastructure/platforms/devto-api.ts";
 import type { DevToHosts } from "#shared/infrastructure/platforms/devto-api.ts";
 import {
-  formBoundary,
+  randomBoundary,
   multipartBody,
 } from "#shared/infrastructure/platforms/multipart-stream.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
@@ -411,7 +411,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
         const bytes = yield* library.held(article.workspaceId, mediaId);
 
         const form = multipartBody({
-          boundary: formBoundary(`${article.id}-${mediaId}`),
+          boundary: randomBoundary(),
           fields: [],
           file: {
             byteSize: described.byteSize,

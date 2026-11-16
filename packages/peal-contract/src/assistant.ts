@@ -78,14 +78,22 @@ export type TranslationLanguage = typeof TranslationLanguageSchema.Type;
  *   the post is about, in the person's words. Optionally in a `tone`, in a
  *   `language` (else the subject's own), and within the limits of a
  *   `platform`.
+ *
+ * With a `platform`, `media: true` says the post shows images or videos:
+ * the text is then held to the platform's limit for a caption, where it
+ * sets one (Telegram: 1,024 characters rather than 4,096).
  */
 export const AssistantActionSchema = Schema.Union([
   Schema.TaggedStruct("rewrite", { tone: AssistantToneSchema }),
-  Schema.TaggedStruct("shorten", { platform: PlatformSchema }),
+  Schema.TaggedStruct("shorten", {
+    media: Schema.optionalKey(Schema.Boolean),
+    platform: PlatformSchema,
+  }),
   Schema.TaggedStruct("translate", { language: TranslationLanguageSchema }),
   Schema.TaggedStruct("hashtags", {}),
   Schema.TaggedStruct("write", {
     language: Schema.optionalKey(TranslationLanguageSchema),
+    media: Schema.optionalKey(Schema.Boolean),
     platform: Schema.optionalKey(PlatformSchema),
     tone: Schema.optionalKey(AssistantToneSchema),
   }),

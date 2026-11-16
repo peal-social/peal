@@ -166,6 +166,15 @@ export const ContentViolationSchema = Schema.Union([
     maximum: Schema.Int,
     minimum: Schema.Int,
   }),
+  // Width plus height is more than the platform takes, in pixels.
+  Schema.TaggedStruct("sideSumTooLarge", { ...sized, maximum: Schema.Int }),
+  // The part's files weigh more together than the platform takes in one
+  // post, in bytes.
+  Schema.TaggedStruct("mediaTotalTooLarge", {
+    ...onChannel,
+    maximum: ByteCountSchema,
+    total: ByteCountSchema,
+  }),
   // Width over height is outside what the platform takes.
   Schema.TaggedStruct("aspectRatioUnsupported", {
     ...sized,

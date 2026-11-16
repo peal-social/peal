@@ -45,9 +45,13 @@ const limitsFor = (action: AssistantAction) => {
       ? action.platform
       : undefined;
 
+  const showsMedia =
+    (action._tag === "shorten" || action._tag === "write") &&
+    action.media === true;
+
   return platform === undefined
     ? Effect.succeed(noLimits)
-    : PlatformLimits.use((limits) => limits.textLimitsOf(platform));
+    : PlatformLimits.use((limits) => limits.textLimitsOf(platform, showsMedia));
 };
 
 // The answer the plan asks for, checked before anyone sees it.

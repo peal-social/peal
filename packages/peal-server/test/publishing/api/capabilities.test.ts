@@ -290,6 +290,8 @@ describe("the platforms' capabilities endpoint", () => {
           ["x", "thread"],
           ["bluesky", "thread"],
           ["mastodon", "thread"],
+          ["discord", "thread"],
+          ["telegram", "thread"],
         ]
       );
       assert.deepStrictEqual(bluesky?.followUps, {
@@ -317,7 +319,7 @@ describe("the platforms' capabilities endpoint", () => {
           all.flatMap(({ followUps, platform }) =>
             followUps === null ? [] : [platform]
           ),
-          ["bluesky", "mastodon"]
+          ["bluesky", "mastodon", "discord", "telegram"]
         );
       })
   );
@@ -381,6 +383,8 @@ describe("the platforms' capabilities endpoint", () => {
             ["mastodon", "thread"],
             ["facebook", "comment"],
             ["youtube", "comment"],
+            ["discord", "thread"],
+            ["telegram", "thread"],
           ]
         );
         // A LinkedIn page comments through its administrator.
@@ -770,20 +774,26 @@ const kindOfType = (contentType: MediaContentType) => {
 const formatOf = (
   contentType: MediaContentType,
   limits: ContractText.FormatLimits
-) => ({
-  contentType,
-  kind: kindOfType(contentType),
-  maxAspectRatio: orNull(limits.aspectRatio?.maximum),
-  maxByteSize: orNull(limits.maxByteSize),
-  maxDurationMs: orNull(limits.maxDurationMs),
-  maxMediaWith: orNull(limits.maxMediaWith),
-  maxPixels: orNull(limits.maxPixels),
-  maxSide: orNull(limits.sideRange?.maximum),
-  minAspectRatio: orNull(limits.aspectRatio?.minimum),
-  minByteSize: orNull(limits.minByteSize),
-  minDurationMs: orNull(limits.minDurationMs),
-  minSide: orNull(limits.sideRange?.minimum),
-});
+) => {
+  const described = {
+    contentType,
+    kind: kindOfType(contentType),
+    maxAspectRatio: orNull(limits.aspectRatio?.maximum),
+    maxByteSize: orNull(limits.maxByteSize),
+    maxDurationMs: orNull(limits.maxDurationMs),
+    maxMediaWith: orNull(limits.maxMediaWith),
+    maxPixels: orNull(limits.maxPixels),
+    maxSide: orNull(limits.sideRange?.maximum),
+    minAspectRatio: orNull(limits.aspectRatio?.minimum),
+    minByteSize: orNull(limits.minByteSize),
+    minDurationMs: orNull(limits.minDurationMs),
+    minSide: orNull(limits.sideRange?.minimum),
+  };
+
+  return limits.maxSideSum === undefined
+    ? described
+    : { ...described, maxSideSum: limits.maxSideSum };
+};
 
 // Clients that count with `peal-contract/post-text` and clients that read
 // the capabilities must see the same figures.
@@ -810,16 +820,27 @@ describe("the capabilities and the contract's copy of the rules", () => {
     for (const view of views) {
       const rules = ContractText.platformRules[view.platform];
 
-      assert.deepStrictEqual(view.text, {
+      const own = {
+        maximum: ContractText.maxPostTextLength,
+        unit: "utf16Units",
+      } as const;
+
+      const text = {
         forbiddenCharacters: rules.forbiddenCharacters ?? [],
-        limits: [
-          ...rules.textLimits,
-          { maximum: ContractText.maxPostTextLength, unit: "utf16Units" },
-        ],
+        limits: [...rules.textLimits, own],
         maxHashtags: rules.maxHashtags ?? null,
         maxLinks: rules.maxLinks ?? null,
         maxMentions: rules.maxMentions ?? null,
-      });
+      };
+
+      const withMedia = rules.textLimitsWithMedia;
+
+      assert.deepStrictEqual(
+        view.text,
+        withMedia === undefined
+          ? text
+          : { ...text, limitsWithMedia: [...withMedia, own] }
+      );
     }
   });
 
@@ -827,8 +848,11 @@ describe("the capabilities and the contract's copy of the rules", () => {
     for (const view of views) {
       const rules = ContractText.platformRules[view.platform];
 
+      const { maxTotalByteSize, ...media } = view.media;
+
+      assert.strictEqual(maxTotalByteSize, rules.media?.maxTotalByteSize);
       assert.deepStrictEqual(
-        { ...view.media, formats: view.media.formats?.length ?? null },
+        { ...media, formats: view.media.formats?.length ?? null },
         {
           altText: {
             maxLength: Math.min(

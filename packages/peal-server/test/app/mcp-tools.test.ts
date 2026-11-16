@@ -1498,6 +1498,30 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             refreshNeeded: 0,
           });
 
+          // A chat is a channel that takes posts, listed as any other.
+          const chat = yield* freshChannel(workspaceId, {
+            platform: "discord",
+            token: { _tag: "nonExpiring" },
+          });
+
+          yield* channels.insert(chat, syntheticCredentials(chat));
+          yield* Effect.addFinalizer(() =>
+            channels.remove(workspaceId, chat.id).pipe(Effect.orDie)
+          );
+
+          const chats = yield* reader.call(
+            "list_channels",
+            ChannelsJsonSchema,
+            {
+              platform: "discord",
+            }
+          );
+
+          assert.deepStrictEqual(
+            chats.channels.map(({ id, platform }) => ({ id, platform })),
+            [{ id: chat.id, platform: "discord" }]
+          );
+
           // Every website is out of the counts as of the list.
           const active = yield* reader.call(
             "list_channels",
@@ -3339,6 +3363,15 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             }),
             "The return address was refused"
           );
+
+          // A chat connects with a secret its member pastes, which no
+          // tool takes: no link offers one.
+          for (const chat of ["discord", "telegram"]) {
+            assert.include(
+              yield* writer.refused("create_connect_link", { platform: chat }),
+              `This server cannot connect ${chat}`
+            );
+          }
 
           const created = yield* writer.call(
             "create_connect_link",

@@ -594,6 +594,43 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   the Google user's lost permission (`BadRequest` `permissionDenied`).
   Reviews, questions and a location's metrics are not built: they would be
   a context of their own, reaching Google through `ChannelAccess`.
+- The chats' adapters (`platforms/discord/`, `platforms/telegram/`) are
+  `sequenced` steps with no `prepare` or `poll`: the files go in the one
+  request that makes the message, the commit, each streamed in turn
+  (`multipartFormBody`), holding one upload slot for the request
+  (`MediaForPublishing.heldInTurn`). Neither platform keeps an idempotency
+  key or lets Peal read a chat back: confirmation is `none`, so a lost
+  answer is unconfirmed, never sent again, and no part follows it.
+  Discord's Execute Webhook always sends `wait=true` and
+  `allowed_mentions` (nothing parsed unless the options' `mentions`),
+  the post id is `<webhook>/<message's channel_id>/<id>[/thread]`, the
+  webhook that sent it and whether it is in a thread as Peal sent it
+  (never guessed from the channel: a server may move a webhook), so a
+  later part, an edit or a deletion sends `thread_id` only for a thread
+  (a forum post the first part opened with `threadName`), and an edit or
+  a deletion of a post another webhook sent is refused before any call
+  (`webhookChanged`: only the sending webhook changes its messages); 220001 is
+  `forumThreadNameRequired`, 220003 `threadNameNotTaken`, 10015 or 50027
+  a refused token, every other refusal its numeric code (`discord<code>`).
+  Telegram sends a text with `sendMessage` (plain, no `parse_mode`), one
+  file with `sendPhoto`, `sendAnimation` or `sendVideo`, 2 to 10 with
+  `sendMediaGroup`, the text the first item's caption; a later part
+  replies to the part before's first message. Its post id says what it
+  is: `t:<id>` or `m:<id>,<id>…`, so an edit picks `editMessageText` or
+  `editMessageCaption` and a deletion removes the whole album
+  (`deleteMessages`). It decides on `error_code` and `parameters` alone:
+  401 and 403 are a refused token, 400 with `migrate_to_chat_id`
+  `chatMigrated`, any other 400 `telegram400` (no 400 can be told from
+  another without its words: a reply's parent gone, an edit of the same
+  text). An edit's 400 is `editRefusedOrSame`, which `editAfterRepeat`
+  takes as the edit applied only after a try known to have reached
+  Telegram (`unansweredAfterSending`: sent and timed out, or a 5xx, which
+  the job counts in `EarlierRemovals.reached`), since that try may have
+  changed the text; a try that never left counts for nothing. Three rule additions serve them:
+  `textLimitsWithMedia` (a caption's limit, read through `textLimitsOf`
+  by `violationsOn`, `previewOn` and the composer), `maxTotalByteSize`
+  (`mediaTotalTooLarge`) and `maxSideSum` (`sideSumTooLarge`). Tests set
+  the fakes' addresses through `discordHosts` and `telegramHosts`.
 - Pinterest's adapter (`platforms/pinterest/`) makes a Pin with one
   request, pins/create: an image by the public media URL Pinterest fetches
   (`MediaForPublishing.publicUrl`, two hours), two to five as a carousel

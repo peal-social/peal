@@ -14,6 +14,11 @@ class TextCapabilities(UniversalBaseModel):
         typing.List[str], FieldMetadata(alias="forbiddenCharacters"), pydantic.Field(alias="forbiddenCharacters")
     ]
     limits: typing.List[TextLimit]
+    limits_with_media: typing_extensions.Annotated[
+        typing.Optional[typing.List[TextLimit]],
+        FieldMetadata(alias="limitsWithMedia"),
+        pydantic.Field(alias="limitsWithMedia"),
+    ] = None
     max_hashtags: typing_extensions.Annotated[
         typing.Optional[int], FieldMetadata(alias="maxHashtags"), pydantic.Field(alias="maxHashtags")
     ] = None

@@ -301,3 +301,43 @@ describe("the media of a story or a reel", () => {
     ).toBe(0);
   });
 });
+
+describe("the chats' media", () => {
+  // The request's 25 MiB, less 64 KiB for the rest of the request.
+  it("refuses Discord files that leave no room in the 25 MiB request", () => {
+    const most = 25 * mebibyte - 64 * 1024;
+
+    const fits = [
+      loaded(file("a", { byteSize: 15 * mebibyte })),
+      loaded(file("b", { byteSize: most - 15 * mebibyte })),
+    ];
+
+    expect(mediaFitOn("discord", fits).problems).toStrictEqual([]);
+
+    const over = [
+      loaded(file("a", { byteSize: 15 * mebibyte })),
+      loaded(file("b", { byteSize: most - 15 * mebibyte + 1 })),
+    ];
+
+    expect(mediaFitOn("discord", over).problems).toStrictEqual([
+      { _tag: "mediaTotalTooLarge", maximum: most, total: most + 1 },
+    ]);
+  });
+
+  it("refuses a Telegram photo whose sides add up to more than 10,000", () => {
+    expect(
+      mediaFitOn("telegram", [
+        loaded(file("a", { dimensions: { height: 5000, width: 5001 } })),
+      ]).problems
+    ).toStrictEqual([
+      {
+        _tag: "sideSumTooLarge",
+        height: 5000,
+        kind: "image",
+        maximum: 10_000,
+        position: 1,
+        width: 5001,
+      },
+    ]);
+  });
+});

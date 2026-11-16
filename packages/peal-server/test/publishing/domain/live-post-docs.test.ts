@@ -26,12 +26,14 @@ const docs = path.join(
 
 const names = new Map<string, Platform>([
   ["Bluesky", "bluesky"],
+  ["Discord", "discord"],
   ["Facebook Pages", "facebook"],
   ["Google Business Profile", "googleBusiness"],
   ["Instagram", "instagram"],
   ["LinkedIn", "linkedin"],
   ["Mastodon", "mastodon"],
   ["Pinterest", "pinterest"],
+  ["Telegram", "telegram"],
   ["Threads", "threads"],
   ["TikTok", "tiktok"],
   ["X", "x"],

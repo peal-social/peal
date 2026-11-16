@@ -2,6 +2,7 @@ export type { ChannelUpdate } from "./ChannelUpdate.js";
 export type { ChooseAccounts } from "./ChooseAccounts.js";
 export type { ConnectCallback } from "./ConnectCallback.js";
 export type { ConnectChannel } from "./ConnectChannel.js";
+export type { ConnectChatChannelsRequest } from "./ConnectChatChannelsRequest.js";
 export type { ConnectSite } from "./ConnectSite.js";
 export type { ConnectSiteWithKey } from "./ConnectSiteWithKey.js";
 export type { DisableChannelsRequest } from "./DisableChannelsRequest.js";

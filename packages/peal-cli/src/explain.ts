@@ -209,6 +209,8 @@ const brokenRule = (violation: ContentViolation): string =>
       "the platform publishes nothing without an image or a video",
     mediaTooLarge: ({ byteSize, maximum }) =>
       `it weighs ${size(byteSize)}, and the platform takes ${size(maximum)}`,
+    mediaTotalTooLarge: ({ maximum, total }) =>
+      `the files weigh ${size(total)} together, and the platform takes ${size(maximum)} in one post`,
     mediaTooSmall: ({ byteSize, minimum }) =>
       `it weighs ${String(byteSize)} bytes, and the platform takes ${String(minimum)} at least`,
     mediaTypeUnsupported: ({ contentType }) =>
@@ -249,6 +251,8 @@ const brokenRule = (violation: ContentViolation): string =>
     pollNotSupported: () => "Peal sends no poll to this platform",
     pollWithMedia: () =>
       "the platform never takes a poll and images or videos in one post",
+    sideSumTooLarge: ({ height, maximum, width }) =>
+      `it is ${String(width)}×${String(height)}, and the platform takes ${String(maximum)} pixels of width and height together`,
     sideOutOfRange: ({ height, maximum, minimum, width }) =>
       `it is ${String(width)}×${String(height)}, and the platform takes sides from ${String(minimum)} to ${String(maximum)} pixels`,
     textTooLong: ({ length, maximum, unit }) =>
@@ -905,6 +909,31 @@ const reasonOf =
       ShortLinkNotFound: () =>
         refused(
           "The workspace has no short link with that id: peal short-links list shows them."
+        ),
+      ChatConnectLimited: () =>
+        refused(
+          "The workspace tried to connect chats too many times in the last hour: try again later. Nothing was saved."
+        ),
+      ChatNotConnected: ({ reason }) =>
+        refused(
+          `The chat was not connected: ${
+            {
+              addressNotAWebhook:
+                "the address is not a Discord webhook's: copy it from the channel's settings, Integrations, Webhooks",
+              cannotPost:
+                "the bot may not post in the chat: in a channel, make it an administrator who may post messages; in a group, let it send messages",
+              chatKindNotSupported:
+                "the chat is a private chat with a person: Peal posts in channels and groups",
+              chatNotFound:
+                "Telegram knows no such chat, or the bot is not in it: add the bot, then give the chat's @name or its id",
+              credentialsRefused:
+                "Telegram refused the bot's token: copy it again from @BotFather",
+              webhookKindNotSupported:
+                "the webhook does not post messages: make an incoming one in the channel's settings",
+              webhookNotFound:
+                "Discord has no such webhook: it was deleted, or its address changed",
+            }[reason]
+          }. Nothing was saved.`
         ),
       SiteConnectLimited: () =>
         refused(

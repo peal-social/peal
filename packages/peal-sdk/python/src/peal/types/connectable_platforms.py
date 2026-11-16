@@ -6,6 +6,7 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .chat_platform import ChatPlatform
 from .instagram_connection import InstagramConnection
 from .linked_in_connection import LinkedInConnection
 from .platform import Platform
@@ -24,6 +25,7 @@ class ConnectablePlatforms(UniversalBaseModel):
         pydantic.Field(alias="linkedinConnections"),
     ]
     platforms: typing.List[Platform]
+    chats: typing.Optional[typing.List[ChatPlatform]] = None
     sites: typing.Optional[typing.List[SitePlatform]] = None
 
     if IS_PYDANTIC_V2:

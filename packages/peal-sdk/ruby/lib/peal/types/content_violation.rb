@@ -77,6 +77,10 @@ module Peal
 
       member -> { Peal::Types::ContentViolationSideOutOfRange }, key: "SIDE_OUT_OF_RANGE"
 
+      member -> { Peal::Types::ContentViolationSideSumTooLarge }, key: "SIDE_SUM_TOO_LARGE"
+
+      member -> { Peal::Types::ContentViolationMediaTotalTooLarge }, key: "MEDIA_TOTAL_TOO_LARGE"
+
       member -> { Peal::Types::ContentViolationAspectRatioUnsupported }, key: "ASPECT_RATIO_UNSUPPORTED"
 
       member -> { Peal::Types::ContentViolationAltTextTooLong }, key: "ALT_TEXT_TOO_LONG"

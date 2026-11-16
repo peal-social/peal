@@ -32,6 +32,7 @@ import { UploadSessions } from "#publishing/application/upload-sessions.ts";
 import type { UploadSession } from "#publishing/application/upload-sessions.ts";
 import { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import { blueskyClient } from "#publishing/infrastructure/platforms/bluesky/bluesky-client.ts";
+import { discordClient } from "#publishing/infrastructure/platforms/discord/discord-client.ts";
 import { googleBusinessClient } from "#publishing/infrastructure/platforms/google-business/google-business-client.ts";
 import { linkedinClient } from "#publishing/infrastructure/platforms/linkedin/linkedin-client.ts";
 import { livePostClientsWith } from "#publishing/infrastructure/platforms/live-post-clients-live.ts";
@@ -41,6 +42,7 @@ import { facebookClient } from "#publishing/infrastructure/platforms/meta/facebo
 import { instagramClient } from "#publishing/infrastructure/platforms/meta/instagram-client.ts";
 import { threadsClient } from "#publishing/infrastructure/platforms/meta/threads-client.ts";
 import { pinterestClient } from "#publishing/infrastructure/platforms/pinterest/pinterest-client.ts";
+import { telegramClient } from "#publishing/infrastructure/platforms/telegram/telegram-client.ts";
 import { tiktokClient } from "#publishing/infrastructure/platforms/tiktok/tiktok-client.ts";
 import { xClient } from "#publishing/infrastructure/platforms/x/x-client.ts";
 import { youtubeClient } from "#publishing/infrastructure/platforms/youtube/youtube-client.ts";
@@ -60,7 +62,10 @@ import { isTokenRejected } from "#shared/domain/token-rejected.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 import type { MetaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
-import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
+import {
+  publicHttpClient,
+  publicHttpClientWith,
+} from "#shared/infrastructure/platforms/public-http.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
 
 import { ProgressLog, progressInMemory } from "./progress-log.ts";
@@ -249,6 +254,12 @@ export const mediaOf = (files: readonly TestFile[]) => {
         found(mediaId).pipe(Effect.map(({ media }) => media)),
       held: (_workspace, mediaId) =>
         found(mediaId).pipe(Effect.map(({ bytes }) => Stream.make(bytes))),
+      heldInTurn: (_workspace, mediaIds) =>
+        Effect.all(
+          mediaIds.map((mediaId) =>
+            found(mediaId).pipe(Effect.map(({ bytes }) => Stream.make(bytes)))
+          )
+        ),
       open: (_workspace, mediaId) =>
         Stream.unwrap(
           found(mediaId).pipe(Effect.map(({ bytes }) => Stream.make(bytes)))
@@ -400,6 +411,58 @@ export const googleBusinessClientWith = Effect.fn("test.googleBusinessClient")(
     );
   }
 );
+
+/** The Discord client, with the fake as Discord's API. */
+export const discordClientWith = Effect.fn("test.discordClient")(
+  function* discordClientWith(options: {
+    readonly api: string;
+    readonly credentials: Layer.Layer<CredentialLog | PlatformCredentials>;
+    readonly files?: readonly TestFile[];
+    /** A client of its own, as one that gives up sooner. */
+    readonly http?: Effect.Success<typeof httpClient> | undefined;
+  }) {
+    const api = options.http ?? (yield* httpClient);
+
+    return yield* discordClient({
+      api,
+      hosts: { api: options.api },
+      timing: testTiming,
+      uploads: api,
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(options.credentials, mediaOf(options.files ?? []))
+      )
+    );
+  }
+);
+
+/** The Telegram client, with the fake as Telegram's Bot API. */
+export const telegramClientWith = Effect.fn("test.telegramClient")(
+  function* telegramClientWith(options: {
+    readonly api: string;
+    readonly credentials: Layer.Layer<CredentialLog | PlatformCredentials>;
+    readonly files?: readonly TestFile[];
+    /** A client of its own, as one that gives up sooner. */
+    readonly http?: Effect.Success<typeof httpClient> | undefined;
+  }) {
+    const api = options.http ?? (yield* httpClient);
+
+    return yield* telegramClient({
+      api,
+      hosts: { api: options.api },
+      timing: testTiming,
+      uploads: api,
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(options.credentials, mediaOf(options.files ?? []))
+      )
+    );
+  }
+);
+
+/** The public client with a timeout of its own, against loopback fakes. */
+export const httpClientTimingOutAfter = (timeout: Duration.Input) =>
+  publicHttpClientWith({ timeout }).pipe(Effect.provide(HttpTest));
 
 /** The Bluesky client, with the fake as PDS and video service. */
 export const blueskyClientWith = Effect.fn("test.blueskyClient")(
@@ -764,11 +827,17 @@ export const liveClientsOn = (options: {
   LivePostClients.pipe(
     Effect.provide(
       livePostClientsWith({
+        discordHosts: options.platforms.discordHosts ?? {
+          api: "http://127.0.0.1:9",
+        },
         googleBusinessApi:
           options.platforms.googleBusinessApi ?? new URL("http://127.0.0.1:9"),
         mastodonScheme: "http:",
         pinterestApi:
           options.platforms.pinterestApi ?? new URL("http://127.0.0.1:9"),
+        telegramHosts: options.platforms.telegramHosts ?? {
+          api: "http://127.0.0.1:9",
+        },
         xApi: options.platforms.xApi ?? new URL("http://127.0.0.1:9"),
       }).pipe(
         Layer.provide(

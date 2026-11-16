@@ -11,6 +11,7 @@ export interface MediaFormat {
     maxMediaWith: number | null;
     maxPixels: number | null;
     maxSide: number | null;
+    maxSideSum?: number | undefined;
     minAspectRatio: number | null;
     minByteSize: number | null;
     minDurationMs: number | null;

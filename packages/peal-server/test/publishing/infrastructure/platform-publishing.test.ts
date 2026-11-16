@@ -50,6 +50,7 @@ const platformsOn = (instanceUrl: string) =>
   RoutedPlatformPublisher.pipe(
     Layer.provide(
       platformClientsWith({
+        discordHosts: { api: instanceUrl },
         googleBusinessApi: new URL(instanceUrl),
         linkedinApi: new URL(instanceUrl),
         mastodonScheme: "http:",
@@ -65,6 +66,7 @@ const platformsOn = (instanceUrl: string) =>
           threadsGraph: new URL(instanceUrl),
         },
         pinterestApi: new URL(instanceUrl),
+        telegramHosts: { api: instanceUrl },
         tiktokApi: new URL(instanceUrl),
         tiktokPullFrom: Option.none(),
         timing: testTiming,

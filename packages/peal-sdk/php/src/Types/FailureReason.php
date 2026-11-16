@@ -25,4 +25,6 @@ enum FailureReason: string
     case PaymentFailed = "paymentFailed";
     case PerAccountPricingRequired = "perAccountPricingRequired";
     case XThreadCut = "xThreadCut";
+    case ForumThreadNameRequired = "forumThreadNameRequired";
+    case ChatMigrated = "chatMigrated";
 }

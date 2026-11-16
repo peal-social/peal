@@ -5,6 +5,8 @@ import { PlatformClients } from "#publishing/application/platform-client.ts";
 import type { PlatformClient } from "#publishing/application/platform-client.ts";
 import type { StepTiming } from "#publishing/application/publication-steps.ts";
 import type { Platform } from "#shared/domain/platform.ts";
+import { discordHosts } from "#shared/infrastructure/platforms/discord-api.ts";
+import type { DiscordHosts } from "#shared/infrastructure/platforms/discord-api.ts";
 import { linkedinVersionConfig } from "#shared/infrastructure/platforms/linkedin-version.ts";
 import { metaAppConfig } from "#shared/infrastructure/platforms/meta-apps.ts";
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
@@ -14,9 +16,12 @@ import {
   publicHttpClient,
   publicHttpClientWith,
 } from "#shared/infrastructure/platforms/public-http.ts";
+import { telegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
+import type { TelegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 import { tiktokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 
 import { blueskyClient } from "./bluesky/bluesky-client.ts";
+import { discordClient } from "./discord/discord-client.ts";
 import { googleBusinessClient } from "./google-business/google-business-client.ts";
 import { linkedinClient } from "./linkedin/linkedin-client.ts";
 import { mastodonClient } from "./mastodon/mastodon-client.ts";
@@ -24,6 +29,7 @@ import { facebookClient } from "./meta/facebook-client.ts";
 import { instagramClient } from "./meta/instagram-client.ts";
 import { threadsClient } from "./meta/threads-client.ts";
 import { pinterestClient } from "./pinterest/pinterest-client.ts";
+import { telegramClient } from "./telegram/telegram-client.ts";
 import { tiktokClient } from "./tiktok/tiktok-client.ts";
 import { tiktokMediaUrlConfig } from "./tiktok/tiktok-settings.ts";
 import { xClient } from "./x/x-client.ts";
@@ -35,6 +41,10 @@ import {
 
 /** Where the platforms are, and how long their steps wait. */
 export interface PlatformClientSettings {
+  /** Discord's API, which takes webhooks' messages and their files. */
+  readonly discordHosts: DiscordHosts;
+  /** Telegram's Bot API, which takes bots' messages and their files. */
+  readonly telegramHosts: TelegramHosts;
   /** The My Business API, which makes and lists local posts. */
   readonly googleBusinessApi: URL;
   /** LinkedIn's API, and the uploads its answers point to. */
@@ -75,8 +85,8 @@ const uploadTimeout = Duration.minutes(10);
 
 /**
  * The platforms Peal publishes to: Mastodon, Bluesky, LinkedIn, X, Threads,
- * Instagram, Facebook Pages, TikTok, YouTube, Pinterest and Google Business
- * Profile. Every request goes through
+ * Instagram, Facebook Pages, TikTok, YouTube, Pinterest, Google Business
+ * Profile, Discord and Telegram. Every request goes through
  * the public HTTP client, so the outbound guard checks the servers users
  * chose. Needs an HttpClient, the OutboundGuard, SecureRandom and Digest
  * (for DPoP proofs), Mac (for Meta's proofs), PlatformCredentials,
@@ -157,6 +167,18 @@ export const platformClientsWith = (settings: PlatformClientSettings) =>
           apiUrl: settings.googleBusinessApi,
           ...timing,
         }),
+        yield* discordClient({
+          api,
+          hosts: settings.discordHosts,
+          uploads,
+          ...timing,
+        }),
+        yield* telegramClient({
+          api,
+          hosts: settings.telegramHosts,
+          uploads,
+          ...timing,
+        }),
       ];
 
       const byPlatform: ReadonlyMap<Platform, PlatformClient> = new Map(
@@ -185,12 +207,14 @@ export const PlatformClientsLive = Layer.unwrap(
     const pinterest = yield* pinterestHostsConfig;
 
     return platformClientsWith({
+      discordHosts,
       googleBusinessApi: new URL("https://mybusiness.googleapis.com"),
       linkedinApi: new URL("https://api.linkedin.com"),
       mastodonScheme: "https:",
       metaAppSecret: meta.pipe(Option.map(({ appSecret }) => appSecret)),
       metaHosts,
       pinterestApi: pinterest.api,
+      telegramHosts,
       tiktokApi: tiktokHosts.api,
       tiktokPullFrom,
       videoService: new URL("https://video.bsky.app"),

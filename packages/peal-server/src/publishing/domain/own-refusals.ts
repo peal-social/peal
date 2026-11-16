@@ -45,6 +45,23 @@ export const ownRefusalCodes = {
  * publication journal too, so never change one.
  */
 export const platformRefusalCodes = {
+  // A BadRequest: a chat's channel is a forum, whose posts need a title
+  // the post has none of (Discord: a forum or media channel's webhook
+  // takes a message only with `thread_name`).
+  forumThreadNameRequired: "forumThreadNameRequired",
+  // A BadRequest: the chat moved to another id, and the channel must be
+  // connected again with the new chat (Telegram: a group that became a
+  // supergroup, `migrate_to_chat_id`).
+  chatMigrated: "chatMigrated",
+  // A BadRequest of an edit the platform refuses without telling why, the
+  // same text again among the reasons (Telegram: "message is not
+  // modified", a 400 like any other). After a try that got no answer, it
+  // is the edit that landed (`editAfterRepeat`).
+  editRefusedOrSame: "editRefusedOrSame",
+  // A BadRequest: the post names a title for a forum post, and the
+  // channel is no forum (Discord: 220003). Its failure reason is
+  // `contentRejected`; the code tells the member what to change.
+  threadNameNotTaken: "threadNameNotTaken",
   // A BadRequest: the platform takes only some posts from this server's
   // app until it approves it (TikTok: private posts from an app it has not
   // audited).

@@ -21,6 +21,8 @@ export const AttemptResult = {
         XCeilingReached: "xCeilingReached",
         PaymentFailed: "paymentFailed",
         PerAccountPricingRequired: "perAccountPricingRequired",
-        XThreadCut: "xThreadCut"
+        XThreadCut: "xThreadCut",
+        ForumThreadNameRequired: "forumThreadNameRequired",
+        ChatMigrated: "chatMigrated"
     } as const;
 export type AttemptResult = typeof AttemptResult[keyof typeof AttemptResult];

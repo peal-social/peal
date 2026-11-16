@@ -672,6 +672,26 @@ describe("asking to unpublish", () => {
     )
   );
 
+  it.effect("refuses a Telegram post past its 48 hours, before any call", () =>
+    onPostsServerAt(
+      start,
+      Effect.gen(function* window() {
+        const changes = yield* LivePostChanges;
+        const removals = yield* FakeRemovals;
+        const live = yield* published("telegram");
+
+        yield* TestClock.adjust(Duration.hours(49));
+
+        const late = yield* changes
+          .unpublishTarget(live.actor, live.postId, live.target.id)
+          .pipe(Effect.exit);
+
+        assert.strictEqual(refusalOf(late), "deletionWindowPassed");
+        assert.deepStrictEqual(yield* removals.calls, []);
+      })
+    )
+  );
+
   it.effect("answers a whole post channel by channel", () =>
     onPostsServerAt(
       start,

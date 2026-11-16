@@ -15,4 +15,6 @@ enum Platform: string
     case Youtube = "youtube";
     case Pinterest = "pinterest";
     case GoogleBusiness = "googleBusiness";
+    case Discord = "discord";
+    case Telegram = "telegram";
 }

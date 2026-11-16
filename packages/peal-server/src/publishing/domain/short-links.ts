@@ -42,12 +42,14 @@ export const keepsLinksAsWritten = (platform: Platform): boolean =>
  */
 const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   bluesky: ["bsky.app"],
+  discord: [],
   facebook: ["facebook.com", "fb.com", "fb.me", "fb.watch"],
   googleBusiness: [],
   instagram: ["instagram.com"],
   linkedin: ["linkedin.com", "lnkd.in"],
   mastodon: [],
   pinterest: ["pinterest.com", "pin.it"],
+  telegram: [],
   threads: ["threads.net", "threads.com"],
   tiktok: ["tiktok.com"],
   x: ["x.com", "twitter.com"],

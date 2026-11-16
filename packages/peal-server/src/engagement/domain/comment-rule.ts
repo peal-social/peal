@@ -254,12 +254,14 @@ export const endCommentRule = (
  */
 export const commentRuleSupport = {
   bluesky: "notAllowed",
+  discord: "noApi",
   facebook: "available",
   googleBusiness: "noApi",
   instagram: "available",
   linkedin: "notAllowed",
   mastodon: "available",
   pinterest: "noApi",
+  telegram: "noApi",
   threads: "noApi",
   tiktok: "noApi",
   x: "notAllowed",

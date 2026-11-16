@@ -39,6 +39,8 @@ interface AssistantWriteFormProps {
   readonly onWrite: (action: AssistantAction, subject: string) => void;
   /** The platforms whose short limit the post may be written to fit. */
   readonly platforms: readonly Platform[];
+  /** Whether the post shows images or videos: a caption's limit then. */
+  readonly showsMedia: boolean;
 }
 
 /**
@@ -52,6 +54,7 @@ export const AssistantWriteForm = ({
   onCancel,
   onWrite,
   platforms,
+  showsMedia,
 }: AssistantWriteFormProps) => {
   const t = useTranslations("Assistant");
   const tPosts = useTranslations("Posts");
@@ -75,7 +78,7 @@ export const AssistantWriteForm = ({
         event.preventDefault();
 
         if (!blank) {
-          onWrite(writeAction(choices), subject);
+          onWrite(writeAction(choices, showsMedia), subject);
         }
       }}
     >

@@ -7,6 +7,7 @@ import { textLimitsOn } from "#publishing/application/platform-text-limits.ts";
 export const PublishingPlatformLimitsLive = Layer.succeed(
   PlatformLimits,
   PlatformLimits.of({
-    textLimitsOf: (platform) => Effect.succeed(textLimitsOn(platform)),
+    textLimitsOf: (platform, showsMedia) =>
+      Effect.succeed(textLimitsOn(platform, showsMedia)),
   })
 );

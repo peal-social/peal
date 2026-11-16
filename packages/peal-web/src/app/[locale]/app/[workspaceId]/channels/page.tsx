@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Effect, Option } from "effect";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -7,6 +7,7 @@ import { currentUser } from "#auth/session.ts";
 import { ChannelsSettings } from "#components/channels/channels-settings.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { docsUrlConfig } from "#shell/docs-url.ts";
 
 // A workspace's channels: the accounts it posts to. The list loads in the
 // browser, with the member's session; what the member may do comes from
@@ -33,6 +34,7 @@ const ChannelsPage = async ({
   }
 
   const t = await getTranslations("ChannelsPage");
+  const docsUrl = await Effect.runPromise(docsUrlConfig);
   const may = new Set(workspace.permissions);
 
   return (
@@ -47,6 +49,7 @@ const ChannelsPage = async ({
         workspaceId={workspace.id}
         canConnect={may.has("channel:connect")}
         canDisconnect={may.has("channel:disconnect")}
+        docsUrl={docsUrl}
       />
     </div>
   );

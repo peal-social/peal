@@ -111,7 +111,7 @@ impl ChannelsClient {
             .await
     }
 
-    /// Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. Needs channel:connect.
+    /// Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
     ///
     /// # Arguments
     ///
@@ -265,6 +265,65 @@ impl ChannelsClient {
             .execute_request(
                 Method::POST,
                 &format!("api/workspaces/{}/channels/websites/keys", workspace_id),
+                Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
+                None,
+                options,
+            )
+            .await
+    }
+
+    /// Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// JSON response from the API
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client
+    ///         .channels
+    ///         .connect_chat(
+    ///             &"workspaceId".to_string(),
+    ///             &ConnectChat::Discord {
+    ///                 data: ConnectDiscordChat {
+    ///                     webhook_url: "webhookUrl".to_string(),
+    ///                     ..Default::default()
+    ///                 },
+    ///             },
+    ///             None,
+    ///         )
+    ///         .await;
+    /// }
+    /// ```
+    pub async fn connect_chat(
+        &self,
+        workspace_id: &str,
+        request: &ConnectChat,
+        options: Option<RequestOptions>,
+    ) -> Result<Channel, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.max_retries = Some(0);
+            Some(o)
+        };
+        self.http_client
+            .execute_request(
+                Method::POST,
+                &format!("api/workspaces/{}/channels/chats", workspace_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

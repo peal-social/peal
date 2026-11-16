@@ -3,7 +3,7 @@
 import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { DateTime, Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
-import { useTranslations } from "next-intl";
+import { useNow, useTranslations } from "next-intl";
 import { LivePostRefusalSchema } from "peal-contract";
 import type {
   SocialChannel,
@@ -34,6 +34,8 @@ import {
   workspacePost,
 } from "#posts/api.ts";
 import {
+  deletionWindowOf,
+  deletionWindowPassed,
   editStateOf,
   endedSince,
   isRemoving,
@@ -98,6 +100,8 @@ export const LivePostActions = ({
 }) => {
   const t = useTranslations("Posts.Live");
   const tPosts = useTranslations("Posts");
+  // Read again each minute, so a deletion window closes on an open page.
+  const now = useNow({ updateInterval: 60_000 });
   const failureText = useUnpublishFailureText();
   const editFailureText = useEditFailureText();
   const changesQuery = postChanges(workspaceId, postId);
@@ -223,8 +227,17 @@ export const LivePostActions = ({
       <LivePostView
         busy={busy}
         channelName={channelName}
+        deletesWithinHours={
+          channel === undefined ? undefined : deletionWindowOf(channel.platform)
+        }
         platform={platform}
-        state={liveStateOf(target, listed, ability)}
+        state={liveStateOf(
+          target,
+          listed,
+          ability,
+          channel !== undefined &&
+            deletionWindowPassed(target, channel.platform, now)
+        )}
         onUnpublish={onUnpublish}
       />
     </div>

@@ -52,6 +52,7 @@ require_relative "peal/channels/types/find_channels_request"
 require_relative "peal/channels/types/platforms_channels_request"
 require_relative "peal/channels/types/connect_site"
 require_relative "peal/channels/types/connect_site_with_key"
+require_relative "peal/channels/types/connect_chat_channels_request"
 require_relative "peal/channels/types/start_site_sign_in"
 require_relative "peal/channels/types/site_sign_in_callback"
 require_relative "peal/channels/types/connect_channel"
@@ -648,6 +649,7 @@ module Peal
     autoload :BoostPage, ::File.join(__dir__, "peal/types/boost_page")
     autoload :BoostQuote, ::File.join(__dir__, "peal/types/boost_quote")
     autoload :BoostStateConflictEncoded, ::File.join(__dir__, "peal/types/boost_state_conflict_encoded")
+    autoload :DiscordOptions, ::File.join(__dir__, "peal/types/discord_options")
     autoload :FacebookFormat, ::File.join(__dir__, "peal/types/facebook_format")
     autoload :FacebookOptions, ::File.join(__dir__, "peal/types/facebook_options")
     autoload :GoogleBusinessCallToAction, ::File.join(__dir__, "peal/types/google_business_call_to_action")
@@ -663,6 +665,7 @@ module Peal
     autoload :MastodonVisibility, ::File.join(__dir__, "peal/types/mastodon_visibility")
     autoload :MastodonOptions, ::File.join(__dir__, "peal/types/mastodon_options")
     autoload :PinterestOptions, ::File.join(__dir__, "peal/types/pinterest_options")
+    autoload :TelegramOptions, ::File.join(__dir__, "peal/types/telegram_options")
     autoload :ThreadsReplyControl, ::File.join(__dir__, "peal/types/threads_reply_control")
     autoload :ThreadsOptions, ::File.join(__dir__, "peal/types/threads_options")
     autoload :TikTokPrivacyLevel, ::File.join(__dir__, "peal/types/tik_tok_privacy_level")
@@ -708,6 +711,7 @@ module Peal
     autoload :ContentViolationMediaRequired, ::File.join(__dir__, "peal/types/content_violation_media_required")
     autoload :ContentViolationMediaTooLarge, ::File.join(__dir__, "peal/types/content_violation_media_too_large")
     autoload :ContentViolationMediaTooSmall, ::File.join(__dir__, "peal/types/content_violation_media_too_small")
+    autoload :ContentViolationMediaTotalTooLarge, ::File.join(__dir__, "peal/types/content_violation_media_total_too_large")
     autoload :ContentViolationMediaTypeUnsupported, ::File.join(__dir__, "peal/types/content_violation_media_type_unsupported")
     autoload :ContentViolationMixedMedia, ::File.join(__dir__, "peal/types/content_violation_mixed_media")
     autoload :ContentViolationNoChannels, ::File.join(__dir__, "peal/types/content_violation_no_channels")
@@ -727,6 +731,7 @@ module Peal
     autoload :ContentViolationPollNotSupported, ::File.join(__dir__, "peal/types/content_violation_poll_not_supported")
     autoload :ContentViolationPollWithMedia, ::File.join(__dir__, "peal/types/content_violation_poll_with_media")
     autoload :ContentViolationSideOutOfRange, ::File.join(__dir__, "peal/types/content_violation_side_out_of_range")
+    autoload :ContentViolationSideSumTooLarge, ::File.join(__dir__, "peal/types/content_violation_side_sum_too_large")
     autoload :ContentViolationTextTooLong, ::File.join(__dir__, "peal/types/content_violation_text_too_long")
     autoload :ContentViolationTooManyHashtags, ::File.join(__dir__, "peal/types/content_violation_too_many_hashtags")
     autoload :ContentViolationTooManyLinks, ::File.join(__dir__, "peal/types/content_violation_too_many_links")
@@ -827,6 +832,10 @@ module Peal
     autoload :ChannelSetNameTakenEncodedTag, ::File.join(__dir__, "peal/types/channel_set_name_taken_encoded_tag")
     autoload :ChannelSetNameTakenEncoded, ::File.join(__dir__, "peal/types/channel_set_name_taken_encoded")
     autoload :ChannelStatusName, ::File.join(__dir__, "peal/types/channel_status_name")
+    autoload :ChatConnectLimitedEncoded, ::File.join(__dir__, "peal/types/chat_connect_limited_encoded")
+    autoload :ChatNotConnectedReason, ::File.join(__dir__, "peal/types/chat_not_connected_reason")
+    autoload :ChatNotConnectedEncoded, ::File.join(__dir__, "peal/types/chat_not_connected_encoded")
+    autoload :ChatPlatform, ::File.join(__dir__, "peal/types/chat_platform")
     autoload :ChoosableAccount, ::File.join(__dir__, "peal/types/choosable_account")
     autoload :CommentInvalidEncodedTag, ::File.join(__dir__, "peal/types/comment_invalid_encoded_tag")
     autoload :CommentProblem, ::File.join(__dir__, "peal/types/comment_problem")
@@ -844,6 +853,9 @@ module Peal
     autoload :CommentRuleRefusal, ::File.join(__dir__, "peal/types/comment_rule_refusal")
     autoload :CommentRuleNotPossibleEncoded, ::File.join(__dir__, "peal/types/comment_rule_not_possible_encoded")
     autoload :CommentRulePage, ::File.join(__dir__, "peal/types/comment_rule_page")
+    autoload :ConnectDiscordChat, ::File.join(__dir__, "peal/types/connect_discord_chat")
+    autoload :ConnectTelegramChat, ::File.join(__dir__, "peal/types/connect_telegram_chat")
+    autoload :ConnectChat, ::File.join(__dir__, "peal/types/connect_chat")
     autoload :ConnectFailedEncodedTag, ::File.join(__dir__, "peal/types/connect_failed_encoded_tag")
     autoload :ConnectFailureReason, ::File.join(__dir__, "peal/types/connect_failure_reason")
     autoload :ConnectFailedEncoded, ::File.join(__dir__, "peal/types/connect_failed_encoded")

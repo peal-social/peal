@@ -70,6 +70,14 @@ public final class TargetOptions {
         return new TargetOptions(new FacebookValue(value));
     }
 
+    public static TargetOptions discord(DiscordOptions value) {
+        return new TargetOptions(new DiscordValue(value));
+    }
+
+    public static TargetOptions telegram(TelegramOptions value) {
+        return new TargetOptions(new TelegramValue(value));
+    }
+
     public boolean isYoutube() {
         return value instanceof YoutubeValue;
     }
@@ -112,6 +120,14 @@ public final class TargetOptions {
 
     public boolean isFacebook() {
         return value instanceof FacebookValue;
+    }
+
+    public boolean isDiscord() {
+        return value instanceof DiscordValue;
+    }
+
+    public boolean isTelegram() {
+        return value instanceof TelegramValue;
     }
 
     public boolean _isUnknown() {
@@ -195,6 +211,20 @@ public final class TargetOptions {
         return Optional.empty();
     }
 
+    public Optional<DiscordOptions> getDiscord() {
+        if (isDiscord()) {
+            return Optional.of(((DiscordValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<TelegramOptions> getTelegram() {
+        if (isTelegram()) {
+            return Optional.of(((TelegramValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<Object> _getUnknown() {
         if (_isUnknown()) {
             return Optional.of(((_UnknownValue) value).value);
@@ -246,6 +276,10 @@ public final class TargetOptions {
 
         T visitFacebook(FacebookOptions facebook);
 
+        T visitDiscord(DiscordOptions discord);
+
+        T visitTelegram(TelegramOptions telegram);
+
         T _visitUnknown(Object unknownType);
     }
 
@@ -261,7 +295,9 @@ public final class TargetOptions {
         @JsonSubTypes.Type(ThreadsValue.class),
         @JsonSubTypes.Type(XValue.class),
         @JsonSubTypes.Type(InstagramValue.class),
-        @JsonSubTypes.Type(FacebookValue.class)
+        @JsonSubTypes.Type(FacebookValue.class),
+        @JsonSubTypes.Type(DiscordValue.class),
+        @JsonSubTypes.Type(TelegramValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
@@ -694,6 +730,86 @@ public final class TargetOptions {
         }
 
         private boolean equalTo(FacebookValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TargetOptions{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("discord")
+    @JsonIgnoreProperties("platform")
+    private static final class DiscordValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "platform", allowSetters = true)
+        private DiscordOptions value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private DiscordValue() {}
+
+        private DiscordValue(DiscordOptions value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitDiscord(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof DiscordValue && equalTo((DiscordValue) other);
+        }
+
+        private boolean equalTo(DiscordValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TargetOptions{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("telegram")
+    @JsonIgnoreProperties("platform")
+    private static final class TelegramValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "platform", allowSetters = true)
+        private TelegramOptions value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private TelegramValue() {}
+
+        private TelegramValue(TelegramOptions value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitTelegram(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof TelegramValue && equalTo((TelegramValue) other);
+        }
+
+        private boolean equalTo(TelegramValue other) {
             return value.equals(other.value);
         }
 

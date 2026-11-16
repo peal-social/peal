@@ -409,6 +409,52 @@ class TargetOptions_Facebook(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+class TargetOptions_Discord(UniversalBaseModel):
+    """
+    What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.
+    """
+
+    platform: typing.Literal["discord"] = "discord"
+    mentions: typing.Optional[bool] = None
+    silent: typing.Optional[bool] = None
+    suppress_embeds: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="suppressEmbeds"), pydantic.Field(alias="suppressEmbeds")
+    ] = None
+    thread_name: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="threadName"), pydantic.Field(alias="threadName")
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class TargetOptions_Telegram(UniversalBaseModel):
+    """
+    What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.
+    """
+
+    platform: typing.Literal["telegram"] = "telegram"
+    link_preview: typing_extensions.Annotated[
+        typing.Optional[bool], FieldMetadata(alias="linkPreview"), pydantic.Field(alias="linkPreview")
+    ] = None
+    silent: typing.Optional[bool] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 TargetOptions = typing_extensions.Annotated[
     typing.Union[
         TargetOptions_Youtube,
@@ -422,6 +468,8 @@ TargetOptions = typing_extensions.Annotated[
         TargetOptions_X,
         TargetOptions_Instagram,
         TargetOptions_Facebook,
+        TargetOptions_Discord,
+        TargetOptions_Telegram,
     ],
     pydantic.Field(discriminator="platform"),
 ]

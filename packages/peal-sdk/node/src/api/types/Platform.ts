@@ -12,6 +12,8 @@ export const Platform = {
         Tiktok: "tiktok",
         Youtube: "youtube",
         Pinterest: "pinterest",
-        GoogleBusiness: "googleBusiness"
+        GoogleBusiness: "googleBusiness",
+        Discord: "discord",
+        Telegram: "telegram"
     } as const;
 export type Platform = typeof Platform[keyof typeof Platform];

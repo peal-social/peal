@@ -33,6 +33,33 @@ const renderState = async (locale: "en" | "fr", state: LiveState) =>
     </NextIntlClientProvider>
   );
 
+describe("Telegram's Unpublish", () => {
+  it("says Telegram deletes a post only within 48 hours", async () => {
+    const html = renderToStaticMarkup(
+      <NextIntlClientProvider
+        locale="en"
+        messages={await loadMessages("en")}
+        timeZone="UTC"
+      >
+        <LivePostView
+          busy={false}
+          channelName="Synthetic news (@synthetic_news)"
+          deletesWithinHours={48}
+          platform="Telegram"
+          state={{ _tag: "offered" }}
+          onUnpublish={() => {
+            // Nothing is asked while rendering to markup.
+          }}
+        />
+      </NextIntlClientProvider>
+    );
+
+    expect(html).toContain(
+      "Telegram deletes a post only within 48 hours of sending it."
+    );
+  });
+});
+
 const channel: SocialChannel = {
   avatarUrl: null,
   connection: null,
@@ -100,6 +127,27 @@ describe("unpublishing a live post", () => {
 
     expect(failed).toContain("La suppression a échoué (unavailable)");
     expect(failed).toContain("Réessayer");
+  });
+
+  it("says a post another webhook sent is to delete on the platform, offering no retry", async () => {
+    const failed = await renderState("en", {
+      _tag: "failed",
+      code: "webhookChanged",
+    });
+
+    expect(failed).toContain(
+      "Another webhook sent this post, and only that one may delete it: remove it on Threads."
+    );
+    expect(failed).not.toContain("Try again");
+  });
+
+  it("says a post past the platform's deletion window is to delete there", async () => {
+    const markup = await renderState("en", { _tag: "windowPassed" });
+
+    expect(markup).toContain(
+      "Threads deletes a post only for a time after it went out, and that time has passed: delete it on Threads."
+    );
+    expect(markup).not.toContain("Unpublish");
   });
 
   it("says why a platform does not let Peal delete", async () => {

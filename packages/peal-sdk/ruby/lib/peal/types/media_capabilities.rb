@@ -11,6 +11,8 @@ module Peal
 
       field :max_count, -> { Integer }, optional: false, nullable: false, api_name: "maxCount"
 
+      field :max_total_byte_size, -> { Integer }, optional: true, nullable: false, api_name: "maxTotalByteSize"
+
       field :max_videos, -> { Integer }, optional: false, nullable: true, api_name: "maxVideos"
 
       field :mixes_kinds, -> { Internal::Types::Boolean }, optional: false, nullable: true, api_name: "mixesKinds"

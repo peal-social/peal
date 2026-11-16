@@ -32,6 +32,8 @@ export interface FormatLimits {
   readonly maxMediaWith?: number;
   /** Width times height. */
   readonly maxPixels?: number;
+  /** Width plus height, in pixels (Telegram's photos). */
+  readonly maxSideSum?: number;
   readonly minByteSize?: number;
   readonly minDurationMs?: number;
   /** Each of width and height, in pixels, both bounds included. */
@@ -50,6 +52,8 @@ export interface MediaRules {
   readonly formats: Readonly<Partial<Record<MediaContentType, FormatLimits>>>;
   /** The longest alt text it keeps for one image or video, in code points. */
   readonly maxAltTextLength?: number;
+  /** The most bytes all of a part's files weigh together (Discord's request). */
+  readonly maxTotalByteSize?: number;
   readonly maxVideos?: number;
   /** One post can show images and videos together. */
   readonly mixesKinds: boolean;
@@ -177,6 +181,11 @@ export interface PlatformRules {
   readonly poll?: PollRules;
   /** Every limit applies: Bluesky counts graphemes and bytes. */
   readonly textLimits: readonly TextLimit[];
+  /**
+   * The limits on a part's text when the part shows media, in place of
+   * `textLimits` (Telegram: a caption). Left out, `textLimits` apply.
+   */
+  readonly textLimitsWithMedia?: readonly TextLimit[];
 }
 
 const mebibyte = 1024 * 1024;
@@ -343,6 +352,39 @@ const pinterestVideo: FormatLimits = {
   minDurationMs: 4 * second,
 };
 
+// The chats, from their own references (read 2026-11-16):
+//
+// - Discord (Execute Webhook, docs.discord.com/developers/resources/webhook):
+//   `content` "up to 2000 characters"; files "The default limit is 20 MiB"
+//   per file (docs.discord.com/developers/reference, Uploading Files), and
+//   "The maximum request size when sending a message is 25 MiB" (Create
+//   Message, docs.discord.com/developers/resources/message); 10 files at
+//   most (error 30015, "Maximum number of attachments in a message reached
+//   (10)", docs.discord.com/developers/topics/opcodes-and-status-codes);
+//   an attachment's description (alt text) "max 1024 characters". Images
+//   and videos go together. The text is Discord's markdown.
+// - Telegram (Bot API 10.4, core.telegram.org/bots/api): `sendMessage`'s
+//   text "1-4096 characters after entities parsing", a caption "0-1024
+//   characters after entities parsing"; a photo "must be at most 10 MB in
+//   size", "width and height must not exceed 10000 in total", "Width and
+//   height ratio must be at most 20"; videos (MPEG4) and animations (GIF)
+//   "of up to 50 MB in size"; an album (`sendMediaGroup`) "must include
+//   2-10 items", photos and videos together, no animation, so a GIF goes
+//   alone. Telegram shows no alt text. WebP (which it may show as a
+//   sticker) and QuickTime ("other formats may be sent as Document") are
+//   not taken.
+//
+// Neither page says what a "character" is: UTF-16 units are never fewer
+// than code points or graphemes, so a text Peal lets through is within the
+// limit whichever the platform counts.
+const discordFile: FormatLimits = { maxByteSize: 20 * mebibyte };
+
+const telegramPhoto: FormatLimits = {
+  aspectRatio: { maximum: 20, minimum: 0.05 },
+  maxByteSize: 10 * mebibyte,
+  maxSideSum: 10_000,
+};
+
 // Post formats, from Meta's references (read 2026-11-12):
 //
 // - Instagram story (the IG User Media reference,
@@ -502,6 +544,29 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
       { maximum: 3000, unit: "utf8Bytes" },
     ],
   },
+  discord: {
+    followUps: thread,
+    maxMedia: 10,
+    media: {
+      formats: {
+        "image/gif": discordFile,
+        "image/jpeg": discordFile,
+        "image/png": discordFile,
+        "image/webp": discordFile,
+        "video/mp4": discordFile,
+        "video/quicktime": discordFile,
+      },
+      maxAltTextLength: 1024,
+      // Discord's 25 MiB is the request's ("The maximum request size when
+      // sending a message is 25 MiB"): the files leave 64 KiB for the
+      // form's framing and its `payload_json`.
+      maxTotalByteSize: 25 * mebibyte - 64 * 1024,
+      mixesKinds: true,
+      showsAltText: true,
+    },
+    mediaRequired: false,
+    textLimits: [{ maximum: 2000, unit: "utf16Units" }],
+  },
   facebook: {
     followUps: firstComment([{ maximum: 63_206, unit: "codePoints" }]),
     media: {
@@ -628,6 +693,27 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     },
     mediaRequired: true,
     textLimits: [{ maximum: 800, unit: "codePoints" }],
+  },
+  telegram: {
+    followUps: thread,
+    maxMedia: 10,
+    media: {
+      formats: {
+        "image/gif": { maxByteSize: 50 * mebibyte, maxMediaWith: 1 },
+        "image/jpeg": telegramPhoto,
+        "image/png": telegramPhoto,
+        "video/mp4": { maxByteSize: 50 * mebibyte },
+      },
+      // An album is one request: at most what the uploads client sends
+      // before its timeout on a modest link, rather than a request of
+      // 500 MiB that ends unconfirmed (Telegram sets no total).
+      maxTotalByteSize: 200 * mebibyte,
+      mixesKinds: true,
+      showsAltText: false,
+    },
+    mediaRequired: false,
+    textLimits: [{ maximum: 4096, unit: "utf16Units" }],
+    textLimitsWithMedia: [{ maximum: 1024, unit: "utf16Units" }],
   },
   threads: {
     poll: {
@@ -780,6 +866,19 @@ export const followUpsThrough = (
   !Option.contains(connectionOf(platform, connection), "linkedinPage")
     ? undefined
     : followUpsOn(platform, options);
+
+/**
+ * The limits on a part's text by the rules in force: those on a caption
+ * where the part shows media and the platform has them apart
+ * (`textLimitsWithMedia`, Telegram's), its `textLimits` otherwise.
+ */
+export const textLimitsOf = (
+  rules: PlatformRules,
+  showsMedia: boolean
+): readonly TextLimit[] =>
+  showsMedia && rules.textLimitsWithMedia !== undefined
+    ? rules.textLimitsWithMedia
+    : rules.textLimits;
 
 /**
  * The rules a part after the first follows on the platform, with the

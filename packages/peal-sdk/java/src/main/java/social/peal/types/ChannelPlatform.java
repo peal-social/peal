@@ -13,7 +13,11 @@ public final class ChannelPlatform {
 
     public static final ChannelPlatform YOUTUBE = new ChannelPlatform(Value.YOUTUBE, "youtube");
 
+    public static final ChannelPlatform DISCORD = new ChannelPlatform(Value.DISCORD, "discord");
+
     public static final ChannelPlatform GOOGLE_BUSINESS = new ChannelPlatform(Value.GOOGLE_BUSINESS, "googleBusiness");
+
+    public static final ChannelPlatform TELEGRAM = new ChannelPlatform(Value.TELEGRAM, "telegram");
 
     public static final ChannelPlatform X = new ChannelPlatform(Value.X, "x");
 
@@ -75,8 +79,12 @@ public final class ChannelPlatform {
                 return visitor.visitFacebook();
             case YOUTUBE:
                 return visitor.visitYoutube();
+            case DISCORD:
+                return visitor.visitDiscord();
             case GOOGLE_BUSINESS:
                 return visitor.visitGoogleBusiness();
+            case TELEGRAM:
+                return visitor.visitTelegram();
             case X:
                 return visitor.visitX();
             case WORDPRESS:
@@ -114,8 +122,12 @@ public final class ChannelPlatform {
                 return FACEBOOK;
             case "youtube":
                 return YOUTUBE;
+            case "discord":
+                return DISCORD;
             case "googleBusiness":
                 return GOOGLE_BUSINESS;
+            case "telegram":
+                return TELEGRAM;
             case "x":
                 return X;
             case "wordpress":
@@ -166,6 +178,10 @@ public final class ChannelPlatform {
 
         GOOGLE_BUSINESS,
 
+        DISCORD,
+
+        TELEGRAM,
+
         WORDPRESS,
 
         DEVTO,
@@ -199,6 +215,10 @@ public final class ChannelPlatform {
         T visitPinterest();
 
         T visitGoogleBusiness();
+
+        T visitDiscord();
+
+        T visitTelegram();
 
         T visitWordpress();
 

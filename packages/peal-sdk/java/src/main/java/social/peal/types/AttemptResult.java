@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class AttemptResult {
+    public static final AttemptResult FORUM_THREAD_NAME_REQUIRED =
+            new AttemptResult(Value.FORUM_THREAD_NAME_REQUIRED, "forumThreadNameRequired");
+
     public static final AttemptResult CONTENT_REJECTED = new AttemptResult(Value.CONTENT_REJECTED, "contentRejected");
 
     public static final AttemptResult PER_ACCOUNT_PRICING_REQUIRED =
@@ -18,6 +21,8 @@ public final class AttemptResult {
 
     public static final AttemptResult REPLIES_NOT_ALLOWED =
             new AttemptResult(Value.REPLIES_NOT_ALLOWED, "repliesNotAllowed");
+
+    public static final AttemptResult CHAT_MIGRATED = new AttemptResult(Value.CHAT_MIGRATED, "chatMigrated");
 
     public static final AttemptResult MEDIA_REJECTED = new AttemptResult(Value.MEDIA_REJECTED, "mediaRejected");
 
@@ -85,6 +90,8 @@ public final class AttemptResult {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case FORUM_THREAD_NAME_REQUIRED:
+                return visitor.visitForumThreadNameRequired();
             case CONTENT_REJECTED:
                 return visitor.visitContentRejected();
             case PER_ACCOUNT_PRICING_REQUIRED:
@@ -95,6 +102,8 @@ public final class AttemptResult {
                 return visitor.visitUnavailable();
             case REPLIES_NOT_ALLOWED:
                 return visitor.visitRepliesNotAllowed();
+            case CHAT_MIGRATED:
+                return visitor.visitChatMigrated();
             case MEDIA_REJECTED:
                 return visitor.visitMediaRejected();
             case PARTS_NOT_SENT:
@@ -136,6 +145,8 @@ public final class AttemptResult {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static AttemptResult valueOf(String value) {
         switch (value) {
+            case "forumThreadNameRequired":
+                return FORUM_THREAD_NAME_REQUIRED;
             case "contentRejected":
                 return CONTENT_REJECTED;
             case "perAccountPricingRequired":
@@ -146,6 +157,8 @@ public final class AttemptResult {
                 return UNAVAILABLE;
             case "repliesNotAllowed":
                 return REPLIES_NOT_ALLOWED;
+            case "chatMigrated":
+                return CHAT_MIGRATED;
             case "mediaRejected":
                 return MEDIA_REJECTED;
             case "partsNotSent":
@@ -226,6 +239,10 @@ public final class AttemptResult {
 
         X_THREAD_CUT,
 
+        FORUM_THREAD_NAME_REQUIRED,
+
+        CHAT_MIGRATED,
+
         UNKNOWN
     }
 
@@ -271,6 +288,10 @@ public final class AttemptResult {
         T visitPerAccountPricingRequired();
 
         T visitXThreadCut();
+
+        T visitForumThreadNameRequired();
+
+        T visitChatMigrated();
 
         T visitUnknown(String unknownType);
     }

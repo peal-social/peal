@@ -182,6 +182,7 @@ public class PlatformsTest : BaseMockServerTest
                       "maxMediaWith": 1,
                       "maxPixels": 1,
                       "maxSide": 1,
+                      "maxSideSum": 1,
                       "minAspectRatio": 1.1,
                       "minByteSize": 1000000,
                       "minDurationMs": 1,
@@ -196,6 +197,7 @@ public class PlatformsTest : BaseMockServerTest
                       "maxMediaWith": 1,
                       "maxPixels": 1,
                       "maxSide": 1,
+                      "maxSideSum": 1,
                       "minAspectRatio": 1.1,
                       "minByteSize": 1000000,
                       "minDurationMs": 1,
@@ -203,6 +205,7 @@ public class PlatformsTest : BaseMockServerTest
                     }
                   ],
                   "maxCount": 1,
+                  "maxTotalByteSize": 1000000,
                   "maxVideos": 1,
                   "mixesKinds": true,
                   "required": true
@@ -309,6 +312,7 @@ public class PlatformsTest : BaseMockServerTest
                           "maxMediaWith": 1,
                           "maxPixels": 1,
                           "maxSide": 1,
+                          "maxSideSum": 1,
                           "minAspectRatio": 1.1,
                           "minByteSize": 1000000,
                           "minDurationMs": 1,
@@ -323,6 +327,7 @@ public class PlatformsTest : BaseMockServerTest
                           "maxMediaWith": 1,
                           "maxPixels": 1,
                           "maxSide": 1,
+                          "maxSideSum": 1,
                           "minAspectRatio": 1.1,
                           "minByteSize": 1000000,
                           "minDurationMs": 1,
@@ -330,6 +335,7 @@ public class PlatformsTest : BaseMockServerTest
                         }
                       ],
                       "maxCount": 1,
+                      "maxTotalByteSize": 1000000,
                       "maxVideos": 1,
                       "mixesKinds": true,
                       "required": true
@@ -354,6 +360,7 @@ public class PlatformsTest : BaseMockServerTest
                           "maxMediaWith": 1,
                           "maxPixels": 1,
                           "maxSide": 1,
+                          "maxSideSum": 1,
                           "minAspectRatio": 1.1,
                           "minByteSize": 1000000,
                           "minDurationMs": 1,
@@ -368,6 +375,7 @@ public class PlatformsTest : BaseMockServerTest
                           "maxMediaWith": 1,
                           "maxPixels": 1,
                           "maxSide": 1,
+                          "maxSideSum": 1,
                           "minAspectRatio": 1.1,
                           "minByteSize": 1000000,
                           "minDurationMs": 1,
@@ -375,6 +383,7 @@ public class PlatformsTest : BaseMockServerTest
                         }
                       ],
                       "maxCount": 1,
+                      "maxTotalByteSize": 1000000,
                       "maxVideos": 1,
                       "mixesKinds": true,
                       "required": true
@@ -389,6 +398,16 @@ public class PlatformsTest : BaseMockServerTest
                     "forbiddenCharacters"
                   ],
                   "limits": [
+                    {
+                      "maximum": 1,
+                      "unit": "graphemes"
+                    },
+                    {
+                      "maximum": 1,
+                      "unit": "graphemes"
+                    }
+                  ],
+                  "limitsWithMedia": [
                     {
                       "maximum": 1,
                       "unit": "graphemes"
@@ -572,6 +591,7 @@ public class PlatformsTest : BaseMockServerTest
                       "maxMediaWith": 1,
                       "maxPixels": 1,
                       "maxSide": 1,
+                      "maxSideSum": 1,
                       "minAspectRatio": 1.1,
                       "minByteSize": 1000000,
                       "minDurationMs": 1,
@@ -586,6 +606,7 @@ public class PlatformsTest : BaseMockServerTest
                       "maxMediaWith": 1,
                       "maxPixels": 1,
                       "maxSide": 1,
+                      "maxSideSum": 1,
                       "minAspectRatio": 1.1,
                       "minByteSize": 1000000,
                       "minDurationMs": 1,
@@ -593,6 +614,7 @@ public class PlatformsTest : BaseMockServerTest
                     }
                   ],
                   "maxCount": 1,
+                  "maxTotalByteSize": 1000000,
                   "maxVideos": 1,
                   "mixesKinds": true,
                   "required": true
@@ -699,6 +721,7 @@ public class PlatformsTest : BaseMockServerTest
                           "maxMediaWith": 1,
                           "maxPixels": 1,
                           "maxSide": 1,
+                          "maxSideSum": 1,
                           "minAspectRatio": 1.1,
                           "minByteSize": 1000000,
                           "minDurationMs": 1,
@@ -713,6 +736,7 @@ public class PlatformsTest : BaseMockServerTest
                           "maxMediaWith": 1,
                           "maxPixels": 1,
                           "maxSide": 1,
+                          "maxSideSum": 1,
                           "minAspectRatio": 1.1,
                           "minByteSize": 1000000,
                           "minDurationMs": 1,
@@ -720,6 +744,7 @@ public class PlatformsTest : BaseMockServerTest
                         }
                       ],
                       "maxCount": 1,
+                      "maxTotalByteSize": 1000000,
                       "maxVideos": 1,
                       "mixesKinds": true,
                       "required": true
@@ -744,6 +769,7 @@ public class PlatformsTest : BaseMockServerTest
                           "maxMediaWith": 1,
                           "maxPixels": 1,
                           "maxSide": 1,
+                          "maxSideSum": 1,
                           "minAspectRatio": 1.1,
                           "minByteSize": 1000000,
                           "minDurationMs": 1,
@@ -758,6 +784,7 @@ public class PlatformsTest : BaseMockServerTest
                           "maxMediaWith": 1,
                           "maxPixels": 1,
                           "maxSide": 1,
+                          "maxSideSum": 1,
                           "minAspectRatio": 1.1,
                           "minByteSize": 1000000,
                           "minDurationMs": 1,
@@ -765,6 +792,7 @@ public class PlatformsTest : BaseMockServerTest
                         }
                       ],
                       "maxCount": 1,
+                      "maxTotalByteSize": 1000000,
                       "maxVideos": 1,
                       "mixesKinds": true,
                       "required": true
@@ -779,6 +807,16 @@ public class PlatformsTest : BaseMockServerTest
                     "forbiddenCharacters"
                   ],
                   "limits": [
+                    {
+                      "maximum": 1,
+                      "unit": "graphemes"
+                    },
+                    {
+                      "maximum": 1,
+                      "unit": "graphemes"
+                    }
+                  ],
+                  "limitsWithMedia": [
                     {
                       "maximum": 1,
                       "unit": "graphemes"
@@ -886,6 +924,7 @@ public class PlatformsTest : BaseMockServerTest
                     }
                   ],
                   "maxCount": 1,
+                  "maxTotalByteSize": 1000000,
                   "maxVideos": 1,
                   "mixesKinds": true,
                   "required": true
@@ -950,6 +989,12 @@ public class PlatformsTest : BaseMockServerTest
                     "forbiddenCharacters"
                   ],
                   "limits": [
+                    {
+                      "maximum": 1,
+                      "unit": "graphemes"
+                    }
+                  ],
+                  "limitsWithMedia": [
                     {
                       "maximum": 1,
                       "unit": "graphemes"

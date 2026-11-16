@@ -24,6 +24,8 @@ pub enum FailureReason {
     PaymentFailed,
     PerAccountPricingRequired,
     XThreadCut,
+    ForumThreadNameRequired,
+    ChatMigrated,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -55,6 +57,8 @@ impl Serialize for FailureReason {
                 serializer.serialize_str("perAccountPricingRequired")
             }
             Self::XThreadCut => serializer.serialize_str("xThreadCut"),
+            Self::ForumThreadNameRequired => serializer.serialize_str("forumThreadNameRequired"),
+            Self::ChatMigrated => serializer.serialize_str("chatMigrated"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -85,6 +89,8 @@ impl<'de> Deserialize<'de> for FailureReason {
             "paymentFailed" => Ok(Self::PaymentFailed),
             "perAccountPricingRequired" => Ok(Self::PerAccountPricingRequired),
             "xThreadCut" => Ok(Self::XThreadCut),
+            "forumThreadNameRequired" => Ok(Self::ForumThreadNameRequired),
+            "chatMigrated" => Ok(Self::ChatMigrated),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -114,6 +120,8 @@ impl fmt::Display for FailureReason {
             Self::PaymentFailed => write!(f, "paymentFailed"),
             Self::PerAccountPricingRequired => write!(f, "perAccountPricingRequired"),
             Self::XThreadCut => write!(f, "xThreadCut"),
+            Self::ForumThreadNameRequired => write!(f, "forumThreadNameRequired"),
+            Self::ChatMigrated => write!(f, "chatMigrated"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

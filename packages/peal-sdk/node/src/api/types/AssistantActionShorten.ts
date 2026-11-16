@@ -3,5 +3,6 @@
 import * as Peal from "../index.js";
 
 export interface AssistantActionShorten {
+    media?: boolean | undefined;
     platform: Peal.Platform;
 }

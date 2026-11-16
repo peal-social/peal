@@ -11,9 +11,13 @@ import type { Platform } from "#shared/domain/platform.ts";
 export class PlatformLimits extends Context.Service<
   PlatformLimits,
   {
-    /** None when no limit is known for the platform. */
+    /**
+     * None when no limit is known for the platform; a caption's limit for
+     * a post that shows media, where the platform sets one.
+     */
     readonly textLimitsOf: (
-      platform: Platform
+      platform: Platform,
+      showsMedia: boolean
     ) => Effect.Effect<readonly TextLimit[]>;
   }
 >()("peal-server/assistant/application/PlatformLimits") {}

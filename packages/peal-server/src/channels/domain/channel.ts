@@ -193,6 +193,14 @@ const withChange = (
   });
 
 /**
+ * A chat whose account moved, as a Discord webhook a server's managers
+ * moved to another channel: the channel follows it, keeping its id, its
+ * history and its place in the plan.
+ */
+export const chatMovedTo = (channel: Channel, accountId: string): Channel =>
+  siteMovedTo(channel, accountId);
+
+/**
  * A website whose API moved under the same home page, as when its
  * permalinks change: the channel's account is the API's new root.
  */

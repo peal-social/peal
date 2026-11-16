@@ -162,6 +162,14 @@ public final class ContentViolation {
         return new ContentViolation(new SideOutOfRangeValue(value));
     }
 
+    public static ContentViolation sideSumTooLarge(ContentViolationSideSumTooLarge value) {
+        return new ContentViolation(new SideSumTooLargeValue(value));
+    }
+
+    public static ContentViolation mediaTotalTooLarge(ContentViolationMediaTotalTooLarge value) {
+        return new ContentViolation(new MediaTotalTooLargeValue(value));
+    }
+
     public static ContentViolation aspectRatioUnsupported(ContentViolationAspectRatioUnsupported value) {
         return new ContentViolation(new AspectRatioUnsupportedValue(value));
     }
@@ -304,6 +312,14 @@ public final class ContentViolation {
 
     public boolean isSideOutOfRange() {
         return value instanceof SideOutOfRangeValue;
+    }
+
+    public boolean isSideSumTooLarge() {
+        return value instanceof SideSumTooLargeValue;
+    }
+
+    public boolean isMediaTotalTooLarge() {
+        return value instanceof MediaTotalTooLargeValue;
     }
 
     public boolean isAspectRatioUnsupported() {
@@ -556,6 +572,20 @@ public final class ContentViolation {
         return Optional.empty();
     }
 
+    public Optional<ContentViolationSideSumTooLarge> getSideSumTooLarge() {
+        if (isSideSumTooLarge()) {
+            return Optional.of(((SideSumTooLargeValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<ContentViolationMediaTotalTooLarge> getMediaTotalTooLarge() {
+        if (isMediaTotalTooLarge()) {
+            return Optional.of(((MediaTotalTooLargeValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<ContentViolationAspectRatioUnsupported> getAspectRatioUnsupported() {
         if (isAspectRatioUnsupported()) {
             return Optional.of(((AspectRatioUnsupportedValue) value).value);
@@ -667,6 +697,10 @@ public final class ContentViolation {
 
         T visitSideOutOfRange(ContentViolationSideOutOfRange sideOutOfRange);
 
+        T visitSideSumTooLarge(ContentViolationSideSumTooLarge sideSumTooLarge);
+
+        T visitMediaTotalTooLarge(ContentViolationMediaTotalTooLarge mediaTotalTooLarge);
+
         T visitAspectRatioUnsupported(ContentViolationAspectRatioUnsupported aspectRatioUnsupported);
 
         T visitAltTextTooLong(ContentViolationAltTextTooLong altTextTooLong);
@@ -710,6 +744,8 @@ public final class ContentViolation {
         @JsonSubTypes.Type(VideoTooShortValue.class),
         @JsonSubTypes.Type(TooManyPixelsValue.class),
         @JsonSubTypes.Type(SideOutOfRangeValue.class),
+        @JsonSubTypes.Type(SideSumTooLargeValue.class),
+        @JsonSubTypes.Type(MediaTotalTooLargeValue.class),
         @JsonSubTypes.Type(AspectRatioUnsupportedValue.class),
         @JsonSubTypes.Type(AltTextTooLongValue.class)
     })
@@ -2064,6 +2100,86 @@ public final class ContentViolation {
         }
 
         private boolean equalTo(SideOutOfRangeValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "ContentViolation{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("sideSumTooLarge")
+    @JsonIgnoreProperties("_tag")
+    private static final class SideSumTooLargeValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private ContentViolationSideSumTooLarge value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private SideSumTooLargeValue() {}
+
+        private SideSumTooLargeValue(ContentViolationSideSumTooLarge value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitSideSumTooLarge(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof SideSumTooLargeValue && equalTo((SideSumTooLargeValue) other);
+        }
+
+        private boolean equalTo(SideSumTooLargeValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "ContentViolation{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("mediaTotalTooLarge")
+    @JsonIgnoreProperties("_tag")
+    private static final class MediaTotalTooLargeValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private ContentViolationMediaTotalTooLarge value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private MediaTotalTooLargeValue() {}
+
+        private MediaTotalTooLargeValue(ContentViolationMediaTotalTooLarge value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitMediaTotalTooLarge(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof MediaTotalTooLargeValue && equalTo((MediaTotalTooLargeValue) other);
+        }
+
+        private boolean equalTo(MediaTotalTooLargeValue other) {
             return value.equals(other.value);
         }
 

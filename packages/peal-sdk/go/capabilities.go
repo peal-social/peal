@@ -1724,12 +1724,13 @@ func (l *LivePostCapabilities) String() string {
 }
 
 var (
-	mediaCapabilitiesFieldAltText    = big.NewInt(1 << 0)
-	mediaCapabilitiesFieldFormats    = big.NewInt(1 << 1)
-	mediaCapabilitiesFieldMaxCount   = big.NewInt(1 << 2)
-	mediaCapabilitiesFieldMaxVideos  = big.NewInt(1 << 3)
-	mediaCapabilitiesFieldMixesKinds = big.NewInt(1 << 4)
-	mediaCapabilitiesFieldRequired   = big.NewInt(1 << 5)
+	mediaCapabilitiesFieldAltText          = big.NewInt(1 << 0)
+	mediaCapabilitiesFieldFormats          = big.NewInt(1 << 1)
+	mediaCapabilitiesFieldMaxCount         = big.NewInt(1 << 2)
+	mediaCapabilitiesFieldMaxTotalByteSize = big.NewInt(1 << 3)
+	mediaCapabilitiesFieldMaxVideos        = big.NewInt(1 << 4)
+	mediaCapabilitiesFieldMixesKinds       = big.NewInt(1 << 5)
+	mediaCapabilitiesFieldRequired         = big.NewInt(1 << 6)
 )
 
 // mediaCapabilitiesNullableFields maps the wire names of MediaCapabilities's nullable fields (required or optional) to their field bits.
@@ -1740,12 +1741,13 @@ var mediaCapabilitiesNullableFields = map[string]*big.Int{
 }
 
 type MediaCapabilities struct {
-	AltText    *MediaCapabilitiesAltText `json:"altText" url:"altText"`
-	Formats    []*MediaFormat            `json:"formats,omitempty" url:"formats,omitempty"`
-	MaxCount   int                       `json:"maxCount" url:"maxCount"`
-	MaxVideos  *int                      `json:"maxVideos,omitempty" url:"maxVideos,omitempty"`
-	MixesKinds *bool                     `json:"mixesKinds,omitempty" url:"mixesKinds,omitempty"`
-	Required   bool                      `json:"required" url:"required"`
+	AltText          *MediaCapabilitiesAltText `json:"altText" url:"altText"`
+	Formats          []*MediaFormat            `json:"formats,omitempty" url:"formats,omitempty"`
+	MaxCount         int                       `json:"maxCount" url:"maxCount"`
+	MaxTotalByteSize *int64                    `json:"maxTotalByteSize,omitempty" url:"maxTotalByteSize,omitempty"`
+	MaxVideos        *int                      `json:"maxVideos,omitempty" url:"maxVideos,omitempty"`
+	MixesKinds       *bool                     `json:"mixesKinds,omitempty" url:"mixesKinds,omitempty"`
+	Required         bool                      `json:"required" url:"required"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1773,6 +1775,13 @@ func (m *MediaCapabilities) GetMaxCount() int {
 		return 0
 	}
 	return m.MaxCount
+}
+
+func (m *MediaCapabilities) GetMaxTotalByteSize() *int64 {
+	if m == nil {
+		return nil
+	}
+	return m.MaxTotalByteSize
 }
 
 func (m *MediaCapabilities) GetMaxVideos() *int {
@@ -1831,6 +1840,13 @@ func (m *MediaCapabilities) SetFormats(formats []*MediaFormat) {
 func (m *MediaCapabilities) SetMaxCount(maxCount int) {
 	m.MaxCount = maxCount
 	m.require(mediaCapabilitiesFieldMaxCount)
+}
+
+// SetMaxTotalByteSize sets the MaxTotalByteSize field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *MediaCapabilities) SetMaxTotalByteSize(maxTotalByteSize *int64) {
+	m.MaxTotalByteSize = maxTotalByteSize
+	m.require(mediaCapabilitiesFieldMaxTotalByteSize)
 }
 
 // SetMaxVideos sets the MaxVideos field and marks it as non-optional;
@@ -2026,10 +2042,11 @@ var (
 	mediaFormatFieldMaxMediaWith   = big.NewInt(1 << 5)
 	mediaFormatFieldMaxPixels      = big.NewInt(1 << 6)
 	mediaFormatFieldMaxSide        = big.NewInt(1 << 7)
-	mediaFormatFieldMinAspectRatio = big.NewInt(1 << 8)
-	mediaFormatFieldMinByteSize    = big.NewInt(1 << 9)
-	mediaFormatFieldMinDurationMs  = big.NewInt(1 << 10)
-	mediaFormatFieldMinSide        = big.NewInt(1 << 11)
+	mediaFormatFieldMaxSideSum     = big.NewInt(1 << 8)
+	mediaFormatFieldMinAspectRatio = big.NewInt(1 << 9)
+	mediaFormatFieldMinByteSize    = big.NewInt(1 << 10)
+	mediaFormatFieldMinDurationMs  = big.NewInt(1 << 11)
+	mediaFormatFieldMinSide        = big.NewInt(1 << 12)
 )
 
 // mediaFormatNullableFields maps the wire names of MediaFormat's nullable fields (required or optional) to their field bits.
@@ -2055,6 +2072,7 @@ type MediaFormat struct {
 	MaxMediaWith   *int             `json:"maxMediaWith,omitempty" url:"maxMediaWith,omitempty"`
 	MaxPixels      *int             `json:"maxPixels,omitempty" url:"maxPixels,omitempty"`
 	MaxSide        *int             `json:"maxSide,omitempty" url:"maxSide,omitempty"`
+	MaxSideSum     *int             `json:"maxSideSum,omitempty" url:"maxSideSum,omitempty"`
 	MinAspectRatio *float64         `json:"minAspectRatio,omitempty" url:"minAspectRatio,omitempty"`
 	MinByteSize    *int64           `json:"minByteSize,omitempty" url:"minByteSize,omitempty"`
 	MinDurationMs  *int             `json:"minDurationMs,omitempty" url:"minDurationMs,omitempty"`
@@ -2121,6 +2139,13 @@ func (m *MediaFormat) GetMaxSide() *int {
 		return nil
 	}
 	return m.MaxSide
+}
+
+func (m *MediaFormat) GetMaxSideSum() *int {
+	if m == nil {
+		return nil
+	}
+	return m.MaxSideSum
 }
 
 func (m *MediaFormat) GetMinAspectRatio() *float64 {
@@ -2221,6 +2246,13 @@ func (m *MediaFormat) SetMaxPixels(maxPixels *int) {
 func (m *MediaFormat) SetMaxSide(maxSide *int) {
 	m.MaxSide = maxSide
 	m.require(mediaFormatFieldMaxSide)
+}
+
+// SetMaxSideSum sets the MaxSideSum field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *MediaFormat) SetMaxSideSum(maxSideSum *int) {
+	m.MaxSideSum = maxSideSum
+	m.require(mediaFormatFieldMaxSideSum)
 }
 
 // SetMinAspectRatio sets the MinAspectRatio field and marks it as non-optional;
@@ -3880,9 +3912,10 @@ func (p *PostFormatCapabilities) String() string {
 var (
 	textCapabilitiesFieldForbiddenCharacters = big.NewInt(1 << 0)
 	textCapabilitiesFieldLimits              = big.NewInt(1 << 1)
-	textCapabilitiesFieldMaxHashtags         = big.NewInt(1 << 2)
-	textCapabilitiesFieldMaxLinks            = big.NewInt(1 << 3)
-	textCapabilitiesFieldMaxMentions         = big.NewInt(1 << 4)
+	textCapabilitiesFieldLimitsWithMedia     = big.NewInt(1 << 2)
+	textCapabilitiesFieldMaxHashtags         = big.NewInt(1 << 3)
+	textCapabilitiesFieldMaxLinks            = big.NewInt(1 << 4)
+	textCapabilitiesFieldMaxMentions         = big.NewInt(1 << 5)
 )
 
 // textCapabilitiesNullableFields maps the wire names of TextCapabilities's nullable fields (required or optional) to their field bits.
@@ -3895,6 +3928,7 @@ var textCapabilitiesNullableFields = map[string]*big.Int{
 type TextCapabilities struct {
 	ForbiddenCharacters []string     `json:"forbiddenCharacters" url:"forbiddenCharacters"`
 	Limits              []*TextLimit `json:"limits" url:"limits"`
+	LimitsWithMedia     []*TextLimit `json:"limitsWithMedia,omitempty" url:"limitsWithMedia,omitempty"`
 	MaxHashtags         *int         `json:"maxHashtags,omitempty" url:"maxHashtags,omitempty"`
 	MaxLinks            *int         `json:"maxLinks,omitempty" url:"maxLinks,omitempty"`
 	MaxMentions         *int         `json:"maxMentions,omitempty" url:"maxMentions,omitempty"`
@@ -3918,6 +3952,13 @@ func (t *TextCapabilities) GetLimits() []*TextLimit {
 		return nil
 	}
 	return t.Limits
+}
+
+func (t *TextCapabilities) GetLimitsWithMedia() []*TextLimit {
+	if t == nil {
+		return nil
+	}
+	return t.LimitsWithMedia
 }
 
 func (t *TextCapabilities) GetMaxHashtags() *int {
@@ -3969,6 +4010,13 @@ func (t *TextCapabilities) SetForbiddenCharacters(forbiddenCharacters []string) 
 func (t *TextCapabilities) SetLimits(limits []*TextLimit) {
 	t.Limits = limits
 	t.require(textCapabilitiesFieldLimits)
+}
+
+// SetLimitsWithMedia sets the LimitsWithMedia field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (t *TextCapabilities) SetLimitsWithMedia(limitsWithMedia []*TextLimit) {
+	t.LimitsWithMedia = limitsWithMedia
+	t.require(textCapabilitiesFieldLimitsWithMedia)
 }
 
 // SetMaxHashtags sets the MaxHashtags field and marks it as non-optional;

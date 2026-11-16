@@ -4,7 +4,7 @@ import type { ChannelOnPlatform } from "./content-rules.ts";
 import type { ContentViolation } from "./content-violation.ts";
 import { countedText } from "./counted-text.ts";
 import { mediaLimitOf } from "./platform-capabilities.ts";
-import { partRulesFor, rulesFor } from "./platform-rules.ts";
+import { partRulesFor, rulesFor, textLimitsOf } from "./platform-rules.ts";
 import { partsOn } from "./post-content.ts";
 import type { PartOnChannel, PostContent } from "./post-content.ts";
 import type { TargetOptions } from "./target-options.ts";
@@ -99,7 +99,7 @@ export const previewOn = (
       mentions: { count: countMentions(text), maximum: rules.maxMentions },
       text,
       textCounts: sendsText
-        ? rules.textLimits.map(({ maximum, unit }) => ({
+        ? textLimitsOf(rules, media.length > 0).map(({ maximum, unit }) => ({
             length: measureText(countedText(text, options), unit),
             maximum,
             unit,

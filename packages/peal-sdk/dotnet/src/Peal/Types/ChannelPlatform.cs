@@ -30,6 +30,10 @@ public readonly record struct ChannelPlatform : IStringEnum
 
     public static readonly ChannelPlatform GoogleBusiness = new(Values.GoogleBusiness);
 
+    public static readonly ChannelPlatform Discord = new(Values.Discord);
+
+    public static readonly ChannelPlatform Telegram = new(Values.Telegram);
+
     public static readonly ChannelPlatform Wordpress = new(Values.Wordpress);
 
     public static readonly ChannelPlatform Devto = new(Values.Devto);
@@ -155,6 +159,10 @@ public readonly record struct ChannelPlatform : IStringEnum
         public const string Pinterest = "pinterest";
 
         public const string GoogleBusiness = "googleBusiness";
+
+        public const string Discord = "discord";
+
+        public const string Telegram = "telegram";
 
         public const string Wordpress = "wordpress";
 

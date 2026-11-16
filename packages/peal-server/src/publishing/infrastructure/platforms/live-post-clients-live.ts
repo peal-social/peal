@@ -11,11 +11,19 @@ import {
 } from "#publishing/domain/live-post-support.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { Platform } from "#shared/domain/platform.ts";
+import { discordHosts } from "#shared/infrastructure/platforms/discord-api.ts";
+import type { DiscordHosts } from "#shared/infrastructure/platforms/discord-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import { pinterestHostsConfig } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
+import { telegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
+import type { TelegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 
 import { blueskyLivePost } from "./bluesky/bluesky-live-post.ts";
+import {
+  discordLiveEdit,
+  discordLivePost,
+} from "./discord/discord-live-post.ts";
 import {
   googleBusinessLiveEdit,
   googleBusinessLivePost,
@@ -27,14 +35,20 @@ import {
   mastodonLivePost,
 } from "./mastodon/mastodon-live-post.ts";
 import { pinterestLivePost } from "./pinterest/pinterest-live-post.ts";
+import {
+  telegramLiveEdit,
+  telegramLivePost,
+} from "./telegram/telegram-live-post.ts";
 import { xLivePost } from "./x/x-live-post.ts";
 
 /** Where the platforms that delete or edit posts are. */
 export interface LivePostSettings {
+  readonly discordHosts: DiscordHosts;
   readonly googleBusinessApi: URL;
   /** `https:`; `http:` only for tests against local fakes. */
   readonly mastodonScheme: "http:" | "https:";
   readonly pinterestApi: URL;
+  readonly telegramHosts: TelegramHosts;
   readonly xApi: URL;
 }
 
@@ -76,11 +90,17 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
   function* livePostRegistryWith(settings: LivePostSettings) {
     const api = yield* publicHttpClient;
 
+    const discord = { api, hosts: settings.discordHosts };
     const google = { api, apiUrl: settings.googleBusinessApi };
+    const telegram = { api, hosts: settings.telegramHosts };
     const mastodon = { api, scheme: settings.mastodonScheme };
 
     const registry: Registry = {
       bluesky: { edit: notEditing, remove: yield* blueskyLivePost({ api }) },
+      discord: {
+        edit: discordLiveEdit(discord),
+        remove: discordLivePost(discord),
+      },
       facebook: neither,
       googleBusiness: {
         edit: googleBusinessLiveEdit(google),
@@ -95,6 +115,10 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
       pinterest: {
         edit: notEditing,
         remove: pinterestLivePost({ api, apiUrl: settings.pinterestApi }),
+      },
+      telegram: {
+        edit: telegramLiveEdit(telegram),
+        remove: telegramLivePost(telegram),
       },
       threads: neither,
       tiktok: neither,
@@ -180,9 +204,11 @@ export const LivePostClientsLive = Layer.unwrap(
   pinterestHostsConfig.pipe(
     Effect.map((pinterest) =>
       livePostClientsWith({
+        discordHosts,
         googleBusinessApi: new URL("https://mybusiness.googleapis.com"),
         mastodonScheme: "https:",
         pinterestApi: pinterest.api,
+        telegramHosts,
         xApi: new URL("https://api.x.com"),
       })
     )

@@ -121,6 +121,24 @@ public record TargetOptions
     }
 
     /// <summary>
+    /// Create an instance of TargetOptions with <see cref="TargetOptions.Discord"/>.
+    /// </summary>
+    public TargetOptions(TargetOptions.Discord value)
+    {
+        Platform = "discord";
+        Value = value.Value;
+    }
+
+    /// <summary>
+    /// Create an instance of TargetOptions with <see cref="TargetOptions.Telegram"/>.
+    /// </summary>
+    public TargetOptions(TargetOptions.Telegram value)
+    {
+        Platform = "telegram";
+        Value = value.Value;
+    }
+
+    /// <summary>
     /// Discriminant value
     /// </summary>
     [JsonPropertyName("platform")]
@@ -185,6 +203,16 @@ public record TargetOptions
     /// Returns true if <see cref="Platform"/> is "facebook"
     /// </summary>
     public bool IsFacebook => Platform == "facebook";
+
+    /// <summary>
+    /// Returns true if <see cref="Platform"/> is "discord"
+    /// </summary>
+    public bool IsDiscord => Platform == "discord";
+
+    /// <summary>
+    /// Returns true if <see cref="Platform"/> is "telegram"
+    /// </summary>
+    public bool IsTelegram => Platform == "telegram";
 
     /// <summary>
     /// Returns the value as a <see cref="Peal.YouTubeOptions"/> if <see cref="Platform"/> is 'youtube', otherwise throws an exception.
@@ -285,6 +313,24 @@ public record TargetOptions
             ? (Peal.FacebookOptions)Value!
             : throw new global::System.Exception("TargetOptions.Platform is not 'facebook'");
 
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.DiscordOptions"/> if <see cref="Platform"/> is 'discord', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'discord'.</exception>
+    public Peal.DiscordOptions AsDiscord() =>
+        IsDiscord
+            ? (Peal.DiscordOptions)Value!
+            : throw new global::System.Exception("TargetOptions.Platform is not 'discord'");
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.TelegramOptions"/> if <see cref="Platform"/> is 'telegram', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'telegram'.</exception>
+    public Peal.TelegramOptions AsTelegram() =>
+        IsTelegram
+            ? (Peal.TelegramOptions)Value!
+            : throw new global::System.Exception("TargetOptions.Platform is not 'telegram'");
+
     public T Match<T>(
         Func<Peal.YouTubeOptions, T> onYoutube,
         Func<Peal.TikTokOptions, T> onTiktok,
@@ -297,6 +343,8 @@ public record TargetOptions
         Func<Peal.XOptions, T> onX,
         Func<Peal.InstagramOptions, T> onInstagram,
         Func<Peal.FacebookOptions, T> onFacebook,
+        Func<Peal.DiscordOptions, T> onDiscord,
+        Func<Peal.TelegramOptions, T> onTelegram,
         Func<string, object?, T> onUnknown_
     )
     {
@@ -313,6 +361,8 @@ public record TargetOptions
             "x" => onX(AsX()),
             "instagram" => onInstagram(AsInstagram()),
             "facebook" => onFacebook(AsFacebook()),
+            "discord" => onDiscord(AsDiscord()),
+            "telegram" => onTelegram(AsTelegram()),
             _ => onUnknown_(Platform, Value),
         };
     }
@@ -329,6 +379,8 @@ public record TargetOptions
         Action<Peal.XOptions> onX,
         Action<Peal.InstagramOptions> onInstagram,
         Action<Peal.FacebookOptions> onFacebook,
+        Action<Peal.DiscordOptions> onDiscord,
+        Action<Peal.TelegramOptions> onTelegram,
         Action<string, object?> onUnknown_
     )
     {
@@ -366,6 +418,12 @@ public record TargetOptions
                 break;
             case "facebook":
                 onFacebook(AsFacebook());
+                break;
+            case "discord":
+                onDiscord(AsDiscord());
+                break;
+            case "telegram":
+                onTelegram(AsTelegram());
                 break;
             default:
                 onUnknown_(Platform, Value);
@@ -527,6 +585,34 @@ public record TargetOptions
         return false;
     }
 
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.DiscordOptions"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsDiscord(out Peal.DiscordOptions? value)
+    {
+        if (Platform == "discord")
+        {
+            value = (Peal.DiscordOptions)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.TelegramOptions"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsTelegram(out Peal.TelegramOptions? value)
+    {
+        if (Platform == "telegram")
+        {
+            value = (Peal.TelegramOptions)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator TargetOptions(TargetOptions.Youtube value) => new(value);
@@ -550,6 +636,10 @@ public record TargetOptions
     public static implicit operator TargetOptions(TargetOptions.Instagram value) => new(value);
 
     public static implicit operator TargetOptions(TargetOptions.Facebook value) => new(value);
+
+    public static implicit operator TargetOptions(TargetOptions.Discord value) => new(value);
+
+    public static implicit operator TargetOptions(TargetOptions.Telegram value) => new(value);
 
     [Serializable]
     internal sealed class JsonConverter : JsonConverter<TargetOptions>
@@ -617,6 +707,10 @@ public record TargetOptions
                     ?? throw new JsonException("Failed to deserialize Peal.InstagramOptions"),
                 "facebook" => jsonWithoutDiscriminator.Deserialize<Peal.FacebookOptions?>(options)
                     ?? throw new JsonException("Failed to deserialize Peal.FacebookOptions"),
+                "discord" => jsonWithoutDiscriminator.Deserialize<Peal.DiscordOptions?>(options)
+                    ?? throw new JsonException("Failed to deserialize Peal.DiscordOptions"),
+                "telegram" => jsonWithoutDiscriminator.Deserialize<Peal.TelegramOptions?>(options)
+                    ?? throw new JsonException("Failed to deserialize Peal.TelegramOptions"),
                 _ => json.Deserialize<object?>(options),
             };
             return new TargetOptions(discriminator, value);
@@ -642,6 +736,8 @@ public record TargetOptions
                     "x" => JsonSerializer.SerializeToNode(value.Value, options),
                     "instagram" => JsonSerializer.SerializeToNode(value.Value, options),
                     "facebook" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "discord" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "telegram" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["platform"] = value.Platform;
@@ -876,6 +972,44 @@ public record TargetOptions
         public override string ToString() => Value.ToString() ?? "null";
 
         public static implicit operator TargetOptions.Facebook(Peal.FacebookOptions value) =>
+            new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for discord
+    /// </summary>
+    [Serializable]
+    public struct Discord
+    {
+        public Discord(Peal.DiscordOptions value)
+        {
+            Value = value;
+        }
+
+        internal Peal.DiscordOptions Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TargetOptions.Discord(Peal.DiscordOptions value) =>
+            new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for telegram
+    /// </summary>
+    [Serializable]
+    public struct Telegram
+    {
+        public Telegram(Peal.TelegramOptions value)
+        {
+            Value = value;
+        }
+
+        internal Peal.TelegramOptions Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TargetOptions.Telegram(Peal.TelegramOptions value) =>
             new(value);
     }
 }

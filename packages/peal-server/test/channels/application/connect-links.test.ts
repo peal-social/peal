@@ -13,6 +13,7 @@ import {
   maxLinkStarts,
   maxPendingLinks,
 } from "#channels/domain/connect-link.ts";
+import type { Platform } from "#shared/domain/platform.ts";
 import { mastodonInstance } from "#test/channels/connect-support.ts";
 import {
   fakeSignIn,
@@ -616,6 +617,35 @@ layer(LinksTest)("connect links", (it) => {
         platform: "linkedin",
         reason: "notConfigured",
       });
+    })
+  );
+
+  it.effect("offer no chat, which connects with a secret, not a sign-in", () =>
+    Effect.gen(function* chats() {
+      const links = yield* ConnectLinks;
+      const workspaceId = yield* freshWorkspace;
+
+      // Each set of platforms asked, and the chat it is refused for.
+      const asked: readonly (readonly [
+        readonly [Platform, ...Platform[]],
+        Platform,
+      ])[] = [
+        [["discord"], "discord"],
+        [["telegram"], "telegram"],
+        [["mastodon", "telegram"], "telegram"],
+      ];
+
+      for (const [platforms, chat] of asked) {
+        const refused = yield* links
+          .create(manager(workspaceId), { ...mastodon, platforms })
+          .pipe(Effect.flip);
+
+        assert.deepInclude(refused, {
+          _tag: "PlatformNotConnectable",
+          platform: chat,
+          reason: "notSupported",
+        });
+      }
     })
   );
 

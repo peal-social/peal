@@ -71,6 +71,11 @@
   WordPress.com's sign-in (`startSiteSignIn`, `completeSiteSignIn`)
   needs the web app's callback page, so it has no command: both are
   exempt from parity, as the social sign-ins are.
+- `peal channels connect-chat --platform discord|telegram [--chat <@name
+  or id>] [--channel <id>]` connects a chat (`channels.connectChat`): a
+  Discord webhook's address or a Telegram bot's token, read with
+  `readSecret`, never an argument; `--chat` is Telegram's and refused
+  missing before any request; `--channel` reconnects that channel.
 - `peal articles` (list, show, create, schedule, unschedule, retry,
   unpublish, delete) follows the articles group; `create` writes the
   body from plain text (`--text`, a paragraph a block), as rich text is

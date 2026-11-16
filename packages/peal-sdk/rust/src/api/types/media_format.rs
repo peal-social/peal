@@ -25,6 +25,9 @@ pub struct MediaFormat {
     #[serde(rename = "maxSide")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_side: Option<i64>,
+    #[serde(rename = "maxSideSum")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_side_sum: Option<i64>,
     #[serde(rename = "minAspectRatio")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
@@ -58,6 +61,7 @@ pub struct MediaFormatBuilder {
     max_media_with: Option<i64>,
     max_pixels: Option<i64>,
     max_side: Option<i64>,
+    max_side_sum: Option<i64>,
     min_aspect_ratio: Option<f64>,
     min_byte_size: Option<i64>,
     min_duration_ms: Option<i64>,
@@ -105,6 +109,11 @@ impl MediaFormatBuilder {
         self
     }
 
+    pub fn max_side_sum(mut self, value: i64) -> Self {
+        self.max_side_sum = Some(value);
+        self
+    }
+
     pub fn min_aspect_ratio(mut self, value: f64) -> Self {
         self.min_aspect_ratio = Some(value);
         self
@@ -141,6 +150,7 @@ impl MediaFormatBuilder {
             max_media_with: self.max_media_with,
             max_pixels: self.max_pixels,
             max_side: self.max_side,
+            max_side_sum: self.max_side_sum,
             min_aspect_ratio: self.min_aspect_ratio,
             min_byte_size: self.min_byte_size,
             min_duration_ms: self.min_duration_ms,

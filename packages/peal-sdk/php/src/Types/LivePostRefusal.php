@@ -12,4 +12,5 @@ enum LivePostRefusal: string
     case ChannelUnavailable = "channelUnavailable";
     case BoostRunning = "boostRunning";
     case ApprovalRequired = "approvalRequired";
+    case DeletionWindowPassed = "deletionWindowPassed";
 }

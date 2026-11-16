@@ -29,6 +29,8 @@ public final class TextCapabilities {
 
     private final List<TextLimit> limits;
 
+    private final Optional<List<TextLimit>> limitsWithMedia;
+
     private final Optional<Integer> maxHashtags;
 
     private final Optional<Integer> maxLinks;
@@ -40,12 +42,14 @@ public final class TextCapabilities {
     private TextCapabilities(
             List<String> forbiddenCharacters,
             List<TextLimit> limits,
+            Optional<List<TextLimit>> limitsWithMedia,
             Optional<Integer> maxHashtags,
             Optional<Integer> maxLinks,
             Optional<Integer> maxMentions,
             Map<String, Object> additionalProperties) {
         this.forbiddenCharacters = forbiddenCharacters;
         this.limits = limits;
+        this.limitsWithMedia = limitsWithMedia;
         this.maxHashtags = maxHashtags;
         this.maxLinks = maxLinks;
         this.maxMentions = maxMentions;
@@ -60,6 +64,11 @@ public final class TextCapabilities {
     @JsonProperty("limits")
     public List<TextLimit> getLimits() {
         return limits;
+    }
+
+    @JsonProperty("limitsWithMedia")
+    public Optional<List<TextLimit>> getLimitsWithMedia() {
+        return limitsWithMedia;
     }
 
     @JsonIgnore
@@ -118,6 +127,7 @@ public final class TextCapabilities {
     private boolean equalTo(TextCapabilities other) {
         return forbiddenCharacters.equals(other.forbiddenCharacters)
                 && limits.equals(other.limits)
+                && limitsWithMedia.equals(other.limitsWithMedia)
                 && maxHashtags.equals(other.maxHashtags)
                 && maxLinks.equals(other.maxLinks)
                 && maxMentions.equals(other.maxMentions);
@@ -125,7 +135,13 @@ public final class TextCapabilities {
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.forbiddenCharacters, this.limits, this.maxHashtags, this.maxLinks, this.maxMentions);
+        return Objects.hash(
+                this.forbiddenCharacters,
+                this.limits,
+                this.limitsWithMedia,
+                this.maxHashtags,
+                this.maxLinks,
+                this.maxMentions);
     }
 
     @java.lang.Override
@@ -143,6 +159,8 @@ public final class TextCapabilities {
 
         private List<TextLimit> limits = new ArrayList<>();
 
+        private Optional<List<TextLimit>> limitsWithMedia = Optional.empty();
+
         private Optional<Integer> maxHashtags = Optional.empty();
 
         private Optional<Integer> maxLinks = Optional.empty();
@@ -156,6 +174,7 @@ public final class TextCapabilities {
         public Builder from(TextCapabilities other) {
             forbiddenCharacters(other.getForbiddenCharacters());
             limits(other.getLimits());
+            limitsWithMedia(other.getLimitsWithMedia());
             maxHashtags(other.getMaxHashtags());
             maxLinks(other.getMaxLinks());
             maxMentions(other.getMaxMentions());
@@ -201,6 +220,17 @@ public final class TextCapabilities {
             if (limits != null) {
                 this.limits.addAll(limits);
             }
+            return this;
+        }
+
+        @JsonSetter(value = "limitsWithMedia", nulls = Nulls.SKIP)
+        public Builder limitsWithMedia(Optional<List<TextLimit>> limitsWithMedia) {
+            this.limitsWithMedia = limitsWithMedia;
+            return this;
+        }
+
+        public Builder limitsWithMedia(List<TextLimit> limitsWithMedia) {
+            this.limitsWithMedia = Optional.ofNullable(limitsWithMedia);
             return this;
         }
 
@@ -272,13 +302,20 @@ public final class TextCapabilities {
 
         public TextCapabilities build() {
             return new TextCapabilities(
-                    forbiddenCharacters, limits, maxHashtags, maxLinks, maxMentions, additionalProperties);
+                    forbiddenCharacters,
+                    limits,
+                    limitsWithMedia,
+                    maxHashtags,
+                    maxLinks,
+                    maxMentions,
+                    additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("forbiddenCharacters")
                     || key.equalsIgnoreCase("limits")
+                    || key.equalsIgnoreCase("limitsWithMedia")
                     || key.equalsIgnoreCase("maxHashtags")
                     || key.equalsIgnoreCase("maxLinks")
                     || key.equalsIgnoreCase("maxMentions")) {

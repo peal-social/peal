@@ -240,6 +240,16 @@ layer(FileTest)("refreshing channel tokens", (it) => {
         },
       });
 
+      // A chat's secret never expires, and nothing renews it.
+      const chats = yield* Effect.all(
+        (["discord", "telegram"] as const).map((chat) =>
+          stored(workspaceId, {
+            platform: chat,
+            token: { _tag: "nonExpiring" },
+          })
+        )
+      );
+
       const broken = yield* stored(workspaceId, {
         token: {
           _tag: "refreshable",
@@ -275,7 +285,7 @@ layer(FileTest)("refreshing channel tokens", (it) => {
       });
       assert.strictEqual(yield* platform.calls, 2);
 
-      for (const untouched of [later, cannotRenew, unknown]) {
+      for (const untouched of [later, cannotRenew, unknown, ...chats]) {
         assert.deepStrictEqual(
           (yield* reread(untouched)).token,
           untouched.token

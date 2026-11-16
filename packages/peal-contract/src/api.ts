@@ -1042,6 +1042,10 @@ export {
   ConnectOutcomeSchema,
   ConnectSiteSchema,
   ConnectSiteWithKeySchema,
+  ConnectChatSchema,
+  ConnectDiscordChatSchema,
+  ConnectTelegramChatSchema,
+  maxChatSecretLength,
   SiteSignInCallbackSchema,
   StartSiteSignInSchema,
   isSocialChannel,
@@ -1063,6 +1067,7 @@ export type {
   ConnectOutcome,
   ConnectSite,
   ConnectSiteWithKey,
+  ConnectChat,
   SiteSignInCallback,
   StartSiteSignIn,
   SocialChannel,
@@ -1314,6 +1319,7 @@ export type { AllowanceReason } from "./usage-allowance-reached.ts";
 export {
   ChannelConnectionSchema,
   ChannelPlatformSchema,
+  ChatPlatformSchema,
   InstagramConnectionSchema,
   KeySitePlatformSchema,
   LinkedInConnectionSchema,
@@ -1325,6 +1331,7 @@ export {
 export type {
   ChannelConnection,
   ChannelPlatform,
+  ChatPlatform,
   InstagramConnection,
   KeySitePlatform,
   LinkedInConnection,
@@ -1801,6 +1808,15 @@ export { TooManyRequests } from "./too-many-requests.ts";
 export { Unauthenticated } from "./unauthenticated.ts";
 
 export { SiteConnectLimited } from "./site-connect-limited.ts";
+
+export { ChatConnectLimited } from "./chat-connect-limited.ts";
+
+export {
+  ChatNotConnected,
+  ChatNotConnectedReasonSchema,
+} from "./chat-not-connected.ts";
+
+export type { ChatNotConnectedReason } from "./chat-not-connected.ts";
 
 export {
   SiteNotConnected,

@@ -1,10 +1,12 @@
 import { Cause, Exit, Option, Schema } from "effect";
 import { Atom } from "effect/reactivity";
 import {
+  ChatNotConnectedReasonSchema,
   ConnectFailureReasonSchema,
   SiteNotConnectedReasonSchema,
 } from "peal-contract";
 import type {
+  ChatNotConnectedReason,
   ConnectFailureReason,
   SiteNotConnectedReason,
 } from "peal-contract";
@@ -57,6 +59,9 @@ export const connectSiteWithKey = PealApi.mutation(
   "connectSiteWithKey"
 );
 
+/** Connects a chat with the secret its member pastes. */
+export const connectChat = PealApi.mutation("channels", "connectChat");
+
 /** Starts signing in to a website's platform (WordPress.com). */
 export const startSiteSignIn = PealApi.mutation("channels", "startSiteSignIn");
 
@@ -84,6 +89,9 @@ export const enableChannel = PealApi.mutation("channels", "enable");
 export type ChannelErrorKey =
   | ConnectFailureReason
   | SiteNotConnectedReason
+  // A chat's refusals, apart from a website's of the same name.
+  | `chat.${ChatNotConnectedReason}`
+  | "chatTooManyTries"
   | "forbidden"
   | "notFound"
   | "planLimit"
@@ -103,6 +111,8 @@ interface Tagged {
 const isConnectFailure = Schema.is(ConnectFailureReasonSchema);
 
 const isSiteRefusal = Schema.is(SiteNotConnectedReasonSchema);
+
+const isChatRefusal = Schema.is(ChatNotConnectedReasonSchema);
 
 // The contract's errors, told apart by tag; anything else, such as the
 // server being down, is unknown.
@@ -134,6 +144,14 @@ const keyOf = (error: Tagged): ChannelErrorKey => {
 
     case "SiteConnectLimited": {
       return "tooManyTries";
+    }
+
+    case "ChatNotConnected": {
+      return isChatRefusal(error.reason) ? `chat.${error.reason}` : "unknown";
+    }
+
+    case "ChatConnectLimited": {
+      return "chatTooManyTries";
     }
 
     // X, billed at its rates, needs per-account pricing that pays: told

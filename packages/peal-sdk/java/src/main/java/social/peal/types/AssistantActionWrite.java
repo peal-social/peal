@@ -22,6 +22,8 @@ import social.peal.core.ObjectMappers;
 public final class AssistantActionWrite {
     private final Optional<TranslationLanguage> language;
 
+    private final Optional<Boolean> media;
+
     private final Optional<Platform> platform;
 
     private final Optional<AssistantTone> tone;
@@ -30,10 +32,12 @@ public final class AssistantActionWrite {
 
     private AssistantActionWrite(
             Optional<TranslationLanguage> language,
+            Optional<Boolean> media,
             Optional<Platform> platform,
             Optional<AssistantTone> tone,
             Map<String, Object> additionalProperties) {
         this.language = language;
+        this.media = media;
         this.platform = platform;
         this.tone = tone;
         this.additionalProperties = additionalProperties;
@@ -42,6 +46,11 @@ public final class AssistantActionWrite {
     @JsonProperty("language")
     public Optional<TranslationLanguage> getLanguage() {
         return language;
+    }
+
+    @JsonProperty("media")
+    public Optional<Boolean> getMedia() {
+        return media;
     }
 
     @JsonProperty("platform")
@@ -66,12 +75,15 @@ public final class AssistantActionWrite {
     }
 
     private boolean equalTo(AssistantActionWrite other) {
-        return language.equals(other.language) && platform.equals(other.platform) && tone.equals(other.tone);
+        return language.equals(other.language)
+                && media.equals(other.media)
+                && platform.equals(other.platform)
+                && tone.equals(other.tone);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.language, this.platform, this.tone);
+        return Objects.hash(this.language, this.media, this.platform, this.tone);
     }
 
     @java.lang.Override
@@ -87,6 +99,8 @@ public final class AssistantActionWrite {
     public static final class Builder {
         private Optional<TranslationLanguage> language = Optional.empty();
 
+        private Optional<Boolean> media = Optional.empty();
+
         private Optional<Platform> platform = Optional.empty();
 
         private Optional<AssistantTone> tone = Optional.empty();
@@ -97,6 +111,7 @@ public final class AssistantActionWrite {
 
         public Builder from(AssistantActionWrite other) {
             language(other.getLanguage());
+            media(other.getMedia());
             platform(other.getPlatform());
             tone(other.getTone());
             return this;
@@ -110,6 +125,17 @@ public final class AssistantActionWrite {
 
         public Builder language(TranslationLanguage language) {
             this.language = Optional.ofNullable(language);
+            return this;
+        }
+
+        @JsonSetter(value = "media", nulls = Nulls.SKIP)
+        public Builder media(Optional<Boolean> media) {
+            this.media = media;
+            return this;
+        }
+
+        public Builder media(Boolean media) {
+            this.media = Optional.ofNullable(media);
             return this;
         }
 
@@ -136,12 +162,15 @@ public final class AssistantActionWrite {
         }
 
         public AssistantActionWrite build() {
-            return new AssistantActionWrite(language, platform, tone, additionalProperties);
+            return new AssistantActionWrite(language, media, platform, tone, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("language") || key.equalsIgnoreCase("platform") || key.equalsIgnoreCase("tone")) {
+            if (key.equalsIgnoreCase("language")
+                    || key.equalsIgnoreCase("media")
+                    || key.equalsIgnoreCase("platform")
+                    || key.equalsIgnoreCase("tone")) {
                 return;
             }
             this.additionalProperties.put(key, value);

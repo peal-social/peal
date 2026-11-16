@@ -15,6 +15,7 @@ import {
 } from "#publishing/domain/live-post-change.ts";
 import type { PartToRemove } from "#publishing/domain/live-post-change.ts";
 import {
+  deletionWindowPassed,
   editBlocker,
   livePostSupport,
   unpublishBlocker,
@@ -232,6 +233,60 @@ describe("the parts a removal takes", () => {
   });
 });
 
+describe(deletionWindowPassed, () => {
+  const target = targetWith(published);
+
+  it("refuses a Telegram post sent more than 48 hours ago, before any call", () => {
+    expect(
+      deletionWindowPassed(target, "telegram", utc("2026-06-17T08:00:00Z"))
+    ).toBeFalsy();
+    expect(
+      deletionWindowPassed(target, "telegram", utc("2026-06-17T08:00:01Z"))
+    ).toBeTruthy();
+  });
+
+  it("counts from each part's own time, the oldest deciding", () => {
+    // The thread's parts went out six hours apart, a rate limit's wait.
+    // The target went live with its last part.
+    const thread = targetWith(
+      { ...published, publishedAt: utc("2026-06-15T14:00:00Z") },
+      [
+        livePart(0, Option.some("t:1")),
+        {
+          ...livePart(1, Option.some("t:2")),
+          publishedAt: utc("2026-06-15T14:00:00Z"),
+        },
+      ]
+    );
+
+    expect(
+      deletionWindowPassed(thread, "telegram", utc("2026-06-17T08:00:01Z"))
+    ).toBeTruthy();
+  });
+
+  it("checks a target whose later parts did not go out", () => {
+    const partial = targetWith(
+      {
+        _tag: "failed",
+        code: Option.none(),
+        failedAt: publishedAt,
+        reason: "partsNotSent",
+      },
+      [livePart(0, Option.some("t:1"))]
+    );
+
+    expect(
+      deletionWindowPassed(partial, "telegram", utc("2026-06-17T08:00:01Z"))
+    ).toBeTruthy();
+  });
+
+  it("knows no window on a platform that deletes at any age", () => {
+    expect(
+      deletionWindowPassed(target, "discord", utc("2027-06-15T08:00:00Z"))
+    ).toBeFalsy();
+  });
+});
+
 describe("the parts a removal takes after an edit", () => {
   it("takes up the parts the last failed removal left, past an edit made since", () => {
     const target = targetWith(published, [
@@ -388,6 +443,8 @@ describe("live post support", () => {
       "mastodon",
       "pinterest",
       "googleBusiness",
+      "discord",
+      "telegram",
     ]);
   });
 });
@@ -567,6 +624,6 @@ describe("live post editing support", () => {
   it("edits only where the platform and Peal's permissions allow", () => {
     expect(
       platforms.filter((platform) => Option.isNone(editBlocker(platform)))
-    ).toStrictEqual(["mastodon", "googleBusiness"]);
+    ).toStrictEqual(["mastodon", "googleBusiness", "discord", "telegram"]);
   });
 });

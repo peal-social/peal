@@ -18,6 +18,7 @@ import type {
 } from "peal-contract";
 
 import { capabilities, lookupWith } from "#commands/channel-capabilities.ts";
+import { connectChat } from "#commands/channel-chats.ts";
 import { defaults } from "#commands/channel-defaults.ts";
 import { settings } from "#commands/channel-settings.ts";
 import {
@@ -329,5 +330,6 @@ export const channels = Command.make("channels").pipe(
     defaults,
     connectWebsite,
     connectWebsiteKey,
+    connectChat,
   ])
 );

@@ -18,6 +18,8 @@ module Peal
       YOUTUBE = "youtube"
       PINTEREST = "pinterest"
       GOOGLE_BUSINESS = "googleBusiness"
+      DISCORD = "discord"
+      TELEGRAM = "telegram"
     end
   end
 end

@@ -20,6 +20,9 @@ import { maxPostTextLength } from "./post-text.ts";
  *   first.
  * - `approvalRequired`: your posts need an approval, and an edit would put
  *   text nobody approved out at once: an approver makes it.
+ * - `deletionWindowPassed`: the platform deletes a post only for a time
+ *   after it went out (Telegram: 48 hours), and that time has passed:
+ *   delete it in the app itself.
  *
  * An edit is refused `noPlatformId` too for a part the post does not have
  * live on that channel.
@@ -33,6 +36,7 @@ export const LivePostRefusalSchema = Schema.Literals([
   "channelUnavailable",
   "boostRunning",
   "approvalRequired",
+  "deletionWindowPassed",
 ]).annotate({ identifier: "LivePostRefusal" });
 
 export type LivePostRefusal = typeof LivePostRefusalSchema.Type;

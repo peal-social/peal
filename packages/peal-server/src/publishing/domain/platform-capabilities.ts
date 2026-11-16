@@ -77,6 +77,12 @@ export interface PlatformCapabilities {
   readonly rules: PlatformRules;
   /** Every limit on the text: the platform's, then Peal's own. */
   readonly textLimits: readonly TextLimit[];
+  /**
+   * Every limit on a part's text when the part shows media, in place of
+   * `textLimits` (Telegram's caption): the platform's, then Peal's own.
+   * Left out where `textLimits` apply with media too.
+   */
+  readonly textLimitsWithMedia?: readonly TextLimit[];
   readonly version: typeof capabilitiesVersion;
 }
 
@@ -225,9 +231,17 @@ export const capabilitiesOf = (
     version: capabilitiesVersion,
   };
 
+  const withMedia =
+    rules.textLimitsWithMedia === undefined
+      ? described
+      : {
+          ...described,
+          textLimitsWithMedia: [...rules.textLimitsWithMedia, ownTextLimit],
+        };
+
   const postFormats = postFormatsOn(platform);
 
-  return postFormats === undefined ? described : { ...described, postFormats };
+  return postFormats === undefined ? withMedia : { ...withMedia, postFormats };
 };
 
 /** Every platform's capabilities, in the platforms' order. */

@@ -814,10 +814,12 @@ func (a *AssistantActionRewrite) String() string {
 }
 
 var (
-	assistantActionShortenFieldPlatform = big.NewInt(1 << 0)
+	assistantActionShortenFieldMedia    = big.NewInt(1 << 0)
+	assistantActionShortenFieldPlatform = big.NewInt(1 << 1)
 )
 
 type AssistantActionShorten struct {
+	Media    *bool    `json:"media,omitempty" url:"media,omitempty"`
 	Platform Platform `json:"platform" url:"platform"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -825,6 +827,13 @@ type AssistantActionShorten struct {
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
+}
+
+func (a *AssistantActionShorten) GetMedia() *bool {
+	if a == nil {
+		return nil
+	}
+	return a.Media
 }
 
 func (a *AssistantActionShorten) GetPlatform() Platform {
@@ -848,6 +857,13 @@ func (a *AssistantActionShorten) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	a.explicitFields = next
+}
+
+// SetMedia sets the Media field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantActionShorten) SetMedia(media *bool) {
+	a.Media = media
+	a.require(assistantActionShortenFieldMedia)
 }
 
 // SetPlatform sets the Platform field and marks it as non-optional;
@@ -987,12 +1003,14 @@ func (a *AssistantActionTranslate) String() string {
 
 var (
 	assistantActionWriteFieldLanguage = big.NewInt(1 << 0)
-	assistantActionWriteFieldPlatform = big.NewInt(1 << 1)
-	assistantActionWriteFieldTone     = big.NewInt(1 << 2)
+	assistantActionWriteFieldMedia    = big.NewInt(1 << 1)
+	assistantActionWriteFieldPlatform = big.NewInt(1 << 2)
+	assistantActionWriteFieldTone     = big.NewInt(1 << 3)
 )
 
 type AssistantActionWrite struct {
 	Language *TranslationLanguage `json:"language,omitempty" url:"language,omitempty"`
+	Media    *bool                `json:"media,omitempty" url:"media,omitempty"`
 	Platform *Platform            `json:"platform,omitempty" url:"platform,omitempty"`
 	Tone     *AssistantTone       `json:"tone,omitempty" url:"tone,omitempty"`
 
@@ -1008,6 +1026,13 @@ func (a *AssistantActionWrite) GetLanguage() *TranslationLanguage {
 		return nil
 	}
 	return a.Language
+}
+
+func (a *AssistantActionWrite) GetMedia() *bool {
+	if a == nil {
+		return nil
+	}
+	return a.Media
 }
 
 func (a *AssistantActionWrite) GetPlatform() *Platform {
@@ -1045,6 +1070,13 @@ func (a *AssistantActionWrite) require(field *big.Int) {
 func (a *AssistantActionWrite) SetLanguage(language *TranslationLanguage) {
 	a.Language = language
 	a.require(assistantActionWriteFieldLanguage)
+}
+
+// SetMedia sets the Media field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantActionWrite) SetMedia(media *bool) {
+	a.Media = media
+	a.require(assistantActionWriteFieldMedia)
 }
 
 // SetPlatform sets the Platform field and marks it as non-optional;

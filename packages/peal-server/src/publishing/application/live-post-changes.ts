@@ -22,6 +22,7 @@ import type {
   LivePostRefusal,
 } from "#publishing/domain/live-post-change.ts";
 import { editViolationsOn } from "#publishing/domain/live-post-edit.ts";
+import { deletionWindowPassed } from "#publishing/domain/live-post-support.ts";
 import { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
@@ -189,6 +190,17 @@ export class LivePostChanges extends Context.Service<
 
           if (Result.isFailure(parts)) {
             return Result.fail<LivePostRefusal>(parts.failure);
+          }
+
+          // The platform would refuse it: past its deletion window.
+          const at = yield* DateTime.now;
+
+          if (
+            Option.exists(platform, (on) =>
+              deletionWindowPassed(target, on, at)
+            )
+          ) {
+            return Result.fail<LivePostRefusal>("deletionWindowPassed");
           }
 
           const held = yield* holds.ofTarget({

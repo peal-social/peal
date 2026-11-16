@@ -4,6 +4,7 @@ import {
   maxFollowUps,
   maxMediaPerPost,
   platformRules,
+  textLimitsOf,
 } from "peal-contract/post-text";
 import type {
   PlatformRules,
@@ -23,12 +24,14 @@ type Locale = (typeof locales)[number];
 // The slug of each platform's page, and its name.
 const pages: Readonly<Record<Platform, { name: string; slug: string }>> = {
   bluesky: { name: "Bluesky", slug: "bluesky" },
+  discord: { name: "Discord", slug: "discord" },
   facebook: { name: "Facebook", slug: "facebook" },
   googleBusiness: { name: "Google Business Profile", slug: "google-business" },
   instagram: { name: "Instagram", slug: "instagram" },
   linkedin: { name: "LinkedIn", slug: "linkedin" },
   mastodon: { name: "Mastodon", slug: "mastodon" },
   pinterest: { name: "Pinterest", slug: "pinterest" },
+  telegram: { name: "Telegram", slug: "telegram" },
   threads: { name: "Threads", slug: "threads" },
   tiktok: { name: "TikTok", slug: "tiktok" },
   x: { name: "X", slug: "x" },
@@ -44,6 +47,8 @@ const words = {
     countedBy: (name: string) => `as ${name} counts them`,
     feed: "Feed",
     files: (count: number) => `Up to ${count}`,
+    noTotal: "No limit of their own together",
+    together: (size: string) => `${size} together, in one part`,
     oneVideo: "one video at most",
     required: "required",
     single: "One post",
@@ -58,6 +63,8 @@ const words = {
     countedBy: (name: string) => `comptés comme ${name} les compte`,
     feed: "Fil",
     files: (count: number) => `Jusqu’à ${count}`,
+    noTotal: "Pas de limite propre à leur ensemble",
+    together: (size: string) => `${size} ensemble, dans une partie`,
     oneVideo: "une vidéo au plus",
     required: "obligatoire",
     single: "Une seule publication",
@@ -126,6 +133,28 @@ const followUps = (locale: Locale, rules: PlatformRules) => {
     : said.comments(count);
 };
 
+const mebibyte = 1024 * 1024;
+
+// What a part's files may weigh together, where the platform limits it
+// (Discord's request), in MiB.
+const total = (locale: Locale, rules: PlatformRules) => {
+  const said = words[locale];
+  const most = rules.media?.maxTotalByteSize;
+
+  return most === undefined
+    ? said.noTotal
+    : said.together(
+        `${number(locale, most / mebibyte)} ${locale === "fr" ? "Mio" : "MiB"}`
+      );
+};
+
+// The limits on a text shown with images or videos: a caption's, where
+// the platform has them apart (Telegram's).
+const textWithMedia = (locale: Locale, name: string, rules: PlatformRules) =>
+  textLimitsOf(rules, true)
+    .map((limit) => textLimit(locale, name, limit))
+    .join(locale === "fr" ? " ; " : "; ");
+
 const formats = (locale: Locale, rules: PlatformRules) =>
   [words[locale].feed, ...Object.keys(rules.postFormats ?? {})].join(", ");
 
@@ -148,7 +177,9 @@ export const platformVariables: Record<string, string> = Object.fromEntries(
             .map((limit) => textLimit(locale, name, limit))
             .join(locale === "fr" ? " ; " : "; "),
         ],
+        [key("text-media"), textWithMedia(locale, name, rules)],
         [key("media"), media(locale, rules)],
+        [key("media-total"), total(locale, rules)],
         [key("parts"), followUps(locale, rules)],
         [key("formats"), formats(locale, rules)],
         [key("alt"), altText(locale, rules)],

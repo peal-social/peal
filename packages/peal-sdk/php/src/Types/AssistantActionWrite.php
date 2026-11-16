@@ -14,6 +14,12 @@ class AssistantActionWrite extends JsonSerializableType
     public ?string $language;
 
     /**
+     * @var ?bool $media
+     */
+    #[JsonProperty('media')]
+    public ?bool $media;
+
+    /**
      * @var ?value-of<Platform> $platform
      */
     #[JsonProperty('platform')]
@@ -28,6 +34,7 @@ class AssistantActionWrite extends JsonSerializableType
     /**
      * @param array{
      *   language?: ?value-of<TranslationLanguage>,
+     *   media?: ?bool,
      *   platform?: ?value-of<Platform>,
      *   tone?: ?value-of<AssistantTone>,
      * } $values
@@ -36,6 +43,7 @@ class AssistantActionWrite extends JsonSerializableType
         array $values = [],
     ) {
         $this->language = $values['language'] ?? null;
+        $this->media = $values['media'] ?? null;
         $this->platform = $values['platform'] ?? null;
         $this->tone = $values['tone'] ?? null;
     }

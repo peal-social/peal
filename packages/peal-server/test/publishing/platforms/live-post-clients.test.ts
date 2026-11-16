@@ -617,9 +617,11 @@ describe("the platforms that delete or edit", () => {
         );
 
         const deleting = yield* livePostRegistryWith({
+          discordHosts: { api: "http://127.0.0.1:9" },
           googleBusinessApi: new URL("http://127.0.0.1:9"),
           mastodonScheme: "http:",
           pinterestApi: new URL("http://127.0.0.1:9"),
+          telegramHosts: { api: "http://127.0.0.1:9" },
           xApi: new URL("http://127.0.0.1:9"),
         }).pipe(Effect.provide(LiveRegistryTest));
 

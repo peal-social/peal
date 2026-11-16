@@ -34,7 +34,7 @@ import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import type { Published } from "#shared/domain/publish-result.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
-  formBoundary,
+  randomBoundary,
   multipartBody,
 } from "#shared/infrastructure/platforms/multipart-stream.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
@@ -364,7 +364,7 @@ export const mastodonClient = Effect.fn("MastodonClient.make")(
           // The form is streamed: the file's bytes pass from the store to the
           // instance as they are read, never held whole.
           const form = multipartBody({
-            boundary: formBoundary(post.idempotencyKey),
+            boundary: randomBoundary(),
             fields:
               attachment.altText.trim() === ""
                 ? []

@@ -277,6 +277,10 @@ if typing.TYPE_CHECKING:
     from .channel_status_disabled import ChannelStatusDisabled
     from .channel_status_name import ChannelStatusName
     from .channel_status_refresh_needed import ChannelStatusRefreshNeeded
+    from .chat_connect_limited_encoded import ChatConnectLimitedEncoded
+    from .chat_not_connected_encoded import ChatNotConnectedEncoded
+    from .chat_not_connected_reason import ChatNotConnectedReason
+    from .chat_platform import ChatPlatform
     from .choosable_account import ChoosableAccount
     from .comment_anchor import CommentAnchor
     from .comment_invalid_encoded import CommentInvalidEncoded
@@ -303,6 +307,8 @@ if typing.TYPE_CHECKING:
         ConflictErrorBody_FollowUpRuleTaken,
         ConflictErrorBody_TooManyFollowUpRules,
     )
+    from .connect_chat import ConnectChat, ConnectChat_Discord, ConnectChat_Telegram
+    from .connect_discord_chat import ConnectDiscordChat
     from .connect_failed_encoded import ConnectFailedEncoded
     from .connect_failed_encoded_tag import ConnectFailedEncodedTag
     from .connect_failure_reason import ConnectFailureReason
@@ -313,6 +319,7 @@ if typing.TYPE_CHECKING:
     from .connect_outcome import ConnectOutcome, ConnectOutcome_Choose, ConnectOutcome_Connected
     from .connect_outcome_choose import ConnectOutcomeChoose
     from .connect_outcome_connected import ConnectOutcomeConnected
+    from .connect_telegram_chat import ConnectTelegramChat
     from .connectable_platforms import ConnectablePlatforms
     from .content_violation import (
         ContentViolation,
@@ -324,6 +331,7 @@ if typing.TYPE_CHECKING:
         ContentViolation_MediaRequired,
         ContentViolation_MediaTooLarge,
         ContentViolation_MediaTooSmall,
+        ContentViolation_MediaTotalTooLarge,
         ContentViolation_MediaTypeUnsupported,
         ContentViolation_MixedMedia,
         ContentViolation_NoChannels,
@@ -342,6 +350,7 @@ if typing.TYPE_CHECKING:
         ContentViolation_PollNotSupported,
         ContentViolation_PollWithMedia,
         ContentViolation_SideOutOfRange,
+        ContentViolation_SideSumTooLarge,
         ContentViolation_TextTooLong,
         ContentViolation_TooManyHashtags,
         ContentViolation_TooManyLinks,
@@ -363,6 +372,7 @@ if typing.TYPE_CHECKING:
     from .content_violation_media_required import ContentViolationMediaRequired
     from .content_violation_media_too_large import ContentViolationMediaTooLarge
     from .content_violation_media_too_small import ContentViolationMediaTooSmall
+    from .content_violation_media_total_too_large import ContentViolationMediaTotalTooLarge
     from .content_violation_media_type_unsupported import ContentViolationMediaTypeUnsupported
     from .content_violation_mixed_media import ContentViolationMixedMedia
     from .content_violation_no_channels import ContentViolationNoChannels
@@ -381,6 +391,7 @@ if typing.TYPE_CHECKING:
     from .content_violation_poll_not_supported import ContentViolationPollNotSupported
     from .content_violation_poll_with_media import ContentViolationPollWithMedia
     from .content_violation_side_out_of_range import ContentViolationSideOutOfRange
+    from .content_violation_side_sum_too_large import ContentViolationSideSumTooLarge
     from .content_violation_text_too_long import ContentViolationTextTooLong
     from .content_violation_too_many_hashtags import ContentViolationTooManyHashtags
     from .content_violation_too_many_links import ContentViolationTooManyLinks
@@ -421,6 +432,7 @@ if typing.TYPE_CHECKING:
     from .database_unavailable_encoded_tag import DatabaseUnavailableEncodedTag
     from .deletion_incomplete_encoded import DeletionIncompleteEncoded
     from .deletion_incomplete_encoded_tag import DeletionIncompleteEncodedTag
+    from .discord_options import DiscordOptions
     from .draft_page import DraftPage
     from .duplicate_on_channel import DuplicateOnChannel
     from .duplicate_post_encoded import DuplicatePostEncoded
@@ -1014,12 +1026,14 @@ if typing.TYPE_CHECKING:
     from .target_options import (
         TargetOptions,
         TargetOptions_Bluesky,
+        TargetOptions_Discord,
         TargetOptions_Facebook,
         TargetOptions_GoogleBusiness,
         TargetOptions_Instagram,
         TargetOptions_Linkedin,
         TargetOptions_Mastodon,
         TargetOptions_Pinterest,
+        TargetOptions_Telegram,
         TargetOptions_Threads,
         TargetOptions_Tiktok,
         TargetOptions_X,
@@ -1027,6 +1041,7 @@ if typing.TYPE_CHECKING:
     )
     from .target_parts import TargetParts
     from .target_status_conflict_encoded import TargetStatusConflictEncoded
+    from .telegram_options import TelegramOptions
     from .tenant_usage import TenantUsage
     from .tenant_usage_page import TenantUsagePage
     from .text_capabilities import TextCapabilities
@@ -1427,6 +1442,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ChannelStatus_Active": ".channel_status",
     "ChannelStatus_Disabled": ".channel_status",
     "ChannelStatus_RefreshNeeded": ".channel_status",
+    "ChatConnectLimitedEncoded": ".chat_connect_limited_encoded",
+    "ChatNotConnectedEncoded": ".chat_not_connected_encoded",
+    "ChatNotConnectedReason": ".chat_not_connected_reason",
+    "ChatPlatform": ".chat_platform",
     "ChoosableAccount": ".choosable_account",
     "CommentAnchor": ".comment_anchor",
     "CommentInvalidEncoded": ".comment_invalid_encoded",
@@ -1451,6 +1470,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ConflictErrorBody": ".conflict_error_body",
     "ConflictErrorBody_FollowUpRuleTaken": ".conflict_error_body",
     "ConflictErrorBody_TooManyFollowUpRules": ".conflict_error_body",
+    "ConnectChat": ".connect_chat",
+    "ConnectChat_Discord": ".connect_chat",
+    "ConnectChat_Telegram": ".connect_chat",
+    "ConnectDiscordChat": ".connect_discord_chat",
     "ConnectFailedEncoded": ".connect_failed_encoded",
     "ConnectFailedEncodedTag": ".connect_failed_encoded_tag",
     "ConnectFailureReason": ".connect_failure_reason",
@@ -1463,6 +1486,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ConnectOutcomeConnected": ".connect_outcome_connected",
     "ConnectOutcome_Choose": ".connect_outcome",
     "ConnectOutcome_Connected": ".connect_outcome",
+    "ConnectTelegramChat": ".connect_telegram_chat",
     "ConnectablePlatforms": ".connectable_platforms",
     "ContentViolation": ".content_violation",
     "ContentViolationAltTextTooLong": ".content_violation_alt_text_too_long",
@@ -1475,6 +1499,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ContentViolationMediaRequired": ".content_violation_media_required",
     "ContentViolationMediaTooLarge": ".content_violation_media_too_large",
     "ContentViolationMediaTooSmall": ".content_violation_media_too_small",
+    "ContentViolationMediaTotalTooLarge": ".content_violation_media_total_too_large",
     "ContentViolationMediaTypeUnsupported": ".content_violation_media_type_unsupported",
     "ContentViolationMixedMedia": ".content_violation_mixed_media",
     "ContentViolationNoChannels": ".content_violation_no_channels",
@@ -1493,6 +1518,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ContentViolationPollNotSupported": ".content_violation_poll_not_supported",
     "ContentViolationPollWithMedia": ".content_violation_poll_with_media",
     "ContentViolationSideOutOfRange": ".content_violation_side_out_of_range",
+    "ContentViolationSideSumTooLarge": ".content_violation_side_sum_too_large",
     "ContentViolationTextTooLong": ".content_violation_text_too_long",
     "ContentViolationTooManyHashtags": ".content_violation_too_many_hashtags",
     "ContentViolationTooManyLinks": ".content_violation_too_many_links",
@@ -1511,6 +1537,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ContentViolation_MediaRequired": ".content_violation",
     "ContentViolation_MediaTooLarge": ".content_violation",
     "ContentViolation_MediaTooSmall": ".content_violation",
+    "ContentViolation_MediaTotalTooLarge": ".content_violation",
     "ContentViolation_MediaTypeUnsupported": ".content_violation",
     "ContentViolation_MixedMedia": ".content_violation",
     "ContentViolation_NoChannels": ".content_violation",
@@ -1529,6 +1556,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ContentViolation_PollNotSupported": ".content_violation",
     "ContentViolation_PollWithMedia": ".content_violation",
     "ContentViolation_SideOutOfRange": ".content_violation",
+    "ContentViolation_SideSumTooLarge": ".content_violation",
     "ContentViolation_TextTooLong": ".content_violation",
     "ContentViolation_TooManyHashtags": ".content_violation",
     "ContentViolation_TooManyLinks": ".content_violation",
@@ -1570,6 +1598,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DatabaseUnavailableEncodedTag": ".database_unavailable_encoded_tag",
     "DeletionIncompleteEncoded": ".deletion_incomplete_encoded",
     "DeletionIncompleteEncodedTag": ".deletion_incomplete_encoded_tag",
+    "DiscordOptions": ".discord_options",
     "DraftPage": ".draft_page",
     "DuplicateOnChannel": ".duplicate_on_channel",
     "DuplicatePostEncoded": ".duplicate_post_encoded",
@@ -2145,18 +2174,21 @@ _dynamic_imports: typing.Dict[str, str] = {
     "TargetMetrics": ".target_metrics",
     "TargetOptions": ".target_options",
     "TargetOptions_Bluesky": ".target_options",
+    "TargetOptions_Discord": ".target_options",
     "TargetOptions_Facebook": ".target_options",
     "TargetOptions_GoogleBusiness": ".target_options",
     "TargetOptions_Instagram": ".target_options",
     "TargetOptions_Linkedin": ".target_options",
     "TargetOptions_Mastodon": ".target_options",
     "TargetOptions_Pinterest": ".target_options",
+    "TargetOptions_Telegram": ".target_options",
     "TargetOptions_Threads": ".target_options",
     "TargetOptions_Tiktok": ".target_options",
     "TargetOptions_X": ".target_options",
     "TargetOptions_Youtube": ".target_options",
     "TargetParts": ".target_parts",
     "TargetStatusConflictEncoded": ".target_status_conflict_encoded",
+    "TelegramOptions": ".telegram_options",
     "TenantUsage": ".tenant_usage",
     "TenantUsagePage": ".tenant_usage_page",
     "TextCapabilities": ".text_capabilities",
@@ -2581,6 +2613,10 @@ __all__ = [
     "ChannelStatus_Active",
     "ChannelStatus_Disabled",
     "ChannelStatus_RefreshNeeded",
+    "ChatConnectLimitedEncoded",
+    "ChatNotConnectedEncoded",
+    "ChatNotConnectedReason",
+    "ChatPlatform",
     "ChoosableAccount",
     "CommentAnchor",
     "CommentInvalidEncoded",
@@ -2605,6 +2641,10 @@ __all__ = [
     "ConflictErrorBody",
     "ConflictErrorBody_FollowUpRuleTaken",
     "ConflictErrorBody_TooManyFollowUpRules",
+    "ConnectChat",
+    "ConnectChat_Discord",
+    "ConnectChat_Telegram",
+    "ConnectDiscordChat",
     "ConnectFailedEncoded",
     "ConnectFailedEncodedTag",
     "ConnectFailureReason",
@@ -2617,6 +2657,7 @@ __all__ = [
     "ConnectOutcomeConnected",
     "ConnectOutcome_Choose",
     "ConnectOutcome_Connected",
+    "ConnectTelegramChat",
     "ConnectablePlatforms",
     "ContentViolation",
     "ContentViolationAltTextTooLong",
@@ -2629,6 +2670,7 @@ __all__ = [
     "ContentViolationMediaRequired",
     "ContentViolationMediaTooLarge",
     "ContentViolationMediaTooSmall",
+    "ContentViolationMediaTotalTooLarge",
     "ContentViolationMediaTypeUnsupported",
     "ContentViolationMixedMedia",
     "ContentViolationNoChannels",
@@ -2647,6 +2689,7 @@ __all__ = [
     "ContentViolationPollNotSupported",
     "ContentViolationPollWithMedia",
     "ContentViolationSideOutOfRange",
+    "ContentViolationSideSumTooLarge",
     "ContentViolationTextTooLong",
     "ContentViolationTooManyHashtags",
     "ContentViolationTooManyLinks",
@@ -2665,6 +2708,7 @@ __all__ = [
     "ContentViolation_MediaRequired",
     "ContentViolation_MediaTooLarge",
     "ContentViolation_MediaTooSmall",
+    "ContentViolation_MediaTotalTooLarge",
     "ContentViolation_MediaTypeUnsupported",
     "ContentViolation_MixedMedia",
     "ContentViolation_NoChannels",
@@ -2683,6 +2727,7 @@ __all__ = [
     "ContentViolation_PollNotSupported",
     "ContentViolation_PollWithMedia",
     "ContentViolation_SideOutOfRange",
+    "ContentViolation_SideSumTooLarge",
     "ContentViolation_TextTooLong",
     "ContentViolation_TooManyHashtags",
     "ContentViolation_TooManyLinks",
@@ -2724,6 +2769,7 @@ __all__ = [
     "DatabaseUnavailableEncodedTag",
     "DeletionIncompleteEncoded",
     "DeletionIncompleteEncodedTag",
+    "DiscordOptions",
     "DraftPage",
     "DuplicateOnChannel",
     "DuplicatePostEncoded",
@@ -3299,18 +3345,21 @@ __all__ = [
     "TargetMetrics",
     "TargetOptions",
     "TargetOptions_Bluesky",
+    "TargetOptions_Discord",
     "TargetOptions_Facebook",
     "TargetOptions_GoogleBusiness",
     "TargetOptions_Instagram",
     "TargetOptions_Linkedin",
     "TargetOptions_Mastodon",
     "TargetOptions_Pinterest",
+    "TargetOptions_Telegram",
     "TargetOptions_Threads",
     "TargetOptions_Tiktok",
     "TargetOptions_X",
     "TargetOptions_Youtube",
     "TargetParts",
     "TargetStatusConflictEncoded",
+    "TelegramOptions",
     "TenantUsage",
     "TenantUsagePage",
     "TextCapabilities",

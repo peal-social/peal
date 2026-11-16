@@ -7245,6 +7245,72 @@ func TestGettersContentViolation(t *testing.T) {
 		_ = obj.GetSideOutOfRange() // Should return zero value
 	})
 
+	t.Run("GetSideSumTooLarge", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolation{}
+		var expected *ContentViolationSideSumTooLarge
+		obj.SideSumTooLarge = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetSideSumTooLarge(), "getter should return the property value")
+	})
+
+	t.Run("GetSideSumTooLarge_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolation{}
+		obj.SideSumTooLarge = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetSideSumTooLarge(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetSideSumTooLarge_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolation
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetSideSumTooLarge() // Should return zero value
+	})
+
+	t.Run("GetMediaTotalTooLarge", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolation{}
+		var expected *ContentViolationMediaTotalTooLarge
+		obj.MediaTotalTooLarge = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMediaTotalTooLarge(), "getter should return the property value")
+	})
+
+	t.Run("GetMediaTotalTooLarge_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolation{}
+		obj.MediaTotalTooLarge = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMediaTotalTooLarge(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMediaTotalTooLarge_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolation
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMediaTotalTooLarge() // Should return zero value
+	})
+
 	t.Run("GetAspectRatioUnsupported", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -10048,6 +10114,335 @@ func TestSettersMarkExplicitContentViolationMediaTooSmall(t *testing.T) {
 
 		// Act
 		obj.SetMinimum(fernTestValueMinimum)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersContentViolationMediaTotalTooLarge(t *testing.T) {
+	t.Run("SetChannelID", func(t *testing.T) {
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValueChannelID string
+		obj.SetChannelID(fernTestValueChannelID)
+		assert.Equal(t, fernTestValueChannelID, obj.ChannelID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPart", func(t *testing.T) {
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValuePart *int
+		obj.SetPart(fernTestValuePart)
+		assert.Equal(t, fernTestValuePart, obj.Part)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPlatform", func(t *testing.T) {
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValuePlatform Platform
+		obj.SetPlatform(fernTestValuePlatform)
+		assert.Equal(t, fernTestValuePlatform, obj.Platform)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetMaximum", func(t *testing.T) {
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValueMaximum int64
+		obj.SetMaximum(fernTestValueMaximum)
+		assert.Equal(t, fernTestValueMaximum, obj.Maximum)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetTotal", func(t *testing.T) {
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValueTotal int64
+		obj.SetTotal(fernTestValueTotal)
+		assert.Equal(t, fernTestValueTotal, obj.Total)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersContentViolationMediaTotalTooLarge(t *testing.T) {
+	t.Run("GetChannelID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var expected string
+		obj.ChannelID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetChannelID(), "getter should return the property value")
+	})
+
+	t.Run("GetChannelID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationMediaTotalTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetChannelID() // Should return zero value
+	})
+
+	t.Run("GetPart", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var expected *int
+		obj.Part = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPart(), "getter should return the property value")
+	})
+
+	t.Run("GetPart_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		obj.Part = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPart(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPart_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationMediaTotalTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPart() // Should return zero value
+	})
+
+	t.Run("GetPlatform", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var expected Platform
+		obj.Platform = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPlatform(), "getter should return the property value")
+	})
+
+	t.Run("GetPlatform_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationMediaTotalTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPlatform() // Should return zero value
+	})
+
+	t.Run("GetMaximum", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var expected int64
+		obj.Maximum = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMaximum(), "getter should return the property value")
+	})
+
+	t.Run("GetMaximum_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationMediaTotalTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMaximum() // Should return zero value
+	})
+
+	t.Run("GetTotal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var expected int64
+		obj.Total = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetTotal(), "getter should return the property value")
+	})
+
+	t.Run("GetTotal_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationMediaTotalTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetTotal() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitContentViolationMediaTotalTooLarge(t *testing.T) {
+	t.Run("SetChannelID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValueChannelID string
+
+		// Act
+		obj.SetChannelID(fernTestValueChannelID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPart_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValuePart *int
+
+		// Act
+		obj.SetPart(fernTestValuePart)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPlatform_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValuePlatform Platform
+
+		// Act
+		obj.SetPlatform(fernTestValuePlatform)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMaximum_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValueMaximum int64
+
+		// Act
+		obj.SetMaximum(fernTestValueMaximum)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetTotal_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+		var fernTestValueTotal int64
+
+		// Act
+		obj.SetTotal(fernTestValueTotal)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -14753,6 +15148,459 @@ func TestSettersMarkExplicitContentViolationSideOutOfRange(t *testing.T) {
 
 		// Act
 		obj.SetMinimum(fernTestValueMinimum)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersContentViolationSideSumTooLarge(t *testing.T) {
+	t.Run("SetChannelID", func(t *testing.T) {
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueChannelID string
+		obj.SetChannelID(fernTestValueChannelID)
+		assert.Equal(t, fernTestValueChannelID, obj.ChannelID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPart", func(t *testing.T) {
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValuePart *int
+		obj.SetPart(fernTestValuePart)
+		assert.Equal(t, fernTestValuePart, obj.Part)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPlatform", func(t *testing.T) {
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValuePlatform Platform
+		obj.SetPlatform(fernTestValuePlatform)
+		assert.Equal(t, fernTestValuePlatform, obj.Platform)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetMediaID", func(t *testing.T) {
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueMediaID string
+		obj.SetMediaID(fernTestValueMediaID)
+		assert.Equal(t, fernTestValueMediaID, obj.MediaID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetHeight", func(t *testing.T) {
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueHeight int
+		obj.SetHeight(fernTestValueHeight)
+		assert.Equal(t, fernTestValueHeight, obj.Height)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetWidth", func(t *testing.T) {
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueWidth int
+		obj.SetWidth(fernTestValueWidth)
+		assert.Equal(t, fernTestValueWidth, obj.Width)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetMaximum", func(t *testing.T) {
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueMaximum int
+		obj.SetMaximum(fernTestValueMaximum)
+		assert.Equal(t, fernTestValueMaximum, obj.Maximum)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersContentViolationSideSumTooLarge(t *testing.T) {
+	t.Run("GetChannelID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var expected string
+		obj.ChannelID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetChannelID(), "getter should return the property value")
+	})
+
+	t.Run("GetChannelID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetChannelID() // Should return zero value
+	})
+
+	t.Run("GetPart", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var expected *int
+		obj.Part = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPart(), "getter should return the property value")
+	})
+
+	t.Run("GetPart_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		obj.Part = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPart(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPart_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPart() // Should return zero value
+	})
+
+	t.Run("GetPlatform", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var expected Platform
+		obj.Platform = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPlatform(), "getter should return the property value")
+	})
+
+	t.Run("GetPlatform_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPlatform() // Should return zero value
+	})
+
+	t.Run("GetMediaID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var expected string
+		obj.MediaID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMediaID(), "getter should return the property value")
+	})
+
+	t.Run("GetMediaID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMediaID() // Should return zero value
+	})
+
+	t.Run("GetHeight", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var expected int
+		obj.Height = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetHeight(), "getter should return the property value")
+	})
+
+	t.Run("GetHeight_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetHeight() // Should return zero value
+	})
+
+	t.Run("GetWidth", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var expected int
+		obj.Width = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetWidth(), "getter should return the property value")
+	})
+
+	t.Run("GetWidth_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetWidth() // Should return zero value
+	})
+
+	t.Run("GetMaximum", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var expected int
+		obj.Maximum = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMaximum(), "getter should return the property value")
+	})
+
+	t.Run("GetMaximum_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMaximum() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitContentViolationSideSumTooLarge(t *testing.T) {
+	t.Run("SetChannelID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueChannelID string
+
+		// Act
+		obj.SetChannelID(fernTestValueChannelID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPart_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValuePart *int
+
+		// Act
+		obj.SetPart(fernTestValuePart)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPlatform_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValuePlatform Platform
+
+		// Act
+		obj.SetPlatform(fernTestValuePlatform)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMediaID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueMediaID string
+
+		// Act
+		obj.SetMediaID(fernTestValueMediaID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetHeight_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueHeight int
+
+		// Act
+		obj.SetHeight(fernTestValueHeight)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetWidth_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueWidth int
+
+		// Act
+		obj.SetWidth(fernTestValueWidth)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMaximum_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+		var fernTestValueMaximum int
+
+		// Act
+		obj.SetMaximum(fernTestValueMaximum)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -35658,6 +36506,39 @@ func TestJSONMarshalingContentViolationMediaTooSmall(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingContentViolationMediaTotalTooLarge(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationMediaTotalTooLarge{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled ContentViolationMediaTotalTooLarge
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj ContentViolationMediaTotalTooLarge
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj ContentViolationMediaTotalTooLarge
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingContentViolationMediaTypeUnsupported(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -36247,6 +37128,39 @@ func TestJSONMarshalingContentViolationSideOutOfRange(t *testing.T) {
 	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
 		t.Parallel()
 		var obj ContentViolationSideOutOfRange
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
+func TestJSONMarshalingContentViolationSideSumTooLarge(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ContentViolationSideSumTooLarge{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled ContentViolationSideSumTooLarge
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj ContentViolationSideSumTooLarge
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj ContentViolationSideSumTooLarge
 		err := json.Unmarshal([]byte(`{}`), &obj)
 		assert.NoError(t, err, "unmarshaling empty object should succeed")
 	})
@@ -39033,6 +39947,22 @@ func TestStringContentViolationMediaTooSmall(t *testing.T) {
 	})
 }
 
+func TestStringContentViolationMediaTotalTooLarge(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &ContentViolationMediaTotalTooLarge{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationMediaTotalTooLarge
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
 func TestStringContentViolationMediaTypeUnsupported(t *testing.T) {
 	t.Run("StringMethod", func(t *testing.T) {
 		t.Parallel()
@@ -39316,6 +40246,22 @@ func TestStringContentViolationSideOutOfRange(t *testing.T) {
 	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *ContentViolationSideOutOfRange
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringContentViolationSideSumTooLarge(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &ContentViolationSideSumTooLarge{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
 		result := obj.String()
 		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
 	})
@@ -40486,6 +41432,20 @@ func TestEnumAttemptResult(t *testing.T) {
 		assert.Equal(t, AttemptResult("xThreadCut"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_forumThreadNameRequired", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewAttemptResultFromString("forumThreadNameRequired")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, AttemptResult("forumThreadNameRequired"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_chatMigrated", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewAttemptResultFromString("chatMigrated")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, AttemptResult("chatMigrated"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewAttemptResultFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)
@@ -40821,6 +41781,13 @@ func TestEnumLivePostRefusal(t *testing.T) {
 		val, err := NewLivePostRefusalFromString("approvalRequired")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, LivePostRefusal("approvalRequired"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_deletionWindowPassed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewLivePostRefusalFromString("deletionWindowPassed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, LivePostRefusal("deletionWindowPassed"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
@@ -41534,6 +42501,29 @@ func TestExtraPropertiesContentViolationMediaTooSmall(t *testing.T) {
 	})
 }
 
+func TestExtraPropertiesContentViolationMediaTotalTooLarge(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &ContentViolationMediaTotalTooLarge{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationMediaTotalTooLarge
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
 func TestExtraPropertiesContentViolationMediaTypeUnsupported(t *testing.T) {
 	t.Run("GetExtraProperties", func(t *testing.T) {
 		t.Parallel()
@@ -41943,6 +42933,29 @@ func TestExtraPropertiesContentViolationSideOutOfRange(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *ContentViolationSideOutOfRange
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesContentViolationSideSumTooLarge(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &ContentViolationSideSumTooLarge{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ContentViolationSideSumTooLarge
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

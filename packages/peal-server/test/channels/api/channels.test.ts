@@ -1,10 +1,11 @@
 import { assert, layer } from "@effect/vitest";
-import { DateTime, Effect, Layer, Option, Ref } from "effect";
+import { DateTime, Effect, Layer, Option, Redacted, Ref } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import {
   Api,
   ChannelNotFound,
+  ChatNotConnected,
   ConnectFailed,
   Forbidden,
   OAuthClientNotPublished,
@@ -18,6 +19,8 @@ import {
 } from "#channels/api/channels.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ChannelSettings } from "#channels/application/channel-settings.ts";
+import { ChatRefused } from "#channels/application/chat-refused.ts";
+import { ChatVerifier } from "#channels/application/chat-verifier.ts";
 import { DisconnectChannel } from "#channels/application/disconnect-channel.ts";
 import { ListChannels } from "#channels/application/list-channels.ts";
 import { OAuthClientDocuments } from "#channels/application/oauth-client-documents.ts";
@@ -29,6 +32,8 @@ import {
   MastodonAuthorizersTest,
   MastodonConnectTest,
   authorizersOf,
+  chatsOn,
+  chatsWith,
   connectChannelWith,
   mastodonInstance,
   WordPressSitesTest,
@@ -50,11 +55,42 @@ import {
 } from "#workspace/api/security.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
+// The chats as their platforms answer: a Discord webhook's address names
+// channel 300 of guild 200, unless it names none; a Telegram bot reaches
+// its chat.
+const ChatsTest = chatsWith(
+  Layer.succeed(
+    ChatVerifier,
+    ChatVerifier.of({
+      verify: (signIn) => {
+        if (
+          signIn.platform === "discord" &&
+          !Redacted.value(signIn.webhookUrl).includes("/webhooks/")
+        ) {
+          return Effect.fail(new ChatRefused({ reason: "addressNotAWebhook" }));
+        }
+
+        return Effect.succeed({
+          accountId: signIn.platform === "discord" ? "200/300" : "-100500",
+          displayName: Option.some("Synthetic news"),
+          handle: "Synthetic news",
+          platform: signIn.platform,
+          secret:
+            signIn.platform === "discord"
+              ? Redacted.make("1/synthetic-token")
+              : signIn.botToken,
+        });
+      },
+    })
+  )
+);
+
 const UseCasesTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
   DisconnectChannel.layer,
-  WordPressSitesTest
+  WordPressSitesTest,
+  ChatsTest
 ).pipe(
   Layer.provideMerge(TransactionsTest),
   Layer.provideMerge(MastodonConnectTest)
@@ -368,6 +404,9 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
         )).channels.platforms({ params });
 
         assert.deepStrictEqual(listed, {
+          // The chats connect with a secret, never a sign-in: apart from
+          // the platforms a client starts a sign-in for.
+          chats: ["discord", "telegram"],
           instagramConnections: [],
           linkedinConnections: [],
           platforms: ["mastodon"],
@@ -431,6 +470,110 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       );
 
       assert.instanceOf(forbidden, Forbidden);
+    })
+  );
+
+  it.effect("connect a chat with its secret, and say why one is refused", () =>
+    Effect.gen(function* chat() {
+      const workspaceId = yield* freshWorkspace;
+      const client = yield* clientAs(owner(workspaceId));
+      const params = { workspaceId };
+
+      const discord = yield* client.channels.connectChat({
+        params,
+        payload: {
+          platform: "discord",
+          webhookUrl: "https://discord.com/api/webhooks/1/synthetic-token",
+        },
+      });
+
+      assert.strictEqual(discord.platform, "discord");
+      assert.strictEqual(discord.handle, "Synthetic news");
+
+      const telegram = yield* client.channels.connectChat({
+        params,
+        payload: {
+          botToken: "1:synthetic-token",
+          chat: "@synthetic_news",
+          platform: "telegram",
+        },
+      });
+
+      assert.strictEqual(telegram.platform, "telegram");
+
+      // The same chat again reconnects its channel, by name or not.
+      const again = yield* client.channels.connectChat({
+        params,
+        payload: {
+          channelId: discord.id,
+          platform: "discord",
+          webhookUrl: "https://discord.com/api/webhooks/2/synthetic-token",
+        },
+      });
+
+      assert.strictEqual(again.id, discord.id);
+
+      const refused = yield* Effect.flip(
+        client.channels.connectChat({
+          params,
+          payload: { platform: "discord", webhookUrl: "synthetic-address" },
+        })
+      );
+
+      assert.instanceOf(refused, ChatNotConnected);
+      assert.strictEqual(refused.reason, "addressNotAWebhook");
+
+      // A channel id that is none of the workspace's.
+      for (const channelId of ["not-an-id", telegram.id]) {
+        assert.instanceOf(
+          yield* Effect.flip(
+            client.channels.connectChat({
+              params,
+              payload: {
+                channelId,
+                platform: "discord",
+                webhookUrl: "https://discord.com/api/webhooks/1/synthetic",
+              },
+            })
+          ),
+          ChannelNotFound
+        );
+      }
+
+      assert.instanceOf(
+        yield* Effect.flip(
+          (yield* clientAs(viewer(workspaceId))).channels.connectChat({
+            params,
+            payload: {
+              platform: "discord",
+              webhookUrl: "https://discord.com/api/webhooks/1/synthetic-token",
+            },
+          })
+        ),
+        Forbidden
+      );
+    })
+  );
+
+  it.effect("refuse cleanly to start a sign-in for a chat", () =>
+    Effect.gen(function* noSignIn() {
+      const workspaceId = yield* freshWorkspace;
+      const client = yield* clientAs(owner(workspaceId));
+
+      for (const platform of ["discord", "telegram"] as const) {
+        const refused = yield* Effect.flip(
+          client.channels.connect({
+            params: { platform, workspaceId },
+            payload: {},
+          })
+        );
+
+        assert.instanceOf(refused, ConnectFailed);
+        assert.strictEqual(
+          refused instanceof ConnectFailed ? refused.reason : "",
+          "platformNotSupported"
+        );
+      }
     })
   );
 
@@ -773,7 +916,8 @@ const AskingTest = Layer.mergeAll(
   ListChannels.layer,
   ChannelSettings.layer,
   DisconnectChannel.layer,
-  WordPressSitesTest
+  WordPressSitesTest,
+  chatsOn()
 ).pipe(
   Layer.provideMerge(TransactionsTest),
   Layer.provideMerge(connectChannelWith(RecordingAuthorizers))

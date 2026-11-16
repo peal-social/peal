@@ -1471,5 +1471,218 @@
       }
     ],
     "version": 1
+  },
+  {
+    "counted": {
+      "account": [],
+      "post": []
+    },
+    "countsPosts": true,
+    "livePost": {
+      "edit": {
+        "_id": "Option",
+        "_tag": "None"
+      },
+      "unpublish": {
+        "_id": "Option",
+        "_tag": "None"
+      }
+    },
+    "lookups": [],
+    "maxAltTextLength": 1024,
+    "maxMedia": 10,
+    "optionConstraints": [],
+    "options": [
+      {
+        "ifLeftOut": false,
+        "name": "mentions",
+        "required": false,
+        "type": "boolean",
+        "values": []
+      },
+      {
+        "ifLeftOut": false,
+        "name": "silent",
+        "required": false,
+        "type": "boolean",
+        "values": []
+      },
+      {
+        "ifLeftOut": false,
+        "name": "suppressEmbeds",
+        "required": false,
+        "type": "boolean",
+        "values": []
+      },
+      {
+        "forbiddenCharacters": ["\n", "\r"],
+        "maxLength": 100,
+        "name": "threadName",
+        "required": false,
+        "type": "text",
+        "values": []
+      }
+    ],
+    "platform": "discord",
+    "rules": {
+      "followUps": {
+        "kind": "thread",
+        "maximum": 24
+      },
+      "maxMedia": 10,
+      "media": {
+        "formats": {
+          "image/gif": {
+            "maxByteSize": 20971520
+          },
+          "image/jpeg": {
+            "maxByteSize": 20971520
+          },
+          "image/png": {
+            "maxByteSize": 20971520
+          },
+          "image/webp": {
+            "maxByteSize": 20971520
+          },
+          "video/mp4": {
+            "maxByteSize": 20971520
+          },
+          "video/quicktime": {
+            "maxByteSize": 20971520
+          }
+        },
+        "maxAltTextLength": 1024,
+        "maxTotalByteSize": 26148864,
+        "mixesKinds": true,
+        "showsAltText": true
+      },
+      "mediaRequired": false,
+      "textLimits": [
+        {
+          "maximum": 2000,
+          "unit": "utf16Units"
+        }
+      ]
+    },
+    "textLimits": [
+      {
+        "maximum": 2000,
+        "unit": "utf16Units"
+      },
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ],
+    "version": 1
+  },
+  {
+    "counted": {
+      "account": [],
+      "post": []
+    },
+    "countsPosts": true,
+    "livePost": {
+      "edit": {
+        "_id": "Option",
+        "_tag": "None"
+      },
+      "unpublish": {
+        "_id": "Option",
+        "_tag": "None"
+      }
+    },
+    "lookups": [],
+    "maxAltTextLength": 5000,
+    "maxMedia": 10,
+    "optionConstraints": [],
+    "options": [
+      {
+        "ifLeftOut": true,
+        "name": "linkPreview",
+        "required": false,
+        "type": "boolean",
+        "values": []
+      },
+      {
+        "ifLeftOut": false,
+        "name": "silent",
+        "required": false,
+        "type": "boolean",
+        "values": []
+      }
+    ],
+    "platform": "telegram",
+    "rules": {
+      "followUps": {
+        "kind": "thread",
+        "maximum": 24
+      },
+      "maxMedia": 10,
+      "media": {
+        "formats": {
+          "image/gif": {
+            "maxByteSize": 52428800,
+            "maxMediaWith": 1
+          },
+          "image/jpeg": {
+            "aspectRatio": {
+              "maximum": 20,
+              "minimum": 0.05
+            },
+            "maxByteSize": 10485760,
+            "maxSideSum": 10000
+          },
+          "image/png": {
+            "aspectRatio": {
+              "maximum": 20,
+              "minimum": 0.05
+            },
+            "maxByteSize": 10485760,
+            "maxSideSum": 10000
+          },
+          "video/mp4": {
+            "maxByteSize": 52428800
+          }
+        },
+        "maxTotalByteSize": 209715200,
+        "mixesKinds": true,
+        "showsAltText": false
+      },
+      "mediaRequired": false,
+      "textLimits": [
+        {
+          "maximum": 4096,
+          "unit": "utf16Units"
+        }
+      ],
+      "textLimitsWithMedia": [
+        {
+          "maximum": 1024,
+          "unit": "utf16Units"
+        }
+      ]
+    },
+    "textLimits": [
+      {
+        "maximum": 4096,
+        "unit": "utf16Units"
+      },
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ],
+    "version": 1,
+    "textLimitsWithMedia": [
+      {
+        "maximum": 1024,
+        "unit": "utf16Units"
+      },
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ]
   }
 ]

@@ -1,5 +1,6 @@
-import { Option } from "effect";
+import { DateTime, Option } from "effect";
 import type {
+  Platform,
   LivePostBlocker,
   LivePostChange,
   PlatformCapabilities,
@@ -20,6 +21,8 @@ import type {
  *   is left.
  * - `offered`: it can be removed.
  * - `blocked`: the platform does not let Peal (`by` says why).
+ * - `windowPassed`: the platform deletes a post only for a time after it
+ *   went out, and that time has passed: it is deleted there.
  */
 export type LiveState =
   | { readonly _tag: "none" }
@@ -28,7 +31,8 @@ export type LiveState =
   | { readonly _tag: "editing" }
   | { readonly _tag: "failed"; readonly code: string | null }
   | { readonly _tag: "offered" }
-  | { readonly _tag: "blocked"; readonly by: LivePostBlocker | null };
+  | { readonly _tag: "blocked"; readonly by: LivePostBlocker | null }
+  | { readonly _tag: "windowPassed" };
 
 /**
  * Where an edit of a channel's text stands for a member who may make it:
@@ -63,12 +67,14 @@ export const latestChangeOf = (
 /**
  * Where the target stands, from its status, the changes asked of it and
  * what its platform lets Peal do (`livePost` of its capabilities, none
- * while they are not read).
+ * while they are not read), and whether its platform's deletion window
+ * has passed (`deletionWindowPassed`).
  */
 export const liveStateOf = (
   target: PostTarget,
   changes: readonly LivePostChange[],
-  ability: Option.Option<PlatformCapabilities["livePost"]>
+  ability: Option.Option<PlatformCapabilities["livePost"]>,
+  windowPassed = false
 ): LiveState => {
   if (target.status !== "published") {
     return { _tag: "none" };
@@ -92,6 +98,11 @@ export const liveStateOf = (
 
   if (!ability.value.unpublish) {
     return { _tag: "blocked", by: ability.value.unpublishBlockedBy ?? null };
+  }
+
+  // The server would refuse it: nothing to ask again.
+  if (windowPassed) {
+    return { _tag: "windowPassed" };
   }
 
   // A failed edit leaves the post as it was, and removal offered.
@@ -215,4 +226,39 @@ export const isRemovedEverywhere = (post: Pick<Post, "targets">): boolean => {
   const live = post.targets.filter(({ status }) => status === "published");
 
   return live.length > 0 && live.every(({ removedAt }) => removedAt !== null);
+};
+
+/**
+ * How long after it was sent a platform deletes a post, in hours, where
+ * it limits that: Telegram's "A message can only be deleted if it was sent
+ * less than 48 hours ago" (core.telegram.org/bots/api, deleteMessage).
+ */
+export const deletionWindowOf = (platform: Platform): number | undefined =>
+  platform === "telegram" ? 48 : undefined;
+
+/**
+ * Whether the platform's deletion window has passed at `now` for any live
+ * part of the target, each from when it went out (the target's own time
+ * for one that lists none), as the server judges it before it refuses the
+ * removal (`deletionWindowPassed`).
+ */
+export const deletionWindowPassed = (
+  target: PostTarget,
+  platform: Platform,
+  now: Date
+): boolean => {
+  const hours = deletionWindowOf(platform);
+
+  if (hours === undefined) {
+    return false;
+  }
+
+  const sent =
+    target.parts.live.length > 0
+      ? target.parts.live.map(({ publishedAt }) => publishedAt)
+      : [target.publishedAt].filter((at) => at !== null);
+
+  return sent.some(
+    (at) => now.getTime() > DateTime.toEpochMillis(at) + hours * 3_600_000
+  );
 };

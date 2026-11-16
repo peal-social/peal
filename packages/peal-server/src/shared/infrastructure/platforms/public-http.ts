@@ -255,6 +255,22 @@ export const publicHttpClient = publicHttpClientWith({
 });
 
 /**
+ * The client with no span for its requests: for a platform whose address
+ * holds a secret in its path (a Discord webhook's token, a Telegram bot's),
+ * which a span's `url.full` would keep.
+ */
+export const untraced = <E, R>(
+  client: HttpClient.HttpClient.With<E, R>
+): HttpClient.HttpClient.With<E, R> =>
+  client.pipe(
+    HttpClient.transform((response) =>
+      response.pipe(
+        Effect.provideService(HttpClient.TracerDisabledWhen, () => true)
+      )
+    )
+  );
+
+/**
  * The same rules as a fetch function, for client libraries that take one: a
  * refused request rejects with a TypeError, as fetch does when it cannot
  * connect, whose cause is the OutboundRequestRefused.
