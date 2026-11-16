@@ -143,11 +143,15 @@ export type InboxOutgoingMessageStatus =
  * account, the conversation is locked, or the text is not allowed),
  * `notSent` (its outcome was unknown, and a member found it never went
  * out), `windowClosed` (the platform takes answers only for a time after
- * the person last wrote, 24 hours on Messenger and Instagram, and it had
- * passed).
+ * the person last wrote, 24 hours on Messenger and Instagram, 7 for a
+ * member's own answer with Meta's Human Agent tag, and it had passed),
+ * `humanAgentNotGranted` (Meta refused a member's answer with its Human
+ * Agent tag, as the server's app does not hold that feature).
  *
  * Unconfirmed, until a member checks the platform: `noResponse`,
- * `interrupted`, `adapterFailure`.
+ * `interrupted`, `adapterFailure`, `tagRestricted` (Meta answered a tagged
+ * answer with its warning that the app's use of message tags is
+ * restricted, which may follow a message that went out).
  */
 export const InboxOutgoingMessageReasonSchema = Schema.Literals([
   "channelUnavailable",
@@ -161,6 +165,8 @@ export const InboxOutgoingMessageReasonSchema = Schema.Literals([
   "interrupted",
   "adapterFailure",
   "windowClosed",
+  "humanAgentNotGranted",
+  "tagRestricted",
 ]).annotate({ identifier: "InboxOutgoingMessageReason" });
 
 export type InboxOutgoingMessageReason =
@@ -189,16 +195,27 @@ export const InboxOutgoingMessageSchema = Schema.Struct({
 
 export type InboxOutgoingMessage = typeof InboxOutgoingMessageSchema.Type;
 
+/** How many days after the person's last message a member answering in person may answer on Messenger and Instagram, with Meta's Human Agent tag. */
+export const humanAgentWindowDays = 7;
+
 /**
  * Whether the platform lets the account answer still, and until when:
  * Mastodon and Bluesky set no window, so `closesAt` is null; Messenger and
  * Instagram take an answer until 24 hours after the person's last message,
  * which Peal ends a minute early, at `closesAt`. A conversation nobody
  * else wrote in is never open.
+ *
+ * `personClosesAt`: on Messenger and Instagram, where the server's Meta
+ * app holds Meta's Human Agent feature, a member signed in to Peal's web
+ * app, in person, may answer until 7 days after the person's last message
+ * (a minute early), past `closesAt`; never an API key, an application
+ * (MCP, the command line), staff acting as a member, or a rule. Null where
+ * there is no such window.
  */
 export const InboxReplyWindowSchema = Schema.Struct({
   closesAt: Schema.NullOr(Schema.DateTimeUtc),
   open: Schema.Boolean,
+  personClosesAt: Schema.NullOr(Schema.DateTimeUtc),
 }).annotate({ identifier: "InboxReplyWindow" });
 
 export const InboxConversationPageSchema = Schema.Struct({
@@ -384,7 +401,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
       }
     ).annotateMerge(
       OpenApi.annotations({
-        description: `Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of \`direct\` visibility, which mentions every participant first, and a text that mentions any other account is refused (422 \`MessageMentionsOutside\`), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept; on Messenger and Instagram a message sent only within 24 hours of the person's last one (\`window\`): past it, the message is refused before anything is journalled (409 \`InboxActionUnavailable\`, \`reason\` \`windowClosed\`, with \`closedAt\`), unless an \`Idempotency-Key\` names a message already made. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message \`sending\`, and the conversation shows how it ended. A message whose outcome is unknown is \`unconfirmed\` and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 \`MessagePending\`). With an \`Idempotency-Key\` header (${maxIdempotencyKeyLength} characters at most, new for each message), the request is safe to send again: within ${idempotencyKeyLifetimeHours} hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 \`IdempotencyKeyReused\`). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 \`UsageAllowanceReached\`); with one, it is billed past the allowance. A message that never went out is not counted. ${acting}`,
+        description: `Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of \`direct\` visibility, which mentions every participant first, and a text that mentions any other account is refused (422 \`MessageMentionsOutside\`), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept; on Messenger and Instagram a message sent only within 24 hours of the person's last one (\`window\`): past it, the message is refused before anything is journalled (409 \`InboxActionUnavailable\`, \`reason\` \`windowClosed\`, with \`closedAt\`), unless an \`Idempotency-Key\` names a message already made. Where the server's Meta app holds Meta's Human Agent feature, a member signed in to Peal's web app in person may answer until ${humanAgentWindowDays} days after the person's last message (\`window.personClosesAt\`), with Meta's \`HUMAN_AGENT\` tag; an API key, an application (MCP, the command line) or staff acting as a member never may, and are refused past the 24 hours. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message \`sending\`, and the conversation shows how it ended. A message whose outcome is unknown is \`unconfirmed\` and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 \`MessagePending\`). With an \`Idempotency-Key\` header (${maxIdempotencyKeyLength} characters at most, new for each message), the request is safe to send again: within ${idempotencyKeyLifetimeHours} hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 \`IdempotencyKeyReused\`). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 \`UsageAllowanceReached\`); with one, it is billed past the allowance. A message that never went out is not counted. ${acting}`,
         summary: "Send a direct message",
       })
     ),

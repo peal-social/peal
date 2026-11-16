@@ -11,6 +11,8 @@ export const InboxOutgoingMessageReason = {
         NoResponse: "noResponse",
         Interrupted: "interrupted",
         AdapterFailure: "adapterFailure",
-        WindowClosed: "windowClosed"
+        WindowClosed: "windowClosed",
+        HumanAgentNotGranted: "humanAgentNotGranted",
+        TagRestricted: "tagRestricted"
     } as const;
 export type InboxOutgoingMessageReason = typeof InboxOutgoingMessageReason[keyof typeof InboxOutgoingMessageReason];

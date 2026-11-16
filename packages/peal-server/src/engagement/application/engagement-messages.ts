@@ -28,7 +28,11 @@ import {
   writeMessage,
 } from "#engagement/domain/outgoing-message.ts";
 import type { OutgoingMessage } from "#engagement/domain/outgoing-message.ts";
-import { replyWindowOf } from "#engagement/domain/reply-window.ts";
+import {
+  answerWindowOf,
+  personWindowOf,
+  replyWindowOf,
+} from "#engagement/domain/reply-window.ts";
 import type { ReplyWindow } from "#engagement/domain/reply-window.ts";
 import { CurrentInboxMessages } from "#shared/application/current-inbox-messages.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -44,6 +48,7 @@ import { storableText } from "#shared/domain/platform-text.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 import { ConversationNotFound } from "./conversation-not-found.ts";
+import { CurrentHumanAgent } from "./current-human-agent.ts";
 import { MessageAbilityUnavailable } from "./message-ability-unavailable.ts";
 import { MessageMentionsOutside } from "./message-mentions-outside.ts";
 import { MessagePending } from "./message-pending.ts";
@@ -85,6 +90,13 @@ export interface ConversationDetail {
   /** The messages sent from Peal, oldest first. */
   readonly sent: readonly OutgoingMessage[];
   readonly window: ReplyWindow;
+  /**
+   * The longer window a member answering in person, in their own
+   * session, has on Messenger and Instagram (Meta's Human Agent tag):
+   * none where the operator's app does not hold the feature, the channel
+   * cannot send, or the platform has no such window.
+   */
+  readonly personWindow: Option.Option<ReplyWindow>;
   /** Where the page of older messages starts; none on the oldest. */
   readonly older: Option.Option<MessageCursor>;
   /** How many messages it keeps in all, past the page too. */
@@ -101,6 +113,29 @@ const unknownChannel: MessageAbilities = {
   read: "unsupported",
   send: "unsupported",
 };
+
+/**
+ * How a message reached Peal: `inSession` only when the API's handler saw
+ * the member's own session of the web app (not a bearer token, an API key
+ * or staff acting as them). A rule, an automation, a job and a tool never
+ * say it, so their messages are never a person's (`byPerson`).
+ */
+export interface MessageSending {
+  readonly inSession: boolean;
+}
+
+const notInSession: MessageSending = { inSession: false };
+
+// Whether the actor is the member themselves: not an API key, an OAuth
+// client (MCP, the command line) acting for them, nor staff as them.
+const isThePerson = ({ subject }: Actor): boolean =>
+  subject._tag === "user" &&
+  subject.clientId === undefined &&
+  Option.isNone(subject.impersonatedBy);
+
+// Whether the message is a person's own: the member, in their session.
+const byPersonOf = (actor: Actor, sending: MessageSending): boolean =>
+  sending.inSession && isThePerson(actor);
 
 // The member who writes: none for an API key, which is nobody.
 const writerOf = (actor: Actor): Option.Option<UserId> =>
@@ -124,6 +159,13 @@ const writerOf = (actor: Actor): Option.Option<UserId> =>
  * it. A message that ends as never sent gives its outbound message back.
  * While a message to a conversation is on its way or unconfirmed, no
  * other is written to it.
+ *
+ * On Messenger and Instagram a member in their own session (`inSession`,
+ * which only the API's handler says) may answer past Meta's 24 hours,
+ * until 7 days after the person's last message, where the operator's app
+ * holds Meta's Human Agent feature (`CurrentHumanAgent`): the message is
+ * `byPerson`, and goes out with the `HUMAN_AGENT` tag. Never a rule's, an
+ * automation's, a tool's or a key's.
  */
 export class EngagementMessages extends Context.Service<
   EngagementMessages,
@@ -153,7 +195,9 @@ export class EngagementMessages extends Context.Service<
        * `messageKeyLifetime` the same key with the same conversation and
        * text answers the message the first request made.
        */
-      key?: Option.Option<string>
+      key?: Option.Option<string>,
+      /** How it reached Peal: only the API's handler says `inSession`. */
+      sending?: MessageSending
     ) => Effect.Effect<
       OutgoingMessage,
       | AllowanceReached
@@ -195,6 +239,7 @@ export class EngagementMessages extends Context.Service<
       const { transaction } = yield* TransactionRunner;
       const ids = yield* Ids;
       const meters = yield* MeteredUsage;
+      const humanAgent = yield* CurrentHumanAgent;
 
       // An application acting for a member reads and answers messages
       // only where the workspace's owner let it; a person, or an API key
@@ -350,6 +395,14 @@ export class EngagementMessages extends Context.Service<
                   })
                 : Option.none(),
             platform: channel.pipe(Option.map((found) => found.platform)),
+            personWindow: platform.pipe(
+              Option.filter(
+                () => humanAgent && abilitiesOf(channel).send === "available"
+              ),
+              Option.flatMap((on) =>
+                personWindowOf(on, summary.conversation.lastIncomingAt, now)
+              )
+            ),
             sent: yield* store.outgoingOf(summary.conversation.id),
             total: summary.messages,
             window: Option.match(platform, {
@@ -390,7 +443,8 @@ export class EngagementMessages extends Context.Service<
         actor: Actor,
         conversationId: string,
         typed: string,
-        key: Option.Option<string> = Option.none()
+        key: Option.Option<string> = Option.none(),
+        sending: MessageSending = notInSession
       ) {
         yield* Effect.fromResult(authorize(actor, "engagement:message"));
         yield* consented(actor);
@@ -456,6 +510,10 @@ export class EngagementMessages extends Context.Service<
           }
         }
 
+        // A person, in their own session: the one sender Meta's Human
+        // Agent tag is for.
+        const byPerson = byPersonOf(actor, sending);
+
         const written = writeMessage(
           yield* newId(OutgoingMessageIdSchema).pipe(
             Effect.provideService(Ids, ids)
@@ -463,7 +521,8 @@ export class EngagementMessages extends Context.Service<
           talk,
           writerOf(actor),
           outgoing,
-          now
+          now,
+          byPerson
         );
 
         const given = key.pipe(
@@ -475,12 +534,15 @@ export class EngagementMessages extends Context.Service<
 
         // Peal never makes a first contact, and a platform whose window
         // closed takes no answer any more: refused before anything is
-        // journalled or claimed. A key sent again answers what it made
-        // while the window was open.
-        const window = replyWindowOf(
+        // journalled or claimed. A person in their own session has Meta's
+        // longer window where the operator's app holds the Human Agent
+        // feature. A key sent again answers what it made while the window
+        // was open.
+        const window = answerWindowOf(
           channel.platform,
           talk.lastIncomingAt,
-          now
+          now,
+          { byPerson, humanAgent }
         );
 
         if (!window.open) {

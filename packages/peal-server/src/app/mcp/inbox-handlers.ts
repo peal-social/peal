@@ -91,7 +91,7 @@ const cannotMessage = ({
 }: MessageAbilityUnavailable) => {
   if (reason === "windowClosed" && closedAt !== undefined) {
     return refuse(
-      `Nothing was sent: the platform takes no answer to this conversation since ${DateTime.formatIso(closedAt)}, as Messenger and Instagram take one only within 24 hours of the person's last message. Do not call this tool again for it; the user may answer from the platform's own inbox if its rules allow.`
+      `Nothing was sent: the platform takes no answer to this conversation since ${DateTime.formatIso(closedAt)}, as Messenger and Instagram take one only within 24 hours of the person's last message. Do not call this tool again for it; the user may answer from Peal's web app, in person, where the conversation's \`window.personClosesAt\` has not passed, or from the platform's own inbox if its rules allow.`
     );
   }
 

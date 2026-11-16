@@ -2047,6 +2047,7 @@ export {
   InboxMessageChannelSchema,
   InboxMessageSettingsSchema,
   InboxReplyWindowSchema,
+  humanAgentWindowDays,
   maxInboxMessageLength,
   maxInboxMessagesPerPage,
   NewInboxMessageSchema,

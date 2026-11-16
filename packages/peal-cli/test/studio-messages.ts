@@ -34,6 +34,9 @@ export const messengerConversationId = "0190f3a0-0000-7000-8000-00000000f002";
 
 const closedAt = at("2026-11-15T08:59:00Z");
 
+// Where a member answering in person may still, with Meta's Human Agent tag.
+const personClosedAt = at("2026-11-21T08:59:00Z");
+
 export const unconfirmedMessageId = "0190f3a0-0000-7000-8000-00000000f201";
 
 const messageChannelId = "0190f3a0-0000-7000-8000-00000000a001";
@@ -256,8 +259,12 @@ export const studioMessagesLive = (state: Ref.Ref<MessagesState>) =>
             platform: messenger ? ("facebook" as const) : ("mastodon" as const),
             sent: messenger ? [] : current.sent,
             window: messenger
-              ? { closesAt: closedAt, open: false }
-              : { closesAt: null, open: true },
+              ? {
+                  closesAt: closedAt,
+                  open: false,
+                  personClosesAt: personClosedAt,
+                }
+              : { closesAt: null, open: true, personClosesAt: null },
           };
         }),
       getMessageSettings: () =>

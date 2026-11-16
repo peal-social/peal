@@ -20,9 +20,16 @@ class InboxReplyWindow extends JsonSerializableType
     public bool $open;
 
     /**
+     * @var ?string $personClosesAt
+     */
+    #[JsonProperty('personClosesAt')]
+    public ?string $personClosesAt;
+
+    /**
      * @param array{
      *   open: bool,
      *   closesAt?: ?string,
+     *   personClosesAt?: ?string,
      * } $values
      */
     public function __construct(
@@ -30,6 +37,7 @@ class InboxReplyWindow extends JsonSerializableType
     ) {
         $this->closesAt = $values['closesAt'] ?? null;
         $this->open = $values['open'];
+        $this->personClosesAt = $values['personClosesAt'] ?? null;
     }
 
     /**

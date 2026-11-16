@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "abc4d868-02a6-47a3-a823-85f4fca115bb",
+  "prevIds": [
+    "bd1b1441-f14f-4b43-81e5-3f79211a2437"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "engagement",
+        "outgoing_messages",
+        "by_person"
+      ],
+      "writes": [
+        "s|col|engagement.outgoing_messages.by_person",
+        "n|col|engagement.outgoing_messages.by_person",
+        "e|col|engagement.outgoing_messages.by_person"
+      ],
+      "reads": [
+        "n|tbl|engagement.outgoing_messages",
+        "n|sch|engagement"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "engagement",
+        "table": "outgoing_messages",
+        "name": "by_person",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

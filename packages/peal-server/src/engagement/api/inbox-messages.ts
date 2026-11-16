@@ -18,6 +18,7 @@ import {
   ReplyInvalid,
   ReplyStatusConflict,
 } from "peal-contract";
+import type { Member } from "peal-contract";
 
 import type { AbilityUnavailable } from "#engagement/application/ability-unavailable.ts";
 import { EngagementMessages } from "#engagement/application/engagement-messages.ts";
@@ -53,6 +54,18 @@ const decodeMessageId = Schema.decodeUnknownOption(OutgoingMessageIdSchema);
 const decodeChannelId = Schema.decodeUnknownOption(ChannelIdSchema);
 const decodeCommentId = Schema.decodeUnknownOption(CommentIdSchema);
 const decodePrivateReplyId = Schema.decodeUnknownOption(PrivateReplyIdSchema);
+
+/**
+ * Whether the member reached the API in their own session of the web app:
+ * the session cookie, not a bearer token (an OAuth client such as MCP or
+ * the command line, or an API key), and not staff acting as them. The one
+ * proof of a person Meta's Human Agent tag asks for: only this handler
+ * gives it.
+ */
+const inOwnSession = ({ principal }: Member): boolean =>
+  principal._tag === "user" &&
+  principal.oauth === undefined &&
+  principal.impersonatedBy === null;
 
 const commentNotFound = () => Effect.fail(new InboxCommentNotFound());
 
@@ -335,7 +348,8 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
         }),
       sendMessage: ({ headers, params, payload }) =>
         Effect.gen(function* sendMessage() {
-          const actor = actorOf(yield* CurrentMember);
+          const member = yield* CurrentMember;
+          const actor = actorOf(member);
 
           const conversationId = yield* idOr(
             decodeConversationId(params.conversationId),
@@ -347,7 +361,8 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
               actor,
               conversationId,
               payload.text,
-              Option.fromUndefinedOr(headers["idempotency-key"])
+              Option.fromUndefinedOr(headers["idempotency-key"]),
+              { inSession: inOwnSession(member) }
             )
             .pipe(
               Effect.map(toOutgoingMessageView),

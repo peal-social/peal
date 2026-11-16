@@ -14,6 +14,8 @@ pub enum InboxOutgoingMessageReason {
     Interrupted,
     AdapterFailure,
     WindowClosed,
+    HumanAgentNotGranted,
+    TagRestricted,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -33,6 +35,8 @@ impl Serialize for InboxOutgoingMessageReason {
             Self::Interrupted => serializer.serialize_str("interrupted"),
             Self::AdapterFailure => serializer.serialize_str("adapterFailure"),
             Self::WindowClosed => serializer.serialize_str("windowClosed"),
+            Self::HumanAgentNotGranted => serializer.serialize_str("humanAgentNotGranted"),
+            Self::TagRestricted => serializer.serialize_str("tagRestricted"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -53,6 +57,8 @@ impl<'de> Deserialize<'de> for InboxOutgoingMessageReason {
             "interrupted" => Ok(Self::Interrupted),
             "adapterFailure" => Ok(Self::AdapterFailure),
             "windowClosed" => Ok(Self::WindowClosed),
+            "humanAgentNotGranted" => Ok(Self::HumanAgentNotGranted),
+            "tagRestricted" => Ok(Self::TagRestricted),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -72,6 +78,8 @@ impl fmt::Display for InboxOutgoingMessageReason {
             Self::Interrupted => write!(f, "interrupted"),
             Self::AdapterFailure => write!(f, "adapterFailure"),
             Self::WindowClosed => write!(f, "windowClosed"),
+            Self::HumanAgentNotGranted => write!(f, "humanAgentNotGranted"),
+            Self::TagRestricted => write!(f, "tagRestricted"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

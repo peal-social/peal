@@ -2,7 +2,8 @@
 // messages never holds what a person wrote, who wrote it, the token or
 // its proof: the adapter runs against the loopback Graph with a logger and
 // a tracer that keep everything a line or a span would export, through a
-// read, a refused answer, an answer sent, a lost one, a resume, the
+// read, a refused answer, an answer sent, a lost one, a resume, each
+// again as a person's answer with Meta's Human Agent tag, the
 // account's events asked for and stopped, and a disconnected channel's;
 // and a comment rule's private replies, run on Postgres, through a public
 // reply, a private one, a refusal and a database that refuses one; and
@@ -318,7 +319,11 @@ describe("what the server writes about Meta's direct messages", () => {
       ]);
 
       return Effect.gen(function* searched() {
-        const graph = yield* fakeMetaMessages([token], { me: facebookPageId });
+        const graph = yield* fakeMetaMessages([token], {
+          humanAgent: true,
+          me: facebookPageId,
+        });
+
         const url = new URL(graph.url);
 
         graph.add({
@@ -381,6 +386,7 @@ describe("what the server writes about Meta's direct messages", () => {
             },
           ],
           platformConversationId: "c_1",
+          humanAgent: false,
           request: false,
           takenIds: [],
           text: answer,
@@ -404,6 +410,24 @@ describe("what the server writes about Meta's direct messages", () => {
 
         yield* platform.send(account, outgoing);
         yield* platform.resume(account, outgoing);
+
+        // A person's answer with Meta's Human Agent tag: refused past the
+        // 7 days, refused to an app without the feature, sent, and lost.
+        const tagged = { ...outgoing, humanAgent: true };
+
+        graph.script.push("POST /v27.0/me/messages", [
+          graphError(10, 2_018_278),
+          graphError(200),
+        ]);
+
+        yield* platform.send(account, tagged);
+        yield* platform.send(account, tagged);
+        yield* platform.send(account, tagged);
+
+        graph.loseAnswer("POST /v27.0/me/messages");
+
+        yield* platform.send(account, tagged);
+        yield* platform.resume(account, tagged);
 
         // The account's events, asked for and stopped.
         yield* Effect.exit(platform.follow?.(account) ?? Effect.void);

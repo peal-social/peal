@@ -470,6 +470,8 @@ export interface SentReviewReplyRecord {
  * people wrote.
  */
 export interface SentMessageRecord {
+  /** Whether they wrote it themselves, in their session of the web app. */
+  readonly byPerson: boolean;
   readonly channelId: string;
   readonly conversationId: string;
   readonly createdAt: DateTime.Utc;

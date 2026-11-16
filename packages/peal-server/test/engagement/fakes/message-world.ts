@@ -3,6 +3,7 @@ import { constVoid } from "effect/Function";
 
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
 import { CollectMessages } from "#engagement/application/collect-messages.ts";
+import { CurrentHumanAgent } from "#engagement/application/current-human-agent.ts";
 import { EngagementMessages } from "#engagement/application/engagement-messages.ts";
 import { MessageSettings } from "#engagement/application/message-settings.ts";
 import { EngagementChannels } from "#engagement/application/ports/engagement-channels.ts";
@@ -151,7 +152,9 @@ export interface MessageWorldState {
 
 export const makeMessageWorld = (
   messages: InboxMessagePlatforms = new Set(["mastodon", "bluesky"]),
-  meters: Layer.Layer<MeteredUsage> = MeteredUsage.layerUnmetered
+  meters: Layer.Layer<MeteredUsage> = MeteredUsage.layerUnmetered,
+  // Whether the operator says Meta's app holds the Human Agent feature.
+  humanAgent = false
 ) => {
   const state: MessageWorldState = {
     accounts: new Map(),
@@ -860,6 +863,7 @@ export const makeMessageWorld = (
       })
     ),
     Layer.succeed(CurrentInboxMessages, messages),
+    Layer.succeed(CurrentHumanAgent, humanAgent),
     Ids.layerTest,
     meters
   );

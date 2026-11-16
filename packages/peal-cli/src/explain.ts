@@ -6,6 +6,7 @@ import {
   duplicateWindowHours,
   imageRequestCost,
   maxImportRows,
+  humanAgentWindowDays,
   privateReplyWindowDays,
   queueHorizonDays,
 } from "peal-contract";
@@ -680,7 +681,7 @@ const reasonOf =
       InboxActionUnavailable: ({ ability, closedAt, reason, standing }) => {
         if (reason === "windowClosed" && closedAt !== undefined) {
           return refused(
-            `The platform takes no answer to this conversation since ${instant(closedAt)}: Messenger and Instagram take one only within 24 hours of the person's last message. Nothing was journalled or counted, and Peal never starts a conversation.`
+            `The platform takes no answer to this conversation since ${instant(closedAt)}: Messenger and Instagram take one only within 24 hours of the person's last message, though where the server's Meta app holds Meta's Human Agent feature a member signed in to Peal's web app may answer in person for up to ${String(humanAgentWindowDays)} days. Nothing was journalled or counted, and Peal never starts a conversation.`
           );
         }
 

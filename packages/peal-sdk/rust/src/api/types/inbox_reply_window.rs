@@ -7,6 +7,9 @@ pub struct InboxReplyWindow {
     pub closes_at: Option<String>,
     #[serde(default)]
     pub open: bool,
+    #[serde(rename = "personClosesAt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub person_closes_at: Option<String>,
 }
 
 impl InboxReplyWindow {
@@ -20,6 +23,7 @@ impl InboxReplyWindow {
 pub struct InboxReplyWindowBuilder {
     closes_at: Option<String>,
     open: Option<bool>,
+    person_closes_at: Option<String>,
 }
 
 impl InboxReplyWindowBuilder {
@@ -33,6 +37,11 @@ impl InboxReplyWindowBuilder {
         self
     }
 
+    pub fn person_closes_at(mut self, value: impl Into<String>) -> Self {
+        self.person_closes_at = Some(value.into());
+        self
+    }
+
     /// Consumes the builder and constructs a [`InboxReplyWindow`].
     /// This method will fail if any of the following fields are not set:
     /// - [`open`](InboxReplyWindowBuilder::open)
@@ -40,6 +49,7 @@ impl InboxReplyWindowBuilder {
         Ok(InboxReplyWindow {
             closes_at: self.closes_at,
             open: self.open.ok_or_else(|| BuildError::missing_field("open"))?,
+            person_closes_at: self.person_closes_at,
         })
     }
 }

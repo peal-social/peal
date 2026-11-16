@@ -31,6 +31,8 @@ import { ReplyDoubtSchema } from "./reply.ts";
  *   out.
  * - `windowClosed`: the platform takes answers only for a time after the
  *   person last wrote (Meta's 24 hours), and it had passed.
+ * - `humanAgentNotGranted`: Meta refused a person's answer tagged
+ *   `HUMAN_AGENT`, as the app does not hold the Human Agent feature.
  *
  * Stored: add a member, never rename or remove one.
  */
@@ -43,15 +45,31 @@ export const MessageFailureSchema = Schema.Literals([
   "refused",
   "notSent",
   "windowClosed",
+  "humanAgentNotGranted",
 ]);
 
 export type MessageFailure = typeof MessageFailureSchema.Type;
+
+/**
+ * Why a message's outcome is not known: a reply's doubts, and
+ * `tagRestricted`, Meta's warning that the app's use of message tags is
+ * bothersome or abusive, which Meta calls a warning: the message may have
+ * gone out, so it is never sent again, and a member checks.
+ *
+ * Stored: add a member, never rename or remove one.
+ */
+export const MessageDoubtSchema = Schema.Union([
+  ReplyDoubtSchema,
+  Schema.Literal("tagRestricted"),
+]);
+
+export type MessageDoubt = typeof MessageDoubtSchema.Type;
 
 /** How sending a message ended, as the platform's adapter tells it. */
 export const MessageSendOutcomeSchema = Schema.Union([
   Schema.TaggedStruct("sent", { platformMessageId: PlatformMessageIdSchema }),
   Schema.TaggedStruct("failed", { reason: MessageFailureSchema }),
-  Schema.TaggedStruct("unconfirmed", { reason: ReplyDoubtSchema }),
+  Schema.TaggedStruct("unconfirmed", { reason: MessageDoubtSchema }),
 ]);
 
 export type MessageSendOutcome = typeof MessageSendOutcomeSchema.Type;
@@ -75,7 +93,7 @@ export const OutgoingMessageStatusSchema = Schema.Union([
   // It may be on the platform: never sent again, a member checks.
   Schema.TaggedStruct("unconfirmed", {
     at: Schema.DateTimeUtc,
-    reason: ReplyDoubtSchema,
+    reason: MessageDoubtSchema,
   }),
 ]);
 
@@ -93,6 +111,11 @@ export class OutgoingMessage extends Schema.Class<OutgoingMessage>(
   // The member who wrote it; none for an API key, or once they closed
   // their account.
   authorId: Schema.Option(UserIdSchema),
+  // Whether a member wrote it in person, in their own session of the web
+  // app: never an API key, an application (MCP, the command line), staff
+  // acting as them, a rule or an automation. Only such a message may be
+  // sent with Meta's Human Agent tag, past the 24 hours (`personWindowOf`).
+  byPerson: Schema.Boolean,
   channelId: ChannelIdSchema,
   conversationId: ConversationIdSchema,
   createdAt: Schema.DateTimeUtc,
@@ -121,6 +144,7 @@ const withStatus = (
 ): OutgoingMessage =>
   new OutgoingMessage({
     authorId: message.authorId,
+    byPerson: message.byPerson,
     channelId: message.channelId,
     conversationId: message.conversationId,
     createdAt: message.createdAt,
@@ -138,16 +162,21 @@ const refused = (message: OutgoingMessage): Transition =>
     })
   );
 
-/** A message to the conversation, about to be journalled and sent. */
+/**
+ * A message to the conversation, about to be journalled and sent: by a
+ * member in person in their own session (`byPerson`), or not.
+ */
 export const writeMessage = (
   id: OutgoingMessageId,
   conversation: Pick<Conversation, "channelId" | "id" | "workspaceId">,
   authorId: Option.Option<UserId>,
   text: string,
-  now: DateTime.Utc
+  now: DateTime.Utc,
+  byPerson = false
 ): OutgoingMessage =>
   new OutgoingMessage({
     authorId,
+    byPerson,
     channelId: conversation.channelId,
     conversationId: conversation.id,
     createdAt: now,
@@ -245,6 +274,7 @@ export const forgetMessageAuthor = (
 ): OutgoingMessage =>
   new OutgoingMessage({
     authorId: Option.none(),
+    byPerson: message.byPerson,
     channelId: message.channelId,
     conversationId: message.conversationId,
     createdAt: message.createdAt,

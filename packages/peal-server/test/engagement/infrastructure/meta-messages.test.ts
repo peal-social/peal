@@ -27,6 +27,7 @@ import type {
 } from "#engagement/infrastructure/platforms/message-platform.ts";
 import {
   messagesFromUnknownSenders,
+  taggedMessageSends,
   metaMessages,
 } from "#engagement/infrastructure/platforms/meta/meta-messages.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
@@ -54,7 +55,11 @@ import {
   graphAppSecret,
   instagramUserId,
 } from "#test/publishing/fakes/fake-meta-graph.ts";
-import { json, rawJson } from "#test/publishing/fakes/platform-server.ts";
+import {
+  json,
+  rawJson,
+  textOf,
+} from "#test/publishing/fakes/platform-server.ts";
 
 // Messenger's and Instagram's direct messages against a loopback Graph
 // that answers as Meta's Conversations API and Send API pages say: only
@@ -179,6 +184,7 @@ const outgoing = (changed: Partial<OutgoingDirect> = {}): OutgoingDirect => ({
   ],
   platformConversationId: "c_1",
   request: false,
+  humanAgent: false,
   takenIds: [],
   text: "Thank you, synthetic reader!",
   ...changed,
@@ -758,6 +764,156 @@ describe("Meta's direct messages, sent", () => {
         assert.lengthOf(graph.conversations()[0]?.messages ?? [], 2);
       })
     )
+  );
+
+  it.effect(
+    "tag a person's answer with Meta's Human Agent tag, through each way in, and no other",
+    () =>
+      atNow(
+        Effect.gen(function* tagged() {
+          for (const way of [
+            "messenger",
+            "pageInstagram",
+            "instagramLogin",
+          ] as const) {
+            const { account, graph, platform } = yield* onGraph(way, {
+              humanAgent: true,
+            });
+
+            const instagram = way !== "messenger";
+            const person = instagram ? igReader : reader;
+
+            graph.add(
+              conversation("c_1", [message(1, { from: person })], {
+                platform: instagram ? "instagram" : "messenger",
+              })
+            );
+
+            const to = {
+              participants: [
+                {
+                  displayName: Option.some(person.name),
+                  handle: "",
+                  platformId: person.id,
+                },
+              ],
+            };
+
+            assert.deepStrictEqual(
+              yield* platform.send(
+                account,
+                outgoing({ ...to, humanAgent: true })
+              ),
+              { _tag: "sent", platformMessageId: "m_sent_1" }
+            );
+            assert.deepStrictEqual(
+              yield* platform.send(account, outgoing(to)),
+              { _tag: "sent", platformMessageId: "m_sent_2" }
+            );
+
+            const [byPerson, other] = graph
+              .requests()
+              .filter(({ method }) => method === "POST")
+              .map((request) => new URLSearchParams(textOf(request)));
+
+            assert.strictEqual(byPerson?.get("messaging_type"), "MESSAGE_TAG");
+            assert.strictEqual(byPerson?.get("tag"), "HUMAN_AGENT");
+            assert.strictEqual(other?.get("messaging_type"), "RESPONSE");
+            assert.isFalse(other?.has("tag"));
+          }
+        })
+      )
+  );
+
+  it.effect(
+    "say apart why Meta refuses a tagged answer, count tagged sends, and log a warning on tag use as an error",
+    () => {
+      const lines: { readonly level: string; readonly refusal: unknown }[] = [];
+
+      const capture = Logger.layer([
+        Logger.make(({ fiber, logLevel }) => {
+          const annotations = fiber.getRef(References.CurrentLogAnnotations);
+
+          if (annotations["code"] !== undefined) {
+            lines.push({ level: logLevel, refusal: annotations["refusal"] });
+          }
+        }),
+      ]);
+
+      return atNow(
+        Effect.gen(function* refusals() {
+          const { account, graph, platform } = yield* onGraph("messenger", {
+            humanAgent: true,
+          });
+
+          graph.add(conversation("c_1", [message(1)]));
+
+          const counted = Metric.value(
+            Metric.withAttributes(taggedMessageSends, { platform: "facebook" })
+          ).pipe(Effect.map(({ count }) => count));
+
+          const before = yield* counted;
+
+          // As integrators report them (not on Meta's page): Messenger's
+          // `100`/`2018276` and Instagram's `10`/`2534044` for an app
+          // without the feature; Meta's `613`/`2018338` on tag use.
+          graph.script.push("POST /v27.0/me/messages", [
+            graphError(100, 2_018_276),
+            graphError(10, 2_534_044),
+            graphError(613, 2_018_338),
+          ]);
+
+          const tagged = outgoing({ humanAgent: true });
+
+          assert.deepStrictEqual(yield* platform.send(account, tagged), {
+            _tag: "failed",
+            reason: "humanAgentNotGranted",
+          });
+          assert.deepStrictEqual(yield* platform.send(account, tagged), {
+            _tag: "failed",
+            reason: "humanAgentNotGranted",
+          });
+          // A warning: the message may have gone out, and is never sent
+          // again.
+          assert.deepStrictEqual(yield* platform.send(account, tagged), {
+            _tag: "unconfirmed",
+            reason: "tagRestricted",
+          });
+          assert.deepStrictEqual(yield* platform.send(account, tagged), {
+            _tag: "sent",
+            platformMessageId: "m_sent_1",
+          });
+
+          // An untagged send counts nothing.
+          yield* platform.send(account, outgoing());
+
+          assert.strictEqual((yield* counted) - before, 4);
+          assert.deepStrictEqual(
+            lines.map(({ level }) => level),
+            ["Warn", "Warn", "Error"]
+          );
+          assert.strictEqual(lines[2]?.refusal, "tagRestricted");
+        }).pipe(Effect.provide(capture))
+      );
+    }
+  );
+
+  it.effect(
+    "fail a tagged answer Meta refuses for an app without the Human Agent feature",
+    () =>
+      atNow(
+        Effect.gen(function* lacking() {
+          const { account, graph, platform } = yield* onGraph();
+
+          graph.add(conversation("c_1", [message(1)]));
+
+          assert.deepStrictEqual(
+            yield* platform.send(account, outgoing({ humanAgent: true })),
+            { _tag: "failed", reason: "refused" }
+          );
+          assert.lengthOf(graph.conversations()[0]?.messages ?? [], 1);
+        })
+      )
   );
 
   it.effect(

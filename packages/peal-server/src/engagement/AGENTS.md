@@ -662,7 +662,8 @@
   `attachments` and `story` sub-fields; whether Publish asks anything of
   an app with no reviewed permission; whether a message taken back on
   Messenger still shows in the Conversations API; and `HUMAN_AGENT` on
-  graph.instagram.com (U9c). Production keeps the setting off until
+  graph.instagram.com, and Meta's refusal of a tag the app lacks (U9c,
+  `PEAL_META_HUMAN_AGENT` off until Meta's review of the feature). Production keeps the setting off until
   Meta's App Review, counsel's line and one live run.
 - Sending (`EngagementMessages.send`, `engagement:message`, in
   `publishingPermissions`): the conversation, the channel able, the text
@@ -670,7 +671,8 @@
   through `ReplyLimits`, `chatOverflow` for the others), the platform's
   `replyWindowOf` open (always on Mastodon and Bluesky; Meta's 24 hours
   after the person's last message, ended a minute early,
-  `metaWindowSkew`), refused `MessageAbilityUnavailable` with `reason`
+  `metaWindowSkew`; for a person's own answer, 7 days, below), refused
+  `MessageAbilityUnavailable` with `reason`
   `windowClosed` and `closedAt` before anything is journalled or claimed,
   unless a key names a message it made (`madeWithKey`, read only), then the journal row, the meter's claim (one
   `outboundMessages`, paused refusing first unless the request has a key),
@@ -693,6 +695,38 @@
   (`journalMessage`), so a send that commits meanwhile is listed and
   given back, or finds its conversation gone: never deleted unseen. The
   gate claims the call first (`claimCall`).
+- A person's answer within Meta's 7 days (U9c): where `PEAL_META_HUMAN_AGENT`
+  is `true` (`CurrentHumanAgent`, `infrastructure/human-agent-config.ts`:
+  the operator holds Meta's App Review of the Human Agent feature, apart
+  from the messaging permissions), a message `byPerson`
+  (`outgoing_messages.by_person`) is held to `personWindowOf` (7 days after
+  the person's last message, less `metaWindowSkew`) through
+  `answerWindowOf` once the 24 hours shut, and the gate sends it with
+  `messaging_type: MESSAGE_TAG`, `tag: HUMAN_AGENT` (`OutgoingDirect.humanAgent`)
+  only when `replyWindowOf` is shut at the call: inside the 24 hours it goes
+  as `RESPONSE`, as Meta keeps the tag for messages "sent outside the 24-hour
+  messaging window" (`page/messages` reference, read 2026-11-16). Each
+  tagged send is counted (`peal.engagement.messages.tagged_sends`, by
+  platform); Meta's refusals of the tag fail apart, logged by their codes:
+  `humanAgentNotGranted` (`100`/`2018276`, `10`/`2534044`, as integrators
+  report them) is `failed`, and `tagRestricted` (`613`/`2018338`, Meta's
+  warning, logged as an error) `unconfirmed` (`MessageDoubtSchema`), as the
+  message may have gone out. `byPerson` is
+  `sending.inSession` (which only the API's `sendMessage` handler passes,
+  from a session principal: no `oauth`, no `impersonatedBy`) and the actor
+  the member themselves: an API key, an OAuth client (MCP, the command
+  line), staff, a rule or an automation (an actor `ActorsNow` resolves
+  looks like the member, which is why the handler, not the actor, vouches
+  for the session) never pass, are refused past the 24 hours, and never
+  tag. Keep it so: no job, cron, rule or tool calls `send` with
+  `inSession` (`test/engagement/api/in-session-callers.test.ts` holds it to
+  the handler). A member's export carries `byPerson`. The conversation's view gives `personWindow`
+  (`window.personClosesAt`) where the feature is on and the channel can
+  send, and the web app shows none of it to staff acting as a member. A
+  private reply is never tagged. Not verified: whether graph.instagram.com
+  takes the tag in the same form, the codes Meta answers an app without
+  the feature, and whether Standard Access lets the sandbox send a tag at
+  all before Meta's review.
 - Retention: each message is deleted `conversationsKeptFor` (30 days)
   after it was sent, a settled outgoing message (`sent`, `failed` or
   left `unconfirmed`) 30 days after it settled, and a conversation once

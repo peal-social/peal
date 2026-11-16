@@ -625,6 +625,10 @@ const ExportedReviewReplySchema = Schema.Struct({
 // A direct message the user sent from Peal to a conversation, while Peal
 // keeps it.
 const ExportedDirectMessageSchema = Schema.Struct({
+  // Whether the user wrote it themselves, in their session of Peal's web
+  // app (what lets it go out on Messenger and Instagram up to 7 days after
+  // the person's last message).
+  byPerson: Schema.Boolean,
   channelId: Schema.String,
   conversationId: Schema.String,
   createdAt: instant,

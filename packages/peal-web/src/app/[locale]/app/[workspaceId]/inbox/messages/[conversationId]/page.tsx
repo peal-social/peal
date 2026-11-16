@@ -3,6 +3,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { currentUser } from "#auth/session.ts";
 import { MessageScreen } from "#components/inbox/message-screen.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
@@ -39,6 +40,12 @@ const InboxConversationPage = async ({
 
   const t = await getTranslations("InboxMessages");
 
+  // Staff acting as the member get none of a person's 7 days.
+  const byHand = Option.exists(
+    await currentUser(),
+    ({ impersonatedBy }) => impersonatedBy === null
+  );
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
@@ -53,6 +60,7 @@ const InboxConversationPage = async ({
         </h1>
       </div>
       <MessageScreen
+        byHand={byHand}
         conversationId={conversationId}
         cursor={cursor}
         mayAnswer={may.has("engagement:message")}

@@ -4433,7 +4433,10 @@
       "pending": "Un message à cette conversation est en route. Attendez qu’il soit parti pour en écrire un autre.",
       "closed": "Personne d’autre n’a encore écrit dans cette conversation : Peal répond, et n’écrit jamais le premier.",
       "openUntil": "Vous pouvez répondre jusqu’au {at} : Messenger et Instagram n’acceptent une réponse que dans les 24 heures qui suivent le dernier message de la personne.",
-      "windowClosed": "Messenger et Instagram n’acceptent une réponse que dans les 24 heures qui suivent le dernier message de la personne, et ce délai a pris fin pour cette conversation le {at}. Répondez depuis la messagerie de la plateforme si ses règles le permettent, ou attendez que la personne écrive de nouveau."
+      "windowClosed": "Messenger et Instagram n’acceptent une réponse que dans les 24 heures qui suivent le dernier message de la personne, et ce délai a pris fin pour cette conversation le {at}. Répondez depuis la messagerie de la plateforme si ses règles le permettent, ou attendez que la personne écrive de nouveau.",
+      "personAfter": "Ensuite, comme Meta laisse une personne répondre elle-même pendant 7 jours, vous pourrez encore répondre vous-même jusqu’au {at}.",
+      "personOpenUntil": "Les 24 heures de Messenger et d’Instagram sont passées, mais Meta laisse une personne répondre elle-même pendant 7 jours après le dernier message de la personne : vous pouvez encore répondre vous-même jusqu’au {at}. Écrivez la réponse vous-même, sur ce qu’elle a demandé : elle part avec la balise Human Agent de Meta, réservée aux réponses écrites par une personne.",
+      "personWindowClosed": "Meta ne laisse une personne répondre elle-même que dans les 7 jours qui suivent le dernier message de la personne, et ce délai a pris fin pour cette conversation le {at}. Répondez depuis la messagerie de la plateforme si ses règles le permettent, ou attendez que la personne écrive de nouveau."
     },
     "settings": {
       "title": "Messages privés : ce que Peal lit",

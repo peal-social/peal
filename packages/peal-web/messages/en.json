@@ -4433,7 +4433,10 @@
       "pending": "A message to this conversation is on its way. Wait until it has gone out to write another.",
       "closed": "Nobody else wrote in this conversation yet: Peal answers, and never writes first.",
       "openUntil": "You can answer until {at}: Messenger and Instagram take an answer only within 24 hours of the person’s last message.",
-      "windowClosed": "Messenger and Instagram take an answer only within 24 hours of the person’s last message, and this conversation’s time ended {at}. Answer from the platform’s own inbox if its rules allow it, or wait for the person to write again."
+      "windowClosed": "Messenger and Instagram take an answer only within 24 hours of the person’s last message, and this conversation’s time ended {at}. Answer from the platform’s own inbox if its rules allow it, or wait for the person to write again.",
+      "personAfter": "After that, as Meta lets a person answer by hand for 7 days, you can still answer yourself until {at}.",
+      "personOpenUntil": "Messenger and Instagram’s 24 hours have passed, but Meta lets a person answer by hand for 7 days after the person’s last message: you can still answer yourself until {at}. Write the answer yourself, about what they asked: it goes out with Meta’s Human Agent tag, which is for a person’s answers only.",
+      "personWindowClosed": "Meta lets a person answer by hand only within 7 days of the person’s last message, and this conversation’s time ended {at}. Answer from the platform’s own inbox if its rules allow it, or wait for the person to write again."
     },
     "settings": {
       "title": "Direct messages: what Peal reads",
