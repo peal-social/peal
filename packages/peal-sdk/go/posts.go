@@ -11728,14 +11728,15 @@ func (l *LivePostChanges) String() string {
 type LivePostRefusal string
 
 const (
-	LivePostRefusalNotPublished       LivePostRefusal = "notPublished"
-	LivePostRefusalAlreadyRemoved     LivePostRefusal = "alreadyRemoved"
-	LivePostRefusalNoPlatformID       LivePostRefusal = "noPlatformId"
-	LivePostRefusalNotSupported       LivePostRefusal = "notSupported"
-	LivePostRefusalChangeInProgress   LivePostRefusal = "changeInProgress"
-	LivePostRefusalChannelUnavailable LivePostRefusal = "channelUnavailable"
-	LivePostRefusalBoostRunning       LivePostRefusal = "boostRunning"
-	LivePostRefusalApprovalRequired   LivePostRefusal = "approvalRequired"
+	LivePostRefusalNotPublished         LivePostRefusal = "notPublished"
+	LivePostRefusalAlreadyRemoved       LivePostRefusal = "alreadyRemoved"
+	LivePostRefusalNoPlatformID         LivePostRefusal = "noPlatformId"
+	LivePostRefusalNotSupported         LivePostRefusal = "notSupported"
+	LivePostRefusalChangeInProgress     LivePostRefusal = "changeInProgress"
+	LivePostRefusalChannelUnavailable   LivePostRefusal = "channelUnavailable"
+	LivePostRefusalBoostRunning         LivePostRefusal = "boostRunning"
+	LivePostRefusalApprovalRequired     LivePostRefusal = "approvalRequired"
+	LivePostRefusalDeletionWindowPassed LivePostRefusal = "deletionWindowPassed"
 )
 
 func NewLivePostRefusalFromString(s string) (LivePostRefusal, error) {
@@ -11756,6 +11757,8 @@ func NewLivePostRefusalFromString(s string) (LivePostRefusal, error) {
 		return LivePostRefusalBoostRunning, nil
 	case "approvalRequired":
 		return LivePostRefusalApprovalRequired, nil
+	case "deletionWindowPassed":
+		return LivePostRefusalDeletionWindowPassed, nil
 	}
 	var t LivePostRefusal
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

@@ -11,6 +11,9 @@ public record AssistantActionShorten : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [JsonPropertyName("media")]
+    public bool? Media { get; set; }
+
     [JsonPropertyName("platform")]
     public required Platform Platform { get; set; }
 

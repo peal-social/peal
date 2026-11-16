@@ -41783,6 +41783,13 @@ func TestEnumLivePostRefusal(t *testing.T) {
 		assert.Equal(t, LivePostRefusal("approvalRequired"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_deletionWindowPassed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewLivePostRefusalFromString("deletionWindowPassed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, LivePostRefusal("deletionWindowPassed"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewLivePostRefusalFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)

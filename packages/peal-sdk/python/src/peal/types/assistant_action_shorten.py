@@ -8,6 +8,7 @@ from .platform import Platform
 
 
 class AssistantActionShorten(UniversalBaseModel):
+    media: typing.Optional[bool] = None
     platform: Platform
 
     if IS_PYDANTIC_V2:

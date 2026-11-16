@@ -7,6 +7,8 @@ module Peal
     class AssistantActionWrite < Internal::Types::Model
       field :language, -> { Peal::Types::TranslationLanguage }, optional: true, nullable: false
 
+      field :media, -> { Internal::Types::Boolean }, optional: true, nullable: false
+
       field :platform, -> { Peal::Types::Platform }, optional: true, nullable: false
 
       field :tone, -> { Peal::Types::AssistantTone }, optional: true, nullable: false

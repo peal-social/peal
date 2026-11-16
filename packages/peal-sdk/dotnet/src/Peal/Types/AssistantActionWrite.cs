@@ -14,6 +14,9 @@ public record AssistantActionWrite : IJsonOnDeserialized
     [JsonPropertyName("language")]
     public TranslationLanguage? Language { get; set; }
 
+    [JsonPropertyName("media")]
+    public bool? Media { get; set; }
+
     [JsonPropertyName("platform")]
     public Platform? Platform { get; set; }
 

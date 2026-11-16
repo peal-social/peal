@@ -24,6 +24,9 @@ public final class LivePostRefusal {
     public static final LivePostRefusal APPROVAL_REQUIRED =
             new LivePostRefusal(Value.APPROVAL_REQUIRED, "approvalRequired");
 
+    public static final LivePostRefusal DELETION_WINDOW_PASSED =
+            new LivePostRefusal(Value.DELETION_WINDOW_PASSED, "deletionWindowPassed");
+
     public static final LivePostRefusal BOOST_RUNNING = new LivePostRefusal(Value.BOOST_RUNNING, "boostRunning");
 
     private final Value value;
@@ -72,6 +75,8 @@ public final class LivePostRefusal {
                 return visitor.visitChannelUnavailable();
             case APPROVAL_REQUIRED:
                 return visitor.visitApprovalRequired();
+            case DELETION_WINDOW_PASSED:
+                return visitor.visitDeletionWindowPassed();
             case BOOST_RUNNING:
                 return visitor.visitBoostRunning();
             case UNKNOWN:
@@ -97,6 +102,8 @@ public final class LivePostRefusal {
                 return CHANNEL_UNAVAILABLE;
             case "approvalRequired":
                 return APPROVAL_REQUIRED;
+            case "deletionWindowPassed":
+                return DELETION_WINDOW_PASSED;
             case "boostRunning":
                 return BOOST_RUNNING;
             default:
@@ -121,6 +128,8 @@ public final class LivePostRefusal {
 
         APPROVAL_REQUIRED,
 
+        DELETION_WINDOW_PASSED,
+
         UNKNOWN
     }
 
@@ -140,6 +149,8 @@ public final class LivePostRefusal {
         T visitBoostRunning();
 
         T visitApprovalRequired();
+
+        T visitDeletionWindowPassed();
 
         T visitUnknown(String unknownType);
     }

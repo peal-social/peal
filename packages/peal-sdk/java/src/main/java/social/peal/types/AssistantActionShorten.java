@@ -9,23 +9,34 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import social.peal.core.ObjectMappers;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = AssistantActionShorten.Builder.class)
 public final class AssistantActionShorten {
+    private final Optional<Boolean> media;
+
     private final Platform platform;
 
     private final Map<String, Object> additionalProperties;
 
-    private AssistantActionShorten(Platform platform, Map<String, Object> additionalProperties) {
+    private AssistantActionShorten(
+            Optional<Boolean> media, Platform platform, Map<String, Object> additionalProperties) {
+        this.media = media;
         this.platform = platform;
         this.additionalProperties = additionalProperties;
+    }
+
+    @JsonProperty("media")
+    public Optional<Boolean> getMedia() {
+        return media;
     }
 
     @JsonProperty("platform")
@@ -45,12 +56,12 @@ public final class AssistantActionShorten {
     }
 
     private boolean equalTo(AssistantActionShorten other) {
-        return platform.equals(other.platform);
+        return media.equals(other.media) && platform.equals(other.platform);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.platform);
+        return Objects.hash(this.media, this.platform);
     }
 
     @java.lang.Override
@@ -74,11 +85,17 @@ public final class AssistantActionShorten {
         _FinalStage additionalProperty(String key, Object value);
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
+
+        _FinalStage media(Optional<Boolean> media);
+
+        _FinalStage media(Boolean media);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder implements PlatformStage, _FinalStage {
         private Platform platform;
+
+        private Optional<Boolean> media = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
 
@@ -86,6 +103,7 @@ public final class AssistantActionShorten {
 
         @java.lang.Override
         public Builder from(AssistantActionShorten other) {
+            media(other.getMedia());
             platform(other.getPlatform());
             return this;
         }
@@ -98,13 +116,26 @@ public final class AssistantActionShorten {
         }
 
         @java.lang.Override
+        public _FinalStage media(Boolean media) {
+            this.media = Optional.ofNullable(media);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "media", nulls = Nulls.SKIP)
+        public _FinalStage media(Optional<Boolean> media) {
+            this.media = media;
+            return this;
+        }
+
+        @java.lang.Override
         public AssistantActionShorten build() {
-            return new AssistantActionShorten(platform, additionalProperties);
+            return new AssistantActionShorten(media, platform, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("platform")) {
+            if (key.equalsIgnoreCase("media") || key.equalsIgnoreCase("platform")) {
                 return;
             }
             this.additionalProperties.put(key, value);

@@ -15,6 +15,7 @@ module Peal
       CHANNEL_UNAVAILABLE = "channelUnavailable"
       BOOST_RUNNING = "boostRunning"
       APPROVAL_REQUIRED = "approvalRequired"
+      DELETION_WINDOW_PASSED = "deletionWindowPassed"
     end
   end
 end

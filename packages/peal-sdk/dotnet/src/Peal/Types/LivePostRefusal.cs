@@ -24,6 +24,8 @@ public readonly record struct LivePostRefusal : IStringEnum
 
     public static readonly LivePostRefusal ApprovalRequired = new(Values.ApprovalRequired);
 
+    public static readonly LivePostRefusal DeletionWindowPassed = new(Values.DeletionWindowPassed);
+
     public LivePostRefusal(string value)
     {
         Value = value;
@@ -135,5 +137,7 @@ public readonly record struct LivePostRefusal : IStringEnum
         public const string BoostRunning = "boostRunning";
 
         public const string ApprovalRequired = "approvalRequired";
+
+        public const string DeletionWindowPassed = "deletionWindowPassed";
     }
 }

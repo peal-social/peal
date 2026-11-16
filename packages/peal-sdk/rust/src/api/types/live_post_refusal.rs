@@ -11,6 +11,7 @@ pub enum LivePostRefusal {
     ChannelUnavailable,
     BoostRunning,
     ApprovalRequired,
+    DeletionWindowPassed,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -27,6 +28,7 @@ impl Serialize for LivePostRefusal {
             Self::ChannelUnavailable => serializer.serialize_str("channelUnavailable"),
             Self::BoostRunning => serializer.serialize_str("boostRunning"),
             Self::ApprovalRequired => serializer.serialize_str("approvalRequired"),
+            Self::DeletionWindowPassed => serializer.serialize_str("deletionWindowPassed"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -44,6 +46,7 @@ impl<'de> Deserialize<'de> for LivePostRefusal {
             "channelUnavailable" => Ok(Self::ChannelUnavailable),
             "boostRunning" => Ok(Self::BoostRunning),
             "approvalRequired" => Ok(Self::ApprovalRequired),
+            "deletionWindowPassed" => Ok(Self::DeletionWindowPassed),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -60,6 +63,7 @@ impl fmt::Display for LivePostRefusal {
             Self::ChannelUnavailable => write!(f, "channelUnavailable"),
             Self::BoostRunning => write!(f, "boostRunning"),
             Self::ApprovalRequired => write!(f, "approvalRequired"),
+            Self::DeletionWindowPassed => write!(f, "deletionWindowPassed"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

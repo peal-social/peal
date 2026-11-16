@@ -11,6 +11,7 @@ from .translation_language import TranslationLanguage
 
 class AssistantActionWrite(UniversalBaseModel):
     language: typing.Optional[TranslationLanguage] = None
+    media: typing.Optional[bool] = None
     platform: typing.Optional[Platform] = None
     tone: typing.Optional[AssistantTone] = None
 

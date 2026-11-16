@@ -12,6 +12,7 @@ LivePostRefusal = typing.Union[
         "channelUnavailable",
         "boostRunning",
         "approvalRequired",
+        "deletionWindowPassed",
     ],
     typing.Any,
 ]

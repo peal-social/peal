@@ -4,6 +4,7 @@ import * as Peal from "../index.js";
 
 export interface AssistantActionWrite {
     language?: Peal.TranslationLanguage | undefined;
+    media?: boolean | undefined;
     platform?: Peal.Platform | undefined;
     tone?: Peal.AssistantTone | undefined;
 }
