@@ -1,0 +1,1 @@
+ALTER TABLE "engagement"."message_boxes" ADD COLUMN "subscribed_at" timestamp with time zone;

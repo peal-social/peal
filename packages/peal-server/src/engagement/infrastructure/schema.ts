@@ -386,6 +386,9 @@ export const messageBoxes = engagement.table(
     createdAt: instant("created_at").notNull(),
     lastReadAt: instant("last_read_at"),
     nextReadAt: instant("next_read_at").notNull(),
+    // When the platform was last asked to tell the server of the account's
+    // messages (Meta's subscribed_apps), or found to need no asking.
+    subscribedAt: instant("subscribed_at"),
     workspaceId: uuid("workspace_id").notNull(),
   },
   (table) => [

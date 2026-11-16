@@ -29,7 +29,7 @@ import { SendMessage } from "#engagement/application/send-message.ts";
 import { isUnread } from "#engagement/domain/conversation.ts";
 import type { Conversation } from "#engagement/domain/conversation.ts";
 import type { DirectMessage } from "#engagement/domain/direct-message.ts";
-import type { MessageBox } from "#engagement/domain/message-box.ts";
+import { MessageBox } from "#engagement/domain/message-box.ts";
 import type { OutgoingMessageId } from "#engagement/domain/outgoing-message-id.ts";
 import type {
   MessageSendOutcome,
@@ -307,6 +307,47 @@ export const makeMessageWorld = (
       }),
     box: (channelId) =>
       Effect.sync(() => Option.fromUndefinedOr(state.boxes.get(channelId))),
+    bringForward: (channelId, at) =>
+      Effect.sync(() => {
+        const box = state.boxes.get(channelId);
+
+        if (box === undefined) {
+          return false;
+        }
+
+        if (millis(at) < millis(box.nextReadAt)) {
+          state.boxes.set(channelId, new MessageBox({ ...box, nextReadAt: at }));
+        }
+
+        return true;
+      }),
+    deleteTakenBack: (channelId, platformMessageId) =>
+      Effect.sync(() => {
+        let gone = 0;
+
+        for (const [key, message] of state.messages) {
+          if (
+            message.channelId === channelId &&
+            message.platformMessageId === platformMessageId
+          ) {
+            state.messages.delete(key);
+            gone += 1;
+          }
+        }
+
+        return gone;
+      }),
+    markFollowed: (channelId, at) =>
+      Effect.sync(() => {
+        const box = state.boxes.get(channelId);
+
+        if (box !== undefined) {
+          state.boxes.set(
+            channelId,
+            new MessageBox({ ...box, subscribedAt: Option.some(at) })
+          );
+        }
+      }),
     channelGone: (channelId) => Effect.sync(() => channelGone(channelId)),
     claimCall: (messageId) =>
       Effect.sync(
@@ -476,10 +517,16 @@ export const makeMessageWorld = (
 
         return { conversations: gone.length, messages: old.length };
       }),
+    // The schedule only, as the Postgres store saves it.
     saveBox: (box) =>
       Effect.sync(() => {
-        if (state.boxes.has(box.channelId)) {
-          state.boxes.set(box.channelId, box);
+        const kept = state.boxes.get(box.channelId);
+
+        if (kept !== undefined) {
+          state.boxes.set(
+            box.channelId,
+            new MessageBox({ ...box, subscribedAt: kept.subscribedAt })
+          );
         }
       }),
     saveConversations: (saved) =>

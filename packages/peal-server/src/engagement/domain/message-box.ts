@@ -18,6 +18,8 @@ const hourly = Duration.hours(1);
  * The direct messages of one channel: when its conversations are read
  * next, and when they were last. One a channel, followed from the channels
  * the directory lists on a platform the server reads messages on.
+ * `subscribedAt` is when its platform was last asked to tell the server of
+ * the account's messages, or found to need no asking: none until then.
  */
 export class MessageBox extends Schema.Class<MessageBox>(
   "peal-server/engagement/domain/MessageBox"
@@ -26,8 +28,27 @@ export class MessageBox extends Schema.Class<MessageBox>(
   createdAt: Schema.DateTimeUtc,
   lastReadAt: Schema.Option(Schema.DateTimeUtc),
   nextReadAt: Schema.DateTimeUtc,
+  subscribedAt: Schema.Option(Schema.DateTimeUtc),
   workspaceId: WorkspaceIdSchema,
 }) {}
+
+/**
+ * How long a platform's subscription to an account's events is trusted:
+ * Meta drops one after an hour of failed deliveries, so it is asked again
+ * once a day.
+ */
+export const subscriptionLasts = Duration.days(1);
+
+/** Whether the box's platform is to be asked for its events before a read. */
+export const subscriptionDue = (box: MessageBox, now: DateTime.Utc): boolean =>
+  Option.match(box.subscribedAt, {
+    onNone: () => true,
+    onSome: (at) =>
+      DateTime.isLessThanOrEqualTo(
+        DateTime.addDuration(at, subscriptionLasts),
+        now
+      ),
+  });
 
 /** A channel to follow: read at the next run. */
 export const followBox = (
@@ -39,6 +60,7 @@ export const followBox = (
     createdAt: now,
     lastReadAt: Option.none(),
     nextReadAt: now,
+    subscribedAt: Option.none(),
     workspaceId: channel.workspaceId,
   });
 
@@ -73,6 +95,7 @@ export const recordBoxRead = (
     createdAt: box.createdAt,
     lastReadAt: Option.some(readAt),
     nextReadAt: nextBoxRead(latest, at),
+    subscribedAt: box.subscribedAt,
     workspaceId: box.workspaceId,
   });
 
@@ -87,5 +110,6 @@ export const postponeBoxRead = (
     createdAt: box.createdAt,
     lastReadAt: box.lastReadAt,
     nextReadAt: DateTime.addDuration(at, wait),
+    subscribedAt: box.subscribedAt,
     workspaceId: box.workspaceId,
   });
