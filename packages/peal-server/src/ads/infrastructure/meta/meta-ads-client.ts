@@ -338,9 +338,13 @@ export const metaAdsClient = Effect.fn("MetaAds.client")(
         AccountSchema,
         maxPages
       ).pipe(
-        Effect.map(({ items }) =>
-          items.flatMap((account) => Option.toArray(factsOf(account)))
-        )
+        Effect.map(({ items }) => ({
+          accounts: items.flatMap((account) =>
+            Option.toArray(factsOf(account))
+          ),
+          // Meta counts no daily allowance a listing would spend.
+          operations: 0,
+        }))
       );
 
     const account: AdNetworkClient["account"] = (token, externalId) =>
@@ -435,6 +439,9 @@ export const metaAdsClient = Effect.fn("MetaAds.client")(
             Option.toArray(adSetOf(adSet, currency))
           ),
           ads: ads.items.flatMap((ad) => Option.toArray(adOf(ad))),
+          // Meta's numbers are read by ad.
+          campaignDays: [],
+          campaignDaysCover: Option.none(),
           campaigns: campaigns.items.flatMap((campaign) =>
             Option.toArray(campaignOf(campaign, currency))
           ),

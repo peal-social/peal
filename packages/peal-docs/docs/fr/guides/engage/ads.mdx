@@ -1,11 +1,11 @@
 ---
 title: Publicités
-description: Connecter des comptes publicitaires Meta à un espace de travail et lire leurs campagnes et leurs chiffres du jour à côté des résultats organiques de vos publications.
+description: Connecter des comptes publicitaires Meta et Google Ads à un espace de travail et lire leurs campagnes et leurs chiffres du jour à côté des résultats organiques de vos publications.
 sidebar:
   icon: megaphone
 ---
 
-Reliez un espace de travail à ses comptes publicitaires chez Meta, voyez ce que leurs publicités ont donné à côté de ce que vos publications ont fait d’elles-mêmes, et mettez en avant une publication parue avec Peal sous la forme d’une publicité sur Facebook ou Instagram.
+Reliez un espace de travail à ses comptes publicitaires chez Meta et sur Google Ads, voyez ce que leurs campagnes et leurs publicités ont donné à côté de ce que vos publications ont fait d’elles-mêmes, et mettez en avant une publication parue avec Peal sous la forme d’une publicité sur Facebook ou Instagram.
 
 <Callout type="note" title="Nouveau">
   Cette fonctionnalité est nouvelle : son API peut encore s’étendre. Elle est
@@ -18,13 +18,14 @@ Reliez un espace de travail à ses comptes publicitaires chez Meta, voyez ce que
 ## Ce qui fonctionne aujourd’hui [#what-works]
 
 - Connecter des comptes publicitaires Meta, par une connexion qui leur est propre, distincte de celle qui relie les Pages Facebook et les comptes Instagram comme [canaux](/guides/channels).
+- Connecter des [comptes Google Ads](#google), en lecture seule : leurs campagnes et, jour par jour, le coût, les impressions et les clics de chacune.
 - Lire les campagnes, ensembles de publicités et publicités de chaque compte publicitaire connecté, y compris ceux créés hors de Peal, et ce que chaque publicité a donné chaque jour.
 - Voir l’organique et le payant côte à côte : les chiffres propres d’une publication parue sur chaque canal, à côté de ce qu’ont donné les publicités qui la mettent en avant.
 - [Mettre en avant une publication parue](/guides/engage/boosts), sur une Page Facebook, ou sur un compte Instagram connecté par sa Page, avec un budget, une date de fin et une audience.
 - Mettre en pause, relancer et arrêter une mise en avant.
 - Des notifications aux propriétaires de l’espace de travail pour chaque mise en avant, des [événements de webhook](/developers/ads#webhooks) pour vos propres systèmes, et un [journal d’audit](/guides/engage/boosts#audit) de chaque décision qui touche à l’argent.
 
-L’[API](/developers/ads#api), les SDK, la [ligne de commande et les outils MCP](/developers/ads#clients) font la même chose. [Ce qui n’est pas fait](#not-built) liste le reste.
+L’[API](/developers/ads#api), les SDK, la [ligne de commande et les outils MCP](/developers/ads#clients) font la même chose, sauf pour les comptes Google Ads, que les outils MCP ne proposent pas. [Ce qui n’est pas fait](#not-built) liste le reste.
 
 ## Qui peut faire quoi [#access]
 
@@ -88,7 +89,7 @@ Lorsque le réseau refuse le jeton d’une connexion, ses comptes indiquent qu�
 
 ## Ce que Peal lit [#reading]
 
-Toutes les heures, Peal lit chaque compte publicitaire connecté sur son réseau : ses campagnes, ses ensembles de publicités et ses publicités, et les chiffres de chaque publicité pour chaque jour du calendrier du compte.
+Toutes les heures, Peal lit chaque compte publicitaire Meta connecté : ses campagnes, ses ensembles de publicités et ses publicités, et les chiffres de chaque publicité pour chaque jour du calendrier du compte. Les comptes Google Ads sont lus [toutes les six heures, par campagne](#google).
 
 | Chiffre     | Ce que c’est                                                                                                                            |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -116,6 +117,20 @@ Les deux ne sont jamais additionnés : ce qu’une plateforme compte sur une pub
 
 Le côté organique est vide pour quelqu’un qui ne peut pas lire les statistiques, et pour une plateforme dont Peal [ne lit pas](/guides/engage/analytics#schedule) les chiffres, comme les Pages Facebook.
 
+## Google Ads [#google]
+
+Peal lit les comptes Google Ads et n’y change rien. Sur une instance dont l’opérateur [propose Google Ads](/self-hosting/ads#google), **Publicités** a un bouton pour le connecter. Avant de vous envoyer chez Google, Peal dit ce qu’il lit ; l’écran de consentement de Google demande ensuite d’afficher, de modifier, de créer et de supprimer vos données Google Ads, car Google n’offre pas d’accès en lecture seule, mais Peal ne crée, ne modifie et ne met en pause rien chez Google.
+
+- **Connexion.** Google vous demande de vous connecter avec une clé d’accès : ajoutez-en une à votre compte Google d’abord, car Google peut mettre jusqu’à sept jours à accepter une nouvelle clé. Peal liste ensuite les comptes que votre compte Google atteint, ceux que vous utilisez directement et les comptes clients des comptes administrateur que vous utilisez, chacun une fois.
+- **Ce qui est lu.** Le nom de chaque compte, ses campagnes (nom, statut, type comme `SEARCH` ou `PERFORMANCE_MAX`, budget, début et fin) et le coût, les impressions et les clics de chaque campagne pour chaque jour du calendrier du compte. Rien sur les personnes qui ont vu une annonce. Le coût est gardé tel que Google l’écrit, en millionièmes de la devise, et chaque chiffre affiché est arrondi au centime supérieur une seule fois : un total peut différer d’un centime de celui de Google. Une campagne supprimée qui n’a rien fait sur les jours affichés est omise de la liste.
+- **Comment il est atteint.** Les comptes que vous utilisez directement, et les comptes clients des comptes administrateur que vous utilisez. Quand un administrateur ne gère plus un compte, Peal cherche une fois un autre chemin par lequel votre connexion l’atteint ; s’il n’y en a pas, le compte est indiqué inaccessible depuis ce jour, et ce que Peal a lu reste.
+- **À quel rythme.** Toutes les six heures : ce que Peal affiche n’a jamais plus de six heures de retard sur sa dernière lecture, que la page de chaque compte indique. La première lecture prend les 90 derniers jours, les suivantes les 7 derniers, car Google corrige les jours récents.
+- **Ce qui n’est pas lu.** Les annonces, les groupes d’annonces et les mots-clés, si bien qu’un compte Google Ads n’a pas de liste de publicités ; la couverture et les résultats, que Google Ads ne donne pas ainsi, et qui sont donc omis ; les conversions.
+- **Pas de mise en avant.** La dépense ne peut pas être activée pour un compte Google Ads, et rien n’y est mis en avant.
+- **Déconnexion.** Déconnecter le compte, ou retirer sa connexion, supprime ce que Peal en a lu. Retirer l’accès de Peal dans les réglages de sécurité de votre compte Google arrête ses lectures et ne supprime rien : Peal indique que la connexion est à refaire, et ce qu’il a lu reste jusqu’au retrait de la connexion.
+
+Les chiffres d’un compte Google Ads restent à part, sur sa page : ils ne sont jamais ajoutés à ceux de Meta, ni à vos chiffres organiques.
+
 ## Vos données [#data]
 
 - Supprimer un espace de travail supprime ses connexions avec leurs jetons, ses comptes publicitaires, ce qui en a été lu, ses mises en avant, leur journal et son journal d’audit. C’est refusé tant qu’une mise en avant est diffusée, peut l’être ou est en cours de création : arrêtez-la d’abord.
@@ -127,7 +142,7 @@ Ce qu’une publicité demande part au réseau publicitaire : l’identifiant de
 
 ## Ce qui n’est pas fait [#not-built]
 
-- D’autres réseaux publicitaires que celui de Meta.
+- D’autres réseaux publicitaires que Meta et Google Ads ; sur Google Ads, autre chose que la lecture des campagnes et de leurs chiffres par jour (ni annonces, ni conversions, ni mises en avant).
 - Créer des campagnes, des ensembles de publicités ou des publicités avec leurs propres visuels : Peal met en avant une publication déjà parue.
 - Mettre en avant une publication qui n’est pas parue avec Peal, ou sur un compte Instagram connecté avec Instagram Login.
 - Modifier le budget ou l’audience d’une mise en avant en cours : arrêtez-la, et créez-en une autre.

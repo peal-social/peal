@@ -12,6 +12,11 @@ export type SealedToken = string;
 
 /** A sign-in in progress, between its start and its callback. */
 export interface SignInAttempt {
+  /**
+   * The sign-in's PKCE verifier, sealed; none for one started before
+   * Peal sent a challenge.
+   */
+  readonly codeVerifier: Option.Option<SealedToken>;
   readonly expiresAt: DateTime.Utc;
   readonly network: AdNetwork;
   readonly startedBy: UserId;

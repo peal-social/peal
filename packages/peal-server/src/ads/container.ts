@@ -22,6 +22,7 @@ import { DrizzleAdRecords } from "#ads/infrastructure/drizzle-ad-records.ts";
 import { DrizzleBoostStore } from "#ads/infrastructure/drizzle-boost-store.ts";
 import { DrizzleGrantStore } from "#ads/infrastructure/drizzle-grant-store.ts";
 import { DrizzleReadModel } from "#ads/infrastructure/drizzle-read-model.ts";
+import { MemoryListingPace } from "#ads/infrastructure/memory-listing-pace.ts";
 import { PublishedPromotablePosts } from "#ads/infrastructure/published-promotable-posts.ts";
 import { ToldAdNotices } from "#ads/infrastructure/told-ad-notices.ts";
 import { WorkflowBoostJobs } from "#ads/infrastructure/workflow-boost-jobs.ts";
@@ -74,6 +75,7 @@ const AdaptersLive = Layer.mergeAll(
   DrizzleBoostStore,
   DrizzleReadModel,
   CipherGrantSecrets,
+  MemoryListingPace,
   NetworksLive,
   PublishedPromotablePosts,
   AnalyticsOrganicCounts,

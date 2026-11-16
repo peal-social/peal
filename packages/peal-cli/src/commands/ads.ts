@@ -16,7 +16,12 @@ import {
 import type { AdAccount } from "peal-contract";
 
 import { money } from "#ads-money.ts";
-import { amountsIn, boostRow, totalsCells } from "#ads-print.ts";
+import {
+  amountsIn,
+  boostRow,
+  capabilitiesOf,
+  totalsCells,
+} from "#ads-print.ts";
 import { apiErrorJson } from "#api-error.ts";
 import { usesApiKey } from "#api-key.ts";
 import { boost } from "#commands/ads-boosts.ts";
@@ -88,10 +93,47 @@ const written = (account: AdAccount, amount: number): string =>
   money(amount, account.currency, account.minorUnitDigits);
 
 // Whether an ad account may spend through Peal, and how much a month.
-const spendingOf = (account: AdAccount): string =>
-  account.spendingEnabled && account.monthlyCeiling !== null
+const spendingOf = (account: AdAccount): string => {
+  if (!capabilitiesOf(account).boosts) {
+    return "read only";
+  }
+
+  return account.spendingEnabled && account.monthlyCeiling !== null
     ? `spending on, ${written(account, account.monthlyCeiling)} a month at most`
     : "spending off";
+};
+
+// Whether its reads work, for `peal ads account`.
+const readingOf = (read: AdAccount): string => {
+  if (read.access !== "working") {
+    return "the ad network refused its sign-in: its person signs in again, in the web app";
+  }
+
+  return read.unreachableSince === undefined || read.unreachableSince === null
+    ? "works"
+    : `unreachable since ${instant(read.unreachableSince)}: the manager account it was read through no longer holds it; what was read stays`;
+};
+
+// Whether, and how much, an account may spend, for `peal ads account`.
+const spendingLine = (read: AdAccount): string => {
+  if (!capabilitiesOf(read).boosts) {
+    return "never: Peal only reads Google Ads accounts, and boosts nothing there";
+  }
+
+  return read.spendingEnabled && read.monthlyCeiling !== null
+    ? `on: its boosts made through Peal may commit ${written(read, read.monthlyCeiling)} in a calendar month of its time zone`
+    : "off: an owner turns it on, with a monthly ceiling, in the web app";
+};
+
+// How often Peal reads an account of the network, as the server does.
+const readEvery: Readonly<Record<AdAccount["network"], string>> = {
+  google: "every six hours",
+  meta: "every hour",
+};
+
+// What an account's numbers are of: its ads', or its campaigns' own.
+const whoseNumbers = (account: AdAccount) =>
+  capabilitiesOf(account).ads ? "what their ads did" : "what they did";
 
 const status = Command.make(
   "status",
@@ -197,22 +239,15 @@ const account = Command.make(
 
     for (const line of columns([
       ["  Name", read.name],
-      ["  Network", `${read.network}, where its id is ${read.externalId}`],
+      [
+        "  Network",
+        `${read.network}, where its id is ${read.externalId}${(read.reachedThrough ?? null) === null ? "" : `, through the manager account ${read.reachedThrough}`}`,
+      ],
       ["  Currency", read.currency],
       ["  Time zone", read.timeZone],
       ["  Status", read.status],
-      [
-        "  Reading",
-        read.access === "working"
-          ? "works"
-          : "the ad network refused its sign-in: its person signs in again, in the web app",
-      ],
-      [
-        "  Spending",
-        read.spendingEnabled && read.monthlyCeiling !== null
-          ? `on: its boosts made through Peal may commit ${written(read, read.monthlyCeiling)} in a calendar month of its time zone`
-          : "off: an owner turns it on, with a monthly ceiling, in the web app",
-      ],
+      ["  Reading", readingOf(read)],
+      ["  Spending", spendingLine(read)],
       [
         "  Committed this month",
         `${written(read, committedThisMonth)}, by the boosts made through Peal`,
@@ -225,7 +260,7 @@ const account = Command.make(
       ],
       [
         "  Last read",
-        read.syncedAt === null ? "not yet" : instant(read.syncedAt),
+        `${read.syncedAt === null ? "not yet" : instant(read.syncedAt)}, ${readEvery[read.network]}`,
       ],
     ])) {
       yield* Console.log(line);
@@ -268,14 +303,14 @@ const campaigns = Command.make(
 
     if (report.rows.length === 0) {
       yield* Console.log(
-        `Peal has read no campaign of ${report.account.name} yet: it reads them every hour.`
+        `Peal has read no campaign of ${report.account.name} yet: it reads them ${readEvery[report.account.network]}.`
       );
 
       return;
     }
 
     yield* Console.log(
-      `Campaigns of ${report.account.name}, with what their ads did from ${report.from} to ${report.to}:`
+      `Campaigns of ${report.account.name}, with ${whoseNumbers(report.account)} from ${report.from} to ${report.to}:`
     );
 
     for (const line of columns(
@@ -283,7 +318,7 @@ const campaigns = Command.make(
         `  ${campaign.externalId}`,
         campaign.name,
         campaign.status,
-        campaign.objective,
+        campaign.kind ?? campaign.objective,
         ...totalsCells(campaign.totals, report.account),
       ])
     )) {
@@ -334,9 +369,17 @@ const list = Command.make(
       return;
     }
 
+    if (!capabilitiesOf(report.account).ads) {
+      yield* Console.log(
+        `Peal reads the campaigns of ${report.account.name} and their days, not its ads: peal ads campaigns shows them.`
+      );
+
+      return;
+    }
+
     if (report.rows.length === 0) {
       yield* Console.log(
-        `Peal has read no such ad of ${report.account.name}: it reads them every hour.`
+        `Peal has read no such ad of ${report.account.name}: it reads them ${readEvery[report.account.network]}.`
       );
 
       return;
@@ -399,7 +442,7 @@ const insights = Command.make(
     }
 
     yield* Console.log(
-      `What the ads of ${report.account.name} did each day, from ${report.from} to ${report.to}:`
+      `What the ${capabilitiesOf(report.account).ads ? "ads" : "campaigns"} of ${report.account.name} did each day, from ${report.from} to ${report.to}:`
     );
 
     for (const line of columns(

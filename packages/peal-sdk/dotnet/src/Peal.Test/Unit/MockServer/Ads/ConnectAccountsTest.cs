@@ -26,6 +26,12 @@ public class ConnectAccountsTest : BaseMockServerTest
               {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -36,15 +42,23 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               },
               {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -55,11 +69,13 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               }
             ]
             """;
@@ -107,6 +123,12 @@ public class ConnectAccountsTest : BaseMockServerTest
               {
                 "access": "working",
                 "amountSpent": 1000000,
+                "capabilities": {
+                  "ads": true,
+                  "boosts": true,
+                  "reach": true,
+                  "results": true
+                },
                 "connectedAt": "connectedAt",
                 "connectionId": "connectionId",
                 "currency": "currency",
@@ -117,11 +139,13 @@ public class ConnectAccountsTest : BaseMockServerTest
                 "name": "name",
                 "network": "meta",
                 "newAdsUntrackedUntil": "newAdsUntrackedUntil",
+                "reachedThrough": "reachedThrough",
                 "spendCap": 1000000,
                 "spendingEnabled": true,
                 "status": "active",
                 "syncedAt": "syncedAt",
-                "timeZone": "timeZone"
+                "timeZone": "timeZone",
+                "unreachableSince": "unreachableSince"
               }
             ]
             """;

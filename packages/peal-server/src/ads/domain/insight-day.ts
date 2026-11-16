@@ -8,7 +8,8 @@ import { AmountSchema } from "./money.ts";
 /** The largest count Peal keeps, what its columns hold. */
 export const maxCount = 2_147_483_647;
 
-const CountSchema = Schema.Int.check(
+/** A count of impressions or clicks, as the columns hold one. */
+export const CountSchema = Schema.Int.check(
   Schema.isBetween({ maximum: maxCount, minimum: 0 })
 );
 

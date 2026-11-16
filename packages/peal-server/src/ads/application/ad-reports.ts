@@ -2,7 +2,6 @@ import { Context, DateTime, Effect, Layer, Option, Schema } from "effect";
 
 import type { Boost } from "#ads/domain/boost.ts";
 import { AdAccountIdSchema } from "#ads/domain/ids.ts";
-import type { AdAccountId } from "#ads/domain/ids.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
@@ -177,14 +176,13 @@ export class AdReports extends Context.Service<
         <A>(
           rows: (
             account: AuthorizedAccount,
-            accountId: AdAccountId,
             range: DayRange
           ) => Effect.Effect<readonly A[], DatabaseError>
         ) =>
         (actor: Actor, accountId: string, asked: AskedRange) =>
           scope(actor, accountId, asked).pipe(
             Effect.flatMap(({ account, range }) =>
-              rows(account, account.account.id, range).pipe(
+              rows(account, range).pipe(
                 Effect.map((found): Report<A> => ({
                   account,
                   range,
@@ -196,8 +194,8 @@ export class AdReports extends Context.Service<
 
       return AdReports.of({
         ads: (actor, accountId, campaignId, asked) =>
-          report((account, id, range) =>
-            readModel.ads(account.account.workspaceId, id, campaignId, range)
+          report(({ account }, range) =>
+            readModel.ads(account, campaignId, range)
           )(actor, accountId, asked),
         auditTrail: Effect.fn("AdReports.auditTrail")(
           function* auditTrail(actor, before) {
@@ -209,12 +207,10 @@ export class AdReports extends Context.Service<
             });
           }
         ),
-        campaigns: report((account, id, range) =>
-          readModel.campaigns(account.account.workspaceId, id, range)
+        campaigns: report(({ account }, range) =>
+          readModel.campaigns(account, range)
         ),
-        days: report((account, id, range) =>
-          readModel.days(account.account.workspaceId, id, range)
-        ),
+        days: report(({ account }, range) => readModel.days(account, range)),
         ofPost: Effect.fn("AdReports.ofPost")(function* ofPost(actor, postId) {
           yield* Effect.fromResult(authorize(actor, "ads:read"));
 

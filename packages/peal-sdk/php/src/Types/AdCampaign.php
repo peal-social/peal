@@ -26,6 +26,12 @@ class AdCampaign extends JsonSerializableType
     public string $externalId;
 
     /**
+     * @var ?string $kind
+     */
+    #[JsonProperty('kind')]
+    public ?string $kind;
+
+    /**
      * @var string $name
      */
     #[JsonProperty('name')]
@@ -84,6 +90,7 @@ class AdCampaign extends JsonSerializableType
      *   totals: PaidTotals,
      *   dailyBudget?: ?int,
      *   endsAt?: ?string,
+     *   kind?: ?string,
      *   startsAt?: ?string,
      *   totalBudget?: ?int,
      * } $values
@@ -94,6 +101,7 @@ class AdCampaign extends JsonSerializableType
         $this->dailyBudget = $values['dailyBudget'] ?? null;
         $this->endsAt = $values['endsAt'] ?? null;
         $this->externalId = $values['externalId'];
+        $this->kind = $values['kind'] ?? null;
         $this->name = $values['name'];
         $this->objective = $values['objective'];
         $this->rawStatus = $values['rawStatus'];

@@ -736,7 +736,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   which says what a ceiling allows before its button: keep that text.
   The tab keeps the sign-in's workspace in `sessionStorage`
   (`#ads/pending-sign-in.ts`) for the callback page (`CompleteAdSignIn`,
-  its view `AdSignInView`).
+  its view `AdSignInView`). Connecting Google Ads opens a dialog first
+  (`GoogleAdsDisclosureView`, which Google's policy for tools asks of a
+  web app): what Peal reads, that it changes nothing though Google's
+  consent screen names editing, how often, how to remove it, and a link
+  to the docs. Hide what an account's `capabilities` say it lacks (the
+  spending form, results, the ads list); show a campaign's `kind` where
+  it has one.
 - Ad amounts are whole minor units: read what a person types with
   `parseAmount` and write amounts with `useMoney` or `formatMoney`
   (`#ads/money.ts`), with the account's `minorUnitDigits`; never multiply

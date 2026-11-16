@@ -39,10 +39,23 @@ export class AdAccount extends Schema.Class<AdAccount>(
   id: AdAccountIdSchema,
   name: Schema.String,
   network: AdNetworkSchema,
+  /**
+   * The manager account it is reached through, on Google Ads, where a
+   * client account is read through its manager; none when the person
+   * signed in reaches it directly, and on Meta.
+   */
+  reachedThrough: Schema.Option(NetworkObjectIdSchema),
   spendCap: Schema.Option(AmountSchema),
   status: AdAccountStatusSchema,
   /** When a sync last read it whole; none before the first. */
   syncedAt: Schema.Option(Schema.DateTimeUtc),
   timeZone: TimeZoneIdSchema,
+  /**
+   * Since when no way Peal knows reaches it (the manager it was read
+   * through no longer holds it, and the sign-in reaches it no other way):
+   * reads are put off, and nothing read of it is deleted. None while it
+   * is read.
+   */
+  unreachableSince: Schema.Option(Schema.DateTimeUtc),
   workspaceId: WorkspaceIdSchema,
 }) {}

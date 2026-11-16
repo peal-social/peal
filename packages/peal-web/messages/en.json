@@ -113,7 +113,7 @@
   "Ads": {
     "open": "Ads",
     "openLabel": "Ads of {workspace}",
-    "network": "{network, select, meta {Meta} other {{network}}}",
+    "network": "{network, select, meta {Meta} google {Google Ads} other {{network}}}",
     "page": {
       "title": "Ads",
       "description": "The ad accounts connected to this workspace, their campaigns and what they spent. The ad network bills each ad account directly, on its own payment method: Peal never handles the money.",
@@ -161,7 +161,11 @@
       "disconnectTitle": "Disconnect {name}?",
       "disconnectDescription": "What Peal read of this ad account is deleted. The records of its boosts stay, and what they committed this month still counts if the same account is connected again. Campaigns that run at the ad network are left as they are.",
       "disconnected": "{name} is disconnected.",
-      "untracked": "This month's managed ads are used: new ads of this account are not tracked until {date, date, long}. Ads already counted, and boosts made through Peal, keep updating. A payment method on the billing page lifts it."
+      "untracked": "This month's managed ads are used: new ads of this account are not tracked until {date, date, long}. Ads already counted, and boosts made through Peal, keep updating. A payment method on the billing page lifts it.",
+      "readOnly": "Never: Peal only reads Google Ads accounts",
+      "reachedThrough": "Read through the manager account",
+      "syncedEvery": "{network, select, google {Read every six hours} other {Read every hour}}",
+      "unreachable": "Unreachable since {date, date, medium}: the manager account it was read through no longer holds it, and the sign-in reaches it no other way. Nothing is read of it until someone who reaches it signs in; what was read stays."
     },
     "spending": {
       "title": "Spending through Peal",
@@ -180,12 +184,12 @@
     },
     "campaigns": {
       "title": "Campaigns",
-      "description": "As last read from the ad network, every hour, those made outside Peal included, with what their ads did over the last 30 days.",
-      "caption": "Campaigns of {account}, with what their ads did from {from} to {to}",
+      "description": "{network, select, google {As last read from Google Ads, every six hours, with what each campaign did over the last 30 days. Google Ads reports no reach and no results here.} other {As last read from the ad network, every hour, those made outside Peal included, with what their ads did over the last 30 days.}}",
+      "caption": "{network, select, google {Campaigns of {account}, with what each did from {from} to {to}} other {Campaigns of {account}, with what their ads did from {from} to {to}}}",
       "empty": "This ad account has no campaign.",
       "name": "Campaign",
       "status": "Status",
-      "objective": "Objective",
+      "objective": "{network, select, google {Type} other {Objective}}",
       "budget": "Budget",
       "spend": "Spend",
       "impressions": "Impressions",
@@ -199,7 +203,7 @@
     },
     "insights": {
       "title": "Daily spend",
-      "description": "What this ad account’s ads spent each day over the last 30 days, on the account’s calendar.",
+      "description": "{network, select, google {What this Google Ads account’s campaigns spent each day over the last 30 days, on the account’s calendar.} other {What this ad account’s ads spent each day over the last 30 days, on the account’s calendar.}}",
       "views": "Show the daily spend as",
       "chart": "Chart",
       "table": "Table",
@@ -348,6 +352,17 @@
       "notPromotable": "{reason, select, platform {Peal boosts posts on Facebook Pages and Instagram only.} connection {This Instagram account was connected through Instagram Login, which cannot run ads. Connect it through its Facebook Page.} other {The post is not published on this channel, or the channel was disconnected since.}}",
       "signInFailed": "{reason, select, denied {You refused the sign-in, or left out a permission that reading ad accounts needs.} expired {This sign-in is unknown, was already completed, is older than 15 minutes or was started by someone else. Start again.} notConfigured {This server cannot keep the sign-in: its operator has not set the key that encrypts it.} other {The ad network refused the sign-in. Start again.}}",
       "stateConflict": "{state, select, failed {This boost failed: it does not run again.} ended {This boost has ended: it does not run again.} stopped {This boost was stopped: it does not run again.} other {This cannot be done where the boost stands now. Refresh to see where it is.}}"
+    },
+    "google": {
+      "title": "Connect Google Ads",
+      "reads": "Peal reads, for each Google Ads account you choose: its name, its campaigns, and each campaign's daily cost, impressions and clicks. Nothing about the people who saw an ad.",
+      "changes": "Google's consent screen asks to see, edit, create and delete your Google Ads data, as Google has no reading-only access. Peal never changes anything there: no campaign, no budget, no status, and it boosts nothing on Google Ads.",
+      "every": "Peal reads each account every six hours, so what it shows is never more than six hours behind.",
+      "passkey": "Google asks you to sign in with a passkey.",
+      "remove": "Remove the sign-in here at any time: what Peal read of its accounts is deleted. You can also revoke Peal's access in your Google account.",
+      "docs": "How Peal uses Google Ads",
+      "cancel": "Cancel",
+      "continue": "Continue to Google"
     }
   },
   "Assistant": {

@@ -113,7 +113,7 @@
   "Ads": {
     "open": "Publicité",
     "openLabel": "Publicité de {workspace}",
-    "network": "{network, select, meta {Meta} other {{network}}}",
+    "network": "{network, select, meta {Meta} google {Google Ads} other {{network}}}",
     "page": {
       "title": "Publicité",
       "description": "Les comptes publicitaires connectés à cet espace de travail, leurs campagnes et ce qu’ils ont dépensé. Le réseau publicitaire facture directement chaque compte publicitaire, sur son propre moyen de paiement : Peal ne manipule jamais l’argent.",
@@ -161,7 +161,11 @@
       "disconnectTitle": "Déconnecter {name} ?",
       "disconnectDescription": "Ce que Peal a lu de ce compte publicitaire est supprimé. L’historique de ses mises en avant reste, et ce qu’elles ont engagé ce mois-ci compte encore si le même compte est reconnecté. Les campagnes en cours auprès du réseau publicitaire restent telles quelles.",
       "disconnected": "{name} est déconnecté.",
-      "untracked": "Les publicités gérées du mois sont épuisées : les nouvelles publicités de ce compte ne sont pas suivies avant le {date, date, long}. Celles déjà comptées, et les boosts faits avec Peal, continuent d’être mis à jour. Un moyen de paiement sur la page de facturation lève cette limite."
+      "untracked": "Les publicités gérées du mois sont épuisées : les nouvelles publicités de ce compte ne sont pas suivies avant le {date, date, long}. Celles déjà comptées, et les boosts faits avec Peal, continuent d’être mis à jour. Un moyen de paiement sur la page de facturation lève cette limite.",
+      "readOnly": "Jamais : Peal ne fait que lire les comptes Google Ads",
+      "reachedThrough": "Lu par le compte administrateur",
+      "syncedEvery": "{network, select, google {Lu toutes les six heures} other {Lu toutes les heures}}",
+      "unreachable": "Inaccessible depuis le {date, date, medium} : le compte administrateur par lequel il était lu ne le gère plus, et la connexion ne l’atteint pas autrement. Rien n’en est lu tant qu’une personne qui y a accès ne s’est pas connectée ; ce qui a été lu reste."
     },
     "spending": {
       "title": "Dépenses via Peal",
@@ -180,12 +184,12 @@
     },
     "campaigns": {
       "title": "Campagnes",
-      "description": "Telles que lues en dernier auprès du réseau publicitaire, toutes les heures, y compris celles créées en dehors de Peal, avec les résultats de leurs publicités sur les 30 derniers jours.",
-      "caption": "Campagnes de {account}, avec les résultats de leurs publicités du {from} au {to}",
+      "description": "{network, select, google {Telles que lues sur Google Ads, toutes les six heures, avec ce que chaque campagne a fait ces 30 derniers jours. Google Ads ne donne ici ni couverture ni résultats.} other {Telles que lues en dernier auprès du réseau publicitaire, toutes les heures, y compris celles créées en dehors de Peal, avec les résultats de leurs publicités sur les 30 derniers jours.}}",
+      "caption": "{network, select, google {Campagnes de {account}, avec ce que chacune a fait du {from} au {to}} other {Campagnes de {account}, avec les résultats de leurs publicités du {from} au {to}}}",
       "empty": "Ce compte publicitaire n’a aucune campagne.",
       "name": "Campagne",
       "status": "Statut",
-      "objective": "Objectif",
+      "objective": "{network, select, google {Type} other {Objectif}}",
       "budget": "Budget",
       "spend": "Dépenses",
       "impressions": "Impressions",
@@ -199,7 +203,7 @@
     },
     "insights": {
       "title": "Dépenses par jour",
-      "description": "Ce que les publicités de ce compte publicitaire ont dépensé chaque jour sur les 30 derniers jours, selon le calendrier du compte.",
+      "description": "{network, select, google {Ce que les campagnes de ce compte Google Ads ont dépensé chaque jour ces 30 derniers jours, selon le calendrier du compte.} other {Ce que les publicités de ce compte publicitaire ont dépensé chaque jour sur les 30 derniers jours, selon le calendrier du compte.}}",
       "views": "Afficher les dépenses par jour sous forme de",
       "chart": "Graphique",
       "table": "Tableau",
@@ -348,6 +352,17 @@
       "notPromotable": "{reason, select, platform {Peal ne met en avant que les publications des Pages Facebook et d’Instagram.} connection {Ce compte Instagram a été connecté avec Instagram Login, qui ne permet pas de diffuser des publicités. Connectez-le par sa Page Facebook.} other {La publication n’est pas publiée sur ce canal, ou le canal a été déconnecté depuis.}}",
       "signInFailed": "{reason, select, denied {Vous avez refusé la connexion, ou écarté une autorisation nécessaire pour lire les comptes publicitaires.} expired {Cette connexion est inconnue, a déjà été finalisée, date de plus de 15 minutes ou a été lancée par quelqu’un d’autre. Recommencez.} notConfigured {Ce serveur ne peut pas conserver la connexion : son opérateur n’a pas défini la clé qui la chiffre.} other {Le réseau publicitaire a refusé la connexion. Recommencez.}}",
       "stateConflict": "{state, select, failed {Cette mise en avant a échoué : elle n’est plus diffusée.} ended {Cette mise en avant est terminée : elle n’est plus diffusée.} stopped {Cette mise en avant a été arrêtée : elle n’est plus diffusée.} other {C’est impossible dans l’état actuel de la mise en avant. Actualisez pour voir où elle en est.}}"
+    },
+    "google": {
+      "title": "Connecter Google Ads",
+      "reads": "Peal lit, pour chaque compte Google Ads que vous choisissez : son nom, ses campagnes, et le coût, les impressions et les clics de chaque campagne, jour par jour. Rien sur les personnes qui ont vu une annonce.",
+      "changes": "L’écran de consentement de Google demande d’afficher, de modifier, de créer et de supprimer vos données Google Ads, car Google n’offre pas d’accès en lecture seule. Peal n’y change jamais rien : ni campagne, ni budget, ni statut, et ne met rien en avant sur Google Ads.",
+      "every": "Peal lit chaque compte toutes les six heures : ce qu’il affiche n’a jamais plus de six heures de retard.",
+      "passkey": "Google vous demande de vous connecter avec une clé d’accès.",
+      "remove": "Retirez la connexion ici quand vous voulez : ce que Peal a lu de ses comptes est supprimé. Vous pouvez aussi révoquer l’accès de Peal dans votre compte Google.",
+      "docs": "Comment Peal utilise Google Ads",
+      "cancel": "Annuler",
+      "continue": "Continuer vers Google"
     }
   },
   "Assistant": {

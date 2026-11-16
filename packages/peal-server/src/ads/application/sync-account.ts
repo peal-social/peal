@@ -1,3 +1,4 @@
+import type { Redacted } from "effect";
 import {
   Context,
   DateTime,
@@ -12,6 +13,8 @@ import type { AccountSnapshot } from "#ads/domain/account-snapshot.ts";
 import type { AdAccount } from "#ads/domain/ad-account.ts";
 import type { AdAccountId } from "#ads/domain/ids.ts";
 import { firstSyncDays, resyncDays } from "#ads/domain/insight-retention.ts";
+import { traitsOf } from "#ads/domain/network-traits.ts";
+import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
@@ -23,16 +26,14 @@ import { AccountStore } from "./ports/account-store.ts";
 import type { SyncOutcome } from "./ports/account-syncer.ts";
 import { ActiveAdMonths } from "./ports/active-ad-months.ts";
 import { AdNetworks } from "./ports/ad-network.ts";
-import type { ReadFailure } from "./ports/ad-network.ts";
+import type { AdNetworkClient, ReadFailure } from "./ports/ad-network.ts";
 import { AdNotices } from "./ports/ad-notices.ts";
 import { BoostStore } from "./ports/boost-store.ts";
 import { GrantSecrets } from "./ports/grant-secrets.ts";
 import { GrantStore } from "./ports/grant-store.ts";
+import { ListingPace } from "./ports/listing-pace.ts";
 import { PromotablePosts } from "./ports/promotable-posts.ts";
 import { ReadModel } from "./ports/read-model.ts";
-
-/** How often an account is read when nothing holds it back. */
-export const syncInterval = Duration.hours(1);
 
 // The least and the most an account is put off when its network asks to
 // slow down, whatever wait it gave.
@@ -46,8 +47,9 @@ const clamp = (wait: Duration.Duration) =>
  * Reads one ad account from its network and saves what it found: the
  * account's own state, its campaigns, ad sets and ads, and each ad's days
  * (90 days the first time, the last 7 after, as networks correct recent
- * days). It then says when the account is next read: in an hour, or once
- * the wait its network asked for is over.
+ * days). It then says when the account is next read: after its
+ * network's `syncEvery` (an hour on Meta, six on Google Ads), or once the
+ * wait its network asked for is over.
  *
  * It runs inside the account's gate, one call at a time. A token the
  * network refuses marks the sign-in, whose person is told once; the
@@ -56,7 +58,16 @@ const clamp = (wait: Duration.Duration) =>
 export class SyncAccount extends Context.Service<
   SyncAccount,
   {
-    readonly run: (accountId: AdAccountId) => Effect.Effect<SyncOutcome>;
+    /**
+     * Reads the account. Its next read counts from `runAt`, the scheduled
+     * time of the sweep that asks (none: from now), so a read every six
+     * hours is due at the sweep six hours on, however late in its run the
+     * account came.
+     */
+    readonly run: (
+      accountId: AdAccountId,
+      runAt?: Option.Option<DateTime.Utc>
+    ) => Effect.Effect<SyncOutcome>;
   }
 >()("peal-server/ads/application/SyncAccount") {
   static readonly layer = Layer.effect(
@@ -74,6 +85,7 @@ export class SyncAccount extends Context.Service<
       const activeMonths = yield* ActiveAdMonths;
       const boostStore = yield* BoostStore;
       const meters = yield* MeteredUsage;
+      const pace = yield* ListingPace;
       const { transaction } = yield* TransactionRunner;
 
       // Counts each ad seen delivering or in review once a month, as one
@@ -227,7 +239,7 @@ export class SyncAccount extends Context.Service<
             account,
             failure._tag === "RateLimited" && failure.retryAfter !== undefined
               ? clamp(failure.retryAfter)
-              : syncInterval
+              : traitsOf(account.network).syncEvery
           );
 
           return "postponed" as const;
@@ -235,7 +247,8 @@ export class SyncAccount extends Context.Service<
       );
 
       const read = Effect.fn("SyncAccount.read")(function* read(
-        account: AdAccount
+        account: AdAccount,
+        runAt: Option.Option<DateTime.Utc>
       ) {
         const client = networks.for(account.network);
         const stored = yield* grants.token(account.grantId);
@@ -254,13 +267,105 @@ export class SyncAccount extends Context.Service<
           return yield* failedRead(account, new TokenRejected());
         }
 
+        return yield* readWith(
+          account,
+          client.value,
+          token.value,
+          false,
+          runAt
+        );
+      });
+
+      // An account read through a manager that refuses it may have been
+      // handed over: the sign-in's listing names the way to it now. That
+      // way, when it is another, is taken; none means no way reaches it.
+      const rerouted = Effect.fn("SyncAccount.rerouted")(function* rerouted(
+        account: AdAccount,
+        client: AdNetworkClient,
+        token: Redacted.Redacted
+      ) {
+        const grant = yield* grants.findIn(
+          account.workspaceId,
+          account.grantId
+        );
+
+        if (Option.isNone(grant)) {
+          return { _tag: "unknown" } as const;
+        }
+
+        // The sign-in's listing of a few minutes ago answers as well as a
+        // new one, and costs nothing; one asked now is kept for the next.
+        const kept = yield* pace.recent(grant.value);
+
+        const listing = Option.isSome(kept)
+          ? Option.some(kept.value)
+          : yield* pace.take(grant.value).pipe(
+              Effect.andThen(client.accounts(token)),
+              Effect.tap((listed) =>
+                pace
+                  .spent(grant.value, listed.operations)
+                  .pipe(
+                    Effect.andThen(pace.remember(grant.value, listed.accounts))
+                  )
+              ),
+              Effect.map(({ accounts: listed }) => listed),
+              // Without a listing to read, Peal cannot tell: nothing is
+              // said of the account, and the next read tries again.
+              Effect.option
+            );
+
+        if (Option.isNone(listing)) {
+          return { _tag: "unknown" } as const;
+        }
+
+        const found = listing.value.find(
+          ({ externalId }) => externalId === account.externalId
+        );
+
+        if (
+          found === undefined ||
+          Option.getOrNull(found.reachedThrough) ===
+            Option.getOrNull(account.reachedThrough)
+        ) {
+          return { _tag: "unreachable" } as const;
+        }
+
+        yield* accounts.setWays(
+          {
+            id: account.grantId,
+            network: account.network,
+            workspaceId: account.workspaceId,
+          },
+          [found]
+        );
+
+        yield* Effect.logInfo(
+          "An ad account is read another way: the one it was read through no longer reaches it"
+        ).pipe(Effect.annotateLogs({ accountId: account.id }));
+
+        // The account as stored now, with the way just taken.
+        const stored = yield* accounts.get(account.id);
+
+        return Option.isSome(stored)
+          ? ({ _tag: "rerouted", account: stored.value.account } as const)
+          : ({ _tag: "unknown" } as const);
+      });
+
+      const readWith = Effect.fn("SyncAccount.readWith")(function* readWith(
+        account: AdAccount,
+        client: AdNetworkClient,
+        token: Redacted.Redacted,
+        rerouting: boolean,
+        runAt: Option.Option<DateTime.Utc>
+      ): Effect.fn.Return<SyncOutcome, DatabaseError> {
         const now = yield* DateTime.now;
         const today = localDateOf(now, account.timeZone);
 
-        const snapshot = yield* client.value
-          .snapshot(token.value, {
+        const snapshot = yield* client
+          .snapshot(token, {
             currency: account.currency,
             externalId: account.externalId,
+            reachedThrough: account.reachedThrough,
             since: addDays(
               today,
               -(Option.isNone(account.syncedAt) ? firstSyncDays : resyncDays)
@@ -271,10 +376,33 @@ export class SyncAccount extends Context.Service<
           .pipe(Effect.result);
 
         if (Result.isFailure(snapshot)) {
-          return yield* failedRead(account, snapshot.failure);
+          const { failure } = snapshot;
+
+          if (
+            !rerouting &&
+            // An account no way reached is not looked for again at each
+            // read: a member's listing of the sign-in finds it if it can.
+            Option.isNone(account.unreachableSince) &&
+            failure._tag === "AdNetworkRefused" &&
+            failure.kind === "permission" &&
+            traitsOf(account.network).readsThroughManagers
+          ) {
+            const other = yield* rerouted(account, client, token);
+
+            if (other._tag === "rerouted") {
+              return yield* readWith(other.account, client, token, true, runAt);
+            }
+
+            if (other._tag === "unreachable") {
+              yield* accounts.markUnreachable(account.id, now);
+            }
+          }
+
+          return yield* failedRead(account, failure);
         }
 
         const taken = yield* metered(account, snapshot.success, now);
+        const traits = traitsOf(account.network);
 
         const promoted = taken.ads.flatMap((ad) => [
           ...Option.toArray(ad.promotedPagePostId),
@@ -284,7 +412,11 @@ export class SyncAccount extends Context.Service<
         yield* readModel.save({
           account,
           complete: taken.complete,
-          matched: yield* posts.matching(account.workspaceId, promoted),
+          // A network read by campaign has no ad that shows a post.
+          matched:
+            traits.days === "campaign"
+              ? new Map()
+              : yield* posts.matching(account.workspaceId, promoted),
           now,
           snapshot: taken,
         });
@@ -298,12 +430,19 @@ export class SyncAccount extends Context.Service<
 
         const halted = taken.haltedFor.pipe(Option.map(clamp));
 
+        // A wait the network asked for counts from now; the next read,
+        // from the sweep's scheduled time, so the sweep that many hours on
+        // finds it due.
         yield* accounts.scheduleSync(
           account.id,
-          DateTime.addDuration(
-            now,
-            Option.getOrElse(halted, () => syncInterval)
-          ),
+          Option.match(halted, {
+            onNone: () =>
+              DateTime.addDuration(
+                Option.getOrElse(runAt, () => now),
+                traits.syncEvery
+              ),
+            onSome: (wait) => DateTime.addDuration(now, wait),
+          }),
           // A sync cut short reads the same days again: the account is
           // read whole only when nothing held it back.
           Option.isSome(halted) ? Option.none() : Option.some(now)
@@ -315,12 +454,12 @@ export class SyncAccount extends Context.Service<
       });
 
       return SyncAccount.of({
-        run: (accountId) =>
+        run: (accountId, runAt = Option.none()) =>
           accounts.get(accountId).pipe(
             Effect.flatMap((found) =>
               Option.match(found, {
                 onNone: () => Effect.succeed<SyncOutcome>("gone"),
-                onSome: ({ account }) => read(account),
+                onSome: ({ account }) => read(account, runAt),
               })
             ),
             // The database failing leaves the account due: the next run

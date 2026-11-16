@@ -17,6 +17,7 @@ import {
   grants,
   activeAdMonths,
   insightDays,
+  campaignDays,
   signInAttempts,
   spendCalls,
 } from "./schema.ts";
@@ -64,6 +65,7 @@ export const DrizzleAdRecords = Layer.effect(
             spendCalls,
             boosts,
             insightDays,
+            campaignDays,
             activeAdMonths,
             ads,
             adSets,

@@ -126,6 +126,8 @@ export const factsOf = (
       externalId,
       // Written by whoever runs the account: kept storable, on one line.
       name: storableLine(account.name ?? "", 512),
+      // Meta's accounts are reached directly.
+      reachedThrough: Option.none(),
       // "A value of 0 means no spending-cap."
       spendCap: positive(minorUnits(account.spend_cap, currency)),
       status: accountStatuses.get(account.account_status ?? -1) ?? "unknown",
@@ -165,6 +167,7 @@ export const campaignOf = (
           dailyBudget: positive(minorUnits(campaign.daily_budget, currency)),
           endsAt: instant(campaign.stop_time),
           externalId,
+          kind: Option.none(),
           objective: objectives.get(campaign.objective ?? "") ?? "other",
           startsAt: instant(campaign.start_time),
           totalBudget: positive(minorUnits(campaign.lifetime_budget, currency)),
