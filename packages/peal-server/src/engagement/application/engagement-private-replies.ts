@@ -257,11 +257,22 @@ export class EngagementPrivateReplies extends Context.Service<
         );
 
       // The channel, when it is connected, on and working.
+      // The channel, when it is connected, on and working; one whose token
+      // ran out stands as its platform granting nothing until it is
+      // connected again, so its standing says to reconnect.
       const channelOf = (channelId: ChannelId) =>
         channels.describe(channelId).pipe(
           Effect.map(Option.some),
-          Effect.catchTag("ChannelUnreadable", () =>
-            Effect.succeed(Option.none<EngagedChannel>())
+          Effect.catchTag("ChannelUnreadable", ({ platform, reason }) =>
+            Effect.succeed(
+              reason === "paused" && platform !== undefined
+                ? Option.some<EngagedChannel>({
+                    connection: Option.none(),
+                    platform,
+                    scopes: [],
+                  })
+                : Option.none<EngagedChannel>()
+            )
           )
         );
 

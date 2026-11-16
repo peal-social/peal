@@ -30,8 +30,22 @@ export const AccessEngagementChannels = Layer.effect(
                   reason: reason === "notFound" ? "disconnected" : "paused",
                 })
               ),
+            // Its token ran out: connected again, it works again.
             TokenExpired: () =>
-              Effect.fail(new ChannelUnreadable({ reason: "paused" })),
+              access.platformOf(channelId).pipe(
+                Effect.flatMap((platform) =>
+                  Effect.fail(
+                    Option.match(platform, {
+                      onNone: () => new ChannelUnreadable({ reason: "paused" }),
+                      onSome: (on) =>
+                        new ChannelUnreadable({
+                          platform: on,
+                          reason: "paused",
+                        }),
+                    })
+                  )
+                )
+              ),
           })
         ),
     });

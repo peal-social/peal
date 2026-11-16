@@ -91,6 +91,7 @@ export const channelAccessOf = (
           account: () => found,
           withSiteToken: () => Effect.die("No website here"),
           withToken,
+          platformOf: () => Effect.succeed(Option.none()),
           workspaceOf: () => Effect.succeed(Option.none()),
         })
       ).pipe(Context.add(AccessLog, AccessLog.of({ handed: Ref.get(handed) })));

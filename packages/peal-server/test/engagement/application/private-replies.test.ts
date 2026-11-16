@@ -442,6 +442,43 @@ describe("a member's private reply", () => {
     ).pipe(Effect.provide(off.layer));
   });
 
+  it.effect("asks to reconnect a Meta channel whose token ran out", () => {
+    const world = worldWith();
+
+    world.comments.state.channels.delete(channelId(1));
+    world.comments.state.expired.set(channelId(1), "facebook");
+
+    return at(
+      Effect.gen(function* expired() {
+        const refused = yield* sending().pipe(Effect.flip);
+
+        assert.deepStrictEqual(
+          refused._tag === "AbilityUnavailable"
+            ? [refused.ability, refused.standing]
+            : [],
+          ["privateReply", "reconnect"]
+        );
+
+        const shown = yield* EngagementPrivateReplies.use((replies) =>
+          replies.standingOf(editor, channelId(1))
+        );
+
+        assert.strictEqual(shown, "reconnect");
+
+        // On a platform without private replies, nothing to reconnect.
+        world.comments.state.expired.set(channelId(1), "mastodon");
+
+        assert.strictEqual(
+          yield* EngagementPrivateReplies.use((replies) =>
+            replies.standingOf(editor, channelId(1))
+          ),
+          "unsupported"
+        );
+        yield* reservedNothing(world);
+      })
+    ).pipe(Effect.provide(world.layer));
+  });
+
   it.effect(
     "takes the channel's messages on in the comment's own workspace only",
     () => {
