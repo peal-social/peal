@@ -1,5 +1,6 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { DateTime, Effect } from "effect";
+import { TestClock } from "effect/testing";
 
 import { filesLayer, signedIn } from "./signed-in.ts";
 import {
@@ -133,6 +134,27 @@ describe("peal inbox messages", () => {
           "a member signed in to Peal's web app may answer in person for up to 7 days"
         );
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("says nothing of a person's 7 days once they passed", () =>
+    Effect.gen(function* passed() {
+      const session = yield* signedIn();
+
+      yield* TestClock.setTime(
+        DateTime.toEpochMillis(DateTime.makeUnsafe("2026-11-22T09:00:00Z"))
+      );
+
+      const shown = yield* session.printed([
+        "inbox",
+        "messages",
+        "show",
+        messengerConversationId,
+        ...inStudio,
+      ]);
+
+      assert.include(shown, "Answers closed at 2026-11-15T08:59:00Z");
+      assert.notInclude(shown, "may answer in person until");
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 
   it.effect("records what was found for an unconfirmed message", () =>
