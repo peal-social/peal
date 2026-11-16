@@ -1413,11 +1413,15 @@ const pageWorld = () => {
   const world = makeMessageWorld();
 
   world.state.accounts.set("facebook:page-1", [
-    { channelId: channelId(1), workspaceId },
-    { channelId: channelId(2), workspaceId: otherWorkspace },
+    { channelId: channelId(1), connection: Option.none(), workspaceId },
+    {
+      channelId: channelId(2),
+      connection: Option.none(),
+      workspaceId: otherWorkspace,
+    },
   ]);
   world.state.accounts.set("facebook:page-off", [
-    { channelId: channelId(3), workspaceId },
+    { channelId: channelId(3), connection: Option.none(), workspaceId },
   ]);
 
   for (const [n, inWorkspace] of [

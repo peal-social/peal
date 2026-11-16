@@ -393,6 +393,19 @@ export const makeMessageWorld = (
 
         return gone;
       }),
+    refollow: (channelIds) =>
+      Effect.sync(() => {
+        for (const channelId of channelIds) {
+          const box = state.boxes.get(channelId);
+
+          if (box !== undefined) {
+            state.boxes.set(
+              channelId,
+              boxWith(box, { subscribedAt: Option.none() })
+            );
+          }
+        }
+      }),
     markFollowed: (channelId, at) =>
       Effect.sync(() => {
         const box = state.boxes.get(channelId);

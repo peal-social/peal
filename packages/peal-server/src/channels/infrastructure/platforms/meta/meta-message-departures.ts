@@ -7,6 +7,7 @@ import { ChannelDirectory } from "#channels/application/channel-directory.ts";
 import type { StoredTokens } from "#channels/application/platform-authorizer.ts";
 import type { Channel } from "#channels/domain/channel.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
+import type { ChannelId } from "#shared/domain/ids.ts";
 import {
   facebookMessageScopes,
   instagramLoginMessageScope,
@@ -47,6 +48,8 @@ const nodeOf = HttpClientResponse.schemaBodyJson(NodeSchema);
 /** An account whose events a subscription carries. */
 interface Carried {
   readonly accountId: string;
+  /** The app whose subscription carries it. */
+  readonly connection: "facebookLogin" | "instagramLogin";
   readonly platform: "facebook" | "instagram";
 }
 
@@ -121,7 +124,11 @@ export const metaMessageDepartures = (settings: {
       ) {
         if (viaInstagramLogin) {
           const own: readonly Carried[] = [
-            { accountId: channel.accountId, platform: "instagram" },
+            {
+              accountId: channel.accountId,
+              connection: "instagramLogin",
+              platform: "instagram",
+            },
           ];
 
           return own;
@@ -140,40 +147,66 @@ export const metaMessageDepartures = (settings: {
         const carried: readonly Carried[] =
           channel.platform === "facebook"
             ? [
-                { accountId: channel.accountId, platform: "facebook" },
+                {
+                  accountId: channel.accountId,
+                  connection: "facebookLogin",
+                  platform: "facebook",
+                },
                 ...Option.toArray(linked).map((accountId) => ({
                   accountId,
+                  connection: "facebookLogin" as const,
                   platform: "instagram" as const,
                 })),
               ]
             : [
-                { accountId: channel.accountId, platform: "instagram" },
-                { accountId: page.id, platform: "facebook" },
+                {
+                  accountId: channel.accountId,
+                  connection: "facebookLogin",
+                  platform: "instagram",
+                },
+                {
+                  accountId: page.id,
+                  connection: "facebookLogin",
+                  platform: "facebook",
+                },
               ];
 
         return carried;
       });
 
-      // Whether another channel of Peal's reads one of the accounts.
-      const readElsewhere = (channel: Channel, carried: readonly Carried[]) =>
+      // The other channels whose events come through the subscription of
+      // one of the accounts, by its app: neither the one leaving nor those
+      // leaving with it.
+      const othersOf = (
+        leaving: ReadonlySet<string>,
+        carried: readonly Carried[]
+      ) =>
         Effect.all(
-          carried.map(({ accountId, platform }) =>
-            directory.withAccount(platform, accountId)
+          carried.map((account) =>
+            directory
+              .withAccount(account.platform, account.accountId)
+              .pipe(
+                Effect.map((found) =>
+                  found.filter(
+                    (other) =>
+                      !leaving.has(other.channelId) &&
+                      (account.platform === "facebook" ||
+                        Option.getOrElse(
+                          other.connection,
+                          () => "facebookLogin"
+                        ) === account.connection)
+                  )
+                )
+              )
           )
         ).pipe(
-          Effect.flatMap((found) =>
-            records.readsMessages(
-              found
-                .flat()
-                .map(({ channelId }) => channelId)
-                .filter((channelId) => channelId !== channel.id)
-            )
-          )
+          Effect.map((found) => found.flat().map(({ channelId }) => channelId))
         );
 
       const departing = Effect.fnUntraced(function* departing(
         channel: Channel,
-        tokens: StoredTokens
+        tokens: StoredTokens,
+        leavingWith: readonly ChannelId[]
       ) {
         const { platform } = channel;
 
@@ -190,8 +223,9 @@ export const metaMessageDepartures = (settings: {
           Option.contains(channel.connection, "instagramLogin");
 
         const carried = yield* carriedBy(channel, tokens, viaInstagramLogin);
+        const leaving = new Set<string>([channel.id, ...leavingWith]);
 
-        if (yield* readElsewhere(channel, carried)) {
+        if (yield* records.readsMessages(yield* othersOf(leaving, carried))) {
           return;
         }
 
@@ -205,11 +239,15 @@ export const metaMessageDepartures = (settings: {
         yield* stopped.status >= 200 && stopped.status < 300
           ? Effect.void
           : Effect.fail(new PlatformUnavailable());
+
+        // A channel of those accounts turned on since the check followed a
+        // subscription that is now gone: it follows again at its next read.
+        yield* records.refollow(yield* othersOf(leaving, carried));
       });
 
       return ChannelDepartures.of({
-        departed: (channel, tokens) =>
-          departing(channel, tokens).pipe(
+        departed: (channel, tokens, leaving = []) =>
+          departing(channel, tokens, leaving).pipe(
             Effect.timeout(departureWait),
             // Logged by the channel's id alone: an answer may name others.
             Effect.catch(() =>

@@ -5,7 +5,7 @@ import { FetchHttpClient } from "effect/http";
 
 import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelDirectory } from "#channels/application/channel-directory.ts";
-import type { ListedChannel } from "#channels/application/channel-directory.ts";
+import type { AccountListedChannel } from "#channels/application/channel-directory.ts";
 import { Channel } from "#channels/domain/channel.ts";
 import { metaMessageDepartures } from "#channels/infrastructure/platforms/meta/meta-message-departures.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
@@ -75,7 +75,15 @@ const tokens = {
 const departures = Effect.fnUntraced(function* departures(options: {
   readonly instagramLogin?: boolean;
   readonly messages?: InboxMessagePlatforms;
-  readonly others?: Readonly<Record<string, readonly ChannelId[]>>;
+  readonly others?: Readonly<
+    Record<
+      string,
+      readonly {
+        readonly channelId: ChannelId;
+        readonly connection?: "facebookLogin" | "instagramLogin";
+      }[]
+    >
+  >;
   readonly reading?: readonly ChannelId[];
 }) {
   const instagramLogin = options.instagramLogin === true;
@@ -88,6 +96,7 @@ const departures = Effect.fnUntraced(function* departures(options: {
 
   const url = new URL(graph.url);
   const asked: string[] = [];
+  const refollowed: ChannelId[] = [];
 
   const directory = Layer.succeed(
     ChannelDirectory,
@@ -98,7 +107,15 @@ const departures = Effect.fnUntraced(function* departures(options: {
 
         return Effect.succeed(
           (options.others?.[`${platform}:${accountId}`] ?? []).map(
-            (channelId): ListedChannel => ({ channelId, platform, workspaceId })
+            ({ channelId, connection }): AccountListedChannel => ({
+              channelId,
+              connection:
+                platform === "instagram"
+                  ? Option.some(connection ?? "facebookLogin")
+                  : Option.none(),
+              platform,
+              workspaceId,
+            })
           )
         );
       },
@@ -121,6 +138,10 @@ const departures = Effect.fnUntraced(function* departures(options: {
         Effect.succeed(
           channelIds.some((id) => (options.reading ?? []).includes(id))
         ),
+      refollow: (channelIds) =>
+        Effect.sync(() => {
+          refollowed.push(...channelIds);
+        }),
     })
   );
 
@@ -139,7 +160,7 @@ const departures = Effect.fnUntraced(function* departures(options: {
     )
   );
 
-  return { asked, graph, layer };
+  return { asked, graph, layer, refollowed };
 });
 
 const depart = (channel: Channel, layer: Layer.Layer<ChannelDepartures>) =>
@@ -163,10 +184,11 @@ describe("a Meta channel disconnected", () => {
         on.layer
       );
 
-      assert.deepStrictEqual(on.asked, [
-        `facebook:${facebookPageId}`,
-        `instagram:${instagramUserId}`,
-      ]);
+      // Asked once to check, once to tell the others to follow again.
+      assert.deepStrictEqual(
+        [...new Set(on.asked)],
+        [`facebook:${facebookPageId}`, `instagram:${instagramUserId}`]
+      );
       assert.isTrue(
         on.graph
           .requests()
@@ -183,7 +205,9 @@ describe("a Meta channel disconnected", () => {
     () =>
       Effect.gen(function* kept() {
         const on = yield* departures({
-          others: { [`instagram:${instagramUserId}`]: [otherId] },
+          others: {
+            [`instagram:${instagramUserId}`]: [{ channelId: otherId }],
+          },
           reading: [otherId],
         });
 
@@ -234,12 +258,65 @@ describe("a Meta channel disconnected", () => {
         on.layer
       );
 
-      assert.deepStrictEqual(on.asked, [`instagram:${instagramUserId}`]);
+      // Asked once to check, once to tell the others to follow again.
+      assert.deepStrictEqual(
+        [...new Set(on.asked)],
+        [`instagram:${instagramUserId}`]
+      );
 
       const [stop] = on.graph.requests();
 
       assert.strictEqual(stop?.method, "DELETE");
       assert.isFalse(stop?.query.has("appsecret_proof"));
     }).pipe(Effect.scoped, Effect.provide(Services))
+  );
+
+  it.effect(
+    "tells the other channels of what it carried to follow again once stopped",
+    () =>
+      Effect.gen(function* refollow() {
+        // A channel of the Page in another workspace, turned on since the
+        // check: its own subscription was just deleted with this one.
+        const on = yield* departures({
+          others: { [`facebook:${facebookPageId}`]: [{ channelId: otherId }] },
+        });
+
+        yield* depart(
+          channelOf("facebook", ["pages_show_list", ...facebookMessageScopes]),
+          on.layer
+        );
+
+        assert.deepStrictEqual(on.refollowed, [otherId]);
+      }).pipe(Effect.scoped, Effect.provide(Services))
+  );
+
+  it.effect(
+    "stops an Instagram Login account's own though a channel through its Page reads it",
+    () =>
+      Effect.gen(function* apart() {
+        const on = yield* departures({
+          instagramLogin: true,
+          others: {
+            [`instagram:${instagramUserId}`]: [
+              { channelId: otherId, connection: "facebookLogin" },
+            ],
+          },
+          reading: [otherId],
+        });
+
+        yield* depart(
+          channelOf(
+            "instagram",
+            ["instagram_business_basic", instagramLoginMessageScope],
+            "instagramLogin"
+          ),
+          on.layer
+        );
+
+        assert.isTrue(
+          on.graph.requests().some(({ method }) => method === "DELETE")
+        );
+        assert.deepStrictEqual(on.refollowed, []);
+      }).pipe(Effect.scoped, Effect.provide(Services))
   );
 });

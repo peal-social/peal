@@ -185,8 +185,10 @@ describe("what the server writes about Meta's direct messages", () => {
         // The account's events, asked for and stopped.
         yield* Effect.exit(platform.follow?.(account) ?? Effect.void);
         yield* Effect.exit(
-          platform.unfollow?.(account, () => Effect.succeed(false)) ??
-            Effect.void
+          platform.unfollow?.(account, {
+            elsewhere: () => Effect.succeed(false),
+            stopped: () => Effect.void,
+          }) ?? Effect.void
         );
 
         // A disconnected channel's events, stopped with its tokens.
@@ -244,6 +246,7 @@ describe("what the server writes about Meta's direct messages", () => {
                   forgetUser: () => Effect.void,
                   postRemoved: () => Effect.void,
                   readsMessages: () => Effect.succeed(false),
+                  refollow: () => Effect.void,
                 })
               ),
               Mac.layerWebCrypto.pipe(

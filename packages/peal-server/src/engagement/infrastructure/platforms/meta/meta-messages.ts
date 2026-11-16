@@ -36,7 +36,7 @@ import {
 } from "#engagement/infrastructure/platforms/channel-refusals.ts";
 import type {
   FollowedAccount,
-  FollowedElsewhere,
+  Followers,
   MessagePlatform,
   MessagesToRead,
   OutgoingDirect,
@@ -891,7 +891,11 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
     ): Effect.Effect<readonly FollowedAccount[], MessagesReadFailure> => {
       if (isInstagramLogin(account)) {
         return Effect.succeed([
-          { accountId: account.accountId, platform: "instagram" },
+          {
+            accountId: account.accountId,
+            connection: "instagramLogin",
+            platform: "instagram",
+          },
         ]);
       }
 
@@ -925,15 +929,28 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
 
             return account.platform === "facebook"
               ? [
-                  { accountId: account.accountId, platform: "facebook" },
+                  {
+                    accountId: account.accountId,
+                    connection: "facebookLogin",
+                    platform: "facebook",
+                  },
                   ...Option.toArray(linked).map((accountId) => ({
                     accountId,
+                    connection: "facebookLogin" as const,
                     platform: "instagram" as const,
                   })),
                 ]
               : [
-                  { accountId: account.accountId, platform: "instagram" },
-                  { accountId: page.id, platform: "facebook" },
+                  {
+                    accountId: account.accountId,
+                    connection: "facebookLogin",
+                    platform: "instagram",
+                  },
+                  {
+                    accountId: page.id,
+                    connection: "facebookLogin",
+                    platform: "facebook",
+                  },
                 ];
           }),
           Effect.catchTags({
@@ -963,15 +980,21 @@ export const metaMessages = Effect.fn("MetaMessages.make")(
       // an account the subscription carries. Only messages are read from
       // Meta's events: once comments come by events too, this must ask
       // after them as well.
-      unfollow: (account, followedElsewhere: FollowedElsewhere) =>
+      unfollow: (account, followers: Followers) =>
         Effect.gen(function* unfollowing() {
           const accounts = yield* sharing(account);
 
-          if (yield* followedElsewhere(accounts)) {
+          if (yield* followers.elsewhere(accounts)) {
             return "unneeded" as const;
           }
 
-          return yield* subscribing(account, "DELETE", {});
+          const outcome = yield* subscribing(account, "DELETE", {});
+
+          // A channel of those accounts turned on since the check followed
+          // a subscription that is now gone: it follows again.
+          yield* followers.stopped(accounts);
+
+          return outcome;
         }),
     };
 

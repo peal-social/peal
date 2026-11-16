@@ -39,7 +39,7 @@ import {
   UserIdSchema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
-import type { WorkspaceId } from "#shared/domain/ids.ts";
+import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { holdFollowingLock } from "./following-lock.ts";
@@ -448,6 +448,15 @@ export const DrizzleMessageStore = Layer.effect(
         .set({ subscribedAt: date(at) })
         .where(eq(messageBoxes.channelId, channelId))
         .pipe(Effect.asVoid, Effect.mapError(failed));
+
+    const refollow = (channelIds: readonly ChannelId[]) =>
+      channelIds.length === 0
+        ? Effect.void
+        : db
+            .update(messageBoxes)
+            .set({ subscribedAt: null })
+            .where(inArray(messageBoxes.channelId, [...channelIds]))
+            .pipe(Effect.asVoid, Effect.mapError(failed));
 
     // By the conversations of the channel, so the index of each
     // conversation's ids finds it.
@@ -1180,6 +1189,7 @@ export const DrizzleMessageStore = Layer.effect(
       bringForward,
       deleteTakenBack,
       markFollowed,
+      refollow,
       allowApplication,
       allows,
       applications,

@@ -558,6 +558,15 @@ export const DrizzleEngagementRecords = Layer.effect(
       }
     );
 
+    const refollow = (channelIds: readonly ChannelId[]) =>
+      channelIds.length === 0
+        ? Effect.void
+        : db
+            .update(messageBoxes)
+            .set({ subscribedAt: null })
+            .where(inArray(messageBoxes.channelId, [...channelIds]))
+            .pipe(Effect.asVoid, Effect.mapError(failed));
+
     return EngagementRecords.of({
       channelGone,
       ensureChannelIdle,
@@ -569,6 +578,7 @@ export const DrizzleEngagementRecords = Layer.effect(
       forgetUser,
       postRemoved,
       readsMessages,
+      refollow,
     });
   })
 );

@@ -113,5 +113,13 @@ export class EngagementRecords extends Context.Service<
     readonly readsMessages: (
       channelIds: readonly ChannelId[]
     ) => Effect.Effect<boolean, DatabaseError>;
+    /**
+     * Makes these channels' boxes ask their platform for the account's
+     * events again at their next read: the subscription they relied on
+     * was stopped for a channel that left.
+     */
+    readonly refollow: (
+      channelIds: readonly ChannelId[]
+    ) => Effect.Effect<void, DatabaseError>;
   }
 >()("peal-server/engagement/application/EngagementRecords") {}

@@ -39,7 +39,12 @@ import type { MetaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 
 import { blueskyMessages } from "./bluesky/bluesky-messages.ts";
 import { mastodonMessages } from "./mastodon/mastodon-messages.ts";
-import type { FollowedElsewhere, MessagePlatform } from "./message-platform.ts";
+import { carriedBy } from "./message-platform.ts";
+import type {
+  FollowedAccount,
+  Followers,
+  MessagePlatform,
+} from "./message-platform.ts";
 import { metaMessages } from "./meta/meta-messages.ts";
 
 /** How far apart the platform's clock and Peal's may be. */
@@ -244,28 +249,54 @@ export const platformMessagesWith = (settings: {
         });
       });
 
+      // The other channels whose events come through the subscription
+      // of one of the accounts, by its app.
+      const othersOf = (
+        channelId: ChannelId,
+        followed: readonly FollowedAccount[]
+      ) =>
+        Effect.all(
+          followed.map((carried) =>
+            accounts.channelsOf(carried.platform, carried.accountId).pipe(
+              Effect.map((found) =>
+                found.filter(
+                  (channel) =>
+                    channel.channelId !== channelId &&
+                    carriedBy(carried, {
+                      connection: channel.connection,
+                      platform: carried.platform,
+                    })
+                )
+              )
+            )
+          )
+        ).pipe(Effect.map((found) => found.flat()));
+
       // Whether a channel of Peal's other than `channelId` reads the
       // messages of one of the accounts: it has a box. Unknown when the
-      // database does not answer, which keeps the subscription.
-      const followedElsewhere =
-        (channelId: ChannelId): FollowedElsewhere =>
-        (followed) =>
-          Effect.all(
-            followed.map(({ accountId, platform }) =>
-              accounts.channelsOf(platform, accountId)
-            )
-          ).pipe(
-            Effect.flatMap((found) =>
-              Effect.all(
-                found
-                  .flat()
-                  .filter((channel) => channel.channelId !== channelId)
-                  .map((channel) => store.box(channel.channelId))
-              )
+      // database does not answer, which keeps the subscription. Once it
+      // is stopped, the others follow again at their next read.
+      const followersOf = (channelId: ChannelId): Followers => ({
+        elsewhere: (followed) =>
+          othersOf(channelId, followed).pipe(
+            Effect.flatMap((others) =>
+              Effect.all(others.map((other) => store.box(other.channelId)))
             ),
             Effect.map((boxes) => boxes.some(Option.isSome)),
             Effect.orElseSucceed(() => true)
-          );
+          ),
+        stopped: (followed) =>
+          othersOf(channelId, followed).pipe(
+            Effect.flatMap((others) =>
+              store.refollow(others.map((other) => other.channelId))
+            ),
+            Effect.catch(() =>
+              Effect.logWarning(
+                "Could not mark channels to follow their events again"
+              ).pipe(Effect.annotateLogs({ channelId }))
+            )
+          ),
+      });
 
       // Asks the channel's platform to tell the server of its account's
       // messages, or to stop: only where the inbox reads them, and only on
@@ -298,7 +329,7 @@ export const platformMessagesWith = (settings: {
 
           return unfollow === undefined
             ? ("unneeded" satisfies MessagesFollowOutcome)
-            : yield* unfollow(account, followedElsewhere(account.channelId));
+            : yield* unfollow(account, followersOf(account.channelId));
         });
 
       // The channel's account, if it may send there, or why nothing can be

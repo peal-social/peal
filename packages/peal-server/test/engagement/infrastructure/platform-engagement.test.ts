@@ -617,8 +617,16 @@ describe("the gate's message source", () => {
               Effect.succeed(
                 platform === "facebook" && accountId === facebookPageId
                   ? [
-                      { channelId: channelId(1), workspaceId },
-                      { channelId: channelId(2), workspaceId: otherWorkspace },
+                      {
+                        channelId: channelId(1),
+                        connection: Option.none(),
+                        workspaceId,
+                      },
+                      {
+                        channelId: channelId(2),
+                        connection: Option.none(),
+                        workspaceId: otherWorkspace,
+                      },
                     ]
                   : []
               ),

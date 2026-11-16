@@ -17,7 +17,8 @@ import { TestClock } from "effect/testing";
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import type { MessageSendOutcome } from "#engagement/domain/outgoing-message.ts";
 import type {
-  FollowedElsewhere,
+  FollowedAccount,
+  Followers,
   MessagePlatform,
   OutgoingDirect,
 } from "#engagement/infrastructure/platforms/message-platform.ts";
@@ -187,10 +188,17 @@ const following = (platform: MessagePlatform) => {
 
   return {
     follow,
-    unfollow: (account: ChannelAccount, elsewhere: FollowedElsewhere) =>
-      unfollow(account, elsewhere),
+    unfollow: (
+      account: ChannelAccount,
+      elsewhere: Followers["elsewhere"],
+      stopped: Followers["stopped"] = () => Effect.void
+    ) => unfollow(account, { elsewhere, stopped }),
   };
 };
+
+// An account a subscription carries, as text: its platform, id and app.
+const named = ({ accountId, connection, platform: on }: FollowedAccount) =>
+  `${on}:${accountId}:${connection}`;
 
 const atNow = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
   TestClock.setTime(DateTime.toEpochMillis(now)).pipe(Effect.andThen(effect));
@@ -846,11 +854,7 @@ describe("Meta's events for an account", () => {
           const kept = yield* following(platform).unfollow(
             account,
             (accounts) => {
-              asked.push(
-                accounts.map(
-                  ({ accountId, platform: on }) => `${on}:${accountId}`
-                )
-              );
+              asked.push(accounts.map(named));
 
               return Effect.succeed(true);
             }
@@ -858,16 +862,28 @@ describe("Meta's events for an account", () => {
 
           assert.strictEqual(kept, "unneeded");
           assert.deepStrictEqual(asked, [
-            [`facebook:${facebookPageId}`, `instagram:${instagramUserId}`],
+            [
+              `facebook:${facebookPageId}:facebookLogin`,
+              `instagram:${instagramUserId}:facebookLogin`,
+            ],
           ]);
           assert.strictEqual(graph.subscription(), "messages,message_echoes");
 
-          const stopped = yield* following(platform).unfollow(account, () =>
-            Effect.succeed(false)
+          // Stopped, the other channels of what it carried follow again.
+          const told: string[][] = [];
+
+          const stopped = yield* following(platform).unfollow(
+            account,
+            () => Effect.succeed(false),
+            (accounts) =>
+              Effect.sync(() => {
+                told.push(accounts.map(named));
+              })
           );
 
           assert.strictEqual(stopped, "done");
           assert.isUndefined(graph.subscription());
+          assert.deepStrictEqual(told, asked);
         })
       )
   );
@@ -887,12 +903,14 @@ describe("Meta's events for an account", () => {
           const asked: string[][] = [];
 
           yield* following(platform).unfollow(account, (accounts) => {
-            asked.push(accounts.map(({ accountId }) => accountId));
+            asked.push(accounts.map(named));
 
             return Effect.succeed(false);
           });
 
-          assert.deepStrictEqual(asked, [[instagramUserId]]);
+          assert.deepStrictEqual(asked, [
+            [`instagram:${instagramUserId}:instagramLogin`],
+          ]);
           assert.isUndefined(graph.subscription());
           assert.isFalse(
             graph.requests().some(({ query }) => query.has("appsecret_proof"))
@@ -911,15 +929,16 @@ describe("Meta's events for an account", () => {
         const asked: string[][] = [];
 
         yield* following(platform).unfollow(account, (accounts) => {
-          asked.push(
-            accounts.map(({ accountId, platform: on }) => `${on}:${accountId}`)
-          );
+          asked.push(accounts.map(named));
 
           return Effect.succeed(true);
         });
 
         assert.deepStrictEqual(asked, [
-          [`instagram:${instagramUserId}`, `facebook:${facebookPageId}`],
+          [
+            `instagram:${instagramUserId}:facebookLogin`,
+            `facebook:${facebookPageId}:facebookLogin`,
+          ],
         ]);
       })
     )

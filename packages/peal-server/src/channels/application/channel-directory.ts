@@ -3,6 +3,7 @@ import type { Effect, Option } from "effect";
 
 import type { Platform } from "#channels/domain/platform.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
+import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 
 /** A connected channel, by what places it: ids and its platform. */
@@ -10,6 +11,15 @@ export interface ListedChannel {
   readonly channelId: ChannelId;
   readonly platform: Platform;
   readonly workspaceId: WorkspaceId;
+}
+
+/**
+ * A channel of an account, with the way in it came through (Instagram's
+ * two logins), which decides the app whose subscription carries its
+ * events.
+ */
+export interface AccountListedChannel extends ListedChannel {
+  readonly connection: Option.Option<ChannelConnection>;
 }
 
 /**
@@ -35,6 +45,6 @@ export class ChannelDirectory extends Context.Service<
     readonly withAccount: (
       platform: Platform,
       accountId: string
-    ) => Effect.Effect<readonly ListedChannel[], DatabaseError>;
+    ) => Effect.Effect<readonly AccountListedChannel[], DatabaseError>;
   }
 >()("peal-server/channels/application/ChannelDirectory") {}
