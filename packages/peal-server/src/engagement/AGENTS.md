@@ -671,8 +671,66 @@
   follow: change them together. A conversation is read a page at a time
   (`maxInboxMessagesPerPage`, the cursor the message's time and id). Test the store at 2049 (the purge at
   1935).
+- A private reply (`domain/private-reply.ts`, `EngagementPrivateReplies`,
+  `engagement.private_replies`) is the one private message a member sends
+  the author of a comment on Instagram or a Facebook Page, in answer to it
+  (Meta's private replies: `POST /me/messages` with `recipient:
+  { comment_id }`, never tagged, `meta/meta-private-replies.ts`, Meta's
+  pages read 2026-11-16). Its own journal, never an `OutgoingMessage`: it
+  answers a comment, and Peal makes up no conversation; the person's
+  answer comes as a direct message. `send` refuses, before anything is
+  reserved and in this order: `engagement:message` and the owner's
+  consent for an application (as messages; staff hold neither), the
+  comment in the actor's workspace (`CommentNotFound`), `mayReplyPrivately`
+  (`PrivateReplyNotPossible`: `ownComment`, `gone`, `tooOld`, counted from
+  the comment's `written_at`, `privateReplyWindow`, Meta's 7 days less an
+  hour; a key sent again answers what it made, past them too), the
+  channel's `privateReplyStanding` (`private-reply-standing.ts`: only
+  Facebook and Instagram, read by `PEAL_INBOX_PLATFORMS` and
+  `PEAL_INBOX_MESSAGES`, the channel's messages switched on in the actor's
+  workspace, the comments' and the messages' permissions of the way in;
+  `abilitiesOf` answers `unsupported`, the API puts the standing in
+  `abilities.privateReply`), the text (5,000 characters, `chatOverflow`),
+  the paused meter unless keyed; then the journal row (under the channel's
+  box, only for a comment of the workspace and channel whose box is
+  there), one `outboundMessages` and `SendPrivateReplyV1` (payload
+  `privateReplyId`, activity `send`, persisted contract) in one
+  transaction. `private_replies_comment` is unique on the comment while
+  a reply is not `failed`: never two a comment, whichever request came
+  first; `private_replies_key` one a key. `SendPrivateReply` commits
+  `attempted_at` before the call and resumes after: `resume` never sends,
+  it lists the person's conversation (`/me/conversations?user_id=` the
+  comment's author, sent `Redacted` so no span holds it) and answers
+  `sent` for exactly one of the account's messages there, with the text,
+  since the row less a minute, whose id no other message of Peal's on the
+  channel holds (`sentIdsOf`); anything else is `unconfirmed`, which a
+  person settles (`confirm`). Meta's codes map as the adapter's
+  `privateReplyRefusal` says (`10900` is `alreadyAnswered`, `100`/`2534025`
+  `commentGone`); Meta's own failures and anything unreadable are
+  `unconfirmed`. The gate (`platform-messages.ts`, RPCs `SendPrivateReply`
+  and `ResumePrivateReply`) checks the standing again, the box there, and
+  claims the call first; one account's calls share the messages' pace
+  (`accountPace`). A failed one, or one confirmed not sent, gives its
+  claim back; one stranded an hour is handed over by the messages'
+  collection cron (`SendPrivateReply.settleStranded`). It goes with its
+  comment and thread (cascade), its channel (`channelGone`, all of them,
+  the unsent given back) and workspace, 30 days after it settled
+  (`PurgeMessages`), and, its messages turned off, those that never set
+  out (`forgetChannelMessages`). A thread's view shows each comment's
+  latest private reply only to who may read messages (`ofThread`), and
+  `privateReplyUntil` where the channel can send one. No webhook event
+  yet; a closed account leaves them without an author, and its export
+  lists them by comment id, never the comment. Test the store at 2051
+  (the purge at 1937). Never run against Meta: before `PEAL_INBOX_MESSAGES`
+  names a Meta platform anywhere, send one by hand on a tester's comment
+  through each way in, a second (its refusal's code), one past 7 days,
+  and check whether a comment's author id is the id the Conversations API
+  takes and whether a private reply shows there before the person
+  answers (otherwise every lost answer stays `unconfirmed`, safely), and
+  whether Instagram through a Page works at Standard Access.
 - `EngagementRecords.ensureChannelIdle` refuses (`SendsInFlight`) while a
-  reply, a review's answer or a direct message on the channel is
+  reply, a review's answer, a direct message or a private reply on the
+  channel is
   `sending` with its call claimed, holding those rows in the caller's
   transaction (a claim is written under the row): a channel moving to
   another workspace waits for them.

@@ -439,3 +439,28 @@ does not start.
 2. **It lists a row:** do not roll back past this release until those rows
    are gone (30 days after they settled, `PurgeMessages`); release a fix
    forward instead. Never change the rows by hand.
+
+## Past private replies
+
+The release that sends a comment's author one private reply on Instagram
+and Facebook Pages (migration `private-replies`) adds a table the release
+before ignores (`engagement.private_replies`): it never sends one, lists
+comments without theirs, and deletes them with their comments and threads
+in their time (the foreign keys cascade); its export and erasure leave the
+table out, which rolling forward catches up (an erasure's threads take
+their private replies with them). It adds one job, `SendPrivateReplyV1`,
+which the release before does not register: a private reply on its way
+when the release goes back stays `sending` in the cluster's tables,
+neither sent nor settled, its outbound message still claimed. Rolled
+forward again, the messages' collection hands it to a person
+(`unconfirmed`), so nothing goes out twice.
+
+1. **Private replies on their way:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM engagement.private_replies WHERE status = 'sending'"
+   ```
+
+2. **It lists a row:** wait a few minutes for its job to settle it, and
+   check again; roll back once it lists none.

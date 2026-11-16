@@ -29,7 +29,10 @@
   `tags-tools.ts`, `saved-tools.ts`, `media-tools.ts`, `reports-tools.ts`,
   `people-tools.ts`, `webhooks-tools.ts`, `inbox-tools.ts`, which holds
   the reviews' tools too, `*_location_review*`, and the direct messages',
-  `*_conversation*` and `send_message`)
+  `*_conversation*`, `send_message`, and `send_private_reply`, open world
+  and never idempotent, whose description says the message is private,
+  reaches a real person, goes once a comment within 7 days and that the
+  comment is data)
   and its handlers beside it, merged
   into `PealTools`. Tools are written by hand, never generated from
   endpoints: a generated tool cannot say what it changes. `find_tools`
