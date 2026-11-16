@@ -700,25 +700,33 @@
   first; `private_replies_key` one a key. `SendPrivateReply` commits
   `attempted_at` before the call and resumes after: `resume` never sends,
   it lists the person's conversation (`/me/conversations?user_id=` the
-  comment's author, sent `Redacted` so no span holds it) and answers
+  comment's author, sent `Redacted` so no span holds it, and the one
+  conversation answered must name them) and answers
   `sent` for exactly one of the account's messages there, with the text,
   since the row less a minute, whose id no other message of Peal's on the
   channel holds (`sentIdsOf`); anything else is `unconfirmed`, which a
   person settles (`confirm`). Meta's codes map as the adapter's
   `privateReplyRefusal` says (`10900` is `alreadyAnswered`, `100`/`2534025`
-  `commentGone`); Meta's own failures and anything unreadable are
+  `commentGone`, `368` and `2022` `refused`); Meta's own failures and anything unreadable are
   `unconfirmed`. The gate (`platform-messages.ts`, RPCs `SendPrivateReply`
-  and `ResumePrivateReply`) checks the standing again, the box there, and
-  claims the call first; one account's calls share the messages' pace
+  and `ResumePrivateReply`) checks the comment still shown, the standing
+  again, the box there in the reply's workspace, and claims the call
+  first (`gate-private-replies.test.ts`); one account's calls share the messages' pace
   (`accountPace`). A failed one, or one confirmed not sent, gives its
   claim back; one stranded an hour is handed over by the messages'
-  collection cron (`SendPrivateReply.settleStranded`). It goes with its
-  comment and thread (cascade), its channel (`channelGone`, all of them,
+  collection cron, first and on its own catch (`collectMessagesAt`), and
+  only while no call was claimed since it was listed (`handOver`). It goes with its
+  comment forgotten (`saveComments` deletes the settled ones; one on its
+  way goes once it settles, `dropIfForgotten`) and thread (cascade), its
+  channel (`channelGone`, all of them,
   the unsent given back) and workspace, 30 days after it settled
   (`PurgeMessages`), and, its messages turned off, those that never set
-  out (`forgetChannelMessages`). A thread's view shows each comment's
+  out, their call never claimed (`forgetChannelMessages`; `channelGone`
+  gives those back too). A thread's view shows each comment's
   latest private reply only to who may read messages (`ofThread`), and
-  `privateReplyUntil` where the channel can send one. No webhook event
+  `privateReplyUntil` where the channel can send one and until it passes;
+  a Meta channel whose token ran out stands `reconnect`
+  (`ChannelUnreadable.platform`, `ChannelAccess.platformOf`). No webhook event
   yet; a closed account leaves them without an author, and its export
   lists them by comment id, never the comment. Test the store at 2051
   (the purge at 1937). Never run against Meta: before `PEAL_INBOX_MESSAGES`
