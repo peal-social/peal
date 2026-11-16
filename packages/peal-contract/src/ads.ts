@@ -35,9 +35,9 @@ import { WorkspaceAccess } from "./workspace-access.ts";
 // vocabularies and limits below; a test keeps the two equal.
 
 /** The ad networks Peal reaches. */
-export const AdNetworkSchema = Schema.Literal("meta").annotate({
+export const AdNetworkSchema = Schema.Literals(["meta", "google"]).annotate({
   description:
-    "An ad network: `meta` is Meta's, for ads on Facebook and Instagram. Others may join it.",
+    "An ad network: `meta` is Meta's, for ads on Facebook and Instagram; `google` is Google Ads, read only (campaigns and their daily numbers, no ads, no boosts). Others may join them.",
   identifier: "AdNetwork",
 });
 

@@ -33,6 +33,7 @@ export const toAccount = (row: Row, access: string) =>
     id: row.id,
     name: row.name,
     network: row.network,
+    reachedThrough: Option.fromNullOr(row.reachedThrough),
     spendCap: Option.fromNullOr(row.spendCap),
     status: row.status,
     syncedAt: utcOrNone(row.syncedAt),
@@ -213,6 +214,7 @@ export const DrizzleAccountStore = Layer.effect(
             network: account.network,
             // Read at the next run of the sync.
             nextSyncAt: date(account.connectedAt),
+            reachedThrough: Option.getOrNull(account.reachedThrough),
             spendCap: Option.getOrNull(account.spendCap),
             status: account.status,
             syncedAt: dateOrNull(account.syncedAt),

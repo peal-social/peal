@@ -95,6 +95,8 @@ export const signInAttempts = adsSchema.table(
  * - `spend_cap` and `amount_spent` are the account's own cap at its
  *   network and what it spent against it, as last read.
  * - `next_sync_at` is when its campaigns and numbers are next read.
+ * - `reached_through` is the manager account a Google Ads account is read
+ *   through; null when reached directly, and on Meta.
  */
 export const accounts = adsSchema.table(
   "accounts",
@@ -114,6 +116,7 @@ export const accounts = adsSchema.table(
     name: text("name").notNull(),
     network: text("network").notNull(),
     nextSyncAt: instant("next_sync_at").notNull(),
+    reachedThrough: text("reached_through"),
     spendCap: money("spend_cap"),
     spendingEnabled: boolean("spending_enabled").notNull().default(false),
     status: text("status").notNull(),
@@ -156,10 +159,19 @@ const budgeted = {
   totalBudget: money("total_budget"),
 };
 
-/** The campaigns of connected accounts, as last read from their network. */
+/**
+ * The campaigns of connected accounts, as last read from their network.
+ * `kind` is the network's own word for a campaign's kind, where it gives
+ * one (Google Ads' channel type).
+ */
 export const campaigns = adsSchema.table(
   "campaigns",
-  { ...synced, ...budgeted, objective: text("objective").notNull() },
+  {
+    ...synced,
+    ...budgeted,
+    kind: text("kind"),
+    objective: text("objective").notNull(),
+  },
   (table) => [
     primaryKey({ columns: [table.accountId, table.externalId] }),
     index("campaigns_workspace").on(table.workspaceId),
@@ -229,6 +241,34 @@ export const insightDays = adsSchema.table(
     index("insight_days_workspace_day").on(table.workspaceId, table.day),
     // The retention's scan.
     index("insight_days_day").on(table.day),
+  ]
+);
+
+/**
+ * What one campaign did on one day of its account's calendar, on a network
+ * read by campaign (Google Ads): counts and money, never who saw an ad.
+ * Kept 13 months, as `insight_days` are.
+ */
+export const campaignDays = adsSchema.table(
+  "campaign_days",
+  {
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    campaignExternalId: text("campaign_external_id").notNull(),
+    clicks: integer("clicks").notNull(),
+    day: date("day", { mode: "string" }).notNull(),
+    impressions: integer("impressions").notNull(),
+    spend: money("spend").notNull(),
+    workspaceId: uuid("workspace_id").notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.accountId, table.campaignExternalId, table.day],
+    }),
+    index("campaign_days_workspace_day").on(table.workspaceId, table.day),
+    // The retention's scan.
+    index("campaign_days_day").on(table.day),
   ]
 );
 

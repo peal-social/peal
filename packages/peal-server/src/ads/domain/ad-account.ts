@@ -39,6 +39,12 @@ export class AdAccount extends Schema.Class<AdAccount>(
   id: AdAccountIdSchema,
   name: Schema.String,
   network: AdNetworkSchema,
+  /**
+   * The manager account it is reached through, on Google Ads, where a
+   * client account is read through its manager; none when the person
+   * signed in reaches it directly, and on Meta.
+   */
+  reachedThrough: Schema.Option(NetworkObjectIdSchema),
   spendCap: Schema.Option(AmountSchema),
   status: AdAccountStatusSchema,
   /** When a sync last read it whole; none before the first. */

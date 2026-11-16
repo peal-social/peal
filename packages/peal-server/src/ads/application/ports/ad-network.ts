@@ -89,6 +89,12 @@ export type NewObject =
 export interface SnapshotRequest {
   readonly currency: Currency;
   readonly externalId: NetworkObjectId;
+  /**
+   * The manager account the account is reached through, where the network
+   * reads a client account through its manager (Google Ads); none when
+   * reached directly. Meta's adapter ignores it.
+   */
+  readonly reachedThrough: Option.Option<NetworkObjectId>;
   /** The first and last days of insights to read, on the account's calendar. */
   readonly since: LocalDate;
   readonly timeZone: TimeZoneId;
@@ -137,10 +143,14 @@ export interface AdNetworkClient {
   readonly accounts: (
     token: Redacted.Redacted
   ) => Effect.Effect<readonly AdAccountFacts[], ReadFailure>;
-  /** One ad account, as the network describes it now. */
+  /**
+   * One ad account, as the network describes it now, reached directly or
+   * through the manager account given (which Meta's adapter ignores).
+   */
   readonly account: (
     token: Redacted.Redacted,
-    externalId: NetworkObjectId
+    externalId: NetworkObjectId,
+    reachedThrough: Option.Option<NetworkObjectId>
   ) => Effect.Effect<AdAccountFacts, ReadFailure>;
   /** The account's campaigns, ad sets, ads and their days. */
   readonly snapshot: (

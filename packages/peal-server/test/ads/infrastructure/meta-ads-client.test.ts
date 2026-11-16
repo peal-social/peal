@@ -72,6 +72,7 @@ const optedOut = {
 const snapshotRequest = {
   currency: eur,
   externalId: account,
+  reachedThrough: Option.none(),
   since: { day: 1, month: 11, year: 2026 },
   timeZone: paris,
   until: { day: 10, month: 11, year: 2026 },
@@ -208,7 +209,7 @@ describe("reading ad accounts", () => {
           ],
         });
 
-        const facts = yield* client.account(token, account);
+        const facts = yield* client.account(token, account, Option.none());
 
         assert.strictEqual(facts.status, "disabled");
         assert.isTrue(Option.isNone(facts.timeZone));

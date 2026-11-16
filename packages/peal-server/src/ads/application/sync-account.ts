@@ -261,6 +261,7 @@ export class SyncAccount extends Context.Service<
           .snapshot(token.value, {
             currency: account.currency,
             externalId: account.externalId,
+            reachedThrough: account.reachedThrough,
             since: addDays(
               today,
               -(Option.isNone(account.syncedAt) ? firstSyncDays : resyncDays)

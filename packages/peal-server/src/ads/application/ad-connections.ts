@@ -562,6 +562,7 @@ export class AdConnections extends Context.Service<
                       ),
                       name: facts.name,
                       network: grant.network,
+                      reachedThrough: facts.reachedThrough,
                       spendCap: facts.spendCap,
                       status: facts.status,
                       syncedAt: Option.none(),

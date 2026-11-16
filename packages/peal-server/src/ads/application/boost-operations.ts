@@ -525,7 +525,7 @@ export class BoostOperations extends Context.Service<
         }
 
         const facts = yield* client
-          .account(token, account.externalId)
+          .account(token, account.externalId, account.reachedThrough)
           .pipe(Effect.result);
 
         if (Result.isFailure(facts)) {
@@ -844,7 +844,7 @@ export class BoostOperations extends Context.Service<
           }
 
           const facts = yield* reach.client
-            .account(reach.token, account.externalId)
+            .account(reach.token, account.externalId, account.reachedThrough)
             .pipe(Effect.catch(unavailable));
 
           yield* accounts.saveFacts(account.id, facts);

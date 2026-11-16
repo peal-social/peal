@@ -435,6 +435,8 @@ export const metaAdsClient = Effect.fn("MetaAds.client")(
             Option.toArray(adSetOf(adSet, currency))
           ),
           ads: ads.items.flatMap((ad) => Option.toArray(adOf(ad))),
+          // Meta's numbers are read by ad.
+          campaignDays: [],
           campaigns: campaigns.items.flatMap((campaign) =>
             Option.toArray(campaignOf(campaign, currency))
           ),

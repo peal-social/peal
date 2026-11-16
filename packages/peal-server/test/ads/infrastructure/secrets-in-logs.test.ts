@@ -13,6 +13,7 @@ import {
   Exit,
   Layer,
   Logger,
+  Option,
   Redacted,
   References,
   Tracer,
@@ -80,6 +81,7 @@ describe("what the server writes about the ad network", () => {
         yield* client.snapshot(grant.token, {
           currency: CurrencySchema.make("EUR"),
           externalId: account?.externalId ?? NetworkObjectIdSchema.make("1001"),
+          reachedThrough: Option.none(),
           since: { day: 1, month: 11, year: 2026 },
           timeZone: TimeZoneIdSchema.make("Europe/Paris"),
           until: { day: 10, month: 11, year: 2026 },

@@ -4,6 +4,7 @@ import {
   CurrencySchema,
   minorUnitDigits,
   minorUnitsOf,
+  minorUnitsOfMicros,
 } from "#ads/domain/money.ts";
 
 describe(minorUnitDigits, () => {
@@ -15,6 +16,38 @@ describe(minorUnitDigits, () => {
   it("counts whole units where the network takes no smaller", () => {
     expect(minorUnitDigits("meta", CurrencySchema.make("JPY"))).toBe(0);
     expect(minorUnitDigits("meta", CurrencySchema.make("HUF"))).toBe(0);
+  });
+
+  it("follows ISO 4217 on Google: no decimals for the yen, two for the forint", () => {
+    expect(minorUnitDigits("google", CurrencySchema.make("JPY"))).toBe(0);
+    expect(minorUnitDigits("google", CurrencySchema.make("KRW"))).toBe(0);
+    expect(minorUnitDigits("google", CurrencySchema.make("XOF"))).toBe(0);
+    expect(minorUnitDigits("google", CurrencySchema.make("HUF"))).toBe(2);
+    expect(minorUnitDigits("google", CurrencySchema.make("EUR"))).toBe(2);
+  });
+});
+
+describe(minorUnitsOfMicros, () => {
+  it("reads millionths of the unit as minor units", () => {
+    expect(minorUnitsOfMicros("12340000", 2)).toBe(1234);
+    expect(minorUnitsOfMicros("5000000", 0)).toBe(5);
+    expect(minorUnitsOfMicros("0", 2)).toBe(0);
+    expect(minorUnitsOfMicros("10000", 2)).toBe(1);
+  });
+
+  it("rounds a finer amount up, so spend is never understated", () => {
+    expect(minorUnitsOfMicros("12345001", 2)).toBe(1235);
+    expect(minorUnitsOfMicros("1", 2)).toBe(1);
+    expect(minorUnitsOfMicros("5000001", 0)).toBe(6);
+  });
+
+  it("refuses what is not a whole number of micros, or past the largest amount", () => {
+    expect(minorUnitsOfMicros("", 2)).toBeUndefined();
+    expect(minorUnitsOfMicros("-1000000", 2)).toBeUndefined();
+    expect(minorUnitsOfMicros("1.5", 2)).toBeUndefined();
+    expect(minorUnitsOfMicros("1e6", 2)).toBeUndefined();
+    expect(minorUnitsOfMicros("1".repeat(30), 2)).toBeUndefined();
+    expect(minorUnitsOfMicros("10000000000000000000", 2)).toBeUndefined();
   });
 });
 
