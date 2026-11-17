@@ -30,7 +30,12 @@ def _docker_runs() -> bool:
     )
 
 
-pytestmark = pytest.mark.skipif(not _docker_runs(), reason="Docker is not running")
+# The module's tests share its Postgres, and run in one of xdist's workers
+# (--dist loadgroup), which starts it once, rather than one each.
+pytestmark = [
+    pytest.mark.skipif(not _docker_runs(), reason="Docker is not running"),
+    pytest.mark.xdist_group("release-postgres"),
+]
 
 # The password secrets.env holds, and the one of the server a backup came from.
 GENERATED = f"generated-{secrets.token_hex(8)}"
