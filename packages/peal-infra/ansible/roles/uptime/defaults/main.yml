@@ -7,7 +7,7 @@ uptime_compose_bin: /usr/local/bin/uptime-compose
 # Gatus checks, Caddy is the one public entry. Each is pinned by digest, at
 # the Caddy that compose.self-host.yaml runs.
 uptime_gatus_image: twinproduction/gatus:v5.38.0@sha256:085ed63da963728965d00a3c78aa6167e3bf135218485b893201758e079e8415
-uptime_caddy_image: caddy:2.11.9-alpine@sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee
+uptime_caddy_image: caddy:2.11.9-alpine@sha256:003a97808e781aa9f7e75cc2f43d34d461099031faf5e20faefb9f61126836f0
 
 # Gatus's dashboard, on 127.0.0.1 only: `ssh -N -L 8080:127.0.0.1:8080 ops@<uptime_hostname>`.
 uptime_gatus_port: 8080
