@@ -56,7 +56,21 @@ jobs:
           CI_PLAN_BASE: ${{ github.event.pull_request.base.sha }}
           CI_PLAN_FULL: ${{ github.event_name != 'pull_request' }}
 
-  check:
+  # `bun run check`, `bun run typecheck` and `bun run build`, as three jobs
+  # side by side. Lint and format: oxlint, with its type-aware rules, and
+  # oxfmt, after the generated types they read.
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: bun run check
+
+  # tsc with Effect's language service, on the workspace and every project.
+  typecheck:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -65,9 +79,29 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
         with:
-          nx-cache: check
-      - run: bun run check
+          nx-cache: typecheck
       - run: bun run typecheck
+      # Only main saves Nx's cache, which every branch restores: a branch's
+      # copy would be readable by that branch alone, and push main's out of
+      # the repository's 10 GB.
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-typecheck-${{ github.sha }}
+
+  # Every build, after the typecheck of the projects it builds, which Nx
+  # runs first (nx.json): the typecheck job checks the others.
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          nx-cache: build
       - run: bun run build
       # Only main saves Nx's cache, which every branch restores: a branch's
       # copy would be readable by that branch alone, and push main's out of
@@ -76,7 +110,7 @@ jobs:
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .nx/cache
-          key: nx-${{ runner.os }}-check-${{ github.sha }}
+          key: nx-${{ runner.os }}-build-${{ github.sha }}
 
   # Every project's tests but the server's and Ansible's, which have jobs of
   # their own.
@@ -407,7 +441,7 @@ jobs:
   # added without changing the ruleset.
   ci:
     if: ${{ always() }}
-    needs: [plan, check, test, server, ansible, secrets, workflows, sdks, e2e]
+    needs: [plan, lint, typecheck, build, test, server, ansible, secrets, workflows, sdks, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
