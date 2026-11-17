@@ -147,7 +147,7 @@ services:
       test: [CMD, /busybox/wget, -q, -O, /dev/null, http://127.0.0.1:13133/]
 
   loki:
-    image: grafana/loki:3.7.9
+    image: grafana/loki:3.7.10
     command: [-config.file=/etc/loki/config.yaml]
     volumes:
       - ./config/loki.yaml:/etc/loki/config.yaml:ro
@@ -190,7 +190,7 @@ services:
   # never for a shared or production Grafana. Grafana 13 logs that an
   # anonymous role other than Viewer is deprecated, but still grants it.
   grafana:
-    image: grafana/grafana:13.3.0
+    image: grafana/grafana:13.3.1
     environment:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
