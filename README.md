@@ -78,7 +78,7 @@ page.
 ### Social networks
 
 Every network takes posts, and most give their counts back. The Inbox column
-says what Peal reads there and lets you answer:
+says what Peal reads there and what you can answer:
 
 | Network                 | Publish |      Analytics      | Inbox                                               |
 | ----------------------- | :-----: | :-----------------: | --------------------------------------------------- |
