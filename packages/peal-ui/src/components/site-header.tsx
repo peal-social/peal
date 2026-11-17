@@ -55,9 +55,22 @@ interface SiteMenuGroup {
   readonly columns?: 1 | 2 | undefined;
   /** Stacks the cell under the previous group's, in one column. */
   readonly stack?: boolean | undefined;
+  /** A few words after the label, in muted text, such as who it is for. */
+  readonly description?: string | undefined;
   readonly label: string;
   readonly links: readonly SiteMenuLink[];
 }
+
+/** A group's label, then its description in muted text. */
+const GroupLabel = ({ group }: { readonly group: SiteMenuGroup }) =>
+  group.description === undefined ? (
+    group.label
+  ) : (
+    <>
+      <span className="text-foreground font-medium">{group.label}</span>{" "}
+      {group.description}
+    </>
+  );
 
 /** The card that closes a mega menu on the right, sized to its content. */
 interface SiteMenuFeature {
@@ -196,7 +209,7 @@ const MenuGroup = ({ group }: { readonly group: SiteMenuGroup }) => {
       )}
     >
       <h2 id={id} className="text-muted-foreground px-2 pt-1 text-xs">
-        {group.label}
+        <GroupLabel group={group} />
       </h2>
       <ul
         className={group.columns === 2 ? "grid grid-cols-2" : "flex flex-col"}
@@ -434,7 +447,9 @@ const MobileMenu = ({
               )}
               {item.groups.map((group) => (
                 <div key={group.label} className="flex flex-col gap-1">
-                  <p className="text-muted-foreground text-xs">{group.label}</p>
+                  <p className="text-muted-foreground text-xs">
+                    <GroupLabel group={group} />
+                  </p>
                   <ul
                     className={
                       group.columns === 2 ? "grid grid-cols-2" : "flex flex-col"

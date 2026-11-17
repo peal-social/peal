@@ -21,33 +21,59 @@ const en = {
     withdraw: "Withdraw from contract here",
   },
   home: {
-    agents: {
-      eyebrow: "Agents and code",
-      groups: {
-        agents: "For agents",
-        sdks: "SDKs",
+    api: {
+      action: "Explore the docs",
+      connect: {
+        asks: "{host} asks to connect your accounts on these platforms, to publish there for you.",
+        connect: "Connect {platform}",
+        connected: ":: Connected",
+        heading: "Connect your accounts",
+        partner: "Example Studio",
       },
-      lead: "An MCP server, a command line, agent skills and SDKs in eight languages, each with its page in the docs.",
-      tiles: {
-        cli: "The peal command, with answers as JSON.",
-        mcp: "Any MCP client, signed in to one workspace.",
-        skills: "Instructions an agent follows to post through Peal.",
+      copied: "Copied",
+      copy: "Copy",
+      demoLabel: "Ways to publish",
+      eyebrow: "PealAPI",
+      lead: "An HTTP API described in OpenAPI, an MCP server for AI agents, a command line and SDKs in eight languages. They all work on the same workspaces your team opens in PealStudio.",
+      rows: {
+        cli: {
+          link: "The command line",
+          text: "The peal command signs in with your Peal account or takes an API key, and answers in JSON, which scripts and agents can read.",
+          title: "Command line",
+        },
+        embedding: {
+          link: "Embedding Peal",
+          text: "Give each of your customers a workspace and send them a connect link. It opens a page Peal hosts, where they sign in to their own accounts and then return to your product.",
+          title: "Embedding kit",
+        },
+        mcp: {
+          link: "Connect an MCP client",
+          text: "Connect an AI assistant to one workspace. If you untick publishing on the consent page, it can still write drafts, and Peal refuses any call that would schedule or publish.",
+          title: "MCP server",
+        },
+        publish: {
+          link: "API quickstart",
+          text: "Send one post to several channels in a single request. Ask it to wait, and the answer comes back once every channel has its result.",
+          title: "Publishing API",
+        },
+        sdks: {
+          link: "Install an SDK",
+          text: "TypeScript, Python, Go, Ruby, Java, PHP, .NET and Rust clients, generated from the same API contract.",
+          title: "SDKs in eight languages",
+        },
+        webhooks: {
+          link: "Webhooks",
+          text: "Peal sends a signed request to your endpoint when something happens in a workspace, such as a post going live on a channel. An event carries ids, states and links, never the post's text.",
+          title: "Webhooks",
+        },
       },
-      titles: {
-        cli: "Command line",
-        mcp: "MCP server",
-        skills: "Agent skills",
-      },
-      title: {
-        muted: "Agents and your own code reach the same workspace.",
-        text: "Connect your agents.",
-      },
+      title: { text: "Or build Peal into your own product." },
     },
     cta: {
-      line: "Write a post once and send it to every platform you use.",
+      line: "Plan posts with your team in PealStudio, or let your code and your AI agents publish through PealAPI.",
       primary: "Get started",
       secondary: "Read the docs",
-      title: "Start with your first post.",
+      title: "The AI marketing platform",
     },
     hardParts: {
       cells: {
@@ -90,15 +116,16 @@ const en = {
       },
     },
     mock: {
-      allowed: ":: Allowed",
       approval: ":: Needs approval",
       check: ":: Check the platform",
       comment: "Comment",
-      connectLink: "Connect link",
-      customer: "Customer",
-      denied: ":: Not allowed",
-      draft: ":: Draft",
+      // Made-up posts for the mocks, with example.com's address.
+      longPost:
+        "Our spring catalogue is out. Forty new prints this season, from botanical studies to city maps, each printed on recycled paper and shipped flat in a reusable tube. Order before Sunday and we add a free frame to every second print. Read the whole catalogue at https://example.com/spring and tell us which one you would hang first.",
       message: "Direct message",
+      post: "Our spring catalogue is out: forty new prints, printed on recycled paper. Read it at https://example.com/spring",
+      shortPost:
+        "Spring catalogue: forty new prints. https://example.com/spring",
       over: ":: Over the limit",
       processed: ":: Processed",
       published: ":: Published",
@@ -142,75 +169,100 @@ const en = {
         text: "Built in the open.",
       },
     },
+    platforms: {
+      api: "Publish from your code, an AI agent or your own product.",
+      eyebrow: "One foundation",
+      lead: "PealStudio and PealAPI are the two sides of the same app, one switch apart in its sidebar.",
+      mock: {
+        apiKeys: "API keys",
+        deliveries: "Webhook deliveries",
+        keys: ["Publishing bot", "Analytics export"],
+        groups: { build: "Build", engage: "Engage", partners: "Partners" },
+        pages: {
+          ads: "Ads",
+          analytics: "Analytics",
+          apiKeys: "API keys",
+          calendar: "Calendar",
+          channels: "Channels",
+          home: "Home",
+          inbox: "Inbox",
+          media: "Media",
+          partner: "Partner",
+          platforms: "Platforms",
+          posts: "Posts",
+          webhooks: "Webhooks",
+        },
+        days: ["Mon 17", "Tue 18"],
+      },
+      studio: "Write, schedule, approve and measure posts as a team.",
+      title: {
+        muted:
+          "The same workspaces, channels and posts, whichever side you work from.",
+        text: "Two platforms built on the same foundation.",
+      },
+    },
     sections: {
-      agents: "Agents",
+      api: "PealAPI",
       faq: "FAQ",
       hardParts: "Under the hood",
       open: "In the open",
-      tryIt: "Try it",
-      useCases: "Use cases",
+      platforms: "Products",
+      studio: "PealStudio",
     },
-    tryIt: {
-      copied: "Copied",
-      copy: "Copy",
-      eyebrow: "Try it",
-      label: "Ways to publish",
-      lead: "The same post goes out four ways, and each answer says how it went on every channel.",
-      title: {
-        muted: "Send it with curl, the command line, an agent or your code.",
-        text: "One request to publish.",
-      },
-    },
-    useCases: {
-      cases: {
-        agency: {
-          body: "Each client gets a workspace with its own channels and members, and one billing account pays for all of them.",
-          description: "One workspace per client, one bill.",
-          link: "Plans and billing",
-          title: "Agency",
-        },
-        agent: {
-          body: "Connect an assistant through the MCP server without the right to publish. It writes drafts, and you review and schedule them.",
-          description: "It drafts, you publish.",
-          link: "Posting from an AI agent",
-          title: "AI agent",
-        },
-        developer: {
-          body: "An API key with the permissions it needs, one request to check a post and one to send it. Webhooks tell your server how it went.",
-          description: "Publish from your own code.",
-          link: "API quickstart",
-          title: "Developer",
-        },
-        marketing: {
-          body: "The team writes in the composer, schedules on the calendar and sends a review link. The post waits until the client approves.",
-          description: "Plan the calendar, get the client's yes.",
+    studio: {
+      action: "Learn more",
+      cards: {
+        approvals: {
+          label: "Approvals",
+          lead: "A client approves without an account.",
           link: "Review and approval",
-          title: "Marketing team",
+          text: "Send them a review link. They read the post, comment on it and approve it, and the post waits for their decision before it goes out.",
         },
-        partner: {
-          body: "A partner account, a workspace for each of your customers, and a hosted page where they connect their accounts.",
-          description: "Peal inside your product.",
-          link: "Embedding Peal",
-          title: "Partner",
+        composer: {
+          label: "Composer",
+          lead: "One post, a preview per platform.",
+          link: "Write a post",
+          text: "Any channel can take its own text and options, and Peal counts each platform's limit before you schedule.",
         },
       },
-      eyebrow: "Use cases",
-      label: "Use cases",
-      lead: "Pick a case to see how it runs.",
-      title: {
-        muted: "Teams, developers and their agents each have a way in.",
-        text: "Who uses Peal.",
+      eyebrow: "PealStudio",
+      lead: "Write a post once and adjust it where a platform needs it. Schedule it on the calendar, get the client's approval through a link, answer comments from the inbox and see how each post did.",
+      review: {
+        approve: "Approve this post",
+        badge: "Reviewer",
+        comment: "Could we add the shop's opening hours?",
+        name: "Sam Reviewer",
+        requestChanges: "Request changes",
       },
+      tiles: {
+        analytics: {
+          label: "Analytics",
+          text: "Counts for every post and account, the posts that did best, and an export.",
+        },
+        assistant: {
+          label: "Writing assistant",
+          text: "Ask AI to write, rewrite, shorten or translate a post, or to suggest hashtags.",
+        },
+        calendar: {
+          label: "Calendar",
+          text: "Schedule in your own time zone, then move or cancel posts on the calendar.",
+        },
+        inbox: {
+          label: "Inbox",
+          text: "Comments, Google Business Profile reviews and Mastodon and Bluesky messages in one place.",
+        },
+      },
+      title: { text: "Plan, write and approve posts as a team." },
     },
     description:
-      "Write a post once, schedule it across platforms and see how it performs. Built for teams, self-hostable and fair source.",
+      "PealStudio for marketing teams and PealAPI for developers and agents: write a post once, schedule it across platforms and see how it performs. Self-hostable and fair source.",
     faq: {
       groups: [
         {
           questions: [
             {
               answer:
-                "A social media scheduling platform for teams: write a post once, schedule it across platforms, and follow its results in one place.",
+                "A social media scheduling platform in two products. Marketing teams write, schedule, approve and measure posts in PealStudio. Developers and AI agents publish through PealAPI, from their own code or product.",
               question: "What is Peal?",
             },
             {
@@ -220,12 +272,18 @@ const en = {
             },
             {
               answer:
-                "Marketing teams, who work in the Studio, and developers, who build on its API, command line, SDKs and webhooks, or embed it in their own product.",
+                "Marketing teams, who work in PealStudio, and developers, who build on PealAPI or embed Peal in their own product.",
               question: "Who is it for?",
             },
             {
               answer:
-                "Yes. An AI assistant connects through the MCP server, signed in to one workspace, and you choose whether it may publish.",
+                "They are two ways into the same workspace. PealStudio is the web app where a team writes, schedules and approves posts and reads its analytics. PealAPI is the HTTP API with its MCP server, command line, SDKs, webhooks and embedding kit, for code and AI agents. A post made from one shows up in the other.",
+              question:
+                "What is the difference between PealStudio and PealAPI?",
+            },
+            {
+              answer:
+                "Yes, through PealAPI. An AI assistant connects through the MCP server, signed in to one workspace, and you choose whether it may publish.",
               question: "Can an AI agent use Peal?",
             },
           ],
@@ -290,7 +348,7 @@ const en = {
             },
             {
               answer:
-                "Members, workspaces and posts are unlimited, and every account has every platform, the calendar, analytics, the API, the MCP server and the command line.",
+                "Members, workspaces and posts are unlimited. Every account has every platform, the calendar and analytics in PealStudio, and the API, the MCP server and the command line in PealAPI.",
               question: "What comes with every account?",
             },
             {
@@ -315,9 +373,23 @@ const en = {
       },
     },
     hero: {
-      lead: "Peal is a social media scheduling platform for teams. Write a post once, schedule it across platforms and follow its results in one place.",
-      primary: "See how it works",
-      secondary: "Run it yourself",
+      chips: {
+        api: "PealAPI in the docs",
+        restApi: "REST API",
+        studio: "PealStudio in the docs",
+      },
+      composer: {
+        action: "Schedule",
+        author: "Peal Example",
+        channels: "Channels",
+        preview: "Preview",
+        text: "Text",
+        time: "Tue 09:00 · Europe/Paris",
+      },
+      lead: "Peal comes as two products that share one workspace. Marketing teams plan, write and approve posts in PealStudio. Developers and their AI agents publish through PealAPI: an HTTP API, an MCP server, a command line and SDKs.",
+      primary: "Get started",
+      secondary: "Read the docs",
+      stage: "Peal's products",
       status:
         "Peal is in development and not released yet. This page shows what it is being built to do.",
       title: "Write once. Schedule everywhere. See what works.",
@@ -337,7 +409,7 @@ const en = {
     },
     blog: "Blog",
     brand: "Peal",
-    developers: "For developers and agents",
+    developers: "for developers and agents",
     discord: "Discord",
     docs: "Docs",
     drawer: { close: "Close the menu", open: "Open the menu", title: "Menu" },
@@ -509,7 +581,7 @@ const en = {
       title: "The source is public",
     },
     stars: "stars",
-    studio: "Studio, for marketing teams",
+    studio: "for marketing teams",
   },
   pricing: {
     coming: "Coming soon: prices to be announced",
@@ -656,34 +728,59 @@ const fr: Messages = {
     withdraw: "Renoncer au contrat ici",
   },
   home: {
-    agents: {
-      eyebrow: "Agents et code",
-      groups: {
-        agents: "Pour les agents",
-        sdks: "SDK",
+    api: {
+      action: "Explorer la documentation",
+      connect: {
+        asks: "{host} demande à connecter vos comptes sur ces plateformes, pour y publier pour vous.",
+        connect: "Connecter {platform}",
+        connected: ":: Connecté",
+        heading: "Connecter vos comptes",
+        partner: "Example Studio",
       },
-      lead: "Un serveur MCP, une ligne de commande, des skills pour agents et des SDK dans huit langages, chacun avec sa page dans la documentation.",
-      tiles: {
-        cli: "La commande peal, avec des réponses en JSON.",
-        mcp: "Tout client MCP, connecté à un espace de travail.",
-        skills: "Des instructions qu’un agent suit pour publier avec Peal.",
+      copied: "Copié",
+      copy: "Copier",
+      demoLabel: "Façons de publier",
+      eyebrow: "PealAPI",
+      lead: "Une API HTTP décrite en OpenAPI, un serveur MCP pour les agents IA, une ligne de commande et des SDK dans huit langages. Tous travaillent sur les mêmes espaces de travail que votre équipe ouvre dans PealStudio.",
+      rows: {
+        cli: {
+          link: "La ligne de commande",
+          text: "La commande peal se connecte avec votre compte Peal ou prend une clé d’API, et répond en JSON, que les scripts et les agents savent lire.",
+          title: "Ligne de commande",
+        },
+        embedding: {
+          link: "Intégrer Peal",
+          text: "Donnez un espace de travail à chacun de vos clients et envoyez-leur un lien de connexion. Il ouvre une page hébergée par Peal, où ils se connectent à leurs propres comptes avant de revenir dans votre produit.",
+          title: "Kit d’intégration",
+        },
+        mcp: {
+          link: "Connecter un client MCP",
+          text: "Connectez un assistant IA à un espace de travail. Si vous décochez la publication sur la page de consentement, il peut toujours écrire des brouillons, et Peal refuse tout appel qui programmerait ou publierait.",
+          title: "Serveur MCP",
+        },
+        publish: {
+          link: "Démarrage rapide de l’API",
+          text: "Envoyez une publication sur plusieurs canaux en une seule requête. Demandez-lui d’attendre, et la réponse arrive quand chaque canal a son résultat.",
+          title: "API de publication",
+        },
+        sdks: {
+          link: "Installer un SDK",
+          text: "Des clients TypeScript, Python, Go, Ruby, Java, PHP, .NET et Rust, générés à partir du même contrat d’API.",
+          title: "Des SDK dans huit langages",
+        },
+        webhooks: {
+          link: "Webhooks",
+          text: "Peal envoie une requête signée à votre adresse quand quelque chose se passe dans un espace de travail, par exemple quand une publication est en ligne sur un canal. Un événement porte des identifiants, des états et des liens, jamais le texte de la publication.",
+          title: "Webhooks",
+        },
       },
-      titles: {
-        cli: "Ligne de commande",
-        mcp: "Serveur MCP",
-        skills: "Skills pour agents",
-      },
-      title: {
-        muted:
-          "Les agents et votre propre code atteignent le même espace de travail.",
-        text: "Connectez vos agents.",
-      },
+      title: { text: "Ou intégrez Peal à votre propre produit." },
     },
     cta: {
-      line: "Écrivez une publication une fois et envoyez-la sur toutes vos plateformes.",
+      line: "Planifiez vos publications en équipe dans PealStudio, ou laissez votre code et vos agents IA publier avec PealAPI.",
       primary: "Commencer",
       secondary: "Lire la documentation",
-      title: "Commencez par votre première publication.",
+      title: "La plateforme marketing IA",
     },
     hardParts: {
       cells: {
@@ -727,15 +824,15 @@ const fr: Messages = {
       },
     },
     mock: {
-      allowed: ":: Autorisé",
       approval: ":: À approuver",
       check: ":: Vérifiez sur la plateforme",
       comment: "Commentaire",
-      connectLink: "Lien de connexion",
-      customer: "Client",
-      denied: ":: Non autorisé",
-      draft: ":: Brouillon",
+      longPost:
+        "Notre catalogue de printemps est sorti. Quarante nouvelles affiches cette saison, des planches botaniques aux plans de villes, toutes imprimées sur papier recyclé et expédiées à plat dans un tube réutilisable. Commandez avant dimanche et nous ajoutons un cadre offert pour chaque deuxième affiche. Tout le catalogue sur https://example.com/printemps",
       message: "Message privé",
+      post: "Notre catalogue de printemps est sorti : quarante nouvelles affiches, imprimées sur papier recyclé. À lire sur https://example.com/printemps",
+      shortPost:
+        "Catalogue de printemps : quarante nouvelles affiches. https://example.com/printemps",
       over: ":: Au-delà de la limite",
       processed: ":: Traité",
       published: ":: Publiée",
@@ -779,77 +876,105 @@ const fr: Messages = {
         text: "Construit au grand jour.",
       },
     },
+    platforms: {
+      api: "Publiez depuis votre code, un agent IA ou votre propre produit.",
+      eyebrow: "Un même socle",
+      lead: "PealStudio et PealAPI sont les deux côtés de la même application, à un bouton d’écart dans sa barre latérale.",
+      mock: {
+        apiKeys: "Clés d’API",
+        deliveries: "Envois des webhooks",
+        keys: ["Robot de publication", "Export des statistiques"],
+        groups: {
+          build: "Développer",
+          engage: "Échanger",
+          partners: "Partenaires",
+        },
+        pages: {
+          ads: "Publicité",
+          analytics: "Statistiques",
+          apiKeys: "Clés d’API",
+          calendar: "Calendrier",
+          channels: "Canaux",
+          home: "Accueil",
+          inbox: "Boîte de réception",
+          media: "Médias",
+          partner: "Partenaire",
+          platforms: "Plateformes",
+          posts: "Publications",
+          webhooks: "Webhooks",
+        },
+        days: ["lun. 17", "mar. 18"],
+      },
+      studio:
+        "Écrivez, programmez, faites approuver et mesurez vos publications en équipe.",
+      title: {
+        muted:
+          "Les mêmes espaces de travail, canaux et publications, quel que soit le côté où vous travaillez.",
+        text: "Deux plateformes bâties sur le même socle.",
+      },
+    },
     sections: {
-      agents: "Agents",
+      api: "PealAPI",
       faq: "FAQ",
       hardParts: "Sous le capot",
       open: "Au grand jour",
-      tryIt: "Essayer",
-      useCases: "Cas d’usage",
+      platforms: "Produits",
+      studio: "PealStudio",
     },
-    tryIt: {
-      copied: "Copié",
-      copy: "Copier",
-      eyebrow: "Essayer",
-      label: "Façons de publier",
-      lead: "La même publication part de quatre façons, et chaque réponse dit comment elle s’est passée sur chaque canal.",
-      title: {
-        muted:
-          "Envoyez-la avec curl, la ligne de commande, un agent ou votre code.",
-        text: "Une requête pour publier.",
-      },
-    },
-    useCases: {
-      cases: {
-        agency: {
-          body: "Chaque client a un espace de travail avec ses canaux et ses membres, et un seul compte de facturation les paie tous.",
-          description: "Un espace par client, une facture.",
-          link: "Formules et facturation",
-          title: "Agence",
-        },
-        agent: {
-          body: "Connectez un assistant par le serveur MCP sans le droit de publier. Il écrit des brouillons, que vous relisez et programmez.",
-          description: "Il rédige, vous publiez.",
-          link: "Publier depuis un agent IA",
-          title: "Agent IA",
-        },
-        developer: {
-          body: "Une clé d’API avec les droits nécessaires, une requête pour vérifier une publication et une pour l’envoyer. Les webhooks disent à votre serveur comment elle s’est passée.",
-          description: "Publiez depuis votre propre code.",
-          link: "Démarrage rapide de l’API",
-          title: "Développeur",
-        },
-        marketing: {
-          body: "L’équipe écrit dans l’éditeur, programme sur le calendrier et envoie un lien de relecture. La publication attend l’accord du client.",
-          description: "Planifiez, obtenez le oui du client.",
+    studio: {
+      action: "En savoir plus",
+      cards: {
+        approvals: {
+          label: "Approbations",
+          lead: "Un client approuve sans compte.",
           link: "Relecture et approbation",
-          title: "Équipe marketing",
+          text: "Envoyez-lui un lien de relecture. Il lit la publication, la commente et l’approuve, et la publication attend sa décision avant de partir.",
         },
-        partner: {
-          body: "Un compte partenaire, un espace de travail par client, et une page hébergée où ils connectent leurs comptes.",
-          description: "Peal dans votre produit.",
-          link: "Intégrer Peal",
-          title: "Partenaire",
+        composer: {
+          label: "Éditeur",
+          lead: "Une publication, un aperçu par plateforme.",
+          link: "Écrire une publication",
+          text: "Chaque canal peut avoir son propre texte et ses options, et Peal compte la limite de chaque plateforme avant que vous programmiez.",
         },
       },
-      eyebrow: "Cas d’usage",
-      label: "Cas d’usage",
-      lead: "Choisissez un cas pour voir comment il fonctionne.",
-      title: {
-        muted:
-          "Les équipes, les développeurs et leurs agents ont chacun leur accès.",
-        text: "Qui utilise Peal.",
+      eyebrow: "PealStudio",
+      lead: "Écrivez une publication une fois et adaptez-la là où une plateforme le demande. Programmez-la sur le calendrier, obtenez l’accord du client par un lien, répondez aux commentaires depuis la boîte de réception et voyez comment chaque publication s’est passée.",
+      review: {
+        approve: "Approuver cette publication",
+        badge: "Invité",
+        comment: "Peut-on ajouter les horaires de la boutique ?",
+        name: "Sam Relecteur",
+        requestChanges: "Demander des modifications",
       },
+      tiles: {
+        analytics: {
+          label: "Statistiques",
+          text: "Les chiffres de chaque publication et de chaque compte, les publications qui ont le mieux marché, et un export.",
+        },
+        assistant: {
+          label: "Assistant de rédaction",
+          text: "Demandez à l’IA d’écrire, de réécrire, de raccourcir ou de traduire une publication, ou de suggérer des hashtags.",
+        },
+        calendar: {
+          label: "Calendrier",
+          text: "Programmez dans votre fuseau horaire, puis déplacez ou annulez des publications sur le calendrier.",
+        },
+        inbox: {
+          label: "Boîte de réception",
+          text: "Les commentaires, les avis Google Business Profile et les messages Mastodon et Bluesky au même endroit.",
+        },
+      },
+      title: { text: "Planifiez, écrivez et faites approuver en équipe." },
     },
     description:
-      "Écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats. Pensé pour les équipes, auto-hébergeable et fair source.",
+      "PealStudio pour les équipes marketing et PealAPI pour les développeurs et les agents : écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats. Auto-hébergeable et fair source.",
     faq: {
       groups: [
         {
           questions: [
             {
               answer:
-                "Une plateforme de planification pour les réseaux sociaux, pensée pour les équipes : écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats au même endroit.",
+                "Une plateforme de planification pour les réseaux sociaux, en deux produits. Les équipes marketing écrivent, programment, font approuver et mesurent leurs publications dans PealStudio. Les développeurs et les agents IA publient avec PealAPI, depuis leur propre code ou produit.",
               question: "Qu’est-ce que Peal ?",
             },
             {
@@ -859,12 +984,17 @@ const fr: Messages = {
             },
             {
               answer:
-                "Les équipes marketing, qui travaillent dans le Studio, et les développeurs, qui construisent sur son API, sa ligne de commande, ses SDK et ses webhooks, ou l’intègrent à leur propre produit.",
+                "Les équipes marketing, qui travaillent dans PealStudio, et les développeurs, qui construisent sur PealAPI ou intègrent Peal à leur propre produit.",
               question: "À qui s’adresse Peal ?",
             },
             {
               answer:
-                "Oui. Un assistant IA se connecte par le serveur MCP, à un espace de travail, et vous choisissez s’il peut publier.",
+                "Ce sont deux accès au même espace de travail. PealStudio est l’application web où une équipe écrit, programme et fait approuver ses publications et lit ses statistiques. PealAPI est l’API HTTP avec son serveur MCP, sa ligne de commande, ses SDK, ses webhooks et son kit d’intégration, pour le code et les agents IA. Une publication créée d’un côté apparaît de l’autre.",
+              question: "Quelle différence entre PealStudio et PealAPI ?",
+            },
+            {
+              answer:
+                "Oui, avec PealAPI. Un assistant IA se connecte par le serveur MCP, à un espace de travail, et vous choisissez s’il peut publier.",
               question: "Un agent IA peut-il utiliser Peal ?",
             },
           ],
@@ -931,7 +1061,7 @@ const fr: Messages = {
             },
             {
               answer:
-                "Membres, espaces de travail et publications illimités, et chaque compte a toutes les plateformes, le calendrier, les statistiques, l’API, le serveur MCP et la ligne de commande.",
+                "Membres, espaces de travail et publications illimités. Chaque compte a toutes les plateformes, le calendrier et les statistiques dans PealStudio, et l’API, le serveur MCP et la ligne de commande dans PealAPI.",
               question: "Qu’est-ce qui vient avec chaque compte ?",
             },
             {
@@ -956,9 +1086,23 @@ const fr: Messages = {
       },
     },
     hero: {
-      lead: "Peal est une plateforme de planification pour les réseaux sociaux, pensée pour les équipes. Écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats au même endroit.",
-      primary: "Voir comment ça marche",
-      secondary: "L’héberger soi-même",
+      chips: {
+        api: "PealAPI dans la documentation",
+        restApi: "API REST",
+        studio: "PealStudio dans la documentation",
+      },
+      composer: {
+        action: "Programmer",
+        author: "Peal Example",
+        channels: "Canaux",
+        preview: "Aperçu",
+        text: "Texte",
+        time: "mar. 09:00 · Europe/Paris",
+      },
+      lead: "Peal se compose de deux produits qui partagent un même espace de travail. Les équipes marketing planifient, écrivent et font approuver leurs publications dans PealStudio. Les développeurs et leurs agents IA publient avec PealAPI : une API HTTP, un serveur MCP, une ligne de commande et des SDK.",
+      primary: "Commencer",
+      secondary: "Lire la documentation",
+      stage: "Les produits de Peal",
       status:
         "Peal est en cours de développement et pas encore sorti. Cette page montre ce qu’il est conçu pour faire.",
       title: "Écrire une fois. Planifier partout. Voir ce qui marche.",
@@ -978,7 +1122,7 @@ const fr: Messages = {
     },
     blog: "Blog",
     brand: "Peal",
-    developers: "Pour les développeurs et les agents",
+    developers: "pour les développeurs et les agents",
     discord: "Discord",
     docs: "Documentation",
     drawer: { close: "Fermer le menu", open: "Ouvrir le menu", title: "Menu" },
@@ -1153,7 +1297,7 @@ const fr: Messages = {
       title: "Le code est public",
     },
     stars: "étoiles",
-    studio: "Studio, pour les équipes marketing",
+    studio: "pour les équipes marketing",
   },
   pricing: {
     coming: "Bientôt : tarifs à venir",

@@ -117,6 +117,23 @@ describe("the site's navigation", () => {
     ).toStrictEqual(["Social", "Chat", "Ads", "Blog"]);
   });
 
+  it.each(locales)(
+    "names the Products menu's groups after the two products in %s",
+    (locale) => {
+      const header = headerProps(messages(locale), pages, everything);
+      const menu = header.items.find((item) => item.kind === "menu");
+
+      expect(
+        menu?.kind === "menu" ? menu.groups.map((group) => group.label) : []
+      ).toStrictEqual(["PealStudio", "PealAPI"]);
+      expect(
+        menu?.kind === "menu"
+          ? menu.groups.every((group) => group.description !== undefined)
+          : false
+      ).toBe(true);
+    }
+  );
+
   it("makes both kinds of WordPress site one entry", () => {
     expect(entryOf("wordpress")).toStrictEqual(entryOf("wordpressCom"));
     expect(

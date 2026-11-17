@@ -1,13 +1,19 @@
-import { platformRules } from "peal-contract/post-text";
+import type { ChannelPlatform } from "peal-contract";
+import { measureText, platformRules } from "peal-contract/post-text";
+import type { AppMockProps, ProductSummary } from "peal-ui/components/app-mock";
 import type { CtaLink } from "peal-ui/components/cta-band";
 import type { FeatureCellContent } from "peal-ui/components/feature-cell";
-import type { SiteMark } from "peal-ui/components/site-icons";
-import type { TileGroup } from "peal-ui/components/tile-grid";
-import type { UseCase } from "peal-ui/components/use-cases";
+import type { StageChip, StageTab } from "peal-ui/components/hero-stage";
+import type {
+  BentoCard,
+  BentoPreview,
+  BentoTile,
+} from "peal-ui/components/product-bento";
+import type { ProductRow } from "peal-ui/components/product-rows";
+import type { SiteIcon, SiteMark } from "peal-ui/components/site-icons";
 import {
   siDotnet,
   siGo,
-  siModelcontextprotocol,
   siOpenjdk,
   siPhp,
   siPython,
@@ -18,10 +24,17 @@ import {
 import type { SimpleIcon } from "simple-icons";
 
 import type { MergedPull } from "./github.ts";
+import {
+  cliRequest,
+  curlRequest,
+  demoTabs,
+  mcpRefusal,
+  webhookPayload,
+} from "./home-demo.ts";
 import type { Locale } from "./i18n/locales.ts";
 import type { Messages } from "./i18n/messages.ts";
 import { repository } from "./navigation.ts";
-import { githubMark, siteEntries } from "./platforms.ts";
+import { entryOf, githubMark, siteEntries } from "./platforms.ts";
 
 // The home page's sections, from its strings, the contract, the docs and
 // what GitHub answered at build time. Kept apart from config.ts, which
@@ -65,50 +78,448 @@ const fill = (text: string, values: Readonly<Record<string, string>>) =>
     (match, name: string) => values[name] ?? match
   );
 
-/** The docs page, or the repository's folder when the build has no docs. */
-const docsOr = (settings: HomeSettings, page: string, folder: string) =>
-  settings.docs(page) ?? `${repository}/tree/main/${folder}`;
+/** A link to a docs page, left out when the build has no docs. */
+const docsLink = (settings: HomeSettings, page: string, label: string) => {
+  const href = settings.docs(page);
 
-export const agentTiles = (
+  return href === undefined ? undefined : { href, label };
+};
+
+// The mocks' channels: three networks whose limits differ.
+const mockPlatforms = ["bluesky", "mastodon", "linkedin"] as const;
+
+type MockPlatform = (typeof mockPlatforms)[number];
+
+/** A text against a platform's first limit, counted as the composer does. */
+const measured = (
+  locale: Locale,
   t: Messages["home"],
+  platform: MockPlatform,
+  text: string
+) => {
+  const number = new Intl.NumberFormat(locale);
+  const [limit] = platformRules[platform].textLimits;
+  const length = limit === undefined ? 0 : measureText(text, limit.unit);
+  const maximum = limit?.maximum ?? 0;
+  const fits = length <= maximum;
+
+  return {
+    count: `${number.format(length)} / ${number.format(maximum)}`,
+    fit: fits
+      ? { state: "done" as const, text: t.mock.within }
+      : { state: "warning" as const, text: t.mock.over },
+  };
+};
+
+const chip = (
+  settings: HomeSettings,
+  icon: SiteIcon,
+  label: string,
+  page: string
+): StageChip[] => {
+  const href = settings.docs(page);
+
+  return href === undefined ? [] : [{ href, icon, label }];
+};
+
+/** The hero's stage: PealStudio's composer and PealAPI's code demo. */
+export const heroTabs = (
+  locale: Locale,
+  messages: Messages,
   settings: HomeSettings
-): TileGroup[] => [
-  {
-    label: t.agents.groups.agents,
-    tiles: [
+): StageTab[] => {
+  const t = messages.home;
+  const { links } = messages.nav;
+  const { composer } = t.hero;
+
+  // Bluesky takes its own, shorter text, as any channel may.
+  const textOf = (platform: MockPlatform) =>
+    platform === "bluesky" ? t.mock.shortPost : t.mock.post;
+
+  return [
+    {
+      chips: [
+        ...chip(settings, "pen", links.composer.title, "guides/posts"),
+        ...chip(
+          settings,
+          "calendar",
+          links.calendar.title,
+          "guides/posts/schedule"
+        ),
+        ...chip(
+          settings,
+          "check-check",
+          links.approvals.title,
+          "guides/posts/review"
+        ),
+        ...chip(settings, "inbox", links.inbox.title, "guides/engage/inbox"),
+        ...chip(
+          settings,
+          "chart",
+          links.analytics.title,
+          "guides/engage/analytics"
+        ),
+      ],
+      chipsLabel: t.hero.chips.studio,
+      content: {
+        composer: {
+          action: composer.action,
+          author: { initials: "PE", name: composer.author },
+          channels: mockPlatforms.map((platform) => ({
+            ...measured(locale, t, platform, textOf(platform)),
+            handle: "@peal_example",
+            mark: entryOf(platform).mark,
+            name: entryOf(platform).name,
+            text: textOf(platform),
+            value: platform,
+          })),
+          channelsLabel: composer.channels,
+          previewLabel: composer.preview,
+          textLabel: composer.text,
+          time: composer.time,
+          url: "app.peal.social/posts/new",
+        },
+        kind: "composer",
+      },
+      label: "PealStudio",
+      tile: "light",
+      value: "studio",
+    },
+    {
+      chips: [
+        ...chip(settings, "braces", t.hero.chips.restApi, "developers"),
+        ...chip(settings, "bot", links.mcp.title, "developers/mcp"),
+        ...chip(settings, "terminal", links.cli.title, "developers/cli"),
+        ...chip(settings, "package", links.sdks.title, "developers/sdks"),
+        ...chip(
+          settings,
+          "webhook",
+          links.webhooks.title,
+          "developers/webhooks"
+        ),
+        ...chip(
+          settings,
+          "panels",
+          links.embedding.title,
+          "developers/embedding"
+        ),
+      ],
+      chipsLabel: t.hero.chips.api,
+      content: {
+        copied: t.api.copied,
+        copy: t.api.copy,
+        kind: "code",
+        label: t.api.demoLabel,
+        tabs: demoTabs,
+      },
+      label: "PealAPI",
+      tile: "ink",
+      value: "api",
+    },
+  ];
+};
+
+const markOfPlatform = (platform: ChannelPlatform) => entryOf(platform).mark;
+
+/** What the two-platforms section shows: the products, then a page of each. */
+export interface ProductPairContent {
+  readonly mocks: readonly [AppMockProps, AppMockProps];
+  readonly products: readonly [ProductSummary, ProductSummary];
+}
+
+/** The two products, and a page of each side of the app beside the other. */
+export const productPair = (t: Messages["home"]): ProductPairContent => {
+  const { mock } = t.platforms;
+  const { pages } = mock;
+  const modes = { console: "PealAPI", studio: "PealStudio" };
+  const [monday = "", tuesday = ""] = mock.days;
+  const [publishingKey = "", analyticsKey = ""] = mock.keys;
+
+  return {
+    mocks: [
       {
-        description: t.agents.tiles.mcp,
-        href: docsOr(settings, "developers/mcp", "packages/peal-server"),
-        mark: markOf(siModelcontextprotocol),
-        title: t.agents.titles.mcp,
+        breadcrumb: pages.calendar,
+        content: {
+          days: [
+            {
+              label: monday,
+              posts: [
+                {
+                  chip: { state: "done", text: t.mock.published },
+                  mark: markOfPlatform("mastodon"),
+                  time: "09:00",
+                },
+                {
+                  chip: { state: "done", text: t.mock.published },
+                  mark: markOfPlatform("bluesky"),
+                  time: "12:30",
+                },
+              ],
+            },
+            {
+              label: tuesday,
+              posts: [
+                {
+                  chip: { state: "pending", text: t.mock.scheduled },
+                  mark: markOfPlatform("linkedin"),
+                  time: "09:00",
+                },
+                {
+                  chip: { state: "warning", text: t.mock.approval },
+                  mark: markOfPlatform("instagram"),
+                  time: "18:00",
+                },
+              ],
+            },
+          ],
+          kind: "calendar",
+        },
+        groups: [
+          {
+            items: [
+              { icon: "home", label: pages.home },
+              { current: true, icon: "calendar", label: pages.calendar },
+              { icon: "pen", label: pages.posts },
+              { icon: "plug", label: pages.channels },
+              { icon: "image", label: pages.media },
+            ],
+          },
+          {
+            items: [
+              { icon: "inbox", label: pages.inbox },
+              { icon: "chart", label: pages.analytics },
+              { icon: "megaphone", label: pages.ads },
+            ],
+            label: mock.groups.engage,
+          },
+        ],
+        mode: "studio",
+        modes,
       },
       {
-        description: t.agents.tiles.cli,
-        href: docsOr(settings, "developers/cli", "packages/peal-cli"),
-        icon: "terminal",
-        title: t.agents.titles.cli,
-      },
-      {
-        description: t.agents.tiles.skills,
-        href: docsOr(settings, "developers/agents", "packages/peal-skills"),
-        icon: "sparkles",
-        title: t.agents.titles.skills,
+        breadcrumb: mock.groups.build,
+        content: {
+          cards: [
+            {
+              rows: [
+                { label: publishingKey, value: "post:schedule" },
+                { label: analyticsKey, value: "analytics:read" },
+              ],
+              title: mock.apiKeys,
+            },
+            {
+              caption: "hooks.example.com",
+              rows: [
+                {
+                  chip: { state: "done", text: "200" },
+                  label: "post.published",
+                  value: "09:00:03",
+                },
+                {
+                  chip: { state: "done", text: "200" },
+                  label: "post.finished",
+                  value: "09:00:04",
+                },
+                {
+                  chip: { state: "done", text: "200" },
+                  label: "post.approved",
+                  value: "08:41:10",
+                },
+              ],
+              title: mock.deliveries,
+            },
+          ],
+          kind: "cards",
+        },
+        groups: [
+          { items: [{ icon: "globe", label: pages.platforms }] },
+          {
+            items: [
+              { current: true, icon: "key", label: pages.apiKeys },
+              { icon: "webhook", label: pages.webhooks },
+            ],
+            label: mock.groups.build,
+          },
+          {
+            items: [{ icon: "handshake", label: pages.partner }],
+            label: mock.groups.partners,
+          },
+        ],
+        mode: "console",
+        modes,
       },
     ],
-  },
-  {
-    label: t.agents.groups.sdks,
-    tiles: sdks.map(({ folder, mark, name }) => ({
-      href:
-        settings.docs("developers/sdks#install") ??
-        `${repository}/tree/main/packages/peal-sdk/${folder}`,
-      mark,
-      title: name,
-    })),
-  },
-];
+    products: [
+      { line: t.platforms.studio, name: "PealStudio" },
+      { line: t.platforms.api, name: "PealAPI" },
+    ],
+  };
+};
 
-const textLimit = (platform: "bluesky" | "linkedin" | "mastodon") =>
+/** What PealStudio's bento shows: two large cards, then the tiles. */
+export interface StudioBentoContent {
+  readonly cards: readonly [BentoCard, BentoCard];
+  readonly tiles: readonly BentoTile[];
+}
+
+/** PealStudio's bento: the composer and approvals, then four tiles. */
+export const studioBento = (
+  locale: Locale,
+  t: Messages["home"],
+  settings: HomeSettings
+): StudioBentoContent => {
+  const { cards, review, tiles } = t.studio;
+
+  const previews: BentoPreview[] = mockPlatforms.map((platform) => ({
+    ...measured(locale, t, platform, t.mock.longPost),
+    mark: entryOf(platform).mark,
+    name: entryOf(platform).name,
+    text: t.mock.longPost,
+  }));
+
+  const tile = (
+    icon: SiteIcon,
+    content: { readonly label: string; readonly text: string },
+    page: string
+  ): BentoTile => ({ ...content, href: settings.docs(page), icon });
+
+  return {
+    cards: [
+      {
+        icon: "pen",
+        illustration: { kind: "previews", previews },
+        label: cards.composer.label,
+        lead: cards.composer.lead,
+        link: docsLink(settings, "guides/posts", cards.composer.link),
+        text: cards.composer.text,
+      },
+      {
+        icon: "check-check",
+        illustration: {
+          kind: "review",
+          review: {
+            approve: review.approve,
+            comment: {
+              badge: review.badge,
+              initials: "SR",
+              name: review.name,
+              text: review.comment,
+            },
+            requestChanges: review.requestChanges,
+            status: { state: "warning", text: t.mock.approval },
+            text: t.mock.post,
+            url: "app.peal.social/review",
+          },
+        },
+        label: cards.approvals.label,
+        lead: cards.approvals.lead,
+        link: docsLink(settings, "guides/posts/review", cards.approvals.link),
+        text: cards.approvals.text,
+      },
+    ],
+    tiles: [
+      tile("calendar", tiles.calendar, "guides/posts/schedule"),
+      tile("inbox", tiles.inbox, "guides/engage/inbox"),
+      tile("chart", tiles.analytics, "guides/engage/analytics"),
+      tile("sparkles", tiles.assistant, "guides/posts/assistant"),
+    ],
+  };
+};
+
+/** PealAPI's rows: publishing, MCP, the command line, SDKs, webhooks, embedding. */
+export const apiRows = (
+  t: Messages["home"],
+  settings: HomeSettings
+): ProductRow[] => {
+  const { connect, rows } = t.api;
+
+  return [
+    {
+      demo: {
+        blocks: [{ code: curlRequest, label: "curl" }],
+        kind: "code",
+      },
+      icon: "braces",
+      link: docsLink(settings, "api-quickstart", rows.publish.link),
+      text: rows.publish.text,
+      title: rows.publish.title,
+    },
+    {
+      demo: {
+        blocks: [
+          { code: mcpRefusal.request, label: "tools/call" },
+          { code: mcpRefusal.response, label: ".json" },
+        ],
+        kind: "code",
+      },
+      icon: "bot",
+      link: docsLink(settings, "developers/mcp", rows.mcp.link),
+      text: rows.mcp.text,
+      title: rows.mcp.title,
+    },
+    {
+      demo: { blocks: [{ code: cliRequest, label: "peal" }], kind: "code" },
+      icon: "terminal",
+      link: docsLink(settings, "developers/cli", rows.cli.link),
+      text: rows.cli.text,
+      title: rows.cli.title,
+    },
+    {
+      demo: {
+        kind: "tiles",
+        tiles: sdks.map(({ folder, mark, name }) => ({
+          href:
+            settings.docs("developers/sdks#install") ??
+            `${repository}/tree/main/packages/peal-sdk/${folder}`,
+          mark,
+          title: name,
+        })),
+      },
+      icon: "package",
+      link: docsLink(settings, "developers/sdks", rows.sdks.link),
+      text: rows.sdks.text,
+      title: rows.sdks.title,
+    },
+    {
+      demo: {
+        blocks: [{ code: webhookPayload, label: "post.published" }],
+        kind: "code",
+      },
+      icon: "webhook",
+      link: docsLink(settings, "developers/webhooks", rows.webhooks.link),
+      text: rows.webhooks.text,
+      title: rows.webhooks.title,
+    },
+    {
+      demo: {
+        connect: {
+          asks: fill(connect.asks, { host: "app.example.com" }),
+          heading: connect.heading,
+          partner: { initials: "ES", name: connect.partner },
+          rows: (["instagram", "linkedin", "mastodon"] as const).map(
+            (platform, index) => ({
+              action:
+                index === 0
+                  ? connect.connected
+                  : fill(connect.connect, { platform: entryOf(platform).name }),
+              connected: index === 0,
+              mark: entryOf(platform).mark,
+              name: entryOf(platform).name,
+            })
+          ),
+          url: "app.peal.social/connect",
+        },
+        kind: "connect",
+      },
+      icon: "panels",
+      link: docsLink(settings, "developers/embedding", rows.embedding.link),
+      text: rows.embedding.text,
+      title: rows.embedding.title,
+    },
+  ];
+};
+
+const textLimit = (platform: MockPlatform) =>
   platformRules[platform].textLimits[0]?.maximum ?? 0;
 
 export const hardPartCells = (
@@ -120,7 +531,7 @@ export const hardPartCells = (
   // A text twelve characters over Bluesky's limit, measured on three networks.
   const length = textLimit("bluesky") + 12;
 
-  const measured = (platform: "bluesky" | "linkedin" | "mastodon") => ({
+  const measuredLength = (platform: MockPlatform) => ({
     chip: {
       state:
         length > textLimit(platform) ? ("warning" as const) : ("done" as const),
@@ -136,9 +547,9 @@ export const hardPartCells = (
       illustration: {
         kind: "window",
         rows: [
-          { label: "Bluesky", ...measured("bluesky") },
-          { label: "Mastodon", ...measured("mastodon") },
-          { label: "LinkedIn", ...measured("linkedin") },
+          { label: "Bluesky", ...measuredLength("bluesky") },
+          { label: "Mastodon", ...measuredLength("mastodon") },
+          { label: "LinkedIn", ...measuredLength("linkedin") },
         ],
         url: "app.peal.social/compose",
       },
@@ -280,124 +691,22 @@ export const openCells = (
   ];
 };
 
-export const useCases = (
-  t: Messages["home"],
-  settings: HomeSettings
-): UseCase[] => {
-  const { cases } = t.useCases;
+/** A product section's button, to its docs; left out without the docs. */
+export const sectionAction = (
+  settings: HomeSettings,
+  page: string,
+  label: string
+) => docsLink(settings, page, label);
 
-  const link = (page: string, label: string) => {
-    const href = settings.docs(page);
-
-    return href === undefined ? undefined : { href, label };
-  };
-
-  return [
-    {
-      ...cases.marketing,
-      chip: { state: "warning", text: t.mock.approval },
-      icon: "users",
-      link: link("guides/posts/review", cases.marketing.link),
-      rows: [
-        {
-          chip: { state: "warning", text: t.mock.approval },
-          label: "Instagram",
-          value: "09:00",
-        },
-        {
-          chip: { state: "warning", text: t.mock.approval },
-          label: "LinkedIn",
-          value: "09:00",
-        },
-      ],
-      url: "app.peal.social/review",
-      value: "marketing",
-    },
-    {
-      ...cases.agency,
-      chip: { state: "done", text: t.mock.published },
-      icon: "layers",
-      link: link("guides/workspace/billing", cases.agency.link),
-      rows: [
-        {
-          chip: { state: "pending", text: t.mock.scheduled },
-          label: `${t.mock.customer} A`,
-          value: "Instagram",
-        },
-        {
-          chip: { state: "done", text: t.mock.published },
-          label: `${t.mock.customer} B`,
-          value: "LinkedIn",
-        },
-        {
-          chip: { state: "pending", text: t.mock.scheduled },
-          label: `${t.mock.customer} C`,
-          value: "TikTok",
-        },
-      ],
-      url: "app.peal.social/workspaces",
-      value: "agency",
-    },
-    {
-      ...cases.developer,
-      chip: { state: "done", text: t.mock.published },
-      icon: "braces",
-      link: link("api-quickstart", cases.developer.link),
-      rows: [
-        { label: "POST …/posts/validate", value: "200" },
-        {
-          chip: { state: "done", text: t.mock.published },
-          label: "POST …/posts/send",
-          value: "201",
-        },
-        { label: "post.published", value: "webhook" },
-      ],
-      url: "app.peal.social/api",
-      value: "developer",
-    },
-    {
-      ...cases.agent,
-      chip: { state: "pending", text: t.mock.draft },
-      icon: "bot",
-      link: link("developers/agents", cases.agent.link),
-      rows: [
-        {
-          chip: { state: "done", text: t.mock.allowed },
-          label: "create_draft",
-          value: "MCP",
-        },
-        {
-          chip: { state: "warning", text: t.mock.denied },
-          label: "publish_post",
-          value: "MCP",
-        },
-      ],
-      url: "app.peal.social/api/mcp",
-      value: "agent",
-    },
-    {
-      ...cases.partner,
-      chip: { state: "done", text: t.mock.published },
-      icon: "handshake",
-      link: link("developers/embedding", cases.partner.link),
-      rows: [
-        { label: `${t.mock.customer} A`, value: t.mock.connectLink },
-        { label: `${t.mock.customer} B`, value: t.mock.connectLink },
-      ],
-      url: "app.peal.social/connect",
-      value: "partner",
-    },
-  ];
-};
-
-/** The closing band's two links, each left out without its setting. */
+/** A call to action's two links, each left out without its setting. */
 export interface CtaLinks {
   readonly primary: CtaLink | undefined;
   readonly secondary: CtaLink | undefined;
 }
 
+/** Get started (the app's sign-up) and Read the docs, for the hero and the closing band. */
 export const ctaLinks = (
-  t: Messages["home"],
+  labels: { readonly primary: string; readonly secondary: string },
   settings: HomeSettings
 ): CtaLinks => {
   const signUp = settings.app("sign-up");
@@ -405,8 +714,10 @@ export const ctaLinks = (
 
   return {
     primary:
-      signUp === undefined ? undefined : { href: signUp, label: t.cta.primary },
+      signUp === undefined
+        ? undefined
+        : { href: signUp, label: labels.primary },
     secondary:
-      docs === undefined ? undefined : { href: docs, label: t.cta.secondary },
+      docs === undefined ? undefined : { href: docs, label: labels.secondary },
   };
 };

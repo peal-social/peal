@@ -186,8 +186,17 @@ const navItems = (
   ).map((group, index) => ({ ...group, stack: index > 1 }));
 
   const products = nonEmpty([
-    { label: t.studio, links: menuLinks(studioRows, t, settings) },
-    { label: t.developers, links: menuLinks(developerRows, t, settings) },
+    // The two products, by name, and whom each is for.
+    {
+      description: t.studio,
+      label: "PealStudio",
+      links: menuLinks(studioRows, t, settings),
+    },
+    {
+      description: t.developers,
+      label: "PealAPI",
+      links: menuLinks(developerRows, t, settings),
+    },
   ]);
 
   const discord =

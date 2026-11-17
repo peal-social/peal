@@ -1,25 +1,28 @@
 ---
 import type { GetStaticPaths } from "astro";
-import { AsciiArt } from "peal-ui/components/ascii-art";
+import { ProductPair } from "peal-ui/components/app-mock";
 import { BrandField } from "peal-ui/components/brand-field";
-import { CodeDemo } from "peal-ui/components/code-demo";
 import { CtaBand } from "peal-ui/components/cta-band";
 import { FaqSection } from "peal-ui/components/faq-section";
 import { FeatureGrid } from "peal-ui/components/feature-cell";
+import { HeroStage } from "peal-ui/components/hero-stage";
+import { ProductBento } from "peal-ui/components/product-bento";
+import { ProductIntro } from "peal-ui/components/product-intro";
+import { ProductRows } from "peal-ui/components/product-rows";
 import { SectionOpener } from "peal-ui/components/section-opener";
-import { TileGrid } from "peal-ui/components/tile-grid";
-import { UseCases } from "peal-ui/components/use-cases";
 
 import { appLink, docsLink } from "../../config.ts";
 import { faqGroups, faqJsonLdText } from "../../faq.ts";
 import { formatStars, latestPulls, repositoryStars } from "../../github.ts";
-import { demoTabs } from "../../home-demo.ts";
 import {
-  agentTiles,
+  apiRows,
   ctaLinks,
   hardPartCells,
+  heroTabs,
   openCells,
-  useCases,
+  productPair,
+  sectionAction,
+  studioBento,
 } from "../../home.ts";
 import type { HomeSettings } from "../../home.ts";
 import { localePaths, pageLocale } from "../../i18n/locales.ts";
@@ -43,13 +46,13 @@ const settings: HomeSettings = {
   stars: stars === undefined ? undefined : formatStars(stars, locale),
 };
 
-// Every section below the hero carries its number, as `[ 01 / 06 ] · Try it`.
+// Every section below the hero carries its number, as `[ 01 / 06 ] · Products`.
 const sections = [
-  t.sections.tryIt,
-  t.sections.agents,
+  t.sections.platforms,
+  t.sections.studio,
+  t.sections.api,
   t.sections.open,
   t.sections.hardParts,
-  t.sections.useCases,
   t.sections.faq,
 ];
 
@@ -60,7 +63,13 @@ const counter = (index: number) =>
 
 const faq = faqGroups(locale);
 
-const cta = ctaLinks(t, settings);
+const hero = ctaLinks(t.hero, settings);
+
+const cta = ctaLinks(t.cta, settings);
+
+const pair = productPair(t);
+
+const bento = studioBento(locale, t, settings);
 ---
 
 <Base description={t.description} path="" title={t.title}>
@@ -75,75 +84,95 @@ const cta = ctaLinks(t, settings);
     railsClassName="inset-x-[max(0px,calc((100%-72rem)/2))] top-8 bottom-12"
   >
     <section
-      class="mx-auto grid max-w-6xl items-center gap-10 px-6 pt-20 pb-24 sm:pt-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:px-10"
+      aria-labelledby="hero-title"
+      class="mx-auto flex max-w-6xl flex-col gap-12 px-4 pt-20 pb-24 sm:px-6 sm:pt-24 lg:px-10"
     >
-      <div>
-        <p class="font-mono text-xs tracking-[0.04em] lowercase">
-          {t.hero.status}
-        </p>
-        <h1
-          class="mt-6 max-w-2xl text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
-        >
-          {t.hero.title}
-        </h1>
-        <p class="mt-6 max-w-[40rem] text-base sm:text-lg">
-          {t.hero.lead}
-        </p>
-        <div class="mt-10 flex flex-wrap items-center gap-3">
-          <a
-            href="#try-it"
-            class="bg-card text-foreground hover:bg-muted focus-visible:ring-ring/50 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium outline-none focus-visible:ring-3"
+      <div class="grid items-end gap-8 lg:grid-cols-2 lg:gap-16">
+        <div>
+          <p class="font-mono text-xs tracking-[0.04em] lowercase">
+            {t.hero.status}
+          </p>
+          <h1
+            id="hero-title"
+            class="mt-6 max-w-2xl text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
           >
-            {t.hero.primary}
-          </a>
-          <a
-            href="#open"
-            class="focus-visible:ring-ring/50 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-3"
-          >
-            {t.hero.secondary}
-          </a>
+            {t.hero.title}
+          </h1>
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            {
+              hero.primary === undefined ? null : (
+                <a
+                  href={hero.primary.href}
+                  class="bg-card text-foreground hover:bg-muted focus-visible:ring-ring/50 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium outline-none focus-visible:ring-3"
+                >
+                  {hero.primary.label}
+                </a>
+              )
+            }
+            {
+              hero.secondary === undefined ? null : (
+                <a
+                  href={hero.secondary.href}
+                  class="focus-visible:ring-ring/50 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-3"
+                >
+                  {hero.secondary.label}
+                </a>
+              )
+            }
+          </div>
         </div>
+        <p class="max-w-[40rem] text-base sm:text-lg">{t.hero.lead}</p>
       </div>
-      <div class="bg-background overflow-hidden rounded-md">
-        <AsciiArt client:visible className="h-80 sm:h-96" variant="pixels" />
-      </div>
+      <HeroStage
+        client:load
+        label={t.hero.stage}
+        tabs={heroTabs(locale, catalogue, settings)}
+      />
     </section>
   </BrandField>
 
-  <section id="try-it" aria-labelledby="try-it-title" class="scroll-mt-8">
+  <section id="products" aria-labelledby="products-title" class="scroll-mt-8">
     <SectionOpener
       client:visible
       counter={counter(0)}
-      eyebrow={{ icon: "code", label: t.tryIt.eyebrow }}
-      headingId="try-it-title"
-      lead={t.tryIt.lead}
-      title={t.tryIt.title}
+      eyebrow={{ icon: "layers", label: t.platforms.eyebrow }}
+      headingId="products-title"
+      lead={t.platforms.lead}
+      title={t.platforms.title}
     />
-    <CodeDemo
-      client:visible
-      copied={t.tryIt.copied}
-      copy={t.tryIt.copy}
-      label={t.tryIt.label}
-      tabs={demoTabs}
-    />
+    <ProductPair mocks={pair.mocks} products={pair.products} />
   </section>
 
-  <section id="agents" aria-labelledby="agents-title" class="scroll-mt-8">
-    <SectionOpener
+  <section id="studio" aria-labelledby="studio-title" class="scroll-mt-8">
+    <ProductIntro
       client:visible
+      action={sectionAction(settings, "guides", t.studio.action)}
       counter={counter(1)}
-      eyebrow={{ icon: "bot", label: t.agents.eyebrow }}
-      headingId="agents-title"
-      lead={t.agents.lead}
-      title={t.agents.title}
+      eyebrow={{ icon: "pen", label: t.studio.eyebrow }}
+      headingId="studio-title"
+      lead={t.studio.lead}
+      title={t.studio.title}
     />
-    <TileGrid groups={agentTiles(t, settings)} />
+    <ProductBento client:visible cards={bento.cards} tiles={bento.tiles} />
+  </section>
+
+  <section id="api" aria-labelledby="api-title" class="scroll-mt-8">
+    <ProductIntro
+      client:visible
+      action={sectionAction(settings, "developers", t.api.action)}
+      counter={counter(2)}
+      eyebrow={{ icon: "braces", label: t.api.eyebrow }}
+      headingId="api-title"
+      lead={t.api.lead}
+      title={t.api.title}
+    />
+    <ProductRows rows={apiRows(t, settings)} />
   </section>
 
   <section id="open" aria-labelledby="open-title" class="scroll-mt-8">
     <SectionOpener
       client:visible
-      counter={counter(2)}
+      counter={counter(3)}
       eyebrow={{ icon: "pull-request", label: t.open.eyebrow }}
       headingId="open-title"
       lead={t.open.lead}
@@ -155,29 +184,13 @@ const cta = ctaLinks(t, settings);
   <section id="hard-parts" aria-labelledby="hard-parts-title" class="scroll-mt-8">
     <SectionOpener
       client:visible
-      counter={counter(3)}
+      counter={counter(4)}
       eyebrow={{ icon: "shield", label: t.hardParts.eyebrow }}
       headingId="hard-parts-title"
       lead={t.hardParts.lead}
       title={t.hardParts.title}
     />
     <FeatureGrid cells={hardPartCells(locale, t)} />
-  </section>
-
-  <section id="use-cases" aria-labelledby="use-cases-title" class="scroll-mt-8">
-    <SectionOpener
-      client:visible
-      counter={counter(4)}
-      eyebrow={{ icon: "users", label: t.useCases.eyebrow }}
-      headingId="use-cases-title"
-      lead={t.useCases.lead}
-      title={t.useCases.title}
-    />
-    <UseCases
-      client:visible
-      cases={useCases(t, settings)}
-      label={t.useCases.label}
-    />
   </section>
 
   <FaqSection

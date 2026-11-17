@@ -100,6 +100,70 @@ const post = await peal.posts.send({
   when: { _tag: "now" },
 });`;
 
+/** The request alone, for the PealAPI section's rows. */
+export const curlRequest = curl;
+
+export const cliRequest = cli;
+
+// An MCP client connected without the permission to publish asks to
+// publish a draft: the server refuses it with the message of
+// src/app/mcp/refusals.ts, cut short here.
+export const mcpRefusal = {
+  request: JSON.stringify(
+    {
+      id: 7,
+      jsonrpc: "2.0",
+      method: "tools/call",
+      params: {
+        arguments: { postId: "0190f3a0-0000-7000-8000-00000000b002" },
+        name: "publish_post",
+      },
+    },
+    null,
+    2
+  ),
+  response: JSON.stringify(
+    {
+      id: 7,
+      jsonrpc: "2.0",
+      result: {
+        content: [
+          {
+            text: "This connection may not schedule or publish posts in this workspace: the user did not give this client the scope workspace:publish (schedule and publish posts, and answer comments). …",
+            type: "text",
+          },
+        ],
+        isError: true,
+      },
+    },
+    null,
+    2
+  ),
+};
+
+// A post.published delivery, as the docs' webhook events page shows one.
+export const webhookPayload = JSON.stringify(
+  {
+    data: {
+      channelId: channels[0],
+      permalink: "https://social.example/@peal_example/115512345678901",
+      platform: "mastodon",
+      postId: "0190f3a0-0000-7000-8000-00000000b001",
+      publishedAt: "2026-11-16T08:00:02.000Z",
+      round: 1,
+      targetId: "0190f3a0-0000-7000-8000-00000000d001",
+      workspaceId: workspace,
+    },
+    id: "0190f3a0-0000-7000-8000-00000000e001",
+    timestamp: "2026-11-16T08:00:03.000Z",
+    type: "post.published",
+    version: 1,
+    workspaceExternalId: null,
+  },
+  null,
+  2
+);
+
 /** The demo's tabs: API, command line, MCP and SDK, with one answer. */
 export const demoTabs: readonly CodeDemoTab[] = [
   {
