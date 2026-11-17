@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 import "../lib/css-properties";
 import { decodeHighlighted } from "../lib/highlighted-code";
 import type { CodeTokenKind } from "../lib/highlighted-code";
@@ -60,16 +62,17 @@ const CodeLines = ({
               <span aria-hidden="true" className="w-4 shrink-0" />
             )}
             <span data-code-line="" className="whitespace-pre">
-              {runs.map((run) => (
-                <span
-                  key={run.offset}
-                  className={
-                    run.kind === undefined ? undefined : kindClass[run.kind]
-                  }
-                >
-                  {run.text}
-                </span>
-              ))}
+              {/* Plain text takes no element of its own: the home page
+                  holds hundreds of such runs. */}
+              {runs.map((run) =>
+                run.kind === undefined ? (
+                  <Fragment key={run.offset}>{run.text}</Fragment>
+                ) : (
+                  <span key={run.offset} className={kindClass[run.kind]}>
+                    {run.text}
+                  </span>
+                )
+              )}
               {"\n"}
             </span>
           </span>
