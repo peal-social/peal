@@ -1,6 +1,6 @@
 import type { Platform, PlatformCapabilities, TextLimit } from "peal-contract";
 
-/** One platform as the Console's Platforms page lists it. */
+/** One platform as PealAPI's Platforms page lists it. */
 export interface PlatformRow {
   readonly platform: Platform;
   /** The workspace's channels on it, connected or not. */

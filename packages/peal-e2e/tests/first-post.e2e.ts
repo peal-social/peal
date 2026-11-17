@@ -296,10 +296,10 @@ describe("a new member's first post", { serial: true }, () => {
     screen,
   }) => {
     await app.open(`/app/${workspaceId}/settings`);
-    // Webhooks are the Console's: the mode switch opens it at API keys.
+    // Webhooks are PealAPI's: the mode switch opens it at API keys.
     await screen
       .getByRole("navigation", "Mode")
-      .getByRole("link", "Console")
+      .getByRole("link", "PealAPI")
       .tap();
     await screen
       .getByRole("navigation", "Workspace")

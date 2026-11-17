@@ -198,7 +198,7 @@ and Next.js ships its docs in `packages/peal-web/node_modules/next/dist/docs`.
 ## Design
 
 [`DESIGN.md`](DESIGN.md) is the design system: the colours of the mark,
-type, shape, the frame (Studio and Console, the drill-down sidebar, the top
+type, shape, the frame (PealStudio and PealAPI, the drill-down sidebar, the top
 bar) and the page patterns. Read it before changing a screen of the web
 app, the site or the docs. Peal is light only: no dark mode, no `dark:`
 class in Peal's own code.

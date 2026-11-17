@@ -55,7 +55,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   app: `app` (workspaces), `app/agenda`, `app/report`, `app/notices`, `app/notices/preferences`,
   `app/account` (in the `(personal)` route group), `app/[workspaceId]`
   (the workspace's home: connecting channels and assistants, a
-  quickstart), `…/platforms` (Console's, for channel:read),
+  quickstart), `…/platforms` (PealAPI's, for channel:read),
   `app/[workspaceId]/channels`, `…/media`, `…/calendar`,
   `…/analytics`, `…/inbox` and `…/inbox/[threadId]` (for `engagement:read`:
   not-found otherwise, as for staff acting as a member), `…/ads`,
@@ -95,8 +95,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `PEAL_DOCS_URL` and **Support** at `PEAL_CONTACT_URL` when set, the
   language switcher and the account menu) and the contract functions at
   the foot. `app/[workspaceId]/layout.tsx` gives a workspace's pages
-  `WorkspaceShell`, whose `SidebarView` holds the Studio and Console
-  switch with Peal's mark, the mode's pages, a section's pages under a way
+  `WorkspaceShell`, whose `SidebarView` holds the PealStudio and
+  PealAPI switch with Peal's mark, the mode's pages, a section's pages under a way
   back, Settings and the workspace switcher; `app/(personal)/layout.tsx`
   gives the person's pages `PersonalShell` (their pages, then each
   workspace). Someone signed out, not a member, or who must first turn on
@@ -112,7 +112,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   tested) from the MCP endpoint at the address the browser has Peal open
   at, after hydration: never a key. Brand marks come from simple-icons
   (`BrandMark`); LinkedIn, Slack and OpenAI, which are not in it, get a
-  plain tile of their letters (`letters` in `platforms-view.tsx`). Console's Platforms lists `platformRowsOf`
+  plain tile of their letters (`letters` in `platforms-view.tsx`). PealAPI's Platforms lists `platformRowsOf`
   (`#platforms/rows.ts`): this server's capabilities beside the
   workspace's channels.
 - The web app reports its errors to `POST /api/client-errors`:

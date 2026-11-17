@@ -2930,9 +2930,9 @@
     "back": "Quitter {section}",
     "modes": {
       "label": "Mode",
-      "studio": "Studio",
-      "console": "Console",
-      "unavailable": "Votre rôle dans cet espace n’a aucune page de la Console"
+      "studio": "PealStudio",
+      "api": "PealAPI",
+      "unavailable": "Votre rôle dans cet espace n’a aucune page de PealAPI"
     },
     "groups": {
       "engage": "Échanger",

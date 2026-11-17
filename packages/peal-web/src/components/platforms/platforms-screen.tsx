@@ -12,7 +12,7 @@ import { platformRowsOf } from "#platforms/rows.ts";
 import { workspaceChannels } from "#posts/api.ts";
 
 /**
- * The Console's Platforms page: what this server says a post may hold on
+ * PealAPI's Platforms page: what this server says a post may hold on
  * each platform, beside the workspace's channels there.
  */
 export const PlatformsScreen = ({

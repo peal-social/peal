@@ -2930,9 +2930,9 @@
     "back": "Back from {section}",
     "modes": {
       "label": "Mode",
-      "studio": "Studio",
-      "console": "Console",
-      "unavailable": "Your role in this workspace has no Console pages"
+      "studio": "PealStudio",
+      "api": "PealAPI",
+      "unavailable": "Your role in this workspace has no PealAPI pages"
     },
     "groups": {
       "engage": "Engage",
