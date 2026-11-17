@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://peal.social">
-    <img src=".github/logo/peal-cube.svg" alt="Peal" width="160" height="160" />
+    <img src=".github/logo/peal-cube.gif" alt="Peal" width="160" height="160" />
   </a>
 </p>
 
@@ -17,6 +17,7 @@
   <a href="https://docs.peal.social/reference"><strong>API reference</strong></a> ·
   <a href="https://docs.peal.social/self-hosting"><strong>Self-hosting</strong></a> ·
   <a href="https://status.peal.social"><strong>Status</strong></a> ·
+  <a href="https://github.com/orgs/peal-social/projects/1"><strong>Roadmap</strong></a> ·
   <a href="https://github.com/peal-social/peal/issues/new/choose"><strong>Report an issue</strong></a>
 </p>
 
@@ -28,8 +29,10 @@
 </p>
 
 > [!WARNING]
-> Peal is built in the open and has not been released yet. Everything below
-> works from source today; there are no published images yet.
+> Peal is being built in the open and has not been released yet. The hosted
+> service at [app.peal.social](https://app.peal.social) is an early preview,
+> and there are no published images yet: everything below works from source
+> today.
 
 ## What's Peal?
 
@@ -44,9 +47,14 @@ write a post once, schedule it across platforms, and see how it performs.
   ways that cannot post it twice, and asks you before trying again.
 - **Work as a team.** Workspaces with roles, review links for people outside
   them, approvals before posts go out, tags, signatures and channel sets.
+  Sign in with a password, with Google, or with your own OpenID Connect
+  provider on a server you run.
 - **See what worked.** Likes, reposts, replies, impressions and followers,
   read back from each platform, by channel and day, with an export, and the
-  comments under your posts in one inbox.
+  comments under your posts in one inbox, beside your ads' results.
+- **Act on it.** Rules that answer comments holding a keyword, and
+  follow-ups that comment under or repost your own post once it has enough
+  likes.
 - **Built to be built on.** A typed HTTP API, SDKs in eight languages, a
   command line, an MCP endpoint and an agent skill, and signed webhooks.
 - **Yours to run.** Self-host it with Postgres and any S3-compatible store.
@@ -57,29 +65,50 @@ write a post once, schedule it across platforms, and see how it performs.
 
 ## Platforms
 
-| Platform                   | Publish |      Analytics      | Inbox |
-| -------------------------- | :-----: | :-----------------: | :---: |
-| Mastodon                   |    ✓    |          ✓          |   ✓   |
-| Bluesky                    |    ✓    |          ✓          |   ✓   |
-| LinkedIn profiles          |    ✓    |                     |       |
-| LinkedIn pages             |    ✓    |          ✓          |       |
-| X                          |    ✓    | ✓ (operator opt-in) |       |
-| Threads                    |    ✓    |          ✓          |       |
-| Instagram                  |    ✓    |          ✓          |       |
-| Facebook Pages             |    ✓    |          ✓          |       |
-| TikTok                     |    ✓    |          ✓          |       |
-| YouTube                    |    ✓    |          ✓          |       |
-| Pinterest                  |    ✓    |          ✓          |       |
-| Google Business Profile    |    ✓    |                     |       |
-| WordPress sites (articles) |    ✓    |                     |       |
+| Platform                   | Publish |      Analytics      | Inbox                                               |
+| -------------------------- | :-----: | :-----------------: | --------------------------------------------------- |
+| Mastodon                   |    ✓    |          ✓          | Comments, direct messages                           |
+| Bluesky                    |    ✓    |          ✓          | Comments, direct messages                           |
+| LinkedIn profiles          |    ✓    |                     |                                                     |
+| LinkedIn pages             |    ✓    |          ✓          | Comments (awaiting LinkedIn)                        |
+| X                          |    ✓    | ✓ (operator opt-in) |                                                     |
+| Threads                    |    ✓    |          ✓          |                                                     |
+| Instagram                  |    ✓    |          ✓          | Comments, messages, private replies (awaiting Meta) |
+| Facebook Pages             |    ✓    |          ✓          | Comments, messages, private replies (awaiting Meta) |
+| TikTok                     |    ✓    |          ✓          |                                                     |
+| YouTube                    |    ✓    |          ✓          | Comments (awaiting Google)                          |
+| Pinterest                  |    ✓    |          ✓          |                                                     |
+| Google Business Profile    |    ✓    |                     | Reviews (awaiting Google)                           |
+| Discord (chats)            |    ✓    |                     |                                                     |
+| Telegram (chats)           |    ✓    |                     |                                                     |
+| Slack (chats)              |    ✓    |                     |                                                     |
+| WordPress sites (articles) |    ✓    |                     |                                                     |
+| WordPress.com (articles)   |    ✓    |                     |                                                     |
+| DEV (articles)             |    ✓    |                     |                                                     |
+| Hashnode (articles)        |    ✓    |                     |                                                     |
 
-A WordPress site takes articles, with a formatted body, a featured image,
-tags and categories ([Websites and articles](https://docs.peal.social/guides/channels/websites)).
+The inbox reads the comments under the posts Peal published, and answers
+them as the connected account. "Awaiting" marks what is built but stays off
+until the platform has reviewed the server's app: Meta's App Review for
+Facebook's and Instagram's comments, direct messages and private replies,
+Google's verification for YouTube's comments and its access for Google
+Business Profile's reviews, LinkedIn's comment scopes for its pages. Direct
+messages are private correspondence: they are read only where whoever runs
+the server turned them on, and then only for the channels a workspace turned
+them on for ([Inbox](https://docs.peal.social/guides/engage/inbox)).
+
+Chats (a Discord or Slack channel, a Telegram chat) take posts; websites take
+articles, with a formatted body, a featured image, tags and categories
+([Websites and articles](https://docs.peal.social/guides/channels/websites)).
 Each platform's limits, media rules and the counts it gives are in the docs'
-[Channels](https://docs.peal.social/guides/channels) and
-[Analytics](https://docs.peal.social/guides/engage/analytics) pages. Meta ad accounts can be
-connected to compare organic and paid results, and to boost a post within a
-ceiling an owner sets ([Ads](https://docs.peal.social/guides/engage/ads)).
+[Platforms](https://docs.peal.social/platforms) and
+[Analytics](https://docs.peal.social/guides/engage/analytics) pages.
+
+Ad accounts connect beside the channels, to compare organic and paid
+results ([Ads](https://docs.peal.social/guides/engage/ads)): Meta ad
+accounts, which can also boost a published post within a monthly ceiling an
+owner sets, and Google Ads accounts, read only. Ads stay off until whoever
+runs the server turns them on.
 
 ## Features
 
@@ -102,6 +131,7 @@ ceiling an owner sets ([Ads](https://docs.peal.social/guides/engage/ads)).
 - Workspaces, members, roles and invitations
 - Review links with comments and approvals
 - Notifications in the app and by email
+- Sign-in with a password, with Google, or with an OpenID Connect provider on a self-hosted server ([Single sign-on](https://docs.peal.social/self-hosting/single-sign-on))
 - A staff console with an audit log, for whoever runs the instance
 
 </td>
@@ -113,13 +143,15 @@ ceiling an owner sets ([Ads](https://docs.peal.social/guides/engage/ads)).
 
 - Post and account counts by channel and day, against the period before
 - Each post's counts over time, the best posts, and an export
-- An inbox for comments, answered as the connected account
+- An [inbox](https://docs.peal.social/guides/engage/inbox) for comments and direct messages, answered as the connected account
+- [Ads](https://docs.peal.social/guides/engage/ads): Meta ads read and boosted within a ceiling, Google Ads read only
 
 </td>
 <td width="50%" valign="top">
 
 **Automate and integrate**
 
+- [Comment rules](https://docs.peal.social/guides/engage/inbox#comment-rules) that answer comments holding a keyword, and [follow-ups](https://docs.peal.social/guides/posts/queues#follow-ups) that comment under or repost a post once it has enough likes
 - An [HTTP API](https://docs.peal.social/developers) with workspace API keys and OAuth
 - [Webhooks](https://docs.peal.social/developers/webhooks) signed as Standard Webhooks says
 - The [`peal` command line](https://docs.peal.social/developers/cli) and an [MCP endpoint](https://docs.peal.social/developers/mcp)
@@ -186,6 +218,7 @@ every setting.
 ## Resources
 
 - [Documentation](https://docs.peal.social)
+- [Roadmap](https://github.com/orgs/peal-social/projects/1)
 - [API reference](https://docs.peal.social/reference)
 - [Self-hosting guide](https://docs.peal.social/self-hosting)
 - [Bug tracker](https://github.com/peal-social/peal/issues) (bugs, platform

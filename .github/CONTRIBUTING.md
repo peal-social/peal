@@ -544,6 +544,10 @@ environment:
 - `DOCS_TURNSTILE_SITE_KEY`: a Turnstile check before each question, whose
   secret the server reads from `TURNSTILE_SECRET_KEY`.
 
+The READMEs' animated logo, `.github/logo/peal-cube.gif`, is the site's
+pixel cube rendered by `bun scripts/logo-gif.ts` (headless Chromium through
+Playwright, then ffmpeg); `--frames <folder>` keeps its PNG frames.
+
 ## Settings
 
 The docs' [environment variables](../packages/peal-docs/docs/self-hosting/environment-variables.mdx)
