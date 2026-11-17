@@ -1,6 +1,7 @@
 import type { ChannelPlatform } from "peal-contract";
 import { measureText, platformRules } from "peal-contract/post-text";
 import type { AppMockProps, ProductSummary } from "peal-ui/components/app-mock";
+import type { CodeBlockContent } from "peal-ui/components/code-block";
 import type { CtaLink } from "peal-ui/components/cta-band";
 import type { FeatureCellContent } from "peal-ui/components/feature-cell";
 import type { StageChip, StageTab } from "peal-ui/components/hero-stage";
@@ -116,12 +117,27 @@ const chip = (
   return href === undefined ? [] : [{ href, icon, label }];
 };
 
-/** The hero's stage: PealStudio's composer and PealAPI's code demo. */
+/** The hero's code demo: the publishing request in every way in. */
+export const heroCode = (
+  t: Messages["home"],
+  code: HomeCode
+): CodeBlockContent => ({
+  copied: t.api.copied,
+  copy: t.api.copy,
+  label: t.api.demoLabel,
+  lineNumbers: true,
+  response: code.publish.response,
+  samples: code.publish.samples,
+});
+
+/**
+ * The hero's stage: PealStudio's composer and PealAPI's code demo, which
+ * the page renders as the stage's `code` (heroCode), out of its props.
+ */
 export const heroTabs = (
   locale: Locale,
   messages: Messages,
-  settings: HomeSettings,
-  code: HomeCode
+  settings: HomeSettings
 ): StageTab[] => {
   const t = messages.home;
   const { links } = messages.nav;
@@ -200,17 +216,7 @@ export const heroTabs = (
         ),
       ],
       chipsLabel: t.hero.chips.api,
-      content: {
-        block: {
-          copied: t.api.copied,
-          copy: t.api.copy,
-          label: t.api.demoLabel,
-          lineNumbers: true,
-          response: code.publish.response,
-          samples: code.publish.samples,
-        },
-        kind: "code",
-      },
+      content: { kind: "code" },
       label: "PealAPI",
       tile: "ink",
       value: "api",
@@ -425,47 +431,65 @@ export const studioBento = (
   };
 };
 
-/** PealAPI's rows: publishing, MCP, the command line, SDKs, webhooks, embedding. */
-export const apiRows = (
-  t: Messages["home"],
-  settings: HomeSettings,
-  code: HomeCode
-): ProductRow[] => {
-  const { connect, rows } = t.api;
+/** The slots of PealAPI's rows that hold a code block. */
+export type ApiCodeSlot =
+  | "codeCli"
+  | "codeMcp"
+  | "codePublish"
+  | "codeWebhooks";
 
+/**
+ * The code blocks of PealAPI's rows, by the slot each fills: the page
+ * renders them, so the rows themselves stay static HTML.
+ */
+export const apiCode = (
+  t: Messages["home"],
+  code: HomeCode
+): Readonly<Record<ApiCodeSlot, CodeBlockContent>> => {
   const block = {
     copied: t.api.copied,
     copy: t.api.copy,
     label: t.api.demoLabel,
   };
 
+  return {
+    codeCli: { ...block, samples: [code.cli] },
+    codeMcp: {
+      ...block,
+      response: code.mcp.response,
+      samples: [code.mcp.request],
+    },
+    codePublish: { ...block, samples: code.publish.samples },
+    codeWebhooks: { ...block, samples: [code.webhook] },
+  };
+};
+
+const codeDemo = (slot: ApiCodeSlot) => ({ kind: "code", slot }) as const;
+
+/** PealAPI's rows: publishing, MCP, the command line, SDKs, webhooks, embedding. */
+export const apiRows = (
+  t: Messages["home"],
+  settings: HomeSettings
+): ProductRow[] => {
+  const { connect, rows } = t.api;
+
   return [
     {
-      demo: {
-        block: { ...block, samples: code.publish.samples },
-        kind: "code",
-      },
+      demo: codeDemo("codePublish"),
       icon: "braces",
       link: docsLink(settings, "api-quickstart", rows.publish.link),
       text: rows.publish.text,
       title: rows.publish.title,
     },
     {
-      demo: {
-        block: {
-          ...block,
-          response: code.mcp.response,
-          samples: [code.mcp.request],
-        },
-        kind: "code",
-      },
+      demo: codeDemo("codeMcp"),
       icon: "bot",
       link: docsLink(settings, "developers/mcp", rows.mcp.link),
       text: rows.mcp.text,
       title: rows.mcp.title,
     },
     {
-      demo: { block: { ...block, samples: [code.cli] }, kind: "code" },
+      demo: codeDemo("codeCli"),
       icon: "terminal",
       link: docsLink(settings, "developers/cli", rows.cli.link),
       text: rows.cli.text,
@@ -488,10 +512,7 @@ export const apiRows = (
       title: rows.sdks.title,
     },
     {
-      demo: {
-        block: { ...block, samples: [code.webhook] },
-        kind: "code",
-      },
+      demo: codeDemo("codeWebhooks"),
       icon: "webhook",
       link: docsLink(settings, "developers/webhooks", rows.webhooks.link),
       text: rows.webhooks.text,

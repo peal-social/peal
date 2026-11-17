@@ -2,10 +2,9 @@
 
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@ui-sdk/react/tabs";
 import { ArrowUpRightIcon } from "lucide-react";
+import type * as React from "react";
 
 import { cn } from "../lib/utils";
-import { CodeBlock } from "./code-block";
-import type { CodeBlockContent } from "./code-block";
 import { ComposerMock } from "./composer-mock";
 import type { ComposerMockProps } from "./composer-mock";
 import { PealMark } from "./peal-mark";
@@ -25,8 +24,11 @@ type StageContent =
       readonly kind: "composer";
     }
   | {
-      /** A request in every way in, beside its response. */
-      readonly block: CodeBlockContent;
+      /**
+       * A request in every way in, beside its response: the stage's `code`,
+       * a CodeBlock island the page renders, so no code rides in the
+       * stage's props.
+       */
       readonly kind: "code";
     };
 
@@ -44,15 +46,6 @@ interface StageTab {
   readonly value: string;
 }
 
-const Content = ({ content }: { readonly content: StageContent }) =>
-  content.kind === "composer" ? (
-    <div className="p-3 sm:p-4">
-      <ComposerMock {...content.composer} />
-    </div>
-  ) : (
-    <CodeBlock {...content.block} className="rounded-none border-0" />
-  );
-
 /**
  * The home page's stage (DESIGN.md, Site): the hero's one `background`
  * panel on the brand field, with ui-sdk's tabs as a segmented switch
@@ -61,10 +54,13 @@ const Content = ({ content }: { readonly content: StageContent }) =>
  */
 const HeroStage = ({
   className,
+  code,
   label,
   tabs,
 }: {
   readonly className?: string | undefined;
+  /** The code tab's block, a CodeBlock without its border. */
+  readonly code?: React.ReactNode;
   /** The switch's name, such as "Peal's products". */
   readonly label: string;
   readonly tabs: readonly StageTab[];
@@ -105,7 +101,13 @@ const HeroStage = ({
         value={tab.value}
         className="border-t outline-none"
       >
-        <Content content={tab.content} />
+        {tab.content.kind === "composer" ? (
+          <div className="p-3 sm:p-4">
+            <ComposerMock {...tab.content.composer} />
+          </div>
+        ) : (
+          code
+        )}
         <ul
           aria-label={tab.chipsLabel}
           className="flex flex-wrap gap-2 border-t p-3 sm:px-4"

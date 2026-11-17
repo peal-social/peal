@@ -85,6 +85,10 @@ export const decodeHighlighted = (encoded: string): DecodedRun[][] =>
     return runs;
   });
 
+/** How many lines the code has, counted from their separators. */
+export const highlightedLineCount = (encoded: string): number =>
+  encoded.split("\n").length;
+
 /** The plain source, as Copy copies it. */
 export const highlightedSource = (encoded: string): string =>
   decodeHighlighted(encoded)

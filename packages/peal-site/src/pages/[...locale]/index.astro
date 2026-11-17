@@ -12,13 +12,16 @@ import { ProductRows } from "peal-ui/components/product-rows";
 import { SectionOpener } from "peal-ui/components/section-opener";
 
 import { homeCode } from "../../code/home-code.ts";
+import CodeBlock from "../../components/code-block.astro";
 import { appLink, docsLink } from "../../config.ts";
 import { faqGroups, faqJsonLdText } from "../../faq.ts";
 import { formatStars, latestPulls, repositoryStars } from "../../github.ts";
 import {
+  apiCode,
   apiRows,
   ctaLinks,
   hardPartCells,
+  heroCode,
   heroTabs,
   openCells,
   productPair,
@@ -130,8 +133,14 @@ const bento = studioBento(locale, t, settings);
       <HeroStage
         client:load
         label={t.hero.stage}
-        tabs={heroTabs(locale, catalogue, settings, code)}
-      />
+        tabs={heroTabs(locale, catalogue, settings)}
+      >
+        <CodeBlock
+          slot="code"
+          block={heroCode(t, code)}
+          class="rounded-none border-0"
+        />
+      </HeroStage>
     </section>
   </BrandField>
 
@@ -170,7 +179,14 @@ const bento = studioBento(locale, t, settings);
       lead={t.api.lead}
       title={t.api.title}
     />
-    <ProductRows client:visible rows={apiRows(t, settings, code)} />
+    <!-- Static: only the code blocks in it hydrate, each on view. -->
+    <ProductRows rows={apiRows(t, settings)}>
+      {
+        Object.entries(apiCode(t, code)).map(([slot, block]) => (
+          <CodeBlock slot={slot} block={block} />
+        ))
+      }
+    </ProductRows>
   </section>
 
   <section id="open" aria-labelledby="open-title" class="scroll-mt-8">

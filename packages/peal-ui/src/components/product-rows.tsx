@@ -1,8 +1,7 @@
 import { ChevronRightIcon } from "lucide-react";
+import type * as React from "react";
 
 import { cn } from "../lib/utils";
-import { CodeBlock } from "./code-block";
-import type { CodeBlockContent } from "./code-block";
 import { Mark, SiteIconView } from "./site-icons";
 import type { SiteIcon, SiteMark } from "./site-icons";
 
@@ -23,8 +22,20 @@ interface ConnectPage {
   readonly url: string;
 }
 
+/** The slot a row's code block comes in, such as `codePublish`. */
+type RowCodeSlot = `code${string}`;
+
+type RowCodeSlots = Readonly<Partial<Record<RowCodeSlot, React.ReactNode>>>;
+
 type RowDemo =
-  | { readonly block: CodeBlockContent; readonly kind: "code" }
+  | {
+      readonly kind: "code";
+      /**
+       * The slot holding the row's code block, a CodeBlock island the page
+       * renders: the rows stay static HTML, and no code rides in props.
+       */
+      readonly slot: RowCodeSlot;
+    }
   | { readonly connect: ConnectPage; readonly kind: "connect" }
   | {
       readonly kind: "tiles";
@@ -121,12 +132,13 @@ const Connect = ({ connect }: { readonly connect: ConnectPage }) => (
   </div>
 );
 
-const Demo = ({ demo }: { readonly demo: RowDemo }) => {
+/** A row's tiles or mock; its code block comes from its slot. */
+const Demo = ({
+  demo,
+}: {
+  readonly demo: Exclude<RowDemo, { readonly kind: "code" }>;
+}) => {
   switch (demo.kind) {
-    case "code": {
-      return <CodeBlock {...demo.block} />;
-    }
-
     case "tiles": {
       return <Tiles tiles={demo.tiles} />;
     }
@@ -149,10 +161,11 @@ const Demo = ({ demo }: { readonly demo: RowDemo }) => {
 const ProductRows = ({
   className,
   rows,
+  ...code
 }: {
   readonly className?: string | undefined;
   readonly rows: readonly ProductRow[];
-}) => (
+} & RowCodeSlots) => (
   <div className={cn("mx-auto max-w-6xl border-t", className)}>
     {rows.map((row) => (
       <section
@@ -183,7 +196,11 @@ const ProductRows = ({
           )}
         </div>
         <div className="min-w-0 p-3 sm:p-6">
-          <Demo demo={row.demo} />
+          {row.demo.kind === "code" ? (
+            code[row.demo.slot]
+          ) : (
+            <Demo demo={row.demo} />
+          )}
         </div>
       </section>
     ))}
@@ -192,4 +209,11 @@ const ProductRows = ({
 
 export { ProductRows };
 
-export type { ConnectPage, ConnectRow, ProductRow, RowDemo };
+export type {
+  ConnectPage,
+  ConnectRow,
+  ProductRow,
+  RowCodeSlot,
+  RowCodeSlots,
+  RowDemo,
+};
