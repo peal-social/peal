@@ -21,11 +21,4 @@ package = false
 # of tests in one of them (tests/class_scheduling.py).
 [tool.pytest]
 testpaths = ["tests"]
-addopts = [
-  "-p",
-  "no:cacheprovider",
-  "--numprocesses",
-  "8",
-  "--durations=60",
-  "--durations-min=1",
-]
+addopts = ["-p", "no:cacheprovider", "--numprocesses", "auto"]
