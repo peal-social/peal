@@ -2,7 +2,7 @@
 
 import { definePrimitive } from "@ui-sdk/core";
 import { createParts } from "@ui-sdk/react/primitive";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type * as React from "react";
 
 import { createPixelArt, rasterise } from "../lib/pixel-icon";
@@ -103,20 +103,35 @@ const PreviewArt = ({
   const icons = useRef(new Map<string, PixelIcon>());
   const shown = useRef<string | undefined>(undefined);
 
+  // Whether the art is made, which the first notice of visibility does.
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
     // The pixels draw on the canvas; the idle sweep runs only while the open
     // menu shows the card.
     const start = (element: HTMLCanvasElement) => {
-      const style = getComputedStyle(element);
-      const tone = (name: string) => style.getPropertyValue(name).trim();
+      let made: PixelArt | undefined;
 
-      const made = createPixelArt(element, {
-        tones: [tone("--brand"), tone("--lavender"), "#ffffff", tone("--sun")],
-      });
-
-      art.current = made;
-
+      // The first notice comes once the page is laid out, so reading the
+      // tones there costs nothing; read while the header hydrated, they
+      // forced the whole page's style and layout.
       const visibility = new IntersectionObserver((entries) => {
+        if (made === undefined) {
+          const style = getComputedStyle(element);
+          const tone = (name: string) => style.getPropertyValue(name).trim();
+
+          made = createPixelArt(element, {
+            tones: [
+              tone("--brand"),
+              tone("--lavender"),
+              "#ffffff",
+              tone("--sun"),
+            ],
+          });
+          art.current = made;
+          setReady(true);
+        }
+
         const entry = entries.at(-1);
         made.idle(entry?.isIntersecting === true && !reducedMotion());
       });
@@ -125,7 +140,7 @@ const PreviewArt = ({
 
       return () => {
         visibility.disconnect();
-        made.dispose();
+        made?.dispose();
         art.current = undefined;
       };
     };
@@ -162,14 +177,15 @@ const PreviewArt = ({
       }
     };
 
-    if (source instanceof SVGSVGElement) {
+    // Once the art is made, and not while the header hydrates.
+    if (ready && source instanceof SVGSVGElement) {
       void show(source);
     }
 
     return () => {
       cancelled = true;
     };
-  }, [cells, current]);
+  }, [cells, current, ready]);
 
   return (
     <canvas
