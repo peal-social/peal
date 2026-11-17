@@ -1,11 +1,11 @@
 ---
 title: Ads
-description: "Connect Meta ad accounts to a workspace and read their campaigns and daily numbers beside your posts' organic results."
+description: "Connect Meta and Google Ads accounts to a workspace and read their campaigns and daily numbers beside your posts' organic results."
 sidebar:
   icon: megaphone
 ---
 
-Once an ad account is connected, you'll see what its ads did next to what your posts did on their own. You can also boost a post you published through Peal as an ad on Facebook or Instagram.
+Once an ad account on Meta or Google Ads is connected, you'll see what its campaigns and ads did next to what your posts did on their own. You can also boost a post you published through Peal as an ad on Facebook or Instagram.
 
 <Callout type="note" title="Ads are new, and off by default">
   This feature is new, and its API may still grow. It's off unless the
@@ -19,13 +19,14 @@ Once an ad account is connected, you'll see what its ads did next to what your p
 With ads turned on, you can:
 
 - Connect Meta ad accounts through a sign-in of their own, separate from the one that connects Facebook Pages and Instagram accounts as [channels](/guides/channels).
+- Connect [Google Ads accounts](#google), read only: their campaigns and each campaign's daily cost, impressions and clicks.
 - Read each ad account's campaigns, ad sets and ads, including those made outside Peal, and what each ad did each day.
 - Compare organic and paid: a published post's own counts on each channel, beside what the ads that promote it did.
 - [Boost a published post](/guides/engage/boosts) on a Facebook Page, or on an Instagram account connected through its Page, with a budget, an end date and an audience.
 - Pause, resume and stop a boost.
 - Follow every boost: the workspace's owners get notifications, your own systems get [webhook events](/developers/ads#webhooks), and every decision about money goes in an [audit trail](/guides/engage/boosts#audit).
 
-The [API](/developers/ads#api), the SDKs, the [command line and MCP tools](/developers/ads#clients) do the same. [What isn't built](#not-built) lists the rest.
+The [API](/developers/ads#api), the SDKs, the [command line and MCP tools](/developers/ads#clients) do the same, except that the MCP tools don't offer Google Ads accounts. [What isn't built](#not-built) lists the rest.
 
 ## Who can do what [#access]
 
@@ -89,7 +90,7 @@ To disconnect one ad account, click **Disconnect** on it. To remove a whole sign
 
 ## What Peal reads [#reading]
 
-Every hour, Peal reads each connected ad account from its network. It reads the campaigns, ad sets and ads, and each ad's numbers for each day of the account's calendar:
+Every hour, Peal reads each connected Meta ad account. (Google Ads accounts are read [every six hours, by campaign](#google).) It reads the campaigns, ad sets and ads, and each ad's numbers for each day of the account's calendar:
 
 | Number      | What it is                                                                                              |
 | ----------- | ------------------------------------------------------------------------------------------------------- |
@@ -118,6 +119,42 @@ The two are never added together, because what a platform counts on a post alrea
 
 The organic side is empty if you can't read analytics. It's also empty for a platform whose counts Peal [doesn't read](/guides/engage/analytics#schedule), such as Facebook Pages.
 
+## Google Ads [#google]
+
+Peal reads Google Ads accounts and never changes anything there. It creates, edits and pauses nothing at Google, and you can't boost a post on Google Ads or turn spending on for one of its accounts.
+
+### Connect a Google Ads account [#google-connect]
+
+On an instance whose operator [offers Google Ads](/self-hosting/ads#google), go to **Ads** and click **Connect an ad account on Google Ads**. Peal first tells you what it reads. Click **Continue to Google** to go on.
+
+Google's consent screen then asks to see, edit, create and delete your Google Ads data, because Google has no reading-only access. Peal still only reads.
+
+Google asks you to sign in with a passkey. Add one to your Google account before you start, because Google can take up to seven days to accept a new passkey.
+
+Peal then lists every account your Google account reaches, each once: the accounts you use directly, and the client accounts of the manager accounts you use. When a manager account no longer holds one of them, Peal looks once for another way your sign-in reaches it. If there's none, the account shows as unreachable from that day, and what Peal already read stays.
+
+### What Peal reads from Google Ads [#google-reading]
+
+For each account, Peal reads:
+
+- Its name.
+- Its campaigns: name, status, type (such as `SEARCH` or `PERFORMANCE_MAX`), budget, start and end.
+- Each campaign's cost, impressions and clicks for each day of the account's calendar.
+
+Nothing about the people who saw an ad is read. Peal doesn't read ads, ad groups, keywords or conversions either, so a Google Ads account has no ads list. Reach and results are left out, because Google Ads doesn't report them this way.
+
+Peal reads every six hours, so what it shows is never more than six hours behind. Each account's page shows the last read. The first read takes the last 90 days, and later ones the last 7, because Google corrects recent days.
+
+Peal keeps cost the way Google writes it, in millionths of the currency, and rounds each figure it shows up to the cent once. A total can be a cent off Google's own. A removed campaign that did nothing over the days shown is left out of the list.
+
+A Google Ads account's numbers stand on their own, on its page. They're never added to Meta's or to your organic numbers.
+
+### Disconnect Google Ads [#google-disconnect]
+
+When you disconnect the account, or remove its sign-in, Peal deletes what it read of it.
+
+If you remove Peal's access in your Google account's security settings instead, Peal stops reading and deletes nothing. The sign-in shows as needing reconnecting, and what Peal read stays until you remove the sign-in.
+
 ## Your data [#data]
 
 Here's what happens to ads data when something is deleted or exported:
@@ -136,7 +173,8 @@ What an ad needs goes to the ad network: the post's id, the budget, the dates, t
 
 Peal doesn't do any of this:
 
-- Ad networks other than Meta's.
+- Ad networks other than Meta's and Google Ads.
+- On Google Ads, anything beyond reading campaigns and their daily numbers: no ads, conversions or boosts.
 - Creating campaigns, ad sets or ads with creatives of their own. Peal boosts a post that's already published.
 - Boosting a post that wasn't published through Peal, or one on an Instagram account connected with Instagram Login.
 - Changing a running boost's budget or audience. Stop it, and make another.

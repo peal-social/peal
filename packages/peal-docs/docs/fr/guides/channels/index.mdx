@@ -9,14 +9,19 @@ Un canal est un compte social connecté à un espace de travail. Les publication
 
 Pour voir les canaux d’un espace de travail, ouvrez l’espace et cliquez sur **Canaux** dans la barre latérale. Chaque membre les voit. Seuls les propriétaires et les administrateurs peuvent les connecter, les reconnecter et les déconnecter.
 
-<Callout type="note" title="Peal connecte onze plateformes pour l’instant">
+<Callout type="note" title="Peal connecte quatorze plateformes pour l’instant">
   Peal connecte les comptes Mastodon, Bluesky, LinkedIn, X, Threads, Instagram,
-  TikTok et Pinterest, les Pages Facebook, les chaînes YouTube et les
-  établissements Google Business Profile. **Canaux** ne propose que les
-  plateformes pour lesquelles le serveur Peal est configuré.
+  TikTok et Pinterest, les Pages Facebook, les chaînes YouTube, les
+  établissements Google Business Profile, et les canaux Discord, Telegram et
+  Slack. **Canaux** ne propose que les plateformes pour lesquelles le serveur
+  Peal est configuré.
 </Callout>
 
 Un site WordPress se connecte aussi, avec un mot de passe d’application, pour que vous puissiez y publier des articles. Voyez [Sites web et articles](/guides/channels/websites).
+
+Une messagerie Discord ou Telegram se connecte sans page de connexion. Vous collez un secret à la place : l’adresse du webhook d’un salon Discord, ou le jeton de votre propre bot Telegram et la discussion, pour un canal ou un groupe Telegram. Peal le vérifie sur la plateforme et le garde chiffré. Pour reconnecter le canal, remplissez le même formulaire avec un nouveau secret. Voyez [Discord](/platforms/discord#connect) et [Telegram](/platforms/telegram#connect).
+
+Un canal Slack se connecte en vous connectant à Slack. Vous ajoutez l’application de Peal à votre espace de travail Slack, puis vous choisissez le canal sur la page de Slack. Voyez [Slack](/platforms/slack#connect).
 
 ## Connecter un compte [#connect]
 
@@ -48,7 +53,7 @@ La plateforme vous renvoie vers Peal, qui termine la connexion.
 
 Si l’espace de travail a déjà le compte, le connecter de nouveau reconnecte son canal au lieu d’en ajouter un second. Plusieurs espaces de travail peuvent connecter le même compte.
 
-La page de chaque plateforme dit comment y connecter un compte : [Mastodon](/platforms/mastodon#connect), [Bluesky](/platforms/bluesky#connect), [Threads](/platforms/threads#connect), [X](/platforms/x#connect), [LinkedIn](/platforms/linkedin#connect), [Pages Facebook](/platforms/facebook#connect), [Instagram](/platforms/instagram#connect), [TikTok](/platforms/tiktok#connect), [YouTube](/platforms/youtube#connect), [Pinterest](/platforms/pinterest#connect), [Google Business Profile](/platforms/google-business#connect).
+La page de chaque plateforme dit comment y connecter un compte : [Mastodon](/platforms/mastodon#connect), [Bluesky](/platforms/bluesky#connect), [Threads](/platforms/threads#connect), [X](/platforms/x#connect), [LinkedIn](/platforms/linkedin#connect), [Pages Facebook](/platforms/facebook#connect), [Instagram](/platforms/instagram#connect), [TikTok](/platforms/tiktok#connect), [YouTube](/platforms/youtube#connect), [Pinterest](/platforms/pinterest#connect), [Google Business Profile](/platforms/google-business#connect), [Discord](/platforms/discord#connect), [Telegram](/platforms/telegram#connect), [Slack](/platforms/slack#connect).
 
 ## Laisser quelqu’un d’autre connecter son compte [#connect-links]
 
@@ -275,14 +280,15 @@ Cliquez sur **Déconnecter** à côté du canal et confirmez. Peal supprime les 
 
 Si une connexion échoue, Peal affiche l’un de ces messages :
 
-| Message                                                                       | Que faire                                                                                                                                                                                                                                                                |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Ce serveur n’est pas configuré pour connecter des comptes de cette plateforme | Demandez à l’administrateur de l’instance. Il manque au serveur un réglage que la plateforme exige.                                                                                                                                                                      |
-| Ce n’est pas l’adresse d’un serveur                                           | Vérifiez l’adresse du serveur Mastodon, par exemple `mastodon.social`.                                                                                                                                                                                                   |
-| Peal ne se connecte qu’à des serveurs publics, en HTTPS                       | Le serveur est privé, ou ne répond pas en HTTPS.                                                                                                                                                                                                                         |
-| Aucun compte ne correspond à cet identifiant                                  | Vérifiez l’identifiant Bluesky.                                                                                                                                                                                                                                          |
-| Cette connexion a expiré ou a été lancée ailleurs                             | Recommencez depuis les canaux de l’espace de travail, dans cet onglet.                                                                                                                                                                                                   |
-| La connexion a été annulée sur la plateforme                                  | Vous, ou la plateforme, avez refusé. Recommencez si vous vouliez connecter le compte.                                                                                                                                                                                    |
-| Vous vous êtes connecté à un autre compte que celui de ce canal               | Reconnectez-vous avec le compte du canal.                                                                                                                                                                                                                                |
-| La connexion n’a atteint aucun compte à connecter                             | Sur Facebook, gérez une Page Facebook, ou liez-y votre compte professionnel Instagram, ou connectez-le plutôt avec Instagram. Sur YouTube, choisissez un compte Google qui a une chaîne. Sur Google Business Profile, faites d’abord valider l’établissement par Google. |
-| La plateforme n’a pas répondu                                                 | Réessayez dans un instant.                                                                                                                                                                                                                                               |
+| Message                                                                          | Que faire                                                                                                                                                                                                                                                                |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Ce serveur n’est pas configuré pour connecter des comptes de cette plateforme    | Demandez à l’administrateur de l’instance. Il manque au serveur un réglage que la plateforme exige.                                                                                                                                                                      |
+| Ce n’est pas l’adresse d’un serveur                                              | Vérifiez l’adresse du serveur Mastodon, par exemple `mastodon.social`.                                                                                                                                                                                                   |
+| Peal ne se connecte qu’à des serveurs publics, en HTTPS                          | Le serveur est privé, ou ne répond pas en HTTPS.                                                                                                                                                                                                                         |
+| Aucun compte ne correspond à cet identifiant                                     | Vérifiez l’identifiant Bluesky.                                                                                                                                                                                                                                          |
+| Cette connexion a expiré ou a été lancée ailleurs                                | Recommencez depuis les canaux de l’espace de travail, dans cet onglet.                                                                                                                                                                                                   |
+| La connexion a été annulée sur la plateforme                                     | Vous, ou la plateforme, avez refusé. Recommencez si vous vouliez connecter le compte.                                                                                                                                                                                    |
+| Vous vous êtes connecté à un autre compte que celui de ce canal                  | Reconnectez-vous avec le compte du canal.                                                                                                                                                                                                                                |
+| La connexion n’a atteint aucun compte à connecter                                | Sur Facebook, gérez une Page Facebook, ou liez-y votre compte professionnel Instagram, ou connectez-le plutôt avec Instagram. Sur YouTube, choisissez un compte Google qui a une chaîne. Sur Google Business Profile, faites d’abord valider l’établissement par Google. |
+| La plateforme n’a pas répondu                                                    | Réessayez dans un instant.                                                                                                                                                                                                                                               |
+| Ce n’est pas l’adresse d’un webhook Discord, et les autres refus des messageries | Chacun dit quoi corriger. Voyez [Discord](/platforms/discord#connect) et [Telegram](/platforms/telegram#connect).                                                                                                                                                        |

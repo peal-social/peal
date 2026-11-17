@@ -9,14 +9,18 @@ A channel is a social account connected to a workspace. Posts go to channels, so
 
 To see a workspace's channels, open the workspace and click **Channels** in the sidebar. Every member sees them. Only owners and admins can connect, reconnect and disconnect them.
 
-<Callout type="note" title="Peal connects eleven platforms so far">
+<Callout type="note" title="Peal connects fourteen platforms so far">
   Peal connects Mastodon, Bluesky, LinkedIn, X, Threads, Instagram, TikTok and
-  Pinterest accounts, Facebook Pages, YouTube channels and Google Business
-  Profile locations. **Channels** offers only the platforms the Peal server is
-  set up for.
+  Pinterest accounts, Facebook Pages, YouTube channels, Google Business Profile
+  locations, and Discord, Telegram and Slack channels. **Channels** offers only
+  the platforms the Peal server is set up for.
 </Callout>
 
 A WordPress site connects too, with an application password, so you can publish articles to it. See [Websites and articles](/guides/channels/websites).
+
+A Discord or Telegram chat connects without a sign-in page. You paste a secret instead: a Discord channel's webhook address, or your own Telegram bot's token and the chat, for a Telegram channel or group. Peal checks it on the platform and keeps it encrypted. To reconnect the channel, fill in the same form with a new secret. See [Discord](/platforms/discord#connect) and [Telegram](/platforms/telegram#connect).
+
+A Slack channel connects with a sign-in. You add Peal's app to your Slack workspace, then pick the channel on Slack's page. See [Slack](/platforms/slack#connect).
 
 ## Connect an account [#connect]
 
@@ -48,7 +52,7 @@ The platform sends you back to Peal, which finishes the connection.
 
 If the workspace already has the account, connecting it again reconnects its channel instead of adding a second one. Several workspaces can connect the same account.
 
-Each platform's page says how to connect an account there: [Mastodon](/platforms/mastodon#connect), [Bluesky](/platforms/bluesky#connect), [Threads](/platforms/threads#connect), [X](/platforms/x#connect), [LinkedIn](/platforms/linkedin#connect), [Facebook Pages](/platforms/facebook#connect), [Instagram](/platforms/instagram#connect), [TikTok](/platforms/tiktok#connect), [YouTube](/platforms/youtube#connect), [Pinterest](/platforms/pinterest#connect), [Google Business Profile](/platforms/google-business#connect).
+Each platform's page says how to connect an account there: [Mastodon](/platforms/mastodon#connect), [Bluesky](/platforms/bluesky#connect), [Threads](/platforms/threads#connect), [X](/platforms/x#connect), [LinkedIn](/platforms/linkedin#connect), [Facebook Pages](/platforms/facebook#connect), [Instagram](/platforms/instagram#connect), [TikTok](/platforms/tiktok#connect), [YouTube](/platforms/youtube#connect), [Pinterest](/platforms/pinterest#connect), [Google Business Profile](/platforms/google-business#connect), [Discord](/platforms/discord#connect), [Telegram](/platforms/telegram#connect), [Slack](/platforms/slack#connect).
 
 ## Let someone else connect their account [#connect-links]
 
@@ -271,14 +275,15 @@ Click **Disconnect** next to the channel and confirm. Peal deletes the tokens it
 
 If a connection fails, Peal shows one of these messages:
 
-| Message                                                          | What to do                                                                                                                                                                                                                                              |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| This server is not set up to connect accounts of this platform   | Ask the instance's administrator. The server lacks a setting the platform needs.                                                                                                                                                                        |
-| This is not the address of a server                              | Check the Mastodon server's address, for example `mastodon.social`.                                                                                                                                                                                     |
-| Peal only connects to servers on the public internet, over HTTPS | The server is private, or doesn't answer over HTTPS.                                                                                                                                                                                                    |
-| No account was found for this handle                             | Check the Bluesky handle.                                                                                                                                                                                                                               |
-| This connection expired or was started elsewhere                 | Start again from the workspace's channels, in this tab.                                                                                                                                                                                                 |
-| The connection was cancelled on the platform                     | You, or the platform, refused. Start again if you meant to connect.                                                                                                                                                                                     |
-| You signed in to another account than this channel's             | Reconnect with the channel's own account.                                                                                                                                                                                                               |
-| The sign-in reached no account to connect                        | On Facebook, manage a Facebook Page, or link your Instagram professional account to one, or connect it with Instagram instead. On YouTube, pick a Google account that has a channel. On Google Business Profile, verify the business with Google first. |
-| The platform did not answer                                      | Try again in a moment.                                                                                                                                                                                                                                  |
+| Message                                                                | What to do                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| This server is not set up to connect accounts of this platform         | Ask the instance's administrator. The server lacks a setting the platform needs.                                                                                                                                                                        |
+| This is not the address of a server                                    | Check the Mastodon server's address, for example `mastodon.social`.                                                                                                                                                                                     |
+| Peal only connects to servers on the public internet, over HTTPS       | The server is private, or doesn't answer over HTTPS.                                                                                                                                                                                                    |
+| No account was found for this handle                                   | Check the Bluesky handle.                                                                                                                                                                                                                               |
+| This connection expired or was started elsewhere                       | Start again from the workspace's channels, in this tab.                                                                                                                                                                                                 |
+| The connection was cancelled on the platform                           | You, or the platform, refused. Start again if you meant to connect.                                                                                                                                                                                     |
+| You signed in to another account than this channel's                   | Reconnect with the channel's own account.                                                                                                                                                                                                               |
+| The sign-in reached no account to connect                              | On Facebook, manage a Facebook Page, or link your Instagram professional account to one, or connect it with Instagram instead. On YouTube, pick a Google account that has a channel. On Google Business Profile, verify the business with Google first. |
+| The platform did not answer                                            | Try again in a moment.                                                                                                                                                                                                                                  |
+| This is not a Discord webhook's address, and the chats' other refusals | Each one says what to fix. See [Discord](/platforms/discord#connect) and [Telegram](/platforms/telegram#connect).                                                                                                                                       |

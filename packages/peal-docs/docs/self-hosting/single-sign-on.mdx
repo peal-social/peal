@@ -33,7 +33,9 @@ Peal reads the provider's discovery document at `<issuer>/.well-known/openid-con
 
 The server reads the discovery document when it starts, up to three times within about ten seconds. If the provider doesn't answer, the server leaves it out and starts all the same.
 
-It then reads the document again in the background, at least once a minute, and logs each failure as an error. The error-log alert of Peal's monitoring picks those up. Once the provider answers, the server offers it again.
+It logs one error, then reads the document again in the background, at least once a minute, and logs each further failure as a warning. Once the provider answers, the server offers it again.
+
+The metric `peal.workspace.sign_in_providers.unavailable` is 1 while a provider is left out and 0 once it answers. Peal's monitoring alerts on it after ten minutes.
 
 A document that lacks what OpenID Connect requires stops the server, with a message that names what's missing. It must have `issuer`, `authorization_endpoint`, `token_endpoint`, `jwks_uri` and `id_token_signing_alg_values_supported`.
 

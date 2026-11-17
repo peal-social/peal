@@ -204,6 +204,7 @@ Before calling the platform, Peal refuses a request it can't carry out with 409 
 - `noPlatformId`, for a post someone confirmed by hand
 - `notSupported`, where the platform's capabilities say why, in `livePost`
 - `channelUnavailable` or `boostRunning`
+- `deletionWindowPassed`, where the platform deletes a post only for a while after it went out (48 hours on Telegram)
 
 `GET …/platforms/capabilities` tells you beforehand where Peal deletes posts. `livePost.unpublish` says whether it does, and `livePost.unpublishBlockedBy` (`noApi`, `permission` or `unverified`) says why not. Webhooks receive `post.unpublished` or `post.unpublish_failed` ([Webhooks](/developers/webhooks/events/posts#post-unpublished)).
 

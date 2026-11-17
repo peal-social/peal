@@ -33,7 +33,9 @@ Peal lit le document de découverte du fournisseur à `<issuer>/.well-known/open
 
 Le serveur lit le document de découverte à son démarrage, jusqu’à trois fois en une dizaine de secondes. Si le fournisseur ne répond pas, le serveur le laisse de côté et démarre quand même.
 
-Il relit ensuite le document en arrière-plan, au moins une fois par minute, et consigne chaque échec comme une erreur. L’alerte sur les erreurs du journal de la surveillance de Peal les relève. Dès que le fournisseur répond, le serveur le propose de nouveau.
+Il consigne une erreur, puis relit le document en arrière-plan, au moins une fois par minute, et consigne chaque nouvel échec comme un avertissement. Dès que le fournisseur répond, le serveur le propose de nouveau.
+
+La métrique `peal.workspace.sign_in_providers.unavailable` vaut 1 tant qu’un fournisseur est laissé de côté, et 0 dès qu’il répond. La surveillance de Peal alerte dessus au bout de dix minutes.
 
 Un document auquel manque ce qu’OpenID Connect exige arrête le serveur, avec un message qui nomme ce qui manque. Il doit contenir `issuer`, `authorization_endpoint`, `token_endpoint`, `jwks_uri` et `id_token_signing_alg_values_supported`.
 

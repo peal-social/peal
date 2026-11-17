@@ -204,6 +204,7 @@ Avant d’appeler la plateforme, Peal refuse une requête impossible avec 409 `l
 - `noPlatformId`, pour une publication que quelqu’un a confirmée à la main
 - `notSupported`, là où les capacités de la plateforme disent pourquoi, dans `livePost`
 - `channelUnavailable` ou `boostRunning`
+- `deletionWindowPassed`, là où la plateforme ne supprime une publication que pendant un temps après sa mise en ligne (48 heures sur Telegram)
 
 `GET …/platforms/capabilities` vous dit d’avance où Peal supprime des publications. `livePost.unpublish` dit s’il le fait, et `livePost.unpublishBlockedBy` (`noApi`, `permission` ou `unverified`) dit pourquoi il ne le fait pas. Les webhooks reçoivent `post.unpublished` ou `post.unpublish_failed` ([Webhooks](/developers/webhooks/events/posts#post-unpublished)).
 

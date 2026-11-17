@@ -83,7 +83,11 @@ The other commands act on a comment or a reply:
 
 `peal inbox rules start --channel <id> --keyword price --keyword prix --reply "…"` makes a [comment rule](/guides/engage/inbox#comment-rules). Use `--post` instead for one post's comments.
 
-`list`, `show`, `update`, `pause`, `resume` and `stop` keep the rule. On `update`, `--keyword` replaces every keyword, and `--reply` the reply. `show` prints what each channel can carry and the comments the rule matched, by id, never their text.
+`list`, `show`, `update`, `pause`, `resume` and `stop` keep the rule. On `update`, `--keyword` replaces every keyword, and `--reply` the reply.
+
+Give `--private-reply "…"` on `start` or `update`, and the rule also sends each comment's author a [private message](/guides/engage/inbox#comment-rule-private-replies) after its public reply, on Instagram and Facebook Pages. `--no-private-reply` on `update` takes it off.
+
+`show` prints what each channel can carry and the comments the rule matched, by id, never their text.
 
 ## Short links [#short-links]
 

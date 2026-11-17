@@ -308,6 +308,33 @@ Voici ce qu’accepte Google Business Profile :
 | Vidéos                           | Non acceptées                                                                                     |
 | Texte alternatif                 | Pas envoyé                                                                                        |
 
+### Discord et Telegram [#platforms-chats]
+
+Voici ce qu’acceptent Discord et Telegram :
+
+| Limite                           | Discord                                                          | Telegram                                                                                                                                  |
+| -------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Images et vidéos par publication | 10, et 24,9 Mio ensemble (25 Mio avec le reste de la requête)    | Une, ou un album de 2 à 10, et 200 Mio ensemble                                                                                           |
+| Images                           | JPEG, PNG, GIF et WebP, jusqu’à 20 Mio chacune                   | JPEG et PNG jusqu’à 10 Mio, largeur et hauteur 10 000 pixels ensemble, au plus 20:1 dans un sens ou l’autre. Un GIF jusqu’à 50 Mio, seul. |
+| Vidéos                           | MP4 ou QuickTime, jusqu’à 20 Mio chacune                         | MP4, jusqu’à 50 Mio                                                                                                                       |
+| Images et vidéo ensemble         | Oui                                                              | Oui                                                                                                                                       |
+| Texte alternatif                 | Montré aux personnes qui en ont besoin, jusqu’à 1 024 caractères | Pas envoyé                                                                                                                                |
+
+Peal envoie chaque fichier à Discord et à Telegram avec la publication. Sur Telegram, le texte de la publication devient la légende de ses images ou vidéos : il ne peut donc pas dépasser 1 024 caractères.
+
+### Slack [#platforms-slack]
+
+Voici ce qu’accepte Slack :
+
+| Limite                 | Slack                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| Images par publication | 10                                                                                   |
+| Images                 | PNG, JPEG et GIF, les types que Slack montre dans un message, jusqu’à 50 Mio chacune |
+| Vidéos                 | Non acceptées                                                                        |
+| Texte alternatif       | Montré aux personnes qui en ont besoin, jusqu’à 1 000 caractères                     |
+
+Peal envoie chaque image à Slack avant le message qui la montre, sans la partager nulle part. Les images s’affichent sous le texte du message, qui peut aller jusqu’à 3 000 caractères.
+
 Peal ne vérifie que ce qu’il a lu de chaque fichier. Un fait qu’il n’a pas pu lire, comme la durée d’une vidéo, n’est pas vérifié, et la plateforme peut encore refuser le fichier.
 
 ## Quand vous programmez [#schedule]

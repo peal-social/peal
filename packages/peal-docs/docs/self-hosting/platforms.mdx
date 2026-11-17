@@ -11,22 +11,23 @@ Your server offers a platform once you've registered an app for it on that platf
 
 Each platform takes its own settings, and several need the platform's approval before you serve other people:
 
-| Platform                                    | Settings                                                                                                             | Before serving other people                    |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| [Bluesky](#bluesky)                         | `BLUESKY_CLIENT_KEYS`                                                                                                | Nothing to register                            |
-| [LinkedIn](#linkedin)                       | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`                                                                       | Nothing: both products are granted at once     |
-| [LinkedIn company pages](#linkedin-pages)   | `LINKEDIN_PAGES_CLIENT_ID`, `LINKEDIN_PAGES_CLIENT_SECRET`                                                           | LinkedIn's review, then its Standard tier      |
-| [X](#x)                                     | `X_CLIENT_ID`, `X_CLIENT_SECRET`                                                                                     | Credits bought ahead                           |
-| [TikTok](#tiktok)                           | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`                                                                          | TikTok's audit                                 |
-| [Threads, Instagram, Facebook Pages](#meta) | `META_APP_ID`, `META_APP_SECRET`, `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET`, `THREADS_APP_ID`, `THREADS_APP_SECRET` | Meta's App Review and Business Verification    |
-| [YouTube](#youtube)                         | `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`                                                                         | A published consent screen, verified by Google |
-| [Pinterest](#pinterest)                     | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | Pinterest's Standard access                    |
-| [Google Business Profile](#google-business) | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | Google's access to the Business Profile APIs   |
-| [WordPress websites](#wordpress)            | None: each member gives their site's application password                                                            | Nothing to register                            |
-| [WordPress.com](#wordpress-com)             | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Nothing known to review                        |
-| [DEV and Hashnode](#devto-hashnode)         | None: each member gives a key of their own                                                                           | Nothing to register                            |
+| Platform                                    | Settings                                                                                                             | Before serving other people                     |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| [Bluesky](#bluesky)                         | `BLUESKY_CLIENT_KEYS`                                                                                                | Nothing to register                             |
+| [LinkedIn](#linkedin)                       | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`                                                                       | Nothing: both products are granted at once      |
+| [LinkedIn company pages](#linkedin-pages)   | `LINKEDIN_PAGES_CLIENT_ID`, `LINKEDIN_PAGES_CLIENT_SECRET`                                                           | LinkedIn's review, then its Standard tier       |
+| [X](#x)                                     | `X_CLIENT_ID`, `X_CLIENT_SECRET`                                                                                     | Credits bought ahead                            |
+| [TikTok](#tiktok)                           | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`                                                                          | TikTok's audit                                  |
+| [Threads, Instagram, Facebook Pages](#meta) | `META_APP_ID`, `META_APP_SECRET`, `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET`, `THREADS_APP_ID`, `THREADS_APP_SECRET` | Meta's App Review and Business Verification     |
+| [YouTube](#youtube)                         | `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`                                                                         | A published consent screen, verified by Google  |
+| [Pinterest](#pinterest)                     | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | Pinterest's Standard access                     |
+| [Google Business Profile](#google-business) | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | Google's access to the Business Profile APIs    |
+| [Slack](#slack)                             | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`                                                                             | Public distribution, which you turn on at Slack |
+| [WordPress websites](#wordpress)            | None: each member gives their site's application password                                                            | Nothing to register                             |
+| [WordPress.com](#wordpress-com)             | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Nothing known to review                         |
+| [DEV and Hashnode](#devto-hashnode)         | None: each member gives a key of their own                                                                           | Nothing to register                             |
 
-For LinkedIn, X, YouTube, Pinterest, Google Business Profile and WordPress.com, setting one of the two settings without the other stops the server at startup. Without both, **Channels** doesn't offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
+For LinkedIn, X, YouTube, Pinterest, Google Business Profile, Slack and WordPress.com, setting one of the two settings without the other stops the server at startup. Without both, **Channels** doesn't offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
 
 ### Token keys [#token-keys]
 
@@ -62,11 +63,13 @@ For each platform, the server calls these hosts and sends media this way:
 | YouTube                 | `oauth2.googleapis.com` and `www.googleapis.com`                                                                                                      | Videos in parts of 8 MiB, one held at a time                                                 |
 | Pinterest               | `api.pinterest.com` (or the Sandbox), and the address Pinterest names for each video, an object store's                                               | Videos sent as they're read, never held whole; images fetched by Pinterest                   |
 | Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` and `mybusiness.googleapis.com` | Photos fetched by Google from the media store                                                |
+| Google Ads              | `oauth2.googleapis.com` and `googleads.googleapis.com`, when `PEAL_ADS_NETWORKS` names `google`                                                       | None, because it only reads                                                                  |
+| Slack                   | `slack.com`, and `files.slack.com`, where Slack has each image uploaded                                                                               | Images sent as they're read, never held whole                                                |
 | WordPress.com           | `public-api.wordpress.com`, whose API serves each site's core routes                                                                                  | Images read whole                                                                            |
 | DEV                     | `dev.to`                                                                                                                                              | Images read whole                                                                            |
 | Hashnode                | `gql-beta.hashnode.com`, and the upload address Hashnode gives for each image                                                                         | Images sent as they're read                                                                  |
 
-The platforms send people back to `PUBLIC_URL/connect/<platform>/callback`, through their browser. They never call the server themselves, apart from Bluesky reading Peal's client description, and Meta's data deletion requests.
+The platforms send people back to `PUBLIC_URL/connect/<platform>/callback`, through their browser. They never call the server themselves, apart from Bluesky reading Peal's client description, and Meta's data deletion requests and events.
 
 ### Addresses to register [#platform-addresses]
 
@@ -96,7 +99,7 @@ With `--json`, it prints the same list for a program to read. Run it again after
   one by a single character, a trailing slash included.
 </Callout>
 
-The command marks the addresses that the platform's servers call: Meta's two callbacks and Bluesky's client documents. These must answer the internet with no sign-in in front of them, so let them through any login page or allow list you put before the server. People's browsers open the others.
+The command marks the addresses that the platform's servers call: Meta's two callbacks and its webhooks, and Bluesky's client documents. These must answer the internet with no sign-in in front of them, so let them through any login page or allow list you put before the server. People's browsers open the others.
 
 ## Bluesky [#bluesky]
 
@@ -298,6 +301,10 @@ In the dashboard, give each use case the addresses [the command](#platform-addre
 | Instagram      | Its business login's OAuth redirect URIs; its data deletion request URL; its deauthorize callback URL                                         |
 | Threads        | Its redirect callback URL; its data deletion request URL; its deauthorize callback URL                                                        |
 
+The command also prints a **Webhooks** callback URL for Facebook Login and one for Instagram. Meta calls it to tell your server that an account's direct messages changed. The server takes those events only once `META_WEBHOOK_VERIFY_TOKEN` is set, and you give its value as the **Verify Token** next to the address.
+
+The address must answer Meta with no login page in front of it, and Meta sends events only from a published (Live) app. The server checks each event's signature with its app's secret before reading it, and reads nothing from it but ids.
+
 Meta fetches the images and videos it publishes from links to the media store, valid for two hours. The store must answer Meta's servers on the internet, through presigned links or `PEAL_MEDIA_PUBLIC_BASE_URL`.
 
 The server signs every call through Facebook Login with the main app's secret, so you can turn on **Require App Secret** in the app's advanced settings. Calls with an Instagram Login token carry no proof.
@@ -316,6 +323,37 @@ To read and answer comments on Facebook Pages and Instagram in the [inbox](/guid
 - `instagram_business_manage_comments` to the Instagram use case
 
 The sign-ins then ask for them, and a member may decline them. Meta grants them at once for accounts your own app's people manage, and for anyone else's only after its App Review.
+
+</AccordionItem>
+<AccordionItem title="Direct messages in the inbox">
+
+To read and answer Messenger's and Instagram's direct messages in the [inbox](/guides/engage/inbox#meta-messages), add `facebook`, `instagram` or both to `PEAL_INBOX_MESSAGES`, and set `META_WEBHOOK_VERIFY_TOKEN`. Then add the messaging permissions to the use cases:
+
+- `pages_messaging` and `pages_manage_metadata` to Facebook Login, for Pages
+- `instagram_manage_messages`, `pages_manage_metadata` and `pages_messaging` to Facebook Login, for Instagram
+- `instagram_business_manage_messages` to the Instagram use case
+
+A sign-in asks for them only when a member turns a channel's messages on.
+
+In the Webhooks settings, give each of the two callback addresses [the command](#platform-addresses) prints the Verify Token. Subscribe to the `messages` and `message_echoes` fields for the Page object and the Instagram object of Facebook Login, and for Instagram Login. The address must answer Meta with no login page in front of it, and the app must be published (Live), because Meta sends events only from a published app.
+
+Peal asks Meta to send each account's events (`subscribed_apps`) when it first reads the account, then once a day. It asks Meta to stop when the channel's messages are turned off or the channel is disconnected.
+
+Deleting a workspace asks the same for each of its channels, in the background, for two minutes at most. A channel Meta hasn't let go of by then is counted in the metric `peal.channels.release.left_subscribed`, which the alert "Meta still sends an erased workspace's messages" reports. The server also logs a warning, "A channel's platform still sends its events after an erasure", with these fields:
+
+- `channelId` and `platform`
+- `accountId`, a Facebook Page's id or an Instagram account's
+- `connection`, on Instagram only: `facebookLogin` through the Page linked to it, or `instagramLogin` on its own
+
+Meta then goes on sending that account's messages until the app is removed. Peal ignores them and never stores them. To stop them:
+
+1. Find the account's id in the warning.
+2. Ask the owner of the Page or the account, or the organisation whose workspace was deleted, to remove the app under the Page's **Business integrations** settings (for Instagram Login, the account's **Apps and websites**).
+3. Or, for a Page, remove the subscription from your app's side. Call `DELETE /{page-id}/subscribed_apps` on the Graph API with your app's app access token. Meta's [reference](https://developers.facebook.com/docs/graph-api/reference/page/subscribed_apps/) says "An app can remove its own webhook subscription from a Page with an App Access Token". Meta documents no such call for Instagram Login.
+
+Before its App Review, an app can read and answer only the messages of people with a role on it, written to accounts they manage too. Meta's review of `pages_messaging`, `pages_manage_metadata`, `instagram_manage_messages` and `instagram_business_manage_messages` asks for screen recordings of a sign-in, of a message sent from the app and seen in Meta's own inbox, and of how a member subscribes the account to its events. Reading Instagram's messages through a Page also needs your business verified. The Instagram account's owner turns on **Allow access to messages** in its Connected tools settings.
+
+Past Meta's 24 hours, a member can still answer by hand for 7 days after the person's last message, with Meta's `HUMAN_AGENT` tag. That needs Meta to review your app's Human Agent feature separately, and your business verified. Once it has, set `PEAL_META_HUMAN_AGENT` to `true`, and leave it unset until then. Only a member signed in to the web app sends such an answer, and Meta's review asks to see that person answer in your inbox.
 
 </AccordionItem>
 <AccordionItem title="Data deletion requests">
@@ -519,6 +557,41 @@ Google fetches each photo from a link to the media store, valid for two hours. T
   channel is disconnected or the workspace deleted. Read the policies, and
   decide whether that suits your use.
 </Callout>
+
+## Slack [#slack]
+
+To connect Slack channels, register an app on Slack and turn on its public distribution, so that other Slack workspaces can install it.
+
+<Steps>
+<Step title="Create an app">
+
+At `api.slack.com/apps`, create an app from scratch in a Slack workspace of yours, named after your service.
+
+</Step>
+<Step title="Add its scopes and redirect URL">
+
+Under **OAuth & Permissions**, add the bot token scopes `incoming-webhook`, `chat:write`, `chat:write.public` and `files:write`. Add `PUBLIC_URL/connect/slack/callback` as a redirect URL, such as `https://peal.example.com/connect/slack/callback`.
+
+Leave token rotation off. Slack can't turn it off again once it's on, and Peal never renews a token.
+
+</Step>
+<Step title="Distribute it">
+
+Under **Manage Distribution**, activate public distribution. You don't need a listing in Slack's directory.
+
+</Step>
+<Step title="Set the credentials">
+
+Put the app's client ID in `SLACK_CLIENT_ID` and its client secret in `SLACK_CLIENT_SECRET`.
+
+</Step>
+</Steps>
+
+Members add the app to their Slack workspace, and on Slack's page they pick the channel it posts to. Peal never lists a workspace's channels, and asks for no scope that reads channels, messages or files.
+
+The bot's token doesn't expire. If Slack refuses it, as it does once the app is removed from the workspace, the channel shows **Reconnect**. Disconnecting a channel revokes nothing, because the same token serves every channel of that Slack workspace.
+
+These settings have nothing to do with `SLACK_ALERTS_WEBHOOK_URL`, where the monitoring sends its alerts.
 
 ## WordPress websites [#wordpress]
 

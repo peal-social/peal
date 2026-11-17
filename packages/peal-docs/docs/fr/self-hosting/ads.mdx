@@ -1,11 +1,11 @@
 ---
 title: Publicités
-description: Activer les publicités sur un serveur auto-hébergé, et ce que Meta demande à l’exploitant de son application.
+description: Activer les publicités sur un serveur auto-hébergé, et ce que Meta et Google demandent à l’exploitant de leurs applications.
 sidebar:
   icon: megaphone
 ---
 
-Les publicités restent désactivées sur votre serveur tant que vous ne définissez pas `PEAL_ADS`. Il vous faut d’abord votre propre application Meta avec l’accès aux publicités, et Meta demande certaines choses à qui l’exploite.
+Les publicités restent désactivées sur votre serveur tant que vous ne définissez pas `PEAL_ADS`. Il vous faut d’abord votre propre application Meta avec l’accès aux publicités, et pour Google Ads votre propre client OAuth. Meta et Google demandent chacun certaines choses à qui les exploite.
 
 ## Activer les publicités [#ads]
 
@@ -14,8 +14,10 @@ Les publicités restent désactivées sur votre serveur tant que vous ne défini
 | `PEAL_ADS`          | Ce que peuvent faire les espaces de travail                                         |
 | ------------------- | ----------------------------------------------------------------------------------- |
 | `off` ou non défini | Rien. Les publicités sont désactivées.                                              |
-| `read`              | Connecter des comptes publicitaires Meta et lire leurs campagnes et leurs chiffres  |
+| `read`              | Connecter des comptes publicitaires et lire leurs campagnes et leurs chiffres       |
 | `spend`             | Mettre aussi en avant des publications parues, ce qui dépense leur argent chez Meta |
+
+[`PEAL_ADS_NETWORKS`](/self-hosting/environment-variables#ads) nomme les réseaux que vous proposez, et vaut `meta` si elle n’est pas définie. Ajoutez `google` pour proposer [Google Ads](#google), en lecture seule. `spend` demande `meta` dans la liste.
 
 Votre instance apporte sa propre application Meta avec l’accès aux publicités, car celle de Peal Cloud ne sert pas les serveurs auto-hébergés. Les publicités passent par l’application principale de Meta, celle qui connecte les [Pages Facebook](/self-hosting/platforms#meta) (`META_APP_ID`, `META_APP_SECRET`). Elles ont aussi besoin de [`PEAL_TOKEN_KEYS`](/self-hosting/environment-variables#channels) pour chiffrer les jetons des connexions.
 
@@ -56,3 +58,56 @@ Voici ce que la documentation de Meta demande à l’heure où ces lignes sont �
 | App Review, avec l’accès avancé  | Pour chaque autorisation, afin d’agir pour les comptes publicitaires d’autres personnes. Une application qui ne gère que son propre compte publicitaire peut fonctionner avec l’accès standard.                                                                                     |
 | Vérification de l’entreprise     | De l’entreprise qui possède l’application                                                                                                                                                                                                                                           |
 | Niveau d’accès à l’API Marketing | Une application commence avec un accès limité, dont les limites de requêtes par compte publicitaire sont basses. Elle obtient l’accès complet après l’App Review et assez d’appels réussis. La page de Meta indique 500 appels en 15 jours, avec un taux d’erreur inférieur à 15 %. |
+
+## Google Ads [#google]
+
+Avec Google Ads, les membres connectent des comptes et lisent leurs campagnes, avec le coût, les impressions et les clics de chacune, jour par jour. Peal n’écrit jamais rien sur Google Ads. Il faut un client OAuth à part, distinct de ceux de YouTube et de Google Business Profile.
+
+<Steps>
+<Step title="Activer l’API">
+
+Prenez un projet Google Cloud lié à un compte de facturation payant, car Google ne donne rien au-delà de l’accès Test à un projet en essai gratuit. Dans la bibliothèque d’API, activez l’**API Google Ads**. Le projet a alors l’accès Test.
+
+</Step>
+<Step title="Configurer l’écran de consentement">
+
+Sous **Google Auth Platform**, ouvrez **Accès aux données** et ajoutez la portée `https://www.googleapis.com/auth/adwords`. Google n’a pas de portée en lecture seule pour Google Ads. Peal demande donc celle-ci, et n’écrit rien.
+
+</Step>
+<Step title="Créer le client">
+
+Sous **Clients**, créez un client **Application Web**. Ajoutez comme URI de redirection autorisé l’adresse que [la commande](/self-hosting/platforms#platform-addresses) affiche pour Google Ads (`PUBLIC_URL/connect/ads/google/callback`). Mettez le client dans `GOOGLE_ADS_CLIENT_ID` et `GOOGLE_ADS_CLIENT_SECRET`.
+
+</Step>
+<Step title="Nommer le réseau">
+
+Définissez `PEAL_ADS=read`, ou `spend` pour les mises en avant sur Meta, puis `PEAL_ADS_NETWORKS=meta,google`, ou `google` seul. `PEAL_TOKEN_KEYS` chiffre le jeton d’actualisation de chaque connexion.
+
+</Step>
+</Steps>
+
+### Combien de comptes lit un niveau d’accès [#google-access]
+
+Il n’y a pas de jeton de développeur à définir. Google les a retirés le 9 septembre 2026, et le niveau d’accès appartient désormais au projet Cloud du client ([Niveaux d’accès](https://developers.google.com/google-ads/api/docs/api-policy/access-levels)). Peal lit chaque compte toutes les six heures, et une lecture coûte trois opérations : le compte, ses campagnes et leurs jours. Les pages suivantes d’une réponse ne comptent pas. Chaque niveau couvre alors environ :
+
+| Niveau d’accès | Comment l’obtenir                                                                                                      | Opérations par jour                   | Comptes, lus toutes les six heures |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ---------------------------------- |
+| Test           | Activez l’API                                                                                                          | 15 000, sur des comptes de test seuls | Comptes de test seuls              |
+| Explorer       | Cliquez sur **Apply for access** sur la page de l’API Google Ads de la console Cloud. Google peut l’accorder aussitôt. | 2 880 sur de vrais comptes            | Environ 240                        |
+| Basic          | Faites une demande une fois la marque du projet vérifiée. Google l’examine en quelques minutes.                        | 15 000                                | Environ 1 250                      |
+
+Lister les comptes qu’une connexion atteint coûte aussi des opérations : une, plus une par compte que la personne utilise directement ou gère (50 au plus). Peal garde une liste cinq minutes, pour les étapes qui la suivent. Une connexion a droit à dix listes par heure, et un espace de travail à trente.
+
+Les listes de tout le serveur dépensent 300 opérations par jour au plus, et un espace de travail 100 d’entre elles. Au-delà, la connexion répond que Google a demandé d’attendre, et les lectures gardent le reste du quota. Avec cette part gardée pour les listes, les chiffres du tableau deviennent environ 215 comptes en Explorer et 1 225 en Basic. Un compte que la tournée atteint tard reste lu toutes les six heures, comptées depuis l’heure de la tournée.
+
+Une lecture plus longue que ce que Peal récupère d’un coup (400 000 lignes de jours) reprend au dernier jour atteint, plusieurs fois. Si elle reste coupée, le compte n’est pas marqué lu, le serveur consigne une erreur, et Peal attend six heures avant de le relire.
+
+### Ce qui échoue avant que Google approuve le projet [#google-review]
+
+Un projet en accès Test ne lit que des [comptes de test](https://developers.google.com/google-ads/api/docs/best-practices/test-accounts). Google refuse les vrais avec `CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION`, que le serveur consigne comme une erreur. Google peut retirer un accès inutilisé pendant 90 jours.
+
+Tant que l’écran de consentement est en **Test**, seuls ses utilisateurs test peuvent se connecter, 100 au plus, et leurs connexions prennent fin après sept jours. Peal indique alors ces comptes comme à reconnecter.
+
+Avant que des personnes hors de votre organisation se connectent, publiez l’écran de consentement et faites vérifier la marque. Faites ensuite vérifier la portée `adwords` par Google, qui demande une justification et une vidéo de la connexion et de ce que Peal affiche ([Vérification de la marque](https://developers.google.com/google-ads/api/docs/api-policy/brand-verification)). Chaque personne qui se connecte a besoin d’une clé d’accès sur son compte Google ([Exigences de sécurité](https://developers.google.com/google-ads/api/docs/oauth/security-requirements)).
+
+Pour Google Ads, le serveur appelle `oauth2.googleapis.com` et `googleads.googleapis.com`, en version v26 de l’API. Google arrête la v26 en novembre 2027.

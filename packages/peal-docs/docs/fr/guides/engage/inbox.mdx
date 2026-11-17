@@ -1,6 +1,6 @@
 ---
 title: Boîte de réception
-description: "Lire et répondre aux commentaires sous vos publications en ligne, aux avis de vos établissements Google Business Profile et à vos messages privés Mastodon et Bluesky, et voir ce que chaque plateforme laisse Peal lire."
+description: "Lire et répondre aux commentaires sous vos publications en ligne, aux avis de vos établissements Google Business Profile et à vos messages privés Mastodon, Bluesky, Messenger et Instagram, et voir ce que chaque plateforme laisse Peal lire."
 sidebar:
   icon: inbox
 ---
@@ -12,7 +12,7 @@ La boîte de réception lit les commentaires des publications mises en ligne dep
 - Sur Mastodon et Bluesky.
 - Sur les Pages Facebook, Instagram, YouTube et les pages d’entreprise LinkedIn, là où la personne qui exploite le serveur les a activés ([Pages Facebook et Instagram](#meta), [YouTube](#youtube), [pages LinkedIn](#linkedin)).
 
-Les mentions ne sont pas collectées. Les messages privés le sont, sur Mastodon et Bluesky, là où la personne qui exploite le serveur les a activés ([Messages privés](#direct-messages)).
+Les mentions ne sont pas collectées. Les messages privés le sont, sur Mastodon, Bluesky, les Pages Facebook (Messenger) et Instagram, là où la personne qui exploite le serveur les a activés ([Messages privés](#direct-messages)).
 
 Peal ne répond à rien de lui-même. Chaque réponse est écrite et envoyée par une personne, ou par une application qu’une personne a connectée et autorisée à publier.
 
@@ -360,15 +360,45 @@ Les règles ne fonctionnent que sur certaines plateformes :
 | LinkedIn                  | Non : ses conditions interdisent les commentaires automatisés                                     |
 | YouTube                   | Non : ses règles demandent votre accord pour chaque commentaire                                   |
 
-Une règle sur une publication peut démarrer avant que la publication ne parte. Elle agit sur les canaux auxquels la publication est destinée, et seulement là où leur plateforme le permet, quels que soient les autres canaux où la publication est partie. Une règle n’aime, ne suit ni n’écrit jamais en privé à personne.
+Une règle sur une publication peut démarrer avant que la publication ne parte. Elle agit sur les canaux auxquels la publication est destinée, et seulement là où leur plateforme le permet, quels que soient les autres canaux où la publication est partie. Une règle n’aime ni ne suit jamais personne, et n’écrit en privé que comme [ci-dessous](#comment-rule-private-replies).
 
 Une règle agit au nom de la personne qui l’a lancée. Elle prend fin quand celle-ci ne peut plus répondre aux commentaires, et quand son canal est déconnecté. L’une ou l’autre fin est [signalée](/guides/workspace/notifications#other-events) à la personne qui l’a lancée, et la première à tous les membres qui peuvent répondre aux commentaires.
 
 Une règle en pause ne répond à rien. Elle ne répond jamais aux commentaires écrits pendant la pause, même ceux que Peal lit après la reprise.
 
+### Le message privé d’une règle [#comment-rule-private-replies]
+
+Sur Instagram et les Pages Facebook, une règle peut aussi envoyer à l’auteur de chaque commentaire une [réponse privée](#private-replies), après sa réponse publique. Quand vous réglez la règle, sélectionnez **Envoyer aussi un message privé**, puis saisissez le **Message privé**.
+
+Le message privé part au passage suivant des règles, une fois la réponse publique partie, en une dizaine de minutes environ. Il ne remplace jamais la réponse publique. Si la réponse publique a échoué, n’a pas été confirmée ou a été retirée, aucun message privé ne part.
+
+Un commentaire reçoit un seul message privé au plus. Si un membre ou une autre règle en a déjà envoyé un, celui de la règle ne part pas, et une règle relancée ne l’envoie jamais deux fois. Comme celui d’un membre, il ne va qu’à la personne qui a commenté, dans les sept jours qui suivent le commentaire.
+
+La règle ne l’envoie que là où le canal peut le porter : les messages privés du canal sont activés dans l’espace de travail, avec les autorisations qu’ils demandent. Concrètement :
+
+- Une règle sur une publication destinée à plusieurs canaux l’envoie sur ceux qui le peuvent, et répond en public sur les autres.
+- Si les messages d’un canal sont désactivés plus tard, la règle continue de répondre en public, et indique sous chaque commentaire pourquoi aucun message privé n’est parti.
+- Peal refuse une règle quand aucun de ses canaux ne peut porter le message privé, ou quand le message est trop long pour l’un de ceux qui le pourraient.
+
+La règle l’envoie au nom de la personne qui l’a lancée. Celle-ci doit pouvoir envoyer des messages privés (propriétaires, administrateurs et éditeurs), et une application a aussi besoin de l’accord du propriétaire pour les messages. Si elle perd ce droit, la règle ne répond plus qu’en public. Modifier les mots-clés ou la réponse d’une règle qui a un message privé, ou la reprendre, demande le même droit. Quiconque peut répondre aux commentaires peut mettre la règle en pause, ou cliquer sur **Retirer le message privé**.
+
+Une fois la règle mise en pause, arrêtée ou privée de son message, un message privé qui attend encore sa réponse publique ne part pas.
+
+Les plafonds de la règle ne changent pas, car un message privé ne suit jamais qu’une de ses réponses publiques. Sur un serveur qui facture, chacun compte pour un message de la boîte de réception. Sous chaque commentaire auquel elle a répondu, la règle indique si son message privé est parti, et sinon pourquoi. Seuls les membres qui lisent les messages privés voient le texte du message privé et les commentaires qui en ont reçu un, et une application ne les voit qu’une fois qu’un propriétaire l’a autorisée à lire les messages.
+
+<Callout
+  type="warning"
+  title="Peal n’indique pas que le message d’une règle est automatique"
+>
+  Le message d’une règle parvient à de vraies personnes sans que personne ne
+  lise chaque commentaire avant. Là où la loi demande qu’un message automatique
+  le dise (certains États et pays le font), dites-le dans votre texte, car Peal
+  n’y ajoute rien.
+</Callout>
+
 ## Messages privés [#direct-messages]
 
-Là où la personne qui exploite le serveur les a activés ([`PEAL_INBOX_MESSAGES`](/self-hosting/environment-variables#core), avec `mastodon`, `bluesky` ou les deux), la boîte de réception lit aussi les conversations privées que des personnes tiennent avec les comptes Mastodon et Bluesky de l’espace de travail. Les membres y répondent en privé, au nom du compte. Aucune des deux plateformes n’examine d’application pour cela.
+Là où la personne qui exploite le serveur les a activés ([`PEAL_INBOX_MESSAGES`](/self-hosting/environment-variables#core), avec `mastodon`, `bluesky`, `facebook`, `instagram`, ou plusieurs), la boîte de réception lit aussi les conversations privées que des personnes tiennent avec les comptes Mastodon et Bluesky de l’espace de travail, ses Pages Facebook (Messenger) et ses comptes professionnels Instagram. Les membres y répondent en privé, au nom du compte. Mastodon et Bluesky n’examinent pas d’application pour cela, mais Meta le fait ([Sur Messenger et Instagram](#meta-messages)).
 
 Peal n’engage jamais une conversation. Il répond à celles qu’une autre personne a commencées.
 
@@ -420,6 +450,42 @@ Une [reconnexion](/guides/channels#reconnect) ultérieure du canal redemande la 
 
 Un message compte 1 000 caractères (graphèmes) au plus. Répondre à une demande de message accepte la conversation. Les conversations de groupe ne sont pas lues.
 
+### Sur Messenger et Instagram [#meta-messages]
+
+Peal lit les conversations Messenger d’une Page Facebook, et celles d’un compte professionnel Instagram, par l’API Conversations de Meta. Cela fonctionne quelle que soit la façon dont le compte Instagram est connecté, par sa Page ou avec Instagram Login. Meta prévient aussi Peal de l’arrivée d’un message, qui apparaît donc dans la boîte de réception en quelques secondes. Peal lit tout de même chaque compte au rythme ci-dessus : un avis perdu ne fait que retarder un message.
+
+De chaque message, Peal lit le texte et le nombre de fichiers qu’il contient. Une story qui mentionne le compte compte pour un fichier. Peal ne conserve jamais un fichier, une story ni un lien vers l’un d’eux, car Meta interdit de stocker le média d’une mention dans une story.
+
+Connecter une Page ou un compte Instagram pour publier ne demande aucune des autorisations de messagerie de Meta. Activer les messages d’un canal les demande. Cliquez sur **Autoriser, sur Facebook** (ou **Autoriser, sur Instagram**, pour un compte connecté avec Instagram Login) pour vous reconnecter en les accordant. L’interrupteur reste désactivé tant qu’elles ne sont pas accordées, et une [reconnexion](/guides/channels#reconnect) ultérieure les redemande.
+
+Sur Instagram, la personne propriétaire du compte doit aussi activer **Paramètres → Messages et réponses aux stories → Contrôles des messages → Outils connectés → Autoriser l’accès aux messages**. D’ici là, Peal ne peut rien lire.
+
+Tant que Meta n’a pas examiné l’application du serveur (son App Review), seules les personnes ayant un rôle sur cette application peuvent écrire au compte et recevoir une réponse par Peal.
+
+Meta fixe quelques autres limites :
+
+- Longueur : 2 000 caractères sur Messenger, et 1 000 octets UTF-8 sur Instagram.
+- Historique : Meta ne donne le détail que des 20 derniers messages d’une conversation. Une conversation plus longue n’est jamais lue en entier, et ses messages plus anciens partent donc au bout des 30 jours plutôt qu’au moment où ils quittent la plateforme.
+- Messages retirés : sur Instagram, Peal en supprime un dès que Meta le signale. Messenger ne le signale pas, et le message reste donc jusqu’au terme de ses 30 jours.
+- Dossiers : une conversation qui quitte la liste de Meta, comme peut le faire une conversation déplacée dans un autre dossier de la messagerie de Meta, n’est pas supprimée pour autant. Elle part elle aussi au bout de ses 30 jours.
+
+Désactiver les messages d’un canal, le déconnecter ou supprimer son espace de travail demande à Meta de ne plus prévenir Peal de ses messages. Peal ne le demande pas tant qu’un autre canal de la même Page, ou du compte Instagram qui lui est lié, les lit encore.
+
+### Répondre dans les 24 heures de Meta [#messages-meta-window]
+
+Meta n’accepte une réponse que dans les 24 heures qui suivent le dernier message de la personne. La conversation indique jusqu’à quand vous pouvez répondre. Peal la ferme une minute plus tôt, pour qu’un message qu’il laisse passer ne soit pas refusé pour un écart d’horloge. Au-delà, la zone de réponse disparaît, et un message envoyé par l’API est refusé avant que rien ne soit compté (`windowClosed`). Répondez depuis la messagerie de Meta si ses règles le permettent, ou attendez que la personne écrive de nouveau.
+
+Là où la personne qui exploite le serveur a obtenu l’examen par Meta de sa fonctionnalité Human Agent ([`PEAL_META_HUMAN_AGENT`](/self-hosting/environment-variables#core)), vous avez plus de temps : jusqu’à 7 jours après le dernier message de la personne, là aussi une minute plus tôt. Vous devez être connecté à l’application web de Peal et écrire le message vous-même, et la conversation indique jusqu’à quand. Le message part avec la balise `HUMAN_AGENT` de Meta, que Meta réserve aux réponses écrites par une personne au-delà des 24 heures. Dans les 24 heures, les réponses partent sans balise.
+
+Une clé d’API, une application (comme la ligne de commande ou un assistant d’IA), l’équipe agissant au nom d’un membre et une règle ne peuvent pas utiliser les 7 jours. Passées les 24 heures, ils sont refusés (`windowClosed`).
+
+Meta peut refuser un message balisé de deux façons :
+
+| Code                   | Ce que cela signifie                                                                                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `humanAgentNotGranted` | Meta a refusé la balise parce que l’application du serveur ne détient pas la fonctionnalité. Le message n’est pas parti.                                                                         |
+| `tagRestricted`        | Meta a averti que l’usage des balises par l’application est restreint. Le message est peut-être parti : Peal le laisse non confirmé et ne le renvoie jamais. Vérifiez la conversation chez Meta. |
+
 ### Répondre à un message [#messages-reply]
 
 Vous ne pouvez répondre qu’à une conversation où quelqu’un d’autre a écrit. Un seul message à une conversation est en route à la fois. Sur un serveur qui facture, chaque message envoyé compte pour un message de la boîte de réception, comme une réponse à un commentaire.
@@ -435,18 +501,32 @@ Un point de terminaison de webhook reçoit ces événements, par leurs seuls ide
 
 Les membres qui répondent aux messages sont avertis d’« un nouveau message sur » le canal, une fois par conversation et par jour, jamais de qui. Les membres qui peuvent connecter des canaux sont avertis quand Peal a désactivé les messages d’un canal parce que son compte ne les autorise plus.
 
+### Répondre en privé [#private-replies]
+
+Sur Instagram et les Pages Facebook, vous pouvez envoyer à l’auteur d’un commentaire sous la publication de l’espace de travail un seul message privé, au nom du compte. Cliquez sur **Répondre en privé** sous le commentaire. Meta l’appelle une réponse privée.
+
+La plateforme prend une seule réponse privée par commentaire, dans les sept jours qui suivent l’écriture du commentaire. Peal s’arrête une heure plus tôt, et le commentaire indique jusqu’à quand. Tant qu’une réponse privée est en route, à vérifier ou envoyée, Peal en refuse une autre. Si elle a échoué, vous pouvez en envoyer une autre.
+
+Une réponse privée n’ouvre pas de conversation que vous pouvez poursuivre. Le compte ne peut écrire de nouveau à la personne qu’une fois qu’elle a répondu, dans les 24 heures de Meta, par un [message privé](#meta-messages). Sur Instagram, la réponse arrive dans ses demandes de messages si elle ne suit pas le compte.
+
+Les messages privés du canal doivent être activés, car la réponse de la personne arrive sous cette forme. Un canal dont les messages sont désactivés ne peut pas envoyer de réponse privée, et un canal à qui manquent les autorisations de ses messages est invité à se reconnecter. Une [règle de réponse](#comment-rule-private-replies) peut aussi en envoyer une, après sa réponse publique. Là où la loi demande qu’un message automatique le dise, dites-le dans le texte de la règle, car Peal n’y ajoute rien.
+
+Une réponse privée est une correspondance privée : le commentaire ne la montre qu’aux membres qui lisent les messages privés. Peal la conserve comme un message envoyé depuis Peal, 30 jours après la fin de l’envoi, et elle est supprimée avec son commentaire, son canal ou son espace de travail.
+
+Pour le reste, elle fonctionne comme un message. Sur un serveur qui facture, elle compte pour un message de la boîte de réception, et elle n’est jamais envoyée deux fois. Si son issue est inconnue, Peal ne la renvoie jamais : vérifiez la conversation de la personne, puis dites ce que vous avez trouvé.
+
 ## Avec l’API, la ligne de commande et les assistants IA [#api]
 
 Chaque action demande une permission :
 
-| Action                                                        | Permission                | Qui l’a                                       |
-| ------------------------------------------------------------- | ------------------------- | --------------------------------------------- |
-| Lire les commentaires et les avis                             | `engagement:read`         | Tous les rôles                                |
-| Répondre, marquer, modérer et retirer une réponse             | `engagement:reply`        | Propriétaires, administrateurs et éditeurs    |
-| Lister et lire les messages privés                            | `engagement:readMessages` | Propriétaires, administrateurs et éditeurs    |
-| Envoyer un message privé, marquer une conversation comme lue  | `engagement:message`      | Propriétaires, administrateurs et éditeurs    |
-| Voir et changer les canaux dont les messages sont lus         | `channel:connect`         | Propriétaires et administrateurs, en personne |
-| Autoriser une application à lire les messages et à y répondre | `organization:secure`     | Propriétaires, en personne                    |
+| Action                                                                             | Permission                | Qui l’a                                       |
+| ---------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------- |
+| Lire les commentaires et les avis                                                  | `engagement:read`         | Tous les rôles                                |
+| Répondre, marquer, modérer et retirer une réponse                                  | `engagement:reply`        | Propriétaires, administrateurs et éditeurs    |
+| Lister et lire les messages privés                                                 | `engagement:readMessages` | Propriétaires, administrateurs et éditeurs    |
+| Envoyer un message privé ou une réponse privée, marquer une conversation comme lue | `engagement:message`      | Propriétaires, administrateurs et éditeurs    |
+| Voir et changer les canaux dont les messages sont lus                              | `channel:connect`         | Propriétaires et administrateurs, en personne |
+| Autoriser une application à lire les messages et à y répondre                      | `organization:secure`     | Propriétaires, en personne                    |
 
 Une clé d’API porte ce que son créateur lui a donné. Seul un propriétaire donne à une clé `engagement:readMessages` et `engagement:message`, en personne, car cela ouvre les messages à une application, et une clé partenaire ne les porte jamais.
 
@@ -456,29 +536,32 @@ L’équipe qui agit au nom d’un membre pour l’aider ne lit pas la boîte de
 
 La boîte de réception a ces requêtes :
 
-| Requête                                                                                     | Ce qu’elle fait                                                                                                                                                                                                                                                |
-| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/workspaces/{workspaceId}/inbox/threads`                                           | Liste les fils qui ont des commentaires, ceux qui attendent une réponse en premier. `channelId`, `postId` et `unanswered=true` restreignent la liste. `cursor` et `limit` la paginent.                                                                         |
-| `GET /api/workspaces/{workspaceId}/inbox/threads/{threadId}`                                | Un fil entier : commentaires, réponses, et ce que le canal peut faire.                                                                                                                                                                                         |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies`                     | Répond à un commentaire. Répond `202` avec la réponse, `sending`.                                                                                                                                                                                              |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered`                    | Marque un commentaire comme répondu, ou de nouveau en attente.                                                                                                                                                                                                 |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation`                  | Masque, montre, aime, n’aime plus ou supprime, quand la plateforme le permet.                                                                                                                                                                                  |
-| `POST /api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation`                   | Enregistre ce que quelqu’un a trouvé pour une réponse non confirmée.                                                                                                                                                                                           |
-| `DELETE /api/workspaces/{workspaceId}/inbox/replies/{replyId}`                              | Retire une réponse envoyée.                                                                                                                                                                                                                                    |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads`                                   | Liste les établissements qui ont des avis, ceux qui attendent une réponse en premier.                                                                                                                                                                          |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}`                        | Les avis d’un établissement en entier, les réponses envoyées depuis Peal, et ce que le canal peut faire.                                                                                                                                                       |
-| `PUT /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                          | Répond à un avis, en remplaçant sa réponse, en personne seulement. Répond `202` avec la réponse, `sending`. Avec un `Idempotency-Key`, la requête peut être renvoyée sans risque.                                                                              |
-| `DELETE /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                       | Supprime la réponse de l’établissement à un avis.                                                                                                                                                                                                              |
-| `POST /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered`                      | Marque un avis comme répondu, ou de nouveau en attente.                                                                                                                                                                                                        |
-| `POST /api/workspaces/{workspaceId}/inbox/rules`                                            | Lance une [règle de réponse](#comment-rules) sur une publication (`postId`) ou un canal (`channelId`), avec `keywords` et une `reply`. `GET`, `PATCH` (mots-clés, réponse, `paused`) et `DELETE …/inbox/rules/{ruleId}` la lisent, la modifient et l’arrêtent. |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations`                            | Liste les conversations, le dernier message en premier. `channelId` et `unread=true` restreignent la liste. `cursor` et `limit` la paginent.                                                                                                                   |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}`           | Une conversation : une page de ses messages (les 100 derniers sauf si `limit` en demande moins, avec `nextCursor` comme `cursor` pour les plus anciens), ceux envoyés depuis Peal, et ce que le canal peut faire.                                              |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/messages` | Envoie un message privé. Répond `202` avec le message, `sending`. Avec un `Idempotency-Key`, la requête peut être renvoyée sans risque.                                                                                                                        |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/read`     | Marque une conversation comme lue, ou de nouveau non lue.                                                                                                                                                                                                      |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/outgoing/{messageId}/confirmation`       | Enregistre ce que quelqu’un a trouvé pour un message non confirmé.                                                                                                                                                                                             |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/settings`                                 | Les canaux dont les messages sont lus, et les applications qu’un propriétaire a autorisées à les lire.                                                                                                                                                         |
-| `PUT /api/workspaces/{workspaceId}/inbox/messages/channels/{channelId}`                     | Active ou désactive les messages d’un canal (`enabled`), en personne.                                                                                                                                                                                          |
-| `PUT /api/workspaces/{workspaceId}/inbox/messages/applications`                             | Autorise une application à lire les messages et à y répondre, ou le lui retire (`clientId`, `allowed`), en personne.                                                                                                                                           |
+| Requête                                                                                      | Ce qu’elle fait                                                                                                                                                                                                                                                                                               |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/workspaces/{workspaceId}/inbox/threads`                                            | Liste les fils qui ont des commentaires, ceux qui attendent une réponse en premier. `channelId`, `postId` et `unanswered=true` restreignent la liste. `cursor` et `limit` la paginent.                                                                                                                        |
+| `GET /api/workspaces/{workspaceId}/inbox/threads/{threadId}`                                 | Un fil entier : commentaires, réponses, et ce que le canal peut faire.                                                                                                                                                                                                                                        |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies`                      | Répond à un commentaire. Répond `202` avec la réponse, `sending`.                                                                                                                                                                                                                                             |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered`                     | Marque un commentaire comme répondu, ou de nouveau en attente.                                                                                                                                                                                                                                                |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation`                   | Masque, montre, aime, n’aime plus ou supprime, quand la plateforme le permet.                                                                                                                                                                                                                                 |
+| `POST /api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation`                    | Enregistre ce que quelqu’un a trouvé pour une réponse non confirmée.                                                                                                                                                                                                                                          |
+| `DELETE /api/workspaces/{workspaceId}/inbox/replies/{replyId}`                               | Retire une réponse envoyée.                                                                                                                                                                                                                                                                                   |
+| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads`                                    | Liste les établissements qui ont des avis, ceux qui attendent une réponse en premier.                                                                                                                                                                                                                         |
+| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}`                         | Les avis d’un établissement en entier, les réponses envoyées depuis Peal, et ce que le canal peut faire.                                                                                                                                                                                                      |
+| `PUT /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                           | Répond à un avis, en remplaçant sa réponse, en personne seulement. Répond `202` avec la réponse, `sending`. Avec un `Idempotency-Key`, la requête peut être renvoyée sans risque.                                                                                                                             |
+| `DELETE /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                        | Supprime la réponse de l’établissement à un avis.                                                                                                                                                                                                                                                             |
+| `POST /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered`                       | Marque un avis comme répondu, ou de nouveau en attente.                                                                                                                                                                                                                                                       |
+| `POST /api/workspaces/{workspaceId}/inbox/rules`                                             | Lance une [règle de réponse](#comment-rules) sur une publication (`postId`) ou un canal (`channelId`), avec `keywords`, une `reply` et, au choix, une `privateReply`. `GET`, `PATCH` (mots-clés, réponse, réponse privée, `paused`) et `DELETE …/inbox/rules/{ruleId}` la lisent, la modifient et l’arrêtent. |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations`                             | Liste les conversations, le dernier message en premier. `channelId` et `unread=true` restreignent la liste. `cursor` et `limit` la paginent.                                                                                                                                                                  |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}`            | Une conversation : une page de ses messages (les 100 derniers sauf si `limit` en demande moins, avec `nextCursor` comme `cursor` pour les plus anciens), ceux envoyés depuis Peal, et ce que le canal peut faire.                                                                                             |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/messages`  | Envoie un message privé. Répond `202` avec le message, `sending`. Avec un `Idempotency-Key`, la requête peut être renvoyée sans risque.                                                                                                                                                                       |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/read`      | Marque une conversation comme lue, ou de nouveau non lue.                                                                                                                                                                                                                                                     |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/outgoing/{messageId}/confirmation`        | Enregistre ce que quelqu’un a trouvé pour un message non confirmé.                                                                                                                                                                                                                                            |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/private-replies`                          | Envoie à l’auteur d’un commentaire sa seule [réponse privée](#private-replies) (`commentId`, `text`). Répond `201` avec elle, `sending`. Avec un `Idempotency-Key`, la requête peut être renvoyée sans risque.                                                                                                |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}`          | Une réponse privée, et où elle en est.                                                                                                                                                                                                                                                                        |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}/confirm` | Enregistre ce que quelqu’un a trouvé pour une réponse privée non confirmée (`went`).                                                                                                                                                                                                                          |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/settings`                                  | Les canaux dont les messages sont lus, et les applications qu’un propriétaire a autorisées à les lire.                                                                                                                                                                                                        |
+| `PUT /api/workspaces/{workspaceId}/inbox/messages/channels/{channelId}`                      | Active ou désactive les messages d’un canal (`enabled`), en personne.                                                                                                                                                                                                                                         |
+| `PUT /api/workspaces/{workspaceId}/inbox/messages/applications`                              | Autorise une application à lire les messages et à y répondre, ou le lui retire (`clientId`, `allowed`), en personne.                                                                                                                                                                                          |
 
 La [ligne de commande](/developers/cli) offre la même chose sous `peal inbox`, avec `peal inbox reviews` pour lire les avis et les marquer, et `peal inbox messages` pour les messages privés.
 
@@ -486,7 +569,7 @@ Les assistants IA connectés par [MCP](/developers/mcp) ont ces outils :
 
 - Pour les commentaires : `list_comment_threads`, `get_comment_thread`, `reply_to_comment`, `confirm_comment_reply`, `withdraw_comment_reply`, `mark_comment_answered` et `moderate_comment`.
 - Pour les avis : `list_location_reviews`, `get_location_reviews` et `mark_location_review_answered`. `reply_to_location_review` et `delete_location_review_reply` refusent, car seule une personne répond à un avis.
-- Pour les messages privés : `list_conversations`, `get_conversation` et `send_message`.
+- Pour les messages privés : `list_conversations`, `get_conversation`, `send_message` et `send_private_reply`.
 
 Un assistant connecté liste les conversations, et ne les lit ou n’y répond qu’une fois qu’un propriétaire a autorisé son application. N’autorisez qu’un assistant qui peut lire les messages privés de l’espace de travail.
 

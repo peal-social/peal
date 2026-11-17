@@ -39,6 +39,15 @@ Le groupe `ads` est sous `/api/workspaces/{workspaceId}/ads`, et les chemins ci-
 
 Les trois rapports prennent `from` et `to`, des jours du calendrier du compte comme `2026-11-01`. Les deux sont compris, séparés de 366 jours au plus, et vous obtenez les 30 derniers jours quand vous les omettez. Les campagnes et les publicités viennent par mille au plus. `ads.listBoosts` et `ads.auditTrail` répondent un `nextCursor`, que vous passez comme `cursor` pour la page suivante.
 
+Chaque compte publicitaire dit ce que son réseau permet dans `capabilities` : `ads`, `boosts`, `reach` et `results`. Masquez ce qui vaut faux. Un compte Google Ads (`network` vaut `google`) les a toutes à faux, car Peal ne fait que le lire :
+
+- Ses campagnes portent leurs propres chiffres par jour, et un `kind` comme `SEARCH` ou `PERFORMANCE_MAX`.
+- `ads.listAds` ne renvoie aucune publicité pour lui.
+- `reach` vaut 0, et `results` vaut null.
+- Activer sa dépense répond `AdSpendingUnavailable`.
+
+Sur un compte Google Ads, `reachedThrough` nomme le compte administrateur par lequel Peal le lit.
+
 Les SDK ont les mêmes opérations dans leur groupe `ads` (`peal.ads.quoteBoost`, `peal.ads.createBoost`…). La [ligne de commande](/developers/cli/workspace) les a sous `peal ads`.
 
 ### Un devis, puis la mise en avant [#api-boost]
@@ -533,3 +542,5 @@ La [ligne de commande](/developers/cli) a les commandes des publicités sous `pe
 Les [assistants IA](/developers/mcp/tools#tools) ont des outils pour les publicités, qui suivent les mêmes permissions et les mêmes règles. Un outil qui dépense le dit dans sa description, et demande que l’application porte `workspace:publish` et `workspace:ads`.
 
 Ni l’une ni les autres ne se connectent à un réseau publicitaire, n’activent les dépenses ni ne changent un plafond. Une personne le fait dans l’application web.
+
+Les outils MCP laissent de côté les comptes Google Ads, comme la règle de Google pour les outils le demande à un serveur MCP. Ils ne listent que les comptes Meta, et refusent un compte Google Ads en expliquant pourquoi. La ligne de commande montre les deux.

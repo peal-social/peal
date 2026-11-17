@@ -84,7 +84,11 @@ Les autres commandes agissent sur un commentaire ou une réponse :
 
 `peal inbox rules start --channel <id> --keyword prix --keyword price --reply "…"` crée une [règle de réponse](/guides/engage/inbox#comment-rules). Utilisez plutôt `--post` pour les commentaires d’une seule publication.
 
-`list`, `show`, `update`, `pause`, `resume` et `stop` gèrent la règle. Sur `update`, `--keyword` remplace tous les mots-clés, et `--reply` la réponse. `show` affiche ce que chaque canal peut porter et les commentaires reconnus par la règle, par identifiant, jamais leur texte.
+`list`, `show`, `update`, `pause`, `resume` et `stop` gèrent la règle. Sur `update`, `--keyword` remplace tous les mots-clés, et `--reply` la réponse.
+
+Avec `--private-reply "…"` sur `start` ou `update`, la règle envoie aussi à l’auteur de chaque commentaire un [message privé](/guides/engage/inbox#comment-rule-private-replies) après sa réponse publique, sur Instagram et les Pages Facebook. `--no-private-reply` sur `update` le retire.
+
+`show` affiche ce que chaque canal peut porter et les commentaires reconnus par la règle, par identifiant, jamais leur texte.
 
 ## Liens courts [#short-links]
 
