@@ -4,8 +4,8 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "@ui-sdk/react/tabs";
 import { ArrowUpRightIcon } from "lucide-react";
 
 import { cn } from "../lib/utils";
-import { CodeDemo } from "./code-demo";
-import type { CodeDemoTab } from "./code-demo";
+import { CodeBlock } from "./code-block";
+import type { CodeBlockContent } from "./code-block";
 import { ComposerMock } from "./composer-mock";
 import type { ComposerMockProps } from "./composer-mock";
 import { PealMark } from "./peal-mark";
@@ -25,12 +25,9 @@ type StageContent =
       readonly kind: "composer";
     }
   | {
-      readonly copied: string;
-      readonly copy: string;
+      /** A request in every way in, beside its response. */
+      readonly block: CodeBlockContent;
       readonly kind: "code";
-      /** The code demo's tab list name. */
-      readonly label: string;
-      readonly tabs: readonly CodeDemoTab[];
     };
 
 interface StageTab {
@@ -53,13 +50,7 @@ const Content = ({ content }: { readonly content: StageContent }) =>
       <ComposerMock {...content.composer} />
     </div>
   ) : (
-    <CodeDemo
-      copied={content.copied}
-      copy={content.copy}
-      label={content.label}
-      tabs={content.tabs}
-      className="max-w-none border-y-0"
-    />
+    <CodeBlock {...content.block} className="rounded-none border-0" />
   );
 
 /**

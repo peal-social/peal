@@ -11,6 +11,7 @@ import { ProductIntro } from "peal-ui/components/product-intro";
 import { ProductRows } from "peal-ui/components/product-rows";
 import { SectionOpener } from "peal-ui/components/section-opener";
 
+import { homeCode } from "../../code/home-code.ts";
 import { appLink, docsLink } from "../../config.ts";
 import { faqGroups, faqJsonLdText } from "../../faq.ts";
 import { formatStars, latestPulls, repositoryStars } from "../../github.ts";
@@ -38,6 +39,9 @@ const catalogue = messages(locale);
 const t = catalogue.home;
 
 const stars = await repositoryStars();
+
+// Highlighted here, at build time: the page ships runs of text, no highlighter.
+const code = await homeCode();
 
 const settings: HomeSettings = {
   app: (page) => appLink(locale, page),
@@ -126,7 +130,7 @@ const bento = studioBento(locale, t, settings);
       <HeroStage
         client:load
         label={t.hero.stage}
-        tabs={heroTabs(locale, catalogue, settings)}
+        tabs={heroTabs(locale, catalogue, settings, code)}
       />
     </section>
   </BrandField>
@@ -166,7 +170,7 @@ const bento = studioBento(locale, t, settings);
       lead={t.api.lead}
       title={t.api.title}
     />
-    <ProductRows rows={apiRows(t, settings)} />
+    <ProductRows client:visible rows={apiRows(t, settings, code)} />
   </section>
 
   <section id="open" aria-labelledby="open-title" class="scroll-mt-8">

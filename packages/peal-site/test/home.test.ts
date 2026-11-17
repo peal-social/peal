@@ -6,6 +6,7 @@ import path from "node:path";
 import { measureText, platformRules } from "peal-contract/post-text";
 import { describe, expect, it } from "vitest";
 
+import { homeCode } from "../src/code/home-code.ts";
 import { faqGroups } from "../src/faq.ts";
 import { apiRows, heroTabs, studioBento } from "../src/home.ts";
 import type { HomeSettings } from "../src/home.ts";
@@ -24,6 +25,8 @@ const settings: HomeSettings = {
   stars: undefined,
 };
 
+const code = await homeCode();
+
 const pageExists = (locale: Locale, page: string) => {
   const folder =
     locale === defaultLocale ? docsRoot : path.join(docsRoot, locale);
@@ -39,9 +42,9 @@ const pageExists = (locale: Locale, page: string) => {
 /** Every docs page the hero, the bento and the rows link to. */
 const docsPages = (locale: Locale) => {
   const t = messages(locale).home;
-  const tabs = heroTabs(locale, messages(locale), settings);
+  const tabs = heroTabs(locale, messages(locale), settings, code);
   const bento = studioBento(locale, t, settings);
-  const rows = apiRows(t, settings);
+  const rows = apiRows(t, settings, code);
 
   return [
     ...tabs.flatMap((tab) => tab.chips.map((chip) => chip.href)),
@@ -71,7 +74,7 @@ describe("the home page", () => {
   it.each(locales)(
     "counts each composer channel's text against its platform's limit in %s",
     (locale) => {
-      const [studio] = heroTabs(locale, messages(locale), settings);
+      const [studio] = heroTabs(locale, messages(locale), settings, code);
 
       const content = studio?.content;
 

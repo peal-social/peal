@@ -1,8 +1,8 @@
 import { ChevronRightIcon } from "lucide-react";
 
 import { cn } from "../lib/utils";
-import { Code } from "./code-demo";
-import type { CodeBlock } from "./code-demo";
+import { CodeBlock } from "./code-block";
+import type { CodeBlockContent } from "./code-block";
 import { Mark, SiteIconView } from "./site-icons";
 import type { SiteIcon, SiteMark } from "./site-icons";
 
@@ -24,7 +24,7 @@ interface ConnectPage {
 }
 
 type RowDemo =
-  | { readonly blocks: readonly CodeBlock[]; readonly kind: "code" }
+  | { readonly block: CodeBlockContent; readonly kind: "code" }
   | { readonly connect: ConnectPage; readonly kind: "connect" }
   | {
       readonly kind: "tiles";
@@ -124,17 +124,7 @@ const Connect = ({ connect }: { readonly connect: ConnectPage }) => (
 const Demo = ({ demo }: { readonly demo: RowDemo }) => {
   switch (demo.kind) {
     case "code": {
-      return (
-        <div className="bg-card overflow-hidden rounded-md border">
-          {demo.blocks.map((block, index) => (
-            <Code
-              key={block.label}
-              block={block}
-              className={index > 0 ? "border-t" : undefined}
-            />
-          ))}
-        </div>
-      );
+      return <CodeBlock {...demo.block} />;
     }
 
     case "tiles": {

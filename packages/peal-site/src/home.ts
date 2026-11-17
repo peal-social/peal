@@ -23,14 +23,8 @@ import {
 } from "simple-icons";
 import type { SimpleIcon } from "simple-icons";
 
+import type { HomeCode } from "./code/home-code.ts";
 import type { MergedPull } from "./github.ts";
-import {
-  cliRequest,
-  curlRequest,
-  demoTabs,
-  mcpRefusal,
-  webhookPayload,
-} from "./home-demo.ts";
 import type { Locale } from "./i18n/locales.ts";
 import type { Messages } from "./i18n/messages.ts";
 import { repository } from "./navigation.ts";
@@ -126,7 +120,8 @@ const chip = (
 export const heroTabs = (
   locale: Locale,
   messages: Messages,
-  settings: HomeSettings
+  settings: HomeSettings,
+  code: HomeCode
 ): StageTab[] => {
   const t = messages.home;
   const { links } = messages.nav;
@@ -206,11 +201,15 @@ export const heroTabs = (
       ],
       chipsLabel: t.hero.chips.api,
       content: {
-        copied: t.api.copied,
-        copy: t.api.copy,
+        block: {
+          copied: t.api.copied,
+          copy: t.api.copy,
+          label: t.api.demoLabel,
+          lineNumbers: true,
+          response: code.publish.response,
+          samples: code.publish.samples,
+        },
         kind: "code",
-        label: t.api.demoLabel,
-        tabs: demoTabs,
       },
       label: "PealAPI",
       tile: "ink",
@@ -429,14 +428,21 @@ export const studioBento = (
 /** PealAPI's rows: publishing, MCP, the command line, SDKs, webhooks, embedding. */
 export const apiRows = (
   t: Messages["home"],
-  settings: HomeSettings
+  settings: HomeSettings,
+  code: HomeCode
 ): ProductRow[] => {
   const { connect, rows } = t.api;
+
+  const block = {
+    copied: t.api.copied,
+    copy: t.api.copy,
+    label: t.api.demoLabel,
+  };
 
   return [
     {
       demo: {
-        blocks: [{ code: curlRequest, label: "curl" }],
+        block: { ...block, samples: code.publish.samples },
         kind: "code",
       },
       icon: "braces",
@@ -446,10 +452,11 @@ export const apiRows = (
     },
     {
       demo: {
-        blocks: [
-          { code: mcpRefusal.request, label: "tools/call" },
-          { code: mcpRefusal.response, label: ".json" },
-        ],
+        block: {
+          ...block,
+          response: code.mcp.response,
+          samples: [code.mcp.request],
+        },
         kind: "code",
       },
       icon: "bot",
@@ -458,7 +465,7 @@ export const apiRows = (
       title: rows.mcp.title,
     },
     {
-      demo: { blocks: [{ code: cliRequest, label: "peal" }], kind: "code" },
+      demo: { block: { ...block, samples: [code.cli] }, kind: "code" },
       icon: "terminal",
       link: docsLink(settings, "developers/cli", rows.cli.link),
       text: rows.cli.text,
@@ -482,7 +489,7 @@ export const apiRows = (
     },
     {
       demo: {
-        blocks: [{ code: webhookPayload, label: "post.published" }],
+        block: { ...block, samples: [code.webhook] },
         kind: "code",
       },
       icon: "webhook",

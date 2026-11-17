@@ -103,8 +103,8 @@ variables rather than values, so each colour is written once.
 | Errors and deletions                  | `code-deleted`     | `#B42318` | `destructive-text` | 6.0:1      |
 
 `code-background` is `muted`. Ratios are WCAG's, rounded down; each clears
-4.5:1. Nothing is bold or italic: colour alone tells the kinds apart, and
-a reader who cannot see it loses nothing they need to run the code.
+4.5:1. Nothing is bold or italic. The kinds differ by colour alone, and
+none of them is needed to read or run the code.
 
 ## Type
 
@@ -372,13 +372,27 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   pixel art of an icon, or the repository's card (its mark, name and
   star count, then the pull requests merged last, from GitHub at build
   time, without work-package codes).
-- **Code demo.** A bordered panel with ui-sdk's tabs (API, CLI, MCP,
-  SDK) along its top; each tab shows the request on the left and the
-  response on the right, both on `muted` in Geist Mono 13 px, each under
-  a mono caption, and a ghost Copy button on the request's caption. The
-  requests are the docs' own, the responses the contract's shapes, and
-  every id is made up and reads as such. Long lines wrap, breaking
-  anywhere, so nothing hides past a panel's edge at any width.
+- **Code block.** peal-ui's `CodeBlock`: a bordered panel with a header
+  bar, then the code on `muted` in Geist Mono 13 px, coloured as
+  [Code](#code) says and highlighted at build time, so no highlighter
+  reaches the browser. The header holds the language switcher and a
+  ghost Copy button, which copies the plain source and says "Copied" to
+  screen readers too. The switcher lists curl, the CLI and the eight SDKs,
+  each with its mark (lucide's terminal for the CLI). It is ui-sdk's tabs
+  once the block is 60 rem wide and ui-sdk's select below that, since ten
+  tabs do not fit on one line any narrower. A block with one language shows
+  its mark and caption in place of the switcher. Every block on the page
+  shows the language picked last, and the reader's next visit opens on it.
+  A request may have its response beside it, from 48 rem of block width,
+  or under it below that. Each pane has a mono caption (the file's name,
+  `201 Created`). Line numbers are optional and stay put while the code
+  scrolls. A long line scrolls sideways inside its pane, above a thin
+  scrollbar, and never wraps: the code keeps the shape it is copied in,
+  and the page never scrolls sideways. From 48 rem, a block keeps the
+  height of its longest language, so switching moves nothing. The
+  requests are the docs' own, the SDKs' calls are their generated
+  methods, the responses use the contract's shapes, and every id is
+  obviously made up.
 - **Tiles.** Bordered cells in rows of four (two on a phone), under a
   mono group label: a 36 px bordered tile with an icon or a brand's mark,
   an arrow pointing out, a title (15 px, 600) and an optional line.
@@ -395,8 +409,9 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   selected segment is `card` with the switch's shadow. Its panel holds
   the product's demo: for PealStudio, the composer (one post, a tab per
   channel, each platform's count against its limit from the contract, a
-  preview beside it), for PealAPI the code demo. Under the demo, a row of
-  chips, one per feature of the selected product (a 14 px icon, its name
+  preview beside it), for PealAPI a code block with line numbers, the
+  request beside its response. Under the demo, a row of chips, one per
+  feature of the selected product (a 14 px icon, its name
   and an arrow pointing out, 4 px radius, bordered), each linking to its
   docs page. Below 768 px the composer's preview goes under its text.
 - **Two platforms panel.** Under a section opener, the two products in
@@ -420,10 +435,11 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   line, linking to its docs page.
 - **Product rows.** Under PealAPI's opening: one bordered row per part,
   its title (an icon, 15 px, 600), a paragraph and a link to its docs
-  page on the left (5 of 12 columns), and on the right its code (the code
-  demo's blocks, stacked, without tabs), its tiles (the SDKs' marks in
-  bordered cells, four to a row, two on a phone) or a mock from the app
-  (a connect link's page). Stacked below 768 px.
+  page on the left (5 of 12 columns), and on the right its code (a code
+  block: the publishing request in every language, the others in one),
+  its tiles (the SDKs' marks in bordered cells, four to a row, two on a
+  phone) or a mock from the app (a connect link's page). Stacked below
+  768 px.
 - **Closing band.** The last section before the footer is a call to
   action on the brand field: a white headline and line, centred, a white
   button with ink text and a white text link, with the field's rails on
