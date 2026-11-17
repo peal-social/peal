@@ -10,8 +10,9 @@ inputs:
     default: "false"
   nx-cache:
     description: >-
-      A name for this job's Nx cache, restored from this branch's last run
-      or the default branch's, and saved when the job succeeds. Empty for none.
+      A name for this job's Nx cache, restored from main's last saved one.
+      Empty for none. The job saves it with the save-cache action, which
+      does so only on main.
     default: ""
 
 runs:
@@ -34,7 +35,7 @@ runs:
     # earlier commit is reused only where nothing it reads has changed. Tests
     # are never cached (nx.json).
     - if: inputs.nx-cache != ''
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: .nx/cache
         key: nx-${{ runner.os }}-${{ inputs.nx-cache }}-${{ github.sha }}
