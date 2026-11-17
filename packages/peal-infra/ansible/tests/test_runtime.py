@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -208,10 +209,10 @@ def test_grafana_alerts_telegram_alone_without_a_slack_webhook(rendered: Path, e
 
 
 @pytest.fixture(scope="module")
-def rendered_slack(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def rendered_slack(rendered_with: Callable[..., Path]) -> Path:
     """Each server's files with the environment's Slack webhook in its
     vault."""
-    return render_inventory(tmp_path_factory.mktemp("slack"), peal_credentials={"SLACK_ALERTS_WEBHOOK_URL": SLACK_WEBHOOK})
+    return rendered_with(peal_credentials={"SLACK_ALERTS_WEBHOOK_URL": SLACK_WEBHOOK})
 
 
 @pytest.mark.parametrize("environment", ENVIRONMENTS)

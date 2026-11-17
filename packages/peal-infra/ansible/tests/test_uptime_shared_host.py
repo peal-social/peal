@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -135,16 +136,15 @@ SHARED = {"uptime_shared_host": True, "uptime_gatus_port": GATUS_PORT, "uptime_s
 
 
 @pytest.fixture(scope="module")
-def shared(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def shared(rendered_with: Callable[..., Path]) -> Path:
     """What the uptime server gets on a shared host, status page on."""
-    return render_inventory(tmp_path_factory.mktemp("shared"), **SHARED) / "peal-uptime"
+    return rendered_with(**SHARED) / "peal-uptime"
 
 
 @pytest.fixture(scope="module")
-def shared_private(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def shared_private(rendered_with: Callable[..., Path]) -> Path:
     """The same, with the status page off."""
-    folder = tmp_path_factory.mktemp("shared-private")
-    return render_inventory(folder, **SHARED, uptime_public_status=False) / "peal-uptime"
+    return rendered_with(**SHARED, uptime_public_status=False) / "peal-uptime"
 
 
 def _compose(folder: Path) -> dict[str, Any]:

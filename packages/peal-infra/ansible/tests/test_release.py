@@ -115,46 +115,47 @@ def restored(postgres: Postgres) -> Iterator[Postgres]:
     _psql(postgres, f"ALTER ROLE peal PASSWORD '{GENERATED}'")
 
 
-def test_the_check_refuses_the_restored_password(restored: Postgres) -> None:
-    assert not _signs_in(restored, GENERATED)
+class TestThePassword:
+    """The release's steps on the database password, against one
+    Postgres, started once for these tests in one of xdist's workers
+    (conftest's scheduler runs a class in one)."""
 
-    assert _step(restored, "Check the database password").returncode != 0
+    def test_the_check_refuses_the_restored_password(self, restored: Postgres) -> None:
+        assert not _signs_in(restored, GENERATED)
 
+        assert _step(restored, "Check the database password").returncode != 0
 
-def test_the_check_accepts_the_generated_password(postgres: Postgres) -> None:
-    assert _step(postgres, "Check the database password").returncode == 0
+    def test_the_check_accepts_the_generated_password(self, postgres: Postgres) -> None:
+        assert _step(postgres, "Check the database password").returncode == 0
 
-
-def test_setting_the_password_lets_the_server_sign_in(restored: Postgres) -> None:
-    _step(restored, "Set the database password to the generated one").check_returncode()
-
-    assert _signs_in(restored, GENERATED)
-    assert _step(restored, "Check the database password").returncode == 0
-
-
-def test_setting_the_password_logs_it_nowhere(restored: Postgres) -> None:
-    """Not in Postgres's log, even where it logs every statement, nor on a
-    command line, where any process on the host could read it."""
-    found = task("peal_release", "Set the database password to the generated one")
-    _psql(restored, "ALTER SYSTEM SET log_statement = 'all'")
-    _psql(restored, "SELECT pg_reload_conf()")
-    try:
+    def test_setting_the_password_lets_the_server_sign_in(self, restored: Postgres) -> None:
         _step(restored, "Set the database password to the generated one").check_returncode()
-    finally:
-        _psql(restored, "ALTER SYSTEM RESET log_statement")
+
+        assert _signs_in(restored, GENERATED)
+        assert _step(restored, "Check the database password").returncode == 0
+
+    def test_setting_the_password_logs_it_nowhere(self, restored: Postgres) -> None:
+        """Not in Postgres's log, even where it logs every statement, nor on a
+        command line, where any process on the host could read it."""
+        found = task("peal_release", "Set the database password to the generated one")
+        _psql(restored, "ALTER SYSTEM SET log_statement = 'all'")
         _psql(restored, "SELECT pg_reload_conf()")
-    logs = _run(["docker", "logs", restored.container])
+        try:
+            _step(restored, "Set the database password to the generated one").check_returncode()
+        finally:
+            _psql(restored, "ALTER SYSTEM RESET log_statement")
+            _psql(restored, "SELECT pg_reload_conf()")
+        logs = _run(["docker", "logs", restored.container])
 
-    assert GENERATED not in logs.stdout + logs.stderr
-    assert all("POSTGRES_PASSWORD" not in part for part in command_of(found, peal_compose_bin=COMPOSE))
+        assert GENERATED not in logs.stdout + logs.stderr
+        assert all("POSTGRES_PASSWORD" not in part for part in command_of(found, peal_compose_bin=COMPOSE))
 
+    def test_reading_what_postgres_runs_shows_no_secret(self, postgres: Postgres) -> None:
+        """The release compares images and settings, and registers what it reads,
+        which Ansible prints with -v: never the container's environment."""
+        running = _step(postgres, "Read what Postgres runs")
+        to_run = _step(postgres, "Read what Postgres is to run")
 
-def test_reading_what_postgres_runs_shows_no_secret(postgres: Postgres) -> None:
-    """The release compares images and settings, and registers what it reads,
-    which Ansible prints with -v: never the container's environment."""
-    running = _step(postgres, "Read what Postgres runs")
-    to_run = _step(postgres, "Read what Postgres is to run")
-
-    assert running.returncode == 0
-    assert GENERATED not in running.stdout + running.stderr
-    assert running.stdout.split()[0] == to_run.stdout.strip()
+        assert running.returncode == 0
+        assert GENERATED not in running.stdout + running.stderr
+        assert running.stdout.split()[0] == to_run.stdout.strip()
