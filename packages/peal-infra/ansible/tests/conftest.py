@@ -190,6 +190,14 @@ def render_inventory(folder: Path, **extra_vars: Any) -> Path:
     return folder
 
 
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """The tests of an xdist_group first, in the order collected otherwise:
+    xdist hands the work out in that order, and a group runs end to end in
+    one worker, so a group handed out last would keep the run going on
+    after the other workers are done."""
+    items.sort(key=lambda item: item.get_closest_marker("xdist_group") is None)
+
+
 @pytest.fixture(scope="session")
 def rendered_with(tmp_path_factory: pytest.TempPathFactory) -> Callable[..., Path]:
     """render_inventory, once a run for each set of settings, however many
