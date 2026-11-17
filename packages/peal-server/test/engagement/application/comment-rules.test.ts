@@ -87,6 +87,8 @@ describe("comment rules", () => {
         const workspaceId = yield* freshWorkspace;
 
         yield* Effect.gen(function* checks() {
+          // The jobs other files' tests started, in this worker, before.
+          const startedBefore = (yield* Ref.get(started)).length;
           const thread = yield* threadOn(workspaceId, "mastodon");
           const rules = yield* CommentRules;
 
@@ -110,7 +112,10 @@ describe("comment rules", () => {
           const run = yield* rules.runDue;
 
           assert.strictEqual(run.replied, 1);
-          assert.strictEqual((yield* Ref.get(started)).length, 1);
+          assert.strictEqual(
+            (yield* Ref.get(started)).length,
+            startedBefore + 1
+          );
 
           const after = yield* rules.get(actorIn(workspaceId), rule.rule.id);
 
@@ -132,7 +137,10 @@ describe("comment rules", () => {
 
           // A later run looks at nothing again.
           assert.strictEqual((yield* rules.runDue).looked, 0);
-          assert.strictEqual((yield* Ref.get(started)).length, 1);
+          assert.strictEqual(
+            (yield* Ref.get(started)).length,
+            startedBefore + 1
+          );
         }).pipe(Effect.ensuring(forget(workspaceId)));
       }).pipe(Effect.provide(RulesTest))
   );

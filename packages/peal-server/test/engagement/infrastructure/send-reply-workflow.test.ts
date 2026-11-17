@@ -640,7 +640,18 @@ describe("SendReplyV1 while the database is down", () => {
           Effect.gen(function* recovers() {
             const reply = yield* replying;
 
-            yield* eventually("the reply's job ends", jobEnded(reply.id));
+            // Its reads wait 200 then 400 milliseconds of virtual time
+            // between tries: a round moves the clock by the first.
+            for (let round = 0; round < 50; round += 1) {
+              if (yield* jobEnded(reply.id)) {
+                break;
+              }
+
+              yield* TestClock.adjust("200 millis");
+              yield* settle(2);
+            }
+
+            assert.isTrue(yield* jobEnded(reply.id));
 
             assert.strictEqual(statusOf(world, reply.id), "sent");
             assert.lengthOf(platform.sent, 1);

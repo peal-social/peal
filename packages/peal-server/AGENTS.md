@@ -331,7 +331,22 @@ and no socket, for tests.
   wakes. Jump only as far as the behaviour needs (a daily rule and days,
   not weeks), and never raise a timeout for a jump. Test a budget of time
   on `TestClock`, with the calls it waits on let go by the test, never on
-  the real clock, which a loaded machine spends on its own.
+  the real clock, which a loaded machine spends on its own. A job's long
+  durable sleep (a retry's delay of minutes) is reached by moving the clock
+  to the wake-up it stored (`untilWokenLater`,
+  `test/publishing/article-support.ts`), not a second a round.
+
+### Test shards
+
+- CI runs the tests in shards (the `server` job's matrix), split by the
+  time each file took (`test/durations.json`, `test/shards.ts`): the
+  sequencer in `vitest.config.ts` gives each file to one shard, a file
+  never measured too, and `test/shards.test.ts` checks it. Each shard
+  uploads what it measured (`server-test-durations-<n>`); refresh the
+  file from a run of `main` with every shard passed, with
+  `nx run peal-server:test-durations -- <run id>`, when a shard runs
+  far longer than the others. A shard's own `--sequence.shuffle.files`
+  shuffles its files.
 
 ### Database
 

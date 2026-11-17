@@ -12,6 +12,11 @@
       "options": { "cwd": "{projectRoot}" },
       "dependsOn": ["auth-schema-check"]
     },
+    "test-durations": {
+      "command": "bun scripts/test-durations.ts",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": false
+    },
     "dev": {
       "command": "bun --watch src/main.ts",
       "options": { "cwd": "{projectRoot}" },
