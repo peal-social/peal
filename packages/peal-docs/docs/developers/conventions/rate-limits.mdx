@@ -7,7 +7,7 @@ sidebar:
 
 ## Rate limits [#rate-limits]
 
-A credential may send a number of requests a minute, counted in one-minute windows:
+Each credential may send a set number of requests a minute. How they're counted depends on the credential:
 
 | Credential                             | Counted                                                              |
 | -------------------------------------- | -------------------------------------------------------------------- |
@@ -18,13 +18,11 @@ A credential may send a number of requests a minute, counted in one-minute windo
 
 On a server that bills, a billing account without a payment method counts all its credentials together ([By billing account](#standing)).
 
-- The count is shared between the API and the [MCP endpoint](/developers/mcp).
-- It is kept in fixed windows of one minute that start on the minute.
-- On your own server, `PEAL_API_REQUESTS_PER_MINUTE` sets the number, {{api-with-en}} unless set ([Environment variables](/self-hosting/environment-variables#core)).
+The API and the [MCP endpoint](/developers/mcp) share one count. It's kept in fixed windows of one minute that start on the minute. On your own server, `PEAL_API_REQUESTS_PER_MINUTE` sets the number, {{api-with-en}} unless set ([Environment variables](/self-hosting/environment-variables#core)).
 
 ### By billing account [#standing]
 
-On a server that bills, as Peal Cloud does, the number depends on the [billing account](/guides/workspace/billing#accounts) that pays for the workspace the credential acts in:
+On a server that bills, as Peal Cloud does, the number depends on the [billing account](/guides/workspace/billing#accounts) that pays for the workspace the credential acts in. Three policies apply:
 
 | Policy     | Requests a minute                     | When                                                                                                    |
 | ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -32,10 +30,11 @@ On a server that bills, as Peal Cloud does, the number depends on the [billing a
 | `default`  | {{api-with-en}}, the server's setting | It has one ([A payment method](/guides/workspace/billing#payment-method)), or a plan priced by channels |
 | `override` | What Peal set for the workspace       | On request, {{api-on-request-en}} usually: write to us                                                  |
 
-- An API key takes its workspace's account, a partner key its partner's home workspace's, and an application the workspace its token is bound to. A token bound to no workspace, as the command line's, takes the account its member pays for (the free tier when they pay for none), and the limit Peal set for the workspace a request names, if any.
-- On the `free` policy, every key, partner key and application of a billing account shares one count, and a member who pays for no account has one of their own: more credentials send no more. With a payment method, each credential counts on its own.
-- A payment method added raises the limit within a minute.
-- A server that does not bill applies its one setting to every credential.
+Which billing account counts depends on the credential. An API key takes its workspace's account, a partner key its partner's home workspace's, and an application the workspace its token is bound to. A token bound to no workspace, such as the command line's, takes the account its member pays for (the free tier when they pay for none), and the limit Peal set for the workspace a request names, if any.
+
+On the `free` policy, every key, partner key and application of a billing account shares one count, and a member who pays for no account has one of their own. More credentials don't send more. With a payment method, each credential counts on its own.
+
+When you add a payment method, the limit goes up within a minute. A server that doesn't bill applies its one setting to every credential.
 
 Every answer to a counted credential says where it stands, in the headers of the IETF draft "RateLimit header fields for HTTP":
 
@@ -45,11 +44,11 @@ Every answer to a counted credential says where it stands, in the headers of the
 | `RateLimit`        | `"default";r=412;t=23` | What is left: `r` requests, for `t` more seconds, after which the count starts again. |
 | `Retry-After`      | `23`                   | On a 429 only: how many seconds to wait.                                              |
 
-<Callout type="info">
-  A 429 `platform_rate_limited` is another thing: a platform asked Peal to slow
-  down, as a [lookup](/developers) can find, and this count is untouched. The
-  hosted pages of connect links and review links, which take no key, have limits
-  of their own by address.
+<Callout type="info" title="A platform's 429 isn't this limit">
+  A 429 `platform_rate_limited` means a platform asked Peal to slow down, as a
+  [lookup](/developers) can find, and this count is untouched. The hosted pages
+  of connect links and review links, which take no key, have limits of their own
+  by address.
 </Callout>
 
 ### Past the limit [#too-many-requests]
@@ -78,16 +77,15 @@ X-Request-Id: 019a7b33-41c7-7d50-a2e9-6b8c0d1e2f3a
 }
 ```
 
-Wait `retryAfterSeconds`, then send the request again. A client that reads `RateLimit` slows down before it is refused.
+Wait `retryAfterSeconds`, then send the request again. A client that reads `RateLimit` slows down before it's refused.
 
-On the `free` policy, the error also carries `withPaymentMethod`, the limit a payment method gives, and its `message` says so. `policy` and `withPaymentMethod` are absent from servers older than them.
+On the `free` policy, the error also carries `withPaymentMethod`, the limit a payment method gives, and its `message` says so. Servers older than these two fields don't send `policy` or `withPaymentMethod`.
 
-- The MCP endpoint answers the same status and headers, with a JSON-RPC error.
-- When the server cannot keep the count, it lets the request through.
+The MCP endpoint answers the same status and headers, with a JSON-RPC error. When the server can't keep the count, it lets the request through.
 
 ### Limits of one feature [#feature-limits]
 
-Some features have a limit of their own, which this one does not replace:
+Some features have a limit of their own, on top of this one:
 
 | Limit                                                  | Error                      | See                                                            |
 | ------------------------------------------------------ | -------------------------- | -------------------------------------------------------------- |

@@ -5,99 +5,109 @@ sidebar:
   icon: megaphone
 ---
 
-Ads stay off on a server of your own until you turn them on. This page says how, and what Meta and Google ask of whoever runs the server's apps.
+Ads stay off on your server until you set `PEAL_ADS`. Before that, you need a Meta app of your own with ads access, and for Google Ads an OAuth client of your own. Meta and Google each ask a few things of whoever runs them.
 
 ## Turn ads on [#ads]
 
-Ads are off until the instance's operator sets [`PEAL_ADS`](/self-hosting/environment-variables#ads):
+[`PEAL_ADS`](/self-hosting/environment-variables#ads) takes one of three values:
 
 | `PEAL_ADS`     | What workspaces may do                                       |
 | -------------- | ------------------------------------------------------------ |
-| `off` or unset | Nothing: ads are off                                         |
+| `off` or unset | Nothing. Ads are off.                                        |
 | `read`         | Connect ad accounts and read their campaigns and numbers     |
 | `spend`        | Also boost published posts, which spends their money at Meta |
 
-[`PEAL_ADS_NETWORKS`](/self-hosting/environment-variables#ads) names the networks offered, `meta` when unset: add `google` for [Google Ads](#google), read only. `spend` needs `meta` among them.
+[`PEAL_ADS_NETWORKS`](/self-hosting/environment-variables#ads) names the networks you offer, and is `meta` when unset. Add `google` to offer [Google Ads](#google), which is read only. `spend` needs `meta` in the list.
 
-A self-hosted instance brings its own Meta app with ads access: Peal Cloud's app does not serve it. Ads use Meta's main app, the one [Facebook Pages](/self-hosting/platforms#meta) connect with (`META_APP_ID`, `META_APP_SECRET`), and [`PEAL_TOKEN_KEYS`](/self-hosting/environment-variables#channels) to encrypt the sign-ins' tokens. `PEAL_ADS` set to `read` or `spend` without that app stops the server at startup.
+Your instance brings its own Meta app with ads access, because Peal Cloud's app doesn't serve self-hosted servers. Ads use Meta's main app, the one [Facebook Pages](/self-hosting/platforms#meta) connect with (`META_APP_ID`, `META_APP_SECRET`). They also need [`PEAL_TOKEN_KEYS`](/self-hosting/environment-variables#channels) to encrypt the sign-ins' tokens.
+
+If you set `PEAL_ADS` to `read` or `spend` without that app, the server stops at startup.
 
 <Steps>
-  <Step title="Get the ads permissions from Meta">
-    Apply for what [Meta asks of the operator](#operator) on the app in
-    `META_APP_ID`.
-  </Step>
-  <Step title="Register the redirect address">
-    Register on the app, as a valid OAuth redirect URI, the address [the
-    command](/self-hosting/platforms#platform-addresses) prints for ads.
-  </Step>
-  <Step title="Start on read">
-    Set `PEAL_ADS=read` until Meta granted the app `ads_management`. Members
-    connect ad accounts and read them, the sign-in asks for reading only, and
-    everything that spends answers `AdSpendingUnavailable`.
-  </Step>
-  <Step title="Move to spend">
-    Once Meta granted `ads_management`, set `PEAL_ADS=spend`. People who signed
-    in before then sign in again to allow running ads.
-  </Step>
+<Step title="Get the ads permissions from Meta">
+
+Apply for what [Meta asks of the operator](#operator), on the app in `META_APP_ID`.
+
+</Step>
+<Step title="Register the redirect address">
+
+On the app, register the address that [the command](/self-hosting/platforms#platform-addresses) prints for ads, as a valid OAuth redirect URI.
+
+</Step>
+<Step title="Start on read">
+
+Set `PEAL_ADS=read` until Meta has granted the app `ads_management`. Members can connect ad accounts and read them, and the sign-in asks for reading only. Everything that spends answers `AdSpendingUnavailable`.
+
+</Step>
+<Step title="Move to spend">
+
+Once Meta has granted `ads_management`, set `PEAL_ADS=spend`. People who signed in before then sign in again to allow running ads.
+
+</Step>
 </Steps>
 
 The server calls Meta's Graph API for ads, as it does for Facebook Pages. Whatever the access tier, Peal stops reading an ad account at 75% of the rate limit Meta reports for it.
 
 ## What Meta asks of the operator [#operator]
 
-These are what Meta's documentation asks for at the time of writing. Confirm each with Meta when you apply, as its rules change ([Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization), [Rate limiting](https://developers.facebook.com/docs/marketing-api/overview/rate-limiting)).
+This is what Meta's documentation asks for at the time of writing. Meta's rules change, so confirm each one with Meta when you apply ([Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization), [Rate limiting](https://developers.facebook.com/docs/marketing-api/overview/rate-limiting)):
 
-| Requirement                      | What it is                                                                                                                                                                                                           |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Permissions                      | `ads_read` to read ad accounts and their reports. To boost: `ads_management`, `pages_show_list`, `pages_read_engagement` and `pages_manage_ads`.                                                                     |
-| App Review, with advanced access | For each permission, to act for other people's ad accounts. An app that only manages its own ad account can work with standard access.                                                                               |
-| Business verification            | Of the business that owns the app                                                                                                                                                                                    |
-| Marketing API access tier        | An app starts with limited access, whose rate limits per ad account are low, and gets full access after App Review and enough successful calls: Meta's page says 500 calls in 15 days, with an error rate under 15%. |
+| Requirement                      | What it is                                                                                                                                                                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Permissions                      | `ads_read` to read ad accounts and their reports. To boost, also `ads_management`, `pages_show_list`, `pages_read_engagement` and `pages_manage_ads`.                                                               |
+| App Review, with advanced access | For each permission, to act for other people's ad accounts. An app that only manages its own ad account can work with standard access.                                                                              |
+| Business verification            | Of the business that owns the app                                                                                                                                                                                   |
+| Marketing API access tier        | An app starts with limited access, whose rate limits per ad account are low. It gets full access after App Review and enough successful calls. Meta's page says 500 calls in 15 days, with an error rate under 15%. |
 
 ## Google Ads [#google]
 
-Google Ads is read only: members connect accounts and read their campaigns and each campaign's daily cost, impressions and clicks, and nothing is ever written to Google Ads. It takes an OAuth client of its own, apart from YouTube's and Google Business Profile's.
+With Google Ads, members connect accounts and read their campaigns, with each campaign's daily cost, impressions and clicks. Peal never writes anything to Google Ads. It needs an OAuth client of its own, separate from the ones for YouTube and Google Business Profile.
 
 <Steps>
-  <Step title="Enable the API">
-    In a Google Cloud project linked to a paid billing account (Google gives no
-    access beyond Test to a project on its free trial), enable the **Google Ads
-    API** in the API library. The project then has Test access.
-  </Step>
-  <Step title="Set up the consent screen">
-    Under **Google Auth Platform**, add the scope
-    `https://www.googleapis.com/auth/adwords` under **Data Access**. Google has
-    no reading-only scope for Google Ads: Peal asks for this one and writes
-    nothing.
-  </Step>
-  <Step title="Create the client">
-    Under **Clients**, create a **Web application** client, with the address
-    [the command](/self-hosting/platforms#platform-addresses) prints for Google
-    Ads as an authorized redirect URI
-    (`PUBLIC_URL/connect/ads/google/callback`). Set `GOOGLE_ADS_CLIENT_ID` and
-    `GOOGLE_ADS_CLIENT_SECRET` to it.
-  </Step>
-  <Step title="Name the network">
-    Set `PEAL_ADS=read` (or `spend`, for Meta's boosts) and
-    `PEAL_ADS_NETWORKS=meta,google`, or `google` alone. `PEAL_TOKEN_KEYS`
-    encrypts each sign-in's refresh token.
-  </Step>
+<Step title="Enable the API">
+
+Use a Google Cloud project linked to a paid billing account, because Google gives a project on its free trial nothing beyond Test access. In the API library, enable the **Google Ads API**. The project now has Test access.
+
+</Step>
+<Step title="Set up the consent screen">
+
+Under **Google Auth Platform**, go to **Data Access** and add the scope `https://www.googleapis.com/auth/adwords`. Google has no read-only scope for Google Ads, so Peal asks for this one and writes nothing.
+
+</Step>
+<Step title="Create the client">
+
+Under **Clients**, create a **Web application** client. Add the address that [the command](/self-hosting/platforms#platform-addresses) prints for Google Ads (`PUBLIC_URL/connect/ads/google/callback`) as an authorized redirect URI. Put the client in `GOOGLE_ADS_CLIENT_ID` and `GOOGLE_ADS_CLIENT_SECRET`.
+
+</Step>
+<Step title="Name the network">
+
+Set `PEAL_ADS=read`, or `spend` for Meta's boosts, and set `PEAL_ADS_NETWORKS=meta,google`, or `google` alone. `PEAL_TOKEN_KEYS` encrypts each sign-in's refresh token.
+
+</Step>
 </Steps>
 
-There is no developer token to set: Google retired them on 9 September 2026, and the access level Google gives belongs to the Cloud project that owns the client ([Access levels](https://developers.google.com/google-ads/api/docs/api-policy/access-levels)). Peal reads each account every six hours, three operations a read (the account, its campaigns, their days; further pages of an answer are not counted), so each level carries about:
+### How many accounts an access level reads [#google-access]
 
-| Access level | How you get it                                                                               | Operations a day              | Accounts at six hours a read |
-| ------------ | -------------------------------------------------------------------------------------------- | ----------------------------- | ---------------------------- |
-| Test         | Enabling the API                                                                             | 15,000, on test accounts only | Test accounts only           |
-| Explorer     | **Apply for access** on the Cloud console's Google Ads API page; Google may grant it at once | 2,880 on real accounts        | About 240                    |
-| Basic        | An application, reviewed within minutes, once the project's brand is verified                | 15,000                        | About 1,250                  |
+There's no developer token to set. Google retired them on 9 September 2026, and the access level now belongs to the Cloud project that owns the client ([Access levels](https://developers.google.com/google-ads/api/docs/api-policy/access-levels)). Peal reads each account every six hours, and a read costs three operations: the account, its campaigns and their days. Further pages of an answer aren't counted. Each level then covers about this many accounts:
 
-Listing the accounts a sign-in reaches spends operations too: one, and one more for each account the person uses directly or manages (50 at most). Peal keeps a listing five minutes for the steps right after it, allows a sign-in ten listings an hour and a workspace thirty, and lets the listings of the whole server spend 300 operations a day at most, 100 of them for one workspace, past which connecting answers that Google asked to wait; the reads keep the rest. The table's figures, with that share kept for listings, are thus about 215 accounts at Explorer and 1,225 at Basic (three operations a read, four reads a day); an account the sweep reads late in its run is still read every six hours, counted from the sweep's time.
+| Access level | How you get it                                                                                      | Operations a day              | Accounts at six hours a read |
+| ------------ | --------------------------------------------------------------------------------------------------- | ----------------------------- | ---------------------------- |
+| Test         | Enable the API                                                                                      | 15,000, on test accounts only | Test accounts only           |
+| Explorer     | Click **Apply for access** on the Cloud console's Google Ads API page. Google may grant it at once. | 2,880 on real accounts        | About 240                    |
+| Basic        | Apply once the project's brand is verified. Google reviews it within minutes.                       | 15,000                        | About 1,250                  |
 
-A read that takes more pages than Peal reads at once (400,000 rows of days) goes on from the last day it reached a few times; one still cut is not marked read, is logged as an error, and waits six hours before it is read again.
+Listing the accounts a sign-in reaches costs operations too: one, plus one for each account the person uses directly or manages (50 at most). Peal keeps a listing for five minutes, for the steps right after it. A sign-in gets ten listings an hour and a workspace thirty.
 
-A project at Test access reads [test accounts](https://developers.google.com/google-ads/api/docs/best-practices/test-accounts) only, and Google refuses real ones (`CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION`, which the server logs as an error). Google may withdraw access unused for 90 days.
+Listings across the whole server spend 300 operations a day at most, and one workspace 100 of them. Past that, connecting answers that Google asked to wait, and the reads keep the rest of the quota. With that share kept for listings, the table's figures come to about 215 accounts at Explorer and 1,225 at Basic. An account the sweep reaches late in its run is still read every six hours, counted from the time of the sweep.
 
-While the consent screen is in **Testing**, only its test users, 100 at most, can sign in, and their sign-ins end after seven days: Peal then shows them as needing reconnecting. Before people outside your organisation connect, publish the consent screen, verify the brand, and have Google verify the `adwords` scope, which asks for a justification and a video of the sign-in and of what Peal shows ([Brand verification](https://developers.google.com/google-ads/api/docs/api-policy/brand-verification)). Everyone who signs in needs a passkey on their Google account ([Security requirements](https://developers.google.com/google-ads/api/docs/oauth/security-requirements)).
+A read longer than Peal fetches at once (400,000 rows of days) picks up from the last day it reached, a few times. If it's still cut short, the account isn't marked read, the server logs an error, and Peal waits six hours before reading it again.
 
-The server calls `oauth2.googleapis.com` and `googleads.googleapis.com` for Google Ads, version v26 of its API, which Google ends in November 2027.
+### What fails before Google approves the project [#google-review]
+
+A project at Test access reads [test accounts](https://developers.google.com/google-ads/api/docs/best-practices/test-accounts) only. Google refuses real ones with `CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION`, which the server logs as an error. Google may withdraw access that goes unused for 90 days.
+
+While the consent screen is in **Testing**, only its test users can sign in, 100 at most, and their sign-ins end after seven days. Peal then shows those accounts as needing to reconnect.
+
+Before people outside your organisation connect, publish the consent screen and verify the brand. Then have Google verify the `adwords` scope, which takes a justification and a video of the sign-in and of what Peal shows ([Brand verification](https://developers.google.com/google-ads/api/docs/api-policy/brand-verification)). Everyone who signs in needs a passkey on their Google account ([Security requirements](https://developers.google.com/google-ads/api/docs/oauth/security-requirements)).
+
+For Google Ads, the server calls `oauth2.googleapis.com` and `googleads.googleapis.com`, on version v26 of the API. Google ends v26 in November 2027.

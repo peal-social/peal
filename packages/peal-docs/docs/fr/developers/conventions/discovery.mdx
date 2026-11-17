@@ -7,17 +7,19 @@ sidebar:
 
 ## Découverte [#discovery]
 
-Un programme qui ne connaît que l’adresse d’un serveur Peal trouve le reste à partir de ces documents. Aucun ne demande d’authentification.
+Un programme qui ne connaît que l’adresse d’un serveur Peal peut trouver le reste à partir de ces documents. Aucun d’eux ne demande d’authentification.
 
 | Adresse                                     | Ce que c’est                                                                                                                                                                                 |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/.well-known/api-catalog`                  | Le catalogue d’API (RFC 9727), en `application/linkset+json` : l’API et le point d’accès MCP, chacun avec sa description, sa documentation et l’endroit où obtenir de quoi s’y authentifier. |
-| `/api/openapi.json`                         | Le document OpenAPI 3.1 de l’API : chaque point d’accès, ses paramètres, ses réponses et ses erreurs.                                                                                        |
-| `/api/mcp/server-card`                      | La fiche du point d’accès MCP (server card), en `application/mcp-server-card+json` : son adresse, les révisions du protocole qu’il parle et l’en-tête qui porte le moyen d’authentification. |
+| `/.well-known/api-catalog`                  | Le catalogue d’API (RFC 9727), en `application/linkset+json` : l’API et le point d’accès MCP, chacun avec sa description, sa documentation et l’endroit où obtenir de quoi s’y authentifier. |
+| `/api/openapi.json`                         | Le document OpenAPI 3.1 de l’API : chaque point d’accès, ses paramètres, ses réponses et ses erreurs.                                                                                        |
+| `/api/mcp/server-card`                      | La fiche du point d’accès MCP (server card), en `application/mcp-server-card+json` : son adresse, les révisions du protocole qu’il parle et l’en-tête qui porte le moyen d’authentification. |
 | `/llms.txt`                                 | Les mêmes adresses en Markdown, pour un modèle de langage.                                                                                                                                   |
 | `/.well-known/oauth-protected-resource/api` | Où un client OAuth obtient un jeton pour l’API, et les scopes (RFC 9728). `…/api/mcp` est celui du point d’accès MCP.                                                                        |
 | `/api/changelog`                            | Ce que chaque version de l’API a ajouté ([Journal des modifications](/developers/conventions/versioning#changelog)).                                                                         |
 | `/api/health`                               | Répond 204 tant que le serveur fonctionne.                                                                                                                                                   |
+
+Le catalogue d’API liste l’API et le point d’accès MCP :
 
 ```bash
 curl https://api.example.com/.well-known/api-catalog
@@ -70,11 +72,14 @@ curl https://api.example.com/.well-known/api-catalog
 }
 ```
 
-<Callout type="info">
+<Callout
+  type="info"
+  title="Les liens vers la documentation demandent PEAL_DOCS_URL"
+>
   Les liens vers la documentation (`service-doc`, et une section de `llms.txt`)
-  n’existent que sur un serveur qui sait où se trouve sa documentation :
+  n’existent que sur un serveur qui sait où se trouve sa documentation, grâce à
   `PEAL_DOCS_URL` ([Variables
   d’environnement](/self-hosting/environment-variables#core)).
 </Callout>
 
-Cette documentation a son propre `llms.txt`, à sa racine, avec chaque page en Markdown.
+Cette documentation a son propre `llms.txt` à sa racine, avec chaque page en Markdown.

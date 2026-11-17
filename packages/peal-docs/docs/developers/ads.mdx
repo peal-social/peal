@@ -5,11 +5,11 @@ sidebar:
   icon: megaphone
 ---
 
-Read ad accounts and their numbers, quote and start a boost, and hear about it by webhook: what the [Ads](/guides/engage/ads) guide does in the app, through the API, the SDKs, the command line or MCP.
+You can do what the [Ads](/guides/engage/ads) guide does in the app from your own code: read ad accounts and their numbers, quote and start a boost, and hear about it by webhook. It works through the API, the SDKs, the command line and MCP.
 
 ## Through the API [#api]
 
-The `ads` group is under `/api/workspaces/{workspaceId}/ads`. Paths below start there.
+The `ads` group is under `/api/workspaces/{workspaceId}/ads`, and the paths below start there. Each operation needs the permission in its last column:
 
 | Operation               | Request                                     | What it does                                                              | Needs                       |
 | ----------------------- | ------------------------------------------- | ------------------------------------------------------------------------- | --------------------------- |
@@ -37,17 +37,253 @@ The `ads` group is under `/api/workspaces/{workspaceId}/ads`. Paths below start 
 | `ads.stopBoost`         | `POST /boosts/{boostId}/stop`               | Stops it for good                                                         | `ads:spend` or `ads:manage` |
 | `ads.auditTrail`        | `GET /audit`                                | Lists the audit trail, 100 lines a page                                   | `ads:authorize`             |
 
-The three reports take `from` and `to`, calendar days of the account such as `2026-11-01`, both included and at most 366 days apart: the last 30 days when left out. Campaigns and ads come a thousand at most. `ads.listBoosts` and `ads.auditTrail` answer a `nextCursor` to pass as `cursor` for the next page.
+The three reports take `from` and `to`, calendar days of the account such as `2026-11-01`. Both are included, at most 366 days apart, and you get the last 30 days when you leave them out. Campaigns and ads come a thousand at most. `ads.listBoosts` and `ads.auditTrail` answer a `nextCursor`, which you pass as `cursor` for the next page.
 
-An account says what its network allows in `capabilities` (`ads`, `boosts`, `reach`, `results`): hide what is false. A Google Ads account (`network` `google`) has all four false: its campaigns carry their own days and a `kind` (`SEARCH`, `PERFORMANCE_MAX`), `ads.listAds` answers none, `reach` reads 0 and `results` null, and turning its spending on answers `AdSpendingUnavailable`. `reachedThrough` names the manager account it is read through.
+Each ad account says what its network allows in `capabilities`: `ads`, `boosts`, `reach` and `results`. Hide whatever is false. A Google Ads account (`network` is `google`) has all four false, because Peal only reads it:
 
-The SDKs have the same operations in their `ads` group (`peal.ads.quoteBoost`, `peal.ads.createBoost`…), and the [command line](/developers/cli/workspace) the commands under `peal ads`.
+- Its campaigns carry their own daily numbers, and a `kind` such as `SEARCH` or `PERFORMANCE_MAX`.
+- `ads.listAds` answers no ads for it.
+- `reach` reads 0, and `results` is null.
+- Turning its spending on answers `AdSpendingUnavailable`.
+
+On a Google Ads account, `reachedThrough` names the manager account Peal reads it through.
+
+The SDKs have the same operations in their `ads` group (`peal.ads.quoteBoost`, `peal.ads.createBoost`…). The [command line](/developers/cli/workspace) has them under `peal ads`.
 
 ### Quote, then boost [#api-boost]
 
-Ask for a quote, show it to whoever decides, then send the same body to create the boost. The quote reserves nothing; the CLI takes the budget in the currency's units (`--total 50`), the API in minor units (`5000`).
+Ask for a quote, show it to whoever decides, then send the same body to create the boost. The quote reserves nothing. The CLI takes the budget in the currency's units (`--total 50`), and the API in minor units (`5000`).
 
 <CodeGroup>
+
+```ts Node.js
+import { PealClient } from "peal-sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+const boost = {
+  accountId: "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+  postId: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+  channelId: "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+  budget: { kind: "total" as const, amount: 5000 },
+  currency: "EUR",
+  endsAt: "2026-11-19T09:00:00.000Z",
+  audience: { countries: ["FR", "BE"], ageMin: 25, ageMax: 54 },
+  specialAdCategory: "none" as const,
+  beneficiary: "Example Bakery SAS",
+  payer: "Example Bakery SAS",
+};
+
+const quote = await peal.ads.quoteBoost({ workspaceId, body: boost });
+```
+
+```python Python
+import os
+
+from peal import BoostAudience, BoostBudget, Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+boost = dict(
+    account_id="019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+    post_id="019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+    channel_id="019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+    budget=BoostBudget(kind="total", amount=5000),
+    currency="EUR",
+    ends_at="2026-11-19T09:00:00.000Z",
+    audience=BoostAudience(countries=["FR", "BE"], age_min=25, age_max=54),
+    special_ad_category="none",
+    beneficiary="Example Bakery SAS",
+    payer="Example Bakery SAS",
+)
+
+quote = peal.ads.quote_boost(workspace_id=workspace_id, **boost)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+// The client is named `client`, so that `peal` stays the package of the
+// request types.
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+ctx := context.Background()
+
+boost := &peal.NewBoost{
+	AccountID:         "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+	PostID:            "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+	ChannelID:         "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+	Budget:            &peal.BoostBudget{Kind: peal.BoostBudgetKindTotal, Amount: 5000},
+	Currency:          "EUR",
+	EndsAt:            "2026-11-19T09:00:00.000Z",
+	Audience:          &peal.BoostAudience{Countries: []string{"FR", "BE"}, AgeMin: 25, AgeMax: 54},
+	SpecialAdCategory: peal.SpecialAdCategoryNone,
+	Beneficiary:       peal.String("Example Bakery SAS"),
+	Payer:             peal.String("Example Bakery SAS"),
+}
+
+quote, err := client.Ads.QuoteBoost(ctx, &peal.QuoteBoostAdsRequest{
+	WorkspaceID: workspaceID,
+	Body:        boost,
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+boost = {
+  account_id: "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+  post_id: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+  channel_id: "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+  budget: { kind: "total", amount: 5000 },
+  currency: "EUR",
+  ends_at: "2026-11-19T09:00:00.000Z",
+  audience: { countries: ["FR", "BE"], ageMin: 25, ageMax: 54 },
+  special_ad_category: "none",
+  beneficiary: "Example Bakery SAS",
+  payer: "Example Bakery SAS"
+}
+
+quote = peal.ads.quote_boost(workspace_id: workspace_id, **boost)
+```
+
+```java Java
+import java.util.List;
+import social.peal.PealClient;
+import social.peal.resources.ads.requests.QuoteBoostAdsRequest;
+import social.peal.types.BoostAudience;
+import social.peal.types.BoostBudget;
+import social.peal.types.BoostBudgetKind;
+import social.peal.types.BoostQuote;
+import social.peal.types.NewBoost;
+import social.peal.types.SpecialAdCategory;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+NewBoost boost = NewBoost.builder()
+    .accountId("019a7902-1f4b-7a60-9c12-7d8e0f2a4b55")
+    .audience(BoostAudience.builder()
+        .ageMax(54)
+        .ageMin(25)
+        .countries(List.of("FR", "BE"))
+        .build())
+    .budget(BoostBudget.builder()
+        .amount(5000)
+        .kind(BoostBudgetKind.TOTAL)
+        .build())
+    .channelId("019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90")
+    .currency("EUR")
+    .endsAt("2026-11-19T09:00:00.000Z")
+    .postId("019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01")
+    .specialAdCategory(SpecialAdCategory.NONE)
+    .beneficiary("Example Bakery SAS")
+    .payer("Example Bakery SAS")
+    .build();
+
+BoostQuote quote = peal.ads().quoteBoost(workspaceId, QuoteBoostAdsRequest.builder()
+    .body(boost)
+    .build());
+```
+
+```php PHP
+<?php
+use Peal\Ads\Requests\QuoteBoostAdsRequest;
+use Peal\PealClient;
+use Peal\Types\BoostAudience;
+use Peal\Types\BoostBudget;
+use Peal\Types\BoostBudgetKind;
+use Peal\Types\NewBoost;
+use Peal\Types\SpecialAdCategory;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+$boost = new NewBoost([
+    'accountId' => '019a7902-1f4b-7a60-9c12-7d8e0f2a4b55',
+    'postId' => '019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01',
+    'channelId' => '019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90',
+    'budget' => new BoostBudget(['kind' => BoostBudgetKind::Total->value, 'amount' => 5000]),
+    'currency' => 'EUR',
+    'endsAt' => '2026-11-19T09:00:00.000Z',
+    'audience' => new BoostAudience(['countries' => ['FR', 'BE'], 'ageMin' => 25, 'ageMax' => 54]),
+    'specialAdCategory' => SpecialAdCategory::None->value,
+    'beneficiary' => 'Example Bakery SAS',
+    'payer' => 'Example Bakery SAS',
+]);
+
+$quote = $peal->ads->quoteBoost($workspaceId, new QuoteBoostAdsRequest(['body' => $boost]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+var boost = new NewBoost
+{
+    AccountId = "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+    PostId = "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+    ChannelId = "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+    Budget = new BoostBudget { Kind = BoostBudgetKind.Total, Amount = 5000 },
+    Currency = "EUR",
+    EndsAt = "2026-11-19T09:00:00.000Z",
+    Audience = new BoostAudience
+    {
+        Countries = new List<string> { "FR", "BE" },
+        AgeMin = 25,
+        AgeMax = 54,
+    },
+    SpecialAdCategory = SpecialAdCategory.None,
+    Beneficiary = "Example Bakery SAS",
+    Payer = "Example Bakery SAS",
+};
+
+var quote = await peal.Ads.QuoteBoostAsync(new QuoteBoostAdsRequest
+{
+    WorkspaceId = workspaceId,
+    Body = boost,
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+let boost = NewBoost::builder()
+    .account_id("019a7902-1f4b-7a60-9c12-7d8e0f2a4b55")
+    .post_id("019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01")
+    .channel_id("019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90")
+    .budget(BoostBudget {
+        amount: 5000,
+        kind: BoostBudgetKind::Total,
+    })
+    .currency("EUR")
+    .ends_at("2026-11-19T09:00:00.000Z")
+    .audience(BoostAudience {
+        countries: vec!["FR".to_string(), "BE".to_string()],
+        age_min: 25,
+        age_max: 54,
+    })
+    .special_ad_category(SpecialAdCategory::None)
+    .beneficiary("Example Bakery SAS")
+    .payer("Example Bakery SAS")
+    .build()?;
+
+let quote = peal.ads.quote_boost(workspace_id, &boost, None).await?;
+```
 
 ```bash curl
 curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts/quote \
@@ -67,24 +303,7 @@ curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts/quote \
   }'
 ```
 
-```ts TypeScript
-const boost = {
-  accountId: "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
-  postId: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
-  channelId: "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
-  budget: { kind: "total" as const, amount: 5000 },
-  currency: "EUR",
-  endsAt: "2026-11-19T09:00:00.000Z",
-  audience: { countries: ["FR", "BE"], ageMin: 25, ageMax: 54 },
-  specialAdCategory: "none" as const,
-  beneficiary: "Example Bakery SAS",
-  payer: "Example Bakery SAS",
-};
-
-const quote = await peal.ads.quoteBoost({ workspaceId, body: boost });
-```
-
-```bash CLI
+```sh CLI
 peal ads boost quote \
   --account 019a7902-1f4b-7a60-9c12-7d8e0f2a4b55 \
   --post 019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01 \
@@ -98,17 +317,99 @@ peal ads boost quote \
 
 </CodeGroup>
 
-The quote answers `commitment`, the `days` the run touches, the `ceiling`, what the account's other boosts already commit in the fullest month the run touches (`committed`), `capRoom`, null when the account has no cap of its own, and `startsAt`, `endsAt`, `currency` and `minorUnitDigits`.
+The quote answers these fields:
+
+- `commitment`, and the `days` the run touches.
+- The `ceiling`, and what the account's other boosts already commit in the fullest month the run touches (`committed`).
+- `capRoom`, which is null when the account has no cap of its own.
+- `startsAt`, `endsAt`, `currency` and `minorUnitDigits`.
 
 <Callout type="warning" title="Creating a boost spends money">
-  `POST …/ads/boosts` takes the same body, and an `Idempotency-Key` header,
-  which is required: any text of your choosing, 255 characters at most, new for
-  each boost. The same key with the same request answers the boost it made, and
-  never makes another; with another request it answers 409 `BoostKeyReused`. A
-  request whose answer was lost is safe to send again with its key.
+  `POST …/ads/boosts` takes the same body, and a required `Idempotency-Key`
+  header: any text you pick, 255 characters at most, new for each boost. The
+  same key with the same request answers the boost it made and never makes
+  another, and with another request it answers 409 `BoostKeyReused`. So when an
+  answer is lost, send the request again with its key.
 </Callout>
 
+Create the boost with the body you quoted and a new key:
+
 <CodeGroup>
+
+```ts Node.js
+const created = await peal.ads.createBoost({
+  workspaceId,
+  "idempotency-key": "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+  body: boost,
+});
+```
+
+```python Python
+created = peal.ads.create_boost(
+    workspace_id=workspace_id,
+    idempotency_key="3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+    **boost,
+)
+```
+
+```go Go
+created, err := client.Ads.CreateBoost(ctx, &peal.CreateBoostAdsRequest{
+	WorkspaceID:    workspaceID,
+	IdempotencyKey: "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+	Body:           boost,
+})
+```
+
+```ruby Ruby
+created = peal.ads.create_boost(
+  workspace_id: workspace_id,
+  idempotency_key: "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+  **boost
+)
+```
+
+```java Java
+import social.peal.resources.ads.requests.CreateBoostAdsRequest;
+import social.peal.types.Boost;
+
+Boost created = peal.ads().createBoost(workspaceId, CreateBoostAdsRequest.builder()
+    .idempotencyKey("3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61")
+    .body(boost)
+    .build());
+```
+
+```php PHP
+use Peal\Ads\Requests\CreateBoostAdsRequest;
+
+$created = $peal->ads->createBoost($workspaceId, new CreateBoostAdsRequest([
+    'idempotencyKey' => '3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61',
+    'body' => $boost,
+]));
+```
+
+```csharp .NET
+var created = await peal.Ads.CreateBoostAsync(new CreateBoostAdsRequest
+{
+    WorkspaceId = workspaceId,
+    IdempotencyKey = "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+    Body = boost,
+});
+```
+
+```rust Rust
+// NewBoost has no field for the key: it goes in the request's headers.
+let created = peal
+    .ads
+    .create_boost(
+        workspace_id,
+        &boost,
+        Some(RequestOptions::new().additional_header(
+            "Idempotency-Key",
+            "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+        )),
+    )
+    .await?;
+```
 
 ```bash curl
 curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts \
@@ -129,15 +430,7 @@ curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts \
   }'
 ```
 
-```ts TypeScript
-const created = await peal.ads.createBoost({
-  workspaceId,
-  "idempotency-key": "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
-  body: boost,
-});
-```
-
-```bash CLI
+```sh CLI
 peal ads boost create \
   --account 019a7902-1f4b-7a60-9c12-7d8e0f2a4b55 \
   --post 019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01 \
@@ -152,31 +445,35 @@ peal ads boost create \
 
 </CodeGroup>
 
-It answers 202 with the boost, `requested`: read it again, or listen for its [events](#webhooks), to learn whether it runs. `ads.getBoost` answers its `steps`, the journal of what Peal sent the network: each step, when, and how it ended (`done`, `refused`, and `found`, `absent` or `unknown` when a lost answer was looked up).
+It answers 202 with the boost, `requested`. Read it again, or listen for its [events](#webhooks), to learn whether it runs.
+
+`ads.getBoost` answers its `steps`, the journal of what Peal sent the network. Each step says when, and how it ended: `done`, `refused`, or `found`, `absent` or `unknown` when a lost answer was looked up.
 
 ### Errors [#errors]
 
-Errors come in the API's format, each with a `code` in snake case beside its name ([Errors](/developers/conventions/errors#errors)).
+Errors come in the API's format, each with a `code` in snake case next to its name ([Errors](/developers/conventions/errors#errors)). These are the ones ads add:
 
-| Status | Error                       | When                                                                                                                                                |
-| ------ | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 404    | `AdsUnavailable`            | Ads are off on the instance, or the network asked for is not set up on it.                                                                          |
-| 409    | `AdSpendingUnavailable`     | The instance offers ads for reading only. Nothing was spent or changed.                                                                             |
-| 422    | `AdSignInFailed`            | A sign-in did not come to a connection. `reason`: `denied`, `expired`, `failed`, or `notConfigured` when the instance has no key to encrypt with.   |
-| 404    | `AdConnectionNotFound`      | No such sign-in, or it is another member's.                                                                                                         |
-| 404    | `AdAccountNotFound`         | No such ad account, or the sign-in does not reach the account asked for.                                                                            |
-| 404    | `BoostNotFound`             | No such boost.                                                                                                                                      |
-| 503    | `AdNetworkUnavailable`      | The network did not answer, asked to slow down, or could not confirm a change. Nothing is known to have changed; `retryAfterSeconds`, when it said. |
-| 409    | `AdAccountBusy`             | `boosts` boosts of the account run, may run, are being made or, for a disconnection, are paused: stop them first.                                   |
-| 409    | `AdAccountUnusable`         | The account cannot take a boost now. `reason`: `status`, `reconnectNeeded` or `permission`.                                                         |
-| 409    | `AdSpendingNotEnabled`      | No owner allowed this ad account to spend through Peal.                                                                                             |
-| 409    | `SpendCeilingExceeded`      | The boost would pass the monthly ceiling: `ceiling`, `committed`, `requested`, in minor units of `currency`.                                        |
-| 409    | `AdAccountSpendCapExceeded` | The account's own cap leaves `room`, and the boost would commit `requested`.                                                                        |
-| 422    | `CeilingCurrencyMismatch`   | The ceiling is not in the account's currency, which `accountCurrency` gives.                                                                        |
-| 422    | `BoostInvalid`              | The boost breaks Peal's rules. `violations` lists every one, below.                                                                                 |
-| 422    | `PostNotPromotable`         | The post cannot be boosted there. `reason`: `notPublished`, `platform`, or `connection` for an Instagram account connected with Instagram Login.    |
-| 409    | `BoostStateConflict`        | The boost's `state` does not allow this: one that failed, ended or was stopped does not run again, and only a paused one resumes.                   |
-| 409    | `BoostKeyReused`            | The `Idempotency-Key` already names a boost that asked for something else.                                                                          |
+| Status | Error                       | When                                                                                                                                                                          |
+| ------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 404    | `AdsUnavailable`            | Ads are off on the instance, or the network asked for is not set up on it.                                                                                                    |
+| 409    | `AdSpendingUnavailable`     | The instance offers ads for reading only. Nothing was spent or changed.                                                                                                       |
+| 422    | `AdSignInFailed`            | A sign-in did not come to a connection. `reason`: `denied`, `expired`, `failed`, or `notConfigured` when the instance has no key to encrypt with.                             |
+| 404    | `AdConnectionNotFound`      | No such sign-in, or it is another member's.                                                                                                                                   |
+| 404    | `AdAccountNotFound`         | No such ad account, or the sign-in does not reach the account asked for.                                                                                                      |
+| 404    | `BoostNotFound`             | No such boost.                                                                                                                                                                |
+| 503    | `AdNetworkUnavailable`      | The network did not answer, asked to slow down, or could not confirm a change. Nothing is known to have changed. `retryAfterSeconds` says when to retry, if the network said. |
+| 409    | `AdAccountBusy`             | `boosts` boosts of the account run, may run, are being made or, for a disconnection, are paused: stop them first.                                                             |
+| 409    | `AdAccountUnusable`         | The account cannot take a boost now. `reason`: `status`, `reconnectNeeded` or `permission`.                                                                                   |
+| 409    | `AdSpendingNotEnabled`      | No owner allowed this ad account to spend through Peal.                                                                                                                       |
+| 409    | `SpendCeilingExceeded`      | The boost would pass the monthly ceiling: `ceiling`, `committed`, `requested`, in minor units of `currency`.                                                                  |
+| 409    | `AdAccountSpendCapExceeded` | The account's own cap leaves `room`, and the boost would commit `requested`.                                                                                                  |
+| 422    | `CeilingCurrencyMismatch`   | The ceiling is not in the account's currency, which `accountCurrency` gives.                                                                                                  |
+| 422    | `BoostInvalid`              | The boost breaks Peal's rules. `violations` lists every one (see the next table).                                                                                             |
+| 422    | `PostNotPromotable`         | The post cannot be boosted there. `reason`: `notPublished`, `platform`, or `connection` for an Instagram account connected with Instagram Login.                              |
+| 409    | `BoostStateConflict`        | The boost's `state` does not allow this: one that failed, ended or was stopped does not run again, and only a paused one resumes.                                             |
+| 409    | `BoostKeyReused`            | The `Idempotency-Key` already names a boost that asked for something else.                                                                                                    |
+
+A `BoostInvalid` error lists these `violations`:
 
 | `violations`          | What is wrong                                                                       |
 | --------------------- | ----------------------------------------------------------------------------------- |
@@ -194,7 +491,7 @@ The [API reference](/reference) lists each endpoint's parameters and answers.
 
 ## Webhook events [#webhooks]
 
-A [webhook endpoint](/developers/webhooks) can subscribe to eight events, which all carry the same `data`: ids, amounts and where the boost stands, never its audience.
+A [webhook endpoint](/developers/webhooks) can subscribe to eight boost events. They all carry the same `data`: ids, amounts and where the boost stands, never its audience.
 
 | Event                                                                             | When                                                      |
 | --------------------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -206,6 +503,8 @@ A [webhook endpoint](/developers/webhooks) can subscribe to eight events, which 
 | [`boost.failed`](/developers/webhooks/events/boosts#boost-failed)                 | A boost could not be made, and nothing ran                |
 | [`boost.unconfirmed`](/developers/webhooks/events/boosts#boost-unconfirmed)       | Peal cannot tell whether a boost runs: it may be spending |
 | [`boost.budget_reached`](/developers/webhooks/events/boosts#boost-budget-reached) | A boost spent its whole total budget                      |
+
+Here's a `boost.started` delivery:
 
 ```json
 {
@@ -236,6 +535,10 @@ A [webhook endpoint](/developers/webhooks) can subscribe to eight events, which 
 
 ## Command line and MCP [#clients]
 
-The [command line](/developers/cli) has the ads commands under `peal ads`: run `peal ads --help` for the list. [AI assistants](/developers/mcp/tools#tools) have ads tools, which follow the same permissions and the same rules: a tool that spends says so in its description, and needs the application to hold `workspace:publish` and `workspace:ads`.
+The [command line](/developers/cli) has the ads commands under `peal ads`. Run `peal ads --help` for the list.
 
-Neither signs in to an ad network, turns spending on or changes a ceiling: those are done in the web app, by a person. The MCP tools do not offer Google Ads accounts, which Google's policy for tools asks of an MCP server: they list Meta's alone, and refuse a Google Ads account in words; the command line shows both.
+[AI assistants](/developers/mcp/tools#tools) have ads tools, which follow the same permissions and the same rules. A tool that spends says so in its description, and needs the application to hold `workspace:publish` and `workspace:ads`.
+
+Neither one signs in to an ad network, turns spending on or changes a ceiling. A person does those in the web app.
+
+The MCP tools leave Google Ads accounts out, as Google's policy for tools asks of an MCP server. They list Meta's accounts only, and refuse a Google Ads account with the reason. The command line shows both.

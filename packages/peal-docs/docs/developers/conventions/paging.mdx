@@ -7,13 +7,15 @@ sidebar:
 
 ## Paging [#paging]
 
-Lists that can grow without end are read a page at a time, newest first:
+You read a list that can grow without end a page at a time, newest first:
 
 1. Send `limit`, the size of a page, in the query.
-2. The answer is an object with the page's `items` and a `nextCursor`.
-3. Pass `nextCursor` as `cursor` to read the next page, and stop when it is `null`.
+2. Read the page's `items` and its `nextCursor` in the answer.
+3. Pass `nextCursor` as `cursor` to read the next page, and stop when it's `null`.
 
-A cursor is an opaque string, good for the list it came from, with the same filters: elsewhere it answers 400 `bad_request`.
+A cursor is an opaque string. It works for the list it came from, with the same filters. Anywhere else it answers 400 `bad_request`.
+
+Each list has its own page size:
 
 | List                                     | A page holds | At most |
 | ---------------------------------------- | ------------ | ------- |
@@ -25,20 +27,122 @@ A cursor is an opaque string, good for the list it came from, with the same filt
 
 Paths starting with `…` are under `/api/workspaces/{workspaceId}`.
 
-The first page:
+Ask for the first page:
 
 <CodeGroup>
+
+```ts Node.js
+import { PealClient } from "peal-sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+const page = await peal.activity.list({ workspaceId, limit: "2" });
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+page = peal.activity.list(workspace_id=workspace_id, limit="2")
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+// The client is named `client`, so that `peal` stays the package of the
+// request types.
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+ctx := context.Background()
+
+page, err := client.Activity.List(ctx, &peal.ListActivityRequest{
+	WorkspaceID: workspaceID,
+	Limit:       peal.String("2"),
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+page = peal.activity.list(workspace_id: workspace_id, limit: "2")
+```
+
+```java Java
+import social.peal.PealClient;
+import social.peal.resources.activity.requests.ListActivityRequest;
+import social.peal.types.ActivityPage;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+ActivityPage page = peal.activity().list(workspaceId, ListActivityRequest.builder()
+    .limit("2")
+    .build());
+```
+
+```php PHP
+<?php
+use Peal\Activity\Requests\ListActivityRequest;
+use Peal\PealClient;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+$page = $peal->activity->list($workspaceId, new ListActivityRequest(['limit' => '2']));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+var page = await peal.Activity.ListAsync(new ListActivityRequest
+{
+    WorkspaceId = workspaceId,
+    Limit = "2",
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+let page = peal
+    .activity
+    .list(
+        workspace_id,
+        &ActivityListQueryRequest {
+            limit: Some("2".to_string()),
+            ..Default::default()
+        },
+        None,
+    )
+    .await?;
+```
 
 ```bash curl
 curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/activity?limit=2" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
-```ts TypeScript
-const page = await peal.activity.list({ workspaceId, limit: "2" });
-```
-
 </CodeGroup>
+
+The answer holds two entries and a cursor:
 
 ```json
 {
@@ -80,16 +184,11 @@ const page = await peal.activity.list({ workspaceId, limit: "2" });
 }
 ```
 
-The next page, with the `nextCursor` above, and a loop that reads them all (the SDKs have no helper that does it for you):
+Pass the `nextCursor` above to get the next page. The SDKs have no helper that reads every page for you, so each one shows the loop:
 
 <CodeGroup>
 
-```bash curl
-curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/activity?limit=2&cursor=MDE5YTdiMzAtNmYxOC03YTk1LTlkMDctMWMyYjNhNGQ1ZTZm" \
-  -H "Authorization: Bearer $PEAL_API_KEY"
-```
-
-```ts TypeScript
+```ts Node.js
 let cursor: string | undefined;
 
 do {
@@ -103,6 +202,152 @@ do {
 } while (cursor !== undefined);
 ```
 
+```python Python
+cursor = None
+
+while True:
+    page = peal.activity.list(workspace_id=workspace_id, limit="100", cursor=cursor)
+
+    for entry in page.items:
+        print(entry.operation, entry.status)
+
+    cursor = page.next_cursor
+    if cursor is None:
+        break
+```
+
+```go Go
+var cursor *string
+
+for {
+	page, err := client.Activity.List(ctx, &peal.ListActivityRequest{
+		WorkspaceID: workspaceID,
+		Limit:       peal.String("100"),
+		Cursor:      cursor,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range page.Items {
+		fmt.Println(entry.Operation)
+	}
+
+	if page.NextCursor == nil {
+		break
+	}
+	cursor = page.NextCursor
+}
+```
+
+```ruby Ruby
+cursor = nil
+
+loop do
+  # Send `cursor` only when there is one.
+  query = { workspace_id: workspace_id, limit: "100" }
+  query[:cursor] = cursor if cursor
+
+  page = peal.activity.list(**query)
+
+  page.items.each { |entry| puts "#{entry.operation} #{entry.status}" }
+
+  cursor = page.next_cursor
+  break if cursor.nil?
+end
+```
+
+```java Java
+import java.util.Optional;
+import social.peal.types.ActivityEvent;
+
+Optional<String> cursor = Optional.empty();
+
+do {
+    ActivityPage page = peal.activity().list(workspaceId, ListActivityRequest.builder()
+        .limit("100")
+        .cursor(cursor)
+        .build());
+
+    for (ActivityEvent entry : page.getItems()) {
+        System.out.println(entry.getOperation() + " " + entry.getStatus().orElse(null));
+    }
+
+    cursor = page.getNextCursor();
+} while (cursor.isPresent());
+```
+
+```php PHP
+$cursor = null;
+
+do {
+    $page = $peal->activity->list($workspaceId, new ListActivityRequest([
+        'limit' => '100',
+        'cursor' => $cursor,
+    ]));
+
+    foreach ($page->items as $entry) {
+        echo $entry->operation, ' ', $entry->status, PHP_EOL;
+    }
+
+    $cursor = $page->nextCursor;
+} while ($cursor !== null);
+```
+
+```csharp .NET
+string? cursor = null;
+
+do
+{
+    var page = await peal.Activity.ListAsync(new ListActivityRequest
+    {
+        WorkspaceId = workspaceId,
+        Limit = "100",
+        Cursor = cursor,
+    });
+
+    foreach (var entry in page.Items)
+    {
+        Console.WriteLine($"{entry.Operation} {entry.Status}");
+    }
+
+    cursor = page.NextCursor;
+} while (cursor != null);
+```
+
+```rust Rust
+let mut cursor: Option<String> = None;
+
+loop {
+    let page = peal
+        .activity
+        .list(
+            workspace_id,
+            &ActivityListQueryRequest {
+                limit: Some("100".to_string()),
+                cursor: cursor.clone(),
+                ..Default::default()
+            },
+            None,
+        )
+        .await?;
+
+    for entry in &page.items {
+        println!("{} {:?}", entry.operation, entry.status);
+    }
+
+    cursor = page.next_cursor;
+    if cursor.is_none() {
+        break;
+    }
+}
+```
+
+```bash curl
+curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/activity?limit=2&cursor=MDE5YTdiMzAtNmYxOC03YTk1LTlkMDctMWMyYjNhNGQ1ZTZm" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
+```
+
 </CodeGroup>
 
 ### Lists that take a range [#ranges]
@@ -114,4 +359,4 @@ Two lists take a range instead, and answer everything in it at once:
 | `GET …/posts?from=…&to=…`                        | The posts scheduled between two instants, `from` included and `to` excluded | At most 62 days apart | `invalid_time_range` |
 | `GET …/analytics/summary?from=…&to=…&timeZone=…` | A sum of the posts published over a range of days, both included            | 366 days at most      | `invalid_date_range` |
 
-The lists a workspace keeps short answer whole, as an array: its channels, members, pending invitations, API keys and webhook endpoints.
+The lists a workspace keeps short come whole, as an array: its channels, members, pending invitations, API keys and webhook endpoints.

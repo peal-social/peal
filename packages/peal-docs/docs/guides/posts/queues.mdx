@@ -5,41 +5,40 @@ sidebar:
   icon: list-ordered
 ---
 
-Let Peal pick a post's time from a weekly timetable, make new posts from one at an interval, follow a post up once it has enough likes, or turn a blog's new items into posts.
+You don't have to pick every post's time yourself. Peal can take it from a weekly timetable, make new posts from one at an interval, follow a post up once it has enough likes, or turn a blog's new items into posts.
 
 ## Queues [#queues]
 
-A queue is a weekly timetable of slots in a time zone, such as every weekday at 09:30 and 17:00 in Europe/Paris, for some channels and at most one [channel set](/guides/posts/organise#sets). Instead of choosing a time, add a post to a queue: it takes the queue's next free slot.
+A queue is a weekly timetable of slots in a time zone, such as every weekday at 09:30 and 17:00 in Europe/Paris. It's for some channels and at most one [channel set](/guides/posts/organise#sets). Instead of choosing a time, you add a post to a queue, and it takes the queue's next free slot.
 
-**Settings**, **Queues** lists the workspace's queues with their next slots. Those who may change [channel sets](/guides/posts/organise#roles) can add one, change it, delete it or make it the default there: owners, admins, editors and contributors (`post:update` through the API). A workspace keeps up to 20 queues, each with up to 100 slots.
+To see a workspace's queues with their next slots, click **Settings** at the foot of the sidebar, then **Queues**. Those who can change [channel sets](/guides/posts/organise#roles) can add a queue there, change it, delete it or make it the default: owners, admins, editors and contributors (`post:update` through the API). A workspace keeps up to 20 queues, each with up to 100 slots.
 
-Adding a post to a queue schedules it, so it takes what scheduling that post takes. A contributor's post waits for an approval where the workspace asks for one, and is refused otherwise.
-
-How slots and queues behave:
-
-- A slot is a day and a time of day on the queue's clock, daylight saving included, as a time you choose: a time the clocks skip moves to the moment they jump, and a time that happens twice is the first one.
-- A slot is taken while a post the queue placed is scheduled, waiting for an approval or publishing at exactly its time. Nothing else is kept of slots: unscheduling, cancelling or moving such a post by hand frees its slot, and a post of the queue moved onto a slot's time takes it.
-- The first queue of a workspace is its **default**, which a post added to no queue in particular goes to. Marking another as the default moves it; deleting the default leaves none until another is marked.
-- Changing a queue's slots moves no post: posts already placed keep their times, until you [move them onto the new slots](#reshuffle).
-- Deleting a queue leaves its posts scheduled at their times.
+Adding a post to a queue schedules it, so it needs what scheduling that post needs. A contributor's post waits for an approval where the workspace asks for one, and is refused otherwise.
 
 ### Add a post to a queue [#add-to-queue]
 
 <Tabs>
-  <Tab title="Web app">
-    <Steps>
-      <Step title="Choose Add to queue">
-        In the composer, under **When**, choose **Add to queue**.
-      </Step>
-      <Step title="Pick the queue">
-        Pick the queue (the default to start with), and read where the post would go: **Next free slot**.
-      </Step>
-      <Step title="Schedule">
-        Choose **Schedule**. The slot is decided when Peal receives the post, so two posts added at the same moment never take the same one.
-      </Step>
-    </Steps>
-  </Tab>
-  <Tab title="CLI">
+<Tab title="Web app">
+<Steps>
+<Step title="Select Add to queue">
+
+In the composer, under **When**, select **Add to queue**.
+
+</Step>
+<Step title="Pick the queue">
+
+Pick the queue (the default to start with), and read where the post would go under **Next free slot**.
+
+</Step>
+<Step title="Schedule">
+
+Click **Schedule**. The slot is decided when Peal receives the post, so two posts added at the same moment never take the same one.
+
+</Step>
+</Steps>
+
+</Tab>
+<Tab title="CLI">
 
 ```sh
 peal post "An evergreen tip" --default-queue
@@ -48,49 +47,61 @@ peal posts queue <post-id> --queue Weekdays
 
 See [Queues on the command line](/developers/cli/posts#queues).
 
-  </Tab>
+</Tab>
 </Tabs>
 
-- A post that names no channel goes to the queue's channels and channel set. One of them disconnected since is left out, and said.
-- From then on the post is an ordinary scheduled post: it is checked against its channels, waits for an approval where the workspace asks for one, shows on the calendar with a queue mark, and can be moved, unscheduled or cancelled.
-- A queued post scheduled already moves to the queue's next free slot the same way.
+A post that names no channel goes to the queue's channels and channel set. If one of them was disconnected since, it's left out, and Peal tells you.
 
-<Callout type="info">
-  The plan's posts a month count in the month of the slot found. When that month
-  has no room, the post is refused, as for a time you chose: Peal never skips to
-  a later month by itself. A queue with no slot, or with every slot of the next
-  366 days taken, refuses the post too.
+From then on, the post is an ordinary scheduled post. It's checked against its channels, waits for an approval where the workspace asks for one, and shows on the calendar with a queue mark. You can move, unschedule or cancel it. A post that's already scheduled moves to the queue's next free slot the same way.
+
+<Callout type="info" title="A queued post counts in the month of its slot">
+  If the plan has no room left in that month, the post is refused, as for a time
+  you chose. Peal never skips to a later month by itself. A queue with no slot,
+  or with every slot of the next 366 days taken, refuses the post too.
 </Callout>
+
+### How slots work [#slots]
+
+A slot is a day and a time of day on the queue's clock, daylight saving included, and it follows the same rules as a time you choose. A time the clocks skip moves to the moment they jump, and a time that happens twice is the first one.
+
+A slot is taken while a post the queue placed is scheduled, waiting for an approval or publishing at exactly its time. Peal keeps nothing else about slots. So if you unschedule, cancel or move such a post by hand, its slot is free again, and a post of the queue moved onto a slot's time takes it.
+
+The first queue of a workspace is its **default**, which a post added to no queue in particular goes to. Marking another queue as the default moves it there. If you delete the default, there's none until you mark another.
+
+Changing a queue's slots moves no post. Posts already placed keep their times until you [move them onto the new slots](#reshuffle). Deleting a queue leaves its posts scheduled at their times.
 
 ### Move the waiting posts onto new slots [#reshuffle]
 
-After you change a queue's slots or its time zone, **Settings**, **Queues** offers **Move the waiting posts onto the new slots** while posts wait in it, with how many wait.
+After you change a queue's slots or its time zone, **Settings › Queues** offers **Move the waiting posts onto the new slots** while posts wait in it, and says how many.
 
-Once you confirm, every post that waits in the queue (scheduled, or waiting for an approval, at a time to come) moves onto the queue's slots as they are now, in the order of their times: the first onto the first free slot, the second onto the next, and so on.
+Once you confirm, every post that waits in the queue (scheduled, or waiting for an approval, at a time still ahead) moves onto the queue's slots as they are now. They move in the order of their times: the first onto the first free slot, the second onto the next, and so on.
 
-- Posts moved by hand onto another time move too, as the queue keeps no record of which were.
+A few rules apply during the move:
+
+- Posts moved by hand onto another time move too, because the queue keeps no record of which ones were.
 - A post already on its slot stays where it is, and a slot a publishing post holds is skipped.
-- What the posts say and where they go do not change.
-- Owners, admins and editors may do it (post:schedule through the API). Through the API, a contributor whose posts wait for an approval moves those alone.
+- What the posts say and where they go don't change.
+- Owners, admins and editors can do it (`post:schedule` through the API). Through the API, a contributor whose posts wait for an approval moves only those.
 
-Peal then says how many posts moved, how many stayed, and how many remain. Moving them twice moves nothing the second time.
+Peal then says how many posts moved, how many stayed, and how many remain. If you move them twice, the second time moves nothing.
 
 <Accordion>
-  <AccordionItem title="Approvals and plan limits during a move">
-    Each post moves as if moved by hand, but for approvals: it gets its new time and counts in its new month.
+<AccordionItem title="Approvals and plan limits during a move">
 
-    A scheduled post goes through the workspace's approvals as if you scheduled it. A post waiting for an approval keeps waiting, at its new time, whoever moves it: its request stays with whoever asked for it, and nobody is asked again to decide. To schedule such a post yourself, when your own posts need no approval, move it by hand.
+Each post moves as if moved by hand, except for approvals. It gets its new time and counts in its new month.
 
-    The move stops, keeping what it moved, at a month the plan has no room in, when no slot is left within 366 days, or when someone saves the queue meanwhile. Move them again once there is room.
+A scheduled post goes through the workspace's approvals as if you scheduled it. A post waiting for an approval keeps waiting at its new time, whoever moves it. Its request stays with whoever asked for it, and nobody is asked to decide again. To schedule such a post yourself, when your own posts need no approval, move it by hand.
 
-  </AccordionItem>
+The move stops, keeping what it already moved, at a month the plan has no room in, when no slot is left within 366 days, or when someone saves the queue meanwhile. Move the posts again once there's room.
+
+</AccordionItem>
 </Accordion>
 
 ## Repeat a post [#recycling]
 
-A post that is scheduled, or already out, can **repeat**: Peal makes a new post from it at an interval, until a number of posts or a date, saying its text or, in turn, text variants.
+A post that's scheduled, or already out, can **repeat**. Peal makes a new post from it at an interval, until a number of posts or a date. Each new post says the source's text or, in turn, its text variants.
 
-Open the post and choose **Repeat**, then set:
+To set it up, open the post, click **Repeat**, then fill in these settings:
 
 | Setting           | Values                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------- |
@@ -99,9 +110,11 @@ Open the post and choose **Repeat**, then set:
 | Queue             | Optionally, a [queue](#queues)                                                              |
 | **Text variants** | Up to 10                                                                                    |
 
-Owners, admins and editors may do it (post:schedule through the API). A contributor's posts, where the workspace lets them ask, each wait for an approval. **Settings**, **Repeating posts** lists the workspace's rules with their next three posts, and lets those who may schedule pause, resume or stop one.
+Owners, admins and editors can repeat a post (`post:schedule` through the API). Where the workspace lets contributors ask, each of a contributor's posts waits for an approval.
 
-From the command line ([Repeating posts](/developers/cli/posts#recycling)):
+**Settings › Repeating posts** lists the workspace's rules with their next three posts. Those who can schedule can pause, resume or stop a rule there.
+
+On the command line ([Repeating posts](/developers/cli/posts#recycling)):
 
 ```sh
 peal recycling start <post-id> --every 2w --count 6 --variant "Open all summer, as before."
@@ -112,69 +125,127 @@ peal recycling end <rule-id>
 
 ### How the new posts are made [#recycling-posts]
 
-- Each new post is an ordinary post, with its own channels' outcome, notifications and analytics. Move, unschedule or cancel one as any other, and the rule goes on by its own clock.
-- It is copied from the source with what the workspace still has (its channels still connected, its media, its options, its tags), never with a signature or a default option added since.
-- The next post is made once the latest one's time has passed, so the calendar shows one ahead.
-- It is due one interval after the one before, at the same time of day in the source's time zone, daylight saving included. A month shorter than the source's day takes its last day (31 January, then 28 February, then 31 March). On a queue, it takes the queue's first free slot from that time.
+Each new post is an ordinary post, with its own channels' outcome, notifications and analytics. You can move, unschedule or cancel one like any other, and the rule goes on by its own clock.
+
+It's copied from the source with what the workspace still has: its channels that are still connected, its media, its options and its tags. It never gets a signature or a default option added since.
+
+The first post says the source's text, the next one the first variant, and so on, then the source's text again. A variant replaces the text of the post's first part, and its texts on some channels. Its media, later parts and options stay.
+
+Some platforms refuse a text they already published for the account, and that's what variants are for. Each variant is checked as the source would be if it said that text, when you save it and again when its post is made.
+
+A post repeats as whoever started it, with what they can do when each post is made. Their posts' approvals apply. A member who left, a revoked key or an application whose access no longer publishes stops the rule.
+
+A post has one rule going on at a time, and a workspace has at most 100.
+
+### When the new posts are due [#recycling-timing]
+
+Peal makes the next post once the latest one's time has passed, so the calendar shows one ahead. Each one is due one interval after the one before, at the same time of day in the source's time zone, daylight saving included.
+
+A few rules decide the exact time:
+
+- A month shorter than the source's day takes its last day (31 January, then 28 February, then 31 March).
+- On a queue, the post takes the queue's first free slot from that time.
 - A time missed while Peal was down is skipped, never made up for.
-- A post whose time, or queue slot, would fall after the rule's last day is not made: the rule ends there, as after its last post.
-- The first post says the source's text, the next the first variant, and so on, then the source's again. A variant replaces the text of the post's first part, and its texts on some channels; its media, later parts and options stay.
-- Some platforms refuse a text they already published for the account: variants are for that. Each variant is checked as the source saying it would be when you save it, and again when its post is made.
-- A post repeats as whoever started it, with what they may do when it is made: their posts' approvals apply, and a member who left, a key revoked or an application whose access no longer publishes stops it.
-- A post has one rule going on at a time, and a workspace 100.
-- A rule keeps the source's first time: moving the source does not move the times it repeats at.
+- A post whose time, or queue slot, would fall after the rule's last day isn't made. The rule ends there, as after its last post.
+- A rule keeps the source's first time, so moving the source doesn't move the times it repeats at.
 
 ### When a rule stops [#recycling-stops]
 
-Peal stops a rule, instead of skipping a post silently, and tells those it concerns ([notifications](/guides/workspace/notifications#events)) when:
+Peal stops a rule instead of silently skipping a post, and tells those it concerns ([notifications](/guides/workspace/notifications#events)). That happens when:
 
-- its post was deleted, cancelled or taken back to draft;
-- its starter can no longer schedule;
-- none of its channels is left;
-- a platform refuses what it would say;
-- the month has no room in the plan;
-- its queue was deleted or has no free slot.
+- its post was deleted, cancelled or taken back to draft
+- its starter can no longer schedule
+- none of its channels is left
+- a platform refuses what it would say
+- the month has no room in the plan
+- its queue was deleted or has no free slot
 
-While its post waits for an approval, it makes nothing and waits.
+While its post waits for an approval, a rule makes nothing and waits.
 
-Once that is put right (room in the plan, other variants, a channel connected again, slots on its queue, its post scheduled again), **Resume** sets it going from the next due time after now, with the same variants. Other variants for a refused text go with the resume through the [command line](/developers/cli/posts#recycling) or the API. It does not resume when another rule repeats the post by then, or when the workspace has 100 going. For any other end, make the post repeat again.
+Once you've put the cause right (room in the plan, other variants, a channel connected again, slots on its queue, its post scheduled again), click **Resume**. The rule starts again from the next due time after now, with the same variants. To give other variants for a refused text along with the resume, use the [command line](/developers/cli/posts#recycling) or the API.
+
+A rule doesn't resume if another rule repeats the post by then, or if the workspace has 100 rules going. For any other end, make the post repeat again.
 
 ## Follow a post up [#follow-ups]
 
-A follow-up rule acts on your own post once it has enough likes: it publishes a comment you wrote under it, as the channel's own reply, reposts it, or both, once each, within seven days of the post going live on that channel. Open a published or scheduled post and choose **Follow up**: the likes it waits for, the comment, and whether it reposts. **Settings › Follow-ups** lists the rules, what each channel can carry, and what each follow-up became.
+A follow-up rule acts on your own post once it has enough likes. It publishes a comment you wrote under the post, as the channel's own reply, or reposts it, or both. Each happens once, within seven days of the post going live on that channel.
+
+To set one up, open a published or scheduled post and click **Follow up**. Set the likes it waits for, the comment, and whether it reposts. **Settings › Follow-ups** lists the rules, what each channel can carry, and what each follow-up became.
+
+What a follow-up can do depends on the platform:
 
 | Platform | Comment                                                     | Repost                                               |
 | -------- | ----------------------------------------------------------- | ---------------------------------------------------- |
 | Bluesky  | Yes                                                         | Yes (the first repost rule asks to connect it again) |
 | Mastodon | Yes                                                         | Yes (a boost)                                        |
-| X        | Yes, where the server sends X threads; X bills it as a post | Not yet                                              |
+| X        | Yes, where the server sends X threads. X bills it as a post | Not yet                                              |
 | LinkedIn | No: LinkedIn's terms forbid automated posting               | No                                                   |
 | Threads  | Waits for Threads' review of Peal                           | Not yet                                              |
 | Others   | Not yet, or not possible there                              | No                                                   |
 
+The comment goes under the post's last part, so it reads as the thread's next part. Nothing likes, follows or messages anyone.
+
+A rule can be on a post or on a channel. A rule on a channel acts on every post the channel publishes after the rule started. A post and a channel each have one rule going on at a time.
+
 ### When a rule acts [#follow-up-timing]
 
-- The likes are those Peal's [analytics](/guides/engage/analytics) last counted: hourly for two days after a post went live, then daily. A rule never asks a platform for more, so a post reaches its likes on Peal's next count, and a platform Peal counts nothing on (X, unless reads are on) never triggers it.
-- A post is followed up once of each kind, whatever rules act on it, and a channel carries 10 follow-ups a day at most; past that they wait for the next day, within their seven days. What a stopped rule gave up is left to the next rule started on the post. A rule on a post with nothing left to publish that would arm nothing is refused: when another rule already follows it up in every way it asks, or when the post's seven days passed, it failed, or no channel it went out on can carry the rule.
-- Adding a comment or a repost to a rule on a post acts at once on the channels the post is already out on. A repost on a Bluesky channel that must be connected again for reposts waits for it (**Allow reposts** in **Settings › Follow-ups**): once connected, the next run arms it, within ten minutes, if the post is still within its seven days, and the rule stays open meanwhile. A kind added to a channel's rule acts on the posts the channel publishes from then on.
-- When a platform puts a follow-up off (it is unreachable, or slows the account down), Peal waits before it tries again: ten minutes the first time, doubled each time up to six hours, or longer when the platform asks for longer. **Settings › Follow-ups** shows when it is tried next, and the API gives it as `notBefore`.
-- On X, a comment whose sending was cut short is looked for among the account's recent posts before anything is sent again: a read at Peal's cost, never billed to you.
-- The comment goes under the post's last part, so it reads as the thread's next part. Nothing likes, follows or messages anyone.
-- A rule on a channel acts on every post the channel publishes after it started. A post and a channel have one rule going on at a time.
+The likes are the ones Peal's [analytics](/guides/engage/analytics) last counted: hourly for two days after a post went live, then daily. A rule never asks a platform for more. So a post reaches its likes on Peal's next count, and a platform Peal counts nothing on (X, unless reads are on) never triggers a rule.
+
+A post is followed up once of each kind, whatever rules act on it. A channel carries at most 10 follow-ups a day, and the rest wait for the next day, within their seven days. Whatever a stopped rule gave up is left to the next rule started on the post.
+
+Peal refuses a rule on a post that has nothing left to publish and that would arm nothing. That's the case when another rule already follows the post up in every way this one asks, or when the post's seven days have passed, when it failed, or when no channel it went out on can carry the rule.
+
+When you add a comment or a repost to a rule on a post, it acts at once on the channels the post is already out on. A kind you add to a channel's rule acts on the posts the channel publishes from then on.
+
+<Accordion>
+<AccordionItem title="Bluesky reposts, retries and X">
+
+A repost on a Bluesky channel that has to be connected again for reposts waits for it (**Allow reposts** in **Settings › Follow-ups**). Once the channel is connected, the next run arms the repost within ten minutes, if the post is still within its seven days. The rule stays open meanwhile.
+
+When a platform puts a follow-up off, because it's unreachable or slows the account down, Peal waits before it tries again. It waits ten minutes the first time, doubled each time up to six hours, or longer when the platform asks for longer. **Settings › Follow-ups** shows when it's tried next, and the API gives it as `notBefore`.
+
+On X, when sending a comment was cut short, Peal looks for it among the account's recent posts before it sends anything again. That read is at Peal's cost, never billed to you.
+
+</AccordionItem>
+</Accordion>
 
 ### Approvals [#follow-up-approvals]
 
-A rule publishes by itself, so where the workspace's [approval policy](/guides/posts/review) holds your posts, the rule waits until a member who approves posts approves it in **Settings › Follow-ups**. Changing its comment or whether it reposts asks again, unless the member who changes it approves posts and the policy does not hold theirs: their change approves it. Changing its likes or pausing it does not. If the policy starts holding your posts after the rule started, it waits too, unless it was approved, and a member who approves posts can approve it then. Just before a follow-up goes out, Peal checks again; if it may no longer go out, it waits, within its seven days.
+A rule publishes by itself. So where the workspace's [approval policy](/guides/posts/review) holds your posts, the rule waits until a member who approves posts approves it in **Settings › Follow-ups**.
 
-### When a follow-up does not go out [#follow-up-ends]
+Changes to the rule follow these rules:
 
-A follow-up expires when its seven days pass: the post did not reach the likes, the rule was paused or waiting for an approval, the channel's day was full, the platform kept putting it off, or the channel was not connected again in time. It is given up when its rule is stopped, its post is no longer live, or its channel can no longer carry it. A platform that refuses it fails it, with the platform's code; one that may have taken it without answering leaves it unconfirmed: check the platform, Peal never sends it again. A rule ends when its starter can no longer publish, when its channel is disconnected, or, on a post, once everything it armed is over. Peal [tells](/guides/workspace/notifications#post-events) whoever started the rule when follow-ups fail, are not confirmed or expire for the platform, the channel or an approval, once a rule and a day at most (those that may have gone out at once), and when a rule ends by itself, to every member who may schedule posts when its starter can no longer publish.
+- Changing its comment, or whether it reposts, asks for an approval again. If the member who changes it approves posts and the policy doesn't hold theirs, their change approves it.
+- Changing its likes, or pausing it, doesn't ask again.
+- If the policy starts holding your posts after the rule started, the rule waits too, unless it was already approved. A member who approves posts can approve it then.
+
+Just before a follow-up goes out, Peal checks again. If it may no longer go out, it waits, within its seven days.
+
+### When a follow-up doesn't go out [#follow-up-ends]
+
+A follow-up that doesn't go out ends in one of four ways:
+
+| Outcome     | When                                                                                                                                                                                                                 |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Expired     | Its seven days passed: the post didn't reach the likes, the rule was paused or waiting for an approval, the channel's day was full, the platform kept putting it off, or the channel wasn't connected again in time. |
+| Given up    | Its rule was stopped, its post is no longer live, or its channel can no longer carry it.                                                                                                                             |
+| Failed      | The platform refused it, with the platform's code.                                                                                                                                                                   |
+| Unconfirmed | The platform may have taken it without answering. Check the platform. Peal never sends it again.                                                                                                                     |
+
+A rule ends when its starter can no longer publish, or when its channel is disconnected. A rule on a post also ends once everything it armed is over.
+
+Peal [tells](/guides/workspace/notifications#post-events) whoever started the rule:
+
+- when follow-ups fail, aren't confirmed, or expire because of the platform, the channel or an approval, at most once a rule and a day (the ones that may have gone out, at once)
+- when a rule ends by itself
+
+When a rule ends because its starter can no longer publish, Peal tells every member who can schedule posts.
 
 ## Post from a feed [#feeds]
 
-A workspace can follow a **web feed** (RSS 2.0, Atom 1.0 or JSON Feed 1.1), such as a blog's: each item that appears in it after you added it becomes a post.
+A workspace can follow a **web feed** (RSS 2.0, Atom 1.0 or JSON Feed 1.1), such as a blog's. Each item that appears in it after you added it becomes a post.
 
-**Settings**, **Feeds** adds one:
+To add one, click **Settings** at the foot of the sidebar, then **Feeds**, and give it these:
 
 | What you give                  | What it holds                                                                                                                                                                     |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -184,9 +255,9 @@ A workspace can follow a **web feed** (RSS 2.0, Atom 1.0 or JSON Feed 1.1), such
 | **Attach each item's picture** | Imports the image an item names (its enclosure, its media or its JSON Feed `image`) into the media library, as the person who added the feed, described by the item's title       |
 | What items become              | A **draft** each by default, or posts on a **queue**                                                                                                                              |
 
-**Preview** reads the address and shows its three newest items as the template would write them, keeping nothing.
+**Preview** reads the address and shows its three newest items as the template would write them. It keeps nothing.
 
-From the command line ([Feeds](/developers/cli/posts#feeds)):
+On the command line ([Feeds](/developers/cli/posts#feeds)):
 
 ```sh
 peal feeds preview https://blog.example/feed.xml --template "New on the blog: {title}"
@@ -196,54 +267,59 @@ peal feeds add https://blog.example/feed.xml --mode queue --queue Weekdays
 
 ### Drafts or a queue [#feed-mode]
 
-By default each item becomes a **draft**, for a person to finish and schedule.
+By default, each item becomes a **draft**, for a person to finish and schedule.
 
-Someone who may schedule (post:schedule) can choose a **queue** instead. Each item then goes on the queue's next free slot, through every rule a post goes through, the approval policy included. What the queue refuses becomes a draft, with why: a platform refuses the text, the month has no room in the plan, the queue has no free slot, a channel is gone, or the same post already goes out.
+Someone who can schedule (`post:schedule`) can choose a **queue** instead. Each item then goes on the queue's next free slot, through every rule a post goes through, the approval policy included.
 
-<Callout type="warning">
-  In queue mode, each item is scheduled without anyone reading it first. A feed
-  never publishes at once.
+Anything the queue refuses becomes a draft, with the reason. A platform may refuse the text, the month may have no room in the plan, the queue may have no free slot, a channel may be gone, or the same post may already be going out.
+
+<Callout type="warning" title="In queue mode, items are scheduled unread">
+  Nobody reads an item before it goes on the queue. A feed never publishes at
+  once.
 </Callout>
 
-A picture that cannot be had (not public, too large, not an image, the plan's storage full) is left out: the post goes without it, and the feed's items say why.
+A picture Peal can't get (not public, too large, not an image, or the plan's storage full) is left out. The post goes without it, and the feed's items say why.
 
 ### How Peal reads a feed [#feed-reading]
 
-- When you add a feed, Peal reads it once and records what it holds: only what appears afterwards becomes a post, and an item dated before the feed was added is never made. Changing its address, or resuming it, does the same.
-- Peal reads each feed about once an hour, and sends back what the site said of its last answer, so an unchanged feed costs it nothing.
-- It makes at most 3 posts a run and 12 a day per feed. The rest of a flood is skipped, never made later.
+When you add a feed, Peal reads it once and records what it holds. Only what appears afterwards becomes a post, and an item dated before the feed was added is never made. Changing the feed's address, or resuming it, does the same.
+
+Peal reads each feed about once an hour. It sends back what the site said about its last answer, so an unchanged feed costs it nothing.
+
+Each feed has these limits:
+
+- At most 3 posts a run and 12 a day. The rest of a flood is skipped, never made later.
 - Each feed's page lists its 50 newest items with what became of each, never what they said.
-- A workspace follows 10 feeds at most. Adding, moving, resuming and previewing feeds read 30 addresses an hour at most.
+- A workspace follows at most 10 feeds.
+- Adding, moving, resuming and previewing feeds read at most 30 addresses an hour.
 
 ### When a feed stops [#feed-stops]
 
 A feed acts as whoever added it, as they are when an item is made. Peal stops it, and tells those it concerns ([notifications](/guides/workspace/notifications#events)), when:
 
-- its site says it is gone;
-- it could not be read, or gave something that is not a feed, for seven days;
-- its starter can no longer make posts there;
-- its queue was deleted.
+- its site says it's gone
+- it couldn't be read, or gave something that isn't a feed, for seven days
+- its starter can no longer make posts there
+- its queue was deleted
 
-**Edit** changes its address, template, channels, mode and queue, the way to put right a channel or a queue gone since: pausing a feed is never refused for them, and resuming one says which to choose again.
+**Edit** changes its address, template, channels, mode and queue, which is how you replace a channel or a queue that's gone. Pausing a feed is never refused because of them, and resuming one says which to choose again.
 
-**Resume** sets it going again, reading it at once. Whoever resumes a feed whose starter is gone takes it over, so its posts act as them from then on.
+**Resume** sets the feed going again, and reads it at once. If you resume a feed whose starter is gone, you take it over, and its posts act as you from then on.
 
 <Accordion>
-  <AccordionItem title="When a site changes its items' identities">
-    A site that changes its items' identities (moving its blog, say) makes them
-    all new to Peal. Up to three of those dated after the feed was added are
-    posted again that run, and the rest are skipped as too many. Pause the feed
-    before such a move, and resume it after.
-  </AccordionItem>
-  <AccordionItem title="How Peal checks a feed's host">
-    Peal reads a feed's host only once its address checked out as public, on
-    every redirect too. A host whose name answers otherwise between that check
-    and the connection is the one gap left, as Peal's HTTP client cannot connect
-    to the address it checked while keeping the name for TLS.
-  </AccordionItem>
-  <AccordionItem title="What Peal keeps of a feed">
-    What a feed says is other people's text. Peal keeps a digest of each item's
-    identity, never the item, and never gives a feed's text to anything but the
-    posts it makes.
-  </AccordionItem>
+<AccordionItem title="When a site changes its items' identities">
+
+A site that changes its items' identities (moving its blog, say) makes them all new to Peal. Up to three of those dated after the feed was added are posted again that run, and the rest are skipped as too many. Pause the feed before such a move, and resume it after.
+
+</AccordionItem>
+<AccordionItem title="How Peal checks a feed's host">
+
+Peal reads a feed's host only once its address checked out as public, on every redirect too. One gap is left: a host whose name answers otherwise between that check and the connection. Peal's HTTP client can't connect to the address it checked while keeping the name for TLS.
+
+</AccordionItem>
+<AccordionItem title="What Peal keeps of a feed">
+
+What a feed says is other people's text. Peal keeps a digest of each item's identity, never the item, and never gives a feed's text to anything but the posts it makes.
+
+</AccordionItem>
 </Accordion>

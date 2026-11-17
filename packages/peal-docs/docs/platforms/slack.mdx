@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/slack.svg
 ---
 
-How to connect a channel of your Slack workspace, what a post there may hold, and the option it takes.
+You connect a Slack channel by adding Peal's app to your Slack workspace and picking the channel there. Each channel you connect is a channel of its own in Peal.
 
 ## At a glance [#at-a-glance]
+
+Here's what a Slack post can hold:
 
 |                 |                                  |
 | --------------- | -------------------------------- |
@@ -17,56 +19,78 @@ How to connect a channel of your Slack workspace, what a post there may hold, an
 | Parts           | {{platform-slack-parts-en}}      |
 | Alt text        | {{platform-slack-alt-en}}        |
 
-What each file type must be is in [Images and videos](/guides/media#platforms-slack): PNG, JPEG and GIF images, and no video. A Slack channel counts as one account on the [plan](/guides/workspace/billing).
+What each file type must be is in [Images and videos](/guides/media#platforms-slack). Slack takes PNG, JPEG and GIF images, and no video. Each Slack channel counts as one account on your [plan](/guides/workspace/billing).
 
-## Connect [#connect]
+## Connect a channel [#connect]
 
 <Steps>
-  <Step title="Choose Connect Slack">
-    On **Channels**, under **Slack**, choose **Connect Slack**.
+  <Step title="Click Connect Slack">
+    On **Channels**, under **Slack**, click **Connect Slack**.
   </Step>
   <Step title="Add the app on Slack">
     Slack asks which workspace, then which channel the app posts to. Pick the
-    channel, and choose **Allow**.
+    channel and click **Allow**.
   </Step>
   <Step title="Come back to Peal">
     Slack sends you back to Peal, which connects that channel.
   </Step>
 </Steps>
 
-- One install connects one channel. To post to another channel of the workspace, connect Slack again and pick it: each channel is a channel of its own in Peal, and on the plan.
-- Pick a channel: Peal refuses a direct message.
-- In a private channel, invite the app too: type `/invite` in the channel, then the app's name. A post to a channel the app is not in, or that lets only some post there, fails (`cannotPost`), and says so.
-- Peal asks Slack to post messages (`chat:write`), in a public channel it has not joined too (`chat:write.public`), to upload the images a post shows (`files:write`), and for the channel picker (`incoming-webhook`). It reads no channel, message or file of the workspace.
-- Peal keeps the app's token encrypted. To cut Peal off, remove the app from the Slack workspace, in its app settings: every channel of that workspace stops, and Peal marks them to reconnect.
-- After the app was removed and added back, reconnect each channel from its row on **Channels**, picking that same channel on Slack's page: another channel is refused there.
-- Each connection adds an incoming webhook to the Slack workspace, which Peal does not use: you may remove it in the app's settings in Slack.
+One install connects one channel. To post to another channel in the same workspace, connect Slack again and pick that one. Each channel counts on your plan. Peal refuses a direct message, so pick a channel.
+
+In a private channel, invite the app too: type `/invite` in the channel, followed by the app's name. If the app isn't in the channel, or the channel lets only some people post, the post fails with `cannotPost` and says why.
+
+### What Peal asks Slack for [#permissions]
+
+Peal asks Slack for four permissions:
+
+- `chat:write`, to post messages.
+- `chat:write.public`, to post in a public channel it hasn't joined.
+- `files:write`, to upload the images a post shows.
+- `incoming-webhook`, for the channel picker.
+
+Peal doesn't read any channel, message or file in your Slack workspace, and it keeps the app's token encrypted.
+
+Each connection also adds an incoming webhook to the Slack workspace. Peal doesn't use it, and you can remove it in the app's settings in Slack.
+
+### Remove the app [#remove]
+
+To cut Peal off, remove the app from the Slack workspace in its app settings. Every channel of that workspace stops, and Peal marks them to reconnect.
+
+If you add the app back later, reconnect each channel from its row on **Channels**, and pick that same channel on Slack's page. Peal refuses a different channel there.
 
 ## What a post becomes [#posts]
 
-- The text is Slack's formatting: `*bold*`, `_italic_`, `~strikethrough~` and `` `code` `` stay as Slack shows them. Peal sends `&`, `<` and `>` as Slack takes them, and asks Slack to read the text of a post with images as it is written, so nothing you type notifies anyone: `@here`, `@channel`, `@everyone`, a person's name and `#channel` stay text, with or without images. Addresses starting with `http://` or `https://` are links, with or without images.
-- A text alone takes 4,000 characters, a text with images 3,000, counted as Slack receives them: `&` counts 5, `<` and `>` 4 each. Peal checks it when the post is scheduled.
-- Images go under the text, in the same message, with their alt text, which is also what a notification of a post of images alone says. An image Slack never shows fails the post as a refused image, and Peal deletes the images it uploaded for a post Slack refused.
-- The parts of a [thread](/guides/posts#threads) are replies in the thread of the first part.
+Peal sends the text in Slack's own formatting, so `*bold*`, `_italic_`, `~strikethrough~` and `` `code` `` show the way Slack shows them. It escapes `&`, `<` and `>` the way Slack expects.
+
+Nothing you type notifies anyone. Peal asks Slack to read the text as it's written, so `@here`, `@channel`, `@everyone`, a person's name and `#channel` stay plain text, with or without images. Addresses that start with `http://` or `https://` become links, with or without images.
+
+On its own, the text can be up to {{platform-slack-text-en}}. With images, it can be up to {{platform-slack-text-media-en}}. Slack counts the text as it receives it, so `&` counts as 5 characters, and `<` and `>` as 4 each. Peal checks the length when you schedule the post.
+
+Images go under the text, in the same message, with their alt text. For a post of images alone, the alt text is also what the notification says. If Slack never shows an image, the post fails as a refused image. Whenever Slack refuses a post, Peal deletes the images it uploaded for it.
+
+The parts of a [thread](/guides/posts#threads) are replies in the thread of the first part.
 
 ## Options [#options]
 
-No option is required, and it goes with every part.
+The one option isn't required, and it goes with every part. **API name** is the option's name in the API:
 
 | Option                         | API name      | Values    | Left out |
 | ------------------------------ | ------------- | --------- | -------- |
 | **Show previews of its links** | `unfurlLinks` | Yes or no | No       |
 
-Left out, Slack shows no preview of the pages, images or videos the text links to.
+When it's off, Slack shows no preview of the pages, images or videos the text links to.
 
 ## Edit and delete [#live]
 
-Peal edits a post's text, keeping its images, and deletes it, with its images: see [After a post is published](/guides/posts/published). A Slack workspace's settings may stop messages being edited after a while: the edit then fails with Slack's reason (`slack:edit_window_closed`).
+Peal can edit a post's text on Slack, keeping its images, and delete the post with its images (see [After a post is published](/guides/posts/published)). A Slack workspace's settings can stop messages being edited after a while. The edit then fails with Slack's reason, `slack:edit_window_closed`.
 
 ## When an answer is lost [#lost]
 
-Slack keeps no key to post a message again under, and Peal reads no channel back. When Slack takes a post and its answer never comes, the post is **To check**: look at the channel, then confirm it or send it again from its page. Peal never sends it again by itself, and sends no part after it.
+Slack has no key that lets Peal post a message again safely, and Peal doesn't read the channel back. So when Slack takes a post and its answer never reaches Peal, the post shows **To check**. Look at the channel, then confirm the post or send it again from its page.
 
-## What Peal does not do there [#limits]
+Peal never sends it again on its own, and it doesn't send the parts that come after it.
 
-Peal reads nothing back from Slack: no counts, no replies, no inbox. It sends no video or document, no direct message to a person, and posts under the app's name only.
+## What Peal doesn't do on Slack [#limits]
+
+Peal doesn't read anything back from Slack, so there are no counts, replies or inbox for it. It doesn't send videos, documents or direct messages to a person, and it posts under the app's name only.

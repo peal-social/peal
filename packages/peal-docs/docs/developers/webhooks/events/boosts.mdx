@@ -6,11 +6,11 @@ sidebar:
   label: "Boosts"
 ---
 
-## Boost events [#boost-events]
+## What every boost event holds [#boost-events]
 
-A [boost](/guides/engage/boosts#boosts) promotes a published post as an ad, on an instance where [ads](/guides/engage/ads) are on. Its eight events carry the same `data`: ids, amounts and where the boost stands.
+A [boost](/guides/engage/boosts#boosts) promotes a published post as an ad, on an instance where [ads](/guides/engage/ads) are on. All eight boost events carry the same `data`: ids, amounts and where the boost stands.
 
-They never carry who the boost is shown to, nor who benefits from the ad or pays for it: read the boost through the API for that, with `GET /api/workspaces/{workspaceId}/ads/boosts/{boostId}`.
+They never say who the boost is shown to, nor who benefits from the ad or pays for it. For that, read the boost through the API, with `GET /api/workspaces/{workspaceId}/ads/boosts/{boostId}`.
 
 | Field         | Type           | What it holds                                                                                                                                                        |
 | ------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -25,11 +25,11 @@ They never carry who the boost is shown to, nor who benefits from the ad or pays
 | `state`       | string         | Where the boost stands, one of the [boost states](/guides/engage/boosts#states)                                                                                      |
 | `reason`      | string or null | Why it failed, one of the [failure reasons](/guides/engage/boosts#failure-reasons); null unless `state` is `failed`                                                  |
 
-An amount is an integer, never a decimal: `5000` in `EUR` is 50.00 €, and in a currency without a minor unit, such as `JPY`, it is 5,000 ¥. The ad account's `minorUnitDigits`, in the API, says which.
+An amount is an integer, never a decimal. `5000` in `EUR` is 50.00 €, but in a currency without a minor unit, such as `JPY`, it's 5,000 ¥. The ad account's `minorUnitDigits`, in the API, tells you which.
 
 ## boost.started [#boost-started]
 
-The boost was made at the ad network and turned on: it may spend up to its budget, until `endsAt`. The network can still review the ad before it shows it.
+The boost was created at the ad network and turned on. It can spend up to its budget, until `endsAt`. The network may still review the ad before showing it.
 
 ```json title="boost.started"
 {
@@ -87,7 +87,7 @@ A member paused the boost, and the network confirmed it. Its budget stays counte
 
 ## boost.resumed [#boost-resumed]
 
-A member ran a paused boost again: it may spend again, until `endsAt`.
+A member ran a paused boost again. It can spend again, until `endsAt`.
 
 ```json title="boost.resumed"
 {
@@ -116,7 +116,7 @@ A member ran a paused boost again: it may spend again, until `endsAt`.
 
 ## boost.stopped [#boost-stopped]
 
-A member stopped the boost for good: it does not run again. `committed` is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one.
+A member stopped the boost for good, and it won't run again. `committed` comes down to what the boost can have cost: nothing if it never ran, the days it ran for a daily budget, or its whole budget for a total one.
 
 ```json title="boost.stopped"
 {
@@ -145,7 +145,7 @@ A member stopped the boost for good: it does not run again. `committed` is count
 
 ## boost.ended [#boost-ended]
 
-The boost's end date passed. The network stops it at that time on its own; Peal records it within about ten minutes.
+The boost's end date passed. The network stops it at that time on its own, and Peal records it within about ten minutes.
 
 ```json title="boost.ended"
 {
@@ -174,7 +174,7 @@ The boost's end date passed. The network stops it at that time on its own; Peal 
 
 ## boost.failed [#boost-failed]
 
-The boost could not be made: nothing ran, and nothing was spent. `reason` says why.
+The boost couldn't be created, so nothing ran and nothing was spent. `reason` says why.
 
 ```json title="boost.failed"
 {
@@ -203,11 +203,11 @@ The boost could not be made: nothing ran, and nothing was spent. `reason` says w
 
 ## boost.unconfirmed [#boost-unconfirmed]
 
-Peal told the network to run the boost and could not read back whether it does. Its budget stays counted, and Peal sends nothing more on its own.
+Peal told the network to run the boost, and couldn't read back whether it runs. Its budget stays counted, and Peal sends nothing more on its own.
 
-<Callout type="warning" title="It may be spending">
-  Someone checks the boost, and [stops it](/guides/engage/boosts#control) if it
-  must not run.
+<Callout type="warning" title="An unconfirmed boost may be spending">
+  Someone has to check the boost, and [stop it](/guides/engage/boosts#control)
+  if it shouldn't run.
 </Callout>
 
 ```json title="boost.unconfirmed"
@@ -237,7 +237,7 @@ Peal told the network to run the boost and could not read back whether it does. 
 
 ## boost.budget_reached [#boost-budget-reached]
 
-The ads Peal read show that the boost spent its whole total budget: the network no longer shows it. It is sent once, for a total budget only, after the hourly read that found it; the boost stays `active` until its end date.
+The ad figures Peal reads show that the boost spent its whole total budget, so the network no longer shows it. Peal sends this once, for a total budget only, after the hourly read that found it. The boost stays `active` until its end date.
 
 ```json title="boost.budget_reached"
 {

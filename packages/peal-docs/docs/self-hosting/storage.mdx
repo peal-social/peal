@@ -5,14 +5,16 @@ sidebar:
   icon: hard-drive
 ---
 
-Peal keeps images and videos in any S3-compatible store. Browsers upload to the bucket directly, so the bucket needs an upload rule as well as the server's settings.
+Any S3-compatible store works. Browsers upload to the bucket directly, so besides the server's settings, you put an upload rule on the bucket.
 
-## Media storage [#media-storage]
+## Connect the store [#media-storage]
 
-| Setting                                                                                    | Required | What it does                                                                                   |
-| ------------------------------------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------- |
-| `PEAL_S3_ENDPOINT`, `PEAL_S3_BUCKET`, `PEAL_S3_ACCESS_KEY_ID`, `PEAL_S3_SECRET_ACCESS_KEY` | Yes      | The store, the bucket and the key. The server's key needs only to read and write objects.      |
-| `PEAL_MEDIA_PUBLIC_BASE_URL`                                                               | No       | The bucket's public address, if it is also served publicly (see [Public links](#public-links)) |
+The server reads these settings:
+
+| Setting                                                                                    | Required | What it does                                                                                  |
+| ------------------------------------------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------- |
+| `PEAL_S3_ENDPOINT`, `PEAL_S3_BUCKET`, `PEAL_S3_ACCESS_KEY_ID`, `PEAL_S3_SECRET_ACCESS_KEY` | Yes      | The store, the bucket and the key. The server's key only needs to read and write objects.     |
+| `PEAL_MEDIA_PUBLIC_BASE_URL`                                                               | No       | The bucket's public address, if it's also served publicly (see [Public links](#public-links)) |
 
 [Environment variables](/self-hosting/environment-variables#media) lists the other media settings, with their defaults.
 
@@ -24,17 +26,17 @@ To keep media in the EU on Cloudflare R2, create the bucket in R2's EU jurisdict
 wrangler r2 bucket create <name> --jurisdiction eu
 ```
 
-Then reach it at the `.eu.` endpoint, `https://<account>.eu.r2.cloudflarestorage.com`, in `PEAL_S3_ENDPOINT`. Wrangler's other bucket commands need `--jurisdiction eu` too. The same goes for a backup bucket, whose endpoint is a host without a scheme.
+Then put the `.eu.` endpoint in `PEAL_S3_ENDPOINT`: `https://<account>.eu.r2.cloudflarestorage.com`. Wrangler's other bucket commands need `--jurisdiction eu` too. The same goes for a backup bucket, whose endpoint is a host without a scheme.
 
-<Callout type="warning" title="The jurisdiction is for good">
-  A bucket's jurisdiction cannot be changed later.
+<Callout type="warning" title="A bucket's jurisdiction can't be changed later">
+  You can't change a bucket's jurisdiction later.
 </Callout>
 
-### The upload rule [#cors]
+## Add the upload rule [#cors]
 
-Browsers send media straight to the bucket, with requests the server signs. The bucket must let the web app's origin send them: a CORS rule that allows `PUT` from that origin with the `Content-Type` and `If-None-Match` headers.
+Browsers send media straight to the bucket, with requests the server signs. The bucket must let the web app's origin send them, with a CORS rule that allows `PUT` from that origin with the `Content-Type` and `If-None-Match` headers.
 
-With the server's variables set, and `PUBLIC_URL` and `TRUSTED_ORIGINS` naming the web app's origins, this command puts the rule on the bucket, keeping its other rules:
+Set the server's variables, and make sure `PUBLIC_URL` and `TRUSTED_ORIGINS` name the web app's origins. Then this command puts the rule on the bucket and keeps the bucket's other rules:
 
 ```sh
 bun nx run peal-server:media-cors
@@ -42,30 +44,64 @@ bun nx run peal-server:media-cors
 
 It also prints the same policy for Cloudflare R2's dashboard (R2 › the bucket › Settings › CORS policy). Running it again changes nothing. Its access key must be allowed to change the bucket's settings.
 
-### Unfinished uploads [#multipart]
+## Clean up unfinished uploads [#multipart]
 
-Large videos go up in parts. An upload left unfinished keeps its parts in the store until something aborts it. The server sweeps the media folder every hour, on one server at a time:
+Large videos go up in parts. An upload left unfinished keeps its parts in the store until something aborts it.
 
-- an upload never completed is deleted, its media and its file, a day after it started (`PEAL_MEDIA_SWEEP_PENDING_AFTER`);
-- a multipart upload left open is aborted a day after it started (`PEAL_MEDIA_SWEEP_UPLOADS_AFTER`);
-- a file under `media/` that no media holds, such as one sent with a link signed before its media was deleted, is deleted once it is a day old (`PEAL_MEDIA_SWEEP_ORPHANS_AFTER`);
-- the files of a deleted workspace that the store did not delete at once are deleted again until none is left.
+The server sweeps the media folder every hour, on one server at a time. Each sweep handles one kind of leftover:
 
-Each run deletes 500 of each at most (`PEAL_MEDIA_SWEEP_BATCH`) and leaves the rest to the next; a file the store refuses to delete is counted and left. They touch only keys under `media/` that Peal writes, below `PEAL_S3_KEY_PREFIX`, never the erasure ledger or another instance's prefix. A sweep that keeps failing raises the `peal-media-sweep-failing` alert.
+| Leftover                                                                                                    | What the sweep does                                    | Setting                          |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------- |
+| An upload never completed                                                                                   | Deletes its media and its file, a day after it started | `PEAL_MEDIA_SWEEP_PENDING_AFTER` |
+| A multipart upload left open                                                                                | Aborts it a day after it started                       | `PEAL_MEDIA_SWEEP_UPLOADS_AFTER` |
+| A file under `media/` that no media holds, such as one sent with a link signed before its media was deleted | Deletes it once it's a day old                         | `PEAL_MEDIA_SWEEP_ORPHANS_AFTER` |
+| The files of a deleted workspace that the store didn't delete at once                                       | Deletes them again until none is left                  |                                  |
+
+Each run deletes 500 of each at most (`PEAL_MEDIA_SWEEP_BATCH`) and leaves the rest to the next. A file the store refuses to delete is counted and left.
+
+The sweeps touch only keys under `media/` that Peal writes, below `PEAL_S3_KEY_PREFIX`. They never touch the erasure ledger or another instance's prefix. A sweep that keeps failing raises the `peal-media-sweep-failing` alert.
 
 The sweeps run in production only, unless `PEAL_MEDIA_SWEEPS` says otherwise. `off` stops them all.
 
-#### Which database the folder belongs to [#media-owner]
+### Which database the folder belongs to [#media-owner]
 
-The pending and orphan sweeps delete what the database does not know of, so they need the database to be the bucket's newest truth. The folder's owner marker, `media/.owner`, says which database that is: the database's random id, the Postgres cluster's system identifier and timeline, and an epoch that only these sweeps advance, one more at each run, in the database and the marker together. The first run writes it. From then on the two sweeps delete nothing, and raise the `peal-media-sweep-refused` alert, when the marker:
+The pending and orphan sweeps delete what the database doesn't know of, so the database must be the bucket's newest truth. The folder's owner marker, `media/.owner`, says which database that is. It holds:
 
-- names another database (`foreign`), or is gone once this database had written it (`unmarked`);
-- names another Postgres cluster or timeline (`restored`): every restore from pgBackRest ends on a new timeline, and a database loaded from a dump runs on a new cluster. The timeline is read from the write-ahead log being written, so a failover to a replica is seen at once, and `pg_upgrade` gives a new cluster: the sweeps stop after either, until the folder is handed over;
-- counts more runs than the database (`rewound`): the database went back in time, as a disk snapshot rolled back does. A snapshot taken after the last run the marker counts reads as sound: that is up to half an hour while the store answers, longer when the store failed the runs' marker writes, and as long as the sweeps were off, since only their runs move the epoch on. Keep them off across a snapshot's roll-back too.
+- The database's random id.
+- The Postgres cluster's system identifier and timeline.
+- An epoch that only these sweeps advance, one more at each run, in the database and the marker together.
 
-Turn the sweeps off as well (`PEAL_MEDIA_SWEEPS=off`) before starting a server on a restored database. As a last guard, the orphan sweep deletes nothing on a page of the listing with more files the database does not know of than `PEAL_MEDIA_SWEEP_ORPHANS_LIMIT` (100), or than a fifth of 50 old files or more, and the pending sweep nothing when uploads never completed are found in more workspaces than `PEAL_MEDIA_SWEEP_PENDING_LIMIT` (100): one workspace's backlog never trips it. These only catch a large gap. A breaker is not cleared by the claim below: once the database is known sound, raise the limit for a run (and restart the server), then set it back.
+The first run writes the marker. From then on, the two sweeps delete nothing, and raise the `peal-media-sweep-refused` alert, when the marker disagrees with the database:
 
-Once the database is meant to own the folder (a restore confirmed final, a failover or an upgrade done, a database loaded from a dump, a marker lost), hand the folder over. The command prints the database, the bucket and prefix, the marker there now and what it would write, and writes only with `--yes`:
+| Reason     | What the marker shows                                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------------------- |
+| `foreign`  | It names another database.                                                                                     |
+| `unmarked` | It's gone, after this database had written it.                                                                 |
+| `restored` | It names another Postgres cluster or timeline.                                                                 |
+| `rewound`  | It counts more runs than the database, so the database went back in time, as a disk snapshot rolled back does. |
+
+Every restore from pgBackRest ends on a new timeline, and a database loaded from a dump runs on a new cluster, so both read as `restored`. The timeline is read from the write-ahead log being written, so a failover to a replica is seen at once. `pg_upgrade` gives a new cluster. The sweeps stop after either, until you hand the folder over.
+
+A snapshot taken after the last run the marker counts reads as sound. That window is up to half an hour while the store answers, longer when the store failed the runs' marker writes, and as long as the sweeps were off, since only their runs move the epoch on. Keep the sweeps off across a snapshot's roll-back too.
+
+<Callout
+  type="warning"
+  title="Turn the sweeps off before you start a server on a restored database"
+>
+  Set `PEAL_MEDIA_SWEEPS=off`. The restored database doesn't know the files
+  uploaded since the backup, and the sweeps would delete them.
+</Callout>
+
+As a last guard, two breakers catch a large gap:
+
+- The orphan sweep deletes nothing on a page of the listing with more files the database doesn't know of than `PEAL_MEDIA_SWEEP_ORPHANS_LIMIT` (100), or than a fifth of 50 old files or more.
+- The pending sweep deletes nothing when uploads never completed are found in more workspaces than `PEAL_MEDIA_SWEEP_PENDING_LIMIT` (100). One workspace's backlog never trips it.
+
+Handing the folder over doesn't clear a breaker. Once you know the database is sound, raise the limit for a run (and restart the server), then set it back.
+
+### Hand the folder over [#claim-media-folder]
+
+Hand the folder over once the database is meant to own it: a restore confirmed final, a failover or an upgrade done, a database loaded from a dump, or a marker lost. The command prints the database, the bucket and prefix, the marker there now and what it would write. It writes only with `--yes`:
 
 ```sh
 docker compose … run --rm --no-deps server packages/peal-server/src/claim-media-folder.ts
@@ -74,15 +110,23 @@ docker compose … run --rm --no-deps server packages/peal-server/src/claim-medi
 
 It changes the marker and nothing else.
 
-#### A lifecycle rule [#lifecycle]
+### Add a lifecycle rule [#lifecycle]
 
-As a second guard, add a lifecycle rule that aborts incomplete multipart uploads, on the media folder alone. Put the rule's prefix before `media/` when you set `PEAL_S3_KEY_PREFIX`, such as `staging/media/`. With Cloudflare R2, whose buckets also abort them after seven days by default (add `--jurisdiction eu` for a bucket in the EU jurisdiction):
+As a second guard, add a lifecycle rule that aborts incomplete multipart uploads, on the media folder alone. When you set `PEAL_S3_KEY_PREFIX`, put it before `media/` in the rule's prefix, such as `staging/media/`.
+
+<Tabs>
+<Tab title="Cloudflare R2">
+
+R2's buckets also abort them after seven days by default. Add `--jurisdiction eu` for a bucket in the EU jurisdiction:
 
 ```sh
 wrangler r2 bucket lifecycle add <bucket> abort-unfinished-uploads media/ --abort-multipart-days 2
 ```
 
-With an S3 API, where the store supports lifecycle rules, save the rule as `lifecycle.json`:
+</Tab>
+<Tab title="S3 API">
+
+Where the store supports lifecycle rules, save the rule as `lifecycle.json`:
 
 ```json
 {
@@ -97,22 +141,27 @@ With an S3 API, where the store supports lifecycle rules, save the rule as `life
 }
 ```
 
-and put it on the bucket (add `--endpoint-url` for a store other than AWS):
+Then put it on the bucket. Add `--endpoint-url` for a store other than AWS:
 
 ```sh
 aws s3api put-bucket-lifecycle-configuration --bucket <bucket> --lifecycle-configuration file://lifecycle.json
 ```
 
+</Tab>
+</Tabs>
+
 <Callout type="warning" title="One configuration per bucket">
   On an S3 API, this replaces every lifecycle rule the bucket had, the erasure
-  ledger's included: put them all in the same file. Never add an expiration to
-  `media/`, which would delete media in use.
+  ledger's included, so put them all in the same file. Never add an expiration
+  to `media/`, because it would delete media in use.
 </Callout>
 
-### Reading the files [#probe]
+## How the server reads the files [#probe]
 
-Once a file is stored, the server reads it: an image's dimensions with sharp, a video's dimensions, duration and codec with ffprobe, which the server's image ships. A video uploaded to a server without ffprobe stays uploaded, marked as unread, until it is completed again on a server that has it.
+Once a file is stored, the server reads it. It reads an image's dimensions with sharp, and a video's dimensions, duration and codec with ffprobe, which the server's image ships.
 
-### Public links [#public-links]
+A video uploaded to a server without ffprobe stays uploaded, marked as unread, until it's completed again on a server that has it.
+
+## Public links [#public-links]
 
 Pages show media through short-lived signed links. If the bucket is also served publicly, as through an R2 custom domain, set `PEAL_MEDIA_PUBLIC_BASE_URL` to that address, and links to media use it instead.

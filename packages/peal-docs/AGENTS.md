@@ -44,7 +44,11 @@ platform's page shows its mark from `public/platform-marks/`, which
 
 ## Plain words
 
-The humanizer rules (github.com/blader/humanizer) apply to every page:
+[`WRITING.md`](WRITING.md) is the voice, the layout and the code
+samples: read it before writing a page, and give the humanizer skill its
+sample for the kind of page. Every API call shows every SDK, Node.js first,
+under the tab labels it lists. The humanizer rules
+(github.com/blader/humanizer) apply to every page:
 
 - State the point; no "not X but Y" contrasts, no one-line closers, no
   staged openers ("Here's what you need to know"), no arguing with no one.
@@ -62,7 +66,9 @@ The humanizer rules (github.com/blader/humanizer) apply to every page:
 ## Checks
 
 `nx run peal-docs:test` (`blume validate --strict`) fails on a broken link
-or anchor. Some tests read pages: the error codes table
+or anchor, and on a French page without French spacing: after editing one,
+run `bun scripts/french-typography.ts` here, which sets the no-break spaces
+before : ; ! ?, inside « » and in numbers (WRITING.md, French). Some tests read pages: the error codes table
 (`developers/conventions/errors.mdx`, the section `#error-codes`, a row per
 code), the webhook payload examples (`developers/webhooks/events/`, one
 ` ```json title="<event>" ` block per event type), the table of deletes and

@@ -5,11 +5,17 @@ sidebar:
   icon: square-pen
 ---
 
-Check a post before you send it, publish it now and wait for its outcome on each channel, through the [HTTP API](/developers), the SDKs, the command line or MCP. Each request comes with an example; the [API reference](/reference) has every field.
+You can send posts from your own code through the [HTTP API](/developers), the SDKs, the command line or MCP. Each request below has a sample in every language, and the [API reference](/reference) lists every field.
 
 ## Before you start [#start]
 
-Every endpoint here is under `/api/workspaces/{workspaceId}/posts`. The examples read the workspace's id from `$WORKSPACE_ID` and an [API key](/guides/workspace#api-keys), which looks like `peal_…`, from `$PEAL_API_KEY`. Ids are made up, and answers are abridged: a post always comes whole, as `GET …/posts/{postId}` answers it. The TypeScript samples use a `peal` client and a `workspaceId`, made as [SDKs](/developers/sdks#credential) shows; the commands run in the workspace `peal` is signed in to ([Command line](/developers/cli)).
+Every endpoint here is under `/api/workspaces/{workspaceId}/posts`. You need an [API key](/guides/workspace#api-keys), which looks like `peal_…`, and the id of its workspace.
+
+The samples read the key from `$PEAL_API_KEY` and the workspace's id from `$WORKSPACE_ID` (`PEAL_WORKSPACE_ID` in the SDK samples). The first sample builds the client, as [SDKs](/developers/sdks#credential) shows, and the others reuse it: `peal` in every language but Go, where it's `client`. The commands run in the workspace `peal` is signed in to ([Command line](/developers/cli)).
+
+The ids are made up and the answers are shortened. A real answer always holds the whole post, as `GET …/posts/{postId}` returns it.
+
+Each request needs these permissions:
 
 | Request                        | What it does                              | Needs                                        |
 | ------------------------------ | ----------------------------------------- | -------------------------------------------- |
@@ -22,17 +28,204 @@ Every endpoint here is under `/api/workspaces/{workspaceId}/posts`. The examples
 
 A post that shows media also needs `media:read`. An OAuth access token needs the scope `workspace:publish` for `send`, `bulk` and `import` ([What each permission allows](/developers/agents#scopes)).
 
-<Callout type="warning" title="Publishing is public">
+<Callout type="warning" title="Peal can't take back a post once it's out">
   What `send`, `bulk` and `import` publish reaches the platforms' public, and
-  cannot be taken back from Peal once it is out. Until its time, cancel or
-  unschedule a post.
+  you can't take it back from Peal once it's out. Until its time, you can still
+  cancel or unschedule a post.
 </Callout>
 
 ## Check a post without making it [#validate]
 
-`POST …/posts/validate` takes what `send` takes, or a draft, which has no `when`. It writes nothing. It answers 200 whether or not the post would go through, with `valid` and everything that would refuse it, all at once.
+`POST …/posts/validate` takes the same body as `send`, or a draft's, which has no `when`. It writes nothing. The answer is 200 whether or not the post would go through, with `valid` and every reason it would be refused, all at once.
 
 <CodeGroup>
+
+```ts Node.js
+import { PealClient } from "peal-sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
+
+const check = await peal.posts.validate({
+  workspaceId,
+  channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
+  content: {
+    text: "Our spring catalogue is out. Read it at https://example.com/spring #spring",
+    media: [],
+    overrides: [],
+  },
+  when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" },
+});
+```
+
+```python Python
+import os
+
+from peal import Peal, PostContent, PostTiming_At
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+workspace_id = os.environ["PEAL_WORKSPACE_ID"]
+
+check = peal.posts.validate(
+    workspace_id=workspace_id,
+    channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
+    content=PostContent(
+        text="Our spring catalogue is out. Read it at https://example.com/spring #spring",
+        media=[],
+        overrides=[],
+    ),
+    when=PostTiming_At(at="2026-11-16T08:00:00Z", time_zone="Europe/Paris"),
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
+
+check, err := client.Posts.Validate(context.TODO(), &peal.PostToValidate{
+	WorkspaceID: workspaceID,
+	ChannelIDs:  []string{"0190f3a0-0000-7000-8000-00000000c001"},
+	Content: &peal.PostContent{
+		Text:      "Our spring catalogue is out. Read it at https://example.com/spring #spring",
+		Media:     []*peal.MediaAttachment{},
+		Overrides: []*peal.TextOverride{},
+	},
+	When: &peal.PostTiming{
+		At: &peal.PostTimingAt{At: "2026-11-16T08:00:00Z", TimeZone: "Europe/Paris"},
+	},
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
+
+check = peal.posts.validate(
+  workspace_id: workspace_id,
+  channel_ids: ["0190f3a0-0000-7000-8000-00000000c001"],
+  content: {
+    text: "Our spring catalogue is out. Read it at https://example.com/spring #spring",
+    media: [],
+    overrides: []
+  },
+  when_: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" }
+)
+```
+
+```java Java
+import java.util.List;
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.*;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
+
+PostValidation check = peal.posts().validate(
+    workspaceId,
+    PostToValidate.builder()
+        .content(PostContent.builder()
+            .text("Our spring catalogue is out. Read it at https://example.com/spring #spring")
+            .build())
+        .channelIds(List.of("0190f3a0-0000-7000-8000-00000000c001"))
+        .when(PostTiming.at(PostTimingAt.builder()
+            .at("2026-11-16T08:00:00Z")
+            .timeZone("Europe/Paris")
+            .build()))
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\PostToValidate;
+use Peal\Types\PostContent;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingAt;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+$workspaceId = getenv('PEAL_WORKSPACE_ID');
+
+$check = $peal->posts->validate($workspaceId, new PostToValidate([
+    'channelIds' => ['0190f3a0-0000-7000-8000-00000000c001'],
+    'content' => new PostContent([
+        'text' => 'Our spring catalogue is out. Read it at https://example.com/spring #spring',
+        'media' => [],
+        'overrides' => [],
+    ]),
+    'when' => PostTiming::at(new PostTimingAt([
+        'at' => '2026-11-16T08:00:00Z',
+        'timeZone' => 'Europe/Paris',
+    ])),
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
+
+var check = await peal.Posts.ValidateAsync(new PostToValidate
+{
+    WorkspaceId = workspaceId,
+    ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c001" },
+    Content = new PostContent
+    {
+        Text = "Our spring catalogue is out. Read it at https://example.com/spring #spring",
+    },
+    When = new PostTiming(new PostTiming.At(new PostTimingAt
+    {
+        At = "2026-11-16T08:00:00Z",
+        TimeZone = "Europe/Paris",
+    })),
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
+
+let check = peal
+    .posts
+    .validate(
+        &workspace_id,
+        &PostToValidate::builder()
+            .channel_ids(vec!["0190f3a0-0000-7000-8000-00000000c001".to_string()])
+            .content(
+                PostContent::builder()
+                    .text("Our spring catalogue is out. Read it at https://example.com/spring #spring")
+                    .media(vec![])
+                    .overrides(vec![])
+                    .build()?,
+            )
+            .when(PostTiming::at(
+                "2026-11-16T08:00:00Z".to_string(),
+                "Europe/Paris".to_string(),
+            ))
+            .build()?,
+        None,
+    )
+    .await?;
+```
 
 ```bash curl
 curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/validate \
@@ -49,20 +242,7 @@ curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/validate
   }'
 ```
 
-```ts TypeScript
-const check = await peal.posts.validate({
-  workspaceId,
-  channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
-  content: {
-    text: "Our spring catalogue is out. Read it at https://example.com/spring #spring",
-    media: [],
-    overrides: [],
-  },
-  when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" },
-});
-```
-
-```bash CLI
+```sh CLI
 peal post "Our spring catalogue is out. Read it at https://example.com/spring #spring" \
   --channel 0190f3a0-0000-7000-8000-00000000c001 \
   --at 2026-11-16T09:00 --time-zone Europe/Paris \
@@ -117,29 +297,33 @@ peal post "Our spring catalogue is out. Read it at https://example.com/spring #s
 }
 ```
 
-| Field             | What it holds                                                                                                                                                                                                                                     |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `valid`           | True when nothing below refuses the post                                                                                                                                                                                                          |
-| `channels`        | One entry per channel of the workspace the post names, in the order given                                                                                                                                                                         |
-| `violations`      | What is wrong whatever the channel: no channel at all, or a text or options for a channel the post does not go to                                                                                                                                 |
-| `unknownChannels` | The channels it names that are not the workspace's                                                                                                                                                                                                |
-| `unknownMedia`    | The media it shows that are not the workspace's, or not ready                                                                                                                                                                                     |
-| `schedule`        | `ok`; `inPast`, more than a minute ago; or `invalidTimeZone`, when the zone is no IANA zone. Null without `when`.                                                                                                                                 |
-| `planLimit`       | The limit of the workspace's plan the post would pass, as `PlanLimitReached` tells it. Null when the plan has room, on an instance that does not bill, or without `when`.                                                                         |
-| `awaitsApproval`  | Whether the post, sent as it is, would wait for an [approval](/guides/posts/review) before it is scheduled, as the workspace asks of this caller: it would be made, with the status `awaitingApproval`. It refuses nothing. False without `when`. |
-| `duplicates`      | The channels that already have the same content from another post near its time, each with that post ([Duplicate posts](#duplicates)). None without `when`, or when the request allows duplicates.                                                |
+The answer holds these fields:
+
+| Field             | What it holds                                                                                                                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `valid`           | True when nothing below refuses the post                                                                                                                                                           |
+| `channels`        | One entry for each of the workspace's channels the post names, in the order you gave them                                                                                                          |
+| `violations`      | What's wrong whatever the channel: no channel at all, or a text or options for a channel the post doesn't go to                                                                                    |
+| `unknownChannels` | The channels it names that aren't the workspace's                                                                                                                                                  |
+| `unknownMedia`    | The media it shows that aren't the workspace's, or aren't ready                                                                                                                                    |
+| `schedule`        | `ok`, `inPast` (more than a minute ago) or `invalidTimeZone` (not an IANA zone). Null without `when`.                                                                                              |
+| `planLimit`       | The limit of the workspace's plan the post would pass, as `PlanLimitReached` describes it. Null when the plan has room, on an instance that doesn't bill, or without `when`.                       |
+| `awaitsApproval`  | Whether the post, sent as it is, would wait for an [approval](/guides/posts/review) before it's scheduled. It would still be made, with the status `awaitingApproval`. False without `when`.       |
+| `duplicates`      | The channels that already get the same content from another post near its time, each with that post ([Duplicate posts](#duplicates)). Empty without `when`, or when the request allows duplicates. |
+
+`awaitsApproval` refuses nothing. It tells you what the workspace asks of this caller.
 
 Each entry of `channels` holds:
 
-| Field                                       | What it holds                                                                                                                                                                                                                                                                                                         |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text`                                      | The text the channel receives, which is its override there, or the post's own                                                                                                                                                                                                                                         |
-| `textCounts`                                | That text's length, counted as the channel's platform counts it, against each of its limits. Bluesky has two, in graphemes and in bytes.                                                                                                                                                                              |
-| `hashtags`, `mentions`, `links` and `media` | How many the post holds (`count`) and the most the platform takes (`maximum`, null when Peal knows no limit for it). `links` counts different links. `media` counts what the channel receives: its own, when its override gives some ([Media of its own on a channel](#channel-media)), or the post's.                |
-| `parts`                                     | The parts after the first of a [thread](/guides/posts#threads), in order, each with its `part` (its place, from 1), its `text` on the channel and the same counts; none for a post alone. A platform that takes a post alone still lists them, and refuses them with `tooManyParts`.                                  |
-| `violations`                                | Every rule of the platform the post breaks, in any of its parts (text, media formats, sizes, counts and durations, options), and the account's own where its platform tells them. One about a later part names it by `part`. They read as in `PostContentInvalid` ([How refusals read](/developers/agents#refusals)). |
+| Field                                       | What it holds                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`                                      | The text the channel receives: its override there, or the post's own                                                                                                                                                                                                                                                    |
+| `textCounts`                                | That text's length against each of the platform's limits, counted the way the platform counts. Bluesky has two, in graphemes and in bytes.                                                                                                                                                                              |
+| `hashtags`, `mentions`, `links` and `media` | How many the post holds (`count`) and the most the platform takes (`maximum`, null when Peal knows no limit). `links` counts distinct links. `media` counts what the channel receives: its own when its override gives some ([Media of its own on a channel](#channel-media)), otherwise the post's.                    |
+| `parts`                                     | The parts after the first of a [thread](/guides/posts#threads), in order, each with its `part` (its place, from 1), its `text` on the channel and the same counts. Empty for a single post. A platform that only takes single posts still lists them, and refuses them with `tooManyParts`.                             |
+| `violations`                                | Every platform rule the post breaks, in any part (text, media formats, sizes, counts and durations, options), plus the account's own rules where its platform reports them. A violation about a later part names it by `part`. They read as in `PostContentInvalid` ([How refusals read](/developers/agents#refusals)). |
 
-A post that would be refused answers 200 too, with `valid` false:
+A post that would be refused also gets a 200, with `valid` false:
 
 ```json
 {
@@ -170,18 +354,176 @@ A post that would be refused answers 200 too, with `valid` false:
 }
 ```
 
-Without `when`, the request is a draft's: neither the time, the plan's room nor duplicates are checked.
+Without `when`, the request is checked as a draft, so the time, the plan's room and duplicates aren't checked.
 
-<Callout type="info">
-  A post that is valid now can still be refused later: a channel disconnected, a
-  plan's month filled meanwhile.
+<Callout type="info" title="A post that's valid now can still be refused later">
+  That happens if a channel is disconnected or the plan's month fills up in the
+  meantime.
 </Callout>
 
 ## Publish now and wait for the outcome [#wait]
 
-`POST …/posts/send` answers as soon as the post is made, while it publishes. With `wait`, a number of seconds from 0 to 60, a post that goes out now is answered once every channel has its result:
+`POST …/posts/send` answers as soon as the post is made, while it's still publishing. Add `wait`, a number of seconds from 0 to 60, and a post that goes out now is answered once every channel has its result. The `Idempotency-Key` header lets you send the request again safely if the answer is lost ([Idempotency](/developers/conventions/idempotency#idempotency)).
 
 <CodeGroup>
+
+```ts Node.js
+const post = await peal.posts.send({
+  workspaceId,
+  wait: "30",
+  "idempotency-key": "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+  channelIds: [
+    "0190f3a0-0000-7000-8000-00000000c001",
+    "0190f3a0-0000-7000-8000-00000000c002",
+  ],
+  content: {
+    text: "Our spring catalogue is out. Read it at https://example.com/spring",
+    media: [],
+    overrides: [],
+  },
+  when: { _tag: "now" },
+});
+```
+
+```python Python
+from peal import PostTiming_Now
+
+post = peal.posts.send(
+    workspace_id=workspace_id,
+    wait="30",
+    idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+    channel_ids=[
+        "0190f3a0-0000-7000-8000-00000000c001",
+        "0190f3a0-0000-7000-8000-00000000c002",
+    ],
+    content=PostContent(
+        text="Our spring catalogue is out. Read it at https://example.com/spring",
+        media=[],
+        overrides=[],
+    ),
+    when=PostTiming_Now(),
+)
+```
+
+```go Go
+post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
+	WorkspaceID:    workspaceID,
+	Wait:           peal.String("30"),
+	IdempotencyKey: peal.String("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90"),
+	ChannelIDs: []string{
+		"0190f3a0-0000-7000-8000-00000000c001",
+		"0190f3a0-0000-7000-8000-00000000c002",
+	},
+	Content: &peal.PostContent{
+		Text:      "Our spring catalogue is out. Read it at https://example.com/spring",
+		Media:     []*peal.MediaAttachment{},
+		Overrides: []*peal.TextOverride{},
+	},
+	When: &peal.PostTiming{Now: &peal.PostTimingNow{}},
+})
+```
+
+```ruby Ruby
+post = peal.posts.send_(
+  workspace_id: workspace_id,
+  wait: "30",
+  idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+  channel_ids: [
+    "0190f3a0-0000-7000-8000-00000000c001",
+    "0190f3a0-0000-7000-8000-00000000c002"
+  ],
+  content: {
+    text: "Our spring catalogue is out. Read it at https://example.com/spring",
+    media: [],
+    overrides: []
+  },
+  when_: { _tag: "now" }
+)
+```
+
+```java Java
+Post post = peal.posts().send(
+    workspaceId,
+    NewPost.builder()
+        .content(PostContent.builder()
+            .text("Our spring catalogue is out. Read it at https://example.com/spring")
+            .build())
+        .when(PostTiming.now(PostTimingNow.builder().build()))
+        .wait("30")
+        .idempotencyKey("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
+        .channelIds(List.of(
+            "0190f3a0-0000-7000-8000-00000000c001",
+            "0190f3a0-0000-7000-8000-00000000c002"))
+        .build());
+```
+
+```php PHP
+use Peal\Posts\Requests\NewPost;
+use Peal\Types\PostTimingNow;
+
+$post = $peal->posts->send($workspaceId, new NewPost([
+    'wait' => '30',
+    'idempotencyKey' => '5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90',
+    'channelIds' => [
+        '0190f3a0-0000-7000-8000-00000000c001',
+        '0190f3a0-0000-7000-8000-00000000c002',
+    ],
+    'content' => new PostContent([
+        'text' => 'Our spring catalogue is out. Read it at https://example.com/spring',
+        'media' => [],
+        'overrides' => [],
+    ]),
+    'when' => PostTiming::now(new PostTimingNow([])),
+]));
+```
+
+```csharp .NET
+var post = await peal.Posts.SendAsync(new NewPost
+{
+    WorkspaceId = workspaceId,
+    Wait = "30",
+    IdempotencyKey = "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+    ChannelIds = new List<string>
+    {
+        "0190f3a0-0000-7000-8000-00000000c001",
+        "0190f3a0-0000-7000-8000-00000000c002",
+    },
+    Content = new PostContent
+    {
+        Text = "Our spring catalogue is out. Read it at https://example.com/spring",
+    },
+    When = new PostTiming(new PostTiming.Now(new PostTimingNow())),
+});
+```
+
+```rust Rust
+// NewPost has no field for the key: it goes in the request's headers.
+let post = peal
+    .posts
+    .send(
+        &workspace_id,
+        &NewPost::builder()
+            .channel_ids(vec![
+                "0190f3a0-0000-7000-8000-00000000c001".to_string(),
+                "0190f3a0-0000-7000-8000-00000000c002".to_string(),
+            ])
+            .content(
+                PostContent::builder()
+                    .text("Our spring catalogue is out. Read it at https://example.com/spring")
+                    .media(vec![])
+                    .overrides(vec![])
+                    .build()?,
+            )
+            .when(PostTiming::now())
+            .wait("30")
+            .build()?,
+        Some(RequestOptions::new().additional_header(
+            "Idempotency-Key",
+            "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+        )),
+    )
+    .await?;
+```
 
 ```bash curl
 curl -X POST "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send?wait=30" \
@@ -202,25 +544,7 @@ curl -X POST "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send?wa
   }'
 ```
 
-```ts TypeScript
-const post = await peal.posts.send({
-  workspaceId,
-  wait: "30",
-  "idempotency-key": "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
-  channelIds: [
-    "0190f3a0-0000-7000-8000-00000000c001",
-    "0190f3a0-0000-7000-8000-00000000c002",
-  ],
-  content: {
-    text: "Our spring catalogue is out. Read it at https://example.com/spring",
-    media: [],
-    overrides: [],
-  },
-  when: { _tag: "now" },
-});
-```
-
-```bash CLI
+```sh CLI
 peal post "Our spring catalogue is out. Read it at https://example.com/spring" \
   --channels 0190f3a0-0000-7000-8000-00000000c001,0190f3a0-0000-7000-8000-00000000c002 \
   --now --wait 30 \
@@ -272,21 +596,20 @@ peal post "Our spring catalogue is out. Read it at https://example.com/spring" \
 }
 ```
 
-- The answer is 201 either way: the post was made.
-- When every channel has its result within the wait, the post's `status` is `finished`, with its `outcome`. Each target is `published`, with its `permalink`, or `failed`, with its `failureReason`.
-- When the time runs out first, the answer is the post as it stands, some targets still `pending` or `publishing`. It goes on publishing.
-- A [thread](/guides/posts#threads) has its result on a channel once every part went out there, or one failed: a target stays `publishing` between two parts, with `parts.live` listing those that are out. With a wait between parts longer than `wait`, the time runs out first.
+The answer is 201 either way, because the post was made. What it holds depends on the wait:
 
-`GET …/posts/{postId}/outcome` waits for the rest. It takes the same `wait`, and answers the post once every channel has its result, or as it stands when the time runs out: ask again then.
+- When every channel finishes in time, the post's `status` is `finished`, with its `outcome`. Each target is `published`, with its `permalink`, or `failed`, with its `failureReason`.
+- When the time runs out first, you get the post as it stands, with some targets still `pending` or `publishing`. It goes on publishing.
+
+A [thread](/guides/posts#threads) has its result on a channel once every part went out there, or one failed. Between two parts, its target stays `publishing`, and `parts.live` lists the parts that are out. If the thread waits longer between parts than `wait`, the time runs out first.
+
+### Wait for the rest [#outcome]
+
+`GET …/posts/{postId}/outcome` takes the same `wait`. It answers once every channel has its result, or with the post as it stands when the time runs out, and then you ask again.
 
 <CodeGroup>
 
-```bash curl
-curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/outcome?wait=30" \
-  -H "Authorization: Bearer $PEAL_API_KEY"
-```
-
-```ts TypeScript
+```ts Node.js
 const outcome = await peal.posts.outcome({
   workspaceId,
   postId: "0190f3a0-0000-7000-8000-00000000b001",
@@ -294,7 +617,74 @@ const outcome = await peal.posts.outcome({
 });
 ```
 
-```bash CLI
+```python Python
+outcome = peal.posts.outcome(
+    workspace_id=workspace_id,
+    post_id="0190f3a0-0000-7000-8000-00000000b001",
+    wait="30",
+)
+```
+
+```go Go
+outcome, err := client.Posts.Outcome(context.TODO(), &peal.OutcomePostsRequest{
+	WorkspaceID: workspaceID,
+	PostID:      "0190f3a0-0000-7000-8000-00000000b001",
+	Wait:        peal.String("30"),
+})
+```
+
+```ruby Ruby
+outcome = peal.posts.outcome(
+  workspace_id: workspace_id,
+  post_id: "0190f3a0-0000-7000-8000-00000000b001",
+  wait: "30"
+)
+```
+
+```java Java
+Post outcome = peal.posts().outcome(
+    workspaceId,
+    "0190f3a0-0000-7000-8000-00000000b001",
+    OutcomePostsRequest.builder().wait("30").build());
+```
+
+```php PHP
+use Peal\Posts\Requests\OutcomePostsRequest;
+
+$outcome = $peal->posts->outcome(
+    $workspaceId,
+    '0190f3a0-0000-7000-8000-00000000b001',
+    new OutcomePostsRequest(['wait' => '30']),
+);
+```
+
+```csharp .NET
+var outcome = await peal.Posts.OutcomeAsync(new OutcomePostsRequest
+{
+    WorkspaceId = workspaceId,
+    PostId = "0190f3a0-0000-7000-8000-00000000b001",
+    Wait = "30",
+});
+```
+
+```rust Rust
+let outcome = peal
+    .posts
+    .outcome(
+        &workspace_id,
+        "0190f3a0-0000-7000-8000-00000000b001",
+        &OutcomeQueryRequest::builder().wait("30").build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/outcome?wait=30" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
+```
+
+```sh CLI
 peal posts wait 0190f3a0-0000-7000-8000-00000000b001 --seconds 30
 ```
 
@@ -304,16 +694,16 @@ peal posts wait 0190f3a0-0000-7000-8000-00000000b001 --seconds 30
 
 </CodeGroup>
 
-Without `wait`, it does not wait. These are answered at once, without waiting:
+Without `wait`, it doesn't wait. These requests are also answered at once:
 
-- a draft, a cancelled post and a post scheduled for later than the wait;
-- a request that comes while the server, or the workspace (10 at once), has as many requests waiting as it lets: ask again then.
+- A request for a draft, a cancelled post, or a post scheduled for later than the wait.
+- A request that arrives while the server, or the workspace (10 at once), already has as many requests waiting as it allows. Ask again then.
 
-Waiting changes nothing and holds nothing: the post publishes in its own job either way, and [webhooks](/developers/webhooks/events#events) still tell how it went on each channel.
+Waiting changes nothing and holds nothing. The post publishes in its own job either way, and [webhooks](/developers/webhooks/events#events) still tell you how it went on each channel.
 
 ## Duplicate posts [#duplicates]
 
-A post made in one call is refused when another post of the workspace already sends the same content to one of its channels less than 23 hours from its time. It answers 409 `DuplicatePost`, and nothing is made:
+Peal refuses a post when another post of the workspace already sends the same content to one of its channels less than 23 hours from its time. The request answers 409 `DuplicatePost`, and nothing is made:
 
 ```json
 {
@@ -327,34 +717,34 @@ A post made in one call is refused when another post of the workspace already se
 }
 ```
 
-`duplicates` names each channel that has the content, with the earliest post that sends it there in that time.
+`duplicates` names each channel that already gets the content, with the earliest post that sends it there in that window. The check follows these rules:
 
-| Rule             | Detail                                                                                                                                                                                                                        |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The same content | The text the channel receives and the same media, in the same order.                                                                                                                                                          |
-| 23 hours         | The shortest day a time zone has, so a post that repeats every day at the same local time is never refused.                                                                                                                   |
-| What counts      | Only posts that go out or went out, those that wait for an approval among them, as they go out once approved: not drafts, cancelled posts, nor a channel where the post failed.                                               |
-| What is checked  | `send`, each item of `bulk`, each row of `import`, the MCP tools `create_post` and `create_posts`, and `peal post`. Scheduling an existing draft, moving a post and reposting on a channel where it failed are never refused. |
-| When it is meant | Send the request again with `allowDuplicate: true`, on the post or on the bulk item, or `allow_duplicate` set to `true` on the CSV row.                                                                                       |
+| Rule             | Detail                                                                                                                                                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The same content | The text the channel receives, and the same media in the same order.                                                                                                                                             |
+| 23 hours         | The shortest day any time zone has, so a post that repeats every day at the same local time is never refused.                                                                                                    |
+| What counts      | Posts that will go out or went out, including those waiting for an approval, since they go out once approved. Drafts, cancelled posts and a channel where the post failed don't count.                           |
+| What is checked  | `send`, each item of `bulk`, each row of `import`, the MCP tools `create_post` and `create_posts`, and `peal post`. Scheduling an existing draft, moving a post and reposting where it failed are never refused. |
+| When it's meant  | Send the request again with `allowDuplicate: true` on the post or the bulk item, or with `allow_duplicate` set to `true` on the CSV row.                                                                         |
 
-<Callout type="info">
-  This is apart from idempotency keys. A key makes one request safe to send
-  again. The duplicate refusal catches the request made twice.
+`validate` reports the same thing beforehand, in `duplicates`.
+
+<Callout type="info" title="This check is separate from idempotency keys">
+  A key makes one request safe to send again. The duplicate refusal catches the
+  same post requested twice.
 </Callout>
-
-`validate` tells the same beforehand, in `duplicates`.
 
 ## Media of its own on a channel [#channel-media]
 
-A post's text on one channel, an entry of `content.overrides` or of a part's `overrides`, may also give that channel images and videos of its own, in `media`. The channel then shows those instead of the post's.
+A post's text on one channel, an entry of `content.overrides` or of a part's `overrides`, can also give that channel its own images and videos, in `media`. The channel then shows those instead of the post's:
 
 | `media` on an override | What the channel shows                                                                  |
 | ---------------------- | --------------------------------------------------------------------------------------- |
-| Left out               | The post's images and videos. Peal answers `media` only on an override that gives some. |
+| Left out               | The post's images and videos. Peal only returns `media` on an override that gives some. |
 | An empty list          | None.                                                                                   |
 | A list                 | Those, in order, each with its alt text: 20 at most, ready media of the workspace.      |
 
-An override always has its `text`, which may not be empty. To give a channel media alone, send the post's own text there. That text is the channel's from then on: when you change the post's text, change it there too (the web app does).
+An override always has a `text`, and it can't be empty. To give a channel its own media and nothing else, repeat the post's text there. That text then belongs to the channel, so when you change the post's text, change it there too (the web app does this for you).
 
 ```json
 {
@@ -381,36 +771,132 @@ An override always has its `text`, which may not be empty. To give a channel med
 }
 ```
 
-- Each channel is checked on the media it receives, by `validate` (its `media` count and its `violations`) as when the post is scheduled.
+Media of its own changes a few other rules:
+
+- Each channel is checked on the media it receives, by `validate` (its `media` count and its `violations`) and when the post is scheduled.
 - The [duplicate check](#duplicates) compares what each channel receives.
-- An approval covers the media of every channel: changing a channel's own media after the post was approved asks for an approval again.
-- While a scheduled post shows a file on any channel, the file cannot be deleted from the library. A draft lets go of it, on every channel.
+- An approval covers every channel's media. Changing a channel's own media after the post was approved asks for an approval again.
+- While a scheduled post shows a file on any channel, you can't delete that file from the library. A draft doesn't hold on to it, on any channel.
 
 ## Remove a channel from a scheduled post [#remove-target]
 
-`DELETE …/posts/{postId}/targets/{targetId}` takes one channel off a post that waits for its time, scheduled or awaiting approval. The post goes out at its time on its other channels, and never on this one, whose target is `cancelled` with `"dropped": true`. It keeps its time and its queue slot, and its `outcome`, once it went out, leaves that channel out. The request answers the post.
+`DELETE …/posts/{postId}/targets/{targetId}` takes one channel off a post that's waiting for its time, scheduled or awaiting approval. The post goes out at its time on its other channels and never on this one. The target becomes `cancelled`, with `"dropped": true`. The post keeps its time and its queue slot, and once it's out, its `outcome` leaves that channel out. The request answers the post.
+
+<CodeGroup>
+
+```ts Node.js
+const post = await peal.posts.removeTarget({
+  workspaceId,
+  postId: "0190f3a0-0000-7000-8000-00000000b001",
+  targetId: "0190f3a0-0000-7000-8000-00000000d002",
+});
+```
+
+```python Python
+post = peal.posts.remove_target(
+    workspace_id=workspace_id,
+    post_id="0190f3a0-0000-7000-8000-00000000b001",
+    target_id="0190f3a0-0000-7000-8000-00000000d002",
+)
+```
+
+```go Go
+post, err := client.Posts.RemoveTarget(context.TODO(), &peal.RemoveTargetPostsRequest{
+	WorkspaceID: workspaceID,
+	PostID:      "0190f3a0-0000-7000-8000-00000000b001",
+	TargetID:    "0190f3a0-0000-7000-8000-00000000d002",
+})
+```
+
+```ruby Ruby
+post = peal.posts.remove_target(
+  workspace_id: workspace_id,
+  post_id: "0190f3a0-0000-7000-8000-00000000b001",
+  target_id: "0190f3a0-0000-7000-8000-00000000d002"
+)
+```
+
+```java Java
+Post post = peal.posts().removeTarget(
+    workspaceId,
+    "0190f3a0-0000-7000-8000-00000000b001",
+    "0190f3a0-0000-7000-8000-00000000d002");
+```
+
+```php PHP
+$post = $peal->posts->removeTarget(
+    $workspaceId,
+    '0190f3a0-0000-7000-8000-00000000b001',
+    '0190f3a0-0000-7000-8000-00000000d002',
+);
+```
+
+```csharp .NET
+var post = await peal.Posts.RemoveTargetAsync(new RemoveTargetPostsRequest
+{
+    WorkspaceId = workspaceId,
+    PostId = "0190f3a0-0000-7000-8000-00000000b001",
+    TargetId = "0190f3a0-0000-7000-8000-00000000d002",
+});
+```
+
+```rust Rust
+let post = peal
+    .posts
+    .remove_target(
+        &workspace_id,
+        "0190f3a0-0000-7000-8000-00000000b001",
+        "0190f3a0-0000-7000-8000-00000000d002",
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl -X DELETE "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/targets/0190f3a0-0000-7000-8000-00000000d002" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
+```
+
+```sh CLI
+peal posts remove-target 0190f3a0-0000-7000-8000-00000000b001 0190f3a0-0000-7000-8000-00000000d002
+```
+
+</CodeGroup>
+
+The request can be refused with these errors:
 
 | Status | Code                     | When                                                                                                              |
 | ------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| 409    | `last_target_left`       | The channel is the last one the post still goes out on: cancel the post instead (`POST …/posts/{postId}/cancel`). |
-| 409    | `post_status_conflict`   | The post is publishing or done, or is a draft, whose channels change with an update.                              |
+| 409    | `last_target_left`       | The channel is the last one the post still goes out on. Cancel the post instead (`POST …/posts/{postId}/cancel`). |
+| 409    | `post_status_conflict`   | The post is publishing or done, or it's a draft, whose channels you change with an update.                        |
 | 409    | `target_status_conflict` | The channel was cancelled with its post.                                                                          |
 
-A channel already taken off answers the post as it is, so a request sent again after a lost answer is safe.
+A channel that was already taken off answers the post as it is, so it's safe to send the request again after a lost answer.
 
-- It is an edit of the post. Where your posts need an [approval](/guides/posts/review), the approval given no longer covers it, and it is answered `awaitingApproval`, waiting for one again. A post already awaiting approval keeps its request, which covers what the post now is.
-- Webhooks hear a [`post.cancelled`](/developers/webhooks/events/posts#post-cancelled) naming that channel alone, with `scope` `target`.
-- A post taken back to draft (`unschedule`, changes requested, or an approval after its time) keeps the channels it still had. The channel taken off it goes with its target and its overrides in every part. Named again in `channelIds`, it gets a new, pending target.
+Taking a channel off counts as an edit of the post:
 
-It needs post:schedule, or, on a post awaiting approval, leave to ask for posts to go out. An OAuth client needs the scope `workspace:publish`.
+- Where your posts need an [approval](/guides/posts/review), the approval no longer covers it. The post is answered `awaitingApproval`, and waits for one again. A post already awaiting approval keeps its request, which now covers the post as it is.
+- Webhooks receive a [`post.cancelled`](/developers/webhooks/events/posts#post-cancelled) that names that channel alone, with `scope` `target`.
+- A post taken back to draft (`unschedule`, changes requested, or an approval after its time) keeps the channels it still had. The removed channel leaves with its target and its overrides in every part. If you name it again in `channelIds`, it gets a new, pending target.
+
+It needs post:schedule, or, on a post awaiting approval, permission to ask for posts to go out. An OAuth client needs the scope `workspace:publish`.
 
 ## Polls and first comments [#polls]
 
-`content.poll` asks a poll with the post's first part, whose text is the question: `choices` (2 to 4), `durationMinutes`, and `multipleChoice` (false when left out). Peal answers it only on a post that asks one; send `null`, or leave it out, for none. A platform's capabilities give its `poll`: how many choices, their `choiceLimit`, `durationMinutes` (`null` where the platform decides how long) and `multipleChoice`. Where they give none, a post with a poll is refused with `pollNotSupported`, and each bound it passes has its violation (`pollChoiceCount`, `pollChoiceLength`, `pollDurationOutOfRange`, `pollMultipleChoice`, `pollWithMedia`).
+`content.poll` adds a poll to the post's first part, whose text is the question. It has `choices` (2 to 4), `durationMinutes`, and `multipleChoice` (false when left out). Peal only returns it on a post that has one. Send `null`, or leave it out, for none.
 
-A first comment is the post's one part after its first (`content.followUps`), where a platform's capabilities give `followUps` of kind `comment`: text alone, within `commentTextLimits`. They give it only where the server reads that platform's comments, and a channel connected before then is refused with `partsNeedReconnect`, which its capabilities say beforehand (`account.restrictions`). On a LinkedIn page, `commentNeeds` says the page's administrator must have connected it. A YouTube video made for kids takes none (`commentsTurnedOff`). A comment that fails after the post went live leaves the post `partiallyPublished`, its target still listed as live for analytics, the inbox and ads; a repost sends the comment alone, and `POST …/posts/{postId}/targets/{targetId}/leave-out-rest` publishes the target as its post without it (`partsLeftOut`). A choice repeated is `pollChoiceRepeated`, and choices are kept without the spaces around them. The [posts guide](/guides/posts#first-comment) says how a lost answer is settled.
+A platform's capabilities describe its `poll`: how many choices, their `choiceLimit`, `durationMinutes` (`null` where the platform decides how long) and `multipleChoice`. Where they describe none, a post with a poll is refused with `pollNotSupported`. Each bound the poll breaks has its own violation: `pollChoiceCount`, `pollChoiceLength`, `pollDurationOutOfRange`, `pollMultipleChoice` or `pollWithMedia`. A repeated choice is `pollChoiceRepeated`, and Peal trims the spaces around each choice.
+
+A first comment is the post's single part after its first (`content.followUps`), on platforms whose capabilities give `followUps` of kind `comment`. It's text only, within `commentTextLimits`. The capabilities only offer it where the server reads that platform's comments, so a channel connected before then is refused with `partsNeedReconnect`. Its capabilities say so beforehand, in `account.restrictions`. Some platforms add their own rules:
+
+- On a LinkedIn page, `commentNeeds` says the page's administrator must have connected it.
+- A YouTube video made for kids takes no comment (`commentsTurnedOff`).
+
+A comment can fail after the post went live. The post is then `partiallyPublished`, and its target still counts as live for analytics, the inbox and ads. A repost sends the comment alone. `POST …/posts/{postId}/targets/{targetId}/leave-out-rest` publishes the target as a post without it (`partsLeftOut`). The [posts guide](/guides/posts#first-comment) explains how a lost answer is settled.
 
 ## From MCP and the command line [#tools]
+
+Each request has an MCP tool or a command, or both:
 
 | Request                                      | MCP tool                          | Command                                          |
 | -------------------------------------------- | --------------------------------- | ------------------------------------------------ |

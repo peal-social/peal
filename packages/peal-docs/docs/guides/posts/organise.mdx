@@ -5,16 +5,18 @@ sidebar:
   icon: tag
 ---
 
-A workspace that posts every day repeats itself: the same channels, the same sign-off, the same campaign names. Peal keeps those for it:
+A workspace that posts every day repeats itself: the same channels, the same sign-off, the same campaign names. Peal keeps those for you:
 
-- tags file posts;
-- signatures end them;
-- channel sets start them;
-- a channel's default options fill in what it always takes.
+- Tags file posts.
+- Signatures end them.
+- Channel sets start them.
+- A channel's default options fill in what that channel always takes.
 
-All of them belong to the workspace: every member reads them, and those who may edit posts change them.
+All of them belong to the workspace. Every member can read them, and those who can edit posts can change them.
 
 ## Who can do what [#roles]
+
+Here's who can read and change them:
 
 | Role        | Tags, signatures, channel sets and default options |
 | ----------- | -------------------------------------------------- |
@@ -24,79 +26,91 @@ All of them belong to the workspace: every member reads them, and those who may 
 | Contributor | Read and change                                    |
 | Viewer      | Read                                               |
 
-Changing them takes the right to edit posts. Through the API that is `post:update`, and reading them `post:read`.
+Changing them takes the right to edit posts. Through the API, that's `post:update`, and reading them is `post:read`.
 
 ## Tags [#tags]
 
-A tag is a name and a colour: a campaign, a client, a theme. A post has up to 10 tags, and a workspace keeps up to 100.
+A tag is a name and a colour, for a campaign, a client or a theme. A post has up to 10 tags, and a workspace keeps up to 100.
 
 <Steps>
-  <Step title="Add a tag">
-    In a workspace's **Settings**, choose **Tags** to add one. Give it a name of
-    40 characters at most, which no other tag of the workspace has whatever its
-    case, and choose its colour among the nine of the palette.
-  </Step>
-  <Step title="Tag a post">
-    In the composer, under **Tags**, tick the tags of the post, or add a new
-    one. A post that went out is tagged on its page: tags say nothing to the
-    platforms, so they change whatever the post's status.
-  </Step>
+<Step title="Add a tag">
+
+In a workspace, click **Settings** at the foot of the sidebar, then **Tags**, and add one there. Give it a name of 40 characters at most, which no other tag of the workspace has, whatever its case. Then choose its colour among the nine of the palette.
+
+</Step>
+<Step title="Tag a post">
+
+In the composer, under **Tags**, tick the post's tags, or add a new one. To tag a post that went out, use its page. Tags mean nothing to the platforms, so you can change them whatever the post's status.
+
+</Step>
 </Steps>
 
-Rename a tag, give it another colour or delete it in **Settings**, **Tags**. Deleting a tag takes it off its posts, which keep everything else.
+To rename a tag, give it another colour or delete it, go to **Settings › Tags**. Deleting a tag takes it off its posts, which keep everything else.
 
-Tags show on the calendar, as a dot of each tag's colour on the post, and in the list of drafts. Above the calendar:
+### Filter the calendar by tag [#tag-filters]
 
-- **Tags** shows only the posts filed under one of the tags you tick;
-- **Channels** shows only those that go to one of the channels you tick;
-- with both, a post must match both.
+Tags show on the calendar, as a dot of each tag's colour on the post, and in the list of drafts. Above the calendar, two filters narrow what you see:
 
-The calendar says how many posts the filters hide, and **Clear filters** shows them all again.
+- **Tags** shows only the posts filed under one of the tags you tick.
+- **Channels** shows only the posts that go to one of the channels you tick.
+
+With both, a post has to match both. The calendar says how many posts the filters hide, and **Clear filters** shows them all again.
 
 ## Signatures [#signatures]
 
-A signature is a block of text a workspace ends its posts with: a sign-off, a disclosure, a set of hashtags. A workspace keeps up to 50, of 2,000 characters at most each.
+A signature is a block of text a workspace ends its posts with, such as a sign-off, a disclosure or a set of hashtags. A workspace keeps up to 50, of 2,000 characters at most each.
 
-In **Settings**, choose **Signatures** to add one. Give it a name, its text, and say what it is for: the whole workspace, one platform, or one channel. Then use it in one of two ways:
+To add one, click **Settings** at the foot of the sidebar, then **Signatures**. Give it a name and its text, and say what it's for: the whole workspace, one platform, or one channel. You can then use it in one of two ways.
 
-| How             | What happens                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| In the composer | **Signature** lists the workspace's signatures. Choosing one puts it under the text for all channels, or under one channel's own text, after a blank line.                                                                                                                                                                                                                                                                                                                                                            |
-| By default      | Tick **Add to new posts by default**. A new post then shows **Add the default signature when the post is saved**, ticked: when you save it, the workspace's default signature goes under its text, and the composer shows the text as saved. A platform's or a channel's own default replaces the workspace's there: the post gets a text of its own on that channel, signed with it. Untick the box for a post that should go without. There is one default for the workspace, one per platform and one per channel. |
+### Add one while you write [#signature-insert]
 
-Once added, a signature is text of the post like the rest:
+In the composer, **Signature** lists the workspace's signatures. Choose one, and it goes under the text for all channels, or under one channel's own text, after a blank line.
 
-- it counts against each platform's limit when the post is scheduled, so a post that fit without it may be refused with it;
-- it is never added under a text that already ends with it, so saving twice, or adding it by hand to a post that has it, adds nothing;
-- it goes under the last part of a post in several parts (a [thread](/guides/posts#threads)), the parts before it staying as they are;
-- changing or deleting the signature later leaves the posts that hold it as they are.
+### Make it a default [#signature-default]
 
-Posts made through the API, MCP or the command line take a signature only when they ask for one: nothing is added to a text unasked.
+Tick **Add to new posts by default**. A new post then shows **Add the default signature when the post is saved**, ticked. When you save the post, the workspace's default signature goes under its text, and the composer shows the text as saved. Untick the box for a post that should go without.
+
+There's one default for the workspace, one per platform and one per channel. A platform's or a channel's own default replaces the workspace's there, so the post gets a text of its own on that channel, signed with it.
+
+### How a signature behaves [#signature-rules]
+
+Once added, a signature is part of the post's text like the rest:
+
+- It counts against each platform's limit when the post is scheduled, so a post that fit without it may be refused with it.
+- It's never added under a text that already ends with it. Saving twice, or adding it by hand to a post that has it, adds nothing.
+- On a post in several parts (a [thread](/guides/posts#threads)), it goes under the last part, and the parts before it stay as they are.
+- If you change or delete the signature later, the posts that hold it stay as they are.
+
+Posts made through the API, MCP or the command line take a signature only when they ask for one. Nothing is added to a text unasked.
 
 ## Channel sets [#sets]
 
-A channel set is a selection of the workspace's channels kept under a name, such as "Launch" or "Client A", with the [options](/guides/posts#options) posts take on some of them. A set holds up to 50 channels, and a workspace keeps up to 50 sets.
+A channel set is a selection of the workspace's channels kept under a name, such as "Launch" or "Client A". It also keeps the [options](/guides/posts#options) posts take on some of them. A set holds up to 50 channels, and a workspace keeps up to 50 sets.
 
-- To save one, tick the channels of a post, fill in their options, then choose **Save selection as a set**.
-- To use one, choose **Use a channel set** when a post starts: it ticks the set's channels and fills in the options it keeps.
-- **Settings**, **Channel sets** lists the sets, and lets you rename one, change its channels or delete it.
+Here's how you work with sets:
+
+- To save one, tick a post's channels, fill in their options, then click **Save selection as a set**.
+- To use one, click **Use a channel set** when a post starts. It ticks the set's channels and fills in the options it keeps.
+- To rename one, change its channels or delete it, go to **Settings › Channel sets**, which lists the sets.
+
+### When a channel in a set is disconnected [#sets-disconnected]
 
 A set keeps the channels it was given. When one of them is disconnected later:
 
-- the set still lists it, marked as no longer connected;
-- a post that uses the set goes to the set's other channels, and Peal says which channel was left out, in the composer and in the API's answer (`warnings`), never silently;
-- a post whose set has no connected channel left, and that names no other channel, is refused;
-- saving the set again takes the disconnected channel out of it.
+- The set still lists it, marked as no longer connected.
+- A post that uses the set goes to the set's other channels. Peal says which channel was left out, in the composer and in the API's answer (`warnings`), never silently.
+- A post whose set has no connected channel left, and that names no other channel, is refused.
+- Saving the set again takes the disconnected channel out of it.
 
 ## Default options for a channel [#defaults]
 
-Some channels always take the same [options](/guides/posts#options): the same Pinterest board, the same YouTube audience. A channel's default options are what a new post takes on that channel when it gives none there.
+Some channels always take the same [options](/guides/posts#options), such as the same Pinterest board or the same YouTube audience. A channel's default options are what a new post takes on that channel when it gives none there.
 
-- Defaults may be unfinished. A post that takes them is checked when it is scheduled exactly as a post that wrote them itself, so they never get round a platform's rules.
-- Options are taken in this order: the post's own, then a channel set's, then the channel's defaults.
-- Only a new post takes them: a draft you change keeps what you give it.
+Defaults may be unfinished. A post that takes them is checked when it's scheduled exactly like a post that wrote them itself, so they never get round a platform's rules.
 
-Set them through the API, MCP or the command line:
+Options are taken in this order: the post's own, then a channel set's, then the channel's defaults. Only a new post takes them, and a draft you change keeps what you give it.
+
+You set them through the API, MCP or the command line:
 
 ```sh
 peal channels defaults set 0190f3a0-0000-7000-8000-00000000c004 \
@@ -105,13 +119,15 @@ peal channels defaults set 0190f3a0-0000-7000-8000-00000000c004 \
 
 ## Duplicate a post [#duplicate]
 
-On a post's page, or from its entry on the calendar, **Duplicate** makes a new draft that says what the post says: its text, its media, its channels with their own text and options, and its tags. The copy has no time, and you are its author. What the workspace no longer has is left out: a channel disconnected since, media deleted since.
+On a post's page, or from its entry on the calendar, click **Duplicate**. You get a new draft that says what the post says: its text, its media, its channels with their own text and options, and its tags.
+
+The copy has no time, and you're its author. Anything the workspace no longer has is left out, such as a channel disconnected since or media deleted since.
 
 To send the same post at several times, duplicate it and schedule each copy.
 
 ## Through the API [#api]
 
-Everything above is in the [HTTP API](/developers), under `/api/workspaces/{workspaceId}`, in the [MCP tools](/developers/mcp/tools#tools) and on the [command line](/developers/cli).
+Everything above is in the [HTTP API](/developers), under `/api/workspaces/{workspaceId}`, in the [MCP tools](/developers/mcp/tools#tools) and on the [command line](/developers/cli). These are the endpoints:
 
 | What                    | Endpoints                                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------------------- |
@@ -123,7 +139,7 @@ Everything above is in the [HTTP API](/developers), under `/api/workspaces/{work
 | Duplicate               | `POST …/posts/{postId}/duplicate`                                                                 |
 | Posts filed under a tag | `GET …/posts/search?tagId=…`                                                                      |
 
-A post names what it takes when it is made. This one goes to the channels of the set "Launch", takes each channel's default signature, and is filed under a tag:
+A post names what it takes when it's made. This one goes to the channels of the set "Launch", takes each channel's default signature, and is filed under a tag:
 
 ```sh
 curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/posts/send" \
@@ -139,11 +155,13 @@ curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/posts/send" \
   }'
 ```
 
-- `channelSets` names sets by id or by name, whatever the case; `channelIds` may then be empty. The post goes to the sets' connected channels and to the channels it lists.
-- `defaultSignatures` puts each channel's default signature under its text, and `signatureId` one signature on every channel.
+The fields work like this:
+
+- `channelSets` names sets by id or by name, whatever the case, and `channelIds` may then be empty. The post goes to the sets' connected channels and to the channels it lists.
+- `defaultSignatures` puts each channel's default signature under its text. `signatureId` puts one signature on every channel.
 - `tagIds` files the post. Updating a draft without `tagIds` keeps its tags.
 
-When a set lists a channel that is no longer connected, the post is made without it and the answer says so:
+When a set lists a channel that's no longer connected, the post is made without it, and the answer says so:
 
 ```json
 {

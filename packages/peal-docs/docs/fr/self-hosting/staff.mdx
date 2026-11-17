@@ -5,27 +5,29 @@ sidebar:
   icon: shield-user
 ---
 
-La console de l’équipe est destinée à celles et ceux qui font tourner un serveur Peal : elle trouve un compte ou un espace de travail, dit comment va le serveur, et permet à l’équipe d’agir sur les comptes. Elle se trouve à `/admin` sur votre adresse Peal (`/fr/admin` en français), et son API sous `/api/admin`.
+Depuis la console de l’équipe, vous pouvez trouver un compte ou un espace de travail, voir comment va le serveur et agir sur les comptes. Elle se trouve à `/admin` sur votre adresse Peal (`/fr/admin` en français), et son API sous `/api/admin`.
 
 ## Donner le rôle d’équipe [#make-staff]
 
-L’équipe, ce sont les comptes qui ont le rôle d’administrateur de Better Auth. Aucune page ne l’accorde : donnez-le dans la base de données, puis reconnectez-vous, car une session garde le rôle qu’elle avait en commençant.
+L’équipe, ce sont les comptes qui ont le rôle d’administrateur de Better Auth. Aucune page ne l’accorde. Donnez-le dans la base de données, puis reconnectez-vous, car une session garde le rôle qu’elle avait en commençant :
 
 ```sql
 UPDATE auth."user" SET role = 'admin' WHERE email = 'you@example.com';
 ```
 
-Pour retirer ce rôle, mettez `role` à `NULL`, puis demandez à une autre personne de l’équipe de **Déconnecter partout** ce compte. Les sessions qu’il a ouvertes pour agir à la place de quelqu’un prennent fin à leur requête suivante, quelle qu’elle soit, car le serveur vérifie à chacune que la personne de l’équipe en fait toujours partie et n’est pas bannie, et le journal d’audit inscrit chaque fin.
+Pour retirer ce rôle, mettez `role` à `NULL`, puis demandez à une autre personne de l’équipe de cliquer sur **Déconnecter partout** sur ce compte. Les sessions qu’il a ouvertes pour agir à la place de quelqu’un prennent fin à leur requête suivante, quelle qu’elle soit. Le serveur vérifie à chaque requête que la personne de l’équipe qui la fait en fait toujours partie et n’est pas bannie, et le journal d’audit inscrit chaque fin.
 
-La console refuse toute personne qui n’est pas de l’équipe dans sa propre session, connectée ou non, en répondant 404 comme si elle n’existait pas. Une clé d’API, une application qui agit par OAuth, ou l’équipe pendant qu’elle agit à la place de quelqu’un sont refusées aussi. Un compte d’équipe banni est refusé aussitôt.
+La console refuse toute personne qui n’est pas de l’équipe dans sa propre session, connectée ou non, et répond 404 comme si elle n’existait pas. Elle refuse aussi une clé d’API, une application qui agit par OAuth, et l’équipe pendant qu’elle agit à la place de quelqu’un. Un compte d’équipe banni est refusé aussitôt.
 
-<Callout type="info" title="Restreignez la console à votre frontal">
+<Callout type="info" title="La console se restreint au niveau de votre frontal">
   Les serveurs de Peal placent aussi `/admin`, `/en/admin`, `/fr/admin` et
   `/api/admin` derrière Cloudflare Access. Derrière votre propre frontal, vous
   pouvez de même les réserver aux adresses de votre équipe.
 </Callout>
 
 ## Ce que montre la console [#screens]
+
+La console a ces pages :
 
 | Page                      | Ce qu’elle montre                                                                                                                                                                                                                                                    |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -37,85 +39,110 @@ La console refuse toute personne qui n’est pas de l’équipe dans sa propre s
 | Demandes sur les contrats | Les demandes de résiliation ou de rétractation qui attendent l’équipe, de la plus ancienne à la plus récente                                                                                                                                                         |
 | Journal d’audit           | Ce que l’équipe a fait, du plus récent au plus ancien                                                                                                                                                                                                                |
 
-L’équipe voit qui est un compte, jamais ce qu’il a écrit : ni le texte d’une publication, ni image ou vidéo, ni jeton. Une publication en échec apparaît par ses identifiants, sa plateforme, la raison de l’échec et le code de la plateforme. Pour voir ce que voit un membre, l’équipe agit à sa place (voir plus bas).
+L’équipe voit qui est un compte, jamais ce qu’il a écrit. Elle ne voit ni le texte d’une publication, ni image ou vidéo, ni jeton. Une publication en échec apparaît par ses identifiants, sa plateforme, la raison de l’échec et le code de la plateforme. Pour voir ce que voit un membre, l’équipe agit à sa place ([Agir à la place d’un compte](#acting-as)).
 
-« Dernière connexion » est le début de la plus récente des sessions que le compte a ouvertes lui-même, tant qu’il en reste une ; les sessions que l’équipe ouvre pour agir à sa place ne comptent pas.
+« Dernière connexion » est le début de la plus récente des sessions que le compte a ouvertes lui-même, tant qu’il en reste une. Les sessions que l’équipe ouvre pour agir à sa place ne comptent pas.
 
 ## Ce que fait l’équipe [#actions]
 
 Chaque action demande un motif, et l’inscrit au journal d’audit avec le nom de la personne de l’équipe. Écrivez ce qui a été demandé, sans en dire plus que nécessaire sur la personne.
 
-| Action                                         | Ce qu’elle fait                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Bannir**                                     | Pour un jour, une semaine, 30 jours ou jusqu’à la levée : le compte est déconnecté partout, y compris des sessions qu’il a ouvertes pour agir à la place de quelqu’un, et ne peut ni se connecter ni utiliser ses clés d’API entre-temps. **Lever le bannissement** l’annule.                                                                                                                                                                                                                          |
-| **Déconnecter partout**                        | Met fin à toutes les sessions du compte, sur tous ses appareils, y compris celles que l’équipe a ouvertes à sa place et celles qu’il a ouvertes pour agir à la place de quelqu’un. Ses clés d’API continuent de fonctionner.                                                                                                                                                                                                                                                                           |
-| **Renvoyer la confirmation**                   | Envoie un nouveau lien pour confirmer l’adresse, dans la langue du compte, tant qu’elle n’est pas confirmée.                                                                                                                                                                                                                                                                                                                                                                                           |
-| **Réinitialiser la validation en deux étapes** | Tant qu’elle est activée, pour une personne qui a perdu son téléphone et ses codes de secours : désactive la [validation en deux étapes](/guides/workspace/account#two-step), supprime l’application d’authentification et les codes de secours, oublie les navigateurs de confiance, déconnecte le compte partout et lui écrit. La personne se connecte alors avec son mot de passe, et peut la réactiver. Les propriétaires ne peuvent pas réinitialiser celle d’un membre : seule l’équipe le peut. |
-| **Agir à la place de ce compte**               | Connecte le navigateur de la personne de l’équipe avec ce compte pendant une heure. Un bandeau en haut de chaque page dit de quel compte il s’agit, avec **Cesser d’agir à sa place**, qui rend la session de la personne de l’équipe.                                                                                                                                                                                                                                                                 |
+Voici les actions sur un compte :
+
+| Action                                         | Ce qu’elle fait                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Bannir**                                     | Pour un jour, une semaine, 30 jours ou jusqu’à la levée. Le compte est déconnecté partout, y compris des sessions qu’il a ouvertes pour agir à la place de quelqu’un, et ne peut ni se connecter ni utiliser ses clés d’API entre-temps. **Lever le bannissement** l’annule.                                                                                                                                                                                                                                        |
+| **Déconnecter partout**                        | Met fin à toutes les sessions du compte, sur tous ses appareils. Cela comprend celles que l’équipe a ouvertes à sa place et celles qu’il a ouvertes pour agir à la place de quelqu’un. Ses clés d’API continuent de fonctionner.                                                                                                                                                                                                                                                                                    |
+| **Renvoyer la confirmation**                   | Envoie un nouveau lien pour confirmer l’adresse, dans la langue du compte, tant que l’adresse n’est pas confirmée.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Réinitialiser la validation en deux étapes** | Pour une personne qui a perdu son téléphone et ses codes de secours, tant que la validation est activée. Elle désactive la [validation en deux étapes](/guides/workspace/account#two-step), supprime l’application d’authentification et les codes de secours, oublie les navigateurs de confiance, déconnecte le compte partout et lui écrit. La personne se connecte alors avec son mot de passe, et peut la réactiver. Les propriétaires ne peuvent pas réinitialiser celle d’un membre, seule l’équipe le peut. |
+| **Agir à la place de ce compte**               | Connecte le navigateur de la personne de l’équipe avec ce compte pendant une heure. Un bandeau en haut de chaque page dit de quel compte il s’agit, avec **Cesser d’agir à sa place**, qui rend la session de la personne de l’équipe.                                                                                                                                                                                                                                                                              |
 
 <Callout
   type="warning"
-  title="Avant de réinitialiser la validation en deux étapes"
+  title="La validation en deux étapes ne se réinitialise qu’après avoir vérifié qui la demande"
 >
-  Vérifiez d’abord qui en fait la demande : un e-mail envoyé depuis l’adresse du
-  compte n’est pas une preuve, la boîte de réception peut être ce qui a été
-  pris.
+  Un e-mail envoyé depuis l’adresse du compte n’est pas une preuve, car la boîte
+  de réception peut être ce qui a été pris.
 </Callout>
 
 ### Agir à la place d’un compte [#acting-as]
 
-Pendant qu’elle agit à la place d’un compte, l’équipe voit ses publications et ses médias, et peut rédiger et modifier des brouillons en son nom. Ce qu’elle crée porte le nom du compte, comme auteur, et le journal d’audit garde qui l’a fait (voir plus bas). Elle peut lire ses notifications, pas les marquer comme lues. Elle peut demander de l’aide à l’assistant de rédaction dans ses espaces de travail, ce qui compte dans les demandes du jour de ces espaces.
+Pendant qu’elle agit à la place d’un compte, l’équipe voit ses publications et ses médias, et peut rédiger et modifier des brouillons en son nom. Ce qu’elle crée porte le nom du compte comme auteur, et le journal d’audit garde qui l’a fait ([Pendant que l’équipe agit à la place d’un compte](#impersonation-log)). Elle peut lire ses notifications, mais pas les marquer comme lues. Elle peut demander de l’aide à l’assistant de rédaction dans ses espaces de travail, et cela compte dans les demandes du jour de ces espaces.
 
-Elle ne peut ni programmer, ni publier, ni connecter de canaux, ni gérer les clés d’API ou la facturation, ni modifier ses espaces de travail ou le compte, ni laisser une application agir pour lui. Elle ne peut ni activer ni désactiver sa validation en deux étapes, ni voir sa clé, ni créer de codes de secours, et la seconde étape ne lui est jamais demandée : la session est la sienne, ouverte depuis la console ; qu’un espace de travail qui l’exige s’ouvre ou non suit le compte lui-même.
+Elle ne peut rien faire de ce qui suit :
+
+- Programmer ou publier.
+- Connecter des canaux.
+- Gérer les clés d’API ou la facturation.
+- Modifier ses espaces de travail ou le compte.
+- Laisser une application agir pour lui.
+- Activer ou désactiver sa validation en deux étapes, voir sa clé ou créer des codes de secours.
+
+La seconde étape ne lui est jamais demandée, car la session est la sienne, ouverte depuis la console. Qu’un espace de travail qui exige la validation en deux étapes s’ouvre ou non suit le réglage du compte lui-même.
 
 L’équipe ne bannit, ne déconnecte, ne réinitialise la validation en deux étapes ni n’agit jamais à sa propre place, et n’agit jamais à la place d’autres membres de l’équipe. Personne ne supprime un compte, sauf son titulaire, depuis [ses paramètres de compte](/guides/workspace/account#delete-account).
 
-Les points d’accès d’administration de Better Auth sous `/api/auth/admin/` sont désactivés, afin que rien de ce que fait l’équipe n’échappe au journal d’audit ; seul `POST /api/auth/admin/stop-impersonating` reste, que le bandeau appelle.
+Les points d’accès d’administration de Better Auth sous `/api/auth/admin/` sont désactivés, pour que rien de ce que fait l’équipe n’échappe au journal d’audit. Seul reste `POST /api/auth/admin/stop-impersonating`, que le bandeau appelle.
 
-## La validation en deux étapes pour l’équipe [#two-step]
+## Exiger la validation en deux étapes de l’équipe [#two-step]
 
-La page d’un compte indique si sa validation en deux étapes est activée, et celle d’un espace de travail s’il l’exige de ses membres. Avec `PEAL_STAFF_TWO_STEP=true` ([Variables d’environnement](/self-hosting/environment-variables)), la console est refusée aux membres de l’équipe dont le compte ne l’a pas activée : on leur dit de l’activer dans les paramètres de leur compte, tandis que quiconque n’est pas de l’équipe ne trouve toujours aucune console.
+La page d’un compte indique si sa validation en deux étapes est activée. Celle d’un espace de travail indique s’il l’exige de ses membres.
 
-<Callout type="warning" title="Activez-le en dernier">
-  Activez ce réglage une fois que chaque compte de l’équipe l’a activée.
+Avec `PEAL_STAFF_TWO_STEP=true` ([Variables d’environnement](/self-hosting/environment-variables)), la console est refusée aux membres de l’équipe dont le compte ne l’a pas activée. Un message leur demande de l’activer dans les paramètres de leur compte. Quiconque n’est pas de l’équipe ne trouve toujours aucune console.
+
+<Callout
+  type="warning"
+  title="La validation en deux étapes ne s’exige qu’une fois activée sur chaque compte de l’équipe"
+>
+  Ne définissez `PEAL_STAFF_TWO_STEP=true` qu’une fois que chaque compte de
+  l’équipe a activé la validation en deux étapes, sinon les membres de l’équipe
+  qui ne l’ont pas activée perdent la console.
 </Callout>
 
-## Comptes partenaires [#partners]
+## Accorder un compte partenaire [#partners]
 
-Un compte partenaire laisse un produit utiliser Peal pour ses propres clients, un espace de travail chacun, par l’API ([Intégrer Peal](/developers/embedding)). La page d’un espace de travail dit où il en est : s’il a un compte partenaire, avec le nombre d’espaces de travail que ce compte possède, ou si un partenaire le possède, avec l’espace de travail principal du partenaire et l’identifiant que le partenaire lui a donné.
+Un compte partenaire permet à un produit d’utiliser Peal pour ses propres clients, un espace de travail chacun, par l’API ([Intégrer Peal](/developers/embedding)). La page d’un espace de travail dit où il en est. Soit il a un compte partenaire, avec le nombre d’espaces de travail que ce compte possède, soit un partenaire le possède, avec l’espace de travail principal du partenaire et l’identifiant que le partenaire lui a donné.
 
-**Accorder un compte partenaire** en ouvre un pour l’espace de travail, à son nom, et demande pourquoi, comme chaque action. Les propriétaires et administrateurs de l’espace le nomment ensuite, créent ses clés et enregistrent où les pages hébergées renvoient leurs clients, sous **Paramètres**, puis **Partenaire**. Avec [`PEAL_PARTNER_SELF_SERVICE`](/self-hosting/environment-variables#sign-in) à `true`, ils en ouvrent un eux-mêmes. Le journal d’audit garde chaque octroi avec l’espace de travail.
+Cliquez sur **Accorder un compte partenaire** pour en ouvrir un pour l’espace de travail, à son nom. L’action demande pourquoi, comme chaque action. Les propriétaires et administrateurs de l’espace le nomment ensuite, créent ses clés et enregistrent où les pages hébergées renvoient leurs clients, sous **Paramètres**, puis **Partenaire**.
 
-Un espace de travail que possède un partenaire n’a pas de membres : l’équipe le lit comme tout autre espace de travail, et personne ne peut agir comme l’un de ses membres.
+Avec [`PEAL_PARTNER_SELF_SERVICE`](/self-hosting/environment-variables#sign-in) à `true`, ils en ouvrent un eux-mêmes. Le journal d’audit garde chaque octroi avec l’espace de travail.
 
-## Demandes sur les contrats [#contract-requests]
+Un espace de travail que possède un partenaire n’a pas de membres. L’équipe le lit comme tout autre espace de travail, et personne ne peut agir comme l’un de ses membres.
 
-Sur un serveur qui facture, chacun peut résilier un contrat ou s’en rétracter sans se connecter ([Abonnements et facturation](/guides/workspace/billing#cancelling)). Une demande qui indique son numéro de contrat, ou dont l’auteur suit le lien envoyé à une adresse qui gère un contrat, est appliquée sans intervention.
+## Traiter les demandes sur les contrats [#contract-requests]
 
-**Demandes sur les contrats** liste les autres : celles pour lesquelles aucun contrat n’a été trouvé, et celles dont l’auteur n’a pas encore suivi son lien. Chacune montre ce que son auteur a indiqué, et rien d’autre : son nom, l’adresse à laquelle l’accusé de réception a été envoyé, le contrat tel qu’il l’a désigné, la date souhaitée, et le compte associé à cette adresse, s’il existe.
+Sur un serveur qui facture, chacun peut résilier un contrat ou s’en rétracter sans se connecter ([Abonnements et facturation](/guides/workspace/billing#cancelling)). Deux sortes de demandes s’appliquent sans intervention : celle qui indique son numéro de contrat, et celle dont l’auteur suit le lien envoyé à une adresse qui gère un contrat.
 
-| Action                                | Ce qu’elle fait                                                                                                                                                                                                                                                                                                                                                                        |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Appliquer à cet espace de travail** | Rattache la demande au contrat d’un espace de travail, par l’identifiant de celui-ci. Elle prend effet à la date de réception de la demande, quel que soit le moment où vous l’appliquez : un renouvellement facturé depuis est remboursé, et les 14 jours et le remboursement d’une rétractation comptent à partir de cette date. L’auteur est informé par e-mail de la suite donnée. |
-| **Clore sans appliquer**              | Pour une demande envoyée deux fois ou par quelqu’un qui n’est titulaire d’aucun contrat. Son auteur n’est pas prévenu : écrivez-lui vous-même s’il attend une réponse.                                                                                                                                                                                                                 |
+**Demandes sur les contrats** liste les autres, celles pour lesquelles aucun contrat n’a été trouvé et celles dont l’auteur n’a pas encore suivi son lien. Chacune montre ce que son auteur a indiqué, et rien d’autre : son nom, l’adresse à laquelle l’accusé de réception a été envoyé, le contrat tel qu’il l’a désigné, la date souhaitée, et le compte associé à cette adresse, s’il existe.
 
-<Callout type="warning" title="Vérifiez qui est titulaire du contrat">
-  N’appliquez une demande qu’une fois certain que l’auteur est titulaire de ce
-  contrat, par exemple en écrivant à l’adresse que connaît le compte.
+Vous pouvez faire l’une de deux choses avec chacune :
+
+| Action                                | Ce qu’elle fait                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Appliquer à cet espace de travail** | Rattache la demande au contrat d’un espace de travail, par l’identifiant de celui-ci. Elle prend effet à la date de réception de la demande, quel que soit le moment où vous l’appliquez. Un renouvellement facturé depuis est remboursé, et les 14 jours et le remboursement d’une rétractation comptent à partir de cette date. L’auteur est informé par e-mail de la suite donnée. |
+| **Clore sans appliquer**              | Pour une demande envoyée deux fois, ou par quelqu’un qui n’est titulaire d’aucun contrat. Peal ne prévient pas son auteur, écrivez-lui donc vous-même s’il attend une réponse.                                                                                                                                                                                                        |
+
+<Callout
+  type="warning"
+  title="Une demande ne s’applique qu’une fois l’auteur reconnu titulaire du contrat"
+>
+  L’appliquer résilie le contrat de cet espace de travail ou s’en rétracte.
+  Vérifiez d’abord, par exemple en écrivant à l’adresse que connaît le compte.
 </Callout>
 
-Les deux demandent pourquoi, et figurent au journal d’audit avec l’identifiant de la demande et celui de l’espace de travail, jamais le nom ni l’adresse que contient la demande. Les demandes sont conservées 5 ans, comme les commandes du contrat.
+Les deux actions demandent pourquoi. Elles figurent au journal d’audit avec l’identifiant de la demande et celui de l’espace de travail, jamais le nom ni l’adresse que contient la demande. Les demandes sont conservées 5 ans, comme les commandes du contrat.
 
-## Liens courts [#short-links]
+## Désactiver un lien court [#short-links]
 
-**Liens courts** trouve un [lien court](/guides/posts/published#short-links) par son code, ou par son adresse entière collée telle qu’elle a été signalée : où il mène, l’espace de travail et la publication qui le contiennent, et s’il est actif.
+**Liens courts** trouve un [lien court](/guides/posts/published#short-links) par son code, ou par son adresse entière collée telle qu’elle a été signalée. La page montre où le lien mène, l’espace de travail et la publication qui le contiennent, et s’il est actif.
 
-- **Le désactiver**, avec un motif, quand un lien est signalé comme menant là où il ne devrait pas : qui le suit reçoit alors `410 Gone` et rien n’est compté. La publication sur la plateforme garde son texte, et **Le réactiver** le fait de nouveau rediriger.
-- La page d’un espace de travail liste ses liens courts, du plus récent au plus ancien, et **Les désactiver tous** arrête d’un coup tous ceux encore actifs, avec un motif, consigné une seule fois dans le journal d’audit.
+Quand un lien est signalé comme menant là où il ne devrait pas, cliquez sur **Le désactiver** et donnez un motif. Qui le suit reçoit alors `410 Gone`, et rien n’est compté. La publication sur la plateforme garde son texte, et **Le réactiver** fait de nouveau rediriger le lien.
 
-Chaque action est consignée dans le journal d’audit, avec le motif, l’espace de travail du lien et son code, avant d’être faite. Un lien court ne répond par ailleurs que tant que la partie de la publication qui le contient est en ligne sur sa plateforme (`404` avant sa mise en ligne), et `410` dès que l’équipe a banni tous les comptes propriétaires de son espace de travail.
+La page d’un espace de travail liste ses liens courts, du plus récent au plus ancien. **Les désactiver tous** arrête d’un coup tous ceux encore actifs, avec un motif, consigné une seule fois dans le journal d’audit.
 
-Les points d’accès de la console, par l’API :
+Chacune de ces actions est consignée dans le journal d’audit avant d’être faite, avec le motif, l’espace de travail du lien et son code. Un lien court ne répond par ailleurs que tant que la partie de la publication qui le contient est en ligne sur sa plateforme (`404` avant sa mise en ligne), et `410` dès que l’équipe a banni tous les comptes propriétaires de son espace de travail.
+
+Les points d’accès de la console, par l’API :
 
 | Point d’accès                                         | Ce qu’il fait                                   |
 | ----------------------------------------------------- | ----------------------------------------------- |
@@ -124,34 +151,49 @@ Les points d’accès de la console, par l’API :
 | `GET /api/admin/workspaces/{workspaceId}/short-links` | Liste les liens courts d’un espace de travail   |
 | `POST …/short-links/disable`                          | Désactive tous les liens d’un espace de travail |
 
-## Limites de débit de l’API [#rate-limits]
+## Fixer la limite de débit de l’API d’un espace de travail [#rate-limits]
 
-Sur un serveur qui facture, la page d’un espace de travail montre la [limite de débit](/developers/conventions/rate-limits#standing) sous laquelle envoient ses clés et les applications qui y agissent : {{api-without-fr}} requêtes par minute sans moyen de paiement, le réglage du serveur avec un moyen de paiement, ou une limite propre. L’équipe lui en donne une sur demande, {{api-on-request-fr}} en général, de 1 à 10 000, avec un motif, et la retire de la même façon : elle s’applique dans la minute, quoi que paie le compte de facturation, et part avec l’espace de travail. Chaque changement est d’abord inscrit au journal d’audit (`setRequestLimit`, avec la limite). Sur un serveur qui ne facture pas, le réglage vaut pour tous, et rien ne se fixe.
+Sur un serveur qui facture, la page d’un espace de travail montre la [limite de débit](/developers/conventions/rate-limits#standing) sous laquelle envoient ses clés et les applications qui y agissent. C’est {{api-without-fr}} requêtes par minute sans moyen de paiement, le réglage du serveur avec un moyen de paiement, ou une limite propre à l’espace de travail.
+
+L’équipe donne à un espace de travail sa propre limite sur demande, {{api-on-request-fr}} en général, de 1 à 10 000, avec un motif. Elle la retire de la même façon. La limite s’applique dans la minute, quoi que paie le compte de facturation, et part avec l’espace de travail. Chaque changement est d’abord inscrit au journal d’audit (`setRequestLimit`, avec la limite).
+
+Sur un serveur qui ne facture pas, le réglage vaut pour tous, et rien ne se fixe.
 
 | Point d’accès                                                   | Ce qu’il fait                                                       |
 | --------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `GET /api/admin/workspaces/{workspaceId}/request-limit`         | Ce sous quoi l’espace de travail envoie                             |
 | `POST …/request-limit`, avec `requestsPerMinute` et un `reason` | Fixe sa limite propre, ou la retire avec `requestsPerMinute` à null |
 
-## Remboursements qui n’ont pas abouti [#refunds]
+## Régler les remboursements qui n’ont pas abouti [#refunds]
 
-Sur un serveur qui facture, **Comptes de facturation** liste, du plus récent au plus ancien, les sommes que Peal doit rendre et que Stripe n’a pas rendues : un avoir sur la part non utilisée d’un abonnement par paliers que Stripe a refusé définitivement (l’abonnement a pris fin quand même), et un remboursement que Stripe a signalé échoué après coup (son événement `refund.failed` : abonnez-y le point d’accès du webhook). Chacun montre son montant, le code de Stripe, l’abonnement ou le remboursement et l’espace de travail. Réglez chacun à la main, dans le tableau de bord de Stripe ou autrement : le client a été informé que la somme lui revient. Puis **Marquer réglé**, en disant comment : inscrit d’abord au journal d’audit (`settleCreditProblem`), il reste listé avec le jour. L’alerte `peal-credit-problems` se déclenche pour chacun. `GET /api/admin/billing/credit-problems` donne la même liste.
+Sur un serveur qui facture, **Comptes de facturation** liste les sommes que Peal doit rendre et que Stripe n’a pas rendues, des plus récentes aux plus anciennes. Il y en a deux sortes :
+
+- Un avoir sur la part non utilisée d’un abonnement par paliers que Stripe a refusé définitivement. L’abonnement a pris fin quand même.
+- Un remboursement que Stripe a signalé échoué après coup, avec son événement `refund.failed`. Abonnez le point d’accès du webhook à cet événement.
+
+Chacun montre son montant, le code de Stripe, l’abonnement ou le remboursement, et l’espace de travail. L’alerte `peal-credit-problems` se déclenche pour chacun, et `GET /api/admin/billing/credit-problems` donne la même liste.
+
+Le client a été informé que la somme lui revient, réglez donc chacun à la main, dans le tableau de bord de Stripe ou autrement. Cliquez ensuite sur **Marquer réglé** et dites comment. C’est d’abord inscrit au journal d’audit (`settleCreditProblem`), et l’entrée reste listée avec le jour.
 
 ## Le journal d’audit [#audit-log]
 
-Chaque action est inscrite avant d’être menée, afin que rien de ce que fait l’équipe ne passe inaperçu : qui l’a faite, quoi, sur quel compte, pourquoi et quand, avec la fin d’un bannissement. Une action qui a ensuite échoué montre tout de même ce que l’équipe a demandé. Le journal garde des identifiants, jamais ce que quiconque a écrit.
+Chaque action est inscrite avant d’être menée, pour que rien de ce que fait l’équipe ne passe inaperçu. Une entrée dit qui l’a faite, quoi, sur quel compte, pourquoi et quand, avec la fin d’un bannissement. Une action qui a ensuite échoué montre tout de même ce que l’équipe a demandé. Le journal garde des identifiants, jamais ce que quiconque a écrit.
+
+Les entrées sont gardées pendant ces durées :
 
 | Entrée                           | Gardée                                                                                                                                     |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Toute entrée                     | 12 mois                                                                                                                                    |
 | Un bannissement, ou sa levée     | 5 ans (le délai de prescription d’une action à son sujet, article 2224 du Code civil), ou 12 mois après la fin d’un bannissement plus long |
-| Un bannissement jusqu’à la levée | Tant qu’il s’applique ; il prend fin à sa levée ou à la fermeture du compte                                                                |
+| Un bannissement jusqu’à la levée | Tant qu’il s’applique. Il prend fin à sa levée ou à la fermeture du compte.                                                                |
 
 Une tâche quotidienne (`staff.audit-retention`, à 03 h 41 UTC) supprime les entrées plus anciennes.
 
 ### Pendant que l’équipe agit à la place d’un compte [#impersonation-log]
 
-Le serveur inscrit chaque requête qui modifie quelque chose, avant qu’elle ne s’exécute, quel que soit son chemin : l’API de Peal (`/api/…`) comme les routes du service de connexion (`/api/auth/…`). Le code qui traite la requête n’y a aucune part, si bien qu’une modification ne peut pas échapper à son inscription, et une modification que le serveur refuse ensuite est inscrite aussi. Chaque entrée indique :
+Le serveur inscrit chaque requête qui modifie quelque chose, avant qu’elle ne s’exécute, quel que soit son chemin : l’API de Peal (`/api/…`) comme les routes du service de connexion (`/api/auth/…`). Le code qui traite la requête n’y a aucune part, et une modification ne peut donc pas échapper à son inscription. Une modification que le serveur refuse ensuite est inscrite aussi.
+
+Chaque entrée contient ces champs :
 
 | Champ             | Ce qu’il contient                                                                                                                                             |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -160,78 +202,74 @@ Le serveur inscrit chaque requête qui modifie quelque chose, avant qu’elle ne
 | Action            | A modifié quelque chose à la place du compte                                                                                                                  |
 | Opération         | Le point d’accès de l’API, sous la forme `groupe.point` (`posts.create`, `posts.schedule`), ou la route de connexion, sous la forme `auth:/chemin`            |
 | Espace de travail | L’espace de travail concerné                                                                                                                                  |
-| Identifiants      | Les identifiants que nommait la requête, par leur nom (`postId`, `channelId`, `organizationId`) ; jamais le texte, les médias ni rien d’autre qu’elle portait |
+| Identifiants      | Les identifiants que nommait la requête, par leur nom (`postId`, `channelId`, `organizationId`). Jamais le texte, les médias ni rien d’autre qu’elle portait. |
 | Quand             | Le moment de la demande                                                                                                                                       |
 
-Les lectures ne sont pas inscrites. Les clients MCP, la ligne de commande et les clés d’API n’agissent jamais pour l’équipe : leurs jetons ne portent aucune substitution, et l’équipe qui agit à la place d’un compte ne peut ni laisser une application agir pour lui ni créer de clé. Une demande de suppression de l’un de ses espaces de travail ou de clôture du compte est refusée, si bien qu’aucun abonnement n’est résilié, et inscrite comme tout autre changement. Ces entrées sont gardées 12 mois, comme le reste du journal.
+Les lectures ne sont pas inscrites. Les clients MCP, la ligne de commande et les clés d’API n’agissent jamais pour l’équipe, car leurs jetons ne portent aucune substitution, et l’équipe qui agit à la place d’un compte ne peut ni laisser une application agir pour lui ni créer de clé. Une demande de suppression de l’un de ses espaces de travail ou de clôture du compte est refusée, si bien qu’aucun abonnement n’est résilié, et elle est inscrite comme tout autre changement. Ces entrées sont gardées 12 mois, comme le reste du journal.
 
-Le journal inscrit aussi comment chaque substitution a pris fin : **A cessé d’agir à la place du compte** quand l’équipe y met fin depuis le bandeau ou se déconnecte, et **Le serveur a mis fin à la session à la place du compte** quand le serveur y met fin, parce que la personne de l’équipe a été bannie, déconnectée partout ou ne fait plus partie de l’équipe, ou parce que le compte a été banni ou déconnecté partout. Une substitution jamais arrêtée prend fin une heure après son début, que montre le journal.
+Le journal inscrit aussi comment chaque substitution a pris fin :
+
+- **A cessé d’agir à la place du compte**, quand l’équipe y met fin depuis le bandeau ou se déconnecte.
+- **Le serveur a mis fin à la session à la place du compte**, quand le serveur y met fin. Cela arrive quand la personne de l’équipe a été bannie, déconnectée partout ou ne fait plus partie de l’équipe, ou quand le compte a été banni ou déconnecté partout.
+
+Une substitution jamais arrêtée prend fin une heure après son début, que montre le journal.
 
 <Accordion>
-  <AccordionItem title="Quand un compte est fermé">
-    Le journal l’oublie en tant que compte visé : les entrées à son sujet
-    perdent son identifiant, le motif donné, l’espace de travail et les
-    identifiants qu’une modification nommait, et son identifiant quitte toute
-    autre entrée qui le nomme.
+<AccordionItem title="Quand un compte est fermé">
 
-    Un bannissement, ou sa levée, garde son motif, avec un pseudonyme chiffré de
-    l’adresse e-mail du compte au lieu de son identifiant, pendant ses 5 ans :
-    qui fait tourner le serveur peut avoir à montrer à un tribunal ce qu’il a
-    fait et pourquoi, et ne retrouve l’entrée qu’à partir de cette adresse.
+Le journal l’oublie en tant que compte visé. Les entrées à son sujet perdent son identifiant, le motif donné, l’espace de travail et les identifiants qu’une modification nommait, et son identifiant quitte toute autre entrée qui le nomme.
 
-    Celles qu’il a faites en tant qu’équipe gardent leur auteur, au titre d’un
-    intérêt légitime : qui fait tourner le serveur répond de ce que l’équipe a
-    fait aux comptes des autres, y compris après son départ. Ce qui a été fait,
-    et quand, reste.
+Un bannissement, ou sa levée, garde son motif pendant ses 5 ans, avec un pseudonyme chiffré de l’adresse e-mail du compte au lieu de son identifiant. Qui fait tourner le serveur peut avoir à montrer à un tribunal ce qu’il a fait et pourquoi, et ne retrouve l’entrée qu’à partir de cette adresse.
 
-    Le téléchargement des données du compte liste ce que l’équipe lui a fait,
-    avec le motif donné et les modifications faites à sa place (quoi, où et sur
-    quels identifiants), mais pas qui l’a fait.
+Celles qu’il a faites en tant qu’équipe gardent leur auteur, au titre d’un intérêt légitime. Qui fait tourner le serveur répond de ce que l’équipe a fait aux comptes des autres, y compris après son départ. Ce qui a été fait, et quand, reste.
 
-  </AccordionItem>
+Le téléchargement des données du compte liste ce que l’équipe lui a fait, avec le motif donné et les modifications faites à sa place (quoi, où et sur quels identifiants), mais pas qui l’a fait.
+
+</AccordionItem>
 </Accordion>
 
-## Réquisitions [#legal-requests]
+## Répondre aux réquisitions [#legal-requests]
 
-L’autorité judiciaire peut demander par écrit les données permettant d’identifier quiconque a contribué à la création d’un contenu (loi n° 2004-575, article 6, V, B). Un serveur qui les conserve ([Conservation légale](/self-hosting/privacy#legal-retention)) y répond depuis **Réquisitions** dans la console (`/admin/legal`), que l’équipe ne voit qu’avec en plus le rôle juridique. Le reste de l’équipe y obtient la page introuvable, et 404 de son API, comme tout le monde.
+L’autorité judiciaire peut demander par écrit les données permettant d’identifier quiconque a contribué à la création d’un contenu (loi n° 2004-575, article 6, V, B). Un serveur qui les conserve ([Conservation légale](/self-hosting/privacy#legal-retention)) y répond depuis **Réquisitions** dans la console (`/admin/legal`). L’équipe ne la voit qu’avec en plus le rôle juridique. Le reste de l’équipe y obtient la page introuvable, et 404 de son API, comme tout le monde.
 
 <Steps>
-  <Step title="Donner le rôle juridique">
-    Donnez-le aux quelques personnes qui répondent aux autorités, et à personne
-    d’autre, puis faites-les se reconnecter :
+<Step title="Donner le rôle juridique">
 
-    ```sql
-    UPDATE auth."user" SET role = 'admin,legal' WHERE email = 'you@example.com';
-    ```
+Donnez-le aux quelques personnes qui répondent aux autorités, et à personne d’autre, puis faites-les se reconnecter :
 
-  </Step>
-  <Step title="Renseigner la demande d’après le document de l’autorité">
-    - Ce qu’elle désigne : une adresse e-mail (les comptes fermés qui l’avaient), l’identifiant d’un compte (fermé ou non) ou celui d’un espace de travail.
-    - L’autorité, la référence de la demande, et son fondement juridique, le texte qui donne à l’autorité le pouvoir de demander.
-    - Ce qu’elle vise, et rien de plus : le titulaire du compte, ses moyens de connexion, ses références de paiement, les connexions ayant créé, modifié ou supprimé un contenu, et la période de ces connexions lorsque la demande en vise une.
+```sql
+UPDATE auth."user" SET role = 'admin,legal' WHERE email = 'you@example.com';
+```
 
-  </Step>
-  <Step title="Consigner la demande et afficher la réponse">
-    **Consigner la demande et afficher la réponse** la consigne d’abord, puis
-    n’affiche que ce que la demande vise : les comptes fermés correspondants, et
-    les connexions de ces comptes, du compte désigné ou dans l’espace de travail
-    désigné. Une catégorie que la demande ne vise pas affiche **Non visé par
-    cette demande**, et le serveur n’en envoie rien.
-  </Step>
+</Step>
+<Step title="Renseigner la demande d’après le document de l’autorité">
+
+Saisissez ces éléments, tels que le document les donne :
+
+- Ce qu’elle désigne : une adresse e-mail (les comptes fermés qui l’avaient), l’identifiant d’un compte (fermé ou non) ou celui d’un espace de travail.
+- L’autorité, la référence de la demande, et son fondement juridique, le texte qui donne à l’autorité le pouvoir de demander.
+- Ce qu’elle vise, et rien de plus : le titulaire du compte, ses moyens de connexion, ses références de paiement, les connexions ayant créé, modifié ou supprimé un contenu, et la période de ces connexions quand la demande en vise une.
+
+</Step>
+<Step title="Consigner la demande et afficher la réponse">
+
+Cliquez sur **Consigner la demande et afficher la réponse**. La demande est d’abord consignée, puis la page n’affiche que ce qu’elle vise : les comptes fermés correspondants, et les connexions de ces comptes, du compte désigné ou dans l’espace de travail désigné. Une catégorie que la demande ne vise pas affiche **Non visé par cette demande**, et le serveur n’en envoie rien.
+
+</Step>
 </Steps>
 
-Les moyens de connexion et de paiement d’un compte sont conservés {{keep-legal-account-fr}} après sa fermeture, son titulaire {{keep-legal-identity-fr}}, et chaque connexion {{keep-legal-connections-fr}}. C’est le seul moyen de lire ce qu’un compte fermé a laissé. Les informations d’un compte encore ouvert sont sur sa page dans la console ; seules les connexions demandent une réquisition.
+Les moyens de connexion et de paiement d’un compte sont conservés {{keep-legal-account-fr}} après sa fermeture, son titulaire {{keep-legal-identity-fr}}, et chaque connexion {{keep-legal-connections-fr}}. C’est le seul moyen de lire ce qu’un compte fermé a laissé. Les informations d’un compte encore ouvert sont sur sa page dans la console, et seules ses connexions demandent une réquisition.
 
-Chaque réponse est consignée avant d’être donnée, avec le membre de l’équipe, l’autorité, sa référence, son fondement juridique, ce sur quoi portait la demande et ce qu’elle visait, et le nombre de données renvoyées, jamais les données remises, et cette trace est gardée {{keep-legal-disclosures-fr}}. **Réponses données** liste ces traces, les plus récentes d’abord, et chacune apparaît aussi dans le journal d’audit, comme **A répondu à une réquisition judiciaire** avec l’autorité et sa référence, pour que le reste de l’équipe la voie.
+Chaque réponse est consignée avant d’être donnée, et cette trace est gardée {{keep-legal-disclosures-fr}}. Elle contient le membre de l’équipe, l’autorité, sa référence, son fondement juridique, ce sur quoi portait la demande et ce qu’elle visait, et le nombre de données renvoyées, jamais les données remises. **Réponses données** liste ces traces, les plus récentes d’abord. Chacune apparaît aussi dans le journal d’audit, comme **A répondu à une réquisition judiciaire** avec l’autorité et sa référence, pour que le reste de l’équipe la voie.
 
 <Callout
   type="warning"
-  title="Prévenez les personnes à qui vous donnez ce rôle"
+  title="Les personnes à qui vous donnez ce rôle doivent savoir que leurs réponses sont consignées"
 >
-  La page dit avant toute saisie que les réponses sont consignées : informez les
-  personnes à qui vous donnez ce rôle que leurs réponses sont consignées et
-  contrôlées, comme le droit du travail peut vous l’imposer. Ne saisissez qu’une
-  demande écrite, et conservez-la avec vos documents juridiques.
+  La page le dit avant toute saisie. Informez les personnes à qui vous donnez ce
+  rôle que leurs réponses sont consignées et contrôlées, comme le droit du
+  travail peut vous l’imposer. Ne saisissez qu’une demande qu’une autorité a
+  faite par écrit, et conservez-la avec vos documents juridiques.
 </Callout>
 
-Les scripts disposent de la même chose, en tant que membre de l’équipe dans sa propre session : `POST /api/admin/legal-requests` répond à une demande, et `GET /api/admin/legal-requests` liste les réponses données.
+Les scripts peuvent faire de même, en tant que membre de l’équipe dans sa propre session. `POST /api/admin/legal-requests` répond à une demande, et `GET /api/admin/legal-requests` liste les réponses données.

@@ -6,11 +6,11 @@ sidebar:
   label: "Articles"
 ---
 
-## Article events [#article-events]
+## What article events hold [#article-events]
 
-An [article](/guides/channels/websites#articles) goes to one website, through its channel. Its events name the article and the channel, never what the article says: read it through the API for that, with `GET /api/workspaces/{workspaceId}/articles/{articleId}`.
+An [article](/guides/channels/websites#articles) goes to one website, through its channel. Its events name the article and the channel, never what the article says. For that, read it through the API, with `GET /api/workspaces/{workspaceId}/articles/{articleId}`.
 
-An article whose site's answer was lost, and which Peal could not find there, ends `unconfirmed`, and no event tells of it: an integrator that waits for an article's ending reads its state from the API.
+When a site's answer is lost and Peal can't find the article there, the article ends `unconfirmed`, and no event reports it. If your integration waits for an article to end, read its state from the API.
 
 | Field       | Type           | What it holds                                                                                                 |
 | ----------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -20,7 +20,7 @@ An article whose site's answer was lost, and which Peal could not find there, en
 
 ## article.published [#article-published]
 
-The site took the article: `platformPostId` is its post's id there, `permalink` its address (a preview address for a draft), and `siteStatus` what the site made of it: `publish`, `draft`, or `future`, scheduled on the site, which publishes it at its time.
+The site took the article. `platformPostId` is the id of its post there, and `permalink` its address (a preview address for a draft). `siteStatus` says what the site made of it: `publish`, `draft`, or `future`, scheduled on the site, which publishes it at its time.
 
 ```json title="article.published"
 {
@@ -44,7 +44,7 @@ The site took the article: `platformPostId` is its post's id there, `permalink` 
 
 ## article.failed [#article-failed]
 
-The article did not go to its site, and nothing is there: `reason` says why, as the API's failure reasons do (`tokenExpired` when the website must be reconnected), and `code` is the site's own when it gave one.
+The article didn't go to its site, and nothing is there. `reason` says why, with the API's failure reasons (`tokenExpired` when the website needs reconnecting), and `code` is the site's own code when it gave one.
 
 ```json title="article.failed"
 {
