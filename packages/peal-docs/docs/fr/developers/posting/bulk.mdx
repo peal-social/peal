@@ -5,44 +5,20 @@ sidebar:
   icon: layers
 ---
 
-Envoyez jusqu’à 50 publications en une requête, ou importez-les d’un fichier CSV, par l’API, les SDK ou la ligne de commande.
+Vous pouvez envoyer jusqu’à 50 publications en une requête, ou en importer jusqu’à 100 depuis un fichier CSV, par l’API, les SDK ou la ligne de commande. Les exemples créent le client comme l’explique [Publier par l’API](/developers/posting#start).
 
 ## Envoyer plusieurs publications en une requête [#bulk]
 
-`POST …/posts/bulk` crée et envoie jusqu’à 50 publications, chacune comme le ferait `send`. Chaque élément est une publication, avec ses propres canaux, son contenu, ses options et son heure. Le même contenu à plusieurs heures, ce sont plusieurs éléments ; une publication qui part à une heure différente sur chaque canal aussi.
+`POST …/posts/bulk` crée et envoie jusqu’à 50 publications, chacune comme le ferait `send`. Chaque élément est une publication, avec ses propres canaux, son contenu, ses options et son heure. Le même contenu à deux heures fait donc deux éléments, tout comme une publication qui part à une heure différente sur chaque canal.
 
 <CodeGroup>
 
-```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/bulk \
-  -H "Authorization: Bearer $PEAL_API_KEY" \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: 9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f" \
-  -d '{
-    "posts": [
-      {
-        "channelIds": ["0190f3a0-0000-7000-8000-00000000c001"],
-        "content": {
-          "text": "Notre catalogue de printemps est sorti. À lire sur https://example.com/printemps",
-          "media": [],
-          "overrides": []
-        },
-        "when": { "_tag": "at", "at": "2026-11-16T08:00:00Z", "timeZone": "Europe/Paris" }
-      },
-      {
-        "channelIds": ["0190f3a0-0000-7000-8000-00000000c009"],
-        "content": {
-          "text": "Notre catalogue de printemps est sorti. À lire sur https://example.com/printemps",
-          "media": [],
-          "overrides": []
-        },
-        "when": { "_tag": "at", "at": "2026-11-16T17:00:00Z", "timeZone": "America/New_York" }
-      }
-    ]
-  }'
-```
+```ts Node.js
+import { PealClient } from "peal-sdk";
 
-```ts TypeScript
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
+
 const result = await peal.posts.bulk({
   workspaceId,
   "idempotency-key": "9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
@@ -77,6 +53,303 @@ const result = await peal.posts.bulk({
 });
 ```
 
+```python Python
+import os
+
+from peal import BulkPost, Peal, PostContent, PostTiming_At
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+workspace_id = os.environ["PEAL_WORKSPACE_ID"]
+
+text = "Our spring catalogue is out. Read it at https://example.com/spring"
+
+result = peal.posts.bulk(
+    workspace_id=workspace_id,
+    idempotency_key="9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
+    posts=[
+        BulkPost(
+            channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
+            content=PostContent(text=text, media=[], overrides=[]),
+            when=PostTiming_At(at="2026-11-16T08:00:00Z", time_zone="Europe/Paris"),
+        ),
+        BulkPost(
+            channel_ids=["0190f3a0-0000-7000-8000-00000000c009"],
+            content=PostContent(text=text, media=[], overrides=[]),
+            when=PostTiming_At(at="2026-11-16T17:00:00Z", time_zone="America/New_York"),
+        ),
+    ],
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
+
+content := &peal.PostContent{
+	Text:      "Our spring catalogue is out. Read it at https://example.com/spring",
+	Media:     []*peal.MediaAttachment{},
+	Overrides: []*peal.TextOverride{},
+}
+
+result, err := client.Posts.Bulk(context.TODO(), &peal.BulkPosts{
+	WorkspaceID:    workspaceID,
+	IdempotencyKey: peal.String("9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f"),
+	Posts: []*peal.BulkPost{
+		{
+			ChannelIDs: []string{"0190f3a0-0000-7000-8000-00000000c001"},
+			Content:    content,
+			When: &peal.PostTiming{
+				At: &peal.PostTimingAt{At: "2026-11-16T08:00:00Z", TimeZone: "Europe/Paris"},
+			},
+		},
+		{
+			ChannelIDs: []string{"0190f3a0-0000-7000-8000-00000000c009"},
+			Content:    content,
+			When: &peal.PostTiming{
+				At: &peal.PostTimingAt{At: "2026-11-16T17:00:00Z", TimeZone: "America/New_York"},
+			},
+		},
+	},
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
+
+content = {
+  text: "Our spring catalogue is out. Read it at https://example.com/spring",
+  media: [],
+  overrides: []
+}
+
+result = peal.posts.bulk(
+  workspace_id: workspace_id,
+  idempotency_key: "9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
+  posts: [
+    {
+      channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
+      content: content,
+      when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" }
+    },
+    {
+      channelIds: ["0190f3a0-0000-7000-8000-00000000c009"],
+      content: content,
+      when: { _tag: "at", at: "2026-11-16T17:00:00Z", timeZone: "America/New_York" }
+    }
+  ]
+)
+```
+
+```java Java
+import java.util.List;
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.*;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
+
+PostContent content = PostContent.builder()
+    .text("Our spring catalogue is out. Read it at https://example.com/spring")
+    .build();
+
+BulkResult result = peal.posts().bulk(
+    workspaceId,
+    BulkPosts.builder()
+        .idempotencyKey("9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f")
+        .posts(List.of(
+            BulkPost.builder()
+                .content(content)
+                .when(PostTiming.at(PostTimingAt.builder()
+                    .at("2026-11-16T08:00:00Z")
+                    .timeZone("Europe/Paris")
+                    .build()))
+                .channelIds(List.of("0190f3a0-0000-7000-8000-00000000c001"))
+                .build(),
+            BulkPost.builder()
+                .content(content)
+                .when(PostTiming.at(PostTimingAt.builder()
+                    .at("2026-11-16T17:00:00Z")
+                    .timeZone("America/New_York")
+                    .build()))
+                .channelIds(List.of("0190f3a0-0000-7000-8000-00000000c009"))
+                .build()))
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\BulkPosts;
+use Peal\Types\BulkPost;
+use Peal\Types\PostContent;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingAt;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+$workspaceId = getenv('PEAL_WORKSPACE_ID');
+
+$content = new PostContent([
+    'text' => 'Our spring catalogue is out. Read it at https://example.com/spring',
+    'media' => [],
+    'overrides' => [],
+]);
+
+$result = $peal->posts->bulk($workspaceId, new BulkPosts([
+    'idempotencyKey' => '9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f',
+    'posts' => [
+        new BulkPost([
+            'channelIds' => ['0190f3a0-0000-7000-8000-00000000c001'],
+            'content' => $content,
+            'when' => PostTiming::at(new PostTimingAt([
+                'at' => '2026-11-16T08:00:00Z',
+                'timeZone' => 'Europe/Paris',
+            ])),
+        ]),
+        new BulkPost([
+            'channelIds' => ['0190f3a0-0000-7000-8000-00000000c009'],
+            'content' => $content,
+            'when' => PostTiming::at(new PostTimingAt([
+                'at' => '2026-11-16T17:00:00Z',
+                'timeZone' => 'America/New_York',
+            ])),
+        ]),
+    ],
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
+
+var content = new PostContent
+{
+    Text = "Our spring catalogue is out. Read it at https://example.com/spring",
+};
+
+var result = await peal.Posts.BulkAsync(new BulkPosts
+{
+    WorkspaceId = workspaceId,
+    IdempotencyKey = "9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
+    Posts = new List<BulkPost>
+    {
+        new BulkPost
+        {
+            ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c001" },
+            Content = content,
+            When = new PostTiming(new PostTiming.At(new PostTimingAt
+            {
+                At = "2026-11-16T08:00:00Z",
+                TimeZone = "Europe/Paris",
+            })),
+        },
+        new BulkPost
+        {
+            ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c009" },
+            Content = content,
+            When = new PostTiming(new PostTiming.At(new PostTimingAt
+            {
+                At = "2026-11-16T17:00:00Z",
+                TimeZone = "America/New_York",
+            })),
+        },
+    },
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
+
+let content = PostContent::builder()
+    .text("Our spring catalogue is out. Read it at https://example.com/spring")
+    .media(vec![])
+    .overrides(vec![])
+    .build()?;
+
+let result = peal
+    .posts
+    .bulk(
+        &workspace_id,
+        &BulkPosts::builder()
+            .posts(vec![
+                BulkPost::builder()
+                    .channel_ids(vec!["0190f3a0-0000-7000-8000-00000000c001".to_string()])
+                    .content(content.clone())
+                    .when(PostTiming::at(
+                        "2026-11-16T08:00:00Z".to_string(),
+                        "Europe/Paris".to_string(),
+                    ))
+                    .build()?,
+                BulkPost::builder()
+                    .channel_ids(vec!["0190f3a0-0000-7000-8000-00000000c009".to_string()])
+                    .content(content)
+                    .when(PostTiming::at(
+                        "2026-11-16T17:00:00Z".to_string(),
+                        "America/New_York".to_string(),
+                    ))
+                    .build()?,
+            ])
+            .build()?,
+        // La clé de la requête passe dans ses en-têtes.
+        Some(RequestOptions::new().additional_header(
+            "Idempotency-Key",
+            "9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
+        )),
+    )
+    .await?;
+```
+
+```bash curl
+curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/bulk \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f" \
+  -d '{
+    "posts": [
+      {
+        "channelIds": ["0190f3a0-0000-7000-8000-00000000c001"],
+        "content": {
+          "text": "Our spring catalogue is out. Read it at https://example.com/spring",
+          "media": [],
+          "overrides": []
+        },
+        "when": { "_tag": "at", "at": "2026-11-16T08:00:00Z", "timeZone": "Europe/Paris" }
+      },
+      {
+        "channelIds": ["0190f3a0-0000-7000-8000-00000000c009"],
+        "content": {
+          "text": "Our spring catalogue is out. Read it at https://example.com/spring",
+          "media": [],
+          "overrides": []
+        },
+        "when": { "_tag": "at", "at": "2026-11-16T17:00:00Z", "timeZone": "America/New_York" }
+      }
+    ]
+  }'
+```
+
 </CodeGroup>
 
 ```json
@@ -109,68 +382,154 @@ const result = await peal.posts.bulk({
 }
 ```
 
-- Les éléments sont traités dans l’ordre, un à la fois, chacun pour lui-même. Un élément refusé n’empêche aucun des autres d’être créé, et rien n’est défait.
-- La réponse est 200 dès que la requête elle-même a pu être lue, même si tous les éléments ont été refusés. `items` dit, pour chaque élément repéré par sa place dans la requête (`index`, à partir de 0), `created` avec sa publication, ou `refused` avec ce que `send` aurait répondu pour lui seul, sous forme de données : les violations de son contenu, des canaux ou médias inconnus, une heure passée, la limite de l’abonnement, un doublon.
-- Une requête qui ne peut pas être lue du tout (mal formée, sans élément, plus de 50) répond 400, et ne crée rien.
-- Les limites de l’abonnement valent sur toute la requête : une fois le mois plein, les éléments restants sont refusés.
-- Chaque élément est comparé aux publications créées avant lui, éléments précédents de la requête compris, pour le même contenu sur le même canal ([Publications en double](/developers/posting#duplicates)).
+Peal traite les éléments dans l’ordre, un à la fois, et chacun pour lui-même. Un élément refusé n’empêche pas les autres d’être créés, et rien n’est défait.
 
-Un en-tête `Idempotency-Key` permet de renvoyer toute la requête sans risque pendant 24 heures. Chaque élément est gardé sous la clé et sa place :
+La réponse est 200 dès que Peal a pu lire la requête, même s’il a refusé tous les éléments. `items` donne un résultat par élément, repéré par sa place dans la requête (`index`, à partir de 0) :
 
-- la même requête renvoyée répond les publications qu’elle a créées, avec `replayed` à vrai, et crée celles qui ne l’avaient pas été la première fois si elles peuvent l’être désormais ;
-- un élément modifié sous la même clé est refusé avec `IdempotencyKeyReused` ;
-- un élément peut porter sa propre `idempotencyKey`, utilisée pour lui à la place de celle de l’en-tête.
+- `created`, avec sa publication.
+- `refused`, avec ce que `send` aurait répondu pour cet élément seul, sous forme de données : les violations de son contenu, des canaux ou médias inconnus, une heure passée, la limite de l’abonnement ou un doublon.
+
+Une requête que Peal ne peut pas lire du tout (mal formée, sans élément, ou avec plus de 50) répond 400 et ne crée rien.
+
+Les limites de l’abonnement valent pour toute la requête. Une fois le mois plein, les éléments restants sont refusés. Chaque élément est aussi comparé aux publications créées avant lui, éléments précédents de la requête compris, pour le même contenu sur le même canal ([Publications en double](/developers/posting#duplicates)).
+
+### La renvoyer sans risque [#bulk-idempotency]
+
+Avec un en-tête `Idempotency-Key`, vous pouvez renvoyer toute la requête sans risque pendant 24 heures. Peal garde chaque élément sous la clé et sa place :
+
+- La même requête renvoyée répond les publications qu’elle a créées, avec `replayed` à vrai. Elle crée aussi les éléments qui ne l’avaient pas été la première fois, s’ils peuvent l’être désormais.
+- Un élément modifié sous la même clé est refusé avec `IdempotencyKeyReused`.
+- Un élément peut porter sa propre `idempotencyKey`, qui remplace alors celle de l’en-tête pour lui.
 
 ## Importer des publications depuis un fichier CSV [#import]
 
-Dans l’application web, [Importer depuis un fichier](/guides/posts/drafts#import-screen) vérifie un fichier et l’importe par ce point de terminaison.
+`POST …/posts/import` crée et envoie les publications que liste un fichier CSV, une par ligne. Dans l’application web, [Importer depuis un fichier](/guides/posts/drafts#import-screen) vérifie un fichier et l’importe par ce point d’accès.
 
-`POST …/posts/import` crée et envoie les publications que liste un fichier CSV, une par ligne. La première ligne du fichier nomme les colonnes, dans n’importe quel ordre :
+La première ligne du fichier nomme les colonnes, dans n’importe quel ordre :
 
-| Colonne           | Obligatoire | Ce qu’elle contient                                                                                                                                                   |
-| ----------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text`            | oui         | Le texte de la publication                                                                                                                                            |
-| `channels`        | oui         | Des identifiants de canaux, séparés par des espaces, des virgules ou des points-virgules                                                                              |
-| `at`              | oui         | `now` ; un instant avec son décalage, comme `2026-11-20T09:00:00Z` ; ou une heure locale sans décalage, comme `2026-11-20 10:00`, lue dans le `time_zone` de la ligne |
-| `time_zone`       | non         | Un fuseau IANA, comme `Europe/Paris`. UTC s’il est absent.                                                                                                            |
-| `media`           | non         | Des identifiants de médias prêts de l’espace de travail                                                                                                               |
-| `allow_duplicate` | non         | `true` ou `false` ([Publications en double](/developers/posting#duplicates))                                                                                          |
-| `idempotency_key` | non         | La clé d’idempotence propre à la ligne                                                                                                                                |
+| Colonne           | Obligatoire | Ce qu’elle contient                                                                                                                                               |
+| ----------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`            | oui         | Le texte de la publication                                                                                                                                        |
+| `channels`        | oui         | Des identifiants de canaux, séparés par des espaces, des virgules ou des points-virgules                                                                          |
+| `at`              | oui         | `now`, un instant avec son décalage comme `2026-11-20T09:00:00Z`, ou une heure locale sans décalage comme `2026-11-20 10:00`, lue dans le `time_zone` de la ligne |
+| `time_zone`       | non         | Un fuseau IANA, comme `Europe/Paris`. UTC s’il est absent.                                                                                                        |
+| `media`           | non         | Des identifiants de médias prêts de l’espace de travail                                                                                                           |
+| `allow_duplicate` | non         | `true` ou `false` ([Publications en double](/developers/posting#duplicates))                                                                                      |
+| `idempotency_key` | non         | La clé d’idempotence propre à la ligne                                                                                                                            |
 
-Une ligne est une publication seule, avec un même texte pour tous ses canaux : un [fil](/guides/posts#threads), un texte propre à un canal ou les options d’une plateforme ne tiennent pas dans une cellule, et passent par `send` ou `bulk`. Un fichier qui nomme une autre colonne est refusé en entier.
+Une ligne est une publication seule, avec un seul texte pour tous ses canaux. Un [fil](/guides/posts#threads), un texte différent sur un canal ou les options d’une plateforme ne tiennent pas dans une cellule : envoyez-les par `send` ou `bulk`. Un fichier qui nomme une autre colonne est refusé en entier.
 
-Les cellules suivent strictement la RFC 4180, pour qu’aucun texte ne soit jamais coupé : une cellule qui contient une virgule, un guillemet ou un saut de ligne s’écrit entre guillemets doubles, et un guillemet à l’intérieur est doublé. Une ligne finit après sa dernière cellule, sans virgule. Un fichier contient au plus 100 lignes sous la première, et 1 000 000 de caractères.
+### Écrire le fichier [#csv]
 
-```csv title="publications.csv"
+Les cellules suivent strictement la RFC 4180, si bien qu’aucun texte n’est jamais coupé. Une cellule qui contient une virgule, un guillemet ou un saut de ligne s’écrit entre guillemets doubles, et un guillemet à l’intérieur est doublé. Une ligne se termine après sa dernière cellule, sans virgule finale. Un fichier contient au plus 100 lignes sous la première, et 1 000 000 de caractères.
+
+```csv title="posts.csv"
 text,channels,at,time_zone,media
-Notre catalogue de printemps est sorti.,0190f3a0-0000-7000-8000-00000000c001 0190f3a0-0000-7000-8000-00000000c002,2026-11-20 10:00,Europe/Paris,0190f3a0-0000-7000-8000-00000000a001
-"Derniers jours : les prix ""printemps"" s’arrêtent dimanche, à minuit.",0190f3a0-0000-7000-8000-00000000c001,2026-11-27T09:00:00Z,,
+Our spring catalogue is out.,0190f3a0-0000-7000-8000-00000000c001 0190f3a0-0000-7000-8000-00000000c002,2026-11-20 10:00,Europe/Paris,0190f3a0-0000-7000-8000-00000000a001
+"Last days: the ""spring"" prices end on Sunday, at midnight.",0190f3a0-0000-7000-8000-00000000c001,2026-11-27T09:00:00Z,,
 ```
 
-La requête est en JSON, avec le texte du fichier dans `csv`. Ici, `jq` l’écrit à partir du fichier :
+### L’envoyer [#import-request]
+
+La requête est en JSON, avec le texte du fichier dans `csv`. Avec curl, `jq` l’écrit depuis le fichier :
 
 <CodeGroup>
 
+```ts Node.js
+import { readFileSync } from "node:fs";
+
+const result = await peal.posts.import({
+  workspaceId,
+  csv: readFileSync("posts.csv", "utf-8"),
+  dryRun: true,
+});
+```
+
+```python Python
+from pathlib import Path
+
+result = peal.posts.import_(
+    workspace_id=workspace_id,
+    csv=Path("posts.csv").read_text(encoding="utf-8"),
+    dry_run=True,
+)
+```
+
+```go Go
+csv, err := os.ReadFile("posts.csv")
+if err != nil {
+	return err
+}
+
+result, err := client.Posts.Import(context.TODO(), &peal.PostImport{
+	WorkspaceID: workspaceID,
+	Csv:         string(csv),
+	DryRun:      peal.Bool(true),
+})
+```
+
+```ruby Ruby
+result = peal.posts.import(
+  workspace_id: workspace_id,
+  csv: File.read("posts.csv", encoding: "utf-8"),
+  dry_run: true
+)
+```
+
+```java Java
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+ImportResult result = peal.posts().import_(
+    workspaceId,
+    PostImport.builder()
+        .csv(Files.readString(Path.of("posts.csv")))
+        .dryRun(true)
+        .build());
+```
+
+```php PHP
+use Peal\Posts\Requests\PostImport;
+
+$result = $peal->posts->import($workspaceId, new PostImport([
+    'csv' => file_get_contents('posts.csv'),
+    'dryRun' => true,
+]));
+```
+
+```csharp .NET
+var result = await peal.Posts.ImportAsync(new PostImport
+{
+    WorkspaceId = workspaceId,
+    Csv = File.ReadAllText("posts.csv"),
+    DryRun = true,
+});
+```
+
+```rust Rust
+let result = peal
+    .posts
+    .import(
+        &workspace_id,
+        &PostImport::builder()
+            .csv(std::fs::read_to_string("posts.csv")?)
+            .dry_run(true)
+            .build()?,
+        None,
+    )
+    .await?;
+```
+
 ```bash curl
-jq -Rs '{ csv: ., dryRun: true }' publications.csv |
+jq -Rs '{ csv: ., dryRun: true }' posts.csv |
   curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/import \
     -H "Authorization: Bearer $PEAL_API_KEY" \
     -H "Content-Type: application/json" \
     -d @-
 ```
 
-```ts TypeScript
-import { readFileSync } from "node:fs";
-
-const result = await peal.posts.import({
-  workspaceId,
-  csv: readFileSync("publications.csv", "utf-8"),
-  dryRun: true,
-});
-```
-
-```bash CLI
-peal posts import publications.csv --dry-run
+```sh CLI
+peal posts import posts.csv --dry-run
 ```
 
 </CodeGroup>
@@ -186,26 +545,28 @@ peal posts import publications.csv --dry-run
 }
 ```
 
-Le fichier est d’abord vérifié, ligne par ligne, comme `validate` vérifie une publication, et comme le fichier qu’il est :
+Peal vérifie d’abord chaque ligne, comme `validate` vérifie une publication, puis le fichier dans son ensemble :
 
-- une ligne à laquelle une ligne précédente ne laisse plus de place dans son mois est refusée avec `PlanLimitReached` ;
-- une ligne qui dit ce que dit une ligne précédente, sur le même canal à moins de 23 heures d’elle, avec `DuplicatePost` (son `message` nomme cette ligne, puisqu’il n’y a pas encore de publication à nommer) ;
-- une ligne qui porte l’`idempotency_key` d’une ligne précédente avec une autre publication, avec `IdempotencyKeyReused`.
+- Une ligne à laquelle une ligne précédente ne laisse plus de place dans son mois est refusée avec `PlanLimitReached`.
+- Une ligne qui répète une ligne précédente sur le même canal, à moins de 23 heures d’elle, est refusée avec `DuplicatePost`. Son `message` nomme cette ligne, puisqu’il n’y a pas encore de publication à nommer.
+- Une ligne qui reprend la `idempotency_key` d’une ligne précédente avec une autre publication est refusée avec `IdempotencyKeyReused`.
 
-<Callout type="info">
-  Si une seule ligne n’est pas valide, rien n’est créé. `dryRun: true` s’arrête
-  là même quand toutes les lignes sont valides. Sinon, les lignes sont ensuite
-  créées dans l’ordre, comme `bulk` crée ses éléments.
+<Callout type="info" title="Une ligne invalide arrête tout l’import">
+  Peal ne crée rien tant que toutes les lignes ne sont pas valides. `dryRun :
+  true` s’arrête là même quand elles le sont toutes. Sinon, Peal crée ensuite
+  les lignes dans l’ordre, comme `bulk` crée ses éléments.
 </Callout>
 
-`rows` contient un résultat par ligne, repérée par sa place sous la première ligne, à partir de 1. Les lignes vides ne sont pas des lignes, et ne sont pas comptées.
+### Lire le résultat [#import-result]
 
-| `_tag`       | Signification                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `created`    | La publication de la ligne a été créée : `post` la contient, et `replayed` dit si sa clé d’idempotence a répondu une publication créée auparavant.                                                                                                                                                                                                                                                     |
-| `valid`      | La ligne a été vérifiée, pas créée : un essai à blanc, ou une autre ligne a empêché l’import du fichier.                                                                                                                                                                                                                                                                                               |
-| `refused`    | `refusal` contient ce que `send` aurait répondu pour elle. Une ligne qui était valide est refusée aussi quand quelque chose a changé depuis la vérification, ou quand elle répète une ligne précédente.                                                                                                                                                                                                |
-| `unreadable` | `problems` nomme les cellules en cause : chaque colonne (`column`), `missing` quand la ligne en a besoin, ou `invalid` pour ce qu’elle contient. Une ligne qui a plus ou moins de cellules que la première ligne n’en nomme n’est pas lue du tout : `cells` dit combien étaient attendues (`expected`) et trouvées (`found`). Une virgule dans un texte qui n’est pas entre guillemets en produit une. |
+`rows` contient un résultat par ligne, repérée par sa place sous la première ligne, à partir de 1. Les lignes vides ne sont pas des lignes, et ne sont pas comptées. Chaque résultat porte l’une de ces étiquettes :
+
+| `_tag`       | Signification                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `created`    | La publication de la ligne a été créée. `post` la contient, et `replayed` dit si sa clé d’idempotence a répondu une publication créée avant.                                                                                                                                                                                                                                                                     |
+| `valid`      | La ligne a été vérifiée sans être créée, lors d’un essai à blanc ou parce qu’une autre ligne a empêché l’import du fichier.                                                                                                                                                                                                                                                                                      |
+| `refused`    | `refusal` contient ce que `send` aurait répondu pour elle. Une ligne qui avait passé la vérification est aussi refusée quand quelque chose a changé depuis, ou quand elle répète une ligne précédente.                                                                                                                                                                                                           |
+| `unreadable` | `problems` nomme les cellules en cause : chaque `column`, `missing` quand la ligne en a besoin, ou `invalid` pour ce qu’elle contient. Une ligne avec plus ou moins de cellules que n’en nomme la première ligne n’est pas lue du tout, et `cells` dit combien étaient attendues (`expected`) et trouvées (`found`). Une virgule dans un texte qui n’est pas entre guillemets doubles suffit à en provoquer une. |
 
 ```json
 {
@@ -222,17 +583,17 @@ Le fichier est d’abord vérifié, ligne par ligne, comme `validate` vérifie u
 }
 ```
 
-La réponse est 200 dès que le fichier a pu être lu. Un fichier qui ne peut pas être lu du tout répond 422 `ImportUnreadable`, et rien n’est créé. `problem` dit pourquoi, et `column` quelle colonne quand il s’agit d’une colonne :
+La réponse est 200 dès que Peal a pu lire le fichier. Un fichier qu’il ne peut pas lire du tout répond 422 `ImportUnreadable`, et rien n’est créé. `problem` dit pourquoi, et `column` nomme la colonne quand le problème en concerne une :
 
-| `problem`           | Le fichier                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `empty`             | est vide                                                                                               |
-| `unterminatedQuote` | a une cellule entre guillemets qui ne finit pas                                                        |
-| `strayQuote`        | a un guillemet dans une cellule qui n’est pas entre guillemets, ou du texte après un guillemet fermant |
-| `unknownColumn`     | nomme une colonne que Peal ne connaît pas                                                              |
-| `repeatedColumn`    | nomme deux fois la même colonne                                                                        |
-| `missingColumn`     | n’a pas une colonne dont il a besoin                                                                   |
-| `tooManyRows`       | a plus de lignes qu’un import n’en prend                                                               |
+| `problem`           | Le fichier                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `empty`             | est vide                                                                                                      |
+| `unterminatedQuote` | a une cellule entre guillemets qui ne se termine jamais                                                       |
+| `strayQuote`        | a un guillemet double dans une cellule qui n’est pas entre guillemets, ou du texte après un guillemet fermant |
+| `unknownColumn`     | nomme une colonne que Peal ne connaît pas                                                                     |
+| `repeatedColumn`    | nomme deux fois la même colonne                                                                               |
+| `missingColumn`     | n’a pas une colonne dont il a besoin                                                                          |
+| `tooManyRows`       | a plus de lignes qu’un import n’en prend                                                                      |
 
 ```json
 { "_tag": "ImportUnreadable", "problem": "missingColumn", "column": "at" }

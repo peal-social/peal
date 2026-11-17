@@ -6,17 +6,17 @@ sidebar:
   order: 4
 ---
 
-The words Peal uses in the app, the API and these docs. Each entry links to the page that says more.
+Each word below means the same thing in the app, the API and the docs, and its entry ends with a link to the page that says more.
 
 ## Workspaces and people [#people]
 
 ### Workspace [#workspace]
 
-What a team shares: its channels, posts, media, members, API keys and webhooks. A person may belong to several. [Workspace settings](/guides/workspace).
+What a team shares: its channels, posts, media, members, API keys and webhooks. A person can belong to several. [Workspace settings](/guides/workspace).
 
 ### Member and role [#member]
 
-A person in a workspace, with a role that says what they may do: owner, admin, editor, contributor or viewer. [Who can do what](/guides/posts#roles).
+A person in a workspace. Their role says what they can do: owner, admin, editor, contributor or viewer. [Who can do what](/guides/posts#roles).
 
 ### Billing account [#billing-account]
 
@@ -24,7 +24,7 @@ Who pays for a workspace. The workspaces a person creates share their billing ac
 
 ### Staff [#staff]
 
-The people who run a Peal server, with a console of their own at `/admin`. [Staff console](/self-hosting/staff).
+The people who run a Peal server. They have a console of their own at `/admin`. [Staff console](/self-hosting/staff).
 
 ## Channels [#channels]
 
@@ -34,11 +34,11 @@ A social network Peal posts to, such as Bluesky or Instagram. [Platforms](/platf
 
 ### Channel [#channel]
 
-One account on a platform, connected to a workspace, that its posts go to. [Connect channels](/guides/channels).
+One account on a platform, connected to a workspace, that the workspace's posts go to. [Connect channels](/guides/channels).
 
 ### Channel set [#channel-set]
 
-A saved selection of channels to start a post with. [Channel sets](/guides/posts/organise#sets).
+A saved selection of channels you can start a post with. [Channel sets](/guides/posts/organise#sets).
 
 ### Default options [#default-options]
 
@@ -52,15 +52,15 @@ One text, with its media and options, sent to one or more channels at one time. 
 
 ### Target [#target]
 
-A post on one of its channels, with its own status, address and attempts. The API's `targets` list them.
+A post on one of its channels, with its own status, address and attempts. The API lists them in a post's `targets`.
 
 ### Draft [#draft]
 
-A post with no time yet, which goes out nowhere. [Drafts](/guides/posts/drafts#drafts).
+A post with no time yet. It doesn't go out anywhere. [Drafts](/guides/posts/drafts#drafts).
 
 ### Part and thread [#thread]
 
-The parts after a post's first, sent as replies on the platforms that take threads. [Threads](/guides/posts#threads).
+The parts that follow a post's first one. They're sent as replies on the platforms that take threads. [Threads](/guides/posts#threads).
 
 ### Platform options [#options]
 
@@ -72,19 +72,19 @@ The kind of post a channel receives on Instagram and Facebook: a feed post, a st
 
 ### Queue [#queue]
 
-A channel's time slots, which posts added to it fill in order. [Queues](/guides/posts/queues#queues).
+A channel's time slots. The posts you add to a queue fill them in order. [Queues](/guides/posts/queues#queues).
 
 ### Feed [#feed]
 
-A web feed (RSS, Atom or JSON Feed), such as a blog's, each new item of which becomes a post. [Post from a feed](/guides/posts/queues#feeds).
+A web feed (RSS, Atom or JSON Feed), such as a blog's. Each new item in it becomes a post. [Post from a feed](/guides/posts/queues#feeds).
 
 ### Tag and signature [#tag]
 
-A coloured label that files posts, and a text that ends them. [Tags, signatures and channel sets](/guides/posts/organise).
+A tag is a coloured label that files posts. A signature is a text that ends them. [Tags, signatures and channel sets](/guides/posts/organise).
 
 ### Approval [#approval]
 
-A post that waits for someone to approve it before it may go out. A **review link** shows it to people without a Peal account. [Review and approval](/guides/posts/review).
+A post that waits for someone to approve it before it can go out. A **review link** shows it to people who don't have a Peal account. [Review and approval](/guides/posts/review).
 
 ### Media library [#media-library]
 
@@ -94,11 +94,11 @@ A workspace's images and videos, ready to attach to posts, each with its alt tex
 
 ### Inbox [#inbox]
 
-The comments people leave under your published posts, which you answer from Peal. [Inbox](/guides/engage/inbox).
+The comments people leave under your published posts. You answer them from Peal. [Inbox](/guides/engage/inbox).
 
 ### Boost [#boost]
 
-A published post promoted on Facebook or Instagram with a connected ad account's money. [Boost a post](/guides/engage/boosts).
+A published post promoted on Facebook or Instagram, paid for by a connected ad account. [Boost a post](/guides/engage/boosts).
 
 ## Building on Peal [#building]
 
@@ -116,11 +116,11 @@ A hosted page where someone connects their accounts to a workspace without a Pea
 
 ### Webhook endpoint [#webhook]
 
-An address on your server that Peal sends events to, signed with its secret. Each send is a **delivery**. [Webhooks](/developers/webhooks).
+An address on your server that Peal sends events to, signed with the endpoint's secret. Each send is a **delivery**. [Webhooks](/developers/webhooks).
 
 ### Idempotency key [#idempotency]
 
-A key that makes a request safe to send again: within 24 hours, the same key and body answer what the first request made, and make nothing more. [Idempotency](/developers/conventions/idempotency).
+A key that makes a request safe to send again. For 24 hours, the same key and body get the answer the first request got, and create nothing more. [Idempotency](/developers/conventions/idempotency).
 
 ### MCP [#mcp]
 

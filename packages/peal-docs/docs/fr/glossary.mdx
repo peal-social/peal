@@ -6,17 +6,17 @@ sidebar:
   order: 4
 ---
 
-Les mots qu’emploie Peal dans l’application, l’API et cette documentation. Chaque entrée renvoie à la page qui en dit plus.
+Chaque mot ci-dessous a le même sens dans l’application, l’API et la documentation, et son entrée se termine par un lien vers la page qui en dit plus.
 
 ## Espaces de travail et personnes [#people]
 
 ### Espace de travail [#workspace]
 
-Ce qu’une équipe partage : ses canaux, publications, médias, membres, clés d’API et webhooks. Une personne peut appartenir à plusieurs. [Paramètres de l’espace de travail](/guides/workspace).
+Ce qu’une équipe partage : ses canaux, publications, médias, membres, clés d’API et webhooks. Une personne peut appartenir à plusieurs. [Paramètres de l’espace de travail](/guides/workspace).
 
 ### Membre et rôle [#member]
 
-Une personne dans un espace de travail, avec un rôle qui dit ce qu’elle peut faire : propriétaire, administrateur, éditeur, contributeur ou lecteur. [Qui peut faire quoi](/guides/posts#roles).
+Une personne dans un espace de travail. Son rôle dit ce qu’elle peut faire : propriétaire, administrateur, éditeur, contributeur ou lecteur. [Qui peut faire quoi](/guides/posts#roles).
 
 ### Compte de facturation [#billing-account]
 
@@ -24,7 +24,7 @@ Qui paie un espace de travail. Les espaces de travail qu’une personne crée pa
 
 ### Équipe [#staff]
 
-Les personnes qui font tourner un serveur Peal, avec une console à elles à `/admin`. [Console de l’équipe](/self-hosting/staff).
+Les personnes qui font tourner un serveur Peal. Elles ont leur propre console, à `/admin`. [Console de l’équipe](/self-hosting/staff).
 
 ## Canaux [#channels]
 
@@ -34,7 +34,7 @@ Un réseau social sur lequel Peal publie, comme Bluesky ou Instagram. [Plateform
 
 ### Canal [#channel]
 
-Un compte sur une plateforme, connecté à un espace de travail, où partent ses publications. [Connecter des canaux](/guides/channels).
+Un compte sur une plateforme, connecté à un espace de travail, où partent les publications de cet espace. [Connecter des canaux](/guides/channels).
 
 ### Groupe de canaux [#channel-set]
 
@@ -52,15 +52,15 @@ Un texte, avec ses médias et ses options, envoyé sur un ou plusieurs canaux à
 
 ### Cible [#target]
 
-Une publication sur l’un de ses canaux, avec son propre état, son adresse et ses tentatives. Les `targets` de l’API les listent.
+Une publication sur l’un de ses canaux, avec son propre état, son adresse et ses tentatives. L’API les liste dans les `targets` d’une publication.
 
 ### Brouillon [#draft]
 
-Une publication sans heure, qui ne part nulle part. [Brouillons](/guides/posts/drafts#drafts).
+Une publication sans heure. Elle ne part nulle part. [Brouillons](/guides/posts/drafts#drafts).
 
 ### Partie et fil [#thread]
 
-Les parties qui suivent la première d’une publication, envoyées en réponses sur les plateformes qui prennent les fils. [Fils](/guides/posts#threads).
+Les parties qui suivent la première d’une publication. Elles partent en réponses sur les plateformes qui prennent les fils. [Fils](/guides/posts#threads).
 
 ### Options des plateformes [#options]
 
@@ -68,23 +68,23 @@ Ce qu’une plateforme demande à une publication en plus de son texte et de ses
 
 ### Format [#format]
 
-La sorte de publication qu’un canal reçoit sur Instagram et Facebook : une publication du fil, une story ou un reel. [Stories et reels](/guides/posts#formats).
+La sorte de publication qu’un canal reçoit sur Instagram et Facebook : une publication du fil, une story ou un reel. [Stories et reels](/guides/posts#formats).
 
 ### File [#queue]
 
-Les créneaux d’un canal, que remplissent dans l’ordre les publications qu’on y ajoute. [Files](/guides/posts/queues#queues).
+Les créneaux d’un canal. Les publications que vous ajoutez à la file les remplissent dans l’ordre. [Files](/guides/posts/queues#queues).
 
 ### Flux [#feed]
 
-Un flux web (RSS, Atom ou JSON Feed), comme celui d’un blog, dont chaque nouvel élément devient une publication. [Publier depuis un flux](/guides/posts/queues#feeds).
+Un flux web (RSS, Atom ou JSON Feed), comme celui d’un blog. Chacun de ses nouveaux éléments devient une publication. [Publier depuis un flux](/guides/posts/queues#feeds).
 
 ### Étiquette et signature [#tag]
 
-Un libellé coloré qui classe les publications, et un texte qui les termine. [Étiquettes, signatures et groupes de canaux](/guides/posts/organise).
+Une étiquette est un libellé coloré qui classe les publications. Une signature est un texte qui les termine. [Étiquettes, signatures et groupes de canaux](/guides/posts/organise).
 
 ### Approbation [#approval]
 
-Une publication qui attend qu’on l’approuve avant de pouvoir partir. Un **lien de relecture** la montre à des personnes sans compte Peal. [Relecture et approbation](/guides/posts/review).
+Une publication qui attend que quelqu’un l’approuve avant de pouvoir partir. Un **lien de relecture** la montre à des personnes qui n’ont pas de compte Peal. [Relecture et approbation](/guides/posts/review).
 
 ### Médiathèque [#media-library]
 
@@ -94,11 +94,11 @@ Les images et vidéos d’un espace de travail, prêtes à joindre aux publicati
 
 ### Boîte de réception [#inbox]
 
-Les commentaires laissés sous vos publications en ligne, auxquels vous répondez depuis Peal. [Boîte de réception](/guides/engage/inbox).
+Les commentaires laissés sous vos publications en ligne. Vous y répondez depuis Peal. [Boîte de réception](/guides/engage/inbox).
 
 ### Mise en avant [#boost]
 
-Une publication en ligne promue sur Facebook ou Instagram avec l’argent d’un compte publicitaire connecté. [Mettre en avant une publication](/guides/engage/boosts).
+Une publication en ligne promue sur Facebook ou Instagram, payée par un compte publicitaire connecté. [Mettre en avant une publication](/guides/engage/boosts).
 
 ## Construire sur Peal [#building]
 
@@ -116,11 +116,11 @@ Une page hébergée où quelqu’un connecte ses comptes à un espace de travail
 
 ### Point de réception de webhooks [#webhook]
 
-Une adresse de votre serveur à laquelle Peal envoie des événements, signés avec son secret. Chaque envoi est une **livraison**. [Webhooks](/developers/webhooks).
+Une adresse de votre serveur à laquelle Peal envoie des événements, signés avec le secret de ce point de réception. Chaque envoi est une **livraison**. [Webhooks](/developers/webhooks).
 
 ### Clé d’idempotence [#idempotency]
 
-Une clé qui permet de renvoyer une requête sans risque : pendant 24 heures, la même clé et le même corps répondent ce que la première requête a fait, et ne font rien de plus. [Idempotence](/developers/conventions/idempotency).
+Une clé qui permet de renvoyer une requête sans risque. Pendant 24 heures, la même clé et le même corps reçoivent la réponse de la première requête, et ne créent rien de plus. [Idempotence](/developers/conventions/idempotency).
 
 ### MCP [#mcp]
 

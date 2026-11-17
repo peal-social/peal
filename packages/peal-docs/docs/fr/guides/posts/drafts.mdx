@@ -5,66 +5,74 @@ sidebar:
   icon: file-text
 ---
 
-Retrouvez les publications qui n’ont pas encore d’heure, listez toutes les publications de l’espace de travail, et programmez-en beaucoup d’un coup depuis un fichier CSV.
+Un brouillon est une publication qui n’a pas encore d’heure. Les brouillons ont leur propre liste, toutes les publications en ont une autre, et vous pouvez en programmer jusqu’à 100 d’un coup depuis un fichier CSV.
 
 ## Brouillons [#drafts]
 
-Sur la carte d’un espace de travail, **Brouillons** liste les publications qui n’ont pas encore d’heure, les plus récentes d’abord, 20 à la fois. Chacune montre le début de son texte, ses canaux et ses médias, et s’ouvre dans l’éditeur.
+Pour les voir, cliquez sur **Publications** dans la barre latérale d’un espace de travail, puis sur **Brouillons**. La liste montre les publications sans heure, les plus récentes d’abord, 20 à la fois. Chacune montre le début de son texte, ses canaux et ses médias, et s’ouvre dans l’éditeur.
 
-Pour abandonner un brouillon, choisissez **Supprimer le brouillon** dans l’éditeur et confirmez. Il est supprimé, et ses images et vidéos restent dans la médiathèque. Les propriétaires, administrateurs et éditeurs suppriment tout brouillon ; un contributeur supprime ceux qu’il a écrits.
+Pour abandonner un brouillon, cliquez sur **Supprimer le brouillon** dans l’éditeur et confirmez. Le brouillon est supprimé, et ses images et vidéos restent dans la médiathèque. Les propriétaires, administrateurs et éditeurs peuvent supprimer tout brouillon. Un contributeur peut supprimer ceux qu’il a écrits.
 
-En ligne de commande ([Brouillons](/developers/cli/posts#drafts)) :
+En ligne de commande ([Brouillons](/developers/cli/posts#drafts)) :
 
 ```sh
-peal drafts list                  # newest first; --limit and --cursor page through them
+peal drafts list                  # les plus récents d’abord, --limit et --cursor parcourent les pages
 peal drafts discard <post-id>
 ```
 
 ## Toutes les publications [#all-posts]
 
-Sur la carte d’un espace de travail, **Toutes les publications** liste ses publications quel que soit leur état, les plus récentes d’abord, avec **Afficher plus** pour la page suivante. Chacune s’ouvre sur sa page et montre :
+Pour voir toutes les publications d’un espace de travail, quel que soit leur état, cliquez sur **Publications** dans sa barre latérale. La barre montre alors **Toutes les publications**, la liste qui s’ouvre. Les publications arrivent les plus récentes d’abord, et **Afficher plus** charge la page suivante. Chacune s’ouvre sur sa page et montre :
 
-- le début de son texte ;
-- son heure dans votre fuseau horaire ;
-- son état et, une fois terminée, son résultat ;
-- ses canaux et ses étiquettes.
+- le début de son texte
+- son heure dans votre fuseau horaire
+- son état et, une fois terminée, son résultat
+- ses canaux et ses étiquettes
 
-Filtrez par état, par résultat (pour les publications terminées), par canal et par étiquette, et triez par création ou par heure. Triée par heure, la liste ne contient que les publications qui en ont une. Les filtres sont dans l’adresse de la page : un lien montre la même liste.
+Vous pouvez filtrer par état, par résultat (pour les publications terminées), par canal et par étiquette. Vous pouvez trier par création ou par heure, et triée par heure, la liste ne contient que les publications qui en ont une. Les filtres sont gardés dans l’adresse de la page, et un lien montre donc la même liste.
 
 ## Importer des publications depuis un fichier [#import-screen]
 
-Depuis **Toutes les publications**, **Importer depuis un fichier** programme jusqu’à 100 publications d’un coup depuis un fichier CSV, une publication par ligne. Les propriétaires, administrateurs et éditeurs le peuvent : il faut le droit de programmer.
+Dans **Toutes les publications**, cliquez sur **Importer depuis un fichier** pour programmer jusqu’à 100 publications d’un coup depuis un fichier CSV, une publication par ligne. L’import demande le droit de programmer : les propriétaires, administrateurs et éditeurs peuvent le faire.
 
-La page liste les colonnes que prend le fichier, propose un exemple pour commencer, et liste les canaux de l’espace de travail avec leurs identifiants, à copier dans la colonne `channels` du fichier, et les noms de ses groupes de canaux. [Importer des publications depuis un fichier CSV](/developers/posting/bulk#import) décrit chaque colonne et chaque réponse.
+La page liste les colonnes que prend le fichier et propose un exemple pour commencer. Elle liste aussi les canaux de l’espace de travail avec leurs identifiants, à copier dans la colonne `channels` du fichier, et les noms de ses groupes de canaux. [Importer des publications depuis un fichier CSV](/developers/posting/bulk#import) décrit chaque colonne et chaque réponse.
 
 <Steps>
   <Step title="Choisissez un fichier">
-    Peal vérifie chaque ligne, sans rien créer. Chaque ligne s’affiche valide,
-    refusée avec la raison, ou illisible avec les cellules en cause.
+
+Peal vérifie chaque ligne, sans encore rien créer. Chaque ligne s’affiche valide, refusée avec la raison, ou illisible avec les cellules en cause.
+
   </Step>
   <Step title="Corrigez-le jusqu’à ce que chaque ligne soit valide">
-    C’est tout ou rien : **Importer** n’est proposé qu’une fois chaque ligne
-    valide. Sinon, corrigez le fichier et choisissez-le à nouveau.
+
+C’est tout ou rien : **Importer** n’est proposé qu’une fois chaque ligne valide. D’ici là, corrigez le fichier et choisissez-le à nouveau.
+
   </Step>
   <Step title="Importez">
-    **Importer** demande une fois, en disant combien de publications seront
-    programmées, puis les crée dans l’ordre et donne un lien vers chacune.
+
+Cliquez sur **Importer**. Peal vous demande de confirmer et dit combien de publications il va programmer, puis les crée dans l’ordre et donne un lien vers chacune.
+
   </Step>
 </Steps>
 
-<Callout type="warning">
-  Une ligne datée `now` part dès qu’elle est créée, en public. Les autres
-  attendent leur heure.
+<Callout type="warning" title="Une ligne datée now part tout de suite">
+  Une ligne datée `now` est publiée dès que sa publication est créée, en public.
+  Les autres lignes attendent leur heure.
 </Callout>
 
-Une ligne peut encore être refusée pendant l’import, quand quelque chose a changé depuis la vérification, comme la place restante du mois sur l’offre. Les publications des autres lignes sont quand même créées, avant elle comme après, et la page dit quelles lignes ne l’ont pas été.
+### Si une ligne est refusée pendant l’import [#import-refused]
 
-<Callout type="warning">
-  Corrigez les lignes refusées et importez-les dans un fichier à part. Importer
-  à nouveau le même fichier créerait les autres deux fois.
+Une ligne peut encore être refusée pendant l’import, quand quelque chose a changé depuis la vérification, comme la place restante du mois sur l’offre. Les publications des autres lignes sont quand même créées, avant elle comme après, et la page vous dit quelles lignes ne l’ont pas été.
+
+<Callout type="warning" title="Les lignes refusées vont dans un fichier à part">
+  Corrigez les lignes refusées et mettez-les dans un nouveau fichier. Si vous
+  importez à nouveau le même fichier, les publications des autres lignes sont
+  créées deux fois.
 </Callout>
 
-En ligne de commande, `--dry-run` vérifie seulement le fichier, et `--idempotency-key` permet de relancer l’import sans risque pendant 24 heures ([Publications](/developers/cli/posts#posts)) :
+### En ligne de commande [#import-cli]
+
+`--dry-run` vérifie seulement le fichier. `--idempotency-key` permet de relancer l’import sans risque pendant 24 heures ([Publications](/developers/cli/posts#posts)) :
 
 ```sh
 peal posts import posts.csv --dry-run

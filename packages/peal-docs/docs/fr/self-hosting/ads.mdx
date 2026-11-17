@@ -1,107 +1,58 @@
 ---
 title: Publicités
-description: Activer les publicités sur un serveur auto-hébergé, et ce que Meta et Google demandent à l’exploitant de leurs applications.
+description: Activer les publicités sur un serveur auto-hébergé, et ce que Meta demande à l’exploitant de son application.
 sidebar:
   icon: megaphone
 ---
 
-Les publicités restent désactivées sur votre propre serveur tant que vous ne les activez pas. Cette page dit comment, et ce que Meta et Google demandent à qui exploite les applications du serveur.
+Les publicités restent désactivées sur votre serveur tant que vous ne définissez pas `PEAL_ADS`. Il vous faut d’abord votre propre application Meta avec l’accès aux publicités, et Meta demande certaines choses à qui l’exploite.
 
 ## Activer les publicités [#ads]
 
-Les publicités sont désactivées tant que l’opérateur de l’instance n’a pas défini [`PEAL_ADS`](/self-hosting/environment-variables#ads) :
+[`PEAL_ADS`](/self-hosting/environment-variables#ads) prend l’une de trois valeurs :
 
 | `PEAL_ADS`          | Ce que peuvent faire les espaces de travail                                         |
 | ------------------- | ----------------------------------------------------------------------------------- |
-| `off` ou non défini | Rien : les publicités sont désactivées                                              |
-| `read`              | Connecter des comptes publicitaires et lire leurs campagnes et leurs chiffres       |
+| `off` ou non défini | Rien. Les publicités sont désactivées.                                              |
+| `read`              | Connecter des comptes publicitaires Meta et lire leurs campagnes et leurs chiffres  |
 | `spend`             | Mettre aussi en avant des publications parues, ce qui dépense leur argent chez Meta |
 
-[`PEAL_ADS_NETWORKS`](/self-hosting/environment-variables#ads) nomme les réseaux proposés, `meta` si elle n’est pas définie : ajoutez `google` pour [Google Ads](#google), en lecture seule. `spend` demande `meta` parmi eux.
+Votre instance apporte sa propre application Meta avec l’accès aux publicités, car celle de Peal Cloud ne sert pas les serveurs auto-hébergés. Les publicités passent par l’application principale de Meta, celle qui connecte les [Pages Facebook](/self-hosting/platforms#meta) (`META_APP_ID`, `META_APP_SECRET`). Elles ont aussi besoin de [`PEAL_TOKEN_KEYS`](/self-hosting/environment-variables#channels) pour chiffrer les jetons des connexions.
 
-Une instance auto-hébergée apporte sa propre application Meta avec l’accès aux publicités : celle de Peal Cloud ne la sert pas. Les publicités passent par l’application principale de Meta, celle qui connecte les [Pages Facebook](/self-hosting/platforms#meta) (`META_APP_ID`, `META_APP_SECRET`), et par [`PEAL_TOKEN_KEYS`](/self-hosting/environment-variables#channels) pour chiffrer les jetons des connexions. `PEAL_ADS` à `read` ou `spend` sans cette application arrête le serveur au démarrage.
+Si vous mettez `PEAL_ADS` à `read` ou `spend` sans cette application, le serveur s’arrête au démarrage.
 
 <Steps>
-  <Step title="Obtenir de Meta les autorisations publicitaires">
-    Demandez ce que [Meta demande à l’opérateur](#operator) sur l’application de
-    `META_APP_ID`.
-  </Step>
-  <Step title="Enregistrer l’adresse de redirection">
-    Enregistrez sur l’application, comme URI de redirection OAuth valide,
-    l’adresse que [la commande](/self-hosting/platforms#platform-addresses)
-    affiche pour les publicités.
-  </Step>
-  <Step title="Commencer avec read">
-    Mettez `PEAL_ADS=read` tant que Meta n’a pas accordé `ads_management` à
-    l’application. Les membres connectent des comptes publicitaires et les
-    lisent, la connexion ne demande que la lecture, et tout ce qui dépense
-    répond `AdSpendingUnavailable`.
-  </Step>
-  <Step title="Passer à spend">
-    Une fois `ads_management` accordé par Meta, mettez `PEAL_ADS=spend`. Les
-    personnes qui s’étaient connectées avant se connectent de nouveau pour
-    autoriser la diffusion de publicités.
-  </Step>
+<Step title="Obtenir de Meta les autorisations publicitaires">
+
+Demandez ce que [Meta demande à l’opérateur](#operator), sur l’application de `META_APP_ID`.
+
+</Step>
+<Step title="Enregistrer l’adresse de redirection">
+
+Sur l’application, enregistrez l’adresse que [la commande](/self-hosting/platforms#platform-addresses) affiche pour les publicités, comme URI de redirection OAuth valide.
+
+</Step>
+<Step title="Commencer avec read">
+
+Mettez `PEAL_ADS=read` tant que Meta n’a pas accordé `ads_management` à l’application. Les membres peuvent connecter des comptes publicitaires et les lire, et la connexion ne demande que la lecture. Tout ce qui dépense répond `AdSpendingUnavailable`.
+
+</Step>
+<Step title="Passer à spend">
+
+Une fois `ads_management` accordé par Meta, mettez `PEAL_ADS=spend`. Les personnes qui s’étaient connectées avant se connectent de nouveau pour autoriser la diffusion de publicités.
+
+</Step>
 </Steps>
 
-Le serveur appelle l’API Graph de Meta pour les publicités, comme pour les Pages Facebook. Quel que soit le niveau d’accès, Peal cesse de lire un compte publicitaire à 75 % de la limite de requêtes que Meta annonce pour lui.
+Le serveur appelle l’API Graph de Meta pour les publicités, comme pour les Pages Facebook. Quel que soit le niveau d’accès, Peal cesse de lire un compte publicitaire à 75 % de la limite de requêtes que Meta annonce pour lui.
 
 ## Ce que Meta demande à l’opérateur [#operator]
 
-Voici ce que la documentation de Meta demande à l’heure où ces lignes sont écrites. Confirmez chaque point auprès de Meta lors de votre demande, car ses règles changent ([Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization), [Rate limiting](https://developers.facebook.com/docs/marketing-api/overview/rate-limiting)).
+Voici ce que la documentation de Meta demande à l’heure où ces lignes sont écrites. Les règles de Meta changent, confirmez donc chaque point auprès de Meta lors de votre demande ([Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization), [Rate limiting](https://developers.facebook.com/docs/marketing-api/overview/rate-limiting)) :
 
-| Exigence                         | Ce que c’est                                                                                                                                                                                                                                                                       |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Autorisations                    | `ads_read` pour lire les comptes publicitaires et leurs rapports. Pour mettre en avant : `ads_management`, `pages_show_list`, `pages_read_engagement` et `pages_manage_ads`.                                                                                                       |
-| App Review, avec l’accès avancé  | Pour chaque autorisation, afin d’agir pour les comptes publicitaires d’autres personnes. Une application qui ne gère que son propre compte publicitaire peut fonctionner avec l’accès standard.                                                                                    |
-| Vérification de l’entreprise     | De l’entreprise qui possède l’application                                                                                                                                                                                                                                          |
-| Niveau d’accès à l’API Marketing | Une application commence avec un accès limité, dont les limites de requêtes par compte publicitaire sont basses, et obtient l’accès complet après l’App Review et assez d’appels réussis : la page de Meta indique 500 appels en 15 jours, avec un taux d’erreur inférieur à 15 %. |
-
-## Google Ads [#google]
-
-Google Ads est en lecture seule : les membres connectent des comptes et lisent leurs campagnes et, jour par jour, le coût, les impressions et les clics de chacune, et rien n’est jamais écrit sur Google Ads. Il demande un client OAuth à lui, distinct de ceux de YouTube et de Google Business Profile.
-
-<Steps>
-  <Step title="Activer l’API">
-    Dans un projet Google Cloud lié à un compte de facturation payant (Google ne
-    donne pas d’accès au-delà de Test à un projet en essai gratuit), activez
-    l’**API Google Ads** dans la bibliothèque d’API. Le projet a alors l’accès
-    Test.
-  </Step>
-  <Step title="Configurer l’écran de consentement">
-    Sous **Google Auth Platform**, ajoutez la portée
-    `https://www.googleapis.com/auth/adwords` dans **Accès aux données**. Google
-    n’a pas de portée en lecture seule pour Google Ads : Peal demande celle-ci
-    et n’écrit rien.
-  </Step>
-  <Step title="Créer le client">
-    Sous **Clients**, créez un client **Application Web**, avec comme URI de
-    redirection autorisé l’adresse que [la
-    commande](/self-hosting/platforms#platform-addresses) affiche pour Google
-    Ads (`PUBLIC_URL/connect/ads/google/callback`). Mettez-le dans
-    `GOOGLE_ADS_CLIENT_ID` et `GOOGLE_ADS_CLIENT_SECRET`.
-  </Step>
-  <Step title="Nommer le réseau">
-    Définissez `PEAL_ADS=read` (ou `spend`, pour les mises en avant sur Meta) et
-    `PEAL_ADS_NETWORKS=meta,google`, ou `google` seul. `PEAL_TOKEN_KEYS` chiffre
-    le jeton d’actualisation de chaque connexion.
-  </Step>
-</Steps>
-
-Il n’y a pas de jeton de développeur à définir : Google les a retirés le 9 septembre 2026, et le niveau d’accès que Google donne appartient au projet Cloud du client ([Niveaux d’accès](https://developers.google.com/google-ads/api/docs/api-policy/access-levels)). Peal lit chaque compte toutes les six heures, trois opérations par lecture (le compte, ses campagnes, leurs jours ; les pages suivantes d’une réponse ne comptent pas), si bien que chaque niveau porte environ :
-
-| Niveau d’accès | Comment l’obtenir                                                                                          | Opérations par jour                   | Comptes, lus toutes les six heures |
-| -------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------- | ---------------------------------- |
-| Test           | En activant l’API                                                                                          | 15 000, sur des comptes de test seuls | Comptes de test seuls              |
-| Explorer       | **Apply for access** sur la page de l’API Google Ads de la console Cloud ; Google peut l’accorder aussitôt | 2 880 sur de vrais comptes            | Environ 240                        |
-| Basic          | Une demande, examinée en quelques minutes, une fois la marque du projet vérifiée                           | 15 000                                | Environ 1 250                      |
-
-Lister les comptes qu’une connexion atteint dépense aussi des opérations : une, et une de plus par compte que la personne utilise directement ou gère (50 au plus). Peal garde une liste cinq minutes pour les étapes qui la suivent, permet dix listes par heure à une connexion et trente à un espace de travail, et laisse les listes de tout le serveur dépenser 300 opérations par jour au plus, dont 100 pour un espace de travail, au-delà desquelles connecter répond que Google a demandé d’attendre ; les lectures gardent le reste. Les chiffres du tableau, cette part gardée pour les listes, sont donc d’environ 215 comptes en Explorer et 1 225 en Basic (trois opérations par lecture, quatre lectures par jour) ; un compte que la tournée lit tard reste lu toutes les six heures, comptées depuis l’heure de la tournée.
-
-Une lecture qui prend plus de pages que Peal n’en lit d’un coup (400 000 lignes de jours) reprend plusieurs fois au dernier jour atteint ; une lecture encore coupée n’est pas marquée lue, est journalisée comme une erreur, et attend six heures avant d’être relue.
-
-Un projet en accès Test ne lit que des [comptes de test](https://developers.google.com/google-ads/api/docs/best-practices/test-accounts), et Google refuse les vrais (`CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION`, que le serveur journalise comme une erreur). Google peut retirer un accès inutilisé pendant 90 jours.
-
-Tant que l’écran de consentement est en **Test**, seuls ses utilisateurs test, 100 au plus, peuvent se connecter, et leurs connexions prennent fin après sept jours : Peal les indique alors comme à refaire. Avant que des personnes hors de votre organisation se connectent, publiez l’écran de consentement, faites vérifier la marque, et faites vérifier la portée `adwords` par Google, qui demande une justification et une vidéo de la connexion et de ce que Peal affiche ([Vérification de la marque](https://developers.google.com/google-ads/api/docs/api-policy/brand-verification)). Chaque personne qui se connecte a besoin d’une clé d’accès sur son compte Google ([Exigences de sécurité](https://developers.google.com/google-ads/api/docs/oauth/security-requirements)).
-
-Pour Google Ads, le serveur appelle `oauth2.googleapis.com` et `googleads.googleapis.com`, en version v26 de son API, que Google arrête en novembre 2027.
+| Exigence                         | Ce que c’est                                                                                                                                                                                                                                                                        |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Autorisations                    | `ads_read` pour lire les comptes publicitaires et leurs rapports. Pour mettre en avant, aussi `ads_management`, `pages_show_list`, `pages_read_engagement` et `pages_manage_ads`.                                                                                                   |
+| App Review, avec l’accès avancé  | Pour chaque autorisation, afin d’agir pour les comptes publicitaires d’autres personnes. Une application qui ne gère que son propre compte publicitaire peut fonctionner avec l’accès standard.                                                                                     |
+| Vérification de l’entreprise     | De l’entreprise qui possède l’application                                                                                                                                                                                                                                           |
+| Niveau d’accès à l’API Marketing | Une application commence avec un accès limité, dont les limites de requêtes par compte publicitaire sont basses. Elle obtient l’accès complet après l’App Review et assez d’appels réussis. La page de Meta indique 500 appels en 15 jours, avec un taux d’erreur inférieur à 15 %. |

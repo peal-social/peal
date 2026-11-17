@@ -1,25 +1,29 @@
 ---
 title: Boîte de réception
-description: "Lire et répondre aux commentaires sous vos publications en ligne, aux avis de vos établissements Google Business Profile et à vos messages privés Mastodon, Bluesky, Messenger et Instagram, et voir ce que chaque plateforme laisse Peal lire."
+description: "Lire et répondre aux commentaires sous vos publications en ligne, aux avis de vos établissements Google Business Profile et à vos messages privés Mastodon et Bluesky, et voir ce que chaque plateforme laisse Peal lire."
 sidebar:
   icon: inbox
 ---
 
-La boîte de réception rassemble les commentaires laissés sous les publications que Peal a mises en ligne pour un espace de travail, et les avis de ses établissements Google Business Profile ([Avis](#reviews)). Les membres y répondent en public, au nom du compte connecté. Ouvrez un espace de travail depuis **Espaces de travail**, puis **Boîte de réception**.
+Dans un espace de travail, cliquez sur **Boîte de réception** dans la barre latérale. Vous y trouvez les commentaires laissés sous les publications que Peal a mises en ligne pour l’espace de travail, et les avis de ses établissements Google Business Profile ([Avis](#reviews)). Les membres y répondent en public, au nom du compte connecté.
 
-La boîte de réception lit les commentaires des publications mises en ligne depuis Peal :
+La boîte de réception lit les commentaires des publications mises en ligne depuis Peal :
 
-- sur Mastodon et Bluesky ;
-- sur les Pages Facebook, Instagram, YouTube et les pages d’entreprise LinkedIn, là où la personne qui exploite le serveur les a activés ([Pages Facebook et Instagram](#meta), [YouTube](#youtube), [pages LinkedIn](#linkedin)).
+- Sur Mastodon et Bluesky.
+- Sur les Pages Facebook, Instagram, YouTube et les pages d’entreprise LinkedIn, là où la personne qui exploite le serveur les a activés ([Pages Facebook et Instagram](#meta), [YouTube](#youtube), [pages LinkedIn](#linkedin)).
 
-Les mentions ne sont pas collectées ; les messages privés le sont, sur Mastodon, Bluesky, les Pages Facebook (Messenger) et Instagram, là où la personne qui exploite le serveur les a activés ([Messages privés](#direct-messages)). Peal ne répond à rien de lui-même : chaque réponse est écrite et envoyée par une personne, ou par une application qu’une personne a connectée et autorisée à publier.
+Les mentions ne sont pas collectées. Les messages privés le sont, sur Mastodon et Bluesky, là où la personne qui exploite le serveur les a activés ([Messages privés](#direct-messages)).
+
+Peal ne répond à rien de lui-même. Chaque réponse est écrite et envoyée par une personne, ou par une application qu’une personne a connectée et autorisée à publier.
 
 ## Ce que Peal collecte [#collected]
 
-Pour chaque publication mise en ligne sur un canal, Peal lit les réponses publiques qu’elle reçoit sur la plateforme. Deux sortes de publications sont laissées de côté :
+Pour chaque publication mise en ligne sur un canal, Peal lit les réponses publiques qu’elle reçoit sur la plateforme. Deux sortes de publications sont laissées de côté :
 
-- les [stories](/guides/posts#formats), qui disparaissent après 24 heures et dont Peal ne lit pas les réponses ;
-- les reels Facebook, dont Peal ne lit pas encore les commentaires.
+- Les [stories](/guides/posts#formats), qui disparaissent après 24 heures et dont Peal ne lit pas les réponses.
+- Les reels Facebook, dont Peal ne lit pas encore les commentaires.
+
+De chaque commentaire, Peal conserve ceci :
 
 | Conservé                                                                                   | D’où cela vient                                  |
 | ------------------------------------------------------------------------------------------ | ------------------------------------------------ |
@@ -30,11 +34,14 @@ Pour chaque publication mise en ligne sur un canal, Peal lit les réponses publi
 | Si l’espace de travail y a répondu, l’a masqué ou aimé                                     | Peal, et la plateforme pour ce qui y a été fait  |
 | Les réponses envoyées depuis Peal, leur auteur et l’issue de l’envoi                       | Les membres de l’espace de travail               |
 
-Pour une publication en plusieurs parties, un [fil](/guides/posts#threads), Peal lit les commentaires sous chaque partie et les réunit dans l’unique fil de la publication dans la boîte de réception. Les parties elles-mêmes, écrites par le compte, ne sont pas des commentaires. Les commentaires d’un fil sont lus une fois toutes ses parties en ligne. S’il s’est arrêté en chemin, ils sont lus à partir du moment où **Republier**, ou ce que vous avez constaté sur la plateforme, le complète.
+Pour un [fil](/guides/posts#threads), une publication en plusieurs parties, Peal lit les commentaires sous chaque partie et les réunit dans l’unique fil de la publication dans la boîte de réception. Les parties elles-mêmes, écrites par le compte, ne sont pas des commentaires. Les commentaires d’un fil sont lus une fois toutes ses parties en ligne. S’il s’est arrêté en chemin, ils sont lus à partir du moment où **Republier**, ou ce que vous avez constaté sur la plateforme, le complète.
 
-Peal ne lit rien d’autre des personnes qui commentent : ni photo, ni profil, ni nombre d’abonnés, ni autre publication, ni message privé. Une réponse que seuls les abonnés de son auteur ou les personnes mentionnées peuvent voir est un message privé, et n’est pas collectée.
+Peal ne lit rien d’autre des personnes qui commentent : ni photo, ni profil, ni nombre d’abonnés, ni autre publication, ni message privé. Une réponse que seuls les abonnés de son auteur ou les personnes mentionnées peuvent voir est un message privé, et n’est pas collectée.
 
-<Callout type="info" title="Les mots d’autres personnes">
+<Callout
+  type="info"
+  title="Peal n’utilise les commentaires que pour les montrer et y répondre"
+>
   Peal se sert des commentaires uniquement pour les montrer aux membres de
   l’espace de travail et leur permettre d’y répondre. Aucun profil de leurs
   auteurs, aucune automatisation ni l’assistant de rédaction ne les lit, et ils
@@ -46,7 +53,7 @@ Peal ne lit rien d’autre des personnes qui commentent : ni photo, ni profil, n
 
 ## Quand les commentaires sont lus [#schedule]
 
-Peal cherche les nouveaux commentaires toutes les dix minutes. La fréquence de lecture des commentaires d’une publication dépend de son âge :
+Peal cherche les nouveaux commentaires toutes les dix minutes. La fréquence à laquelle il lit les commentaires d’une publication dépend de l’âge de celle-ci :
 
 | Âge de la publication                                      | Ses commentaires sont lus |
 | ---------------------------------------------------------- | ------------------------- |
@@ -57,7 +64,7 @@ Peal cherche les nouveaux commentaires toutes les dix minutes. La fréquence de 
 
 La personne qui exploite le serveur peut fixer une autre fenêtre, de 90 jours au plus ([`PEAL_ENGAGEMENT_WINDOW_DAYS`](/self-hosting/environment-variables)).
 
-Les lectures alternent avec les publications du canal : Peal fait un appel à la fois par compte.
+Les lectures alternent avec les publications du canal, et Peal fait un appel à la fois par compte. Certains canaux attendent :
 
 - Quand une plateforme demande à Peal de ralentir, ou ne répond pas, les fils de ce canal attendent une demi-heure.
 - Un canal désactivé ou à reconnecter est laissé de côté jusqu’à ce qu’il fonctionne de nouveau.
@@ -69,363 +76,427 @@ Quand un commentaire a été modifié, Peal montre son nouveau texte. Quand une 
 
 Un fil (les commentaires d’une publication sur un canal, et les réponses envoyées) est supprimé {{keep-inbox-fr}} après que Peal a cessé de lire les commentaires de la publication. Avec la fenêtre habituelle, cela fait 60 jours après la mise en ligne. La suppression a lieu une fois par jour.
 
-Certaines plateformes ne laissent Peal conserver ce qu’elles donnent que moins longtemps, à moins que Peal ne le relise :
+Certaines plateformes ne laissent Peal conserver ce qu’elles donnent que moins longtemps, à moins que Peal ne le relise :
 
 - Sur [YouTube](#youtube), les commentaires d’une publication, leur texte et leur auteur, sont effacés 29 jours après la dernière lecture qui les a tous trouvés.
 - Sur [LinkedIn](#linkedin), ils sont effacés un jour après celle-ci.
 
-Ils sont effacés comme quand la plateforme ne les montre plus, et la boîte de réception indique « Plus conservé ». Une lecture qui s’arrête en chemin (une publication de plus de 500 commentaires, des commentaires désactivés, le quota du jour épuisé) ne compte pas : les commentaires qu’elle n’a pas trouvés sont effacés à cette date. Une lecture suivante qui retrouve un commentaire l’affiche de nouveau. Peal le vérifie toutes les heures. Déconnecter un canal d’une telle plateforme efface aussitôt ses commentaires.
+Ils sont effacés comme si la plateforme ne les montrait plus, et la boîte de réception indique « Plus conservé ». Une lecture qui s’arrête en chemin ne compte pas : une publication de plus de 500 commentaires, des commentaires désactivés, ou le quota du jour épuisé. Les commentaires qu’elle n’a pas trouvés sont effacés à cette date. Une lecture suivante qui retrouve un commentaire l’affiche de nouveau. Peal le vérifie toutes les heures. Déconnecter un canal d’une telle plateforme efface aussitôt ses commentaires.
 
 Supprimer un espace de travail supprime aussitôt ses fils. Quand un membre ferme son compte, les réponses qu’il a envoyées restent à l’espace de travail, sans son nom. Son [export de données](/guides/workspace) liste les réponses qu’il a envoyées, jamais les commentaires auxquels il répondait, qui appartiennent à d’autres.
 
-Si vous avez commenté une publication mise en ligne avec Peal et souhaitez que votre commentaire quitte Peal, supprimez-le sur la plateforme : il quitte Peal à la lecture suivante. Vous pouvez aussi écrire au compte qui a publié, ou à la personne qui exploite le serveur.
+Si vous avez commenté une publication mise en ligne avec Peal et souhaitez que votre commentaire quitte Peal, supprimez-le sur la plateforme. Il quitte Peal à la lecture suivante. Vous pouvez aussi écrire au compte qui a publié, ou à la personne qui exploite le serveur.
 
-## Répondre [#replying]
+## Répondre à un commentaire [#replying]
 
-Une réponse est un message public du compte connecté : toute personne qui voit la publication la voit. Les propriétaires, administrateurs et éditeurs peuvent répondre. Les contributeurs et les lecteurs lisent la boîte de réception et ne répondent à rien. Sur Peal Cloud, chaque réponse envoyée compte dans la franchise mensuelle de messages de son compte de facturation ([Les compteurs d’usage](/guides/workspace/billing#meters)).
+Une réponse est un message public du compte connecté, et toute personne qui voit la publication la voit. Les propriétaires, administrateurs et éditeurs peuvent répondre. Les contributeurs et les lecteurs lisent la boîte de réception et ne répondent à rien. Sur Peal Cloud, chaque réponse envoyée compte dans la franchise mensuelle de messages de son compte de facturation ([Les compteurs d’usage](/guides/workspace/billing#meters)).
 
-Quand vous envoyez une réponse, Peal :
+Écrivez votre réponse sous le commentaire et cliquez sur **Envoyer**. Peal, ensuite :
 
-1. la vérifie contre la longueur de la plateforme, comptée comme la plateforme compte (sur Mastodon, la mention de la personne à qui vous répondez est placée en tête, car Mastodon en a besoin pour la prévenir, et elle compte) ;
-2. l’enregistre avant d’appeler la plateforme ;
-3. l’envoie une seule fois.
+1. La vérifie contre la longueur de la plateforme, comptée comme la plateforme compte. Sur Mastodon, la mention de la personne à qui vous répondez est placée en tête, car Mastodon en a besoin pour la prévenir, et elle compte.
+2. L’enregistre avant d’appeler la plateforme.
+3. L’envoie une seule fois.
 
-Le fil montre où en est chaque réponse :
+Le fil montre où en est chaque réponse :
 
 | État          | Ce que cela signifie                                                                                             |
 | ------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `sending`     | Enregistrée, et en route.                                                                                        |
 | `sent`        | Sur la plateforme, avec son lien.                                                                                |
-| `failed`      | Rien n’est parti, et pourquoi. Écrivez-la de nouveau quand la cause a disparu.                                   |
-| `unconfirmed` | Peal ne sait pas si elle est partie : la plateforme n’a pas répondu, ou le serveur s’est arrêté pendant l’appel. |
+| `failed`      | Rien n’est parti, et pourquoi. Écrivez-la de nouveau une fois la cause disparue.                                 |
+| `unconfirmed` | Peal ne sait pas si elle est partie : la plateforme n’a pas répondu, ou le serveur s’est arrêté pendant l’appel. |
 | `withdrawn`   | Envoyée, puis supprimée de la plateforme par un membre.                                                          |
 
-<Callout type="warning" title="Tranchez vous-même une réponse non confirmée">
-  Peal ne renvoie jamais une réponse non confirmée, car cela pourrait publier
-  deux fois la même réponse. Regardez la publication sur la plateforme, puis
-  dites à Peal ce que vous y avez trouvé : **Elle y est**, ou **Elle n’est pas
-  partie**. D’ici là, aucune autre réponse ne peut être écrite à ce commentaire.
+<Callout
+  type="warning"
+  title="Peal ne renvoie jamais une réponse non confirmée"
+>
+  La renvoyer pourrait publier deux fois la même réponse, c’est donc à vous de
+  trancher. Regardez la publication sur la plateforme, puis dites à Peal ce que
+  vous y avez trouvé en cliquant sur **Elle y est** ou **Elle n’est pas
+  partie**. D’ici là, personne ne peut écrire d’autre réponse à ce commentaire.
 </Callout>
 
 Une réponse encore en route une heure après que vous l’avez écrite devient elle aussi non confirmée. Peal arrête alors son envoi pour de bon, et rien ne part plus pour elle, quoi que vous trouviez ensuite sur la plateforme.
 
-Un commentaire n’a qu’une réponse en route à la fois : de deux requêtes envoyées ensemble pour y répondre, l’une est refusée. Par l’API, un en-tête `Idempotency-Key` permet de renvoyer sans risque une requête dont la réponse s’est perdue ([Idempotence](/developers/conventions/idempotency#idempotency)).
+Un commentaire n’a qu’une réponse en route à la fois. Si deux requêtes sont envoyées ensemble pour y répondre, l’une est refusée. Par l’API, un en-tête `Idempotency-Key` permet de renvoyer sans risque une requête dont la réponse s’est perdue ([Idempotence](/developers/conventions/idempotency#idempotency)).
 
-Vous pouvez aussi :
+### Retirer une réponse [#withdraw]
 
-- retirer une réponse envoyée : Peal la supprime de la plateforme. Les personnes qui l’ont déjà vue ont pu la garder.
-- marquer un commentaire comme traité quand il n’appelle pas de réponse. Un commentaire auquel le compte a répondu sur la plateforme elle-même est marqué comme traité à la lecture suivante.
+Pour retirer une réponse envoyée, cliquez sur **Retirer**. Peal la supprime de la plateforme. Les personnes qui l’ont déjà vue ont pu la garder.
+
+### Marquer un commentaire comme répondu [#mark-answered]
+
+Quand un commentaire n’appelle pas de réponse, cliquez sur **Marquer comme répondu**. Un commentaire auquel le compte a répondu sur la plateforme elle-même est marqué comme répondu à la lecture suivante.
 
 ## Ce que chaque plateforme permet [#abilities]
+
+Ce que vous pouvez faire d’un commentaire dépend de sa plateforme :
 
 | Possibilité                                                | Mastodon                                        | Bluesky                                                     | Pages Facebook ([où activées](#meta)) | Instagram ([où activé](#meta))            | YouTube ([où activé](#youtube))               | Pages LinkedIn ([où activées](#linkedin))                   |
 | ---------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- | ----------------------------------------- | --------------------------------------------- | ----------------------------------------------------------- |
 | Lire les commentaires d’une publication                    | Oui                                             | Oui                                                         | Oui                                   | Oui                                       | Oui                                           | Oui                                                         |
 | Répondre à un commentaire                                  | Oui                                             | Oui                                                         | Oui                                   | Oui                                       | Oui                                           | Oui                                                         |
 | Retirer une réponse                                        | Oui                                             | Oui                                                         | Oui                                   | Oui                                       | Oui                                           | Oui                                                         |
-| Aimer un commentaire                                       | Pas encore : Peal ne demande pas l’autorisation | Pas encore : Peal ne demande pas l’autorisation             | Pas encore                            | Non : l’API d’Instagram n’a pas de j’aime | Non : l’API de YouTube n’a pas de j’aime      | Pas encore                                                  |
-| Masquer le commentaire de quelqu’un sous votre publication | Non : Mastodon ne l’offre à aucun compte        | Pas encore : Peal ne demande pas l’autorisation             | Oui                                   | Oui                                       | Oui : il est rejeté                           | Non : l’API des pages ne masque rien                        |
-| Supprimer le commentaire de quelqu’un d’autre              | Non : Mastodon ne l’offre à aucun compte        | Non : personne ne supprime la publication d’un autre compte | Pas encore                            | Pas encore                                | Non : seul son auteur supprime un commentaire | Non : personne ne supprime le commentaire d’un autre membre |
+| Aimer un commentaire                                       | Pas encore : Peal ne demande pas l’autorisation | Pas encore : Peal ne demande pas l’autorisation             | Pas encore                            | Non : l’API d’Instagram n’a pas de j’aime | Non : l’API de YouTube n’a pas de j’aime      | Pas encore                                                  |
+| Masquer le commentaire de quelqu’un sous votre publication | Non : Mastodon ne l’offre à aucun compte        | Pas encore : Peal ne demande pas l’autorisation             | Oui                                   | Oui                                       | Oui : il est rejeté                           | Non : l’API des pages ne masque rien                        |
+| Supprimer le commentaire de quelqu’un d’autre              | Non : Mastodon ne l’offre à aucun compte        | Non : personne ne supprime la publication d’un autre compte | Pas encore                            | Pas encore                                | Non : seul son auteur supprime un commentaire | Non : personne ne supprime le commentaire d’un autre membre |
 
-`GET /api/workspaces/{workspaceId}/inbox/channels/{channelId}/abilities` et chaque fil répondent la même chose pour un canal :
+`GET /api/workspaces/{workspaceId}/inbox/channels/{channelId}/abilities` et chaque fil donnent la même chose pour un canal, sous l’une de ces valeurs :
 
-- `available` ;
-- `reconnect` : le compte a été connecté avant que Peal ne demande ce que la possibilité exige. [Connectez de nouveau le compte](/guides/channels), sans le déconnecter, et le canal reste avec son historique ;
+- `available`.
+- `reconnect` : le compte a été connecté avant que Peal ne demande ce que la possibilité exige. [Reconnectez le canal](/guides/channels#reconnect), ou connectez de nouveau le même compte, sans le déconnecter. Le canal garde alors son historique, que la déconnexion effacerait.
 - `unsupported`.
 
 Sur Mastodon, les réponses aux publications publiques et non listées sont lues. Peal les lit avec l’accès du compte quand celui-ci l’a permis, ce qui montre toutes les réponses. Sans lui, Peal voit les 60 premières, sur vingt niveaux de réponses au plus. Sur Bluesky, Peal lit le fil depuis le service public de Bluesky, sans la session du compte.
 
-Un fil garde ses 500 premiers commentaires. Sous une publication aux milliers de réponses, Peal lit jusque-là et pas plus loin : les commentaires suivants restent sur la plateforme, et ne sont pas affichés ici.
+Un fil garde ses 500 premiers commentaires. Sous une publication aux milliers de réponses, Peal lit jusque-là et pas plus loin. Les commentaires suivants restent sur la plateforme, et ne sont pas affichés ici.
 
 ### Pages Facebook et Instagram [#meta]
 
-Peal lit les commentaires des publications des Pages Facebook et des comptes Instagram seulement là où la personne qui exploite le serveur les a activés ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)). Les autorisations qu’ils exigent sont accordées par l’App Review de Meta, dont les comptes de l’application elle-même se passent, et non ceux des autres.
+Peal lit les commentaires des publications des Pages Facebook et des comptes Instagram seulement là où la personne qui exploite le serveur les a activés ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)). L’App Review de Meta accorde les autorisations qu’ils exigent. Les comptes de l’application elle-même s’en passent, ceux des autres non.
+
+Chaque plateforme demande ceci :
 
 | Plateforme     | Ce que le compte autorise à la connexion                                                                                      | Ce que règle l’exploitant du serveur                                                                  |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | Pages Facebook | `pages_read_user_content` pour lire les commentaires, `pages_manage_engagement` pour répondre, masquer et retirer une réponse | `facebook` dans `PEAL_INBOX_PLATFORMS`, avec l’application de Meta (`META_APP_ID`, `META_APP_SECRET`) |
 | Instagram      | `instagram_manage_comments` via une Page, ou `instagram_business_manage_comments` via la connexion Instagram                  | `instagram` dans `PEAL_INBOX_PLATFORMS`, avec l’un ou l’autre des accès d’Instagram                   |
 
-La connexion demande ces autorisations là où le serveur lit la plateforme, et un membre peut les refuser : le compte se connecte et publie quand même, sans boîte de réception. Un compte connecté avant affiche `reconnect` sur ce qui lui manque : [connectez-le de nouveau](/guides/channels), sans le déconnecter.
+La connexion demande ces autorisations là où le serveur lit la plateforme, et un membre peut les refuser. Le compte se connecte et publie quand même, sans boîte de réception. Un compte connecté avant affiche `reconnect` sur ce qui lui manque : [reconnectez-le](/guides/channels#reconnect), sans le déconnecter.
 
 Meta les accorde aussitôt pour les comptes que gèrent les personnes de son application (accès standard). Pour tout autre compte, il ne les accorde qu’une fois l’App Review passée, l’entreprise étant vérifiée (accès avancé). [L’auto-hébergement](/self-hosting/platforms#meta) explique comment régler l’application.
 
-Sur ces plateformes :
+Chaque plateforme a ses particularités :
 
-- Facebook montre le nom de la personne ou de la Page qui a commenté, et pas d’identifiant public. Il peut ne pas montrer du tout qui a écrit un commentaire, que la boîte de réception attribue alors à « Quelqu’un ». Il ne dit pas si un commentaire est masqué : Peal montre ce qui a été fait depuis Peal.
-- Instagram ne prend de réponses qu’aux commentaires de premier niveau : une réponse à une réponse va sous le commentaire auquel celle-ci répond. Il n’en prend aucune à un commentaire masqué.
-- Instagram place une réponse à une réponse sous le commentaire de premier niveau : la lecture suivante montre donc aussi ce commentaire comme répondu.
-- Meta ne prend aucune clé qui rendrait une réponse sûre à envoyer deux fois. Quand on ne sait pas comment l’envoi d’une réponse s’est terminé, Peal la cherche parmi les réponses sous le commentaire. Il ne la trouve que si exactement une, du compte, écrite depuis que vous l’avez écrite, a son texte ; sinon elle reste `unconfirmed`, à vous de trancher. Elle n’est jamais envoyée de nouveau.
-- Peal lit les commentaires toutes les dix minutes, comme sur les autres plateformes, et s’arrête pour la passe dès que Meta indique que la moitié des appels du compte sont utilisés, pour que la publication garde le reste. Les notifications de nouveaux commentaires de Meta ne sont pas encore utilisées.
-- Seules les publications mises en ligne après l’activation de la plateforme sont lues : celles d’avant n’ont pas de boîte de réception.
+- Facebook montre le nom de la personne ou de la Page qui a commenté, et pas d’identifiant public. Il peut ne pas montrer du tout qui a écrit un commentaire, et la boîte de réception affiche alors « Quelqu’un ».
+- Facebook ne dit pas si un commentaire est masqué, et Peal montre donc ce qui a été fait depuis Peal.
+- Instagram ne prend de réponses qu’aux commentaires de premier niveau, si bien qu’une réponse à une réponse va sous le commentaire auquel celle-ci répond. Il n’en prend aucune à un commentaire masqué.
+- Instagram place une réponse à une réponse sous le commentaire de premier niveau, et la lecture suivante montre donc aussi ce commentaire comme répondu.
+- Meta ne prend aucune clé qui rendrait une réponse sûre à envoyer deux fois. Quand l’issue d’une réponse est inconnue, Peal la cherche parmi les réponses sous le commentaire.
+- Peal ne la trouve que si exactement une réponse du compte, écrite depuis l’envoi de la vôtre, a son texte. Sinon, elle reste `unconfirmed`, à vous de trancher. Elle n’est jamais envoyée de nouveau.
+- Peal lit les commentaires toutes les dix minutes, comme sur les autres plateformes. Il s’arrête pour la passe dès que Meta indique que la moitié des appels du compte sont utilisés, pour que la publication garde le reste. Les notifications de nouveaux commentaires de Meta ne sont pas encore utilisées.
+- Seules les publications mises en ligne après l’activation de la plateforme sont lues. Celles d’avant n’ont pas de boîte de réception.
 
 ### YouTube [#youtube]
 
-Peal lit les commentaires des vidéos d’une chaîne YouTube, Shorts compris, seulement là où la personne qui exploite le serveur a activé YouTube ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)). Le scope qu’ils exigent, `youtube.force-ssl`, est de ceux que Google vérifie avant qu’une application puisse le demander à d’autres que ses propres testeurs.
+Peal lit les commentaires des vidéos d’une chaîne YouTube, Shorts compris, seulement là où la personne qui exploite le serveur a activé YouTube ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)). Ils exigent le scope `youtube.force-ssl`, que Google vérifie avant qu’une application puisse le demander à d’autres que ses propres testeurs.
+
+YouTube demande ceci :
 
 | Ce que le compte autorise à la connexion                                                 | Ce que règle l’exploitant du serveur                                                                            |
 | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `youtube.force-ssl` pour lire les commentaires, répondre, masquer et retirer une réponse | `youtube` dans `PEAL_INBOX_PLATFORMS`, avec le client de YouTube (`YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`) |
 
-La connexion demande ce scope là où le serveur lit YouTube, et la page de consentement de Google permet de le décocher : la chaîne se connecte et publie quand même, sans boîte de réception. Une chaîne connectée avant affiche `reconnect` : [connectez-la de nouveau](/guides/channels), sans la déconnecter.
+La connexion demande ce scope là où le serveur lit YouTube, et la page de consentement de Google permet au titulaire de le décocher. La chaîne se connecte et publie quand même, sans boîte de réception. Une chaîne connectée avant affiche `reconnect` : [reconnectez-la](/guides/channels#reconnect), sans la déconnecter.
 
-Sur YouTube :
+Sur YouTube :
 
-- YouTube n’a qu’un niveau de réponses : une réponse à une réponse va sous le commentaire de premier niveau.
+- Il n’y a qu’un niveau de réponses, si bien qu’une réponse à une réponse va sous le commentaire de premier niveau.
 - L’auteur d’un commentaire apparaît sous le nom qu’il affiche, souvent son identifiant public. Il n’y a pas de lien vers un commentaire.
-- YouTube ne prend aucune clé qui rendrait une réponse sûre à envoyer deux fois. Quand on ne sait pas comment son envoi s’est terminé, Peal la cherche parmi les réponses sous le commentaire, comme sur [les plateformes de Meta](#meta), et ne l’envoie jamais de nouveau.
-- Les règles de YouTube laissent Peal conserver un commentaire 30 jours sans le relire. Peal efface les commentaires d’une publication 29 jours après la dernière lecture qui les a tous trouvés ([conservation](#retention)), et les efface tous aussitôt quand la chaîne est déconnectée.
-- Seules les vidéos mises en ligne après l’activation de YouTube sont lues : celles d’avant n’ont pas de boîte de réception.
+- YouTube ne prend aucune clé qui rendrait une réponse sûre à envoyer deux fois. Quand l’issue d’une réponse est inconnue, Peal la cherche parmi les réponses sous le commentaire, comme sur [les plateformes de Meta](#meta), et ne l’envoie jamais de nouveau.
+- Les règles de YouTube laissent Peal conserver un commentaire 30 jours sans le relire. Peal efface les commentaires d’une publication 29 jours après la dernière lecture qui les a tous trouvés ([conservation](#retention)), et tous aussitôt quand la chaîne est déconnectée.
+- Seules les vidéos mises en ligne après l’activation de YouTube sont lues. Celles d’avant n’ont pas de boîte de réception.
 
-Masquer un commentaire le rejette. Lui et les réponses qu’il a reçues ne sont plus affichés sur YouTube, et Peal ne bannit jamais son auteur. La lecture suivante ne le trouve plus, puisque l’API de YouTube ne liste aucun commentaire rejeté, et l’efface alors comme n’étant plus sur la plateforme. D’ici là, l’afficher de nouveau demande à YouTube de le publier, ce que YouTube peut refuser. Ensuite, affichez-le de nouveau depuis YouTube Studio, et Peal le lit dès que YouTube le montre.
+Masquer un commentaire le rejette. Le commentaire et les réponses qu’il a reçues ne sont plus affichés sur YouTube, et Peal ne bannit jamais son auteur.
+
+La lecture suivante ne le trouve plus, puisque l’API de YouTube ne liste aucun commentaire rejeté, et l’efface alors comme n’étant plus sur la plateforme. D’ici là, l’afficher de nouveau demande à YouTube de le publier, ce que YouTube peut refuser. Ensuite, affichez-le de nouveau depuis YouTube Studio, et Peal le lit dès que YouTube le montre.
 
 <Accordion>
-  <AccordionItem title="Le quota quotidien de YouTube">
-    Le quota quotidien de 10 000 unités du projet repart à minuit, heure du
-    Pacifique. Peal le partage par défaut en trois :
+<AccordionItem title="Le quota quotidien de YouTube">
 
-    | Part                          | Unités              | Réglage                                                  |
-    | ----------------------------- | ------------------- | -------------------------------------------------------- |
-    | Lecture des commentaires      | 3 000 au plus       | `YOUTUBE_DAILY_COMMENT_UNITS`                            |
-    | Miniatures personnalisées     | Environ 4 000       | `YOUTUBE_DAILY_THUMBNAILS` (80, à environ 50 unités chacune) |
-    | Ce que Peal ne compte pas     | 3 000 restantes     | Les réponses, masquages et retraits (50 unités chacun), le suivi des publications et les recherches, et les statistiques |
+Le quota quotidien de 10 000 unités du projet repart à minuit, heure du Pacifique. Peal le partage par défaut en trois :
 
-    La lecture dépense une unité par page. Au-delà de sa part, ou dès que
-    YouTube indique que le quota est épuisé, les commentaires attendent le jour
-    suivant. Une réponse, un masquage ou un retrait n’est jamais retenu par la
-    part de la lecture.
+| Part                      | Unités          | Réglage                                                                                                                  |
+| ------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Lecture des commentaires  | 3 000 au plus   | `YOUTUBE_DAILY_COMMENT_UNITS`                                                                                            |
+| Miniatures personnalisées | Environ 4 000   | `YOUTUBE_DAILY_THUMBNAILS` (80, à environ 50 unités chacune)                                                             |
+| Ce que Peal ne compte pas | 3 000 restantes | Les réponses, masquages et retraits (50 unités chacun), le suivi des publications et les recherches, et les statistiques |
 
-  </AccordionItem>
+La lecture dépense une unité par page. Au-delà de sa part, ou dès que YouTube indique que le quota est épuisé, les commentaires attendent le jour suivant. Une réponse, un masquage ou un retrait n’est jamais retenu par la part de la lecture.
+
+</AccordionItem>
 </Accordion>
 
 ### Pages LinkedIn [#linkedin]
 
-Peal lit les commentaires des publications d’une page d’entreprise LinkedIn seulement là où la personne qui exploite le serveur a activé LinkedIn ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)), avec l’application des pages (`LINKEDIN_PAGES_CLIENT_ID`, `LINKEDIN_PAGES_CLIENT_SECRET`). Le profil d’un membre n’est pas lu : LinkedIn ferme à presque toutes les applications l’autorisation qui lit les publications d’un membre.
+Peal lit les commentaires des publications d’une page d’entreprise LinkedIn seulement là où la personne qui exploite le serveur a activé LinkedIn ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)), avec l’application des pages (`LINKEDIN_PAGES_CLIENT_ID`, `LINKEDIN_PAGES_CLIENT_SECRET`). Le profil d’un membre n’est pas lu, car LinkedIn ferme à presque toutes les applications l’autorisation qui lit les publications d’un membre.
+
+L’administrateur de la page autorise deux scopes à la connexion :
 
 | Ce que l’administrateur de la page autorise à la connexion | Ce que cela permet                                 |
 | ---------------------------------------------------------- | -------------------------------------------------- |
 | `r_organization_social_feed`                               | Lire les commentaires des publications de la page  |
 | `w_organization_social_feed`                               | Répondre au nom de la page, et retirer une réponse |
 
-La connexion des pages demande les deux là où le serveur lit LinkedIn. Une page connectée avant affiche `reconnect` : [connectez-la de nouveau](/guides/channels), sans la déconnecter.
+La connexion des pages demande les deux là où le serveur lit LinkedIn. Une page connectée avant affiche `reconnect` : [reconnectez-la](/guides/channels#reconnect), sans la déconnecter.
 
-<Callout type="warning">
-  LinkedIn accorde tout ce qui est demandé ou rien. Une application qui ne
-  détient pas encore ces champs d’application fait refuser toute la connexion
-  par LinkedIn : n’activez donc LinkedIn qu’une fois que les produits de
-  l’application les listent.
+<Callout
+  type="warning"
+  title="LinkedIn accorde tout ce qui est demandé, ou rien"
+>
+  Si l’application ne détient pas encore ces scopes, LinkedIn refuse toute la
+  connexion. N’activez LinkedIn qu’une fois que les produits de l’application
+  les listent.
 </Callout>
 
-Sur LinkedIn :
+Sur LinkedIn :
 
-- Peal garde qui a commenté par son identifiant LinkedIn et ne récupère aucun nom. LinkedIn ne laisse une application conserver le profil d’un autre membre qu’une journée au plus ; la boîte de réception affiche donc « Un membre de LinkedIn », ou « Une page LinkedIn » pour une page.
-- LinkedIn laisse une application conserver les commentaires 48 heures, et les données de profil une journée. Peal efface les commentaires d’une publication un jour après la dernière lecture qui les a tous trouvés ([conservation](#retention)). Tant qu’une publication est lue, elle l’est au moins toutes les six heures, et ses commentaires restent affichés.
-- Un commentaire a des commentaires imbriqués sur un niveau : une réponse à un commentaire imbriqué va sous le commentaire auquel il répond.
+- Peal garde qui a commenté par son identifiant LinkedIn et ne récupère aucun nom. LinkedIn ne laisse une application conserver le profil d’un autre membre qu’une journée au plus, et la boîte de réception affiche donc « Un membre de LinkedIn », ou « Une page LinkedIn » pour une page.
+- LinkedIn laisse une application conserver les commentaires 48 heures, et les données de profil une journée. Peal efface les commentaires d’une publication un jour après la dernière lecture qui les a tous trouvés ([conservation](#retention)).
+- Tant qu’une publication est lue, elle l’est au moins toutes les six heures, et ses commentaires restent affichés.
+- Un commentaire a des commentaires imbriqués sur un niveau. Une réponse à un commentaire imbriqué va sous le commentaire auquel il répond.
 - Rien n’est masqué ni aimé depuis Peal.
-- LinkedIn ne prend aucune clé qui rendrait une réponse sûre à envoyer deux fois. Quand on ne sait pas comment son envoi s’est terminé, Peal la cherche parmi les commentaires sous celui auquel elle répond, comme sur [les plateformes de Meta](#meta), et ne l’envoie jamais de nouveau.
+- LinkedIn ne prend aucune clé qui rendrait une réponse sûre à envoyer deux fois. Quand l’issue d’une réponse est inconnue, Peal la cherche parmi les commentaires sous celui auquel elle répond, comme sur [les plateformes de Meta](#meta), et ne l’envoie jamais de nouveau.
 - Seules les publications mises en ligne après l’activation de LinkedIn sont lues.
 
 <Accordion>
-  <AccordionItem title="Les appels quotidiens de LinkedIn">
-    Le niveau Development de LinkedIn permet 500 appels par jour pour toute
-    l’application et 100 par membre, publication comprise. La lecture des
-    commentaires en prend au plus 200 de l’application et 40 par membre par
-    défaut (`LINKEDIN_DAILY_COMMENT_CALLS`,
-    `LINKEDIN_DAILY_COMMENT_CALLS_PER_MEMBER`), comptés par jour UTC. Elle
-    s’arrête ensuite jusqu’au lendemain, tandis que la publication et les
-    réponses continuent.
+<AccordionItem title="Les appels quotidiens de LinkedIn">
 
-    - Un membre est l’administrateur qui a connecté la page : toutes les pages qu’il a connectées partagent ses 40.
-    - Peal garde l’identifiant LinkedIn de ce membre avec la page seulement tant qu’il lit les commentaires LinkedIn, et l’oublie dans la journée une fois ceux-ci désactivés. Il compte les appels sous une empreinte à clé de cet identifiant, jamais sous l’identifiant.
-    - Une page connectée avant que Peal ne garde qui l’a connectée, ou pendant que les commentaires LinkedIn étaient désactivés, est comptée seule jusqu’à sa reconnexion.
-    - Une fois la part du jour épuisée, les publications qui n’ont pas été lues en entier ce jour-là perdent le texte de leurs commentaires un jour après leur dernière lecture complète ([conservation](#retention)), jusqu’à ce qu’une lecture les retrouve. Au niveau Development, la boîte de réception peut montrer peu de commentaires une bonne partie de la journée.
-    - Le niveau Standard n’a pas cette limite : relevez les deux.
-    - Une liste de commentaires que LinkedIn donne sans son total et qui remplit ses pages (dix commentaires ou plus) coûte un appel de plus, pour en trouver la fin.
+Le niveau Development de LinkedIn permet 500 appels par jour pour toute l’application et 100 par membre, publication comprise. Par défaut, la lecture des commentaires en prend au plus 200 de l’application et 40 par membre (`LINKEDIN_DAILY_COMMENT_CALLS`, `LINKEDIN_DAILY_COMMENT_CALLS_PER_MEMBER`), comptés par jour UTC. Elle s’arrête ensuite jusqu’au lendemain, tandis que la publication et les réponses continuent.
 
-  </AccordionItem>
+Comment les appels sont comptés :
+
+- Un membre est l’administrateur qui a connecté la page. Toutes les pages qu’il a connectées partagent ses 40.
+- Peal garde l’identifiant LinkedIn de ce membre avec la page seulement tant qu’il lit les commentaires LinkedIn, et l’oublie dans la journée une fois ceux-ci désactivés. Il compte les appels sous une empreinte à clé de cet identifiant, jamais sous l’identifiant.
+- Une page connectée avant que Peal ne garde qui l’a connectée, ou pendant que les commentaires LinkedIn étaient désactivés, est comptée seule jusqu’à sa reconnexion.
+- Une fois la part du jour épuisée, les publications qui n’ont pas été lues en entier ce jour-là perdent le texte de leurs commentaires un jour après leur dernière lecture complète ([conservation](#retention)), jusqu’à ce qu’une lecture les retrouve. Au niveau Development, la boîte de réception peut montrer peu de commentaires une bonne partie de la journée.
+- Le niveau Standard n’a pas cette limite : relevez-y les deux réglages.
+- Une liste de commentaires que LinkedIn donne sans son total et qui remplit ses pages (dix commentaires ou plus) coûte un appel de plus, pour en trouver la fin.
+
+</AccordionItem>
 </Accordion>
 
 ### Autres plateformes [#other-platforms]
 
-Peal ne lit pas encore de commentaires sur les autres plateformes. Chacune exige une autorisation que sa plateforme accorde après un examen :
+Peal ne lit pas encore de commentaires sur les autres plateformes. Chacune exige une autorisation que sa plateforme accorde après un examen :
 
 | Plateforme | Ce qu’exigent la lecture des commentaires et les réponses                                                       |
 | ---------- | --------------------------------------------------------------------------------------------------------------- |
 | Threads    | `threads_read_replies` et `threads_manage_replies`, accordées par l’App Review de Meta                          |
 | X          | Un accès payant à l’API de X pour lire les réponses                                                             |
 | TikTok     | Les commentaires sont offerts aux comptes professionnels par un autre produit de TikTok, que Peal n’utilise pas |
-| Pinterest  | Non prévu : l’API de Pinterest n’a pas de commentaires                                                          |
+| Pinterest  | Non prévu : l’API de Pinterest n’a pas de commentaires                                                          |
 
 Si vous exploitez votre propre serveur, les mêmes examens s’appliquent à vos propres applications de plateformes.
 
 ## Avis [#reviews]
 
-Un canal Google Business Profile publie au nom d’un établissement, et les personnes qui le fréquentent laissent des avis sur Google. Là où la personne qui exploite le serveur a activé Google Business Profile ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core), avec `googleBusiness`), la boîte de réception les lit à côté des commentaires : une entrée par établissement, ses avis du plus récent au plus ancien.
+Un canal Google Business Profile publie au nom d’un établissement, et les personnes qui le fréquentent laissent des avis sur Google. Là où la personne qui exploite le serveur a activé Google Business Profile ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core), avec `googleBusiness`), la boîte de réception les lit à côté des commentaires. Chaque établissement a une entrée, avec ses avis du plus récent au plus ancien.
 
-| Ce que Peal conserve d’un avis                                                                                                                        | Ce qu’il ne conserve jamais                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Ses étoiles (de 1 à 5), son texte, quand il a été écrit et modifié pour la dernière fois, le nom qu’affiche son auteur (aucun quand il reste anonyme) | La photo de profil ou le profil de l’auteur, les photos (seulement leur nombre) |
-| La réponse de l’établissement telle que Google la montre, avec le fait que Google la vérifie, l’affiche ou l’a refusée                                |                                                                                 |
-| Si un membre a dit qu’il n’appelle pas de réponse, et les réponses envoyées depuis Peal, avec leur auteur et l’issue de l’envoi                       |                                                                                 |
-
-- **Quand.** Un établissement est lu toutes les heures tant qu’il a eu un avis écrit ou modifié la semaine passée, toutes les six heures sinon, jusqu’au plus ancien avis que Peal peut conserver.
-- **Combien de temps.** Les règles de Google ne permettent de stocker ce que fournit son API que 30 jours au plus. Peal conserve un avis 29 jours après qu’il a été écrit ou modifié pour la dernière fois, puis le supprime avec les réponses qui lui ont été envoyées ; un avis modifié depuis est relu et conservé à partir de sa modification. Un avis que Google ne montre plus est supprimé à la lecture complète suivante. Un établissement qui n’a pas été lu pendant 29 jours (son canal désactivé, ou la plateforme désactivée) est supprimé, avec ce que Google en dit. Déconnecter le canal, ou supprimer l’espace de travail, supprime ses avis aussitôt.
-- **Répondre.** Un avis porte une seule réponse sur Google, quel qu’en soit l’auteur : une réponse depuis Peal la remplace, et Google peut la vérifier avant de l’afficher. Les réponses aux avis ne comptent pas comme messages de la boîte de réception. Une réponse dont l’issue n’est pas connue est réglée par la lecture suivante de l’établissement, que Peal avance : elle est partie quand la réponse de l’établissement est son texte. **Supprimer la réponse** supprime la réponse de l’établissement, quel qu’en soit l’auteur. Google ne prend de réponses que pour un établissement validé, de 4 096 octets au plus.
-- **En personne seulement.** Un membre répond à un avis, ou supprime sa réponse, connecté à Peal dans l’application web : une clé d’API, une application connectée par OAuth, la ligne de commande et les assistants IA lisent les avis et les marquent comme répondus, et se voient refuser une réponse (`403`, `personRequired`). Les règles de Google demandent que les réponses aux avis ne soient jamais automatisées ni déclenchées sans le consentement préalable, précis et exprès de l’utilisateur, que Peal n’enregistre pas encore.
-- **Événements.** Un point de terminaison de webhook reçoit [`review.received`](/developers/webhooks/events/media-comments#review-received) pour chaque avis lu pour la première fois, par ses seuls identifiants, et [`review.replied`](/developers/webhooks/events/media-comments#review-replied) pour chaque réponse partie.
-
-<Callout type="info" title="D’abord l’accès de Google">
-  Google donne à un projet l’accès aux API Business Profile après une demande :
-  jusque-là son quota est nul, et chaque lecture attend. Les règles de Google
+<Callout type="info" title="Google doit d’abord accorder l’accès au projet">
+  Google donne à un projet l’accès aux API Business Profile après une demande.
+  Jusque-là, son quota est nul, et chaque lecture attend. Les règles de Google
   demandent aussi de ne répondre aux avis au nom d’une entreprise qu’avec son
   autorisation, et jamais automatiquement.
 </Callout>
 
+De chaque avis, Peal conserve :
+
+- Ses étoiles (de 1 à 5), son texte, quand il a été écrit et modifié pour la dernière fois, et le nom qu’affiche son auteur (aucun quand il reste anonyme).
+- La réponse de l’établissement telle que Google la montre, en indiquant si Google la vérifie, l’affiche ou l’a refusée.
+- Si un membre a dit qu’il n’appelle pas de réponse, et les réponses envoyées depuis Peal, avec leur auteur et l’issue de l’envoi.
+
+Peal ne conserve jamais la photo de profil ni le profil de l’auteur, ni les photos. Il ne garde que leur nombre.
+
+### Quand les avis sont lus [#reviews-schedule]
+
+Un établissement est lu toutes les heures tant qu’il a eu un avis écrit ou modifié la semaine passée, et toutes les six heures sinon. Chaque lecture remonte jusqu’au plus ancien avis que Peal peut conserver.
+
+### Combien de temps les avis sont conservés [#reviews-retention]
+
+Les règles de Google ne permettent de stocker ce que fournit son API que 30 jours au plus. Peal conserve un avis 29 jours après qu’il a été écrit ou modifié pour la dernière fois, puis le supprime avec les réponses qui lui ont été envoyées. Un avis modifié depuis est relu et conservé à partir de sa modification.
+
+D’autres cas suppriment des avis :
+
+- Un avis que Google ne montre plus est supprimé à la lecture complète suivante.
+- Un établissement qui n’a pas été lu pendant 29 jours (son canal désactivé, ou la plateforme désactivée) est supprimé, avec ce que Google en dit.
+- Déconnecter le canal, ou supprimer l’espace de travail, supprime ses avis aussitôt.
+
+### Répondre à un avis [#reviews-reply]
+
+Un avis porte une seule réponse sur Google, quel qu’en soit l’auteur. Une réponse depuis Peal la remplace, et Google peut la vérifier avant de l’afficher. Les réponses aux avis ne comptent pas comme messages de la boîte de réception. Google ne prend de réponses que pour un établissement validé, de 4 096 octets au plus.
+
+Quand l’issue d’une réponse n’est pas connue, la lecture suivante de l’établissement la règle, et Peal avance cette lecture. La réponse est partie si la réponse de l’établissement est son texte.
+
+Cliquez sur **Supprimer la réponse** pour supprimer la réponse de l’établissement, quel qu’en soit l’auteur. Quand un avis n’appelle pas de réponse, cliquez sur **N’appelle pas de réponse**.
+
+### Seule une personne répond à un avis [#reviews-in-person]
+
+Un membre répond à un avis, ou supprime sa réponse, connecté à Peal dans l’application web. Une clé d’API, une application connectée par OAuth, la ligne de commande et les assistants IA peuvent lire les avis et les marquer comme répondus. Ils se voient refuser une réponse (`403`, `personRequired`).
+
+Les règles de Google demandent que les réponses aux avis ne soient jamais automatisées ni déclenchées sans le consentement préalable, précis et exprès de l’utilisateur, que Peal n’enregistre pas encore.
+
+### Les événements des avis [#reviews-events]
+
+Un point de terminaison de webhook reçoit ces événements, par leurs seuls identifiants :
+
+- [`review.received`](/developers/webhooks/events/media-comments#review-received), pour chaque avis lu pour la première fois.
+- [`review.replied`](/developers/webhooks/events/media-comments#review-replied), pour chaque réponse partie.
+
 ## Répondre par mot-clé [#comment-rules]
 
-Une règle de réponse répond d’elle-même, en public, depuis le compte du canal, aux commentaires qui contiennent un mot-clé choisi, sous une publication ou sous chaque publication d’un canal. Dans **Réglages › Réponses aux commentaires**, choisissez le canal, jusqu’à 10 mots-clés et la réponse. Une règle répond :
+Une règle de réponse répond d’elle-même aux commentaires, en public, depuis le compte du canal. Elle répond à ceux qui contiennent un mot-clé choisi, sous une publication ou sous chaque publication d’un canal.
 
-- à un commentaire écrit après son lancement, ou après sa dernière reprise, qui contient un mot-clé comme un mot, quelles que soient sa casse et ses accents (`prix` répond à « Quel PRIX ? », pas à « surprix ») ;
-- une fois par commentaire, et une fois par personne : quelqu’un qui commente à nouveau n’obtient pas deux réponses ;
-- 25 fois par jour au plus, et 100 fois par jour pour toutes les règles d’un canal ensemble (jours UTC) ;
-- par les réponses de la boîte de réception : chacune apparaît dans son fil, compte comme un de vos messages sortants, et n’est jamais envoyée deux fois. Un commentaire auquel quelqu’un a répondu, ou répond, est laissé tel quel.
+Pour en créer une, cliquez sur **Paramètres** en bas de la barre latérale, puis sur **Réponses aux commentaires**. Sélectionnez le **Canal**, saisissez jusqu’à 10 **Mots-clés** et la **Réponse**, puis cliquez sur **Lancer**.
+
+Une règle répond :
+
+- À un commentaire écrit après son lancement, ou après sa dernière reprise, qui contient un mot-clé comme un mot, quelles que soient sa casse et ses accents. `prix` répond à « Quel PRIX ? », pas à « surprix ».
+- Une fois par commentaire, et une fois par personne. Quelqu’un qui commente à nouveau n’obtient pas deux réponses.
+- 25 fois par jour au plus, et 100 fois par jour pour toutes les règles d’un canal ensemble (jours UTC).
+- Par les réponses de la boîte de réception. Chacune apparaît dans son fil, compte comme un de vos messages sortants, et n’est jamais envoyée deux fois.
+
+Un commentaire auquel quelqu’un a répondu, ou répond, est laissé tel quel.
+
+Les règles ne fonctionnent que sur certaines plateformes :
 
 | Plateforme                | Règles de réponse                                                                                 |
 | ------------------------- | ------------------------------------------------------------------------------------------------- |
 | Mastodon                  | Oui                                                                                               |
 | Pages Facebook, Instagram | Oui, là où Peal lit leurs commentaires                                                            |
-| Bluesky                   | Non : ses recommandations demandent aux robots de n’interagir qu’avec ceux qui les ont mentionnés |
-| X                         | Non : X refuse les réponses d’une application aux commentaires qui ne mentionnent pas le compte   |
-| LinkedIn                  | Non : ses conditions interdisent les commentaires automatisés                                     |
-| YouTube                   | Non : ses règles demandent votre accord pour chaque commentaire                                   |
+| Bluesky                   | Non : ses recommandations demandent aux robots de n’interagir qu’avec ceux qui les ont mentionnés |
+| X                         | Non : X refuse les réponses d’une application aux commentaires qui ne mentionnent pas le compte   |
+| LinkedIn                  | Non : ses conditions interdisent les commentaires automatisés                                     |
+| YouTube                   | Non : ses règles demandent votre accord pour chaque commentaire                                   |
 
-Une règle sur une publication peut démarrer avant que la publication ne parte : elle agit sur les canaux auxquels la publication est destinée, et seulement là où leur plateforme le permet, quels que soient les autres canaux où la publication est partie. Une règle n’aime ni ne suit jamais personne, et n’écrit en privé que comme ci-dessous. Elle agit au nom de la personne qui l’a lancée : elle prend fin quand celle-ci ne peut plus répondre aux commentaires, et quand son canal est déconnecté. L’une ou l’autre fin est [signalée](/guides/workspace/notifications#other-events) à la personne qui l’a lancée, et la première à tous les membres qui peuvent répondre aux commentaires. Une règle en pause ne répond à rien, et jamais aux commentaires écrits pendant la pause, même ceux que Peal lit après la reprise.
+Une règle sur une publication peut démarrer avant que la publication ne parte. Elle agit sur les canaux auxquels la publication est destinée, et seulement là où leur plateforme le permet, quels que soient les autres canaux où la publication est partie. Une règle n’aime, ne suit ni n’écrit jamais en privé à personne.
 
-### Le message privé d’une règle [#comment-rule-private-replies]
+Une règle agit au nom de la personne qui l’a lancée. Elle prend fin quand celle-ci ne peut plus répondre aux commentaires, et quand son canal est déconnecté. L’une ou l’autre fin est [signalée](/guides/workspace/notifications#other-events) à la personne qui l’a lancée, et la première à tous les membres qui peuvent répondre aux commentaires.
 
-Sur Instagram et les Pages Facebook, une règle peut aussi envoyer à l’auteur de chaque commentaire auquel elle répond une [réponse privée](#private-replies) : cochez **Envoyer aussi un message privé** et écrivez-le. Il part :
-
-- **Après la réponse publique, jamais à sa place.** Peal l’envoie au passage suivant des règles une fois la réponse publique partie, en une dizaine de minutes environ. Une réponse publique qui a échoué, n’a pas été confirmée ou a été retirée n’entraîne aucun message privé.
-- **Une fois par commentaire.** Quel que soit l’auteur du premier, un membre ou une autre règle, le commentaire n’en reçoit pas de second : celui de la règle n’est alors pas envoyé. Une règle relancée ne l’envoie jamais deux fois.
-- **Dans les sept jours** qui suivent le commentaire, comme la réponse privée d’un membre, et seulement à la personne qui a commenté.
-- **Là où le canal peut le porter.** Ses messages privés activés dans l’espace de travail, et les autorisations qu’ils demandent. Une règle sur une publication destinée à plusieurs canaux ne l’envoie que sur ceux qui le peuvent, et répond en public ailleurs. Une règle dont le canal voit ensuite ses messages désactivés continue de répondre en public et indique, sous chaque commentaire, pourquoi aucun message privé n’est parti. Une règle est refusée quand aucun canal sur lequel elle répond ne peut porter son message privé, ou quand le message est trop long pour l’un de ceux qui le pourraient.
-- **Au nom de la personne qui a lancé la règle**, qui doit pouvoir envoyer des messages privés (propriétaires, administrateurs et éditeurs), et, pour une application, avec l’accord du propriétaire pour les messages. Si elle perd ce droit, la règle ne répond plus qu’en public. Modifier les mots-clés ou la réponse d’une règle qui a un message privé, ou la reprendre, demande le même droit ; quiconque peut répondre aux commentaires peut la mettre en pause ou lui retirer son message privé.
-- **Pas après une pause ou un arrêt.** Un message privé qui attend encore sa réponse publique n’est pas envoyé une fois la règle mise en pause, arrêtée ou privée de son message.
-
-Les plafonds de la règle ne changent pas : un message privé ne suit jamais qu’une de ses réponses publiques, et chacun compte un message de la boîte de réception sur un serveur qui facture. Sous chaque commentaire auquel elle a répondu, la règle indique si son message privé est parti, et sinon pourquoi. Le texte du message privé, et les commentaires qui en ont reçu un, ne sont montrés qu’aux membres qui lisent les messages privés, et à une application seulement une fois qu’un propriétaire l’a autorisée à les lire.
-
-**Indiquez que le message est automatique là où la loi le demande.** Le message d’une règle part vers de vraies personnes sans que personne ne lise chaque commentaire avant. Là où la loi demande qu’un message automatique le dise (certains États et pays le font), dites-le dans votre texte : Peal n’y ajoute rien.
+Une règle en pause ne répond à rien. Elle ne répond jamais aux commentaires écrits pendant la pause, même ceux que Peal lit après la reprise.
 
 ## Messages privés [#direct-messages]
 
-Là où la personne qui exploite le serveur les a activés ([`PEAL_INBOX_MESSAGES`](/self-hosting/environment-variables#core), avec `mastodon`, `bluesky`, `facebook`, `instagram`, ou plusieurs), la boîte de réception lit aussi les conversations privées que des personnes tiennent avec les comptes Mastodon et Bluesky de l’espace de travail, ses Pages Facebook (Messenger) et ses comptes professionnels Instagram, et les membres y répondent en privé, au nom du compte. Ni Mastodon ni Bluesky n’examinent une application pour cela ; Meta, si ([Messenger et Instagram](#meta-messages)). Peal n’engage jamais de conversation : il répond à celles qu’une autre personne a commencées.
+Là où la personne qui exploite le serveur les a activés ([`PEAL_INBOX_MESSAGES`](/self-hosting/environment-variables#core), avec `mastodon`, `bluesky` ou les deux), la boîte de réception lit aussi les conversations privées que des personnes tiennent avec les comptes Mastodon et Bluesky de l’espace de travail. Les membres y répondent en privé, au nom du compte. Aucune des deux plateformes n’examine d’application pour cela.
 
-Rien des conversations d’un canal n’est lu tant qu’un espace de travail n’a pas activé ses messages : un propriétaire ou un administrateur, en personne, sous **Messages privés : ce que Peal lit** dans la boîte de réception, un canal à la fois. Les désactiver arrête la lecture et supprime aussitôt tout ce que Peal a conservé des conversations de ce canal ; un message en route qui n’est jamais parti n’est pas envoyé.
+Peal n’engage jamais une conversation. Il répond à celles qu’une autre personne a commencées.
 
-| Ce que Peal conserve d’une conversation                                                                     | Ce qu’il ne conserve jamais        |
-| ----------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Les autres comptes qui y participent : leur identifiant, leur identifiant public et le nom qu’ils affichent | La photo ou le profil de quiconque |
-| Le texte de chaque message, qui l’a envoyé, quand, et le nombre de fichiers qu’il contient                  | Les fichiers                       |
-| Si un membre l’a lue, et les messages envoyés depuis Peal, avec leur auteur et l’issue de l’envoi           |                                    |
+### Activer les messages d’un canal [#messages-on]
 
-- **Privés.** Les messages sont une correspondance privée que reçoit l’espace de travail, et Peal ne les conserve que pour lui : l’équipe qui agit au nom d’un membre pour l’aider ne les lit jamais, aucun assistant de rédaction ne les reçoit, et ni un journal, ni une notification, ni un événement de webhook ne contient ce qu’ils disent ou qui les a envoyés.
-- **Quand.** Peal lit les conversations d’un canal deux fois par heure (aux minutes 1 et 21) tant qu’il a eu un message la veille, toutes les heures sinon.
-- **Qui les lit.** Lire les messages demande sa propre permission, `engagement:readMessages`, que détiennent les propriétaires, administrateurs et éditeurs ; les lecteurs et contributeurs voient les commentaires et les avis, pas les messages.
-- **Combien de temps.** Peal conserve chaque message 30 jours après son envoi, un message envoyé depuis Peal 30 jours après la fin de l’envoi ou après être resté non confirmé, et une conversation jusqu’à ce que son dernier message ait cet âge et qu’aucun message vers elle ne soit en route, puis les supprime dans l’heure. Peal relit chaque conversation conservée au moins une fois par jour : un message que la plateforme ne montre plus est supprimé dans la journée, et une conversation une fois que deux listes complètes de suite des conversations du compte ne la montrent plus. Une conversation trop longue pour être lue en entier, ou un compte qui a plus de conversations qu’une liste n’en lit, part au bout des 30 jours ; une liste vide ne supprime rien. Désactiver les messages du canal, déconnecter le canal, ou supprimer l’espace de travail supprime ses conversations aussitôt.
-- **Mastodon.** Un message privé est un statut de visibilité `direct`, qui parvient aux comptes qu’il mentionne : Peal place d’abord la mention de chaque participant, et le tout compte dans la longueur de Mastodon. Un message qui mentionne quelqu’un d’autre est refusé (`message_mentions_outside`), car il lui parviendrait aussi ; une conversation ne montre que les statuts échangés entre le compte et ses participants. Il demande les autorisations que la connexion de Peal a toujours demandées (`read:statuses`, `write:statuses`).
-- **Bluesky.** Les messages passent par le service de messagerie de Bluesky, qui demande ses propres autorisations : la connexion ne demande que ce qu’exige la publication, et activer les messages d’un canal Bluesky demande d’abord au compte d’autoriser sa messagerie : **Autoriser, sur Bluesky** reconnecte le compte en la demandant, et l’interrupteur reste désactivé tant que le compte ne l’a pas autorisée. Une [reconnexion](/guides/channels#reconnect) ultérieure du canal la redemande, pour que ses messages restent lisibles. [Connecter](/guides/channels#connect) à nouveau le même compte avec **Connecter Bluesky** ne demande que ce qu’exige la publication : à sa lecture suivante, Peal désactive alors les messages du canal, supprime leurs conversations et avertit les membres qui peuvent connecter des canaux ; pour les lire à nouveau, choisissez **Lire ses messages**, puis **Autoriser, sur Bluesky**. Un message compte 1 000 caractères (graphèmes) au plus. Répondre à une demande de message accepte la conversation. Les conversations de groupe ne sont pas lues.
-- **Messenger et Instagram.** [Voir plus bas](#meta-messages).
-- **Répondre.** Seule une conversation où quelqu’un d’autre a écrit peut recevoir une réponse. Un seul message à une conversation est en route à la fois. Un message dont l’issue n’est pas connue n’est jamais renvoyé : vérifiez sur la plateforme, puis dites ce que vous avez trouvé. Sur un serveur qui facture, chaque message envoyé compte un message de la boîte de réception, comme une réponse à un commentaire.
-- **Événements et notifications.** Un point de terminaison de webhook reçoit [`message.received`](/developers/webhooks/events/media-comments#message-received) pour chaque message lu pour la première fois, et [`message.sent`](/developers/webhooks/events/media-comments#message-sent) pour chacun qui est parti, par leurs seuls identifiants. Les membres qui répondent aux messages sont avertis d’« un nouveau message sur » le canal, une fois par conversation et par jour, jamais de qui. Les membres qui peuvent connecter des canaux sont avertis quand Peal a désactivé les messages d’un canal parce que son compte ne les autorise plus.
+Rien des conversations d’un canal n’est lu tant que l’espace de travail n’a pas activé ses messages. Un propriétaire ou un administrateur le fait, en personne, sous **Messages privés : ce que Peal lit** dans la boîte de réception, un canal à la fois, en cliquant sur **Lire ses messages**.
 
-### Messenger et Instagram [#meta-messages]
+Pour les désactiver, cliquez sur **Arrêter, et supprimer ce qui a été conservé**. La lecture s’arrête, et tout ce que Peal a conservé des conversations de ce canal est supprimé aussitôt. Un message en route qui n’est jamais parti n’est pas envoyé.
 
-Les conversations Messenger d’une Page Facebook et celles d’un compte professionnel Instagram, par l’une ou l’autre voie (une Page, ou la connexion Instagram), sont lues par l’API Conversations de Meta. Meta prévient aussi Peal de l’arrivée d’un message, qui est donc dans la boîte de réception en quelques secondes ; Peal lit tout de même chaque compte au rythme ci-dessus, si bien qu’un avis perdu ne fait que le retarder.
+De chaque conversation, Peal conserve :
 
-- **Ce qui est lu.** Le texte de chaque message et le nombre de fichiers qu’il contient, une story où le compte est mentionné comptant pour un fichier. Peal ne conserve jamais un fichier, une story ni un lien vers l’un d’eux : Meta interdit de stocker le média d’une mention dans une story.
-- **Autorisations.** Connecter une Page ou un compte Instagram pour publier ne demande aucune des autorisations de messagerie de Meta. Activer les messages d’un canal les demande : **Autoriser, sur Facebook** (ou **sur Instagram**, pour un compte connecté par la connexion Instagram) reconnecte le compte en les demandant, et l’interrupteur reste désactivé tant qu’elles ne sont pas accordées. Une [reconnexion](/guides/channels#reconnect) ultérieure les demande de nouveau.
-- **Le réglage d’Instagram.** Sur Instagram, la personne propriétaire du compte active aussi **Paramètres → Messages et réponses aux stories → Contrôles des messages → Outils connectés → Autoriser l’accès aux messages** ; d’ici là, rien ne peut être lu.
-- **Avant l’examen de Meta.** Tant que Meta n’a pas examiné l’application du serveur (son App Review), seules les personnes ayant un rôle sur cette application peuvent écrire au compte et recevoir une réponse par Peal.
-- **24 heures.** Meta n’accepte une réponse que dans les 24 heures qui suivent le dernier message de la personne. Peal indique jusqu’à quand une conversation peut recevoir une réponse, et s’arrête une minute plus tôt pour qu’un message qu’il laisse passer ne soit pas refusé pour un écart d’horloge ; au-delà, la zone de réponse disparaît et un message envoyé par l’API est refusé avant que rien ne soit compté (`windowClosed`). Répondez depuis la messagerie de Meta si ses règles le permettent, ou attendez que la personne écrive de nouveau.
-- **7 jours, à la main.** Là où la personne qui exploite le serveur a obtenu l’examen par Meta de sa fonctionnalité Human Agent ([`PEAL_META_HUMAN_AGENT`](/self-hosting/environment-variables#core)), un membre connecté à l’application web de Peal peut encore répondre, en écrivant le message lui-même, jusqu’à 7 jours après le dernier message de la personne (là aussi une minute plus tôt) : la conversation indique jusqu’à quand, et le message part avec la balise `HUMAN_AGENT` de Meta, que Meta réserve aux réponses écrites par une personne au-delà des 24 heures (en deçà, une réponse part sans balise). Là où Meta refuse la balise parce que l’application du serveur ne détient pas la fonctionnalité, le message n’est pas envoyé (`humanAgentNotGranted`) ; là où Meta répond par son avertissement que l’usage des balises par l’application est restreint, le message est peut-être parti : il reste non confirmé, pour qu’un membre vérifie, et n’est jamais renvoyé (`tagRestricted`). Une clé d’API, une application comme la ligne de commande ou un assistant d’IA, l’équipe agissant en tant que membre et une règle ne le peuvent jamais : passées les 24 heures, ils sont refusés (`windowClosed`).
-- **Longueur.** Un message compte 2 000 caractères au plus sur Messenger, et 1 000 octets UTF-8 sur Instagram.
-- **20 messages.** Meta ne donne le détail que des 20 derniers messages d’une conversation. Peal conserve ceux qu’il a lus ; une conversation plus longue n’est jamais lue en entier, et ses messages plus anciens sont donc supprimés au bout des 30 jours plutôt qu’au moment où ils quittent la plateforme.
-- **Messages retirés.** Un message que son auteur retire sur Instagram est supprimé de Peal dès que Meta le signale. Messenger ne signale aucun message retiré : il reste dans Peal jusqu’au terme de ses 30 jours. Une conversation qui quitte la liste de Meta, comme peut le faire une conversation déplacée dans un autre dossier de la messagerie de Meta, n’est pas supprimée pour autant : elle part elle aussi au bout de ses 30 jours.
-- **Déconnexion.** Désactiver les messages d’un canal, le déconnecter ou supprimer son espace de travail demande à Meta de ne plus prévenir Peal de ses messages, sauf si un autre canal de la même Page ou du compte Instagram qui lui est lié les lit encore.
+- Les autres comptes qui y participent : leur identifiant, leur identifiant public et le nom qu’ils affichent.
+- Le texte de chaque message, qui l’a envoyé, quand, et le nombre de fichiers qu’il contient.
+- Si un membre l’a lue, et les messages envoyés depuis Peal, avec leur auteur et l’issue de l’envoi.
 
-### Répondre en privé [#private-replies]
+Peal ne conserve jamais la photo ni le profil de quiconque, ni les fichiers.
 
-Sur Instagram et les Pages Facebook, un membre peut envoyer à l’auteur d’un commentaire sous la publication de l’espace de travail un seul message privé, au nom du compte : **Répondre en privé** sous le commentaire. Meta l’appelle une réponse privée.
+### Les messages restent privés [#messages-private]
 
-- **Une par commentaire.** La plateforme prend un seul message privé par commentaire, et Peal n’en envoie pas de second : tant qu’une réponse privée est en route, à vérifier ou envoyée, une autre est refusée. Une réponse qui a échoué en laisse passer une autre.
-- **Sept jours.** La plateforme la prend dans les sept jours qui suivent l’écriture du commentaire. Peal s’arrête une heure plus tôt, et le commentaire indique jusqu’à quand.
-- **La personne répond d’abord.** Elle n’ouvre aucune conversation que le compte pourrait poursuivre : ce n’est qu’une fois que la personne a répondu que le compte peut lui écrire de nouveau, dans les 24 heures de Meta, par un [message privé](#meta-messages). Sur Instagram, elle arrive dans ses demandes de messages si elle ne suit pas le compte.
-- **Ce qu’il faut.** Les messages privés du canal activés, comme ci-dessus : la réponse de la personne arrive sous cette forme. Un canal dont les messages sont désactivés ne peut pas en envoyer, et un canal à qui manquent les autorisations de ses messages est invité à se reconnecter.
-- **Depuis une règle.** Une [règle de réponse](#comment-rule-private-replies) peut aussi l’envoyer, après sa réponse publique.
-- **Dire qu’il est automatique là où la loi le demande.** Là où la loi demande qu’un message automatique le dise (certains États et pays le font), dites-le dans votre texte : Peal n’y ajoute rien.
-- **Qui la voit.** C’est une correspondance privée : le commentaire ne la montre qu’aux membres qui lisent les messages privés, et elle est conservée, comme un message envoyé depuis Peal, 30 jours après la fin de l’envoi. Elle part avec son commentaire, son canal et son espace de travail.
-- **Comme un message.** Elle compte un message de la boîte de réception sur un serveur qui facture, n’est jamais envoyée deux fois, et une réponse dont l’issue est inconnue n’est jamais renvoyée : vérifiez la conversation de la personne, puis dites ce que vous avez trouvé.
+Les messages sont une correspondance privée que reçoit l’espace de travail, et Peal ne les conserve que pour lui. L’équipe qui agit au nom d’un membre pour l’aider ne les lit jamais. Aucun assistant de rédaction ne les reçoit. Ni un journal, ni une notification, ni un événement de webhook ne contient ce qu’ils disent ou qui les a envoyés.
+
+Lire les messages demande sa propre permission, `engagement:readMessages`, que détiennent les propriétaires, administrateurs et éditeurs. Les lecteurs et contributeurs voient les commentaires et les avis, pas les messages.
+
+### Quand les messages sont lus et combien de temps ils sont conservés [#messages-retention]
+
+Peal lit les conversations d’un canal deux fois par heure (aux minutes 1 et 21) tant qu’il a eu un message la veille, et toutes les heures sinon.
+
+Peal conserve chaque message 30 jours, puis le supprime dans l’heure. Voici quand les 30 jours commencent :
+
+- Un message reçu : à son envoi.
+- Un message envoyé depuis Peal : à la fin de l’envoi, ou quand il est resté non confirmé.
+- Une conversation : elle est conservée jusqu’à ce que son dernier message ait cet âge et qu’aucun message vers elle ne soit en route.
+
+Peal relit chaque conversation conservée au moins une fois par jour. Un message que la plateforme ne montre plus est supprimé dans la journée. Une conversation est supprimée une fois que deux listes complètes de suite des conversations du compte ne la montrent plus.
+
+Une conversation trop longue pour être lue en entier, ou un compte qui a plus de conversations qu’une liste n’en lit, part au bout des 30 jours. Une liste vide ne supprime rien. Désactiver les messages du canal, déconnecter le canal, ou supprimer l’espace de travail supprime ses conversations aussitôt.
+
+### Sur Mastodon [#messages-mastodon]
+
+Un message privé est un statut de visibilité `direct`, qui parvient aux comptes qu’il mentionne. Peal place d’abord la mention de chaque participant, et le message entier compte dans la longueur de Mastodon.
+
+Un message qui mentionne quelqu’un d’autre est refusé (`message_mentions_outside`), car il lui parviendrait aussi. Une conversation ne montre que les statuts échangés entre le compte et ses participants. Les messages demandent les autorisations que la connexion de Peal a toujours demandées (`read:statuses`, `write:statuses`).
+
+### Sur Bluesky [#messages-bluesky]
+
+Les messages passent par le service de messagerie de Bluesky, qui demande ses propres autorisations. La connexion ne demande que ce qu’exige la publication. Pour activer les messages d’un canal Bluesky, le compte doit donc d’abord autoriser sa messagerie. Cliquez sur **Autoriser, sur Bluesky** pour vous reconnecter en l’accordant. L’interrupteur reste désactivé tant que le compte ne l’a pas autorisée.
+
+Une [reconnexion](/guides/channels#reconnect) ultérieure du canal redemande la messagerie, pour que ses messages restent lisibles. [Connecter](/guides/channels#connect) à nouveau le même compte avec **Connecter Bluesky** ne demande que ce qu’exige la publication. À sa lecture suivante, Peal désactive alors les messages du canal, supprime leurs conversations et avertit les membres qui peuvent connecter des canaux. Pour les lire à nouveau, cliquez sur **Lire ses messages**, puis sur **Autoriser, sur Bluesky**.
+
+Un message compte 1 000 caractères (graphèmes) au plus. Répondre à une demande de message accepte la conversation. Les conversations de groupe ne sont pas lues.
+
+### Répondre à un message [#messages-reply]
+
+Vous ne pouvez répondre qu’à une conversation où quelqu’un d’autre a écrit. Un seul message à une conversation est en route à la fois. Sur un serveur qui facture, chaque message envoyé compte pour un message de la boîte de réception, comme une réponse à un commentaire.
+
+Un message dont l’issue n’est pas connue n’est jamais renvoyé. Vérifiez sur la plateforme, puis dites ce que vous avez trouvé : **Il est parti** ou **Il n’est jamais parti**.
+
+### Les événements et notifications des messages [#messages-events]
+
+Un point de terminaison de webhook reçoit ces événements, par leurs seuls identifiants :
+
+- [`message.received`](/developers/webhooks/events/media-comments#message-received), pour chaque message lu pour la première fois.
+- [`message.sent`](/developers/webhooks/events/media-comments#message-sent), pour chacun qui est parti.
+
+Les membres qui répondent aux messages sont avertis d’« un nouveau message sur » le canal, une fois par conversation et par jour, jamais de qui. Les membres qui peuvent connecter des canaux sont avertis quand Peal a désactivé les messages d’un canal parce que son compte ne les autorise plus.
 
 ## Avec l’API, la ligne de commande et les assistants IA [#api]
 
-| Action                                                                             | Permission                | Qui l’a                                       |
-| ---------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------- |
-| Lire les commentaires et les avis                                                  | `engagement:read`         | Tous les rôles                                |
-| Répondre, marquer, modérer et retirer une réponse                                  | `engagement:reply`        | Propriétaires, administrateurs et éditeurs    |
-| Lister et lire les messages privés                                                 | `engagement:readMessages` | Propriétaires, administrateurs et éditeurs    |
-| Envoyer un message privé ou une réponse privée, marquer une conversation comme lue | `engagement:message`      | Propriétaires, administrateurs et éditeurs    |
-| Voir et changer les canaux dont les messages sont lus                              | `channel:connect`         | Propriétaires et administrateurs, en personne |
-| Autoriser une application à lire les messages et à y répondre                      | `organization:secure`     | Propriétaires, en personne                    |
+Chaque action demande une permission :
 
-Une clé d’API porte ce que son créateur lui a donné ; `engagement:readMessages` et `engagement:message`, seul un propriétaire les donne à une clé, en personne, car cela ouvre les messages à une application, et une clé partenaire ne les porte jamais. Une application connectée par OAuth a besoin du scope `workspace:publish` pour tout ce qui n’est pas lire, comme pour publier, et le scope `workspace:read` ne porte jamais les messages. Sans l’accord d’un propriétaire, donné sous **Applications qui peuvent les lire et y répondre** avec l’identifiant de client qu’elle affiche, une application liste les conversations (qui y participe, combien de messages) et se voit refuser leur lecture et la réponse, avec un refus qui dit pourquoi. L’équipe qui agit au nom d’un membre pour l’aider ne lit pas la boîte de réception et n’y répond pas.
+| Action                                                        | Permission                | Qui l’a                                       |
+| ------------------------------------------------------------- | ------------------------- | --------------------------------------------- |
+| Lire les commentaires et les avis                             | `engagement:read`         | Tous les rôles                                |
+| Répondre, marquer, modérer et retirer une réponse             | `engagement:reply`        | Propriétaires, administrateurs et éditeurs    |
+| Lister et lire les messages privés                            | `engagement:readMessages` | Propriétaires, administrateurs et éditeurs    |
+| Envoyer un message privé, marquer une conversation comme lue  | `engagement:message`      | Propriétaires, administrateurs et éditeurs    |
+| Voir et changer les canaux dont les messages sont lus         | `channel:connect`         | Propriétaires et administrateurs, en personne |
+| Autoriser une application à lire les messages et à y répondre | `organization:secure`     | Propriétaires, en personne                    |
 
-| Requête                                                                                      | Ce qu’elle fait                                                                                                                                                                                                                                                                                               |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/workspaces/{workspaceId}/inbox/threads`                                            | Liste les fils qui ont des commentaires, ceux qui attendent une réponse en premier. `channelId`, `postId` et `unanswered=true` restreignent la liste ; `cursor` et `limit` la paginent.                                                                                                                       |
-| `GET /api/workspaces/{workspaceId}/inbox/threads/{threadId}`                                 | Un fil entier : commentaires, réponses, et ce que le canal peut faire.                                                                                                                                                                                                                                        |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies`                      | Répond à un commentaire. Répond `202` avec la réponse, `sending`.                                                                                                                                                                                                                                             |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered`                     | Marque un commentaire comme traité, ou de nouveau en attente.                                                                                                                                                                                                                                                 |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation`                   | Masque, montre, aime, n’aime plus ou supprime, quand la plateforme le permet.                                                                                                                                                                                                                                 |
-| `POST /api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation`                    | Enregistre ce que quelqu’un a trouvé pour une réponse non confirmée.                                                                                                                                                                                                                                          |
-| `DELETE /api/workspaces/{workspaceId}/inbox/replies/{replyId}`                               | Retire une réponse envoyée.                                                                                                                                                                                                                                                                                   |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads`                                    | Liste les établissements qui ont des avis, ceux qui attendent une réponse en premier.                                                                                                                                                                                                                         |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}`                         | Les avis d’un établissement en entier, les réponses envoyées depuis Peal, et ce que le canal peut faire.                                                                                                                                                                                                      |
-| `PUT /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                           | Répond à un avis, en remplaçant sa réponse, en personne seulement. Répond `202` avec la réponse, `sending` ; avec un `Idempotency-Key`, peut être renvoyée sans risque.                                                                                                                                       |
-| `DELETE /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                        | Supprime la réponse de l’établissement à un avis.                                                                                                                                                                                                                                                             |
-| `POST /api/workspaces/{workspaceId}/inbox/rules`                                             | Lance une [règle de réponse](#comment-rules) sur une publication (`postId`) ou un canal (`channelId`), avec `keywords`, une `reply` et, au choix, une `privateReply`. `GET`, `PATCH` (mots-clés, réponse, réponse privée, `paused`) et `DELETE …/inbox/rules/{ruleId}` la lisent, la modifient et l’arrêtent. |
-| `POST /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered`                       | Marque un avis comme répondu, ou de nouveau en attente.                                                                                                                                                                                                                                                       |
-| Requête                                                                                      | Ce qu’elle fait                                                                                                                                                                                                                                                                                               |
-| -------------------------------------------------------------------------------------------  | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------                                                                                                 |
-| `GET /api/workspaces/{workspaceId}/inbox/threads`                                            | Liste les fils qui ont des commentaires, ceux qui attendent une réponse en premier. `channelId`, `postId` et `unanswered=true` restreignent la liste ; `cursor` et `limit` la paginent.                                                                                                                       |
-| `GET /api/workspaces/{workspaceId}/inbox/threads/{threadId}`                                 | Un fil entier : commentaires, réponses, et ce que le canal peut faire.                                                                                                                                                                                                                                        |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies`                      | Répond à un commentaire. Répond `202` avec la réponse, `sending`.                                                                                                                                                                                                                                             |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered`                     | Marque un commentaire comme traité, ou de nouveau en attente.                                                                                                                                                                                                                                                 |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation`                   | Masque, montre, aime, n’aime plus ou supprime, quand la plateforme le permet.                                                                                                                                                                                                                                 |
-| `POST /api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation`                    | Enregistre ce que quelqu’un a trouvé pour une réponse non confirmée.                                                                                                                                                                                                                                          |
-| `DELETE /api/workspaces/{workspaceId}/inbox/replies/{replyId}`                               | Retire une réponse envoyée.                                                                                                                                                                                                                                                                                   |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads`                                    | Liste les établissements qui ont des avis, ceux qui attendent une réponse en premier.                                                                                                                                                                                                                         |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}`                         | Les avis d’un établissement en entier, les réponses envoyées depuis Peal, et ce que le canal peut faire.                                                                                                                                                                                                      |
-| `PUT /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                           | Répond à un avis, en remplaçant sa réponse, en personne seulement. Répond `202` avec la réponse, `sending` ; avec un `Idempotency-Key`, peut être renvoyée sans risque.                                                                                                                                       |
-| `DELETE /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                        | Supprime la réponse de l’établissement à un avis.                                                                                                                                                                                                                                                             |
-| `POST /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered`                       | Marque un avis comme répondu, ou de nouveau en attente.                                                                                                                                                                                                                                                       |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations`                             | Liste les conversations, le dernier message en premier. `channelId` et `unread=true` restreignent la liste ; `cursor` et `limit` la paginent.                                                                                                                                                                 |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}`            | Une conversation : une page de ses messages (les 100 derniers sauf si `limit` en demande moins ; `nextCursor` comme `cursor` pour les plus anciens), ceux envoyés depuis Peal, et ce que le canal peut faire.                                                                                                 |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/messages`  | Envoie un message privé. Répond `202` avec le message, `sending` ; avec un `Idempotency-Key`, peut être renvoyée sans risque.                                                                                                                                                                                 |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/read`      | Marque une conversation comme lue, ou de nouveau non lue.                                                                                                                                                                                                                                                     |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/outgoing/{messageId}/confirmation`        | Enregistre ce que quelqu’un a trouvé pour un message non confirmé.                                                                                                                                                                                                                                            |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/private-replies`                          | Envoie à l’auteur d’un commentaire sa seule [réponse privée](#private-replies) (`commentId`, `text`). Répond `201` avec elle, `sending` ; avec un `Idempotency-Key`, peut être renvoyée sans risque.                                                                                                          |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}`          | Une réponse privée, et où elle en est.                                                                                                                                                                                                                                                                        |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}/confirm` | Enregistre ce que quelqu’un a trouvé pour une réponse privée non confirmée (`went`).                                                                                                                                                                                                                          |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/settings`                                  | Les canaux dont les messages sont lus, et les applications qu’un propriétaire a autorisées à les lire.                                                                                                                                                                                                        |
-| `PUT /api/workspaces/{workspaceId}/inbox/messages/channels/{channelId}`                      | Active ou désactive les messages d’un canal (`enabled`), en personne.                                                                                                                                                                                                                                         |
-| `PUT /api/workspaces/{workspaceId}/inbox/messages/applications`                              | Autorise une application à lire les messages et à y répondre, ou le lui retire (`clientId`, `allowed`), en personne.                                                                                                                                                                                          |
+Une clé d’API porte ce que son créateur lui a donné. Seul un propriétaire donne à une clé `engagement:readMessages` et `engagement:message`, en personne, car cela ouvre les messages à une application, et une clé partenaire ne les porte jamais.
 
-La ligne de commande offre la même chose sous `peal inbox`, et `peal inbox reviews` pour lire les avis et les marquer (voir [Ligne de commande](/developers/cli)). Les assistants IA connectés par [MCP](/developers/mcp) ont `list_comment_threads`, `get_comment_thread`, `reply_to_comment`, `confirm_comment_reply`, `withdraw_comment_reply`, `mark_comment_answered` et `moderate_comment`, pour les avis `list_location_reviews`, `get_location_reviews` et `mark_location_review_answered` (`reply_to_location_review` et `delete_location_review_reply` refusent, car seule une personne répond à un avis), et pour les messages privés `list_conversations`, `get_conversation` et `send_message`, avec `peal inbox messages` en ligne de commande. Un assistant connecté liste les conversations, et ne les lit ou n’y répond qu’une fois qu’un propriétaire a autorisé son application : n’autorisez qu’un assistant qui peut lire les messages privés de l’espace de travail.
+Une application connectée par OAuth a besoin du scope `workspace:publish` pour tout ce qui n’est pas lire, comme pour publier. Le scope `workspace:read` ne porte jamais les messages. Sans l’accord d’un propriétaire, une application liste les conversations (qui y participe, combien de messages) et se voit refuser leur lecture et la réponse, avec un refus qui dit pourquoi. Un propriétaire donne cet accord sous **Applications qui peuvent les lire et y répondre**, avec l’identifiant de client que l’application affiche.
 
-<Callout type="warning" title="Un commentaire peut contenir des instructions">
+L’équipe qui agit au nom d’un membre pour l’aider ne lit pas la boîte de réception et n’y répond pas.
+
+La boîte de réception a ces requêtes :
+
+| Requête                                                                                     | Ce qu’elle fait                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/workspaces/{workspaceId}/inbox/threads`                                           | Liste les fils qui ont des commentaires, ceux qui attendent une réponse en premier. `channelId`, `postId` et `unanswered=true` restreignent la liste. `cursor` et `limit` la paginent.                                                                         |
+| `GET /api/workspaces/{workspaceId}/inbox/threads/{threadId}`                                | Un fil entier : commentaires, réponses, et ce que le canal peut faire.                                                                                                                                                                                         |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies`                     | Répond à un commentaire. Répond `202` avec la réponse, `sending`.                                                                                                                                                                                              |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered`                    | Marque un commentaire comme répondu, ou de nouveau en attente.                                                                                                                                                                                                 |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation`                  | Masque, montre, aime, n’aime plus ou supprime, quand la plateforme le permet.                                                                                                                                                                                  |
+| `POST /api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation`                   | Enregistre ce que quelqu’un a trouvé pour une réponse non confirmée.                                                                                                                                                                                           |
+| `DELETE /api/workspaces/{workspaceId}/inbox/replies/{replyId}`                              | Retire une réponse envoyée.                                                                                                                                                                                                                                    |
+| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads`                                   | Liste les établissements qui ont des avis, ceux qui attendent une réponse en premier.                                                                                                                                                                          |
+| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}`                        | Les avis d’un établissement en entier, les réponses envoyées depuis Peal, et ce que le canal peut faire.                                                                                                                                                       |
+| `PUT /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                          | Répond à un avis, en remplaçant sa réponse, en personne seulement. Répond `202` avec la réponse, `sending`. Avec un `Idempotency-Key`, la requête peut être renvoyée sans risque.                                                                              |
+| `DELETE /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                       | Supprime la réponse de l’établissement à un avis.                                                                                                                                                                                                              |
+| `POST /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered`                      | Marque un avis comme répondu, ou de nouveau en attente.                                                                                                                                                                                                        |
+| `POST /api/workspaces/{workspaceId}/inbox/rules`                                            | Lance une [règle de réponse](#comment-rules) sur une publication (`postId`) ou un canal (`channelId`), avec `keywords` et une `reply`. `GET`, `PATCH` (mots-clés, réponse, `paused`) et `DELETE …/inbox/rules/{ruleId}` la lisent, la modifient et l’arrêtent. |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations`                            | Liste les conversations, le dernier message en premier. `channelId` et `unread=true` restreignent la liste. `cursor` et `limit` la paginent.                                                                                                                   |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}`           | Une conversation : une page de ses messages (les 100 derniers sauf si `limit` en demande moins, avec `nextCursor` comme `cursor` pour les plus anciens), ceux envoyés depuis Peal, et ce que le canal peut faire.                                              |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/messages` | Envoie un message privé. Répond `202` avec le message, `sending`. Avec un `Idempotency-Key`, la requête peut être renvoyée sans risque.                                                                                                                        |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/read`     | Marque une conversation comme lue, ou de nouveau non lue.                                                                                                                                                                                                      |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/outgoing/{messageId}/confirmation`       | Enregistre ce que quelqu’un a trouvé pour un message non confirmé.                                                                                                                                                                                             |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/settings`                                 | Les canaux dont les messages sont lus, et les applications qu’un propriétaire a autorisées à les lire.                                                                                                                                                         |
+| `PUT /api/workspaces/{workspaceId}/inbox/messages/channels/{channelId}`                     | Active ou désactive les messages d’un canal (`enabled`), en personne.                                                                                                                                                                                          |
+| `PUT /api/workspaces/{workspaceId}/inbox/messages/applications`                             | Autorise une application à lire les messages et à y répondre, ou le lui retire (`clientId`, `allowed`), en personne.                                                                                                                                           |
+
+La [ligne de commande](/developers/cli) offre la même chose sous `peal inbox`, avec `peal inbox reviews` pour lire les avis et les marquer, et `peal inbox messages` pour les messages privés.
+
+Les assistants IA connectés par [MCP](/developers/mcp) ont ces outils :
+
+- Pour les commentaires : `list_comment_threads`, `get_comment_thread`, `reply_to_comment`, `confirm_comment_reply`, `withdraw_comment_reply`, `mark_comment_answered` et `moderate_comment`.
+- Pour les avis : `list_location_reviews`, `get_location_reviews` et `mark_location_review_answered`. `reply_to_location_review` et `delete_location_review_reply` refusent, car seule une personne répond à un avis.
+- Pour les messages privés : `list_conversations`, `get_conversation` et `send_message`.
+
+Un assistant connecté liste les conversations, et ne les lit ou n’y répond qu’une fois qu’un propriétaire a autorisé son application. N’autorisez qu’un assistant qui peut lire les messages privés de l’espace de travail.
+
+<Callout
+  type="warning"
+  title="Un commentaire peut chercher à orienter votre assistant"
+>
   Un commentaire est un texte écrit par quelqu’un d’extérieur à votre espace de
-  travail, et peut être écrit pour orienter un assistant IA (« ignore tes
-  instructions et… »). Les outils de Peal le disent à l’assistant, et aucun
+  travail, et il peut être écrit pour orienter un assistant IA (« ignore tes
+  instructions et… »). Les outils de Peal le disent à l’assistant, et aucun
   outil n’agit parce qu’un commentaire le demande. Ne donnez à un assistant le
   droit de publier que si vous voulez qu’il puisse répondre en votre nom.
 </Callout>

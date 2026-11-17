@@ -6,37 +6,44 @@ sidebar:
   order: 1
 ---
 
-Peal is a social media scheduling platform: write a post once, schedule it across platforms, and see how it performs.
+You write a post once in Peal, adjust it where a platform needs something different, and Peal sends it to each of your channels at the time you set. Then each platform's numbers come back, so you can see what worked without opening every app.
 
-<Callout type="warning" title="Early development">
-  Peal is being built in the open and has not been released yet. These pages
-  describe what works today, and grow as features land.
+<Callout type="warning" title="Peal hasn't been released yet">
+  Peal is being built in the open. These pages describe what works today, and
+  they grow as features land.
 </Callout>
 
-What works today:
+Here's what works today:
 
-- workspaces;
-- Mastodon, Bluesky, LinkedIn, X, Threads and Instagram accounts, and Facebook Pages;
-- posts with images and videos, scheduled on a calendar and published;
-- a notice of how each post went, and how it did on its platforms;
-- a writing assistant.
+- Workspaces, with members and roles.
+- Accounts on [eleven platforms](/platforms), from Mastodon and Bluesky to YouTube and Google Business Profile, and articles on websites.
+- Posts with images and videos, scheduled on a calendar and published.
+- A notice of how each post went, and how it did on its platforms.
+- A writing assistant.
 
 ## What Peal does [#what-it-does]
 
-| Task                      | What Peal does                                                                                                                                    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Write once                | Draft a post in one editor, then give it its own text on each channel where it needs to differ. Counters show how much room each platform leaves. |
-| Schedule across platforms | Pick the accounts and the time. Peal publishes each post when it is due, in the time zone you scheduled it in, daylight saving included.          |
-| See results               | Peal reads back each post's likes, reposts, replies and quotes for a month, so you can see what worked in one place.                              |
-| Work as a team            | Workspaces have members and roles, so several people can write, review and schedule together.                                                     |
+Each task below is one part of the app:
 
-<Callout type="info" title="No blind retries">
-  When a platform does not confirm whether a post went out, Peal asks again only
-  in ways that cannot post it twice. If that still settles nothing, it marks the
-  post unconfirmed and asks you to check the platform before posting again.
+| Task                      | What Peal does                                                                                                                                        |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Write once                | You draft a post in one editor, then give it its own text on each channel where it needs to differ. Counters show how much room each platform leaves. |
+| Schedule across platforms | You pick the accounts and the time. Peal publishes each post when it's due, in the time zone you scheduled it in, daylight saving included.           |
+| See results               | Peal reads back each post's likes, reposts, replies and quotes for a month, so you can see what worked in one place.                                  |
+| Work as a team            | Workspaces have members and roles, so several people can write, review and schedule together.                                                         |
+
+<Callout
+  type="info"
+  title="Peal doesn't post again when a platform doesn't confirm"
+>
+  When a platform doesn't confirm that a post went out, Peal checks again only
+  in ways that can't post it twice. If that still settles nothing, it marks the
+  post unconfirmed and asks you to check the platform before you post again.
 </Callout>
 
 ## Where to start [#guides]
+
+Pick the page that matches what you came to do:
 
 <CardGroup cols={2}>
   <Card title="Quickstart" href="/quickstart" icon="rocket">
@@ -53,32 +60,32 @@ What works today:
   </Card>
 </CardGroup>
 
-The tabs at the top split the rest by reader:
+The tabs at the top split the rest of the docs by reader:
 
 - **Guides**: running a workspace in the app.
 - **Developers**: building on the API, the command line, MCP and webhooks.
 - **Self-hosting**: running a server.
 
-The [glossary](/glossary) says what each word means.
+If a word is new to you, the [glossary](/glossary) says what it means.
 
-## Self-hostable [#self-hostable]
+## Run it yourself [#self-hostable]
 
-Every outside service Peal relies on has a self-hostable default. A self-hosted instance needs:
+Every outside service Peal relies on has a default you can host yourself. A self-hosted instance needs three things:
 
-- Postgres;
-- an S3-compatible store;
-- a way to send email.
+- Postgres.
+- An S3-compatible store.
+- A way to send email.
 
-Billing, captcha, AI and telemetry are optional. [Self-hosting](/self-hosting) explains how to run it, [Environment variables](/self-hosting/environment-variables) lists every setting, and the [staff console](/self-hosting/staff) is where the people who run it find accounts and workspaces.
+Billing, captcha, AI and telemetry are optional. [Self-hosting](/self-hosting) explains how to run it, and [Environment variables](/self-hosting/environment-variables) lists every setting. The people who run the server find accounts and workspaces in the [staff console](/self-hosting/staff).
 
 ## Fair source [#fair-source]
 
-The source is public under the Functional Source License (FSL-1.1-ALv2):
+The source is public under the Functional Source License (FSL-1.1-ALv2). Here's what it lets you do:
 
-- You may use, modify and self-host Peal for any purpose, except offering it to others as a competing commercial product or service.
-- Each release also becomes available under the Apache License 2.0 two years after it ships.
+- Use, modify and self-host Peal for any purpose, except offering it to others as a competing commercial product or service.
+- Use each release under the Apache License 2.0 too, two years after it ships.
 
-That is why Peal calls itself fair source rather than open source.
+That's why Peal calls itself fair source rather than open source.
 
 ## Licensing [#licensing]
 
@@ -87,10 +94,10 @@ Peal, the licensor, publishes the source on [GitHub](https://github.com/peal-soc
 | Part                                                               | Licence                                                           |
 | ------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | The server, the web app, the command line, these docs and the rest | FSL-1.1-ALv2, as above                                            |
-| The SDKs, and the API contract they are generated from             | [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) |
+| The SDKs, and the API contract they're generated from              | [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) |
 
-An application that calls Peal through an SDK may use it for anything, a competing service included, under the Apache License's terms. A folder with a `LICENSE` file of its own is under that licence; the rest of the repository is under `LICENSE.md`.
+An application that calls Peal through an SDK can use it for anything, a competing service included, under the Apache License's terms. A folder with a `LICENSE` file of its own is under that licence. The rest of the repository is under `LICENSE.md`.
 
 ## Build on the API [#api]
 
-Everything the web app does goes through the same HTTP API. [The API overview](/developers) explains how it is organised and how to authenticate, and the [API reference](/reference) lists every endpoint.
+Everything the web app does goes through the same HTTP API. [The API overview](/developers) explains how it's organised and how to authenticate, and the [API reference](/reference) lists every endpoint.

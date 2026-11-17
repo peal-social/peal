@@ -5,9 +5,11 @@ sidebar:
   icon: newspaper
 ---
 
-Comment connecter un site WordPress.com, ou un site Jetpack que vous y atteignez, et ce qu’un article peut y contenir. Un site prend des [articles](/guides/channels/websites), pas des publications, comme un site WordPress à vous.
+Vous pouvez connecter un site hébergé sur WordPress.com, ou un site Jetpack que vous y atteignez. Comme un site WordPress à vous, il prend des [articles](/guides/channels/websites) plutôt que des publications.
 
 ## En bref [#at-a-glance]
+
+Voici ce qu’un article sur WordPress.com peut contenir, et ce que Peal peut en faire :
 
 |             |                                                           |
 | ----------- | --------------------------------------------------------- |
@@ -17,25 +19,36 @@ Comment connecter un site WordPress.com, ou un site Jetpack que vous y atteignez
 | Sur le site | Publié aussitôt, un brouillon là-bas, ou programmé là-bas |
 | Dépublier   | Envoie l’article à la corbeille du site                   |
 
-## Connecter [#connect]
+## Connecter un site [#connect]
 
-Dans **Canaux**, sous **WordPress.com**, choisissez **Connecter WordPress.com**, connectez-vous sur WordPress.com, et choisissez le site. Vous devez pouvoir y publier des articles et y envoyer des fichiers : auteur, éditeur ou administrateur. Peal ne demande à WordPress.com l’accès qu’à ce site, conserve chiffré le jeton qu’il donne, et ne voit jamais votre mot de passe.
+Dans **Canaux**, sous **WordPress.com**, cliquez sur **Connecter WordPress.com**, connectez-vous sur WordPress.com, et choisissez le site. Vous devez pouvoir y publier des articles et y envoyer des fichiers, comme auteur, éditeur ou administrateur.
 
-**Canaux** propose WordPress.com une fois le serveur Peal configuré pour lui (voir [Sur votre propre serveur](#self-hosting)). Reconnecter un canal demande de se connecter de nouveau, et d’atteindre le même site.
+Peal ne demande à WordPress.com l’accès qu’à ce site. Il conserve chiffré le jeton que WordPress.com lui donne, et ne voit jamais votre mot de passe.
+
+**Canaux** propose WordPress.com une fois le serveur Peal configuré pour lui (voir [Sur votre propre serveur](#self-hosting)). Reconnecter un canal vous demande de vous connecter de nouveau, et doit atteindre le même site.
 
 ## Articles [#articles]
 
-Un site WordPress.com reçoit un article comme un site WordPress à vous : ses images vont une fois à la médiathèque du site, ses étiquettes et catégories sont retrouvées par leur nom ou créées, et une réponse perdue est d’abord cherchée parmi vos articles. Voir [Sites web et articles](/guides/channels/websites#send).
+Un site WordPress.com reçoit un article de la même façon qu’un site WordPress à vous :
 
-<Callout type="warning" title="Le partage depuis WordPress.com">
-  Un site réglé pour partager ses nouveaux articles sur ses propres comptes
-  sociaux (sur WordPress.com, sous Jetpack Social) partage aussi l’article que
-  Peal y publie, car Peal ne change pas les réglages du site. Si ces comptes
-  sociaux sont aussi connectés à Peal et que vous y publiez l’article depuis
-  Peal, ils le reçoivent deux fois : coupez le partage pour eux, ou laissez-les
-  de côté dans Peal.
+- Ses images vont une fois à la médiathèque du site.
+- Ses étiquettes et catégories sont retrouvées par leur nom, ou créées.
+- Quand la réponse de WordPress.com se perd, Peal cherche d’abord l’article parmi vos articles.
+
+Voyez [Sites web et articles](/guides/channels/websites#send).
+
+<Callout
+  type="warning"
+  title="Un site qui partage ses nouveaux articles partage aussi ceux de Peal"
+>
+  Un site peut être réglé pour partager ses nouveaux articles sur ses propres
+  comptes sociaux (sur WordPress.com, sous Jetpack Social). Peal ne change pas
+  les réglages du site, si bien que le site partage aussi l’article que Peal y
+  publie. Si ces comptes sociaux sont aussi connectés à Peal et que vous y
+  publiez l’article depuis Peal, ils le reçoivent deux fois. Coupez le partage
+  pour eux, ou laissez-les de côté dans Peal.
 </Callout>
 
 ## Sur votre propre serveur [#self-hosting]
 
-Un serveur auto-hébergé propose WordPress.com une fois son application enregistrée : voir [WordPress.com](/self-hosting/platforms#wordpress-com).
+Un serveur auto-hébergé propose WordPress.com une fois son application enregistrée : voyez [WordPress.com](/self-hosting/platforms#wordpress-com).

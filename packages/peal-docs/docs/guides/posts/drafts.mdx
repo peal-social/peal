@@ -5,15 +5,15 @@ sidebar:
   icon: file-text
 ---
 
-Find the posts that have no time yet, list every post of the workspace, and schedule many at once from a CSV file.
+A draft is a post with no time yet. You'll find drafts on their own list, every post on another, and you can schedule up to 100 at once from a CSV file.
 
 ## Drafts [#drafts]
 
-From a workspace's card, **Drafts** lists the posts without a time yet, newest first, 20 at a time. Each shows the start of its text, its channels and its media, and opens in the composer.
+To see them, click **Posts** in a workspace's sidebar, then **Drafts**. The list shows posts without a time, newest first, 20 at a time. Each one shows the start of its text, its channels and its media, and opens in the composer.
 
-To drop a draft, choose **Discard the draft** in the composer and confirm. It is deleted, and its images and videos stay in the media library. Owners, admins and editors discard any draft; a contributor discards those they wrote.
+To drop a draft, click **Discard the draft** in the composer and confirm. The draft is deleted, and its images and videos stay in the media library. Owners, admins and editors can discard any draft. A contributor can discard the ones they wrote.
 
-From the command line ([Drafts](/developers/cli/posts#drafts)):
+On the command line ([Drafts](/developers/cli/posts#drafts)):
 
 ```sh
 peal drafts list                  # newest first; --limit and --cursor page through them
@@ -22,49 +22,56 @@ peal drafts discard <post-id>
 
 ## All posts [#all-posts]
 
-From a workspace's card, **All posts** lists its posts whatever their state, newest first, with **Show more** for the next page. Each opens on its page and shows:
+To see every post of a workspace, whatever its state, click **Posts** in its sidebar. The sidebar then shows **All posts**, the list that opens. Posts come newest first, and **Show more** loads the next page. Each one opens on its page and shows:
 
-- the start of its text;
-- its time in your time zone;
-- its status and, once finished, its outcome;
-- its channels and its tags.
+- the start of its text
+- its time in your time zone
+- its status and, once it's finished, its outcome
+- its channels and its tags
 
-Filter by status, by outcome (with finished posts), by channel and by tag, and order by creation or by time. Ordered by time, the list holds only the posts that have one. The filters are in the page's address, so a link shows the same list.
+You can filter by status, by outcome (for finished posts), by channel and by tag. You can order by creation or by time, and when you order by time, the list holds only the posts that have one. The filters are kept in the page's address, so a link shows the same list.
 
 ## Import posts from a file [#import-screen]
 
-From **All posts**, **Import from a file** schedules up to 100 posts at once from a CSV file, one post a row. Owners, admins and editors may: it takes the right to schedule.
+On **All posts**, click **Import from a file** to schedule up to 100 posts at once from a CSV file, one post a row. Importing needs the right to schedule, so owners, admins and editors can do it.
 
-The page lists the columns the file takes, offers a sample to start from, and lists the workspace's channels with their ids, to copy into the file's `channels` column, and its channel sets' names. [Import posts from a CSV file](/developers/posting/bulk#import) describes each column and every answer.
+The page lists the columns the file takes and offers a sample to start from. It also lists the workspace's channels with their ids, to copy into the file's `channels` column, and its channel sets' names. [Import posts from a CSV file](/developers/posting/bulk#import) describes each column and every answer.
 
 <Steps>
   <Step title="Choose a file">
-    Peal checks every row, and makes nothing. Each row shows as valid, refused
-    with the reason, or unreadable with the cells at fault.
+
+Peal checks every row and makes nothing yet. Each row shows as valid, refused with the reason, or unreadable with the cells at fault.
+
   </Step>
   <Step title="Correct it until every row is valid">
-    It is all or nothing: **Import** is offered only once every row is valid.
-    Otherwise, correct the file and choose it again.
+
+It's all or nothing: **Import** is offered only once every row is valid. Until then, correct the file and choose it again.
+
   </Step>
   <Step title="Import">
-    **Import** asks once, saying how many posts will be scheduled, then makes
-    them in order and links each one.
+
+Click **Import**. Peal asks you to confirm and says how many posts it'll schedule, then makes them in order and links each one.
+
   </Step>
 </Steps>
 
-<Callout type="warning">
-  A row dated `now` goes out as soon as it is made, in public. The others wait
-  for their time.
+<Callout type="warning" title="A row dated now goes out at once">
+  A row dated `now` is published as soon as its post is made, in public. The
+  other rows wait for their time.
 </Callout>
 
-A row can still be refused while the file is imported, when something changed since the check, such as the month's room on the plan. The other rows' posts are still made, before it and after it, and the page says which rows were not.
+### If a row is refused during the import [#import-refused]
 
-<Callout type="warning">
-  Correct the refused rows and import them in a file of their own. Importing the
-  same file again would make the others twice.
+A row can still be refused during the import when something changed since the check, such as the month's room on the plan. The posts of the other rows are still made, before it and after it, and the page tells you which rows weren't.
+
+<Callout type="warning" title="Refused rows go in a file of their own">
+  Correct the refused rows and put them in a new file. If you import the same
+  file again, the other rows' posts are made twice.
 </Callout>
 
-From the command line, `--dry-run` only checks the file, and `--idempotency-key` makes the import safe to run again within 24 hours ([Posts](/developers/cli/posts#posts)):
+### On the command line [#import-cli]
+
+`--dry-run` only checks the file. `--idempotency-key` makes the import safe to run again within 24 hours ([Posts](/developers/cli/posts#posts)):
 
 ```sh
 peal posts import posts.csv --dry-run

@@ -5,145 +5,122 @@ sidebar:
   icon: sliders-horizontal
 ---
 
-La facturation, le captcha et l’inscription fermée sont tous désactivés sur un nouveau serveur. Chaque section dit quoi définir pour en activer un.
+Sur un nouveau serveur, la facturation et le captcha sont désactivés, et tout le monde peut s’inscrire. Chaque section ci-dessous dit quoi définir pour changer cela.
 
 ## Facturation [#billing]
 
-La facturation est désactivée tant que `STRIPE_SECRET_KEY` n’est pas définie : il n’y a pas d’abonnement, rien n’est limité, et la page de facturation des espaces de travail le dit. Avec une clé, chaque espace de travail commence avec l’offre gratuite, {{free-accounts}} comptes connectés sur tout son compte de facturation. Un abonnement Stripe au tarif par compte, au mois, lui en donne autant qu’il veut, facturés au compte et à l’usage (les abonnements par paliers de canaux ne sont plus vendus). [Abonnements et facturation](/guides/workspace/billing) présente les deux, avec ce que chacun limite, la commande, la résiliation et la rétractation.
+La facturation est désactivée tant que vous n’avez pas défini `STRIPE_SECRET_KEY`. D’ici là, il n’y a pas d’abonnement, rien n’est limité, et la page de facturation des espaces de travail le dit.
 
-<Callout type="warning" title="Définir un délai avant d’activer la facturation">
-  Activer la facturation, ou mettre à jour un serveur qui facturait avec les
-  abonnements par paliers de canaux (dont l’offre gratuite comptait 3 comptes),
-  met au-delà de l’offre gratuite chaque espace de travail qui compte plus de {{free-accounts}}
-  comptes. Définissez d’abord `PEAL_BILLING_GRACE_UNTIL`, pour les laisser
-  publier sur les comptes qu’ils avaient jusqu’à un jour, pendant que ceux qui
-  gèrent leur facturation sont prévenus ([Variables
-  d’environnement](/self-hosting/environment-variables#billing)). Sans elle, le
-  serveur l’avertit au démarrage.
+Avec une clé, chaque espace de travail commence avec l’offre gratuite, soit {{free-accounts}} comptes connectés sur tout son compte de facturation. Un abonnement Stripe mensuel au tarif par compte lui en donne autant qu’il veut, facturés au compte et à l’usage. Les abonnements par paliers de canaux ne sont plus vendus. [Abonnements et facturation](/guides/workspace/billing) présente les deux, avec ce que chacun limite, et explique la commande, la résiliation et la rétractation.
+
+<Callout type="warning" title="Le délai se définit avant d’activer la facturation">
+
+Activer la facturation met au-delà de l’offre gratuite chaque espace de travail qui compte plus de {{free-accounts}} comptes. Mettre à jour un serveur qui facturait avec les abonnements par paliers de canaux, dont l’offre gratuite comptait 3 comptes, fait de même. Définissez d’abord `PEAL_BILLING_GRACE_UNTIL`. Les espaces de travail continuent alors de publier sur les comptes qu’ils avaient jusqu’à ce jour, et ceux qui gèrent leur facturation sont prévenus ([Variables d’environnement](/self-hosting/environment-variables#billing)). Sans elle, le serveur l’avertit au démarrage.
+
 </Callout>
 
-<Callout
-  type="warning"
-  title="Ne jamais revenir à une version d’avant le tarif par compte"
->
-  Une fois qu’un serveur facture au tarif par compte, ne revenez jamais à une
-  version d’avant. Elle donne aux abonnements au compte les limites de
-  l’ancienne offre gratuite (3 canaux, 2 membres, 30 publications), si bien que
-  chaque espace payant au-delà cesse de publier. Elle ne sait pas non plus lire
-  les avis de moyen de paiement que la période de grâce enregistre, si bien que
-  les avis et l’export des données échouent pour qui en a un.
-</Callout>
+La facturation prend ces réglages, sur le serveur, l’application web et le site vitrine :
 
-| Réglage                    | Où                           | Ce qu’il fait                                                                                                                         |
-| -------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `STRIPE_SECRET_KEY`        | Serveur                      | Active la facturation                                                                                                                 |
-| `STRIPE_WEBHOOK_SECRET`    | Serveur                      | Le secret de signature du webhook                                                                                                     |
-| `STRIPE_LOOKUP_KEY_PREFIX` | Serveur                      | Le préfixe des clés de recherche du catalogue                                                                                         |
-| `PEAL_BILLING_GRACE_UNTIL` | Serveur                      | Le jour jusqu’auquel les espaces de travail au-delà de l’offre gratuite continuent de publier sur les comptes qu’ils avaient          |
-| `PEAL_TERMS_URL`           | Application web              | Vos conditions d’utilisation, vers lesquelles la page de facturation renvoie avant une commande                                       |
-| `PEAL_CONTACT_URL`         | Application web              | L’adresse où écrire pour davantage que le plus grand abonnement                                                                       |
-| `SITE_APP_URL`             | Construction du site vitrine | Permet au pied de page du site de renvoyer vers les pages de l’application qui permettent de résilier un contrat et de s’en rétracter |
+| Réglage                    | Où                           | Ce qu’il fait                                                                                                                |
+| -------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `STRIPE_SECRET_KEY`        | Serveur                      | Active la facturation                                                                                                        |
+| `STRIPE_WEBHOOK_SECRET`    | Serveur                      | Le secret de signature du webhook                                                                                            |
+| `STRIPE_LOOKUP_KEY_PREFIX` | Serveur                      | Le préfixe des clés de recherche du catalogue                                                                                |
+| `PEAL_BILLING_GRACE_UNTIL` | Serveur                      | Le jour jusqu’auquel les espaces de travail au-delà de l’offre gratuite continuent de publier sur les comptes qu’ils avaient |
+| `PEAL_TERMS_URL`           | Application web              | Vos conditions d’utilisation, vers lesquelles la page de facturation renvoie avant une commande                              |
+| `PEAL_CONTACT_URL`         | Application web              | L’adresse où écrire pour davantage que le plus grand abonnement                                                              |
+| `SITE_APP_URL`             | Construction du site vitrine | Fait renvoyer le pied de page du site vers les pages de l’application qui servent à résilier un contrat et à s’en rétracter  |
 
-[Variables d’environnement](/self-hosting/environment-variables#billing) donne ceux du serveur, avec leurs valeurs par défaut, ainsi que ceux de l’[application web](/self-hosting/environment-variables#web-app) et du [site](/self-hosting/environment-variables#compose).
+[Variables d’environnement](/self-hosting/environment-variables#billing) donne les réglages du serveur avec leurs valeurs par défaut, ainsi que ceux de l’[application web](/self-hosting/environment-variables#web-app) et du [site](/self-hosting/environment-variables#compose).
 
 ### Ce qui compte dans les limites [#limits]
 
-- Les publications comptent dans le mois civil (UTC) où elles partent, une fois programmées : les brouillons et les publications annulées ne comptent pas, une publication repassée en brouillon libère sa place, et une publication renvoyée sur un canal ne compte qu’une fois.
-- Les membres comptent avec les invitations encore en attente au moment d’inviter.
+Chaque limite compte à sa façon :
+
+- Les publications comptent dans le mois civil (UTC) où elles partent, une fois programmées. Les brouillons et les publications annulées ne comptent pas.
+- Une publication repassée en brouillon libère sa place, et une publication renvoyée sur un canal ne compte qu’une fois.
+- Les membres comptent avec les invitations encore en attente au moment où vous invitez quelqu’un.
 - Les Pages ou les comptes Instagram cochés ensemble doivent tous avoir de la place, sinon aucun n’est connecté.
 - Les médias comptent par les octets stockés, envois en cours compris.
 
-Une limite s’applique quand on ajoute quelque chose : un espace de travail passé à un abonnement inférieur garde ce qu’il a déjà, mais ne programme rien tant qu’il a plus de canaux que son abonnement n’en permet.
+Une limite s’applique quand quelque chose est ajouté. Un espace de travail passé à un abonnement inférieur à ses besoins garde ce qu’il a, mais ne programme rien tant qu’il a plus de canaux que son abonnement n’en permet.
 
 ### Configurer Stripe [#stripe-setup]
 
 <Steps>
-  <Step title="Donner à Stripe le catalogue de Peal">
-    Avec `STRIPE_SECRET_KEY` définie, une commande crée la tarification par
-    compte ([Le catalogue](#catalogue)). Lancez-la depuis le dépôt, ou avec
-    l’image et les réglages du serveur, comme dans [Avec Docker Compose et
-    Caddy](/self-hosting#compose), pour que la clé reste sur le serveur :
+<Step title="Donner à Stripe le catalogue de Peal">
 
-    <CodeGroup>
+Avec `STRIPE_SECRET_KEY` définie, une commande crée la tarification par compte ([Le catalogue](#catalogue)). Lancez-la depuis le dépôt, ou avec l’image et les réglages du serveur comme dans [Avec Docker Compose et Caddy](/self-hosting#compose), pour que la clé reste sur le serveur :
 
-    ```sh Depuis le dépôt
-    bun nx run peal-server:stripe-catalogue
-    ```
+<CodeGroup>
 
-    ```sh Avec l’image du serveur
-    docker compose --project-name peal --file compose.production.yaml \
-      --file compose.self-host.yaml --env-file /srv/peal/peal.env \
-      run --rm --no-deps server packages/peal-server/scripts/stripe-catalogue.ts
-    ```
+```sh Depuis le dépôt
+bun nx run peal-server:stripe-catalogue
+```
 
-    </CodeGroup>
+```sh Avec l’image du serveur
+docker compose --project-name peal --file compose.production.yaml \
+  --file compose.self-host.yaml --env-file /srv/peal/peal.env \
+  run --rm --no-deps server packages/peal-server/scripts/stripe-catalogue.ts
+```
 
-  </Step>
-  <Step title="Garder les prix des anciens abonnements, s’il y en a">
-    Un nouveau compte Stripe n’en a besoin d’aucun : les abonnements par paliers
-    de canaux ne sont plus vendus. Un serveur où un abonnement à l’un d’eux
-    court encore garde leurs prix, comme le dit
-    [Les prix des abonnements](#plan-prices).
-  </Step>
-  <Step title="Ajouter le webhook">
-    Ajoutez un webhook vers `PUBLIC_URL/api/auth/stripe/webhook` avec les
-    événements `customer.subscription.created`,
-    `customer.subscription.updated`, `customer.subscription.deleted`,
-    `checkout.session.completed` et `refund.failed` (le dernier signale à
-    l’équipe un remboursement échoué), et définissez `STRIPE_WEBHOOK_SECRET` à son
-    secret de signature. Laissez ce chemin ouvert à Stripe si quelque chose
-    protège le reste de `/api/auth`.
-  </Step>
-  <Step title="Ajouter la destination des erreurs de compteur">
-    Ajoutez une destination d’événements vers
-    `PUBLIC_URL/api/stripe/meter-errors`, avec des événements légers comme
-    contenu et les événements `v1.billing.meter.error_report_triggered` et
-    `v1.billing.meter.no_meter_found`, et définissez
-    `STRIPE_METER_WEBHOOK_SECRET` à son secret de signature. Stripe les envoie
-    quand il a accepté des événements de compteur sans pouvoir les compter,
-    dont l’usage n’est alors pas facturé ; sans la destination, personne ne
-    l’apprend. Laissez aussi ce chemin ouvert à Stripe.
-  </Step>
-  <Step title="Activer Stripe Tax et l’espace client">
-    Le paiement fait toujours ajouter la TVA par Stripe Tax, car les prix sont
-    hors taxes et Peal affiche chacun HT et avec la TVA française. Activez l’espace client, où les
-    membres changent de moyen de paiement et téléchargent leurs factures, sans
-    offre de rétention, et avec le changement d’abonnement (mises à jour
-    d’abonnement) et la résiliation désactivés : les abonnements changent et
-    prennent fin depuis la page de facturation seulement, où chaque changement
-    demande une commande. Définissez `PEAL_TERMS_URL` et `PEAL_CONTACT_URL` de
-    l’application web.
-  </Step>
-  <Step title="Respecter vos obligations fiscales et de facturation">
-    Peal les laisse à Stripe :
+</CodeGroup>
 
-    - Dans Stripe Tax : votre adresse d’origine, une immatriculation pour chaque territoire où vous collectez la taxe (pour un vendeur de l’UE, son pays et le guichet unique OSS), et le code de taxe du produit de chaque abonnement. C’est le logiciel en tant que service, `txcd_10103001` pour un usage professionnel ou `txcd_10103000` pour un usage personnel ; la commande donne `txcd_10103001` aux produits du catalogue quand elle les crée. La distinction entre usage professionnel et personnel compte pour la taxe sur les ventes aux États-Unis, une question pour votre expert-comptable.
-    - Dans les paramètres de facturation : vos mentions légales (identifiants de la société, numéro de TVA, pied de page), une numérotation, et l’envoi par e-mail des factures et des reçus aux clients.
-    - Dans l’espace client : l’historique des factures, pour que les membres téléchargent leurs factures depuis **Facturation**.
+</Step>
+<Step title="Garder les prix des anciens abonnements, s’il y en a">
 
-    Le paiement demande alors à chaque client une adresse de facturation et
-    propose un champ pour le numéro fiscal d’une entreprise, que Stripe imprime
-    sur la facture et utilise pour l’autoliquidation.
+Un nouveau compte Stripe n’en a besoin d’aucun, car les abonnements par paliers de canaux ne sont plus vendus. Si un abonnement à l’un d’eux court encore sur votre serveur, gardez leurs prix, comme le dit [Les prix des abonnements](#plan-prices).
 
-  </Step>
-  <Step title="Construire le site vitrine avec SITE_APP_URL">
-    Définissez `SITE_APP_URL` à la construction du site vitrine, pour que son
-    pied de page renvoie vers les pages de l’application qui permettent de
-    résilier un contrat et de s’en rétracter ([variables
-    d’environnement](/self-hosting/environment-variables)).
-  </Step>
+</Step>
+<Step title="Ajouter le webhook">
+
+Ajoutez un webhook vers `PUBLIC_URL/api/auth/stripe/webhook` avec les événements `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `checkout.session.completed` et `refund.failed`. Le dernier signale à l’équipe un remboursement échoué. Définissez `STRIPE_WEBHOOK_SECRET` au secret de signature du webhook. Si quelque chose protège le reste de `/api/auth`, laissez ce chemin ouvert à Stripe.
+
+</Step>
+<Step title="Ajouter la destination des erreurs de compteur">
+
+Ajoutez une destination d’événements vers `PUBLIC_URL/api/stripe/meter-errors`, avec des événements légers comme contenu et les événements `v1.billing.meter.error_report_triggered` et `v1.billing.meter.no_meter_found`. Définissez `STRIPE_METER_WEBHOOK_SECRET` à son secret de signature. Stripe envoie ces événements quand il a accepté des événements de compteur sans pouvoir les compter, et cet usage n’est alors pas facturé. Sans la destination, personne ne l’apprend. Laissez aussi ce chemin ouvert à Stripe.
+
+</Step>
+<Step title="Activer Stripe Tax et l’espace client">
+
+Le paiement fait toujours ajouter la TVA par Stripe Tax, car les prix sont hors taxes et Peal affiche chacun HT et avec la TVA française.
+
+Activez l’espace client, où les membres changent de moyen de paiement et téléchargent leurs factures. Laissez de côté les offres de rétention, et désactivez le changement d’abonnement (mises à jour d’abonnement) et la résiliation. Les abonnements changent et prennent fin depuis la page de facturation seulement, où chaque changement demande une commande.
+
+Définissez ensuite `PEAL_TERMS_URL` et `PEAL_CONTACT_URL` de l’application web.
+
+</Step>
+<Step title="Respecter vos obligations fiscales et de facturation">
+
+Peal les laisse à Stripe :
+
+- Dans Stripe Tax : votre adresse d’origine, une immatriculation pour chaque territoire où vous collectez la taxe (pour un vendeur de l’UE, son pays et le guichet unique OSS), et le code de taxe du produit de chaque abonnement.
+- Dans les paramètres de facturation : vos mentions légales (identifiants de la société, numéro de TVA, pied de page), une numérotation, et l’envoi par e-mail des factures et des reçus aux clients.
+- Dans l’espace client : l’historique des factures, pour que les membres puissent télécharger leurs factures depuis **Facturation**.
+
+Le code de taxe est celui du logiciel en tant que service : `txcd_10103001` pour un usage professionnel, ou `txcd_10103000` pour un usage personnel. La commande donne `txcd_10103001` aux produits du catalogue quand elle les crée. La distinction entre usage professionnel et personnel compte pour la taxe sur les ventes aux États-Unis, une question pour votre expert-comptable.
+
+Le paiement demande alors à chaque client une adresse de facturation. Il propose aussi un champ pour le numéro fiscal d’une entreprise, que Stripe imprime sur la facture et utilise pour l’autoliquidation.
+
+</Step>
+<Step title="Construire le site vitrine avec SITE_APP_URL">
+
+Définissez `SITE_APP_URL` à la construction du site vitrine, pour que son pied de page renvoie vers les pages de l’application qui servent à résilier un contrat et à s’en rétracter ([variables d’environnement](/self-hosting/environment-variables)).
+
+</Step>
 </Steps>
 
 ### Le catalogue [#catalogue]
 
-Un serveur qui facture vérifie le catalogue de Peal au démarrage.
+Un serveur qui facture vérifie le catalogue de Peal au démarrage :
 
-- Un compteur ou un prix absent ou qui facture autrement, ou un prix sur un produit archivé, l’arrête, en énumérant les écarts et la commande qui crée le catalogue.
-- Les prix des abonnements par paliers de canaux, qui ne sont plus vendus, ne sont vérifiés que tant qu’un abonnement à l’un d’eux court encore : un nouveau compte Stripe n’en a besoin d’aucun.
+- Un compteur ou un prix absent ou qui facture autrement, ou un prix sur un produit archivé, arrête le serveur. Il énumère les écarts, et la commande qui crée le catalogue.
+- Les prix des abonnements par paliers de canaux, qui ne sont plus vendus, ne sont vérifiés que tant qu’un abonnement à l’un d’eux court encore. Un nouveau compte Stripe n’en a besoin d’aucun.
 - Si Stripe ne répond pas, le serveur démarre et consigne un avertissement.
-- Le serveur ne lit le catalogue qu’au démarrage : après avoir lancé la commande, redémarrez un serveur déjà démarré.
+- Le serveur ne lit le catalogue qu’au démarrage. Après avoir lancé la commande, redémarrez tout serveur déjà démarré.
 
-La tarification par compte, c’est un compteur (meter), un produit et un prix à l’usage en dollars américains, hors taxes et facturé chaque mois, pour chaque ligne de la grille tarifaire. Leurs clés de recherche (lookup keys), qui sont aussi les noms d’événements des compteurs, sont celles-ci, ou commencent par le préfixe défini dans `STRIPE_LOOKUP_KEY_PREFIX` :
+La tarification par compte, c’est un compteur (meter), un produit et un prix à l’usage pour chaque ligne de la grille tarifaire, en dollars américains, hors taxes et facturé chaque mois. Leurs clés de recherche (lookup keys) sont aussi les noms d’événements des compteurs. Ce sont celles-ci, ou elles commencent par le préfixe défini dans `STRIPE_LOOKUP_KEY_PREFIX` :
 
 | Clé de recherche          | Ligne de la grille tarifaire                                  |
 | ------------------------- | ------------------------------------------------------------- |
@@ -154,60 +131,72 @@ La tarification par compte, c’est un compteur (meter), un produit et un prix �
 | `peal_managed_ads`        | Les publicités gérées                                         |
 | `peal_x_api`              | L’usage de l’API de X                                         |
 
-La clé de la commande doit pouvoir écrire les compteurs, les produits et les prix. La commande affiche ce qu’elle crée, par nom et identifiant, et ne change rien si on la relance. Avec `--check`, elle compare seulement, et échoue si quelque chose changerait.
+La clé de la commande doit pouvoir écrire les compteurs, les produits et les prix. La commande affiche ce qu’elle crée, par nom et identifiant, et ne change rien si vous la relancez. Avec `--check`, elle compare seulement, et échoue si quelque chose changerait.
+
+<Callout
+  type="warning"
+  title="Une version d’avant le tarif par compte ne se réinstalle jamais"
+>
+
+Une fois qu’un serveur facture au tarif par compte, ne revenez pas à une version d’avant. Elle donne aux abonnements au compte les limites de l’ancienne offre gratuite (3 canaux, 2 membres, 30 publications), si bien que chaque espace payant au-delà cesse de publier. Elle ne sait pas non plus lire les avis de moyen de paiement que la période de grâce enregistre, si bien que les avis et l’export des données échouent pour qui en a un.
+
+</Callout>
 
 <Accordion>
-  <AccordionItem title="Quand les montants de la grille changent, et revenir en arrière">
-    La commande crée un nouveau prix qui reprend la clé de recherche, et laisse
-    l’ancien actif pour les abonnements qui l’utilisent. La version précédente
-    ne trouve alors plus son propre prix sous cette clé, et ne démarre pas :
-    pour revenir en arrière, lancez le `stripe-catalogue` de la version
-    précédente, qui ramène la clé, puis démarrez cette version.
-  </AccordionItem>
-  <AccordionItem title="Noms des produits et codes de taxe">
-    La commande donne à chaque produit qu’elle crée son nom et le code de taxe
-    `txcd_10103001`, et ne les change jamais ensuite : renommez un produit ou
-    donnez-lui un autre code de taxe chez Stripe, la commande le signale et les
-    laisse.
-  </AccordionItem>
-  <AccordionItem title="Quand la commande s’arrête">
-    Elle s’arrête, sans rien changer, sur un prix dont le produit est archivé
-    (restaurez le produit), et sur un compteur qui compte autrement que ce que
-    Peal envoie, car Stripe ne permet pas de modifier un compteur :
-    désactivez-le chez Stripe et relancez la commande. Dès lors, les abonnements
-    sur un prix qui lit l’ancien compteur ne comptent plus jusqu’à leur passage
-    au nouveau prix. Si Stripe refuse au nouveau compteur le nom d’événement de
-    l’ancien, définissez `STRIPE_LOOKUP_KEY_PREFIX` à un nouveau préfixe et
-    donnez à Stripe le catalogue et les prix des abonnements sous celui-ci.
-  </AccordionItem>
+<AccordionItem title="Quand les montants de la grille changent, et revenir en arrière">
+
+La commande crée un nouveau prix qui reprend la clé de recherche, et laisse l’ancien actif pour les abonnements qui l’utilisent. La version précédente ne trouve alors plus son propre prix sous cette clé, et ne démarre pas. Pour revenir en arrière, lancez le `stripe-catalogue` de la version précédente, qui ramène la clé, puis démarrez cette version.
+
+</AccordionItem>
+<AccordionItem title="Noms des produits et codes de taxe">
+
+La commande donne à chaque produit qu’elle crée son nom et le code de taxe `txcd_10103001`, et ne les change jamais ensuite. Si vous renommez un produit ou lui donnez un autre code de taxe chez Stripe, la commande le signale et les laisse tels quels.
+
+</AccordionItem>
+<AccordionItem title="Quand la commande s’arrête">
+
+Elle s’arrête, sans rien changer, sur un prix dont le produit est archivé. Restaurez le produit. Elle s’arrête aussi sur un compteur qui compte autrement que ce que Peal envoie, car Stripe ne permet pas de modifier un compteur. Désactivez le compteur chez Stripe et relancez la commande. Dès lors, les abonnements sur un prix qui lit l’ancien compteur ne comptent plus jusqu’à leur passage au nouveau prix.
+
+Si Stripe refuse au nouveau compteur le nom d’événement de l’ancien, définissez `STRIPE_LOOKUP_KEY_PREFIX` à un nouveau préfixe. Donnez ensuite à Stripe le catalogue et les prix des abonnements sous celui-ci.
+
+</AccordionItem>
 </Accordion>
 
 ### Les prix des abonnements [#plan-prices]
 
-Les abonnements par paliers de canaux ne sont plus vendus, et un nouveau compte Stripe n’a besoin d’aucun de leurs prix. Le serveur ne les vérifie que tant qu’un abonnement à l’un d’eux court encore : gardez alors un produit pour chaque abonnement payant, avec un prix mensuel et un prix annuel en euros, tous deux hors taxes, sous les clés de recherche `peal_<plan>_monthly` et `peal_<plan>_yearly` (`peal_starter_monthly`, `peal_pro_yearly`…), avec le même préfixe.
+Les abonnements par paliers de canaux ne sont plus vendus, et un nouveau compte Stripe n’a besoin d’aucun de leurs prix. Le serveur ne les vérifie que tant qu’un abonnement à l’un d’eux court encore.
 
-Leurs montants sont ceux d’[Abonnements et facturation](/guides/workspace/billing#legacy-plans) : gardez-les égaux. Le serveur vérifie que chacun existe, est actif, coûte ce que Peal publie à la bonne périodicité et est hors taxes.
+Dans ce cas, gardez un produit pour chaque abonnement payant, avec un prix mensuel et un prix annuel en euros, tous deux hors taxes. Leurs clés de recherche sont `peal_<plan>_monthly` et `peal_<plan>_yearly` (`peal_starter_monthly`, `peal_pro_yearly`…), avec le même préfixe.
+
+Leurs montants sont ceux d’[Abonnements et facturation](/guides/workspace/billing#legacy-plans), et ils doivent rester égaux. Le serveur vérifie que chaque prix existe, est actif, coûte ce que Peal publie à la bonne périodicité et est hors taxes.
 
 ### Le comportement des abonnements [#subscriptions]
 
-- Les propriétaires et les administrateurs commandent, résilient et se rétractent depuis la page de facturation de l’espace de travail, dans leur propre session ; l’équipe qui se fait passer pour eux, les clés d’API et les clients OAuth ne le peuvent pas.
-- Un paiement ne commence que pour une commande passée là dans les 30 dernières minutes, qui enregistre la demande de commencer immédiatement.
-- L’état d’un abonnement ne vient que de ses événements de webhook, vérifiés avec le secret de signature : un événement envoyé deux fois n’est enregistré qu’une fois, et un événement plus ancien ne remplace jamais un plus récent.
-- Un abonnement reste payé tant que Stripe retente un paiement échoué ; impayé, suspendu ou résilié, l’espace de travail revient à l’offre gratuite.
-- Un essai déjà commencé (Peal n’en propose plus) est programmé pour prendre fin, résilié, avec son essai, même si un moyen de paiement est ajouté, si bien qu’il ne devient jamais payant : son espace de travail revient alors à l’offre gratuite, et un abonnement payant commandé pendant l’essai y met fin une fois payé.
-- La tâche `billing.reminders` rappelle chaque heure les essais qui se terminent dans les trois jours et les abonnements annuels par paliers de canaux qui se renouvellent dans les 45 jours, toujours plus d’un mois à l’avance.
+Les abonnements suivent ces règles :
 
-<Callout type="warning" title="Supprimer un espace de travail qui paie">
-  Un espace de travail dont un abonnement peut encore être facturé par Stripe,
-  impayé ou suspendu compris, ne peut pas être supprimé, ni le compte de son
-  seul membre, tant que l’abonnement n’est pas résilié.
+- Les propriétaires et les administrateurs commandent, résilient et se rétractent depuis la page de facturation de l’espace de travail, dans leur propre session. L’équipe qui se fait passer pour eux, les clés d’API et les clients OAuth ne le peuvent pas.
+- Un paiement ne commence que pour une commande passée là dans les 30 dernières minutes, qui enregistre la demande de commencer immédiatement.
+- L’état d’un abonnement ne vient que de ses événements de webhook, vérifiés avec le secret de signature.
+- Un événement envoyé deux fois n’est enregistré qu’une fois, et un événement plus ancien ne remplace jamais un plus récent.
+- Un abonnement reste payé tant que Stripe retente un paiement échoué. Impayé, suspendu ou résilié, l’espace de travail revient à l’offre gratuite.
+
+Peal ne propose plus de nouvel essai. Un essai déjà commencé est programmé pour prendre fin, résilié avec son essai, même si un moyen de paiement est ajouté, si bien qu’il ne devient jamais payant. Son espace de travail revient alors à l’offre gratuite. Un abonnement payant commandé pendant l’essai y met fin une fois payé.
+
+Chaque heure, la tâche `billing.reminders` envoie un rappel pour les essais qui se terminent dans les trois jours, et pour les abonnements annuels par paliers de canaux qui se renouvellent dans les 45 jours. Un renouvellement est toujours rappelé plus d’un mois à l’avance.
+
+<Callout type="warning" title="Un espace de travail qui paie ne peut pas être supprimé">
+
+Un espace de travail dont un abonnement peut encore être facturé par Stripe, impayé ou suspendu compris, ne peut pas être supprimé tant que l’abonnement n’est pas résilié. Le compte de son seul membre non plus.
+
 </Callout>
 
 ### Résilier et se rétracter [#cancel-withdraw]
 
-Chacun peut résilier un contrat ou s’en rétracter sans se connecter, depuis **Résilier votre contrat** et **Renoncer au contrat ici** au pied de chaque page de l’application web (`/fr/cancel` et `/fr/withdraw`), qu’un serveur qui ne facture pas n’affiche pas.
+Chacun peut résilier un contrat ou s’en rétracter sans se connecter. Il suffit de cliquer sur **Résilier votre contrat** ou **Renoncer au contrat ici** au pied de chaque page de l’application web (`/fr/cancel` et `/fr/withdraw`). Un serveur qui ne facture pas ne les affiche pas.
 
-`POST /api/contract-requests` enregistre chaque demande avec le moment de sa réception, qui fait foi quel que soit le moment où elle est appliquée, et en accuse réception par e-mail. Il accepte 5 demandes par heure d’une même adresse (lue dans `AUTH_IP_HEADERS`), un jeton Turnstile quand Turnstile est activé, et n’écrit à une même adresse e-mail que 5 fois par jour.
+`POST /api/contract-requests` enregistre chaque demande avec le moment de sa réception, qui fait foi quel que soit le moment où elle est appliquée. Il en accuse réception par e-mail. Il accepte 5 demandes par heure d’une même adresse (lue dans `AUTH_IP_HEADERS`), et un jeton Turnstile quand Turnstile est activé. Il n’écrit à une même adresse e-mail que 5 fois par jour au plus.
+
+Le moment où une demande est appliquée dépend de ce qu’elle donne :
 
 | Demande                                                            | Appliquée                                                                                   |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
@@ -215,21 +204,23 @@ Chacun peut résilier un contrat ou s’en rétracter sans se connecter, depuis 
 | Vient d’une adresse qui gère la facturation d’un espace de travail | Depuis le lien de son accusé de réception                                                   |
 | Toute autre                                                        | Attend dans la console d’équipe ([Console d’équipe](/self-hosting/staff#contract-requests)) |
 
-La tâche `billing.contract-requests` reprend, toutes les cinq minutes, ce que la messagerie ou Stripe n’ont pas pu traiter. Les demandes sont conservées avec leur espace de travail, puis 5 ans après sa suppression, comme celles pour lesquelles aucun contrat n’a été trouvé le sont à compter de leur réception.
+Toutes les cinq minutes, la tâche `billing.contract-requests` reprend ce que la messagerie ou Stripe n’ont pas pu traiter. Les demandes sont conservées avec leur espace de travail, puis 5 ans après sa suppression. Celles pour lesquelles aucun contrat n’a été trouvé sont conservées 5 ans à compter de leur réception.
 
 ## Captcha [#captcha]
 
-Avec `TURNSTILE_SITE_KEY` et `TURNSTILE_SECRET_KEY` ([Variables d’environnement](/self-hosting/environment-variables#captcha)), l’inscription et la demande de réinitialisation du mot de passe demandent un jeton Cloudflare Turnstile : les formulaires montrent le widget, et le serveur vérifie chaque jeton auprès de Cloudflare avant de continuer. La connexion s’appuie sur ses limites de fréquence.
+Avec `TURNSTILE_SITE_KEY` et `TURNSTILE_SECRET_KEY` définies ([Variables d’environnement](/self-hosting/environment-variables#captcha)), l’inscription et la demande de réinitialisation du mot de passe demandent un jeton Cloudflare Turnstile. Les formulaires montrent le widget, et le serveur vérifie chaque jeton auprès de Cloudflare avant de continuer. La connexion s’appuie plutôt sur ses limites de débit.
 
-Ajoutez votre adresse publique aux noms d’hôte du widget dans Cloudflare. Les clés de test de Cloudflare permettent d’essayer sans vrai widget.
+Ajoutez votre adresse publique aux noms d’hôte du widget dans Cloudflare. Vous pouvez essayer sans vrai widget, avec les clés de test de Cloudflare.
 
 ## Qui peut s’inscrire [#sign-up]
 
-Quiconque atteint votre instance peut créer un compte, puis un espace de travail, qui utilise vos applications de plateformes et les demandes de votre assistant de rédaction. Pour faire tourner Peal pour vos seules équipes, définissez `PEAL_SIGN_UP=invitation` ([Variables d’environnement](/self-hosting/environment-variables#sign-in)).
+Quiconque atteint votre instance peut créer un compte, puis un espace de travail, et cet espace utilise vos applications de plateformes et les demandes de votre assistant de rédaction. Pour faire tourner Peal pour vos seules équipes, définissez `PEAL_SIGN_UP=invitation` ([Variables d’environnement](/self-hosting/environment-variables#sign-in)).
 
-Un compte n’est alors créé que depuis le lien d’une invitation, celui de son e-mail ou celui que donne **Copier le lien**, avec l’adresse à laquelle elle a été envoyée, tant qu’elle est en attente. Connaître une adresse invitée ne suffit pas. La page d’inscription dit à toute autre personne que les comptes sont créés sur invitation, et le serveur refuse toute autre inscription de la même façon : sa réponse ne dit jamais si une adresse a été invitée.
+Un compte ne peut alors être créé que depuis le lien d’une invitation, tant qu’elle est en attente, avec l’adresse à laquelle elle a été envoyée. Ce lien est celui de son e-mail, ou celui que donne **Copier le lien**. Connaître une adresse invitée ne suffit pas.
 
-Chaque personne que vous laissez entrer peut ensuite créer son propre espace de travail et y inviter qui elle veut, qui peut en faire autant : le mode sur invitation fait confiance à chacun de ceux qu’il laisse entrer pour inviter.
+Toute autre personne voit une page d’inscription qui dit que les comptes sont créés sur invitation. Le serveur refuse toute autre inscription de la même façon, si bien que sa réponse ne dit jamais si une adresse a été invitée.
+
+Chaque personne que vous laissez entrer peut créer son propre espace de travail et y inviter qui elle veut, et ces personnes peuvent en faire autant. Le mode sur invitation fait confiance à chacun de ceux qu’il laisse entrer pour en inviter d’autres.
 
 L’inscription par un [fournisseur de connexion](/self-hosting/single-sign-on) demande aussi le lien de l’invitation, et l’adresse confirmée par le fournisseur doit être celle à laquelle l’invitation a été envoyée.
 
@@ -237,33 +228,29 @@ La connexion, la réinitialisation du mot de passe, l’acceptation d’une invi
 
 ### Le premier compte [#first-account]
 
-Tant que le serveur n’a aucun compte, le premier peut être créé sans invitation, pour qu’un nouveau serveur puisse être mis en place : la page d’inscription montre son formulaire jusque-là.
+Tant que le serveur n’a aucun compte, le premier peut être créé sans invitation, pour que vous puissiez mettre en place un nouveau serveur. La page d’inscription montre son formulaire jusque-là. Un compte compte comme le premier avant même que son adresse soit confirmée.
 
 <Callout
   type="warning"
-  title="Créez le premier compte avant que l’adresse soit publique"
+  title="Le premier compte se crée avant que l’adresse soit publique"
 >
-  Créez-le, puis votre espace de travail, avant que l’adresse soit publique.
-  Deux inscriptions au même moment sur un serveur vide pourraient passer toutes
-  les deux, et la règle s’ouvre à nouveau si tous les comptes sont supprimés.
+
+Créez-le, puis votre espace de travail, avant que l’adresse soit publique. Deux inscriptions au même moment sur un serveur vide pourraient passer toutes les deux, et la règle s’ouvre à nouveau si tous les comptes sont supprimés.
+
 </Callout>
 
-Un compte compte comme le premier avant même que son adresse soit confirmée.
-
 <Accordion>
-  <AccordionItem title="Si le premier compte ne peut pas être confirmé">
-    Une adresse mal tapée, un e-mail qui ne fonctionne pas encore, ou quelqu’un
-    d’autre qui a pris la place le premier : personne ne peut alors se connecter
-    pour inviter qui que ce soit. Supprimez les comptes que personne n’a
-    confirmés, tant qu’aucun ne l’est, puis inscrivez-vous à nouveau :
+<AccordionItem title="Si le premier compte ne peut pas être confirmé">
 
-    ```bash
-    docker compose --project-name peal --file compose.production.yaml \
-      --file compose.self-host.yaml --env-file /srv/peal/peal.env exec postgres \
-      psql -U peal -d peal -c 'DELETE FROM auth."user" WHERE NOT email_verified AND NOT EXISTS (SELECT 1 FROM auth."user" WHERE email_verified);'
-    ```
+L’adresse est peut-être mal tapée, l’e-mail ne fonctionne peut-être pas encore, ou quelqu’un d’autre a pu prendre la place le premier. Personne ne peut alors se connecter pour inviter qui que ce soit. Tant qu’aucun compte n’est confirmé, supprimez les comptes non confirmés, puis inscrivez-vous à nouveau :
 
-    Elle ne supprime rien dès qu’un compte est confirmé.
+```bash
+docker compose --project-name peal --file compose.production.yaml \
+  --file compose.self-host.yaml --env-file /srv/peal/peal.env exec postgres \
+  psql -U peal -d peal -c 'DELETE FROM auth."user" WHERE NOT email_verified AND NOT EXISTS (SELECT 1 FROM auth."user" WHERE email_verified);'
+```
 
-  </AccordionItem>
+La commande ne supprime rien dès qu’un compte est confirmé.
+
+</AccordionItem>
 </Accordion>

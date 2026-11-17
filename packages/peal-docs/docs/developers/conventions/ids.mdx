@@ -7,7 +7,7 @@ sidebar:
 
 ## Ids and instants [#ids]
 
-Ids are strings, written in lowercase. Treat every id as an opaque string: compare it, store it, send it back, and read nothing from it.
+Ids are strings, written in lowercase. Treat every id as opaque: compare it, store it and send it back, but read nothing from it. Their shape depends on the object:
 
 | Objects                                  | Id                                                     |
 | ---------------------------------------- | ------------------------------------------------------ |
@@ -17,11 +17,14 @@ Ids are strings, written in lowercase. Treat every id as an opaque string: compa
 
 ### Instants and time zones [#instants]
 
+Times are written in one of three ways:
+
 | Value                | How it is written                                                                                             |
 | -------------------- | ------------------------------------------------------------------------------------------------------------- |
-| An instant           | ISO 8601, in UTC, such as `2026-11-16T08:00:00.000Z`. Answers give instants that way; send them the same way. |
+| An instant           | ISO 8601, in UTC, such as `2026-11-16T08:00:00.000Z`. Answers give instants that way. Send them the same way. |
 | A time to schedule   | An instant and the IANA time zone it was chosen in, such as `Europe/Paris`, which Peal keeps with the post.   |
 | A day, for analytics | A calendar day, such as `2026-11-16`, with the time zone the days run in.                                     |
 
-- An offset such as `+01:00` is not a time zone, and answers 422 `invalid_time_zone`.
-- A time up to a minute in the past counts as now; an earlier one answers 422 `schedule_in_past`.
+An offset such as `+01:00` isn't a time zone, and answers 422 `invalid_time_zone`.
+
+A time less than a minute in the past counts as now. Anything earlier answers 422 `schedule_in_past`, so pick a time that's still ahead.

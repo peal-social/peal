@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/mastodon.svg
 ---
 
-How to connect a Mastodon account, what a post there may hold, and the options it takes.
+Mastodon works on any server, with nothing for an operator to set up. You connect an account by its server's name, and Peal registers itself there the first time.
 
 ## At a glance [#at-a-glance]
+
+Here's what a Mastodon post can hold:
 
 |                   |                                  |
 | ----------------- | -------------------------------- |
@@ -19,24 +21,24 @@ How to connect a Mastodon account, what a post there may hold, and the options i
 
 What each file type must be is in [Images and videos](/guides/media#platforms).
 
-## Connect [#connect]
+## Connect an account [#connect]
 
-Under **Mastodon**, give the account's server, such as `mastodon.social`, or the account's own address, such as `@you@mastodon.social`, then choose **Connect Mastodon**.
+Under **Mastodon**, type the account's server, such as `mastodon.social`, or the account's own address, such as `@you@mastodon.social`. Then click **Connect Mastodon**.
 
-Peal works with any Mastodon server on the public internet, reached over HTTPS. The first time someone connects an account on a server, Peal registers itself there as an application. It asks to:
+Peal works with any Mastodon server on the public internet that it can reach over HTTPS. The first time someone connects an account on a server, Peal registers itself there as an application. It asks to:
 
-- read the account's profile;
-- publish posts and media;
-- read the account's posts back, for their counts in [analytics](/guides/engage/analytics).
+- Read the account's profile.
+- Publish posts and media.
+- Read the account's posts back, for their counts in [analytics](/guides/engage/analytics).
 
-<Callout type="info">
+<Callout type="info" title="Older channels need reconnecting for analytics">
   An account connected before Peal asked to read its posts keeps posting as it
-  did. Reconnect it to grant that too.
+  did. Reconnect it to grant that permission too.
 </Callout>
 
 ## Options [#options]
 
-No option is required, and each is sent only when you choose it. **API name** is the option's name through the API. **Parts** says whether, in a [thread](/guides/posts#threads), it goes with every part or with the first part alone.
+None of these is required, and Peal sends each one only when you set it. **API name** is the option's name in the API. **Parts** says whether, in a [thread](/guides/posts#threads), the option goes with every part or with the first part only.
 
 | Option                          | API name         | Values                                                                     | Left out              | Parts      |
 | ------------------------------- | ---------------- | -------------------------------------------------------------------------- | --------------------- | ---------- |
@@ -46,17 +48,18 @@ No option is required, and each is sent only when you choose it. **API name** is
 | **Language**                    | `language`       | A code of two or three lower-case letters, such as `fr`                    | The account's default | Every part |
 | **Who can quote this post**     | `quotePolicy`    | `public`, `followers`, `nobody`; only with `visibility` public or unlisted | The account's default | Every part |
 
-How Mastodon treats them:
+### How Mastodon treats them [#options-behaviour]
 
-- A content warning counts in the post's character limit, with the text: on a Mastodon channel the 500 characters are the warning and the text together, on every part, and the composer counts them so.
-- A content warning also marks the post sensitive, whatever **Mark the media as sensitive** says.
-- Servers older than Mastodon 4.5 ignore the quote policy, and nobody may quote a followers-only post, whatever it says.
-- Private mentions are not offered: Peal publishes posts.
+A content warning counts toward the post's character limit, along with the text. On a Mastodon channel, the 500 characters cover the warning and the text together, on every part, and the composer counts them that way. A content warning also marks the post sensitive, whatever **Mark the media as sensitive** says.
+
+Servers older than Mastodon 4.5 ignore the quote policy. Nobody can quote a followers-only post, whatever its policy says.
+
+Peal doesn't offer private mentions, because it publishes posts.
 
 ## Comments [#comments]
 
-Peal reads the comments under your published posts there, and you answer them from Peal: see [Inbox](/guides/engage/inbox#other-platforms).
+Peal reads the comments under your published posts on Mastodon, and you can answer them from Peal. See [Inbox](/guides/engage/inbox#other-platforms).
 
 ## On your own server [#self-hosting]
 
-Mastodon needs no setup: Peal registers itself as an application on each server the first time someone connects an account there.
+Mastodon needs no setup. Peal registers itself as an application on each Mastodon server the first time someone connects an account there.

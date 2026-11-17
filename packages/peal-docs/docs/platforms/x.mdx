@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/x.svg
 ---
 
-How to connect an X account, what a post there may hold, and the options it takes.
+On Peal Cloud, every post you send to X is billed at X's own rates ([see below](#billing)). A server you run yourself bills nothing for X.
 
 ## At a glance [#at-a-glance]
+
+Here's what an X post can hold:
 
 |                   |                           |
 | ----------------- | ------------------------- |
@@ -19,26 +21,26 @@ How to connect an X account, what a post there may hold, and the options it take
 
 What each file type must be is in [Images and videos](/guides/media#platforms).
 
-## Connect [#connect]
+## Connect an account [#connect]
 
-Under **X**, choose **Connect X**, sign in on X and allow Peal. It asks to:
+Under **X**, click **Connect X**, sign in on X and allow Peal. It asks to:
 
-- read and write posts;
-- upload media;
-- stay connected, so it can renew its access without you.
+- Read and write posts.
+- Upload media.
+- Stay connected, so it can renew its access without you.
 
 **Channels** offers X once the Peal server is set up for it (see [On your own server](#self-hosting)).
 
 ### How X counts length [#length]
 
-X counts a post's length its own way, and Peal counts the same, so a post it accepts fits on X (see [Length on each channel](/guides/posts#write)):
+X counts a post's length its own way, and Peal counts the same way, so a post Peal accepts fits on X (see [Length on each channel](/guides/posts#write)). Two things count differently from what you'd expect:
 
-- A link counts 23 characters whatever its length, written with `https://` or without, as `peal.social` (a domain X knows, so not `localhost`).
-- An emoji, or a character outside the Latin, Greek and Cyrillic scripts, counts 2.
+- A link counts as 23 characters whatever its length, with or without `https://`, as in `peal.social`. It has to be a domain X knows, so `localhost` doesn't count as a link.
+- An emoji, or a character outside the Latin, Greek and Cyrillic scripts, counts as 2.
 
 ## Options [#options]
 
-No option is required, and each is sent only when you choose it. **API name** is the option's name through the API. **Parts** says what it applies to in a [thread](/guides/posts#threads).
+None of these is required, and Peal sends each one only when you set it. **API name** is the option's name in the API. **Parts** says what the option applies to in a [thread](/guides/posts#threads).
 
 | Option                        | API name             | Values                                                   | Left out                | Parts                             |
 | ----------------------------- | -------------------- | -------------------------------------------------------- | ----------------------- | --------------------------------- |
@@ -48,30 +50,36 @@ No option is required, and each is sent only when you choose it. **API name** is
 | **Paid partnership**          | `paidPartnership`    | Yes or no                                                | No                      | Every part                        |
 | **Made with AI**              | `madeWithAi`         | Yes or no                                                | No                      | Every part with images or a video |
 
-X does not document which accounts may use each of these. When X refuses a post that carries them:
+### When X refuses an option [#option-refused]
 
-| X's answer                                                 | The channel reads                                                                                        | What to do                           |
+X doesn't document which accounts can use each of these options. When X refuses a post that carries them, what you see depends on X's answer:
+
+| X's answer                                                 | The channel shows                                                                                        | What to do                           |
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | Names one of the options (the field, or the community)     | **Failed**, with the code `optionRefused`                                                                | Change the options and post it again |
-| Refuses it for anything else, such as a restricted account | X's own problem type, as for a post without options (`client-forbidden`, or `http403` when X names none) | Changing the options will not help   |
+| Refuses it for anything else, such as a restricted account | X's own problem type, as for a post without options (`client-forbidden`, or `http403` when X names none) | Changing the options won't help      |
 
-With `optionRefused`, Peal does not send the post again. X's message is not kept, so the channel does not say which option X refused.
+With `optionRefused`, Peal doesn't send the post again. Peal doesn't keep X's message, so the channel can't tell you which option X refused.
 
 ## Comments [#comments]
 
-Peal does not read comments on X yet.
+Peal doesn't read comments on X yet.
 
 ## On Peal Cloud: billed at X's rates [#billing]
 
-X bills each call to its API, and on Peal Cloud Peal passes it on at X's published rates, with nothing added ([X, at X's rates](/guides/workspace/billing#x)). So:
+X bills each call to its API. On Peal Cloud, Peal passes that cost on at X's published rates, with nothing added ([X, at X's rates](/guides/workspace/billing#x)). Here's what that means for a workspace:
 
-- an X account is connected only once the billing account has a payment method on per-account pricing;
-- each post sent to X, each part of a thread, is billed at X's rate for a post ({{x-post-en}}), or for a post with a link ({{x-post-link-en}});
-- X's counts and followers are read only once a member who manages billing turns X's reads on for the workspace, on the billing page, each read billed at X's rate, once a UTC day;
-- the billing account's monthly ceiling for X bounds all of it: a thread with no room for all its parts is not sent at all, and the composer says so before; room can still be taken between its parts (another post or X channel of the account, X's reads), and the thread is then cut there.
+- An X account connects only once the billing account has a payment method and is on per-account pricing.
+- Each post sent to X is billed at X's rate for a post ({{x-post-en}}), or for a post with a link ({{x-post-link-en}}). Each part of a thread counts as a post.
+- X's counts and followers are read only once a member who manages billing turns X's reads on for the workspace, on the billing page. Each read is billed at X's rate, once a UTC day.
+- The billing account's monthly ceiling for X covers all of it.
 
-A post refused for billing fails without being sent (`paymentMethodRequired`, `paymentFailed`, `perAccountPricingRequired`, `xCeilingReached`), and a thread cut part way says where (`xThreadCut`). A server you run yourself bills nothing for X.
+When a thread doesn't have room under the ceiling for all its parts, Peal doesn't send it at all, and the composer tells you before you schedule it. Room can still run out between its parts, if another post or X channel of the same account, or X's reads, take it first. The thread is then cut at that point.
+
+A post refused for billing fails without being sent, with the code `paymentMethodRequired`, `paymentFailed`, `perAccountPricingRequired` or `xCeilingReached`. A thread cut part way says where, with `xThreadCut`.
+
+A server you run yourself bills nothing for X.
 
 ## On your own server [#self-hosting]
 
-A self-hosted server offers X once its app is registered: see [X](/self-hosting/platforms#x). Until then, **Channels** does not offer it.
+A self-hosted server offers X once its app is registered: see [X](/self-hosting/platforms#x). Until then, **Channels** doesn't offer it.

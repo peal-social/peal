@@ -5,9 +5,11 @@ sidebar:
   icon: newspaper
 ---
 
-Comment connecter un compte DEV (dev.to), et ce qu’un article peut y contenir. DEV prend des [articles](/guides/channels/websites), pas des publications.
+Vous connectez un compte DEV (dev.to) avec une clé d’API que vous créez sur DEV. Le serveur Peal n’a donc besoin d’aucune application pour lui. DEV prend des [articles](/guides/channels/websites) plutôt que des publications.
 
 ## En bref [#at-a-glance]
+
+Voici ce qu’un article sur DEV peut contenir, et ce que Peal peut en faire :
 
 |             |                                                                |
 | ----------- | -------------------------------------------------------------- |
@@ -16,31 +18,39 @@ Comment connecter un compte DEV (dev.to), et ce qu’un article peut y contenir.
 | Étiquettes  | 4 au plus, lettres et chiffres seulement                       |
 | Catégories  | Aucune                                                         |
 | Sur le site | Publié aussitôt, un brouillon là-bas, ou programmé là-bas      |
-| Dépublier   | Remet l’article en brouillon sur DEV : DEV n’en supprime aucun |
+| Dépublier   | Remet l’article en brouillon sur DEV : DEV n’en supprime aucun |
 
-## Connecter [#connect]
+## Connecter un compte [#connect]
 
 <Steps>
   <Step title="Créer une clé d’API">
     Sur DEV, ouvrez **Settings**, puis **Extensions**. Sous **DEV Community API
-    Keys**, décrivez-la comme Peal et choisissez **Generate API Key**.
+    Keys**, décrivez la clé comme Peal et cliquez sur **Generate API Key**.
   </Step>
   <Step title="La connecter dans Peal">
-    Dans **Canaux**, sous **DEV**, collez la clé, puis **Connecter DEV**.
+    Dans **Canaux**, sous **DEV**, collez la clé, puis cliquez sur **Connecter
+    DEV**.
   </Step>
 </Steps>
 
-Peal vérifie la clé sur DEV, puis la conserve chiffrée : elle n’est plus jamais affichée. Le canal est le compte à qui appartient la clé. Le connecter de nouveau avec une nouvelle clé remplace l’ancienne. Révoquez la clé sur DEV pour couper l’accès de Peal ; le canal est alors marqué **Reconnecter**.
+Peal vérifie la clé sur DEV, puis la conserve chiffrée, et ne l’affiche plus jamais. Le canal est le compte à qui appartient la clé. Si vous le connectez de nouveau avec une nouvelle clé, elle remplace l’ancienne.
+
+Pour couper l’accès de Peal, révoquez la clé sur DEV. Le canal est alors marqué **Reconnecter**.
 
 ## Articles [#articles]
 
-- Peal écrit le corps en Markdown, où tout ce que vous avez tapé reste du texte : rien n’en devient balise, tag Liquid (`{% … %}`, `{{ … }}`) ou intégration de DEV, un `@nom` ne mentionne personne, et une adresse tapée dans le texte s’affiche en texte, pas en lien : faites un lien avec le bouton lien de l’éditeur.
-- Chaque image part d’abord à l’envoi d’images de DEV, une fois, et l’article la montre depuis DEV. DEV prend par défaut 10 envois par heure et par compte : un article qui a plus d’images attend DEV, et part dès qu’il le peut.
-- L’extrait est la description de l’article, l’image mise en avant sa couverture.
-- **Programmé là-bas** donne l’heure à DEV, qui le publie alors.
-- DEV prend une écriture par seconde d’un serveur, quel que soit le compte : Peal envoie ses écritures à DEV une à une, à une seconde d’écart, pour tous les comptes ensemble, et attend la courte attente que DEV demande.
-- Quand la réponse de DEV se perd, Peal cherche d’abord parmi vos articles celui de même titre et de même corps, et ne l’envoie jamais deux fois.
+Peal écrit le corps en Markdown, et tout ce que vous avez saisi reste du texte. Rien n’en devient balise de DEV, tag Liquid (`{% … %}`, `{{ … }}`) ou intégration, et un `@nom` ne mentionne personne. Une adresse saisie dans le texte s’affiche en texte, pas en lien. Faites donc vos liens avec le bouton lien de l’éditeur.
+
+Chaque image part d’abord, une fois, à l’envoi d’images de DEV, et l’article la montre depuis DEV. Par défaut, DEV prend 10 envois par heure et par compte. Un article qui a plus d’images attend DEV, et part dès qu’il le peut.
+
+L’extrait devient la description de l’article, et l’image mise en avant sa couverture. Avec **Programmé là-bas**, Peal donne l’heure à DEV, qui publie alors l’article.
+
+### Limites de débit et réponses perdues [#limits]
+
+DEV prend une écriture par seconde d’un serveur, quel que soit le compte. Peal envoie donc ses écritures à DEV une à une, à une seconde d’écart, pour tous les comptes ensemble. Quand DEV lui demande d’attendre un instant, il attend.
+
+Quand la réponse de DEV se perd, Peal cherche d’abord parmi vos articles celui de même titre et de même corps. Il n’envoie jamais un article deux fois.
 
 ## Sur votre propre serveur [#self-hosting]
 
-DEV ne demande aucune application sur un serveur auto-hébergé : chaque membre apporte sa clé. Voir [DEV et Hashnode](/self-hosting/platforms#devto-hashnode).
+DEV ne demande aucune application sur un serveur auto-hébergé, car chaque membre apporte sa clé. Voyez [DEV et Hashnode](/self-hosting/platforms#devto-hashnode).

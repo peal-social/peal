@@ -5,31 +5,41 @@ sidebar:
   icon: list-filter
 ---
 
-## Lister les publications [#search]
+Vous pouvez retrouver les publications qui ont échoué la semaine dernière, tout ce qui reste programmé sur un canal, ou les publications créées par une clé. Les exemples créent le client comme l’explique [Publier par l’API](/developers/posting#start).
 
-`GET …/posts/search` liste les publications de l’espace de travail, quel que soit leur état, une page à la fois : 20 sauf si `limit` en décide autrement, 100 au plus. Tous les filtres donnés doivent être satisfaits. L’[outil MCP](/developers/mcp/tools#tools) `list_posts` prend les mêmes filtres, et `peal posts list` liste les mêmes publications ([Ligne de commande](/developers/cli/posts#posts)).
+## Filtrer les publications [#search]
 
-| Paramètre    | Ce qu’il garde                                                                                                                                                                  |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`     | `draft`, `awaitingApproval` (elle attend une [approbation](/guides/posts/review), et garde son horaire), `scheduled`, `publishing`, `finished` ou `cancelled`                   |
-| `outcome`    | Comment une publication terminée a fini : `published`, `partiallyPublished`, `unconfirmed`, `failed` ou `cancelled`                                                             |
-| `channelId`  | Les publications qui ont une cible sur ce canal                                                                                                                                 |
-| `platform`   | Les publications qui ont une cible sur un canal connecté de cette plateforme                                                                                                    |
-| `from`, `to` | Les publications programmées de `from` (compris) à `to` (exclu). L’un comme l’autre écarte les publications sans heure.                                                         |
-| `createdVia` | `web`, `apiKey` ou `application`                                                                                                                                                |
-| `authorId`   | Les publications créées par cet utilisateur                                                                                                                                     |
-| `sort`       | `createdDesc` (par défaut) ou `createdAsc`, par date de création ; `scheduledDesc` ou `scheduledAsc`, par instant programmé, qui ne listent que les publications avec une heure |
-| `limit`      | Le nombre de publications par page, de 1 à 100                                                                                                                                  |
-| `cursor`     | Le `nextCursor` de la page précédente                                                                                                                                           |
+`GET …/posts/search` liste les publications de l’espace de travail, quel que soit leur état, une page à la fois. Une page contient 20 publications sauf si `limit` en décide autrement, et 100 au plus. Quand vous donnez plusieurs filtres, une publication doit les satisfaire tous. L’[outil MCP](/developers/mcp/tools#tools) `list_posts` prend les mêmes filtres, et `peal posts list` liste les mêmes publications ([Ligne de commande](/developers/cli/posts#posts)).
+
+La requête prend ces paramètres :
+
+| Paramètre     | Ce qu’il garde                                                                                                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`      | `draft`, `awaitingApproval` (en attente d’une [approbation](/guides/posts/review), son heure gardée), `scheduled`, `publishing`, `finished` ou `cancelled`                                        |
+| `outcome`     | Comment une publication terminée a fini : `published`, `partiallyPublished`, `unconfirmed`, `failed` ou `cancelled`                                                                               |
+| `channelId`   | Les publications qui ont une cible sur ce canal                                                                                                                                                   |
+| `platform`    | Les publications qui ont une cible sur un canal connecté de cette plateforme                                                                                                                      |
+| `tagId`       | Les publications classées sous cette étiquette                                                                                                                                                    |
+| `queueId`     | Les publications placées par cette file d’attente ([Files d’attente](/developers/posting/queues#queues))                                                                                          |
+| `recyclingId` | Les publications créées par cette règle de répétition ([Répéter une publication](/developers/posting/queues#recycling))                                                                           |
+| `removed`     | `true` : les publications que Peal a supprimées de la plateforme d’au moins un canal. `false` : celles supprimées d’aucune ([Dépublier une publication](/developers/posting/published#unpublish)) |
+| `from`, `to`  | Les publications programmées de `from` (compris) à `to` (exclu). L’un comme l’autre écarte les publications sans heure.                                                                           |
+| `createdVia`  | `web`, `apiKey` ou `application`                                                                                                                                                                  |
+| `authorId`    | Les publications créées par cet utilisateur                                                                                                                                                       |
+| `sort`        | `createdDesc` (par défaut) ou `createdAsc`, par date de création. `scheduledDesc` ou `scheduledAsc`, par instant programmé, qui ne listent que les publications avec une heure                    |
+| `limit`       | Le nombre de publications par page, de 1 à 100                                                                                                                                                    |
+| `cursor`      | Le `nextCursor` de la page précédente                                                                                                                                                             |
+
+Cette requête liste les publications Bluesky en échec, la plus récemment programmée en premier :
 
 <CodeGroup>
 
-```bash curl
-curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/search?status=finished&outcome=failed&platform=bluesky&sort=scheduledDesc&limit=50" \
-  -H "Authorization: Bearer $PEAL_API_KEY"
-```
+```ts Node.js
+import { PealClient } from "peal-sdk";
 
-```ts TypeScript
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
+
 const page = await peal.posts.search({
   workspaceId,
   status: "finished",
@@ -38,6 +48,148 @@ const page = await peal.posts.search({
   sort: "scheduledDesc",
   limit: "50",
 });
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+workspace_id = os.environ["PEAL_WORKSPACE_ID"]
+
+page = peal.posts.search(
+    workspace_id=workspace_id,
+    status="finished",
+    outcome="failed",
+    platform="bluesky",
+    sort="scheduledDesc",
+    limit="50",
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
+
+page, err := client.Posts.Search(context.TODO(), &peal.SearchPostsRequest{
+	WorkspaceID: workspaceID,
+	Status:      peal.PostStatusFinished.Ptr(),
+	Outcome:     peal.PostOutcomeFailed.Ptr(),
+	Platform:    peal.PlatformBluesky.Ptr(),
+	Sort:        peal.PostSortScheduledDesc.Ptr(),
+	Limit:       peal.String("50"),
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
+
+page = peal.posts.search(
+  workspace_id: workspace_id,
+  status: "finished",
+  outcome: "failed",
+  platform: "bluesky",
+  sort: "scheduledDesc",
+  limit: "50"
+)
+```
+
+```java Java
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.SearchPostsRequest;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
+
+PostPage page = peal.posts().search(
+    workspaceId,
+    SearchPostsRequest.builder()
+        .status(PostStatus.FINISHED)
+        .outcome(PostOutcome.FAILED)
+        .platform(Platform.BLUESKY)
+        .sort(PostSort.SCHEDULED_DESC)
+        .limit("50")
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\SearchPostsRequest;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+$workspaceId = getenv('PEAL_WORKSPACE_ID');
+
+$page = $peal->posts->search($workspaceId, new SearchPostsRequest([
+    'status' => 'finished',
+    'outcome' => 'failed',
+    'platform' => 'bluesky',
+    'sort' => 'scheduledDesc',
+    'limit' => '50',
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
+
+var page = await peal.Posts.SearchAsync(new SearchPostsRequest
+{
+    WorkspaceId = workspaceId,
+    Status = PostStatus.Finished,
+    Outcome = PostOutcome.Failed,
+    Platform = Platform.Bluesky,
+    Sort = PostSort.ScheduledDesc,
+    Limit = "50",
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
+
+let page = peal
+    .posts
+    .search(
+        &workspace_id,
+        &SearchQueryRequest::builder()
+            .status(PostStatus::Finished)
+            .outcome(PostOutcome::Failed)
+            .platform(Platform::Bluesky)
+            .sort(PostSort::ScheduledDesc)
+            .limit("50")
+            .build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/search?status=finished&outcome=failed&platform=bluesky&sort=scheduledDesc&limit=50" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
 ```json MCP (list_posts)
@@ -84,14 +236,19 @@ const page = await peal.posts.search({
 }
 ```
 
-- Chaque publication est répondue en entier, avec ses cibles, leur statut, leur adresse et la raison de leur échec.
-- `channels` donne la plateforme de chaque canal que nomme la page et qui est encore connecté : un client nomme ainsi chaque cible sans autre requête.
-- Pour la page suivante, passez `nextCursor` dans `cursor`, avec les mêmes filtres et le même tri. Il est null sur la dernière page.
-- Un curseur marque l’endroit où sa page s’est arrêtée : les publications créées, déplacées ou supprimées entre-temps ne font ni répéter ni sauter une publication d’une page à l’autre.
-- Un curseur d’un autre tri, ou qu’aucune page n’a donné, répond 400.
+Chaque publication arrive en entier, avec ses cibles, leur statut, leur adresse et la raison de leur échec. `channels` donne la plateforme de chaque canal de la page encore connecté, pour que vous puissiez nommer chaque cible sans autre requête.
 
-<Callout type="info" title="Pour les calendriers">
-  `GET …/posts?from=…&to=…` reste : il liste en une seule réponse les
+## Lire la page suivante [#next-page]
+
+Passez `nextCursor` dans `cursor`, avec les mêmes filtres et le même tri. Il est null sur la dernière page.
+
+Un curseur marque l’endroit où sa page s’est arrêtée. Les publications créées, déplacées ou supprimées entre-temps ne font donc jamais répéter ni sauter une publication d’une page à l’autre. Un curseur d’un autre tri, ou qu’aucune page n’a renvoyé, répond 400.
+
+<Callout
+  type="info"
+  title="Un calendrier peut lire une période entière en une requête"
+>
+  `GET …/posts?from=…&to=…` existe toujours. Il liste en une seule réponse les
   publications programmées entre deux instants, séparés de 62 jours au plus, par
   instant programmé. Les brouillons n’en font pas partie.
 </Callout>

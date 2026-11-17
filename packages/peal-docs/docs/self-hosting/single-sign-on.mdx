@@ -5,59 +5,87 @@ sidebar:
   icon: key-round
 ---
 
-Let the people of your organisation sign in and make their account with your identity provider (any OpenID Connect provider), or with Google. The password form stays: a provider is one more way in.
+You can let the people of your organisation sign in and make their account with your identity provider (any OpenID Connect provider), or with Google. The password form stays, so a provider is one more way in.
 
 ## Register Peal at your provider [#register]
 
 <Steps>
-  <Step title="Create a client">
-    At your provider, create a confidential client (an "application") for
-    the web, with the redirect URI `<PUBLIC_URL>/api/auth/callback/oidc`,
-    such as `https://peal.example.com/api/auth/callback/oidc`. Allow the
-    authorization code flow; Peal uses PKCE.
-  </Step>
-  <Step title="Give it the scopes">
-    Peal asks for `openid email profile` unless you set others. The
-    provider must put `email` and `email_verified` in the ID token, which
-    Peal reads alone, never the userinfo endpoint.
-  </Step>
-  <Step title="Set the variables">
-    Set `PEAL_OIDC_ISSUER`, `PEAL_OIDC_CLIENT_ID` and
-    `PEAL_OIDC_CLIENT_SECRET`, and `PEAL_OIDC_NAME` for the button's name
-    ([Environment variables](/self-hosting/environment-variables#sign-in-providers)),
-    then restart the server. The sign-in and sign-up pages then show
-    **Continue with** and that name above the form.
-  </Step>
+<Step title="Create a client">
+
+At your provider, create a confidential client (an "application") for the web, with the redirect URI `<PUBLIC_URL>/api/auth/callback/oidc`, such as `https://peal.example.com/api/auth/callback/oidc`. Allow the authorization code flow. Peal uses PKCE.
+
+</Step>
+<Step title="Give it the scopes">
+
+Peal asks for `openid email profile` unless you set others. The provider must put `email` and `email_verified` in the ID token, because that's all Peal reads. It never calls the userinfo endpoint.
+
+</Step>
+<Step title="Set the variables">
+
+Set `PEAL_OIDC_ISSUER`, `PEAL_OIDC_CLIENT_ID` and `PEAL_OIDC_CLIENT_SECRET`, and `PEAL_OIDC_NAME` for the button's name ([Environment variables](/self-hosting/environment-variables#sign-in-providers)). Then restart the server. You should see **Continue with** and that name above the form on the sign-in and sign-up pages.
+
+</Step>
 </Steps>
 
-Peal reads the provider's discovery document at `<issuer>/.well-known/openid-configuration` and checks each ID token's signature, issuer, audience and nonce against it. The server reads the discovery document when it starts, up to three times within about ten seconds. A provider that does not answer is left out, and the server starts all the same: it logs one error, reads the document again in the background, at least once a minute, logging each further failure as a warning, and offers the provider again once it answers. The metric `peal.workspace.sign_in_providers.unavailable` is 1 for a provider left out and 0 once it answers, and Peal's monitoring alerts on it after ten minutes. A document that lacks what OpenID Connect requires (`issuer`, `authorization_endpoint`, `token_endpoint`, `jwks_uri` and `id_token_signing_alg_values_supported`) stops the server, with a message that names what is missing. The provider may be on your private network: the server reaches it directly.
+Peal reads the provider's discovery document at `<issuer>/.well-known/openid-configuration`. It checks each ID token's signature, issuer, audience and nonce against it. The provider may be on your private network, because the server reaches it directly.
+
+### When the provider doesn't answer at startup [#discovery]
+
+The server reads the discovery document when it starts, up to three times within about ten seconds. If the provider doesn't answer, the server leaves it out and starts all the same.
+
+It then reads the document again in the background, at least once a minute, and logs each failure as an error. The error-log alert of Peal's monitoring picks those up. Once the provider answers, the server offers it again.
+
+A document that lacks what OpenID Connect requires stops the server, with a message that names what's missing. It must have `issuer`, `authorization_endpoint`, `token_endpoint`, `jwks_uri` and `id_token_signing_alg_values_supported`.
 
 ## What the provider must send [#claims]
 
-- `email`, an address (Peal takes it without the spaces around it, and refuses anything else), and `email_verified` set to `true`. A provider that sends no `email_verified`, or `false`, cannot sign anyone in: Peal tells the person their provider has not confirmed the address.
+Peal reads three claims from the ID token:
+
+- `email`, an address, and `email_verified` set to `true`. Peal takes the address without the spaces around it, and refuses anything else. A provider that sends no `email_verified`, or `false`, can't sign anyone in, and Peal tells the person their provider hasn't confirmed the address.
 - `sub`, which Peal keeps as the person's identifier at the provider. Peal keeps no token of the provider's, and never its picture.
-- `name`, optional: without it, a new account is named after the address.
+- `name`, which is optional. Without it, a new account is named after the address.
 
 ## How accounts are matched [#matching]
 
-A provider's sign-in reaches an account only through an address confirmed on both sides: the provider says it confirmed it, and the Peal account confirmed it too. An account whose address was never confirmed is not joined to the provider; its owner signs in with their password, or resets it, first. Once joined, the provider's identifier signs in that account, even if the address at the provider changes. Nothing else links an account to a provider, and the account page has no link or unlink.
+A provider's sign-in reaches an account only through an address confirmed on both sides. The provider says it confirmed it, and the Peal account confirmed it too.
+
+An account whose address was never confirmed isn't joined to the provider. Its owner signs in with their password, or resets it, first.
+
+Once joined, the provider's identifier signs in that account, even if the address at the provider changes. Nothing else links an account to a provider, and the account page has no link or unlink.
 
 ## Making an account [#sign-up]
 
-A provider makes an account only from the sign-up page, under its terms line. On the sign-in page, an address with no account is told to sign up. With `PEAL_SIGN_UP=invitation`, a provider's sign-up needs the invitation's link too, and the address the provider confirmed must be the one the invitation went to ([Who may sign up](/self-hosting/options#sign-up)).
+A provider makes an account only from the sign-up page, under its terms line. On the sign-in page, an address with no account is told to sign up.
 
-An account a provider made has no password. Its owner sets one with **Forgot your password?**, or from the account page, before turning on two-step verification or closing the account, which both ask for it.
+With `PEAL_SIGN_UP=invitation`, a provider's sign-up needs the invitation's link too, and the address the provider confirmed must be the one the invitation went to ([Who may sign up](/self-hosting/options#sign-up)).
+
+An account a provider made has no password. Turning on two-step verification and closing the account both ask for one, so its owner first sets it with **Forgot your password?** or from the account page.
 
 ## Two-step verification [#two-step]
 
-An account with two-step verification on signs in with its password and its code: a provider's sign-in is refused for it. A workspace that requires two-step verification refuses a member without it, however they signed in, so in such a workspace members sign in with their password.
+An account with two-step verification on signs in with its password and its code, and a provider's sign-in is refused for it. A workspace that requires two-step verification refuses a member without it, however they signed in. So in such a workspace, members sign in with their password.
 
 ## Changing the provider [#change-provider]
 
-An identity is kept with the issuer that made it (`<issuer>|<sub>`), so a subject of one provider never reaches an account another provider's subject joined, even when the two are spelled alike. After you change `PEAL_OIDC_ISSUER`, each person's next sign-in joins their account again through the new provider, by an address both the new provider and Peal confirmed, as a first sign-in does; the old provider's identities stay unused. An account the old provider made has a confirmed address, so it joins too. The issuer is compared as a URL reads it, so another spelling of the same one (the host's case, the default port, a trailing slash) changes nothing.
+An identity is kept with the issuer that made it (`<issuer>|<sub>`). A subject of one provider never reaches an account another provider's subject joined, even when the two are spelled alike.
+
+After you change `PEAL_OIDC_ISSUER`, each person's next sign-in joins their account again through the new provider, as a first sign-in does. It goes by an address both the new provider and Peal confirmed. The old provider's identities stay unused. An account the old provider made has a confirmed address, so it joins too.
+
+The issuer is compared as a URL reads it, so another spelling of the same one (the host's case, the default port, a trailing slash) changes nothing.
 
 ## Google [#google]
 
-Google vouches for fewer addresses than your own provider. Peal takes Google's word for an address only when it is a Gmail address (`@gmail.com`), or when Google Workspace manages its domain (the ID token's `hd`, the same domain as the address). Any other address Google once confirmed may have changed hands since, so it joins no account, makes none and accepts no invitation: its owner signs in with their password, and is told "Sign in with your password: Google can't confirm this address is still yours". Your own provider is its users' authority: its `email_verified` is enough. A `@googlemail.com` address, and a Google Workspace user whose address is on one of the organisation's secondary domains, are refused that way too: they sign in with their password.
+Google is set up the same way, with its own two variables, `GOOGLE_SIGN_IN_CLIENT_ID` and `GOOGLE_SIGN_IN_CLIENT_SECRET`. In the Google Cloud console, create an OAuth client of type "Web application" with the redirect URI `<PUBLIC_URL>/api/auth/callback/google`. Give it a consent screen that asks for `openid`, `email` and `profile` only. Google and your own provider can both be on.
 
-Google is set the same way, with its own two variables, `GOOGLE_SIGN_IN_CLIENT_ID` and `GOOGLE_SIGN_IN_CLIENT_SECRET`. In the Google Cloud console, create an OAuth client of type "Web application" with the redirect URI `<PUBLIC_URL>/api/auth/callback/google`, and a consent screen that asks for `openid`, `email` and `profile` only. Google and your own provider can both be on.
+### Which Google addresses Peal trusts [#google-addresses]
+
+Google vouches for fewer addresses than your own provider. Peal takes Google's word for an address only in two cases:
+
+- It's a Gmail address (`@gmail.com`).
+- Google Workspace manages its domain, so the ID token's `hd` is the same domain as the address.
+
+Any other address Google once confirmed may have changed hands since. It joins no account, makes none and accepts no invitation. Its owner signs in with their password, and sees "Sign in with your password: Google can't confirm this address is still yours".
+
+A `@googlemail.com` address is refused that way too, and so is a Google Workspace user whose address is on one of the organisation's secondary domains. They sign in with their password.
+
+Your own provider is its users' authority, so its `email_verified` is enough.

@@ -5,13 +5,13 @@ sidebar:
   icon: credit-card
 ---
 
-Sur Peal Cloud, chaque espace de travail suit l’abonnement de son [compte de facturation](#accounts) : l’offre gratuite, ou le tarif par compte une fois un moyen de paiement ajouté.
+Sur Peal Cloud, chaque espace de travail suit l’abonnement de son [compte de facturation](#accounts). C’est l’offre gratuite, ou le tarif par compte une fois que vous avez ajouté un moyen de paiement.
 
 Tous deux comprennent toutes les plateformes, le calendrier, les statistiques, l’API, le [serveur MCP](/developers/mcp) et la [ligne de commande](/developers/cli), avec membres, espaces de travail et publications illimités. Un serveur que vous hébergez vous-même ne facture rien et ne limite rien ([Auto-hébergement](/self-hosting/options#billing)).
 
 ## Le tarif par compte [#pricing]
 
-Un compte de facturation paie les comptes de réseaux sociaux connectés dans tous ses espaces de travail, sur un barème progressif, par mois : les comptes du mois, comptés au jour comme ci-dessous, sont facturés tranche par tranche. Chaque prix est affiché HT et avec la TVA française de {{vat-rate}} %, en dollars américains.
+Un compte de facturation paie chaque mois les comptes de réseaux sociaux connectés dans tous ses espaces de travail. Les comptes du mois, comptés au jour comme ci-dessous, sont facturés tranche par tranche sur un barème progressif. Chaque prix est affiché HT et avec la TVA française de {{vat-rate}} %, en dollars américains.
 
 | Comptes                                           | Par mois et par compte |
 | ------------------------------------------------- | ---------------------- |
@@ -20,16 +20,17 @@ Un compte de facturation paie les comptes de réseaux sociaux connectés dans to
 | {{accounts-band-3-from}} à {{accounts-band-3-to}} | {{accounts-band-3-fr}} |
 | {{accounts-band-4-from}} et au-delà               | {{accounts-band-4-fr}} |
 
-Les comptes sont comptés au jour :
+### Comment les comptes sont comptés [#counting]
 
-- Chaque jour UTC du mois compte le plus grand nombre de comptes connectés en même temps ce jour-là, sur tout le compte de facturation, pour les jours 1 à {{days-per-month}} seulement (le jour {{day-not-counted}} n’est jamais compté).
-- À la fin du mois, les jours-comptes sont additionnés et divisés par {{days-per-month}}, et ce nombre de comptes, qui peut comporter une fraction, passe au barème : les {{free-account-days}} premiers jours-comptes sont gratuits.
-- Un compte que vous déconnectez cesse de compter dès le lendemain, et rien d’autre n’est facturé pour les comptes : aucuns frais.
-- Un canal désactivé ou à reconnecter compte toujours ; un compte publicitaire ne compte pas.
-- Une messagerie compte comme un compte : un salon Discord, un canal ou un groupe Telegram, ou un canal Slack.
+Les comptes sont comptés au jour :
+
+- Chaque jour UTC du mois compte le plus grand nombre de comptes connectés en même temps ce jour-là, sur tout le compte de facturation. Seuls les jours 1 à {{days-per-month}} comptent : le jour {{day-not-counted}} n’est jamais compté.
+- À la fin du mois, les jours-comptes sont additionnés et divisés par {{days-per-month}}. Ce nombre de comptes, qui peut comporter une fraction, passe au barème, et les {{free-account-days}} premiers jours-comptes sont gratuits.
+- Un compte que vous déconnectez cesse de compter dès le lendemain. Rien d’autre n’est facturé pour les comptes : aucuns frais.
+- Un canal désactivé ou à reconnecter compte toujours. Un compte publicitaire ne compte pas.
 - Le premier de chaque mois, la facture porte sur le mois écoulé.
 
-Avec chaque compte connecté tout le mois :
+Avec chaque compte connecté tout le mois, un mois coûte :
 
 | Comptes                    | Par mois             |
 | -------------------------- | -------------------- |
@@ -41,34 +42,46 @@ Avec chaque compte connecté tout le mois :
 | {{accounts-100-count-fr}}  | {{accounts-100-fr}}  |
 | {{accounts-1000-count-fr}} | {{accounts-1000-fr}} |
 
-Un mois incomplet : {{part-month-all-fr}} comptes connectés tout le mois, plus {{part-month-extras-fr}}, font {{part-month-days-fr}} jours-comptes. Divisés par {{days-per-month}}, cela fait {{part-month-units-fr}} comptes passés au barème : {{part-month-fr}} pour le mois.
+Voici un mois incomplet. {{part-month-all-fr}} comptes connectés tout le mois, plus {{part-month-extras-fr}}, font {{part-month-days-fr}} jours-comptes. Divisés par {{days-per-month}}, cela fait {{part-month-units-fr}} comptes passés au barème, soit {{part-month-fr}} pour le mois.
 
-Les prix sont fixés en dollars américains, hors taxes. La TVA que vous payez dépend de votre pays : elle est ajoutée au paiement pour les clients de l’UE, au taux de leur pays. Une entreprise avec un numéro de TVA valide paie le prix HT, la TVA étant autoliquidée ; en France, la TVA française s’applique.
+### TVA et devise [#vat]
 
-Au paiement, vous pouvez régler dans votre propre devise, convertie par notre prestataire de paiement au taux du jour ; sinon, votre carte est débitée en dollars américains. Les factures sont en dollars américains.
+Les prix sont fixés en dollars américains, hors taxes. La TVA que vous payez dépend de votre pays. Les clients de l’UE la voient ajoutée au paiement, au taux de leur pays. Une entreprise avec un numéro de TVA valide paie le prix HT, car la TVA est autoliquidée. En France, la TVA française s’applique.
 
-La page **Facturation** de l’espace de travail indique son abonnement et ce qu’il utilise de chaque limite. `GET /api/workspaces/:workspaceId/billing` répond la même chose.
+Au paiement, vous pouvez régler dans votre propre devise, convertie par notre prestataire de paiement au taux du jour. Sinon, votre carte est débitée en dollars américains. Les factures sont en dollars américains.
+
+La page **Facturation** de l’espace de travail indique son abonnement et ce qu’il utilise de chaque limite. Pour l’ouvrir, cliquez sur **Paramètres** en bas de la barre latérale de l’espace de travail, puis sur **Abonnement et facturation**. `GET /api/workspaces/:workspaceId/billing` répond la même chose.
 
 ## Les compteurs d’usage [#meters]
 
-Ce qui coûte à Peal à l’usage a un compteur, avec une franchise mensuelle par compte de facturation pour tous ses espaces de travail, à partir du premier de chaque mois civil (UTC).
+Ce qui coûte à Peal à l’usage a un compteur. Chaque compteur a une franchise mensuelle par compte de facturation, pour tous ses espaces de travail, à partir du premier de chaque mois civil (UTC) :
 
 | Compteur                                                                                                   | Inclus chaque mois        | Au-delà de la franchise                                            |
 | ---------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------ |
 | Messages envoyés depuis la [boîte de réception](/guides/engage/inbox), réponses aux commentaires comprises | {{messages-allowance-fr}} | {{messages-price-fr}} pour {{messages-per-fr}}, facturé au message |
 | [Publicités gérées](/guides/engage/ads), chaque publicité active dans le mois                              | {{ads-allowance-fr}}      | {{ads-price-fr}} par publicité                                     |
 | Les demandes et les images de l’assistant de rédaction, sur les modèles de l’instance                      | bientôt                   | bientôt                                                            |
-| L’API de [X](/platforms/x) : publications envoyées et, si activée, lecture des chiffres                    | rien                      | aux tarifs de X ([ci-dessous](#x))                                 |
+| L’API de [X](/platforms/x) : publications envoyées et, si activée, lecture des chiffres                    | rien                      | aux tarifs de X ([ci-dessous](#x))                                 |
 
-Sans moyen de paiement, un compteur s’arrête à sa franchise jusqu’au premier du mois suivant, tandis que la lecture, les statistiques et la publication continuent. Avec un moyen de paiement, chaque unité au-delà de la franchise est facturée sur la facture du mois. Tant qu’un paiement a échoué, les franchises s’appliquent toujours et rien n’est utilisé au-delà jusqu’à ce qu’il passe. Tant que la première facture d’un compte de facturation n’est pas payée, ce que ses compteurs facturent est plafonné, quels que soient les plafonds choisis, mois écoulés depuis le début de son abonnement compris.
+Ce qui se passe à la franchise dépend du moyen de paiement :
 
-Au-delà de ce qu’un compteur permet, l’action est refusée et rien n’est compté : l’API répond 402 `UsageAllowanceReached`, avec le compteur (`meter`), ce qu’il permet (`allowed`), ce qui a été utilisé (`used`), quand il repart (`resetsAt`) et la raison (`reason`) ([Erreurs](/developers/conventions/errors)).
+- Sans moyen de paiement, un compteur s’arrête à sa franchise jusqu’au premier du mois suivant. La lecture, les statistiques et la publication continuent.
+- Avec un moyen de paiement, chaque unité au-delà de la franchise est facturée sur la facture du mois.
+- Tant qu’un paiement a échoué, les franchises s’appliquent toujours, et rien n’est utilisé au-delà jusqu’à ce que le paiement passe.
 
-L’assistant de rédaction sur les modèles de l’instance demande un moyen de paiement. Avec un moyen de paiement, ses demandes et ses images ont chacune une franchise mensuelle par compte de facturation, qu’indique la page de facturation ; tant que leurs prix ne sont pas fixés, rien n’est facturé au-delà, et l’assistant s’y arrête jusqu’au mois suivant. Une génération qui échoue une fois que le fournisseur l’a reçue n’est pas comptée, dans la limite de la franchise. Les fournisseurs d’[images](/guides/workspace#image-provider) et de [texte](/guides/workspace#text-provider) propres à un espace de travail ne coûtent rien, quel que soit l’abonnement.
+Tant que la première facture d’un compte de facturation n’est pas payée, ce que ses compteurs facturent est plafonné, quels que soient les plafonds choisis, mois écoulés depuis le début de son abonnement compris.
+
+Au-delà de ce qu’un compteur permet, l’action est refusée et rien n’est compté. L’API répond 402 `UsageAllowanceReached`, avec le compteur (`meter`), ce qu’il permet (`allowed`), ce qui a été utilisé (`used`), quand il repart (`resetsAt`) et la raison (`reason`) ([Erreurs](/developers/conventions/errors)).
+
+### L’assistant de rédaction [#assistant-meter]
+
+L’assistant de rédaction sur les modèles de l’instance demande un moyen de paiement. Avec un moyen de paiement, ses demandes et ses images ont chacune une franchise mensuelle par compte de facturation, qu’indique la page de facturation. Tant que leurs prix ne sont pas fixés, rien n’est facturé au-delà, et l’assistant s’y arrête jusqu’au mois suivant.
+
+Une génération qui échoue une fois que le fournisseur l’a reçue n’est pas comptée, dans la limite de la franchise. Les fournisseurs d’[images](/guides/workspace#image-provider) et de [texte](/guides/workspace#text-provider) propres à un espace de travail ne coûtent rien, quel que soit l’abonnement.
 
 ### X, aux tarifs de X [#x]
 
-X facture chaque appel à son API, et Peal le refacture aux tarifs à l’usage publiés par X, sans rien ajouter. Un compte de facturation doit avoir un moyen de paiement avant de connecter un compte X, et l’usage de X est facturé sur sa facture mensuelle, dans la limite d’un plafond de {{x-ceiling-fr}} hors taxes par mois, sauf si ses responsables de la facturation le modifient sur la page de facturation.
+X facture chaque appel à son API, et Peal le refacture aux tarifs à l’usage publiés par X, sans rien ajouter. Un compte de facturation doit avoir un moyen de paiement avant de connecter un compte X. L’usage de X est facturé sur sa facture mensuelle, dans la limite d’un plafond de {{x-ceiling-fr}} hors taxes par mois, que ses responsables de la facturation peuvent modifier sur la page de facturation.
 
 | Un appel                                                  | Tarif de X         |
 | --------------------------------------------------------- | ------------------ |
@@ -77,11 +90,31 @@ X facture chaque appel à son API, et Peal le refacture aux tarifs à l’usage 
 | Les chiffres d’une publication lus, une fois par jour UTC | {{x-post-read-fr}} |
 | Les abonnés d’un compte lus, une fois par jour UTC        | {{x-user-read-fr}} |
 
-Ces tarifs sont ceux qu’indiquait la page de tarifs pour développeurs de X le {{x-rates-read-fr}} ; X peut les changer, et la page de facturation montre ceux qui sont facturés. La lecture des chiffres est désactivée tant qu’un membre qui gère la facturation ne l’active pas pour l’espace de travail, sur la page de facturation ([Statistiques](/guides/engage/analytics)). Avant que chaque partie d’un fil parte, le compteur est vérifié pour toutes les parties qui restent ; un fil sans place dès sa première partie n’est pas envoyé du tout, et au plafond, les publications sur X échouent sans être envoyées (`xCeilingReached`) et les chiffres attendent le mois suivant, tandis que les autres plateformes continuent ; les responsables de la facturation sont prévenus à 80 % et à 100 % du plafond. Une publication sur X échoue de la même façon quand le compte de facturation n’a pas de moyen de paiement (`paymentMethodRequired`), que son dernier paiement a échoué (`paymentFailed`) ou qu’il a un abonnement antérieur au tarif par compte (`perAccountPricingRequired`) ; un fil coupé en route échoue en `xThreadCut`, ses premières parties en ligne : la place que la vérification avait trouvée a été prise par une autre demande avant une partie suivante (une autre publication ou un autre canal X du compte, les lectures de X) ou le compte a changé entre-temps, car la vérification ne réserve rien. Les lectures que X ne renvoie pas (un refus, une publication supprimée) ne sont pas facturées. Un serveur que vous hébergez ne facture rien pour X : les réglages de son opérateur décident ([Variables d’environnement](/self-hosting/environment-variables)).
+Ces tarifs sont ceux qu’indiquait la page de tarifs pour développeurs de X le {{x-rates-read-fr}}. X peut les changer, et la page de facturation montre ceux qui sont facturés. Les lectures que X ne renvoie pas (un refus, une publication supprimée) ne sont pas facturées.
+
+La lecture des chiffres est désactivée tant qu’un membre qui gère la facturation ne l’active pas pour l’espace de travail, sur la page de facturation ([Statistiques](/guides/engage/analytics)).
+
+#### Au plafond [#x-ceiling]
+
+Avant que chaque partie d’un fil parte, Peal vérifie que le compteur a de la place pour toutes les parties qui restent. Un fil sans place dès sa première partie n’est pas envoyé du tout.
+
+Au plafond, les publications sur X échouent sans être envoyées (`xCeilingReached`), et les chiffres attendent le mois suivant. Les autres plateformes continuent. Les responsables de la facturation sont prévenus à 80 % et à 100 % du plafond.
+
+#### Quand une publication sur X échoue [#x-failures]
+
+Une publication sur X échoue aussi, sans être envoyée, quand le compte de facturation :
+
+- n’a pas de moyen de paiement (`paymentMethodRequired`)
+- a vu son dernier paiement échouer (`paymentFailed`)
+- a un abonnement antérieur au tarif par compte (`perAccountPricingRequired`)
+
+Un fil peut aussi être coupé en route, avec ses premières parties en ligne. Il échoue alors en `xThreadCut`. Cela arrive parce que la vérification ne réserve rien : la place qu’elle avait trouvée a été prise par une autre demande avant une partie suivante (une autre publication ou un autre canal X du compte, ou les lectures de X), ou le compte a changé entre-temps.
+
+Un serveur que vous hébergez ne facture rien pour X. Les réglages de son opérateur décident ([Variables d’environnement](/self-hosting/environment-variables)).
 
 ## Un moyen de paiement [#payment-method]
 
-Commander le tarif par compte ([Commander](#ordering)) ajoute un moyen de paiement au compte de facturation, et le fait sortir de l’offre gratuite :
+Commander le tarif par compte ([Commander](#ordering)) ajoute un moyen de paiement au compte de facturation et le fait sortir de l’offre gratuite. Voici ce qui change :
 
 | Quoi                                                                                                       | Sans moyen de paiement                                | Avec un moyen de paiement                                                       |
 | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -91,121 +124,133 @@ Commander le tarif par compte ([Commander](#ordering)) ajoute un moyen de paieme
 | Stockage des médias (usage raisonnable)                                                                    | {{free-storage-fr}} sur tout le compte de facturation | {{storage-per-account-fr}} par compte connecté, {{storage-minimum-fr}} au moins |
 | [Requêtes à l’API](/developers/conventions/rate-limits#rate-limits) par minute, par clé et par application | {{api-without-fr}}                                    | {{api-with-fr}}, ou {{api-on-request-fr}} sur demande                           |
 
-Un compte de facturation peut créer autant d’espaces de travail qu’il veut : ils partagent un barème, un lot de comptes gratuits et une franchise de chaque compteur, si bien qu’un espace de plus n’apporte rien de gratuit. L’offre gratuite est unique par personne : une personne paie un seul compte de facturation au plus, et l’équipe de Peal peut fusionner des comptes de facturation ouverts pour la multiplier, ou exiger un moyen de paiement de l’un d’eux.
+Un compte de facturation peut créer autant d’espaces de travail qu’il veut. Ils partagent un barème, un lot de comptes gratuits et une franchise de chaque compteur, si bien qu’un espace de plus n’apporte rien de gratuit.
+
+L’offre gratuite est unique par personne. Une personne paie un seul compte de facturation au plus, et l’équipe de Peal peut fusionner des comptes de facturation ouverts pour la multiplier, ou exiger un moyen de paiement de l’un d’eux.
 
 ## Comptes de facturation [#accounts]
 
-Chaque espace de travail appartient à un compte de facturation, qui le paie.
+Chaque espace de travail appartient à un compte de facturation, qui le paie :
 
-- La personne qui crée un espace de travail le paie : chaque espace qu’elle crée rejoint son compte de facturation, créé avec le premier.
+- La personne qui crée un espace de travail le paie. Chaque espace qu’elle crée rejoint son compte de facturation, créé avec le premier.
 - Un espace créé avant les comptes de facturation est sur celui de son plus ancien propriétaire.
 - L’espace principal d’un [compte partenaire](/developers/embedding) et les espaces qu’il possède sont sur le compte de facturation du partenaire, à part de ceux de ses propriétaires.
 
-Les espaces d’un compte partagent un abonnement et comptent leurs canaux ensemble : un compte gratuit a les {{free-accounts}} comptes de l’offre gratuite pour tous ses espaces.
+Les espaces d’un compte partagent un abonnement et comptent leurs canaux ensemble. Un compte gratuit a les {{free-accounts}} comptes de l’offre gratuite pour tous ses espaces.
 
-L’abonnement se commande, se résilie et se rétracte sur l’espace de facturation du compte, son plus ancien (l’espace principal d’un partenaire), qui porte l’abonnement. La page Facturation de chaque autre espace du compte le nomme, avec un lien pour ses membres, et ne commande rien (409 `billed_elsewhere`). Chaque autre espace de travail du compte lit son abonnement, ses comptes connectés et ses limites, mais rien de son argent ni de son contrat. Un espace qui avait déjà un abonnement à lui le garde seul jusqu’à sa fin, puis rejoint le compte de son payeur. Sur un serveur qui ne facture pas, les comptes sont tenus et ne limitent rien.
+### L’espace de facturation [#billing-workspace]
+
+L’abonnement se commande, se résilie et se rétracte sur l’espace de facturation du compte, qui porte l’abonnement. C’est son plus ancien espace, ou l’espace principal d’un partenaire.
+
+La page **Facturation** de chaque autre espace du compte nomme l’espace de facturation, avec un lien pour ses membres, et ne commande rien (409 `billed_elsewhere`). Ces espaces lisent l’abonnement, les comptes connectés et les limites du compte, mais rien de son argent ni de son contrat.
+
+Un espace qui avait déjà un abonnement à lui le garde seul jusqu’à sa fin, puis rejoint le compte de son payeur. Sur un serveur qui ne facture pas, les comptes sont tenus et ne limitent rien.
 
 ### Confier un espace à un autre propriétaire [#transfer]
 
-Le payeur d’un espace de travail le confie à un autre de ses propriétaires depuis sa page Facturation. La proposition reste ouverte 7 jours, et le propriétaire à qui elle est faite l’accepte là, en personne, ou la refuse. Accepter fait passer l’espace sur son compte de facturation, créé s’il n’en a pas.
+Le payeur d’un espace de travail peut le confier à un autre de ses propriétaires, depuis sa page **Facturation**. La proposition reste ouverte 7 jours. Le propriétaire à qui elle est faite l’accepte ou la refuse là, en personne. Accepter fait passer l’espace sur son compte de facturation, créé s’il n’en a pas.
 
-C’est refusé :
+Le transfert est refusé dans deux cas :
 
-- quand l’abonnement de son compte n’a pas de place pour les canaux de l’espace ;
-- pour l’espace de facturation tant que son abonnement peut encore être prélevé : résiliez-le d’abord, ou confiez un autre espace.
+- quand l’abonnement de son compte n’a pas de place pour les canaux de l’espace
+- pour l’espace de facturation, tant que son abonnement peut encore être prélevé. Résiliez-le d’abord, ou confiez un autre espace.
 
 Dans l’API, `POST …/billing/transfer`, `POST …/billing/transfer/acceptance` et `DELETE …/billing/transfer` ne répondent qu’à une personne dans sa propre session.
 
 <Accordion>
   <AccordionItem title="Quand le payeur s’en va">
-    Sur un serveur qui facture, le payeur reste l’un des propriétaires de
-    l’espace de travail jusqu’à ce qu’il le confie : le quitter, en être retiré
-    ou perdre le rôle de propriétaire répond 400 `PAYER_MUST_STAY`, et une
-    réduction qui le retirerait `payerRequired`.
 
-    Sur un serveur qui ne facture pas, rien n’est refusé : un espace dont le
-    payeur n’est plus l’un des propriétaires passe sur le compte de son plus
-    ancien propriétaire.
+Sur un serveur qui facture, le payeur reste l’un des propriétaires de l’espace de travail jusqu’à ce qu’il le confie. Le quitter, en être retiré ou perdre le rôle de propriétaire répond 400 `PAYER_MUST_STAY`, et une réduction qui le retirerait répond `payerRequired`.
 
-    Quand le payeur ferme son compte, chaque espace qu’il payait et que
-    d’autres possèdent passe sur le compte de son plus ancien autre
-    propriétaire, au-delà de son abonnement si ce compte n’a pas de place pour
-    ses canaux.
+Sur un serveur qui ne facture pas, rien n’est refusé. Un espace dont le payeur n’est plus l’un des propriétaires passe sur le compte de son plus ancien propriétaire.
+
+Quand le payeur ferme son compte, chaque espace qu’il payait et que d’autres possèdent passe sur le compte de son plus ancien autre propriétaire. Il y passe au-delà de son abonnement si ce compte n’a pas de place pour ses canaux.
 
   </AccordionItem>
 </Accordion>
 
 ## Ce qu’un abonnement limite [#limits]
 
-Un espace de travail ne dépasse jamais son abonnement : chaque limite est vérifiée quand quelque chose est ajouté, y compris pour des demandes envoyées en même temps, et ce pour quoi l’abonnement n’a pas de place est refusé.
+Un espace de travail ne dépasse jamais son abonnement. Chaque limite est vérifiée quand quelque chose est ajouté, y compris pour des demandes envoyées en même temps, et ce pour quoi l’abonnement n’a pas de place est refusé :
 
-| Limite                              | Comment elle est vérifiée                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Canaux                              | Sur l’offre gratuite, connecter un compte au-delà des {{free-accounts}} premiers du compte de facturation est refusé, et avec un moyen de paiement rien ne l’est. Un compte Instagram est un seul canal, quelle que soit la façon dont il est connecté : le passer d’une Page Facebook à Instagram, ou l’inverse, n’en ajoute aucun, même quand l’abonnement est plein.                                                                                                                                                                                                                                                                                                           |
-| Membres                             | Invitations en attente comprises, à l’invitation puis à nouveau quand une invitation est acceptée, sur les seuls abonnements par paliers de canaux qui les limitent.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Publications                        | Les publications qui partent dans un mois civil (UTC), sur les seuls abonnements par paliers de canaux qui les limitent. Vérifiées à nouveau à l’heure de chaque publication.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Demandes à l’assistant de rédaction | Sur l’offre gratuite et le tarif par compte, un [compteur d’usage](#meters) : chaque demande et chaque image compte une fois dans le mois du compte de facturation, aucune sans moyen de paiement. Sur un abonnement par paliers de canaux, des demandes par jour UTC, telles que l’abonnement les donne, une image du modèle de l’instance en coûtant 5 ([Générer une image](/guides/media#generate)). Une image du [fournisseur d’images](/guides/workspace#image-provider) propre à l’espace de travail, et une suggestion de son propre [fournisseur de texte](/guides/workspace#text-provider), n’en coûtent aucune, quel que soit l’abonnement, et ne sont jamais comptées. |
-| Médias                              | Les octets d’images et de vidéos stockés, envois en cours compris. Un envoi pour lequel l’abonnement n’a pas de place est refusé avant que rien ne parte ; supprimez des médias pour en faire. La place donnée à un envoi lui est gardée six heures : terminé plus tard, il lui en faut à nouveau.                                                                                                                                                                                                                                                                                                                                                                                |
+| Limite                              | Comment elle est vérifiée                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Canaux                              | Sur l’offre gratuite, connecter un compte au-delà des {{free-accounts}} premiers du compte de facturation est refusé. Avec un moyen de paiement, rien ne l’est. Un compte Instagram est un seul canal, quelle que soit la façon dont il est connecté : le passer d’une Page Facebook à Instagram, ou l’inverse, n’en ajoute aucun, même quand l’abonnement est plein.                                                                                                                                                                                                                                                                                                                              |
+| Membres                             | Invitations en attente comprises, à l’invitation puis à nouveau quand une invitation est acceptée. Seulement sur les abonnements par paliers de canaux qui les limitent.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Publications                        | Les publications qui partent dans un mois civil (UTC), vérifiées à nouveau à l’heure de chaque publication. Seulement sur les abonnements par paliers de canaux qui les limitent.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Demandes à l’assistant de rédaction | Sur l’offre gratuite et le tarif par compte, un [compteur d’usage](#meters) : chaque demande et chaque image compte une fois dans le mois du compte de facturation, et aucune n’est permise sans moyen de paiement. Sur un abonnement par paliers de canaux, des demandes par jour UTC, telles que l’abonnement les donne, une image du modèle de l’instance en coûtant 5 ([Générer une image](/guides/media#generate)). Une image du [fournisseur d’images](/guides/workspace#image-provider) propre à l’espace de travail, et une suggestion de son propre [fournisseur de texte](/guides/workspace#text-provider), n’en coûtent aucune, quel que soit l’abonnement, et ne sont jamais comptées. |
+| Médias                              | Les octets d’images et de vidéos stockés, envois en cours compris. Un envoi pour lequel l’abonnement n’a pas de place est refusé avant que rien ne parte. Supprimez des médias pour en faire. La place donnée à un envoi lui est gardée six heures. S’il se termine plus tard, il lui en faut à nouveau.                                                                                                                                                                                                                                                                                                                                                                                           |
 
-Dans l’application web, un refus ouvre une fenêtre qui dit quelle limite est atteinte, avec ce que l’espace de travail possède et son abonnement. Elle propose le tarif par compte, avec ce que coûte le compte suivant.
+### Quand une limite est atteinte [#refusals]
 
-- Les propriétaires et les administrateurs ajoutent là un moyen de paiement, par carte, comme depuis la page Facturation ([Commander](#ordering)), et reviennent à ce qu’ils faisaient.
-- Les autres membres lisent qui peut le faire.
+Dans l’application web, un refus ouvre une fenêtre qui dit quelle limite est atteinte, avec ce que l’espace de travail possède et son abonnement. Elle propose le tarif par compte, avec ce que coûte le compte suivant :
 
-Par l’API, chaque refus répond 402 `PlanLimitReached`, avec la limite (`limit`), ce que l’abonnement permet (`allowed`), ce que l’espace de travail possède (`used`), son abonnement (`plan`), l’abonnement qui a de la place (`planWithRoom` : `payAsYouGo` quand un moyen de paiement en donne, nul quand aucun abonnement ne contient autant) et la page de facturation (`billingUrl`). Les demandes quotidiennes à l’assistant de rédaction répondent 429 `AssistantQuotaExceeded` avec les mêmes champs d’abonnement. La ligne de commande et les outils MCP disent la même chose en toutes lettres, avec l’abonnement à commander et la page de facturation.
+- Les propriétaires et les administrateurs peuvent y ajouter un moyen de paiement, par carte, comme depuis la page **Facturation** ([Commander](#ordering)), puis revenir à ce qu’ils faisaient.
+- Les autres membres voient qui peut le faire.
+
+Par l’API, chaque refus répond 402 `PlanLimitReached`. Il contient la limite (`limit`), ce que l’abonnement permet (`allowed`), ce que l’espace de travail possède (`used`), son abonnement (`plan`), l’abonnement qui a de la place et la page de facturation (`billingUrl`). L’abonnement qui a de la place (`planWithRoom`) vaut `payAsYouGo` quand un moyen de paiement en donne, et nul quand aucun abonnement ne contient autant.
+
+Les demandes quotidiennes à l’assistant de rédaction répondent 429 `AssistantQuotaExceeded`, avec les mêmes champs d’abonnement. La ligne de commande et les outils MCP disent la même chose en toutes lettres, avec l’abonnement à commander et la page de facturation.
 
 ## Un espace de travail au-delà de son abonnement [#over]
 
-Un abonnement peut se réduire sous un espace de travail : son essai prend fin, ou son abonnement est résilié ou reste impayé, et il revient à l’offre gratuite. Rien n’est supprimé, et l’espace de travail peut donc posséder plus que son abonnement ne permet. Avec plus de canaux que l’abonnement n’en permet sur tout son compte de facturation (ou plus de membres, sur un abonnement par paliers de canaux qui les limite), il doit revenir dans son abonnement avant de faire quoi que ce soit d’autre.
+Un abonnement peut se réduire sous un espace de travail. Son essai prend fin, ou son abonnement est résilié ou reste impayé, et il revient à l’offre gratuite. Rien n’est supprimé, et l’espace de travail peut donc posséder plus que son abonnement ne permet.
+
+S’il a plus de canaux que l’abonnement n’en permet sur tout son compte de facturation (ou plus de membres, sur un abonnement par paliers de canaux qui les limite), il doit revenir dans son abonnement avant de faire quoi que ce soit d’autre :
 
 - Chaque membre qui ouvre l’espace de travail voit ce qu’il possède au-delà de l’abonnement.
-- Les propriétaires et les administrateurs peuvent ajouter un moyen de paiement, qui contient tout, ou choisir les canaux qui restent connectés (et, sur un tel abonnement, les membres qui restent). Les autres sont déconnectés ou retirés en une seule étape confirmée, et les invitations en attente sont révoquées. La déconnexion est la même que celle de chaque canal à la main : ses jetons sont supprimés et les plateformes qui le permettent sont priées d’oublier Peal. Les autres membres lisent qui peut le faire.
-- Plus de médias que l’abonnement n’en permet ne refuse que les envois : la bibliothèque reste ouverte, pour y supprimer.
+- Les propriétaires et les administrateurs peuvent ajouter un moyen de paiement, qui couvre tout. Ou ils choisissent les canaux qui restent connectés (et, sur un tel abonnement, les membres qui restent). Les autres membres voient qui peut le faire.
+- Les autres canaux sont déconnectés, et les autres membres retirés, en une seule étape confirmée, et les invitations en attente sont révoquées. La déconnexion se passe comme pour chaque canal à la main : ses jetons sont supprimés, et les plateformes qui le permettent sont priées d’oublier Peal.
+- Plus de médias que l’abonnement n’en permet ne refuse que les envois. La médiathèque reste ouverte, pour que vous puissiez y supprimer.
 
 <Callout
   type="warning"
   title="Rien n’est publié tant que l’espace n’est pas revenu dans son abonnement"
 >
   D’ici là, rien n’est programmé ni publié. Les publications déjà programmées
-  restent telles quelles et échouent sur leurs canaux à leur heure, avec
+  restent telles quelles, et échouent sur leurs canaux à leur heure, avec
   `planLimit` pour motif et sans rien envoyer. Une fois l’espace de travail
   revenu dans son abonnement, republiez chacune depuis sa page.
 </Callout>
 
-Ces publications ne repassent pas en brouillon : une publication en échec garde son heure, son texte et ses canaux, prévient son auteur par notification et par e-mail, et se republie en une étape, là où un brouillon perdrait sa programmation sans prévenir personne.
+Ces publications ne repassent pas en brouillon. Une publication en échec garde son heure, son texte et ses canaux, prévient son auteur par notification et par e-mail, et se republie en une étape. Un brouillon perdrait sa programmation sans prévenir personne.
 
-<Callout type="info" title="Quand Peal Cloud commence à facturer">
-  Un espace de travail de l’offre gratuite qui compte plus de comptes qu’elle
-  n’en inclut continue de programmer et de publier sur les comptes qu’il avait
-  alors jusqu’à un jour que Peal annonce, et n’en connecte pas d’autre d’ici là.
-  Un compte connecté depuis n’en profite pas, et un espace dont l’abonnement
-  prend fin entre-temps garde les comptes qu’il avait alors, jusqu’à ce jour.
-  Ceux qui gèrent sa facturation sont prévenus, dans l’application et par
-  e-mail, et chaque membre voit ce jour.
-</Callout>
+### Quand Peal Cloud commence à facturer [#billing-start]
 
-Trois jours avant la fin d’un essai, le rappel énumère ce que l’espace de travail possède au-delà de l’offre gratuite. `GET /api/workspaces/:workspaceId/billing/standing` répond la même chose à chaque membre : ce qui dépasse, si l’espace de travail doit revenir dans son abonnement, jusqu’à quand un délai le laisse publier (`graceUntil`), et l’abonnement qui contient tout.
+Un espace de travail de l’offre gratuite qui compte plus de comptes qu’elle n’en inclut continue de programmer et de publier sur les comptes qu’il avait alors, jusqu’à un jour que Peal annonce. Il n’en connecte pas d’autre d’ici là. Un compte connecté depuis n’en profite pas, et un espace dont l’abonnement prend fin entre-temps garde les comptes qu’il avait alors, jusqu’à ce jour. Ceux qui gèrent sa facturation sont prévenus, dans l’application et par e-mail, et chaque membre voit ce jour.
+
+### Ce que l’espace possède au-delà de son abonnement [#standing]
+
+Trois jours avant la fin d’un essai, le rappel énumère ce que l’espace de travail possède au-delà de l’offre gratuite.
+
+`GET /api/workspaces/:workspaceId/billing/standing` répond la même chose à chaque membre. Il donne ce qui dépasse, si l’espace de travail doit revenir dans son abonnement, jusqu’à quand un délai le laisse publier (`graceUntil`), et l’abonnement qui contient tout.
 
 ## Utilisation [#usage]
 
-Sous l’abonnement, la page **Facturation** de l’espace de travail montre ce qu’il a fait jour par jour sur les 7, 30 ou 90 derniers jours : les publications parties et les canaux qu’il avait connectés, en graphique et en tableau, avec les totaux de la période.
+Sous l’abonnement, la page **Facturation** de l’espace de travail montre ce qu’il a fait jour par jour sur les 7, 30 ou 90 derniers jours. Ce sont les publications parties et les canaux qu’il avait connectés, en graphique et en tableau, avec les totaux de la période.
 
-`GET /api/workspaces/:workspaceId/usage?from=2026-10-01&to=2026-10-31`, [`peal usage`](/developers/cli/workspace#usage) et l’outil MCP [`get_usage`](/developers/mcp) répondent la même chose à qui lit la facturation de l’espace de travail : les propriétaires et les administrateurs, une clé d’API ou une application à qui ce droit a été donné, et les clés d’un partenaire dans les espaces de travail qu’il possède.
+Vous obtenez la même chose avec `GET /api/workspaces/:workspaceId/usage?from=2026-10-01&to=2026-10-31`, [`peal usage`](/developers/cli/workspace#usage) ou l’outil MCP [`get_usage`](/developers/mcp). Ils répondent à qui lit la facturation de l’espace de travail : les propriétaires et les administrateurs, une clé d’API ou une application à qui ce droit a été donné, et les clés d’un partenaire dans les espaces de travail qu’il possède.
 
-Ce ne sont que des décomptes : rien n’est facturé, prélevé ou limité d’après eux. Un serveur qui ne facture pas conserve et répond les mêmes décomptes, avec `plan` et `allowances` à null.
+Ce ne sont que des décomptes, et rien n’est facturé, prélevé ou limité d’après eux. Un serveur qui ne facture pas conserve et répond les mêmes décomptes, avec `plan` et `allowances` à null.
 
 <Accordion>
   <AccordionItem title="Comment l’utilisation est comptée">
-    - Les jours sont des jours UTC, comme pour toutes les limites. `from` et `to` sont tous deux compris, 92 jours au plus ; sans eux, les 30 jours qui finissent aujourd’hui. Une plage qui finit avant de commencer, ou plus longue, répond 400 `invalid_date_range`.
-    - Chaque jour compte les publications parties ce jour-là, une pour chaque canal où une publication est partie, par plateforme. Un fil compte une fois. Une publication renvoyée après un échec compte de nouveau, puisque c’est une autre publication sur la plateforme. Une publication dont l’issue n’a pas pu être confirmée n’est pas comptée, même une fois que quelqu’un confirme qu’elle est partie. Le jour donne aussi les demandes de l’espace de travail à l’assistant de rédaction, que le relevé ci-dessous recopie : `null` pour un jour sans relevé, aujourd’hui compris, tant qu’il n’est pas fait.
-    - Peu après chaque minuit UTC (à 00:11, ou jusqu’à 12 heures plus tard après une panne), le serveur relève ce que chaque espace de travail détient alors, pour le jour qui vient de finir : les canaux qu’il a lui-même connectés, ses membres et les octets de médias qu’il stocke. Un jour sans ce relevé (avant que l’utilisation ne soit comptée, ou un jour où le relevé n’a pas pu être fait) répond `null`, et un tiret sur la page, jamais le chiffre d’un autre jour.
-    - Les totaux additionnent les publications de la période, par plateforme, et ses jours-canal : les canaux de chaque jour additionnés, sans les jours sans relevé, avec le nombre de jours qu’ils couvrent (`daysCounted`). Pour chaque mois civil que touche la période, ils donnent aussi les publications sur les plateformes qui facturent le serveur à la publication (X), avec combien contenaient un lien. Celles-ci comptent chaque partie d’un fil, comme X facture chacune : un fil de trois parties est une des publications du jour, et trois ici.
-    - `current` est ce que compte chaque limite maintenant, comme sur la page Facturation. Un espace de travail qu’un partenaire possède compte ses canaux dans l’abonnement du partenaire : `sharedWith` nomme l’espace de travail du partenaire.
-    - Les décomptes sont conservés {{keep-usage-fr}}, puis supprimés ; une plage qui commence plus tôt répond ce qui est conservé. Ils sont supprimés avec l’espace de travail, et son export de données les contient.
-    - Un compte partenaire lit la même chose pour tous les espaces de travail qu’il détient, par client : [Utilisation par client](/developers/embedding/operate#usage).
 
-  </AccordionItem>
-</Accordion>
+- Les jours sont des jours UTC, comme pour toutes les limites. `from` et `to` sont tous deux compris, 92 jours au plus. Sans eux, vous obtenez les 30 jours qui finissent aujourd’hui. Une plage qui finit avant de commencer, ou plus longue, répond 400 `invalid_date_range`.
+- Chaque jour compte les publications parties ce jour-là, une pour chaque canal où une publication est partie, par plateforme. Un fil compte une fois.
+- Une publication renvoyée après un échec compte de nouveau, puisque c’est une autre publication sur la plateforme. Une publication dont l’issue n’a pas pu être confirmée n’est pas comptée, même une fois que quelqu’un confirme qu’elle est partie.
+- Le jour donne aussi les demandes de l’espace de travail à l’assistant de rédaction, que le relevé quotidien ci-dessous recopie. C’est `null` pour un jour sans relevé, aujourd’hui compris, tant que le relevé n’est pas fait.
+- Peu après chaque minuit UTC (à 00:11, ou jusqu’à 12 heures plus tard après une panne), le serveur relève ce que chaque espace de travail détient alors, pour le jour qui vient de finir : les canaux qu’il a lui-même connectés, ses membres et les octets de médias qu’il stocke.
+- Un jour sans ce relevé (avant que l’utilisation ne soit comptée, ou un jour où le relevé n’a pas pu être fait) répond `null`, et montre un tiret sur la page, jamais le chiffre d’un autre jour.
+- Les totaux additionnent les publications de la période, par plateforme, et ses jours-canal. Les jours-canal sont les canaux de chaque jour additionnés, sans les jours sans relevé, avec le nombre de jours qu’ils couvrent (`daysCounted`).
+- Pour chaque mois civil que touche la période, les totaux donnent aussi les publications sur les plateformes qui facturent le serveur à la publication (X), avec combien contenaient un lien. Celles-ci comptent chaque partie d’un fil, comme X facture chacune : un fil de trois parties est une des publications du jour, et trois ici.
+- `current` est ce que compte chaque limite maintenant, comme sur la page **Facturation**. Un espace de travail qu’un partenaire possède compte ses canaux dans l’abonnement du partenaire, et `sharedWith` nomme l’espace de travail du partenaire.
+- Les décomptes sont conservés {{keep-usage-fr}}, puis supprimés. Une plage qui commence plus tôt répond ce qui est conservé. Ils sont supprimés avec l’espace de travail, et son export de données les contient.
+- Un compte partenaire lit la même chose pour tous les espaces de travail qu’il détient, par client : [Utilisation par client](/developers/embedding/operate#usage).
+
+      </AccordionItem>
+
+  </Accordion>
 
 ## Commander [#ordering]
 
@@ -213,82 +258,97 @@ Les propriétaires et les administrateurs commandent le tarif par compte depuis 
 
 <Steps>
   <Step title="Cocher la case">
-    Avant tout paiement, ils cochent une case qui n’est jamais cochée pour eux :
-    « Je demande que le tarif par compte commence dès maintenant : chaque compte
-    connecté au-delà des comptes gratuits, compté au jour, et chaque usage
-    au-delà de son allocation mensuelle sont facturés aux prix de la grille
-    tarifaire, hors taxes, chaque mois pour le mois écoulé. Je sais qu’en tant
-    que consommateur, je peux me rétracter dans les 14 jours, avec « Renoncer au
-    contrat ici », au pied de chaque page et sur celle-ci, et ne payer alors que
-    ce qui a été utilisé. » Peal l’enregistre avec la commande.
+
+Avant tout paiement, cochez une case qui n’est jamais cochée pour vous : « Je demande que le tarif par compte commence dès maintenant : chaque compte connecté au-delà des comptes gratuits, compté au jour, et chaque usage au-delà de son allocation mensuelle sont facturés aux prix de la grille tarifaire, hors taxes, chaque mois pour le mois écoulé. Je sais qu’en tant que consommateur, je peux me rétracter dans les 14 jours, avec « Renoncer au contrat ici », au pied de chaque page et sur celle-ci, et ne payer alors que ce qui a été utilisé. » Peal l’enregistre avec la commande.
+
   </Step>
   <Step title="Payer chez Stripe">
-    Peal ouvre ensuite le paiement de Stripe depuis le bouton **Commander avec
-    obligation de paiement**. Stripe demande une carte, même si rien n’est
-    encore dû, l’adresse de facturation et, pour une entreprise, le numéro de
-    TVA, et calcule la TVA.
+
+Cliquez sur **Commander avec obligation de paiement** pour ouvrir le paiement de Stripe. Stripe demande une carte, même si rien n’est encore dû, l’adresse de facturation et, pour une entreprise, le numéro de TVA, puis calcule la TVA.
+
   </Step>
   <Step title="Recevoir la confirmation">
-    Une confirmation arrive par e-mail, avec les tarifs et le numéro de contrat,
-    qui permet de résilier ou de se rétracter sans se connecter.
+
+Une confirmation arrive par e-mail, avec les tarifs et le numéro de contrat. Ce numéro permet de résilier ou de se rétracter sans se connecter.
+
   </Step>
 </Steps>
 
+Une fois la commande passée :
+
 - L’abonnement facture des mois civils (UTC), à partir du premier du mois suivant.
 - L’espace client de Stripe change le moyen de paiement et donne les factures et les reçus, y compris une fois l’abonnement terminé (**Factures et reçus**).
-- Seul le tarif par compte se commande, au mois : un autre abonnement ou une année est refusé (409 `PlanNotSold`).
-- Un compte qui l’a déjà, même en retard ou impayé, ne commande plus rien (409 `AlreadySubscribed`) : un paiement échoué se règle en mettant à jour le moyen de paiement dans l’espace client de Stripe.
-- Une commande depuis une page dont la case montre d’anciens termes, ou qui n’en nomme aucune, est refusée (409 `ConsentChanged`) : rechargez la page.
-- Un espace de travail sur un abonnement par paliers de canaux, ou en essai, peut aussi le commander : cet abonnement prend alors fin avec sa période, ou immédiatement pour un essai.
 
-<Callout
-  type="warning"
-  title="Aucun avoir pour un abonnement par paliers de canaux"
->
-  Pour l’instant, aucun avoir n’est fait pour la part non utilisée de cet
-  abonnement : il reste payé jusqu’à la fin de sa période (jusqu’à un an pour un
-  abonnement annuel) pendant que les comptes sont facturés au compte dès le
-  passage, si bien que passer vers la fin de la période coûte le moins.
-</Callout>
+Certaines commandes sont refusées :
+
+- Seul le tarif par compte se commande, au mois. Un autre abonnement ou une année est refusé (409 `PlanNotSold`).
+- Un compte qui l’a déjà, même en retard ou impayé, ne commande plus rien (409 `AlreadySubscribed`). Pour régler un paiement échoué, mettez à jour le moyen de paiement dans l’espace client de Stripe.
+- Une commande depuis une page dont la case montre d’anciens termes, ou n’en nomme aucun, est refusée (409 `ConsentChanged`). Rechargez la page.
+
+Un espace de travail sur un abonnement par paliers de canaux, ou en essai, peut aussi le commander. Dès que le tarif par compte commence, cet abonnement ou cet essai prend fin aussitôt, et la part non utilisée de l’abonnement est remboursée sur le moyen de paiement qui l’a réglée ([Passer au tarif par compte](#legacy-move)).
 
 ## Résilier [#cancelling]
 
-Résiliez en ligne à tout moment avec **Résilier votre contrat** : le lien figure au pied de chaque page, connecté ou non, et sur la page **Facturation**. La page demande ce qui vous identifie et identifie le contrat, et rien d’autre : votre nom, l’adresse e-mail de l’accusé de réception, le contrat et, si vous le souhaitez, la date de résiliation souhaitée. Elle présente ensuite un récapitulatif à vérifier, et **Notification de la résiliation** l’envoie.
+Vous pouvez résilier en ligne à tout moment avec **Résilier votre contrat**. Le lien figure au pied de chaque page, connecté ou non, et sur la page **Facturation**.
 
-| Comment vous résiliez                                                                                                   | Ce qui se passe                                                                                                                                                                                                                                                                                                                                                                              |
-| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Connecté, en tant que propriétaire ou administrateur                                                                    | Votre nom et votre adresse sont préremplis, vous choisissez le contrat parmi vos espaces de travail, et la résiliation est appliquée immédiatement. La page **Facturation** propose les deux mêmes étapes pour son espace de travail.                                                                                                                                                        |
-| Avec le numéro de contrat, qui figure dans l’e-mail de confirmation de l’abonnement et dans le rappel de renouvellement | Appliquée immédiatement, sans connexion, quelle que soit l’adresse indiquée.                                                                                                                                                                                                                                                                                                                 |
-| Sans l’un ni l’autre                                                                                                    | Peal envoie un accusé de réception à l’adresse. Si cette adresse gère la facturation d’un espace de travail, l’e-mail contient un lien, valable 30 jours, qui présente ses contrats et applique la résiliation à celui que vous choisissez ; sinon, une personne examine la demande et vous écrit. Ainsi, quelqu’un qui ne connaît que votre adresse ne peut pas mettre fin à votre contrat. |
+La page ne demande que ce qui vous identifie et identifie le contrat : votre nom, l’adresse e-mail de l’accusé de réception, le contrat et, si vous le souhaitez, la date de résiliation voulue. Elle présente ensuite un récapitulatif à vérifier, et **Notification de la résiliation** l’envoie.
 
-Dans tous les cas, la résiliation compte à partir du moment où Peal l’a reçue, que l’accusé de réception indique : un renouvellement facturé après ce moment est remboursé.
+La façon dont elle s’applique dépend de la façon dont vous identifiez le contrat :
+
+| Comment vous résiliez                                                                                                   | Ce qui se passe                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connecté, en tant que propriétaire ou administrateur                                                                    | Votre nom et votre adresse sont préremplis, vous choisissez le contrat parmi vos espaces de travail, et la résiliation s’applique immédiatement. La page **Facturation** propose les deux mêmes étapes pour son espace de travail.                                                                                                                                                          |
+| Avec le numéro de contrat, qui figure dans l’e-mail de confirmation de l’abonnement et dans le rappel de renouvellement | Appliquée immédiatement, sans connexion, quelle que soit l’adresse indiquée.                                                                                                                                                                                                                                                                                                                |
+| Sans l’un ni l’autre                                                                                                    | Peal envoie un accusé de réception à l’adresse. Si cette adresse gère la facturation d’un espace de travail, l’e-mail contient un lien, valable 30 jours, qui présente ses contrats et applique la résiliation à celui que vous choisissez. Sinon, une personne examine la demande et vous écrit. Ainsi, quelqu’un qui ne connaît que votre adresse ne peut pas mettre fin à votre contrat. |
+
+Dans tous les cas, la résiliation compte à partir du moment où Peal l’a reçue, que l’accusé de réception indique. Un renouvellement facturé après ce moment est remboursé.
+
+La date de fin dépend de l’abonnement :
 
 - Le tarif par compte prend fin avec le mois, dont la dernière facture porte l’usage.
 - Un abonnement par paliers de canaux prend fin avec la période payée, et plus rien n’est facturé.
-- Avec une date ultérieure, il prend fin ce jour-là et la dernière période n’est facturée que jusqu’à cette date.
+- Avec une date ultérieure, il prend fin ce jour-là, et la dernière période n’est facturée que jusqu’à cette date.
 - Un essai prend fin immédiatement.
 
 Les membres qui gèrent la facturation reçoivent la confirmation par e-mail, avec la date à laquelle elle prend effet. Supprimer l’espace de travail résilie aussi immédiatement ([Espaces de travail et compte](/guides/workspace#delete-workspace)).
 
 ## Se rétracter sous 14 jours [#withdrawal]
 
-En tant que consommateur, vous pouvez vous rétracter du contrat dans les 14 jours suivant la souscription, sans donner de motif, avec **Renoncer au contrat ici** : au pied de chaque page, connecté ou non, et sur la page **Facturation** pendant ces 14 jours, même après une résiliation.
+En tant que consommateur, vous pouvez vous rétracter du contrat dans les 14 jours suivant la souscription, sans donner de motif. Utilisez **Renoncer au contrat ici**, au pied de chaque page, connecté ou non. Le lien figure aussi sur la page **Facturation** pendant ces 14 jours, même après une résiliation.
 
-Le parcours est celui de la résiliation : votre nom, l’adresse de l’accusé de réception et le contrat, un récapitulatif, puis **Confirmer la rétractation**. Elle est appliquée immédiatement si vous êtes connecté ou si vous indiquez le numéro de contrat, et sinon depuis le lien que Peal vous envoie par e-mail. Les 14 jours et le remboursement comptent à partir du moment où Peal a reçu votre déclaration, que l’accusé de réception indique avec ce que vous avez envoyé.
+Le parcours est celui de la résiliation. Vous donnez votre nom, l’adresse de l’accusé de réception et le contrat, vérifiez un récapitulatif, puis cliquez sur **Confirmer la rétractation**. Elle s’applique immédiatement si vous êtes connecté ou si vous indiquez le numéro de contrat. Sinon, elle s’applique depuis le lien que Peal vous envoie par e-mail.
 
-La rétractation met fin à l’abonnement immédiatement et rembourse, pour chaque paiement depuis la souscription, la part non utilisée de la période qu’il a payée, à la seconde, sur votre moyen de paiement sous 14 jours, par un avoir sur chaque facture. Le tarif par compte est facturé pour le mois écoulé : la rétractation facture son usage jusqu’à ce moment, et rien de payé d’avance n’est à rembourser.
+Les 14 jours et le remboursement comptent à partir du moment où Peal a reçu votre déclaration. L’accusé de réception indique ce moment, avec ce que vous avez envoyé.
 
-<Callout type="info">
+La rétractation met fin à l’abonnement immédiatement. Pour chaque paiement depuis la souscription, la part non utilisée de la période qu’il a payée est remboursée, à la seconde, sur votre moyen de paiement sous 14 jours, par un avoir sur chaque facture. Le tarif par compte est facturé pour le mois écoulé : la rétractation facture donc son usage jusqu’à ce moment, et rien de payé d’avance n’est à rembourser.
+
+<Callout
+  type="info"
+  title="Une entreprise au numéro de TVA vérifié ne peut pas se rétracter"
+>
   Une entreprise qui a donné un numéro de TVA vérifié par Stripe n’a pas de
   droit de rétractation, et peut résilier.
 </Callout>
 
 ## Les abonnements par paliers de canaux [#legacy-plans]
 
-Ces abonnements ne sont plus vendus : un abonnement à l’un d’eux le garde, avec son prix et les limites ci-dessous, jusqu’à sa fin. Un tel abonnement est payé d’avance et porte son espace de travail seul, à part de son compte de facturation, jusqu’à sa fin ; l’espace rejoint ensuite l’abonnement de son compte de facturation.
+Ces abonnements ne sont plus vendus. Un abonnement à l’un d’eux le garde, avec son prix et les limites ci-dessous, jusqu’à sa fin. Un tel abonnement est payé d’avance et porte son espace de travail seul, à part de son compte de facturation, jusqu’à sa fin. L’espace rejoint ensuite l’abonnement de son compte de facturation.
 
-- **Passer au tarif par compte**, sur la page Facturation, commande le tarif par compte comme l’ajout d’un moyen de paiement ([Commander](#ordering)), par un paiement qui lui est propre. Dès qu’il commence, l’abonnement prend fin aussitôt, et la part de la période payée pas encore utilisée revient sur le moyen de paiement qui l’a réglée, à la seconde, par un avoir sur chaque facture. Un essai prend fin de la même façon, sans rien à rembourser.
-- **Retrait.** Ces abonnements sont retirés : chacun est averti, par une notification et un e-mail aux membres qui gèrent la facturation, du jour où il prend fin, le premier minuit UTC 30 jours au moins après l’avis. Rien n’est facturé au-delà de ce jour, quelle que soit la période de l’abonnement : ce qui a été payé au-delà est remboursé sur le moyen de paiement qui l’a réglé, par un avoir sur chaque facture, et une période renouvelée avant ce jour n’est facturée que jusqu’à lui. L’espace de travail passe alors à l’offre gratuite, sauf s’il est passé au tarif par compte avant.
+### Passer au tarif par compte [#legacy-move]
+
+Sous **Passer au tarif par compte**, sur la page **Facturation**, vous commandez le tarif par compte comme en ajoutant un moyen de paiement ([Commander](#ordering)), par un paiement qui lui est propre.
+
+Dès que le tarif par compte commence, l’abonnement prend fin aussitôt. La part de la période payée pas encore utilisée revient sur le moyen de paiement qui l’a réglée, à la seconde, par un avoir sur chaque facture. Un essai prend fin de la même façon, sans rien à rembourser.
+
+### Le retrait [#legacy-retirement]
+
+Ces abonnements sont retirés. Chacun est averti du jour où il prend fin, par une notification et un e-mail aux membres qui gèrent la facturation. Ce jour est le premier minuit UTC au moins 30 jours après l’avis.
+
+Rien n’est facturé au-delà de ce jour, quelle que soit la période de l’abonnement. Ce qui a été payé au-delà est remboursé sur le moyen de paiement qui l’a réglé, par un avoir sur chaque facture. Une période renouvelée avant ce jour n’est facturée que jusqu’à lui. L’espace de travail passe alors à l’offre gratuite, sauf s’il est passé au tarif par compte avant.
+
+### Les abonnements [#legacy-table]
+
+Voici les abonnements et leurs limites :
 
 | Abonnement | Canaux                   | Membres                 | Publications par mois          | Assistant par jour                | Médias                       | Mensuel                                            | Annuel                                           |
 | ---------- | ------------------------ | ----------------------- | ------------------------------ | --------------------------------- | ---------------------------- | -------------------------------------------------- | ------------------------------------------------ |
@@ -297,20 +357,21 @@ Ces abonnements ne sont plus vendus : un abonnement à l’un d’eux le garde, 
 | Business   | {{business-channels-fr}} | {{business-members-fr}} | {{business-scheduledPosts-fr}} | {{business-assistantRequests-fr}} | {{business-mediaStorage-fr}} | {{business-month-fr}} ({{business-month-excl-fr}}) | {{business-year-fr}} ({{business-year-excl-fr}}) |
 | Agency     | {{agency-channels-fr}}   | {{agency-members-fr}}   | {{agency-scheduledPosts-fr}}   | {{agency-assistantRequests-fr}}   | {{agency-mediaStorage-fr}}   | {{agency-month-fr}} ({{agency-month-excl-fr}})     | {{agency-year-fr}} ({{agency-year-excl-fr}})     |
 
-- Leurs prix sont en euros, TTC avec la TVA française de {{vat-rate}} % ; le prix HT est entre parenthèses.
-- Une année coûte dix mois.
+Leurs prix sont en euros, TTC avec la TVA française de {{vat-rate}} %, et le prix HT figure entre parenthèses. Une année coûte dix mois.
 
 ## Les essais [#trial]
 
-Aucun essai n’est plus proposé : les comptes gratuits le remplacent. Un essai commencé avant va jusqu’à sa fin, sans rien facturer, et l’espace de travail passe ensuite à l’offre gratuite, avec son contenu. Trois jours avant, les membres qui gèrent la facturation reçoivent un rappel, avec ce que l’espace de travail possède au-delà de l’offre gratuite.
+Aucun essai n’est plus proposé, car les comptes gratuits le remplacent. Un essai commencé avant va jusqu’à sa fin, sans rien facturer, et l’espace de travail passe ensuite à l’offre gratuite, avec son contenu. Trois jours avant, les membres qui gèrent la facturation reçoivent un rappel, avec ce que l’espace de travail possède au-delà de l’offre gratuite.
 
 ## Abonnements annuels [#renewal]
 
-Les abonnements annuels ne sont plus vendus. Un abonnement annuel par paliers de canaux se renouvelle chaque année jusqu’à résiliation. 45 jours avant le renouvellement, et jamais moins d’un mois avant, les membres qui gèrent la facturation reçoivent un rappel, dans l’application et par un e-mail dédié, de la possibilité de ne pas reconduire le contrat. Le rappel donne :
+Les abonnements annuels ne sont plus vendus. Un abonnement annuel par paliers de canaux se renouvelle chaque année jusqu’à résiliation.
 
-- ce que Stripe facturera, TVA comprise ;
-- la date limite de non-reconduction, dans un encadré ;
-- le numéro de contrat ;
-- la façon de résilier.
+45 jours avant le renouvellement, et jamais moins d’un mois avant, les membres qui gèrent la facturation reçoivent un rappel, dans l’application et par un e-mail dédié. Il dit que le contrat peut ne pas être reconduit, et donne :
+
+- ce que Stripe facturera, TVA comprise
+- la date limite de non-reconduction, dans un encadré
+- le numéro de contrat
+- la façon de résilier
 
 Un changement de prix est annoncé par e-mail 30 jours à l’avance, et s’applique au renouvellement suivant.

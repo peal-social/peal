@@ -5,61 +5,87 @@ sidebar:
   icon: key-round
 ---
 
-Laissez les membres de votre organisation se connecter et créer leur compte avec votre fournisseur d’identité (tout fournisseur OpenID Connect), ou avec Google. Le formulaire de mot de passe reste : un fournisseur est une façon de plus d’entrer.
+Vous pouvez laisser les membres de votre organisation se connecter et créer leur compte avec votre fournisseur d’identité (tout fournisseur OpenID Connect), ou avec Google. Le formulaire de mot de passe reste, un fournisseur est donc une façon de plus d’entrer.
 
 ## Enregistrer Peal chez votre fournisseur [#register]
 
 <Steps>
-  <Step title="Créez un client">
-    Chez votre fournisseur, créez un client confidentiel (une
-    « application ») pour le Web, avec l’URI de redirection
-    `<PUBLIC_URL>/api/auth/callback/oidc`, par exemple
-    `https://peal.example.com/api/auth/callback/oidc`. Autorisez le flux
-    du code d’autorisation ; Peal utilise PKCE.
-  </Step>
-  <Step title="Donnez-lui les portées">
-    Peal demande `openid email profile` sauf si vous en définissez
-    d’autres. Le fournisseur doit mettre `email` et `email_verified` dans
-    le jeton d’identité (ID token), que Peal lit seul, jamais le point
-    d’accès userinfo.
-  </Step>
-  <Step title="Définissez les variables">
-    Définissez `PEAL_OIDC_ISSUER`, `PEAL_OIDC_CLIENT_ID` et
-    `PEAL_OIDC_CLIENT_SECRET`, et `PEAL_OIDC_NAME` pour le nom du bouton
-    ([Variables d’environnement](/self-hosting/environment-variables#sign-in-providers)),
-    puis redémarrez le serveur. Les pages de connexion et d’inscription
-    montrent alors **Continuer avec** et ce nom au-dessus du formulaire.
-  </Step>
+<Step title="Créer un client">
+
+Chez votre fournisseur, créez un client confidentiel (une « application ») pour le Web, avec l’URI de redirection `<PUBLIC_URL>/api/auth/callback/oidc`, par exemple `https://peal.example.com/api/auth/callback/oidc`. Autorisez le flux du code d’autorisation. Peal utilise PKCE.
+
+</Step>
+<Step title="Lui donner les portées">
+
+Peal demande `openid email profile` sauf si vous en définissez d’autres. Le fournisseur doit mettre `email` et `email_verified` dans le jeton d’identité (ID token), car Peal ne lit que lui. Il n’appelle jamais le point d’accès userinfo.
+
+</Step>
+<Step title="Définir les variables">
+
+Définissez `PEAL_OIDC_ISSUER`, `PEAL_OIDC_CLIENT_ID` et `PEAL_OIDC_CLIENT_SECRET`, et `PEAL_OIDC_NAME` pour le nom du bouton ([Variables d’environnement](/self-hosting/environment-variables#sign-in-providers)). Redémarrez ensuite le serveur. Les pages de connexion et d’inscription doivent montrer **Continuer avec** et ce nom au-dessus du formulaire.
+
+</Step>
 </Steps>
 
-Peal lit le document de découverte du fournisseur à `<issuer>/.well-known/openid-configuration` et vérifie la signature, l’émetteur, l’audience et le nonce de chaque jeton d’identité. Le serveur lit le document de découverte à son démarrage, jusqu’à trois fois en une dizaine de secondes. Un fournisseur qui ne répond pas est laissé de côté, et le serveur démarre quand même : il consigne une erreur, relit le document en arrière-plan, au moins une fois par minute, en consignant chaque nouvel échec comme un avertissement, et propose de nouveau le fournisseur dès qu’il répond. La métrique `peal.workspace.sign_in_providers.unavailable` vaut 1 pour un fournisseur laissé de côté et 0 dès qu’il répond, et la supervision de Peal alerte dessus au bout de dix minutes. Un document auquel manque ce qu’OpenID Connect exige (`issuer`, `authorization_endpoint`, `token_endpoint`, `jwks_uri` et `id_token_signing_alg_values_supported`) arrête le serveur, avec un message qui nomme ce qui manque. Le fournisseur peut être sur votre réseau privé : le serveur le joint directement.
+Peal lit le document de découverte du fournisseur à `<issuer>/.well-known/openid-configuration`. Il vérifie d’après lui la signature, l’émetteur, l’audience et le nonce de chaque jeton d’identité. Le fournisseur peut être sur votre réseau privé, car le serveur le joint directement.
+
+### Quand le fournisseur ne répond pas au démarrage [#discovery]
+
+Le serveur lit le document de découverte à son démarrage, jusqu’à trois fois en une dizaine de secondes. Si le fournisseur ne répond pas, le serveur le laisse de côté et démarre quand même.
+
+Il relit ensuite le document en arrière-plan, au moins une fois par minute, et consigne chaque échec comme une erreur. L’alerte sur les erreurs du journal de la surveillance de Peal les relève. Dès que le fournisseur répond, le serveur le propose de nouveau.
+
+Un document auquel manque ce qu’OpenID Connect exige arrête le serveur, avec un message qui nomme ce qui manque. Il doit contenir `issuer`, `authorization_endpoint`, `token_endpoint`, `jwks_uri` et `id_token_signing_alg_values_supported`.
 
 ## Ce que le fournisseur doit envoyer [#claims]
 
-- `email`, une adresse (Peal la prend sans les espaces qui l’entourent, et refuse tout le reste), et `email_verified` à `true`. Un fournisseur qui n’envoie pas `email_verified`, ou `false`, ne peut connecter personne : Peal dit à la personne que son fournisseur n’a pas confirmé l’adresse.
+Peal lit trois informations dans le jeton d’identité :
+
+- `email`, une adresse, et `email_verified` à `true`. Peal prend l’adresse sans les espaces qui l’entourent, et refuse tout le reste. Un fournisseur qui n’envoie pas `email_verified`, ou `false`, ne peut connecter personne, et Peal dit à la personne que son fournisseur n’a pas confirmé l’adresse.
 - `sub`, que Peal conserve comme identifiant de la personne chez le fournisseur. Peal ne conserve aucun jeton du fournisseur, ni sa photo.
-- `name`, facultatif : sans lui, un nouveau compte prend le nom de l’adresse.
+- `name`, qui est facultatif. Sans lui, un nouveau compte prend le nom de l’adresse.
 
 ## Comment les comptes sont reliés [#matching]
 
-La connexion par un fournisseur n’atteint un compte que par une adresse confirmée des deux côtés : le fournisseur dit l’avoir confirmée, et le compte Peal l’a confirmée aussi. Un compte dont l’adresse n’a jamais été confirmée n’est pas relié au fournisseur ; son titulaire se connecte d’abord avec son mot de passe, ou le réinitialise. Une fois relié, l’identifiant du fournisseur connecte ce compte, même si l’adresse change chez le fournisseur. Rien d’autre ne relie un compte à un fournisseur, et la page du compte n’a ni lien ni déliaison.
+La connexion par un fournisseur n’atteint un compte que par une adresse confirmée des deux côtés. Le fournisseur dit l’avoir confirmée, et le compte Peal l’a confirmée aussi.
+
+Un compte dont l’adresse n’a jamais été confirmée n’est pas relié au fournisseur. Son titulaire se connecte d’abord avec son mot de passe, ou le réinitialise.
+
+Une fois relié, l’identifiant du fournisseur connecte ce compte, même si l’adresse change chez le fournisseur. Rien d’autre ne relie un compte à un fournisseur, et la page du compte n’a ni lien ni déliaison.
 
 ## Créer un compte [#sign-up]
 
-Un fournisseur ne crée un compte que depuis la page d’inscription, sous sa ligne des conditions. Sur la page de connexion, une adresse sans compte est invitée à s’inscrire. Avec `PEAL_SIGN_UP=invitation`, l’inscription par un fournisseur demande aussi le lien de l’invitation, et l’adresse confirmée par le fournisseur doit être celle à laquelle l’invitation a été envoyée ([Qui peut s’inscrire](/self-hosting/options#sign-up)).
+Un fournisseur ne crée un compte que depuis la page d’inscription, sous sa ligne des conditions. Sur la page de connexion, une adresse sans compte est invitée à s’inscrire.
 
-Un compte créé par un fournisseur n’a pas de mot de passe. Son titulaire en définit un avec **Mot de passe oublié ?**, ou depuis la page du compte, avant d’activer la validation en deux étapes ou de fermer le compte, qui le demandent toutes deux.
+Avec `PEAL_SIGN_UP=invitation`, l’inscription par un fournisseur demande aussi le lien de l’invitation, et l’adresse confirmée par le fournisseur doit être celle à laquelle l’invitation a été envoyée ([Qui peut s’inscrire](/self-hosting/options#sign-up)).
+
+Un compte créé par un fournisseur n’a pas de mot de passe. Activer la validation en deux étapes et fermer le compte en demandent un tous les deux, son titulaire le définit donc d’abord avec **Mot de passe oublié ?** ou depuis la page du compte.
 
 ## Validation en deux étapes [#two-step]
 
-Un compte où la validation en deux étapes est activée se connecte avec son mot de passe et son code : la connexion par un fournisseur lui est refusée. Un espace de travail qui exige la validation en deux étapes refuse un membre qui ne l’a pas, quelle que soit sa façon de se connecter : dans un tel espace, les membres se connectent avec leur mot de passe.
+Un compte où la validation en deux étapes est activée se connecte avec son mot de passe et son code, et la connexion par un fournisseur lui est refusée. Un espace de travail qui exige la validation en deux étapes refuse un membre qui ne l’a pas, quelle que soit sa façon de se connecter. Dans un tel espace, les membres se connectent donc avec leur mot de passe.
 
 ## Changer de fournisseur [#change-provider]
 
-Une identité est gardée avec l’émetteur qui l’a créée (`<issuer>|<sub>`) : l’identifiant d’un fournisseur n’atteint jamais un compte qu’a rejoint l’identifiant d’un autre, même s’ils s’écrivent pareil. Après un changement de `PEAL_OIDC_ISSUER`, la connexion suivante de chacun relie de nouveau son compte par le nouveau fournisseur, par une adresse que le nouveau fournisseur et Peal ont confirmée, comme une première connexion ; les identités de l’ancien fournisseur restent inutilisées. Un compte créé par l’ancien fournisseur a une adresse confirmée : il est relié lui aussi. L’émetteur est comparé tel qu’une URL se lit : une autre écriture du même (la casse de l’hôte, le port par défaut, une barre oblique finale) ne change rien.
+Une identité est gardée avec l’émetteur qui l’a créée (`<issuer>|<sub>`). L’identifiant d’un fournisseur n’atteint jamais un compte qu’a rejoint l’identifiant d’un autre, même s’ils s’écrivent pareil.
+
+Après un changement de `PEAL_OIDC_ISSUER`, la connexion suivante de chacun relie de nouveau son compte par le nouveau fournisseur, comme une première connexion. Elle passe par une adresse que le nouveau fournisseur et Peal ont confirmée. Les identités de l’ancien fournisseur restent inutilisées. Un compte créé par l’ancien fournisseur a une adresse confirmée, il est donc relié lui aussi.
+
+L’émetteur est comparé tel qu’une URL se lit. Une autre écriture du même (la casse de l’hôte, le port par défaut, une barre oblique finale) ne change donc rien.
 
 ## Google [#google]
 
-Google se porte garant de moins d’adresses que votre propre fournisseur. Peal ne croit Google sur une adresse que s’il s’agit d’une adresse Gmail (`@gmail.com`), ou si Google Workspace gère son domaine (le `hd` du jeton d’identité, le même domaine que l’adresse). Toute autre adresse que Google a confirmée un jour a pu changer de mains depuis : elle ne rejoint aucun compte, n’en crée aucun et n’accepte aucune invitation ; son titulaire se connecte avec son mot de passe, et lit « Connectez-vous avec votre mot de passe : Google ne peut pas confirmer que cette adresse est toujours la vôtre ». Votre propre fournisseur fait autorité pour ses utilisateurs : son `email_verified` suffit. Une adresse `@googlemail.com`, et un utilisateur de Google Workspace dont l’adresse est sur un domaine secondaire de l’organisation, sont refusés de même : ils se connectent avec leur mot de passe.
+Google se règle de la même façon, avec ses deux variables, `GOOGLE_SIGN_IN_CLIENT_ID` et `GOOGLE_SIGN_IN_CLIENT_SECRET`. Dans la console Google Cloud, créez un client OAuth de type « Application Web » avec l’URI de redirection `<PUBLIC_URL>/api/auth/callback/google`. Donnez-lui un écran de consentement qui ne demande que `openid`, `email` et `profile`. Google et votre propre fournisseur peuvent être activés ensemble.
 
-Google se règle de la même façon, avec ses deux variables, `GOOGLE_SIGN_IN_CLIENT_ID` et `GOOGLE_SIGN_IN_CLIENT_SECRET`. Dans la console Google Cloud, créez un client OAuth de type « Application Web » avec l’URI de redirection `<PUBLIC_URL>/api/auth/callback/google`, et un écran de consentement qui ne demande que `openid`, `email` et `profile`. Google et votre propre fournisseur peuvent être activés ensemble.
+### Les adresses Google auxquelles Peal se fie [#google-addresses]
+
+Google se porte garant de moins d’adresses que votre propre fournisseur. Peal ne croit Google sur une adresse que dans deux cas :
+
+- C’est une adresse Gmail (`@gmail.com`).
+- Google Workspace gère son domaine, c’est-à-dire que le `hd` du jeton d’identité est le même domaine que l’adresse.
+
+Toute autre adresse que Google a confirmée un jour a pu changer de mains depuis. Elle ne rejoint aucun compte, n’en crée aucun et n’accepte aucune invitation. Son titulaire se connecte avec son mot de passe, et lit « Connectez-vous avec votre mot de passe : Google ne peut pas confirmer que cette adresse est toujours la vôtre ».
+
+Une adresse `@googlemail.com` est refusée de même, ainsi qu’un utilisateur de Google Workspace dont l’adresse est sur un domaine secondaire de l’organisation. Ils se connectent avec leur mot de passe.
+
+Votre propre fournisseur fait autorité pour ses utilisateurs, son `email_verified` suffit donc.

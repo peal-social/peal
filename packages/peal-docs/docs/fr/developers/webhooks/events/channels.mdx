@@ -1,23 +1,25 @@
 ---
 title: Événements des canaux
-description: "Les événements d’un canal : connecté, déconnecté, à reconnecter, désactivé ou réactivé, et bientôt expiré."
+description: "Les événements d’un canal : connecté, déconnecté, à reconnecter, désactivé ou réactivé, et bientôt expiré."
 sidebar:
   icon: cable
   label: "Canaux"
 ---
 
-Les événements d’un canal, chacun avec ses champs et un exemple de contenu. Un point de terminaison [filtré par canaux](/developers/webhooks#filters) les reçoit quand le canal est listé. Le canal d’un site web a la plateforme de son site, à côté de celles des réseaux sociaux : `wordpress`, `wordpressCom`, `devto` ou `hashnode`.
+Chaque événement ci-dessous liste ses champs et montre un exemple de contenu. Un point de terminaison [filtré par canaux](/developers/webhooks#filters) les reçoit quand le canal est listé.
+
+Le canal d’un site web a la plateforme de son site, à côté de celles des réseaux sociaux : `wordpress`, `wordpressCom`, `devto` ou `hashnode`.
 
 ## channel.connected [#channel-connected]
 
-Un compte a été connecté à l’espace de travail, ou un canal que l’espace de travail avait a été de nouveau autorisé.
+Un compte a été connecté à l’espace de travail, ou un canal qu’il avait déjà a été autorisé de nouveau.
 
-| Champ         | Type    | Ce qu’il contient                                                                                  |
-| ------------- | ------- | -------------------------------------------------------------------------------------------------- |
-| `workspaceId` | chaîne  | L’espace de travail                                                                                |
-| `channelId`   | chaîne  | Le canal                                                                                           |
-| `platform`    | chaîne  | La plateforme du canal                                                                             |
-| `reconnected` | booléen | Vrai quand un canal que l’espace de travail avait a été de nouveau autorisé ; faux pour un nouveau |
+| Champ         | Type    | Ce qu’il contient                                                                                 |
+| ------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `workspaceId` | chaîne  | L’espace de travail                                                                               |
+| `channelId`   | chaîne  | Le canal                                                                                          |
+| `platform`    | chaîne  | La plateforme du canal                                                                            |
+| `reconnected` | booléen | Vrai quand un canal que l’espace de travail avait a été de nouveau autorisé, faux pour un nouveau |
 
 ```json title="channel.connected"
 {
@@ -37,7 +39,7 @@ Un compte a été connecté à l’espace de travail, ou un canal que l’espace
 
 ## channel.disconnected [#channel-disconnected]
 
-Un canal a été déconnecté de l’espace de travail, ou son partenaire l’a [déplacé](/developers/embedding/operate#move-channel) vers un autre de ses espaces de travail, qui envoie `channel.connected` pour lui sous un nouvel identifiant.
+Un canal a été déconnecté de l’espace de travail, ou son partenaire l’a [déplacé](/developers/embedding/operate#move-channel) vers un autre de ses espaces de travail. Cet espace de travail envoie alors `channel.connected` pour lui, sous un nouvel identifiant.
 
 | Champ         | Type   | Ce qu’il contient      |
 | ------------- | ------ | ---------------------- |
@@ -62,7 +64,7 @@ Un canal a été déconnecté de l’espace de travail, ou son partenaire l’a 
 
 ## channel.reconnect_needed [#channel-reconnect-needed]
 
-L’autorisation du canal ne fonctionne plus : rien n’y est publié tant que personne ne l’a [reconnecté](/guides/channels#reconnect).
+L’autorisation du canal ne fonctionne plus. Rien n’y est publié tant que personne ne l’a [reconnecté](/guides/channels#reconnect).
 
 | Champ         | Type   | Ce qu’il contient      |
 | ------------- | ------ | ---------------------- |
@@ -87,7 +89,7 @@ L’autorisation du canal ne fonctionne plus : rien n’y est publié tant que p
 
 ## channel.disabled [#channel-disabled]
 
-Un membre a désactivé le canal : rien n’y est publié tant que personne ne le réactive. Une publication qui arrive à son heure sur ce canal y échoue (`channelDisabled`). Le canal garde son autorisation, ses publications et ses statistiques.
+Un membre a désactivé le canal : rien n’y est publié tant que personne ne le réactive. Une publication qui arrive à son heure sur ce canal y échoue (`channelDisabled`). Le canal garde son autorisation, ses publications et ses statistiques.
 
 | Champ         | Type   | Ce qu’il contient      |
 | ------------- | ------ | ---------------------- |
@@ -112,7 +114,7 @@ Un membre a désactivé le canal : rien n’y est publié tant que personne ne l
 
 ## channel.enabled [#channel-enabled]
 
-Un membre a réactivé le canal : il publie de nouveau. Quand son autorisation a cessé de fonctionner ou a expiré entre-temps, `channel.reconnect_needed` suit.
+Un membre a réactivé le canal, qui publie donc de nouveau. Si son autorisation a cessé de fonctionner ou a expiré entre-temps, `channel.reconnect_needed` suit.
 
 | Champ         | Type   | Ce qu’il contient      |
 | ------------- | ------ | ---------------------- |
@@ -137,9 +139,9 @@ Un membre a réactivé le canal : il publie de nouveau. Quand son autorisation a
 
 ## channel.expiring [#channel-expiring]
 
-L’autorisation du canal ne peut pas être renouvelée, et prend fin à `expiresAt`, comme celle d’un profil LinkedIn après 60 jours : quelqu’un le [reconnecte](/guides/channels#reconnect) avant, ou rien n’y est publié ensuite.
+L’autorisation du canal ne peut pas être renouvelée, et prend fin à `expiresAt`, comme celle d’un profil LinkedIn après 60 jours. Quelqu’un doit le [reconnecter](/guides/channels#reconnect) avant, sinon rien n’y est publié ensuite.
 
-Il est envoyé une fois pour chaque expiration, une semaine avant au plus : programmez vos propres rappels à partir d’`expiresAt`.
+Peal l’envoie une fois pour chaque expiration, une semaine avant au plus. Programmez vos propres rappels à partir d’`expiresAt`.
 
 | Champ         | Type   | Ce qu’il contient                                             |
 | ------------- | ------ | ------------------------------------------------------------- |

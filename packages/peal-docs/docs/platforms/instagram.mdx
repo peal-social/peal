@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/instagram.svg
 ---
 
-How to connect an Instagram account, what a post there may hold, and the options it takes.
+Peal posts to Instagram professional accounts, business or creator. It reaches them through Instagram itself or through a Facebook Page.
 
 ## At a glance [#at-a-glance]
+
+Here's what an Instagram post can hold:
 
 |                   |                                   |
 | ----------------- | --------------------------------- |
@@ -19,39 +21,39 @@ How to connect an Instagram account, what a post there may hold, and the options
 
 What each file type must be is in [Images and videos](/guides/media#platforms).
 
-## Connect [#connect]
+## Connect an account [#connect]
 
-Peal posts to Instagram professional accounts, business or creator. It reaches them in one of two ways, which **Instagram** offers as two buttons when the server has both.
+Peal reaches an Instagram account in one of two ways. When the server has both, **Instagram** offers them as two buttons.
 
 <Tabs>
   <Tab title="Instagram Login">
-    **Connect with Instagram** is the default. Sign in to the professional
-    account itself on Instagram, and allow Peal to read its profile, publish,
-    and read its insights.
 
-    - The account needs no Facebook Page.
-    - Its access lasts 60 days, and Peal renews it on its own a week before it ends.
-    - You may decline insights: the account then posts, without counts in **Analytics**.
+**Connect with Instagram** is the default. Sign in to the professional account itself on Instagram, and allow Peal to read its profile, publish, and read its insights. With this way of connecting:
 
-  </Tab>
+- The account needs no Facebook Page.
+- Its access lasts 60 days, and Peal renews it by itself a week before it ends.
+- You can decline insights. The account then posts, but without counts in **Analytics**.
+
+      </Tab>
+
   <Tab title="Facebook Login">
-    **Connect through a Facebook Page**: sign in with Facebook, as for Pages,
-    then tick the Instagram accounts linked to your Pages.
 
-    - An account posts with its Page's access, which does not expire, so it stays connected as long as you manage the Page.
-    - Use it for an account run from a Page, or for what only Meta's Facebook Login API gives, such as tagging products, collaborators and hashtag search, which Peal does not use yet.
+Click **Connect through a Facebook Page** and sign in with Facebook, as for Pages. Then select the Instagram accounts linked to your Pages. With this way of connecting:
 
-  </Tab>
-</Tabs>
+- An account posts with its Page's access, which doesn't expire, so it stays connected as long as you manage the Page.
+- It suits an account run from a Page. It's also the way to what only Meta's Facebook Login API gives, such as tagging products, collaborators and hashtag search, which Peal doesn't use yet.
 
-Both ways publish images, reels and carousels the same way, and read the same counts.
+      </Tab>
 
-- The channels list says which way each Instagram channel came through, and reconnecting it signs in that way again.
-- Connecting through Instagram Login an account the workspace has through a Page moves its channel there, with its posts and schedule: the workspace keeps one channel per account.
+  </Tabs>
+
+Both ways publish images, reels and carousels the same way, and read the same counts. The channels list says which way each Instagram channel came through, and reconnecting it signs in that way again.
+
+If you connect through Instagram Login an account the workspace already has through a Page, its channel moves over, with its posts and schedule. The workspace keeps one channel per account.
 
 ## Options [#options]
 
-Each option is sent only when you choose it. Some apply only to some media: the composer shows them for those, and scheduling refuses them on another post. In the composer, these are a reel's settings and **Collaborators**. **API name** is the option's name through the API.
+Peal sends each option only when you set it. Some apply only to some media: the composer shows them for those, and scheduling refuses them on another post. In the composer, these are a reel's settings and **Collaborators**. **API name** is the option's name in the API.
 
 | Option                           | API name        | Values                                                              | Left out             |
 | -------------------------------- | --------------- | ------------------------------------------------------------------- | -------------------- |
@@ -63,23 +65,30 @@ Each option is sent only when you choose it. Some apply only to some media: the 
 | **Trial reel**                   | `trialReel`     | A reel: `manual` or `performance`                                   | Not a trial          |
 | **Collaborators**                | `collaborators` | One to three Instagram usernames                                    | None                 |
 
-- On Instagram, a reel is a feed post of one video. A story takes none of these options.
-- A cover image wins over a cover frame: only the image is sent then.
-- Instagram renames a reel's audio once.
-- A trial reel is shown to accounts that do not follow yours first. It reaches your followers when you share it in the app (`manual`) or by itself when it does well (`performance`).
-- Instagram shows the alt text of a post's images, up to 1,000 characters, and none on a video.
+### Reels and stories [#reels]
 
-<Callout type="warning" title="Collaborators get an invitation">
+On Instagram, a reel is a feed post of one video. A story takes none of the options above.
+
+A cover image wins over a cover frame: when you set both, Peal sends only the image. Instagram renames a reel's audio only once.
+
+A trial reel is shown first to accounts that don't follow yours. It reaches your followers when you share it in the Instagram app (`manual`), or by itself when it does well (`performance`).
+
+Instagram shows the alt text of a post's images, up to 1,000 characters, and none on a video.
+
+### Collaborators [#collaborators]
+
+Under **Collaborators**, you can name one to three other accounts as the post's co-authors.
+
+<Callout type="warning" title="Each collaborator gets an invitation">
   Each collaborator is another account, which receives an invitation to be named
-  as a co-author: name only accounts you mean to invite. Instagram does not
-  document collaborators for accounts connected with Instagram Login: when
-  Instagram refuses such a post, the channel reads **Failed** with Meta's own
-  code.
+  as a co-author. Instagram doesn't document collaborators for accounts
+  connected with Instagram Login: when Instagram refuses such a post, the
+  channel shows **Failed** with Meta's own code.
 </Callout>
 
 ## Comments [#comments]
 
-Peal reads the comments under your published posts there, and you answer them from Peal: see [Inbox](/guides/engage/inbox#meta). Its direct messages can be read and answered too, within 24 hours of the person's last message, or by hand in Peal's web app for up to 7 days where the server allows it: see [Messenger and Instagram](/guides/engage/inbox#meta-messages). Where its messages are on, the author of a comment may get one [private reply](/guides/engage/inbox#private-replies), within seven days of the comment, from a member or after a [comment rule](/guides/engage/inbox#comment-rule-private-replies)'s public reply.
+Peal reads the comments under your published posts on Instagram, and you can answer them from Peal. See [Inbox](/guides/engage/inbox#meta).
 
 ## On your own server [#self-hosting]
 

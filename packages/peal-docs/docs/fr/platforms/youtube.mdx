@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/youtube.svg
 ---
 
-Comment connecter une chaîne YouTube, ce qu’une publication peut y contenir, et les options qu’elle prend.
+Une publication YouTube est une vidéo, avec son titre, et le texte de la publication en description. Il vous faut une chaîne YouTube avant de vous connecter, car un compte Google sans chaîne ne connecte rien.
 
 ## En bref [#at-a-glance]
+
+Voici ce qu’une publication YouTube peut contenir :
 
 |                  |                                 |
 | ---------------- | ------------------------------- |
@@ -19,37 +21,37 @@ Comment connecter une chaîne YouTube, ce qu’une publication peut y contenir, 
 
 Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms).
 
-## Connecter [#connect]
+## Connecter une chaîne [#connect]
 
 <Steps>
   <Step title="Se connecter avec Google">
-    Sous **YouTube**, choisissez **Connecter YouTube** et connectez-vous avec
+    Sous **YouTube**, cliquez sur **Connecter YouTube** et connectez-vous avec
     Google.
   </Step>
   <Step title="Choisir la chaîne">
-    Un compte Google qui gère plusieurs chaînes, celles de ses comptes de marque
-    comprises, les liste dans le sélecteur de comptes de Google. Chaque
+    Si votre compte Google gère plusieurs chaînes, celles de ses comptes de
+    marque comprises, le sélecteur de comptes de Google les liste. Chaque
     connexion est une chaîne.
   </Step>
   <Step title="Autoriser Peal">
-    Autorisez Peal à mettre en ligne des vidéos et à voir votre compte YouTube :
-    il lit le nom et l’image de la chaîne, le traitement de ses vidéos et leurs
-    chiffres, et ne modifie rien d’autre. Décochez l’un des deux, et la
-    connexion est refusée.
+    Autorisez Peal à mettre en ligne des vidéos et à voir votre compte YouTube.
+    Il lit le nom et l’image de la chaîne, le traitement de ses vidéos et leurs
+    chiffres, et ne modifie rien d’autre. Si vous décochez l’une des deux
+    autorisations, la connexion est refusée.
   </Step>
 </Steps>
 
-Un compte Google sans chaîne ne connecte rien : créez d’abord la chaîne sur YouTube.
+Un compte Google sans chaîne ne connecte rien. Créez donc d’abord la chaîne sur YouTube.
 
 **Canaux** propose YouTube une fois le serveur Peal configuré pour lui (voir [Sur votre propre serveur](#self-hosting)).
 
 ## Options [#options]
 
-L’éditeur montre d’abord celles-ci. **Nom dans l’API** est le nom de l’option par l’API.
+L’éditeur montre d’abord celles-ci. **Nom dans l’API** est le nom de l’option dans l’API.
 
 | Option                            | Nom dans l’API           | Dans l’éditeur                                        |
 | --------------------------------- | ------------------------ | ----------------------------------------------------- |
-| **Titre**                         | `title`                  | Obligatoire : 100 caractères au plus, sans `<` ni `>` |
+| **Titre**                         | `title`                  | Obligatoire : 100 caractères au plus, sans `<` ni `>` |
 | **Conçue pour les enfants**       | `madeForKids`            | Obligatoire, sans valeur par défaut                   |
 | **Visibilité**                    | `privacy`                | Publique sauf choix contraire                         |
 | **Tags**                          | `tags`                   | 500 caractères en tout                                |
@@ -57,7 +59,7 @@ L’éditeur montre d’abord celles-ci. **Nom dans l’API** est le nom de l’
 | **Prévenir les abonnés**          | `notifySubscribers`      | Activé                                                |
 | Contenus modifiés ou synthétiques | `containsSyntheticMedia` |                                                       |
 
-Les autres ne sont envoyées que si vous les choisissez. Certaines ne valent que pour certains médias : l’éditeur les montre pour ceux-là, et la programmation les refuse sur une autre publication.
+Peal n’envoie chacune des autres options que si vous la réglez. Certaines ne valent que pour certains médias : l’éditeur les montre pour ceux-là, et la programmation les refuse sur une autre publication.
 
 | Option                                   | Nom dans l’API        | Valeurs                                                                    | Par défaut                  |
 | ---------------------------------------- | --------------------- | -------------------------------------------------------------------------- | --------------------------- |
@@ -70,14 +72,14 @@ Les autres ne sont envoyées que si vous les choisissez. Certaines ne valent que
 
 ### Miniatures [#thumbnails]
 
-- YouTube définit la miniature une fois la vidéo mise en ligne, et seulement sur une chaîne qui a droit aux miniatures personnalisées.
-- Sinon, ou s’il refuse l’image, la vidéo est publiée quand même, avec sa propre miniature. La page de la publication dit **La miniature n’a pas été définie**, et par l’API sa cible porte `thumbnailNotSet: true`.
-- Peal définit au plus `YOUTUBE_DAILY_THUMBNAILS` miniatures par jour pour tout le serveur (voir [les variables d’environnement](/self-hosting/environment-variables)), car chacune puise dans le quota général du projet Google. Au-delà, une vidéo part avec celle de YouTube.
+YouTube définit la miniature une fois la vidéo mise en ligne, et seulement sur une chaîne qui a droit aux miniatures personnalisées. Sinon, ou s’il refuse l’image, la vidéo est publiée quand même, avec la miniature de YouTube. La page de la publication dit **La miniature n’a pas été définie**, et dans l’API la cible de la publication porte `thumbnailNotSet: true`.
+
+Chaque miniature puise dans le quota général du projet Google. Peal définit donc au plus `YOUTUBE_DAILY_THUMBNAILS` miniatures par jour pour tout le serveur (voyez [les variables d’environnement](/self-hosting/environment-variables)). Au-delà, une vidéo part avec la miniature de YouTube.
 
 ## Commentaires [#comments]
 
-Peal lit les commentaires sous vos publications en ligne, et vous y répondez depuis Peal : voir [Boîte de réception](/guides/engage/inbox#youtube).
+Peal lit les commentaires sous vos vidéos en ligne, et vous pouvez y répondre depuis Peal. Voyez [Boîte de réception](/guides/engage/inbox#youtube).
 
 ## Sur votre propre serveur [#self-hosting]
 
-Un serveur auto-hébergé propose YouTube une fois son application enregistrée : voir [YouTube](/self-hosting/platforms#youtube). D’ici là, **Canaux** ne le propose pas.
+Un serveur auto-hébergé propose YouTube une fois son application enregistrée : voyez [YouTube](/self-hosting/platforms#youtube). D’ici là, **Canaux** ne le propose pas.

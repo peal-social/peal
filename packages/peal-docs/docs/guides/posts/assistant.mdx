@@ -5,63 +5,75 @@ sidebar:
   icon: sparkles
 ---
 
-The assistant drafts and reworks a post's text in the composer, and can make an image for it.
+You'll find the assistant in the composer, where it drafts and reworks a post's text. It can also make an image for the post.
 
-## Ask the writing assistant [#assistant]
+## Ask the assistant [#assistant]
 
-When the workspace has its own [text provider](/guides/workspace#text-provider), or the Peal instance has an AI provider, the composer's **Text** section has an **Assistant** menu. It works on the text for all channels.
-
-| Action                | What it does                                                                                                                                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Write a post…**     | Say what the post is about, in your own words, and the assistant writes a first text, in the subject's language.                                                                                                                |
-| **Rewrite in a tone** | Professional, friendly, casual, enthusiastic or witty, keeping the meaning, the language and about the length.                                                                                                                  |
-| **Shorten to fit**    | One of the platforms of the channels you picked, or, before you pick any, each platform whose limit Peal knows. With images or videos attached, the limit of a caption where the platform has one (Telegram: 1,024 characters). |
-| **Translate into**    | English, French, German, Spanish, Italian, Portuguese, Dutch, Polish, Japanese or Chinese (simplified).                                                                                                                         |
-| **Suggest hashtags**  | Up to 8 that the text does not have yet.                                                                                                                                                                                        |
-
-About **Write a post…**:
-
-- Choose a tone if you like, and, when the post goes to a platform with a short limit (X, Bluesky, Threads or Mastodon), the one whose limit it must fit.
-- It is offered whether the text is empty or not, and using its text replaces the one you had.
-- It is told not to add facts, figures, names, dates or links that the subject does not give, and to add hashtags only when the subject asks for them.
-- For another idea, ask again: each one is a request.
+The composer's **Text** section has an **Assistant** menu when the workspace has its own [text provider](/guides/workspace#text-provider), or when the Peal instance has an AI provider. The menu works on the text for all channels.
 
 <Steps>
   <Step title="Choose an action">
-    Open **Assistant** and choose what it should do.
+
+Open **Assistant** and click what it should do.
+
   </Step>
   <Step title="Read the suggestion">
-    The suggestion opens in a preview, and nothing changes yet.
+
+The suggestion opens in a preview. Nothing in your post changes yet.
+
   </Step>
   <Step title="Use it or drop it">
-    Choose **Use this text**, or **Add these hashtags**, which adds them on a
-    line of their own. **Discard** drops it.
+
+Click **Use this text**, or **Add these hashtags**, which adds them on a line of their own. To drop the suggestion, click **Discard**.
+
   </Step>
 </Steps>
 
-<Callout type="warning">
-  Read the suggestion before you use it. The assistant keeps mentions, hashtags
-  and links, and is told not to add facts, but it can still get things wrong.
+<Callout type="warning" title="A suggestion can still be wrong">
+  The assistant keeps mentions, hashtags and links, and it's told not to add
+  facts. Read the suggestion before you use it.
 </Callout>
 
-## Images [#images]
+### What each action does [#actions]
 
-When the workspace has its own [image provider](/guides/workspace#image-provider), or the instance has an image model, **Choose from the library** offers **Generate an image**. It makes an image from a description into the library, picked for the post: see [Generate an image](/guides/media#generate).
+The menu has five actions:
 
-An image from the instance's model costs 5 of the day's requests; one from the workspace's own provider costs none.
+| Action                | What it does                                                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Write a post…**     | Say what the post is about, in your own words, and the assistant writes a first text, in the subject's language. |
+| **Rewrite in a tone** | Professional, friendly, casual, enthusiastic or witty. It keeps the meaning, the language and about the length.  |
+| **Shorten to fit**    | One of the platforms of the channels you picked. Before you pick any, each platform whose limit Peal knows.      |
+| **Translate into**    | English, French, German, Spanish, Italian, Portuguese, Dutch, Polish, Japanese or Chinese (simplified).          |
+| **Suggest hashtags**  | Up to 8 that the text doesn't have yet.                                                                          |
+
+### Write a post from a subject [#write]
+
+**Write a post…** is offered whether the text is empty or not. If you use its text, it replaces the one you had.
+
+You can choose a tone. When the post goes to a platform with a short limit (X, Bluesky, Threads or Mastodon), you can also choose the one whose limit the text must fit.
+
+The assistant is told not to add facts, figures, names, dates or links that the subject doesn't give. It adds hashtags only when the subject asks for them. For another idea, ask again, and each try counts as one request.
+
+## Make an image [#images]
+
+**Choose from the library** offers **Generate an image** when the workspace has its own [image provider](/guides/workspace#image-provider), or when the instance has an image model. It makes an image from a description, puts it in the library and picks it for the post. See [Generate an image](/guides/media#generate).
+
+An image from the instance's model costs 5 of the day's requests. One from the workspace's own provider costs none.
 
 ## Limits [#limits]
 
-| Limit                                  | Value                                                                                                                                                                                              |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Text or subject                        | Up to 5,000 characters                                                                                                                                                                             |
-| Requests a day                         | 100 per workspace unless the instance sets another, counted from midnight UTC. On Peal Cloud, the plan's, shared by the workspaces of the billing account. The menu shows how many are left today. |
-| With the workspace's own text provider | None counts: the menu says the workspace's provider writes, and that provider takes up to 500 requests a day.                                                                                      |
+The assistant has these limits:
 
-- A request that could not reach the AI provider does not count.
-- One that took more than 90 seconds does, as the provider may have worked on it.
-- The requests are counted for each workspace, never for each person: every member shares the workspace's day. On Peal Cloud, the workspaces of one billing account share one count, those a [partner](/developers/embedding) owns included.
+| Limit                                  | Value                                                                                                                                                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Text or subject                        | Up to 5,000 characters                                                                                                                                                                                    |
+| Requests a day                         | 100 per workspace unless the instance sets another figure, counted from midnight UTC. On Peal Cloud, the plan's, shared by the workspaces of the billing account. The menu shows how many are left today. |
+| With the workspace's own text provider | None counts. The menu says the workspace's provider writes, and that provider takes up to 500 requests a day.                                                                                             |
+
+A request that couldn't reach the AI provider doesn't count. One that took more than 90 seconds does, because the provider may have worked on it.
+
+Requests are counted per workspace, never per person, so every member shares the workspace's day. On Peal Cloud, the workspaces of one billing account share one count, including those a [partner](/developers/embedding) owns.
 
 ## Where your text goes [#privacy]
 
-Your text, or the subject, goes to the workspace's own text provider when it set one, and otherwise to the AI provider the instance's administrator chose, and nowhere else. Peal saves neither the text you send nor the suggestion, and never writes them to its logs.
+Your text, or the subject, goes to the workspace's own text provider if it set one. Otherwise it goes to the AI provider the instance's administrator chose, and nowhere else. Peal saves neither the text you send nor the suggestion, and never writes them to its logs.

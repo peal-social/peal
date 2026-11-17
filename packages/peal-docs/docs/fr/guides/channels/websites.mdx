@@ -1,11 +1,13 @@
 ---
 title: Sites web et articles
-description: "Connectez un site web (un site WordPress, WordPress.com, DEV ou Hashnode), et publiez-y des articles depuis Peal : un titre, un corps mis en forme, une image mise en avant, des étiquettes et des catégories, aussitôt, en brouillon ou à une heure."
+description: "Connectez un site web (un site WordPress, WordPress.com, DEV ou Hashnode), et publiez-y des articles depuis Peal : un titre, un corps mis en forme, une image mise en avant, des étiquettes et des catégories, aussitôt, en brouillon ou à une heure."
 sidebar:
   icon: newspaper
 ---
 
-Un site web est aussi un canal, qui prend des **articles** plutôt que des publications : un site WordPress à vous, un site WordPress.com, un compte DEV ou une publication Hashnode. Un article a un titre, un corps mis en forme, un extrait, des étiquettes, des catégories et une image mise en avant, et Peal l’envoie au site comme un article du site.
+Un site web est aussi un canal, mais il prend des **articles** au lieu de publications. Un article a un titre, un corps mis en forme, un extrait, des étiquettes, des catégories et une image mise en avant, et Peal l’envoie au site comme l’un des articles du site.
+
+Vous pouvez connecter quatre sortes de sites web :
 
 | Site web                                   | Se connecte avec                                             | Sa page                                   |
 | ------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------- |
@@ -14,57 +16,71 @@ Un site web est aussi un canal, qui prend des **articles** plutôt que des publi
 | DEV                                        | Une clé d’API                                                | [DEV](/platforms/devto)                   |
 | Hashnode, en offre Pro                     | Un jeton d’accès personnel et la publication                 | [Hashnode](/platforms/hashnode)           |
 
-Un site web compte pour un canal, comme tout compte connecté : sur une offre au compte, c’est un compte.
+Un site web compte pour un canal, comme tout compte connecté. Sur une offre au compte, c’est un compte.
 
 ## Connecter un site WordPress [#connect]
 
-Peal publie en tant que l’un des utilisateurs du site, avec un **mot de passe d’application** : un mot de passe que WordPress crée pour une seule application, que l’utilisateur peut révoquer à tout moment, jamais son propre mot de passe. Peal demande WordPress 5.7 ou plus récent, sur un site servi en HTTPS : les mots de passe d’application arrivent avec la 5.6, et la 5.7 permet à Peal de retrouver un article par le moment où il a changé.
+Peal publie en tant que l’un des utilisateurs du site, avec un **mot de passe d’application**. C’est un mot de passe que WordPress crée pour une seule application, et que l’utilisateur peut révoquer à tout moment. Ce n’est jamais son propre mot de passe.
+
+Il vous faut WordPress 5.7 ou plus récent, sur un site servi en HTTPS. Les mots de passe d’application sont arrivés avec la 5.6, et la 5.7 permet à Peal de retrouver un article par le moment où il a changé.
 
 <Steps>
-  <Step title="Créez un mot de passe d’application">
-    Dans WordPress, ouvrez **Utilisateurs**, puis le profil de l’utilisateur
-    avec lequel Peal publie : un auteur, un éditeur ou un administrateur. Sous
-    **Mots de passe d’application**, nommez-le Peal et choisissez **Ajouter un
-    mot de passe d’application**. Copiez le mot de passe, qu’il ne montre qu’une
-    fois.
+  <Step title="Créer un mot de passe d’application">
+
+Dans WordPress, ouvrez **Utilisateurs**, puis le profil de l’utilisateur avec lequel Peal publie. Cet utilisateur doit être auteur, éditeur ou administrateur. Sous **Mots de passe d’application**, nommez-le Peal et cliquez sur **Ajouter un mot de passe d’application**. Copiez le mot de passe, car il ne s’affiche qu’une fois.
+
   </Step>
-  <Step title="Connectez le site dans Peal">
-    Dans **Canaux**, sous **Site WordPress**, donnez l’adresse du site (sa page
-    d’accueil, comme `https://blog.example.com`), l’identifiant de l’utilisateur
-    et le mot de passe d’application, puis **Connecter le site**.
+  <Step title="Connecter le site dans Peal">
+
+Dans **Canaux**, sous **Site WordPress**, saisissez l’adresse du site (sa page d’accueil, comme `https://blog.example.com`), l’identifiant de l’utilisateur et le mot de passe d’application. Cliquez ensuite sur **Connecter le site**.
+
   </Step>
 </Steps>
 
-Peal trouve l’API REST du site depuis sa page d’accueil, vérifie que l’utilisateur peut publier des articles et téléverser des fichiers, puis garde le mot de passe chiffré : il n’est plus jamais montré. Il n’envoie le mot de passe qu’à l’API REST du site lui-même, jamais à une que la page d’accueil désigne ailleurs. Connecter le même site de nouveau, à la même page d’accueil, remplace le mot de passe, même quand son API REST a changé d’adresse, comme quand ses permaliens changent.
+Peal trouve l’API REST du site depuis sa page d’accueil, et vérifie que l’utilisateur peut publier des articles et téléverser des fichiers. Il garde ensuite le mot de passe chiffré et ne le montre plus jamais. Il n’envoie le mot de passe qu’à l’API REST du site lui-même, jamais à une que la page d’accueil désigne ailleurs.
 
-Un nouveau site web demande de la place dans l’offre de l’espace de travail, que Peal vérifie avant d’appeler le site. Un espace de travail essaie 30 fois par heure au plus.
+Connecter le même site de nouveau, à la même page d’accueil, remplace le mot de passe. Cela fonctionne même quand son API REST a changé d’adresse, comme quand ses permaliens changent.
 
-Peal joint les sites web en HTTPS, à des adresses publiques seulement. Un site sur un réseau privé demande que l’opérateur de son serveur l’autorise ([PEAL_OUTBOUND_ALLOWED_HOSTS](/self-hosting/environment-variables#channels)) ; le service de Peal ne le fait jamais.
+Un nouveau site web demande de la place dans l’offre de l’espace de travail, que Peal vérifie avant d’appeler le site. Un espace de travail peut essayer 30 fois par heure au plus.
+
+Peal joint les sites web en HTTPS, à des adresses publiques seulement. Un site sur un réseau privé demande que l’opérateur de son serveur l’autorise ([PEAL_OUTBOUND_ALLOWED_HOSTS](/self-hosting/environment-variables#channels)). Le service de Peal ne le fait jamais.
 
 ### Quand la connexion échoue [#errors]
 
-| Message                                                                  | Que faire                                                                                                                             |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| L’adresse ne mène à aucun site WordPress                                 | Donnez la page d’accueil du site. Un site dont une extension coupe l’API REST ne peut pas être connecté.                              |
-| Peal joint les sites web en HTTPS, à des adresses publiques seulement    | Servez le site en HTTPS, à une adresse publique, avec son API REST sur le même site.                                                  |
-| Le site a refusé l’identifiant et le mot de passe d’application          | Vérifiez-les. Certains hébergeurs retirent l’en-tête `Authorization` qui les porte : demandez à votre hébergeur de le laisser passer. |
-| Cet utilisateur ne peut pas publier d’articles ni téléverser de fichiers | Prenez un auteur, un éditeur ou un administrateur.                                                                                    |
+Si la connexion échoue, Peal affiche l’un de ces messages :
 
-Quand le site refuse plus tard le mot de passe, par exemple une fois révoqué, le canal passe à **Reconnecter** : reconnectez-le avec un nouveau mot de passe d’application.
+| Message                                                                  | Que faire                                                                                                                                  |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| L’adresse ne mène à aucun site WordPress                                 | Donnez la page d’accueil du site. Un site dont une extension coupe l’API REST ne peut pas être connecté.                                   |
+| Peal joint les sites web en HTTPS, à des adresses publiques seulement    | Servez le site en HTTPS, à une adresse publique, avec son API REST sur le même site.                                                       |
+| Le site a refusé l’identifiant et le mot de passe d’application          | Vérifiez-les. Certains hébergeurs retirent l’en-tête `Authorization` qui les porte. Demandez alors à votre hébergeur de le laisser passer. |
+| Cet utilisateur ne peut pas publier d’articles ni téléverser de fichiers | Prenez un auteur, un éditeur ou un administrateur.                                                                                         |
+
+Quand le site refuse plus tard le mot de passe, par exemple une fois qu’il a été révoqué, le canal passe à **Reconnecter**. Reconnectez-le avec un nouveau mot de passe d’application.
 
 ## Connecter WordPress.com, DEV ou Hashnode [#other-sites]
 
-Dans **Canaux**, un site WordPress.com se connecte en se connectant sur WordPress.com et en choisissant le site ; un compte DEV avec une clé d’API ; une publication Hashnode avec un jeton d’accès personnel et l’adresse de la publication. La page de chaque plateforme dit où créer la clé : [WordPress.com](/platforms/wordpress-com), [DEV](/platforms/devto), [Hashnode](/platforms/hashnode). Peal conserve la clé ou le jeton chiffré, et ne l’affiche plus jamais ; un site ou un compte compte pour un canal, et un nouveau demande de la place dans l’offre de l’espace de travail.
+Chacun se connecte depuis **Canaux** à sa façon :
 
-| Message                                                                  | Que faire                                                                                                                                                           |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Le site a refusé ce avec quoi Peal se connecte                           | Créez une nouvelle clé ou un nouveau jeton, et collez-le en entier.                                                                                                 |
-| Vous avez plusieurs publications sur Hashnode                            | Donnez l’adresse de celle où publier.                                                                                                                               |
-| Hashnode n’a pas cette publication                                       | Donnez son adresse, comme `blog.example.com` ou `nom.hashnode.dev`.                                                                                                 |
-| Hashnode ne répond à son API qu’en offre Pro                             | Passez la publication en Pro sur Hashnode, puis connectez-la de nouveau.                                                                                            |
-| Cet utilisateur ne peut pas publier d’articles ni téléverser de fichiers | Sur WordPress.com, connectez-vous comme auteur, éditeur ou administrateur du site ; sur Hashnode, la publication d’une équipe vous demande propriétaire ou éditeur. |
+- Un site WordPress.com : connectez-vous sur WordPress.com et choisissez le site.
+- Un compte DEV : collez une clé d’API.
+- Une publication Hashnode : collez un jeton d’accès personnel et donnez l’adresse de la publication.
+
+La page de chaque plateforme dit où créer la clé : [WordPress.com](/platforms/wordpress-com), [DEV](/platforms/devto), [Hashnode](/platforms/hashnode). Peal conserve la clé ou le jeton chiffré, et ne l’affiche plus jamais. Un site ou un compte compte pour un canal, et un nouveau demande de la place dans l’offre de l’espace de travail.
+
+Si la connexion échoue, Peal affiche l’un de ces messages :
+
+| Message                                                                  | Que faire                                                                                                                                                          |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Le site a refusé ce avec quoi Peal se connecte                           | Créez une nouvelle clé ou un nouveau jeton, et collez-le en entier.                                                                                                |
+| Vous avez plusieurs publications sur Hashnode                            | Donnez l’adresse de celle où publier.                                                                                                                              |
+| Hashnode n’a pas cette publication                                       | Donnez son adresse, comme `blog.example.com` ou `nom.hashnode.dev`.                                                                                                |
+| Hashnode ne répond à son API qu’en offre Pro                             | Passez la publication en Pro sur Hashnode, puis connectez-la de nouveau.                                                                                           |
+| Cet utilisateur ne peut pas publier d’articles ni téléverser de fichiers | Sur WordPress.com, connectez-vous comme auteur, éditeur ou administrateur du site. Sur Hashnode, la publication d’une équipe vous demande propriétaire ou éditeur. |
 
 ## Ce que prend chaque site [#sites]
+
+Chaque site fixe ses propres limites :
 
 | Site web                 | Titre          | Étiquettes             | Catégories | Sur le site                                            | Dépublier                     |
 | ------------------------ | -------------- | ---------------------- | ---------- | ------------------------------------------------------ | ----------------------------- |
@@ -72,52 +88,92 @@ Dans **Canaux**, un site WordPress.com se connecte en se connectant sur WordPres
 | DEV                      | 128 caractères | 4, lettres et chiffres | Aucune     | Publié aussitôt, un brouillon là-bas, programmé là-bas | Redevient un brouillon là-bas |
 | Hashnode                 | 500 caractères | 15                     | Aucune     | Publié aussitôt, un brouillon là-bas                   | Retiré de la publication      |
 
-Un site WordPress reçoit le HTML de l’article, que Peal écrit lui-même ; DEV et Hashnode reçoivent du Markdown, que Peal écrit aussi, où tout ce que vous avez tapé reste du texte. Chaque image part d’abord au site, une fois.
+Un site WordPress reçoit le HTML de l’article, que Peal écrit lui-même. DEV et Hashnode reçoivent du Markdown, que Peal écrit aussi, et tout ce que vous avez tapé reste du texte. Chaque image part d’abord au site, une fois.
 
 ## Écrire un article [#articles]
 
-Ouvrez **Publications**, puis **Articles**, et **Nouvel article**. Choisissez le site web, puis écrivez :
+Dans un espace de travail, cliquez sur **Publications** dans la barre latérale, puis sur **Articles**, et cliquez sur **Nouvel article**. Sélectionnez le **Site web**, puis remplissez l’article :
 
-- le **titre**, que le site montre au-dessus de l’article ;
-- le **corps**, dans l’éditeur : titres, paragraphes, gras, italique, texte barré et code, liens, listes, citations, séparateurs, blocs de code et images de la [médiathèque](/guides/media) de l’espace de travail. Ce que vous collez n’en garde que cela ;
-- un **extrait**, le résumé que le site montre dans ses listes ;
-- des **étiquettes** et des **catégories**, séparées par des virgules, comme le site les montre : Peal prend celles que le site a, quelle que soit leur casse, et crée les autres (créer une catégorie demande un éditeur ou un administrateur) ;
-- une **image mise en avant** de la médiathèque.
+- **Titre** : ce que le site montre au-dessus de l’article.
+- **Corps** : écrit dans l’éditeur, avec titres, paragraphes, gras, italique, texte barré et code, liens, listes, citations, séparateurs, blocs de code et images de la [médiathèque](/guides/media) de l’espace de travail. Ce que vous collez n’en garde que cela.
+- **Extrait** : le résumé que le site montre dans ses listes.
+- **Étiquettes** et **Catégories** : séparées par des virgules, comme le site les montre. Peal prend celles que le site a, quelle que soit leur casse, et crée les autres. Créer une catégorie demande un éditeur ou un administrateur.
+- **Image mise en avant** : une image de la médiathèque.
 
 Peal écrit lui-même le HTML que le site reçoit à partir du corps, et envoie d’abord chaque image à la médiathèque du site.
 
 ## L’envoyer [#send]
 
-Choisissez ce que le site fait de l’article, puis quand Peal l’envoie :
+Sous **Sur le site**, choisissez ce que le site fait de l’article :
 
-| Sur le site         | Ce que fait le site                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| Publié aussitôt     | Le publie dès que Peal l’envoie.                                                       |
-| Un brouillon là-bas | Le garde en brouillon, à finir et publier sur le site.                                 |
-| Programmé là-bas    | Le publie lui-même à l’heure de l’article : Peal l’envoie aussitôt, et le site attend. |
+| Sur le site         | Ce que fait le site                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| Publié aussitôt     | Le publie dès que Peal l’envoie.                                                      |
+| Un brouillon là-bas | Le garde en brouillon, pour que vous le finissiez et le publiiez sur le site.         |
+| Programmé là-bas    | Le publie lui-même à l’heure de l’article. Peal l’envoie aussitôt, et le site attend. |
 
-Laissez l’heure vide pour l’envoyer maintenant, ou donnez-en une : Peal l’envoie alors. Peal vérifie l’article avant de le programmer, tout à la fois : un titre, un corps, les étiquettes et catégories [que son site prend](#sites), une heure à venir, et que la médiathèque a toujours ses images. Hashnode ne peut pas publier un article lui-même à une heure donnée : donnez-lui l’heure avec **Publié aussitôt**, et Peal l’envoie alors. Le titre et l’extrait partent sur le site en texte brut, tels que vous les avez tapés.
+Choisissez ensuite quand Peal l’envoie. Laissez **Heure** vide pour l’envoyer maintenant, ou donnez-en une, et Peal l’envoie alors. Hashnode ne peut pas publier un article lui-même à une heure donnée. Donnez-lui donc l’heure avec **Publié aussitôt**, et Peal l’envoie alors.
 
-DEV prend une écriture par seconde d’un serveur, quel que soit le compte, et 10 envois d’images par heure d’un compte par défaut : Peal envoie ses écritures à DEV une à une, à une seconde d’écart, et un article qui atteint la seconde limite attend DEV, puis part. Hashnode peut répondre à une recherche depuis un cache vieux de 25 secondes environ : un article renvoyé moins d’une minute après l’appel qu’il cherche attend, puis cherche.
+Avant de programmer un article, Peal vérifie tout à la fois :
 
-Un espace de travail au-delà de son offre, comme après son essai, n’envoie aucun article avant d’y revenir, comme pour ses publications. Une image qu’un article programmé montre ne peut pas être supprimée de la médiathèque avant que l’article repasse en brouillon ou soit parti ; supprimer une image qu’un brouillon, un article en échec ou à vérifier montre la retire de cet article.
+- il a un titre et un corps
+- ses étiquettes et ses catégories sont [acceptées par son site](#sites)
+- son heure est encore à venir
+- la médiathèque a toujours ses images
 
-Ce qui part est public. Peal n’envoie jamais un article deux fois : quand la réponse du site se perd, Peal cherche l’article parmi ceux de l’utilisateur, par son titre, et le prend quand un seul correspond ; quand il ne peut pas le dire, l’article est **À vérifier** : regardez sur le site, puis renvoyez-le seulement s’il n’y est pas. Renvoyé, Peal cherche d’abord cet article une fois de plus, parmi les articles de l’utilisateur de ce titre créés ou modifiés dans la journée qui a suivi le premier envoi, et le prend quand il en trouve exactement un ; quand il en trouve plusieurs, ou que le site refuse la recherche, l’article reste **À vérifier**.
+Le titre et l’extrait partent sur le site en texte brut, tels que vous les avez tapés.
 
-Quand le site a un autre article du même titre, que Peal ne peut pas distinguer de celui qu’il a envoyé, l’article le dit, et Peal ne le renvoie jamais de lui-même. Regardez sur le site : si l’article y est, il est en ligne et vous pouvez le laisser ; sinon, renommez ou supprimez l’autre article là-bas, puis renvoyez-le.
+### Limites de rythme [#rate-limits]
+
+DEV prend une écriture par seconde d’un serveur, quel que soit le compte, et 10 envois d’images par heure d’un compte par défaut. Peal envoie ses écritures à DEV une à une, à une seconde d’écart. Un article qui atteint la limite d’une seconde attend DEV, puis part.
+
+Hashnode peut répondre à une recherche depuis un cache vieux de 25 secondes environ. Un article renvoyé moins d’une minute après l’appel qu’il cherche attend, puis cherche.
+
+### Ce qui retient aussi un article [#held]
+
+Un espace de travail au-delà de son offre, comme après son essai, n’envoie aucun article avant d’y revenir, comme pour ses publications.
+
+Une image qu’un article programmé montre ne peut pas être supprimée de la médiathèque avant que l’article repasse en brouillon ou soit parti. Supprimer une image que montre un brouillon, un article en échec ou un article à vérifier la retire de cet article.
+
+### Quand la réponse du site se perd [#lost-answer]
+
+Ce qui part est public, donc Peal n’envoie jamais un article deux fois.
+
+Quand la réponse du site se perd, Peal cherche l’article parmi ceux de l’utilisateur, par son titre, et le prend quand un seul correspond. Quand il ne peut pas le dire, l’article est **À vérifier**. Regardez sur le site, et renvoyez-le seulement s’il n’y est pas.
+
+Quand vous le renvoyez, Peal cherche d’abord cet article une fois de plus. Il parcourt les articles de l’utilisateur de ce titre créés ou modifiés dans la journée qui a suivi le premier envoi, et prend l’article quand il en trouve exactement un. Quand il en trouve plusieurs, ou que le site refuse la recherche, l’article reste **À vérifier**.
+
+Quand le site a un autre article du même titre, Peal ne peut pas le distinguer de celui qu’il a envoyé. L’article le dit, et Peal ne le renvoie jamais de lui-même. Regardez sur le site. Si l’article y est, il est en ligne et vous pouvez le laisser. Sinon, renommez ou supprimez l’autre article là-bas, puis renvoyez-le.
 
 ## Une fois sur le site [#on-site]
 
-- **Mettre à jour sur le site** renvoie le titre, le corps, l’extrait, les étiquettes, les catégories et l’image mise en avant sur l’article du site, aussitôt : une image mise en avant ou un extrait retirés dans Peal le sont là-bas. Le site garde son état et sa date. Les images que le site a déjà ne sont pas renvoyées.
-- **Dépublier** met l’article dans la corbeille du site, que WordPress vide après 30 jours par défaut. L’article reste dans Peal, montré dans la corbeille du site. Un site dont la corbeille est désactivée le refuse : supprimez l’article là-bas. Sur DEV, qui ne supprime aucun article par son API, l’article redevient un brouillon là-bas ; sur Hashnode, l’article est retiré de la publication.
-- **Renvoyer** renvoie un article en échec, aussitôt.
+Depuis l’article dans Peal, vous pouvez :
+
+- Cliquer sur **Mettre à jour sur le site** pour renvoyer aussitôt le titre, le corps, l’extrait, les étiquettes, les catégories et l’image mise en avant sur l’article du site. Une image mise en avant ou un extrait retirés dans Peal le sont là-bas. Le site garde l’état et la date de l’article, et les images qu’il a déjà ne sont pas renvoyées.
+- Cliquer sur **Dépublier** pour mettre l’article dans la corbeille du site, que WordPress vide après 30 jours par défaut. L’article reste dans Peal, montré dans la corbeille du site.
+- Cliquer sur **Renvoyer** pour renvoyer aussitôt un article en échec.
+
+**Dépublier** se passe autrement sur certains sites. Un site dont la corbeille est désactivée le refuse : supprimez alors l’article là-bas. DEV ne supprime aucun article par son API, et l’article y redevient donc un brouillon. Sur Hashnode, l’article est retiré de la publication.
 
 Supprimer un article dans Peal laisse son article sur le site.
 
 ## Approbations [#approvals]
 
-Les articles ne peuvent pas encore être approuvés. Dans un espace de travail dont les publications attendent une approbation (voir [Quelles publications attendent](/guides/posts/review#policy)), tout ce qui mettrait un article sur son site, ou l’y changerait, est refusé à qui ses publications attendraient : l’envoyer, le programmer, le renvoyer, le modifier pendant qu’il est programmé, et le mettre à jour sur le site. Les brouillons peuvent toujours être écrits, et un article peut toujours quitter son site. Un membre dont les publications partent sans approbation l’envoie.
+Les articles ne peuvent pas encore être approuvés. Dans un espace de travail dont les publications attendent une approbation (voir [Quelles publications attendent](/guides/posts/review#policy)), tout ce qui mettrait un article sur son site, ou l’y changerait, est refusé à qui ses publications attendraient. Cela comprend :
+
+- l’envoyer, le programmer et le renvoyer
+- le modifier pendant qu’il est programmé
+- le mettre à jour sur le site
+
+Les brouillons peuvent toujours être écrits, et un article peut toujours quitter son site. Un membre dont les publications partent sans approbation peut l’envoyer.
 
 ## Dans l’API [#api]
 
-Les [points d’accès des articles](/reference) font de même : `POST /api/workspaces/{workspaceId}/channels/websites` connecte un site WordPress, `…/channels/websites/keys` un compte DEV ou Hashnode, `…/channels/websites/sign-in/wordpressCom` commence la connexion à WordPress.com, et `/api/workspaces/{workspaceId}/articles` écrit, programme, renvoie, met à jour et dépublie les articles. Les événements webhook [`article.published` et `article.failed`](/developers/webhooks/events/articles) disent comment chacun a fini. La ligne de commande a `peal channels connect-website`, `peal channels connect-website-key` et `peal articles`.
+Les [points d’accès des articles](/reference) font de même :
+
+- `POST /api/workspaces/{workspaceId}/channels/websites` connecte un site WordPress.
+- `…/channels/websites/keys` connecte un compte DEV ou Hashnode.
+- `…/channels/websites/sign-in/wordpressCom` commence la connexion à WordPress.com.
+- `/api/workspaces/{workspaceId}/articles` écrit, programme, renvoie, met à jour et dépublie les articles.
+
+Les événements webhook [`article.published` et `article.failed`](/developers/webhooks/events/articles) disent comment chacun a fini. La ligne de commande a `peal channels connect-website`, `peal channels connect-website-key` et `peal articles`.

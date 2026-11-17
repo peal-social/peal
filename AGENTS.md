@@ -203,6 +203,10 @@ bar) and the page patterns. Read it before changing a screen of the web
 app, the site or the docs. Peal is light only: no dark mode, no `dark:`
 class in Peal's own code.
 
+[`WRITING.md`](WRITING.md) is how Peal's words read: the voice, the
+layout of a page and the code samples, for the docs, the site and the
+app's text, with a sample per kind of text for the humanizer skill.
+
 Look for patterns through the MCP servers in `.mcp.json` (shadcn/ui's
 registry, and 21st.dev's with `TWENTYFIRST_API_KEY`), then build them from
 peal-ui and its theme: a reference is a starting point, not code to paste.

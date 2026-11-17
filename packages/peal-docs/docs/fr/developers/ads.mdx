@@ -5,15 +5,15 @@ sidebar:
   icon: megaphone
 ---
 
-Lisez les comptes publicitaires et leurs chiffres, chiffrez et lancez une mise en avant, et soyez-en averti par webhook : ce que le guide [Publicités](/guides/engage/ads) fait dans l’application, par l’API, les SDK, la ligne de commande ou MCP.
+Vous pouvez faire depuis votre propre code ce que fait le guide [Publicités](/guides/engage/ads) dans l’application : lire les comptes publicitaires et leurs chiffres, chiffrer et lancer une mise en avant, et en être averti par webhook. Cela passe par l’API, les SDK, la ligne de commande et MCP.
 
 ## Par l’API [#api]
 
-Le groupe `ads` est sous `/api/workspaces/{workspaceId}/ads`. Les chemins ci-dessous partent de là.
+Le groupe `ads` est sous `/api/workspaces/{workspaceId}/ads`, et les chemins ci-dessous partent de là. Chaque opération demande la permission de sa dernière colonne :
 
 | Opération               | Requête                                     | Ce qu’elle fait                                                                                        | Demande                                       |
 | ----------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
-| `ads.status`            | `GET /`                                     | Dit ce que l’instance propose : `off`, `read` ou `spend`, et les réseaux                               | `ads:read`                                    |
+| `ads.status`            | `GET /`                                     | Dit ce que l’instance propose : `off`, `read` ou `spend`, et les réseaux                               | `ads:read`                                    |
 | `ads.listConnections`   | `GET /connections`                          | Liste les connexions aux réseaux publicitaires, jamais un jeton                                        | `ads:read`                                    |
 | `ads.connect`           | `POST /connections/{network}`               | Commence une connexion, et répond la page où envoyer le navigateur                                     | `ads:manage`, en personne                     |
 | `ads.completeConnect`   | `POST /connections/{network}/callback`      | La termine, et répond les comptes publicitaires qu’elle atteint                                        | `ads:manage`, en personne                     |
@@ -37,17 +37,244 @@ Le groupe `ads` est sous `/api/workspaces/{workspaceId}/ads`. Les chemins ci-des
 | `ads.stopBoost`         | `POST /boosts/{boostId}/stop`               | L’arrête pour de bon                                                                                   | `ads:spend` ou `ads:manage`                   |
 | `ads.auditTrail`        | `GET /audit`                                | Liste le journal d’audit, 100 lignes par page                                                          | `ads:authorize`                               |
 
-Les trois rapports prennent `from` et `to`, des jours du calendrier du compte comme `2026-11-01`, tous deux compris et séparés de 366 jours au plus : les 30 derniers jours quand ils manquent. Les campagnes et les publicités viennent par mille au plus. `ads.listBoosts` et `ads.auditTrail` répondent un `nextCursor` à passer comme `cursor` pour la page suivante.
+Les trois rapports prennent `from` et `to`, des jours du calendrier du compte comme `2026-11-01`. Les deux sont compris, séparés de 366 jours au plus, et vous obtenez les 30 derniers jours quand vous les omettez. Les campagnes et les publicités viennent par mille au plus. `ads.listBoosts` et `ads.auditTrail` répondent un `nextCursor`, que vous passez comme `cursor` pour la page suivante.
 
-Un compte dit ce que son réseau permet dans `capabilities` (`ads`, `boosts`, `reach`, `results`) : masquez ce qui vaut faux. Un compte Google Ads (`network` `google`) les a toutes à faux : ses campagnes portent leurs propres jours et un `kind` (`SEARCH`, `PERFORMANCE_MAX`), `ads.listAds` n’en renvoie aucune, `reach` vaut 0 et `results` null, et activer sa dépense répond `AdSpendingUnavailable`. `reachedThrough` nomme le compte administrateur par lequel il est lu.
-
-Les SDK ont les mêmes opérations dans leur groupe `ads` (`peal.ads.quoteBoost`, `peal.ads.createBoost`…), et la [ligne de commande](/developers/cli/workspace) les commandes sous `peal ads`.
+Les SDK ont les mêmes opérations dans leur groupe `ads` (`peal.ads.quoteBoost`, `peal.ads.createBoost`…). La [ligne de commande](/developers/cli/workspace) les a sous `peal ads`.
 
 ### Un devis, puis la mise en avant [#api-boost]
 
-Demandez un devis, montrez-le à la personne qui décide, puis envoyez le même corps pour créer la mise en avant. Le devis ne réserve rien ; la ligne de commande prend le budget dans les unités de la devise (`--total 50`), l’API en unités mineures (`5000`).
+Demandez un devis, montrez-le à la personne qui décide, puis envoyez le même corps pour créer la mise en avant. Le devis ne réserve rien. La ligne de commande prend le budget dans les unités de la devise (`--total 50`), et l’API en unités mineures (`5000`).
 
 <CodeGroup>
+
+```ts Node.js
+import { PealClient } from "peal-sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+const boost = {
+  accountId: "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+  postId: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+  channelId: "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+  budget: { kind: "total" as const, amount: 5000 },
+  currency: "EUR",
+  endsAt: "2026-11-19T09:00:00.000Z",
+  audience: { countries: ["FR", "BE"], ageMin: 25, ageMax: 54 },
+  specialAdCategory: "none" as const,
+  beneficiary: "Example Bakery SAS",
+  payer: "Example Bakery SAS",
+};
+
+const quote = await peal.ads.quoteBoost({ workspaceId, body: boost });
+```
+
+```python Python
+import os
+
+from peal import BoostAudience, BoostBudget, Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+boost = dict(
+    account_id="019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+    post_id="019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+    channel_id="019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+    budget=BoostBudget(kind="total", amount=5000),
+    currency="EUR",
+    ends_at="2026-11-19T09:00:00.000Z",
+    audience=BoostAudience(countries=["FR", "BE"], age_min=25, age_max=54),
+    special_ad_category="none",
+    beneficiary="Example Bakery SAS",
+    payer="Example Bakery SAS",
+)
+
+quote = peal.ads.quote_boost(workspace_id=workspace_id, **boost)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+// Le client s’appelle `client`, pour que `peal` reste le paquet des types de
+// requête.
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+ctx := context.Background()
+
+boost := &peal.NewBoost{
+	AccountID:         "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+	PostID:            "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+	ChannelID:         "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+	Budget:            &peal.BoostBudget{Kind: peal.BoostBudgetKindTotal, Amount: 5000},
+	Currency:          "EUR",
+	EndsAt:            "2026-11-19T09:00:00.000Z",
+	Audience:          &peal.BoostAudience{Countries: []string{"FR", "BE"}, AgeMin: 25, AgeMax: 54},
+	SpecialAdCategory: peal.SpecialAdCategoryNone,
+	Beneficiary:       peal.String("Example Bakery SAS"),
+	Payer:             peal.String("Example Bakery SAS"),
+}
+
+quote, err := client.Ads.QuoteBoost(ctx, &peal.QuoteBoostAdsRequest{
+	WorkspaceID: workspaceID,
+	Body:        boost,
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+boost = {
+  account_id: "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+  post_id: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+  channel_id: "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+  budget: { kind: "total", amount: 5000 },
+  currency: "EUR",
+  ends_at: "2026-11-19T09:00:00.000Z",
+  audience: { countries: ["FR", "BE"], ageMin: 25, ageMax: 54 },
+  special_ad_category: "none",
+  beneficiary: "Example Bakery SAS",
+  payer: "Example Bakery SAS"
+}
+
+quote = peal.ads.quote_boost(workspace_id: workspace_id, **boost)
+```
+
+```java Java
+import java.util.List;
+import social.peal.PealClient;
+import social.peal.resources.ads.requests.QuoteBoostAdsRequest;
+import social.peal.types.BoostAudience;
+import social.peal.types.BoostBudget;
+import social.peal.types.BoostBudgetKind;
+import social.peal.types.BoostQuote;
+import social.peal.types.NewBoost;
+import social.peal.types.SpecialAdCategory;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+NewBoost boost = NewBoost.builder()
+    .accountId("019a7902-1f4b-7a60-9c12-7d8e0f2a4b55")
+    .audience(BoostAudience.builder()
+        .ageMax(54)
+        .ageMin(25)
+        .countries(List.of("FR", "BE"))
+        .build())
+    .budget(BoostBudget.builder()
+        .amount(5000)
+        .kind(BoostBudgetKind.TOTAL)
+        .build())
+    .channelId("019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90")
+    .currency("EUR")
+    .endsAt("2026-11-19T09:00:00.000Z")
+    .postId("019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01")
+    .specialAdCategory(SpecialAdCategory.NONE)
+    .beneficiary("Example Bakery SAS")
+    .payer("Example Bakery SAS")
+    .build();
+
+BoostQuote quote = peal.ads().quoteBoost(workspaceId, QuoteBoostAdsRequest.builder()
+    .body(boost)
+    .build());
+```
+
+```php PHP
+<?php
+use Peal\Ads\Requests\QuoteBoostAdsRequest;
+use Peal\PealClient;
+use Peal\Types\BoostAudience;
+use Peal\Types\BoostBudget;
+use Peal\Types\BoostBudgetKind;
+use Peal\Types\NewBoost;
+use Peal\Types\SpecialAdCategory;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+$boost = new NewBoost([
+    'accountId' => '019a7902-1f4b-7a60-9c12-7d8e0f2a4b55',
+    'postId' => '019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01',
+    'channelId' => '019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90',
+    'budget' => new BoostBudget(['kind' => BoostBudgetKind::Total->value, 'amount' => 5000]),
+    'currency' => 'EUR',
+    'endsAt' => '2026-11-19T09:00:00.000Z',
+    'audience' => new BoostAudience(['countries' => ['FR', 'BE'], 'ageMin' => 25, 'ageMax' => 54]),
+    'specialAdCategory' => SpecialAdCategory::None->value,
+    'beneficiary' => 'Example Bakery SAS',
+    'payer' => 'Example Bakery SAS',
+]);
+
+$quote = $peal->ads->quoteBoost($workspaceId, new QuoteBoostAdsRequest(['body' => $boost]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+var boost = new NewBoost
+{
+    AccountId = "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
+    PostId = "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+    ChannelId = "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
+    Budget = new BoostBudget { Kind = BoostBudgetKind.Total, Amount = 5000 },
+    Currency = "EUR",
+    EndsAt = "2026-11-19T09:00:00.000Z",
+    Audience = new BoostAudience
+    {
+        Countries = new List<string> { "FR", "BE" },
+        AgeMin = 25,
+        AgeMax = 54,
+    },
+    SpecialAdCategory = SpecialAdCategory.None,
+    Beneficiary = "Example Bakery SAS",
+    Payer = "Example Bakery SAS",
+};
+
+var quote = await peal.Ads.QuoteBoostAsync(new QuoteBoostAdsRequest
+{
+    WorkspaceId = workspaceId,
+    Body = boost,
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+let boost = NewBoost::builder()
+    .account_id("019a7902-1f4b-7a60-9c12-7d8e0f2a4b55")
+    .post_id("019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01")
+    .channel_id("019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90")
+    .budget(BoostBudget {
+        amount: 5000,
+        kind: BoostBudgetKind::Total,
+    })
+    .currency("EUR")
+    .ends_at("2026-11-19T09:00:00.000Z")
+    .audience(BoostAudience {
+        countries: vec!["FR".to_string(), "BE".to_string()],
+        age_min: 25,
+        age_max: 54,
+    })
+    .special_ad_category(SpecialAdCategory::None)
+    .beneficiary("Example Bakery SAS")
+    .payer("Example Bakery SAS")
+    .build()?;
+
+let quote = peal.ads.quote_boost(workspace_id, &boost, None).await?;
+```
 
 ```bash curl
 curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts/quote \
@@ -67,24 +294,7 @@ curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts/quote \
   }'
 ```
 
-```ts TypeScript
-const boost = {
-  accountId: "019a7902-1f4b-7a60-9c12-7d8e0f2a4b55",
-  postId: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
-  channelId: "019a5d14-6a2c-7b85-8f3d-1e2c4a6b8d90",
-  budget: { kind: "total" as const, amount: 5000 },
-  currency: "EUR",
-  endsAt: "2026-11-19T09:00:00.000Z",
-  audience: { countries: ["FR", "BE"], ageMin: 25, ageMax: 54 },
-  specialAdCategory: "none" as const,
-  beneficiary: "Example Bakery SAS",
-  payer: "Example Bakery SAS",
-};
-
-const quote = await peal.ads.quoteBoost({ workspaceId, body: boost });
-```
-
-```bash CLI
+```sh CLI
 peal ads boost quote \
   --account 019a7902-1f4b-7a60-9c12-7d8e0f2a4b55 \
   --post 019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01 \
@@ -98,18 +308,101 @@ peal ads boost quote \
 
 </CodeGroup>
 
-Le devis répond `commitment`, les jours (`days`) que la diffusion touche, le plafond (`ceiling`), ce que les autres mises en avant du compte engagent déjà dans le mois le plus chargé que la diffusion touche (`committed`), `capRoom`, null quand le compte n’a pas de plafond propre, et `startsAt`, `endsAt`, `currency` et `minorUnitDigits`.
+Le devis répond ces champs :
+
+- `commitment`, et les jours (`days`) que la diffusion touche.
+- Le plafond (`ceiling`), et ce que les autres mises en avant du compte engagent déjà dans le mois le plus chargé que la diffusion touche (`committed`).
+- `capRoom`, qui vaut null quand le compte n’a pas de plafond propre.
+- `startsAt`, `endsAt`, `currency` et `minorUnitDigits`.
 
 <Callout type="warning" title="Créer une mise en avant dépense de l’argent">
-  `POST …/ads/boosts` prend le même corps, et un en-tête `Idempotency-Key`,
-  obligatoire : un texte de votre choix, de 255 caractères au plus, nouveau pour
+  `POST …/ads/boosts` prend le même corps, et un en-tête `Idempotency-Key`
+  obligatoire : un texte de votre choix, de 255 caractères au plus, nouveau pour
   chaque mise en avant. La même clé avec la même requête répond la mise en avant
-  qu’elle a créée, et n’en crée jamais une autre ; avec une autre requête, elle
-  répond 409 `BoostKeyReused`. Une requête dont la réponse s’est perdue peut
-  être renvoyée sans risque avec sa clé.
+  qu’elle a créée et n’en crée jamais une autre. Avec une autre requête, elle
+  répond 409 `BoostKeyReused`. Quand une réponse se perd, renvoyez donc la
+  requête avec sa clé.
 </Callout>
 
+Créez la mise en avant avec le corps du devis et une nouvelle clé :
+
 <CodeGroup>
+
+```ts Node.js
+const created = await peal.ads.createBoost({
+  workspaceId,
+  "idempotency-key": "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+  body: boost,
+});
+```
+
+```python Python
+created = peal.ads.create_boost(
+    workspace_id=workspace_id,
+    idempotency_key="3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+    **boost,
+)
+```
+
+```go Go
+created, err := client.Ads.CreateBoost(ctx, &peal.CreateBoostAdsRequest{
+	WorkspaceID:    workspaceID,
+	IdempotencyKey: "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+	Body:           boost,
+})
+```
+
+```ruby Ruby
+created = peal.ads.create_boost(
+  workspace_id: workspace_id,
+  idempotency_key: "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+  **boost
+)
+```
+
+```java Java
+import social.peal.resources.ads.requests.CreateBoostAdsRequest;
+import social.peal.types.Boost;
+
+Boost created = peal.ads().createBoost(workspaceId, CreateBoostAdsRequest.builder()
+    .idempotencyKey("3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61")
+    .body(boost)
+    .build());
+```
+
+```php PHP
+use Peal\Ads\Requests\CreateBoostAdsRequest;
+
+$created = $peal->ads->createBoost($workspaceId, new CreateBoostAdsRequest([
+    'idempotencyKey' => '3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61',
+    'body' => $boost,
+]));
+```
+
+```csharp .NET
+var created = await peal.Ads.CreateBoostAsync(new CreateBoostAdsRequest
+{
+    WorkspaceId = workspaceId,
+    IdempotencyKey = "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+    Body = boost,
+});
+```
+
+```rust Rust
+// NewBoost n’a pas de champ pour la clé : elle passe dans les en-têtes de la
+// requête.
+let created = peal
+    .ads
+    .create_boost(
+        workspace_id,
+        &boost,
+        Some(RequestOptions::new().additional_header(
+            "Idempotency-Key",
+            "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
+        )),
+    )
+    .await?;
+```
 
 ```bash curl
 curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts \
@@ -130,15 +423,7 @@ curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts \
   }'
 ```
 
-```ts TypeScript
-const created = await peal.ads.createBoost({
-  workspaceId,
-  "idempotency-key": "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
-  body: boost,
-});
-```
-
-```bash CLI
+```sh CLI
 peal ads boost create \
   --account 019a7902-1f4b-7a60-9c12-7d8e0f2a4b55 \
   --post 019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01 \
@@ -153,31 +438,35 @@ peal ads boost create \
 
 </CodeGroup>
 
-Elle répond 202 avec la mise en avant, à l’état `requested` : relisez-la, ou écoutez ses [événements](#webhooks), pour savoir si elle est diffusée. `ads.getBoost` répond ses `steps`, le journal de ce que Peal a envoyé au réseau : chaque étape, quand, et comment elle s’est terminée (`done`, `refused`, et `found`, `absent` ou `unknown` quand une réponse perdue a été recherchée).
+Elle répond 202 avec la mise en avant, à l’état `requested`. Relisez-la, ou écoutez ses [événements](#webhooks), pour savoir si elle est diffusée.
+
+`ads.getBoost` répond ses `steps`, le journal de ce que Peal a envoyé au réseau. Chaque étape dit quand, et comment elle s’est terminée : `done`, `refused`, ou `found`, `absent` ou `unknown` quand une réponse perdue a été recherchée.
 
 ### Erreurs [#errors]
 
-Les erreurs viennent au format de l’API, chacune avec un `code` en snake case à côté de son nom ([Erreurs](/developers/conventions/errors#errors)).
+Les erreurs viennent au format de l’API, chacune avec un `code` en snake case à côté de son nom ([Erreurs](/developers/conventions/errors#errors)). Voici celles des publicités :
 
-| Statut | Erreur                      | Quand                                                                                                                                                                  |
-| ------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 404    | `AdsUnavailable`            | Les publicités sont désactivées sur l’instance, ou le réseau demandé n’y est pas configuré.                                                                            |
-| 409    | `AdSpendingUnavailable`     | L’instance ne propose les publicités qu’en lecture. Rien n’a été dépensé ni modifié.                                                                                   |
-| 422    | `AdSignInFailed`            | Une connexion n’a pas abouti. `reason` : `denied`, `expired`, `failed`, ou `notConfigured` quand l’instance n’a pas de clé pour chiffrer.                              |
-| 404    | `AdConnectionNotFound`      | Aucune connexion de ce nom, ou elle est celle d’un autre membre.                                                                                                       |
-| 404    | `AdAccountNotFound`         | Aucun compte publicitaire de ce nom, ou la connexion n’atteint pas le compte demandé.                                                                                  |
-| 404    | `BoostNotFound`             | Aucune mise en avant de ce nom.                                                                                                                                        |
-| 503    | `AdNetworkUnavailable`      | Le réseau n’a pas répondu, a demandé de ralentir, ou n’a pas pu confirmer un changement. Rien n’a changé à notre connaissance ; `retryAfterSeconds`, quand il l’a dit. |
-| 409    | `AdAccountBusy`             | `boosts` mises en avant du compte sont diffusées, peuvent l’être, sont en cours de création ou, pour une déconnexion, en pause : arrêtez-les d’abord.                  |
-| 409    | `AdAccountUnusable`         | Le compte ne peut pas recevoir de mise en avant pour le moment. `reason` : `status`, `reconnectNeeded` ou `permission`.                                                |
-| 409    | `AdSpendingNotEnabled`      | Aucun propriétaire n’a autorisé ce compte publicitaire à dépenser avec Peal.                                                                                           |
-| 409    | `SpendCeilingExceeded`      | La mise en avant dépasserait le plafond mensuel : `ceiling`, `committed`, `requested`, en unités mineures de `currency`.                                               |
-| 409    | `AdAccountSpendCapExceeded` | Le plafond propre au compte laisse `room`, et la mise en avant engagerait `requested`.                                                                                 |
-| 422    | `CeilingCurrencyMismatch`   | Le plafond n’est pas dans la devise du compte, que donne `accountCurrency`.                                                                                            |
-| 422    | `BoostInvalid`              | La mise en avant enfreint les règles de Peal. `violations` les liste toutes, ci-dessous.                                                                               |
-| 422    | `PostNotPromotable`         | La publication ne peut pas y être mise en avant. `reason` : `notPublished`, `platform`, ou `connection` pour un compte Instagram connecté avec Instagram Login.        |
-| 409    | `BoostStateConflict`        | L’état (`state`) de la mise en avant ne le permet pas : une mise en avant échouée, terminée ou arrêtée ne reprend pas, et seule une mise en avant en pause reprend.    |
-| 409    | `BoostKeyReused`            | L’`Idempotency-Key` désigne déjà une mise en avant qui demandait autre chose.                                                                                          |
+| Statut | Erreur                      | Quand                                                                                                                                                                                             |
+| ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 404    | `AdsUnavailable`            | Les publicités sont désactivées sur l’instance, ou le réseau demandé n’y est pas configuré.                                                                                                       |
+| 409    | `AdSpendingUnavailable`     | L’instance ne propose les publicités qu’en lecture. Rien n’a été dépensé ni modifié.                                                                                                              |
+| 422    | `AdSignInFailed`            | Une connexion n’a pas abouti. `reason` : `denied`, `expired`, `failed`, ou `notConfigured` quand l’instance n’a pas de clé pour chiffrer.                                                         |
+| 404    | `AdConnectionNotFound`      | Aucune connexion de ce nom, ou elle est celle d’un autre membre.                                                                                                                                  |
+| 404    | `AdAccountNotFound`         | Aucun compte publicitaire de ce nom, ou la connexion n’atteint pas le compte demandé.                                                                                                             |
+| 404    | `BoostNotFound`             | Aucune mise en avant de ce nom.                                                                                                                                                                   |
+| 503    | `AdNetworkUnavailable`      | Le réseau n’a pas répondu, a demandé de ralentir, ou n’a pas pu confirmer un changement. Rien n’a changé à notre connaissance. `retryAfterSeconds` dit quand réessayer, si le réseau l’a indiqué. |
+| 409    | `AdAccountBusy`             | `boosts` mises en avant du compte sont diffusées, peuvent l’être, sont en cours de création ou, pour une déconnexion, en pause : arrêtez-les d’abord.                                             |
+| 409    | `AdAccountUnusable`         | Le compte ne peut pas recevoir de mise en avant pour le moment. `reason` : `status`, `reconnectNeeded` ou `permission`.                                                                           |
+| 409    | `AdSpendingNotEnabled`      | Aucun propriétaire n’a autorisé ce compte publicitaire à dépenser avec Peal.                                                                                                                      |
+| 409    | `SpendCeilingExceeded`      | La mise en avant dépasserait le plafond mensuel : `ceiling`, `committed`, `requested`, en unités mineures de `currency`.                                                                          |
+| 409    | `AdAccountSpendCapExceeded` | Le plafond propre au compte laisse `room`, et la mise en avant engagerait `requested`.                                                                                                            |
+| 422    | `CeilingCurrencyMismatch`   | Le plafond n’est pas dans la devise du compte, que donne `accountCurrency`.                                                                                                                       |
+| 422    | `BoostInvalid`              | La mise en avant enfreint les règles de Peal. `violations` les liste toutes (voir le tableau suivant).                                                                                            |
+| 422    | `PostNotPromotable`         | La publication ne peut pas y être mise en avant. `reason` : `notPublished`, `platform`, ou `connection` pour un compte Instagram connecté avec Instagram Login.                                   |
+| 409    | `BoostStateConflict`        | L’état (`state`) de la mise en avant ne le permet pas : une mise en avant échouée, terminée ou arrêtée ne reprend pas, et seule une mise en avant en pause reprend.                               |
+| 409    | `BoostKeyReused`            | L’`Idempotency-Key` désigne déjà une mise en avant qui demandait autre chose.                                                                                                                     |
+
+Une erreur `BoostInvalid` liste ces `violations` :
 
 | `violations`          | Ce qui ne va pas                                                                     |
 | --------------------- | ------------------------------------------------------------------------------------ |
@@ -195,7 +484,7 @@ La [référence de l’API](/reference) liste les paramètres et les réponses d
 
 ## Événements de webhook [#webhooks]
 
-Un [point de terminaison de webhook](/developers/webhooks) peut s’abonner à huit événements, qui portent tous le même `data` : des identifiants, des montants et l’état de la mise en avant, jamais son audience.
+Un [point de terminaison de webhook](/developers/webhooks) peut s’abonner à huit événements de mise en avant. Ils portent tous le même `data` : des identifiants, des montants et l’état de la mise en avant, jamais son audience.
 
 | Événement                                                                         | Quand                                                                              |
 | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -205,8 +494,10 @@ Un [point de terminaison de webhook](/developers/webhooks) peut s’abonner à h
 | [`boost.stopped`](/developers/webhooks/events/boosts#boost-stopped)               | Un membre a arrêté une mise en avant pour de bon                                   |
 | [`boost.ended`](/developers/webhooks/events/boosts#boost-ended)                   | La date de fin d’une mise en avant est passée                                      |
 | [`boost.failed`](/developers/webhooks/events/boosts#boost-failed)                 | Une mise en avant n’a pas pu être créée, et rien n’a été diffusé                   |
-| [`boost.unconfirmed`](/developers/webhooks/events/boosts#boost-unconfirmed)       | Peal ne peut pas savoir si une mise en avant est diffusée : elle dépense peut-être |
+| [`boost.unconfirmed`](/developers/webhooks/events/boosts#boost-unconfirmed)       | Peal ne peut pas savoir si une mise en avant est diffusée : elle dépense peut-être |
 | [`boost.budget_reached`](/developers/webhooks/events/boosts#boost-budget-reached) | Une mise en avant a dépensé tout son budget total                                  |
+
+Voici une livraison de `boost.started` :
 
 ```json
 {
@@ -237,6 +528,8 @@ Un [point de terminaison de webhook](/developers/webhooks) peut s’abonner à h
 
 ## Ligne de commande et MCP [#clients]
 
-La [ligne de commande](/developers/cli) a les commandes des publicités sous `peal ads` : lancez `peal ads --help` pour en voir la liste. Les [assistants IA](/developers/mcp/tools#tools) ont des outils pour les publicités, qui suivent les mêmes permissions et les mêmes règles : un outil qui dépense le dit dans sa description, et demande que l’application porte `workspace:publish` et `workspace:ads`.
+La [ligne de commande](/developers/cli) a les commandes des publicités sous `peal ads`. Lancez `peal ads --help` pour en voir la liste.
 
-Ni l’une ni les autres ne se connectent à un réseau publicitaire, n’activent les dépenses ni ne changent un plafond : cela se fait dans l’application web, par une personne. Les outils MCP ne proposent pas les comptes Google Ads, ce que la règle de Google pour les outils demande d’un serveur MCP : ils ne listent que ceux de Meta, et refusent un compte Google Ads en le disant ; la ligne de commande montre les deux.
+Les [assistants IA](/developers/mcp/tools#tools) ont des outils pour les publicités, qui suivent les mêmes permissions et les mêmes règles. Un outil qui dépense le dit dans sa description, et demande que l’application porte `workspace:publish` et `workspace:ads`.
+
+Ni l’une ni les autres ne se connectent à un réseau publicitaire, n’activent les dépenses ni ne changent un plafond. Une personne le fait dans l’application web.

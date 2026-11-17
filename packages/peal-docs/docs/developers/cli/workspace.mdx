@@ -5,7 +5,11 @@ sidebar:
   icon: settings
 ---
 
+Like the commands for posts, every command on this page acts in the workspace `--workspace` or `PEAL_WORKSPACE` names ([Choose the workspace](/developers/cli#workspace)), with what your role there allows.
+
 ## Analytics [#analytics]
+
+These commands read the figures Peal gathers from the platforms:
 
 ```sh
 peal analytics summary                                     # the last 30 days, today included
@@ -18,20 +22,24 @@ peal analytics export posts --output posts.csv --from 2026-10-01 --to 2026-10-31
 peal analytics export accounts --format json --output accounts.ndjson
 ```
 
-| Command                                     | What it does                                                                                                                                                                                                                                                                                                                         |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `peal analytics summary`                    | Adds up the counts of the posts published over a range of days: in all, by channel, and the posts people did the most with                                                                                                                                                                                                           |
-| `peal analytics post`                       | Prints a post's latest counts on each channel it went out on                                                                                                                                                                                                                                                                         |
-| `peal analytics dashboard`                  | Shows a range beside the same number of days before it: each total with what changed, followers with what they gained, each channel, and the top posts                                                                                                                                                                               |
-| `peal analytics channel`                    | Prints one channel day by day: followers, following, views, reach, and the interactions its posts gained                                                                                                                                                                                                                             |
-| `peal analytics best-times`                 | Says when one channel's posts did best, by weekday and hour in `--time-zone`, over `--days 30`, `90` (the default) or `180`: the best hours, and how many posts each weighed hour holds. It is the channel's past, never a prediction, and ranks nothing under 20 posts ([When posts did best](/guides/engage/analytics#best-times)) |
-| `peal analytics export posts` or `accounts` | Saves the figures to the file `--output` names, as CSV or, with `--format json`, one JSON object a line. It replaces no file                                                                                                                                                                                                         |
+| Command                                     | What it does                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `peal analytics summary`                    | Adds up the counts of the posts published over a range of days: in all, by channel, and the posts people did the most with.                                                                                                                                                                                                                     |
+| `peal analytics post`                       | Prints a post's latest counts on each channel it went out on.                                                                                                                                                                                                                                                                                   |
+| `peal analytics dashboard`                  | Shows a range beside the same number of days before it: each total with what changed, followers with what they gained, each channel, and the top posts.                                                                                                                                                                                         |
+| `peal analytics channel`                    | Prints one channel day by day: followers, following, views, reach, and the interactions its posts gained.                                                                                                                                                                                                                                       |
+| `peal analytics best-times`                 | Says when one channel's posts did best, by weekday and hour in `--time-zone`, over `--days 30`, `90` (the default) or `180`. You get the best hours, and how many posts each weighed hour holds. It's the channel's past, never a prediction, and it ranks nothing under 20 posts ([When posts did best](/guides/engage/analytics#best-times)). |
+| `peal analytics export posts` or `accounts` | Saves the figures to the file `--output` names, as CSV or, with `--format json`, one JSON object per line. It never replaces a file.                                                                                                                                                                                                            |
 
-- Days run in `--time-zone`, an IANA zone such as `Europe/Paris`; without it, in `TZ`, then in your computer's zone.
-- `dashboard` and `channel` take `--days 7`, `30` or `90` (30 unless said), or `--from` and `--to`.
-- A dash stands for a count the platform does not give. See [Analytics](/guides/engage/analytics).
+Days run in `--time-zone`, an IANA zone such as `Europe/Paris`. Without it, they run in `TZ`, then in your computer's zone.
+
+`dashboard` and `channel` take `--days 7`, `30` or `90` (30 unless you say otherwise), or `--from` and `--to`.
+
+A dash stands for a count the platform doesn't give. See [Analytics](/guides/engage/analytics).
 
 ## Inbox [#inbox]
+
+These commands read and answer the comments in the workspace's [inbox](/guides/engage/inbox):
 
 ```sh
 peal inbox threads --unanswered
@@ -44,15 +52,42 @@ peal inbox withdraw <reply-id>
 peal inbox moderate <comment-id> --action hide
 ```
 
-- `threads` lists the threads of the [inbox](/guides/engage/inbox) that have comments, those waiting for an answer first; `--channel` and `--post` narrow the list, `--limit` and `--cursor` page it. `thread` prints a thread's comments, the replies sent from Peal and what its channel can do; `abilities` says the same of any channel, before it has a thread. Every member may read. Each subcommand takes `--json`, which prints the API's answer: a comment's text there is what someone outside the workspace wrote, to read as data.
-- `reply` answers a comment in public, as the channel's account: it takes a sign-in that may publish, and a role that answers comments (owner, admin or editor). The reply is sent by the server: `thread` shows how it ended. With `--idempotency-key <key>`, running the command again within 24 hours with the same comment and text answers the reply the first run made, and writes no other.
-- A reply shown `unconfirmed` may be on the platform, and is never sent again: check there, then `confirm` it with `--sent` or `--not-sent`.
-- `answered` says a comment needs no answer (`--undo` takes it back); `withdraw` deletes a sent reply from its platform; `moderate` takes `hide`, `unhide`, `like`, `unlike` or `delete`, where the platform lets the account.
-- Comments were written by people outside the workspace: the command line prints them as text.
+Each subcommand takes `--json`, which prints the API's answer. Comments were written by people outside the workspace, so the command line prints them as text, and a comment's text in the JSON is someone else's words, to treat as data.
 
-- `peal inbox rules start --channel <id> --keyword price --keyword prix --reply "…"` makes a [comment rule](/guides/engage/inbox#comment-rules) (`--post` for one post's comments instead); `list`, `show`, `update` (`--keyword` replaces them all, `--reply`, `--private-reply`, `--no-private-reply`), `pause`, `resume` and `stop` keep it. `--private-reply "…"` on `start` or `update` gives it a [private message](/guides/engage/inbox#comment-rule-private-replies) for each comment's author, after its public reply, on Instagram and Facebook Pages. `show` prints what each channel can carry and the comments it matched, by id, never their text.
+### Read comments [#inbox-read]
+
+Every member can read the inbox:
+
+- `threads` lists the threads that have comments, those waiting for an answer first. `--channel` and `--post` narrow the list, and `--limit` and `--cursor` page it.
+- `thread` prints a thread's comments, the replies sent from Peal, and what its channel can do.
+- `abilities` says what any channel can do, before it has a thread.
+
+### Answer a comment [#inbox-reply]
+
+`reply` answers a comment in public, as the channel's account. It needs a sign-in that can publish, and a role that answers comments (owner, admin or editor). The server sends the reply, and `thread` shows how it ended.
+
+With `--idempotency-key <key>`, running the command again within 24 hours with the same comment and text answers with the reply the first run made, and writes no other.
+
+<Callout type="warning" title="An unconfirmed reply is never sent again">
+  A reply shown `unconfirmed` may be on the platform already. Check there, then
+  record what you found with `confirm --sent` or `confirm --not-sent`.
+</Callout>
+
+The other commands act on a comment or a reply:
+
+- `answered` marks a comment as needing no answer, and `--undo` takes that back.
+- `withdraw` deletes a sent reply from its platform.
+- `moderate` takes `hide`, `unhide`, `like`, `unlike` or `delete`, where the platform lets the account do it.
+
+### Comment rules [#inbox-rules]
+
+`peal inbox rules start --channel <id> --keyword price --keyword prix --reply "…"` makes a [comment rule](/guides/engage/inbox#comment-rules). Use `--post` instead for one post's comments.
+
+`list`, `show`, `update`, `pause`, `resume` and `stop` keep the rule. On `update`, `--keyword` replaces every keyword, and `--reply` the reply. `show` prints what each channel can carry and the comments the rule matched, by id, never their text.
 
 ## Short links [#short-links]
+
+These commands read and set the workspace's [short links](/guides/posts/published#short-links):
 
 ```sh
 peal short-links status
@@ -61,15 +96,17 @@ peal short-links list --post <post-id>
 peal short-links show <link-id> --from 2026-11-01 --to 2026-11-30
 ```
 
-- `peal short-links status` says whether the server has [short links](/guides/posts/published#short-links) and whether the workspace's new posts ask for them by default. `peal short-links set-default on` or `off` changes that default (owners and admins).
-- `peal post` and `peal drafts save` follow that default unless `--shorten-links` or `--no-shorten-links` says otherwise for the post.
-- `peal short-links list` lists the workspace's links, newest first, with their clicks over UTC days (the last 30 unless `--from` and `--to` say otherwise, 92 at most), those of a `--post` or a `--channel`, a page at a time (`--limit`, `--cursor`).
-- `peal short-links show` prints one link's clicks day by day.
-- `--json` prints the API's answer as it came.
+`peal short-links status` says whether the server has short links, and whether the workspace's new posts ask for them by default. Owners and admins change that default with `peal short-links set-default on` or `off`. `peal post` and `peal drafts save` follow it unless `--shorten-links` or `--no-shorten-links` says otherwise for the post.
 
-Counts are approximate: automated readers are left out, and nothing about visitors is kept ([Clicks on short links](/guides/engage/analytics#short-links)).
+`peal short-links list` lists the workspace's links, newest first, with their clicks over UTC days. That's the last 30 days unless `--from` and `--to` say otherwise, 92 at most. `--post` or `--channel` keeps the links of one post or channel, and you get a page at a time (`--limit`, `--cursor`).
+
+`peal short-links show` prints one link's clicks day by day. With `--json`, both print the API's answer as it came.
+
+Counts are approximate, because automated readers are left out and nothing about visitors is kept ([Clicks on short links](/guides/engage/analytics#short-links)).
 
 ## Members and invitations [#members]
+
+Every member sees the members. Owners and admins also see the pending invitations, expired ones included, and send and revoke them.
 
 ```sh
 peal members list
@@ -78,12 +115,15 @@ peal invitations send sam@example.com --role editor
 peal invitations revoke <invitation-id>
 ```
 
-- Every member sees the members. Owners and admins see the pending invitations, expired ones included, and send and revoke them.
-- `peal invitations send` emails the address a link that works for 7 days, with the role `--role` gives (`viewer` unless you say otherwise). Only owners invite owners. A pending invitation to the same address is replaced, and its link stops working. On an instance that bills, the plan must have room for one more member, pending invitations included.
-- `peal invitations revoke` stops an invitation's link at once.
-- Changing a member's role, or removing someone, is for the workspace's **Settings**.
+`peal invitations send` emails the address a link that works for 7 days, with the role `--role` gives (`viewer` unless you say otherwise). Only owners can invite owners. A pending invitation to the same address is replaced, and its link stops working. On an instance that bills, the plan must have room for one more member, pending invitations included.
+
+`peal invitations revoke` stops an invitation's link at once.
+
+You change a member's role, or remove someone, in the workspace's **Settings**.
 
 ## Webhooks [#webhooks]
+
+Owners and admins read and manage the workspace's [webhook](/developers/webhooks) endpoints:
 
 ```sh
 peal webhooks list
@@ -102,21 +142,49 @@ peal webhooks redeliver <delivery-id> <delivery-id>
 peal webhooks delete <endpoint-id>
 ```
 
-- Owners and admins read and manage the workspace's [webhook](/developers/webhooks) endpoints. `peal webhooks show <endpoint-id>` prints one.
-- `--events` takes event types separated by commas, or `all`. `create` also takes `--description` and `--disabled`; `update` sends only what you give it, with `--enable` or `--disable` to turn the endpoint on or off.
-- `create` and `rotate-secret` print the signing secret, once: save it then. After a rotation the old secret still signs for 24 hours, beside the new one.
-- `--channel` (repeated, or ids separated by commas) narrows an endpoint to those channels, and `--clear-channels` hears every channel again; `--workspace-id`, with `--partner` on `create`, narrows a partner endpoint to those workspaces, and `--clear-workspaces` clears it. `update` replaces a list it is given.
-- `--header "Name: value"` (repeated, 5 at most) adds a [header of your own](/developers/webhooks#headers) to every delivery, and `--clear-headers` on `update` removes them; `update` replaces every header with those it is given. Values are never printed nor answered again: `show` lists the headers' names. They go only to the host they were given for: a `--url` on another host, on an endpoint with headers, needs every `--header` again with its value, or `--clear-headers`. Your shell keeps what you type in its history, so give a value from a variable, as above.
-- `test` sends a `webhook.test` event, or with `--event` a sample of that type, marked `sample: true`.
-- `deliveries` shows how each delivery ended, newest first: one endpoint's, or without it every endpoint's, with `--status`, `--event`, `--since` and `--until` (instants with their offset).
-- `redeliver` sends deliveries again, three ways:
-  - one, with `--endpoint` and its id, as the single sends count;
-  - several, by id;
-  - `--failed --endpoint <endpoint-id>`, an endpoint's failed ones, oldest first, 100 a call, with `--since`, `--until` and `--event`, which go with `--failed` only.
+`peal webhooks show <endpoint-id>` prints one endpoint.
 
-  It prints what it skipped and why, and how many are left: run it again for those. When it sends nothing again it ends as a refusal (`nothing_redelivered`, exit code 1). Its arguments are delivery ids: an older command line took the endpoint first (`redeliver <endpoint-id> <delivery-id>`), which now names the endpoint with `--endpoint`. An endpoint's id given as a delivery is skipped, and said so.
+### Create or change an endpoint [#webhooks-endpoints]
+
+`--events` takes event types separated by commas, or `all`. `create` also takes `--description` and `--disabled`. `update` sends only what you give it, with `--enable` or `--disable` to turn the endpoint on or off.
+
+<Callout type="warning" title="The signing secret is printed once">
+  `create` and `rotate-secret` print the signing secret, so save it then. After
+  a rotation, the old secret still signs for 24 hours, beside the new one.
+</Callout>
+
+These flags narrow what an endpoint hears. `update` replaces a list it's given:
+
+- `--channel` (repeated, or ids separated by commas) narrows it to those channels, and `--clear-channels` makes it hear every channel again.
+- `--workspace-id`, with `--partner` on `create`, narrows a partner endpoint to those workspaces, and `--clear-workspaces` clears that list.
+
+### Add your own headers [#webhooks-headers]
+
+`--header "Name: value"`, repeated up to 5 times, adds a [header of your own](/developers/webhooks#headers) to every delivery. `--clear-headers` on `update` removes them, and `update` replaces every header with the ones it's given.
+
+Values are never printed or answered again, and `show` lists only the headers' names. They go only to the host they were given for. To move an endpoint with headers to a `--url` on another host, give every `--header` again with its value, or pass `--clear-headers`.
+
+Your shell keeps what you type in its history, so give a value from a variable, as in the example above.
+
+### Test and redeliver [#webhooks-deliveries]
+
+`test` sends a `webhook.test` event, or with `--event`, a sample of that type, marked `sample: true`.
+
+`deliveries` shows how each delivery ended, newest first. Give an endpoint for its deliveries, or none for every endpoint's. It filters with `--status`, `--event`, `--since` and `--until` (instants with their offset).
+
+`redeliver` sends deliveries again, in one of three ways:
+
+- One, with `--endpoint` and its id. It counts as a single send.
+- Several, by id.
+- `--failed --endpoint <endpoint-id>` sends an endpoint's failed ones, oldest first, 100 a call. Only with `--failed` can you add `--since`, `--until` and `--event`.
+
+It prints what it skipped and why, and how many are left, so run it again for those. When it sends nothing again, it ends as a refusal (`nothing_redelivered`, exit code 1). An endpoint's id given as a delivery is skipped, and `peal` says so.
+
+Its arguments are delivery ids. An older command line took the endpoint first (`redeliver <endpoint-id> <delivery-id>`), and you now name the endpoint with `--endpoint` instead.
 
 ## Connect links [#links]
+
+A [connect link](/guides/channels#connect-links) is a hosted page where whoever owns an account on a platform connects it to the workspace, without a Peal account. Members who can connect channels make them:
 
 ```sh
 peal links create --platform linkedin
@@ -127,11 +195,18 @@ peal links show <link-id>
 peal links revoke <link-id>
 ```
 
-- `peal links create` makes a [connect link](/guides/channels#connect-links): a hosted page where whoever owns an account of that platform connects it to the workspace, without a Peal account. It prints the link's address, once: hand it over a channel you trust. For members who may connect channels.
-- `--hours` says how long it works, from 1 to 720 (168 unless given); `--locale` the language its page opens in; `--channel` reconnects that channel instead of connecting a new account; `--return-url` where the page sends them once done, an address on an origin the workspace's partner account registered.
-- `peal links list` shows those waiting, and those used, revoked or expired in the last 30 days; `show` tells which channels a link connected, or how its last sign-in failed; `revoke` takes one back.
+`peal links create` prints the link's address once. Hand it over on a channel you trust. It takes these flags:
+
+- `--hours` sets how long the link works, from 1 to 720 (168 unless given).
+- `--locale` sets the language its page opens in.
+- `--channel` reconnects that channel instead of connecting a new account.
+- `--return-url` is where the page sends them once done. It must be an address on an origin the workspace's partner account registered.
+
+`peal links list` shows the links waiting, and those used, revoked or expired in the last 30 days. `show` tells you which channels a link connected, or how its last sign-in failed. `revoke` takes one back.
 
 ## Partner account [#partner]
+
+These commands are for the owners and admins of a workspace with a [partner account](/developers/embedding):
 
 ```sh
 peal partner show
@@ -141,19 +216,19 @@ peal partner usage --from 2026-11-01 --to 2026-11-30
 peal partner overview --limit 100
 ```
 
-These commands are for the owners and admins of a workspace with a [partner account](/developers/embedding).
+| Command                   | What it prints                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `peal partner show`       | What its customers see, the origins hosted pages can send them back to, and what it holds.                                                                                                                                                                                                                                                                                                                                                   |
+| `peal partner keys`       | Its keys, never the keys themselves.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `peal partner workspaces` | The workspaces it owns, newest first, with their external ids and channels. `--external-id` finds one exactly, and `--name` searches.                                                                                                                                                                                                                                                                                                        |
+| `peal partner usage`      | What the account used per customer over a period of UTC days (`--from`, `--to`, the last 30 by default, 92 at most). The first page starts with what it holds now and the totals. Then comes a row per workspace, external id first, with its home workspace first on the first page. `--limit` and `--before` page as the [API](/developers/embedding/operate#usage) does, and it prints the command for the next page, with the same days. |
+| `peal partner overview`   | What needs attention in each customer's workspace ([Health](/developers/embedding/operate#health)): channels to reconnect or turned off, and posts that failed or wait to be confirmed or approved, and threads waiting. It says "Nothing needs attention." once where nothing does, and on the first page, whether the plan holds their channels. Newest first, paged with `--limit` and `--cursor`.                                        |
 
-| Command                   | What it prints                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `peal partner show`       | What its customers see, the origins hosted pages may send them back to, and what it holds                                                                                                                                                                                                                                                                                                                        |
-| `peal partner keys`       | Its keys, never the keys themselves                                                                                                                                                                                                                                                                                                                                                                              |
-| `peal partner workspaces` | The workspaces it owns, newest first, with their external ids and channels. `--external-id` finds one exactly, and `--name` searches                                                                                                                                                                                                                                                                             |
-| `peal partner usage`      | What the account used per customer over a period of UTC days (`--from`, `--to`, the last 30 by default, 92 at most). On the first page, what it holds now and the totals; then a row per workspace, external id first, its home workspace first on the first page, `--limit` and `--before` paging as the [API](/developers/embedding/operate#usage) does, and the command for the next page, with the same days |
-| `peal partner overview`   | What needs attention in each customer's workspace ([Health](/developers/embedding/operate#health)): channels to reconnect or turned off, posts that failed, wait to be confirmed or approved, threads waiting, once "Nothing needs attention." where nothing does, and on the first page whether the plan holds their channels. Newest first, `--limit` and `--cursor` paging                                    |
-
-Creating and deleting those workspaces is for the partner API, with a partner key, and creating a key for the workspace's **Settings**.
+You create and delete those workspaces through the partner API, with a partner key. You create a key in the workspace's **Settings**.
 
 ## Activity log [#activity]
+
+`peal activity list` lists the requests that asked to change something in the workspace, newest first:
 
 ```sh
 peal activity list
@@ -161,93 +236,121 @@ peal activity list --operation posts.schedule --limit 50
 peal activity list --actor <user-id|api-key-id> --json
 ```
 
-`peal activity list` lists the requests that asked to change something in the workspace, newest first: when, the operation, the status answered and the error's code, who asked, through which key or application, the ids the request named, and the request's id. Owners read it, and a key an owner gave `activity:read`; an event is kept {{keep-activity-en}} ([The activity log](/guides/workspace#activity)).
+Each entry shows when, the operation, the status answered and the error's code, who asked, through which key or application, the ids the request named, and the request's id. Owners read it, and so does a key an owner gave `activity:read`. An event is kept {{keep-activity-en}} ([The activity log](/guides/workspace#activity)).
 
-- `--operation` keeps one operation, such as `posts.schedule`, or `mcp.create_draft` for a tool of the MCP endpoint; `--actor` keeps what one member, by their user id, or one API key, by its id, asked for.
-- `--limit` takes 100 at most. When there is more, the last line gives the command for the next page, with its `--cursor`.
+It takes these flags:
+
+- `--operation` keeps one operation, such as `posts.schedule`, or `mcp.create_draft` for a tool of the MCP endpoint.
+- `--actor` keeps what one member asked for, by their user id, or one API key, by its id.
+- `--limit` takes 100 at most. When there's more, the last line gives the command for the next page, with its `--cursor`.
 
 ## Billing [#billing]
+
+`peal billing` shows where the workspace stands with its plan, and changes nothing:
 
 ```sh
 peal billing
 ```
 
-`peal billing --json` prints the API's two answers in one document, under `billing` and `standing`. Without it, the command prints the workspace's plan and subscription, and, for each limit (channels, members, posts going out this month, assistant requests today, media stored), how much is used of what the plan allows, and whether the workspace may still start its trial. It changes nothing: owners and admins order, cancel or withdraw on the workspace's **Billing** page ([Plans and billing](/guides/workspace/billing)). On an instance that does not bill, nothing is limited.
+It prints the workspace's plan and subscription. For each limit (channels, members, posts going out this month, assistant requests today, media stored), it shows how much is used of what the plan allows. It also says whether the workspace can still start its trial.
+
+`peal billing --json` prints the API's two answers in one document, under `billing` and `standing`.
+
+Owners and admins order, cancel or withdraw on the workspace's **Billing** page ([Plans and billing](/guides/workspace/billing)). On an instance that doesn't bill, nothing is limited.
 
 ## Usage [#usage]
+
+`peal usage` shows what the workspace used, day by day, and changes nothing ([Usage](/guides/workspace/billing#usage)):
 
 ```sh
 peal usage
 peal usage --from 2026-10-01 --to 2026-10-31
 ```
 
-`peal usage` prints the workspace's plan, each limit against what is used now, then, over UTC days (the last 30 unless `--from` and `--to` say otherwise, 92 at most), the posts that went out by platform, the channel-days, the posts on platforms that bill per post, and a row for each day that has anything: its posts, the channels, members and media as the day's snapshot found them (a dash for a day without a snapshot), and its assistant requests. For the workspace that bills its billing account, on a server that bills per connected account, it also prints the billable account-days and, for each day, the accounts the day bills: the most connected at once across the account's workspaces, 0 on the 31st. `--json` prints the API's answer as it came. It changes nothing ([Usage](/guides/workspace/billing#usage)).
+It prints the workspace's plan and each limit against what's used now. Then, over UTC days (the last 30 unless `--from` and `--to` say otherwise, 92 at most), it prints these totals:
+
+- the posts that went out, by platform;
+- the channel-days;
+- the posts on platforms that bill per post.
+
+Last comes a row for each day that has anything. A row holds the day's posts, the channels, members and media as the day's snapshot found them (a dash for a day without a snapshot), and its assistant requests.
+
+On a server that bills per connected account, the workspace that bills its billing account shows two more things. You get the billable account-days, and for each day, the accounts the day bills: the most connected at once across the account's workspaces, 0 on the 31st.
+
+`--json` prints the API's answer as it came.
 
 ## Ads [#ads]
 
+These commands read ad accounts and boost published posts. They follow the [ads](/guides/engage/ads) page, so read it first.
+
 <Callout type="warning" title="Boosting spends money">
-  These commands follow the [ads](/guides/engage/ads) page: read it first. `peal
-  ads boost create` and `peal ads boost resume` spend money.
+  `peal ads boost create` and `peal ads boost resume` spend money.
 </Callout>
 
-No command signs in to an ad network, connects an ad account, turns spending on or sets the monthly ceiling: a person does that in the web app.
+No command signs in to an ad network, connects an ad account, turns spending on or sets the monthly ceiling. A person does that in the web app.
 
-Boosting from a sign-in takes the `workspace:ads` scope, which `peal login --ads` asks for and which is never asked without the flag. `peal doctor` says whether the sign-in holds it.
+To boost from a sign-in, you need the `workspace:ads` scope. `peal login --ads` asks for it, and it's never asked for without the flag. `peal doctor` says whether the sign-in holds it.
 
-| Command                                                                     | What it does                                                                                                                                           |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `peal ads status`                                                           | Says what the server offers of ads: nothing, reading ad accounts, or boosting too.                                                                     |
-| `peal ads accounts`                                                         | Lists the connected ad accounts: network, currency, status, whether an owner allowed each to spend, and its monthly ceiling.                           |
-| `peal ads account <account-id>`                                             | Shows one ad account, its ceiling and what its boosts commit this month.                                                                               |
-| `peal ads campaigns <account-id> [--from <YYYY-MM-DD>] [--to <YYYY-MM-DD>]` | Lists the account's campaigns as last read, with what their ads did over the days (the last 30 by default, 366 at most).                               |
-| `peal ads list <account-id> [--campaign <campaign-id>] [--from …] [--to …]` | Lists the account's ads, those of one campaign with `--campaign`, each with the workspace's post it promotes.                                          |
-| `peal ads insights <account-id> [--from …] [--to …]`                        | Sums what the account's ads did each day: spend, impressions, reach, clicks, results.                                                                  |
-| `peal ads post <post-id>`                                                   | Shows a published post's organic counts beside its paid numbers, by ad account, and its boosts: side by side, never summed.                            |
-| `peal ads boosts [--post <post-id>] [--cursor <cursor>]`                    | Lists the workspace's boosts, newest first.                                                                                                            |
-| `peal ads boost show <boost-id>`                                            | Shows one boost, where it stands, and the requests Peal sent the ad network for it.                                                                    |
-| `peal ads boost quote …`                                                    | Checks a boost and makes nothing: the most it can cost, its days, and the room under the monthly ceiling.                                              |
-| `peal ads boost create … [--idempotency-key <key>] [--yes]`                 | Spends money. Quotes, prints what it will spend and for how long, asks, then boosts the post.                                                          |
-| `peal ads boost pause <boost-id>`                                           | Pauses a boost; it spends nothing while paused. Safe to run twice.                                                                                     |
-| `peal ads boost resume <boost-id> [--yes]`                                  | Spends money. Runs a paused boost again until its end, after asking.                                                                                   |
-| `peal ads boost stop <boost-id> [--yes]`                                    | Stops a boost for good, after asking.                                                                                                                  |
-| `peal ads audit [--cursor <cursor>]`                                        | Lists the ads audit trail, which answers to owners alone (`ads:authorize`): with an API key an owner gave that permission, as no application holds it. |
+The `peal ads` commands are these:
+
+| Command                                                                     | What it does                                                                                                                                               |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `peal ads status`                                                           | Says what the server offers for ads: nothing, reading ad accounts, or boosting too.                                                                        |
+| `peal ads accounts`                                                         | Lists the connected ad accounts: network, currency, status, whether an owner allowed each to spend, and its monthly ceiling.                               |
+| `peal ads account <account-id>`                                             | Shows one ad account, its ceiling and what its boosts commit this month.                                                                                   |
+| `peal ads campaigns <account-id> [--from <YYYY-MM-DD>] [--to <YYYY-MM-DD>]` | Lists the account's campaigns as last read, with what their ads did over the days (the last 30 by default, 366 at most).                                   |
+| `peal ads list <account-id> [--campaign <campaign-id>] [--from …] [--to …]` | Lists the account's ads, or those of one campaign with `--campaign`, each with the workspace's post it promotes.                                           |
+| `peal ads insights <account-id> [--from …] [--to …]`                        | Sums what the account's ads did each day: spend, impressions, reach, clicks and results.                                                                   |
+| `peal ads post <post-id>`                                                   | Shows a published post's organic counts beside its paid numbers, by ad account, and its boosts. They're side by side, never summed.                        |
+| `peal ads boosts [--post <post-id>] [--cursor <cursor>]`                    | Lists the workspace's boosts, newest first.                                                                                                                |
+| `peal ads boost show <boost-id>`                                            | Shows one boost, where it stands, and the requests Peal sent the ad network for it.                                                                        |
+| `peal ads boost quote …`                                                    | Checks a boost and makes nothing: the most it can cost, its days, and the room left under the monthly ceiling.                                             |
+| `peal ads boost create … [--idempotency-key <key>] [--yes]`                 | Spends money. It quotes, prints what it will spend and for how long, asks, then boosts the post.                                                           |
+| `peal ads boost pause <boost-id>`                                           | Pauses a boost, which spends nothing while paused. It's safe to run twice.                                                                                 |
+| `peal ads boost resume <boost-id> [--yes]`                                  | Spends money. It runs a paused boost again until its end, after asking.                                                                                    |
+| `peal ads boost stop <boost-id> [--yes]`                                    | Stops a boost for good, after asking.                                                                                                                      |
+| `peal ads audit [--cursor <cursor>]`                                        | Lists the ads audit trail, which answers to owners alone (`ads:authorize`). Use an API key an owner gave that permission, because no application holds it. |
 
 `boost quote` and `boost create` take the same flags:
 
-| Flag                                     | Meaning                                                                                                                                                                    |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--account <account-id>`                 | The ad account that pays. Required.                                                                                                                                        |
-| `--post <post-id>`                       | The published post to boost. Required.                                                                                                                                     |
-| `--channel <channel-id>`                 | The channel it is boosted on: a Facebook Page, or an Instagram account connected through its Page. Required.                                                               |
-| `--total <amount>` or `--daily <amount>` | The budget for the whole run, or for each day, in the currency's units (`50`, `50.00`). Exactly one. More decimals than the currency has are refused.                      |
-| `--currency <EUR>`                       | The budget's currency. Required, never defaulted: it must be the ad account's, and nothing is ever converted.                                                              |
-| `--ends <instant>`                       | When the run ends. Required: at least a day after the start, 90 days at most.                                                                                              |
-| `--starts <instant>`                     | When it starts. Now when left out.                                                                                                                                         |
-| `--time-zone <zone>`                     | The zone `--starts` and `--ends` are read in when written without an offset.                                                                                               |
-| `--countries <FR,BE>`                    | ISO alpha-2 country codes, 25 at most. Required.                                                                                                                           |
-| `--age-min <n>`, `--age-max <n>`         | 18 to 65 (65 means 65 and over). 18 and 65 when left out.                                                                                                                  |
-| `--not-special-category`                 | A required declaration: Peal does not boost ads about housing, employment, financial products or services, or social issues, elections or politics.                        |
-| `--beneficiary <name>`, `--payer <name>` | Who benefits from the ad and who pays for it: required when a country is in the European Union.                                                                            |
-| `--idempotency-key <key>` (create)       | Makes the command safe to run again: the same key never makes a second boost. Made up and printed when left out.                                                           |
-| `--yes` (create, resume, stop)           | Answers the confirmation beforehand. Required with `--json`, and where the input is not a terminal: the command then refuses with `confirmation_required` rather than ask. |
+| Flag                                     | Meaning                                                                                                                                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--account <account-id>`                 | The ad account that pays. Required.                                                                                                                                                    |
+| `--post <post-id>`                       | The published post to boost. Required.                                                                                                                                                 |
+| `--channel <channel-id>`                 | The channel it's boosted on: a Facebook Page, or an Instagram account connected through its Page. Required.                                                                            |
+| `--total <amount>` or `--daily <amount>` | The budget for the whole run, or for each day, in the currency's units (`50`, `50.00`). Give exactly one. More decimals than the currency has are refused.                             |
+| `--currency <EUR>`                       | The budget's currency. Required and never defaulted. It must be the ad account's, and nothing is ever converted.                                                                       |
+| `--ends <instant>`                       | When the run ends. Required, at least a day after the start and 90 days at most.                                                                                                       |
+| `--starts <instant>`                     | When it starts. Now, when left out.                                                                                                                                                    |
+| `--time-zone <zone>`                     | The zone `--starts` and `--ends` are read in when they're written without an offset.                                                                                                   |
+| `--countries <FR,BE>`                    | ISO alpha-2 country codes, 25 at most. Required.                                                                                                                                       |
+| `--age-min <n>`, `--age-max <n>`         | 18 to 65 (65 means 65 and over). 18 and 65 when left out.                                                                                                                              |
+| `--not-special-category`                 | A required declaration. Peal doesn't boost ads about housing, employment, financial products or services, or social issues, elections or politics.                                     |
+| `--beneficiary <name>`, `--payer <name>` | Who benefits from the ad and who pays for it. Required when a country is in the European Union.                                                                                        |
+| `--idempotency-key <key>` (create)       | Makes the command safe to run again: the same key never makes a second boost. When left out, `peal` makes one up and prints it.                                                        |
+| `--yes` (create, resume, stop)           | Answers the confirmation beforehand. It's required with `--json`, and where the input isn't a terminal: without it the command refuses with `confirmation_required` instead of asking. |
 
 ## Settings [#settings]
 
-| Variable             | What it does                                                                                                                               |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PEAL_API_URL`       | The instance's address, unless `--api-url` is given. Default: `http://localhost:3000`.                                                     |
-| `PEAL_INSECURE_HTTP` | `true` lets the sign-in or the API key go over plain HTTP to a server that is not this machine, as `--insecure-http` does. Off by default. |
-| `PEAL_API_KEY`       | A workspace API key to run with instead of a saved sign-in, which it wins over ([Run it with an API key](/developers/cli#api-key)).        |
-| `PEAL_WORKSPACE`     | The workspace commands act in, by slug or id, unless `--workspace` is given. With an API key, by id.                                       |
-| `TZ`                 | The zone `peal analytics summary` runs days in, and the zone `--at` is read in, unless `--time-zone` is given.                             |
-| `PEAL_CONFIG_DIR`    | The folder `credentials.json` is saved in.                                                                                                 |
-| `XDG_CONFIG_HOME`    | Without `PEAL_CONFIG_DIR`, the sign-in goes in its `peal` folder.                                                                          |
-| `APPDATA`            | Without either, on Windows, the sign-in goes in its `peal` folder.                                                                         |
-| `HOME`               | Otherwise, the sign-in goes in `~/.config/peal`.                                                                                           |
+`peal` reads these environment variables:
+
+| Variable             | What it does                                                                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `PEAL_API_URL`       | The instance's address, unless `--api-url` is given. Default: `http://localhost:3000`.                                                    |
+| `PEAL_INSECURE_HTTP` | `true` lets the sign-in or the API key go over plain HTTP to a server that isn't this machine, as `--insecure-http` does. Off by default. |
+| `PEAL_API_KEY`       | A workspace API key to run with instead of a saved sign-in, which it wins over ([Run it with an API key](/developers/cli#api-key)).       |
+| `PEAL_WORKSPACE`     | The workspace commands act in, by slug or id, unless `--workspace` is given. With an API key, by id.                                      |
+| `TZ`                 | The zone `peal analytics summary` runs days in, and the zone `--at` is read in, unless `--time-zone` is given.                            |
+| `PEAL_CONFIG_DIR`    | The folder `credentials.json` is saved in.                                                                                                |
+| `XDG_CONFIG_HOME`    | Without `PEAL_CONFIG_DIR`, the sign-in goes in its `peal` folder.                                                                         |
+| `APPDATA`            | Without either, on Windows, the sign-in goes in its `peal` folder.                                                                        |
+| `HOME`               | Otherwise, the sign-in goes in `~/.config/peal`.                                                                                          |
 
 `peal --help` lists the commands, and `peal <command> --help` describes one.
 
 ## Your data [#account]
+
+These commands act on your own account, not on a workspace:
 
 ```sh
 peal account export                       # peal-data-2026-11-09.json, in this folder
@@ -255,15 +358,23 @@ peal account export --output ~/peal-data.json
 peal account apps
 ```
 
-- `peal account export` saves a copy of everything Peal keeps about you, as on the account settings page: your account, sessions, workspaces, invitations, connected applications, notices, preferences, the posts you wrote, and the content of the workspaces where you are the only member. It holds no password, token, key or card. The file is yours alone to read (mode 600), and `peal` never writes over a file unless you add `--force`. Peal emails your address each time a copy is taken, saying it came from the command line.
-- `peal account apps` lists the applications that act for you, this command line and MCP clients among them, with what they may do and where. Revoke one from **Account settings**, in the web app: no application revokes another.
-- Deleting your account is for **Account settings** too.
+### Export your data [#account-export]
 
-<Callout type="note" title="Why MCP clients cannot do this">
-  Your export and your connected applications are open to you in the web app and
-  to this command line, which you sign in at your own terminal and which writes
-  to your own disk. No MCP tool hands them out: an MCP client passes what its
-  tools answer to an AI model, and your export holds your sessions' addresses
-  and everything you wrote. The instance refuses them to every OAuth client but
-  `peal`.
+`peal account export` saves a copy of everything Peal keeps about you, as the account settings page does. The copy holds your account, sessions, workspaces, invitations, connected applications, notices and preferences. It also holds the posts you wrote, and the content of the workspaces where you're the only member. It holds no password, token, key or card.
+
+The file is yours alone to read (mode 600), and `peal` never writes over a file unless you add `--force`. Each time a copy is taken, Peal emails your address to say it came from the command line.
+
+### See your connected applications [#account-apps]
+
+`peal account apps` lists the applications that act for you, this command line and MCP clients among them, with what they can do and where. You revoke one from **Account settings**, in the web app, because no application revokes another. You delete your account there too.
+
+<Callout
+  type="note"
+  title="MCP clients can't read your export or your applications"
+>
+  You can open them in the web app and in this command line, which you sign in
+  at your own terminal and which writes to your own disk. An MCP client passes
+  what its tools answer to an AI model, and your export holds your sessions'
+  addresses and everything you wrote. So no MCP tool hands them out, and the
+  instance refuses them to every OAuth client but `peal`.
 </Callout>
