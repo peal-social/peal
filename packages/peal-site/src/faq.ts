@@ -26,6 +26,7 @@ const fill = (text: string, values: Readonly<Record<string, string>>) =>
 /** The FAQ's groups in a language, every placeholder filled. */
 export const faqGroups = (locale: Locale): FaqGroup[] => {
   const values = {
+    ads: namesIn(locale, "ads"),
     blog: namesIn(locale, "blog"),
     chat: namesIn(locale, "chat"),
     free: new Intl.NumberFormat(locale).format(freeAccountsOf(rateCard)),

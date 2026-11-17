@@ -3,7 +3,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-import { ChannelPlatformSchema } from "peal-contract";
+import { AdNetworkSchema, ChannelPlatformSchema } from "peal-contract";
 import type { SiteHeaderProps } from "peal-ui/components/site-header";
 import { describe, expect, it } from "vitest";
 
@@ -21,7 +21,7 @@ import {
   studioRows,
 } from "../src/navigation.ts";
 import type { PageLinks, SiteSettings } from "../src/navigation.ts";
-import { entryOf, siteEntries } from "../src/platforms.ts";
+import { adEntryOf, entryOf, siteEntries } from "../src/platforms.ts";
 
 const docsRoot = path.join(import.meta.dirname, "../../peal-docs/docs");
 
@@ -34,9 +34,12 @@ const docsPaths = [
   ...siteEntries.map((entry) => entry.docs),
 ];
 
-const pageExists = (locale: Locale, page: string) => {
+// A link may name a heading of its page (`page#anchor`): the page must exist.
+const pageExists = (locale: Locale, link: string) => {
   const folder =
     locale === defaultLocale ? docsRoot : path.join(docsRoot, locale);
+
+  const [page = link] = link.split("#");
 
   return (
     existsSync(path.join(folder, `${page}.mdx`)) ||
@@ -110,6 +113,10 @@ describe("the site's navigation", () => {
 
     for (const platform of ChannelPlatformSchema.literals) {
       expect(listed).toContain(entryOf(platform).name);
+    }
+
+    for (const network of AdNetworkSchema.literals) {
+      expect(listed).toContain(adEntryOf(network).name);
     }
 
     expect(

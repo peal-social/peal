@@ -16,18 +16,15 @@ describe("the FAQ", () => {
     }
   });
 
-  it.each(locales)(
-    "names every platform but the ad networks in %s",
-    (locale) => {
-      const answers = faqGroups(locale)
-        .flatMap((group) => group.questions.map((item) => item.answer))
-        .join(" ");
+  it.each(locales)("names every platform and ad network in %s", (locale) => {
+    const answers = faqGroups(locale)
+      .flatMap((group) => group.questions.map((item) => item.answer))
+      .join(" ");
 
-      for (const entry of siteEntries.filter((item) => item.group !== "ads")) {
-        expect(answers).toContain(entry.name);
-      }
+    for (const entry of siteEntries) {
+      expect(answers).toContain(entry.name);
     }
-  );
+  });
 
   it.each(locales)("gives the rate card's free accounts in %s", (locale) => {
     const answers = faqGroups(locale)

@@ -293,7 +293,7 @@ const en = {
           questions: [
             {
               answer:
-                "Social networks: {social}. Chats: {chat}. Blogs: {blog}. Meta ad accounts can be connected too, on a server that turns ads on.",
+                "Social networks: {social}. Chats: {chat}. Blogs: {blog}. Ad accounts can be connected too, on a server that turns ads on: {ads}.",
               question: "Which platforms does Peal publish to?",
             },
             {
@@ -1004,7 +1004,7 @@ const fr: Messages = {
           questions: [
             {
               answer:
-                "Réseaux sociaux : {social}. Messageries : {chat}. Blogs : {blog}. Des comptes publicitaires Meta peuvent aussi être connectés, sur un serveur qui active la publicité.",
+                "Réseaux sociaux : {social}. Messageries : {chat}. Blogs : {blog}. Des comptes publicitaires peuvent aussi être connectés, sur un serveur qui active la publicité : {ads}.",
               question: "Sur quelles plateformes Peal publie-t-il ?",
             },
             {

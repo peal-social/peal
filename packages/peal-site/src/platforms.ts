@@ -12,6 +12,7 @@ import {
   siDiscord,
   siFacebook,
   siGithub,
+  siGoogleads,
   siHashnode,
   siInstagram,
   siMastodon,
@@ -142,6 +143,11 @@ const channelEntries: Readonly<
 };
 
 const adEntries: Readonly<Record<AdNetwork, Omit<PlatformEntry, "group">>> = {
+  google: {
+    docs: "guides/engage/ads#google",
+    mark: markOf(siGoogleads),
+    name: "Google Ads",
+  },
   meta: { docs: "guides/engage/ads", mark: markOf(siMeta), name: "Meta ads" },
 };
 
@@ -178,8 +184,14 @@ export const siteEntries: readonly PlatformEntry[] = [
     (entry, index) =>
       channels.findIndex((other) => other.docs === entry.docs) === index
   ),
-  { ...adEntries[AdNetworkSchema.literal], group: "ads" },
+  ...AdNetworkSchema.literals.map((network) => ({
+    ...adEntries[network],
+    group: "ads" as const,
+  })),
 ];
 
 /** The menu's entry for a channel's platform. */
 export const entryOf = (platform: ChannelPlatform) => channelEntries[platform];
+
+/** The menu's entry for an ad network. */
+export const adEntryOf = (network: AdNetwork) => adEntries[network];
