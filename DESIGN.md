@@ -419,9 +419,15 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   768 px the cells stack and the art becomes a strip 96 px tall. The
   questions are also the page's FAQPage JSON-LD.
 - **Footer**, on `background` under a full-width rule: the mark, the
-  licence's line and the language links in a first cell, then a bordered
+  licence's line and the language menu in a first cell, then a bordered
   cell per column of links (legal, the contract's functions, Peal's
-  accounts), and a caption row at the foot.
+  accounts), and a caption row at the foot. The language menu is a small
+  outline button (30 px): `Languages`, the current language's own name
+  and a chevron, named "Language" and that name for screen readers. It
+  opens upward a menu of the same page in each language, each item a
+  link with its `hreflang` and `lang`, the current one checked; a
+  `<noscript>` repeats the links as a row for a reader without
+  JavaScript.
 - **Hero art.** The home page's hero shows the product, in its stage,
   and no other art: the turning cube it once held is gone. Pixel art
   stays in the menu previews, the section openers, the FAQ and the

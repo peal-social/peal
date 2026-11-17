@@ -92,6 +92,9 @@ const fallback = absolute(defaultLocale);
     <main class="relative flex-1">
       <slot />
     </main>
-    <SiteFooter {...footer} />
+    <!-- Hydrated for its language menu once the page is idle, well before a
+         reader scrolls down to it (on view, a first click could come
+         before the menu listens). -->
+    <SiteFooter client:idle {...footer} />
   </body>
 </html>

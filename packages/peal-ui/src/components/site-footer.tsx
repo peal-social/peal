@@ -3,17 +3,15 @@ import type { PartProps } from "@ui-sdk/react/primitive";
 import { useId } from "react";
 
 import { cn } from "../lib/utils";
+import { LanguageMenu } from "./language-menu";
+import type { LanguageMenuLink } from "./language-menu";
 import { PealMark } from "./peal-mark";
 
 interface SiteFooterLink {
-  /** Marks the link to the page being read, such as its own language. */
+  /** Marks the link to the page being read. */
   readonly current?: boolean | undefined;
   readonly href: string;
-  /** The language the linked page is in, for a language link. */
-  readonly hrefLang?: string | undefined;
   readonly label: string;
-  /** The language of the label itself, for a language link. */
-  readonly lang?: string | undefined;
   /** Such as `me`, which a Mastodon profile checks for. */
   readonly rel?: string | undefined;
 }
@@ -37,8 +35,16 @@ type SiteFooterProps = Omit<PartProps<"footer">, "children" | "className"> & {
     readonly label: string;
     readonly name: string;
   };
-  /** The language links, under the licence's line. */
-  readonly languages?: SiteFooterColumn | undefined;
+  /**
+   * The language menu, under the licence's line: the page's word for
+   * language, and the same page in each language.
+   */
+  readonly languages?:
+    | {
+        readonly label: string;
+        readonly links: readonly LanguageMenuLink[];
+      }
+    | undefined;
   /** A line under the mark, such as the licence's. */
   readonly note: string;
 };
@@ -50,8 +56,6 @@ const FooterLink = ({ link }: { readonly link: SiteFooterLink }) => (
   <a
     href={link.href}
     rel={link.rel}
-    hrefLang={link.hrefLang}
-    lang={link.lang}
     aria-current={link.current === true ? "page" : undefined}
     className={linkClassName}
   >
@@ -83,8 +87,9 @@ const Column = ({ column }: { readonly column: SiteFooterColumn }) => {
 
 /**
  * The marketing site's footer (DESIGN.md, Site): the mark, the licence's
- * line and the language links, then a bordered cell per column of links,
- * and a row of captions. Every link and label comes from the page.
+ * line and the language menu, then a bordered cell per column of links,
+ * and a row of captions. Every link and label comes from the page. The
+ * language menu opens in the browser, so a page hydrates the footer.
  */
 const SiteFooter = ({
   captions,
@@ -95,10 +100,8 @@ const SiteFooter = ({
   note,
   render,
   ...props
-}: SiteFooterProps) => {
-  const languagesId = useId();
-
-  return renderElement(
+}: SiteFooterProps) =>
+  renderElement(
     "footer",
     {
       ...props,
@@ -118,18 +121,11 @@ const SiteFooter = ({
                 {note}
               </p>
               {languages === undefined ? null : (
-                <nav aria-labelledby={languagesId}>
-                  <h2 id={languagesId} className="sr-only">
-                    {languages.label}
-                  </h2>
-                  <ul className="flex gap-3 text-sm">
-                    {languages.links.map((link) => (
-                      <li key={link.href}>
-                        <FooterLink link={link} />
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
+                <LanguageMenu
+                  label={languages.label}
+                  links={languages.links}
+                  side="top"
+                />
               )}
             </div>
             {columns.map((column) => (
@@ -149,7 +145,6 @@ const SiteFooter = ({
     },
     render
   );
-};
 
 export { SiteFooter };
 
