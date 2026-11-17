@@ -2,11 +2,26 @@
 import type { GetStaticPaths } from "astro";
 import { AsciiArt } from "peal-ui/components/ascii-art";
 import { BrandField } from "peal-ui/components/brand-field";
+import { CodeDemo } from "peal-ui/components/code-demo";
+import { CtaBand } from "peal-ui/components/cta-band";
 import { FaqSection } from "peal-ui/components/faq-section";
+import { FeatureGrid } from "peal-ui/components/feature-cell";
+import { SectionOpener } from "peal-ui/components/section-opener";
+import { TileGrid } from "peal-ui/components/tile-grid";
+import { UseCases } from "peal-ui/components/use-cases";
 
-import { Features } from "../../components/features.tsx";
-import { docsLink } from "../../config.ts";
+import { appLink, docsLink } from "../../config.ts";
 import { faqGroups, faqJsonLdText } from "../../faq.ts";
+import { formatStars, latestPulls, repositoryStars } from "../../github.ts";
+import { demoTabs } from "../../home-demo.ts";
+import {
+  agentTiles,
+  ctaLinks,
+  hardPartCells,
+  openCells,
+  useCases,
+} from "../../home.ts";
+import type { HomeSettings } from "../../home.ts";
 import { localePaths, pageLocale } from "../../i18n/locales.ts";
 import { messages } from "../../i18n/messages.ts";
 import Base from "../../layouts/base.astro";
@@ -19,18 +34,33 @@ const catalogue = messages(locale);
 
 const t = catalogue.home;
 
-const selfHostingGuide = docsLink(locale, "self-hosting");
+const stars = await repositoryStars();
 
-// Every section below the hero carries its number, as `[ 01 / 03 ] · Product`.
-const sections = [t.sections.features, t.sections.selfHost, t.sections.faq];
+const settings: HomeSettings = {
+  app: (page) => appLink(locale, page),
+  docs: (page) => docsLink(locale, page),
+  pulls: await latestPulls(),
+  stars: stars === undefined ? undefined : formatStars(stars, locale),
+};
+
+// Every section below the hero carries its number, as `[ 01 / 06 ] · Try it`.
+const sections = [
+  t.sections.tryIt,
+  t.sections.agents,
+  t.sections.open,
+  t.sections.hardParts,
+  t.sections.useCases,
+  t.sections.faq,
+];
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
-const counter = (index: number) => 
-  `[ ${pad(index + 1)} / ${pad(sections.length)} ] · ${sections[index] ?? ""}`
-;
+const counter = (index: number) =>
+  `[ ${pad(index + 1)} / ${pad(sections.length)} ] · ${sections[index] ?? ""}`;
 
 const faq = faqGroups(locale);
+
+const cta = ctaLinks(t, settings);
 ---
 
 <Base description={t.description} path="" title={t.title}>
@@ -61,13 +91,13 @@ const faq = faqGroups(locale);
         </p>
         <div class="mt-10 flex flex-wrap items-center gap-3">
           <a
-            href="#features"
+            href="#try-it"
             class="bg-card text-foreground hover:bg-muted focus-visible:ring-ring/50 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium outline-none focus-visible:ring-3"
           >
             {t.hero.primary}
           </a>
           <a
-            href="#self-host"
+            href="#open"
             class="focus-visible:ring-ring/50 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-3"
           >
             {t.hero.secondary}
@@ -80,76 +110,91 @@ const faq = faqGroups(locale);
     </section>
   </BrandField>
 
-  <section
-    id="features"
-    aria-labelledby="features-title"
-    class="mx-auto max-w-6xl scroll-mt-8 pt-16"
-  >
-    <p
-      class="text-muted-foreground px-6 pb-4 font-mono text-xs tracking-[0.04em]"
-    >
-      {counter(0)}
-    </p>
-    <h2
-      id="features-title"
-      class="px-6 text-[30px] leading-[1.1] font-semibold tracking-[-0.025em] sm:text-[40px]"
-    >
-      {t.featuresTitle}
-    </h2>
-    <div class="mt-10">
-      <Features features={t.features} />
-    </div>
-    <div class="border-b p-6" role="note">
-      <h3 class="text-[15px] font-semibold">{t.unconfirmed.title}</h3>
-      <p class="text-muted-foreground mt-2 text-sm">
-        {t.unconfirmed.body}
-      </p>
-    </div>
+  <section id="try-it" aria-labelledby="try-it-title" class="scroll-mt-8">
+    <SectionOpener
+      client:visible
+      counter={counter(0)}
+      eyebrow={{ icon: "code", label: t.tryIt.eyebrow }}
+      headingId="try-it-title"
+      lead={t.tryIt.lead}
+      title={t.tryIt.title}
+    />
+    <CodeDemo
+      client:visible
+      copied={t.tryIt.copied}
+      copy={t.tryIt.copy}
+      label={t.tryIt.label}
+      tabs={demoTabs}
+    />
   </section>
 
-  <p
-    class="text-muted-foreground mx-auto max-w-6xl px-6 pt-16 pb-4 font-mono text-xs tracking-[0.04em]"
-  >
-    {counter(1)}
-  </p>
-  <section class="mx-auto grid max-w-6xl border-t sm:grid-cols-2">
-    <div id="self-host" class="scroll-mt-8 border-b p-6 py-12 sm:border-e">
-      <h2 class="text-2xl font-semibold tracking-[-0.025em]">
-        {t.selfHost.title}
-      </h2>
-      <p class="text-muted-foreground mt-4 text-sm">
-        {t.selfHost.body}
-      </p>
-      {
-        selfHostingGuide !== undefined && (
-          <p class="mt-4 text-sm">
-            <a
-              href={selfHostingGuide}
-              class="text-brand-text font-medium underline underline-offset-4"
-            >
-              {t.selfHost.docs}
-            </a>
-          </p>
-        )
-      }
-    </div>
-    <div class="border-b p-6 py-12">
-      <h2 class="text-2xl font-semibold tracking-[-0.025em]">
-        {t.fairSource.title}
-      </h2>
-      <p class="text-muted-foreground mt-4 text-sm">
-        {t.fairSource.body}
-      </p>
-    </div>
+  <section id="agents" aria-labelledby="agents-title" class="scroll-mt-8">
+    <SectionOpener
+      client:visible
+      counter={counter(1)}
+      eyebrow={{ icon: "bot", label: t.agents.eyebrow }}
+      headingId="agents-title"
+      lead={t.agents.lead}
+      title={t.agents.title}
+    />
+    <TileGrid groups={agentTiles(t, settings)} />
+  </section>
+
+  <section id="open" aria-labelledby="open-title" class="scroll-mt-8">
+    <SectionOpener
+      client:visible
+      counter={counter(2)}
+      eyebrow={{ icon: "pull-request", label: t.open.eyebrow }}
+      headingId="open-title"
+      lead={t.open.lead}
+      title={t.open.title}
+    />
+    <FeatureGrid cells={openCells(locale, t, settings)} />
+  </section>
+
+  <section id="hard-parts" aria-labelledby="hard-parts-title" class="scroll-mt-8">
+    <SectionOpener
+      client:visible
+      counter={counter(3)}
+      eyebrow={{ icon: "shield", label: t.hardParts.eyebrow }}
+      headingId="hard-parts-title"
+      lead={t.hardParts.lead}
+      title={t.hardParts.title}
+    />
+    <FeatureGrid cells={hardPartCells(locale, t)} />
+  </section>
+
+  <section id="use-cases" aria-labelledby="use-cases-title" class="scroll-mt-8">
+    <SectionOpener
+      client:visible
+      counter={counter(4)}
+      eyebrow={{ icon: "users", label: t.useCases.eyebrow }}
+      headingId="use-cases-title"
+      lead={t.useCases.lead}
+      title={t.useCases.title}
+    />
+    <UseCases
+      client:visible
+      cases={useCases(t, settings)}
+      label={t.useCases.label}
+    />
   </section>
 
   <FaqSection
     client:visible
-    className="pt-16 pb-24"
-    counter={counter(2)}
+    className="pt-0 pb-24"
+    counter={counter(5)}
     groups={faq}
     label={t.faq.label}
     lead={t.faq.lead}
     title={t.faq.title}
+  />
+
+  <CtaBand
+    captions={catalogue.footer.captions}
+    line={t.cta.line}
+    primary={cta.primary}
+    secondary={cta.secondary}
+    title={t.cta.title}
   />
 </Base>

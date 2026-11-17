@@ -21,30 +21,189 @@ const en = {
     withdraw: "Withdraw from contract here",
   },
   home: {
+    agents: {
+      eyebrow: "Agents and code",
+      groups: {
+        agents: "For agents",
+        sdks: "SDKs",
+      },
+      lead: "An MCP server, a command line, agent skills and SDKs in eight languages, each with its page in the docs.",
+      tiles: {
+        cli: "The peal command, with answers as JSON.",
+        mcp: "Any MCP client, signed in to one workspace.",
+        skills: "Instructions an agent follows to post through Peal.",
+      },
+      titles: {
+        cli: "Command line",
+        mcp: "MCP server",
+        skills: "Agent skills",
+      },
+      title: {
+        muted: "Agents and your own code reach the same workspace.",
+        text: "Connect your agents.",
+      },
+    },
+    cta: {
+      line: "Write a post once and send it to every platform you use.",
+      primary: "Get started",
+      secondary: "Read the docs",
+      title: "Start with your first post.",
+    },
+    hardParts: {
+      cells: {
+        approvals: {
+          label: "Approvals",
+          lead: "A client says yes first.",
+          text: "Send a review link to someone without a Peal account. They comment, and the post waits for their approval.",
+        },
+        inbox: {
+          label: "Inbox",
+          lead: "Replies in one place.",
+          text: "Comments under your posts, Google Business Profile reviews, and Mastodon and Bluesky direct messages, answered from one inbox.",
+        },
+        limits: {
+          label: "Platform limits",
+          lead: "Checked before you schedule.",
+          text: "Peal counts each platform's text limits, checks images and videos against what it accepts, and names what to fix.",
+        },
+        media: {
+          label: "Media",
+          lead: "Sent the way each platform takes it.",
+          text: "Files go up in parts where a platform asks for that, and Peal waits while the platform processes them before the post goes out.",
+        },
+        timeZones: {
+          label: "Time zones",
+          lead: "Your time, daylight saving included.",
+          text: "A post goes out at the wall-clock time of the time zone you pick.",
+        },
+        unconfirmed: {
+          label: "No blind reposts",
+          lead: "When a platform does not answer, Peal asks you.",
+          text: "A post that may have gone out without a reply is marked unconfirmed, and Peal never sends it again on its own.",
+        },
+      },
+      eyebrow: "Under the hood",
+      lead: "What Peal checks and does between your post and each network.",
+      title: {
+        muted: "A post goes out once, in the form each platform wants.",
+        text: "We handle the hard parts.",
+      },
+    },
+    mock: {
+      allowed: ":: Allowed",
+      approval: ":: Needs approval",
+      check: ":: Check the platform",
+      comment: "Comment",
+      connectLink: "Connect link",
+      customer: "Customer",
+      denied: ":: Not allowed",
+      draft: ":: Draft",
+      message: "Direct message",
+      over: ":: Over the limit",
+      processed: ":: Processed",
+      published: ":: Published",
+      publishing: ":: Publishing…",
+      review: "Review",
+      scheduled: ":: Scheduled",
+      unconfirmed: ":: Unconfirmed",
+      uploading: ":: Uploading",
+      within: ":: Within the limit",
+    },
+    open: {
+      cells: {
+        platforms: {
+          label: "Platforms",
+          lead: "{platforms} platforms.",
+          text: "Social networks, chats and blogs, from one composer and one API.",
+        },
+        repository: {
+          label: "Fair source",
+          lead: "Apache 2.0 after two years.",
+          pulls: "merged lately",
+          stars: "stars",
+          text: "The source is under the Functional Source License, and each release becomes Apache 2.0 two years after it ships.",
+        },
+        sdks: {
+          label: "SDKs",
+          lead: "Eight languages.",
+          text: "TypeScript, Python, Go, Ruby, Java, PHP, .NET and Rust clients, generated from the same API contract.",
+        },
+        selfHosting: {
+          label: "Self-hosting",
+          lead: "Postgres and an S3-compatible store.",
+          link: "Read the self-hosting guide",
+          text: "That is all a server needs. Email, billing, captcha, AI and telemetry are optional.",
+        },
+      },
+      eyebrow: "Built in the open",
+      lead: "The code, the API contract and the SDKs are public on GitHub.",
+      title: {
+        muted: "Anyone can read the code and run it.",
+        text: "Built in the open.",
+      },
+    },
+    sections: {
+      agents: "Agents",
+      faq: "FAQ",
+      hardParts: "Under the hood",
+      open: "In the open",
+      tryIt: "Try it",
+      useCases: "Use cases",
+    },
+    tryIt: {
+      copied: "Copied",
+      copy: "Copy",
+      eyebrow: "Try it",
+      label: "Ways to publish",
+      lead: "The same post goes out four ways, and each answer says how it went on every channel.",
+      title: {
+        muted: "Send it with curl, the command line, an agent or your code.",
+        text: "One request to publish.",
+      },
+    },
+    useCases: {
+      cases: {
+        agency: {
+          body: "Each client gets a workspace with its own channels and members, and one billing account pays for all of them.",
+          description: "One workspace per client, one bill.",
+          link: "Plans and billing",
+          title: "Agency",
+        },
+        agent: {
+          body: "Connect an assistant through the MCP server without the right to publish. It writes drafts, and you review and schedule them.",
+          description: "It drafts, you publish.",
+          link: "Posting from an AI agent",
+          title: "AI agent",
+        },
+        developer: {
+          body: "An API key with the permissions it needs, one request to check a post and one to send it. Webhooks tell your server how it went.",
+          description: "Publish from your own code.",
+          link: "API quickstart",
+          title: "Developer",
+        },
+        marketing: {
+          body: "The team writes in the composer, schedules on the calendar and sends a review link. The post waits until the client approves.",
+          description: "Plan the calendar, get the client's yes.",
+          link: "Review and approval",
+          title: "Marketing team",
+        },
+        partner: {
+          body: "A partner account, a workspace for each of your customers, and a hosted page where they connect their accounts.",
+          description: "Peal inside your product.",
+          link: "Embedding Peal",
+          title: "Partner",
+        },
+      },
+      eyebrow: "Use cases",
+      label: "Use cases",
+      lead: "Pick a case to see how it runs.",
+      title: {
+        muted: "Teams, developers and their agents each have a way in.",
+        text: "Who uses Peal.",
+      },
+    },
     description:
       "Write a post once, schedule it across platforms and see how it performs. Built for teams, self-hostable and fair source.",
-    fairSource: {
-      body: "The source is public under the Functional Source License. Use it, change it and run it for anything but a competing service, and each release becomes Apache 2.0 two years after it ships.",
-      title: "Fair source",
-    },
-    features: [
-      {
-        body: "Draft a post in one editor, then adjust it for each platform where it needs to differ.",
-        title: "Write once",
-      },
-      {
-        body: "Pick the accounts and the time. Each post goes out when it is due, in the time zone you chose, daylight saving included.",
-        title: "Schedule across platforms",
-      },
-      {
-        body: "Each platform’s metrics come back to one place, so you can see what worked without opening every app.",
-        title: "See results",
-      },
-      {
-        body: "Bring your team into an organisation, give each person a role, and write, review and schedule together.",
-        title: "Work as a team",
-      },
-    ],
     faq: {
       groups: [
         {
@@ -155,7 +314,6 @@ const en = {
         text: "Frequently asked questions.",
       },
     },
-    featuresTitle: "What we are building",
     hero: {
       lead: "Peal is a social media scheduling platform for teams. Write a post once, schedule it across platforms and follow its results in one place.",
       primary: "See how it works",
@@ -164,21 +322,7 @@ const en = {
         "Peal is in development and not released yet. This page shows what it is being built to do.",
       title: "Write once. Schedule everywhere. See what works.",
     },
-    sections: {
-      faq: "FAQ",
-      features: "Product",
-      selfHost: "Self-hosting",
-    },
-    selfHost: {
-      body: "A self-hosted instance needs only Postgres and an S3-compatible store. Email, billing, captcha, AI and telemetry are optional, and each one has a self-hostable choice.",
-      docs: "Read the self-hosting guide",
-      title: "Run it yourself",
-    },
     title: "Peal: schedule social media posts across platforms",
-    unconfirmed: {
-      body: "When a platform does not confirm that a post went out, Peal marks it unconfirmed and asks you to check, instead of posting it again blindly.",
-      title: "No blind reposts",
-    },
   },
   legal: {
     "data-deletion": "Data deletion",
@@ -512,30 +656,193 @@ const fr: Messages = {
     withdraw: "Renoncer au contrat ici",
   },
   home: {
+    agents: {
+      eyebrow: "Agents et code",
+      groups: {
+        agents: "Pour les agents",
+        sdks: "SDK",
+      },
+      lead: "Un serveur MCP, une ligne de commande, des skills pour agents et des SDK dans huit langages, chacun avec sa page dans la documentation.",
+      tiles: {
+        cli: "La commande peal, avec des réponses en JSON.",
+        mcp: "Tout client MCP, connecté à un espace de travail.",
+        skills: "Des instructions qu’un agent suit pour publier avec Peal.",
+      },
+      titles: {
+        cli: "Ligne de commande",
+        mcp: "Serveur MCP",
+        skills: "Skills pour agents",
+      },
+      title: {
+        muted:
+          "Les agents et votre propre code atteignent le même espace de travail.",
+        text: "Connectez vos agents.",
+      },
+    },
+    cta: {
+      line: "Écrivez une publication une fois et envoyez-la sur toutes vos plateformes.",
+      primary: "Commencer",
+      secondary: "Lire la documentation",
+      title: "Commencez par votre première publication.",
+    },
+    hardParts: {
+      cells: {
+        approvals: {
+          label: "Approbations",
+          lead: "Un client dit oui d’abord.",
+          text: "Envoyez un lien de relecture à quelqu’un sans compte Peal. Il commente, et la publication attend son accord.",
+        },
+        inbox: {
+          label: "Boîte de réception",
+          lead: "Les réponses au même endroit.",
+          text: "Les commentaires sous vos publications, les avis Google Business Profile et les messages privés Mastodon et Bluesky, traités depuis une seule boîte.",
+        },
+        limits: {
+          label: "Limites des plateformes",
+          lead: "Vérifiées avant la programmation.",
+          text: "Peal compte les limites de texte de chaque plateforme, vérifie les images et les vidéos selon ce qu’elle accepte, et dit quoi corriger.",
+        },
+        media: {
+          label: "Médias",
+          lead: "Envoyés comme chaque plateforme les prend.",
+          text: "Les fichiers partent en morceaux quand une plateforme le demande, et Peal attend qu’elle les traite avant que la publication parte.",
+        },
+        timeZones: {
+          label: "Fuseaux horaires",
+          lead: "Votre heure, changements d’heure compris.",
+          text: "Une publication part à l’heure locale du fuseau horaire choisi.",
+        },
+        unconfirmed: {
+          label: "Pas de republication à l’aveugle",
+          lead: "Quand une plateforme ne répond pas, Peal vous demande.",
+          text: "Une publication qui a pu partir sans réponse est marquée non confirmée, et Peal ne la renvoie jamais de lui-même.",
+        },
+      },
+      eyebrow: "Sous le capot",
+      lead: "Ce que Peal vérifie et fait entre votre publication et chaque réseau.",
+      title: {
+        muted:
+          "Une publication part une fois, sous la forme que chaque plateforme attend.",
+        text: "Nous gérons le plus difficile.",
+      },
+    },
+    mock: {
+      allowed: ":: Autorisé",
+      approval: ":: À approuver",
+      check: ":: Vérifiez sur la plateforme",
+      comment: "Commentaire",
+      connectLink: "Lien de connexion",
+      customer: "Client",
+      denied: ":: Non autorisé",
+      draft: ":: Brouillon",
+      message: "Message privé",
+      over: ":: Au-delà de la limite",
+      processed: ":: Traité",
+      published: ":: Publiée",
+      publishing: ":: Publication…",
+      review: "Avis",
+      scheduled: ":: Programmée",
+      unconfirmed: ":: Non confirmée",
+      uploading: ":: Envoi",
+      within: ":: Dans la limite",
+    },
+    open: {
+      cells: {
+        platforms: {
+          label: "Plateformes",
+          lead: "{platforms} plateformes.",
+          text: "Réseaux sociaux, messageries et blogs, depuis un seul éditeur et une seule API.",
+        },
+        repository: {
+          label: "Fair source",
+          lead: "Apache 2.0 après deux ans.",
+          pulls: "fusionnées récemment",
+          stars: "étoiles",
+          text: "Le code est sous Functional Source License, et chaque version passe sous licence Apache 2.0 deux ans après sa sortie.",
+        },
+        sdks: {
+          label: "SDK",
+          lead: "Huit langages.",
+          text: "Des clients TypeScript, Python, Go, Ruby, Java, PHP, .NET et Rust, générés à partir du même contrat d’API.",
+        },
+        selfHosting: {
+          label: "Auto-hébergement",
+          lead: "Postgres et un stockage compatible S3.",
+          link: "Lire le guide d’auto-hébergement",
+          text: "C’est tout ce qu’il faut à un serveur. L’e-mail, la facturation, le captcha, l’IA et la télémétrie sont facultatifs.",
+        },
+      },
+      eyebrow: "Construit au grand jour",
+      lead: "Le code, le contrat d’API et les SDK sont publics sur GitHub.",
+      title: {
+        muted: "Chacun peut lire le code et le faire tourner.",
+        text: "Construit au grand jour.",
+      },
+    },
+    sections: {
+      agents: "Agents",
+      faq: "FAQ",
+      hardParts: "Sous le capot",
+      open: "Au grand jour",
+      tryIt: "Essayer",
+      useCases: "Cas d’usage",
+    },
+    tryIt: {
+      copied: "Copié",
+      copy: "Copier",
+      eyebrow: "Essayer",
+      label: "Façons de publier",
+      lead: "La même publication part de quatre façons, et chaque réponse dit comment elle s’est passée sur chaque canal.",
+      title: {
+        muted:
+          "Envoyez-la avec curl, la ligne de commande, un agent ou votre code.",
+        text: "Une requête pour publier.",
+      },
+    },
+    useCases: {
+      cases: {
+        agency: {
+          body: "Chaque client a un espace de travail avec ses canaux et ses membres, et un seul compte de facturation les paie tous.",
+          description: "Un espace par client, une facture.",
+          link: "Formules et facturation",
+          title: "Agence",
+        },
+        agent: {
+          body: "Connectez un assistant par le serveur MCP sans le droit de publier. Il écrit des brouillons, que vous relisez et programmez.",
+          description: "Il rédige, vous publiez.",
+          link: "Publier depuis un agent IA",
+          title: "Agent IA",
+        },
+        developer: {
+          body: "Une clé d’API avec les droits nécessaires, une requête pour vérifier une publication et une pour l’envoyer. Les webhooks disent à votre serveur comment elle s’est passée.",
+          description: "Publiez depuis votre propre code.",
+          link: "Démarrage rapide de l’API",
+          title: "Développeur",
+        },
+        marketing: {
+          body: "L’équipe écrit dans l’éditeur, programme sur le calendrier et envoie un lien de relecture. La publication attend l’accord du client.",
+          description: "Planifiez, obtenez le oui du client.",
+          link: "Relecture et approbation",
+          title: "Équipe marketing",
+        },
+        partner: {
+          body: "Un compte partenaire, un espace de travail par client, et une page hébergée où ils connectent leurs comptes.",
+          description: "Peal dans votre produit.",
+          link: "Intégrer Peal",
+          title: "Partenaire",
+        },
+      },
+      eyebrow: "Cas d’usage",
+      label: "Cas d’usage",
+      lead: "Choisissez un cas pour voir comment il fonctionne.",
+      title: {
+        muted:
+          "Les équipes, les développeurs et leurs agents ont chacun leur accès.",
+        text: "Qui utilise Peal.",
+      },
+    },
     description:
       "Écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats. Pensé pour les équipes, auto-hébergeable et fair source.",
-    fairSource: {
-      body: "Le code source est public, sous la Functional Source License. Utilisez-le, modifiez-le et faites-le tourner pour tout usage sauf un service concurrent ; chaque version passe sous licence Apache 2.0 deux ans après sa sortie.",
-      title: "Fair source",
-    },
-    features: [
-      {
-        body: "Rédigez une publication dans un seul éditeur, puis ajustez-la pour chaque plateforme là où elle doit différer.",
-        title: "Écrire une fois",
-      },
-      {
-        body: "Choisissez les comptes et l’heure. Chaque publication part à l’échéance, dans le fuseau horaire choisi, changements d’heure compris.",
-        title: "Planifier sur plusieurs plateformes",
-      },
-      {
-        body: "Les statistiques de chaque plateforme reviennent au même endroit : vous voyez ce qui a fonctionné sans ouvrir chaque application.",
-        title: "Suivre les résultats",
-      },
-      {
-        body: "Réunissez votre équipe dans une organisation, donnez un rôle à chacun, et rédigez, relisez et planifiez ensemble.",
-        title: "Travailler en équipe",
-      },
-    ],
     faq: {
       groups: [
         {
@@ -648,7 +955,6 @@ const fr: Messages = {
         text: "Questions fréquentes.",
       },
     },
-    featuresTitle: "Ce que nous construisons",
     hero: {
       lead: "Peal est une plateforme de planification pour les réseaux sociaux, pensée pour les équipes. Écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats au même endroit.",
       primary: "Voir comment ça marche",
@@ -657,21 +963,7 @@ const fr: Messages = {
         "Peal est en cours de développement et pas encore sorti. Cette page montre ce qu’il est conçu pour faire.",
       title: "Écrire une fois. Planifier partout. Voir ce qui marche.",
     },
-    sections: {
-      faq: "FAQ",
-      features: "Produit",
-      selfHost: "Auto-hébergement",
-    },
-    selfHost: {
-      body: "Une instance auto-hébergée n’a besoin que de Postgres et d’un stockage compatible S3. L’e-mail, la facturation, le captcha, l’IA et la télémétrie sont facultatifs, et chacun a une option auto-hébergeable.",
-      docs: "Lire le guide d’auto-hébergement",
-      title: "L’héberger soi-même",
-    },
     title: "Peal : planifiez vos publications sur les réseaux sociaux",
-    unconfirmed: {
-      body: "Quand une plateforme ne confirme pas qu’une publication est partie, Peal la marque comme non confirmée et vous demande de vérifier, au lieu de republier à l’aveugle.",
-      title: "Pas de republication à l’aveugle",
-    },
   },
   legal: {
     "data-deletion": "Suppression des données",
