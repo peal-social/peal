@@ -9,6 +9,7 @@ import type {
   TooltipValueType,
 } from "recharts";
 
+import "../lib/css-properties";
 import { cn } from "../lib/utils";
 
 /**
@@ -29,14 +30,6 @@ const seriesOf = (
   config: ChartConfig,
   dataKey: string
 ): ChartConfig[string] | undefined => config[dataKey];
-
-// A series' swatch reads its color from the `--swatch` custom property,
-// set inline: React's style type admits custom properties from here on.
-declare module "react" {
-  interface CSSProperties {
-    [property: `--${string}`]: string | undefined;
-  }
-}
 
 const INITIAL_DIMENSION = { height: 200, width: 320 } as const;
 

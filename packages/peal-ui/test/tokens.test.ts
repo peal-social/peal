@@ -88,7 +88,7 @@ const luminance = (hex: string) => {
   const [red = 0, green = 0, blue = 0] = [1, 3, 5].map((start) => {
     const channel = Number.parseInt(hex.slice(start, start + 2), 16) / 255;
 
-    return channel <= 0.040_45
+    return channel <= 0.04045
       ? channel / 12.92
       : ((channel + 0.055) / 1.055) ** 2.4;
   });
@@ -98,9 +98,10 @@ const luminance = (hex: string) => {
 
 // WCAG's contrast ratio of two colours, the lighter one first.
 const contrast = (first: string, second: string) => {
-  const [lighter = 0, darker = 0] = [luminance(first), luminance(second)].sort(
-    (a, b) => b - a
-  );
+  const [lighter = 0, darker = 0] = [
+    luminance(first),
+    luminance(second),
+  ].toSorted((a, b) => b - a);
 
   return (lighter + 0.05) / (darker + 0.05);
 };
