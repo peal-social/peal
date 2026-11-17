@@ -33,10 +33,13 @@ runs:
       shell: bash
     # Nx hashes every input of a cached target, so an entry restored from an
     # earlier commit is reused only where nothing it reads has changed. Tests
-    # are never cached (nx.json).
+    # are never cached (nx.json). Nx reuses only the entries its database in
+    # .nx/workspace-data records, so the database goes with them.
     - if: inputs.nx-cache != ''
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: .nx/cache
+        path: |
+          .nx/cache
+          .nx/workspace-data
         key: nx-${{ runner.os }}-${{ inputs.nx-cache }}-${{ github.sha }}
         restore-keys: nx-${{ runner.os }}-${{ inputs.nx-cache }}-
