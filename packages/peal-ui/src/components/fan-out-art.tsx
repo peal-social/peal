@@ -8,6 +8,9 @@ const nodes = [0, 60, 120, 180, 240, 300];
 
 const radius = 26;
 
+// Rounded to hundredths, so the server's and the browser's markup match.
+const round = (value: number) => Math.round(value * 100) / 100;
+
 const FanOutArt = () => (
   <svg viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
     {nodes.map((angle) => {
@@ -18,14 +21,20 @@ const FanOutArt = () => (
       return (
         <g key={angle}>
           <line
-            x1={32 + (x - 32) * inner}
-            y1={32 + (y - 32) * inner}
-            x2={x}
-            y2={y}
+            x1={round(32 + (x - 32) * inner)}
+            y1={round(32 + (y - 32) * inner)}
+            x2={round(x)}
+            y2={round(y)}
             stroke="currentColor"
             strokeWidth={2.2}
           />
-          <rect x={x - 4.5} y={y - 4.5} width={9} height={9} rx={2} />
+          <rect
+            x={round(x - 4.5)}
+            y={round(y - 4.5)}
+            width={9}
+            height={9}
+            rx={2}
+          />
         </g>
       );
     })}

@@ -1,30 +1,6 @@
 "use client";
 
-import {
-  ActivityIcon,
-  ArrowRightIcon,
-  BlocksIcon,
-  BookOpenIcon,
-  BotIcon,
-  BracesIcon,
-  CalendarDaysIcon,
-  ChartLineIcon,
-  CheckCheckIcon,
-  GlobeIcon,
-  HistoryIcon,
-  InboxIcon,
-  MenuIcon,
-  MessagesSquareIcon,
-  PackageIcon,
-  PanelsTopLeftIcon,
-  PenLineIcon,
-  ServerIcon,
-  ShieldCheckIcon,
-  SparklesIcon,
-  SquareTerminalIcon,
-  StarIcon,
-  WebhookIcon,
-} from "lucide-react";
+import { ArrowRightIcon, MenuIcon, StarIcon } from "lucide-react";
 import { useId } from "react";
 
 import { cn } from "../lib/utils";
@@ -50,47 +26,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./sheet";
-
-// The icons a site menu's rows may show, by name: the props cross from an
-// Astro page to a React island as JSON, which cannot carry a component.
-const siteIcons = {
-  activity: ActivityIcon,
-  blocks: BlocksIcon,
-  "book-open": BookOpenIcon,
-  bot: BotIcon,
-  braces: BracesIcon,
-  calendar: CalendarDaysIcon,
-  chart: ChartLineIcon,
-  "check-check": CheckCheckIcon,
-  globe: GlobeIcon,
-  history: HistoryIcon,
-  inbox: InboxIcon,
-  messages: MessagesSquareIcon,
-  package: PackageIcon,
-  panels: PanelsTopLeftIcon,
-  pen: PenLineIcon,
-  server: ServerIcon,
-  shield: ShieldCheckIcon,
-  sparkles: SparklesIcon,
-  terminal: SquareTerminalIcon,
-  webhook: WebhookIcon,
-} as const;
-
-type SiteIcon = keyof typeof siteIcons;
+import { Mark, siteIcons } from "./site-icons";
+import type { SiteIcon, SiteMark } from "./site-icons";
 
 interface SiteLink {
   readonly href: string;
   readonly label: string;
 }
-
-/**
- * A brand's own mark (DESIGN.md, Icons): a simple-icons path, drawn in
- * currentColor, or the letters of a lettered tile for a brand that has no
- * mark there. The page passes the path, so the header holds no logo.
- */
-type SiteMark =
-  | { readonly kind: "path"; readonly path: string }
-  | { readonly kind: "letters"; readonly letters: string };
 
 /**
  * A row of a mega menu: an icon or a brand's mark, a title, and a one-line
@@ -185,34 +127,6 @@ interface SiteHeaderProps {
   readonly label: string;
   readonly signIn?: SiteLink | undefined;
 }
-
-const Mark = ({
-  className,
-  mark,
-}: {
-  readonly className?: string | undefined;
-  readonly mark: SiteMark;
-}) =>
-  mark.kind === "path" ? (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill="currentColor"
-      className={cn("size-4 shrink-0", className)}
-    >
-      <path d={mark.path} />
-    </svg>
-  ) : (
-    <span
-      aria-hidden="true"
-      className={cn(
-        className,
-        "bg-foreground text-background flex size-4 shrink-0 items-center justify-center rounded-sm text-[9px] leading-none font-semibold"
-      )}
-    >
-      {mark.letters}
-    </span>
-  );
 
 const RowIcon = ({ link }: { readonly link: SiteMenuLink }) => {
   if (link.mark !== undefined) {

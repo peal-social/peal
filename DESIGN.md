@@ -327,6 +327,43 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
 - **Section counter.** Every section of a page below its hero opens with
   its number and name in Geist Mono, 12 px, muted, `0.04em`: `[ 01 / 03 ]
   · Product`. Sections are counted in order, and the total is the page's.
+- **Section opener.** Below its counter, a section opens on a band with
+  a faint pixel field behind it (5 px cells in the blue and lavender
+  tints, `#E8ECFD` and `#EDE7FF`, where smooth noise rises, thinning
+  toward the middle, still), and, centred, an eyebrow in Geist Mono,
+  12 px, muted, `// [icon] Label \\`, the section headline with its
+  second sentence muted, and a lead. No word of the headline is coloured.
+- **Feature cells.** Bordered cells in two columns on the rails: a 16 px
+  icon and a label (13 px, muted), a paragraph at the lead's size whose
+  first phrase is ink and 600 and the rest muted, an optional link in
+  `brand-text` with a chevron, and an illustration. A cell may span both
+  columns, its words centred and its illustration at most 28 rem wide.
+- **Illustrations** are drawn from Peal's own UI, never pictures of
+  another site: a mock window (a bar with three outlined dots and the
+  app's address in a mono chip, then rows of a label, a mono value and a
+  chip), a line of mono chips such as `:: Publishing…` in the tint and
+  text of the post states (scheduled, published, needs approval), still
+  pixel art of an icon, or the repository's card (its mark, name and
+  star count, then the pull requests merged last, from GitHub at build
+  time, without work-package codes).
+- **Code demo.** A bordered panel with ui-sdk's tabs (API, CLI, MCP,
+  SDK) along its top; each tab shows the request on the left and the
+  response on the right, both on `muted` in Geist Mono 13 px, each under
+  a mono caption, and a ghost Copy button on the request's caption. The
+  requests are the docs' own, the responses the contract's shapes, and
+  every id is made up and reads as such.
+- **Tiles.** Bordered cells in rows of four (two on a phone), under a
+  mono group label: a 36 px bordered tile with an icon or a brand's mark,
+  an arrow pointing out, a title (15 px, 600) and an optional line.
+- **Use cases.** ui-sdk's vertical tabs: cases in a column of bordered
+  rows on the left (an icon, a title, a line), the selected one on
+  `muted` with a 2 px blue bar at its start; on the right, its demo: a
+  chip, a mock window, a short paragraph and a link to its docs page.
+  Below 768 px the column comes first and the demo under it.
+- **Closing band.** The last section before the footer is a call to
+  action on the brand field: a white headline and line, centred, a white
+  button with ink text and a white text link, with the field's rails on
+  the page's and its captions.
 - **FAQ.** A band on the grid, in two cells: on the left, quiet pixel art
   filling the cell (an icon rasterised onto 5 px cells in the blue and
   lavender tints, `#E8ECFD` and `#EDE7FF`, with lavender on the brightest
