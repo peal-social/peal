@@ -14,6 +14,7 @@
     "**/*.css"
   ],
   "exports": {
+    "./brand-marks/*": "./src/brand-marks/*",
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts",
     "./lib/*": "./src/lib/*.ts",

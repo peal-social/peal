@@ -20,12 +20,10 @@ import {
 } from "peal-ui/components/table";
 import { useId, useState } from "react";
 import type { ReactNode } from "react";
-import type { SimpleIcon } from "simple-icons";
 import {
   siBluesky,
   siDiscord,
   siFacebook,
-  siGoogle,
   siInstagram,
   siMastodon,
   siPinterest,
@@ -36,33 +34,32 @@ import {
   siYoutube,
 } from "simple-icons";
 
-import { BrandMark } from "#components/shell/brand-mark.tsx";
+import {
+  BrandMark,
+  googleBusinessProfileBrand,
+  linkedinBrand,
+  slackBrand,
+} from "#components/shell/brand-mark.tsx";
+import type { Brand } from "#components/shell/brand-mark.tsx";
 import { rowMatches } from "#platforms/rows.ts";
 import type { PlatformRow } from "#platforms/rows.ts";
 
-// LinkedIn and Slack asked to be left out of simple-icons: a tile of their
-// letters stands in.
-const marks: Readonly<Record<Platform, SimpleIcon | null>> = {
+// simple-icons' marks, and peal-ui's for the brands it does not hold.
+const marks: Readonly<Record<Platform, Brand>> = {
   bluesky: siBluesky,
   discord: siDiscord,
   facebook: siFacebook,
-  googleBusiness: siGoogle,
+  googleBusiness: googleBusinessProfileBrand,
   instagram: siInstagram,
-  linkedin: null,
+  linkedin: linkedinBrand,
   mastodon: siMastodon,
   pinterest: siPinterest,
-  slack: null,
+  slack: slackBrand,
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,
   x: siX,
   youtube: siYoutube,
-};
-
-// The letters of the tiles that stand in for a mark.
-const letters: Readonly<Partial<Record<Platform, string>>> = {
-  linkedin: "in",
-  slack: "S",
 };
 
 const Capability = ({
@@ -150,65 +147,55 @@ export const PlatformsView = ({
                 </TableCell>
               </TableRow>
             ) : (
-              shown.map((row) => {
-                const mark = marks[row.platform];
-
-                return (
-                  <TableRow key={row.platform}>
-                    <TableCell>
-                      <span className="flex items-center gap-2.5 font-medium">
-                        {mark === null ? (
-                          <span
-                            aria-hidden
-                            className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md text-xs font-bold"
-                          >
-                            {letters[row.platform]}
-                          </span>
-                        ) : (
-                          <span className="bg-card ring-border flex size-6 items-center justify-center rounded-md ring-1">
-                            <BrandMark icon={mark} className="size-4" />
-                          </span>
-                        )}
-                        {nameOf(row.platform)}
+              shown.map((row) => (
+                <TableRow key={row.platform}>
+                  <TableCell>
+                    <span className="flex items-center gap-2.5 font-medium">
+                      <span className="bg-card ring-border flex size-6 items-center justify-center rounded-md ring-1">
+                        <BrandMark
+                          icon={marks[row.platform]}
+                          className="size-4"
+                        />
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-muted-foreground font-mono">
-                        {row.platform}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      {row.textLimit === null
-                        ? t("noLimit")
-                        : t("textLimit", {
-                            maximum: row.textLimit.maximum,
-                            unit: row.textLimit.unit,
-                          })}
-                    </TableCell>
-                    <TableCell>{t("media", { count: row.maxMedia })}</TableCell>
-                    <TableCell>
-                      <span className="flex flex-wrap gap-1">
-                        {row.followUps === null ? null : (
-                          <Capability icon={<MessagesSquareIcon aria-hidden />}>
-                            {t(`followUps.${row.followUps}`)}
-                          </Capability>
-                        )}
-                        {row.analytics ? (
-                          <Capability icon={<ChartColumnIcon aria-hidden />}>
-                            {t("analytics")}
-                          </Capability>
-                        ) : null}
-                        {row.unpublish ? (
-                          <Capability icon={<Trash2Icon aria-hidden />}>
-                            {t("unpublish")}
-                          </Capability>
-                        ) : null}
-                      </span>
-                    </TableCell>
-                    <TableCell variant="numeric">{row.channels}</TableCell>
-                  </TableRow>
-                );
-              })
+                      {nameOf(row.platform)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <code className="text-muted-foreground font-mono">
+                      {row.platform}
+                    </code>
+                  </TableCell>
+                  <TableCell>
+                    {row.textLimit === null
+                      ? t("noLimit")
+                      : t("textLimit", {
+                          maximum: row.textLimit.maximum,
+                          unit: row.textLimit.unit,
+                        })}
+                  </TableCell>
+                  <TableCell>{t("media", { count: row.maxMedia })}</TableCell>
+                  <TableCell>
+                    <span className="flex flex-wrap gap-1">
+                      {row.followUps === null ? null : (
+                        <Capability icon={<MessagesSquareIcon aria-hidden />}>
+                          {t(`followUps.${row.followUps}`)}
+                        </Capability>
+                      )}
+                      {row.analytics ? (
+                        <Capability icon={<ChartColumnIcon aria-hidden />}>
+                          {t("analytics")}
+                        </Capability>
+                      ) : null}
+                      {row.unpublish ? (
+                        <Capability icon={<Trash2Icon aria-hidden />}>
+                          {t("unpublish")}
+                        </Capability>
+                      ) : null}
+                    </span>
+                  </TableCell>
+                  <TableCell variant="numeric">{row.channels}</TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>

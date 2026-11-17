@@ -20,6 +20,7 @@ import {
   KeyRoundIcon,
   LayersIcon,
   MegaphoneIcon,
+  NewspaperIcon,
   MessagesSquareIcon,
   PackageIcon,
   PanelsTopLeftIcon,
@@ -61,6 +62,7 @@ const siteIcons = {
   key: KeyRoundIcon,
   layers: LayersIcon,
   megaphone: MegaphoneIcon,
+  newspaper: NewspaperIcon,
   messages: MessagesSquareIcon,
   package: PackageIcon,
   panels: PanelsTopLeftIcon,
@@ -81,13 +83,25 @@ const siteIcons = {
 type SiteIcon = keyof typeof siteIcons;
 
 /**
- * A brand's own mark (DESIGN.md, Icons): a simple-icons path, drawn in
- * currentColor, or the letters of a lettered tile for a brand that has no
- * mark there. The page passes the path, so the components hold no logo.
+ * A brand's own mark (DESIGN.md, Icons): a path drawn in currentColor
+ * (simple-icons', on its 24-unit box, or one of `lib/brand-marks.ts` with
+ * its own box), or the letters of a lettered tile for a brand that has no
+ * mark. The page passes the mark, so the components hold no logo.
  */
 type SiteMark =
-  | { readonly kind: "path"; readonly path: string }
+  | {
+      readonly kind: "path";
+      /** `evenodd` where a shape inside another is a hole, such as a letter. */
+      readonly fillRule?: "evenodd" | undefined;
+      readonly path: string;
+      /** The box the path fills, when it is not simple-icons' 24 units. */
+      readonly viewBox?: string | undefined;
+    }
   | { readonly kind: "letters"; readonly letters: string };
+
+/** What tells one mark from another, such as a list's key. */
+const markKey = (mark: SiteMark) =>
+  mark.kind === "path" ? mark.path : mark.letters;
 
 const Mark = ({
   className,
@@ -98,12 +112,12 @@ const Mark = ({
 }) =>
   mark.kind === "path" ? (
     <svg
-      viewBox="0 0 24 24"
+      viewBox={mark.viewBox ?? "0 0 24 24"}
       aria-hidden="true"
       fill="currentColor"
       className={cn("size-4 shrink-0", className)}
     >
-      <path d={mark.path} />
+      <path d={mark.path} fillRule={mark.fillRule} />
     </svg>
   ) : (
     <span
@@ -136,6 +150,6 @@ const SiteIconView = ({
   );
 };
 
-export { Mark, SiteIconView, siteIcons };
+export { Mark, markKey, SiteIconView, siteIcons };
 
 export type { SiteIcon, SiteMark };

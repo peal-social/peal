@@ -111,8 +111,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The workspace's home builds each assistant's setup (`#home/agents.ts`,
   tested) from the MCP endpoint at the address the browser has Peal open
   at, after hydration: never a key. Brand marks come from simple-icons
-  (`BrandMark`); LinkedIn, Slack and OpenAI, which are not in it, get a
-  plain tile of their letters (`letters` in `platforms-view.tsx`). PealAPI's Platforms lists `platformRowsOf`
+  (`BrandMark`); LinkedIn, Slack and Google Business Profile, which are
+  not in it, from the files their owners publish, in peal-ui's
+  `src/brand-marks` (`linkedinBrand`, `slackBrand`,
+  `googleBusinessProfileBrand`); OpenAI's assistant gets a plain tile. PealAPI's Platforms lists `platformRowsOf`
   (`#platforms/rows.ts`): this server's capabilities beside the
   workspace's channels.
 - The web app reports its errors to `POST /api/client-errors`:

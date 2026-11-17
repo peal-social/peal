@@ -18,7 +18,7 @@ import { highlight } from "./highlight.ts";
 import type { CodeGrammar } from "./highlight.ts";
 import {
   cliRequest,
-  mcpRefusal,
+  mcpConfig,
   publishResponse,
   publishSnippets,
   requestLanguages,
@@ -33,8 +33,8 @@ import type { RequestLanguage } from "./snippets.ts";
 export interface HomeCode {
   /** The command line's row. */
   readonly cli: CodeSample;
-  /** The MCP row: a refused tool call and the refusal. */
-  readonly mcp: { readonly request: CodeSample; readonly response: CodeSample };
+  /** The MCP row: the client's configuration. */
+  readonly mcp: CodeSample;
   /** The publishing request in every way in, and what it answers. */
   readonly publish: {
     readonly response: CodeSample;
@@ -101,16 +101,7 @@ export const homeCode = async (): Promise<HomeCode> => {
       label: publishSnippets.cli.label,
       value: "cli",
     }),
-    mcp: {
-      request: await sample(mcpRefusal.request, "json", {
-        ...json,
-        filename: "tools/call",
-      }),
-      response: await sample(mcpRefusal.response, "json", {
-        ...json,
-        filename: "result",
-      }),
-    },
+    mcp: await sample(mcpConfig, "json", { ...json, filename: "mcp.json" }),
     publish: {
       response: await sample(publishResponse, "json", {
         ...json,

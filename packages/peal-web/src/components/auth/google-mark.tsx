@@ -1,4 +1,7 @@
-import { Option, Schema } from "effect";
+import {
+  assetAddress,
+  decodeImportedFile,
+} from "#components/shell/asset-address.ts";
 
 import googleButton from "./google-g.svg";
 
@@ -11,19 +14,7 @@ import googleButton from "./google-g.svg";
 // with its aspect ratio as the guidelines allow. Never a monochrome or
 // redrawn G.
 
-// Next types an imported SVG as anything: it is the file's address, which
-// Next's build hands over as a static image and Vite's as a string.
-const decodeStaticImage = Schema.decodeUnknownOption(
-  Schema.Struct({ src: Schema.String })
-);
-
-const decodeAddress = Schema.decodeUnknownOption(Schema.String);
-
-const googleButtonAddress = decodeStaticImage(googleButton).pipe(
-  Option.map(({ src }) => src),
-  Option.orElse(() => decodeAddress(googleButton)),
-  Option.getOrElse(() => "")
-);
+const googleButtonAddress = assetAddress(decodeImportedFile(googleButton));
 
 export const GoogleMark = () => (
   <svg aria-hidden width={16} height={16} viewBox="10 10 20 20">

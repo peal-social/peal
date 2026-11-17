@@ -7,6 +7,12 @@ import {
 import type { AdNetwork, ChannelPlatform } from "peal-contract";
 import type { SiteMark } from "peal-ui/components/site-header";
 import {
+  googleBusinessProfile,
+  linkedin,
+  slack,
+} from "peal-ui/lib/brand-marks";
+import type { OneColourMark } from "peal-ui/lib/brand-marks";
+import {
   siBluesky,
   siDevdotto,
   siDiscord,
@@ -36,10 +42,14 @@ const markOf = (icon: SimpleIcon): SiteMark => ({
   path: icon.path,
 });
 
-// Brands missing from simple-icons get a lettered tile, as in the web app
-// (DESIGN.md, Icons): LinkedIn and Slack asked to be left out, and Google
-// Business Profile has no mark there.
-const lettered = (letters: string): SiteMark => ({ kind: "letters", letters });
+// Brands simple-icons does not hold take peal-ui's brand marks, from the
+// files their owners publish, in one colour as the rest.
+const ownMark = ({ fillRule, path, viewBox }: OneColourMark): SiteMark => ({
+  fillRule,
+  kind: "path",
+  path,
+  viewBox,
+});
 
 export const githubMark = markOf(siGithub);
 
@@ -47,7 +57,7 @@ export const discordMark = markOf(siDiscord);
 
 export const telegramMark = markOf(siTelegram);
 
-export const slackMark = lettered("S");
+export const slackMark = ownMark(slack);
 
 export type PlatformGroup = "ads" | "blog" | "chat" | "social";
 
@@ -92,7 +102,7 @@ const channelEntries: Readonly<
   },
   googleBusiness: {
     docs: "platforms/google-business",
-    mark: lettered("G"),
+    mark: ownMark(googleBusinessProfile),
     name: "Google Business Profile",
   },
   hashnode: {
@@ -107,7 +117,7 @@ const channelEntries: Readonly<
   },
   linkedin: {
     docs: "platforms/linkedin",
-    mark: lettered("in"),
+    mark: ownMark(linkedin),
     name: "LinkedIn",
   },
   mastodon: {

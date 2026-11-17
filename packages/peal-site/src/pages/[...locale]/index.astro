@@ -1,11 +1,12 @@
 ---
 import type { GetStaticPaths } from "astro";
 import { ProductPair } from "peal-ui/components/app-mock";
-import { BrandField } from "peal-ui/components/brand-field";
+import { buttonVariants } from "peal-ui/components/button";
 import { CtaBand } from "peal-ui/components/cta-band";
 import { FaqSection } from "peal-ui/components/faq-section";
 import { FeatureGrid } from "peal-ui/components/feature-cell";
 import { HeroStage } from "peal-ui/components/hero-stage";
+import { PixelGlow } from "peal-ui/components/pixel-glow";
 import { ProductBento } from "peal-ui/components/product-bento";
 import { ProductIntro } from "peal-ui/components/product-intro";
 import { ProductRows } from "peal-ui/components/product-rows";
@@ -86,32 +87,24 @@ const bento = studioBento(locale, t, settings);
     is:inline
     set:html={faqJsonLdText(faq)}
   />
-  <BrandField
-    captions={catalogue.footer.captions}
-    railsClassName="inset-x-[max(0px,calc((100%-72rem)/2))] top-8 bottom-12"
-  >
+  <div class="relative isolate mx-auto max-w-6xl overflow-hidden">
+    <PixelGlow client:load layout="hero" />
     <section
       aria-labelledby="hero-title"
-      class="mx-auto flex max-w-6xl flex-col gap-12 px-4 pt-20 pb-24 sm:px-6 sm:pt-24 lg:px-10"
+      class="flex flex-col gap-12 px-4 pt-20 pb-24 sm:px-6 sm:pt-24 lg:px-10"
     >
       <div class="grid items-end gap-8 lg:grid-cols-2 lg:gap-16">
         <div>
-          <p class="font-mono text-xs tracking-[0.04em] lowercase">
-            {t.hero.status}
-          </p>
           <h1
             id="hero-title"
-            class="mt-6 max-w-2xl text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
+            class="max-w-2xl text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
           >
             {t.hero.title}
           </h1>
           <div class="mt-8 flex flex-wrap items-center gap-3">
             {
               hero.primary === undefined ? null : (
-                <a
-                  href={hero.primary.href}
-                  class="bg-card text-foreground hover:bg-muted focus-visible:ring-ring/50 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium outline-none focus-visible:ring-3"
-                >
+                <a href={hero.primary.href} class={buttonVariants()}>
                   {hero.primary.label}
                 </a>
               )
@@ -120,7 +113,7 @@ const bento = studioBento(locale, t, settings);
               hero.secondary === undefined ? null : (
                 <a
                   href={hero.secondary.href}
-                  class="focus-visible:ring-ring/50 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-3"
+                  class={buttonVariants({ variant: "outline" })}
                 >
                   {hero.secondary.label}
                 </a>
@@ -128,10 +121,13 @@ const bento = studioBento(locale, t, settings);
             }
           </div>
         </div>
-        <p class="max-w-[40rem] text-base sm:text-lg">{t.hero.lead}</p>
+        <p class="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
+          {t.hero.lead}
+        </p>
       </div>
       <HeroStage
         client:load
+        className="border"
         label={t.hero.stage}
         tabs={heroTabs(locale, catalogue, settings)}
       >
@@ -142,7 +138,7 @@ const bento = studioBento(locale, t, settings);
         />
       </HeroStage>
     </section>
-  </BrandField>
+  </div>
 
   <section id="products" aria-labelledby="products-title" class="scroll-mt-8">
     <SectionOpener
@@ -224,7 +220,7 @@ const bento = studioBento(locale, t, settings);
   />
 
   <CtaBand
-    captions={catalogue.footer.captions}
+    client:visible
     line={t.cta.line}
     primary={cta.primary}
     secondary={cta.secondary}

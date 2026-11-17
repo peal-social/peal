@@ -6,6 +6,8 @@ import { cn } from "../lib/utils";
 import { LanguageMenu } from "./language-menu";
 import type { LanguageMenuLink } from "./language-menu";
 import { PealMark } from "./peal-mark";
+import { PolicyMenu } from "./policy-menu";
+import type { PolicyMenuLink } from "./policy-menu";
 
 interface SiteFooterLink {
   /** Marks the link to the page being read. */
@@ -19,6 +21,13 @@ interface SiteFooterLink {
 interface SiteFooterColumn {
   readonly label: string;
   readonly links: readonly SiteFooterLink[];
+  /** A menu after the links, such as the policies: its name and links. */
+  readonly menu?:
+    | {
+        readonly label: string;
+        readonly links: readonly PolicyMenuLink[];
+      }
+    | undefined;
 }
 
 type SiteFooterProps = Omit<PartProps<"footer">, "children" | "className"> & {
@@ -36,8 +45,8 @@ type SiteFooterProps = Omit<PartProps<"footer">, "children" | "className"> & {
     readonly name: string;
   };
   /**
-   * The language menu, under the licence's line: the page's word for
-   * language, and the same page in each language.
+   * The language menu, under the mark: the page's word for language, and
+   * the same page in each language.
    */
   readonly languages?:
     | {
@@ -45,8 +54,6 @@ type SiteFooterProps = Omit<PartProps<"footer">, "children" | "className"> & {
         readonly links: readonly LanguageMenuLink[];
       }
     | undefined;
-  /** A line under the mark, such as the licence's. */
-  readonly note: string;
 };
 
 const linkClassName =
@@ -80,16 +87,21 @@ const Column = ({ column }: { readonly column: SiteFooterColumn }) => {
             <FooterLink link={link} />
           </li>
         ))}
+        {column.menu === undefined || column.menu.links.length === 0 ? null : (
+          <li className="text-muted-foreground">
+            <PolicyMenu label={column.menu.label} links={column.menu.links} />
+          </li>
+        )}
       </ul>
     </nav>
   );
 };
 
 /**
- * The marketing site's footer (DESIGN.md, Site): the mark, the licence's
- * line and the language menu, then a bordered cell per column of links,
- * and a row of captions. Every link and label comes from the page. The
- * language menu opens in the browser, so a page hydrates the footer.
+ * The marketing site's footer (DESIGN.md, Site): the mark and the
+ * language menu, then a bordered cell per column of links, and a row of
+ * captions. Every link and label comes from the page. The language menu
+ * opens in the browser, so a page hydrates the footer.
  */
 const SiteFooter = ({
   captions,
@@ -97,7 +109,6 @@ const SiteFooter = ({
   columns,
   home,
   languages,
-  note,
   render,
   ...props
 }: SiteFooterProps) =>
@@ -108,7 +119,7 @@ const SiteFooter = ({
       children: (
         <div className="mx-auto max-w-6xl">
           <div className="grid sm:grid-cols-2 md:flex">
-            <div className="flex flex-col gap-4 p-6 sm:col-span-2 md:flex-[1.5]">
+            <div className="flex flex-col items-start gap-4 p-6 sm:col-span-2 md:flex-1">
               <a
                 href={home.href}
                 aria-label={home.label}
@@ -117,9 +128,6 @@ const SiteFooter = ({
                 <PealMark className="size-6" />
                 {home.name}
               </a>
-              <p className="text-muted-foreground max-w-xs text-[13px]">
-                {note}
-              </p>
               {languages === undefined ? null : (
                 <LanguageMenu
                   label={languages.label}
@@ -133,7 +141,7 @@ const SiteFooter = ({
             ))}
           </div>
           {captions === undefined ? null : (
-            <div className="text-muted-foreground flex flex-wrap justify-between gap-2 border-t px-6 py-4 font-mono text-xs tracking-[0.04em] lowercase">
+            <div className="text-muted-foreground flex flex-wrap justify-between gap-2 border-t px-6 py-4 font-mono text-xs tracking-[0.04em]">
               <span>{captions.start}</span>
               <span>{captions.end}</span>
             </div>

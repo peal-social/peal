@@ -323,11 +323,15 @@ self-hoster needs only Postgres and an S3-compatible store:
   logic in `src/pricing.ts`) and the docs' **Plans and billing** page
   (`docs/guides/workspace/billing.mdx`, with the variables of
   `pricing-variables.ts`) show the contract's rate card and never type a
-  figure (`test/pricing.test.ts`): US dollars, each price excluding VAT and
-  with France's VAT, labelled, in every language, and no exchange rate. A
+  figure (`test/pricing.test.ts`): US dollars, in every language, and no
+  exchange rate. The docs page shows each price excluding VAT and with
+  France's VAT; the site's shows prices excluding VAT, and says once,
+  after the rate card, that French VAT applies, at the rate card's rate. A
   figure the rate card marks as awaiting a decision shows as coming
-  (`comingMeters`). Both work out the rate card's `pricingExamples`, a part
-  month with `accountsCharge`, as the invoice bills it. The legal pages'
+  (`comingMeters`). The site's calculator prices any count with the
+  contract's sums (`test/graduated.test.ts`); the docs page works out the
+  rate card's `pricingExamples`, a part month with `accountsCharge`, as
+  the invoice bills it. The legal pages'
   plans section follows it, pointing to the pricing page for figures.
 - Site strings live in `packages/peal-site/src/i18n/messages.ts`, legal
   documents in `src/content/legal/<locale>/<document>.md`. Keep a legal

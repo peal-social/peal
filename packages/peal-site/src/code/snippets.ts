@@ -528,41 +528,18 @@ export const publishResponse = JSON.stringify(
 /** The command line's row: the request alone. */
 export const cliRequest = cli;
 
-// An MCP client connected without the permission to publish asks to
-// publish a draft: the server refuses it with the message of the server's
-// src/app/mcp/refusals.ts, cut short here.
-export const mcpRefusal = {
-  request: JSON.stringify(
-    {
-      id: 7,
-      jsonrpc: "2.0",
-      method: "tools/call",
-      params: {
-        arguments: { postId: "0190f3a0-0000-7000-8000-00000000b002" },
-        name: "publish_post",
-      },
+// The MCP row: the configuration most MCP clients take for a remote
+// server, as `peal mcp` prints it and the docs' MCP page shows it. The
+// client then signs in, in a browser.
+export const mcpConfig = JSON.stringify(
+  {
+    mcpServers: {
+      peal: { type: "http", url: "https://app.peal.social/api/mcp" },
     },
-    null,
-    2
-  ),
-  response: JSON.stringify(
-    {
-      id: 7,
-      jsonrpc: "2.0",
-      result: {
-        content: [
-          {
-            text: "This connection may not schedule or publish posts in this workspace: the user did not give this client the scope workspace:publish (schedule and publish posts, and answer comments). …",
-            type: "text",
-          },
-        ],
-        isError: true,
-      },
-    },
-    null,
-    2
-  ),
-};
+  },
+  null,
+  2
+);
 
 /** A post.published delivery, as the docs' webhook events page shows one. */
 export const webhookPayload = JSON.stringify(

@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from "./accordion";
 import { PixelFigure } from "./pixel-figure";
+import { SectionCounter } from "./section-opener";
 
 // The label's brackets, as text.
 const slashes = "//";
@@ -61,11 +62,7 @@ const FaqSection = ({
       data-slot="faq-section"
       className={cn("mx-auto max-w-6xl", className)}
     >
-      {counter === undefined ? null : (
-        <p className="text-muted-foreground px-6 pb-4 font-mono text-xs tracking-[0.04em]">
-          {counter}
-        </p>
-      )}
+      {counter === undefined ? null : <SectionCounter counter={counter} />}
       <div className="grid border-y md:grid-cols-2">
         <div className="relative flex h-24 items-center justify-center overflow-hidden border-b md:h-auto md:min-h-64 md:border-e md:border-b-0">
           <PixelFigure
@@ -84,7 +81,7 @@ const FaqSection = ({
             <span aria-hidden="true">{backslashes}</span>
           </span>
         </div>
-        <div className="flex flex-col justify-center gap-4 px-6 py-10 md:py-14">
+        <div className="flex flex-col justify-center gap-5 px-6 py-16 sm:py-20">
           <h2
             id={heading}
             className="text-[30px] leading-[1.1] font-semibold tracking-[-0.025em] sm:text-[40px]"

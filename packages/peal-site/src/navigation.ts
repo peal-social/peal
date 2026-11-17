@@ -15,7 +15,6 @@ import { locales } from "./i18n/locales.ts";
 import type { Locale } from "./i18n/locales.ts";
 import type { Messages } from "./i18n/messages.ts";
 import { localeNames } from "./i18n/messages.ts";
-import { legalDocuments } from "./legal.ts";
 import type { LegalDocument } from "./legal.ts";
 import {
   discordMark,
@@ -160,7 +159,7 @@ const menuLinks = (
 const nonEmpty = (groups: readonly SiteMenuGroup[]) =>
   groups.filter((group) => group.links.length > 0);
 
-/** The header's items: the three menus, then Pricing, Docs and Blog. */
+/** The header's items: the three menus, then Pricing and Docs. */
 const navItems = (
   t: Messages["nav"],
   pages: PageLinks,
@@ -210,6 +209,14 @@ const navItems = (
             mark: discordMark,
           },
         ];
+
+  // The blog is a page of the site, in the page's language.
+  const blog = {
+    ...t.links.blog,
+    href: pages.blog,
+    icon: "newspaper" as const,
+    intro: t.intros.blog,
+  };
 
   const docs = settings.docs("");
 
@@ -262,7 +269,7 @@ const navItems = (
       groups: [
         {
           label: t.resourcesGroup,
-          links: [...menuLinks(resourceRows, t, settings), ...discord],
+          links: [blog, ...menuLinks(resourceRows, t, settings), ...discord],
         },
       ],
       kind: "menu",
@@ -279,7 +286,6 @@ const navItems = (
     ...(docs === undefined
       ? []
       : [{ href: docs, kind: "link" as const, label: t.docs }]),
-    { href: pages.blog, kind: "link", label: t.blog },
   ];
 };
 
@@ -315,6 +321,20 @@ export const headerProps = (
   };
 };
 
+/** The legal documents the footer links to. */
+const footerDocuments: readonly LegalDocument[] = ["privacy", "terms"];
+
+/** The links whose page exists, without those a setting turns off. */
+const present = (
+  links: readonly {
+    readonly href: string | undefined;
+    readonly label: string;
+  }[]
+) =>
+  links.flatMap(({ href, label }) =>
+    href === undefined ? [] : [{ href, label }]
+  );
+
 export const footerProps = (
   messages: Messages,
   pages: PageLinks,
@@ -323,21 +343,17 @@ export const footerProps = (
 ): SiteFooterProps => {
   const t = messages.footer;
 
-  const contract = [
-    { href: settings.app("cancel"), label: t.cancel },
-    { href: settings.app("withdraw"), label: t.withdraw },
-  ].flatMap(({ href, label }) => (href === undefined ? [] : [{ href, label }]));
+  const titled = (rows: readonly Row[]) =>
+    rows.flatMap((row) => {
+      const href = hrefOf(row.target, settings);
 
-  const legal: SiteFooterColumn = {
-    label: t.legal,
-    links: legalDocuments.map((document) => ({
-      href: pages.legal(document),
-      label: messages.legal[document],
-    })),
-  };
+      return href === undefined
+        ? []
+        : [{ href, label: messages.nav.links[row.name].title }];
+    });
 
-  const follow: SiteFooterColumn = {
-    label: t.follow,
+  const socials: SiteFooterColumn = {
+    label: t.socials,
     links: [
       ...accounts.map(({ href, name, rel }) => ({ href, label: name, rel })),
       ...(settings.discord === undefined
@@ -347,15 +363,54 @@ export const footerProps = (
     ],
   };
 
-  return {
-    captions: t.captions,
-    columns: [
-      legal,
-      ...(contract.length === 0
-        ? []
-        : [{ label: t.contract, links: contract }]),
-      follow,
+  // The privacy policy and the terms (the data deletion page is for
+  // platforms' app review), then the contract's functions, which the law
+  // wants within reach of every page.
+  const policies = present([
+    ...footerDocuments.map((document) => ({
+      href: pages.legal(document),
+      label: messages.legal[document],
+    })),
+    { href: settings.app("cancel"), label: t.cancel },
+    { href: settings.app("withdraw"), label: t.withdraw },
+  ]);
+
+  const resources: SiteFooterColumn = {
+    label: messages.nav.resources,
+    links: present([
+      { href: settings.docs(""), label: messages.nav.docs },
+      { href: pages.blog, label: messages.nav.blog },
+      ...titled(resourceRows),
+    ]),
+  };
+
+  // Cookie settings leads to the privacy policy's cookies section until
+  // the site sets a cookie that needs consent: Plausible sets none.
+  const company: SiteFooterColumn = {
+    label: t.company,
+    links: [
+      { href: pages.pricing, label: messages.pricing.nav },
+      {
+        href: `${pages.legal("privacy")}#${t.cookies.section}`,
+        label: t.cookies.label,
+      },
     ],
+    menu: { label: t.policies, links: policies },
+  };
+
+  const columns: SiteFooterColumn[] = [
+    { label: "PealStudio", links: titled(studioRows) },
+    { label: "PealAPI", links: titled(developerRows) },
+    resources,
+    socials,
+    company,
+  ];
+
+  return {
+    captions: {
+      start: `© ${new Date().getFullYear()} ${messages.nav.brand}`,
+    },
+    columns: columns.filter((column) => column.links.length > 0),
     home: {
       href: pages.home,
       label: messages.nav.home,
@@ -371,6 +426,5 @@ export const footerProps = (
         lang: code,
       })),
     },
-    note: t.license,
   };
 };

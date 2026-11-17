@@ -1,6 +1,6 @@
 // The header and the footer link only to what exists: docs pages that the
 // docs have in every language, and the settings the build was given.
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { AdNetworkSchema, ChannelPlatformSchema } from "peal-contract";
@@ -157,7 +157,6 @@ describe("the site's navigation", () => {
       "Resources",
       "Pricing",
       "Docs",
-      "Blog",
     ]);
     expect(header.signIn?.href).toBe("https://app.test/sign-in");
     expect(header.getStarted?.href).toBe("https://app.test/sign-up");
@@ -173,8 +172,9 @@ describe("the site's navigation", () => {
     expect(header.items.map((item) => item.label)).toStrictEqual([
       "Resources",
       "Pricing",
-      "Blog",
     ]);
+    // The blog is the site's own page: its link needs no setting.
+    expect(hrefs(header)).toContain(pages.blog);
     expect(header.signIn).toBeUndefined();
     expect(header.getStarted).toBeUndefined();
     expect(header.discord).toBeUndefined();
@@ -187,6 +187,27 @@ describe("the site's navigation", () => {
     expect(labels(everything)).toContain("Discord");
     expect(labels(nothing)).not.toContain("Discord");
   });
+
+  it.each(locales)(
+    "leads Cookie settings to a section of the privacy policy in %s",
+    (locale) => {
+      const policy = readFileSync(
+        path.join(
+          import.meta.dirname,
+          `../src/content/legal/${locale}/privacy.md`
+        ),
+        "utf-8"
+      );
+
+      // A heading's id is its text in lower case, spaces as hyphens.
+      const ids = policy
+        .split("\n")
+        .filter((line) => line.startsWith("## "))
+        .map((line) => line.slice(3).toLowerCase().replaceAll(" ", "-"));
+
+      expect(ids).toContain(messages(locale).footer.cookies.section);
+    }
+  );
 
   it("marks the page's own language in the footer", () => {
     const footer = footerProps(

@@ -1,7 +1,15 @@
 ---
 import type { GetStaticPaths } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { AccountPricer } from "peal-ui/components/account-pricer";
+import { buttonVariants } from "peal-ui/components/button";
+import { CtaBand } from "peal-ui/components/cta-band";
+import { PixelGlow } from "peal-ui/components/pixel-glow";
+import { RateCard } from "peal-ui/components/rate-card";
+import { Eyebrow } from "peal-ui/components/section-opener";
 
+import { appLink, docsLink } from "../../config.ts";
+import { ctaLinks } from "../../home.ts";
 import { localePaths, pageLocale } from "../../i18n/locales.ts";
 import { messages } from "../../i18n/messages.ts";
 import Base from "../../layouts/base.astro";
@@ -11,165 +19,186 @@ export const getStaticPaths = (() => localePaths()) satisfies GetStaticPaths;
 
 const locale = pageLocale(Astro.currentLocale);
 
-const t = messages(locale).pricing;
+const catalogue = messages(locale);
+
+const t = catalogue.pricing;
 
 const page = pricingPage(locale, t);
+
+const signUp = appLink(locale, "sign-up");
+
+const cta =
+  signUp === undefined
+    ? undefined
+    : { href: signUp, label: catalogue.home.hero.primary };
+
+const selfHosting = docsLink(locale, "self-hosting");
+
+// The closing band, as the home page's.
+const closing = ctaLinks(catalogue.home.cta, {
+  app: (path) => appLink(locale, path),
+  docs: (path) => docsLink(locale, path),
+});
+
+const [cloudPlan, enterprisePlan] = page.rateCard.plans;
+
+// The rate card's plans, with the build's ways in.
+const plans = [
+  ...(cloudPlan === undefined
+    ? []
+    : [{ ...cloudPlan, action: cta === undefined ? undefined : { ...cta, primary: true } }]),
+  ...(enterprisePlan === undefined
+    ? []
+    : [
+        {
+          ...enterprisePlan,
+          action: { href: page.enterprise.href, label: page.enterprise.talk },
+        },
+      ]),
+];
+
 ---
 
-<Base current="pricing" description={t.description} path="pricing" title={`${t.title} · Peal`}>
-  <section class="mx-auto max-w-6xl px-6 pt-16 pb-8">
-    <h1 class="text-4xl font-semibold tracking-tight">{t.title}</h1>
-    <p class="mt-4 max-w-3xl text-lg text-neutral-600">{page.lead}</p>
-    <ul class="mt-4 flex max-w-3xl flex-col gap-1 text-sm text-neutral-600">
-      <li>{t.taxes.excluded}</li>
-      <li>{page.vat}</li>
-      <li>{t.taxes.vat}</li>
-      <li>{t.taxes.currency}</li>
-      <li>{t.taxes.reverseCharge}</li>
-    </ul>
-  </section>
-
-  <section class="mx-auto grid max-w-6xl gap-8 px-6 pb-8 lg:grid-cols-2">
-    <div class="rounded-2xl border border-neutral-200 p-5">
-      <h2 class="text-lg font-semibold">{t.ladder.title}</h2>
-      <p class="mt-2 text-sm text-neutral-600">{t.ladder.lead}</p>
-      <table class="mt-4 w-full text-sm">
-        <caption class="sr-only">{t.ladder.caption}</caption>
-        <thead>
-          <tr>
-            <th class="pb-2 text-left font-medium" scope="col">
-              {t.ladder.accounts}
-            </th>
-            <th class="pb-2 text-right font-medium" scope="col">
-              {t.ladder.price}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            page.ladder.map((row) => (
-              <tr class="border-t border-neutral-200">
-                <th class="py-2 pr-4 text-left font-medium" scope="row">
-                  {row.accounts}
-                </th>
-                <td class="py-2 text-right tabular-nums">{row.text}</td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-      <p class="mt-4 text-sm text-neutral-600">{page.dayRule}</p>
-    </div>
-
-    <div class="rounded-2xl border border-neutral-200 p-5">
-      <h2 class="text-lg font-semibold">{t.examples.title}</h2>
-      <p class="mt-2 text-sm text-neutral-600">{t.examples.lead}</p>
-      <table class="mt-4 w-full text-sm">
-        <caption class="sr-only">{t.examples.caption}</caption>
-        <thead>
-          <tr>
-            <th class="pb-2 text-left font-medium" scope="col">
-              {t.examples.accounts}
-            </th>
-            <th class="pb-2 text-right font-medium" scope="col">
-              {t.examples.month}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            page.examples.map((row) => (
-              <tr class="border-t border-neutral-200">
-                <td class="py-2 pr-4 tabular-nums">{row.accounts}</td>
-                <td class="py-2 text-right tabular-nums">{row.text}</td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-      <h3 class="mt-6 font-semibold">{t.partMonth.title}</h3>
-      <p class="mt-2 text-sm text-neutral-600 tabular-nums">
-        {page.partMonth.text}
-      </p>
-    </div>
-  </section>
-
-  <section class="mx-auto max-w-6xl px-6 py-8">
-    <h2 class="text-2xl font-semibold tracking-tight">{t.meters.title}</h2>
-    <p class="mt-2 max-w-3xl text-neutral-600">{t.meters.lead}</p>
-    <ul class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {
-        page.meters.map((row) => (
-          <li class="flex flex-col gap-1 rounded-2xl border border-neutral-200 p-5">
-            <h3 class="font-semibold">{row.name}</h3>
-            <p class="text-sm tabular-nums">{row.allowance}</p>
-            {row.priceText === null ? null : (
-              <p class="text-sm tabular-nums">{row.priceText}</p>
-            )}
-            {row.note === null ? null : (
-              <p class="text-sm text-neutral-600">{row.note}</p>
-            )}
-          </li>
-        ))
-      }
-    </ul>
-    <div class="mt-6 max-w-3xl rounded-2xl border border-neutral-200 p-5">
-      <h3 class="font-semibold">{t.meters.x.title}</h3>
-      <p class="mt-2 text-sm text-neutral-600">{t.meters.x.lead}</p>
-      <table class="mt-4 w-full text-sm">
-        <caption class="sr-only">{t.meters.x.title}</caption>
-        <tbody>
-          {
-            page.x.rates.map((rate) => (
-              <tr class="border-t border-neutral-200">
-                <th class="py-2 pr-4 text-left font-medium" scope="row">
-                  {rate.name}
-                </th>
-                <td class="py-2 text-right tabular-nums">{rate.price.text}</td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-      <p class="mt-4 text-sm text-neutral-600">{page.x.ceiling}</p>
-      <p class="mt-2 text-sm text-neutral-600">{page.x.readOn}</p>
-    </div>
-  </section>
-
-  <section class="mx-auto grid max-w-6xl gap-8 px-6 py-8 lg:grid-cols-2">
-    <div>
-      <h2 class="text-lg font-semibold">{t.unlimited.title}</h2>
-      <ul class="mt-2 flex list-disc flex-col gap-1 pl-5 text-neutral-600">
-        {t.unlimited.items.map((item) => <li>{item}</li>)}
-      </ul>
-    </div>
-    <div>
-      <h2 class="text-lg font-semibold">{t.storage.title}</h2>
-      <p class="mt-2 text-neutral-600">{page.storage}</p>
-      <h2 class="mt-6 text-lg font-semibold">{t.api.title}</h2>
-      <p class="mt-2 text-neutral-600">{page.api}</p>
-    </div>
-  </section>
-
-  <section class="mx-auto max-w-6xl px-6 pt-8 pb-24">
-    <h2 class="text-2xl font-semibold tracking-tight">{t.legal.title}</h2>
-    <ul
-      class="mt-4 flex max-w-3xl list-disc flex-col gap-2 pl-5 text-neutral-600"
+<Base
+  current="pricing"
+  description={t.description}
+  path="pricing"
+  title={`${t.title} · Peal`}
+>
+  <div class="relative isolate mx-auto max-w-6xl overflow-hidden">
+    <PixelGlow client:load />
+    <section
+      aria-labelledby="pricing-title"
+      class="mx-auto flex max-w-3xl flex-col items-center gap-5 px-6 pt-20 pb-16 text-center sm:pt-24"
     >
-      <li>{t.legal.billing}</li>
-      <li>{t.legal.cancel}</li>
-      <li>{t.legal.withdrawal}</li>
-      <li>{t.legal.prices}</li>
-      <li>{t.legal.legacy}</li>
-      <li>{t.selfHost}</li>
-    </ul>
-    <p class="mt-4">
-      <a
-        href={getRelativeLocaleUrl(locale, "terms")}
-        class="font-medium underline underline-offset-4"
+      <Eyebrow icon="scale" label={t.title} />
+      <h1
+        id="pricing-title"
+        class="text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
       >
-        {t.legal.terms}
-      </a>
-    </p>
+        {page.headline.text}{" "}
+        <span class="text-muted-foreground">{page.headline.muted}</span>
+      </h1>
+      <p class="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
+        {page.lead}
+      </p>
+    </section>
+  </div>
+
+  <section
+    aria-label={t.calculator.label}
+    class="mx-auto max-w-6xl border-y"
+  >
+    <AccountPricer client:visible {...page.calculator} cta={cta}>
+      <div
+        class="flex flex-col gap-6 border-b p-6 sm:p-8 lg:row-span-4 lg:grid lg:grid-rows-subgrid lg:border-e lg:border-b-0"
+      >
+        <div>
+          <h3 class="text-[15px] font-semibold">{page.enterprise.title}</h3>
+          <p class="text-muted-foreground mt-1 text-sm">
+            {page.enterprise.line}
+          </p>
+        </div>
+        <p
+          class="text-[40px] leading-none font-semibold tracking-[-0.025em]"
+        >
+          {page.enterprise.price}
+        </p>
+        <a
+          href={page.enterprise.href}
+          class={buttonVariants({ className: "w-fit", variant: "outline" })}
+        >
+          {page.enterprise.talk}
+        </a>
+        <ul
+          class="text-muted-foreground flex flex-col gap-1.5 border-t pt-5 text-sm"
+        >
+          {
+            page.enterprise.items.map((item) => (
+              <li class="flex gap-2">
+                <span
+                  aria-hidden="true"
+                  class="bg-brand mt-[7px] size-[5px] shrink-0"
+                />
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div
+        class="flex flex-col gap-6 p-6 sm:p-8 lg:row-span-4 lg:grid lg:grid-rows-subgrid"
+      >
+        <div>
+          <h3 class="text-[15px] font-semibold">{t.selfHosted.title}</h3>
+          <p class="text-muted-foreground mt-1 text-sm">{t.selfHost}</p>
+        </div>
+        <p
+          class="text-[40px] leading-none font-semibold tracking-[-0.025em]"
+        >
+          {t.selfHosted.price}
+        </p>
+        {
+          selfHosting === undefined ? (
+            <span />
+          ) : (
+            <a
+              href={selfHosting}
+              class={buttonVariants({ className: "w-fit", variant: "outline" })}
+            >
+              {t.selfHosted.link}
+            </a>
+          )
+        }
+        <ul
+          class="text-muted-foreground flex flex-col gap-1.5 border-t pt-5 text-sm"
+        >
+          {
+            t.selfHosted.items.map((item) => (
+              <li class="flex gap-2">
+                <span
+                  aria-hidden="true"
+                  class="bg-brand mt-[7px] size-[5px] shrink-0"
+                />
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </AccountPricer>
   </section>
+
+  <section
+    aria-labelledby="pricing-features"
+    class="mx-auto max-w-6xl pt-16 pb-24"
+  >
+    <div class="border-y">
+      <RateCard
+        client:visible
+        eyebrow={{ icon: "layers", label: page.rateCard.eyebrow }}
+        groups={page.rateCard.groups}
+        headingId="pricing-features"
+        note={{
+          link: {
+            href: getRelativeLocaleUrl(locale, "terms"),
+            label: t.legal.terms,
+          },
+          text: page.vat,
+        }}
+        plans={plans}
+        rows={page.rateCard.rows}
+        title={page.rateCard.title}
+      />
+    </div>
+  </section>
+
+  <CtaBand
+    client:visible
+    line={catalogue.home.cta.line}
+    primary={closing.primary}
+    secondary={{ href: page.enterprise.href, label: page.enterprise.talk }}
+    title={catalogue.home.cta.title}
+  />
 </Base>
+

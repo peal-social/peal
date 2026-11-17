@@ -5,7 +5,7 @@ import type * as React from "react";
 
 import { cn } from "../lib/utils";
 
-const buttonVariants = cva(
+const buttonClasses = cva(
   "group/button focus-visible:border-ring focus-visible:ring-ring aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:ring-3 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:ring-3 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     defaultVariants: {
@@ -42,6 +42,14 @@ const buttonVariants = cva(
 
 type Primitive = React.ComponentProps<typeof ButtonPrimitive>;
 
+/**
+ * A button's classes, merged: a variant's border colour replaces the base's
+ * transparent one, as it must on a link drawn as a button, which no `cn`
+ * call of its own merges.
+ */
+const buttonVariants = (props?: Parameters<typeof buttonClasses>[0]): string =>
+  cn(buttonClasses(props));
+
 // ui-sdk's Button: a native button, or, through `render`, a link that keeps
 // its link semantics. Callers may pass `undefined` for an option they leave
 // unset (`onClick={canSave ? save : undefined}`), which ui-sdk's props, read
@@ -50,7 +58,7 @@ type ButtonProps = Omit<
   React.ComponentProps<"button">,
   "children" | "className" | "disabled" | "onClick" | "style" | "type"
 > &
-  VariantProps<typeof buttonVariants> & {
+  VariantProps<typeof buttonClasses> & {
     readonly children?: React.ReactNode;
     readonly className?: string | undefined;
     readonly disabled?: boolean | undefined;
@@ -77,7 +85,7 @@ const Button = ({
 }: ButtonProps) => (
   <ButtonPrimitive
     data-slot="button"
-    className={cn(buttonVariants({ className, size, variant }))}
+    className={buttonVariants({ className, size, variant })}
     {...props}
     {...(disabled === undefined ? {} : { disabled })}
     {...(focusableWhenDisabled === undefined ? {} : { focusableWhenDisabled })}

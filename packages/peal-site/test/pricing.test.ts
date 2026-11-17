@@ -23,7 +23,7 @@ const dollars = (locale: Locale, cents: number) =>
   new Intl.NumberFormat(locale, {
     currency: "USD",
     maximumFractionDigits: 4,
-    minimumFractionDigits: 2,
+    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
     style: "currency",
   }).format(cents / 100);
 
@@ -93,7 +93,7 @@ describe("the pricing page", () => {
     const fr = pageOf("fr");
 
     expect(en.ladder[1]?.price?.text).toBe(
-      "$5.00 excl. VAT · $6.00 with France's 20% VAT"
+      "$5 excl. VAT · $6 with France's 20% VAT"
     );
     expect(fr.ladder[1]?.price?.text).toBe(
       `${dollars("fr", 500)} HT · ${dollars("fr", 600)} avec la TVA française de 20 %`
@@ -101,7 +101,8 @@ describe("the pricing page", () => {
     expect(en.partMonth.price.text).toBe(
       "$41.40 excl. VAT · $49.68 with France's 20% VAT"
     );
-    expect(en.vat).toContain("France's 20% VAT");
+    // The page says it once, after the rate card.
+    expect(en.vat).toContain("French VAT of 20%");
     expect(fr.vat).toContain("TVA française de 20 %");
   });
 

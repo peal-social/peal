@@ -153,8 +153,11 @@ Headlines keep `-0.025em`; "phone" is below 640 px.
 
 lucide, at 16 px in navigation and buttons (stroke 1.75) and 12 to 14 px in
 chips (stroke 2), in `currentColor`. An icon-only button has an
-`aria-label`. Platforms are shown by their own marks where they allow it,
-else by a lettered tile; never draw a platform's logo from memory.
+`aria-label`. Platforms are shown by their own marks: simple-icons', or,
+for a brand it does not hold (LinkedIn, Slack, Google Business Profile),
+the file its owner publishes, kept in peal-ui's `src/brand-marks` with
+where it came from; a lettered tile only for a brand with neither. Never
+draw a platform's logo from memory.
 
 A sign-in provider's button is an outline button of the control height,
 the provider's own mark at 16 px, half the control's height as Google
@@ -166,22 +169,23 @@ page's main action, which stays the primary button.
 
 ## Brand field
 
-The brand field is Peal's one gradient: the mark's colours glowing on a
-deep blue, drawn exactly as Peal's social banners are. peal-ui's
-`BrandField` renders it, from the `--field-*` tokens.
+The brand field is Peal's one gradient surface: the mark's colours
+glowing on a deep blue, drawn exactly as Peal's social banners are.
+peal-ui's `BrandField` renders it, from the `--field-*` tokens. The only
+other gradient is a line, the pricing slider's fill (see Account
+calculator).
 
-**Where.** Only on the site's hero, a closing call-to-action band at the
-foot of a site page, the art area of a site menu's preview card, and covers
-and social images (blog covers, Open Graph images, the social banners).
-Never in the app or the docs, and never twice on one screen but for a menu
-open over the hero.
+**Where.** Only in the art area of a site menu's preview card, and on
+covers and social images (blog covers, Open Graph images, the social
+banners). Never in the app or the docs, and never twice on one screen. The
+site's pages themselves stay on the light grid: their hero and closing band
+show the field's glows as pixels instead (the pixel glow, see
+[Site](#site)).
 
 **On it.** White text only (`#FFFFFF`), over the base and the blue glow
 (5:1 or better there), never over the lavender or yellow glows, which sit
-at the corners for that reason; then the rails and their captions. A button on it is white with ink text, the primary button
-inverted. The site's hero may hold one `background` panel between its
-rails, with the 6 px radius and no border or shadow, for the home page's
-stage (see [Site](#site)); no other surface sits on the field.
+at the corners for that reason; then the rails and their captions. A
+button on it is white with ink text, the primary button inverted.
 
 The base is `radial-gradient(120% 140% at 50% 50%, #1E2D8C 0%, #16206A 60%, #0F1650 100%)`.
 Five blurred ellipses glow on it. Their sizes and blur are fractions of
@@ -300,7 +304,8 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   floating cards.
 - **Header**, 56 px, on `background` with a rule under it: the mark and
   "Peal" on the left; Products, Platforms and Resources (each opening a
-  mega menu), Pricing, Docs and Blog in the middle; on the right the
+  mega menu; the blog is Resources' first row), Pricing and Docs in the
+  middle; on the right the
   GitHub mark with the star count (Geist Mono, hidden when unknown), a
   vertical divider, the Discord mark alone (an icon-only button with its
   `aria-label`), Log in (a ghost button) and Get started (the primary
@@ -350,9 +355,12 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   platform, after the rows in tab order. The panel fits from 1024 px up.
 - **Marks on the site.** Brands' marks (platforms, GitHub, Discord) come
   from simple-icons, at the version the workspace pins, in `currentColor`:
-  ink, or muted text in the drawer, never the brand's colour. A brand
-  missing from simple-icons (LinkedIn, Slack, Google Business Profile) is a
-  lettered tile in ink.
+  ink, or muted text in the drawer, never the brand's colour. LinkedIn,
+  Slack and Google Business Profile, missing from simple-icons, take
+  peal-ui's brand marks the same way: their owners' one-colour marks,
+  and for Google Business Profile, which Google publishes in colour only,
+  a one-colour mark made from Google's file alone (its outline with its
+  "G" cut out).
 - **Section counter.** Every section of a page below its hero opens with
   its number and name in Geist Mono, 12 px, muted, `0.04em`: `[ 01 / 03 ]
   · Product`. Sections are counted in order, and the total is the page's.
@@ -404,8 +412,29 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   developers and agents): the two sides of the app's mode switch (see
   [The frame](#the-frame)). A product's name is set as one word, in the
   text's own colour, never as a logo.
+- **Announcement bar.** A line the whole site must say (while Peal is
+  not released, that it is in development), above every page's header:
+  a thin ink bar across the page, 13 px text in `background`, centred,
+  after a 5 px square in yellow, then a link with an arrow to read more.
+  It cannot be dismissed, and the site removes it once it no longer holds;
+  no page repeats it.
+- **Hero.** On the page's background and grid: the headline (one plain
+  claim, no slogan), the primary and outline buttons
+  on the left, a lead of two short sentences in muted text on the right,
+  then the stage. Behind it, the pixel glow in its hero layout.
+- **Pixel glow.** The brand field's glows drawn in pixels on the page's
+  own background (peal-ui's `PixelGlow`): blue, lavender and yellow,
+  where the banners place them, rasterised onto 5 px cells and
+  Bayer-dithered as the menu art is, each glow a strong tone at its heart,
+  a middle one and a tint at its edge, never fully solid, fading to the
+  plain page before any text. It lives as a fire does: its texture
+  drifts slowly, each cell twinkles on its own beat so the edges shimmer,
+  and a blurred copy under the pixels makes them glow; 24 frames a
+  second, only while on screen, and still with reduced motion. Its
+  `band` layout frames centred text; its `hero` layout keeps the top
+  left, where the headline is, clear.
 - **Hero stage.** Under the home page's headline (left, with its
-  buttons) and lead (right), one `background` panel on the brand field:
+  buttons) and lead (right), one bordered `background` panel:
   ui-sdk's tabs as a segmented switch across its top, on `muted`, one
   segment per product with the mark in a 20 px tile (white for
   PealStudio, ink for PealAPI, as the app's switch draws its modes); the
@@ -443,11 +472,64 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   its tiles (the SDKs' marks in bordered cells, four to a row, two on a
   phone) or a mock from the app (a connect link's page). Stacked below
   768 px.
+- **Pricing page.** An opening as a section opener's, centred over the
+  pixel glow: the `// [scale] Pricing \\` eyebrow, the headline with its
+  muted second sentence (the free accounts), a lead. Then the account
+  calculator across the column, between rules; then the rate card, and
+  the closing band. Figures in tabular numbers, excluding VAT; one muted
+  line after the rate card's last group says French VAT applies, at its
+  rate, with a link to the terms. Every figure comes from the rate card.
+- **Account calculator** (peal-ui's `AccountPricer`). The count, large
+  and typed in place, labelled in mono above it, between outline − and +
+  icon buttons, each moving one account; under it ui-sdk's slider: a
+  6 px `border` track whose fill is the mark's colours across the whole
+  track (blue, lavender at 70%, yellow), uncovered up to the count, a
+  24 px round thumb in `background` ringed in blue (a little larger
+  under the pointer, larger still while held), and over the thumb an
+  ink tag with the count and its band's price ("150 accounts · $1 each
+  a month"). Each band after the first starts at a stop of two by two
+  5 px pixels on the track (yellow and lavender on top, blue below)
+  once passed, `border` before; under the track, each band's range and
+  price in mono, the band the count is in on `brand-tint`. The bands
+  share the track by weight, not by count, so the first accounts are as
+  easy to pick as the thousandth; the open band runs on a logarithmic
+  scale to the slider's end (10,000), and a count typed past it rests
+  the thumb there: the count has no limit. The arrow keys move one
+  account and Page Up and Down ten.
+  The fill and the thumb glide (300 ms, easing out) to a count typed,
+  stepped or keyed, and follow the pointer at once while it drags.
+  Crossing into another band throws a burst of pixels off the thumb, in
+  blue, lavender and yellow, and the tag's price fades in anew. The
+  month's figures count to their new value in about 260 ms. With reduced
+  motion, nothing glides, bursts or counts; a screen reader hears only
+  where the figures land. Then three cells, Peal Cloud, Enterprise and
+  Self-hosted, sharing four rows on a subgrid (head, price, button, a
+  list under a rule), so each part lines up across them: Peal Cloud's
+  month (the total at 40 px with "a month · excl. VAT", the average per
+  account, the primary button, what every account includes), Enterprise
+  ("Custom", an outline "Talk to sales" that writes to Peal's address,
+  what it adds) and Self-hosted (free, an outline button to the guide,
+  what it gives).
+- **Rate card** (peal-ui's `RateCard`). Under its counter, a table on the
+  grid, opening as a section opener does (centred eyebrow and headline
+  over a faint pixel field); then a head row that scrolls with the page,
+  never sticking: an empty first column, a column per plan, all three
+  a third wide, so their lines run on from the plans' cells above, each
+  its name, a line and its button (the primary for Peal Cloud). A row per
+  feature: its name (15 px, 500), a bordered tag holding the marks of the
+  platforms it covers and their kind, a muted line; each plan's value
+  after a blue check where it is granted in full. Then a group per kind
+  of usage (Usage, X's API, Limits), ui-sdk's accordion, closed at first
+  and found by the browser's search:
+  a 40 px `brand-tint` tile with the group's icon in blue, its title and
+  muted explanation under it, a chevron that turns; its rows as the
+  features'. Narrower than 1024 px, it scrolls sideways at 720 px.
 - **Closing band.** The last section before the footer is a call to
-  action on the brand field: a white headline and line, centred, a white
-  button with ink text and a white text link, with the field's rails on
-  the page's and its captions.
-- **FAQ.** A band on the grid, in two cells: on the left, quiet pixel art
+  action on the page's grid, with the pixel glow in its band layout
+  behind it: a headline and a muted line, centred, the primary button
+  and an outline one.
+- **FAQ.** Its counter as a section opener's, then a band on the grid,
+  as tall as an opener, in two cells: on the left, quiet pixel art
   filling the cell (an icon rasterised onto 5 px cells in the blue and
   lavender tints, `#E8ECFD` and `#EDE7FF`, with lavender on the brightest
   cells, so it reads as texture) behind a small mono label, `// [icon] FAQ
@@ -460,10 +542,17 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   closed ones stay in the page, found by the browser's search. Below
   768 px the cells stack and the art becomes a strip 96 px tall. The
   questions are also the page's FAQPage JSON-LD.
-- **Footer**, on `background` under a full-width rule: the mark, the
-  licence's line and the language menu in a first cell, then a bordered
-  cell per column of links (legal, the contract's functions, Peal's
-  accounts), and a caption row at the foot. The language menu is a small
+- **Footer**, on `background` under a full-width rule: the mark and the
+  language menu in a first cell, then a bordered cell per column of
+  links, in this order: PealStudio, PealAPI (each product's docs pages),
+  Resources (the docs, the blog, the changelog, self-hosting, status,
+  security), Socials (Peal's accounts, Discord and GitHub) and Company
+  (pricing, cookie settings, then the Policies menu). A caption row at
+  the foot: `© <year> Peal` alone. The Policies menu is Company's last entry, a quiet text
+  trigger with a chevron, in the links' type, that opens upward the
+  privacy policy, the terms and the contract's functions (cancel,
+  withdraw), each a link, repeated in a `<noscript>`.
+  The language menu is a small
   outline button (30 px): `Languages`, the current language's own name
   and a chevron, named "Language" and that name for screen readers. It
   opens upward a menu of the same page in each language, each item a
@@ -471,9 +560,10 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   `<noscript>` repeats the links as a row for a reader without
   JavaScript.
 - **Hero art.** The home page's hero shows the product, in its stage,
-  and no other art: the turning cube it once held is gone. Pixel art
-  stays in the menu previews, the section openers, the FAQ and the
-  feature tiles.
+  over the pixel glow, and no other art: the turning cube it once held is
+  gone. Pixel art stays in the menu previews, the section openers, the
+  FAQ, the feature tiles, and the pixel glow of the hero and the closing
+  band.
 
 ## Writing
 
