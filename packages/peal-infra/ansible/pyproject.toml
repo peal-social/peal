@@ -28,4 +28,6 @@ addopts = [
   "auto",
   "--dist",
   "loadgroup",
+  "--durations=60",
+  "--durations-min=1",
 ]
