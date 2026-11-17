@@ -24,8 +24,10 @@ concurrency:
 env:
   DO_NOT_TRACK: "1"
   NX_NO_CLOUD: "true"
-  # What a job's Nx cache keeps between runs (actions/cache), saved from
-  # main's nightly run and restored by every other.
+  # Nx's cache, in the checkout where actions/cache saves and restores it:
+  # Nx otherwise keeps it in a folder of the user's, outside the checkout.
+  # Saved from main's nightly run and restored by every other, up to 1 GB.
+  NX_CACHE_DIRECTORY: .nx/cache
   NX_MAX_CACHE_SIZE: 1GB
 
 jobs:
