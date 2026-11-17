@@ -1,8 +1,10 @@
 name: CI
 
 # Pull requests, and the merge queue, which runs CI again on the commit that
-# lands on main: main gets no other run but the nightly one, which runs every
-# job whatever changed and keeps Nx's cache warm for the branches.
+# lands on main: main gets no other run but the nightly one. A pull request
+# runs the jobs its change needs (scripts/ci-plan.ts); the merge queue and
+# the nightly and manual runs run every job, whatever changed, so nothing
+# reaches main that the full suite has not passed.
 on:
   pull_request:
   merge_group:
@@ -13,9 +15,11 @@ on:
 permissions:
   contents: read
 
+# A new commit on a pull request cancels the run of the one before it. A run
+# on main, or in the merge queue, always finishes.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   DO_NOT_TRACK: "1"
@@ -24,9 +28,9 @@ env:
   NX_MAX_CACHE_SIZE: 1GB
 
 jobs:
-  # Which of the longer jobs the change needs (scripts/ci-plan.ts): the
+  # Which of the longer jobs a pull request needs (scripts/ci-plan.ts): the
   # server's tests, Ansible's, the SDKs and the end-to-end run. The others
-  # run on every change.
+  # run on every change, and every job runs outside pull requests.
   plan:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -45,8 +49,8 @@ jobs:
       - id: plan
         run: bun scripts/ci-plan.ts
         env:
-          CI_PLAN_BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-          CI_PLAN_FULL: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+          CI_PLAN_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_PLAN_FULL: ${{ github.event_name != 'pull_request' }}
 
   check:
     runs-on: ubuntu-latest

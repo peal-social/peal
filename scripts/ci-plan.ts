@@ -1,14 +1,15 @@
-// Decides which of CI's longer jobs a change needs, from the files it changes
-// and the projects Nx finds affected by them: `bun scripts/ci-plan.ts`, with
-// CI_PLAN_BASE (and CI_PLAN_HEAD, HEAD by default), or CI_PLAN_FULL=true for
-// every job. It writes one `<job>=true|false` line per job to GITHUB_OUTPUT,
-// or to stdout outside Actions.
+// Decides which of CI's longer jobs a pull request needs, from the files it
+// changes and the projects Nx finds affected by them: `bun
+// scripts/ci-plan.ts`, with CI_PLAN_BASE (and CI_PLAN_HEAD, HEAD by default),
+// or CI_PLAN_FULL=true for every job. It writes one `<job>=true|false` line
+// per job to GITHUB_OUTPUT, or to stdout outside Actions.
 //
 // Nx's project graph follows imports, not the files a package's tests read
 // in another package, so each job also names the folders its tests read. A
 // change outside every project (the workflows, a root configuration, these
-// scripts) runs every job, as the nightly and manual runs do, but for prose:
-// the only Markdown outside a project that a test reads is DESIGN.md.
+// scripts) runs every job, as the merge queue, the nightly and the manual
+// runs do, but for prose: the only Markdown outside a project that a test
+// reads is DESIGN.md.
 import { appendFile, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";

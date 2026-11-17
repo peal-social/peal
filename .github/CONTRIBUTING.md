@@ -108,8 +108,9 @@ Pull requests are squash-merged, so the title becomes the commit on `main`.
 
 A maintainer reviews each pull request, as
 [CODEOWNERS](CODEOWNERS) says. It merges through the merge queue, which runs
-CI again on the commit that lands: its `ci` check passes once every job the
-change needs has passed, the `sdks` jobs included when the contract changed.
+CI again on the commit that lands, with every job whatever the change: a
+pull request's run skips the jobs its change cannot reach, the queue's never
+does.
 
 ## Licence of contributions
 
