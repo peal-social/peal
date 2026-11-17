@@ -71,6 +71,45 @@ const glowRows = [
   y: groups?.["y"] ?? "",
 }));
 
+// The rows of the Code table: | Keywords | `code-keyword` | `#2F47C9` |
+// Blue text | 6.7:1 |, the last cell the colour's contrast on `muted`.
+const codeRows = [
+  ...design.matchAll(
+    /^\| [A-Z][^|]+ \| `(?<token>code-[a-z]+)` +\| `(?<hex>#[0-9A-F]{6})` +\| [^|]+ \| (?<ratio>\d+\.\d):1 +\|$/gmu
+  ),
+].map(({ groups }) => ({
+  hex: (groups?.["hex"] ?? "").toLowerCase(),
+  ratio: Number(groups?.["ratio"]),
+  token: groups?.["token"] ?? "",
+}));
+
+// WCAG's relative luminance of a `#rrggbb` colour.
+const luminance = (hex: string) => {
+  const [red = 0, green = 0, blue = 0] = [1, 3, 5].map((start) => {
+    const channel = Number.parseInt(hex.slice(start, start + 2), 16) / 255;
+
+    return channel <= 0.040_45
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+};
+
+// WCAG's contrast ratio of two colours, the lighter one first.
+const contrast = (first: string, second: string) => {
+  const [lighter = 0, darker = 0] = [luminance(first), luminance(second)].sort(
+    (a, b) => b - a
+  );
+
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+// DESIGN.md without its Code section: the palette syntax colours come from.
+const palette = design
+  .replace(/^### Code$[\s\S]*?(?=^## )/mu, "")
+  .toLowerCase();
+
 describe("DESIGN.md and tokens.css", () => {
   it("reads the Neutrals table", () => {
     expect(neutralRows.map((row) => row.name)).toContain("background");
@@ -159,6 +198,41 @@ describe("DESIGN.md and tokens.css", () => {
 
     expect(opacity).toBeDefined();
     expect(Number(tokens.get("field-grain-opacity"))).toBe(Number(opacity));
+  });
+
+  it("reads the Code table", () => {
+    expect(codeRows.map((row) => row.token)).toStrictEqual([
+      "code-foreground",
+      "code-comment",
+      "code-punctuation",
+      "code-keyword",
+      "code-string",
+      "code-constant",
+      "code-type",
+      "code-deleted",
+    ]);
+  });
+
+  it.each(codeRows)(
+    "gives --$token the value $hex, a colour of the palette",
+    ({ hex, token }) => {
+      expect(tokens.get(token)).toBe(hex);
+      expect(palette).toContain(`\`${hex}\``);
+    }
+  );
+
+  it.each(codeRows)(
+    "gives --$token $ratio:1 on muted, past WCAG's 4.5:1",
+    ({ hex, ratio }) => {
+      const measured = contrast(hex, tokens.get("muted") ?? "");
+
+      expect(measured).toBeGreaterThanOrEqual(4.5);
+      expect(Math.floor(measured * 10) / 10).toBe(ratio);
+    }
+  );
+
+  it("sets code on muted", () => {
+    expect(tokens.get("code-background")).toBe(tokens.get("muted"));
   });
 
   it("gives the radius of controls and cards to --radius", () => {

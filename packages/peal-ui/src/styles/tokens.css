@@ -51,6 +51,18 @@
   --brand-text: #2f47c9;
   --lavender: #b9a6ff;
   --sun: #ffca00;
+  /* Code's syntax (DESIGN.md, Code): text colours the palette already
+     has, on muted, each past 4.5:1 there. The site's Shiki theme names
+     these variables, never the values. */
+  --code-background: #f5f5f4;
+  --code-foreground: #0c0a09;
+  --code-comment: #716b66;
+  --code-punctuation: #716b66;
+  --code-keyword: #2f47c9;
+  --code-string: #166534;
+  --code-constant: #5b45c7;
+  --code-type: #7a5b00;
+  --code-deleted: #b42318;
   /* The brand field (DESIGN.md): the social banners' gradient, for the
      site's hero, a closing call-to-action band and covers. Glow sizes and
      blur are fractions of --m, the field's width or 2.2 times its height,

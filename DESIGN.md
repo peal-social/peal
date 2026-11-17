@@ -83,6 +83,29 @@ dot, a tint and a text colour:
 `#B42318`, is for text on its tint. States that must be told apart also
 differ in lightness, not hue alone.
 
+### Code
+
+Code sits on `muted` in Geist Mono, and its syntax takes its colours from
+the palette above, with none of its own: each kind of token borrows a text
+colour Peal already uses for something else. `tokens.css` holds them as
+`--code-*`. The site's highlighter (Shiki, run at build time) names those
+variables rather than values, so each colour is written once.
+
+| Kind                                  | Token              | Value     | From               | On `muted` |
+| ------------------------------------- | ------------------ | --------- | ------------------ | ---------- |
+| Text, names and calls                 | `code-foreground`  | `#0C0A09` | `foreground`       | 18.1:1     |
+| Comments                              | `code-comment`     | `#716B66` | `muted-foreground` | 4.8:1      |
+| Punctuation and operators             | `code-punctuation` | `#716B66` | `muted-foreground` | 4.8:1      |
+| Keywords, and JSON's keys             | `code-keyword`     | `#2F47C9` | Blue's text        | 6.7:1      |
+| Strings                               | `code-string`      | `#166534` | Published's text   | 6.5:1      |
+| Numbers and constants (`true`, `nil`) | `code-constant`    | `#5B45C7` | Lavender's text    | 6.1:1      |
+| Types and classes                     | `code-type`        | `#7A5B00` | Yellow's text      | 5.7:1      |
+| Errors and deletions                  | `code-deleted`     | `#B42318` | `destructive-text` | 6.0:1      |
+
+`code-background` is `muted`. Ratios are WCAG's, rounded down; each clears
+4.5:1. Nothing is bold or italic: colour alone tells the kinds apart, and
+a reader who cannot see it loses nothing they need to run the code.
+
 ## Type
 
 Geist for text and Geist Mono for what is read character by character: ids,

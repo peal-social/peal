@@ -29,6 +29,15 @@
   --color-brand-text: var(--brand-text);
   --color-lavender: var(--lavender);
   --color-sun: var(--sun);
+  --color-code-background: var(--code-background);
+  --color-code-foreground: var(--code-foreground);
+  --color-code-comment: var(--code-comment);
+  --color-code-punctuation: var(--code-punctuation);
+  --color-code-keyword: var(--code-keyword);
+  --color-code-string: var(--code-string);
+  --color-code-constant: var(--code-constant);
+  --color-code-type: var(--code-type);
+  --color-code-deleted: var(--code-deleted);
   --color-tag-gray: var(--tag-gray);
   --color-tag-red: var(--tag-red);
   --color-tag-orange: var(--tag-orange);
