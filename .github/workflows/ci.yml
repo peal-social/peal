@@ -89,7 +89,9 @@ jobs:
       - if: github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: .nx/cache
+          path: |
+            .nx/cache
+            .nx/workspace-data
           key: nx-${{ runner.os }}-typecheck-${{ github.sha }}
 
   # Every build, after the typecheck of the projects it builds, which Nx
@@ -111,7 +113,9 @@ jobs:
       - if: github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: .nx/cache
+          path: |
+            .nx/cache
+            .nx/workspace-data
           key: nx-${{ runner.os }}-build-${{ github.sha }}
 
   # Every project's tests but the server's and Ansible's, which have jobs of
@@ -133,7 +137,9 @@ jobs:
       - if: github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: .nx/cache
+          path: |
+            .nx/cache
+            .nx/workspace-data
           key: nx-${{ runner.os }}-test-${{ github.sha }}
 
   # The server's tests, against a real, throwaway database, reading the
@@ -425,7 +431,9 @@ jobs:
       - if: github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: .nx/cache
+          path: |
+            .nx/cache
+            .nx/workspace-data
           key: nx-${{ runner.os }}-e2e-${{ github.sha }}
       # The report, a trace page and screenshots for each failed test, and the
       # server's and the web app's output. Every value in them is synthetic.
