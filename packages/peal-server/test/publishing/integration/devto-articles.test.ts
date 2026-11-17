@@ -31,6 +31,7 @@ import {
   eventuallyLater,
   onArticles,
   stateOf,
+  untilWokenLater,
   writer,
   zone,
 } from "#test/publishing/article-support.ts";
@@ -595,6 +596,18 @@ describe("an article on DEV", () => {
           },
           Option.some({ at: Option.some(at), timeZone: zone })
         );
+
+        // DEV takes its own time, so the article goes at once, and DEV
+        // holds it back 25 minutes, past that time: the clock goes to the
+        // retry's wake-up the job stored.
+        yield* eventuallyLater(
+          "DEV holds the article back",
+          Effect.sync(() => limited)
+        );
+
+        const retried = yield* untilWokenLater("DEV's limit is over");
+
+        assert.isTrue(DateTime.isGreaterThan(retried, at));
 
         yield* eventuallyLater(
           "the article is sent",
