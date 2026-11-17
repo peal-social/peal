@@ -1,0 +1,26 @@
+---
+// A code block: peal-ui's CodeBlock island for the switcher and Copy, with
+// each language's lines rendered here, once, as static HTML in its slots.
+// The island's props name the languages and never carry the code.
+import { CodeBlock, codeBlockParts } from "peal-ui/components/code-block";
+import type { CodeBlockContent } from "peal-ui/components/code-block";
+import { CodeLines } from "peal-ui/components/code-lines";
+
+interface Props {
+  readonly block: CodeBlockContent;
+  readonly class?: string;
+}
+
+const { block, class: className } = Astro.props;
+
+const { panels, props, response } = codeBlockParts(block);
+---
+
+<CodeBlock client:visible {...props} className={className}>
+  {panels.map((panel) => <CodeLines slot={panel.slot} {...panel.lines} />)}
+  {
+    response === undefined ? null : (
+      <CodeLines slot="responseCode" {...response.lines} />
+    )
+  }
+</CodeBlock>

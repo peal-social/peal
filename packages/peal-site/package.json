@@ -18,9 +18,14 @@
     "@tailwindcss/typography": "0.5.20",
     "@tailwindcss/vite": "4.3.5",
     "astro": "7.4.11",
+    "effect": "4.1.4",
+    "geist": "1.9.2",
     "peal-contract": "workspace:*",
+    "peal-ui": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "shiki": "4.6.0",
+    "simple-icons": "16.37.0",
     "tailwindcss": "4.3.5"
   },
   "devDependencies": {
