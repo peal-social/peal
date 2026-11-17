@@ -336,15 +336,17 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   the art while the menu is open; with reduced motion, the art swaps at
   once and nothing sweeps. A menu whose rows are all of a kind, such as
   Platforms, has one preview for all of them that does not change with the
-  row. The drawer has no preview.
+  row; since it repeats no row, screen readers read it (its art aside),
+  and it may hold one small text link under its intro. The drawer has no
+  preview.
 - **Platforms menu.** Every platform a channel connects to and every ad
   network, from the contract's lists, under Social (a wide cell of two
   columns), then Chat, Ads and Blog stacked in one column beside it, each
   row linking to the platform's docs page; both kinds of WordPress site
   are one entry. Its preview is one post fanning out to many networks:
   the mark in the centre, joined by spokes to nodes around it. A small
-  text link under the rows compares every platform. The panel fits from
-  1024 px up.
+  text link with an arrow under the preview's intro compares every
+  platform, after the rows in tab order. The panel fits from 1024 px up.
 - **Marks on the site.** Brands' marks (platforms, GitHub, Discord) come
   from simple-icons, at the version the workspace pins, in `currentColor`:
   ink, or muted text in the drawer, never the brand's colour. A brand

@@ -237,8 +237,8 @@ const navItems = (
       ? []
       : [
           {
-            // One preview for every platform; the comparison moves to a
-            // link under the rows.
+            // One preview for every platform; the comparison is a link
+            // under its intro.
             feature: {
               caption: "",
               description: t.platformsIntro.body,

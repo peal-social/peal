@@ -207,20 +207,26 @@ const Intro = ({
 /**
  * A mega menu's preview (DESIGN.md, Site): its rows, then a card whose
  * pixel art and intro follow the row the pointer rests on or focus is in,
- * and show the card's own art and intro otherwise. The card is not a link
- * and screen readers skip it: the rows are the links. Rows name themselves
- * with `data-preview-key`, and their icon's SVG is the art.
+ * and show the card's own art and intro otherwise. Such a card is not a
+ * link and screen readers skip it: the rows are the links. Rows name
+ * themselves with `data-preview-key`, and their icon's SVG is the art.
+ * A fixed card, with no rows to follow (`items` empty), says what the rows
+ * do not: screen readers read it, its art aside, and it may hold one
+ * `link` under its intro.
  */
 const MenuPreview = ({
   children,
   className,
   fallback,
   items,
+  link,
 }: {
   readonly children?: React.ReactNode;
   readonly className?: string | undefined;
   readonly fallback: MenuPreviewFallback;
   readonly items: readonly MenuPreviewItem[];
+  /** A fixed card's one link, under its intro. */
+  readonly link?: React.ReactNode;
 }) => (
   <Root className={cn("flex gap-2", className)}>
     {({ current }: MenuPreviewState) => {
@@ -230,7 +236,7 @@ const MenuPreview = ({
         <>
           {children}
           <div
-            aria-hidden="true"
+            aria-hidden={items.length === 0 ? undefined : "true"}
             data-slot="menu-preview-card"
             className="bg-muted flex w-72 flex-col gap-3 rounded-md border p-2"
           >
@@ -243,15 +249,18 @@ const MenuPreview = ({
             <span hidden data-preview-art="">
               {fallback.art}
             </span>
-            <span className="grid px-2 pb-2">
-              <Intro intro={fallback} shown={item === undefined} />
-              {items.map((candidate) => (
-                <Intro
-                  key={candidate.key}
-                  intro={candidate}
-                  shown={candidate === item}
-                />
-              ))}
+            <span className="flex flex-col gap-2 px-2 pb-2">
+              <span className="grid">
+                <Intro intro={fallback} shown={item === undefined} />
+                {items.map((candidate) => (
+                  <Intro
+                    key={candidate.key}
+                    intro={candidate}
+                    shown={candidate === item}
+                  />
+                ))}
+              </span>
+              {items.length === 0 ? link : undefined}
             </span>
           </div>
         </>

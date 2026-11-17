@@ -86,7 +86,10 @@ interface SiteMenuFeature {
 
 interface SiteMenu {
   readonly feature?: SiteMenuFeature | undefined;
-  /** A small link under the rows, such as one to compare every platform. */
+  /**
+   * A small link, such as one to compare every platform: under the intro
+   * of a `menu` preview's card, and at the foot of the menu in the drawer.
+   */
   readonly footer?: SiteLink | undefined;
   /**
    * Whether the feature card becomes a preview, not a link: `rows` shows
@@ -289,24 +292,25 @@ const MenuColumns = ({ menu }: { readonly menu: SiteMenu }) =>
   ));
 
 const MenuRows = ({ menu }: { readonly menu: SiteMenu }) => (
-  <div className="flex flex-col gap-2">
-    <div className="flex flex-1 gap-2">
-      <MenuColumns menu={menu} />
-    </div>
-    {menu.footer === undefined ? null : (
-      <NavigationMenuLink
-        href={menu.footer.href}
-        className="text-muted-foreground hover:text-foreground w-fit items-center gap-1 px-2 py-1 text-[13px]"
-      >
-        {menu.footer.label}
-        <ArrowRightIcon
-          aria-hidden="true"
-          strokeWidth={1.75}
-          className="size-3.5"
-        />
-      </NavigationMenuLink>
-    )}
+  <div className="flex gap-2">
+    <MenuColumns menu={menu} />
   </div>
+);
+
+// A small text link with its arrow in a preview card's text column, its
+// text on the column's edge and its focus ring just around it.
+const CardLink = ({ link }: { readonly link: SiteLink }) => (
+  <NavigationMenuLink
+    href={link.href}
+    className="text-foreground group/card-link -mx-1 w-fit items-center gap-1 px-1 py-0.5 text-[13px] font-medium hover:bg-transparent hover:underline hover:underline-offset-4"
+  >
+    {link.label}
+    <ArrowRightIcon
+      aria-hidden="true"
+      strokeWidth={1.75}
+      className="size-3.5 transition-transform group-hover/card-link:translate-x-0.5 motion-reduce:transition-none"
+    />
+  </NavigationMenuLink>
 );
 
 // The preview's own art: a drawn picture, or the feature's first mark.
@@ -337,6 +341,11 @@ const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => {
           cells: feature.illustration === undefined ? undefined : 48,
           headline: feature.title,
         }}
+        link={
+          menu.preview === "menu" && menu.footer !== undefined ? (
+            <CardLink link={menu.footer} />
+          ) : undefined
+        }
         items={
           menu.preview === "menu"
             ? []
