@@ -13,14 +13,17 @@ module Peal
       # Lists the workspace's conversations, the latest message first, 30 a page unless `limit` (at most 100) says
       # otherwise. `channelId` and `unread` narrow the list. Pass the page's `nextCursor` as `cursor` for the next one.
       # Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that.
-      # Peal reads a channel's direct messages, on Mastodon and Bluesky where the server's operator turned them on, only
-      # once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a
-      # conversation until its last message is that old; it deletes a channel's conversations at once when the channel
-      # is disconnected or its messages turned off; a message the platform no longer shows within a day, and a
-      # conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by
-      # the 30 days; a listing that comes back empty deletes nothing). Peal never starts a conversation: it answers
-      # those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client
-      # only with the scope workspace:publish, and staff acting as a member never.
+      # Peal reads a channel's direct messages, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram where the
+      # server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30
+      # days after it was sent, and a conversation until its last message is that old; it deletes a channel's
+      # conversations at once when the channel is disconnected or its messages turned off; a message the platform no
+      # longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can
+      # read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). On Messenger and
+      # Instagram, Meta gives only a conversation's 20 latest messages, so a longer one is never read whole; a message
+      # taken back on Instagram is deleted when Meta tells of it, and Messenger tells of none, so one taken back there
+      # stays until its 30 days. Peal never starts a conversation: it answers those someone else began. Needs
+      # engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope
+      # workspace:publish, and staff acting as a member never.
       #
       # @param request_options [Hash]
       # @param params [Hash]
@@ -134,12 +137,18 @@ module Peal
       # Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be
       # taken back from Peal. On Mastodon it is a status of `direct` visibility, which mentions every participant first,
       # and a text that mentions any other account is refused (422 `MessageMentionsOutside`), as it would reach them
-      # too; on Bluesky a chat message, which accepts a conversation the account had yet to accept. The message is
-      # checked against the platform's length, journalled, and sent by a job: the answer is the message `sending`, and
-      # the conversation shows how it ended. A message whose outcome is unknown is `unconfirmed` and never sent again:
-      # check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is
-      # refused (409 `MessagePending`). With an `Idempotency-Key` header (255 characters at most, new for each message),
-      # the request is safe to send again: within 24 hours the same key with the same conversation and text answers the
+      # too; on Bluesky a chat message, which accepts a conversation the account had yet to accept; on Messenger and
+      # Instagram a message sent only within 24 hours of the person's last one (`window`): past it, the message is
+      # refused before anything is journalled (409 `InboxActionUnavailable`, `reason` `windowClosed`, with `closedAt`),
+      # unless an `Idempotency-Key` names a message already made. Where the server's Meta app holds Meta's Human Agent
+      # feature, a member signed in to Peal's web app in person may answer until 7 days after the person's last message
+      # (`window.personClosesAt`), with Meta's `HUMAN_AGENT` tag; an API key, an application (MCP, the command line) or
+      # staff acting as a member never may, and are refused past the 24 hours. The message is checked against the
+      # platform's length, journalled, and sent by a job: the answer is the message `sending`, and the conversation
+      # shows how it ended. A message whose outcome is unknown is `unconfirmed` and never sent again: check the
+      # platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused
+      # (409 `MessagePending`). With an `Idempotency-Key` header (255 characters at most, new for each message), the
+      # request is safe to send again: within 24 hours the same key with the same conversation and text answers the
       # message the first request made, and sends no other; with another conversation or text it is refused (409
       # `IdempotencyKeyReused`). Sending marks the conversation read. On a server that bills, each message counts one of
       # the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment
@@ -193,6 +202,183 @@ module Peal
         code = response.code.to_i
         if code.between?(200, 299)
           (response.body.to_s.empty? ? nil : Peal::Types::InboxOutgoingMessage.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Sends the author of a comment under the workspace's post one private message, as the channel's account, on
+      # Instagram and Facebook Pages (the thread's `abilities.privateReply`): it goes to a real person, and cannot be
+      # taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour
+      # earlier, at the comment's `privateReplyUntil`), and the person must answer before the account may write again,
+      # as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's
+      # direct messages must be on, as the answer comes as one (409 `InboxActionUnavailable`, `privateReply`,
+      # otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer
+      # shows, or one too old (409 `PrivateReplyNotPossible`, with `reason`), and a text longer than the platform takes
+      # (422 `ReplyInvalid`). The message is journalled and sent by a job: the answer is the private reply `sending`;
+      # the comment shows how it ended. One whose outcome is unknown is `unconfirmed` and never sent again: check the
+      # conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is
+      # refused (409 `PrivateReplyPending`), whichever request came first; one that failed lets another through. With an
+      # `Idempotency-Key` header (255 characters at most, new for each), the request is safe to send again: within 24
+      # hours the same key with the same comment and text answers the private reply the first request made; with another
+      # comment or text it is refused (409 `IdempotencyKeyReused`). On a server that bills, each counts one of the
+      # billing account's inbox messages, as a direct message does (402 `UsageAllowanceReached`); one that never went
+      # out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs
+      # engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only
+      # once the workspace's owner let it; staff acting as a member never hold it.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::InboxMessages::Types::NewInboxPrivateReply]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [String, nil] :idempotency_key
+      #
+      # @example
+      #   client.inbox_messages.send_private_reply(
+      #     workspace_id: "workspaceId",
+      #     comment_id: "commentId",
+      #     text: "text"
+      #   )
+      #
+      # @return [Peal::Types::InboxPrivateReply]
+      def send_private_reply(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::InboxMessages::Types::NewInboxPrivateReply.new(params).to_h
+        non_body_param_names = %w[workspaceId idempotency-key]
+        body = request_data.except(*non_body_param_names)
+
+        headers = {}
+        headers["idempotency-key"] = params[:idempotency_key] if params[:idempotency_key]
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/messages/private-replies",
+          headers: headers,
+          body: body,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::InboxPrivateReply.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which
+      # owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a
+      # member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise
+      # 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
+      #
+      # @param request_options [Hash]
+      # @param params [Hash]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [String] :private_reply_id
+      #
+      # @example
+      #   client.inbox_messages.get_private_reply(
+      #     workspace_id: "workspaceId",
+      #     private_reply_id: "privateReplyId"
+      #   )
+      #
+      # @return [Peal::Types::InboxPrivateReply]
+      def get_private_reply(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "GET",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/messages/private-replies/#{URI.encode_uri_component(params[:private_reply_id].to_s)}",
+          request_options: request_options
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::InboxPrivateReply.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went:
+      # true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs
+      # engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only
+      # once the workspace's owner let it; staff acting as a member never hold it.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::InboxMessages::Types::ConfirmPrivateReplyInboxMessagesRequest]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [String] :private_reply_id
+      #
+      # @example
+      #   client.inbox_messages.confirm_private_reply(
+      #     workspace_id: "workspaceId",
+      #     private_reply_id: "privateReplyId",
+      #     went: true
+      #   )
+      #
+      # @return [Peal::Types::InboxPrivateReply]
+      def confirm_private_reply(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::InboxMessages::Types::ConfirmPrivateReplyInboxMessagesRequest.new(params).to_h
+        non_body_param_names = %w[workspaceId privateReplyId]
+        body = request_data.except(*non_body_param_names)
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/messages/private-replies/#{URI.encode_uri_component(params[:private_reply_id].to_s)}/confirm",
+          body: body,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::InboxPrivateReply.load(response.body))
         else
           error_class = Peal::Errors::ResponseError.subclass_for_code(code)
           error_types = {
@@ -302,10 +488,12 @@ module Peal
       # Turns a channel's direct messages on (`enabled: true`): Peal reads its conversations from the next run, and
       # tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the
       # channel. A channel on a platform whose messages the server does not read is refused (409
-      # `InboxActionUnavailable`, `unsupported`), and a Bluesky channel whose account has not granted the chat methods'
-      # permissions too (`reconnect`): reconnect it with `messages=true`, then turn its messages on. Needs
-      # channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth
-      # application is refused (403 `Forbidden`, `personRequired`).
+      # `InboxActionUnavailable`, `unsupported`), and a Bluesky, Facebook Page or Instagram channel whose account has
+      # not granted the permissions its messages take too (`reconnect`): reconnect it with `messages=true`, then turn
+      # its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the
+      # messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access
+      # its messages in Instagram's settings. Needs channel:connect. Only a member signed in in person (a session of the
+      # web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
       #
       # @param request_options [Hash]
       # @param params [Peal::InboxMessages::Types::SetChannelMessagesInboxMessagesRequest]

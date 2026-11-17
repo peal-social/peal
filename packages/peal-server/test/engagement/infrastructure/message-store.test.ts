@@ -18,6 +18,7 @@ import { EngagementRecords } from "#engagement/application/engagement-records.ts
 import { forgetChannelMessages } from "#engagement/application/forget-channel-messages.ts";
 import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
+import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
 import { ConversationIdSchema } from "#engagement/domain/conversation-id.ts";
 import {
   markConversationRead,
@@ -45,6 +46,7 @@ import {
 } from "#engagement/domain/outgoing-message.ts";
 import { DrizzleEngagementRecords } from "#engagement/infrastructure/drizzle-engagement-records.ts";
 import { DrizzleMessageStore } from "#engagement/infrastructure/drizzle-message-store.ts";
+import { DrizzlePrivateReplyStore } from "#engagement/infrastructure/drizzle-private-reply-store.ts";
 import { newId } from "#shared/application/ids.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { ChannelIdSchema, UserIdSchema } from "#shared/domain/ids.ts";
@@ -64,6 +66,7 @@ import { FakeMetersLedger, fakeMeters } from "#test/shared/support.ts";
 // meters that count in memory.
 const StoreTest = Layer.mergeAll(
   DrizzleMessageStore,
+  DrizzlePrivateReplyStore,
   DrizzleEngagementRecords.pipe(Layer.provide(CommentRuleNotices.none))
 ).pipe(
   Layer.provideMerge(fakeMeters({ allowed: Option.none() })),
@@ -433,6 +436,68 @@ layer(StoreTest)("the message store", (it) => {
   );
 
   it.effect(
+    "keeps whether a member wrote a message in person, and journals none so by default",
+    () =>
+      Effect.gen(function* inPerson() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-04T11:00:00.000Z");
+        const at = utc("2049-02-04T11:00:00.000Z");
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box]);
+
+          const talk = yield* conversationOn(
+            box,
+            1,
+            "2049-02-04T09:00:00.000Z"
+          );
+
+          const other = yield* conversationOn(
+            box,
+            2,
+            "2049-02-04T09:00:00.000Z"
+          );
+
+          yield* store.saveConversations([talk, other]);
+
+          const byPerson = writeMessage(
+            yield* newId(OutgoingMessageIdSchema),
+            talk,
+            Option.none(),
+            "Back on Monday",
+            at,
+            true
+          );
+
+          const byKey = writeMessage(
+            yield* newId(OutgoingMessageIdSchema),
+            other,
+            Option.none(),
+            "Back on Monday",
+            at
+          );
+
+          yield* store.journalMessage(byPerson, Option.none());
+          yield* store.journalMessage(byKey, Option.none());
+
+          assert.deepStrictEqual(
+            (yield* store.outgoing(byPerson.id)).pipe(
+              Option.map((kept) => kept.byPerson)
+            ),
+            Option.some(true)
+          );
+          assert.deepStrictEqual(
+            (yield* store.outgoing(byKey.id)).pipe(
+              Option.map((kept) => kept.byPerson)
+            ),
+            Option.some(false)
+          );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
     "drops a message whose conversation went, and finds the stranded",
     () =>
       Effect.gen(function* drops() {
@@ -498,6 +563,82 @@ layer(StoreTest)("the message store", (it) => {
             yield* store.box(box.channelId),
             Option.none()
           );
+        }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
+    "hands over one stranded only while no call was claimed since it was listed",
+    () =>
+      Effect.gen(function* handOver() {
+        const workspaceId = yield* freshWorkspace;
+        const store = yield* MessageStore;
+        const box = yield* boxOf(workspaceId, "2049-02-06T10:00:00.000Z");
+        const at = utc("2049-02-06T10:00:00.000Z");
+
+        yield* Effect.gen(function* checks() {
+          yield* store.follow([box]);
+
+          const talk = yield* conversationOn(
+            box,
+            1,
+            "2049-02-06T09:00:00.000Z"
+          );
+
+          yield* store.saveConversations([talk]);
+
+          const message = writeMessage(
+            yield* newId(OutgoingMessageIdSchema),
+            talk,
+            Option.none(),
+            "Hello",
+            at
+          );
+
+          yield* store.journalMessage(message, Option.none());
+          yield* store.advanceMessage(
+            Result.getOrThrow(beginMessage(message, at)),
+            message
+          );
+
+          const later = DateTime.addDuration(at, "2 hours");
+          const bound = DateTime.addDuration(at, "1 hour");
+
+          // Listed as stranded, then its gate claims the call.
+          assert.isTrue(
+            (yield* store.strandedMessages(bound, bound, 1000)).some(
+              ({ id }) => id === message.id
+            )
+          );
+          assert.isTrue(yield* store.claimCall(message.id, later));
+          assert.isTrue(
+            Option.isNone(yield* store.handOver(message.id, later, bound))
+          );
+          assert.strictEqual(
+            (yield* store.outgoing(message.id)).pipe(
+              Option.map(({ status }) => status._tag),
+              Option.getOrNull
+            ),
+            "sending"
+          );
+
+          // Its claim old enough: handed over.
+          const handed = yield* store.handOver(
+            message.id,
+            DateTime.addDuration(later, "1 hour"),
+            DateTime.addDuration(later, "10 minutes")
+          );
+
+          assert.deepStrictEqual(
+            handed.pipe(
+              Option.map(({ status }) =>
+                status._tag === "unconfirmed" ? status.reason : status._tag
+              ),
+              Option.getOrNull
+            ),
+            "interrupted"
+          );
+          assert.deepStrictEqual(yield* store.outgoing(message.id), handed);
         }).pipe(Effect.ensuring(forget(workspaceId)));
       })
   );
@@ -874,14 +1015,18 @@ layer(StoreTest)("the message store", (it) => {
             talk,
             Option.some(userId),
             "Hello",
-            at
+            at,
+            true
           );
 
           yield* store.journalMessage(sent, Option.none());
 
+          // With whether they wrote it themselves, which Peal keeps of them.
           assert.deepStrictEqual(
-            (yield* records.exportUserMessages(userId)).map(({ id }) => id),
-            [sent.id]
+            (yield* records.exportUserMessages(userId)).map(
+              ({ byPerson, id }) => ({ byPerson, id })
+            ),
+            [{ byPerson: true, id: sent.id }]
           );
 
           yield* records.forgetUser(userId);
@@ -946,13 +1091,15 @@ layer(StoreTest)("the message store", (it) => {
     })
   );
 
-  // A message journalled on a conversation of the box: on its way, and
-  // begun (the call may have gone out) when `attempted`.
+  // A message journalled on a conversation of the box: on its way; begun
+  // (its attempt committed, its call waiting for the gate's turn) when
+  // `attempted`; its call claimed too (it may have gone out) when
+  // `claimed`.
   const pendingOn = Effect.fn("pendingOn")(function* pendingOn(
     box: MessageBox,
     n: number,
     at: string,
-    attempted: boolean
+    attempted: boolean | "claimed"
   ) {
     const store = yield* MessageStore;
     const talk = yield* conversationOn(box, n, at);
@@ -969,11 +1116,15 @@ layer(StoreTest)("the message store", (it) => {
 
     yield* store.journalMessage(message, Option.none());
 
-    if (attempted) {
+    if (attempted !== false) {
       yield* store.advanceMessage(
         Result.getOrThrow(beginMessage(message, utc(at))),
         message
       );
+    }
+
+    if (attempted === "claimed") {
+      yield* store.claimCall(message.id, utc(at));
     }
 
     return message;
@@ -993,8 +1144,8 @@ layer(StoreTest)("the message store", (it) => {
 
           const waiting = yield* pendingOn(box, 1, at, false);
 
-          // Begun: it may be on the platform, and stays counted.
-          yield* pendingOn(box, 2, at, true);
+          // Its call claimed: it may be on the platform, and stays counted.
+          yield* pendingOn(box, 2, at, "claimed");
 
           yield* records.channelGone(box.channelId, "mastodon", utc(at));
 
@@ -1025,6 +1176,77 @@ layer(StoreTest)("the message store", (it) => {
 
           assert.lengthOf(yield* givenBackIn(workspaceId), 1);
         }).pipe(Effect.ensuring(forget(workspaceId)));
+      })
+  );
+
+  it.effect(
+    "gives back the outbound message of one attempted whose call was never claimed when its channel leaves or moves, its messages are turned off or its workspace is erased",
+    () =>
+      Effect.gen(function* attemptedOnly() {
+        const records = yield* EngagementRecords;
+        const store = yield* MessageStore;
+
+        // A move is the channel leaving its workspace: the same deletion.
+        const deletions = [
+          [
+            "leaves",
+            "2049-02-14T09:00:00.000Z",
+            (box: MessageBox) =>
+              records.channelGone(
+                box.channelId,
+                "facebook",
+                utc("2049-02-14T09:00:00.000Z")
+              ),
+          ],
+          [
+            "turned off",
+            "2049-02-15T09:00:00.000Z",
+            (box: MessageBox) =>
+              SqlClient.SqlClient.use((sql) =>
+                sql.withTransaction(
+                  Effect.gen(function* forgetting() {
+                    yield* forgetChannelMessages(
+                      store,
+                      yield* PrivateReplyStore,
+                      yield* MeteredUsage,
+                      box.channelId
+                    );
+                  })
+                )
+              ),
+          ],
+          [
+            "erased",
+            "2049-02-16T09:00:00.000Z",
+            (box: MessageBox) => records.eraseWorkspace(box.workspaceId),
+          ],
+        ] as const;
+
+        for (const [how, at, deletion] of deletions) {
+          const workspaceId = yield* freshWorkspace;
+          const box = yield* boxOf(workspaceId, at);
+
+          yield* Effect.gen(function* checks() {
+            yield* store.follow([box]);
+
+            // Its attempt committed, its call waiting for the gate's turn
+            // (behind a publication): it never set out.
+            const waiting = yield* pendingOn(box, 1, at, true);
+
+            // Its call claimed: it may be out, and stays counted.
+            yield* pendingOn(box, 2, at, "claimed");
+
+            yield* deletion(box);
+
+            assert.deepStrictEqual(
+              (yield* givenBackIn(workspaceId)).map((claim) =>
+                DateTime.formatIso(claim.at)
+              ),
+              [DateTime.formatIso(waiting.createdAt)],
+              how
+            );
+          }).pipe(Effect.ensuring(forget(workspaceId)));
+        }
       })
   );
 
@@ -1118,9 +1340,16 @@ layer(StoreTest)("the message store", (it) => {
             "turned off",
             "2049-02-11T09:00:00.000Z",
             (box: MessageBox) =>
-              MeteredUsage.use((meters) =>
-                forgetChannelMessages(store, meters, box.channelId)
-              ),
+              Effect.gen(function* forgetting() {
+                const meters = yield* MeteredUsage;
+
+                yield* forgetChannelMessages(
+                  store,
+                  yield* PrivateReplyStore,
+                  meters,
+                  box.channelId
+                );
+              }),
           ],
           [
             "erased",

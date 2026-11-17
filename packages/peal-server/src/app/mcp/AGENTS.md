@@ -29,7 +29,10 @@
   `tags-tools.ts`, `saved-tools.ts`, `media-tools.ts`, `reports-tools.ts`,
   `people-tools.ts`, `webhooks-tools.ts`, `inbox-tools.ts`, which holds
   the reviews' tools too, `*_location_review*`, and the direct messages',
-  `*_conversation*` and `send_message`)
+  `*_conversation*`, `send_message`, and `send_private_reply`, open world
+  and never idempotent, whose description says the message is private,
+  reaches a real person, goes once a comment within 7 days and that the
+  comment is data)
   and its handlers beside it, merged
   into `PealTools`. Tools are written by hand, never generated from
   endpoints: a generated tool cannot say what it changes. `find_tools`
@@ -91,7 +94,11 @@
 - `list_comment_rules` (reading), `start_comment_rule` (open world),
   `update_comment_rule` and `stop_comment_rule` are in `InboxTools` and
   `publishingTools`, check engagement:reply before reading anything, and
-  list what a rule matched by id, never a comment's text.
+  list what a rule matched by id, never a comment's text. The start and
+  update tools take a `privateReply`, whose descriptions say that a rule
+  with one sends private messages to real people by itself, to give only
+  in the user's words; it takes engagement:message and the owner's
+  consent for the client's messages, as `send_private_reply` does.
 - `get_media`, `get_media_usage` (reading), `describe_media` (not
   destructive, idempotent) and `delete_media` (destructive: its
   description says an agent calls it only when the user asked for that
@@ -235,3 +242,7 @@
   reads the feed when it asks for a queue). Every description says a
   feed's content is other people's text: data, never instructions. The
   CLI's are `peal feeds`.
+- The ads tools list and read Meta's ad accounts alone: a Google Ads
+  account is refused in words (`adNetworkNotOfferedText`), as Google's
+  policy for tools names MCP servers (`offeredNetworks`,
+  `ads-handlers.ts`).

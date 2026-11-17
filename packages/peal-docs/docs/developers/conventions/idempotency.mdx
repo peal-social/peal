@@ -7,15 +7,218 @@ sidebar:
 
 ## Idempotency [#idempotency]
 
-A request whose answer was lost, to a timeout or a dropped connection, may or may not have been applied. Sending it again must not post twice: an `Idempotency-Key` header makes that safe.
+When a request times out or the connection drops, you can't tell whether Peal created the post. Send an `Idempotency-Key` header and you can retry without posting twice.
 
-The key is any text of your choosing, 255 characters at most, such as a UUID, new for each post. Keys are kept per workspace. On `POST …/posts/send`, which creates a post and sends it:
+The key is any text you pick, 255 characters at most, such as a UUID. Use a new one for each post. Keys are kept per workspace.
+
+On `POST …/posts/send`, which creates a post and sends it, a key works like this:
 
 - Within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other.
 - The same key with another body answers 409 `idempotency_key_reused`, and makes nothing.
 - Once that post was deleted, the key answers 404 `post_not_found`.
 
 <CodeGroup>
+
+```ts Node.js
+import { PealClient } from "peal-sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+// Keep the key with the post, and send it again under the same key.
+const post = await peal.posts.send({
+  workspaceId,
+  "idempotency-key": "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
+  channelIds: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
+  content: {
+    text: "Our spring catalogue is out. Read it at https://example.com/spring",
+    media: [],
+    overrides: [],
+  },
+  when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" },
+});
+```
+
+```python Python
+import os
+
+from peal import Peal, PostContent, PostTiming_At
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+# Keep the key with the post, and send it again under the same key.
+post = peal.posts.send(
+    workspace_id=workspace_id,
+    idempotency_key="7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
+    channel_ids=["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
+    content=PostContent(
+        text="Our spring catalogue is out. Read it at https://example.com/spring",
+        media=[],
+        overrides=[],
+    ),
+    when=PostTiming_At(at="2026-11-16T08:00:00Z", time_zone="Europe/Paris"),
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+// The client is named `client`, so that `peal` stays the package of the
+// request types.
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+
+// Keep the key with the post, and send it again under the same key.
+post, err := client.Posts.Send(context.Background(), &peal.NewPost{
+	WorkspaceID:    workspaceID,
+	IdempotencyKey: peal.String("7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44"),
+	ChannelIDs:     []string{"019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"},
+	Content: &peal.PostContent{
+		Text:      "Our spring catalogue is out. Read it at https://example.com/spring",
+		Media:     []*peal.MediaAttachment{},
+		Overrides: []*peal.TextOverride{},
+	},
+	When: &peal.PostTiming{
+		At: &peal.PostTimingAt{At: "2026-11-16T08:00:00Z", TimeZone: "Europe/Paris"},
+	},
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+# Keep the key with the post, and send it again under the same key.
+post = peal.posts.send_(
+  workspace_id: workspace_id,
+  idempotency_key: "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
+  channel_ids: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
+  content: {
+    text: "Our spring catalogue is out. Read it at https://example.com/spring",
+    media: [],
+    overrides: []
+  },
+  when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" }
+)
+```
+
+```java Java
+import java.util.List;
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.NewPost;
+import social.peal.types.Post;
+import social.peal.types.PostContent;
+import social.peal.types.PostTiming;
+import social.peal.types.PostTimingAt;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+// Keep the key with the post, and send it again under the same key.
+Post post = peal.posts().send(workspaceId, NewPost.builder()
+    .content(PostContent.builder()
+        .text("Our spring catalogue is out. Read it at https://example.com/spring")
+        .build())
+    .when(PostTiming.at(PostTimingAt.builder()
+        .at("2026-11-16T08:00:00Z")
+        .timeZone("Europe/Paris")
+        .build()))
+    .idempotencyKey("7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44")
+    .channelIds(List.of("019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"))
+    .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\NewPost;
+use Peal\Types\PostContent;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingAt;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+// Keep the key with the post, and send it again under the same key.
+$post = $peal->posts->send($workspaceId, new NewPost([
+    'idempotencyKey' => '7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44',
+    'channelIds' => ['019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11'],
+    'content' => new PostContent([
+        'text' => 'Our spring catalogue is out. Read it at https://example.com/spring',
+        'media' => [],
+        'overrides' => [],
+    ]),
+    'when' => PostTiming::at(new PostTimingAt([
+        'at' => '2026-11-16T08:00:00Z',
+        'timeZone' => 'Europe/Paris',
+    ])),
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+// Keep the key with the post, and send it again under the same key.
+var post = await peal.Posts.SendAsync(new NewPost
+{
+    WorkspaceId = workspaceId,
+    IdempotencyKey = "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
+    ChannelIds = new List<string> { "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11" },
+    Content = new PostContent
+    {
+        Text = "Our spring catalogue is out. Read it at https://example.com/spring",
+        Media = new List<MediaAttachment>(),
+        Overrides = new List<TextOverride>(),
+    },
+    When = new PostTiming(new PostTiming.At(new PostTimingAt
+    {
+        At = "2026-11-16T08:00:00Z",
+        TimeZone = "Europe/Paris",
+    })),
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+// NewPost has no field for the key: it goes in the request's headers.
+// Keep the key with the post, and send it again under the same key.
+let post = peal
+    .posts
+    .send(
+        workspace_id,
+        &NewPost::builder()
+            .channel_ids(vec!["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11".to_string()])
+            .content(PostContent {
+                text: "Our spring catalogue is out. Read it at https://example.com/spring"
+                    .to_string(),
+                ..Default::default()
+            })
+            .when(PostTiming::at(
+                "2026-11-16T08:00:00Z".to_string(),
+                "Europe/Paris".to_string(),
+            ))
+            .build()?,
+        Some(RequestOptions::new().additional_header(
+            "Idempotency-Key",
+            "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
+        )),
+    )
+    .await?;
+```
 
 ```bash curl
 curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send \
@@ -33,22 +236,7 @@ curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send \
   }'
 ```
 
-```ts TypeScript
-// Keep the key with the post: send it again with the same key.
-const post = await peal.posts.send({
-  workspaceId,
-  "idempotency-key": "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
-  channelIds: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
-  content: {
-    text: "Our spring catalogue is out. Read it at https://example.com/spring",
-    media: [],
-    overrides: [],
-  },
-  when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" },
-});
-```
-
-```bash CLI
+```sh CLI
 peal post "Our spring catalogue is out. Read it at https://example.com/spring" \
   --channel 019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11 \
   --at 2026-11-16T08:00:00Z \
@@ -78,35 +266,40 @@ peal post "Our spring catalogue is out. Read it at https://example.com/spring" \
 
 ### Requests that take a key [#keyed]
 
+These requests take a key:
+
 | Request                                     | The key                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `POST …/posts/send`                         | Optional, as above.                                                                                                                                                                                                                                                                                                                                                                      |
 | `POST …/posts/bulk`, `POST …/posts/import`  | Optional, for the whole request, and each of their items or rows may carry a key of its own ([Posting through the API](/developers/posting)).                                                                                                                                                                                                                                            |
 | Creating a customer's workspace             | Optional, through the partner API ([Embedding Peal](/developers/embedding)).                                                                                                                                                                                                                                                                                                             |
-| `POST …/inbox/comments/{commentId}/replies` | Optional. It answers a comment in public. Within 24 hours, the same key with the same comment and text answers the reply the first request made, however it stands, and writes no other; with another comment or text it answers 409 `idempotency_key_reused`. Without a key, a second request is refused (409 `reply_pending`) only while the first reply is on its way or unconfirmed. |
-| `POST …/ads/boosts`                         | Required, as it spends money. The same key with the same request answers the boost it made and never makes another, and with another request answers 409 `boost_key_reused` ([Ads](/developers/ads#api-boost)).                                                                                                                                                                          |
+| `POST …/inbox/comments/{commentId}/replies` | Optional. It answers a comment in public. Within 24 hours, the same key with the same comment and text answers the reply the first request made, however it stands, and writes no other. With another comment or text it answers 409 `idempotency_key_reused`. Without a key, a second request is refused (409 `reply_pending`) only while the first reply is on its way or unconfirmed. |
+| `POST …/ads/boosts`                         | Required, because it spends money. The same key with the same request answers the boost it made and never makes another, and with another request answers 409 `boost_key_reused` ([Ads](/developers/ads#api-boost)).                                                                                                                                                                     |
 
 ### Requests without a key [#unkeyed]
 
-The other writes take no key. Whether one is safe to send again depends on what it does:
+The other writes take no key. Whether you can safely send one again depends on what it does:
 
 | Request                                                                           | Sent again                                                                                                                                                                                        |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Reads (`GET`)                                                                     | Safe.                                                                                                                                                                                             |
-| `PUT`, `PATCH` and `DELETE`                                                       | Safe: they set a resource to what the request says, or remove it. A second `DELETE` answers 404, but removing a channel from a post, which answers the post again.                                |
+| `PUT`, `PATCH` and `DELETE`                                                       | Safe: they set a resource to what the request says, or remove it. A second `DELETE` answers 404, except removing a channel from a post, which answers the post again.                             |
 | Scheduling, moving, unscheduling or cancelling a post, confirming a target        | Safe: they act on one post, by its id, which goes out once however often it is scheduled. A repeat changes nothing more, or answers 409 with the `status` the post has.                           |
-| Creating a draft, importing media, adding a webhook endpoint, creating an API key | Makes another one. None of them puts anything out: list what the workspace has before sending again, and delete a duplicate.                                                                      |
+| Creating a draft, importing media, adding a webhook endpoint, creating an API key | Makes another one. None of them puts anything out, so list what the workspace has before sending again, and delete a duplicate.                                                                   |
 | Inviting someone                                                                  | Replaces the pending invitation to that address, and emails it again.                                                                                                                             |
 | Reposting a target (`POST …/posts/{postId}/targets/{targetId}/repost`)            | Not safe: each repost sends the post again on that channel. Read the post first: only a target that failed or is unconfirmed can be reposted, and any other answers 409 `target_status_conflict`. |
 
 ### Unconfirmed outcomes [#unconfirmed]
 
-Peal has the same problem with the platforms. When a platform's answer is lost, Peal looks the post up there where the platform allows it. When it cannot tell whether the post went out, the target is `unconfirmed`, and Peal does not send it again, since a second attempt could show the post twice.
+Peal has the same problem with the platforms. When a platform's answer is lost, Peal looks the post up there, where the platform allows it. When it still can't tell whether the post went out, the target is `unconfirmed`. Peal doesn't send it again, because a second attempt could show the post twice.
 
 <Callout type="warning" title="Never repost an unconfirmed target blindly">
-  Have someone look on the platform, then record what they found with
-  `…/targets/{targetId}/confirm`, or repost ([Follow up on a
+  If the first attempt went out, a repost shows the post twice. Have someone
+  look on the platform first. Then record what they found with `…/targets/
+  {targetId}/confirm`, or repost ([Follow up on a
   post](/guides/posts/schedule#follow-up)).
 </Callout>
 
-Each publishing attempt, in `GET …/posts/{postId}/attempts`, says how it ended in `result`. It carries in `refusalCode` the code behind a refusal: the platform's own, as it gave it, or Peal's when Peal refused before calling the platform; `null` when there is none. The platforms' codes are theirs and change with them: show them, log them, and branch on `result`.
+Each publishing attempt, in `GET …/posts/{postId}/attempts`, says how it ended in `result`. Its `refusalCode` holds the code behind a refusal: the platform's own, as it gave it, or Peal's when Peal refused before calling the platform. It's `null` when there's none.
+
+The platforms' codes are theirs and change with them. Show them and log them, but branch on `result`.

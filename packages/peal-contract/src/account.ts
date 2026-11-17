@@ -625,8 +625,24 @@ const ExportedReviewReplySchema = Schema.Struct({
 // A direct message the user sent from Peal to a conversation, while Peal
 // keeps it.
 const ExportedDirectMessageSchema = Schema.Struct({
+  // Whether the user wrote it themselves, in their session of Peal's web
+  // app (what lets it go out on Messenger and Instagram up to 7 days after
+  // the person's last message).
+  byPerson: Schema.Boolean,
   channelId: Schema.String,
   conversationId: Schema.String,
+  createdAt: instant,
+  id: Schema.String,
+  status: Schema.String,
+  text: Schema.String,
+  ...inWorkspace,
+});
+
+// A private reply the user sent from Peal to the author of a comment, by
+// the comment's id: never the comment, which someone else wrote.
+const ExportedPrivateReplySchema = Schema.Struct({
+  channelId: Schema.String,
+  commentId: Schema.String,
   createdAt: instant,
   id: Schema.String,
   status: Schema.String,
@@ -894,10 +910,17 @@ const ExportedWorkspaceSchema = Schema.Struct({
             lookedAt: instant,
             // `claimed`, `replied`, `noMatch`, `samePerson` or `refused`.
             outcome: Schema.String,
+            // Why the rule's private reply was not made, or the one it
+            // made; absent from exports made before private replies.
+            privateCode: Schema.optionalKey(nullable(Schema.String)),
+            privateReplyId: Schema.optionalKey(nullable(Schema.String)),
             replyId: nullable(Schema.String),
           })
         ),
         postId: nullable(Schema.String),
+        // The text sent privately after each public reply, or null;
+        // absent from exports made before private replies.
+        privateReply: Schema.optionalKey(nullable(Schema.String)),
         reply: Schema.String,
         // `post` or `channel`.
         scope: Schema.String,
@@ -1003,6 +1026,9 @@ export const AccountExportSchema = Schema.Struct({
     ...NotificationPreferencesSchema.fields,
     lastWeeklyDigest: nullable(Schema.String),
   }),
+  // The private replies the user sent to the authors of comments, in any
+  // workspace, while Peal keeps them; never the comments.
+  privateReplies: Schema.Array(ExportedPrivateReplySchema),
   // The replies the user sent to comments under posts, in any workspace.
   replies: Schema.Array(ExportedReplySchema),
   // The replies the user sent to reviews of locations, in any workspace;

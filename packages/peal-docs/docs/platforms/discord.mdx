@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/discord.svg
 ---
 
-How to connect a Discord channel through a webhook, what a post there may hold, and the options it takes.
+You connect a Discord channel with a webhook made in its settings. There's no app to add and no account to sign in with, and Peal posts under the webhook's name.
 
 ## At a glance [#at-a-glance]
+
+Here's what a Discord post can hold:
 
 |                     |                                     |
 | ------------------- | ----------------------------------- |
@@ -17,39 +19,48 @@ How to connect a Discord channel through a webhook, what a post there may hold, 
 | Parts               | {{platform-discord-parts-en}}       |
 | Alt text            | {{platform-discord-alt-en}}         |
 
-What each file type must be is in [Images and videos](/guides/media#platforms). A Discord channel counts as one account on the [plan](/guides/workspace/billing).
+What each file type must be is in [Images and videos](/guides/media#platforms). Each Discord channel counts as one account on your [plan](/guides/workspace/billing).
 
-## Connect [#connect]
+## Connect a channel [#connect]
 
 <Steps>
   <Step title="Make a webhook">
-    In Discord, open the channel's settings, then **Integrations**,
+    In Discord, open the channel's settings, go to **Integrations**, then
     **Webhooks**, and make a webhook for Peal. Its name is what the channel
-    shows as the author of Peal's posts. Choose **Copy Webhook URL**.
+    shows as the author of Peal's posts. Click **Copy Webhook URL**.
   </Step>
   <Step title="Paste it in Peal">
     On **Channels**, under **Discord**, paste the address into **Webhook
-    address** and choose **Connect Discord**. Peal reads the webhook on Discord
-    and keeps its address encrypted: it is never shown again.
+    address** and click **Connect Discord**. Peal reads the webhook on Discord
+    and keeps its address encrypted, so you won't see it again.
   </Step>
 </Steps>
 
-- The address starts with `https://discord.com/api/webhooks/`, or the older `https://discordapp.com/api/webhooks/`, and may come from Discord's test builds (`canary.discord.com`, `ptb.discord.com`). Peal refuses any other before it calls anything, and always calls Discord's own API.
-- Only an incoming webhook, the kind a channel's settings make, posts messages.
-- Another webhook of the same channel reconnects its channel with the new address.
-- A webhook your server moved to another channel reconnects its channel too, now posting there: it is not a second channel on your plan.
-- To cut Peal off, delete the webhook in the channel's settings. Peal then marks the channel to reconnect and calls it no more.
+Peal checks the address before it calls anything. It takes one that starts with `https://discord.com/api/webhooks/` or the older `https://discordapp.com/api/webhooks/`, from Discord's test builds too (`canary.discord.com`, `ptb.discord.com`). It refuses any other address, and it always calls Discord's own API.
+
+Only an incoming webhook, the kind a channel's settings make, can post messages.
+
+### When the webhook changes [#webhook]
+
+Here's what happens when the webhook changes:
+
+- If you connect another webhook of the same channel, Peal reconnects that channel with the new address.
+- If your server moved the webhook to another channel, connecting it reconnects its channel too, which now posts there. It doesn't count as a second channel on your plan.
+- If you delete the webhook in the channel's settings, Peal marks the channel to reconnect and stops calling it. That's how you cut Peal off.
 
 ## What a post becomes [#posts]
 
-- The text is Discord's markdown, as you type it: `**bold**`, `> quote`, a link. Peal changes nothing in it.
-- A mention notifies nobody unless **Notify the people and roles it mentions** is on: `@everyone`, a role or a person typed in the text shows, and pings no one.
-- The parts of a [thread](/guides/posts#threads) are messages after one another in the channel.
-- In a forum or media channel, the first part opens a forum post titled with **Forum post title**, and the later parts go in it. Without a title, Discord refuses the post (`forumThreadNameRequired`); any other channel refuses a title.
+Peal sends the text as you type it, and Discord reads it as its own markdown: `**bold**`, `> quote`, a link. Peal changes nothing in it.
+
+Mentions don't notify anyone unless you turn on **Notify the people and roles it mentions**. Until then, `@everyone`, a role or a person typed in the text shows in the message, and nobody gets pinged.
+
+The parts of a [thread](/guides/posts#threads) go out as messages one after another in the channel.
+
+In a forum or media channel, the first part opens a forum post titled with **Forum post title**, and the later parts go inside it. Without a title, Discord refuses the post (`forumThreadNameRequired`). Any other kind of channel refuses a title.
 
 ## Options [#options]
 
-No option is required, and each goes with every part but the title, which the first part takes.
+None of these is required. Each one goes with every part, except **Forum post title**, which only the first part takes. **API name** is the option's name in the API:
 
 | Option                                      | API name         | Values                           | Left out |
 | ------------------------------------------- | ---------------- | -------------------------------- | -------- |
@@ -60,14 +71,16 @@ No option is required, and each goes with every part but the title, which the fi
 
 ## Edit and delete [#live]
 
-Peal edits a post's text there and deletes it, every part of it: see [After a post is published](/guides/posts/published). An edit keeps the files.
+Peal can edit a post's text on Discord, and delete the post with every part of it (see [After a post is published](/guides/posts/published)). An edit keeps the files.
 
-Only the webhook that sent a post may change it. After you reconnect the channel with another webhook, Peal asks nothing of Discord for the posts the earlier one sent, and says so (`webhookChanged`): edit or remove them on Discord.
+Only the webhook that sent a post can change it. If you reconnect the channel with another webhook, Peal doesn't ask Discord to change the posts the old one sent, and it tells you so (`webhookChanged`). Edit or remove those posts on Discord.
 
 ## When an answer is lost [#lost]
 
-Discord keeps no key to send a message again under, and lets a webhook list no message. When Discord takes a post and its answer never comes, the post is **To check**: look at the channel, then confirm it or send it again from its page. Peal never sends it again by itself, and sends no part after it.
+Discord has no key that lets Peal send a message again safely, and a webhook can't list the channel's messages. So when Discord takes a post and its answer never reaches Peal, the post shows **To check**. Look at the channel, then confirm the post or send it again from its page.
 
-## What Peal does not do there [#limits]
+Peal never sends it again on its own, and it doesn't send the parts that come after it.
 
-Peal reads nothing back from Discord: no counts, no replies, no inbox. It posts in no existing thread, and sends no embed, poll or button.
+## What Peal doesn't do on Discord [#limits]
+
+Peal doesn't read anything back from Discord, so there are no counts, replies or inbox for it. It doesn't post in an existing thread, and it sends no embeds, polls or buttons.

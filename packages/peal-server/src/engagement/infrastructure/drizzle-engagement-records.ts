@@ -15,10 +15,12 @@ import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import type {
   CommentRuleRecord,
   SentMessageRecord,
+  SentPrivateReplyRecord,
   SentReplyRecord,
   SentReviewReplyRecord,
 } from "#shared/application/personal-data.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import type { ChannelId } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
@@ -32,6 +34,7 @@ import {
   messageBoxes,
   messageChannels,
   outgoingMessages,
+  privateReplies,
   replies,
   reviewReplies,
   reviewThreads,
@@ -58,7 +61,7 @@ export const DrizzleEngagementRecords = Layer.effect(
     const ruleNotices = yield* CommentRuleNotices;
 
     // The messages sent from Peal that never set out (on their way, no
-    // call begun), locked until the caller's transaction ends, so a job
+    // call claimed), locked until the caller's transaction ends, so a job
     // that would begin one waits and then finds it gone.
     const unsentWhere = (where: SQL | undefined) =>
       db
@@ -71,7 +74,28 @@ export const DrizzleEngagementRecords = Layer.effect(
           and(
             where,
             eq(outgoingMessages.status, "sending"),
-            isNull(outgoingMessages.attemptedAt)
+            // Its call never claimed: an attempt that waited for the
+            // gate's turn never left either.
+            isNull(outgoingMessages.callClaimedAt)
+          )
+        )
+        .for("update");
+
+    // The private replies that never set out, locked alike.
+    const unsentPrivateWhere = (where: SQL | undefined) =>
+      db
+        .select({
+          createdAt: privateReplies.createdAt,
+          workspaceId: privateReplies.workspaceId,
+        })
+        .from(privateReplies)
+        .where(
+          and(
+            where,
+            eq(privateReplies.status, "sending"),
+            // Its call never claimed: an attempt that waited for the
+            // gate's turn never left either.
+            isNull(privateReplies.callClaimedAt)
           )
         )
         .for("update");
@@ -138,9 +162,12 @@ export const DrizzleEngagementRecords = Layer.effect(
             commentId: match.commentId,
             lookedAt: DateTime.fromDateUnsafe(match.lookedAt),
             outcome: match.outcome,
+            privateCode: match.privateCode,
+            privateReplyId: match.privateReplyId,
             replyId: match.replyId,
           })),
         postId: rule.postId,
+        privateReply: rule.privateReply,
         reply: rule.reply,
         scope: rule.scope,
         status: rule.status,
@@ -206,6 +233,7 @@ export const DrizzleEngagementRecords = Layer.effect(
     )(function* exportUserMessages(userId: string) {
       const rows = yield* db
         .select({
+          byPerson: outgoingMessages.byPerson,
           channelId: outgoingMessages.channelId,
           conversationId: outgoingMessages.conversationId,
           createdAt: outgoingMessages.createdAt,
@@ -220,6 +248,30 @@ export const DrizzleEngagementRecords = Layer.effect(
         .pipe(Effect.mapError(failed));
 
       return rows.map((row): SentMessageRecord => ({
+        ...row,
+        createdAt: DateTime.fromDateUnsafe(row.createdAt),
+      }));
+    });
+
+    const exportUserPrivateReplies = Effect.fn(
+      "EngagementRecords.exportUserPrivateReplies"
+    )(function* exportUserPrivateReplies(userId: string) {
+      const rows = yield* db
+        .select({
+          channelId: privateReplies.channelId,
+          commentId: privateReplies.commentId,
+          createdAt: privateReplies.createdAt,
+          id: privateReplies.id,
+          status: privateReplies.status,
+          text: privateReplies.text,
+          workspaceId: privateReplies.workspaceId,
+        })
+        .from(privateReplies)
+        .where(eq(privateReplies.authorId, userId))
+        .orderBy(asc(privateReplies.id))
+        .pipe(Effect.mapError(failed));
+
+      return rows.map((row): SentPrivateReplyRecord => ({
         ...row,
         createdAt: DateTime.fromDateUnsafe(row.createdAt),
       }));
@@ -245,6 +297,11 @@ export const DrizzleEngagementRecords = Layer.effect(
 
               const found = yield* unsentWhere(
                 eq(outgoingMessages.workspaceId, workspaceId)
+              );
+
+              // Its private replies go with its threads' comments.
+              const replying = yield* unsentPrivateWhere(
+                eq(privateReplies.workspaceId, workspaceId)
               );
 
               yield* db
@@ -281,7 +338,7 @@ export const DrizzleEngagementRecords = Layer.effect(
                 .delete(conversations)
                 .where(eq(conversations.workspaceId, workspaceId));
 
-              return found;
+              return [...found, ...replying];
             })
           )
           .pipe(Effect.mapError(failed));
@@ -323,6 +380,12 @@ export const DrizzleEngagementRecords = Layer.effect(
           .update(outgoingMessages)
           .set({ authorId: null })
           .where(eq(outgoingMessages.authorId, userId))
+          .pipe(Effect.mapError(failed));
+
+        yield* db
+          .update(privateReplies)
+          .set({ authorId: null })
+          .where(eq(privateReplies.authorId, userId))
           .pipe(Effect.mapError(failed));
 
         yield* db
@@ -368,6 +431,21 @@ export const DrizzleEngagementRecords = Layer.effect(
         const unsent = yield* sql
           .withTransaction(
             Effect.gen(function* deleting() {
+              // The rules that may answer on the channel, before its box,
+              // in the order a rules' run takes them (the rule, then the
+              // box its private reply is journalled under): the two never
+              // wait on each other.
+              yield* sql`
+                SELECT id FROM engagement.comment_rules
+                WHERE status <> 'ended'
+                  AND (channel_id = ${channelId}::uuid OR post_id IN (
+                    SELECT post_id FROM engagement.threads
+                    WHERE channel_id = ${channelId}::uuid
+                  ))
+                ORDER BY id
+                FOR UPDATE
+              `;
+
               // The box first, which a message being journalled holds: it
               // is then found here, not deleted unseen.
               yield* sql`
@@ -379,6 +457,17 @@ export const DrizzleEngagementRecords = Layer.effect(
               const found = yield* unsentWhere(
                 eq(outgoingMessages.channelId, channelId)
               );
+
+              // Its private replies too, sent or not: what the channel's
+              // account sent is kept for the workspace only while it
+              // holds the channel.
+              const replying = yield* unsentPrivateWhere(
+                eq(privateReplies.channelId, channelId)
+              );
+
+              yield* db
+                .delete(privateReplies)
+                .where(eq(privateReplies.channelId, channelId));
 
               yield* db
                 .delete(messageChannels)
@@ -392,7 +481,7 @@ export const DrizzleEngagementRecords = Layer.effect(
                 .delete(conversations)
                 .where(eq(conversations.channelId, channelId));
 
-              return found;
+              return [...found, ...replying];
             })
           )
           .pipe(Effect.mapError(failed));
@@ -424,6 +513,23 @@ export const DrizzleEngagementRecords = Layer.effect(
                   workspaceId: commentRules.workspaceId,
                 })
                 .pipe(Effect.mapError(failed));
+
+              // Their private replies still waiting go with them.
+              if (ended.length > 0) {
+                yield* db
+                  .update(commentRuleMatches)
+                  .set({ privateCode: "stopped" })
+                  .where(
+                    and(
+                      inArray(
+                        commentRuleMatches.ruleId,
+                        ended.map(({ id }) => id)
+                      ),
+                      eq(commentRuleMatches.privateCode, "waiting")
+                    )
+                  )
+                  .pipe(Effect.mapError(failed));
+              }
 
               yield* Effect.forEach(
                 ended,
@@ -517,7 +623,7 @@ export const DrizzleEngagementRecords = Layer.effect(
     const ensureChannelIdle = Effect.fn("EngagementRecords.ensureChannelIdle")(
       function* ensureChannelIdle(workspaceId: string, channelId: string) {
         const claimed = yield* Effect.forEach(
-          [replies, reviewReplies, outgoingMessages],
+          [replies, reviewReplies, outgoingMessages, privateReplies],
           (table) =>
             db
               .select({ claimedAt: table.callClaimedAt })
@@ -540,6 +646,32 @@ export const DrizzleEngagementRecords = Layer.effect(
       }
     );
 
+    const readsMessages = Effect.fn("EngagementRecords.readsMessages")(
+      function* readsMessages(channelIds: readonly ChannelId[]) {
+        if (channelIds.length === 0) {
+          return false;
+        }
+
+        const found = yield* db
+          .select({ channelId: messageBoxes.channelId })
+          .from(messageBoxes)
+          .where(inArray(messageBoxes.channelId, [...channelIds]))
+          .limit(1)
+          .pipe(Effect.mapError(failed));
+
+        return found.length > 0;
+      }
+    );
+
+    const refollow = (channelIds: readonly ChannelId[]) =>
+      channelIds.length === 0
+        ? Effect.void
+        : db
+            .update(messageBoxes)
+            .set({ subscribedAt: null })
+            .where(inArray(messageBoxes.channelId, [...channelIds]))
+            .pipe(Effect.asVoid, Effect.mapError(failed));
+
     return EngagementRecords.of({
       channelGone,
       ensureChannelIdle,
@@ -547,9 +679,12 @@ export const DrizzleEngagementRecords = Layer.effect(
       exportCommentRules,
       exportUser,
       exportUserMessages,
+      exportUserPrivateReplies,
       exportUserReviewReplies,
       forgetUser,
       postRemoved,
+      readsMessages,
+      refollow,
     });
   })
 );

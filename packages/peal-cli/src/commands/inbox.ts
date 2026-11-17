@@ -1,4 +1,4 @@
-import { Console, Effect, Option } from "effect";
+import { Console, DateTime, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import {
   idempotencyKeyLifetimeHours,
@@ -23,6 +23,10 @@ import type {
 } from "peal-contract";
 
 import { messages } from "#commands/inbox-messages.ts";
+import {
+  privateReply,
+  privateReplyLine,
+} from "#commands/inbox-private-replies.ts";
 import { reviews } from "#commands/inbox-reviews.ts";
 import { rules } from "#commands/inbox-rules.ts";
 import { explain } from "#explain.ts";
@@ -257,6 +261,20 @@ const thread = Command.make(
           yield* Console.log(`    reply ${reply.id}  ${replyLine(reply)}`);
           yield* Console.log(`      ${reply.text}`);
         }
+      }
+
+      if (comment.privateReply !== null) {
+        yield* Console.log(
+          `    private reply ${comment.privateReply.id}  ${privateReplyLine(comment.privateReply)}`
+        );
+        yield* Console.log(`      ${comment.privateReply.text}`);
+      } else if (
+        comment.privateReplyUntil !== null &&
+        DateTime.isLessThan(DateTime.nowUnsafe(), comment.privateReplyUntil)
+      ) {
+        yield* Console.log(
+          `    a private reply may go until ${instant(comment.privateReplyUntil)}: peal inbox private-reply send ${comment.id}`
+        );
       }
     }
 
@@ -531,13 +549,13 @@ const abilities = Command.make(
   })
 ).pipe(
   Command.withDescription(
-    "Say what a channel can do about the comments under its posts: read them, reply, take a reply back, like, hide or delete, from its platform and what its account allowed."
+    "Say what a channel can do about the comments under its posts: read them, reply, take a reply back, like, hide, delete or reply privately once, from its platform, what its account allowed and whether its direct messages are on."
   )
 );
 
 export const inbox = Command.make("inbox").pipe(
   Command.withDescription(
-    `The comments people leave under a workspace's published posts, on ${inboxPlatformsText}, the reviews of its Google Business Profile locations, and the direct messages its Mastodon and Bluesky accounts receive: read them, and answer as the channel's account.`
+    `The comments people leave under a workspace's published posts, on ${inboxPlatformsText}, the reviews of its Google Business Profile locations, and the direct messages its Mastodon, Bluesky, Facebook Page and Instagram accounts receive: read them, and answer as the channel's account.`
   ),
   Command.withSubcommands([
     threads,
@@ -551,5 +569,6 @@ export const inbox = Command.make("inbox").pipe(
     reviews,
     rules,
     messages,
+    privateReply,
   ])
 );

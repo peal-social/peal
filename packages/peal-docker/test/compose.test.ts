@@ -194,6 +194,18 @@ describe("compose.yaml", () => {
     }
   );
 
+  // Several runs of the server's tests share it, each holding up to about
+  // 80 connections: past the limit, Postgres refuses the next.
+  it("lets Postgres hold the connections of several test runs", () => {
+    const postgres = development.find(([name]) => name === "postgres")?.[1];
+
+    expect(postgres?.command).toStrictEqual([
+      "postgres",
+      "-c",
+      "max_connections=400",
+    ]);
+  });
+
   it("probes the collector with a wget a one-shot service copies", () => {
     expect(collectorProbe(development)).toStrictEqual({
       filler: "collector-wget",

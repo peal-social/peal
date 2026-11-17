@@ -24,6 +24,7 @@ import type {
   MessagesApplication,
   MessagesSwitchedOn,
 } from "./ports/message-store.ts";
+import { PrivateReplyStore } from "./ports/private-reply-store.ts";
 
 type Refused = DatabaseError | MessagesNeedPerson | MissingPermission;
 
@@ -81,6 +82,7 @@ export class MessageSettings extends Context.Service<
     MessageSettings,
     Effect.gen(function* MessageSettingsLive() {
       const store = yield* MessageStore;
+      const privateReplies = yield* PrivateReplyStore;
       const source = yield* MessageSource;
       const channels = yield* EngagementChannels;
       const messages = yield* CurrentInboxMessages;
@@ -118,11 +120,21 @@ export class MessageSettings extends Context.Service<
           }
 
           if (!on) {
-            // Its platform is told to stop sending the account's events,
-            // once and best effort, while the channel's token is there: a
-            // refusal, or a gate too busy to answer in time, is logged by
-            // the channel's id, and the messages go all the same.
-            if (Option.isSome(yield* store.box(channelId))) {
+            const followed = Option.isSome(yield* store.box(channelId));
+
+            // What was on its way and never set out is not sent: its
+            // outbound message is given back as its row goes.
+            yield* transaction(
+              forgetChannelMessages(store, privateReplies, meters, channelId)
+            );
+
+            // Its platform is then told to stop sending the account's
+            // events, once and best effort, while the channel's token is
+            // there: with the box gone first, two channels of one account
+            // turned off at once each see the other gone, and the last one
+            // stops them. A refusal, or a gate too busy to answer in time,
+            // is logged by the channel's id.
+            if (followed) {
               yield* source.unfollow({ channelId }).pipe(
                 Effect.timeout(unfollowWait),
                 Effect.catch((error) =>
@@ -138,10 +150,6 @@ export class MessageSettings extends Context.Service<
                 Effect.asVoid
               );
             }
-
-            // What was on its way and never set out is not sent: its
-            // outbound message is given back as its row goes.
-            yield* transaction(forgetChannelMessages(store, meters, channelId));
 
             return yield* viewOf(actor);
           }
@@ -164,12 +172,14 @@ export class MessageSettings extends Context.Service<
           }
 
           // An account that has not granted what reading takes (Bluesky's
-          // chat, asked only once a member asks for the channel's messages)
+          // chat, Meta's messaging permissions, asked only once a member
+          // asks for the channel's messages)
           // stays off until it is connected again with them.
           const { read } = messageAbilitiesOf(
             channel.value.platform,
             channel.value.scopes,
-            messages
+            messages,
+            channel.value.connection
           );
 
           if (read !== "available") {

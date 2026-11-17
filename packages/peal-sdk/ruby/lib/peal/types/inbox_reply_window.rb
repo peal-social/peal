@@ -8,6 +8,8 @@ module Peal
       field :closes_at, -> { String }, optional: false, nullable: true, api_name: "closesAt"
 
       field :open, -> { Internal::Types::Boolean }, optional: false, nullable: false
+
+      field :person_closes_at, -> { String }, optional: false, nullable: true, api_name: "personClosesAt"
     end
   end
 end

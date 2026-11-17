@@ -44,6 +44,18 @@ class InboxComment extends JsonSerializableType
     public ?string $permalink;
 
     /**
+     * @var ?InboxPrivateReply $privateReply
+     */
+    #[JsonProperty('privateReply')]
+    public ?InboxPrivateReply $privateReply;
+
+    /**
+     * @var ?string $privateReplyUntil
+     */
+    #[JsonProperty('privateReplyUntil')]
+    public ?string $privateReplyUntil;
+
+    /**
      * @var string $receivedAt
      */
     #[JsonProperty('receivedAt')]
@@ -86,6 +98,8 @@ class InboxComment extends JsonSerializableType
      *   forgotten?: ?value-of<InboxCommentForgotten>,
      *   parentId?: ?string,
      *   permalink?: ?string,
+     *   privateReply?: ?InboxPrivateReply,
+     *   privateReplyUntil?: ?string,
      * } $values
      */
     public function __construct(
@@ -97,6 +111,8 @@ class InboxComment extends JsonSerializableType
         $this->liked = $values['liked'];
         $this->parentId = $values['parentId'] ?? null;
         $this->permalink = $values['permalink'] ?? null;
+        $this->privateReply = $values['privateReply'] ?? null;
+        $this->privateReplyUntil = $values['privateReplyUntil'] ?? null;
         $this->receivedAt = $values['receivedAt'];
         $this->state = $values['state'];
         $this->text = $values['text'];

@@ -7,7 +7,7 @@ sidebar:
 
 ## Identifiants et instants [#ids]
 
-Les identifiants sont des chaînes de caractères, écrites en minuscules. Traitez chaque identifiant comme une chaîne opaque : comparez-le, stockez-le, renvoyez-le, et n’en déduisez rien.
+Les identifiants sont des chaînes de caractères, écrites en minuscules. Traitez chaque identifiant comme une chaîne opaque : comparez-le, stockez-le et renvoyez-le, mais n’en déduisez rien. Leur forme dépend de l’objet :
 
 | Objets                                           | Identifiant                                          |
 | ------------------------------------------------ | ---------------------------------------------------- |
@@ -17,11 +17,14 @@ Les identifiants sont des chaînes de caractères, écrites en minuscules. Trait
 
 ### Instants et fuseaux horaires [#instants]
 
-| Valeur                         | Comment elle s’écrit                                                                                                           |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| Un instant                     | En ISO 8601, en UTC, comme `2026-11-16T08:00:00.000Z`. Les réponses donnent les instants ainsi ; envoyez-les de la même façon. |
-| Une heure de programmation     | Un instant et le fuseau horaire IANA dans lequel il a été choisi, comme `Europe/Paris`, que Peal garde avec la publication.    |
-| Un jour, pour les statistiques | Un jour calendaire, comme `2026-11-16`, avec le fuseau horaire dans lequel ces jours s’écoulent.                               |
+Les heures s’écrivent de trois façons :
 
-- Un décalage comme `+01:00` n’est pas un fuseau horaire, et répond 422 `invalid_time_zone`.
-- Une heure passée depuis une minute au plus vaut maintenant ; une heure plus ancienne répond 422 `schedule_in_past`.
+| Valeur                         | Comment elle s’écrit                                                                                                          |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Un instant                     | En ISO 8601, en UTC, comme `2026-11-16T08:00:00.000Z`. Les réponses donnent les instants ainsi. Envoyez-les de la même façon. |
+| Une heure de programmation     | Un instant et le fuseau horaire IANA dans lequel il a été choisi, comme `Europe/Paris`, que Peal garde avec la publication.   |
+| Un jour, pour les statistiques | Un jour calendaire, comme `2026-11-16`, avec le fuseau horaire dans lequel ces jours s’écoulent.                              |
+
+Un décalage comme `+01:00` n’est pas un fuseau horaire, et répond 422 `invalid_time_zone`.
+
+Une heure passée depuis moins d’une minute compte comme maintenant. Une heure plus ancienne répond 422 `schedule_in_past` : choisissez une heure à venir.

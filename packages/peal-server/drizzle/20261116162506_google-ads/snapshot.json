@@ -1,0 +1,443 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "00890b9e-9380-47b8-b384-d99a22384b03",
+  "prevIds": [
+    "44af3c69-bc07-41a4-9af7-0bd390a8e4d3"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "ads",
+        "campaign_days"
+      ],
+      "writes": [
+        "s|tbl|ads.campaign_days",
+        "n|tbl|ads.campaign_days",
+        "e|tbl|ads.campaign_days",
+        "n|rel|ads.campaign_days",
+        "n|type|ads.campaign_days",
+        "n|rel|ads.campaign_days_pkey"
+      ],
+      "reads": [
+        "n|sch|ads"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "ads",
+        "accounts",
+        "reached_through"
+      ],
+      "writes": [
+        "s|col|ads.accounts.reached_through",
+        "n|col|ads.accounts.reached_through",
+        "e|col|ads.accounts.reached_through"
+      ],
+      "reads": [
+        "n|tbl|ads.accounts",
+        "n|sch|ads"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "ads",
+        "accounts",
+        "unreachable_since"
+      ],
+      "writes": [
+        "s|col|ads.accounts.unreachable_since",
+        "n|col|ads.accounts.unreachable_since",
+        "e|col|ads.accounts.unreachable_since"
+      ],
+      "reads": [
+        "n|tbl|ads.accounts",
+        "n|sch|ads"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "ads",
+        "campaigns",
+        "kind"
+      ],
+      "writes": [
+        "s|col|ads.campaigns.kind",
+        "n|col|ads.campaigns.kind",
+        "e|col|ads.campaigns.kind"
+      ],
+      "reads": [
+        "n|tbl|ads.campaigns",
+        "n|sch|ads"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "ads",
+        "sign_in_attempts",
+        "code_verifier"
+      ],
+      "writes": [
+        "s|col|ads.sign_in_attempts.code_verifier",
+        "n|col|ads.sign_in_attempts.code_verifier",
+        "e|col|ads.sign_in_attempts.code_verifier"
+      ],
+      "reads": [
+        "n|tbl|ads.sign_in_attempts",
+        "n|sch|ads"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "ads",
+        "campaign_days",
+        "campaign_days_workspace_day"
+      ],
+      "writes": [
+        "s|idx|ads.campaign_days_workspace_day",
+        "n|idx|ads.campaign_days_workspace_day",
+        "e|idx|ads.campaign_days_workspace_day",
+        "n|rel|ads.campaign_days_workspace_day"
+      ],
+      "reads": [
+        "n|tbl|ads.campaign_days",
+        "n|sch|ads",
+        "n|col|ads.campaign_days.workspace_id",
+        "n|col|ads.campaign_days.day"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "ads",
+        "campaign_days",
+        "campaign_days_day"
+      ],
+      "writes": [
+        "s|idx|ads.campaign_days_day",
+        "n|idx|ads.campaign_days_day",
+        "e|idx|ads.campaign_days_day",
+        "n|rel|ads.campaign_days_day"
+      ],
+      "reads": [
+        "n|tbl|ads.campaign_days",
+        "n|sch|ads",
+        "n|col|ads.campaign_days.day"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "ads",
+        "campaign_days"
+      ],
+      "writes": [
+        "s|fk|ads.campaign_days.campaign_days_account_id_accounts_id_fkey",
+        "n|fk|ads.campaign_days.campaign_days_account_id_accounts_id_fkey",
+        "e|fk|ads.campaign_days.campaign_days_account_id_accounts_id_fkey",
+        "n|con|ads.campaign_days.campaign_days_account_id_accounts_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|ads.campaign_days",
+        "n|sch|ads",
+        "n|tbl|ads.accounts",
+        "n|sch|ads",
+        "n|col|ads.campaign_days.account_id",
+        "n|col|ads.accounts.id",
+        "e|uniqueness|ads.accounts.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "name": "campaign_days",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "accounts",
+        "name": "reached_through",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "accounts",
+        "name": "unreachable_since",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "campaign_external_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "clicks",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "day",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "impressions",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "spend_micros",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "workspace_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaigns",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "sign_in_attempts",
+        "name": "code_verifier",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "campaign_days_workspace_day",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "workspace_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "day",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "campaign_days_day",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "day",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "campaign_days_account_id_accounts_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "account_id"
+        ],
+        "schemaTo": "ads",
+        "tableTo": "accounts",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "ads",
+        "table": "campaign_days",
+        "name": "campaign_days_pkey",
+        "columns": [
+          "account_id",
+          "campaign_external_id",
+          "day"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

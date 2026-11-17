@@ -5,44 +5,20 @@ sidebar:
   icon: layers
 ---
 
-Send up to 50 posts in one request, or import them from a CSV file, through the API, the SDKs or the command line.
+You can send up to 50 posts in one request, or import up to 100 from a CSV file, through the API, the SDKs or the command line. The samples build the client as [Posting through the API](/developers/posting#start) explains.
 
 ## Send several posts in one request [#bulk]
 
-`POST …/posts/bulk` creates and sends up to 50 posts, each as `send` would. Each item is one post, with its own channels, content, options and time. The same content at several times is several items, and so is a post that goes out at a time of its own on each channel.
+`POST …/posts/bulk` creates and sends up to 50 posts, each as `send` would. Each item is one post, with its own channels, content, options and time. So the same content at two times is two items, and so is a post that goes out at a different time on each channel.
 
 <CodeGroup>
 
-```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/bulk \
-  -H "Authorization: Bearer $PEAL_API_KEY" \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: 9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f" \
-  -d '{
-    "posts": [
-      {
-        "channelIds": ["0190f3a0-0000-7000-8000-00000000c001"],
-        "content": {
-          "text": "Our spring catalogue is out. Read it at https://example.com/spring",
-          "media": [],
-          "overrides": []
-        },
-        "when": { "_tag": "at", "at": "2026-11-16T08:00:00Z", "timeZone": "Europe/Paris" }
-      },
-      {
-        "channelIds": ["0190f3a0-0000-7000-8000-00000000c009"],
-        "content": {
-          "text": "Our spring catalogue is out. Read it at https://example.com/spring",
-          "media": [],
-          "overrides": []
-        },
-        "when": { "_tag": "at", "at": "2026-11-16T17:00:00Z", "timeZone": "America/New_York" }
-      }
-    ]
-  }'
-```
+```ts Node.js
+import { PealClient } from "peal-sdk";
 
-```ts TypeScript
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
+
 const result = await peal.posts.bulk({
   workspaceId,
   "idempotency-key": "9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
@@ -77,6 +53,303 @@ const result = await peal.posts.bulk({
 });
 ```
 
+```python Python
+import os
+
+from peal import BulkPost, Peal, PostContent, PostTiming_At
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+workspace_id = os.environ["PEAL_WORKSPACE_ID"]
+
+text = "Our spring catalogue is out. Read it at https://example.com/spring"
+
+result = peal.posts.bulk(
+    workspace_id=workspace_id,
+    idempotency_key="9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
+    posts=[
+        BulkPost(
+            channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
+            content=PostContent(text=text, media=[], overrides=[]),
+            when=PostTiming_At(at="2026-11-16T08:00:00Z", time_zone="Europe/Paris"),
+        ),
+        BulkPost(
+            channel_ids=["0190f3a0-0000-7000-8000-00000000c009"],
+            content=PostContent(text=text, media=[], overrides=[]),
+            when=PostTiming_At(at="2026-11-16T17:00:00Z", time_zone="America/New_York"),
+        ),
+    ],
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
+
+content := &peal.PostContent{
+	Text:      "Our spring catalogue is out. Read it at https://example.com/spring",
+	Media:     []*peal.MediaAttachment{},
+	Overrides: []*peal.TextOverride{},
+}
+
+result, err := client.Posts.Bulk(context.TODO(), &peal.BulkPosts{
+	WorkspaceID:    workspaceID,
+	IdempotencyKey: peal.String("9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f"),
+	Posts: []*peal.BulkPost{
+		{
+			ChannelIDs: []string{"0190f3a0-0000-7000-8000-00000000c001"},
+			Content:    content,
+			When: &peal.PostTiming{
+				At: &peal.PostTimingAt{At: "2026-11-16T08:00:00Z", TimeZone: "Europe/Paris"},
+			},
+		},
+		{
+			ChannelIDs: []string{"0190f3a0-0000-7000-8000-00000000c009"},
+			Content:    content,
+			When: &peal.PostTiming{
+				At: &peal.PostTimingAt{At: "2026-11-16T17:00:00Z", TimeZone: "America/New_York"},
+			},
+		},
+	},
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
+
+content = {
+  text: "Our spring catalogue is out. Read it at https://example.com/spring",
+  media: [],
+  overrides: []
+}
+
+result = peal.posts.bulk(
+  workspace_id: workspace_id,
+  idempotency_key: "9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
+  posts: [
+    {
+      channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
+      content: content,
+      when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" }
+    },
+    {
+      channelIds: ["0190f3a0-0000-7000-8000-00000000c009"],
+      content: content,
+      when: { _tag: "at", at: "2026-11-16T17:00:00Z", timeZone: "America/New_York" }
+    }
+  ]
+)
+```
+
+```java Java
+import java.util.List;
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.*;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
+
+PostContent content = PostContent.builder()
+    .text("Our spring catalogue is out. Read it at https://example.com/spring")
+    .build();
+
+BulkResult result = peal.posts().bulk(
+    workspaceId,
+    BulkPosts.builder()
+        .idempotencyKey("9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f")
+        .posts(List.of(
+            BulkPost.builder()
+                .content(content)
+                .when(PostTiming.at(PostTimingAt.builder()
+                    .at("2026-11-16T08:00:00Z")
+                    .timeZone("Europe/Paris")
+                    .build()))
+                .channelIds(List.of("0190f3a0-0000-7000-8000-00000000c001"))
+                .build(),
+            BulkPost.builder()
+                .content(content)
+                .when(PostTiming.at(PostTimingAt.builder()
+                    .at("2026-11-16T17:00:00Z")
+                    .timeZone("America/New_York")
+                    .build()))
+                .channelIds(List.of("0190f3a0-0000-7000-8000-00000000c009"))
+                .build()))
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\BulkPosts;
+use Peal\Types\BulkPost;
+use Peal\Types\PostContent;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingAt;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+$workspaceId = getenv('PEAL_WORKSPACE_ID');
+
+$content = new PostContent([
+    'text' => 'Our spring catalogue is out. Read it at https://example.com/spring',
+    'media' => [],
+    'overrides' => [],
+]);
+
+$result = $peal->posts->bulk($workspaceId, new BulkPosts([
+    'idempotencyKey' => '9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f',
+    'posts' => [
+        new BulkPost([
+            'channelIds' => ['0190f3a0-0000-7000-8000-00000000c001'],
+            'content' => $content,
+            'when' => PostTiming::at(new PostTimingAt([
+                'at' => '2026-11-16T08:00:00Z',
+                'timeZone' => 'Europe/Paris',
+            ])),
+        ]),
+        new BulkPost([
+            'channelIds' => ['0190f3a0-0000-7000-8000-00000000c009'],
+            'content' => $content,
+            'when' => PostTiming::at(new PostTimingAt([
+                'at' => '2026-11-16T17:00:00Z',
+                'timeZone' => 'America/New_York',
+            ])),
+        ]),
+    ],
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
+
+var content = new PostContent
+{
+    Text = "Our spring catalogue is out. Read it at https://example.com/spring",
+};
+
+var result = await peal.Posts.BulkAsync(new BulkPosts
+{
+    WorkspaceId = workspaceId,
+    IdempotencyKey = "9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
+    Posts = new List<BulkPost>
+    {
+        new BulkPost
+        {
+            ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c001" },
+            Content = content,
+            When = new PostTiming(new PostTiming.At(new PostTimingAt
+            {
+                At = "2026-11-16T08:00:00Z",
+                TimeZone = "Europe/Paris",
+            })),
+        },
+        new BulkPost
+        {
+            ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c009" },
+            Content = content,
+            When = new PostTiming(new PostTiming.At(new PostTimingAt
+            {
+                At = "2026-11-16T17:00:00Z",
+                TimeZone = "America/New_York",
+            })),
+        },
+    },
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
+
+let content = PostContent::builder()
+    .text("Our spring catalogue is out. Read it at https://example.com/spring")
+    .media(vec![])
+    .overrides(vec![])
+    .build()?;
+
+let result = peal
+    .posts
+    .bulk(
+        &workspace_id,
+        &BulkPosts::builder()
+            .posts(vec![
+                BulkPost::builder()
+                    .channel_ids(vec!["0190f3a0-0000-7000-8000-00000000c001".to_string()])
+                    .content(content.clone())
+                    .when(PostTiming::at(
+                        "2026-11-16T08:00:00Z".to_string(),
+                        "Europe/Paris".to_string(),
+                    ))
+                    .build()?,
+                BulkPost::builder()
+                    .channel_ids(vec!["0190f3a0-0000-7000-8000-00000000c009".to_string()])
+                    .content(content)
+                    .when(PostTiming::at(
+                        "2026-11-16T17:00:00Z".to_string(),
+                        "America/New_York".to_string(),
+                    ))
+                    .build()?,
+            ])
+            .build()?,
+        // The request's key goes in its headers.
+        Some(RequestOptions::new().additional_header(
+            "Idempotency-Key",
+            "9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f",
+        )),
+    )
+    .await?;
+```
+
+```bash curl
+curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/bulk \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 9b2e4d6f-1a3c-4b5d-8e7f-0a1b2c3d4e5f" \
+  -d '{
+    "posts": [
+      {
+        "channelIds": ["0190f3a0-0000-7000-8000-00000000c001"],
+        "content": {
+          "text": "Our spring catalogue is out. Read it at https://example.com/spring",
+          "media": [],
+          "overrides": []
+        },
+        "when": { "_tag": "at", "at": "2026-11-16T08:00:00Z", "timeZone": "Europe/Paris" }
+      },
+      {
+        "channelIds": ["0190f3a0-0000-7000-8000-00000000c009"],
+        "content": {
+          "text": "Our spring catalogue is out. Read it at https://example.com/spring",
+          "media": [],
+          "overrides": []
+        },
+        "when": { "_tag": "at", "at": "2026-11-16T17:00:00Z", "timeZone": "America/New_York" }
+      }
+    ]
+  }'
+```
+
 </CodeGroup>
 
 ```json
@@ -109,23 +382,30 @@ const result = await peal.posts.bulk({
 }
 ```
 
-- Items are taken in order, one at a time, each on its own. One refused keeps none of the others from being made, and nothing is undone.
-- The answer is 200 whenever the request itself was read, even if every item was refused. `items` says, for each item by its place in the request (`index`, from 0), `created` with its post, or `refused` with what `send` would have answered for it alone, as data: its content's violations, unknown channels or media, a time gone by, the plan's limit, a duplicate.
-- A request that cannot be read at all (malformed, no item, more than 50) answers 400, and makes nothing.
-- The plan's limits hold across the request: once the month has no room, the items left are refused.
-- Each item is checked against the posts made before it, the request's earlier items included, for the same content on the same channel ([Duplicate posts](/developers/posting#duplicates)).
+Peal takes the items in order, one at a time, and each stands on its own. A refused item doesn't stop the others from being made, and nothing is undone.
 
-An `Idempotency-Key` header makes the whole request safe to send again within 24 hours. Each item is kept under the key and its place:
+The answer is 200 as long as Peal could read the request, even if it refused every item. `items` gives one result per item, by its place in the request (`index`, from 0):
 
-- the same request sent again answers the posts it made, with `replayed` true, and makes those that were not made the first time if they now can be;
-- an item that changed under the same key is refused with `IdempotencyKeyReused`;
-- an item may carry an `idempotencyKey` of its own, which is used instead of the header's for that item.
+- `created`, with its post.
+- `refused`, with what `send` would have answered for that item alone, as data: its content's violations, unknown channels or media, a time that has passed, the plan's limit or a duplicate.
+
+A request Peal can't read at all (malformed, with no item, or with more than 50) answers 400 and makes nothing.
+
+The plan's limits hold across the whole request. Once the month has no room left, the remaining items are refused. Each item is also checked for the same content on the same channel against the posts made before it, the request's earlier items included ([Duplicate posts](/developers/posting#duplicates)).
+
+### Send it again safely [#bulk-idempotency]
+
+An `Idempotency-Key` header makes the whole request safe to send again within 24 hours. Peal keeps each item under the key and its place:
+
+- The same request sent again answers the posts it made, with `replayed` true. It also makes the items that weren't made the first time, if they can be now.
+- An item that changed under the same key is refused with `IdempotencyKeyReused`.
+- An item can carry its own `idempotencyKey`, which then replaces the header's for that item.
 
 ## Import posts from a CSV file [#import]
 
-In the web app, [Import from a file](/guides/posts/drafts#import-screen) checks a file and imports it through this endpoint.
+`POST …/posts/import` creates and sends the posts a CSV file lists, one per row. In the web app, [Import from a file](/guides/posts/drafts#import-screen) checks a file and imports it through this endpoint.
 
-`POST …/posts/import` creates and sends the posts a CSV file lists, one per row. The file's first line names the columns, in any order:
+The file's first line names the columns, in any order:
 
 | Column            | Required | What it holds                                                                                                                                             |
 | ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -137,9 +417,11 @@ In the web app, [Import from a file](/guides/posts/drafts#import-screen) checks 
 | `allow_duplicate` | no       | `true` or `false` ([Duplicate posts](/developers/posting#duplicates))                                                                                     |
 | `idempotency_key` | no       | The row's own idempotency key                                                                                                                             |
 
-A row is a post alone, with one text for all its channels: a [thread](/guides/posts#threads), a text of its own on a channel or a platform's options do not fit in a cell, and go through `send` or `bulk`. A file that names another column is refused whole.
+A row is a single post, with one text for all its channels. A [thread](/guides/posts#threads), a different text on one channel or a platform's options don't fit in a cell, so send those through `send` or `bulk`. A file that names any other column is refused whole.
 
-Cells follow RFC 4180 strictly, so that no text is ever cut short: a cell with a comma, a quote or a line break is written between double quotes, and a quote inside it is doubled. A row ends after its last cell, without a comma. A file holds at most 100 rows under its first line, and 1,000,000 characters.
+### Write the file [#csv]
+
+Cells follow RFC 4180 strictly, so a text is never cut short. A cell that holds a comma, a quote or a line break goes between double quotes, and a quote inside it is doubled. A row ends after its last cell, with no trailing comma. A file holds at most 100 rows under its first line, and 1,000,000 characters.
 
 ```csv title="posts.csv"
 text,channels,at,time_zone,media
@@ -147,19 +429,13 @@ Our spring catalogue is out.,0190f3a0-0000-7000-8000-00000000c001 0190f3a0-0000-
 "Last days: the ""spring"" prices end on Sunday, at midnight.",0190f3a0-0000-7000-8000-00000000c001,2026-11-27T09:00:00Z,,
 ```
 
-The request is JSON, with the file's text in `csv`. Here `jq` writes it from the file:
+### Send it [#import-request]
+
+The request is JSON, with the file's text in `csv`. With curl, `jq` writes it from the file:
 
 <CodeGroup>
 
-```bash curl
-jq -Rs '{ csv: ., dryRun: true }' posts.csv |
-  curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/import \
-    -H "Authorization: Bearer $PEAL_API_KEY" \
-    -H "Content-Type: application/json" \
-    -d @-
-```
-
-```ts TypeScript
+```ts Node.js
 import { readFileSync } from "node:fs";
 
 const result = await peal.posts.import({
@@ -169,7 +445,90 @@ const result = await peal.posts.import({
 });
 ```
 
-```bash CLI
+```python Python
+from pathlib import Path
+
+result = peal.posts.import_(
+    workspace_id=workspace_id,
+    csv=Path("posts.csv").read_text(encoding="utf-8"),
+    dry_run=True,
+)
+```
+
+```go Go
+csv, err := os.ReadFile("posts.csv")
+if err != nil {
+	return err
+}
+
+result, err := client.Posts.Import(context.TODO(), &peal.PostImport{
+	WorkspaceID: workspaceID,
+	Csv:         string(csv),
+	DryRun:      peal.Bool(true),
+})
+```
+
+```ruby Ruby
+result = peal.posts.import(
+  workspace_id: workspace_id,
+  csv: File.read("posts.csv", encoding: "utf-8"),
+  dry_run: true
+)
+```
+
+```java Java
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+ImportResult result = peal.posts().import_(
+    workspaceId,
+    PostImport.builder()
+        .csv(Files.readString(Path.of("posts.csv")))
+        .dryRun(true)
+        .build());
+```
+
+```php PHP
+use Peal\Posts\Requests\PostImport;
+
+$result = $peal->posts->import($workspaceId, new PostImport([
+    'csv' => file_get_contents('posts.csv'),
+    'dryRun' => true,
+]));
+```
+
+```csharp .NET
+var result = await peal.Posts.ImportAsync(new PostImport
+{
+    WorkspaceId = workspaceId,
+    Csv = File.ReadAllText("posts.csv"),
+    DryRun = true,
+});
+```
+
+```rust Rust
+let result = peal
+    .posts
+    .import(
+        &workspace_id,
+        &PostImport::builder()
+            .csv(std::fs::read_to_string("posts.csv")?)
+            .dry_run(true)
+            .build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+jq -Rs '{ csv: ., dryRun: true }' posts.csv |
+  curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/import \
+    -H "Authorization: Bearer $PEAL_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d @-
+```
+
+```sh CLI
 peal posts import posts.csv --dry-run
 ```
 
@@ -186,26 +545,28 @@ peal posts import posts.csv --dry-run
 }
 ```
 
-The file is checked first, every row, as `validate` checks a post, and as the file it is:
+Peal checks every row first, the way `validate` checks a post, and then checks the file as a whole:
 
-- a row an earlier row leaves no room for in its month is refused with `PlanLimitReached`;
-- a row that says what an earlier row says, on the same channel less than 23 hours from it, with `DuplicatePost` (its `message` names that row, as there is no post to name yet);
-- a row that carries an earlier row's `idempotency_key` with another post, with `IdempotencyKeyReused`.
+- A row an earlier row leaves no room for in its month is refused with `PlanLimitReached`.
+- A row that repeats an earlier row on the same channel, less than 23 hours from it, is refused with `DuplicatePost`. Its `message` names that row, since there's no post to name yet.
+- A row that reuses an earlier row's `idempotency_key` with a different post is refused with `IdempotencyKeyReused`.
 
-<Callout type="info">
-  Unless every row is valid, nothing is made. `dryRun: true` stops there even
-  when every row is valid. Otherwise the rows are then made in order, as `bulk`
+<Callout type="info" title="One invalid row stops the whole import">
+  Peal makes nothing unless every row is valid. `dryRun: true` stops there even
+  when they all are. Otherwise Peal then makes the rows in order, as `bulk`
   makes its items.
 </Callout>
 
-`rows` holds one result per row, by its place under the first line, from 1. Blank lines are no rows, and are not counted.
+### Read the result [#import-result]
 
-| `_tag`       | Meaning                                                                                                                                                                                                                                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `created`    | The row's post was made: `post` holds it, and `replayed` says whether its idempotency key answered one made before.                                                                                                                                                                                                 |
-| `valid`      | The row was checked and not made: a dry run, or another row kept the file from being imported.                                                                                                                                                                                                                      |
-| `refused`    | `refusal` holds what `send` would have answered for it. A row that was valid is refused too when something changed since the check, or when it repeats an earlier row.                                                                                                                                              |
-| `unreadable` | `problems` names the cells at fault: each `column`, `missing` when the row needs it, or `invalid` for what it holds. A row with more or fewer cells than the first line names is not read at all: `cells` says how many were `expected` and `found`. A comma in a text that is not between double quotes makes one. |
+`rows` holds one result per row, by its place under the first line, from 1. Blank lines aren't rows, and aren't counted. Each result has one of these tags:
+
+| `_tag`       | Meaning                                                                                                                                                                                                                                                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `created`    | The row's post was made. `post` holds it, and `replayed` says whether its idempotency key answered a post made before.                                                                                                                                                                                                 |
+| `valid`      | The row was checked and not made, either in a dry run or because another row kept the file from being imported.                                                                                                                                                                                                        |
+| `refused`    | `refusal` holds what `send` would have answered for it. A row that passed the check is also refused when something changed since, or when it repeats an earlier row.                                                                                                                                                   |
+| `unreadable` | `problems` names the cells at fault: each `column`, `missing` when the row needs it, or `invalid` for what it holds. A row with more or fewer cells than the first line names isn't read at all, and `cells` says how many were `expected` and `found`. A comma in a text that isn't between double quotes causes one. |
 
 ```json
 {
@@ -222,20 +583,20 @@ The file is checked first, every row, as `validate` checks a post, and as the fi
 }
 ```
 
-The answer is 200 once the file was read. A file that cannot be read at all answers 422 `ImportUnreadable`, and nothing is made. `problem` says why, and `column` which column when it is about one:
+The answer is 200 once Peal could read the file. A file it can't read at all answers 422 `ImportUnreadable`, and nothing is made. `problem` says why, and `column` names the column when the problem is about one:
 
-| `problem`           | The file                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------ |
-| `empty`             | is empty                                                                                   |
-| `unterminatedQuote` | has a quoted cell that never ends                                                          |
-| `strayQuote`        | has a double quote inside a cell that is not between quotes, or text after a closing quote |
-| `unknownColumn`     | names a column Peal does not know                                                          |
-| `repeatedColumn`    | names the same column twice                                                                |
-| `missingColumn`     | lacks a column it needs                                                                    |
-| `tooManyRows`       | has more rows than one import takes                                                        |
+| `problem`           | The file                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| `empty`             | is empty                                                                                  |
+| `unterminatedQuote` | has a quoted cell that never ends                                                         |
+| `strayQuote`        | has a double quote inside a cell that isn't between quotes, or text after a closing quote |
+| `unknownColumn`     | names a column Peal doesn't know                                                          |
+| `repeatedColumn`    | names the same column twice                                                               |
+| `missingColumn`     | lacks a column it needs                                                                   |
+| `tooManyRows`       | has more rows than one import takes                                                       |
 
 ```json
 { "_tag": "ImportUnreadable", "problem": "missingColumn", "column": "at" }
 ```
 
-An `Idempotency-Key` header works as on `bulk`, by row.
+An `Idempotency-Key` header works as it does on `bulk`, row by row.

@@ -7,7 +7,7 @@ sidebar:
 
 ## Discovery [#discovery]
 
-A program that knows only the address of a Peal server finds the rest from these documents. None needs a credential.
+A program that knows only the address of a Peal server can find the rest from these documents. None of them needs a credential.
 
 | Address                                     | What it is                                                                                                                                                                    |
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -18,6 +18,8 @@ A program that knows only the address of a Peal server finds the rest from these
 | `/.well-known/oauth-protected-resource/api` | Where an OAuth client gets a token for the API, and the scopes (RFC 9728). `…/api/mcp` is the MCP endpoint's.                                                                 |
 | `/api/changelog`                            | What each release of the API added ([Changelog](/developers/conventions/versioning#changelog)).                                                                               |
 | `/api/health`                               | Answers 204 while the server is up.                                                                                                                                           |
+
+The API catalogue lists the API and the MCP endpoint:
 
 ```bash
 curl https://api.example.com/.well-known/api-catalog
@@ -70,11 +72,11 @@ curl https://api.example.com/.well-known/api-catalog
 }
 ```
 
-<Callout type="info">
+<Callout type="info" title="Documentation links need PEAL_DOCS_URL">
   The links to the documentation (`service-doc`, and a section of `llms.txt`)
-  are there only on a server that knows where its documentation is:
+  are there only on a server that knows where its documentation is, through
   `PEAL_DOCS_URL` ([Environment
   variables](/self-hosting/environment-variables#core)).
 </Callout>
 
-This documentation has an `llms.txt` of its own, at its root, with every page as Markdown.
+This documentation has an `llms.txt` of its own at its root, with every page as Markdown.

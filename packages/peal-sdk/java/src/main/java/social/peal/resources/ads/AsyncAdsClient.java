@@ -624,7 +624,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Decides whether an ad account may spend through Peal, and how much: <code>enabled</code> with a <code>monthlyCeiling</code> in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (<code>AdAccountBusy</code>). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
+     * Decides whether an ad account may spend through Peal, and how much: <code>enabled</code> with a <code>monthlyCeiling</code> in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (<code>AdAccountBusy</code>). Turning it on is refused (<code>AdSpendingUnavailable</code>) on a server that offers no spending, and on an account whose <code>capabilities.boosts</code> is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
      */
     public CompletableFuture<AdSpending> setSpending(String workspaceId, String accountId, AdSpendingDecision request) {
         CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture =
@@ -639,7 +639,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Decides whether an ad account may spend through Peal, and how much: <code>enabled</code> with a <code>monthlyCeiling</code> in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (<code>AdAccountBusy</code>). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
+     * Decides whether an ad account may spend through Peal, and how much: <code>enabled</code> with a <code>monthlyCeiling</code> in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (<code>AdAccountBusy</code>). Turning it on is refused (<code>AdSpendingUnavailable</code>) on a server that offers no spending, and on an account whose <code>capabilities.boosts</code> is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
      */
     public CompletableFuture<AdSpending> setSpending(
             String workspaceId, String accountId, AdSpendingDecision request, RequestOptions requestOptions) {
@@ -655,7 +655,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Lists an ad account's campaigns as last read from its network (every hour), those made outside Peal included, with what their ads did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
      */
     public CompletableFuture<AdCampaignReport> listCampaigns(String workspaceId, String accountId) {
         CompletableFuture<PealClientHttpResponse<AdCampaignReport>> rawFuture =
@@ -670,7 +670,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Lists an ad account's campaigns as last read from its network (every hour), those made outside Peal included, with what their ads did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
      */
     public CompletableFuture<AdCampaignReport> listCampaigns(
             String workspaceId, String accountId, RequestOptions requestOptions) {
@@ -686,7 +686,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Lists an ad account's campaigns as last read from its network (every hour), those made outside Peal included, with what their ads did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
      */
     public CompletableFuture<AdCampaignReport> listCampaigns(
             String workspaceId, String accountId, ListCampaignsAdsRequest request) {
@@ -702,7 +702,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Lists an ad account's campaigns as last read from its network (every hour), those made outside Peal included, with what their ads did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
      */
     public CompletableFuture<AdCampaignReport> listCampaigns(
             String workspaceId, String accountId, ListCampaignsAdsRequest request, RequestOptions requestOptions) {
@@ -718,7 +718,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
     public CompletableFuture<AdReport> listAds(String workspaceId, String accountId) {
         CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture = this.rawClient.listAds(workspaceId, accountId);
@@ -732,7 +732,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
     public CompletableFuture<AdReport> listAds(String workspaceId, String accountId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture =
@@ -747,7 +747,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
     public CompletableFuture<AdReport> listAds(String workspaceId, String accountId, ListAdsAdsRequest request) {
         CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture =
@@ -762,7 +762,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
     public CompletableFuture<AdReport> listAds(
             String workspaceId, String accountId, ListAdsAdsRequest request, RequestOptions requestOptions) {
@@ -778,7 +778,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Sums what an ad account's ads did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Needs ads:read.
+     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
      */
     public CompletableFuture<AdInsightReport> listInsights(String workspaceId, String accountId) {
         CompletableFuture<PealClientHttpResponse<AdInsightReport>> rawFuture =
@@ -793,7 +793,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Sums what an ad account's ads did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Needs ads:read.
+     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
      */
     public CompletableFuture<AdInsightReport> listInsights(
             String workspaceId, String accountId, RequestOptions requestOptions) {
@@ -809,7 +809,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Sums what an ad account's ads did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Needs ads:read.
+     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
      */
     public CompletableFuture<AdInsightReport> listInsights(
             String workspaceId, String accountId, ListInsightsAdsRequest request) {
@@ -825,7 +825,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * Sums what an ad account's ads did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Needs ads:read.
+     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
      */
     public CompletableFuture<AdInsightReport> listInsights(
             String workspaceId, String accountId, ListInsightsAdsRequest request, RequestOptions requestOptions) {
@@ -995,7 +995,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * <strong>Spends money.</strong> Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until <code>endsAt</code>. The <code>Idempotency-Key</code> header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as <code>requested</code>, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads, the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached <code>paymentMethodRequired</code>); running boosts are never touched. Needs ads:spend; never staff acting as a member.
+     * <strong>Spends money.</strong> Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until <code>endsAt</code>. The <code>Idempotency-Key</code> header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as <code>requested</code>, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose <code>capabilities.boosts</code> is false, Google Ads: <code>AdAccountUnusable</code>), the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached <code>paymentMethodRequired</code>); running boosts are never touched. Needs ads:spend; never staff acting as a member.
      */
     public CompletableFuture<Boost> createBoost(String workspaceId, CreateBoostAdsRequest request) {
         CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.createBoost(workspaceId, request);
@@ -1009,7 +1009,7 @@ public class AsyncAdsClient {
     }
 
     /**
-     * <strong>Spends money.</strong> Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until <code>endsAt</code>. The <code>Idempotency-Key</code> header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as <code>requested</code>, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads, the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached <code>paymentMethodRequired</code>); running boosts are never touched. Needs ads:spend; never staff acting as a member.
+     * <strong>Spends money.</strong> Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until <code>endsAt</code>. The <code>Idempotency-Key</code> header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as <code>requested</code>, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose <code>capabilities.boosts</code> is false, Google Ads: <code>AdAccountUnusable</code>), the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached <code>paymentMethodRequired</code>); running boosts are never touched. Needs ads:spend; never staff acting as a member.
      */
     public CompletableFuture<Boost> createBoost(
             String workspaceId, CreateBoostAdsRequest request, RequestOptions requestOptions) {

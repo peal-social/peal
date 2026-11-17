@@ -1,9 +1,13 @@
-import { DateTime, Effect, Layer, Option } from "effect";
+import { DateTime, Duration, Effect, Layer, Option } from "effect";
+import type { Redacted } from "effect";
 
 import { ChannelAccess } from "#channels/application/channel-access.ts";
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
+import { CurrentHumanAgent } from "#engagement/application/current-human-agent.ts";
 import { MessagesUngranted } from "#engagement/application/messages-ungranted.ts";
+import { EngagementStore } from "#engagement/application/ports/engagement-store.ts";
+import { MessageChannelsOfAccount } from "#engagement/application/ports/message-channels-of-account.ts";
 import { MessageSender } from "#engagement/application/ports/message-sender.ts";
 import type { MessageSendRequest } from "#engagement/application/ports/message-sender.ts";
 import { MessageSource } from "#engagement/application/ports/message-source.ts";
@@ -13,7 +17,14 @@ import type {
   MessagesRequest,
 } from "#engagement/application/ports/message-source.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
+import { PrivateReplySender } from "#engagement/application/ports/private-reply-sender.ts";
+import type {
+  PrivateReplyOutcome,
+  PrivateReplyRequest,
+} from "#engagement/application/ports/private-reply-sender.ts";
+import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
 import { dueForCheck } from "#engagement/domain/conversation.ts";
+import type { DirectMessage } from "#engagement/domain/direct-message.ts";
 import {
   messageAbilitiesOf,
   namesMessageScopes,
@@ -23,6 +34,9 @@ import type {
   MessageFailure,
   MessageSendOutcome,
 } from "#engagement/domain/outgoing-message.ts";
+import { privateReplyStanding } from "#engagement/domain/private-reply-standing.ts";
+import type { PrivateReplyFailure } from "#engagement/domain/private-reply.ts";
+import { replyWindowOf } from "#engagement/domain/reply-window.ts";
 import {
   databaseDown,
   needsReconnect,
@@ -30,16 +44,76 @@ import {
 } from "#engagement/infrastructure/platforms/channel-refusals.ts";
 import type { PlatformHttp } from "#engagement/infrastructure/platforms/engagement-platform.ts";
 import { CurrentInboxMessages } from "#shared/application/current-inbox-messages.ts";
+import { CurrentInboxPlatforms } from "#shared/application/current-inbox-platforms.ts";
+import type { ChannelId } from "#shared/domain/ids.ts";
 import type { InboxMessagePlatform } from "#shared/domain/inbox-message-platform.ts";
+import type { MetaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 
 import { blueskyMessages } from "./bluesky/bluesky-messages.ts";
 import { mastodonMessages } from "./mastodon/mastodon-messages.ts";
-import type { MessagePlatform } from "./message-platform.ts";
+import { carriedBy } from "./message-platform.ts";
+import type {
+  FollowedAccount,
+  Followers,
+  MessagePlatform,
+} from "./message-platform.ts";
+import { accountPace, metaMessages } from "./meta/meta-messages.ts";
+import { metaPrivateReplies } from "./meta/meta-private-replies.ts";
+
+/** How far apart the platform's clock and Peal's may be. */
+const clockSkew = Duration.minutes(1);
+
+/**
+ * The platform's ids a resumed message may not take for its own: the
+ * account's messages sent before it was written (less `skew`), and those
+ * another message of Peal's went out as. One of the account's sent since,
+ * that nothing of Peal's claims, may be this very message, read back from
+ * its echo (Meta's `message_echoes`): it stays free, and the platform's
+ * look-up still asks for exactly one, with the text.
+ */
+export const takenIdsOf = (
+  kept: readonly Pick<
+    DirectMessage,
+    "fromAccount" | "platformMessageId" | "sentAt"
+  >[],
+  others: readonly {
+    readonly id: string;
+    readonly platformMessageId: Option.Option<string>;
+  }[],
+  message: { readonly createdAt: DateTime.Utc; readonly id: string },
+  skew: Duration.Duration = clockSkew
+): readonly string[] => {
+  const since = DateTime.subtractDuration(message.createdAt, skew);
+
+  const claimed = new Set(
+    others.flatMap((other) =>
+      other.id === message.id ? [] : Option.toArray(other.platformMessageId)
+    )
+  );
+
+  return [
+    ...new Set([
+      ...kept.flatMap(({ fromAccount, platformMessageId, sentAt }) =>
+        fromAccount &&
+        (DateTime.isLessThan(sentAt, since) || claimed.has(platformMessageId))
+          ? [platformMessageId]
+          : []
+      ),
+      ...claimed,
+    ]),
+  ];
+};
 
 // What the gate answers for a message it did not call the platform for
 // and cannot tell the fate of: one no longer on its way, whose job then
 // finds it settled, or a resumed one.
 const notClaimed: MessageSendOutcome = {
+  _tag: "unconfirmed",
+  reason: "interrupted",
+};
+
+// The same, for a private reply.
+const privateNotClaimed: PrivateReplyOutcome = {
   _tag: "unconfirmed",
   reason: "interrupted",
 };
@@ -52,7 +126,7 @@ const failedWith = (reason: MessageFailure): MessageSendOutcome => ({
 // Why nothing was sent, when the channels context gave no token.
 const accessFailureOf = (failure: {
   readonly _tag: string;
-}): MessageFailure => {
+}): "channelUnavailable" | "platformUnavailable" | "reconnectNeeded" => {
   if (failure._tag === "ChannelUnusable") {
     return "channelUnavailable";
   }
@@ -63,29 +137,62 @@ const accessFailureOf = (failure: {
 };
 
 /**
- * The direct messages of Mastodon and Bluesky, as the channel's gate runs
- * them: `MessageSource` reads a channel's conversations, `MessageSender`
+ * The direct messages of Mastodon, Bluesky, Facebook Pages and Instagram,
+ * as the channel's gate runs them: `MessageSource` reads a channel's conversations, `MessageSender`
  * sends what the engagement tables hold, found by id, so no text travels
  * with a call. Only where the inbox reads the platform's messages
  * (`readsMessagesOn`) and the channel granted what it takes
  * (`messageAbilitiesOf`): otherwise nothing is called. Needs
- * ChannelAccess, the MessageStore and CurrentInboxMessages.
+ * ChannelAccess, the MessageStore, MessageChannelsOfAccount (whether
+ * another channel follows an account's events), Mac and
+ * CurrentInboxMessages.
  */
 export const platformMessagesWith = (settings: {
   readonly http: PlatformHttp;
   /** The client conversations are read with, whose answers end rather than fail when long. */
   readonly reader: PlatformHttp;
   readonly mastodonScheme: "http:" | "https:";
+  /**
+   * Meta's main app's secret, whose proof Facebook Login's calls carry;
+   * none on a server without that app.
+   */
+  readonly metaAppSecret: Option.Option<Redacted.Redacted>;
+  readonly metaHosts: MetaHosts;
 }) =>
   Layer.unwrap(
     Effect.gen(function* PlatformMessages() {
       const access = yield* ChannelAccess;
       const store = yield* MessageStore;
       const messages = yield* CurrentInboxMessages;
+      const accounts = yield* MessageChannelsOfAccount;
+      const comments = yield* EngagementStore;
+      const privateStore = yield* PrivateReplyStore;
+      const inbox = yield* CurrentInboxPlatforms;
+      const humanAgent = yield* CurrentHumanAgent;
+
+      // One pace for every call of an account the process makes, its
+      // messages' and its private replies' alike.
+      const paced = yield* accountPace();
+
+      const meta = yield* metaMessages({
+        appSecret: settings.metaAppSecret,
+        hosts: settings.metaHosts,
+        http: settings.http,
+        paced,
+      });
+
+      const metaReplies = yield* metaPrivateReplies({
+        appSecret: settings.metaAppSecret,
+        hosts: settings.metaHosts,
+        http: settings.http,
+        paced,
+      });
 
       const platforms: Readonly<Record<InboxMessagePlatform, MessagePlatform>> =
         {
           bluesky: yield* blueskyMessages({ http: settings.http }),
+          facebook: meta,
+          instagram: meta,
           mastodon: yield* mastodonMessages({
             http: settings.http,
             reader: settings.reader,
@@ -114,8 +221,12 @@ export const platformMessagesWith = (settings: {
         // scopes still name it in another form is paused instead: what a
         // refresh answers is not a reason to delete.
         if (
-          messageAbilitiesOf(account.platform, account.scopes, messages)
-            .read !== "available"
+          messageAbilitiesOf(
+            account.platform,
+            account.scopes,
+            messages,
+            account.connection
+          ).read !== "available"
         ) {
           return yield* namesMessageScopes(account.platform, account.scopes)
             ? new ChannelUnreadable({ reason: "paused" })
@@ -173,6 +284,65 @@ export const platformMessagesWith = (settings: {
         });
       });
 
+      // The other channels whose events come through the subscription
+      // of one of the accounts, by its app.
+      const othersOf = (
+        channelId: ChannelId,
+        followed: readonly FollowedAccount[]
+      ) =>
+        Effect.all(
+          followed.map((carried) =>
+            accounts.channelsOf(carried.platform, carried.accountId).pipe(
+              Effect.map((found) =>
+                found.filter(
+                  (channel) =>
+                    channel.channelId !== channelId &&
+                    carriedBy(carried, {
+                      connection: channel.connection,
+                      platform: carried.platform,
+                    })
+                )
+              )
+            )
+          )
+        ).pipe(Effect.map((found) => found.flat()));
+
+      // Whether a channel of Peal's reads the messages of one of the
+      // accounts: it has a box, `channelId` itself among them, as its
+      // messages may have been turned on again since they were turned
+      // off. Unknown when the database does not answer, which keeps the
+      // subscription. Once it is stopped, the others, and `channelId`
+      // turned on again while Meta stopped it, follow again at their next
+      // read.
+      const followersOf = (channelId: ChannelId): Followers => ({
+        elsewhere: (followed) =>
+          othersOf(channelId, followed).pipe(
+            Effect.flatMap((others) =>
+              Effect.all(
+                [channelId, ...others.map((other) => other.channelId)].map(
+                  (reading) => store.box(reading)
+                )
+              )
+            ),
+            Effect.map((boxes) => boxes.some(Option.isSome)),
+            Effect.orElseSucceed(() => true)
+          ),
+        stopped: (followed) =>
+          othersOf(channelId, followed).pipe(
+            Effect.flatMap((others) =>
+              store.refollow([
+                channelId,
+                ...others.map((other) => other.channelId),
+              ])
+            ),
+            Effect.catch(() =>
+              Effect.logWarning(
+                "Could not mark channels to follow their events again"
+              ).pipe(Effect.annotateLogs({ channelId }))
+            )
+          ),
+      });
+
       // Asks the channel's platform to tell the server of its account's
       // messages, or to stop: only where the inbox reads them, and only on
       // a platform that tells; elsewhere nothing is called.
@@ -190,13 +360,21 @@ export const platformMessagesWith = (settings: {
 
           const { platform } = account;
 
-          const asked = readsMessagesOn(platform, messages)
-            ? platforms[platform][mode]
-            : undefined;
+          if (!readsMessagesOn(platform, messages)) {
+            return "unneeded" satisfies MessagesFollowOutcome;
+          }
 
-          return asked === undefined
+          const { follow, unfollow } = platforms[platform];
+
+          if (mode === "follow") {
+            return follow === undefined
+              ? ("unneeded" satisfies MessagesFollowOutcome)
+              : yield* follow(account);
+          }
+
+          return unfollow === undefined
             ? ("unneeded" satisfies MessagesFollowOutcome)
-            : yield* asked(account);
+            : yield* unfollow(account, followersOf(account.channelId));
         });
 
       // The channel's account, if it may send there, or why nothing can be
@@ -208,8 +386,12 @@ export const platformMessagesWith = (settings: {
               account
             ): Option.Option<readonly [ChannelAccount, InboxMessagePlatform]> =>
               readsMessagesOn(account.platform, messages) &&
-              messageAbilitiesOf(account.platform, account.scopes, messages)
-                .send === "available"
+              messageAbilitiesOf(
+                account.platform,
+                account.scopes,
+                messages,
+                account.connection
+              ).send === "available"
                 ? Option.some([account, account.platform] as const)
                 : Option.none()
           ),
@@ -252,13 +434,22 @@ export const platformMessagesWith = (settings: {
           const kept = yield* store.messagesOf(conversation.id);
           const others = yield* store.outgoingOf(conversation.id);
 
+          const now = yield* DateTime.now;
+
           // Claimed just before the call, and only while the message is on
           // its way: one handed over meanwhile is not sent.
-          if (
-            !(yield* store.claimCall(request.messageId, yield* DateTime.now))
-          ) {
+          if (!(yield* store.claimCall(request.messageId, now))) {
             return notClaimed;
           }
+
+          // Meta's tag is for a message "sent outside the 24-hour messaging
+          // window": a member's own answer carries it only once the window
+          // has shut at the call, whenever it was written.
+          const tagged =
+            humanAgent &&
+            message.value.byPerson &&
+            (platform === "facebook" || platform === "instagram") &&
+            !replyWindowOf(platform, conversation.lastIncomingAt, now).open;
 
           return yield* platforms[platform][mode](account, {
             createdAt: message.value.createdAt,
@@ -269,16 +460,21 @@ export const platformMessagesWith = (settings: {
             participants: conversation.participants,
             platformConversationId: conversation.platformConversationId,
             request: conversation.request,
-            takenIds: [
-              ...kept
-                .filter(({ fromAccount }) => fromAccount)
-                .map(({ platformMessageId }) => platformMessageId),
-              ...others.flatMap((other) =>
-                other.id !== message.value.id && other.status._tag === "sent"
-                  ? Option.toArray(other.status.platformMessageId)
-                  : []
-              ),
-            ],
+            // Only a member's own answer, in their session, on Messenger
+            // or Instagram where the operator's app holds the feature, past
+            // the standard window.
+            humanAgent: tagged,
+            takenIds: takenIdsOf(
+              kept,
+              others.map((other) => ({
+                id: other.id,
+                platformMessageId:
+                  other.status._tag === "sent"
+                    ? other.status.platformMessageId
+                    : Option.none(),
+              })),
+              message.value
+            ),
             text: message.value.text,
           });
         }).pipe(
@@ -296,7 +492,117 @@ export const platformMessagesWith = (settings: {
           )
         );
 
+      // A private reply, sent or looked for: only while the channel may
+      // send one (its comments and messages read, its messages on, its
+      // permissions granted), and claimed just before the call, so one
+      // handed over meanwhile is not sent. Logged by ids alone.
+      const privately = (
+        request: PrivateReplyRequest,
+        mode: "resume" | "send"
+      ): Effect.Effect<PrivateReplyOutcome> =>
+        Effect.gen(function* privateReply() {
+          // A resumed one may be out since its first run: whatever keeps
+          // this run from asking the platform proves nothing.
+          const stopped = (reason: PrivateReplyFailure): PrivateReplyOutcome =>
+            mode === "send" ? { _tag: "failed", reason } : privateNotClaimed;
+
+          const reply = yield* privateStore.privateReply(
+            request.privateReplyId
+          );
+
+          const comment = yield* Option.match(reply, {
+            onNone: () => Effect.succeed(Option.none()),
+            onSome: ({ commentId }) => comments.comment(commentId),
+          });
+
+          // A comment the platform no longer shows takes no private reply.
+          if (
+            Option.isNone(reply) ||
+            Option.isNone(comment) ||
+            comment.value.state === "deleted"
+          ) {
+            return stopped("commentGone");
+          }
+
+          const reached = yield* access
+            .account(request.channelId)
+            .pipe(Effect.mapError(accessFailureOf), Effect.result);
+
+          if (reached._tag === "Failure") {
+            return stopped(reached.failure);
+          }
+
+          const account = reached.success;
+
+          const on = (yield* store.box(request.channelId)).pipe(
+            Option.exists(
+              ({ workspaceId }) => workspaceId === reply.value.workspaceId
+            )
+          );
+
+          if (
+            (account.platform !== "facebook" &&
+              account.platform !== "instagram") ||
+            privateReplyStanding(
+              account.platform,
+              account.connection,
+              account.scopes,
+              inbox,
+              messages,
+              on
+            ) !== "available"
+          ) {
+            return stopped("channelUnavailable");
+          }
+
+          const takenIds = yield* privateStore.sentIdsOf(
+            request.channelId,
+            request.privateReplyId
+          );
+
+          if (
+            !(yield* privateStore.claimCall(
+              request.privateReplyId,
+              yield* DateTime.now
+            ))
+          ) {
+            return privateNotClaimed;
+          }
+
+          return yield* metaReplies[mode](account, {
+            commentAuthorId: comment.value.author.pipe(
+              Option.map(({ platformId }) => platformId)
+            ),
+            createdAt: reply.value.createdAt,
+            platformCommentId: comment.value.platformCommentId,
+            privateReplyId: reply.value.id,
+            takenIds,
+            text: reply.value.text,
+          });
+        }).pipe(
+          Effect.catchTag("DatabaseError", () =>
+            Effect.logWarning("Could not read a private reply to send").pipe(
+              Effect.annotateLogs({
+                channelId: request.channelId,
+                privateReplyId: request.privateReplyId,
+              }),
+              Effect.as<PrivateReplyOutcome>(
+                mode === "send"
+                  ? { _tag: "failed", reason: "platformUnavailable" }
+                  : privateNotClaimed
+              )
+            )
+          )
+        );
+
       return Layer.mergeAll(
+        Layer.succeed(
+          PrivateReplySender,
+          PrivateReplySender.of({
+            resume: (request) => privately(request, "resume"),
+            send: (request) => privately(request, "send"),
+          })
+        ),
         Layer.succeed(
           MessageSource,
           MessageSource.of({

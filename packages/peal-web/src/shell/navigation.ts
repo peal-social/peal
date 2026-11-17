@@ -1,11 +1,11 @@
 import type { Permission } from "peal-contract";
 
 /**
- * The two modes of a workspace's frame (DESIGN.md): Studio runs its
- * channels and posts; Console builds on the API. A page belongs to one, so
+ * The two modes of a workspace's frame (DESIGN.md): PealStudio runs its
+ * channels and posts; PealAPI builds on the API. A page belongs to one, so
  * the address carries the mode.
  */
-export type Mode = "console" | "studio";
+export type Mode = "api" | "studio";
 
 /** The sections whose pages the sidebar opens in place of its own. */
 export type Section = "posts" | "settings";
@@ -74,7 +74,7 @@ const pages: Readonly<Record<Page, PageRule>> = {
   },
   apiKeys: {
     may: needs("apiKey:read"),
-    mode: "console",
+    mode: "api",
     path: "/settings/api-keys",
   },
   approvals: {
@@ -150,12 +150,12 @@ const pages: Readonly<Record<Page, PageRule>> = {
   },
   partner: {
     may: needs("partner:read"),
-    mode: "console",
+    mode: "api",
     path: "/settings/partner",
   },
   platforms: {
     may: needs("channel:read"),
-    mode: "console",
+    mode: "api",
     path: "/platforms",
   },
   posts: {
@@ -208,7 +208,7 @@ const pages: Readonly<Record<Page, PageRule>> = {
   },
   webhooks: {
     may: needs("webhook:read"),
-    mode: "console",
+    mode: "api",
     path: "/settings/webhooks",
   },
 };
@@ -221,7 +221,7 @@ const layout: Readonly<
     readonly { readonly group: Group | null; readonly pages: readonly Page[] }[]
   >
 > = {
-  console: [
+  api: [
     { group: null, pages: ["platforms"] },
     { group: "build", pages: ["apiKeys", "webhooks"] },
     { group: "partners", pages: ["partner"] },
@@ -398,7 +398,7 @@ export const navigationOf = ({
     current,
     groups,
     mode,
-    modes: { console: firstOf("console"), studio: firstOf("studio") },
+    modes: { api: firstOf("api"), studio: firstOf("studio") },
     section,
     sectionLinks,
     settings: linkOf("general", "settings"),

@@ -102,6 +102,14 @@
   which applications may read them) are a person's, in the web app, and
   have no command (the parity test's exemptions). Its tests run against
   `test/studio-messages.ts`.
+- `peal inbox private-reply` (`commands/inbox-private-replies.ts`: send,
+  show, confirm) sends a comment's author its one private reply on
+  Instagram or a Facebook Page; `send` prints the text and asks first
+  (`confirmed`, `--yes`; `--json` needs `--yes`), takes
+  `--idempotency-key`, and the parent takes no argument, as a positional
+  one beside subcommands would read `confirm` as a comment's id. `peal
+  inbox thread` prints each comment's private reply, or until when one
+  may go. The studio answers it from `test/studio-messages.ts`.
 - `peal media list` takes `--search` (checked against
   the contract's `MediaQuerySchema` before any request) and `--kind`, and prints each
   file's name; `peal media upload` sends the file's base name.

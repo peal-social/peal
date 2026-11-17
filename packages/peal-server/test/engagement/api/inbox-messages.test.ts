@@ -1,5 +1,13 @@
 import { assert, describe, expect, it } from "@effect/vitest";
-import { DateTime, Effect, Layer, Result, Schema } from "effect";
+import {
+  DateTime,
+  Duration,
+  Effect,
+  Layer,
+  Option,
+  Result,
+  Schema,
+} from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import { TestClock } from "effect/testing";
@@ -16,13 +24,16 @@ import type { Member } from "peal-contract";
 
 import { InboxMessagesApiLive } from "#engagement/container.ts";
 import { refreshConversation } from "#engagement/domain/conversation.ts";
+import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import type { Permission } from "#shared/domain/access.ts";
 import { memberOf } from "#test/channels/support.ts";
 import {
+  facebookChannel,
   makeMessageWorld,
   mastodonChannel,
 } from "#test/engagement/fakes/message-world.ts";
 import type { MessageWorld } from "#test/engagement/fakes/message-world.ts";
+import { makePrivateReplyWorld } from "#test/engagement/fakes/private-reply-world.ts";
 import {
   channelId,
   conversation,
@@ -32,6 +43,7 @@ import {
   workspaceId,
 } from "#test/engagement/support.ts";
 import { securityTest } from "#workspace/api/security.ts";
+import { withheldWhileImpersonating } from "#workspace/domain/membership.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
 // The direct messages endpoints on their real use cases, over the
@@ -48,7 +60,12 @@ const clientAs = (
       Layer.mergeAll(
         InboxMessagesApiLive.pipe(
           Layer.provideMerge(securityTest(member)),
-          Layer.provide(world.layer)
+          Layer.provide(
+            Layer.merge(
+              world.layer,
+              makePrivateReplyWorld({ boxes: world }).layer
+            )
+          )
         ),
         HttpServer.layerServices
       )
@@ -135,7 +152,11 @@ describe("the direct messages endpoints", () => {
           detail.messages.map(({ text }) => text),
           ["Message 1"]
         );
-        assert.deepStrictEqual(detail.window, { closesAt: null, open: true });
+        assert.deepStrictEqual(detail.window, {
+          closesAt: null,
+          open: true,
+          personClosesAt: null,
+        });
       })
     ).pipe(Effect.provide(world.layer));
   });
@@ -375,4 +396,282 @@ describe("the direct messages endpoints", () => {
       ).pipe(Effect.provide(world.layer));
     }
   );
+});
+
+// A world with one Messenger conversation, someone's message in it.
+const messengerWorld = (humanAgent = false) => {
+  const world = makeMessageWorld(
+    new Set(["mastodon", "facebook"]),
+    MeteredUsage.layerUnmetered,
+    humanAgent
+  );
+
+  const started = conversation(1);
+  const kept = directMessage(1, {}, started);
+
+  const talk = refreshConversation(
+    started,
+    conversationReading(1),
+    [kept],
+    messagedAt
+  );
+
+  world.state.channels.set(channelId(1), facebookChannel);
+  world.state.conversations.set(talk.id, talk);
+  world.state.messages.set(kept.id, kept);
+
+  return { kept, talk, world };
+};
+
+describe("the direct messages endpoints on Messenger", () => {
+  it.effect(
+    "hold the same permissions: a viewer, an application without the owner's leave and staff acting as a member read nothing",
+    () => {
+      const { talk, world } = messengerWorld();
+      const editor = permissionsFor("editor");
+
+      return at(
+        Effect.gen(function* matrix() {
+          const target = { ...params, conversationId: talk.id };
+
+          const refusedTo = (member: Member) =>
+            clientAs(world, member.permissions, member).pipe(
+              Effect.flatMap((client) =>
+                client.inboxMessages
+                  .getConversation({ params: target, query: {} })
+                  .pipe(Effect.flip)
+              )
+            );
+
+          const viewer = memberOf(workspaceId, permissionsFor("viewer"));
+
+          const asEditor = memberOf(workspaceId, editor);
+
+          const userId =
+            asEditor.principal._tag === "user" ? asEditor.principal.userId : "";
+
+          const application: Member = {
+            ...asEditor,
+            principal: {
+              _tag: "user",
+              impersonatedBy: null,
+              oauth: {
+                clientId: "synthetic-unconsented-client",
+                scopes: ["workspace:publish"],
+                workspaceId,
+              },
+              userId,
+            },
+          };
+
+          const staff: Member = {
+            ...memberOf(
+              workspaceId,
+              editor.filter(
+                (permission) => !withheldWhileImpersonating.has(permission)
+              )
+            ),
+            principal: {
+              _tag: "user",
+              impersonatedBy: "01900000-0000-7000-8000-0000000000c1",
+              userId,
+            },
+          };
+
+          for (const member of [viewer, application, staff]) {
+            assert.instanceOf(yield* refusedTo(member), Forbidden);
+          }
+
+          const client = yield* clientAs(world, editor);
+
+          const detail = yield* client.inboxMessages.getConversation({
+            params: target,
+            query: {},
+          });
+
+          assert.strictEqual(detail.platform, "facebook");
+          assert.isTrue(detail.window.open);
+          assert.isNotNull(detail.window.closesAt);
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect("refuse a message past Meta's window, saying when it shut", () => {
+    const { kept, talk, world } = messengerWorld();
+
+    return TestClock.setTime(
+      DateTime.toEpochMillis(DateTime.addDuration(messagedAt, "2 days"))
+    ).pipe(
+      Effect.andThen(
+        Effect.gen(function* shut() {
+          const client = yield* clientAs(world, permissionsFor("editor"));
+
+          const refused = yield* client.inboxMessages
+            .sendMessage({
+              headers: {},
+              params: { ...params, conversationId: talk.id },
+              payload: { text: "Hi" },
+            })
+            .pipe(Effect.flip);
+
+          assert.instanceOf(refused, InboxActionUnavailable);
+
+          if (refused instanceof InboxActionUnavailable) {
+            assert.strictEqual(refused.reason, "windowClosed");
+            assert.deepStrictEqual(
+              refused.closedAt,
+              DateTime.addDuration(
+                kept.sentAt,
+                Duration.sum(Duration.hours(23), Duration.minutes(59))
+              )
+            );
+          }
+
+          assert.strictEqual(world.state.outgoing.size, 0);
+        })
+      ),
+      Effect.provide(world.layer)
+    );
+  });
+});
+
+const twoDaysOn = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+  TestClock.setTime(
+    DateTime.toEpochMillis(DateTime.addDuration(messagedAt, "2 days"))
+  ).pipe(Effect.andThen(effect));
+
+const sendAs = (world: MessageWorld, member: Member, conversationId: string) =>
+  clientAs(world, member.permissions, member).pipe(
+    Effect.flatMap((client) =>
+      client.inboxMessages.sendMessage({
+        headers: {},
+        params: { ...params, conversationId },
+        payload: { text: "Back on Monday, sorry for the wait" },
+      })
+    )
+  );
+
+describe("a person's answer on Messenger past the 24 hours (Human Agent)", () => {
+  const editor = permissionsFor("editor");
+  const inSession = memberOf(workspaceId, editor);
+
+  const userId =
+    inSession.principal._tag === "user" ? inSession.principal.userId : "";
+
+  // The command line, which the owner let read and answer messages.
+  const application: Member = {
+    ...inSession,
+    principal: {
+      _tag: "user",
+      impersonatedBy: null,
+      oauth: {
+        clientId: "synthetic-cli-client",
+        scopes: ["workspace:publish"],
+        workspaceId,
+      },
+      userId,
+    },
+  };
+
+  const apiKey: Member = {
+    permissions: editor,
+    principal: {
+      _tag: "apiKey",
+      apiKeyId: "synthetic-api-key",
+      permissions: editor,
+      workspaceId,
+    },
+    workspaceId,
+  };
+
+  it.effect("is sent for a member in their own session, by a person", () => {
+    const { kept, talk, world } = messengerWorld(true);
+
+    return twoDaysOn(
+      Effect.gen(function* answered() {
+        const client = yield* clientAs(world, editor);
+
+        const detail = yield* client.inboxMessages.getConversation({
+          params: { ...params, conversationId: talk.id },
+          query: {},
+        });
+
+        assert.isFalse(detail.window.open);
+        assert.deepStrictEqual(
+          detail.window.personClosesAt,
+          DateTime.addDuration(
+            kept.sentAt,
+            Duration.subtract(Duration.days(7), Duration.minutes(1))
+          )
+        );
+
+        const sent = yield* sendAs(world, inSession, talk.id);
+
+        assert.strictEqual(sent.status, "sending");
+        assert.isTrue(world.state.outgoing.get(sent.id)?.byPerson);
+      })
+    ).pipe(Effect.provide(world.layer));
+  });
+
+  it.effect(
+    "is refused to an application and an API key, before anything is journalled",
+    () => {
+      const { kept, talk, world } = messengerWorld(true);
+
+      world.state.applications.push({
+        clientId: "synthetic-cli-client",
+        grantedAt: messagedAt,
+        grantedBy: Option.none(),
+        workspaceId,
+      });
+
+      return twoDaysOn(
+        Effect.gen(function* refused() {
+          for (const member of [application, apiKey]) {
+            const refusal = yield* sendAs(world, member, talk.id).pipe(
+              Effect.flip
+            );
+
+            assert.instanceOf(refusal, InboxActionUnavailable);
+
+            if (refusal instanceof InboxActionUnavailable) {
+              assert.strictEqual(refusal.reason, "windowClosed");
+              assert.deepStrictEqual(
+                refusal.closedAt,
+                DateTime.addDuration(
+                  kept.sentAt,
+                  Duration.sum(Duration.hours(23), Duration.minutes(59))
+                )
+              );
+            }
+          }
+
+          assert.strictEqual(world.state.outgoing.size, 0);
+        })
+      ).pipe(Effect.provide(world.layer));
+    }
+  );
+
+  it.effect("is refused where the server's Meta app lacks the feature", () => {
+    const { talk, world } = messengerWorld(false);
+
+    return twoDaysOn(
+      Effect.gen(function* off() {
+        const client = yield* clientAs(world, editor);
+
+        const detail = yield* client.inboxMessages.getConversation({
+          params: { ...params, conversationId: talk.id },
+          query: {},
+        });
+
+        assert.isNull(detail.window.personClosesAt);
+        assert.instanceOf(
+          yield* sendAs(world, inSession, talk.id).pipe(Effect.flip),
+          InboxActionUnavailable
+        );
+        assert.strictEqual(world.state.outgoing.size, 0);
+      })
+    ).pipe(Effect.provide(world.layer));
+  });
 });

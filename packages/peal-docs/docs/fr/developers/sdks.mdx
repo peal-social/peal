@@ -1,13 +1,15 @@
 ---
 title: SDK
-description: "Les clients de l’API dans huit langages : en installer un, vérifier l’identifiant, publier et traiter les erreurs."
+description: "Les clients de l’API dans huit langages : en installer un, vérifier l’identifiant, publier et traiter les erreurs."
 sidebar:
   icon: package
 ---
 
-Les SDK de Peal sont des clients de l’[API](/developers) en huit langages. Chacun est généré à partir du même contrat que le serveur : ses méthodes portent le nom des opérations de l’API (`posts.send`, `media.importFromUrl`) et ses types celui de ses schémas. Ce sont des logiciels libres, sous licence Apache 2.0, contrairement au reste de Peal.
+Les SDK de Peal appellent l’[API](/developers) depuis huit langages. Ils sont générés à partir du même contrat que le serveur : chaque méthode porte le nom d’une opération de l’API (`posts.send`, `media.importFromUrl`), et chaque type celui d’un schéma. Contrairement au reste de Peal, ce sont des logiciels libres, sous licence Apache 2.0.
 
 ## Installer [#install]
+
+Chaque SDK est publié sur le registre de son langage :
 
 | Langage               | Registre                                                                          | Installation                                              |
 | --------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -20,9 +22,13 @@ Les SDK de Peal sont des clients de l’[API](/developers) en huit langages. Cha
 | .NET                  | [NuGet](https://www.nuget.org/packages/Peal)                                      | `dotnet add package Peal`                                 |
 | Rust                  | [crates.io](https://crates.io/crates/peal-sdk)                                    | `cargo add peal-sdk`                                      |
 
-Le README de chaque paquet montre comment s’en servir, et son `reference.md` liste chaque méthode, dans [le dépôt](https://github.com/peal-social/peal/tree/main/packages/peal-sdk). Les SDK appellent tous les points d’accès qu’un jeton porteur peut appeler : une [clé d’API](/guides/workspace#api-keys) (`peal_…`), une [clé partenaire](/developers/embedding) (`peal_partner_…`) ou un jeton d’accès OAuth. Ce que seule une personne fait dans sa propre session (exporter ou supprimer un compte, les applications connectées) en est exclu.
+Le README de chaque paquet montre comment s’en servir, et son `reference.md` liste chaque méthode. Vous trouverez les deux dans [le dépôt](https://github.com/peal-social/peal/tree/main/packages/peal-sdk).
 
-Ils envoient leurs requêtes à `https://app.peal.social`. Sur votre propre serveur, donnez son adresse au client ([URL de base](/developers#base-url)) :
+Les SDK appellent tous les points d’accès qui acceptent un jeton porteur. C’est une [clé d’API](/guides/workspace#api-keys) (`peal_…`), une [clé partenaire](/developers/embedding) (`peal_partner_…`) ou un jeton d’accès OAuth. Ce que seule une personne fait dans sa propre session en est exclu : exporter ou supprimer un compte, et les applications connectées.
+
+### Le diriger vers votre serveur [#base-url]
+
+Les SDK envoient leurs requêtes à `https://app.peal.social`. Sur votre propre serveur, donnez son adresse au client ([URL de base](/developers#base-url)) avec cette option :
 
 | Langage            | Option                         |
 | ------------------ | ------------------------------ |
@@ -34,7 +40,9 @@ Ils envoient leurs requêtes à `https://app.peal.social`. Sur votre propre serv
 
 ## Vérifier d’abord l’identifiant [#credential]
 
-Commencez par `GET /api/credential` : il répond qui est la clé ou le jeton que vous envoyez et ce qu’il peut faire, sans lire aucune donnée. Une clé révoquée ou expirée répond 401 : un programme sait tout de suite si sa clé fonctionne, avant d’agir.
+Commencez par `GET /api/credential`. Il vous dit qui est la clé ou le jeton, et ce qu’il peut faire, sans lire aucune donnée. Une clé révoquée ou expirée reçoit 401 : votre programme sait donc si sa clé fonctionne avant de faire quoi que ce soit.
+
+La réponse dépend de l’identifiant :
 
 | Identifiant             | Répond       | Avec                                                                    |
 | ----------------------- | ------------ | ----------------------------------------------------------------------- |
@@ -42,9 +50,11 @@ Commencez par `GET /api/credential` : il répond qui est la clé ou le jeton que
 | Une clé partenaire      | `partnerKey` | Son partenaire, ses portées et ses permissions                          |
 | Le jeton d’une personne | `user`       |                                                                         |
 
+Créez le client à partir de votre clé, puis demandez qui elle est :
+
 <CodeGroup>
 
-```ts TypeScript
+```ts Node.js
 import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
@@ -64,20 +74,35 @@ from peal import Peal
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
 credential = peal.credential.get()
+
+if credential.type == "apiKey":
+    print(credential.workspace.id, credential.permissions)
 ```
 
 ```go Go
 import (
 	"context"
+	"fmt"
 	"os"
 
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
 	"github.com/peal-social/peal/packages/peal-sdk/go/client"
 	"github.com/peal-social/peal/packages/peal-sdk/go/option"
 )
 
-peal := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+// Le client s’appelle `client`, pour que `peal` reste le paquet des types de
+// requête.
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+ctx := context.Background()
 
-credential, err := peal.Credential.Get(context.TODO())
+credential, err := client.Credential.Get(ctx)
+if err != nil {
+	return err
+}
+
+if credential.APIKey != nil {
+	fmt.Println(credential.APIKey.Workspace.ID, credential.APIKey.Permissions)
+}
 ```
 
 ```ruby Ruby
@@ -85,7 +110,10 @@ require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
+# Le SDK renvoie l’identifiant sous forme de hash.
 credential = peal.credential.get
+
+puts credential[:workspace][:id] if credential[:_tag] == "apiKey"
 ```
 
 ```java Java
@@ -97,6 +125,9 @@ PealClient peal = PealClient.builder()
     .build();
 
 Credential credential = peal.credential().get();
+
+credential.getApiKey().ifPresent(key ->
+    System.out.println(key.getWorkspace().getId() + " " + key.getPermissions()));
 ```
 
 ```php PHP
@@ -106,14 +137,24 @@ use Peal\PealClient;
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
 $credential = $peal->credential->get();
+
+if ($credential->isApiKey()) {
+    echo $credential->asApiKey()->workspace->id, PHP_EOL;
+}
 ```
 
 ```csharp .NET
 using Peal;
 
-var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY"));
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
 var credential = await peal.Credential.GetAsync();
+
+if (credential.IsApiKey)
+{
+    var key = credential.AsApiKey();
+    Console.WriteLine($"{key.Workspace.Id} {string.Join(", ", key.Permissions)}");
+}
 ```
 
 ```rust Rust
@@ -125,17 +166,28 @@ let peal = PealClient::new(ClientConfig {
 })?;
 
 let credential = peal.credential.get(None).await?;
+
+if let Credential::ApiKey { workspace, permissions, .. } = &credential {
+    println!("{} {:?}", workspace.id, permissions);
+}
+```
+
+```bash curl
+curl https://app.peal.social/api/credential \
+  -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
 </CodeGroup>
 
-La réponse ne contient jamais la clé elle-même, ni aucun des espaces de travail qu’une clé partenaire atteint : `GET /api/partner/workspaces` les liste.
+La réponse ne contient jamais la clé elle-même, et ne liste pas les espaces de travail qu’une clé partenaire atteint. `GET /api/partner/workspaces` les liste.
 
 ## Publier, de bout en bout [#journey]
 
-Les étapes de l’[API de publication](/developers/posting), en TypeScript : trouver les canaux, importer une image depuis son adresse, vérifier la publication, l’envoyer avec une `Idempotency-Key`, puis lire comment elle s’est passée. L’identifiant de l’espace de travail est celui qu’a répondu la vérification de l’identifiant.
+Ce programme suit les étapes de l’[API de publication](/developers/posting). Il trouve les canaux, importe une image depuis son adresse, vérifie la publication, l’envoie avec une `Idempotency-Key`, puis lit comment elle s’est passée. L’identifiant de l’espace de travail est celui qu’a renvoyé la vérification de l’identifiant.
 
-```ts publish.ts
+<CodeGroup>
+
+```ts Node.js
 import { randomUUID } from "node:crypto";
 
 import { PealClient } from "peal-sdk";
@@ -143,13 +195,13 @@ import { PealClient } from "peal-sdk";
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
 
-// 1. Où elle peut partir : les canaux qui publient.
+// 1. Où elle peut partir : les canaux qui peuvent publier.
 const channels = await peal.channels.list({ workspaceId });
 const channelIds = channels
   .filter(({ status }) => status._tag === "active")
   .map(({ id }) => id);
 
-// 2. Une image déjà en ligne, que le serveur va chercher lui-même.
+// 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
 const image = await peal.media.importFromUrl({
   workspaceId,
   url: "https://media.example.com/synthetic/launch.png",
@@ -167,21 +219,23 @@ const post = {
   when: { _tag: "now" as const },
 };
 
-// 3. Vérifiée sans être créée : toutes les violations d’un coup.
+// 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
 const check = await peal.posts.validate(post);
 
 if (!check.valid) {
   throw new Error(JSON.stringify(check.violations));
 }
 
-// 4. Envoyée une fois, autant de fois que cette ligne s’exécute en 24 heures.
+// 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
+// 24 heures renvoie cette publication, sans en créer une deuxième.
 const sent = await peal.posts.send({
   ...post,
   "idempotency-key": randomUUID(),
   wait: "30",
 });
 
-// 5. Comment cela s’est passé sur chaque canal, une fois que chacun a son résultat.
+// 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
+// résultat.
 const outcome = await peal.posts.outcome({ workspaceId, postId: sent.id });
 
 for (const target of outcome.targets) {
@@ -189,7 +243,514 @@ for (const target of outcome.targets) {
 }
 ```
 
-Les mêmes étapes dans les autres SDK :
+```python Python
+import os
+import uuid
+
+from peal import MediaAttachment, Peal, PostContent, PostTiming_Now
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+workspace_id = os.environ["PEAL_WORKSPACE_ID"]
+
+# 1. Où elle peut partir : les canaux qui peuvent publier.
+channels = peal.channels.list(workspace_id=workspace_id)
+channel_ids = [channel.id for channel in channels if channel.status.type == "active"]
+
+# 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
+image = peal.media.import_from_url(
+    workspace_id=workspace_id,
+    url="https://media.example.com/synthetic/launch.png",
+    alt_text="A synthetic launch picture",
+)
+
+post = dict(
+    workspace_id=workspace_id,
+    channel_ids=channel_ids,
+    content=PostContent(
+        text="A synthetic post, sent with the SDK.",
+        media=[MediaAttachment(media_id=image.id, alt_text="A synthetic launch picture")],
+        overrides=[],
+    ),
+    when=PostTiming_Now(),
+)
+
+# 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
+check = peal.posts.validate(**post)
+
+if not check.valid:
+    raise RuntimeError(check.violations)
+
+# 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
+# 24 heures renvoie cette publication, sans en créer une deuxième.
+sent = peal.posts.send(**post, idempotency_key=str(uuid.uuid4()), wait="30")
+
+# 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
+# résultat.
+outcome = peal.posts.outcome(workspace_id=workspace_id, post_id=sent.id)
+
+for target in outcome.targets:
+    print(target.channel_id, target.status, target.permalink)
+```
+
+```go Go
+package main
+
+import (
+	"context"
+	"crypto/rand"
+	"fmt"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+func main() {
+	ctx := context.Background()
+	client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+	workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
+
+	// 1. Où elle peut partir : les canaux qui peuvent publier.
+	channels, err := client.Channels.List(ctx, &peal.ListChannelsRequest{WorkspaceID: workspaceID})
+	if err != nil {
+		panic(err)
+	}
+
+	var channelIDs []string
+	for _, channel := range channels {
+		if channel.Status.Active != nil {
+			channelIDs = append(channelIDs, channel.ID)
+		}
+	}
+
+	// 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
+	image, err := client.Media.ImportFromURL(ctx, &peal.MediaImport{
+		WorkspaceID: workspaceID,
+		URL:         "https://media.example.com/synthetic/launch.png",
+		AltText:     peal.String("A synthetic launch picture"),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	content := &peal.PostContent{
+		Text: "A synthetic post, sent with the SDK.",
+		Media: []*peal.MediaAttachment{
+			{MediaID: image.ID, AltText: "A synthetic launch picture"},
+		},
+		Overrides: []*peal.TextOverride{},
+	}
+	now := &peal.PostTiming{Now: &peal.PostTimingNow{}}
+
+	// 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
+	check, err := client.Posts.Validate(ctx, &peal.PostToValidate{
+		WorkspaceID: workspaceID,
+		ChannelIDs:  channelIDs,
+		Content:     content,
+		When:        now,
+	})
+	if err != nil {
+		panic(err)
+	}
+	if !check.Valid {
+		panic(fmt.Sprint(check.Violations))
+	}
+
+	// 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans
+	// les 24 heures renvoie cette publication, sans en créer une deuxième.
+	sent, err := client.Posts.Send(ctx, &peal.NewPost{
+		WorkspaceID:    workspaceID,
+		ChannelIDs:     channelIDs,
+		Content:        content,
+		When:           now,
+		IdempotencyKey: peal.String(rand.Text()),
+		Wait:           peal.String("30"),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	// 5. Comment elle s’est passée sur chaque canal, une fois que chacun a
+	// son résultat.
+	outcome, err := client.Posts.Outcome(ctx, &peal.OutcomePostsRequest{
+		WorkspaceID: workspaceID,
+		PostID:      sent.ID,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, target := range outcome.Targets {
+		permalink := ""
+		if target.Permalink != nil {
+			permalink = *target.Permalink
+		}
+		fmt.Println(target.ChannelID, target.Status, permalink)
+	}
+}
+```
+
+```ruby Ruby
+require "peal"
+require "securerandom"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
+
+# 1. Où elle peut partir : les canaux qui peuvent publier. Le SDK renvoie le
+# statut d’un canal sous forme de hash.
+channels = peal.channels.list(workspace_id: workspace_id)
+channel_ids = channels.select { |channel| channel.status[:_tag] == "active" }.map(&:id)
+
+# 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
+image = peal.media.import_from_url(
+  workspace_id: workspace_id,
+  url: "https://media.example.com/synthetic/launch.png",
+  alt_text: "A synthetic launch picture"
+)
+
+post = {
+  workspace_id: workspace_id,
+  channel_ids: channel_ids,
+  content: {
+    text: "A synthetic post, sent with the SDK.",
+    media: [{ mediaId: image.id, altText: "A synthetic launch picture" }],
+    overrides: []
+  },
+  when: { _tag: "now" }
+}
+
+# 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
+check = peal.posts.validate(**post)
+
+raise check.violations.inspect unless check.valid
+
+# 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
+# 24 heures renvoie cette publication, sans en créer une deuxième.
+sent = peal.posts.send_(**post, idempotency_key: SecureRandom.uuid, wait: "30")
+
+# 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
+# résultat.
+outcome = peal.posts.outcome(workspace_id: workspace_id, post_id: sent.id)
+
+outcome.targets.each do |target|
+  puts [target.channel_id, target.status, target.permalink].join(" ")
+end
+```
+
+```java Java
+import java.util.List;
+import java.util.UUID;
+import social.peal.PealClient;
+import social.peal.resources.media.requests.MediaImport;
+import social.peal.resources.posts.requests.NewPost;
+import social.peal.resources.posts.requests.PostToValidate;
+import social.peal.types.Channel;
+import social.peal.types.Media;
+import social.peal.types.MediaAttachment;
+import social.peal.types.Post;
+import social.peal.types.PostContent;
+import social.peal.types.PostTarget;
+import social.peal.types.PostTiming;
+import social.peal.types.PostTimingNow;
+import social.peal.types.PostValidation;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
+
+// 1. Où elle peut partir : les canaux qui peuvent publier.
+List<String> channelIds = peal.channels().list(workspaceId).stream()
+    .filter(channel -> channel.getStatus().isActive())
+    .map(Channel::getId)
+    .toList();
+
+// 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
+Media image = peal.media().importFromUrl(workspaceId, MediaImport.builder()
+    .url("https://media.example.com/synthetic/launch.png")
+    .altText("A synthetic launch picture")
+    .build());
+
+PostContent content = PostContent.builder()
+    .text("A synthetic post, sent with the SDK.")
+    .media(List.of(MediaAttachment.builder()
+        .altText("A synthetic launch picture")
+        .mediaId(image.getId())
+        .build()))
+    .build();
+PostTiming now = PostTiming.now(PostTimingNow.builder().build());
+
+// 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
+PostValidation check = peal.posts().validate(workspaceId, PostToValidate.builder()
+    .content(content)
+    .channelIds(channelIds)
+    .when(now)
+    .build());
+
+if (!check.getValid()) {
+    throw new IllegalStateException(check.getViolations().toString());
+}
+
+// 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
+// 24 heures renvoie cette publication, sans en créer une deuxième.
+Post sent = peal.posts().send(workspaceId, NewPost.builder()
+    .content(content)
+    .when(now)
+    .channelIds(channelIds)
+    .idempotencyKey(UUID.randomUUID().toString())
+    .wait("30")
+    .build());
+
+// 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
+// résultat.
+Post outcome = peal.posts().outcome(workspaceId, sent.getId());
+
+for (PostTarget target : outcome.getTargets()) {
+    System.out.println(target.getChannelId() + " " + target.getStatus() + " "
+        + target.getPermalink().orElse(""));
+}
+```
+
+```php PHP
+<?php
+use Peal\Media\Requests\MediaImport;
+use Peal\PealClient;
+use Peal\Posts\Requests\NewPost;
+use Peal\Posts\Requests\PostToValidate;
+use Peal\Types\MediaAttachment;
+use Peal\Types\PostContent;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingNow;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+$workspaceId = getenv('PEAL_WORKSPACE_ID');
+
+// 1. Où elle peut partir : les canaux qui peuvent publier.
+$channelIds = [];
+foreach ($peal->channels->list($workspaceId) as $channel) {
+    if ($channel->status->isActive()) {
+        $channelIds[] = $channel->id;
+    }
+}
+
+// 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
+$image = $peal->media->importFromUrl($workspaceId, new MediaImport([
+    'url' => 'https://media.example.com/synthetic/launch.png',
+    'altText' => 'A synthetic launch picture',
+]));
+
+$content = new PostContent([
+    'text' => 'A synthetic post, sent with the SDK.',
+    'media' => [
+        new MediaAttachment(['mediaId' => $image->id, 'altText' => 'A synthetic launch picture']),
+    ],
+    'overrides' => [],
+]);
+$now = PostTiming::now(new PostTimingNow([]));
+
+// 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
+$check = $peal->posts->validate($workspaceId, new PostToValidate([
+    'channelIds' => $channelIds,
+    'content' => $content,
+    'when' => $now,
+]));
+
+if (!$check->valid) {
+    throw new RuntimeException(json_encode($check->violations));
+}
+
+// 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
+// 24 heures renvoie cette publication, sans en créer une deuxième.
+$sent = $peal->posts->send($workspaceId, new NewPost([
+    'channelIds' => $channelIds,
+    'content' => $content,
+    'when' => $now,
+    'idempotencyKey' => bin2hex(random_bytes(16)),
+    'wait' => '30',
+]));
+
+// 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
+// résultat.
+$outcome = $peal->posts->outcome($workspaceId, $sent->id);
+
+foreach ($outcome->targets as $target) {
+    echo $target->channelId, ' ', $target->status, ' ', $target->permalink ?? '', PHP_EOL;
+}
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID") ?? "";
+
+// 1. Où elle peut partir : les canaux qui peuvent publier.
+var channels = await peal.Channels.ListAsync(new ListChannelsRequest { WorkspaceId = workspaceId });
+var channelIds = channels.Where(channel => channel.Status.IsActive).Select(channel => channel.Id).ToList();
+
+// 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
+var image = await peal.Media.ImportFromUrlAsync(new MediaImport
+{
+    WorkspaceId = workspaceId,
+    Url = "https://media.example.com/synthetic/launch.png",
+    AltText = "A synthetic launch picture",
+});
+
+var content = new PostContent
+{
+    Text = "A synthetic post, sent with the SDK.",
+    Media = new List<MediaAttachment>
+    {
+        new MediaAttachment { MediaId = image.Id, AltText = "A synthetic launch picture" },
+    },
+    Overrides = new List<TextOverride>(),
+};
+var now = new PostTiming(new PostTiming.Now(new PostTimingNow()));
+
+// 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
+var check = await peal.Posts.ValidateAsync(new PostToValidate
+{
+    WorkspaceId = workspaceId,
+    ChannelIds = channelIds,
+    Content = content,
+    When = now,
+});
+
+if (!check.Valid)
+{
+    throw new InvalidOperationException(string.Join(", ", check.Violations));
+}
+
+// 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
+// 24 heures renvoie cette publication, sans en créer une deuxième.
+var sent = await peal.Posts.SendAsync(new NewPost
+{
+    WorkspaceId = workspaceId,
+    ChannelIds = channelIds,
+    Content = content,
+    When = now,
+    IdempotencyKey = Guid.NewGuid().ToString(),
+    Wait = "30",
+});
+
+// 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
+// résultat.
+var outcome = await peal.Posts.OutcomeAsync(new OutcomePostsRequest
+{
+    WorkspaceId = workspaceId,
+    PostId = sent.Id,
+});
+
+foreach (var target in outcome.Targets)
+{
+    Console.WriteLine($"{target.ChannelId} {target.Status} {target.Permalink}");
+}
+```
+
+```rust Rust
+// cargo add peal-sdk tokio --features tokio/full
+// cargo add uuid --features v4
+use peal_sdk::prelude::*;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let peal = PealClient::new(ClientConfig {
+        token: std::env::var("PEAL_API_KEY").ok(),
+        ..Default::default()
+    })?;
+    let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
+
+    // 1. Où elle peut partir : les canaux qui peuvent publier.
+    let channel_ids: Vec<String> = peal
+        .channels
+        .list(&workspace_id, None)
+        .await?
+        .into_iter()
+        .filter(|channel| matches!(channel.status, ChannelStatus::Active { .. }))
+        .map(|channel| channel.id)
+        .collect();
+
+    // 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
+    let image = peal
+        .media
+        .import_from_url(
+            &workspace_id,
+            &MediaImport {
+                url: "https://media.example.com/synthetic/launch.png".to_string(),
+                alt_text: Some("A synthetic launch picture".to_string()),
+            },
+            None,
+        )
+        .await?;
+
+    let content = PostContent {
+        text: "A synthetic post, sent with the SDK.".to_string(),
+        media: vec![MediaAttachment {
+            media_id: image.id.clone(),
+            alt_text: "A synthetic launch picture".to_string(),
+        }],
+        ..Default::default()
+    };
+
+    // 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
+    let check = peal
+        .posts
+        .validate(
+            &workspace_id,
+            &PostToValidate::builder()
+                .channel_ids(channel_ids.clone())
+                .content(content.clone())
+                .when(PostTiming::now())
+                .build()?,
+            None,
+        )
+        .await?;
+
+    if !check.valid {
+        return Err(format!("{:?}", check.violations).into());
+    }
+
+    // 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans
+    // les 24 heures renvoie cette publication, sans en créer une deuxième.
+    // NewPost n’a pas de champ pour la clé, qui passe donc dans les en-têtes
+    // de la requête.
+    let sent = peal
+        .posts
+        .send(
+            &workspace_id,
+            &NewPost::builder()
+                .channel_ids(channel_ids)
+                .content(content)
+                .when(PostTiming::now())
+                .wait("30")
+                .build()?,
+            Some(RequestOptions::new().additional_header(
+                "Idempotency-Key",
+                uuid::Uuid::new_v4().to_string(),
+            )),
+        )
+        .await?;
+
+    // 5. Comment elle s’est passée sur chaque canal, une fois que chacun a
+    // son résultat.
+    let outcome = peal
+        .posts
+        .outcome(&workspace_id, &sent.id, &OutcomeQueryRequest::default(), None)
+        .await?;
+
+    for target in outcome.targets {
+        println!("{} {} {:?}", target.channel_id, target.status, target.permalink);
+    }
+
+    Ok(())
+}
+```
+
+</CodeGroup>
+
+Chaque SDK nomme les étapes à sa façon :
 
 | Étape                  | Python                          | Go                              | Ruby                              | Java                              | PHP                              | .NET                                 | Rust                                                             |
 | ---------------------- | ------------------------------- | ------------------------------- | --------------------------------- | --------------------------------- | -------------------------------- | ------------------------------------ | ---------------------------------------------------------------- |
@@ -200,24 +761,32 @@ Les mêmes étapes dans les autres SDK :
 | Envoyer, avec une clé  | `posts.send(idempotency_key=…)` | `Posts.Send` (`IdempotencyKey`) | `posts.send_(idempotency_key: …)` | `posts().send` (`idempotencyKey`) | `posts->send` (`idempotencyKey`) | `Posts.SendAsync` (`IdempotencyKey`) | `posts.send`, l’en-tête dans `RequestOptions::additional_header` |
 | Lire le résultat       | `posts.outcome`                 | `Posts.Outcome`                 | `posts.outcome`                   | `posts().outcome`                 | `posts->outcome`                 | `Posts.OutcomeAsync`                 | `posts.outcome`                                                  |
 
-Ruby nomme `send` `send_`, car `send` est une méthode de tout objet Ruby. Le `NewPost` de Rust n’a pas de champ pour la clé : envoyez l’en-tête `Idempotency-Key` par les options de la requête.
+Ruby appelle `send` `send_`, parce que tout objet Ruby a déjà une méthode `send`. Le `NewPost` de Rust n’a pas de champ pour la clé : vous envoyez l’en-tête `Idempotency-Key` par les options de la requête.
 
 ## Erreurs et nouvelles tentatives [#errors]
 
-Chaque SDK lève (ou renvoie, en Go et en Rust) une erreur typée par statut d’erreur : une clé refusée est l’erreur 401 du SDK, une permission manquante sa 403. L’erreur porte l’[enveloppe](/developers/conventions/errors#errors) qu’a répondue l’API, avec son `code`, son `message` et son `requestId` : journalisez l’identifiant de la requête, et citez-le quand vous demandez de l’aide.
+Chaque SDK lève une erreur typée par statut d’erreur (Go et Rust la renvoient). Une clé refusée donne l’erreur 401 du SDK, une permission manquante sa 403. L’erreur porte l’[enveloppe](/developers/conventions/errors#errors) qu’a répondue l’API, avec son `code`, son `message` et son `requestId`. Journalisez l’identifiant de la requête, et citez-le quand vous demandez de l’aide.
+
+Le SDK renvoie ou non la requête selon son type :
 
 | Requête            | Le SDK                                                                                                                                                                                                                      |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET, PUT ou DELETE | La renvoie, avec un délai croissant, quand l’API répond 408, 429 ou 5xx. Les options de chaque requête fixent combien de fois (`maxRetries`, `max_retries`, `option.WithMaxAttempts`, `MaxRetries` : chaque README le dit). |
-| POST ou PATCH      | Ne l’envoie jamais deux fois : le premier a pu créer la publication avant que sa réponse ne se perde.                                                                                                                       |
+| GET, PUT ou DELETE | La renvoie, avec un délai croissant, quand l’API répond 408, 429 ou 5xx. Les options de chaque requête fixent combien de fois (`maxRetries`, `max_retries`, `option.WithMaxAttempts`, `MaxRetries` : chaque README le dit). |
+| POST ou PATCH      | Ne l’envoie jamais deux fois, parce que le premier envoi a pu créer la publication avant que sa réponse ne se perde.                                                                                                        |
 
-Pour renvoyer un POST sans risque, donnez-lui une `Idempotency-Key` ([Idempotence](/developers/conventions/idempotency#idempotency)) : l’API répond alors la même publication, et n’en crée pas d’autre. Une clé envoie au plus {{api-with-fr}} requêtes par minute, {{api-without-fr}} pour un compte de facturation sans moyen de paiement ([Limites de débit](/developers/conventions/rate-limits#rate-limits)).
+Pour renvoyer un POST sans risque, donnez-lui une `Idempotency-Key` ([Idempotence](/developers/conventions/idempotency#idempotency)). L’API répond alors la même publication, et n’en crée pas d’autre.
+
+Une clé peut envoyer {{api-with-fr}} requêtes par minute, ou {{api-without-fr}} pour un compte de facturation sans moyen de paiement ([Limites de débit](/developers/conventions/rate-limits#rate-limits)).
 
 ## Pages [#paging]
 
-Les listes qui grandissent sans fin se lisent page par page : passez `limit` et `cursor`, puis le `nextCursor` de la réponse comme `cursor` suivant, jusqu’à ce qu’il soit `null` ([Pagination](/developers/conventions/paging#paging)). Les listes de l’API partenaire (`/api/partner/workspaces`, `/api/partner/usage`, `/api/partner/overview`) prennent `before` à la place, et répondent `next`. Les SDK passent les deux tels quels : ils n’ont pas d’aide qui lise toutes les pages pour vous.
+Les listes qui grandissent sans fin se lisent page par page. Passez `limit` et `cursor`, puis passez le `nextCursor` de la réponse comme `cursor` suivant, jusqu’à ce qu’il vaille `null` ([Pagination](/developers/conventions/paging#paging)). Les listes de l’API partenaire (`/api/partner/workspaces`, `/api/partner/usage`, `/api/partner/overview`) prennent `before` à la place, et répondent `next`.
 
-```ts
+Les SDK passent les deux tels quels. Aucun n’a d’aide qui lise toutes les pages pour vous, c’est donc à vous d’écrire la boucle :
+
+<CodeGroup>
+
+```ts Node.js
 let cursor: string | undefined;
 
 do {
@@ -231,18 +800,250 @@ do {
 } while (cursor !== undefined);
 ```
 
+```python Python
+cursor = None
+
+while True:
+    page = peal.media.list(workspace_id=workspace_id, limit="100", cursor=cursor)
+
+    for media in page.items:
+        print(media.id)
+
+    cursor = page.next_cursor
+    if cursor is None:
+        break
+```
+
+```go Go
+var cursor *string
+
+for {
+	page, err := client.Media.List(ctx, &peal.ListMediaRequest{
+		WorkspaceID: workspaceID,
+		Limit:       peal.String("100"),
+		Cursor:      cursor,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, media := range page.Items {
+		fmt.Println(media.ID)
+	}
+
+	if page.NextCursor == nil {
+		break
+	}
+	cursor = page.NextCursor
+}
+```
+
+```ruby Ruby
+cursor = nil
+
+loop do
+  # N’envoyer `cursor` que s’il y en a un.
+  query = { workspace_id: workspace_id, limit: "100" }
+  query[:cursor] = cursor if cursor
+
+  page = peal.media.list(**query)
+
+  page.items.each { |media| puts media.id }
+
+  cursor = page.next_cursor
+  break if cursor.nil?
+end
+```
+
+```java Java
+import java.util.Optional;
+import social.peal.resources.media.requests.ListMediaRequest;
+import social.peal.types.Media;
+import social.peal.types.MediaPage;
+
+Optional<String> cursor = Optional.empty();
+
+do {
+    MediaPage page = peal.media().list(workspaceId, ListMediaRequest.builder()
+        .limit("100")
+        .cursor(cursor)
+        .build());
+
+    for (Media media : page.getItems()) {
+        System.out.println(media.getId());
+    }
+
+    cursor = page.getNextCursor();
+} while (cursor.isPresent());
+```
+
+```php PHP
+<?php
+use Peal\Media\Requests\ListMediaRequest;
+
+$cursor = null;
+
+do {
+    $page = $peal->media->list($workspaceId, new ListMediaRequest([
+        'limit' => '100',
+        'cursor' => $cursor,
+    ]));
+
+    foreach ($page->items as $media) {
+        echo $media->id, PHP_EOL;
+    }
+
+    $cursor = $page->nextCursor;
+} while ($cursor !== null);
+```
+
+```csharp .NET
+string? cursor = null;
+
+do
+{
+    var page = await peal.Media.ListAsync(new ListMediaRequest
+    {
+        WorkspaceId = workspaceId,
+        Limit = "100",
+        Cursor = cursor,
+    });
+
+    foreach (var media in page.Items)
+    {
+        Console.WriteLine(media.Id);
+    }
+
+    cursor = page.NextCursor;
+} while (cursor != null);
+```
+
+```rust Rust
+let mut cursor: Option<String> = None;
+
+loop {
+    let page = peal
+        .media
+        .list(
+            &workspace_id,
+            &MediaListQueryRequest {
+                limit: Some("100".to_string()),
+                cursor: cursor.clone(),
+                ..Default::default()
+            },
+            None,
+        )
+        .await?;
+
+    for media in &page.items {
+        println!("{}", media.id);
+    }
+
+    cursor = page.next_cursor;
+    if cursor.is_none() {
+        break;
+    }
+}
+```
+
+</CodeGroup>
+
 ## Vérifier un webhook [#webhooks]
 
-Les SDK appellent l’API : ils ne reçoivent pas les [webhooks](/developers/webhooks). Vérifiez chaque livraison avec la bibliothèque [Standard Webhooks](https://www.standardwebhooks.com) de votre langage, avant d’agir. [Vérifier une livraison](/developers/webhooks/requests#verify) dit ce qui est signé ; en bref :
+Les SDK appellent l’API, mais ne reçoivent pas les [webhooks](/developers/webhooks). Vérifiez chaque livraison avec la bibliothèque [Standard Webhooks](https://www.standardwebhooks.com) de votre langage avant d’agir. [Vérifier une livraison](/developers/webhooks/requests#verify) dit ce qui est signé. En bref :
 
-- le secret du point de terminaison est `whsec_` suivi de base64, affiché une fois à sa création ([Le secret de signature](/developers/webhooks/requests#secret)) ;
-- chaque livraison porte `webhook-id`, `webhook-timestamp` et `webhook-signature` ([Ce que Peal envoie](/developers/webhooks/requests#request)) ;
-- les bibliothèques refusent un horodatage à plus de cinq minutes du moment présent ;
-- pendant 24 heures après une rotation, `webhook-signature` contient deux signatures, une par secret : les bibliothèques acceptent l’une ou l’autre.
+- Le secret du point de terminaison est `whsec_` suivi de base64. Il n’est affiché qu’une fois, à la création du point de terminaison ([Le secret de signature](/developers/webhooks/requests#secret)).
+- Chaque livraison porte `webhook-id`, `webhook-timestamp` et `webhook-signature` ([Ce que Peal envoie](/developers/webhooks/requests#request)).
+- Les bibliothèques refusent un horodatage à plus de cinq minutes du moment présent.
+- Pendant 24 heures après une rotation, `webhook-signature` contient deux signatures, une par secret. Les bibliothèques acceptent l’une ou l’autre.
 
-Vérifiez le corps tel qu’il est arrivé, octet par octet, avant de l’analyser. Les exemples pour JavaScript, Python, Go, Ruby et PHP sont sur [la page des webhooks](/developers/webhooks/requests#verify). Pour Java, .NET et Rust :
+Vérifiez le corps tel qu’il est arrivé, octet par octet, avant de l’analyser :
 
 <CodeGroup>
+
+```ts Node.js
+// npm install standardwebhooks
+import { Webhook } from "standardwebhooks";
+
+const webhook = new Webhook(process.env.PEAL_WEBHOOK_SECRET ?? "");
+
+// `rawBody` est le corps de la requête tel que reçu, une chaîne ou un Buffer.
+// Lève une erreur quand la signature ou l’horodatage est faux.
+const event = webhook.verify(rawBody, {
+  "webhook-id": request.headers["webhook-id"],
+  "webhook-timestamp": request.headers["webhook-timestamp"],
+  "webhook-signature": request.headers["webhook-signature"],
+});
+```
+
+```python Python
+# pip install standardwebhooks
+import os
+
+from standardwebhooks.webhooks import Webhook
+
+webhook = Webhook(os.environ["PEAL_WEBHOOK_SECRET"])
+
+# `raw_body` est le corps de la requête tel que reçu, en bytes. Lève
+# WebhookVerificationError quand la signature ou l’horodatage est faux.
+event = webhook.verify(
+    raw_body,
+    {
+        "webhook-id": request.headers["webhook-id"],
+        "webhook-timestamp": request.headers["webhook-timestamp"],
+        "webhook-signature": request.headers["webhook-signature"],
+    },
+)
+```
+
+```go Go
+// go get github.com/standard-webhooks/standard-webhooks/libraries
+import (
+	"io"
+	"net/http"
+	"os"
+
+	standardwebhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
+)
+
+func handle(w http.ResponseWriter, r *http.Request) {
+	webhook, err := standardwebhooks.NewWebhook(os.Getenv("PEAL_WEBHOOK_SECRET"))
+	if err != nil {
+		http.Error(w, "misconfigured", http.StatusInternalServerError)
+		return
+	}
+
+	// Le corps de la requête tel que reçu.
+	rawBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "unreadable", http.StatusBadRequest)
+		return
+	}
+
+	if err := webhook.Verify(rawBody, r.Header); err != nil {
+		http.Error(w, "invalid signature", http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+```
+
+```ruby Ruby
+# gem install standardwebhooks
+require "standardwebhooks"
+
+webhook = StandardWebhooks::Webhook.new(ENV.fetch("PEAL_WEBHOOK_SECRET"))
+
+# `raw_body` est le corps de la requête tel que reçu, en chaîne. Lève
+# StandardWebhooks::WebhookVerificationError quand la signature ou
+# l’horodatage est faux.
+event = webhook.verify(raw_body, {
+  "webhook-id" => request.env.fetch("HTTP_WEBHOOK_ID"),
+  "webhook-timestamp" => request.env.fetch("HTTP_WEBHOOK_TIMESTAMP"),
+  "webhook-signature" => request.env.fetch("HTTP_WEBHOOK_SIGNATURE"),
+})
+```
 
 ```java Java
 // Maven : com.standardwebhooks:standardwebhooks:1.2.0
@@ -251,11 +1052,29 @@ import com.standardwebhooks.exceptions.WebhookVerificationException;
 
 Webhook webhook = new Webhook(System.getenv("PEAL_WEBHOOK_SECRET"));
 
-// `rawBody` est le corps de la requête tel que reçu, en chaîne, et
-// `headers` les en-têtes de la requête, une Map<String, List<String>>
-// (noms en toute casse). Lève WebhookVerificationException quand la
-// signature ou l’horodatage est faux.
+// `rawBody` est le corps de la requête tel que reçu, en chaîne, et `headers`
+// les en-têtes de la requête, une Map<String, List<String>> (noms en toute
+// casse). Lève WebhookVerificationException quand la signature ou
+// l’horodatage est faux.
 webhook.verify(rawBody, headers);
+```
+
+```php PHP
+<?php
+// composer require standard-webhooks/standard-webhooks
+
+$webhook = new \StandardWebhooks\Webhook(getenv('PEAL_WEBHOOK_SECRET'));
+
+// Le corps de la requête tel que reçu.
+$rawBody = file_get_contents('php://input');
+
+// Lève \StandardWebhooks\Exception\WebhookVerificationException quand la
+// signature ou l’horodatage est faux.
+$event = $webhook->verify($rawBody, [
+    'webhook-id' => $_SERVER['HTTP_WEBHOOK_ID'],
+    'webhook-timestamp' => $_SERVER['HTTP_WEBHOOK_TIMESTAMP'],
+    'webhook-signature' => $_SERVER['HTTP_WEBHOOK_SIGNATURE'],
+]);
 ```
 
 ```csharp .NET
@@ -265,7 +1084,7 @@ using StandardWebhooks;
 
 var webhook = new Webhook(Environment.GetEnvironmentVariable("PEAL_WEBHOOK_SECRET"));
 
-// `rawBody` est le corps de la requête tel que reçu ; `headers` porte les
+// `rawBody` est le corps de la requête tel que reçu, et `headers` porte les
 // trois en-têtes webhook-. Lève WebhookVerificationException quand la
 // signature ou l’horodatage est faux.
 var headers = new WebHeaderCollection
@@ -285,8 +1104,8 @@ use standardwebhooks::Webhook;
 let webhook = Webhook::new(&std::env::var("PEAL_WEBHOOK_SECRET")?)?;
 
 // `raw_body` est le corps de la requête tel que reçu, en octets, et `headers`
-// le http::HeaderMap de la requête. Échoue quand la signature ou
-// l’horodatage est faux.
+// le http::HeaderMap de la requête. Échoue quand la signature ou l’horodatage
+// est faux.
 webhook.verify(&raw_body, &headers)?;
 ```
 

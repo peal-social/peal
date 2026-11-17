@@ -24,6 +24,23 @@ export class GrantSecrets extends Context.Service<
     }>;
     /** The hash a state is kept under. */
     readonly hashOf: (state: string) => Effect.Effect<string>;
+    /**
+     * A new PKCE verifier for a sign-in (RFC 7636): 32 random bytes, and
+     * its S256 challenge, which the authorization request carries.
+     */
+    readonly newVerifier: Effect.Effect<{
+      readonly challenge: string;
+      readonly verifier: Redacted.Redacted;
+    }>;
+    /** Seals a sign-in's verifier, bound to its state's hash. */
+    readonly sealVerifier: (
+      verifier: Redacted.Redacted,
+      stateHash: string
+    ) => Effect.Effect<SealedToken, AdSignInFailed>;
+    readonly openVerifier: (
+      sealed: SealedToken,
+      stateHash: string
+    ) => Effect.Effect<Redacted.Redacted, { readonly _tag: "Unopenable" }>;
     readonly seal: (
       token: Redacted.Redacted,
       grantId: AdGrantId

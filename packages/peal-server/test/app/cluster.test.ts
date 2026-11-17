@@ -45,6 +45,7 @@ import { PurgeEngagement } from "#engagement/application/purge-engagement.ts";
 import { PurgeMessages } from "#engagement/application/purge-messages.ts";
 import { PurgeReviews } from "#engagement/application/purge-reviews.ts";
 import { slotOf } from "#engagement/application/receive-message-events.ts";
+import { SendPrivateReply } from "#engagement/application/send-private-reply.ts";
 import { SendReply } from "#engagement/application/send-reply.ts";
 import { WorkflowMessageJobs } from "#engagement/infrastructure/workflow-message-jobs.ts";
 import {
@@ -288,7 +289,12 @@ const ChannelJobsTest = Layer.mergeAll(
       change: () => Effect.die("No comment rule changes here"),
       get: () => Effect.die("No comment rule is read here"),
       list: () => Effect.succeed([]),
-      runDue: Effect.succeed({ ended: 0, looked: 0, replied: 0 }),
+      runDue: Effect.succeed({
+        ended: 0,
+        looked: 0,
+        privateReplied: 0,
+        replied: 0,
+      }),
       start: () => Effect.die("No comment rule starts here"),
       stop: () => Effect.die("No comment rule stops here"),
     })
@@ -334,6 +340,13 @@ const ChannelJobsTest = Layer.mergeAll(
   Layer.succeed(
     SendReply,
     SendReply.of({
+      run: () => Effect.succeed("superseded"),
+      settleStranded: Effect.succeed(0),
+    })
+  ),
+  Layer.succeed(
+    SendPrivateReply,
+    SendPrivateReply.of({
       run: () => Effect.succeed("superseded"),
       settleStranded: Effect.succeed(0),
     })

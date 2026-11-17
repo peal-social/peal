@@ -260,9 +260,12 @@ export interface CommentRuleRecord {
     readonly commentId: string;
     readonly lookedAt: DateTime.Utc;
     readonly outcome: string;
+    readonly privateCode: string | null;
+    readonly privateReplyId: string | null;
     readonly replyId: string | null;
   }[];
   readonly postId: string | null;
+  readonly privateReply: string | null;
   readonly reply: string;
   readonly scope: string;
   readonly status: string;
@@ -467,8 +470,25 @@ export interface SentReviewReplyRecord {
  * people wrote.
  */
 export interface SentMessageRecord {
+  /** Whether they wrote it themselves, in their session of the web app. */
+  readonly byPerson: boolean;
   readonly channelId: string;
   readonly conversationId: string;
+  readonly createdAt: DateTime.Utc;
+  readonly id: string;
+  readonly status: string;
+  readonly text: string;
+  readonly workspaceId: string;
+}
+
+/**
+ * The private reply a member sent from Peal to the author of a comment,
+ * while Peal keeps it. Never the comment it answered, which someone else
+ * wrote.
+ */
+export interface SentPrivateReplyRecord {
+  readonly channelId: string;
+  readonly commentId: string;
   readonly createdAt: DateTime.Utc;
   readonly id: string;
   readonly status: string;

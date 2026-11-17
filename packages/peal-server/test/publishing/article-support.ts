@@ -2,9 +2,9 @@
 // member who may do everything with it, and the article sent to a fresh
 // site on a fresh server.
 import { assert } from "@effect/vitest";
-import { Duration, Effect, Option } from "effect";
+import { DateTime, Duration, Effect, Option } from "effect";
 import type { Layer, Scope } from "effect";
-import { Sharding } from "effect/cluster";
+import { MessageStorage, Sharding } from "effect/cluster";
 import { TestClock } from "effect/testing";
 
 import { ArticleStore } from "#publishing/application/article-store.ts";
@@ -164,4 +164,52 @@ export const eventuallyLater = <E, R>(
     }
 
     assert.fail(`Timed out waiting until ${label}`);
+  });
+
+// The earliest instant past `now` that storage holds a request back to:
+// a durable clock's wake-up.
+const nextWakeUp = (now: number) =>
+  MessageStorage.MemoryDriver.use((driver) =>
+    Effect.sync(() =>
+      Option.fromUndefinedOr(
+        [...driver.unprocessed]
+          .flatMap((envelope) =>
+            envelope._tag === "Request"
+              ? [driver.requests.get(envelope.requestId)?.deliverAt ?? now]
+              : []
+          )
+          .filter((deliverAt) => deliverAt > now)
+          .toSorted((left, right) => left - right)
+          .at(0)
+      )
+    )
+  );
+
+/**
+ * Waits, the virtual clock still, until storage holds a durable clock's
+ * wake-up later than now, then moves the clock to it and returns it: for
+ * a long wait (a scheduled time, a retry's delay) that `eventuallyLater`,
+ * a second a round, takes thousands of rounds to reach. The clock lands
+ * on the wake-up, never past it, so no deadline after it goes by.
+ */
+export const untilWokenLater = (label: string) =>
+  Effect.gen(function* wakingLater() {
+    const sharding = yield* Sharding.Sharding;
+
+    for (let round = 0; round < 1000; round += 1) {
+      const wakeUp = yield* nextWakeUp(
+        DateTime.toEpochMillis(yield* DateTime.now)
+      );
+
+      if (Option.isSome(wakeUp)) {
+        yield* TestClock.setTime(wakeUp.value);
+
+        return DateTime.makeUnsafe(wakeUp.value);
+      }
+
+      yield* sharding.pollStorage;
+      yield* TestClock.withLive(Effect.sleep(Duration.millis(10)));
+    }
+
+    return assert.fail(`Timed out waiting until ${label}`);
   });

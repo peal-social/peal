@@ -135,6 +135,7 @@ export const ContextRecordsLive = Layer.effect(
           contracts: billing.exportUser(userId),
           legalHold: legal.exportUser(userId),
           messages: engagement.exportUserMessages(userId),
+          privateReplies: engagement.exportUserPrivateReplies(userId),
           replies: engagement.exportUser(userId),
           reviewReplies: engagement.exportUserReviewReplies(userId),
           review: reviews.exportUser(userId),
@@ -147,6 +148,7 @@ export const ContextRecordsLive = Layer.effect(
             contracts: exported.contracts,
             legalHold: exported.legalHold,
             messages: exported.messages,
+            privateReplies: exported.privateReplies,
             replies: exported.replies,
             reviewReplies: exported.reviewReplies,
             review: exported.review,
@@ -233,6 +235,12 @@ export const ContextRecordsLive = Layer.effect(
                 .pipe(Effect.catchTags(billingRefusals(workspaceId)))
             )
           );
+
+          // Settled, they let go what their channels set up on their
+          // platforms for Peal (Meta's message events), with the tokens
+          // the erasure is about to delete: all at once, bounded, best
+          // effort, never refused.
+          yield* channels.releaseWorkspaces(workspaceIds);
 
           const erased: ErasedWorkspace = {
             subscriptionsCancelled: settled.reduce(

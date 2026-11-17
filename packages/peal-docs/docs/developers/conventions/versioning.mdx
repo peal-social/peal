@@ -7,33 +7,37 @@ sidebar:
 
 ## Versioning [#versioning]
 
-The API has no version in its path, and one version: it only grows. Fields, operations, values of an enumeration and errors are added; none is renamed, removed or made stricter. A client written today keeps working, provided that it ignores what it does not know:
+The API has no version in its path, and only one version, because it only grows. Fields, operations, values of an enumeration and errors are added. None is renamed, removed or made stricter.
 
-| What the client meets                                                                                | What it does                                                 |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| A field it does not read, in any answer or webhook payload                                           | Ignores it.                                                  |
-| A value it does not know where a field lists its values, such as a new post status or failure reason | Treats it as "something else", never as a failure to decode. |
-| An error code it does not know                                                                       | Falls back on the HTTP status, and shows `message`.          |
+A client written today keeps working, as long as it ignores what it doesn't know:
 
-<Callout type="info" title="How the API is held to this">
+| What the client meets                                                                               | What it does                                                 |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| A field it doesn't read, in any answer or webhook payload                                           | Ignores it.                                                  |
+| A value it doesn't know where a field lists its values, such as a new post status or failure reason | Treats it as "something else", never as a failure to decode. |
+| An error code it doesn't know                                                                       | Falls back on the HTTP status, and shows `message`.          |
+
+<Callout type="info" title="Tests block any change that could break a client">
   Every change to the contract is compared with the last released OpenAPI
-  document, the one the SDKs were generated from (their release 0.3.0 today),
-  and the project's tests fail on any change that could break a client: an
+  document, the one the SDKs were generated from (their release 0.3.0 today).
+  The project's tests fail on any change that could break a client: an
   operation, a field or a value removed or renamed, a parameter that became
-  required, a type that changed.
+  required, or a type that changed.
 </Callout>
 
-A break is made only when decided on. It is then recorded with its reason, listed in the [changelog](#changelog) under `breaking`, and announced by a [deprecation](#deprecations) first wherever an endpoint goes away.
+A break happens only when it's decided on. It's then recorded with its reason and listed in the [changelog](#changelog) under `breaking`. Wherever an endpoint goes away, a [deprecation](#deprecations) announces it first.
 
 Webhook payloads follow the same rule, with a `version` of their own ([Versions](/developers/webhooks/requests#versions)).
 
 ## Deprecations [#deprecations]
 
-An endpoint that is deprecated keeps answering as it always did. It says so in three places:
+A deprecated endpoint keeps answering as it always did. It says so in three places:
 
-- the OpenAPI document marks its operation `deprecated`, which generated clients and editors show;
-- every answer from it carries the headers below;
-- the [changelog](#changelog) lists it, by operation, in the release that deprecated it.
+- The OpenAPI document marks its operation `deprecated`, which generated clients and editors show.
+- Every answer from it carries the headers below.
+- The [changelog](#changelog) lists it, by operation, in the release that deprecated it.
+
+Here's what each header says:
 
 | Header        | What it says                                                                                                             |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -41,25 +45,102 @@ An endpoint that is deprecated keeps answering as it always did. It says so in t
 | `Sunset`      | When it stops answering, once that is decided, as an HTTP date (RFC 8594), such as `Wed, 01 Sep 2027 00:00:00 GMT`.      |
 | `Link`        | Where the deprecation is explained, with what to call instead, when there is such a page: `rel="deprecation"`.           |
 
-`Sunset` and `Link` are there only when there is something to say: a deprecated endpoint without `Sunset` has no end decided. Have your client log any answer that carries `Deprecation`.
+`Sunset` and `Link` are there only when there's something to say, so a deprecated endpoint without `Sunset` has no end decided. Have your client log any answer that carries `Deprecation`.
 
 No endpoint is deprecated today.
 
 ## Changelog [#changelog]
 
-`GET /api/changelog` lists the releases of the API, newest first, and needs no credential: a client reads it to learn what the server it found can do.
+`GET /api/changelog` lists the releases of the API, newest first. It needs no credential, so a client can read it to learn what the server it found can do.
 
 <CodeGroup>
+
+```ts Node.js
+import { PealClient } from "peal-sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+const changelog = await peal.system.changelog();
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+changelog = peal.system.changelog()
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+
+changelog, err := client.System.Changelog(context.Background())
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+changelog = peal.system.changelog
+```
+
+```java Java
+import social.peal.PealClient;
+import social.peal.types.ApiChangelog;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+ApiChangelog changelog = peal.system().changelog();
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+$changelog = $peal->system->changelog();
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+var changelog = await peal.System.ChangelogAsync();
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+let changelog = peal.system.changelog(None).await?;
+```
 
 ```bash curl
 curl https://api.example.com/api/changelog
 ```
 
-```ts TypeScript
-const changelog = await peal.system.changelog();
-```
-
 </CodeGroup>
+
+The answer lists one entry per release:
 
 ```json
 {
@@ -75,6 +156,8 @@ const changelog = await peal.system.changelog();
   ]
 }
 ```
+
+Each entry has these fields:
 
 | Field          | What it holds                                                                                        |
 | -------------- | ---------------------------------------------------------------------------------------------------- |

@@ -1,4 +1,4 @@
-import { Console, Effect, Option } from "effect";
+import { Console, DateTime, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import {
   idempotencyKeyLifetimeHours,
@@ -37,6 +37,12 @@ const reasons: Readonly<Record<InboxOutgoingMessageReason, string>> = {
   reconnectNeeded: "the platform refuses the channel's token: reconnect it",
   refused:
     "the platform refused it: the person may take no messages from the account",
+  windowClosed:
+    "the platform takes no answer any more: Messenger and Instagram take one only within 24 hours of the person's last message",
+  humanAgentNotGranted:
+    "Meta refused Peal's Human Agent tag: the server's Meta app does not hold that feature, so a late answer by hand cannot go out",
+  tagRestricted:
+    "Meta warned that the app's use of message tags is restricted, and may have sent it all the same: check the platform, and the server's operator should check Meta's app",
 };
 
 const sentLine = (message: InboxOutgoingMessage): string =>
@@ -116,7 +122,7 @@ const list = Command.make(
 
     if (page.items.length === 0) {
       yield* Console.log(
-        `No conversations in ${workspace.name}'s inbox. Peal reads the direct messages of Mastodon and Bluesky channels where whoever runs the server turned them on, and keeps a conversation ${String(inboxMessageRetentionDays)} days after its last message.`
+        `No conversations in ${workspace.name}'s inbox. Peal reads the direct messages of Mastodon, Bluesky, Facebook Page (Messenger) and Instagram channels where whoever runs the server turned them on, and keeps a conversation ${String(inboxMessageRetentionDays)} days after its last message.`
       );
 
       return;
@@ -210,6 +216,26 @@ const show = Command.make(
     yield* Console.log(
       `Sending: ${detail.abilities.send === "reconnect" ? "reconnect the channel to allow it" : detail.abilities.send}.`
     );
+
+    // Messenger and Instagram take an answer for a time only.
+    if (detail.window.closesAt !== null) {
+      yield* Console.log(
+        `${detail.window.open ? "Answers until" : "Answers closed at"} ${instant(detail.window.closesAt)}: Messenger and Instagram take one only within 24 hours of the person's last message.`
+      );
+    }
+
+    // A person, in the web app, may answer for longer: never this command.
+    const { personClosesAt } = detail.window;
+
+    if (
+      personClosesAt !== null &&
+      !detail.window.open &&
+      DateTime.isLessThan(yield* DateTime.now, personClosesAt)
+    ) {
+      yield* Console.log(
+        `A member signed in to Peal's web app may answer in person until ${instant(personClosesAt)}, with Meta's Human Agent tag: the command line cannot.`
+      );
+    }
   })
 ).pipe(
   Command.withDescription(
@@ -377,7 +403,7 @@ const confirm = Command.make(
 
 export const messages = Command.make("messages").pipe(
   Command.withDescription(
-    "The direct messages people send to a workspace's Mastodon and Bluesky accounts: read the conversations, and answer one privately as the channel's account. Peal never starts a conversation."
+    "The direct messages people send to a workspace's Mastodon, Bluesky, Facebook Page (Messenger) and Instagram accounts: read the conversations, and answer one privately as the channel's account, within 24 hours of the person's last message on Messenger and Instagram. Peal never starts a conversation."
   ),
   Command.withSubcommands([list, show, send, read, confirm])
 );

@@ -6,15 +6,17 @@ sidebar:
   order: 3
 ---
 
-Go from an API key to a published post, and a webhook that tells you how it went. Each step shows the request with `curl`, the `peal` command line and the TypeScript SDK.
+In this quickstart you'll send a post to one of your channels with the API, then get a webhook when it's out. Each step shows the same request in every SDK, with `curl` and with the `peal` command line.
 
 ## Before you start [#before]
 
-- A workspace with at least one channel connected in the app ([Quickstart](/quickstart), [Connect channels](/guides/channels)).
-- `curl`, the [command line](/developers/cli) or an [SDK](/developers/sdks) (`npm install peal-sdk` for TypeScript).
-- Your instance's address. The examples use `https://api.example.com`; Peal Cloud is `https://app.peal.social` ([Base URL](/developers#base-url)).
+You need three things:
 
-Ids in the examples are made up, and answers are abridged.
+- A workspace with at least one channel connected in the app ([Quickstart](/quickstart), [Connect channels](/guides/channels)).
+- `curl`, the [command line](/developers/cli) or an [SDK](/developers/sdks) (`npm install peal-sdk` for Node.js).
+- Your instance's address. The examples use `https://api.example.com`, and Peal Cloud is `https://app.peal.social` ([Base URL](/developers#base-url)).
+
+The ids on this page are made up, so yours will differ. The answers are abridged.
 
 <Prompt description="Using a coding agent? Give it this prompt." actions={["copy"]}>
 
@@ -27,7 +29,7 @@ Add the Peal API to this project, following Peal's API quickstart.
 5. Send the same body to `POST /api/workspaces/{workspaceId}/posts/send`, with an `Idempotency-Key` header holding a new UUID.
 6. Create a webhook endpoint with `POST /api/workspaces/{workspaceId}/webhooks` for `post.published` and `post.failed`, and store its signing secret, which is shown once.
 
-What goes out reaches the platforms' public and cannot be taken back from Peal: show me the post and wait for my OK before sending it. Stop to ask if any call returns an error.
+What goes out reaches the platforms' public and can't be taken back from Peal. Show me the post and wait for my OK before sending it. Stop and ask me if any call returns an error.
 
 </Prompt>
 
@@ -38,17 +40,103 @@ What goes out reaches the platforms' public and cannot be taken back from Peal: 
     In the app, open the workspace's **Settings**, then **API keys**.
   </Step>
   <Step title="Give it what this page needs">
-    Name the key and say how long it works. For this page it needs
-    `channel:read`, `post:read` and `post:schedule`, and `webhook:manage` for
+    Name the key and set how long it works. For this page it needs
+    `channel:read`, `post:read` and `post:schedule`, plus `webhook:manage` for
     the last step.
   </Step>
   <Step title="Copy it">
-    Choose **Create the key** and copy it: it is shown once ([API
+    Click **Create the key** and copy it. You'll only see it once ([API
     keys](/guides/workspace#api-keys)).
   </Step>
 </Steps>
 
+Then set up your client with the key:
+
 <CodeGroup>
+
+```ts Node.js
+import { PealClient } from "peal-sdk";
+
+const peal = new PealClient({
+  token: process.env.PEAL_API_KEY,
+  baseUrl: "https://api.example.com",
+});
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"], base_url="https://api.example.com")
+```
+
+```go Go
+import (
+	"context"
+	"fmt"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+// The client is named `client`, so that `peal` stays the package of the
+// request types.
+client := client.NewClient(
+	option.WithToken(os.Getenv("PEAL_API_KEY")),
+	option.WithBaseURL("https://api.example.com"),
+)
+ctx := context.Background()
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(
+  token: ENV.fetch("PEAL_API_KEY"),
+  base_url: "https://api.example.com"
+)
+```
+
+```java Java
+import social.peal.PealClient;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .url("https://api.example.com")
+    .build();
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+
+$peal = new PealClient(
+    token: getenv('PEAL_API_KEY'),
+    options: ['baseUrl' => 'https://api.example.com'],
+);
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(
+    Environment.GetEnvironmentVariable("PEAL_API_KEY")!,
+    new ClientOptions { BaseUrl = "https://api.example.com" }
+);
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    base_url: "https://api.example.com".to_string(),
+    ..Default::default()
+})?;
+```
 
 ```bash curl
 export PEAL_API_KEY="peal_…"
@@ -59,22 +147,97 @@ export PEAL_API_URL="https://api.example.com"
 export PEAL_API_KEY="peal_…"
 ```
 
-```ts TypeScript
-import { PealClient } from "peal-sdk";
-
-const peal = new PealClient({
-  token: process.env.PEAL_API_KEY,
-  baseUrl: "https://api.example.com",
-});
-```
-
 </CodeGroup>
 
 ## 2. Check the key [#credential]
 
-`GET /api/credential` says who the key is and what it may do, and reads no data. Its `workspace.id` is the workspace every other request names.
+`GET /api/credential` tells you who the key is and what it may do, and it reads no data. Copy its `workspace.id`, because every other request names that workspace.
 
 <CodeGroup>
+
+```ts Node.js
+const credential = await peal.credential.get();
+
+if (credential._tag === "apiKey") {
+  console.log(credential.workspace.id, credential.permissions);
+}
+
+const workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
+```
+
+```python Python
+credential = peal.credential.get()
+
+if credential.type == "apiKey":
+    print(credential.workspace.id, credential.permissions)
+
+workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
+```
+
+```go Go
+credential, err := client.Credential.Get(ctx)
+if err != nil {
+	return err
+}
+
+if credential.APIKey != nil {
+	fmt.Println(credential.APIKey.Workspace.ID, credential.APIKey.Permissions)
+}
+
+workspaceID := "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
+```
+
+```ruby Ruby
+# The SDK answers the credential as a hash.
+credential = peal.credential.get
+
+puts credential[:workspace][:id] if credential[:_tag] == "apiKey"
+
+workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
+```
+
+```java Java
+import social.peal.types.Credential;
+
+Credential credential = peal.credential().get();
+
+credential.getApiKey().ifPresent(key ->
+    System.out.println(key.getWorkspace().getId() + " " + key.getPermissions()));
+
+String workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
+```
+
+```php PHP
+$credential = $peal->credential->get();
+
+if ($credential->isApiKey()) {
+    echo $credential->asApiKey()->workspace->id, PHP_EOL;
+}
+
+$workspaceId = '7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90';
+```
+
+```csharp .NET
+var credential = await peal.Credential.GetAsync();
+
+if (credential.IsApiKey)
+{
+    var key = credential.AsApiKey();
+    Console.WriteLine($"{key.Workspace.Id} {string.Join(", ", key.Permissions)}");
+}
+
+var workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
+```
+
+```rust Rust
+let credential = peal.credential.get(None).await?;
+
+if let Credential::ApiKey { workspace, permissions, .. } = &credential {
+    println!("{} {:?}", workspace.id, permissions);
+}
+
+let workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
+```
 
 ```bash curl
 curl https://api.example.com/api/credential \
@@ -89,23 +252,48 @@ peal whoami
 export PEAL_WORKSPACE="7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
 ```
 
-```ts TypeScript
-const credential = await peal.credential.get();
-
-if (credential._tag === "apiKey") {
-  console.log(credential.workspace.id, credential.permissions);
-}
-
-const workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
-```
-
 </CodeGroup>
 
 ## 3. Find your channels [#channels]
 
-A channel is an account the workspace posts to. Connect one in the app first ([Connect channels](/guides/channels)), then list them: each has an `id` and its `platform`.
+A channel is an account the workspace posts to. Connect one in the app first ([Connect channels](/guides/channels)). Then list them, and you'll get each one's `id` and `platform`:
 
 <CodeGroup>
+
+```ts Node.js
+const channels = await peal.channels.list({ workspaceId });
+```
+
+```python Python
+channels = peal.channels.list(workspace_id=workspace_id)
+```
+
+```go Go
+channels, err := client.Channels.List(ctx, &peal.ListChannelsRequest{WorkspaceID: workspaceID})
+```
+
+```ruby Ruby
+channels = peal.channels.list(workspace_id: workspace_id)
+```
+
+```java Java
+import java.util.List;
+import social.peal.types.Channel;
+
+List<Channel> channels = peal.channels().list(workspaceId);
+```
+
+```php PHP
+$channels = $peal->channels->list($workspaceId);
+```
+
+```csharp .NET
+var channels = await peal.Channels.ListAsync(new ListChannelsRequest { WorkspaceId = workspaceId });
+```
+
+```rust Rust
+let channels = peal.channels.list(workspace_id, None).await?;
+```
 
 ```bash curl
 curl https://api.example.com/api/workspaces/$WORKSPACE_ID/channels \
@@ -116,17 +304,157 @@ curl https://api.example.com/api/workspaces/$WORKSPACE_ID/channels \
 peal channels list
 ```
 
-```ts TypeScript
-const channels = await peal.channels.list({ workspaceId });
-```
-
 </CodeGroup>
 
 ## 4. Check the post, then send it [#post]
 
-`POST …/posts/validate` answers whether a post would go through, with everything that would refuse it, and makes nothing ([Check a post](/developers/posting#validate)).
+`POST …/posts/validate` tells you whether a post would go through, with everything that would refuse it. It makes nothing ([Check a post](/developers/posting#validate)).
 
 <CodeGroup>
+
+```ts Node.js
+const post = {
+  workspaceId,
+  channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
+  content: { text: "Hello from the API", media: [], overrides: [] },
+  when: {
+    _tag: "at" as const,
+    at: "2026-11-16T08:00:00Z",
+    timeZone: "Europe/Paris",
+  },
+};
+
+const check = await peal.posts.validate(post);
+```
+
+```python Python
+from peal import PostContent, PostTiming_At
+
+post = dict(
+    workspace_id=workspace_id,
+    channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
+    content=PostContent(text="Hello from the API", media=[], overrides=[]),
+    when=PostTiming_At(at="2026-11-16T08:00:00Z", time_zone="Europe/Paris"),
+)
+
+check = peal.posts.validate(**post)
+```
+
+```go Go
+channelIDs := []string{"0190f3a0-0000-7000-8000-00000000c001"}
+content := &peal.PostContent{
+	Text:      "Hello from the API",
+	Media:     []*peal.MediaAttachment{},
+	Overrides: []*peal.TextOverride{},
+}
+when := &peal.PostTiming{
+	At: &peal.PostTimingAt{At: "2026-11-16T08:00:00Z", TimeZone: "Europe/Paris"},
+}
+
+check, err := client.Posts.Validate(ctx, &peal.PostToValidate{
+	WorkspaceID: workspaceID,
+	ChannelIDs:  channelIDs,
+	Content:     content,
+	When:        when,
+})
+```
+
+```ruby Ruby
+post = {
+  workspace_id: workspace_id,
+  channel_ids: ["0190f3a0-0000-7000-8000-00000000c001"],
+  content: { text: "Hello from the API", media: [], overrides: [] },
+  when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" }
+}
+
+check = peal.posts.validate(**post)
+```
+
+```java Java
+import social.peal.resources.posts.requests.PostToValidate;
+import social.peal.types.PostContent;
+import social.peal.types.PostTiming;
+import social.peal.types.PostTimingAt;
+import social.peal.types.PostValidation;
+
+List<String> channelIds = List.of("0190f3a0-0000-7000-8000-00000000c001");
+PostContent content = PostContent.builder().text("Hello from the API").build();
+PostTiming when = PostTiming.at(PostTimingAt.builder()
+    .at("2026-11-16T08:00:00Z")
+    .timeZone("Europe/Paris")
+    .build());
+
+PostValidation check = peal.posts().validate(workspaceId, PostToValidate.builder()
+    .content(content)
+    .channelIds(channelIds)
+    .when(when)
+    .build());
+```
+
+```php PHP
+use Peal\Posts\Requests\PostToValidate;
+use Peal\Types\PostContent;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingAt;
+
+$channelIds = ['0190f3a0-0000-7000-8000-00000000c001'];
+$content = new PostContent(['text' => 'Hello from the API', 'media' => [], 'overrides' => []]);
+$when = PostTiming::at(new PostTimingAt([
+    'at' => '2026-11-16T08:00:00Z',
+    'timeZone' => 'Europe/Paris',
+]));
+
+$check = $peal->posts->validate($workspaceId, new PostToValidate([
+    'channelIds' => $channelIds,
+    'content' => $content,
+    'when' => $when,
+]));
+```
+
+```csharp .NET
+var channelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c001" };
+var content = new PostContent
+{
+    Text = "Hello from the API",
+    Media = new List<MediaAttachment>(),
+    Overrides = new List<TextOverride>(),
+};
+var when = new PostTiming(new PostTiming.At(new PostTimingAt
+{
+    At = "2026-11-16T08:00:00Z",
+    TimeZone = "Europe/Paris",
+}));
+
+var check = await peal.Posts.ValidateAsync(new PostToValidate
+{
+    WorkspaceId = workspaceId,
+    ChannelIds = channelIds,
+    Content = content,
+    When = when,
+});
+```
+
+```rust Rust
+let channel_ids = vec!["0190f3a0-0000-7000-8000-00000000c001".to_string()];
+let content = PostContent {
+    text: "Hello from the API".to_string(),
+    ..Default::default()
+};
+let when = PostTiming::at("2026-11-16T08:00:00Z".to_string(), "Europe/Paris".to_string());
+
+let check = peal
+    .posts
+    .validate(
+        workspace_id,
+        &PostToValidate::builder()
+            .channel_ids(channel_ids.clone())
+            .content(content.clone())
+            .when(when.clone())
+            .build()?,
+        None,
+    )
+    .await?;
+```
 
 ```bash curl
 curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/validate \
@@ -144,26 +472,89 @@ peal post "Hello from the API" --channel 0190f3a0-0000-7000-8000-00000000c001 \
   --at 2026-11-16T09:00 --time-zone Europe/Paris --dry-run
 ```
 
-```ts TypeScript
-const post = {
-  workspaceId,
-  channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
-  content: { text: "Hello from the API", media: [], overrides: [] },
-  when: {
-    _tag: "at" as const,
-    at: "2026-11-16T08:00:00Z",
-    timeZone: "Europe/Paris",
-  },
-};
-
-const check = await peal.posts.validate(post);
-```
-
 </CodeGroup>
 
-When it answers `"valid": true`, send the same body to `POST …/posts/send`. An `Idempotency-Key` makes it safe to send again after a timeout ([Idempotency](/developers/conventions/idempotency)).
+When it answers `"valid": true`, send the same body to `POST …/posts/send`. With an `Idempotency-Key`, you can send it again after a timeout without posting twice ([Idempotency](/developers/conventions/idempotency)).
 
 <CodeGroup>
+
+```ts Node.js
+const sent = await peal.posts.send({
+  ...post,
+  "idempotency-key": "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+});
+```
+
+```python Python
+sent = peal.posts.send(**post, idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
+```
+
+```go Go
+sent, err := client.Posts.Send(ctx, &peal.NewPost{
+	WorkspaceID:    workspaceID,
+	ChannelIDs:     channelIDs,
+	Content:        content,
+	When:           when,
+	IdempotencyKey: peal.String("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90"),
+})
+```
+
+```ruby Ruby
+sent = peal.posts.send_(**post, idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
+```
+
+```java Java
+import social.peal.resources.posts.requests.NewPost;
+import social.peal.types.Post;
+
+Post sent = peal.posts().send(workspaceId, NewPost.builder()
+    .content(content)
+    .when(when)
+    .channelIds(channelIds)
+    .idempotencyKey("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
+    .build());
+```
+
+```php PHP
+use Peal\Posts\Requests\NewPost;
+
+$sent = $peal->posts->send($workspaceId, new NewPost([
+    'channelIds' => $channelIds,
+    'content' => $content,
+    'when' => $when,
+    'idempotencyKey' => '5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90',
+]));
+```
+
+```csharp .NET
+var sent = await peal.Posts.SendAsync(new NewPost
+{
+    WorkspaceId = workspaceId,
+    ChannelIds = channelIds,
+    Content = content,
+    When = when,
+    IdempotencyKey = "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+});
+```
+
+```rust Rust
+// NewPost has no field for the key: it goes in the request's headers.
+let sent = peal
+    .posts
+    .send(
+        workspace_id,
+        &NewPost::builder()
+            .channel_ids(channel_ids)
+            .content(content)
+            .when(when)
+            .build()?,
+        Some(RequestOptions::new().additional_header(
+            "Idempotency-Key",
+            "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+        )),
+    )
+    .await?;
+```
 
 ```bash curl
 curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send \
@@ -183,28 +574,112 @@ peal post "Hello from the API" --channel 0190f3a0-0000-7000-8000-00000000c001 \
   --idempotency-key 5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90
 ```
 
-```ts TypeScript
-const sent = await peal.posts.send({
-  ...post,
-  "idempotency-key": "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
-});
-```
-
 </CodeGroup>
 
-The post is now scheduled: it shows on the workspace's calendar and goes out at its time.
+The post is now scheduled. It shows on the workspace's calendar and goes out at its time.
 
-<Callout type="info" title="Publish at once">
-  With `"when": { "_tag": "now" }` the post goes out at once, and `?wait=30`
-  answers once each channel has its result ([Publish
+<Callout type="info" title="A post can go out at once">
+  With `"when": { "_tag": "now" }`, the post goes out at once. Add `?wait=30`
+  and the answer waits until each channel has its result ([Publish
   now](/developers/posting#wait)).
 </Callout>
 
 ## 5. Hear how it went [#webhook]
 
-Rather than asking, have Peal tell your server: create a webhook endpoint for the events you want. The answer holds its signing secret, shown once: keep it to [verify each delivery](/developers/webhooks/requests).
+Instead of asking, have Peal tell your server. Create a webhook endpoint for the events you want. The answer holds its signing secret, and you'll only see it once, so keep it to [verify each delivery](/developers/webhooks/requests).
 
 <CodeGroup>
+
+```ts Node.js
+const endpoint = await peal.webhooks.create({
+  workspaceId,
+  url: "https://example.com/peal-events",
+  eventTypes: ["post.published", "post.failed"],
+});
+```
+
+```python Python
+endpoint = peal.webhooks.create(
+    workspace_id=workspace_id,
+    url="https://example.com/peal-events",
+    event_types=["post.published", "post.failed"],
+)
+```
+
+```go Go
+endpoint, err := client.Webhooks.Create(ctx, &peal.NewWebhookEndpoint{
+	WorkspaceID: workspaceID,
+	URL:         "https://example.com/peal-events",
+	EventTypes: []peal.SubscribableWebhookEventType{
+		peal.SubscribableWebhookEventTypePostPublished,
+		peal.SubscribableWebhookEventTypePostFailed,
+	},
+})
+```
+
+```ruby Ruby
+endpoint = peal.webhooks.create(
+  workspace_id: workspace_id,
+  url: "https://example.com/peal-events",
+  event_types: ["post.published", "post.failed"]
+)
+```
+
+```java Java
+import social.peal.resources.webhooks.requests.NewWebhookEndpoint;
+import social.peal.types.SubscribableWebhookEventType;
+import social.peal.types.WebhookEndpointSecret;
+
+WebhookEndpointSecret endpoint = peal.webhooks().create(workspaceId, NewWebhookEndpoint.builder()
+    .url("https://example.com/peal-events")
+    .eventTypes(List.of(
+        SubscribableWebhookEventType.POST_PUBLISHED,
+        SubscribableWebhookEventType.POST_FAILED))
+    .build());
+```
+
+```php PHP
+use Peal\Types\SubscribableWebhookEventType;
+use Peal\Webhooks\Requests\NewWebhookEndpoint;
+
+$endpoint = $peal->webhooks->create($workspaceId, new NewWebhookEndpoint([
+    'url' => 'https://example.com/peal-events',
+    'eventTypes' => [
+        SubscribableWebhookEventType::PostPublished->value,
+        SubscribableWebhookEventType::PostFailed->value,
+    ],
+]));
+```
+
+```csharp .NET
+var endpoint = await peal.Webhooks.CreateAsync(new NewWebhookEndpoint
+{
+    WorkspaceId = workspaceId,
+    Url = "https://example.com/peal-events",
+    EventTypes = new List<SubscribableWebhookEventType>
+    {
+        SubscribableWebhookEventType.PostPublished,
+        SubscribableWebhookEventType.PostFailed,
+    },
+});
+```
+
+```rust Rust
+let endpoint = peal
+    .webhooks
+    .create(
+        workspace_id,
+        &NewWebhookEndpoint::builder()
+            .url("https://example.com/peal-events")
+            .event_types(vec![
+                SubscribableWebhookEventType::PostPublished,
+                SubscribableWebhookEventType::PostFailed,
+            ])
+            .build()?,
+        None,
+    )
+    .await?;
+```
 
 ```bash curl
 curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/webhooks \
@@ -221,23 +696,15 @@ peal webhooks create --url https://example.com/peal-events \
   --events post.published,post.failed
 ```
 
-```ts TypeScript
-const endpoint = await peal.webhooks.create({
-  workspaceId,
-  url: "https://example.com/peal-events",
-  eventTypes: ["post.published", "post.failed"],
-});
-```
-
 </CodeGroup>
 
-When the post goes out, your server receives [`post.published`](/developers/webhooks/events/posts#post-published) for each channel it reached, or [`post.failed`](/developers/webhooks/events/posts#post-failed) with the reason.
+When the post goes out, your server gets [`post.published`](/developers/webhooks/events/posts#post-published) for each channel it reached, or [`post.failed`](/developers/webhooks/events/posts#post-failed) with the reason.
 
 ## Next [#next]
 
 <CardGroup cols={2}>
   <Card title="SDKs" href="/developers/sdks" icon="package">
-    The same requests in eight languages.
+    Install a client, and publish a post from start to finish.
   </Card>
   <Card
     title="Errors"

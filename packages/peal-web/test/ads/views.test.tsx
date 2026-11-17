@@ -13,7 +13,12 @@ import {
   toggledAccounts,
 } from "#components/ads/ad-sign-in-view.tsx";
 import type { AdSignInStep } from "#components/ads/ad-sign-in-view.tsx";
-import { AdAccountView, SpendingFormView } from "#components/ads/ads-views.tsx";
+import {
+  AdAccountView,
+  CampaignsTableView,
+  GoogleAdsDisclosureView,
+  SpendingFormView,
+} from "#components/ads/ads-views.tsx";
 import {
   BoostFormView,
   BoostSummaryView,
@@ -21,7 +26,7 @@ import {
 import { controlsOf, PaidSectionView } from "#components/ads/paid-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
-import { at, euroAccount, yenAccount } from "./fixtures.ts";
+import { at, euroAccount, googleAccount, yenAccount } from "./fixtures.ts";
 
 const render = async (locale: "en" | "fr", view: ReactNode) => {
   const html = renderToStaticMarkup(
@@ -481,6 +486,116 @@ describe(AdAccountView, () => {
     expect(html).toMatch(/Spending through Peal<\/dt><dd[^>]*>Off/u);
     expect(html).toContain("Payment failed");
     expect(html).toContain("Not synced yet");
+  });
+
+  it("shows an older server's account, which says nothing of its network, as Meta's", async () => {
+    const {
+      capabilities: _capabilities,
+      reachedThrough: _reachedThrough,
+      ...asBefore
+    } = euroAccount;
+
+    const html = await render(
+      "en",
+      <ul>
+        <AdAccountView account={asBefore} committedThisMonth={12_000} />
+      </ul>
+    );
+
+    expect(html).toContain("On, up to €500.00 each calendar month");
+    expect(html).not.toContain("Read through the manager account");
+  });
+
+  it("shows a Google Ads account read only, through its manager, read every six hours", async () => {
+    const html = await render(
+      "en",
+      <ul>
+        <AdAccountView account={googleAccount} committedThisMonth={null} />
+      </ul>
+    );
+
+    expect(html).toContain("Google Ads");
+    expect(html).toMatch(
+      /Spending through Peal<\/dt><dd[^>]*>Never: Peal only reads Google Ads accounts/u
+    );
+    expect(html).toMatch(
+      /Read through the manager account<\/dt><dd[^>]*>2222222222/u
+    );
+    expect(html).toContain("Read every six hours");
+    expect(html).not.toContain("Read every hour");
+  });
+});
+
+const googleTotals = {
+  clicks: 8,
+  impressions: 600,
+  reach: 0,
+  results: null,
+  spend: 351,
+};
+
+describe(CampaignsTableView, () => {
+  it("shows a Google Ads campaign's type, and no results column", async () => {
+    const html = await render(
+      "en",
+      <CampaignsTableView
+        report={{
+          account: googleAccount,
+          from: "2026-11-01",
+          rows: [
+            {
+              dailyBudget: 1000,
+              endsAt: null,
+              externalId: "901",
+              kind: "SEARCH",
+              name: "Winter search",
+              objective: "other",
+              rawStatus: "ENABLED",
+              startsAt: null,
+              status: "active",
+              syncedAt: at("2026-11-10T06:00:00Z"),
+              totalBudget: null,
+              totals: googleTotals,
+            },
+          ],
+          to: "2026-11-10",
+        }}
+      />
+    );
+
+    expect(html).toContain("with what each did from");
+    expect(html).toMatch(/<th[^>]*>Type<\/th>/u);
+    expect(html).toContain("SEARCH");
+    expect(html).not.toContain("Results");
+    expect(html).not.toContain("Not reported");
+  });
+});
+
+describe(GoogleAdsDisclosureView, () => {
+  it("says what Peal reads, that it changes nothing, how often, and how to remove it", async () => {
+    const html = await render(
+      "en",
+      <GoogleAdsDisclosureView docsUrl="https://docs.peal.example/guides/engage/ads#google" />
+    );
+
+    expect(html).toContain(
+      "its campaigns, and each campaign's daily cost, impressions and clicks"
+    );
+    expect(html).toContain("Peal never changes anything there");
+    expect(html).toMatch(
+      /every six hours.*passkey.*Remove the sign-in here at any time/su
+    );
+    expect(html).toContain(
+      'href="https://docs.peal.example/guides/engage/ads#google"'
+    );
+  });
+
+  it("is written in French, and links nowhere without docs", async () => {
+    const html = await render("fr", <GoogleAdsDisclosureView docsUrl={null} />);
+
+    expect(html).toContain("Peal n’y change jamais rien");
+    expect(html).toContain("toutes les six heures");
+    expect(html).not.toContain("href");
   });
 });
 

@@ -1,6 +1,7 @@
 import { Option } from "effect";
 
 import { tokenPolicies } from "#channels/domain/token-policy.ts";
+import { instagramPageMessageScopes } from "#shared/domain/inbox-message-platform.ts";
 import { instagramPageCommentScope } from "#shared/domain/inbox-platform.ts";
 
 import { avatarOf, facebookLogin } from "./facebook-login.ts";
@@ -45,6 +46,8 @@ export const instagramAccounts: FacebookLoginProduct = {
   // Reading the account's comments, and answering and hiding them.
   commentScopes: [instagramPageCommentScope],
   connection: "facebookLogin",
+  // Reading and answering its direct messages, and following their events.
+  messageScopes: instagramPageMessageScopes,
   optionalScopes: insightsScopes,
   platform: "instagram",
   policy: tokenPolicies.instagram,

@@ -28,6 +28,8 @@ public final class AdAccount {
 
     private final Optional<Long> amountSpent;
 
+    private final Optional<AdAccountCapabilities> capabilities;
+
     private final String connectedAt;
 
     private final String connectionId;
@@ -48,6 +50,8 @@ public final class AdAccount {
 
     private final Optional<String> newAdsUntrackedUntil;
 
+    private final Optional<String> reachedThrough;
+
     private final Optional<Long> spendCap;
 
     private final boolean spendingEnabled;
@@ -58,11 +62,14 @@ public final class AdAccount {
 
     private final String timeZone;
 
+    private final Optional<String> unreachableSince;
+
     private final Map<String, Object> additionalProperties;
 
     private AdAccount(
             AdAccess access,
             Optional<Long> amountSpent,
+            Optional<AdAccountCapabilities> capabilities,
             String connectedAt,
             String connectionId,
             String currency,
@@ -73,14 +80,17 @@ public final class AdAccount {
             String name,
             AdNetwork network,
             Optional<String> newAdsUntrackedUntil,
+            Optional<String> reachedThrough,
             Optional<Long> spendCap,
             boolean spendingEnabled,
             AdAccountStatus status,
             Optional<String> syncedAt,
             String timeZone,
+            Optional<String> unreachableSince,
             Map<String, Object> additionalProperties) {
         this.access = access;
         this.amountSpent = amountSpent;
+        this.capabilities = capabilities;
         this.connectedAt = connectedAt;
         this.connectionId = connectionId;
         this.currency = currency;
@@ -91,11 +101,13 @@ public final class AdAccount {
         this.name = name;
         this.network = network;
         this.newAdsUntrackedUntil = newAdsUntrackedUntil;
+        this.reachedThrough = reachedThrough;
         this.spendCap = spendCap;
         this.spendingEnabled = spendingEnabled;
         this.status = status;
         this.syncedAt = syncedAt;
         this.timeZone = timeZone;
+        this.unreachableSince = unreachableSince;
         this.additionalProperties = additionalProperties;
     }
 
@@ -113,6 +125,11 @@ public final class AdAccount {
             return Optional.empty();
         }
         return amountSpent;
+    }
+
+    @JsonProperty("capabilities")
+    public Optional<AdAccountCapabilities> getCapabilities() {
+        return capabilities;
     }
 
     @JsonProperty("connectedAt")
@@ -177,6 +194,14 @@ public final class AdAccount {
         return newAdsUntrackedUntil;
     }
 
+    @JsonIgnore
+    public Optional<String> getReachedThrough() {
+        if (reachedThrough == null) {
+            return Optional.empty();
+        }
+        return reachedThrough;
+    }
+
     /**
      * @return An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's <code>minorUnitDigits</code> to show it.
      */
@@ -211,6 +236,14 @@ public final class AdAccount {
         return timeZone;
     }
 
+    @JsonIgnore
+    public Optional<String> getUnreachableSince() {
+        if (unreachableSince == null) {
+            return Optional.empty();
+        }
+        return unreachableSince;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("amountSpent")
     private Optional<Long> _getAmountSpent() {
@@ -230,6 +263,12 @@ public final class AdAccount {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("reachedThrough")
+    private Optional<String> _getReachedThrough() {
+        return reachedThrough;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("spendCap")
     private Optional<Long> _getSpendCap() {
         return spendCap;
@@ -239,6 +278,12 @@ public final class AdAccount {
     @JsonProperty("syncedAt")
     private Optional<String> _getSyncedAt() {
         return syncedAt;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("unreachableSince")
+    private Optional<String> _getUnreachableSince() {
+        return unreachableSince;
     }
 
     @java.lang.Override
@@ -255,6 +300,7 @@ public final class AdAccount {
     private boolean equalTo(AdAccount other) {
         return access.equals(other.access)
                 && amountSpent.equals(other.amountSpent)
+                && capabilities.equals(other.capabilities)
                 && connectedAt.equals(other.connectedAt)
                 && connectionId.equals(other.connectionId)
                 && currency.equals(other.currency)
@@ -265,11 +311,13 @@ public final class AdAccount {
                 && name.equals(other.name)
                 && network.equals(other.network)
                 && newAdsUntrackedUntil.equals(other.newAdsUntrackedUntil)
+                && reachedThrough.equals(other.reachedThrough)
                 && spendCap.equals(other.spendCap)
                 && spendingEnabled == other.spendingEnabled
                 && status.equals(other.status)
                 && syncedAt.equals(other.syncedAt)
-                && timeZone.equals(other.timeZone);
+                && timeZone.equals(other.timeZone)
+                && unreachableSince.equals(other.unreachableSince);
     }
 
     @java.lang.Override
@@ -277,6 +325,7 @@ public final class AdAccount {
         return Objects.hash(
                 this.access,
                 this.amountSpent,
+                this.capabilities,
                 this.connectedAt,
                 this.connectionId,
                 this.currency,
@@ -287,11 +336,13 @@ public final class AdAccount {
                 this.name,
                 this.network,
                 this.newAdsUntrackedUntil,
+                this.reachedThrough,
                 this.spendCap,
                 this.spendingEnabled,
                 this.status,
                 this.syncedAt,
-                this.timeZone);
+                this.timeZone,
+                this.unreachableSince);
     }
 
     @java.lang.Override
@@ -372,6 +423,10 @@ public final class AdAccount {
 
         _FinalStage amountSpent(Nullable<Long> amountSpent);
 
+        _FinalStage capabilities(Optional<AdAccountCapabilities> capabilities);
+
+        _FinalStage capabilities(AdAccountCapabilities capabilities);
+
         /**
          * <p>An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's <code>minorUnitDigits</code> to show it.</p>
          */
@@ -387,6 +442,12 @@ public final class AdAccount {
 
         _FinalStage newAdsUntrackedUntil(Nullable<String> newAdsUntrackedUntil);
 
+        _FinalStage reachedThrough(Optional<String> reachedThrough);
+
+        _FinalStage reachedThrough(String reachedThrough);
+
+        _FinalStage reachedThrough(Nullable<String> reachedThrough);
+
         /**
          * <p>An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's <code>minorUnitDigits</code> to show it.</p>
          */
@@ -401,6 +462,12 @@ public final class AdAccount {
         _FinalStage syncedAt(String syncedAt);
 
         _FinalStage syncedAt(Nullable<String> syncedAt);
+
+        _FinalStage unreachableSince(Optional<String> unreachableSince);
+
+        _FinalStage unreachableSince(String unreachableSince);
+
+        _FinalStage unreachableSince(Nullable<String> unreachableSince);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -442,13 +509,19 @@ public final class AdAccount {
 
         private String timeZone;
 
+        private Optional<String> unreachableSince = Optional.empty();
+
         private Optional<String> syncedAt = Optional.empty();
 
         private Optional<Long> spendCap = Optional.empty();
 
+        private Optional<String> reachedThrough = Optional.empty();
+
         private Optional<String> newAdsUntrackedUntil = Optional.empty();
 
         private Optional<Long> monthlyCeiling = Optional.empty();
+
+        private Optional<AdAccountCapabilities> capabilities = Optional.empty();
 
         private Optional<Long> amountSpent = Optional.empty();
 
@@ -460,6 +533,7 @@ public final class AdAccount {
         public Builder from(AdAccount other) {
             access(other.getAccess());
             amountSpent(other.getAmountSpent());
+            capabilities(other.getCapabilities());
             connectedAt(other.getConnectedAt());
             connectionId(other.getConnectionId());
             currency(other.getCurrency());
@@ -470,11 +544,13 @@ public final class AdAccount {
             name(other.getName());
             network(other.getNetwork());
             newAdsUntrackedUntil(other.getNewAdsUntrackedUntil());
+            reachedThrough(other.getReachedThrough());
             spendCap(other.getSpendCap());
             spendingEnabled(other.getSpendingEnabled());
             status(other.getStatus());
             syncedAt(other.getSyncedAt());
             timeZone(other.getTimeZone());
+            unreachableSince(other.getUnreachableSince());
             return this;
         }
 
@@ -567,6 +643,31 @@ public final class AdAccount {
         }
 
         @java.lang.Override
+        public _FinalStage unreachableSince(Nullable<String> unreachableSince) {
+            if (unreachableSince.isNull()) {
+                this.unreachableSince = null;
+            } else if (unreachableSince.isEmpty()) {
+                this.unreachableSince = Optional.empty();
+            } else {
+                this.unreachableSince = Optional.of(unreachableSince.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage unreachableSince(String unreachableSince) {
+            this.unreachableSince = Optional.ofNullable(unreachableSince);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "unreachableSince", nulls = Nulls.SKIP)
+        public _FinalStage unreachableSince(Optional<String> unreachableSince) {
+            this.unreachableSince = unreachableSince;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage syncedAt(Nullable<String> syncedAt) {
             if (syncedAt.isNull()) {
                 this.syncedAt = null;
@@ -624,6 +725,31 @@ public final class AdAccount {
         @JsonSetter(value = "spendCap", nulls = Nulls.SKIP)
         public _FinalStage spendCap(Optional<Long> spendCap) {
             this.spendCap = spendCap;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage reachedThrough(Nullable<String> reachedThrough) {
+            if (reachedThrough.isNull()) {
+                this.reachedThrough = null;
+            } else if (reachedThrough.isEmpty()) {
+                this.reachedThrough = Optional.empty();
+            } else {
+                this.reachedThrough = Optional.of(reachedThrough.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage reachedThrough(String reachedThrough) {
+            this.reachedThrough = Optional.ofNullable(reachedThrough);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "reachedThrough", nulls = Nulls.SKIP)
+        public _FinalStage reachedThrough(Optional<String> reachedThrough) {
+            this.reachedThrough = reachedThrough;
             return this;
         }
 
@@ -688,6 +814,19 @@ public final class AdAccount {
             return this;
         }
 
+        @java.lang.Override
+        public _FinalStage capabilities(AdAccountCapabilities capabilities) {
+            this.capabilities = Optional.ofNullable(capabilities);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "capabilities", nulls = Nulls.SKIP)
+        public _FinalStage capabilities(Optional<AdAccountCapabilities> capabilities) {
+            this.capabilities = capabilities;
+            return this;
+        }
+
         /**
          * <p>An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's <code>minorUnitDigits</code> to show it.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
@@ -729,6 +868,7 @@ public final class AdAccount {
             return new AdAccount(
                     access,
                     amountSpent,
+                    capabilities,
                     connectedAt,
                     connectionId,
                     currency,
@@ -739,11 +879,13 @@ public final class AdAccount {
                     name,
                     network,
                     newAdsUntrackedUntil,
+                    reachedThrough,
                     spendCap,
                     spendingEnabled,
                     status,
                     syncedAt,
                     timeZone,
+                    unreachableSince,
                     additionalProperties);
         }
 
@@ -751,6 +893,7 @@ public final class AdAccount {
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("access")
                     || key.equalsIgnoreCase("amountSpent")
+                    || key.equalsIgnoreCase("capabilities")
                     || key.equalsIgnoreCase("connectedAt")
                     || key.equalsIgnoreCase("connectionId")
                     || key.equalsIgnoreCase("currency")
@@ -761,11 +904,13 @@ public final class AdAccount {
                     || key.equalsIgnoreCase("name")
                     || key.equalsIgnoreCase("network")
                     || key.equalsIgnoreCase("newAdsUntrackedUntil")
+                    || key.equalsIgnoreCase("reachedThrough")
                     || key.equalsIgnoreCase("spendCap")
                     || key.equalsIgnoreCase("spendingEnabled")
                     || key.equalsIgnoreCase("status")
                     || key.equalsIgnoreCase("syncedAt")
-                    || key.equalsIgnoreCase("timeZone")) {
+                    || key.equalsIgnoreCase("timeZone")
+                    || key.equalsIgnoreCase("unreachableSince")) {
                 return;
             }
             this.additionalProperties.put(key, value);

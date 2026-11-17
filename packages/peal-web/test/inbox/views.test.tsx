@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import type {
   SocialChannel,
   InboxComment,
+  InboxPrivateReply,
   InboxReply,
   InboxThread,
 } from "peal-contract";
@@ -14,12 +15,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
   CommentView,
   InboxEmptyView,
+  PrivateReplyFormView,
+  PrivateReplyView,
   ReplyAbilityNotice,
   ReplyBoxView,
   ReplyView,
   ThreadRowView,
 } from "#components/inbox/inbox-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
+import { privateReplyFit } from "#inbox/private-reply-text.ts";
 import { replyFit } from "#inbox/reply-text.ts";
 
 const render = async (locale: "en" | "fr", view: ReactNode) =>
@@ -79,6 +83,8 @@ const comment: InboxComment = {
   liked: false,
   parentId: null,
   permalink: "https://social.example/@ada/2",
+  privateReply: null,
+  privateReplyUntil: null,
   receivedAt: at("2026-11-10T08:37:00Z"),
   state: "new",
   text: "When does it open?",
@@ -772,5 +778,136 @@ describe(ReplyAbilityNotice, () => {
         />
       )
     ).resolves.toBe("");
+  });
+});
+
+const privateReply: InboxPrivateReply = {
+  authorId: null,
+  commentId: comment.id,
+  createdAt: at("2026-11-10T09:00:00Z"),
+  id: "00000000-0000-7000-8000-0000000000f1",
+  reason: null,
+  ruleId: null,
+  settledAt: null,
+  status: "sending",
+  text: "Here is the link you asked for.",
+};
+
+describe(PrivateReplyView, () => {
+  it("shows one on its way as sending, never as sent", async () => {
+    const html = await render("en", <PrivateReplyView reply={privateReply} />);
+
+    expect(
+      missingFrom(html, [
+        "Private reply sent from Peal on",
+        "Sending…",
+        "Here is the link you asked for.",
+      ])
+    ).toStrictEqual([]);
+    expect(html).not.toContain(">Sent<");
+  });
+
+  it("says why one failed, and that Meta's own refusal means another answered", async () => {
+    const html = await render(
+      "en",
+      <PrivateReplyView
+        reply={{
+          ...privateReply,
+          reason: "alreadyAnswered",
+          settledAt: at("2026-11-10T09:00:05Z"),
+          status: "failed",
+        }}
+      />
+    );
+
+    expect(
+      missingFrom(html, [
+        "Not sent",
+        "Nothing went out: the platform says the comment had its one private reply already",
+      ])
+    ).toStrictEqual([]);
+  });
+
+  it("asks to check one whose outcome is unknown, in French too, with what the reader may do", async () => {
+    const unconfirmed: InboxPrivateReply = {
+      ...privateReply,
+      reason: "noResponse",
+      settledAt: at("2026-11-10T09:00:05Z"),
+      status: "unconfirmed",
+    };
+
+    const html = await render(
+      "fr",
+      <PrivateReplyView
+        reply={unconfirmed}
+        actions={<button type="button">Elle est partie</button>}
+      />
+    );
+
+    expect(
+      missingFrom(html, [
+        "À vérifier",
+        "Peal ne l’envoie jamais de nouveau",
+        "Elle est partie",
+      ])
+    ).toStrictEqual([]);
+  });
+
+  it("renders markup in its text as the text it is", async () => {
+    const html = await render(
+      "en",
+      <PrivateReplyView reply={{ ...privateReply, text: "<b>hi</b>" }} />
+    );
+
+    expect(html).toContain("&lt;b&gt;hi&lt;/b&gt;");
+  });
+});
+
+// The dialog's form for `text` on `platform`.
+const form = (text: string, platform: "facebook" | "instagram") => (
+  <PrivateReplyFormView
+    author="Ada Example"
+    error={null}
+    fit={privateReplyFit(platform, text)}
+    sending={false}
+    text={text}
+    until={at("2026-11-17T07:30:00Z")}
+    onCancel={constVoid}
+    onChange={constVoid}
+    onSend={constVoid}
+  />
+);
+
+describe(PrivateReplyFormView, () => {
+  it("says it is one message, within seven days, the person answering first, and that saying it is automatic is the member's", async () => {
+    const html = await render("en", form("Hello", "facebook"));
+
+    expect(
+      missingFrom(html, [
+        "One private message to Ada Example",
+        "within seven days of it",
+        "Nov 17, 2026",
+        "The person must answer before you can write to them again",
+        "say it in your text: Peal adds nothing to it",
+        "5 of 2,000 characters",
+        "Send privately",
+      ])
+    ).toStrictEqual([]);
+  });
+
+  it("counts Instagram in bytes, and keeps Send off once too long", async () => {
+    const html = await render("en", form("é".repeat(501), "instagram"));
+
+    expect(
+      missingFrom(html, ["1,002 of 1,000 bytes", "2 too many"])
+    ).toStrictEqual([]);
+    expect(html).toMatch(/<button[^>]*type="submit"[^>]*disabled/u);
+  });
+
+  it("keeps Send off while there is nothing to send", async () => {
+    const html = await render("fr", form("  ", "instagram"));
+
+    expect(html).toContain("Envoyer en privé");
+    expect(html).toMatch(/<button[^>]*type="submit"[^>]*disabled/u);
   });
 });

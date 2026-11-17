@@ -6,11 +6,11 @@ sidebar:
   label: "Media, comments, reviews, messages"
 ---
 
-The events of a file in the media library, of the comments under a published post, of the reviews of a location and of a channel's direct messages, each with its fields and an example payload. Media events are about no channel, so they reach an endpoint [whatever channels it lists](/developers/webhooks#filters).
+These events cover the files in the media library, the comments under a published post, a location's reviews and a channel's direct messages. Each one lists its fields and shows an example payload. Media events aren't about any channel, so they reach an endpoint [whatever channels it lists](/developers/webhooks#filters).
 
 ## media.ready [#media-ready]
 
-Peal [read the file](/guides/media#library) once it was stored, and it can go in posts.
+Peal [read the file](/guides/media#library) after storing it, and the file can now go in posts.
 
 | Field         | Type   | What it holds                                |
 | ------------- | ------ | -------------------------------------------- |
@@ -35,7 +35,7 @@ Peal [read the file](/guides/media#library) once it was stored, and it can go in
 
 ## media.failed [#media-failed]
 
-The file was refused, or Peal could not read it. A file that could not be read stays in the library, and is not ready for posts.
+The file was refused, or Peal couldn't read it. A file Peal couldn't read stays in the library, and isn't ready for posts.
 
 | Field         | Type   | What it holds               |
 | ------------- | ------ | --------------------------- |
@@ -43,16 +43,16 @@ The file was refused, or Peal could not read it. A file that could not be read s
 | `mediaId`     | string | The media                   |
 | `reason`      | string | Why, one of the codes below |
 
-| `reason`       | What happened                                                          |
-| -------------- | ---------------------------------------------------------------------- |
-| `sizeMismatch` | The stored file is not the size the upload declared. It was refused.   |
-| `typeMismatch` | The stored file is not the type the upload declared. It was refused.   |
-| `unreadable`   | The file is damaged, or not in a format Peal reads.                    |
-| `timedOut`     | Reading the file took longer than Peal allows.                         |
-| `tooLarge`     | The store served more bytes than Peal stores for the file's kind.      |
-| `toolFailed`   | The program that reads files could not run, or printed nothing usable. |
-| `tooManyPages` | A PDF document has more than 300 pages, which no platform shows.       |
-| `unavailable`  | The instance has nothing to read this kind of file with.               |
+| `reason`       | What happened                                                         |
+| -------------- | --------------------------------------------------------------------- |
+| `sizeMismatch` | The stored file isn't the size the upload declared. It was refused.   |
+| `typeMismatch` | The stored file isn't the type the upload declared. It was refused.   |
+| `unreadable`   | The file is damaged, or not in a format Peal reads.                   |
+| `timedOut`     | Reading the file took longer than Peal allows.                        |
+| `tooLarge`     | The store served more bytes than Peal stores for the file's kind.     |
+| `toolFailed`   | The program that reads files couldn't run, or printed nothing usable. |
+| `tooManyPages` | A PDF document has more than 300 pages, which no platform shows.      |
+| `unavailable`  | The instance has nothing to read this kind of file with.              |
 
 ```json title="media.failed"
 {
@@ -71,7 +71,7 @@ The file was refused, or Peal could not read it. A file that could not be read s
 
 ## comment.received [#comment-received]
 
-Peal read a comment for the first time under a post that went live on a channel (see [Inbox](/guides/engage/inbox)). The event carries ids only: what the comment says and who wrote it are read through the API, with `engagement:read`.
+Peal read a new comment under a post that went live on a channel (see [Inbox](/guides/engage/inbox)). The event carries ids only. To get what the comment says and who wrote it, read it through the API, with `engagement:read`.
 
 | Field         | Type   | What it holds                            |
 | ------------- | ------ | ---------------------------------------- |
@@ -102,7 +102,7 @@ Peal read a comment for the first time under a post that went live on a channel 
 
 ## comment.replied [#comment-replied]
 
-A reply to a comment went out from Peal, as the channel's account. A reply that failed, or whose outcome is not known, sends nothing: read it through the API.
+A reply to a comment went out from Peal, as the channel's account. A reply that failed, or whose outcome isn't known, sends nothing, so read it through the API.
 
 | Field         | Type           | What it holds                                         |
 | ------------- | -------------- | ----------------------------------------------------- |
@@ -137,7 +137,7 @@ A reply to a comment went out from Peal, as the channel's account. A reply that 
 
 ## review.received [#review-received]
 
-Peal read a review for the first time on a location a Google Business Profile channel posts as (see [Inbox](/guides/engage/inbox#reviews)). The event carries ids only: the review's stars, what it says and who wrote it are read through the API, as Google lets what its API gives be stored 30 days at most and an event is kept with its deliveries, with `engagement:read`.
+Peal read a new review on a location a Google Business Profile channel posts as (see [Inbox](/guides/engage/inbox#reviews)). The event carries ids only. To get the review's stars, what it says and who wrote it, read it through the API, with `engagement:read`. The event holds no more because Google lets what its API returns be stored for 30 days at most, and an event is kept with its deliveries.
 
 | Field         | Type   | What it holds                            |
 | ------------- | ------ | ---------------------------------------- |
@@ -166,7 +166,7 @@ Peal read a review for the first time on a location a Google Business Profile ch
 
 ## review.replied [#review-replied]
 
-A reply to a review went out from Peal, as the location. A reply that failed, or whose outcome is not known yet, sends nothing: read it through the API.
+A reply to a review went out from Peal, as the location. A reply that failed, or whose outcome isn't known yet, sends nothing, so read it through the API.
 
 | Field         | Type   | What it holds                          |
 | ------------- | ------ | -------------------------------------- |
@@ -197,7 +197,9 @@ A reply to a review went out from Peal, as the location. A reply that failed, or
 
 ## message.received [#message-received]
 
-Peal read, for the first time, a direct message someone sent to a channel's account, on a platform whose messages the server reads, for a channel whose messages the workspace turned on (see [Inbox](/guides/engage/inbox#direct-messages)). Messages sent before Peal began reading the channel send nothing. The event carries ids only: what the message says and who sent it are read through the API, with `engagement:readMessages`, as messages are private correspondence and an event is kept with its deliveries longer than a conversation.
+Peal read a new direct message someone sent to a channel's account (see [Inbox](/guides/engage/inbox#direct-messages)). That happens on a platform whose messages the server reads, for a channel whose messages the workspace turned on. Messages sent before Peal began reading the channel send nothing.
+
+The event carries ids only. To get what the message says and who sent it, read it through the API, with `engagement:readMessages`. Messages are private correspondence, and an event is kept with its deliveries for longer than a conversation.
 
 | Field            | Type   | What it holds                           |
 | ---------------- | ------ | --------------------------------------- |
@@ -226,7 +228,7 @@ Peal read, for the first time, a direct message someone sent to a channel's acco
 
 ## message.sent [#message-sent]
 
-A direct message went out from Peal, as the channel's account. A message that failed, or whose outcome is not known yet, sends nothing: read it through the API.
+A direct message went out from Peal, as the channel's account. A message that failed, or whose outcome isn't known yet, sends nothing, so read it through the API.
 
 | Field            | Type   | What it holds                          |
 | ---------------- | ------ | -------------------------------------- |

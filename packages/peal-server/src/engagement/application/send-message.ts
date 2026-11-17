@@ -162,19 +162,38 @@ export class SendMessage extends Context.Service<
           strandedPerRun
         );
 
+        const calledBefore = DateTime.subtractDuration(now, callBound);
         let settled = 0;
 
-        // One transaction a message, its job stopped in it.
+        // One transaction a message, its job stopped in it. One whose gate
+        // claimed its call since it was listed is left to that call.
         for (const { id } of stranded) {
-          const result = yield* transaction(
-            settle(id, { _tag: "unconfirmed", reason: "interrupted" }).pipe(
-              Effect.tap((ended) =>
-                ended === "settled" ? jobs.cancel(id) : Effect.void
-              )
-            )
+          const handed = yield* transaction(
+            Effect.gen(function* handing() {
+              const found = yield* store.handOver(id, now, calledBefore);
+
+              if (Option.isNone(found)) {
+                return found;
+              }
+
+              yield* jobs.cancel(id);
+
+              const summary = yield* store.conversation(
+                found.value.conversationId
+              );
+
+              if (Option.isSome(summary)) {
+                yield* outcomes.settled(
+                  summary.value.conversation,
+                  found.value
+                );
+              }
+
+              return found;
+            })
           );
 
-          settled += result === "settled" ? 1 : 0;
+          settled += Option.isSome(handed) ? 1 : 0;
         }
 
         yield* Metric.update(

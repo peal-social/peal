@@ -5,69 +5,77 @@ sidebar:
   icon: /platform-marks/telegram.svg
 ---
 
-How to connect a Telegram channel or group with a bot of your own, what a post there may hold, and the options it takes.
+You connect a Telegram channel or group with a bot you make yourself, and Peal posts as that bot. It posts in channels and groups only, never in a private chat with a person.
 
 ## At a glance [#at-a-glance]
 
-|                   |                                     |
-| ----------------- | ----------------------------------- |
-| Text              | {{platform-telegram-text-en}}       |
-| Text with media   | {{platform-telegram-text-media-en}} |
-| Images and videos | {{platform-telegram-media-en}}      |
-| Parts             | {{platform-telegram-parts-en}}      |
-| Alt text          | {{platform-telegram-alt-en}}        |
+Here's what a Telegram post can hold:
 
-What each file type must be is in [Images and videos](/guides/media#platforms): photos (JPEG, PNG), MP4 videos, and a GIF, which goes alone. A Telegram chat counts as one account on the [plan](/guides/workspace/billing).
+|                     |                                      |
+| ------------------- | ------------------------------------ |
+| Text                | {{platform-telegram-text-en}}        |
+| Text with media     | {{platform-telegram-text-media-en}}  |
+| Images and videos   | {{platform-telegram-media-en}}       |
+| Their size together | {{platform-telegram-media-total-en}} |
+| Parts               | {{platform-telegram-parts-en}}       |
+| Alt text            | {{platform-telegram-alt-en}}         |
 
-## Connect [#connect]
+What each file type must be is in [Images and videos](/guides/media#platforms). Telegram takes JPEG and PNG photos, MP4 videos, and a GIF, which has to go alone. Each Telegram chat counts as one account on your [plan](/guides/workspace/billing).
+
+## Connect a chat [#connect]
 
 <Steps>
   <Step title="Make a bot">
-    In Telegram, open @BotFather, Telegram's own bot for making bots, send
-    `/newbot`, and follow its steps. It answers with the bot's token.
+    In Telegram, open @BotFather, Telegram's own bot for making bots. Send
+    `/newbot` and follow its steps. It answers with the bot's token.
   </Step>
   <Step title="Add the bot to the chat">
-    In a channel, add the bot as an administrator who may post messages. In a
+    In a channel, add the bot as an administrator who can post messages. In a
     group, add it as a member.
   </Step>
-  <Step title="Paste it in Peal">
-    On **Channels**, under **Telegram**, paste the token into **Bot token**,
-    give the chat in **Chat**, and choose **Connect Telegram**. Peal checks the
-    bot may post there, and keeps the token encrypted: it is never shown again.
+  <Step title="Paste the token in Peal">
+    On **Channels**, under **Telegram**, paste the token into **Bot token** and
+    type the chat in **Chat**. Then click **Connect Telegram**. Peal checks that
+    the bot can post there and keeps the token encrypted, so you won't see it
+    again.
   </Step>
 </Steps>
 
-- Name the chat by its public name, such as `@name`, or by its id: a channel's or a supergroup's starts with `-100`.
-- Peal posts in channels and groups, never in a private chat with a person.
-- To cut Peal off, revoke the bot's token with @BotFather, or remove the bot from the chat. Peal then marks the channel to reconnect.
-- When a group becomes a supergroup, Telegram gives it a new id and posts fail (`chatMigrated`): connect the chat again, as a new channel, then disconnect the old one, which stays on your plan until you do.
+In **Chat**, type the chat's public name, such as `@name`, or its id. A channel's or a supergroup's id starts with `-100`.
+
+To cut Peal off, revoke the bot's token with @BotFather, or remove the bot from the chat. Peal then marks the channel to reconnect.
+
+When a group becomes a supergroup, Telegram gives it a new id, and posts to it fail with `chatMigrated`. Connect the chat again as a new channel, then disconnect the old one. The old channel counts on your plan until you do.
 
 ## What a post becomes [#posts]
 
-- The text is plain text: no bold, italics or other formatting. Telegram still makes links, `@names`, hashtags and `/commands` clickable, and an `@name` in a group notifies that person: Peal cannot turn that off.
-- A text alone takes 4,096 characters. A text with images or videos is their caption, and takes 1,024: Peal checks it when the post is scheduled.
-- Several files go as one album, the text the first one's caption.
-- The parts of a [thread](/guides/posts#threads) are replies, each to the part before.
+Peal sends plain text, with no bold, italics or other formatting. Telegram still makes links, `@names`, hashtags and `/commands` clickable. An `@name` in a group notifies that person, and Peal can't turn that off.
+
+On its own, the text can be up to {{platform-telegram-text-en}}. With images or videos, it becomes their caption and can be up to {{platform-telegram-text-media-en}}. Peal checks the length when you schedule the post.
+
+Several files go out as one album, with the text as the first file's caption. The parts of a [thread](/guides/posts#threads) are replies, each to the part before it.
 
 ## Options [#options]
 
-No option is required, and each goes with every part.
+None of these is required, and each one goes with every part. **API name** is the option's name in the API:
 
 | Option                               | API name      | Values    | Left out |
 | ------------------------------------ | ------------- | --------- | -------- |
 | **Show a preview of its first link** | `linkPreview` | Yes or no | Yes      |
 | **Send without sound**               | `silent`      | Yes or no | No       |
 
-A part with images or videos shows no link preview, whatever it says.
+A part with images or videos never shows a link preview, whatever **Show a preview of its first link** says.
 
 ## Edit and delete [#live]
 
-Peal edits a post's text, or its caption, and deletes it, every message of an album: see [After a post is published](/guides/posts/published). Telegram deletes a message only within 48 hours of sending it: past that, Peal asks nothing of Telegram and says so (`deletionWindowPassed`), and you delete the post in Telegram.
+Peal can edit a post's text, or its caption, and delete the post with every message of an album (see [After a post is published](/guides/posts/published)). Telegram deletes a message only within 48 hours of sending it. After that, Peal doesn't ask Telegram and tells you so (`deletionWindowPassed`), and you delete the post in Telegram yourself.
 
 ## When an answer is lost [#lost]
 
-Telegram keeps no key to send a message again under, and lets a bot read no chat's messages. When Telegram takes a post and its answer never comes, the post is **To check**: look at the chat, then confirm it or send it again from its page. Peal never sends it again by itself, and sends no part after it.
+Telegram has no key that lets Peal send a message again safely, and a bot can't read a chat's messages. So when Telegram takes a post and its answer never reaches Peal, the post shows **To check**. Look at the chat, then confirm the post or send it again from its page.
 
-## What Peal does not do there [#limits]
+Peal never sends it again on its own, and it doesn't send the parts that come after it.
 
-Peal reads nothing back from Telegram: no counts, no replies, no inbox. It posts in no topic of a forum group, and sends no formatting, button or document.
+## What Peal doesn't do on Telegram [#limits]
+
+Peal doesn't read anything back from Telegram, so there are no counts, replies or inbox for it. It doesn't post in a topic of a forum group, and it sends no formatting, buttons or documents.

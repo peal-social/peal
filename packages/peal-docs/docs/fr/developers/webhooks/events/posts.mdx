@@ -1,16 +1,16 @@
 ---
 title: Événements des publications
-description: "Les événements d’une publication : programmée, publiée, en échec, annulée, dépubliée, modifiée et approuvée."
+description: "Les événements d’une publication : programmée, publiée, en échec, annulée, dépubliée, modifiée et approuvée."
 sidebar:
   icon: square-pen
   label: "Publications"
 ---
 
-Les événements d’une publication, chacun avec ses champs et un exemple de contenu. Les événements qui nomment un canal portent les [champs d’un canal](/developers/webhooks/events#per-channel).
+Chaque événement ci-dessous liste ses champs et montre un exemple de contenu. Les événements qui nomment un canal portent aussi les [champs d’un canal](/developers/webhooks/events#per-channel).
 
 ## post.scheduled [#post-scheduled]
 
-Une publication a été programmée, ou déplacée à une autre heure. Une publication qui attend une [approbation](/guides/posts/review) n’est pas encore programmée : elle envoie `post.approval_requested`, et cet événement seulement une fois approuvée.
+Une publication a été programmée, ou déplacée à une autre heure. Une publication en attente d’[approbation](/guides/posts/review) n’est pas encore programmée. Elle envoie `post.approval_requested` à la place, et cet événement seulement une fois approuvée.
 
 | Champ         | Type    | Ce qu’il contient                                                          |
 | ------------- | ------- | -------------------------------------------------------------------------- |
@@ -50,7 +50,7 @@ Une publication a été programmée, ou déplacée à une autre heure. Une publi
 
 ## post.unscheduled [#post-unscheduled]
 
-Une publication programmée, ou qui attendait une approbation, est repassée en brouillon : elle ne part nulle part tant qu’elle n’est pas programmée de nouveau.
+Une publication programmée, ou en attente d’approbation, est repassée en brouillon. Elle ne part nulle part tant que personne ne la programme de nouveau.
 
 | Champ         | Type   | Ce qu’il contient   |
 | ------------- | ------ | ------------------- |
@@ -75,16 +75,16 @@ Une publication programmée, ou qui attendait une approbation, est repassée en 
 
 La publication est en ligne sur le canal.
 
-| Champ         | Type           | Ce qu’il contient                                                                                              |
-| ------------- | -------------- | -------------------------------------------------------------------------------------------------------------- |
-| `workspaceId` | chaîne         | L’espace de travail                                                                                            |
-| `postId`      | chaîne         | La publication                                                                                                 |
-| `targetId`    | chaîne         | La publication sur ce canal                                                                                    |
-| `channelId`   | chaîne         | Le canal                                                                                                       |
-| `platform`    | chaîne ou null | La plateforme du canal ; null une fois le canal déconnecté                                                     |
-| `round`       | entier         | Combien de fois la publication y a été envoyée                                                                 |
-| `publishedAt` | chaîne         | Le moment où elle a été mise en ligne, en instant UTC                                                          |
-| `permalink`   | chaîne ou null | Son adresse sur la plateforme, quand la plateforme en a donné une, ou le membre qui l’a confirmée ; null sinon |
+| Champ         | Type           | Ce qu’il contient                                                                                             |
+| ------------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| `workspaceId` | chaîne         | L’espace de travail                                                                                           |
+| `postId`      | chaîne         | La publication                                                                                                |
+| `targetId`    | chaîne         | La publication sur ce canal                                                                                   |
+| `channelId`   | chaîne         | Le canal                                                                                                      |
+| `platform`    | chaîne ou null | La plateforme du canal, ou null une fois le canal déconnecté                                                  |
+| `round`       | entier         | Combien de fois la publication y a été envoyée                                                                |
+| `publishedAt` | chaîne         | Le moment où elle a été mise en ligne, en instant UTC                                                         |
+| `permalink`   | chaîne ou null | Son adresse sur la plateforme, quand la plateforme en a donné une, ou le membre qui l’a confirmée. Null sinon |
 
 ```json title="post.published"
 {
@@ -110,45 +110,45 @@ La publication est en ligne sur le canal.
 
 La publication n’est pas partie sur le canal.
 
-| Champ         | Type           | Ce qu’il contient                                          |
-| ------------- | -------------- | ---------------------------------------------------------- |
-| `workspaceId` | chaîne         | L’espace de travail                                        |
-| `postId`      | chaîne         | La publication                                             |
-| `targetId`    | chaîne         | La publication sur ce canal                                |
-| `channelId`   | chaîne         | Le canal                                                   |
-| `platform`    | chaîne ou null | La plateforme du canal ; null une fois le canal déconnecté |
-| `round`       | entier         | Combien de fois la publication y a été envoyée             |
-| `failedAt`    | chaîne         | Le moment où elle a échoué, en instant UTC                 |
-| `reason`      | chaîne         | Pourquoi, l’un des codes ci-dessous                        |
+| Champ         | Type           | Ce qu’il contient                                            |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| `workspaceId` | chaîne         | L’espace de travail                                          |
+| `postId`      | chaîne         | La publication                                               |
+| `targetId`    | chaîne         | La publication sur ce canal                                  |
+| `channelId`   | chaîne         | Le canal                                                     |
+| `platform`    | chaîne ou null | La plateforme du canal, ou null une fois le canal déconnecté |
+| `round`       | entier         | Combien de fois la publication y a été envoyée               |
+| `failedAt`    | chaîne         | Le moment où elle a échoué, en instant UTC                   |
+| `reason`      | chaîne         | Pourquoi, l’un des codes ci-dessous                          |
 
-| `reason`                    | Ce qui s’est passé                                                                                                                                                                 |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `contentRejected`           | La plateforme a refusé le texte ou le format de la publication.                                                                                                                    |
-| `channelDisconnected`       | Le canal a été déconnecté de l’espace de travail avant le départ de la publication. Rien n’a été envoyé.                                                                           |
-| `channelDisabled`           | Le canal a été désactivé avant le départ de la publication. Rien n’a été envoyé.                                                                                                   |
-| `mediaRemoved`              | L’une de ses images ou vidéos a été supprimée, ou n’était plus prête, avant le départ de la publication. Rien n’a été envoyé.                                                      |
-| `mediaRejected`             | La plateforme a refusé l’une de ses images ou vidéos.                                                                                                                              |
-| `missed`                    | Le serveur était arrêté à l’heure prévue, et la publication est arrivée trop tard pour partir à son retour.                                                                        |
-| `notPublished`              | Un membre a vérifié une publication non confirmée sur la plateforme et ne l’a pas trouvée.                                                                                         |
-| `rateLimited`               | La plateforme a limité Peal jusqu’à ce que l’envoi abandonne.                                                                                                                      |
-| `tokenExpired`              | La plateforme a refusé l’autorisation du canal : le canal doit être reconnecté.                                                                                                    |
-| `unavailable`               | La plateforme était injoignable. Rien n’a été envoyé.                                                                                                                              |
-| `appNotAudited`             | La plateforme n’accepte que certaines publications de l’application du serveur tant qu’elle ne l’a pas approuvée. Rien n’a été envoyé.                                             |
-| `quotaExceeded`             | Une allocation quotidienne de mises en ligne sur la plateforme est restée épuisée jusqu’à ce que l’envoi abandonne.                                                                |
-| `appBillingLimit`           | La plateforme a refusé l’application du serveur tant que son opérateur ne l’a pas réglée. Rien n’a été envoyé.                                                                     |
-| `planLimit`                 | L’abonnement de l’espace de travail n’avait pas de place pour la publication à son heure : trop de canaux, ou les publications du mois épuisées. Rien n’a été envoyé.              |
-| `partsNotSent`              | Des parties de la publication sont en ligne, et Peal ne peut pas envoyer les suivantes : il n’a pas de publication à laquelle répondre. Elle ne peut pas être republiée.           |
-| `repliesNotAllowed`         | Les premières parties sont en ligne, et X n’a pas laissé l’application de ce serveur publier la suite en réponse ([Fils](/guides/posts#threads)). Elle ne peut pas être republiée. |
-| `paymentMethodRequired`     | Sur un serveur qui facture, les publications sur X sont facturées aux tarifs de X, et le compte de facturation n’a pas de moyen de paiement. Rien n’a été envoyé.                  |
-| `paymentFailed`             | Sur un serveur qui facture, les publications sur X sont facturées aux tarifs de X, et le dernier paiement du compte de facturation a échoué. Rien n’a été envoyé.                  |
-| `perAccountPricingRequired` | Sur un serveur qui facture, les publications sur X sont facturées aux tarifs de X, et l’espace de travail a un abonnement antérieur au tarif par compte. Rien n’a été envoyé.      |
-| `xThreadCut`                | Sur un serveur qui facture, un fil sur X a été coupé : ses premières parties sont en ligne, et le compteur de X a refusé la suivante. Republiez pour envoyer la suite.             |
-| `xCeilingReached`           | Sur un serveur qui facture, la publication aurait dépassé le plafond mensuel du compte de facturation pour X. Rien n’a été envoyé.                                                 |
-| `forumThreadNameRequired`   | Le salon Discord est un forum, dont les publications demandent un titre, et la publication n’en avait pas ([Discord](/platforms/discord)). Rien n’a été envoyé.                    |
-| `chatMigrated`              | Le groupe Telegram est devenu un supergroupe d’un nouvel identifiant : connectez à nouveau la discussion ([Telegram](/platforms/telegram)). Rien n’a été envoyé.                   |
-| `cannotPost`                | L’application ne peut pas publier dans le canal, comme une application Slack qui n’y est pas : invitez-la dans le canal ([Slack](/platforms/slack)). Rien n’a été envoyé.          |
+| `reason`                    | Ce qui s’est passé                                                                                                                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `contentRejected`           | La plateforme a refusé le texte ou le format de la publication.                                                                                                                                  |
+| `channelDisconnected`       | Le canal a été déconnecté de l’espace de travail avant le départ de la publication. Rien n’a été envoyé.                                                                                         |
+| `channelDisabled`           | Le canal a été désactivé avant le départ de la publication. Rien n’a été envoyé.                                                                                                                 |
+| `mediaRemoved`              | L’une de ses images ou vidéos a été supprimée, ou n’était plus prête, avant le départ de la publication. Rien n’a été envoyé.                                                                    |
+| `mediaRejected`             | La plateforme a refusé l’une de ses images ou vidéos.                                                                                                                                            |
+| `missed`                    | Le serveur était arrêté à l’heure prévue, et la publication est arrivée trop tard pour partir à son retour.                                                                                      |
+| `notPublished`              | Un membre a vérifié une publication non confirmée sur la plateforme et ne l’a pas trouvée.                                                                                                       |
+| `rateLimited`               | La plateforme a limité Peal jusqu’à ce que l’envoi abandonne.                                                                                                                                    |
+| `tokenExpired`              | La plateforme a refusé l’autorisation du canal : le canal doit être reconnecté.                                                                                                                  |
+| `unavailable`               | La plateforme était injoignable. Rien n’a été envoyé.                                                                                                                                            |
+| `appNotAudited`             | La plateforme n’accepte que certaines publications de l’application du serveur tant qu’elle ne l’a pas approuvée. Rien n’a été envoyé.                                                           |
+| `quotaExceeded`             | Une allocation quotidienne de mises en ligne sur la plateforme est restée épuisée jusqu’à ce que l’envoi abandonne.                                                                              |
+| `appBillingLimit`           | La plateforme a refusé l’application du serveur tant que son opérateur ne l’a pas réglée. Rien n’a été envoyé.                                                                                   |
+| `planLimit`                 | L’abonnement de l’espace de travail n’avait pas de place pour la publication à son heure : trop de canaux, ou les publications du mois épuisées. Rien n’a été envoyé.                            |
+| `partsNotSent`              | Des parties de la publication sont en ligne, et Peal ne peut pas envoyer les suivantes : il n’a pas de publication à laquelle répondre. Elle ne peut pas être republiée.                         |
+| `repliesNotAllowed`         | Les premières parties sont en ligne, et X n’a pas laissé l’application de ce serveur publier la suite en réponse ([Fils](/guides/posts#threads)). Elle ne peut pas être republiée.               |
+| `paymentMethodRequired`     | Sur un serveur qui facture, les publications sur X sont facturées aux tarifs de X, et le compte de facturation n’a pas de moyen de paiement. Rien n’a été envoyé.                                |
+| `paymentFailed`             | Sur un serveur qui facture, les publications sur X sont facturées aux tarifs de X, et le dernier paiement du compte de facturation a échoué. Rien n’a été envoyé.                                |
+| `perAccountPricingRequired` | Sur un serveur qui facture, les publications sur X sont facturées aux tarifs de X, et l’espace de travail a un abonnement antérieur au tarif par compte. Rien n’a été envoyé.                    |
+| `xThreadCut`                | Sur un serveur qui facture, un fil sur X a été coupé : ses premières parties sont en ligne, et le compteur de X a refusé la suivante. Republiez pour envoyer la suite.                           |
+| `xCeilingReached`           | Sur un serveur qui facture, la publication aurait dépassé le plafond mensuel du compte de facturation pour X. Rien n’a été envoyé.                                                               |
+| `forumThreadNameRequired`   | Le salon Discord est un forum, chacune de ses publications demande un titre, et celle-ci n’en avait pas ([Discord](/platforms/discord)). Rien n’a été envoyé.                                    |
+| `chatMigrated`              | Le groupe Telegram est devenu un supergroupe, avec un nouvel identifiant. Connectez à nouveau la discussion ([Telegram](/platforms/telegram)). Rien n’a été envoyé.                              |
+| `cannotPost`                | L’application n’a pas le droit de publier dans le canal, par exemple une application Slack qui n’y a pas été ajoutée. Invitez-la dans le canal ([Slack](/platforms/slack)). Rien n’a été envoyé. |
 
-[Notifications](/guides/workspace/notifications#events) dit que faire dans chaque cas.
+[Notifications](/guides/workspace/notifications#events) explique que faire dans chaque cas.
 
 ```json title="post.failed"
 {
@@ -172,30 +172,30 @@ La publication n’est pas partie sur le canal.
 
 ## post.unconfirmed [#post-unconfirmed]
 
-Peal ne peut pas savoir si la publication est en ligne sur le canal, et ne la renvoie jamais de lui-même : quelqu’un vérifie sur la plateforme, puis [la confirme ou la republie](/guides/posts/schedule#follow-up).
+Peal ne peut pas savoir si la publication est en ligne sur le canal, et ne la renvoie jamais de lui-même. Quelqu’un doit vérifier sur la plateforme, puis [la confirmer ou la republier](/guides/posts/schedule#follow-up).
 
-Dès qu’un membre indique ce qu’il a trouvé, un `post.published`, ou un `post.failed` avec la raison `notPublished`, suit pour le même `round`. Une republication amène les événements du tour suivant.
+Dès qu’un membre indique ce qu’il a trouvé, un `post.published` suit pour le même `round`, ou un `post.failed` avec la raison `notPublished`. Une republication amène les événements du tour suivant.
 
-| Champ         | Type           | Ce qu’il contient                                           |
-| ------------- | -------------- | ----------------------------------------------------------- |
-| `workspaceId` | chaîne         | L’espace de travail                                         |
-| `postId`      | chaîne         | La publication                                              |
-| `targetId`    | chaîne         | La publication sur ce canal                                 |
-| `channelId`   | chaîne         | Le canal                                                    |
-| `platform`    | chaîne ou null | La plateforme du canal ; null une fois le canal déconnecté  |
-| `round`       | entier         | Combien de fois la publication y a été envoyée              |
-| `attemptedAt` | chaîne         | Le moment de l’envoi, en instant UTC                        |
-| `reason`      | chaîne         | Pourquoi Peal ne peut pas savoir, l’un des codes ci-dessous |
+| Champ         | Type           | Ce qu’il contient                                            |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| `workspaceId` | chaîne         | L’espace de travail                                          |
+| `postId`      | chaîne         | La publication                                               |
+| `targetId`    | chaîne         | La publication sur ce canal                                  |
+| `channelId`   | chaîne         | Le canal                                                     |
+| `platform`    | chaîne ou null | La plateforme du canal, ou null une fois le canal déconnecté |
+| `round`       | entier         | Combien de fois la publication y a été envoyée               |
+| `attemptedAt` | chaîne         | Le moment de l’envoi, en instant UTC                         |
+| `reason`      | chaîne         | Pourquoi Peal ne peut pas savoir, l’un des codes ci-dessous  |
 
 | `reason`             | Ce qui s’est passé                                                                                                                                                                |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `noResponse`         | La requête a peut-être atteint la plateforme, et aucune réponse n’est revenue.                                                                                                    |
 | `unreadableResponse` | Une réponse est revenue, que Peal n’a pas pu lire.                                                                                                                                |
-| `interrupted`        | Le serveur s’est arrêté pendant l’appel : on ne sait pas si elle est partie.                                                                                                      |
+| `interrupted`        | Le serveur s’est arrêté pendant l’appel : on ne sait pas si elle est partie.                                                                                                      |
 | `adapterFailure`     | Le code de Peal a échoué pendant l’appel, après que la requête a pu partir.                                                                                                       |
 | `stillProcessing`    | La plateforme a pris la publication et la traitait encore quand Peal a cessé de vérifier.                                                                                         |
 | `searchRefused`      | Le site d’un article a refusé que Peal cherche un article qu’un envoi précédent a pu faire.                                                                                       |
-| `severalOnSite`      | Le site d’un article a un autre article de ce titre, que Peal ne peut pas distinguer de celui qu’il a pu faire : regardez, puis renommez ou retirez l’autre avant de le renvoyer. |
+| `severalOnSite`      | Le site d’un article a un autre article de ce titre, que Peal ne peut pas distinguer de celui qu’il a pu faire : regardez, puis renommez ou retirez l’autre avant de le renvoyer. |
 
 ```json title="post.unconfirmed"
 {
@@ -219,19 +219,19 @@ Dès qu’un membre indique ce qu’il a trouvé, un `post.published`, ou un `po
 
 ## post.cancelled [#post-cancelled]
 
-La publication a été annulée. `targets` liste les canaux où elle ne partira pas ; un canal qu’elle avait déjà atteint garde son propre événement.
+La publication a été annulée. `targets` liste les canaux où elle ne partira pas. Un canal qu’elle avait déjà atteint garde son propre événement.
 
-Un canal vers lequel Peal envoyait à ce moment-là se termine par son propre événement : `post.published`, `post.failed` ou `post.unconfirmed` si la plateforme a été appelée, ou un `post.cancelled` qui le nomme seul si elle ne l’a pas été.
+Un canal vers lequel Peal envoyait à ce moment-là se termine par son propre événement. C’est `post.published`, `post.failed` ou `post.unconfirmed` si Peal avait appelé la plateforme, ou un `post.cancelled` qui nomme ce seul canal sinon.
 
-Un canal que quelqu’un retire d’une publication qui attend son heure est annoncé par un `post.cancelled` qui le nomme seul, avec `scope` `target`. La publication garde son heure et part toujours sur ses autres canaux : un `post.scheduled` annoncé quand elle est déplacée ne nomme plus ce canal, et son `post.finished` le liste comme `cancelled`.
+Quand quelqu’un retire un canal d’une publication qui attend son heure, Peal envoie un `post.cancelled` qui nomme ce seul canal, avec `scope` `target`. La publication garde son heure et part toujours sur ses autres canaux. Un `post.scheduled` envoyé quand elle est déplacée ne nomme plus ce canal, et son `post.finished` le liste comme `cancelled`.
 
-| Champ         | Type    | Ce qu’il contient                                                                                                                                                                                         |
-| ------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `workspaceId` | chaîne  | L’espace de travail                                                                                                                                                                                       |
-| `postId`      | chaîne  | La publication                                                                                                                                                                                            |
-| `cancelledAt` | chaîne  | Le moment où elle a été annulée, en instant UTC                                                                                                                                                           |
-| `scope`       | chaîne  | `post` quand la publication a été annulée ; `target` quand un canal a été retiré d’une publication qui part toujours. Absent des événements faits avant qu’il soit envoyé, qui portent sur la publication |
-| `targets`     | tableau | Les canaux où elle ne partira pas, chacun avec `targetId`, `channelId` et `platform`                                                                                                                      |
+| Champ         | Type    | Ce qu’il contient                                                                                                                                                                                        |
+| ------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workspaceId` | chaîne  | L’espace de travail                                                                                                                                                                                      |
+| `postId`      | chaîne  | La publication                                                                                                                                                                                           |
+| `cancelledAt` | chaîne  | Le moment où elle a été annulée, en instant UTC                                                                                                                                                          |
+| `scope`       | chaîne  | `post` quand la publication a été annulée, `target` quand un canal a été retiré d’une publication qui part toujours. Absent des événements faits avant qu’il soit envoyé, qui portent sur la publication |
+| `targets`     | tableau | Les canaux où elle ne partira pas, chacun avec `targetId`, `channelId` et `platform`                                                                                                                     |
 
 ```json title="post.cancelled"
 {
@@ -258,12 +258,12 @@ Un canal que quelqu’un retire d’une publication qui attend son heure est ann
 
 ## post.finished [#post-finished]
 
-Chaque canal de la publication a son résultat : elle y est en ligne, y a échoué, y est peut-être partie, ou y a été annulée. `post.published`, `post.failed` et `post.unconfirmed` disent chaque canal à mesure qu’il se termine ; celui-ci dit la publication entière une fois le dernier terminé, avec `outcome`, ce qu’ils donnent ensemble.
+Chaque canal de la publication a son résultat : elle y est en ligne, y a échoué, y est peut-être partie, ou y a été annulée. `post.published`, `post.failed` et `post.unconfirmed` annoncent chaque canal à mesure qu’il se termine. Cet événement annonce la publication entière une fois le dernier canal terminé, avec `outcome`, ce que les canaux donnent ensemble.
 
-Il peut venir plus d’une fois :
+Il peut arriver plus d’une fois :
 
-- une publication renvoyée sur un canal se termine de nouveau quand ce tour se termine, et amène un autre `post.finished` avec son `round` ;
-- un membre qui confirme un canal non confirmé en amène un de plus quand cela change `outcome`.
+- Une publication renvoyée sur un canal se termine de nouveau à la fin de ce tour, et amène un autre `post.finished` avec son `round`.
+- Un membre qui confirme un canal non confirmé en amène un de plus, quand cela change `outcome`.
 
 Un point de terminaison qui écoute certains canaux le reçoit quand l’un des canaux de la publication en fait partie.
 
@@ -271,10 +271,10 @@ Un point de terminaison qui écoute certains canaux le reçoit quand l’un des 
 | ------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `workspaceId` | chaîne  | L’espace de travail                                                                                                                                                                                                                                          |
 | `postId`      | chaîne  | La publication                                                                                                                                                                                                                                               |
-| `outcome`     | chaîne  | Ce que donnent ses canaux : `published` (chaque canal l’a en entier), `partiallyPublished` (certains l’ont), `unconfirmed` (au moins un l’a peut-être : vérifiez avant toute chose), `failed` (aucun ne l’a) ou `cancelled` (chaque canal a été annulé)      |
+| `outcome`     | chaîne  | Ce que donnent ses canaux : `published` (chaque canal l’a en entier), `partiallyPublished` (certains l’ont), `unconfirmed` (au moins un l’a peut-être : vérifiez avant toute chose), `failed` (aucun ne l’a) ou `cancelled` (chaque canal a été annulé)      |
 | `finishedAt`  | chaîne  | Quand elle s’est terminée, sous forme d’instant en UTC                                                                                                                                                                                                       |
-| `round`       | entier  | Le dernier tour de la publication : 1, et un de plus chaque fois que l’un de ses canaux a été renvoyé                                                                                                                                                        |
-| `targets`     | tableau | Le résultat de chaque canal : `targetId`, `channelId`, `platform`, `status` (`published`, `failed`, `unconfirmed` ou `cancelled`), `failureReason` ([pourquoi](#post-failed) elle a échoué, ou null) et `permalink` (son adresse sur la plateforme, ou null) |
+| `round`       | entier  | Le dernier tour de la publication : 1, et un de plus chaque fois que l’un de ses canaux a été renvoyé                                                                                                                                                        |
+| `targets`     | tableau | Le résultat de chaque canal : `targetId`, `channelId`, `platform`, `status` (`published`, `failed`, `unconfirmed` ou `cancelled`), `failureReason` ([pourquoi](#post-failed) elle a échoué, ou null) et `permalink` (son adresse sur la plateforme, ou null) |
 
 ```json title="post.finished"
 {
@@ -313,7 +313,7 @@ Un point de terminaison qui écoute certains canaux le reçoit quand l’un des 
 
 ## post.unpublished [#post-unpublished]
 
-Peal a supprimé la publication de la plateforme du canal, toutes ses parties, à la demande d’un membre, d’une clé ou d’une application ([Dépublier une publication](/guides/posts/published#unpublish)). La publication reste `published` dans Peal : sa cible reçoit `removedAt` et garde son lien permanent pour mémoire.
+Peal a supprimé toutes les parties de la publication de la plateforme du canal, à la demande d’un membre, d’une clé ou d’une application ([Dépublier une publication](/guides/posts/published#unpublish)). La publication reste `published` dans Peal. Sa cible reçoit `removedAt` et garde son lien permanent pour mémoire.
 
 | Champ         | Type           | Ce qu’il contient                                                             |
 | ------------- | -------------- | ----------------------------------------------------------------------------- |
@@ -321,7 +321,7 @@ Peal a supprimé la publication de la plateforme du canal, toutes ses parties, �
 | `postId`      | chaîne         | La publication                                                                |
 | `targetId`    | chaîne         | La publication sur ce canal                                                   |
 | `channelId`   | chaîne         | Le canal                                                                      |
-| `platform`    | chaîne ou null | La plateforme du canal ; null une fois le canal déconnecté                    |
+| `platform`    | chaîne ou null | La plateforme du canal, ou null une fois le canal déconnecté                  |
 | `removedAt`   | chaîne         | Le moment où la dernière partie a été supprimée, en instant UTC               |
 | `alreadyGone` | booléen        | Si la plateforme n’avait déjà plus une partie, supprimée chez elle auparavant |
 
@@ -346,19 +346,19 @@ Peal a supprimé la publication de la plateforme du canal, toutes ses parties, �
 
 ## post.unpublish_failed [#post-unpublish-failed]
 
-Peal n’a pas pu supprimer la publication de la plateforme du canal, après les essais qu’une suppression fait. `code` dit pourquoi, comme le `code` du changement : `unavailable`, `rateLimited`, `channelUnavailable`, ou celui de la plateforme.
+Peal n’a pas pu supprimer la publication de la plateforme du canal, après toutes les tentatives d’une suppression. `code` dit pourquoi, comme le `code` du changement : `unavailable`, `rateLimited`, `channelUnavailable`, ou celui de la plateforme.
 
-La publication peut y être encore, entière ou en partie. Un membre peut redemander, ce qui supprime les parties restantes.
+La publication y est peut-être encore, entière ou en partie. Un membre peut redemander, ce qui supprime les parties restantes.
 
-| Champ         | Type           | Ce qu’il contient                                          |
-| ------------- | -------------- | ---------------------------------------------------------- |
-| `workspaceId` | chaîne         | L’espace de travail                                        |
-| `postId`      | chaîne         | La publication                                             |
-| `targetId`    | chaîne         | La publication sur ce canal                                |
-| `channelId`   | chaîne         | Le canal                                                   |
-| `platform`    | chaîne ou null | La plateforme du canal ; null une fois le canal déconnecté |
-| `code`        | chaîne         | Pourquoi la suppression s’est arrêtée                      |
-| `failedAt`    | chaîne         | Le moment où Peal a renoncé, en instant UTC                |
+| Champ         | Type           | Ce qu’il contient                                            |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| `workspaceId` | chaîne         | L’espace de travail                                          |
+| `postId`      | chaîne         | La publication                                               |
+| `targetId`    | chaîne         | La publication sur ce canal                                  |
+| `channelId`   | chaîne         | Le canal                                                     |
+| `platform`    | chaîne ou null | La plateforme du canal, ou null une fois le canal déconnecté |
+| `code`        | chaîne         | Pourquoi la suppression s’est arrêtée                        |
+| `failedAt`    | chaîne         | Le moment où Peal a renoncé, en instant UTC                  |
 
 ```json title="post.unpublish_failed"
 {
@@ -381,17 +381,17 @@ La publication peut y être encore, entière ou en partie. Un membre peut redema
 
 ## post.edited [#post-edited]
 
-Peal a remplacé le texte d’une partie de la publication sur la plateforme du canal, à la demande de quelqu’un ([Modifier une publication en ligne](/guides/posts/published#edit-live)) : le texte de cette partie sur le canal est aussi le nouveau dans Peal, et la cible a son `editedAt`. Le texte lui-même n’est pas envoyé : lisez la publication.
+Peal a remplacé le texte d’une partie de la publication sur la plateforme du canal, à la demande de quelqu’un ([Modifier une publication en ligne](/guides/posts/published#edit-live)). Dans Peal aussi, le texte de cette partie sur le canal est désormais le nouveau, et la cible a son `editedAt`. L’événement ne porte pas le texte : lisez la publication si vous en avez besoin.
 
-| Champ         | Type           | Ce qu’il contient                                          |
-| ------------- | -------------- | ---------------------------------------------------------- |
-| `workspaceId` | chaîne         | L’espace de travail                                        |
-| `postId`      | chaîne         | La publication                                             |
-| `targetId`    | chaîne         | La publication sur ce canal                                |
-| `channelId`   | chaîne         | Le canal                                                   |
-| `platform`    | chaîne ou null | La plateforme du canal ; null une fois le canal déconnecté |
-| `part`        | entier         | La partie modifiée, depuis 0 (la publication elle-même)    |
-| `editedAt`    | chaîne         | Le moment où la plateforme a pris le texte, en instant UTC |
+| Champ         | Type           | Ce qu’il contient                                            |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| `workspaceId` | chaîne         | L’espace de travail                                          |
+| `postId`      | chaîne         | La publication                                               |
+| `targetId`    | chaîne         | La publication sur ce canal                                  |
+| `channelId`   | chaîne         | Le canal                                                     |
+| `platform`    | chaîne ou null | La plateforme du canal, ou null une fois le canal déconnecté |
+| `part`        | entier         | La partie modifiée, depuis 0 (la publication elle-même)      |
+| `editedAt`    | chaîne         | Le moment où la plateforme a pris le texte, en instant UTC   |
 
 ```json title="post.edited"
 {
@@ -414,25 +414,28 @@ Peal a remplacé le texte d’une partie de la publication sur la plateforme du 
 
 ## post.edit_failed [#post-edit-failed]
 
-Peal n’a pas pu modifier la partie de la publication sur la plateforme du canal, après les essais qu’une modification fait. `code` dit pourquoi, comme le `code` du changement : `postGone` quand la plateforme n’a plus la publication, `pollNotEditable` pour une publication Mastodon avec un sondage, `permissionDenied`, `unavailable`, `rateLimited`, `channelUnavailable`, ou celui de la plateforme.
+Peal n’a pas pu modifier la partie de la publication sur la plateforme du canal, après toutes les tentatives d’une modification. `code` dit pourquoi, comme le `code` du changement : `postGone` quand la plateforme n’a plus la publication, `pollNotEditable` pour une publication Mastodon avec un sondage, `permissionDenied`, `unavailable`, `rateLimited`, `channelUnavailable`, ou celui de la plateforme.
 
-Le texte de Peal n’a pas changé, et la publication dit très probablement ce qu’elle disait.
+Le texte de Peal n’a pas changé, et la publication dit très probablement toujours ce qu’elle disait.
 
-<Callout type="warning" title="Après unavailable ou rateLimited">
-  Une réponse a pu se perdre, et la plateforme affiche peut-être le nouveau
-  texte : regardez-y avant qu’un membre ne redemande.
+<Callout
+  type="warning"
+  title="Après unavailable ou rateLimited, regardez d’abord la plateforme"
+>
+  Une réponse a pu se perdre, si bien que la plateforme affiche peut-être le
+  nouveau texte. Regardez-y avant qu’un membre ne redemande.
 </Callout>
 
-| Champ         | Type           | Ce qu’il contient                                          |
-| ------------- | -------------- | ---------------------------------------------------------- |
-| `workspaceId` | chaîne         | L’espace de travail                                        |
-| `postId`      | chaîne         | La publication                                             |
-| `targetId`    | chaîne         | La publication sur ce canal                                |
-| `channelId`   | chaîne         | Le canal                                                   |
-| `platform`    | chaîne ou null | La plateforme du canal ; null une fois le canal déconnecté |
-| `part`        | entier         | La partie que Peal devait modifier, depuis 0               |
-| `code`        | chaîne         | Pourquoi la modification s’est arrêtée                     |
-| `failedAt`    | chaîne         | Le moment où Peal a renoncé, en instant UTC                |
+| Champ         | Type           | Ce qu’il contient                                            |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| `workspaceId` | chaîne         | L’espace de travail                                          |
+| `postId`      | chaîne         | La publication                                               |
+| `targetId`    | chaîne         | La publication sur ce canal                                  |
+| `channelId`   | chaîne         | Le canal                                                     |
+| `platform`    | chaîne ou null | La plateforme du canal, ou null une fois le canal déconnecté |
+| `part`        | entier         | La partie que Peal devait modifier, depuis 0                 |
+| `code`        | chaîne         | Pourquoi la modification s’est arrêtée                       |
+| `failedAt`    | chaîne         | Le moment où Peal a renoncé, en instant UTC                  |
 
 ```json title="post.edit_failed"
 {
@@ -456,16 +459,16 @@ Le texte de Peal n’a pas changé, et la publication dit très probablement ce 
 
 ## post.approval_requested [#post-approval-requested]
 
-Quelqu’un a demandé que la publication parte, dans un espace de travail qui demande des [approbations](/guides/posts/review) : elle attend. Elle garde son heure, et aucun `post.scheduled` n’est envoyé tant qu’elle n’est pas approuvée. Ce qu’une application y envoie ou y programme commence ainsi.
+Quelqu’un a demandé que la publication parte dans un espace de travail qui demande des [approbations](/guides/posts/review), alors elle attend. Elle garde son heure, et aucun `post.scheduled` n’est envoyé tant qu’elle n’est pas approuvée. Tout ce qu’une application y envoie ou y programme commence ainsi.
 
-Ce qui suit dit ce qu’elle est devenue, l’un de :
+L’événement suivant vous dit ce qu’elle est devenue :
 
-- `post.approval_requested` de nouveau, avec son nouveau `scheduledAt` : elle a été déplacée à une autre heure, et attend toujours ;
-- [`post.approved`](#post-approved), puis `post.scheduled` sauf si l’approbation est arrivée en retard (`late`) ;
-- [`post.changes_requested`](#post-changes-requested) : elle est de nouveau un brouillon ;
-- `post.unscheduled` : quelqu’un l’a remise en brouillon avant toute décision ;
-- `post.cancelled` : elle a été annulée pendant qu’elle attendait ;
-- `post.scheduled` seul : un membre qui peut programmer sans approbation l’a programmée.
+- `post.approval_requested` de nouveau, avec son nouveau `scheduledAt` : elle a été déplacée à une autre heure, et attend toujours.
+- [`post.approved`](#post-approved), puis `post.scheduled` sauf si l’approbation est arrivée en retard (`late`).
+- [`post.changes_requested`](#post-changes-requested) : elle est de nouveau un brouillon.
+- `post.unscheduled` : quelqu’un l’a remise en brouillon avant toute décision.
+- `post.cancelled` : elle a été annulée pendant qu’elle attendait.
+- `post.scheduled` seul : un membre qui peut programmer sans approbation l’a programmée.
 
 | Champ         | Type   | Ce qu’il contient                                 |
 | ------------- | ------ | ------------------------------------------------- |
@@ -490,13 +493,13 @@ Ce qui suit dit ce qu’elle est devenue, l’un de :
 
 ## post.approved [#post-approved]
 
-La publication a été approuvée. Approuvée à temps, elle est programmée, et un `post.scheduled` suit. Approuvée après son heure (`late`), rien ne part en retard : elle repasse en brouillon, et aucun `post.scheduled` ne suit.
+La publication a été approuvée. Si elle l’a été à temps, elle est programmée, et un `post.scheduled` suit. Si elle l’a été après son heure (`late`), rien ne part en retard : elle repasse en brouillon, et aucun `post.scheduled` ne suit.
 
 | Champ         | Type    | Ce qu’il contient                                                                                                               |
 | ------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `workspaceId` | chaîne  | L’espace de travail                                                                                                             |
 | `postId`      | chaîne  | La publication                                                                                                                  |
-| `by`          | chaîne  | Qui l’a approuvée, par type : `member`, `visitor` (une personne venue par un lien de relecture) ou `application`. Jamais un nom |
+| `by`          | chaîne  | Qui l’a approuvée, par type : `member`, `visitor` (une personne venue par un lien de relecture) ou `application`. Jamais un nom |
 | `late`        | booléen | Si son heure était passée                                                                                                       |
 
 ```json title="post.approved"
@@ -517,13 +520,13 @@ La publication a été approuvée. Approuvée à temps, elle est programmée, et
 
 ## post.changes_requested [#post-changes-requested]
 
-Des modifications ont été demandées sur une publication qui attendait : elle repasse en brouillon. Ce qui est demandé est un commentaire sur la publication, que l’événement ne porte pas : lisez la relecture de la publication par l’API.
+Quelqu’un a demandé des modifications sur une publication en attente, qui repasse donc en brouillon. La demande elle-même est un commentaire sur la publication, que l’événement ne porte pas. Lisez la relecture de la publication par l’API pour la voir.
 
 | Champ         | Type   | Ce qu’il contient                                              |
 | ------------- | ------ | -------------------------------------------------------------- |
 | `workspaceId` | chaîne | L’espace de travail                                            |
 | `postId`      | chaîne | La publication                                                 |
-| `by`          | chaîne | Qui a demandé, par type : `member`, `visitor` ou `application` |
+| `by`          | chaîne | Qui a demandé, par type : `member`, `visitor` ou `application` |
 
 ```json title="post.changes_requested"
 {

@@ -18,6 +18,17 @@ def _refused(**names: Any) -> list[str]:
 
 def test_the_preflight_takes_settings_without_private_hosts() -> None:
     assert _refused(peal_settings={"PEAL_ADS": "read"}) == []
+    assert (
+        _refused(
+            peal_settings={
+                "PEAL_ADS": "read",
+                "PEAL_ADS_NETWORKS": "meta,google",
+                "GOOGLE_ADS_CLIENT_ID": "synthetic-client.apps.googleusercontent.com",
+            },
+            peal_credentials={"GOOGLE_ADS_CLIENT_SECRET": "synthetic-google-ads-secret"},
+        )
+        == []
+    )
 
 
 @pytest.mark.parametrize("hosts", ["", "blog.lan"])

@@ -16,6 +16,7 @@ import { SqlClient } from "effect/sql";
 import { CommentRuleStore } from "#engagement/application/ports/comment-rule-store.ts";
 import type {
   MatchOutcome,
+  PrivateOutcome,
   RuleMatch,
 } from "#engagement/application/ports/comment-rule-store.ts";
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
@@ -23,13 +24,23 @@ import {
   CommentRule,
   CommentRuleOriginSchema,
 } from "#engagement/domain/comment-rule.ts";
-import type { CommentRuleStatus } from "#engagement/domain/comment-rule.ts";
+import type {
+  CommentRuleStatus,
+  PrivateCode,
+} from "#engagement/domain/comment-rule.ts";
+import { PrivateReplyIdSchema } from "#engagement/domain/private-reply-id.ts";
+import { PrivateReplyStatusTagSchema } from "#engagement/domain/private-reply.ts";
 import { ReplyIdSchema } from "#engagement/domain/reply-id.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
-import { commentRuleMatches, commentRules, threads } from "./schema.ts";
+import {
+  commentRuleMatches,
+  commentRules,
+  privateReplies,
+  threads,
+} from "./schema.ts";
 
 type Row = typeof commentRules.$inferSelect;
 
@@ -49,12 +60,30 @@ const decodeCandidates = Schema.decodeUnknownEffect(
   )
 );
 
+const decodeWaiting = Schema.decodeUnknownEffect(
+  Schema.Array(
+    Schema.Struct({
+      channelId: ChannelIdSchema,
+      commentId: CommentIdSchema,
+      lookedAt: Schema.Date,
+      replyId: ReplyIdSchema,
+    })
+  )
+);
+
+const decodePrivateStatus = Schema.decodeUnknownOption(
+  PrivateReplyStatusTagSchema
+);
+
 const failed = (cause: unknown) => new DatabaseError({ cause });
 
 const decodeCount = (rows: readonly unknown[]) =>
   Schema.decodeUnknownEffect(
     Schema.Tuple([Schema.Struct({ count: Schema.Int })])
   )(rows).pipe(Effect.map(([row]) => row.count));
+
+const waitingCode: PrivateCode = "waiting";
+const stoppedCode: PrivateCode = "stopped";
 
 const utc = (date: Date) => DateTime.fromDateUnsafe(date);
 
@@ -83,6 +112,7 @@ const toRule = (row: Row) =>
       createdAt: utc(row.createdAt),
       id: row.id,
       keywords: row.keywords,
+      privateReply: Option.fromNullOr(row.privateReply),
       reply: row.reply,
       scope:
         row.scope === "post"
@@ -129,6 +159,7 @@ const changing = (rule: CommentRule) => ({
   ...statusColumns(rule.status),
   answersFrom: date(rule.answersFrom),
   keywords: [...rule.keywords],
+  privateReply: Option.getOrNull(rule.privateReply),
   reply: rule.reply,
   startedBy: Option.getOrNull(rule.startedBy),
 });
@@ -136,49 +167,84 @@ const changing = (rule: CommentRule) => ({
 const inWorkspace = (workspaceId: string, ruleId: string) =>
   and(eq(commentRules.workspaceId, workspaceId), eq(commentRules.id, ruleId));
 
+const privateColumns = (outcome: Option.Option<PrivateOutcome>) => ({
+  privateCode: Option.match(outcome, {
+    onNone: () => null,
+    onSome: (made) => (made._tag === "privateCode" ? made.code : null),
+  }),
+  privateReplyId: Option.match(outcome, {
+    onNone: () => null,
+    onSome: (made) =>
+      made._tag === "privateReply" ? made.privateReplyId : null,
+  }),
+});
+
 const outcomeColumns = (outcome: MatchOutcome) => ({
   code: outcome._tag === "refused" ? outcome.code : null,
   outcome: outcome._tag,
   replyId: outcome._tag === "replied" ? outcome.replyId : null,
+  ...privateColumns(
+    outcome._tag === "replied" ? outcome.private : Option.none()
+  ),
 });
 
-const matchOf = (row: typeof commentRuleMatches.$inferSelect): RuleMatch => {
-  const commentId = CommentIdSchema.make(row.commentId);
-  const lookedAt = utc(row.lookedAt);
+const privateOf = (
+  row: typeof commentRuleMatches.$inferSelect
+): Option.Option<PrivateOutcome> => {
+  if (row.privateReplyId !== null) {
+    return Option.some({
+      _tag: "privateReply",
+      privateReplyId: PrivateReplyIdSchema.make(row.privateReplyId),
+    });
+  }
 
+  return row.privateCode === null
+    ? Option.none()
+    : Option.some({ _tag: "privateCode", code: row.privateCode });
+};
+
+const outcomeOf = (
+  row: typeof commentRuleMatches.$inferSelect
+): RuleMatch["outcome"] => {
   switch (row.outcome) {
     case "replied": {
       return {
-        commentId,
-        lookedAt,
-        outcome: {
-          _tag: "replied",
-          replyId: ReplyIdSchema.make(row.replyId ?? ""),
-        },
+        _tag: "replied",
+        private: privateOf(row),
+        replyId: ReplyIdSchema.make(row.replyId ?? ""),
       };
     }
 
     case "refused": {
-      return {
-        commentId,
-        lookedAt,
-        outcome: { _tag: "refused", code: row.code ?? "" },
-      };
+      return { _tag: "refused", code: row.code ?? "" };
     }
 
     case "samePerson": {
-      return { commentId, lookedAt, outcome: { _tag: "samePerson" } };
+      return { _tag: "samePerson" };
     }
 
     case "noMatch": {
-      return { commentId, lookedAt, outcome: { _tag: "noMatch" } };
+      return { _tag: "noMatch" };
     }
 
     default: {
-      return { commentId, lookedAt, outcome: { _tag: "claimed" } };
+      return { _tag: "claimed" };
     }
   }
 };
+
+const matchOf = ({
+  match,
+  privateStatus,
+}: {
+  readonly match: typeof commentRuleMatches.$inferSelect;
+  readonly privateStatus: string | null;
+}): RuleMatch => ({
+  commentId: CommentIdSchema.make(match.commentId),
+  lookedAt: utc(match.lookedAt),
+  outcome: outcomeOf(match),
+  privateStatus: decodePrivateStatus(privateStatus),
+});
 
 /** Comment rules and what they looked at, in the engagement schema. */
 export const DrizzleCommentRuleStore = Layer.effect(
@@ -358,8 +424,15 @@ export const DrizzleCommentRuleStore = Layer.effect(
           .pipe(Effect.mapError(failed), Effect.flatMap(firstRule)),
       matchesOf: (ruleId, limit) =>
         db
-          .select()
+          .select({
+            match: commentRuleMatches,
+            privateStatus: privateReplies.status,
+          })
           .from(commentRuleMatches)
+          .leftJoin(
+            privateReplies,
+            eq(privateReplies.id, commentRuleMatches.privateReplyId)
+          )
           .where(
             and(
               eq(commentRuleMatches.ruleId, ruleId),
@@ -423,12 +496,72 @@ export const DrizzleCommentRuleStore = Layer.effect(
             )
           )
           .pipe(Effect.asVoid, Effect.mapError(failed)),
+      settlePrivate: (ruleId, commentId, outcome) =>
+        db
+          .update(commentRuleMatches)
+          .set(privateColumns(Option.some(outcome)))
+          .where(
+            and(
+              eq(commentRuleMatches.ruleId, ruleId),
+              eq(commentRuleMatches.commentId, commentId),
+              eq(commentRuleMatches.privateCode, waitingCode)
+            )
+          )
+          .returning({ commentId: commentRuleMatches.commentId })
+          .pipe(
+            Effect.map((rows) => rows.length > 0),
+            Effect.mapError(failed)
+          ),
+      stopWaiting: (ruleId) =>
+        db
+          .update(commentRuleMatches)
+          .set({ privateCode: stoppedCode })
+          .where(
+            and(
+              eq(commentRuleMatches.ruleId, ruleId),
+              eq(commentRuleMatches.privateCode, waitingCode)
+            )
+          )
+          .pipe(Effect.asVoid, Effect.mapError(failed)),
+      unmakePrivate: (ruleId, privateReplyIds) =>
+        privateReplyIds.length === 0
+          ? Effect.void
+          : db
+              .update(commentRuleMatches)
+              .set({ privateCode: stoppedCode, privateReplyId: null })
+              .where(
+                and(
+                  eq(commentRuleMatches.ruleId, ruleId),
+                  inArray(commentRuleMatches.privateReplyId, [
+                    ...privateReplyIds,
+                  ])
+                )
+              )
+              .pipe(Effect.asVoid, Effect.mapError(failed)),
       update: (rule) =>
         db
           .update(commentRules)
           .set(changing(rule))
           .where(inWorkspace(rule.workspaceId, rule.id))
           .pipe(Effect.asVoid, Effect.mapError(failed)),
+      waitingPrivate: (ruleId, limit) =>
+        client`
+          SELECT m.comment_id AS "commentId", m.reply_id AS "replyId",
+            c.channel_id AS "channelId", m.looked_at AS "lookedAt"
+          FROM engagement.comment_rule_matches m
+          JOIN engagement.comments c ON c.id = m.comment_id
+          WHERE m.rule_id = ${ruleId}
+            AND m.private_code = ${waitingCode}
+            AND m.outcome = 'replied'
+          ORDER BY m.looked_at, m.comment_id
+          LIMIT ${limit}
+        `.pipe(
+          Effect.flatMap(decodeWaiting),
+          Effect.map((rows) =>
+            rows.map((row) => ({ ...row, lookedAt: utc(row.lookedAt) }))
+          ),
+          Effect.mapError(failed)
+        ),
     });
   })
 );

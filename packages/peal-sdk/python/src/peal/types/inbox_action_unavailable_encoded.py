@@ -8,6 +8,7 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .inbox_action_unavailable_encoded_standing import InboxActionUnavailableEncodedStanding
 from .inbox_action_unavailable_encoded_tag import InboxActionUnavailableEncodedTag
+from .inbox_action_unavailable_reason import InboxActionUnavailableReason
 
 
 class InboxActionUnavailableEncoded(UniversalBaseModel):
@@ -20,6 +21,10 @@ class InboxActionUnavailableEncoded(UniversalBaseModel):
         typing.Optional[str], FieldMetadata(alias="requestId"), pydantic.Field(alias="requestId")
     ] = None
     ability: str
+    closed_at: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="closedAt"), pydantic.Field(alias="closedAt")
+    ] = None
+    reason: typing.Optional[InboxActionUnavailableReason] = None
     standing: InboxActionUnavailableEncodedStanding
 
     if IS_PYDANTIC_V2:

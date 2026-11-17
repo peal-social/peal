@@ -114,6 +114,11 @@ peal_settings:
   X_CLIENT_ID: OTdwb0p4d0QzaWFpRU5iamYzWGU6MTpjaQ
   # One WordPress.com app serves both environments, with both callbacks.
   WORDPRESS_COM_CLIENT_ID: "153160"
+  # Google Ads, read only, once its own OAuth client, "Peal: Google Ads",
+  # exists in this environment's project (peal-production), with the Google Ads API
+  # enabled there: PEAL_ADS: read, PEAL_ADS_NETWORKS (meta,google, or
+  # google alone until Meta's app has ads access) and GOOGLE_ADS_CLIENT_ID
+  # here, GOOGLE_ADS_CLIENT_SECRET in the vault.
   # One Slack app serves both environments, with both redirect URLs.
   SLACK_CLIENT_ID: "12606763099492.12617179827665"
   # Google sign-in: its own OAuth client, "Peal: Google sign-in", in this
@@ -153,6 +158,11 @@ peal_settings:
   # the privacy policy's lines on them and one conversation was read and
   # answered on a test account of each.
   # PEAL_INBOX_MESSAGES: mastodon,bluesky
+  # A member's own answer on Messenger and Instagram up to 7 days after
+  # the person's last message, with Meta's Human Agent tag: only once
+  # Meta's App Review granted the app the Human Agent feature, apart from
+  # the messaging permissions, and facebook or instagram is named above.
+  # PEAL_META_HUMAN_AGENT: "true"
   # Refuses the staff console to staff whose own account does not have
   # two-step verification on: set once every staff account has it on.
   # PEAL_STAFF_TWO_STEP: "true"

@@ -33,7 +33,7 @@ const isSiteStatus = (value: string): value is ArticleDraft["siteStatus"] =>
   siteStatuses.some((status) => status === value);
 
 const selectClass =
-  "border-input h-9 rounded-md border bg-transparent px-2 text-sm";
+  "border-input h-8.5 rounded-md border bg-transparent px-2 text-sm";
 
 /** The article's fields: what it says, and how and when it goes out. */
 export const ArticleFields = ({

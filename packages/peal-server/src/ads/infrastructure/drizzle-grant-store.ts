@@ -112,6 +112,7 @@ export const DrizzleGrantStore = Layer.effect(
         db
           .insert(signInAttempts)
           .values({
+            codeVerifier: Option.getOrNull(attempt.codeVerifier),
             expiresAt: date(attempt.expiresAt),
             network: attempt.network,
             startedBy: attempt.startedBy,
@@ -135,6 +136,7 @@ export const DrizzleGrantStore = Layer.effect(
             Effect.map(([row]) =>
               Option.fromUndefinedOr(row).pipe(
                 Option.map((taken): SignInAttempt => ({
+                  codeVerifier: Option.fromNullOr(taken.codeVerifier),
                   expiresAt: utc(taken.expiresAt),
                   network: Schema.decodeUnknownSync(AdNetworkSchema)(
                     taken.network

@@ -6,6 +6,8 @@ import {
   duplicateWindowHours,
   imageRequestCost,
   maxImportRows,
+  humanAgentWindowDays,
+  privateReplyWindowDays,
   queueHorizonDays,
 } from "peal-contract";
 import type {
@@ -22,6 +24,7 @@ import type {
   FollowUpRefusal,
   NotRecyclableReason,
   PostNotPromotable,
+  PrivateReplyRefusal,
   TextProviderAddressRefused,
   TextProviderRefused,
   WebhookUrlRefused,
@@ -38,6 +41,7 @@ import { PealApi } from "#api.ts";
 import { CredentialStore } from "#credentials.ts";
 import { livePostRefusalWords } from "#live-post-refusals.ts";
 import { planLimitReason, usageLimitReason } from "#plan-limit.ts";
+import { instant } from "#print.ts";
 import { Refused } from "#refused.ts";
 import { SignInExpired } from "#sign-in-expired.ts";
 
@@ -47,6 +51,14 @@ export type ApiFailure =
   | HttpApiError.BadRequest
   | HttpClientError.HttpClientError
   | Schema.SchemaError;
+
+// Why a comment gets no private reply, in words.
+const privateReplyRefusals: Readonly<Record<PrivateReplyRefusal, string>> = {
+  gone: "The comment is no longer on its platform: nothing was sent.",
+  ownComment:
+    "The channel's own account wrote this comment: a private reply goes to someone else's. Nothing was sent.",
+  tooOld: `The comment was written more than ${String(privateReplyWindowDays)} days ago, less Peal's hour: the platform takes no private reply to it any more. Nothing was sent.`,
+};
 
 const mebibyte = 1024 * 1024;
 
@@ -159,11 +171,14 @@ const urlRefusals: Readonly<Record<WebhookUrlRefused["reason"], string>> = {
 const commentRuleRefusals: Readonly<Record<CommentRuleRefusal, string>> = {
   channels:
     "No channel can carry the rule's reply, or it is too long for one that could: each channel says why. Nothing was saved.",
+  emptyPrivateReply: "The private reply is empty: give it some text.",
   emptyReply: "The reply is empty: give it some text.",
   keywords:
     "Give 1 to 10 keywords of 60 characters at most, each with some letters or digits.",
   noChannel:
     "The rule answers on no channel of the inbox: a post's rule needs a post that went out, on a channel the inbox reads.",
+  privateReply:
+    "No channel the rule answers on can carry its private reply, or it is too long for one that could: each channel says why (messagesOff: turn the channel's direct messages on in the web app). Nothing was saved.",
 };
 
 // Why a follow-up rule was refused, as the user puts it right.
@@ -663,12 +678,19 @@ const reasonOf =
         refused(
           `The platform did not do it (${reason}), and nothing changed in Peal: asking again is safe.`
         ),
-      InboxActionUnavailable: ({ ability, standing }) =>
-        refused(
+      InboxActionUnavailable: ({ ability, closedAt, reason, standing }) => {
+        if (reason === "windowClosed" && closedAt !== undefined) {
+          return refused(
+            `The platform takes no answer to this conversation since ${instant(closedAt)}: Messenger and Instagram take one only within 24 hours of the person's last message, though where the server's Meta app holds Meta's Human Agent feature a member signed in to Peal's web app may answer in person for up to ${String(humanAgentWindowDays)} days. Nothing was journalled or counted, and Peal never starts a conversation.`
+          );
+        }
+
+        return refused(
           standing === "reconnect"
             ? `This channel may not ${ability} yet: disconnect it and connect the account again, which asks for what it takes, or the channel was disconnected or turned off. Nothing was asked of the platform.`
             : `This channel's platform does not let the account ${ability} here. Nothing was asked of it.`
-        ),
+        );
+      },
       InboxCommentGone: () =>
         refused(
           "The comment is no longer on its platform: it can be neither answered nor moderated."
@@ -684,6 +706,10 @@ const reasonOf =
       InboxMessageNotFound: () =>
         refused(
           "The workspace sent no such message from Peal: peal inbox messages show lists a conversation's."
+        ),
+      InboxPrivateReplyNotFound: () =>
+        refused(
+          "The workspace sent no such private reply, or it went with its comment: peal inbox thread shows each comment's."
         ),
       InboxReplyNotFound: () =>
         refused(
@@ -823,8 +849,8 @@ const reasonOf =
           [
             commentRuleRefusals[reason],
             ...channels.map(
-              ({ channelId, platform, reply }) =>
-                `  ${platform} ${channelId}: ${reply}`
+              ({ channelId, platform, privateReply, reply }) =>
+                `  ${platform} ${channelId}: ${reply}, private reply ${privateReply}`
             ),
           ].join("\n")
         ),
@@ -887,6 +913,12 @@ const reasonOf =
       MessagePending: ({ messageId }) =>
         refused(
           `A message to this conversation is on its way, or may have gone out (${messageId}): nothing more was sent. If it is unconfirmed, check the platform, then run peal inbox messages confirm.`
+        ),
+      PrivateReplyNotPossible: ({ reason }) =>
+        refused(privateReplyRefusals[reason]),
+      PrivateReplyPending: ({ privateReplyId }) =>
+        refused(
+          `The comment has its private reply already (${privateReplyId}), on its way, unconfirmed or sent: the platform takes one a comment, so nothing more was sent. If it is unconfirmed, check the person's conversation, then run peal inbox private-reply confirm.`
         ),
       ReplyPending: ({ replyId }) =>
         refused(

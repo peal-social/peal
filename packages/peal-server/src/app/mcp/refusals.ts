@@ -304,3 +304,16 @@ export const livePostRefusals: Readonly<Record<LivePostRefusal, string>> = {
  */
 export const messagesConsentText = (clientId: string): string =>
   `This application may list the workspace's conversations, never read or answer their messages: direct messages are private, and an owner of the workspace lets an application read them, in person, under "Applications that may read and answer them" in the inbox of the web app, with this application's client id, \`${clientId}\`. Nothing was read or sent. Tell the user so, and that they can read and answer the messages in the web app meanwhile.`;
+
+/**
+ * Why the ads tools refuse a Google Ads account: Google's policy for tools
+ * names MCP servers that pass its API's data on, so its accounts are read
+ * in the web app, the API and the command line only, until the owner
+ * decides otherwise.
+ */
+export const adNetworkNotOfferedText =
+  "Google Ads accounts are read in the web app, the API and the command line; they are not offered through MCP. Nothing was read. Tell the user so, and that they can see the account's campaigns and numbers there.";
+
+/** Why the boost tools refuse a Google Ads account: Peal only reads it. */
+export const boostNotOfferedText =
+  "Google Ads accounts are read only in Peal: nothing is boosted on Google Ads, and nothing was reserved or sent. Tell the user so; a post can be boosted on a Meta ad account.";

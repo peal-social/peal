@@ -1,8 +1,10 @@
 import { assert, layer } from "@effect/vitest";
-import { Effect, Layer, Option } from "effect";
+import { Context, Effect, Layer, Option, Redacted, Ref } from "effect";
 
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelEvents } from "#channels/application/channel-events.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
+import { encryptTokens } from "#channels/application/channel-tokens.ts";
 import { DisconnectChannel } from "#channels/application/disconnect-channel.ts";
 import { ListChannels } from "#channels/application/list-channels.ts";
 import { PlatformAuthorizers } from "#channels/application/platform-authorizer.ts";
@@ -18,6 +20,28 @@ import {
   TokenCipherTest,
 } from "#test/channels/support.ts";
 
+// The channels told to have departed, with the token each held.
+class Departed extends Context.Service<Departed, Ref.Ref<readonly string[]>>()(
+  "test/Departed"
+) {}
+
+const DepartedTest = Layer.effect(Departed, Ref.make<readonly string[]>([]));
+
+const RecordedDepartures = Layer.effect(
+  ChannelDepartures,
+  Effect.gen(function* RecordedDepartures() {
+    const departed = yield* Departed;
+
+    return ChannelDepartures.of({
+      departed: (channel, tokens) =>
+        Ref.update(departed, (all) => [
+          ...all,
+          `${channel.id}:${Redacted.value(tokens.accessToken)}`,
+        ]).pipe(Effect.as("done" as const)),
+    });
+  })
+);
+
 // No platform to tell about a disconnect: its own tests are its sign-in's.
 const UseCasesTest = Layer.mergeAll(
   ListChannels.layer,
@@ -28,9 +52,11 @@ const UseCasesTest = Layer.mergeAll(
       DrizzleChannelRepository,
       ChannelEvents.none,
       TokenCipherTest,
-      Layer.succeed(PlatformAuthorizers, authorizersOf())
+      Layer.succeed(PlatformAuthorizers, authorizersOf()),
+      RecordedDepartures
     )
   ),
+  Layer.provideMerge(DepartedTest),
   Layer.provideMerge(DatabaseTest)
 );
 
@@ -122,6 +148,36 @@ layer(UseCasesTest)("disconnecting a channel", (it) => {
         Option.none()
       );
     })
+  );
+
+  it.effect(
+    "tells what it set up on its platform, with the token it held, once it is gone",
+    () =>
+      Effect.gen(function* departs() {
+        const workspaceId = yield* freshWorkspace;
+        const channel = yield* freshChannel(workspaceId);
+
+        const credentials = yield* encryptTokens(
+          {
+            accessToken: Redacted.make("synthetic-access-token"),
+            expiresAt: Option.none(),
+            refreshToken: Option.none(),
+            renewable: false,
+            scopes: channel.scopes,
+          },
+          channel.id
+        );
+
+        yield* ChannelRepository.use((channels) =>
+          channels.insert(channel, credentials)
+        );
+
+        yield* disconnect(workspaceId, channel.id);
+
+        assert.deepStrictEqual(yield* Departed.use(Ref.get), [
+          `${channel.id}:synthetic-access-token`,
+        ]);
+      })
   );
 
   it.effect.each([

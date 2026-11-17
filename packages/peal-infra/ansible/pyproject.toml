@@ -11,12 +11,14 @@ dependencies = ["ansible-core==2.22.0", "ansible-lint==26.11.0"]
 
 # tests/ reads the roles' tasks and templates with these, as Ansible does.
 [dependency-groups]
-dev = ["jinja2==3.1.6", "pytest==9.2.0", "pyyaml==6.0.3"]
+dev = ["jinja2==3.1.6", "pytest==9.2.0", "pytest-xdist==3.8.0", "pyyaml==6.0.3"]
 
 [tool.uv]
 package = false
 
 # No cache folder in the package; tests that need Docker skip without it.
+# The tests run in parallel, one worker a CPU (pytest-xdist), each class
+# of tests in one of them (tests/class_scheduling.py).
 [tool.pytest]
 testpaths = ["tests"]
-addopts = ["-p", "no:cacheprovider"]
+addopts = ["-p", "no:cacheprovider", "--numprocesses", "auto"]

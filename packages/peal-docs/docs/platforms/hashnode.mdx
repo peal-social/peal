@@ -5,15 +5,17 @@ sidebar:
   icon: newspaper
 ---
 
-How to connect a publication on Hashnode, and what an article there may hold. Hashnode takes [articles](/guides/channels/websites), not posts.
+You connect a Hashnode publication with a personal access token you make on Hashnode. Hashnode takes [articles](/guides/channels/websites) rather than posts.
 
-<Callout type="warning" title="Hashnode's Pro plan">
+<Callout type="warning" title="Hashnode's API needs its Pro plan">
   Hashnode answers its API only for a publication on its Pro plan, paid on
   Hashnode. Without it, connecting the publication is refused, and an article
-  sent there fails, each saying so.
+  sent there fails. Each says why.
 </Callout>
 
 ## At a glance [#at-a-glance]
+
+Here's what an article on Hashnode can hold, and what Peal can do with it:
 
 |             |                                                          |
 | ----------- | -------------------------------------------------------- |
@@ -23,7 +25,7 @@ How to connect a publication on Hashnode, and what an article there may hold. Ha
 | On the site | Published at once, or a draft there; not scheduled there |
 | Unpublish   | Removes the post, or the draft, from the publication     |
 
-## Connect [#connect]
+## Connect a publication [#connect]
 
 <Steps>
   <Step title="Make a personal access token">
@@ -31,23 +33,31 @@ How to connect a publication on Hashnode, and what an article there may hold. Ha
     a personal access token for Peal.
   </Step>
   <Step title="Connect it in Peal">
-    In **Channels**, under **Hashnode**, paste the token and give the
-    publication's address, such as `blog.example.com` or `name.hashnode.dev`,
-    then **Connect Hashnode**. With one publication, the address may be left
-    empty.
+    In **Channels**, under **Hashnode**, paste the token and type the
+    publication's address, such as `blog.example.com` or `name.hashnode.dev`.
+    Then click **Connect Hashnode**. If you have one publication, you can leave
+    the address empty.
   </Step>
 </Steps>
 
-Peal checks the token and the publication on Hashnode, then keeps the token encrypted: it is never shown again. The channel is the publication: yours, or a team's where you are an owner or an editor (a contributor only submits drafts for review there, and is refused). A member the publication keeps private is not in its visible list: the publication connects, and the first article says whether they may publish there. Revoke the token on Hashnode to cut Peal off; the channel is then marked **Reconnect**.
+Peal checks the token and the publication on Hashnode, then keeps the token encrypted, and never shows it again.
+
+The channel is the publication. It can be yours, or a team's where you're an owner or an editor. A contributor is refused, because a contributor only submits drafts for review there. If the publication keeps you private as a member, you aren't in its visible list. The publication still connects, and the first article tells you whether you can publish there.
+
+To cut Peal off, revoke the token on Hashnode. The channel is then marked **Reconnect**.
 
 ## Articles [#articles]
 
-- Peal writes the body as Markdown, where everything you typed stays text.
-- Each image goes to Hashnode's image upload first, once: images up to 8 MB, never SVG.
-- The excerpt is the post's subtitle, the featured image its cover, each tag named by its slug.
-- Hashnode cannot publish a post at a time itself: give the article a time with **Published at once**, and Peal sends it then.
-- When Hashnode's answer is lost, Peal looks among the publication's latest posts for one of the same title and body before anything else, and never sends it twice.
+Peal writes the body as Markdown, and everything you typed stays text.
+
+Each image goes to Hashnode's image upload first, once. Images can be up to 8 MB, and can't be SVG.
+
+The excerpt becomes the post's subtitle, and the featured image its cover. Each tag is named by its slug.
+
+Hashnode can't publish a post at a set time by itself. To publish later, give the article a time with **Published at once**, and Peal sends it then.
+
+When Hashnode's answer is lost, Peal first looks among the publication's latest posts for one with the same title and body. It never sends an article twice.
 
 ## On your own server [#self-hosting]
 
-Hashnode needs no app on a self-hosted server: each member brings a token. See [DEV and Hashnode](/self-hosting/platforms#devto-hashnode).
+Hashnode needs no app on a self-hosted server, because each member brings a token. See [DEV and Hashnode](/self-hosting/platforms#devto-hashnode).

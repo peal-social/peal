@@ -111,9 +111,11 @@ several:
 - CI (`.github/workflows/ci.yml`) runs those checks in parallel jobs, on
   pull requests and in the merge queue, and nightly on `main`; its `ci` job,
   which waits for the others, is the one check the ruleset requires.
-  `scripts/ci-plan.ts` decides from a change's files and the projects Nx
-  finds affected whether it needs the server's tests, Ansible's, the SDKs
-  and the end-to-end run. Nx's graph follows imports only: a test that
+  On a pull request, `scripts/ci-plan.ts` decides from the change's files
+  and the projects Nx finds affected whether it needs the server's tests,
+  Ansible's, the SDKs and the end-to-end run; the merge queue runs every
+  job, so the full suite passes before anything reaches `main`. Only a
+  pull request's run is cancelled by a newer commit. Nx's graph follows imports only: a test that
   reads files in another package names them in the plan's rules, with a
   case in `scripts/ci-plan.test.ts`. actionlint and zizmor
   (`.github/zizmor.yml`) check the workflows.
@@ -198,10 +200,14 @@ and Next.js ships its docs in `packages/peal-web/node_modules/next/dist/docs`.
 ## Design
 
 [`DESIGN.md`](DESIGN.md) is the design system: the colours of the mark,
-type, shape, the frame (Studio and Console, the drill-down sidebar, the top
+type, shape, the frame (PealStudio and PealAPI, the drill-down sidebar, the top
 bar) and the page patterns. Read it before changing a screen of the web
 app, the site or the docs. Peal is light only: no dark mode, no `dark:`
 class in Peal's own code.
+
+[`packages/peal-docs/WRITING.md`](packages/peal-docs/WRITING.md) is how Peal's words read: the voice, the
+layout of a page and the code samples, for the docs, the site and the
+app's text, with a sample per kind of text for the humanizer skill.
 
 Look for patterns through the MCP servers in `.mcp.json` (shadcn/ui's
 registry, and 21st.dev's with `TWENTYFIRST_API_KEY`), then build them from
@@ -252,7 +258,8 @@ self-hoster needs only Postgres and an S3-compatible store:
   bills per connected account and by use, in US dollars, as the rate card
   (`peal-contract/rate-card`) says;
 - ads: off until `PEAL_ADS` is `read` or `spend`, with the operator's own
-  Meta app holding the ads permissions (see
+  Meta app holding the ads permissions, and Google Ads, read only, once
+  `PEAL_ADS_NETWORKS` names `google` with its own OAuth client (see
   [`src/ads/AGENTS.md`](packages/peal-server/src/ads/AGENTS.md));
 - captcha: Turnstile, off when no key is set;
 - sign-up: anyone, unless `PEAL_SIGN_UP=invitation` (an invitation's link

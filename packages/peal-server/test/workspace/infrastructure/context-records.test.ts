@@ -90,7 +90,11 @@ const RecordsTest = Layer.unwrap(
           Layer.mock(EngagementRecords, {
             eraseWorkspace: () => Effect.void,
           }),
-          Layer.mock(ChannelRecords, { eraseWorkspace: () => Effect.void }),
+          Layer.mock(ChannelRecords, {
+            eraseWorkspace: () => Effect.void,
+            releaseWorkspaces: (workspaceIds) =>
+              call(`release:${workspaceIds.join(",")}`),
+          }),
           Layer.mock(MediaRecords, { eraseWorkspace: () => Effect.void }),
           Layer.mock(NoticeRecords, { eraseWorkspace: () => Effect.void }),
           Layer.mock(UsageRecords, { eraseWorkspace: () => Effect.void }),
@@ -137,9 +141,12 @@ layer(RecordsTest)("settling deletions at Stripe", (it) => {
         });
 
         assert.deepStrictEqual(settled, { subscriptionsCancelled: 2 });
+        // Then what their channels set up on their platforms is let go,
+        // all at once, under one bound.
         assert.deepStrictEqual(yield* made, [
           `settle:${harbour}`,
           `settle:${meadow}`,
+          `release:${harbour},${meadow}`,
         ]);
       })
   );

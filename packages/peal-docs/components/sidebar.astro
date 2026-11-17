@@ -26,6 +26,74 @@ const href = appUrl === undefined || appUrl === "" ? undefined : `${appUrl}${fre
   )
 }
 
+<script>
+  // A reader who picks a language in one code sample sees it first in every
+  // sample after, on this page and the next ones. Blume already syncs the
+  // tabs of one page; this keeps the choice in the browser across pages.
+  // Only the SDK languages and curl are remembered: "CLI" is also a tab of
+  // the guides' "Web app / CLI" groups, which should open on the app.
+  const STORAGE_KEY = "peal-docs-code-language";
+  const LANGUAGES = new Set(["Node.js", "Python", "Go", "Ruby", "Java", "PHP", ".NET", "Rust", "curl"]);
+
+  type BlumeTabs = HTMLElement & { activateByTitle: (title: string, sync: boolean) => void };
+
+  const read = (): string | undefined => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) ?? undefined;
+    } catch {
+      return undefined;
+    }
+  };
+
+  document.addEventListener("blume-tabs-change", (event) => {
+    // SAFETY: Blume's tabs (blume/components/content/Tabs.astro) dispatch
+    // this event only as a CustomEvent whose detail is { key?, title? }.
+    const { detail } = event as CustomEvent<{ key?: string; title?: string }>;
+
+    if (detail?.title === undefined || !LANGUAGES.has(detail.title) || (detail.key ?? "") !== "") {
+      return;
+    }
+
+    try {
+      localStorage.setItem(STORAGE_KEY, detail.title);
+    } catch {
+      // Storage refused (private window): the choice lasts for this page only.
+    }
+  });
+
+  // Switches every group that has a tab with this title, and answers how many.
+  const activate = (title: string): number => {
+    const groups = [...document.querySelectorAll<BlumeTabs>("blume-tabs")].filter((tabs) =>
+      [...tabs.querySelectorAll('[role="tab"]')].some((tab) => tab.textContent?.trim() === title)
+    );
+
+    for (const tabs of groups) {
+      tabs.activateByTitle(title, false);
+    }
+
+    return groups.length;
+  };
+
+  const restore = () => {
+    const title = read();
+
+    if (title === undefined || !LANGUAGES.has(title)) {
+      return;
+    }
+
+    customElements
+      .whenDefined("blume-tabs")
+      .then(() => activate(title))
+      .catch(() => {
+        // The tabs never loaded: there is nothing to switch.
+      });
+  };
+
+  document.addEventListener("astro:page-load", restore);
+
+  restore();
+</script>
+
 <style>
   /* Stays at the foot of the sidebar while its list scrolls. */
   .peal-app-link {

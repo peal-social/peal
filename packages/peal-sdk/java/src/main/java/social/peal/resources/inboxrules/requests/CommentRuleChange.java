@@ -5,6 +5,7 @@ package social.peal.resources.inboxrules.requests;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import social.peal.core.Nullable;
+import social.peal.core.NullableNonemptyFilter;
 import social.peal.core.ObjectMappers;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
@@ -25,6 +28,8 @@ public final class CommentRuleChange {
 
     private final Optional<Boolean> paused;
 
+    private final Optional<String> privateReply;
+
     private final Optional<String> reply;
 
     private final Map<String, Object> additionalProperties;
@@ -32,10 +37,12 @@ public final class CommentRuleChange {
     private CommentRuleChange(
             Optional<List<String>> keywords,
             Optional<Boolean> paused,
+            Optional<String> privateReply,
             Optional<String> reply,
             Map<String, Object> additionalProperties) {
         this.keywords = keywords;
         this.paused = paused;
+        this.privateReply = privateReply;
         this.reply = reply;
         this.additionalProperties = additionalProperties;
     }
@@ -50,9 +57,23 @@ public final class CommentRuleChange {
         return paused;
     }
 
+    @JsonIgnore
+    public Optional<String> getPrivateReply() {
+        if (privateReply == null) {
+            return Optional.empty();
+        }
+        return privateReply;
+    }
+
     @JsonProperty("reply")
     public Optional<String> getReply() {
         return reply;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privateReply")
+    private Optional<String> _getPrivateReply() {
+        return privateReply;
     }
 
     @java.lang.Override
@@ -67,12 +88,15 @@ public final class CommentRuleChange {
     }
 
     private boolean equalTo(CommentRuleChange other) {
-        return keywords.equals(other.keywords) && paused.equals(other.paused) && reply.equals(other.reply);
+        return keywords.equals(other.keywords)
+                && paused.equals(other.paused)
+                && privateReply.equals(other.privateReply)
+                && reply.equals(other.reply);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.keywords, this.paused, this.reply);
+        return Objects.hash(this.keywords, this.paused, this.privateReply, this.reply);
     }
 
     @java.lang.Override
@@ -90,6 +114,8 @@ public final class CommentRuleChange {
 
         private Optional<Boolean> paused = Optional.empty();
 
+        private Optional<String> privateReply = Optional.empty();
+
         private Optional<String> reply = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -99,6 +125,7 @@ public final class CommentRuleChange {
         public Builder from(CommentRuleChange other) {
             keywords(other.getKeywords());
             paused(other.getPaused());
+            privateReply(other.getPrivateReply());
             reply(other.getReply());
             return this;
         }
@@ -125,6 +152,28 @@ public final class CommentRuleChange {
             return this;
         }
 
+        @JsonSetter(value = "privateReply", nulls = Nulls.SKIP)
+        public Builder privateReply(Optional<String> privateReply) {
+            this.privateReply = privateReply;
+            return this;
+        }
+
+        public Builder privateReply(String privateReply) {
+            this.privateReply = Optional.ofNullable(privateReply);
+            return this;
+        }
+
+        public Builder privateReply(Nullable<String> privateReply) {
+            if (privateReply.isNull()) {
+                this.privateReply = null;
+            } else if (privateReply.isEmpty()) {
+                this.privateReply = Optional.empty();
+            } else {
+                this.privateReply = Optional.of(privateReply.get());
+            }
+            return this;
+        }
+
         @JsonSetter(value = "reply", nulls = Nulls.SKIP)
         public Builder reply(Optional<String> reply) {
             this.reply = reply;
@@ -137,12 +186,15 @@ public final class CommentRuleChange {
         }
 
         public CommentRuleChange build() {
-            return new CommentRuleChange(keywords, paused, reply, additionalProperties);
+            return new CommentRuleChange(keywords, paused, privateReply, reply, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("keywords") || key.equalsIgnoreCase("paused") || key.equalsIgnoreCase("reply")) {
+            if (key.equalsIgnoreCase("keywords")
+                    || key.equalsIgnoreCase("paused")
+                    || key.equalsIgnoreCase("privateReply")
+                    || key.equalsIgnoreCase("reply")) {
                 return;
             }
             this.additionalProperties.put(key, value);

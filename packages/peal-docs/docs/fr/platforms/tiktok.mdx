@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/tiktok.svg
 ---
 
-Comment connecter un compte TikTok, ce qu’une publication peut y contenir, et les options qu’elle prend.
+Les règles de TikTok demandent à une application de montrer les réglages du compte avant de publier, si bien que l’éditeur les lit sur TikTok. Tant que TikTok n’a pas audité l’application du serveur, il n’accepte que des publications privées.
 
 ## En bref [#at-a-glance]
+
+Voici ce qu’une publication TikTok peut contenir :
 
 |                  |                                |
 | ---------------- | ------------------------------ |
@@ -19,72 +21,74 @@ Comment connecter un compte TikTok, ce qu’une publication peut y contenir, et 
 
 Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms).
 
-## Connecter [#connect]
+## Connecter un compte [#connect]
 
-Sous **TikTok**, choisissez **Connecter TikTok**, connectez-vous sur TikTok et autorisez Peal. Il demande :
+Sous **TikTok**, cliquez sur **Connecter TikTok**, connectez-vous sur TikTok et autorisez Peal. Il demande :
 
-- votre profil et votre nom d’utilisateur ;
-- à publier des vidéos et des photos sur votre compte ;
-- à lire vos vidéos, pour leurs chiffres dans les [statistiques](/guides/engage/analytics). Vous pouvez refuser ce point sur la page de TikTok : le canal publie alors sans statistiques.
+- Votre profil et votre nom d’utilisateur.
+- Le droit de publier des vidéos et des photos sur votre compte.
+- Le droit de lire vos vidéos, pour leurs chiffres dans les [statistiques](/guides/engage/analytics). Vous pouvez refuser ce point sur la page de TikTok, et le canal publie alors sans statistiques.
 
 **Canaux** propose TikTok une fois le serveur Peal configuré pour lui (voir [Sur votre propre serveur](#self-hosting)).
 
 <Callout
   type="warning"
-  title="Tant que TikTok n’a pas audité l’application du serveur"
+  title="TikTok n’accepte que des publications privées tant qu’il n’a pas audité l’application"
 >
   TikTok n’accepte que des publications privées d’une application qu’il n’a pas
-  auditée : le compte doit être privé quand la publication part, et la
+  auditée. Le compte doit être privé quand la publication part, et la
   publication visible par vous seul (**Moi uniquement**). Toute autre
-  publication échoue avec « la plateforme n’accepte que des publications privées
-  de l’application de ce serveur ». Demandez à l’opérateur du serveur si TikTok
+  publication échoue avec « la plateforme n’accepte que des publications privées
+  de l’application de ce serveur ». Demandez à l’opérateur du serveur si TikTok
   l’a auditée.
 </Callout>
 
 ## Options [#options]
 
-L’éditeur montre d’abord celles-ci. **Nom dans l’API** est le nom de l’option par l’API.
+L’éditeur montre d’abord celles-ci. **Nom dans l’API** est le nom de l’option dans l’API.
 
 | Option                              | Nom dans l’API      | Dans l’éditeur                                                                                           |
 | ----------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Qui peut voir cette publication** | `privacyLevel`      | Obligatoire, sans valeur par défaut : l’une des audiences du compte ([voir plus bas](#account-settings)) |
-| **Autoriser les commentaires**      | `disableComment`    | Désactivé tant que vous ne l’activez pas. Par l’API, c’est l’inverse : `true` le désactive               |
-| **Autoriser le Duo**                | `disableDuet`       | Désactivé tant que vous ne l’activez pas. Par l’API, c’est l’inverse : `true` le désactive               |
-| **Autoriser le Collage**            | `disableStitch`     | Désactivé tant que vous ne l’activez pas. Par l’API, c’est l’inverse : `true` le désactive               |
+| **Qui peut voir cette publication** | `privacyLevel`      | Obligatoire, sans valeur par défaut : l’une des audiences du compte ([voir plus bas](#account-settings)) |
+| **Autoriser les commentaires**      | `disableComment`    | Désactivé tant que vous ne l’activez pas                                                                 |
+| **Autoriser le Duo**                | `disableDuet`       | Désactivé tant que vous ne l’activez pas                                                                 |
+| **Autoriser le Collage**            | `disableStitch`     | Désactivé tant que vous ne l’activez pas                                                                 |
 | Divulgation d’un contenu commercial | `commercialContent` | Voir [Contenu commercial](#commercial-content)                                                           |
 | Contenu généré par IA               | `aiGenerated`       | Indique que la publication contient du contenu généré par IA                                             |
 
-Les autres ne sont envoyées que si vous les choisissez. Certaines ne valent que pour certains médias : l’éditeur les montre pour ceux-là, et la programmation les refuse sur une autre publication.
+Dans l’API, les trois options **Autoriser** se lisent à l’inverse : `true` désactive les commentaires, le Duo ou le Collage.
+
+Peal n’envoie chacune des autres options que si vous la réglez. Certaines ne valent que pour certains médias : l’éditeur les montre pour ceux-là, et la programmation les refuse sur une autre publication.
 
 | Option                                    | Nom dans l’API          | Valeurs                                                                 | Par défaut        |
 | ----------------------------------------- | ----------------------- | ----------------------------------------------------------------------- | ----------------- |
 | **Image de couverture, en millisecondes** | `videoCoverTimestampMs` | Une image d’une vidéo, en millisecondes depuis son début, dans sa durée | La première image |
-| **Titre de la publication photo**         | `photoTitle`            | Photos : 90 caractères au plus, comptés comme TikTok les compte         | Pas de titre      |
-| **Ajouter de la musique automatiquement** | `autoAddMusic`          | Photos : oui ou non                                                     | Non               |
-| **Photo de couverture**                   | `photoCoverIndex`       | Photos : la place de la couverture, à partir de 0 pour la première      | La première photo |
+| **Titre de la publication photo**         | `photoTitle`            | Photos : 90 caractères au plus, comptés comme TikTok les compte         | Pas de titre      |
+| **Ajouter de la musique automatiquement** | `autoAddMusic`          | Photos : oui ou non                                                     | Non               |
+| **Photo de couverture**                   | `photoCoverIndex`       | Photos : la place de la couverture, à partir de 0 pour la première      | La première photo |
 
-Le texte d’une publication photo en est la description, et son titre est à part.
+Le texte d’une publication photo en est la description. Son titre est à part.
 
 ### Contenu commercial [#commercial-content]
 
-Pour divulguer un contenu commercial sur TikTok, activez **Divulguer un contenu commercial**, puis dites de quelle marque la publication fait la promotion :
+Pour divulguer un contenu commercial sur TikTok, activez **Divulguer un contenu commercial**. Dites ensuite de quelle marque la publication fait la promotion :
 
 | Choix                 | Nom dans l’API | Pour                | Mention de TikTok        |
 | --------------------- | -------------- | ------------------- | ------------------------ |
-| **Votre marque**      | `brandOrganic` | Votre propre marque | « Contenu promotionnel » |
-| **Contenu de marque** | `brandContent` | Un tiers            | « Partenariat rémunéré » |
+| **Votre marque**      | `brandOrganic` | Votre propre marque | « Contenu promotionnel » |
+| **Contenu de marque** | `brandContent` | Un tiers            | « Partenariat rémunéré » |
 
-Vous pouvez choisir les deux. Un contenu de marque ne peut pas être visible par vous seul.
+Vous pouvez sélectionner les deux. Un contenu de marque ne peut pas être visible par vous seul.
 
 ### Ce que l’éditeur lit sur TikTok [#account-settings]
 
-Sur un canal TikTok, l’éditeur lit les réglages du compte sur TikTok, comme le demandent les règles de TikTok. Il :
+Sur un canal TikTok, l’éditeur lit les réglages du compte sur TikTok, comme le demandent les règles de TikTok. Voici ce qu’il en fait :
 
-- nomme le compte au nom duquel la publication part ;
-- ne propose que les audiences du compte (un compte public : tout le monde, amis, moi uniquement ; un compte privé : abonnés, amis, moi uniquement) ;
-- grise les interactions que son titulaire a désactivées sur TikTok ;
-- retire le Duo et le Collage des publications de photos ;
-- dit quelle mention ajoute une divulgation.
+- Il nomme le compte au nom duquel la publication part.
+- Il ne propose que les audiences du compte. Un compte public a tout le monde, amis et moi uniquement. Un compte privé a abonnés, amis et moi uniquement.
+- Il grise les interactions que le titulaire du compte a désactivées sur TikTok.
+- Il retire le Duo et le Collage des publications de photos.
+- Il dit quelle mention ajoute une divulgation.
 
 La programmation revérifie ces réglages, avec la durée maximale des vidéos du compte. La mention de consentement de TikTok se trouve sous les options, et publier vaut acceptation.
 
@@ -94,4 +98,4 @@ Peal ne lit pas encore les commentaires sur TikTok.
 
 ## Sur votre propre serveur [#self-hosting]
 
-Un serveur auto-hébergé propose TikTok une fois son application enregistrée : voir [TikTok](/self-hosting/platforms#tiktok). D’ici là, **Canaux** ne le propose pas.
+Un serveur auto-hébergé propose TikTok une fois son application enregistrée : voyez [TikTok](/self-hosting/platforms#tiktok). D’ici là, **Canaux** ne le propose pas.

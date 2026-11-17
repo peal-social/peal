@@ -168,5 +168,9 @@ export const toConversationDetailView = (
   window: {
     closesAt: Option.getOrNull(detail.window.closesAt),
     open: detail.window.open,
+    personClosesAt: detail.personWindow.pipe(
+      Option.flatMap(({ closesAt }) => closesAt),
+      Option.getOrNull
+    ),
   },
 });

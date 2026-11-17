@@ -20,6 +20,9 @@ public record AdAccount : IJsonOnDeserialized
     [JsonPropertyName("amountSpent")]
     public long? AmountSpent { get; set; }
 
+    [JsonPropertyName("capabilities")]
+    public AdAccountCapabilities? Capabilities { get; set; }
+
     [JsonPropertyName("connectedAt")]
     public required string ConnectedAt { get; set; }
 
@@ -56,6 +59,9 @@ public record AdAccount : IJsonOnDeserialized
     [JsonPropertyName("newAdsUntrackedUntil")]
     public string? NewAdsUntrackedUntil { get; set; }
 
+    [JsonPropertyName("reachedThrough")]
+    public string? ReachedThrough { get; set; }
+
     /// <summary>
     /// An amount in the currency's minor units, as the ad network counts them: cents for EUR and USD, yen for JPY. Divide by 10 to the power of the account's `minorUnitDigits` to show it.
     /// </summary>
@@ -73,6 +79,9 @@ public record AdAccount : IJsonOnDeserialized
 
     [JsonPropertyName("timeZone")]
     public required string TimeZone { get; set; }
+
+    [JsonPropertyName("unreachableSince")]
+    public string? UnreachableSince { get; set; }
 
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();

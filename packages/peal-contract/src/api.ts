@@ -240,6 +240,8 @@ export {
   CommentRuleOutcomeSchema,
   commentRuleMatchesShown,
   CommentRulePageSchema,
+  CommentRulePrivateAbilitySchema,
+  CommentRulePrivateStatusSchema,
   CommentRuleRefusalSchema,
   CommentRuleSchema,
   CommentRuleStatusSchema,
@@ -256,6 +258,7 @@ export type {
   CommentRuleAbility,
   CommentRuleChange,
   CommentRulePage,
+  CommentRulePrivateAbility,
   CommentRuleRefusal,
   CommentRuleStatus,
   NewCommentRule,
@@ -1958,6 +1961,9 @@ export {
   inboxPlatforms,
   inboxPlatformsText,
   inboxStandardPlatforms,
+  InboxPrivateReplyReasonSchema,
+  InboxPrivateReplySchema,
+  InboxPrivateReplyStatusSchema,
   InboxReplyReasonSchema,
   InboxReplySchema,
   InboxReplyStatusSchema,
@@ -1980,6 +1986,9 @@ export type {
   InboxComment,
   InboxCommentState,
   InboxModerationAction,
+  InboxPrivateReply,
+  InboxPrivateReplyReason,
+  InboxPrivateReplyStatus,
   InboxReply,
   InboxReplyReason,
   InboxReplyStatus,
@@ -2038,9 +2047,13 @@ export {
   InboxMessageChannelSchema,
   InboxMessageSettingsSchema,
   InboxReplyWindowSchema,
+  humanAgentWindowDays,
   maxInboxMessageLength,
   maxInboxMessagesPerPage,
   NewInboxMessageSchema,
+  NewInboxPrivateReplySchema,
+  privateReplyLimits,
+  privateReplyWindowDays,
 } from "./inbox-messages.ts";
 
 export type {
@@ -2055,7 +2068,19 @@ export type {
   InboxMessageSettings,
   InboxParticipant,
   NewInboxMessage,
+  NewInboxPrivateReply,
 } from "./inbox-messages.ts";
+
+export {
+  PrivateReplyNotPossible,
+  PrivateReplyRefusalSchema,
+} from "./private-reply-not-possible.ts";
+
+export type { PrivateReplyRefusal } from "./private-reply-not-possible.ts";
+
+export { PrivateReplyPending } from "./private-reply-pending.ts";
+
+export { InboxPrivateReplyNotFound } from "./inbox-private-reply-not-found.ts";
 
 export { MessageMentionsOutside } from "./message-mentions-outside.ts";
 
@@ -2071,7 +2096,12 @@ export { InboxReviewThreadNotFound } from "./inbox-review-thread-not-found.ts";
 
 export { InboxActionFailed } from "./inbox-action-failed.ts";
 
-export { InboxActionUnavailable } from "./inbox-action-unavailable.ts";
+export {
+  InboxActionUnavailable,
+  InboxActionUnavailableReasonSchema,
+} from "./inbox-action-unavailable.ts";
+
+export type { InboxActionUnavailableReason } from "./inbox-action-unavailable.ts";
 
 export { InboxCommentGone } from "./inbox-comment-gone.ts";
 

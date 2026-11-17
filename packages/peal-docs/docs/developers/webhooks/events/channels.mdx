@@ -6,7 +6,9 @@ sidebar:
   label: "Channels"
 ---
 
-The events of a channel, each with its fields and an example payload. An endpoint [filtered on channels](/developers/webhooks#filters) hears them when the channel is listed. A website's channel has the platform of its site, beside the social networks': `wordpress`, `wordpressCom`, `devto` or `hashnode`.
+Each event below lists its fields and shows an example payload. An endpoint [filtered on channels](/developers/webhooks#filters) receives them when the channel is listed.
+
+A website's channel has its site's platform, next to the social networks' ones: `wordpress`, `wordpressCom`, `devto` or `hashnode`.
 
 ## channel.connected [#channel-connected]
 
@@ -37,7 +39,7 @@ An account was connected to the workspace, or a channel the workspace had was au
 
 ## channel.disconnected [#channel-disconnected]
 
-A channel was disconnected from the workspace, or its partner [moved it](/developers/embedding/operate#move-channel) to another of its workspaces, which sends `channel.connected` for it under a new id.
+A channel was disconnected from the workspace, or its partner [moved it](/developers/embedding/operate#move-channel) to another of its workspaces. That workspace then sends `channel.connected` for it, under a new id.
 
 | Field         | Type   | What it holds          |
 | ------------- | ------ | ---------------------- |
@@ -62,7 +64,7 @@ A channel was disconnected from the workspace, or its partner [moved it](/develo
 
 ## channel.reconnect_needed [#channel-reconnect-needed]
 
-The channel's authorization stopped working: nothing is posted there until someone [reconnects it](/guides/channels#reconnect).
+The channel's authorization stopped working. Nothing is posted there until someone [reconnects it](/guides/channels#reconnect).
 
 | Field         | Type   | What it holds          |
 | ------------- | ------ | ---------------------- |
@@ -87,7 +89,7 @@ The channel's authorization stopped working: nothing is posted there until someo
 
 ## channel.disabled [#channel-disabled]
 
-A member turned the channel off: nothing is posted there until someone turns it back on. A post that reaches its time on it fails there (`channelDisabled`). The channel keeps its authorization, its posts and its analytics.
+A member turned the channel off, and nothing is posted there until someone turns it back on. A post that reaches its time on it fails there (`channelDisabled`). The channel keeps its authorization, its posts and its analytics.
 
 | Field         | Type   | What it holds          |
 | ------------- | ------ | ---------------------- |
@@ -112,7 +114,7 @@ A member turned the channel off: nothing is posted there until someone turns it 
 
 ## channel.enabled [#channel-enabled]
 
-A member turned the channel back on: it posts again. When its authorization stopped working or ran out meanwhile, `channel.reconnect_needed` follows.
+A member turned the channel back on, so it posts again. If its authorization stopped working or ran out in the meantime, `channel.reconnect_needed` follows.
 
 | Field         | Type   | What it holds          |
 | ------------- | ------ | ---------------------- |
@@ -137,9 +139,9 @@ A member turned the channel back on: it posts again. When its authorization stop
 
 ## channel.expiring [#channel-expiring]
 
-The channel's authorization cannot be renewed, and ends at `expiresAt`, as a LinkedIn profile's does after 60 days: someone [reconnects it](/guides/channels#reconnect) before then, or nothing is posted there after.
+The channel's authorization can't be renewed, and ends at `expiresAt`, as a LinkedIn profile's does after 60 days. Someone has to [reconnect it](/guides/channels#reconnect) before then, or nothing is posted there afterwards.
 
-It is sent once for each expiry, a week ahead at most: schedule your own reminders from `expiresAt`.
+Peal sends it once for each expiry, a week ahead at most. Schedule your own reminders from `expiresAt`.
 
 | Field         | Type   | What it holds                                     |
 | ------------- | ------ | ------------------------------------------------- |

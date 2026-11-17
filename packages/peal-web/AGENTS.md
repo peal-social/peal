@@ -55,7 +55,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   app: `app` (workspaces), `app/agenda`, `app/report`, `app/notices`, `app/notices/preferences`,
   `app/account` (in the `(personal)` route group), `app/[workspaceId]`
   (the workspace's home: connecting channels and assistants, a
-  quickstart), `…/platforms` (Console's, for channel:read),
+  quickstart), `…/platforms` (PealAPI's, for channel:read),
   `app/[workspaceId]/channels`, `…/media`, `…/calendar`,
   `…/analytics`, `…/inbox` and `…/inbox/[threadId]` (for `engagement:read`:
   not-found otherwise, as for staff acting as a member), `…/ads`,
@@ -95,8 +95,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `PEAL_DOCS_URL` and **Support** at `PEAL_CONTACT_URL` when set, the
   language switcher and the account menu) and the contract functions at
   the foot. `app/[workspaceId]/layout.tsx` gives a workspace's pages
-  `WorkspaceShell`, whose `SidebarView` holds the Studio and Console
-  switch with Peal's mark, the mode's pages, a section's pages under a way
+  `WorkspaceShell`, whose `SidebarView` holds the PealStudio and
+  PealAPI switch with Peal's mark, the mode's pages, a section's pages under a way
   back, Settings and the workspace switcher; `app/(personal)/layout.tsx`
   gives the person's pages `PersonalShell` (their pages, then each
   workspace). Someone signed out, not a member, or who must first turn on
@@ -112,7 +112,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   tested) from the MCP endpoint at the address the browser has Peal open
   at, after hydration: never a key. Brand marks come from simple-icons
   (`BrandMark`); LinkedIn, Slack and OpenAI, which are not in it, get a
-  plain tile of their letters (`letters` in `platforms-view.tsx`). Console's Platforms lists `platformRowsOf`
+  plain tile of their letters (`letters` in `platforms-view.tsx`). PealAPI's Platforms lists `platformRowsOf`
   (`#platforms/rows.ts`): this server's capabilities beside the
   workspace's channels.
 - The web app reports its errors to `POST /api/client-errors`:
@@ -506,10 +506,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `engagement:message`): text as text, never markup, a file count (never
   a file), the box only where `abilities.send` is `available` and the
   reply window is open, under an `Idempotency-Key` kept until the message
-  is made. Reading a conversation never marks it read. The settings
-  (`message-settings.tsx`) show to `channel:connect`: each Mastodon and
-  Bluesky channel's switch, and, for `organization:secure`, the
-  applications let read the messages, by client id.
+  is made; where the window has an end (Messenger's and Instagram's 24
+  hours) `ReplyWindowView` says until when, or why the box is gone.
+  Reading a conversation never marks it read. The settings
+  (`message-settings.tsx`) show to `channel:connect`: each Mastodon,
+  Bluesky, Facebook Page and Instagram channel's switch (a Meta one says
+  who may write before Meta's App Review, an Instagram one the Connected
+  tools setting; one refused `reconnect` offers the sign-in with
+  `messages=true`), and, for `organization:secure`, the applications let
+  read the messages, by client id.
 - The inbox (`components/inbox/`) lists threads with counts and never a
   comment's text (`ThreadsList`), and shows one whole (`ThreadScreen`):
   views in `inbox-views.tsx` take links as props, so tests render each
@@ -517,6 +522,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   moderation only where the thread's `abilities` say `available`, show a
   reply's journal status, and for an `unconfirmed` one only the two
   answers a person gives after checking the platform: never a resend.
+- A comment's private reply (`PrivateReplyPart` in `thread-screen.tsx`,
+  `PrivateReplyView` and `PrivateReplyFormView` in `inbox-views.tsx`):
+  its state shows to who may read messages (the server answers it null
+  otherwise); "Reply privately" opens a dialog only for
+  `engagement:message`, while `abilities.privateReply` is `available`,
+  the comment is shown and before its `privateReplyUntil`, and none holds
+  the comment (a failed one lets another through). The dialog counts the
+  text as Meta does (`privateReplyFit`: Instagram's bytes, Messenger's
+  characters), sends under an `Idempotency-Key` kept until the reply is
+  made, says one message within seven days and that the person answers
+  first, and that saying the message is automatic is the member's to
+  write: Peal appends nothing. An `unconfirmed` one offers the two
+  answers after checking the conversation, never a resend; `reconnect`
+  links to the inbox's message settings.
 - `AssistantMenu` sits in the composer's text section and works on the text
   for all channels. Render it only for members with `assistant:use`, and
   only while `GET …/assistant` answers `available`; refresh that status after
@@ -731,7 +750,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   which says what a ceiling allows before its button: keep that text.
   The tab keeps the sign-in's workspace in `sessionStorage`
   (`#ads/pending-sign-in.ts`) for the callback page (`CompleteAdSignIn`,
-  its view `AdSignInView`).
+  its view `AdSignInView`). Connecting Google Ads opens a dialog first
+  (`GoogleAdsDisclosureView`, which Google's policy for tools asks of a
+  web app): what Peal reads, that it changes nothing though Google's
+  consent screen names editing, how often, how to remove it, and a link
+  to the docs. Hide what an account's `capabilities` say it lacks (the
+  spending form, results, the ads list); show a campaign's `kind` where
+  it has one.
 - Ad amounts are whole minor units: read what a person types with
   `parseAmount` and write amounts with `useMoney` or `formatMoney`
   (`#ads/money.ts`), with the account's `minorUnitDigits`; never multiply

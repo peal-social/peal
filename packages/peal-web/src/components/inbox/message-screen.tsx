@@ -1,7 +1,7 @@
 "use client";
 
 import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
-import { Exit, Option } from "effect";
+import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { maxInboxMessageLength } from "peal-contract";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { Link } from "#i18n/navigation.ts";
+import { answerWindowOf } from "#inbox/answer-window.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";
 import {
   confirmMessage,
@@ -33,6 +34,7 @@ import {
   DirectMessageView,
   MessageBoxView,
   OutgoingMessageView,
+  ReplyWindowView,
 } from "./message-views.tsx";
 
 // How often the conversation is read again while the tab is visible, so a
@@ -100,11 +102,14 @@ const PagesView = ({
 };
 
 const LoadedConversation = ({
+  byHand,
   cursor,
   detail,
   mayAnswer,
   workspaceId,
 }: {
+  /** The member's own session, not staff acting as them. */
+  readonly byHand: boolean;
   readonly cursor: string;
   readonly detail: InboxConversationDetail;
   readonly mayAnswer: boolean;
@@ -128,8 +133,13 @@ const LoadedConversation = ({
 
   const params = { conversationId: conversation.id, workspaceId };
 
+  // Past Meta's 24 hours, a member answering by hand has until
+  // `personClosesAt`, where the server's Meta app holds the Human Agent
+  // feature: only in their own session, never staff acting as them.
+  const window = answerWindowOf(detail.window, byHand, DateTime.nowUnsafe());
+
   const answers =
-    mayAnswer && detail.abilities.send === "available" && detail.window.open;
+    mayAnswer && detail.abilities.send === "available" && window.answers;
 
   const handleSend = () => {
     setError(null);
@@ -241,8 +251,8 @@ const LoadedConversation = ({
       {conversation.request && answers ? (
         <p className="text-muted-foreground text-sm">{t("thread.request")}</p>
       ) : null}
-      {mayAnswer && !detail.window.open ? (
-        <p className="text-muted-foreground text-sm">{t("box.closed")}</p>
+      {mayAnswer && detail.abilities.send === "available" ? (
+        <ReplyWindowView personOpen={window.personOpen} window={window.shown} />
       ) : null}
       {answers ? (
         <MessageBoxView
@@ -275,11 +285,14 @@ const LoadedConversation = ({
  * is known. `cursor` shows the page of older messages it names.
  */
 export const MessageScreen = ({
+  byHand,
   conversationId,
   cursor,
   mayAnswer,
   workspaceId,
 }: {
+  /** The member's own session, not staff acting as them. */
+  readonly byHand: boolean;
   readonly conversationId: string;
   readonly cursor: string;
   readonly mayAnswer: boolean;
@@ -314,6 +327,7 @@ export const MessageScreen = ({
 
   return (
     <LoadedConversation
+      byHand={byHand}
       cursor={cursor}
       detail={result.value}
       mayAnswer={mayAnswer}

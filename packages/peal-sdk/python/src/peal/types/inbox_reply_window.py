@@ -13,6 +13,9 @@ class InboxReplyWindow(UniversalBaseModel):
         typing.Optional[str], FieldMetadata(alias="closesAt"), pydantic.Field(alias="closesAt")
     ] = None
     open: bool
+    person_closes_at: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="personClosesAt"), pydantic.Field(alias="personClosesAt")
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

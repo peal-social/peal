@@ -5,6 +5,7 @@ import type { DatabaseError } from "#shared/application/database-error.ts";
 import type {
   CommentRuleRecord,
   SentMessageRecord,
+  SentPrivateReplyRecord,
   SentReplyRecord,
   SentReviewReplyRecord,
 } from "#shared/application/personal-data.ts";
@@ -70,6 +71,13 @@ export class EngagementRecords extends Context.Service<
       userId: UserId
     ) => Effect.Effect<readonly SentReviewReplyRecord[], DatabaseError>;
     /** The direct messages the user sent from Peal, oldest first. */
+    /**
+     * The private replies the user sent to the authors of comments, in
+     * any workspace, oldest first; never the comments.
+     */
+    readonly exportUserPrivateReplies: (
+      userId: UserId
+    ) => Effect.Effect<readonly SentPrivateReplyRecord[], DatabaseError>;
     readonly exportUserMessages: (
       userId: UserId
     ) => Effect.Effect<readonly SentMessageRecord[], DatabaseError>;
@@ -105,6 +113,21 @@ export class EngagementRecords extends Context.Service<
     readonly postRemoved: (
       targetId: PostTargetId,
       at: DateTime.Utc
+    ) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Whether one of these channels has its direct messages on (a box):
+     * what keeps a platform's subscription to the account's events.
+     */
+    readonly readsMessages: (
+      channelIds: readonly ChannelId[]
+    ) => Effect.Effect<boolean, DatabaseError>;
+    /**
+     * Makes these channels' boxes ask their platform for the account's
+     * events again at their next read: the subscription they relied on
+     * was stopped for a channel that left.
+     */
+    readonly refollow: (
+      channelIds: readonly ChannelId[]
     ) => Effect.Effect<void, DatabaseError>;
   }
 >()("peal-server/engagement/application/EngagementRecords") {}

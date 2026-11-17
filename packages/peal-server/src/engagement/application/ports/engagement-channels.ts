@@ -13,6 +13,11 @@ import type { Platform } from "#shared/domain/platform.ts";
  * account allowed.
  */
 export interface EngagedChannel {
+  /**
+   * The account's id on its platform, where the channels context gave it:
+   * what tells the account's own comment from someone else's.
+   */
+  readonly accountId?: string;
   readonly connection: Option.Option<ChannelConnection>;
   readonly platform: Platform;
   readonly scopes: readonly string[];

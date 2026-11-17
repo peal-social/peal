@@ -13,7 +13,7 @@ import shutil
 import stat
 import subprocess
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -557,115 +557,102 @@ def _heartbeat(stack: Stack, token: str, key: str = "production_grafana-heartbea
 
 
 @needs_docker
-def test_gatus_loads_the_configuration(stack: Stack) -> None:
-    logs = _run(["docker", "logs", stack.gatus])
+class TestTheStack:
+    """Gatus, the status page and Caddy, started once for these tests,
+    in one of xdist's workers (conftest's scheduler runs a class in
+    one)."""
 
-    assert _request(stack, "http://gatus:8080/health") == (200, '{"status":"UP"}')
-    assert "configuredProviders=[telegram]" in logs.stdout + logs.stderr
+    def test_gatus_loads_the_configuration(self, stack: Stack) -> None:
+        logs = _run(["docker", "logs", stack.gatus])
 
+        assert _request(stack, "http://gatus:8080/health") == (200, '{"status":"UP"}')
+        assert "configuredProviders=[telegram]" in logs.stdout + logs.stderr
 
-@needs_docker
-def test_gatus_runs_every_check(stack: Stack, rendered: Path) -> None:
-    expected = {_key(endpoint["group"], endpoint["name"]) for endpoint in _config(rendered)["endpoints"]}
-    for _ in range(30):
-        _, body = _request(stack, "http://gatus:8080/api/v1/endpoints/statuses")
-        if {endpoint["key"] for endpoint in json.loads(body or "[]")} >= expected:
-            break
-        time.sleep(1)
-    else:
-        pytest.fail(f"Gatus checked {body}")
+    def test_gatus_runs_every_check(self, stack: Stack, rendered: Path) -> None:
+        expected = {_key(endpoint["group"], endpoint["name"]) for endpoint in _config(rendered)["endpoints"]}
+        for _ in range(30):
+            _, body = _request(stack, "http://gatus:8080/api/v1/endpoints/statuses")
+            if {endpoint["key"] for endpoint in json.loads(body or "[]")} >= expected:
+                break
+            time.sleep(1)
+        else:
+            pytest.fail(f"Gatus checked {body}")
 
+    def test_gatus_takes_a_heartbeat_with_its_token(self, stack: Stack) -> None:
+        assert _heartbeat(stack, TOKEN) == 200
 
-@needs_docker
-def test_gatus_takes_a_heartbeat_with_its_token(stack: Stack) -> None:
-    assert _heartbeat(stack, TOKEN) == 200
+    # Named ids: the token is made for this run, and xdist's workers each
+    # collect the tests, which must agree on their names.
+    @pytest.mark.parametrize(
+        "token", ["", "wrong", ENVIRONMENT["TELEGRAM_BOT_TOKEN"]], ids=["empty", "wrong", "telegram-bot-token"]
+    )
+    def test_gatus_refuses_a_heartbeat_with_another_token(self, stack: Stack, token: str) -> None:
+        assert _heartbeat(stack, token) == 401
 
+    @pytest.mark.parametrize(
+        "path",
+        ["/", "/health", "/api/v1/endpoints/statuses", "/api/v1/config", "/api/v1/endpoints/production_api/statuses"],
+    )
+    def test_caddy_shows_the_world_no_dashboard(self, stack: Stack, path: str) -> None:
+        assert _request(stack, f"http://caddy:8080{path}")[0] == 404
 
-@needs_docker
-@pytest.mark.parametrize("token", ["", "wrong", ENVIRONMENT["TELEGRAM_BOT_TOKEN"]])
-def test_gatus_refuses_a_heartbeat_with_another_token(stack: Stack, token: str) -> None:
-    assert _heartbeat(stack, token) == 401
+    def test_caddy_takes_heartbeats_by_post_only(self, stack: Stack) -> None:
+        url = "http://caddy:8080/api/v1/endpoints/production_grafana-heartbeat/external?success=true"
 
+        assert _request(stack, url, "--header", f"Authorization: Bearer {TOKEN}")[0] == 404
 
-@needs_docker
-@pytest.mark.parametrize(
-    "path",
-    ["/", "/health", "/api/v1/endpoints/statuses", "/api/v1/config", "/api/v1/endpoints/production_api/statuses"],
-)
-def test_caddy_shows_the_world_no_dashboard(stack: Stack, path: str) -> None:
-    assert _request(stack, f"http://caddy:8080{path}")[0] == 404
+    @pytest.mark.parametrize(
+        "path",
+        ["/", "/api/v1/endpoints/statuses", "/api/v1/endpoints/peal-production_api/statuses"],
+    )
+    def test_the_status_page_shows_the_dashboard(self, stack: Stack, path: str) -> None:
+        assert _request(stack, f"{STATUS_PAGE}{path}")[0] == 200
 
+    def test_the_status_page_lists_production_s_checks_alone(self, stack: Stack, rendered: Path) -> None:
+        expected = {_key(endpoint["group"], endpoint["name"]) for endpoint in _status_config(rendered)["endpoints"]}
+        for _ in range(30):
+            _, body = _request(stack, f"{STATUS_PAGE}/api/v1/endpoints/statuses")
+            listed = {endpoint["key"] for endpoint in json.loads(body or "[]")}
+            if listed >= expected:
+                break
+            time.sleep(1)
+        else:
+            pytest.fail(f"The status page lists {body}")
 
-@needs_docker
-def test_caddy_takes_heartbeats_by_post_only(stack: Stack) -> None:
-    url = "http://caddy:8080/api/v1/endpoints/production_grafana-heartbeat/external?success=true"
+        assert listed == expected
+        assert "sandbox" not in body
 
-    assert _request(stack, url, "--header", f"Authorization: Bearer {TOKEN}")[0] == 404
+    @pytest.mark.parametrize(
+        ("path", "source"),
+        [
+            ("/peal/mark.svg", "icon.svg"),
+            ("/favicon.ico", "icon.svg"),
+            ("/apple-touch-icon.png", "apple-icon.png"),
+            ("/favicon-32x32.png", "apple-icon.png"),
+        ],
+    )
+    def test_the_status_page_serves_peal_s_icons(self, stack: Stack, path: str, source: str) -> None:
+        """Peal's, not Gatus's, at the paths browsers ask for."""
+        icon = INFRA.parent.parent / "peal-web" / "src" / "app" / source
 
+        assert _headers(stack, f"{STATUS_PAGE}{path}")["Content-Length"] == str(icon.stat().st_size)
 
-@needs_docker
-@pytest.mark.parametrize(
-    "path",
-    ["/", "/api/v1/endpoints/statuses", "/api/v1/endpoints/peal-production_api/statuses"],
-)
-def test_the_status_page_shows_the_dashboard(stack: Stack, path: str) -> None:
-    assert _request(stack, f"{STATUS_PAGE}{path}")[0] == 200
+    @pytest.mark.parametrize("name", ["geist.woff2", "geist-mono.woff2", "geist-license.txt"])
+    def test_the_status_page_serves_its_fonts(self, stack: Stack, name: str) -> None:
+        assert _headers(stack, f"{STATUS_PAGE}/peal/{name}")["status"] == "200"
 
+    def test_the_status_page_is_light_only(self, stack: Stack) -> None:
+        """Gatus's theme cookie, set to light on the page itself, so its script
+        reads it before it draws; and Peal's tokens over Gatus's."""
+        _, css = _request(stack, f"{STATUS_PAGE}/css/custom.css")
 
-@needs_docker
-def test_the_status_page_lists_production_s_checks_alone(stack: Stack, rendered: Path) -> None:
-    expected = {_key(endpoint["group"], endpoint["name"]) for endpoint in _status_config(rendered)["endpoints"]}
-    for _ in range(30):
-        _, body = _request(stack, f"{STATUS_PAGE}/api/v1/endpoints/statuses")
-        listed = {endpoint["key"] for endpoint in json.loads(body or "[]")}
-        if listed >= expected:
-            break
-        time.sleep(1)
-    else:
-        pytest.fail(f"The status page lists {body}")
+        assert _headers(stack, f"{STATUS_PAGE}/")["Set-Cookie"].startswith("theme=light; Path=/;")
+        assert "--background: 60 9.1% 97.8%" in css
 
-    assert listed == expected
-    assert "sandbox" not in body
-
-
-@needs_docker
-@pytest.mark.parametrize(
-    ("path", "source"),
-    [
-        ("/peal/mark.svg", "icon.svg"),
-        ("/favicon.ico", "icon.svg"),
-        ("/apple-touch-icon.png", "apple-icon.png"),
-        ("/favicon-32x32.png", "apple-icon.png"),
-    ],
-)
-def test_the_status_page_serves_peal_s_icons(stack: Stack, path: str, source: str) -> None:
-    """Peal's, not Gatus's, at the paths browsers ask for."""
-    icon = INFRA.parent.parent / "peal-web" / "src" / "app" / source
-
-    assert _headers(stack, f"{STATUS_PAGE}{path}")["Content-Length"] == str(icon.stat().st_size)
-
-
-@needs_docker
-@pytest.mark.parametrize("name", ["geist.woff2", "geist-mono.woff2", "geist-license.txt"])
-def test_the_status_page_serves_its_fonts(stack: Stack, name: str) -> None:
-    assert _headers(stack, f"{STATUS_PAGE}/peal/{name}")["status"] == "200"
-
-
-@needs_docker
-def test_the_status_page_is_light_only(stack: Stack) -> None:
-    """Gatus's theme cookie, set to light on the page itself, so its script
-    reads it before it draws; and Peal's tokens over Gatus's."""
-    _, css = _request(stack, f"{STATUS_PAGE}/css/custom.css")
-
-    assert _headers(stack, f"{STATUS_PAGE}/")["Set-Cookie"].startswith("theme=light; Path=/;")
-    assert "--background: 60 9.1% 97.8%" in css
-
-
-@needs_docker
-def test_the_status_page_takes_no_heartbeat(stack: Stack) -> None:
-    """Even with the right token: heartbeats go to the uptime server's own
-    name."""
-    assert _heartbeat(stack, TOKEN, origin=STATUS_PAGE) == 405
+    def test_the_status_page_takes_no_heartbeat(self, stack: Stack) -> None:
+        """Even with the right token: heartbeats go to the uptime server's own
+        name."""
+        assert _heartbeat(stack, TOKEN, origin=STATUS_PAGE) == 405
 
 
 @needs_docker
@@ -705,17 +692,17 @@ TELEGRAM_ONLY = {name: "synthetic" for name in _provided() if not name.endswith(
 
 
 @pytest.fixture(scope="module")
-def rendered_unset(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def rendered_unset(rendered_with: Callable[..., Path]) -> Path:
     """The uptime server's files with a vault whose Slack webhooks are
     empty."""
     credentials = TELEGRAM_ONLY | dict.fromkeys([*SLACK, "SLACK_CHANGELOG_WEBHOOK_URL"], "")
-    return render_inventory(tmp_path_factory.mktemp("slack-unset"), uptime_credentials=credentials)
+    return rendered_with(uptime_credentials=credentials)
 
 
 @pytest.fixture(scope="module")
-def rendered_slack(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def rendered_slack(rendered_with: Callable[..., Path]) -> Path:
     """The same with both alert webhooks set."""
-    return render_inventory(tmp_path_factory.mktemp("slack"), uptime_credentials=TELEGRAM_ONLY | SLACK)
+    return rendered_with(uptime_credentials=TELEGRAM_ONLY | SLACK)
 
 
 def _files(folder: Path) -> dict[str, bytes]:

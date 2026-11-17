@@ -120,8 +120,9 @@ Pull requests are squash-merged, so the title becomes the commit on `main`.
 
 A maintainer reviews each pull request, as
 [CODEOWNERS](CODEOWNERS) says. It merges through the merge queue, which runs
-CI again on the commit that lands: its `ci` check passes once every job the
-change needs has passed, the `sdks` jobs included when the contract changed.
+CI again on the commit that lands, with every job whatever the change: a
+pull request's run skips the jobs its change cannot reach, the queue's never
+does.
 
 ## Licence of contributions
 
@@ -591,6 +592,8 @@ In development, these are the ones you may want:
 | `PEAL_AI_IMAGE_MODEL`         | unset                            | The image model: required with a provider                              |
 | `PEAL_AI_IMAGE_API_KEY`       | unset                            | The image provider's key, if it takes one                              |
 | `PEAL_ADS`                    | `off`                            | `read` connects Meta ad accounts, `spend` also boosts posts            |
+| `PEAL_ADS_NETWORKS`           | `meta`                           | `meta,google` adds Google Ads, read only                               |
+| `GOOGLE_ADS_CLIENT_ID`        | unset: no Google Ads             | Its Google client's id, with `GOOGLE_ADS_CLIENT_SECRET`                |
 | `STRIPE_SECRET_KEY`           | unset: no billing, no limits     | Bills workspaces through Stripe, with the variables it needs           |
 | `TURNSTILE_SITE_KEY`          | unset: no captcha                | With `TURNSTILE_SECRET_KEY`, Turnstile on sign-up and resets           |
 | `MCP_DYNAMIC_REGISTRATION`    | `false`                          | Lets MCP clients register themselves                                   |

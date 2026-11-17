@@ -45,6 +45,7 @@ if typing.TYPE_CHECKING:
     from .ad_account import AdAccount
     from .ad_account_busy_encoded import AdAccountBusyEncoded
     from .ad_account_busy_encoded_tag import AdAccountBusyEncodedTag
+    from .ad_account_capabilities import AdAccountCapabilities
     from .ad_account_not_found_encoded import AdAccountNotFoundEncoded
     from .ad_account_spend_cap_exceeded_encoded import AdAccountSpendCapExceededEncoded
     from .ad_account_status import AdAccountStatus
@@ -298,6 +299,8 @@ if typing.TYPE_CHECKING:
     from .comment_rule_not_possible_encoded_tag import CommentRuleNotPossibleEncodedTag
     from .comment_rule_outcome import CommentRuleOutcome
     from .comment_rule_page import CommentRulePage
+    from .comment_rule_private_ability import CommentRulePrivateAbility
+    from .comment_rule_private_status import CommentRulePrivateStatus
     from .comment_rule_refusal import CommentRuleRefusal
     from .comment_rule_status import CommentRuleStatus
     from .comment_selection import CommentSelection
@@ -539,6 +542,7 @@ if typing.TYPE_CHECKING:
     from .inbox_action_unavailable_encoded import InboxActionUnavailableEncoded
     from .inbox_action_unavailable_encoded_standing import InboxActionUnavailableEncodedStanding
     from .inbox_action_unavailable_encoded_tag import InboxActionUnavailableEncodedTag
+    from .inbox_action_unavailable_reason import InboxActionUnavailableReason
     from .inbox_author import InboxAuthor
     from .inbox_collection_end import InboxCollectionEnd
     from .inbox_comment import InboxComment
@@ -564,6 +568,10 @@ if typing.TYPE_CHECKING:
     from .inbox_owner_reply import InboxOwnerReply
     from .inbox_owner_reply_moderation import InboxOwnerReplyModeration
     from .inbox_participant import InboxParticipant
+    from .inbox_private_reply import InboxPrivateReply
+    from .inbox_private_reply_not_found_encoded import InboxPrivateReplyNotFoundEncoded
+    from .inbox_private_reply_reason import InboxPrivateReplyReason
+    from .inbox_private_reply_status import InboxPrivateReplyStatus
     from .inbox_reply import InboxReply
     from .inbox_reply_not_found_encoded import InboxReplyNotFoundEncoded
     from .inbox_reply_reason import InboxReplyReason
@@ -906,6 +914,9 @@ if typing.TYPE_CHECKING:
     from .prices import Prices
     from .prices_accounts import PricesAccounts
     from .prices_meters import PricesMeters
+    from .private_reply_not_possible_encoded import PrivateReplyNotPossibleEncoded
+    from .private_reply_pending_encoded import PrivateReplyPendingEncoded
+    from .private_reply_refusal import PrivateReplyRefusal
     from .probe_state import ProbeState
     from .publication_attempt import PublicationAttempt
     from .queue import Queue
@@ -1217,6 +1228,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AdAccount": ".ad_account",
     "AdAccountBusyEncoded": ".ad_account_busy_encoded",
     "AdAccountBusyEncodedTag": ".ad_account_busy_encoded_tag",
+    "AdAccountCapabilities": ".ad_account_capabilities",
     "AdAccountNotFoundEncoded": ".ad_account_not_found_encoded",
     "AdAccountSpendCapExceededEncoded": ".ad_account_spend_cap_exceeded_encoded",
     "AdAccountStatus": ".ad_account_status",
@@ -1465,6 +1477,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CommentRuleNotPossibleEncodedTag": ".comment_rule_not_possible_encoded_tag",
     "CommentRuleOutcome": ".comment_rule_outcome",
     "CommentRulePage": ".comment_rule_page",
+    "CommentRulePrivateAbility": ".comment_rule_private_ability",
+    "CommentRulePrivateStatus": ".comment_rule_private_status",
     "CommentRuleRefusal": ".comment_rule_refusal",
     "CommentRuleStatus": ".comment_rule_status",
     "CommentSelection": ".comment_selection",
@@ -1703,6 +1717,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "InboxActionUnavailableEncoded": ".inbox_action_unavailable_encoded",
     "InboxActionUnavailableEncodedStanding": ".inbox_action_unavailable_encoded_standing",
     "InboxActionUnavailableEncodedTag": ".inbox_action_unavailable_encoded_tag",
+    "InboxActionUnavailableReason": ".inbox_action_unavailable_reason",
     "InboxAuthor": ".inbox_author",
     "InboxCollectionEnd": ".inbox_collection_end",
     "InboxComment": ".inbox_comment",
@@ -1728,6 +1743,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "InboxOwnerReply": ".inbox_owner_reply",
     "InboxOwnerReplyModeration": ".inbox_owner_reply_moderation",
     "InboxParticipant": ".inbox_participant",
+    "InboxPrivateReply": ".inbox_private_reply",
+    "InboxPrivateReplyNotFoundEncoded": ".inbox_private_reply_not_found_encoded",
+    "InboxPrivateReplyReason": ".inbox_private_reply_reason",
+    "InboxPrivateReplyStatus": ".inbox_private_reply_status",
     "InboxReply": ".inbox_reply",
     "InboxReplyNotFoundEncoded": ".inbox_reply_not_found_encoded",
     "InboxReplyReason": ".inbox_reply_reason",
@@ -2057,6 +2076,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Prices": ".prices",
     "PricesAccounts": ".prices_accounts",
     "PricesMeters": ".prices_meters",
+    "PrivateReplyNotPossibleEncoded": ".private_reply_not_possible_encoded",
+    "PrivateReplyPendingEncoded": ".private_reply_pending_encoded",
+    "PrivateReplyRefusal": ".private_reply_refusal",
     "ProbeState": ".probe_state",
     "PublicationAttempt": ".publication_attempt",
     "Queue": ".queue",
@@ -2390,6 +2412,7 @@ __all__ = [
     "AdAccount",
     "AdAccountBusyEncoded",
     "AdAccountBusyEncodedTag",
+    "AdAccountCapabilities",
     "AdAccountNotFoundEncoded",
     "AdAccountSpendCapExceededEncoded",
     "AdAccountStatus",
@@ -2638,6 +2661,8 @@ __all__ = [
     "CommentRuleNotPossibleEncodedTag",
     "CommentRuleOutcome",
     "CommentRulePage",
+    "CommentRulePrivateAbility",
+    "CommentRulePrivateStatus",
     "CommentRuleRefusal",
     "CommentRuleStatus",
     "CommentSelection",
@@ -2876,6 +2901,7 @@ __all__ = [
     "InboxActionUnavailableEncoded",
     "InboxActionUnavailableEncodedStanding",
     "InboxActionUnavailableEncodedTag",
+    "InboxActionUnavailableReason",
     "InboxAuthor",
     "InboxCollectionEnd",
     "InboxComment",
@@ -2901,6 +2927,10 @@ __all__ = [
     "InboxOwnerReply",
     "InboxOwnerReplyModeration",
     "InboxParticipant",
+    "InboxPrivateReply",
+    "InboxPrivateReplyNotFoundEncoded",
+    "InboxPrivateReplyReason",
+    "InboxPrivateReplyStatus",
     "InboxReply",
     "InboxReplyNotFoundEncoded",
     "InboxReplyReason",
@@ -3230,6 +3260,9 @@ __all__ = [
     "Prices",
     "PricesAccounts",
     "PricesMeters",
+    "PrivateReplyNotPossibleEncoded",
+    "PrivateReplyPendingEncoded",
+    "PrivateReplyRefusal",
     "ProbeState",
     "PublicationAttempt",
     "Queue",

@@ -29,6 +29,8 @@ public final class NewCommentRule {
 
     private final Optional<String> postId;
 
+    private final Optional<String> privateReply;
+
     private final String reply;
 
     private final Map<String, Object> additionalProperties;
@@ -37,11 +39,13 @@ public final class NewCommentRule {
             Optional<String> channelId,
             List<String> keywords,
             Optional<String> postId,
+            Optional<String> privateReply,
             String reply,
             Map<String, Object> additionalProperties) {
         this.channelId = channelId;
         this.keywords = keywords;
         this.postId = postId;
+        this.privateReply = privateReply;
         this.reply = reply;
         this.additionalProperties = additionalProperties;
     }
@@ -59,6 +63,11 @@ public final class NewCommentRule {
     @JsonProperty("postId")
     public Optional<String> getPostId() {
         return postId;
+    }
+
+    @JsonProperty("privateReply")
+    public Optional<String> getPrivateReply() {
+        return privateReply;
     }
 
     @JsonProperty("reply")
@@ -81,12 +90,13 @@ public final class NewCommentRule {
         return channelId.equals(other.channelId)
                 && keywords.equals(other.keywords)
                 && postId.equals(other.postId)
+                && privateReply.equals(other.privateReply)
                 && reply.equals(other.reply);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.channelId, this.keywords, this.postId, this.reply);
+        return Objects.hash(this.channelId, this.keywords, this.postId, this.privateReply, this.reply);
     }
 
     @java.lang.Override
@@ -124,11 +134,17 @@ public final class NewCommentRule {
         _FinalStage postId(Optional<String> postId);
 
         _FinalStage postId(String postId);
+
+        _FinalStage privateReply(Optional<String> privateReply);
+
+        _FinalStage privateReply(String privateReply);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder implements ReplyStage, _FinalStage {
         private String reply;
+
+        private Optional<String> privateReply = Optional.empty();
 
         private Optional<String> postId = Optional.empty();
 
@@ -145,6 +161,7 @@ public final class NewCommentRule {
             channelId(other.getChannelId());
             keywords(other.getKeywords());
             postId(other.getPostId());
+            privateReply(other.getPrivateReply());
             reply(other.getReply());
             return this;
         }
@@ -153,6 +170,19 @@ public final class NewCommentRule {
         @JsonSetter("reply")
         public _FinalStage reply(@NotNull String reply) {
             this.reply = Objects.requireNonNull(reply, "reply must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage privateReply(String privateReply) {
+            this.privateReply = Optional.ofNullable(privateReply);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "privateReply", nulls = Nulls.SKIP)
+        public _FinalStage privateReply(Optional<String> privateReply) {
+            this.privateReply = privateReply;
             return this;
         }
 
@@ -208,7 +238,7 @@ public final class NewCommentRule {
 
         @java.lang.Override
         public NewCommentRule build() {
-            return new NewCommentRule(channelId, keywords, postId, reply, additionalProperties);
+            return new NewCommentRule(channelId, keywords, postId, privateReply, reply, additionalProperties);
         }
 
         @JsonAnySetter
@@ -216,6 +246,7 @@ public final class NewCommentRule {
             if (key.equalsIgnoreCase("channelId")
                     || key.equalsIgnoreCase("keywords")
                     || key.equalsIgnoreCase("postId")
+                    || key.equalsIgnoreCase("privateReply")
                     || key.equalsIgnoreCase("reply")) {
                 return;
             }

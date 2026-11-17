@@ -233,6 +233,34 @@
   scopes only for a reconnect asked with `messages` (the inbox's switch,
   `POST …/reconnect?messages=true`) or of a channel that granted them
   (`grantsBlueskyChat`), so a reconnect never takes its messages away.
+- Where `PEAL_INBOX_MESSAGES` names `facebook` or `instagram`
+  (`ChannelPlatformSettings.messages`), Facebook Login's products ask
+  their `messageScopes` and Instagram Login `instagramLoginMessageScope`
+  only for a sign-in with `messages` or a reconnect of a channel that
+  granted one; off, the dialog's `scope` is as before, byte for byte.
+  Instagram Login keeps what it asked in the attempt's secret, for an
+  answer that lists no permission. `DisconnectChannel` tells
+  `ChannelDepartures` (`channel-departures.ts`) once the channel is gone,
+  with the tokens read before, beside the revoke (ten seconds for both),
+  and `ChannelRecords.releaseWorkspaces` does it for every channel before
+  the erasure of one or more workspaces, every channel of them leaving
+  with each: it reads their tokens first (`Redacted`), then lets them go
+  eight side by side in a detached fiber bounded at `releaseLimit` (two
+  minutes), which the erasure waits for `releaseWait` (ten seconds) at
+  most and never cuts short, so an erasure never waits on Meta once a
+  channel. `departed` answers `done` or `failed`; each channel not let go
+  by the end is logged by its id, platform, `accountId` and, on Instagram,
+  `connection` (a business account's public ids, for the operator to reach
+  it once the channel is gone; never a token) and counted
+  (`peal.channels.release.left_subscribed`, which `peal-erased-channels-subscribed`
+  alerts on at once, its summary saying how to remove the app from the
+  Page): `metaMessageDepartures` deletes Meta's
+  `subscribed_apps` while no other channel reads an account the app's
+  subscription carries (`ChannelDirectory.withAccount` gives each
+  channel's way in; `EngagementRecords.readsMessages`), then tells the
+  others to follow again (`refollow`). Its token and proof go `Redacted`,
+  as every Meta call's must: a plain query value is in the client span's
+  `url.full`.
 - `platformRegistrations` (`infrastructure/platforms/platform-addresses.ts`)
   lists every address a platform is given or reads (redirect URIs, Meta's
   data deletion and deauthorize callbacks, Bluesky's documents), from the

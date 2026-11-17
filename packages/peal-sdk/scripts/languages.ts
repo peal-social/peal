@@ -80,7 +80,7 @@ export const languages: readonly Language[] = [
     build: {
       environment: { npm_config_cache: "/cache/npm" },
       image:
-        "node:26.13.0-alpine@sha256:8996bb5821d62a8fd9bb27c1cb07462f3fdce6e47d640c6a881ead0b064ce216",
+        "node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5",
       kind: "container",
       // The TypeScript and Node types the package.json names, at one version
       // each, compile the CommonJS and ES modules npm ships, as the package's

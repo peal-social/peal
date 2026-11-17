@@ -6,21 +6,21 @@ sidebar:
   label: "Articles"
 ---
 
-## Événements des articles [#article-events]
+## Ce que portent les événements des articles [#article-events]
 
-Un [article](/guides/channels/websites#articles) part vers un site web, par son canal. Ses événements nomment l’article et le canal, jamais ce que dit l’article : lisez-le par l’API pour cela, avec `GET /api/workspaces/{workspaceId}/articles/{articleId}`.
+Un [article](/guides/channels/websites#articles) part vers un site web, par son canal. Ses événements nomment l’article et le canal, jamais ce que dit l’article. Pour cela, lisez-le par l’API, avec `GET /api/workspaces/{workspaceId}/articles/{articleId}`.
 
-Un article dont la réponse du site s’est perdue, et que Peal n’a pas pu y retrouver, finit `unconfirmed`, et aucun événement ne le dit : une intégration qui attend la fin d’un article lit son état dans l’API.
+Quand la réponse d’un site se perd et que Peal ne retrouve pas l’article sur le site, l’article finit `unconfirmed`, et aucun événement ne le signale. Si votre intégration attend la fin d’un article, lisez son état dans l’API.
 
-| Champ       | Type           | Contenu                                                                                                 |
-| ----------- | -------------- | ------------------------------------------------------------------------------------------------------- |
-| `articleId` | chaîne         | L’article                                                                                               |
-| `channelId` | chaîne         | Le canal du site web                                                                                    |
-| `platform`  | chaîne ou null | Où est le site : `wordpress`, `wordpressCom`, `devto` ou `hashnode` ; null une fois le canal déconnecté |
+| Champ       | Type           | Contenu                                                                                                |
+| ----------- | -------------- | ------------------------------------------------------------------------------------------------------ |
+| `articleId` | chaîne         | L’article                                                                                              |
+| `channelId` | chaîne         | Le canal du site web                                                                                   |
+| `platform`  | chaîne ou null | Où est le site : `wordpress`, `wordpressCom`, `devto` ou `hashnode`. Null une fois le canal déconnecté |
 
 ## article.published [#article-published]
 
-Le site a pris l’article : `platformPostId` est l’identifiant de son article là-bas, `permalink` son adresse (une adresse d’aperçu pour un brouillon), et `siteStatus` ce qu’en a fait le site : `publish`, `draft`, ou `future`, programmé sur le site, qui le publie lui-même à son heure.
+Le site a pris l’article. `platformPostId` est l’identifiant de son article là-bas, et `permalink` son adresse (une adresse d’aperçu pour un brouillon). `siteStatus` dit ce qu’en a fait le site : `publish`, `draft`, ou `future`, programmé sur le site, qui le publie lui-même à son heure.
 
 ```json title="article.published"
 {
@@ -44,7 +44,7 @@ Le site a pris l’article : `platformPostId` est l’identifiant de son article
 
 ## article.failed [#article-failed]
 
-L’article n’est pas parti vers son site, et rien n’y est : `reason` dit pourquoi, comme les raisons d’échec de l’API (`tokenExpired` quand le site web doit être reconnecté), et `code` est celui du site quand il en a donné un.
+L’article n’est pas parti vers son site, et rien n’y est. `reason` dit pourquoi, avec les raisons d’échec de l’API (`tokenExpired` quand le site web doit être reconnecté), et `code` est le code du site quand il en a donné un.
 
 ```json title="article.failed"
 {

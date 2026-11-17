@@ -16,10 +16,13 @@ import { ChannelUnusable } from "#channels/application/channel-unusable.ts";
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
 import { MessagesUngranted } from "#engagement/application/messages-ungranted.ts";
 import { CommentSource } from "#engagement/application/ports/comment-source.ts";
+import { MessageChannelsOfAccount } from "#engagement/application/ports/message-channels-of-account.ts";
 import { MessageSource } from "#engagement/application/ports/message-source.ts";
 import { MessageStore } from "#engagement/application/ports/message-store.ts";
+import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
 import { ReplySender } from "#engagement/application/ports/reply-sender.ts";
 import type { SendRequest } from "#engagement/application/ports/reply-sender.ts";
+import { followBox } from "#engagement/domain/message-box.ts";
 import {
   beginSending,
   confirmReply,
@@ -33,6 +36,8 @@ import { youtubeCommentsDailyUnits } from "#engagement/infrastructure/platforms/
 import { CurrentInboxMessages } from "#shared/application/current-inbox-messages.ts";
 import { CurrentInboxPlatforms } from "#shared/application/current-inbox-platforms.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
+import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { facebookMessageScopes } from "#shared/domain/inbox-message-platform.ts";
 import { youtubeCommentScope } from "#shared/domain/inbox-platform.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
@@ -41,8 +46,10 @@ import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import type { AccountFailure } from "#test/analytics/access-log.ts";
 import { channelAccessOf } from "#test/analytics/access-log.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
+import { fakeMetaMessages } from "#test/engagement/fakes/fake-meta-messages.ts";
 import { memoryQuota } from "#test/engagement/fakes/fake-youtube-comments.ts";
 import { makeMessageWorld } from "#test/engagement/fakes/message-world.ts";
+import { noPrivateReplies } from "#test/engagement/fakes/no-private-replies.ts";
 import { makeReviewWorld } from "#test/engagement/fakes/review-world.ts";
 import { makeWorld } from "#test/engagement/fakes/world.ts";
 import type { World } from "#test/engagement/fakes/world.ts";
@@ -54,12 +61,23 @@ import {
   replyId,
   thread,
   threadId,
+  workspaceId,
 } from "#test/engagement/support.ts";
+import {
+  facebookPageId,
+  graphAppSecret,
+} from "#test/publishing/fakes/fake-meta-graph.ts";
 import {
   json,
   platformServer,
 } from "#test/publishing/fakes/platform-server.ts";
 import type { PlatformAnswer } from "#test/publishing/fakes/platform-server.ts";
+
+// No other channel of any account: what an unfollow asks after.
+const noOtherChannels = Layer.succeed(
+  MessageChannelsOfAccount,
+  MessageChannelsOfAccount.of({ channelsOf: () => Effect.succeed([]) })
+);
 
 const youtubeOnly: InboxPlatforms = new Set(["youtube"]);
 
@@ -195,6 +213,8 @@ const onServer = Effect.fnUntraced(function* onServer(
             world.ports,
             makeReviewWorld().ports,
             Layer.succeed(MessageStore, makeMessageWorld().store),
+            Layer.succeed(PrivateReplyStore, noPrivateReplies),
+            noOtherChannels,
             channelAccessOf(
               Option.getOrElse(failure, () => account),
               ["token-1"]
@@ -522,7 +542,11 @@ describe("the gate's reply sender", () => {
 const messageSourceOn = (
   url: URL,
   store: typeof MessageStore.Service,
-  account: ChannelAccount
+  account: ChannelAccount,
+  meta?: {
+    readonly others: Layer.Layer<MessageChannelsOfAccount>;
+    readonly token: string;
+  }
 ) =>
   MessageSource.pipe(
     Effect.provide(
@@ -533,8 +557,8 @@ const messageSourceOn = (
         linkedinReadCalls: linkedinCommentsDailyCalls,
         linkedinVersion: "202610",
         mastodonScheme: "http:",
-        metaAppSecret: Option.none(),
-        metaHosts,
+        metaAppSecret: Option.some(Redacted.make(graphAppSecret)),
+        metaHosts: { ...metaHosts, facebookGraph: url, instagramGraph: url },
         youtubeApi: url,
         youtubeCommentUnits: youtubeCommentsDailyUnits,
       }).pipe(
@@ -543,13 +567,15 @@ const messageSourceOn = (
             makeWorld().ports,
             makeReviewWorld().ports,
             Layer.succeed(MessageStore, store),
+            Layer.succeed(PrivateReplyStore, noPrivateReplies),
+            meta?.others ?? noOtherChannels,
             Layer.succeed(
               CurrentInboxMessages,
-              new Set(["mastodon", "bluesky"] as const)
+              new Set(["mastodon", "bluesky", "facebook", "instagram"] as const)
             ),
             Layer.succeed(CurrentInboxPlatforms, new Set()),
             memoryQuota().layer,
-            channelAccessOf(account, ["token-1"]),
+            channelAccessOf(account, [meta?.token ?? "token-1"]),
             FetchHttpClient.layer,
             OpenOutboundGuard,
             KeyedPseudonymsLive,
@@ -564,6 +590,89 @@ const messageSourceOn = (
   );
 
 describe("the gate's message source", () => {
+  // On the live clock: Meta's calls of one account are half a second apart.
+  it.live(
+    "keeps a Page's events while its channel in another workspace reads its messages",
+    () =>
+      Effect.gen(function* twoWorkspaces() {
+        const graph = yield* fakeMetaMessages(["synthetic-token-1"], {
+          me: facebookPageId,
+        });
+
+        const world = makeMessageWorld();
+
+        const otherWorkspace = WorkspaceIdSchema.make(
+          "01900000-0000-7000-8000-0000000000b2"
+        );
+
+        // The same Page, connected in a second workspace, messages on.
+        world.state.boxes.set(
+          channelId(2),
+          followBox(
+            { channelId: channelId(2), workspaceId: otherWorkspace },
+            yield* DateTime.now
+          )
+        );
+
+        const others = Layer.succeed(
+          MessageChannelsOfAccount,
+          MessageChannelsOfAccount.of({
+            channelsOf: (platform, accountId) =>
+              Effect.succeed(
+                platform === "facebook" && accountId === facebookPageId
+                  ? [
+                      {
+                        channelId: channelId(1),
+                        connection: Option.none(),
+                        workspaceId,
+                      },
+                      {
+                        channelId: channelId(2),
+                        connection: Option.none(),
+                        workspaceId: otherWorkspace,
+                      },
+                    ]
+                  : []
+              ),
+          })
+        );
+
+        const account: ChannelAccount = {
+          accountId: facebookPageId,
+          channelId: channelId(1),
+          connection: Option.none(),
+          platform: "facebook",
+          scopes: [...facebookMessageScopes],
+        };
+
+        const source = yield* messageSourceOn(
+          new URL(graph.url),
+          world.store,
+          account,
+          { others, token: "synthetic-token-1" }
+        );
+
+        assert.strictEqual(
+          yield* source.unfollow({ channelId: channelId(1) }),
+          "unneeded"
+        );
+        assert.isFalse(
+          graph.requests().some(({ method }) => method === "DELETE")
+        );
+
+        // Turned off there too: the last one stops them.
+        world.state.boxes.delete(channelId(2));
+
+        assert.strictEqual(
+          yield* source.unfollow({ channelId: channelId(1) }),
+          "done"
+        );
+        assert.isTrue(
+          graph.requests().some(({ method }) => method === "DELETE")
+        );
+      }).pipe(Effect.scoped)
+  );
+
   it.effect(
     "reads a conversation as not whole when the database does not give what Peal keeps of it",
     () =>

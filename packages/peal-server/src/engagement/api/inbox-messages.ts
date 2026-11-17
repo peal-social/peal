@@ -7,22 +7,32 @@ import {
   maxInboxMessagesPerPage,
   IdempotencyKeyReused,
   InboxActionUnavailable,
+  InboxCommentNotFound,
   InboxConversationNotFound,
   InboxMessageNotFound,
+  InboxPrivateReplyNotFound,
   MessageMentionsOutside,
   MessagePending,
+  PrivateReplyNotPossible,
+  PrivateReplyPending,
   ReplyInvalid,
   ReplyStatusConflict,
 } from "peal-contract";
+import type { Member } from "peal-contract";
 
+import type { AbilityUnavailable } from "#engagement/application/ability-unavailable.ts";
 import { EngagementMessages } from "#engagement/application/engagement-messages.ts";
+import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import type { MessageAbilityUnavailable } from "#engagement/application/message-ability-unavailable.ts";
 import type { MessagePending as PendingMessage } from "#engagement/application/message-pending.ts";
 import { MessageSettings } from "#engagement/application/message-settings.ts";
 import type { ReplyTooLong } from "#engagement/application/reply-too-long.ts";
+import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
 import { ConversationIdSchema } from "#engagement/domain/conversation-id.ts";
 import type { InvalidOutgoingMessageTransition } from "#engagement/domain/invalid-outgoing-message-transition.ts";
+import type { InvalidPrivateReplyTransition } from "#engagement/domain/invalid-private-reply-transition.ts";
 import { OutgoingMessageIdSchema } from "#engagement/domain/outgoing-message-id.ts";
+import { PrivateReplyIdSchema } from "#engagement/domain/private-reply-id.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { allowanceRefusal } from "#shared/api/allowance-reached.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
@@ -37,10 +47,35 @@ import {
   toConversationView,
   toOutgoingMessageView,
 } from "./inbox-message-view.ts";
+import { toPrivateReplyView } from "./inbox-view.ts";
 
 const decodeConversationId = Schema.decodeUnknownOption(ConversationIdSchema);
 const decodeMessageId = Schema.decodeUnknownOption(OutgoingMessageIdSchema);
 const decodeChannelId = Schema.decodeUnknownOption(ChannelIdSchema);
+const decodeCommentId = Schema.decodeUnknownOption(CommentIdSchema);
+const decodePrivateReplyId = Schema.decodeUnknownOption(PrivateReplyIdSchema);
+
+/**
+ * Whether the member reached the API in their own session of the web app:
+ * the session cookie, not a bearer token (an OAuth client such as MCP or
+ * the command line, or an API key), and not staff acting as them. The one
+ * proof of a person Meta's Human Agent tag asks for: only this handler
+ * gives it.
+ */
+const inOwnSession = ({ principal }: Member): boolean =>
+  principal._tag === "user" &&
+  principal.oauth === undefined &&
+  principal.impersonatedBy === null;
+
+const commentNotFound = () => Effect.fail(new InboxCommentNotFound());
+
+const privateReplyNotFound = () => Effect.fail(new InboxPrivateReplyNotFound());
+
+const privateUnavailable = ({ ability, standing }: AbilityUnavailable) =>
+  Effect.fail(new InboxActionUnavailable({ ability, standing }));
+
+const privateConflict = ({ from }: InvalidPrivateReplyTransition) =>
+  Effect.fail(new ReplyStatusConflict({ status: from }));
 
 const conversationNotFound = () => Effect.fail(new InboxConversationNotFound());
 
@@ -48,8 +83,21 @@ const messageNotFound = () => Effect.fail(new InboxMessageNotFound());
 
 const badRequest = () => Effect.fail(new HttpApiError.BadRequest());
 
-const unavailable = ({ ability, standing }: MessageAbilityUnavailable) =>
-  Effect.fail(new InboxActionUnavailable({ ability, standing }));
+// A window that shut says when; every other refusal, its standing alone.
+const unavailable = (refusal: MessageAbilityUnavailable) => {
+  const { ability, closedAt, standing } = refusal;
+
+  return Effect.fail(
+    refusal.reason === "windowClosed" && closedAt !== undefined
+      ? new InboxActionUnavailable({
+          ability,
+          closedAt,
+          reason: "windowClosed",
+          standing,
+        })
+      : new InboxActionUnavailable({ ability, standing })
+  );
+};
 
 const pending = ({ messageId }: PendingMessage) =>
   Effect.fail(new MessagePending({ messageId }));
@@ -100,9 +148,86 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
   Effect.fn(function* inboxMessagesHandlers(handlers) {
     const messages = yield* EngagementMessages;
     const settings = yield* MessageSettings;
+    const privateReplies = yield* EngagementPrivateReplies;
     const allowance = yield* allowanceRefusal;
 
     return handlers.handleAll({
+      confirmPrivateReply: ({ params, payload }) =>
+        Effect.gen(function* confirmPrivateReply() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const privateReplyId = yield* idOr(
+            decodePrivateReplyId(params.privateReplyId),
+            privateReplyNotFound
+          );
+
+          return yield* privateReplies
+            .confirm(actor, privateReplyId, payload.went)
+            .pipe(
+              Effect.map(toPrivateReplyView),
+              Effect.catchTags({
+                DatabaseError: Effect.die,
+                InvalidPrivateReplyTransition: privateConflict,
+                MessagesNeedConsent: forbidden,
+                MissingPermission: forbidden,
+                PrivateReplyNotFound: privateReplyNotFound,
+              })
+            );
+        }),
+      getPrivateReply: ({ params }) =>
+        Effect.gen(function* getPrivateReply() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const privateReplyId = yield* idOr(
+            decodePrivateReplyId(params.privateReplyId),
+            privateReplyNotFound
+          );
+
+          return yield* privateReplies.privateReply(actor, privateReplyId).pipe(
+            Effect.map(toPrivateReplyView),
+            Effect.catchTags({
+              DatabaseError: Effect.die,
+              MessagesNeedConsent: forbidden,
+              MissingPermission: forbidden,
+              PrivateReplyNotFound: privateReplyNotFound,
+            })
+          );
+        }),
+      sendPrivateReply: ({ headers, payload }) =>
+        Effect.gen(function* sendPrivateReply() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const commentId = yield* idOr(
+            decodeCommentId(payload.commentId),
+            commentNotFound
+          );
+
+          return yield* privateReplies
+            .send(
+              actor,
+              commentId,
+              payload.text,
+              Option.fromUndefinedOr(headers["idempotency-key"])
+            )
+            .pipe(
+              Effect.map(toPrivateReplyView),
+              Effect.catchTags({
+                AbilityUnavailable: privateUnavailable,
+                AllowanceReached: allowance,
+                CommentNotFound: commentNotFound,
+                DatabaseError: Effect.die,
+                MessagesNeedConsent: forbidden,
+                MissingPermission: forbidden,
+                PrivateReplyNotPossible: ({ reason }) =>
+                  Effect.fail(new PrivateReplyNotPossible({ reason })),
+                PrivateReplyPending: ({ privateReplyId }) =>
+                  Effect.fail(new PrivateReplyPending({ privateReplyId })),
+                ReplyEmpty: empty,
+                ReplyKeyReused: () => Effect.fail(new IdempotencyKeyReused()),
+                ReplyTooLong: tooLong,
+              })
+            );
+        }),
       confirmMessage: ({ params, payload }) =>
         Effect.gen(function* confirmMessage() {
           const actor = actorOf(yield* CurrentMember);
@@ -223,7 +348,8 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
         }),
       sendMessage: ({ headers, params, payload }) =>
         Effect.gen(function* sendMessage() {
-          const actor = actorOf(yield* CurrentMember);
+          const member = yield* CurrentMember;
+          const actor = actorOf(member);
 
           const conversationId = yield* idOr(
             decodeConversationId(params.conversationId),
@@ -235,7 +361,8 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
               actor,
               conversationId,
               payload.text,
-              Option.fromUndefinedOr(headers["idempotency-key"])
+              Option.fromUndefinedOr(headers["idempotency-key"]),
+              { inSession: inOwnSession(member) }
             )
             .pipe(
               Effect.map(toOutgoingMessageView),

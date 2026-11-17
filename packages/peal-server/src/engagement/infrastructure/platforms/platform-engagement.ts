@@ -19,6 +19,7 @@ import { readsCommentsOn } from "#engagement/domain/engagement-abilities.ts";
 import type { EngagedPlatform } from "#engagement/domain/engagement-abilities.ts";
 import { withdrawable } from "#engagement/domain/reply.ts";
 import type { ReplyFailure, SendOutcome } from "#engagement/domain/reply.ts";
+import { HumanAgentLive } from "#engagement/infrastructure/human-agent-config.ts";
 import { blueskyEngagement } from "#engagement/infrastructure/platforms/bluesky/bluesky-engagement.ts";
 import {
   accessFailure,
@@ -393,10 +394,13 @@ export const platformEngagementWith = (settings: EngagementSettings) =>
       return Layer.mergeAll(
         // A location's reviews, on Google Business Profile.
         platformReviewsWith({ businessApi: settings.businessApi, http }),
-        // A channel's direct messages, on Mastodon and Bluesky.
+        // A channel's direct messages, on Mastodon, Bluesky, Facebook Pages
+        // and Instagram.
         platformMessagesWith({
           http,
           mastodonScheme: settings.mastodonScheme,
+          metaAppSecret: settings.metaAppSecret,
+          metaHosts: settings.metaHosts,
           reader,
         }),
         Layer.succeed(CommentSource, CommentSource.of({ read })),
@@ -446,6 +450,7 @@ export const PlatformEngagementLive = Layer.unwrap(
 ).pipe(
   Layer.provide(InboxPlatformsLive),
   Layer.provide(InboxMessagesLive),
+  Layer.provide(HumanAgentLive),
   Layer.provide(KeyedPseudonymsLive),
   Layer.provide(OutboundGuard.layer),
   Layer.provide(FetchHttpClient.layer),

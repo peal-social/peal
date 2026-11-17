@@ -6,6 +6,7 @@ export interface InboxAbilities {
     "delete": Peal.InboxAbilityStanding;
     hide: Peal.InboxAbilityStanding;
     like: Peal.InboxAbilityStanding;
+    privateReply: Peal.InboxAbilityStanding;
     read: Peal.InboxAbilityStanding;
     reply: Peal.InboxAbilityStanding;
     withdraw: Peal.InboxAbilityStanding;

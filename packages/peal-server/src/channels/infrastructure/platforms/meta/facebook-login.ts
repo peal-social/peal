@@ -13,6 +13,8 @@ import { AvatarUrlSchema } from "#channels/domain/avatar-url.ts";
 import type { AvatarUrl } from "#channels/domain/avatar-url.ts";
 import type { Platform } from "#channels/domain/platform.ts";
 import type { TokenPolicy } from "#channels/domain/token-policy.ts";
+import { InboxMessagePlatformSchema } from "#shared/domain/inbox-message-platform.ts";
+import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
 import { OptionalInboxPlatformSchema } from "#shared/domain/inbox-platform.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
 import type { InstagramConnection } from "#shared/domain/instagram-connection.ts";
@@ -100,6 +102,8 @@ const decodeAvatar = Schema.decodeUnknownOption(AvatarUrlSchema);
 
 const isInboxPlatform = Schema.is(OptionalInboxPlatformSchema);
 
+const isMessagePlatform = Schema.is(InboxMessagePlatformSchema);
+
 /** The picture at a URL Meta gave, if it is one clients can show. */
 export const avatarOf = (url: string | undefined): Option.Option<AvatarUrl> =>
   Option.fromUndefinedOr(url).pipe(Option.flatMap(decodeAvatar));
@@ -119,6 +123,14 @@ export interface FacebookLoginProduct {
    * (`PEAL_INBOX_PLATFORMS`).
    */
   readonly commentScopes?: readonly string[];
+  /**
+   * The permissions the inbox reads and answers direct messages with,
+   * asked only where the server reads the platform's messages
+   * (`PEAL_INBOX_MESSAGES`) and the sign-in asks for them: a member
+   * turning a channel's messages on, or a reconnect of a channel that
+   * granted them.
+   */
+  readonly messageScopes?: readonly string[];
   /** The way in it is, for Instagram. */
   readonly connection?: InstagramConnection;
   /**
@@ -158,6 +170,8 @@ export const facebookLogin = Effect.fn("FacebookLogin.make")(
       readonly http: MetaHttp;
       /** The optional platforms the inbox reads; none when not given. */
       readonly inbox?: InboxPlatforms;
+      /** The platforms the inbox reads messages on; none when not given. */
+      readonly messages?: InboxMessagePlatforms;
       readonly publicUrl: string;
     }
   ) {
@@ -180,9 +194,38 @@ export const facebookLogin = Effect.fn("FacebookLogin.make")(
       options.publicUrl
     ).href;
 
-    const begin: PlatformAuthorizer["begin"] = () =>
+    const messageScopes = product.messageScopes ?? [];
+
+    // The messaging permissions, where the server reads the platform's
+    // messages and the sign-in is for them: asked by a member who turns
+    // the channel's messages on, or a reconnect of a channel that granted
+    // them, so a reconnect never takes its messages away.
+    const askedForMessages = (
+      request: Parameters<PlatformAuthorizer["begin"]>[0]
+    ): readonly string[] => {
+      const readHere =
+        isMessagePlatform(platform) && options.messages?.has(platform) === true;
+
+      const granted = Option.exists(request.reconnecting, (channel) =>
+        channel.scopes.some((scope) => messageScopes.includes(scope))
+      );
+
+      return readHere && (request.messages === true || granted)
+        ? messageScopes
+        : [];
+    };
+
+    const begin: PlatformAuthorizer["begin"] = (request) =>
       Effect.gen(function* beginning() {
         const state = Base64Url.encode(yield* random.randomBytes(32));
+
+        const asked = [
+          ...new Set([
+            ...scopes,
+            ...optionalScopes,
+            ...askedForMessages(request),
+          ]),
+        ];
 
         const url = new URL(
           `/${graphApiVersion}/dialog/oauth`,
@@ -195,7 +238,7 @@ export const facebookLogin = Effect.fn("FacebookLogin.make")(
           client_id: app.appId,
           redirect_uri: redirectUri,
           response_type: "code",
-          scope: [...scopes, ...optionalScopes].join(","),
+          scope: asked.join(","),
           state,
         }).toString();
 

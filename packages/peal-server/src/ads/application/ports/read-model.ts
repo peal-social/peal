@@ -24,12 +24,17 @@ export interface PaidTotals {
   readonly spend: number;
 }
 
-/** A campaign as last read, with what its ads did over a range of days. */
+/**
+ * A campaign as last read, with what it did over a range of days: its
+ * ads' days, or its own on a network read by campaign.
+ */
 export interface CampaignRow {
   readonly accountId: AdAccountId;
   readonly dailyBudget: Option.Option<number>;
   readonly endsAt: Option.Option<DateTime.Utc>;
   readonly externalId: NetworkObjectId;
+  /** The network's word for the campaign's kind, where it gives one. */
+  readonly kind: Option.Option<string>;
   readonly name: string;
   readonly objective: CampaignObjective;
   readonly rawStatus: string;
@@ -68,15 +73,20 @@ export interface DayRange {
 
 /**
  * The campaigns, ad sets, ads and daily numbers read from the networks:
- * ids, names, statuses, budgets and counts, never who saw an ad.
+ * ids, names, statuses, budgets and counts, never who saw an ad. Days are
+ * kept by ad, or by campaign on a network read so (`networkTraits`'
+ * `days`): an account's reports read the one its network keeps, with
+ * reach 0 and results none where the network reports neither.
  */
 export class ReadModel extends Context.Service<
   ReadModel,
   {
     /**
      * Saves what a sync read of an account, in one transaction: objects
-     * are added or updated, days replaced. With `complete`, the objects
-     * the network no longer lists are marked archived. `matched` names the
+     * are added or updated, days replaced (a campaign's days within the
+     * snapshot's `campaignDaysCover` that were not listed are deleted).
+     * With `complete`, the objects the network no longer lists are marked
+     * archived. `matched` names the
      * workspace's own posts the ads promote, by the platform's id.
      */
     readonly save: (request: {
@@ -91,21 +101,18 @@ export class ReadModel extends Context.Service<
     }) => Effect.Effect<void, DatabaseError>;
     /** An account's campaigns, the most recently started first. */
     readonly campaigns: (
-      workspaceId: WorkspaceId,
-      accountId: AdAccountId,
+      account: AdAccount,
       range: DayRange
     ) => Effect.Effect<readonly CampaignRow[], DatabaseError>;
-    /** A campaign's ads. */
+    /** A campaign's ads: none on a network read by campaign. */
     readonly ads: (
-      workspaceId: WorkspaceId,
-      accountId: AdAccountId,
+      account: AdAccount,
       campaignExternalId: Option.Option<string>,
       range: DayRange
     ) => Effect.Effect<readonly AdRow[], DatabaseError>;
-    /** What an account's ads did each day of a range, oldest first. */
+    /** What an account's ads or campaigns did each day of a range, oldest first. */
     readonly days: (
-      workspaceId: WorkspaceId,
-      accountId: AdAccountId,
+      account: AdAccount,
       range: DayRange
     ) => Effect.Effect<readonly DayTotals[], DatabaseError>;
     /**

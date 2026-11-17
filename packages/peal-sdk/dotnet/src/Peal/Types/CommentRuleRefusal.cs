@@ -16,6 +16,10 @@ public readonly record struct CommentRuleRefusal : IStringEnum
 
     public static readonly CommentRuleRefusal Channels = new(Values.Channels);
 
+    public static readonly CommentRuleRefusal EmptyPrivateReply = new(Values.EmptyPrivateReply);
+
+    public static readonly CommentRuleRefusal PrivateReply = new(Values.PrivateReply);
+
     public CommentRuleRefusal(string value)
     {
         Value = value;
@@ -119,5 +123,9 @@ public readonly record struct CommentRuleRefusal : IStringEnum
         public const string NoChannel = "noChannel";
 
         public const string Channels = "channels";
+
+        public const string EmptyPrivateReply = "emptyPrivateReply";
+
+        public const string PrivateReply = "privateReply";
     }
 }

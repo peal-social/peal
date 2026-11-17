@@ -11,6 +11,15 @@ pub struct CommentRuleMatch {
     #[serde(default)]
     pub looked_at: String,
     pub outcome: CommentRuleOutcome,
+    #[serde(rename = "privateCode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_code: Option<String>,
+    #[serde(rename = "privateReplyId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_reply_id: Option<String>,
+    #[serde(rename = "privateStatus")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub private_status: Option<CommentRulePrivateStatus>,
     #[serde(rename = "replyId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_id: Option<String>,
@@ -29,6 +38,9 @@ pub struct CommentRuleMatchBuilder {
     comment_id: Option<String>,
     looked_at: Option<String>,
     outcome: Option<CommentRuleOutcome>,
+    private_code: Option<String>,
+    private_reply_id: Option<String>,
+    private_status: Option<CommentRulePrivateStatus>,
     reply_id: Option<String>,
 }
 
@@ -50,6 +62,21 @@ impl CommentRuleMatchBuilder {
 
     pub fn outcome(mut self, value: CommentRuleOutcome) -> Self {
         self.outcome = Some(value);
+        self
+    }
+
+    pub fn private_code(mut self, value: impl Into<String>) -> Self {
+        self.private_code = Some(value.into());
+        self
+    }
+
+    pub fn private_reply_id(mut self, value: impl Into<String>) -> Self {
+        self.private_reply_id = Some(value.into());
+        self
+    }
+
+    pub fn private_status(mut self, value: CommentRulePrivateStatus) -> Self {
+        self.private_status = Some(value);
         self
     }
 
@@ -75,6 +102,9 @@ impl CommentRuleMatchBuilder {
             outcome: self
                 .outcome
                 .ok_or_else(|| BuildError::missing_field("outcome"))?,
+            private_code: self.private_code,
+            private_reply_id: self.private_reply_id,
+            private_status: self.private_status,
             reply_id: self.reply_id,
         })
     }

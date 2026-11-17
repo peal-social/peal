@@ -6,6 +6,7 @@ import { CollectReviews } from "#engagement/application/collect-reviews.ts";
 import { CommentRules } from "#engagement/application/comment-rules.ts";
 import { EngagementInbox } from "#engagement/application/engagement-inbox.ts";
 import { EngagementMessages } from "#engagement/application/engagement-messages.ts";
+import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 import { EngagementReplies } from "#engagement/application/engagement-replies.ts";
 import { EngagementReviews } from "#engagement/application/engagement-reviews.ts";
 import { InboxWaiting } from "#engagement/application/inbox-waiting.ts";
@@ -13,6 +14,7 @@ import { MessageSettings } from "#engagement/application/message-settings.ts";
 import type { CommentSource } from "#engagement/application/ports/comment-source.ts";
 import type { MessageSender } from "#engagement/application/ports/message-sender.ts";
 import type { MessageSource } from "#engagement/application/ports/message-source.ts";
+import type { PrivateReplySender } from "#engagement/application/ports/private-reply-sender.ts";
 import type { ReplySender } from "#engagement/application/ports/reply-sender.ts";
 import type { ReviewReplySender } from "#engagement/application/ports/review-reply-sender.ts";
 import type { ReviewSource } from "#engagement/application/ports/review-source.ts";
@@ -21,6 +23,7 @@ import { PurgeMessages } from "#engagement/application/purge-messages.ts";
 import { PurgeReviews } from "#engagement/application/purge-reviews.ts";
 import { ReceiveMessageEvents } from "#engagement/application/receive-message-events.ts";
 import { SendMessage } from "#engagement/application/send-message.ts";
+import { SendPrivateReply } from "#engagement/application/send-private-reply.ts";
 import { SendReply } from "#engagement/application/send-reply.ts";
 import { SendReviewReply } from "#engagement/application/send-review-reply.ts";
 import { AccessEngagementChannels } from "#engagement/infrastructure/access-engagement-channels.ts";
@@ -32,7 +35,9 @@ import { DrizzleEngagementRecords } from "#engagement/infrastructure/drizzle-eng
 import { DrizzleEngagementStore } from "#engagement/infrastructure/drizzle-engagement-store.ts";
 import { DrizzleInboxWaitingReads } from "#engagement/infrastructure/drizzle-inbox-waiting-reads.ts";
 import { DrizzleMessageStore } from "#engagement/infrastructure/drizzle-message-store.ts";
+import { DrizzlePrivateReplyStore } from "#engagement/infrastructure/drizzle-private-reply-store.ts";
 import { DrizzleReviewStore } from "#engagement/infrastructure/drizzle-review-store.ts";
+import { HumanAgentLive } from "#engagement/infrastructure/human-agent-config.ts";
 import { NotifiedCommentRuleNotices } from "#engagement/infrastructure/notified-comment-rule-notices.ts";
 import { PublishingFollowedPosts } from "#engagement/infrastructure/publishing-followed-posts.ts";
 import { PublishingReplyLimits } from "#engagement/infrastructure/publishing-reply-limits.ts";
@@ -40,10 +45,12 @@ import { ToldEngagementOutcomes } from "#engagement/infrastructure/told-engageme
 import { ToldMessageOutcomes } from "#engagement/infrastructure/told-message-outcomes.ts";
 import { ToldReviewOutcomes } from "#engagement/infrastructure/told-review-outcomes.ts";
 import { WorkflowMessageJobs } from "#engagement/infrastructure/workflow-message-jobs.ts";
+import { WorkflowPrivateReplyJobs } from "#engagement/infrastructure/workflow-private-reply-jobs.ts";
 import { WorkflowReplyJobs } from "#engagement/infrastructure/workflow-reply-jobs.ts";
 import { WorkflowReviewReplyJobs } from "#engagement/infrastructure/workflow-review-reply-jobs.ts";
 import { ReadMessageBoxV1Live } from "#engagement/infrastructure/workflows/read-message-box.ts";
 import { SendMessageV1Live } from "#engagement/infrastructure/workflows/send-message.ts";
+import { SendPrivateReplyV1Live } from "#engagement/infrastructure/workflows/send-private-reply.ts";
 import { SendReplyV1Live } from "#engagement/infrastructure/workflows/send-reply.ts";
 import { SendReviewReplyV1Live } from "#engagement/infrastructure/workflows/send-review-reply.ts";
 import { WorkspaceRuleStarters } from "#engagement/infrastructure/workspace-rule-starters.ts";
@@ -53,6 +60,8 @@ import { InboxPlatformsLive } from "#shared/infrastructure/inbox-platforms.ts";
 export { EngagementInbox } from "#engagement/application/engagement-inbox.ts";
 
 export { EngagementMessages } from "#engagement/application/engagement-messages.ts";
+
+export { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
 
 export { MessageSettings } from "#engagement/application/message-settings.ts";
 
@@ -70,12 +79,18 @@ export { EngagementReviews } from "#engagement/application/engagement-reviews.ts
  * its job (SendReply); and the same for the reviews of locations
  * (EngagementReviews, CollectReviews, PurgeReviews, SendReviewReply), and
  * for direct messages (EngagementMessages, CollectMessages, PurgeMessages,
- * SendMessage). Needs a TransactionRunner and Ids.
+ * SendMessage), and the private replies to comments
+ * (EngagementPrivateReplies, SendPrivateReply). Needs a TransactionRunner
+ * and Ids.
  */
 export const engagementWith = <ROut, E, R>(adapters: Layer.Layer<ROut, E, R>) =>
   Layer.mergeAll(
     EngagementInbox.layer,
-    CommentRules.layer.pipe(Layer.provideMerge(EngagementReplies.layer)),
+    CommentRules.layer.pipe(
+      Layer.provideMerge(
+        Layer.merge(EngagementReplies.layer, EngagementPrivateReplies.layer)
+      )
+    ),
     CollectComments.layer,
     PurgeEngagement.layer,
     SendReply.layer,
@@ -86,7 +101,8 @@ export const engagementWith = <ROut, E, R>(adapters: Layer.Layer<ROut, E, R>) =>
     MessageSettings.layer,
     CollectMessages.layer.pipe(Layer.provideMerge(SendMessage.layer)),
     PurgeMessages.layer,
-    ReceiveMessageEvents.layer
+    ReceiveMessageEvents.layer,
+    SendPrivateReply.layer
   ).pipe(Layer.provideMerge(adapters));
 
 /**
@@ -111,6 +127,7 @@ export const engagementLive = <E, R>(
     | CommentSource
     | MessageSender
     | MessageSource
+    | PrivateReplySender
     | ReplySender
     | ReviewReplySender
     | ReviewSource,
@@ -124,6 +141,8 @@ export const engagementLive = <E, R>(
         DrizzleEngagementStore,
         DrizzleReviewStore,
         DrizzleMessageStore,
+        DrizzlePrivateReplyStore,
+        WorkflowPrivateReplyJobs,
         ChannelsReviewLocations,
         ChannelsMessageAccounts,
         WorkflowMessageJobs,
@@ -147,7 +166,10 @@ export const engagementLive = <E, R>(
       Layer.provide(InboxPlatformsLive),
       // The operator's PEAL_INBOX_MESSAGES: which platforms' direct
       // messages are read and answered.
-      Layer.provide(InboxMessagesLive)
+      Layer.provide(InboxMessagesLive),
+      // The operator's PEAL_META_HUMAN_AGENT: whether a member's own
+      // answer may take Meta's 7 days.
+      Layer.provide(HumanAgentLive)
     ),
     EngagementRecordsLive
   );
@@ -183,14 +205,15 @@ export { PlatformEngagementLive } from "#engagement/infrastructure/platforms/pla
 
 /**
  * Registers the workflows that send replies, to comments and to reviews,
- * and direct messages, and the one that reads a box a platform's event
- * names. Needs SendReply, SendReviewReply, SendMessage and
- * CollectMessages.
+ * direct messages and private replies, and the one that reads a box a
+ * platform's event names. Needs SendReply, SendReviewReply, SendMessage,
+ * SendPrivateReply and CollectMessages.
  */
 export const EngagementWorkersLive = Layer.mergeAll(
   SendReplyV1Live,
   SendReviewReplyV1Live,
   SendMessageV1Live,
+  SendPrivateReplyV1Live,
   ReadMessageBoxV1Live
 );
 

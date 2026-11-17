@@ -528,6 +528,8 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           schedule_post: [false, false, false, true],
           // Peal calls the receiver, a server outside it.
           send_message: [false, false, false, true],
+          // A message to a real person, once a comment.
+          send_private_reply: [false, false, false, true],
           send_test_webhook: [false, false, false, true],
           server_health: [true, false, true, false],
           // They replace the options the channel had.
@@ -777,6 +779,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
               ["list_conversations", "workspace:read"],
               ["get_conversation", "workspace:read"],
               ["send_message", "workspace:publish"],
+              ["send_private_reply", "workspace:publish"],
               ["list_comment_rules", "workspace:read"],
               ["start_comment_rule", "workspace:publish"],
               ["update_comment_rule", "workspace:publish"],
@@ -874,6 +877,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             reply_to_location_review: { reviewId: postId, text: "Never sent." },
             repost_target: { postId, targetId: postId },
             send_message: { conversationId: postId, text: "Never sent." },
+            send_private_reply: { commentId: postId, text: "Never sent." },
             request_changes: { ...decision, comment: "Never read." },
             reschedule_post: {
               at: "2030-01-01T10:00:00Z",

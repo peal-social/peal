@@ -112,7 +112,8 @@ export class SyncAdAccounts extends Context.Service<
           readonly dueAt: DateTime.Utc;
         }[],
         deadline: DateTime.Utc,
-        tally: Ref.Ref<Record<SyncOutcome, number>>
+        tally: Ref.Ref<Record<SyncOutcome, number>>,
+        at: DateTime.Utc
       ) {
         const reached = yield* Ref.make(Option.none<SyncCursor>());
         const late = yield* Ref.make(false);
@@ -130,7 +131,7 @@ export class SyncAdAccounts extends Context.Service<
                 return;
               }
 
-              const outcome = yield* syncer.sync(account.id);
+              const outcome = yield* syncer.sync(account.id, at);
 
               yield* Ref.update(tally, (counts) => ({
                 ...counts,
@@ -180,7 +181,7 @@ export class SyncAdAccounts extends Context.Service<
               ),
           });
 
-          const page = yield* readPage(due, deadline, tally);
+          const page = yield* readPage(due, deadline, tally, at);
 
           if (page.late) {
             return Option.some(

@@ -3,4 +3,5 @@
 export interface InboxReplyWindow {
     closesAt: string | null;
     open: boolean;
+    personClosesAt: string | null;
 }

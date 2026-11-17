@@ -1,15 +1,21 @@
 import { Context } from "effect";
-import type { Effect } from "effect";
+import type { Effect, Option } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
+import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 
 /** A platform whose events name the accounts they concern. */
 export type EventPlatform = "facebook" | "instagram";
 
-/** A connected channel of an account: where its events go. */
+/**
+ * A connected channel of an account: where its events go, and the way in
+ * it came through (Instagram's two logins), whose app's subscription
+ * carries them.
+ */
 export interface AccountChannel {
   readonly channelId: ChannelId;
+  readonly connection: Option.Option<ChannelConnection>;
   readonly workspaceId: WorkspaceId;
 }
 

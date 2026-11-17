@@ -1,8 +1,13 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { DateTime, Effect } from "effect";
+import { TestClock } from "effect/testing";
 
 import { filesLayer, signedIn } from "./signed-in.ts";
-import { conversationId, unconfirmedMessageId } from "./studio-messages.ts";
+import {
+  conversationId,
+  messengerConversationId,
+  unconfirmedMessageId,
+} from "./studio-messages.ts";
 
 // peal inbox messages, against the in-memory studio: what each subcommand
 // asks the server, and what it prints.
@@ -85,6 +90,71 @@ describe("peal inbox messages", () => {
 
         assert.include(again, "on its way, or may have gone out");
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
+    "says until when a Messenger conversation takes an answer, and why a late one is refused",
+    () =>
+      Effect.gen(function* window() {
+        const session = yield* signedIn();
+
+        const shown = yield* session.printed([
+          "inbox",
+          "messages",
+          "show",
+          messengerConversationId,
+          ...inStudio,
+        ]);
+
+        assert.include(
+          shown,
+          "Answers closed at 2026-11-15T08:59:00Z: Messenger and Instagram take one only within 24 hours of the person's last message."
+        );
+        assert.include(
+          shown,
+          "A member signed in to Peal's web app may answer in person until 2026-11-21T08:59:00Z, with Meta's Human Agent tag: the command line cannot."
+        );
+
+        const late = yield* session.refused([
+          "inbox",
+          "messages",
+          "send",
+          messengerConversationId,
+          "--text",
+          "Sorry for the wait.",
+          ...inStudio,
+        ]);
+
+        assert.include(
+          late,
+          "The platform takes no answer to this conversation since 2026-11-15T08:59:00Z"
+        );
+        assert.include(
+          late,
+          "a member signed in to Peal's web app may answer in person for up to 7 days"
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("says nothing of a person's 7 days once they passed", () =>
+    Effect.gen(function* passed() {
+      const session = yield* signedIn();
+
+      yield* TestClock.setTime(
+        DateTime.toEpochMillis(DateTime.makeUnsafe("2026-11-22T09:00:00Z"))
+      );
+
+      const shown = yield* session.printed([
+        "inbox",
+        "messages",
+        "show",
+        messengerConversationId,
+        ...inStudio,
+      ]);
+
+      assert.include(shown, "Answers closed at 2026-11-15T08:59:00Z");
+      assert.notInclude(shown, "may answer in person until");
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 
   it.effect("records what was found for an unconfirmed message", () =>

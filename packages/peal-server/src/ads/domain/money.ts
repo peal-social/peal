@@ -47,16 +47,47 @@ const metaWholeUnitCurrencies: ReadonlySet<string> = new Set([
   "VND",
 ]);
 
+// ISO 4217's list of currencies with no minor unit (the "Minor unit"
+// column at 0, "List one: currency and funds codes", read 2026-11-16),
+// for Google Ads, which writes money as millionths of the unit whatever
+// the currency. The few with three decimals (BHD, KWD and others) are
+// counted in hundredths there, rounded up as everything is.
+const isoWholeUnitCurrencies: ReadonlySet<string> = new Set([
+  "BIF",
+  "CLP",
+  "DJF",
+  "GNF",
+  "ISK",
+  "JPY",
+  "KMF",
+  "KRW",
+  "PYG",
+  "RWF",
+  "UGX",
+  "UYI",
+  "VND",
+  "VUV",
+  "XAF",
+  "XOF",
+  "XPF",
+]);
+
 /**
  * How many decimal digits separate a currency's unit from the minor unit
- * the network counts budgets in: 2 for most, 0 where the network takes
- * whole units. It follows the network's own table, not ISO 4217's, which
- * gives some of these currencies decimals the network does not use.
+ * Peal counts the network's amounts in: 2 for most, 0 for whole units.
+ * On Meta it follows Meta's own table, not ISO 4217's, which gives some of
+ * these currencies decimals Meta does not use; on Google, which counts in
+ * micros, ISO 4217's.
  */
 export const minorUnitDigits = (
-  _network: AdNetwork,
+  network: AdNetwork,
   currency: Currency
-): 0 | 2 => (metaWholeUnitCurrencies.has(currency) ? 0 : 2);
+): 0 | 2 =>
+  (network === "meta" ? metaWholeUnitCurrencies : isoWholeUnitCurrencies).has(
+    currency
+  )
+    ? 0
+    : 2;
 
 const decimal = /^(?<whole>\d{1,13})(?:\.(?<fraction>\d{1,6}))?$/u;
 
@@ -85,4 +116,41 @@ export const minorUnitsOf = (
     (/[1-9]/u.test(dropped) ? 1 : 0);
 
   return amount > maxAmount ? undefined : amount;
+};
+
+/**
+ * An amount in millionths of the currency's unit, as Google Ads counts
+ * money: a whole number no float loses, so a day's cost is kept as
+ * written and rounded only once days are summed.
+ */
+export const MicrosSchema = Schema.Int.check(
+  Schema.isBetween({ maximum: Number.MAX_SAFE_INTEGER, minimum: 0 })
+);
+
+/** How many micros one minor unit holds, for a currency's digits. */
+export const microsPerMinorUnit = (digits: 0 | 2): number =>
+  digits === 0 ? 1_000_000 : 10_000;
+
+const micros = /^\d{1,25}$/u;
+
+/**
+ * The minor units an amount in micros names, as Google Ads writes money (a
+ * whole number of millionths of the unit, in a JSON string, int64): read
+ * with `BigInt`, never through a float, and rounded up, so spend is never
+ * understated. Undefined for anything but digits, or past `maxAmount`.
+ */
+export const minorUnitsOfMicros = (
+  written: string,
+  digits: 0 | 2
+): number | undefined => {
+  if (!micros.test(written)) {
+    return undefined;
+  }
+
+  const perMinorUnit = digits === 0 ? 1_000_000n : 10_000n;
+  const value = BigInt(written);
+
+  const amount = value / perMinorUnit + (value % perMinorUnit === 0n ? 0n : 1n);
+
+  return amount > BigInt(maxAmount) ? undefined : Number(amount);
 };

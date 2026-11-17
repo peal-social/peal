@@ -17,6 +17,9 @@ public record InboxReplyWindow : IJsonOnDeserialized
     [JsonPropertyName("open")]
     public required bool Open { get; set; }
 
+    [JsonPropertyName("personClosesAt")]
+    public string? PersonClosesAt { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

@@ -12,6 +12,8 @@ module Peal
 
         field :post_id, -> { String }, optional: true, nullable: false, api_name: "postId"
 
+        field :private_reply, -> { String }, optional: true, nullable: false, api_name: "privateReply"
+
         field :reply, -> { String }, optional: false, nullable: false
       end
     end

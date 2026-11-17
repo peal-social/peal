@@ -372,6 +372,32 @@ before cannot read:
 3. **Either lists a row:** do not roll back past this release; release a
    fix forward instead. Never change the rows by hand.
 
+## Past Google Ads
+
+The release that reads Google Ads adds `ads.campaign_days`, and the
+columns `ads.accounts.reached_through` and `ads.campaigns.kind`, which the
+release before ignores. It also stores what the release before cannot
+read: a sign-in or an ad account of the network `google`
+(`ads.grants.network`, `ads.accounts.network`). The release before knows
+`meta` alone, and fails to decode such a row wherever it reads it: the
+hourly sync, which reads every account that is due, the ads page and
+API of its workspace, and a workspace's erasure.
+
+1. **Google Ads sign-ins and accounts:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT 'grant' AS kind, id, workspace_id FROM ads.grants WHERE network = 'google' UNION ALL SELECT 'account', id, workspace_id FROM ads.accounts WHERE network = 'google'"
+   ```
+
+2. **It lists a row:** do not roll back past this release. The way out,
+   when a roll-back cannot wait: the members who connected them remove
+   those sign-ins from the workspace's Ads page, which disconnects their
+   accounts with them (removing works with `google` no longer in
+   `PEAL_ADS_NETWORKS` too), so that the query lists nothing, then roll
+   back. Never change the rows by
+   hand.
+
 ## Past sign-in providers
 
 The release that signs people in with Google or an OpenID Connect provider
@@ -415,3 +441,115 @@ read:
 
 3. **Either lists a row:** do not roll back past this release; release a
    fix forward instead. Never change the rows by hand.
+
+## Past Messenger's and Instagram's direct messages
+
+The release that reads Facebook Pages' and Instagram's direct messages
+(`PEAL_INBOX_MESSAGES` with `facebook` or `instagram`) stores one value the
+release before cannot decode: an outgoing message failed because Meta's
+answer window had shut (`engagement.outgoing_messages.reason`
+`windowClosed`), which it fails on where it reads the conversation. It
+adds no column. The boxes and conversations of Meta channels are harmless
+there: the release before reads none of their messages (`unsupported`),
+and its retention deletes them in their time. Set `PEAL_INBOX_MESSAGES`
+back to the names the release before takes before rolling back, or it
+does not start.
+
+1. **Outgoing messages with the new reason:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM engagement.outgoing_messages WHERE reason = 'windowClosed'"
+   ```
+
+2. **It lists a row:** do not roll back past this release until those rows
+   are gone (30 days after they settled, `PurgeMessages`); release a fix
+   forward instead. Never change the rows by hand.
+
+## Past private replies
+
+The release that sends a comment's author one private reply on Instagram
+and Facebook Pages (migration `private-replies`) adds a table the release
+before ignores (`engagement.private_replies`): it never sends one, lists
+comments without theirs, and deletes them with their comments and threads
+in their time (the foreign keys cascade); its export and erasure leave the
+table out, which rolling forward catches up (an erasure's threads take
+their private replies with them). It adds one job, `SendPrivateReplyV1`,
+which the release before does not register: a private reply on its way
+when the release goes back stays `sending` in the cluster's tables,
+neither sent nor settled, its outbound message still claimed. Rolled
+forward again, the messages' collection hands it to a person
+(`unconfirmed`), so nothing goes out twice.
+
+1. **Private replies on their way:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM engagement.private_replies WHERE status = 'sending'"
+   ```
+
+2. **It lists a row:** wait a few minutes for its job to settle it, and
+   check again; roll back once it lists none.
+
+## Past a person's answer within Meta's 7 days
+
+The release that lets a member answer a Messenger or Instagram
+conversation by hand for 7 days with Meta's Human Agent tag (migration
+`person-replies`, `PEAL_META_HUMAN_AGENT`) adds one column the release
+before ignores (`engagement.outgoing_messages.by_person`, not null, false
+by default): it journals its own messages with the default and never
+tags one. A message a member wrote past the 24 hours that is still on
+its way when the release goes back is sent untagged, which Meta refuses
+as outside its window: it fails `windowClosed` and gives its outbound
+message back, so nothing goes out that Meta did not take. It also stores
+two reasons the release before cannot decode
+(`engagement.outgoing_messages.reason` `humanAgentNotGranted` and
+`tagRestricted`), where it reads the conversation. Remove
+`PEAL_META_HUMAN_AGENT` before rolling back: the release before does not
+read it.
+
+1. **Messages by a person on their way:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM engagement.outgoing_messages WHERE by_person AND status = 'sending'"
+   ```
+
+   And the reasons it cannot decode, which hold it until they are gone (30
+   days after they settled, `PurgeMessages`; release a fix forward
+   instead, and never change the rows by hand):
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM engagement.outgoing_messages WHERE reason IN ('humanAgentNotGranted', 'tagRestricted')"
+   ```
+
+2. **It lists a row:** wait a few minutes for its job to settle it, and
+   check again; roll back once it lists none.
+
+## Past rules' private replies
+
+The release that lets a comment rule send a private reply after its
+public one (migration `rule-private-replies`) adds a column the release
+before ignores (`engagement.comment_rules.private_reply`) and two
+(`engagement.comment_rule_matches.private_reply_id`, `private_code`) and
+an index on the second: the release before never sends a rule's private
+reply, and lists rules and their matches without them. A rule's private
+reply is a private reply as above, `SendPrivateReplyV1` included: roll
+back only once none is on its way, as [Past private
+replies](#past-private-replies) says. Those still waiting for their public
+reply (`private_code` `waiting`) are not sent while the release before
+runs; rolled forward again, those still within their 7 days go.
+
+1. **Rules' private replies on their way, or waiting:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT p.id, p.workspace_id, p.rule_id FROM engagement.private_replies p WHERE p.status = 'sending' AND p.rule_id IS NOT NULL"
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT rule_id, count(*) FROM engagement.comment_rule_matches WHERE private_code = 'waiting' GROUP BY rule_id"
+   ```
+
+2. **The first lists a row:** wait a few minutes for its job to settle
+   it, and check again; roll back once it lists none. The second needs no
+   wait.

@@ -3,6 +3,7 @@ import { Effect, Layer, Option } from "effect";
 
 import { WorkspaceHoldings } from "#billing/application/ports/workspace-holdings.ts";
 import { ContextWorkspaceHoldingsLive } from "#billing/infrastructure/context-workspace-holdings.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelEvents } from "#channels/application/channel-events.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { DisconnectChannel } from "#channels/application/disconnect-channel.ts";
@@ -31,7 +32,10 @@ import { WorkspaceMembers } from "#workspace/application/workspace-members.ts";
 const Test = ContextWorkspaceHoldingsLive.pipe(
   Layer.provide(Layer.mock(WorkspaceMembers, {})),
   Layer.provideMerge(
-    Layer.mergeAll(DisconnectChannel.layer, ListChannels.layer)
+    Layer.mergeAll(
+      DisconnectChannel.layer.pipe(Layer.provide(ChannelDepartures.none)),
+      ListChannels.layer
+    )
   ),
   Layer.provideMerge(
     Layer.mergeAll(

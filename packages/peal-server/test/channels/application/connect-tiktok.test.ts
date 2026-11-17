@@ -1,6 +1,7 @@
 import { assert, layer } from "@effect/vitest";
 import { DateTime, Duration, Effect, Layer, Option, Redacted } from "effect";
 
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { decryptTokens } from "#channels/application/channel-tokens.ts";
 import { DisconnectChannel } from "#channels/application/disconnect-channel.ts";
@@ -93,6 +94,7 @@ const tokenJobs = (workspaceId: WorkspaceId, authorizer: PlatformAuthorizer) =>
 
 const disconnecting = (authorizer: PlatformAuthorizer) =>
   DisconnectChannel.layer.pipe(
+    Layer.provide(ChannelDepartures.none),
     Layer.provide(Layer.succeed(PlatformAuthorizers, authorizersOf(authorizer)))
   );
 

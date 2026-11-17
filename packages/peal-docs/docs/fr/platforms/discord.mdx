@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/discord.svg
 ---
 
-Comment connecter un salon Discord par un webhook, ce qu’une publication peut y contenir, et les options qu’elle prend.
+Vous connectez un salon Discord avec un webhook créé dans ses paramètres. Il n’y a ni application à ajouter ni compte à connecter, et Peal publie sous le nom du webhook.
 
 ## En bref [#at-a-glance]
+
+Voici ce qu’une publication Discord peut contenir :
 
 |                      |                                     |
 | -------------------- | ----------------------------------- |
@@ -17,40 +19,49 @@ Comment connecter un salon Discord par un webhook, ce qu’une publication peut 
 | Parties              | {{platform-discord-parts-fr}}       |
 | Texte alternatif     | {{platform-discord-alt-fr}}         |
 
-Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms). Un salon Discord compte comme un compte dans l’[abonnement](/guides/workspace/billing).
+Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms). Chaque salon Discord compte comme un compte dans votre [abonnement](/guides/workspace/billing).
 
-## Connecter [#connect]
+## Connecter un salon [#connect]
 
 <Steps>
-  <Step title="Créer un webhook">
-    Dans Discord, ouvrez les paramètres du salon, puis **Intégrations**,
-    **Webhooks**, et créez un webhook pour Peal. Son nom est celui que le salon
-    montre comme auteur des publications de Peal. Choisissez **Copier l’URL du
-    webhook**.
+  <Step title="Créez un webhook">
+    Dans Discord, ouvrez les paramètres du salon, allez dans **Intégrations**,
+    puis **Webhooks**, et créez un webhook pour Peal. Son nom est celui que le
+    salon montre comme auteur des publications de Peal. Cliquez sur **Copier
+    l’URL du webhook**.
   </Step>
-  <Step title="Le coller dans Peal">
+  <Step title="Collez-le dans Peal">
     Sur **Canaux**, sous **Discord**, collez l’adresse dans **Adresse du
-    webhook** et choisissez **Connecter Discord**. Peal lit le webhook sur
-    Discord et garde son adresse chiffrée : elle n’est plus jamais montrée.
+    webhook** et cliquez sur **Connecter Discord**. Peal lit le webhook sur
+    Discord et garde son adresse chiffrée. Vous ne la reverrez plus.
   </Step>
 </Steps>
 
-- L’adresse commence par `https://discord.com/api/webhooks/`, ou l’ancienne `https://discordapp.com/api/webhooks/`, et peut venir des versions de test de Discord (`canary.discord.com`, `ptb.discord.com`). Peal refuse toute autre avant d’appeler quoi que ce soit, et appelle toujours l’API de Discord elle-même.
-- Seul un webhook entrant, celui que créent les paramètres d’un salon, publie des messages.
-- Un autre webhook du même salon reconnecte son canal avec la nouvelle adresse.
-- Un webhook que votre serveur a déplacé vers un autre salon reconnecte aussi son canal, qui publie désormais là : ce n’est pas un second canal de votre offre.
-- Pour couper l’accès de Peal, supprimez le webhook dans les paramètres du salon. Peal marque alors le canal à reconnecter et ne l’appelle plus.
+Peal vérifie l’adresse avant d’appeler quoi que ce soit. Il accepte celle qui commence par `https://discord.com/api/webhooks/` ou par l’ancienne `https://discordapp.com/api/webhooks/`, y compris depuis les versions de test de Discord (`canary.discord.com`, `ptb.discord.com`). Il refuse toute autre adresse, et appelle toujours l’API de Discord elle-même.
+
+Seul un webhook entrant, celui que créent les paramètres d’un salon, peut publier des messages.
+
+### Quand le webhook change [#webhook]
+
+Voici ce qui se passe quand le webhook change :
+
+- Si vous connectez un autre webhook du même salon, Peal reconnecte ce canal avec la nouvelle adresse.
+- Si votre serveur a déplacé le webhook vers un autre salon, le connecter reconnecte aussi son canal, qui publie désormais là. Il ne compte pas comme un second canal dans votre abonnement.
+- Si vous supprimez le webhook dans les paramètres du salon, Peal marque le canal à reconnecter et ne l’appelle plus. C’est ainsi que vous coupez l’accès de Peal.
 
 ## Ce que devient une publication [#posts]
 
-- Le texte est le markdown de Discord, tel que vous l’écrivez : `**gras**`, `> citation`, un lien. Peal n’y change rien.
-- Une mention ne notifie personne tant que **Notifier les personnes et les rôles mentionnés** n’est pas activé : `@everyone`, un rôle ou une personne écrits dans le texte s’affichent, sans notifier qui que ce soit.
-- Les parties d’un [fil](/guides/posts#threads) sont des messages qui se suivent dans le salon.
-- Dans un salon forum ou média, la première partie ouvre un post de forum titré par **Titre du post de forum**, et les parties suivantes y vont. Sans titre, Discord refuse la publication (`forumThreadNameRequired`) ; tout autre salon refuse un titre.
+Peal envoie le texte tel que vous l’écrivez, et Discord le lit comme son propre markdown : `**gras**`, `> citation`, un lien. Peal n’y change rien.
+
+Les mentions ne notifient personne tant que vous n’activez pas **Notifier les personnes et les rôles mentionnés**. D’ici là, `@everyone`, un rôle ou une personne écrits dans le texte s’affichent dans le message, sans notifier personne.
+
+Les parties d’un [fil](/guides/posts#threads) partent comme des messages qui se suivent dans le salon.
+
+Dans un salon forum ou média, la première partie ouvre un post de forum titré par **Titre du post de forum**, et les parties suivantes y vont. Sans titre, Discord refuse la publication (`forumThreadNameRequired`). Tout autre type de salon refuse un titre.
 
 ## Options [#options]
 
-Aucune option n’est nécessaire, et chacune va avec chaque partie, sauf le titre, que prend la première.
+Aucune option n’est obligatoire. Chacune part avec chaque partie, sauf **Titre du post de forum**, que seule la première prend. **Nom dans l’API** est le nom de l’option dans l’API :
 
 | Option                                             | Nom dans l’API   | Valeurs                           | Par défaut |
 | -------------------------------------------------- | ---------------- | --------------------------------- | ---------- |
@@ -61,14 +72,16 @@ Aucune option n’est nécessaire, et chacune va avec chaque partie, sauf le tit
 
 ## Modifier et supprimer [#live]
 
-Peal modifie le texte d’une publication et la supprime, chacune de ses parties : voir [Après la publication](/guides/posts/published). Une modification garde les fichiers.
+Peal peut modifier le texte d’une publication sur Discord, et supprimer la publication avec toutes ses parties (voyez [Après la publication](/guides/posts/published)). Une modification garde les fichiers.
 
-Seul le webhook qui a envoyé une publication peut la changer. Après avoir reconnecté le canal avec un autre webhook, Peal ne demande rien à Discord pour les publications envoyées par le précédent, et le dit (`webhookChanged`) : modifiez-les ou retirez-les sur Discord.
+Seul le webhook qui a envoyé une publication peut la changer. Si vous reconnectez le canal avec un autre webhook, Peal ne demande pas à Discord de changer les publications envoyées par l’ancien, et vous le dit (`webhookChanged`). Modifiez ou retirez ces publications sur Discord.
 
 ## Quand une réponse se perd [#lost]
 
-Discord ne garde aucune clé sous laquelle renvoyer un message, et ne laisse un webhook lister aucun message. Quand Discord prend une publication et que sa réponse ne vient jamais, la publication est **À vérifier** : regardez le salon, puis confirmez-la ou renvoyez-la depuis sa page. Peal ne la renvoie jamais de lui-même, et n’envoie aucune partie après elle.
+Discord n’a aucune clé qui permette à Peal de renvoyer un message sans risque, et un webhook ne peut pas lister les messages du salon. Quand Discord prend une publication et que sa réponse n’arrive jamais à Peal, la publication affiche donc **À vérifier**. Regardez le salon, puis confirmez la publication ou renvoyez-la depuis sa page.
 
-## Ce que Peal n’y fait pas [#limits]
+Peal ne la renvoie jamais de lui-même, et n’envoie pas les parties qui la suivent.
 
-Peal ne lit rien en retour sur Discord : ni comptages, ni réponses, ni boîte de réception. Il ne publie dans aucun fil existant, et n’envoie ni embed, ni sondage, ni bouton.
+## Ce que Peal ne fait pas sur Discord [#limits]
+
+Peal ne relit rien sur Discord, donc il n’y a pour lui ni statistiques, ni réponses, ni boîte de réception. Il ne publie dans aucun fil existant, et n’envoie ni embed, ni sondage, ni bouton.

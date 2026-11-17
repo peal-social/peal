@@ -4,14 +4,19 @@ server of the inventory."""
 
 from __future__ import annotations
 
+import atexit
+import fcntl
 import functools
+import hashlib
 import json
+import os
 import re
 import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +25,8 @@ import pytest
 import yaml
 from ansible.parsing.dataloader import DataLoader
 from ansible.template import Templar, trust_as_template
+from class_scheduling import ClassScheduling
+from xdist.remote import Producer
 
 INFRA = Path(__file__).resolve().parent.parent
 
@@ -32,8 +39,11 @@ def committed_inventory() -> str:
     """The inventory as committed, for Ansible's runs here: a copy without
     the files Git ignores (each environment's vault.yml, encrypted with a
     password the tests have not, and host_vars/*/local.yml, which a
-    machine may hold), so the tests read what the repository says."""
-    copy = Path(tempfile.mkdtemp(prefix="peal-inventory-")) / "inventory"
+    machine may hold), so the tests read what the repository says. Each
+    of xdist's workers makes its own, removed when the worker ends."""
+    folder = tempfile.mkdtemp(prefix="peal-inventory-")
+    atexit.register(shutil.rmtree, folder, ignore_errors=True)
+    copy = Path(folder) / "inventory"
     shutil.copytree(INFRA / "inventory", copy, ignore=shutil.ignore_patterns("vault.yml", "local.yml"))
     return str(copy / "hosts.yml")
 
@@ -182,8 +192,40 @@ def render_inventory(folder: Path, **extra_vars: Any) -> Path:
     return folder
 
 
+@pytest.hookimpl(optionalhook=True)
+def pytest_xdist_make_scheduler(config: pytest.Config, log: Producer) -> ClassScheduling | None:
+    """A class's tests to one worker, the others one by one, unless
+    --dist names another way."""
+    return ClassScheduling(config, log) if config.getvalue("dist") == "load" else None
+
+
 @pytest.fixture(scope="session")
-def rendered(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def rendered_with(tmp_path_factory: pytest.TempPathFactory) -> Callable[..., Path]:
+    """render_inventory, once a run for each set of settings, however many
+    of xdist's workers ask for it: the first renders into the run's own
+    temporary folder, which the workers share, under a lock the others wait
+    on, and all read the same folder. Tests only read it; one that changes
+    the files renders its own with render_inventory."""
+    base = tmp_path_factory.getbasetemp()
+    root = (base.parent if os.environ.get("PYTEST_XDIST_WORKER") else base) / "rendered"
+    root.mkdir(exist_ok=True)
+
+    def rendered_with(**extra_vars: Any) -> Path:
+        key = hashlib.sha256(json.dumps(extra_vars, sort_keys=True).encode()).hexdigest()[:16]
+        folder, done = root / key, root / f"{key}.done"
+        with (root / f"{key}.lock").open("w") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            if not done.exists():
+                shutil.rmtree(folder, ignore_errors=True)
+                render_inventory(folder, **extra_vars)
+                done.touch()
+        return folder
+
+    return rendered_with
+
+
+@pytest.fixture(scope="session")
+def rendered(rendered_with: Callable[..., Path]) -> Path:
     """The templates of tests/render.yml, rendered by Ansible for each
     server of the inventory, in <folder>/<server>/."""
-    return render_inventory(tmp_path_factory.mktemp("rendered"))
+    return rendered_with()

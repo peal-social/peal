@@ -1,4 +1,5 @@
-import type { DateTime, Effect, Option } from "effect";
+import { Option } from "effect";
+import type { DateTime, Effect } from "effect";
 
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import type {
@@ -9,6 +10,7 @@ import type {
 import type { Participant } from "#engagement/domain/conversation.ts";
 import type { OutgoingMessageId } from "#engagement/domain/outgoing-message-id.ts";
 import type { MessageSendOutcome } from "#engagement/domain/outgoing-message.ts";
+import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 
 /** What a read of a channel's conversations knows already. */
 export interface MessagesToRead {
@@ -48,12 +50,63 @@ export interface OutgoingDirect {
   /** Whether the account has yet to accept the conversation (Bluesky). */
   readonly request: boolean;
   /**
+   * Whether it goes out with Meta's Human Agent tag: a member's own answer,
+   * in person, on a server whose Meta app holds the feature, once the
+   * standard window has shut at the call; Meta takes it until 7 days after
+   * the person's last message. Never for a rule,
+   * a tool or a key; only Messenger and Instagram read it.
+   */
+  readonly humanAgent: boolean;
+  /**
    * The platform's ids of the conversation's other messages sent from
    * Peal and of the account's messages Peal read: a resume never takes
    * one of them for this one.
    */
   readonly takenIds: readonly string[];
   readonly text: string;
+}
+
+/**
+ * An account a platform's subscription carries, and the app whose
+ * subscription it is: Facebook Login's (a Page's, which carries the Page
+ * and the Instagram account linked to it) or Instagram Login's (the
+ * account's own).
+ */
+export interface FollowedAccount {
+  readonly accountId: string;
+  readonly connection: "facebookLogin" | "instagramLogin";
+  readonly platform: "facebook" | "instagram";
+}
+
+/** Whether a channel's events come through the subscription `account` names. */
+export const carriedBy = (
+  account: FollowedAccount,
+  channel: {
+    readonly connection: Option.Option<ChannelConnection>;
+    readonly platform: string;
+  }
+): boolean =>
+  channel.platform === account.platform &&
+  (account.platform === "facebook" ||
+    Option.getOrElse(channel.connection, () => "facebookLogin") ===
+      account.connection);
+
+/**
+ * What an unfollow asks of Peal's channels, in any workspace, the one
+ * unfollowing included (its messages may have been turned on again since
+ * they were turned off): whether one still reads the messages of an
+ * account the subscription carries (`elsewhere`; true when it cannot be
+ * told, so a subscription is never stopped on a doubt), and, once it is
+ * stopped, to follow again at their next read those whose messages were
+ * turned on meanwhile, the one unfollowing among them (`stopped`).
+ */
+export interface Followers {
+  readonly elsewhere: (
+    accounts: readonly FollowedAccount[]
+  ) => Effect.Effect<boolean>;
+  readonly stopped: (
+    accounts: readonly FollowedAccount[]
+  ) => Effect.Effect<void>;
 }
 
 /**
@@ -69,10 +122,12 @@ export interface OutgoingDirect {
  * A platform that tells the server when an account's messages change
  * (Meta's events) has `follow`, which asks it to, and `unfollow`, which
  * asks it to stop: the platform's subscription is the account's, so
- * `unfollow` answers `unneeded`, and calls nothing, while another channel
- * of Peal's still follows the account (a Page connected in two
- * workspaces). One without them is read on the collection's schedule
- * alone (Mastodon, Bluesky).
+ * `unfollow` answers `unneeded`, and calls nothing, while a channel of
+ * Peal's still follows the account (`Followers`: the channel itself turned
+ * on again, a Page connected in two workspaces, or the Instagram account
+ * it is linked to).
+ * One without them is read on the collection's schedule alone (Mastodon,
+ * Bluesky).
  */
 export interface MessagePlatform {
   readonly read: (
@@ -91,6 +146,7 @@ export interface MessagePlatform {
     account: ChannelAccount
   ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
   readonly unfollow?: (
-    account: ChannelAccount
+    account: ChannelAccount,
+    followers: Followers
   ) => Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
 }

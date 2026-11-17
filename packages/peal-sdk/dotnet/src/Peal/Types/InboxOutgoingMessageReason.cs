@@ -34,6 +34,14 @@ public readonly record struct InboxOutgoingMessageReason : IStringEnum
 
     public static readonly InboxOutgoingMessageReason AdapterFailure = new(Values.AdapterFailure);
 
+    public static readonly InboxOutgoingMessageReason WindowClosed = new(Values.WindowClosed);
+
+    public static readonly InboxOutgoingMessageReason HumanAgentNotGranted = new(
+        Values.HumanAgentNotGranted
+    );
+
+    public static readonly InboxOutgoingMessageReason TagRestricted = new(Values.TagRestricted);
+
     public InboxOutgoingMessageReason(string value)
     {
         Value = value;
@@ -149,5 +157,11 @@ public readonly record struct InboxOutgoingMessageReason : IStringEnum
         public const string Interrupted = "interrupted";
 
         public const string AdapterFailure = "adapterFailure";
+
+        public const string WindowClosed = "windowClosed";
+
+        public const string HumanAgentNotGranted = "humanAgentNotGranted";
+
+        public const string TagRestricted = "tagRestricted";
     }
 }

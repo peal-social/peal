@@ -26,6 +26,10 @@ import type { Platform } from "#shared/domain/platform.ts";
  * - `hide`: hide someone's comment under the account's post, and show it
  *   again.
  * - `delete`: delete someone else's comment under the account's post.
+ * - `privateReply`: send the comment's author one private message, on
+ *   Instagram and Facebook Pages. The channel's scopes alone do not decide
+ *   it (`abilitiesOf` answers `unsupported`): its messages must be on too,
+ *   which `privateReplyStanding` takes.
  */
 export const EngagementAbilitySchema = Schema.Literals([
   "read",
@@ -34,6 +38,7 @@ export const EngagementAbilitySchema = Schema.Literals([
   "like",
   "hide",
   "delete",
+  "privateReply",
 ]);
 
 export type EngagementAbility = typeof EngagementAbilitySchema.Type;
@@ -67,6 +72,7 @@ const none: EngagementAbilities = {
   delete: "unsupported",
   hide: "unsupported",
   like: "unsupported",
+  privateReply: "unsupported",
   read: "unsupported",
   reply: "unsupported",
   withdraw: "unsupported",
@@ -236,6 +242,7 @@ export const abilitiesOf = (
       delete: "unsupported",
       hide: "unsupported",
       like: "unsupported",
+      privateReply: "unsupported",
       read: granted("read", scopes, oneOf(linkedinCommentScopes.read)),
       reply: granted("reply", scopes, writing),
       withdraw: granted("withdraw", scopes, writing),
@@ -249,6 +256,7 @@ export const abilitiesOf = (
       delete: "unsupported",
       hide: "unsupported",
       like: granted("like", scopes, oneOf("write", "write:favourites")),
+      privateReply: "unsupported",
       read: "available",
       reply: granted("reply", scopes, posting),
       withdraw: granted("withdraw", scopes, posting),
@@ -262,6 +270,7 @@ export const abilitiesOf = (
       delete: "unsupported",
       hide: granted("hide", scopes, repo("app.bsky.feed.threadgate")),
       like: granted("like", scopes, repo("app.bsky.feed.like")),
+      privateReply: "unsupported",
       read: "available",
       reply: granted("reply", scopes, posting),
       withdraw: granted("withdraw", scopes, posting),
@@ -275,6 +284,7 @@ export const abilitiesOf = (
       delete: "unsupported",
       hide: granted("hide", scopes, managing),
       like: "unsupported",
+      privateReply: "unsupported",
       read: granted("read", scopes, oneOf(facebookCommentScopes.read)),
       reply: granted("reply", scopes, managing),
       withdraw: granted("withdraw", scopes, managing),
@@ -288,6 +298,7 @@ export const abilitiesOf = (
       delete: "unsupported",
       hide: granted("hide", scopes, commenting),
       like: "unsupported",
+      privateReply: "unsupported",
       read: granted("read", scopes, commenting),
       reply: granted("reply", scopes, commenting),
       withdraw: granted("withdraw", scopes, commenting),
@@ -303,6 +314,7 @@ export const abilitiesOf = (
     delete: "unsupported",
     hide: granted("hide", scopes, commenting),
     like: "unsupported",
+    privateReply: "unsupported",
     read: granted("read", scopes, commenting),
     reply: granted("reply", scopes, commenting),
     withdraw: granted("withdraw", scopes, commenting),

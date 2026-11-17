@@ -2,4 +2,6 @@
 
 import typing
 
-CommentRuleRefusal = typing.Union[typing.Literal["keywords", "emptyReply", "noChannel", "channels"], typing.Any]
+CommentRuleRefusal = typing.Union[
+    typing.Literal["keywords", "emptyReply", "noChannel", "channels", "emptyPrivateReply", "privateReply"], typing.Any
+]

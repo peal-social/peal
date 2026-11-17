@@ -6,11 +6,11 @@ sidebar:
   label: "Médias, commentaires, avis, messages"
 ---
 
-Les événements d’un fichier de la médiathèque, des commentaires sous une publication en ligne, des avis d’un établissement et des messages privés d’un canal, chacun avec ses champs et un exemple de contenu. Les événements des médias ne concernent aucun canal : ils parviennent à un point de terminaison [quels que soient les canaux qu’il liste](/developers/webhooks#filters).
+Ces événements concernent les fichiers de la médiathèque, les commentaires sous une publication en ligne, les avis d’un établissement et les messages privés d’un canal. Chacun liste ses champs et montre un exemple de contenu. Les événements des médias ne concernent aucun canal : ils parviennent donc à un point de terminaison [quels que soient les canaux qu’il liste](/developers/webhooks#filters).
 
 ## media.ready [#media-ready]
 
-Peal [a lu le fichier](/guides/media#library) une fois stocké, et il peut aller dans des publications.
+Peal [a lu le fichier](/guides/media#library) après l’avoir stocké, et le fichier peut désormais aller dans des publications.
 
 | Champ         | Type   | Ce qu’il contient                                |
 | ------------- | ------ | ------------------------------------------------ |
@@ -71,14 +71,14 @@ Le fichier a été refusé, ou Peal n’a pas pu le lire. Un fichier qui n’a p
 
 ## comment.received [#comment-received]
 
-Peal a lu pour la première fois un commentaire sous une publication mise en ligne sur un canal (voir [Boîte de réception](/guides/engage/inbox)). L’événement ne porte que des identifiants : ce que dit le commentaire et qui l’a écrit se lisent par l’API, avec `engagement:read`.
+Peal a lu un nouveau commentaire sous une publication mise en ligne sur un canal (voir [Boîte de réception](/guides/engage/inbox)). L’événement ne porte que des identifiants. Pour savoir ce que dit le commentaire et qui l’a écrit, lisez-le par l’API, avec `engagement:read`.
 
 | Champ         | Type   | Ce qu’il contient                                |
 | ------------- | ------ | ------------------------------------------------ |
 | `workspaceId` | chaîne | L’espace de travail                              |
 | `postId`      | chaîne | La publication                                   |
 | `channelId`   | chaîne | Le canal où la publication est en ligne          |
-| `threadId`    | chaîne | Le fil : les commentaires sous cette publication |
+| `threadId`    | chaîne | Le fil : les commentaires sous cette publication |
 | `commentId`   | chaîne | Le commentaire                                   |
 | `receivedAt`  | chaîne | Quand Peal l’a lu, sous forme d’instant en UTC   |
 
@@ -102,7 +102,7 @@ Peal a lu pour la première fois un commentaire sous une publication mise en lig
 
 ## comment.replied [#comment-replied]
 
-Une réponse à un commentaire est partie depuis Peal, au nom du compte du canal. Une réponse qui a échoué, ou dont l’issue n’est pas connue, n’envoie rien : lisez-la par l’API.
+Une réponse à un commentaire est partie depuis Peal, au nom du compte du canal. Une réponse qui a échoué, ou dont l’issue n’est pas connue, n’envoie rien : lisez-la alors par l’API.
 
 | Champ         | Type           | Ce qu’il contient                                              |
 | ------------- | -------------- | -------------------------------------------------------------- |
@@ -137,13 +137,13 @@ Une réponse à un commentaire est partie depuis Peal, au nom du compte du canal
 
 ## review.received [#review-received]
 
-Peal a lu un avis pour la première fois sur un établissement au nom duquel publie un canal Google Business Profile (voir [Boîte de réception](/guides/engage/inbox#reviews)). L’événement ne porte que des identifiants : les étoiles de l’avis, ce qu’il dit et qui l’a écrit se lisent par l’API, car Google ne permet de stocker ce que fournit son API que 30 jours au plus et un événement est conservé avec ses livraisons, avec `engagement:read`.
+Peal a lu un nouvel avis sur un établissement au nom duquel publie un canal Google Business Profile (voir [Boîte de réception](/guides/engage/inbox#reviews)). L’événement ne porte que des identifiants. Pour connaître les étoiles de l’avis, ce qu’il dit et qui l’a écrit, lisez-le par l’API, avec `engagement:read`. L’événement n’en contient pas plus parce que Google ne permet de stocker ce que fournit son API que 30 jours au plus, et un événement est conservé avec ses livraisons.
 
 | Champ         | Type   | Ce qu’il contient                              |
 | ------------- | ------ | ---------------------------------------------- |
 | `workspaceId` | chaîne | L’espace de travail                            |
 | `channelId`   | chaîne | Le canal dont l’établissement a reçu l’avis    |
-| `threadId`    | chaîne | Le fil : les avis de cet établissement         |
+| `threadId`    | chaîne | Le fil : les avis de cet établissement         |
 | `reviewId`    | chaîne | L’avis                                         |
 | `receivedAt`  | chaîne | Quand Peal l’a lu, sous forme d’instant en UTC |
 
@@ -166,7 +166,7 @@ Peal a lu un avis pour la première fois sur un établissement au nom duquel pub
 
 ## review.replied [#review-replied]
 
-Une réponse à un avis est partie depuis Peal, au nom de l’établissement. Une réponse qui a échoué, ou dont l’issue n’est pas encore connue, n’envoie rien : lisez-la par l’API.
+Une réponse à un avis est partie depuis Peal, au nom de l’établissement. Une réponse qui a échoué, ou dont l’issue n’est pas encore connue, n’envoie rien : lisez-la alors par l’API.
 
 | Champ         | Type   | Ce qu’il contient                                  |
 | ------------- | ------ | -------------------------------------------------- |
@@ -197,7 +197,9 @@ Une réponse à un avis est partie depuis Peal, au nom de l’établissement. Un
 
 ## message.received [#message-received]
 
-Peal a lu pour la première fois un message privé que quelqu’un a envoyé au compte d’un canal, sur une plateforme dont le serveur lit les messages, pour un canal dont l’espace de travail a activé les messages (voir [Boîte de réception](/guides/engage/inbox#direct-messages)). Les messages envoyés avant que Peal ne commence à lire le canal n’envoient rien. L’événement ne porte que des identifiants : ce que dit le message et qui l’a envoyé se lisent par l’API, avec `engagement:readMessages`, car les messages sont une correspondance privée et un événement est conservé avec ses livraisons plus longtemps qu’une conversation.
+Peal a lu un nouveau message privé que quelqu’un a envoyé au compte d’un canal (voir [Boîte de réception](/guides/engage/inbox#direct-messages)). Cela se produit sur une plateforme dont le serveur lit les messages, pour un canal dont l’espace de travail a activé les messages. Les messages envoyés avant que Peal ne commence à lire le canal n’envoient rien.
+
+L’événement ne porte que des identifiants. Pour savoir ce que dit le message et qui l’a envoyé, lisez-le par l’API, avec `engagement:readMessages`. Les messages sont une correspondance privée, et un événement est conservé avec ses livraisons plus longtemps qu’une conversation.
 
 | Champ            | Type   | Ce qu’il contient                              |
 | ---------------- | ------ | ---------------------------------------------- |
@@ -226,7 +228,7 @@ Peal a lu pour la première fois un message privé que quelqu’un a envoyé au 
 
 ## message.sent [#message-sent]
 
-Un message privé est parti depuis Peal, au nom du compte du canal. Un message qui a échoué, ou dont l’issue n’est pas encore connue, n’envoie rien : lisez-le par l’API.
+Un message privé est parti depuis Peal, au nom du compte du canal. Un message qui a échoué, ou dont l’issue n’est pas encore connue, n’envoie rien : lisez-le alors par l’API.
 
 | Champ            | Type   | Ce qu’il contient                            |
 | ---------------- | ------ | -------------------------------------------- |

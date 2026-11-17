@@ -4561,7 +4561,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"abilities\": {\n    \"delete\": \"available\",\n    \"hide\": \"available\",\n    \"like\": \"available\",\n    \"read\": \"available\",\n    \"reply\": \"available\",\n    \"withdraw\": \"available\"\n  },\n  \"comments\": [\n    {\n      \"author\": {\n        \"displayName\": null,\n        \"handle\": \"handle\",\n        \"platformId\": \"platformId\"\n      },\n      \"forgotten\": \"expired\",\n      \"id\": \"id\",\n      \"liked\": true,\n      \"parentId\": \"parentId\",\n      \"permalink\": \"permalink\",\n      \"receivedAt\": \"receivedAt\",\n      \"state\": \"new\",\n      \"text\": \"text\",\n      \"threadId\": \"threadId\",\n      \"writtenAt\": \"writtenAt\"\n    }\n  ],\n  \"platform\": \"x\",\n  \"replies\": [\n    {\n      \"authorId\": \"authorId\",\n      \"commentId\": \"commentId\",\n      \"createdAt\": \"createdAt\",\n      \"id\": \"id\",\n      \"permalink\": \"permalink\",\n      \"reason\": \"channelUnavailable\",\n      \"settledAt\": \"settledAt\",\n      \"status\": \"sending\",\n      \"text\": \"text\",\n      \"threadId\": \"threadId\"\n    }\n  ],\n  \"thread\": {\n    \"channelId\": \"channelId\",\n    \"collectionEnded\": \"window\",\n    \"comments\": 1,\n    \"id\": \"id\",\n    \"lastCollectedAt\": \"lastCollectedAt\",\n    \"lastCommentAt\": \"lastCommentAt\",\n    \"permalink\": \"permalink\",\n    \"postId\": \"postId\",\n    \"publishedAt\": \"publishedAt\",\n    \"targetId\": \"targetId\",\n    \"unanswered\": 1\n  }\n}",
+        "body": "{\n  \"abilities\": {\n    \"delete\": \"available\",\n    \"hide\": \"available\",\n    \"like\": \"available\",\n    \"privateReply\": \"available\",\n    \"read\": \"available\",\n    \"reply\": \"available\",\n    \"withdraw\": \"available\"\n  },\n  \"comments\": [\n    {\n      \"author\": {\n        \"displayName\": null,\n        \"handle\": \"handle\",\n        \"platformId\": \"platformId\"\n      },\n      \"forgotten\": \"expired\",\n      \"id\": \"id\",\n      \"liked\": true,\n      \"parentId\": \"parentId\",\n      \"permalink\": \"permalink\",\n      \"privateReply\": {\n        \"authorId\": null,\n        \"commentId\": \"commentId\",\n        \"createdAt\": \"createdAt\",\n        \"id\": \"id\",\n        \"reason\": null,\n        \"ruleId\": null,\n        \"settledAt\": null,\n        \"status\": \"sending\",\n        \"text\": \"text\"\n      },\n      \"privateReplyUntil\": \"privateReplyUntil\",\n      \"receivedAt\": \"receivedAt\",\n      \"state\": \"new\",\n      \"text\": \"text\",\n      \"threadId\": \"threadId\",\n      \"writtenAt\": \"writtenAt\"\n    }\n  ],\n  \"platform\": \"x\",\n  \"replies\": [\n    {\n      \"authorId\": \"authorId\",\n      \"commentId\": \"commentId\",\n      \"createdAt\": \"createdAt\",\n      \"id\": \"id\",\n      \"permalink\": \"permalink\",\n      \"reason\": \"channelUnavailable\",\n      \"settledAt\": \"settledAt\",\n      \"status\": \"sending\",\n      \"text\": \"text\",\n      \"threadId\": \"threadId\"\n    }\n  ],\n  \"thread\": {\n    \"channelId\": \"channelId\",\n    \"collectionEnded\": \"window\",\n    \"comments\": 1,\n    \"id\": \"id\",\n    \"lastCollectedAt\": \"lastCollectedAt\",\n    \"lastCommentAt\": \"lastCommentAt\",\n    \"permalink\": \"permalink\",\n    \"postId\": \"postId\",\n    \"publishedAt\": \"publishedAt\",\n    \"targetId\": \"targetId\",\n    \"unanswered\": 1\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -4600,7 +4600,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"delete\": \"available\",\n  \"hide\": \"available\",\n  \"like\": \"available\",\n  \"read\": \"available\",\n  \"reply\": \"available\",\n  \"withdraw\": \"available\"\n}",
+        "body": "{\n  \"delete\": \"available\",\n  \"hide\": \"available\",\n  \"like\": \"available\",\n  \"privateReply\": \"available\",\n  \"read\": \"available\",\n  \"reply\": \"available\",\n  \"withdraw\": \"available\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -4678,7 +4678,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"author\": {\n    \"displayName\": \"displayName\",\n    \"handle\": \"handle\",\n    \"platformId\": \"platformId\"\n  },\n  \"forgotten\": \"expired\",\n  \"id\": \"id\",\n  \"liked\": true,\n  \"parentId\": \"parentId\",\n  \"permalink\": \"permalink\",\n  \"receivedAt\": \"receivedAt\",\n  \"state\": \"new\",\n  \"text\": \"text\",\n  \"threadId\": \"threadId\",\n  \"writtenAt\": \"writtenAt\"\n}",
+        "body": "{\n  \"author\": {\n    \"displayName\": \"displayName\",\n    \"handle\": \"handle\",\n    \"platformId\": \"platformId\"\n  },\n  \"forgotten\": \"expired\",\n  \"id\": \"id\",\n  \"liked\": true,\n  \"parentId\": \"parentId\",\n  \"permalink\": \"permalink\",\n  \"privateReply\": {\n    \"authorId\": \"authorId\",\n    \"commentId\": \"commentId\",\n    \"createdAt\": \"createdAt\",\n    \"id\": \"id\",\n    \"reason\": \"channelUnavailable\",\n    \"ruleId\": \"ruleId\",\n    \"settledAt\": \"settledAt\",\n    \"status\": \"sending\",\n    \"text\": \"text\"\n  },\n  \"privateReplyUntil\": \"privateReplyUntil\",\n  \"receivedAt\": \"receivedAt\",\n  \"state\": \"new\",\n  \"text\": \"text\",\n  \"threadId\": \"threadId\",\n  \"writtenAt\": \"writtenAt\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -4717,7 +4717,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"author\": {\n    \"displayName\": \"displayName\",\n    \"handle\": \"handle\",\n    \"platformId\": \"platformId\"\n  },\n  \"forgotten\": \"expired\",\n  \"id\": \"id\",\n  \"liked\": true,\n  \"parentId\": \"parentId\",\n  \"permalink\": \"permalink\",\n  \"receivedAt\": \"receivedAt\",\n  \"state\": \"new\",\n  \"text\": \"text\",\n  \"threadId\": \"threadId\",\n  \"writtenAt\": \"writtenAt\"\n}",
+        "body": "{\n  \"author\": {\n    \"displayName\": \"displayName\",\n    \"handle\": \"handle\",\n    \"platformId\": \"platformId\"\n  },\n  \"forgotten\": \"expired\",\n  \"id\": \"id\",\n  \"liked\": true,\n  \"parentId\": \"parentId\",\n  \"permalink\": \"permalink\",\n  \"privateReply\": {\n    \"authorId\": \"authorId\",\n    \"commentId\": \"commentId\",\n    \"createdAt\": \"createdAt\",\n    \"id\": \"id\",\n    \"reason\": \"channelUnavailable\",\n    \"ruleId\": \"ruleId\",\n    \"settledAt\": \"settledAt\",\n    \"status\": \"sending\",\n    \"text\": \"text\"\n  },\n  \"privateReplyUntil\": \"privateReplyUntil\",\n  \"receivedAt\": \"receivedAt\",\n  \"state\": \"new\",\n  \"text\": \"text\",\n  \"threadId\": \"threadId\",\n  \"writtenAt\": \"writtenAt\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5062,7 +5062,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"abilities\": {\n    \"read\": \"available\",\n    \"send\": \"available\"\n  },\n  \"conversation\": {\n    \"channelId\": \"channelId\",\n    \"id\": \"id\",\n    \"lastIncomingAt\": \"lastIncomingAt\",\n    \"lastMessageAt\": \"lastMessageAt\",\n    \"messages\": 1,\n    \"participants\": [\n      {\n        \"displayName\": null,\n        \"handle\": \"handle\",\n        \"platformId\": \"platformId\"\n      }\n    ],\n    \"readAt\": \"readAt\",\n    \"request\": true,\n    \"unread\": true\n  },\n  \"messages\": [\n    {\n      \"attachments\": 1,\n      \"conversationId\": \"conversationId\",\n      \"fromAccount\": true,\n      \"id\": \"id\",\n      \"senderPlatformId\": \"senderPlatformId\",\n      \"sentAt\": \"sentAt\",\n      \"text\": \"text\"\n    }\n  ],\n  \"nextCursor\": \"nextCursor\",\n  \"platform\": \"x\",\n  \"sent\": [\n    {\n      \"authorId\": \"authorId\",\n      \"conversationId\": \"conversationId\",\n      \"createdAt\": \"createdAt\",\n      \"id\": \"id\",\n      \"platformMessageId\": \"platformMessageId\",\n      \"reason\": \"channelUnavailable\",\n      \"settledAt\": \"settledAt\",\n      \"status\": \"sending\",\n      \"text\": \"text\"\n    }\n  ],\n  \"window\": {\n    \"closesAt\": \"closesAt\",\n    \"open\": true\n  }\n}",
+        "body": "{\n  \"abilities\": {\n    \"read\": \"available\",\n    \"send\": \"available\"\n  },\n  \"conversation\": {\n    \"channelId\": \"channelId\",\n    \"id\": \"id\",\n    \"lastIncomingAt\": \"lastIncomingAt\",\n    \"lastMessageAt\": \"lastMessageAt\",\n    \"messages\": 1,\n    \"participants\": [\n      {\n        \"displayName\": null,\n        \"handle\": \"handle\",\n        \"platformId\": \"platformId\"\n      }\n    ],\n    \"readAt\": \"readAt\",\n    \"request\": true,\n    \"unread\": true\n  },\n  \"messages\": [\n    {\n      \"attachments\": 1,\n      \"conversationId\": \"conversationId\",\n      \"fromAccount\": true,\n      \"id\": \"id\",\n      \"senderPlatformId\": \"senderPlatformId\",\n      \"sentAt\": \"sentAt\",\n      \"text\": \"text\"\n    }\n  ],\n  \"nextCursor\": \"nextCursor\",\n  \"platform\": \"x\",\n  \"sent\": [\n    {\n      \"authorId\": \"authorId\",\n      \"conversationId\": \"conversationId\",\n      \"createdAt\": \"createdAt\",\n      \"id\": \"id\",\n      \"platformMessageId\": \"platformMessageId\",\n      \"reason\": \"channelUnavailable\",\n      \"settledAt\": \"settledAt\",\n      \"status\": \"sending\",\n      \"text\": \"text\"\n    }\n  ],\n  \"window\": {\n    \"closesAt\": \"closesAt\",\n    \"open\": true,\n    \"personClosesAt\": \"personClosesAt\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5107,6 +5107,120 @@
         }
       },
       "uuid": "ab71d6fd-c4d9-48a2-ac8c-c5b13aae221c",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "b5f7d97c-a077-4fe2-bf48-a4ca8f72989a",
+      "name": "Send a private reply to a comment - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/inbox/messages/private-replies",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"commentId\": \"commentId\",\n  \"createdAt\": \"createdAt\",\n  \"id\": \"id\",\n  \"reason\": \"channelUnavailable\",\n  \"ruleId\": \"ruleId\",\n  \"settledAt\": \"settledAt\",\n  \"status\": \"sending\",\n  \"text\": \"text\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "b5f7d97c-a077-4fe2-bf48-a4ca8f72989a",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "34288bfd-c65f-49a8-a552-cc20a1c4faf7",
+      "name": "Get a private reply - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "privateReplyId": {
+            "equalTo": "privateReplyId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"commentId\": \"commentId\",\n  \"createdAt\": \"createdAt\",\n  \"id\": \"id\",\n  \"reason\": \"channelUnavailable\",\n  \"ruleId\": \"ruleId\",\n  \"settledAt\": \"settledAt\",\n  \"status\": \"sending\",\n  \"text\": \"text\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "34288bfd-c65f-49a8-a552-cc20a1c4faf7",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "6a638883-3212-4583-9553-7fc652948321",
+      "name": "Confirm an unconfirmed private reply - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}/confirm",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "privateReplyId": {
+            "equalTo": "privateReplyId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"commentId\": \"commentId\",\n  \"createdAt\": \"createdAt\",\n  \"id\": \"id\",\n  \"reason\": \"channelUnavailable\",\n  \"ruleId\": \"ruleId\",\n  \"settledAt\": \"settledAt\",\n  \"status\": \"sending\",\n  \"text\": \"text\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "6a638883-3212-4583-9553-7fc652948321",
       "persistent": true,
       "priority": 3,
       "metadata": {
@@ -5518,7 +5632,7 @@
       },
       "response": {
         "status": 200,
-        "body": "[\n  {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\"\n  }\n]",
+        "body": "[\n  {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"capabilities\": {\n      \"ads\": true,\n      \"boosts\": true,\n      \"reach\": true,\n      \"results\": true\n    },\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"reachedThrough\": \"reachedThrough\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\",\n    \"unreachableSince\": \"unreachableSince\"\n  }\n]",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5593,7 +5707,7 @@
       },
       "response": {
         "status": 200,
-        "body": "[\n  {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\"\n  }\n]",
+        "body": "[\n  {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"capabilities\": {\n      \"ads\": true,\n      \"boosts\": true,\n      \"reach\": true,\n      \"results\": true\n    },\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"reachedThrough\": \"reachedThrough\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\",\n    \"unreachableSince\": \"unreachableSince\"\n  }\n]",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5632,7 +5746,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\"\n  },\n  \"committedThisMonth\": 1000000\n}",
+        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"capabilities\": {\n      \"ads\": true,\n      \"boosts\": true,\n      \"reach\": true,\n      \"results\": true\n    },\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"reachedThrough\": \"reachedThrough\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\",\n    \"unreachableSince\": \"unreachableSince\"\n  },\n  \"committedThisMonth\": 1000000\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5710,7 +5824,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\"\n  },\n  \"committedThisMonth\": 1000000\n}",
+        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"capabilities\": {\n      \"ads\": true,\n      \"boosts\": true,\n      \"reach\": true,\n      \"results\": true\n    },\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"reachedThrough\": \"reachedThrough\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\",\n    \"unreachableSince\": \"unreachableSince\"\n  },\n  \"committedThisMonth\": 1000000\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5749,7 +5863,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\"\n  },\n  \"from\": \"from\",\n  \"rows\": [\n    {\n      \"dailyBudget\": 1000000,\n      \"endsAt\": \"endsAt\",\n      \"externalId\": \"externalId\",\n      \"name\": \"name\",\n      \"objective\": \"awareness\",\n      \"rawStatus\": \"rawStatus\",\n      \"startsAt\": \"startsAt\",\n      \"status\": \"active\",\n      \"syncedAt\": \"syncedAt\",\n      \"totalBudget\": 1000000,\n      \"totals\": {\n        \"clicks\": 1000000,\n        \"impressions\": 1000000,\n        \"reach\": 1000000,\n        \"results\": null,\n        \"spend\": 1000000\n      }\n    }\n  ],\n  \"to\": \"to\"\n}",
+        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"capabilities\": {\n      \"ads\": true,\n      \"boosts\": true,\n      \"reach\": true,\n      \"results\": true\n    },\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"reachedThrough\": \"reachedThrough\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\",\n    \"unreachableSince\": \"unreachableSince\"\n  },\n  \"from\": \"from\",\n  \"rows\": [\n    {\n      \"dailyBudget\": 1000000,\n      \"endsAt\": \"endsAt\",\n      \"externalId\": \"externalId\",\n      \"kind\": \"kind\",\n      \"name\": \"name\",\n      \"objective\": \"awareness\",\n      \"rawStatus\": \"rawStatus\",\n      \"startsAt\": \"startsAt\",\n      \"status\": \"active\",\n      \"syncedAt\": \"syncedAt\",\n      \"totalBudget\": 1000000,\n      \"totals\": {\n        \"clicks\": 1000000,\n        \"impressions\": 1000000,\n        \"reach\": 1000000,\n        \"results\": null,\n        \"spend\": 1000000\n      }\n    }\n  ],\n  \"to\": \"to\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5788,7 +5902,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\"\n  },\n  \"from\": \"from\",\n  \"rows\": [\n    {\n      \"adSetExternalId\": \"adSetExternalId\",\n      \"campaignExternalId\": \"campaignExternalId\",\n      \"externalId\": \"externalId\",\n      \"name\": \"name\",\n      \"postId\": \"postId\",\n      \"rawStatus\": \"rawStatus\",\n      \"status\": \"active\",\n      \"totals\": {\n        \"clicks\": 1000000,\n        \"impressions\": 1000000,\n        \"reach\": 1000000,\n        \"results\": null,\n        \"spend\": 1000000\n      }\n    }\n  ],\n  \"to\": \"to\"\n}",
+        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"capabilities\": {\n      \"ads\": true,\n      \"boosts\": true,\n      \"reach\": true,\n      \"results\": true\n    },\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"reachedThrough\": \"reachedThrough\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\",\n    \"unreachableSince\": \"unreachableSince\"\n  },\n  \"from\": \"from\",\n  \"rows\": [\n    {\n      \"adSetExternalId\": \"adSetExternalId\",\n      \"campaignExternalId\": \"campaignExternalId\",\n      \"externalId\": \"externalId\",\n      \"name\": \"name\",\n      \"postId\": \"postId\",\n      \"rawStatus\": \"rawStatus\",\n      \"status\": \"active\",\n      \"totals\": {\n        \"clicks\": 1000000,\n        \"impressions\": 1000000,\n        \"reach\": 1000000,\n        \"results\": null,\n        \"spend\": 1000000\n      }\n    }\n  ],\n  \"to\": \"to\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -5827,7 +5941,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\"\n  },\n  \"from\": \"from\",\n  \"rows\": [\n    {\n      \"day\": \"day\",\n      \"totals\": {\n        \"clicks\": 1000000,\n        \"impressions\": 1000000,\n        \"reach\": 1000000,\n        \"results\": null,\n        \"spend\": 1000000\n      }\n    }\n  ],\n  \"to\": \"to\"\n}",
+        "body": "{\n  \"account\": {\n    \"access\": \"working\",\n    \"amountSpent\": 1000000,\n    \"capabilities\": {\n      \"ads\": true,\n      \"boosts\": true,\n      \"reach\": true,\n      \"results\": true\n    },\n    \"connectedAt\": \"connectedAt\",\n    \"connectionId\": \"connectionId\",\n    \"currency\": \"currency\",\n    \"externalId\": \"externalId\",\n    \"id\": \"id\",\n    \"minorUnitDigits\": 1.1,\n    \"monthlyCeiling\": 1000000,\n    \"name\": \"name\",\n    \"network\": \"meta\",\n    \"newAdsUntrackedUntil\": \"newAdsUntrackedUntil\",\n    \"reachedThrough\": \"reachedThrough\",\n    \"spendCap\": 1000000,\n    \"spendingEnabled\": true,\n    \"status\": \"active\",\n    \"syncedAt\": \"syncedAt\",\n    \"timeZone\": \"timeZone\",\n    \"unreachableSince\": \"unreachableSince\"\n  },\n  \"from\": \"from\",\n  \"rows\": [\n    {\n      \"day\": \"day\",\n      \"totals\": {\n        \"clicks\": 1000000,\n        \"impressions\": 1000000,\n        \"reach\": 1000000,\n        \"results\": null,\n        \"spend\": 1000000\n      }\n    }\n  ],\n  \"to\": \"to\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -8617,7 +8731,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"items\": [\n    {\n      \"channelId\": \"channelId\",\n      \"channels\": [\n        {\n          \"channelId\": \"channelId\",\n          \"platform\": \"x\",\n          \"reply\": \"available\"\n        }\n      ],\n      \"createdAt\": \"createdAt\",\n      \"endedReason\": \"stopped\",\n      \"id\": \"id\",\n      \"keywords\": [\n        \"keywords\"\n      ],\n      \"matches\": [\n        {\n          \"code\": null,\n          \"commentId\": \"commentId\",\n          \"lookedAt\": \"lookedAt\",\n          \"outcome\": \"claimed\",\n          \"replyId\": null\n        }\n      ],\n      \"postId\": \"postId\",\n      \"reply\": \"reply\",\n      \"startedBy\": \"startedBy\",\n      \"status\": \"active\"\n    }\n  ],\n  \"nextCursor\": \"nextCursor\"\n}",
+        "body": "{\n  \"items\": [\n    {\n      \"channelId\": \"channelId\",\n      \"channels\": [\n        {\n          \"channelId\": \"channelId\",\n          \"platform\": \"x\",\n          \"privateReply\": \"available\",\n          \"reply\": \"available\"\n        }\n      ],\n      \"createdAt\": \"createdAt\",\n      \"endedReason\": \"stopped\",\n      \"holdsPrivateReply\": true,\n      \"id\": \"id\",\n      \"keywords\": [\n        \"keywords\"\n      ],\n      \"matches\": [\n        {\n          \"code\": null,\n          \"commentId\": \"commentId\",\n          \"lookedAt\": \"lookedAt\",\n          \"outcome\": \"claimed\",\n          \"privateCode\": null,\n          \"privateReplyId\": null,\n          \"privateStatus\": null,\n          \"replyId\": null\n        }\n      ],\n      \"postId\": \"postId\",\n      \"privateReply\": \"privateReply\",\n      \"reply\": \"reply\",\n      \"startedBy\": \"startedBy\",\n      \"status\": \"active\"\n    }\n  ],\n  \"nextCursor\": \"nextCursor\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -8653,7 +8767,7 @@
       },
       "response": {
         "status": 201,
-        "body": "{\n  \"channelId\": \"channelId\",\n  \"channels\": [\n    {\n      \"channelId\": \"channelId\",\n      \"platform\": \"x\",\n      \"reply\": \"available\"\n    }\n  ],\n  \"createdAt\": \"createdAt\",\n  \"endedReason\": \"stopped\",\n  \"id\": \"id\",\n  \"keywords\": [\n    \"keywords\"\n  ],\n  \"matches\": [\n    {\n      \"code\": \"code\",\n      \"commentId\": \"commentId\",\n      \"lookedAt\": \"lookedAt\",\n      \"outcome\": \"claimed\",\n      \"replyId\": \"replyId\"\n    }\n  ],\n  \"postId\": \"postId\",\n  \"reply\": \"reply\",\n  \"startedBy\": \"startedBy\",\n  \"status\": \"active\"\n}",
+        "body": "{\n  \"channelId\": \"channelId\",\n  \"channels\": [\n    {\n      \"channelId\": \"channelId\",\n      \"platform\": \"x\",\n      \"privateReply\": \"available\",\n      \"reply\": \"available\"\n    }\n  ],\n  \"createdAt\": \"createdAt\",\n  \"endedReason\": \"stopped\",\n  \"holdsPrivateReply\": true,\n  \"id\": \"id\",\n  \"keywords\": [\n    \"keywords\"\n  ],\n  \"matches\": [\n    {\n      \"code\": \"code\",\n      \"commentId\": \"commentId\",\n      \"lookedAt\": \"lookedAt\",\n      \"outcome\": \"claimed\",\n      \"privateCode\": \"privateCode\",\n      \"privateReplyId\": \"privateReplyId\",\n      \"privateStatus\": \"sending\",\n      \"replyId\": \"replyId\"\n    }\n  ],\n  \"postId\": \"postId\",\n  \"privateReply\": \"privateReply\",\n  \"reply\": \"reply\",\n  \"startedBy\": \"startedBy\",\n  \"status\": \"active\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -8692,7 +8806,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"channelId\": \"channelId\",\n  \"channels\": [\n    {\n      \"channelId\": \"channelId\",\n      \"platform\": \"x\",\n      \"reply\": \"available\"\n    }\n  ],\n  \"createdAt\": \"createdAt\",\n  \"endedReason\": \"stopped\",\n  \"id\": \"id\",\n  \"keywords\": [\n    \"keywords\"\n  ],\n  \"matches\": [\n    {\n      \"code\": \"code\",\n      \"commentId\": \"commentId\",\n      \"lookedAt\": \"lookedAt\",\n      \"outcome\": \"claimed\",\n      \"replyId\": \"replyId\"\n    }\n  ],\n  \"postId\": \"postId\",\n  \"reply\": \"reply\",\n  \"startedBy\": \"startedBy\",\n  \"status\": \"active\"\n}",
+        "body": "{\n  \"channelId\": \"channelId\",\n  \"channels\": [\n    {\n      \"channelId\": \"channelId\",\n      \"platform\": \"x\",\n      \"privateReply\": \"available\",\n      \"reply\": \"available\"\n    }\n  ],\n  \"createdAt\": \"createdAt\",\n  \"endedReason\": \"stopped\",\n  \"holdsPrivateReply\": true,\n  \"id\": \"id\",\n  \"keywords\": [\n    \"keywords\"\n  ],\n  \"matches\": [\n    {\n      \"code\": \"code\",\n      \"commentId\": \"commentId\",\n      \"lookedAt\": \"lookedAt\",\n      \"outcome\": \"claimed\",\n      \"privateCode\": \"privateCode\",\n      \"privateReplyId\": \"privateReplyId\",\n      \"privateStatus\": \"sending\",\n      \"replyId\": \"replyId\"\n    }\n  ],\n  \"postId\": \"postId\",\n  \"privateReply\": \"privateReply\",\n  \"reply\": \"reply\",\n  \"startedBy\": \"startedBy\",\n  \"status\": \"active\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -8770,7 +8884,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"channelId\": \"channelId\",\n  \"channels\": [\n    {\n      \"channelId\": \"channelId\",\n      \"platform\": \"x\",\n      \"reply\": \"available\"\n    }\n  ],\n  \"createdAt\": \"createdAt\",\n  \"endedReason\": \"stopped\",\n  \"id\": \"id\",\n  \"keywords\": [\n    \"keywords\"\n  ],\n  \"matches\": [\n    {\n      \"code\": \"code\",\n      \"commentId\": \"commentId\",\n      \"lookedAt\": \"lookedAt\",\n      \"outcome\": \"claimed\",\n      \"replyId\": \"replyId\"\n    }\n  ],\n  \"postId\": \"postId\",\n  \"reply\": \"reply\",\n  \"startedBy\": \"startedBy\",\n  \"status\": \"active\"\n}",
+        "body": "{\n  \"channelId\": \"channelId\",\n  \"channels\": [\n    {\n      \"channelId\": \"channelId\",\n      \"platform\": \"x\",\n      \"privateReply\": \"available\",\n      \"reply\": \"available\"\n    }\n  ],\n  \"createdAt\": \"createdAt\",\n  \"endedReason\": \"stopped\",\n  \"holdsPrivateReply\": true,\n  \"id\": \"id\",\n  \"keywords\": [\n    \"keywords\"\n  ],\n  \"matches\": [\n    {\n      \"code\": \"code\",\n      \"commentId\": \"commentId\",\n      \"lookedAt\": \"lookedAt\",\n      \"outcome\": \"claimed\",\n      \"privateCode\": \"privateCode\",\n      \"privateReplyId\": \"privateReplyId\",\n      \"privateStatus\": \"sending\",\n      \"replyId\": \"replyId\"\n    }\n  ],\n  \"postId\": \"postId\",\n  \"privateReply\": \"privateReply\",\n  \"reply\": \"reply\",\n  \"startedBy\": \"startedBy\",\n  \"status\": \"active\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -9317,6 +9431,6 @@
     }
   ],
   "meta": {
-    "total": 248
+    "total": 251
   }
 }

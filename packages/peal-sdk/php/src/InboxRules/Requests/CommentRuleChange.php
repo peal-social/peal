@@ -21,6 +21,12 @@ class CommentRuleChange extends JsonSerializableType
     public ?bool $paused;
 
     /**
+     * @var ?string $privateReply
+     */
+    #[JsonProperty('privateReply')]
+    public ?string $privateReply;
+
+    /**
      * @var ?string $reply
      */
     #[JsonProperty('reply')]
@@ -30,6 +36,7 @@ class CommentRuleChange extends JsonSerializableType
      * @param array{
      *   keywords?: ?array<string>,
      *   paused?: ?bool,
+     *   privateReply?: ?string,
      *   reply?: ?string,
      * } $values
      */
@@ -38,6 +45,7 @@ class CommentRuleChange extends JsonSerializableType
     ) {
         $this->keywords = $values['keywords'] ?? null;
         $this->paused = $values['paused'] ?? null;
+        $this->privateReply = $values['privateReply'] ?? null;
         $this->reply = $values['reply'] ?? null;
     }
 }

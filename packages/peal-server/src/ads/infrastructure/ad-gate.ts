@@ -1,4 +1,12 @@
-import { Context, Duration, Effect, Layer, Schedule } from "effect";
+import {
+  Context,
+  Duration,
+  Effect,
+  Layer,
+  Option,
+  Schedule,
+  Schema,
+} from "effect";
 import { Entity } from "effect/cluster";
 import { Rpc } from "effect/rpc";
 
@@ -30,7 +38,11 @@ import { AdAccountIdSchema, BoostIdSchema } from "#ads/domain/ids.ts";
  */
 export const AdGate = Entity.make("AdGate", [
   Rpc.make("Sync", {
-    payload: { accountId: AdAccountIdSchema },
+    // When the sweep that asks was scheduled: the next read counts from it.
+    payload: {
+      accountId: AdAccountIdSchema,
+      runAt: Schema.optionalKey(Schema.DateTimeUtc),
+    },
     success: SyncOutcomeSchema,
   }),
   Rpc.make("Place", {
@@ -60,7 +72,8 @@ export const AdGateLive = AdGate.toLayer(
       Control: ({ payload }) => operations.control(payload.request),
       GiveUp: ({ payload }) => operations.giveUp(payload.boostId),
       Place: ({ payload }) => operations.place(payload.boostId),
-      Sync: ({ payload }) => sync.run(payload.accountId),
+      Sync: ({ payload }) =>
+        sync.run(payload.accountId, Option.fromUndefinedOr(payload.runAt)),
     });
   }),
   { disableFatalDefects: true, maxIdleTime: Duration.minutes(10) }
@@ -82,9 +95,9 @@ export const GatedAds = Layer.effectContext(
     const gateFor = yield* AdGate.client;
 
     const syncer = AccountSyncer.of({
-      sync: (accountId) =>
+      sync: (accountId, runAt) =>
         gateFor(accountId)
-          .Sync({ accountId })
+          .Sync({ accountId, runAt })
           .pipe(
             Effect.retry({
               schedule: notTakenRetry,

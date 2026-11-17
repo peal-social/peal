@@ -5,5 +5,6 @@ import * as Peal from "../index.js";
 export interface ChannelCommentRule {
     channelId: string;
     platform: Peal.Platform;
+    privateReply: Peal.CommentRulePrivateAbility;
     reply: Peal.CommentRuleAbility;
 }

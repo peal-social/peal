@@ -14,6 +14,9 @@ InboxOutgoingMessageReason = typing.Union[
         "noResponse",
         "interrupted",
         "adapterFailure",
+        "windowClosed",
+        "humanAgentNotGranted",
+        "tagRestricted",
     ],
     typing.Any,
 ]

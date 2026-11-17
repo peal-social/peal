@@ -1317,7 +1317,7 @@ $client->channels->chooseAccounts(
 <dl>
 <dd>
 
-Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions, which turning a channel's messages on needs (`setChannelMessages` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (`setChannelMessages` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
 </dd>
 </dl>
 </dd>
@@ -10124,7 +10124,7 @@ $client->inboxReviews->setReviewAnswered(
 <dl>
 <dd>
 
-Lists the workspace's conversations, the latest message first, 30 a page unless `limit` (at most 100) says otherwise. `channelId` and `unread` narrow the list. Pass the page's `nextCursor` as `cursor` for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon and Bluesky where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
+Lists the workspace's conversations, the latest message first, 30 a page unless `limit` (at most 100) says otherwise. `channelId` and `unread` narrow the list. Pass the page's `nextCursor` as `cursor` for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). On Messenger and Instagram, Meta gives only a conversation's 20 latest messages, so a longer one is never read whole; a message taken back on Instagram is deleted when Meta tells of it, and Messenger tells of none, so one taken back there stays until its 30 days. Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
 </dd>
 </dl>
 </dd>
@@ -10295,7 +10295,7 @@ $client->inboxMessages->getConversation(
 <dl>
 <dd>
 
-Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of `direct` visibility, which mentions every participant first, and a text that mentions any other account is refused (422 `MessageMentionsOutside`), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message `sending`, and the conversation shows how it ended. A message whose outcome is unknown is `unconfirmed` and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 `MessagePending`). With an `Idempotency-Key` header (255 characters at most, new for each message), the request is safe to send again: within 24 hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 `IdempotencyKeyReused`). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 `UsageAllowanceReached`); with one, it is billed past the allowance. A message that never went out is not counted. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of `direct` visibility, which mentions every participant first, and a text that mentions any other account is refused (422 `MessageMentionsOutside`), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept; on Messenger and Instagram a message sent only within 24 hours of the person's last one (`window`): past it, the message is refused before anything is journalled (409 `InboxActionUnavailable`, `reason` `windowClosed`, with `closedAt`), unless an `Idempotency-Key` names a message already made. Where the server's Meta app holds Meta's Human Agent feature, a member signed in to Peal's web app in person may answer until 7 days after the person's last message (`window.personClosesAt`), with Meta's `HUMAN_AGENT` tag; an API key, an application (MCP, the command line) or staff acting as a member never may, and are refused past the 24 hours. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message `sending`, and the conversation shows how it ended. A message whose outcome is unknown is `unconfirmed` and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 `MessagePending`). With an `Idempotency-Key` header (255 characters at most, new for each message), the request is safe to send again: within 24 hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 `IdempotencyKeyReused`). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 `UsageAllowanceReached`); with one, it is billed past the allowance. A message that never went out is not counted. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 </dd>
 </dl>
 </dd>
@@ -10356,6 +10356,231 @@ $client->inboxMessages->sendMessage(
 <dd>
 
 **$text:** `string` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>$client-&gt;inboxMessages-&gt;sendPrivateReply($workspaceId, $request) -> ?InboxPrivateReply</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's `abilities.privateReply`): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's `privateReplyUntil`), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 `InboxActionUnavailable`, `privateReply`, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 `PrivateReplyNotPossible`, with `reason`), and a text longer than the platform takes (422 `ReplyInvalid`). The message is journalled and sent by a job: the answer is the private reply `sending`; the comment shows how it ended. One whose outcome is unknown is `unconfirmed` and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 `PrivateReplyPending`), whichever request came first; one that failed lets another through. With an `Idempotency-Key` header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 `IdempotencyKeyReused`). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 `UsageAllowanceReached`); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```php
+$client->inboxMessages->sendPrivateReply(
+    'workspaceId',
+    new NewInboxPrivateReply([
+        'commentId' => 'commentId',
+        'text' => 'text',
+    ]),
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**$workspaceId:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**$idempotencyKey:** `?string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**$commentId:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**$text:** `string` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>$client-&gt;inboxMessages-&gt;getPrivateReply($workspaceId, $privateReplyId) -> ?InboxPrivateReply</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```php
+$client->inboxMessages->getPrivateReply(
+    'workspaceId',
+    'privateReplyId',
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**$workspaceId:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**$privateReplyId:** `string` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>$client-&gt;inboxMessages-&gt;confirmPrivateReply($workspaceId, $privateReplyId, $request) -> ?InboxPrivateReply</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```php
+$client->inboxMessages->confirmPrivateReply(
+    'workspaceId',
+    'privateReplyId',
+    new ConfirmPrivateReplyInboxMessagesRequest([
+        'went' => true,
+    ]),
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**$workspaceId:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**$privateReplyId:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**$went:** `bool` 
     
 </dd>
 </dl>
@@ -10511,7 +10736,7 @@ $client->inboxMessages->getMessageSettings(
 <dl>
 <dd>
 
-Turns a channel's direct messages on (`enabled: true`): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 `InboxActionUnavailable`, `unsupported`), and a Bluesky channel whose account has not granted the chat methods' permissions too (`reconnect`): reconnect it with `messages=true`, then turn its messages on. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
+Turns a channel's direct messages on (`enabled: true`): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 `InboxActionUnavailable`, `unsupported`), and a Bluesky, Facebook Page or Instagram channel whose account has not granted the permissions its messages take too (`reconnect`): reconnect it with `messages=true`, then turn its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access its messages in Instagram's settings. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 </dd>
 </dl>
 </dd>
@@ -11403,7 +11628,7 @@ $client->ads->removeAccount(
 <dl>
 <dd>
 
-Decides whether an ad account may spend through Peal, and how much: `enabled` with a `monthlyCeiling` in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (`AdAccountBusy`). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
+Decides whether an ad account may spend through Peal, and how much: `enabled` with a `monthlyCeiling` in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (`AdAccountBusy`). Turning it on is refused (`AdSpendingUnavailable`) on a server that offers no spending, and on an account whose `capabilities.boosts` is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
 </dd>
 </dl>
 </dd>
@@ -11487,7 +11712,7 @@ $client->ads->setSpending(
 <dl>
 <dd>
 
-Lists an ad account's campaigns as last read from its network (every hour), those made outside Peal included, with what their ads did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose `reach` reads 0 and `results` null. A thousand at most. Needs ads:read.
 </dd>
 </dl>
 </dd>
@@ -11569,7 +11794,7 @@ $client->ads->listCampaigns(
 <dl>
 <dd>
 
-Lists an ad account's ads as last read, those of one campaign with `campaignId` (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. Needs ads:read.
+Lists an ad account's ads as last read, those of one campaign with `campaignId` (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose `capabilities.ads` is false (Google Ads, read by campaign) answers none. Needs ads:read.
 </dd>
 </dl>
 </dd>
@@ -11659,7 +11884,7 @@ $client->ads->listAds(
 <dl>
 <dd>
 
-Sums what an ad account's ads did each day: spend, impressions, reach, clicks and results, over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Needs ads:read.
+Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where `capabilities.reach` or `capabilities.results` is false, `reach` reads 0 and `results` null. Needs ads:read.
 </dd>
 </dl>
 </dd>
@@ -11964,7 +12189,7 @@ $client->ads->listBoosts(
 <dl>
 <dd>
 
-**Spends money.** Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until `endsAt`. The `Idempotency-Key` header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as `requested`, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads, the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached `paymentMethodRequired`); running boosts are never touched. Needs ads:spend; never staff acting as a member.
+**Spends money.** Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until `endsAt`. The `Idempotency-Key` header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as `requested`, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose `capabilities.boosts` is false, Google Ads: `AdAccountUnusable`), the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached `paymentMethodRequired`); running boosts are never touched. Needs ads:spend; never staff acting as a member.
 </dd>
 </dl>
 </dd>
@@ -17129,7 +17354,7 @@ $client->followUps->approve(
 <dl>
 <dd>
 
-Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. Needs engagement:read.
+Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 </dd>
 </dl>
 </dd>
@@ -17210,7 +17435,7 @@ $client->inboxRules->listCommentRules(
 <dl>
 <dd>
 
-Starts a rule on the comments of a post that went out (`postId`) or of every post of a channel (`channelId`), exactly one of them, with 1 to 10 `keywords` and a `reply`. A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its `reply`, once a comment and once a person, 25 replies a day at most, and 100 a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and `channels` says so. It never likes, follows or messages anyone privately. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected. It is refused when no channel it answers on can carry its reply (CommentRuleNotPossible, with each channel's reason). A workspace keeps 100 rules active or paused. Needs engagement:reply; never staff acting as a member.
+Starts a rule on the comments of a post that went out (`postId`) or of every post of a channel (`channelId`), exactly one of them, with 1 to 10 `keywords`, a `reply` and, optionally, a `privateReply`. A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its `reply`, once a comment and once a person, 25 replies a day at most, and 100 a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and `channels` says so. It never likes or follows anyone. With a `privateReply`, it also sends the author of each comment it answered that one private message, once its public reply is out: only on Instagram and Facebook Pages, whose platforms let an account send a commenter one message within 7 days of the comment, only where the channel's messages are on (a channel that cannot carry it answers in public only, and the match's `privateCode` says why), never twice to a comment, whoever sent the first, and never to anyone who did not comment. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected. It is refused when no channel it answers on can carry its reply, or its private reply when it has one (CommentRuleNotPossible, with each channel's reason). A workspace keeps 100 rules active or paused. Needs engagement:reply, and engagement:message with a private reply (an application, the owner's consent for messages too); never staff acting as a member.
 </dd>
 </dl>
 </dd>
@@ -17280,6 +17505,14 @@ $client->inboxRules->createCommentRule(
 <dl>
 <dd>
 
+**$privateReply:** `?string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **$reply:** `string` 
     
 </dd>
@@ -17304,7 +17537,7 @@ $client->inboxRules->createCommentRule(
 <dl>
 <dd>
 
-Answers a comment rule of the workspace, what its channels can carry and what it matched. Needs engagement:read.
+Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 </dd>
 </dl>
 </dd>
@@ -17434,7 +17667,7 @@ $client->inboxRules->deleteCommentRule(
 <dl>
 <dd>
 
-Changes a rule's keywords or reply, or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, and answers no comment received while it was paused. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply.
+Changes a rule's keywords, reply or private reply (`privateReply` null takes it off), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
 </dd>
 </dl>
 </dd>
@@ -17493,6 +17726,14 @@ $client->inboxRules->updateCommentRule(
 <dd>
 
 **$paused:** `?bool` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**$privateReply:** `?string` 
     
 </dd>
 </dl>

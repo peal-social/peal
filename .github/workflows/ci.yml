@@ -1,8 +1,10 @@
 name: CI
 
 # Pull requests, and the merge queue, which runs CI again on the commit that
-# lands on main: main gets no other run but the nightly one, which runs every
-# job whatever changed and keeps Nx's cache warm for the branches.
+# lands on main: main gets no other run but the nightly one. A pull request
+# runs the jobs its change needs (scripts/ci-plan.ts); the merge queue and
+# the nightly and manual runs run every job, whatever changed, so nothing
+# reaches main that the full suite has not passed.
 on:
   pull_request:
   merge_group:
@@ -13,20 +15,23 @@ on:
 permissions:
   contents: read
 
+# A new commit on a pull request cancels the run of the one before it. A run
+# on main, or in the merge queue, always finishes.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   DO_NOT_TRACK: "1"
   NX_NO_CLOUD: "true"
-  # What a job's Nx cache keeps between runs (actions/cache).
+  # What a job's Nx cache keeps between runs (actions/cache), saved from
+  # main's nightly run and restored by every other.
   NX_MAX_CACHE_SIZE: 1GB
 
 jobs:
-  # Which of the longer jobs the change needs (scripts/ci-plan.ts): the
+  # Which of the longer jobs a pull request needs (scripts/ci-plan.ts): the
   # server's tests, Ansible's, the SDKs and the end-to-end run. The others
-  # run on every change.
+  # run on every change, and every job runs outside pull requests.
   plan:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -36,19 +41,36 @@ jobs:
       sdks: ${{ steps.plan.outputs.sdks }}
       server: ${{ steps.plan.outputs.server }}
     steps:
+      # Every commit, for the merge base, but no file's contents until Git
+      # needs it: the plan reads which files changed, not what they hold.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          filter: blob:none
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: bun test scripts/ci-plan.test.ts
       - id: plan
         run: bun scripts/ci-plan.ts
         env:
-          CI_PLAN_BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-          CI_PLAN_FULL: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+          CI_PLAN_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_PLAN_FULL: ${{ github.event_name != 'pull_request' }}
 
-  check:
+  # `bun run check`, `bun run typecheck` and `bun run build`, as three jobs
+  # side by side. Lint and format: oxlint, with its type-aware rules, and
+  # oxfmt, after the generated types they read.
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: bun run check
+
+  # tsc with Effect's language service, on the workspace and every project.
+  typecheck:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -57,10 +79,38 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
         with:
-          nx-cache: check
-      - run: bun run check
+          nx-cache: typecheck
       - run: bun run typecheck
+      # Only main saves Nx's cache, which every branch restores: a branch's
+      # copy would be readable by that branch alone, and push main's out of
+      # the repository's 10 GB.
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-typecheck-${{ github.sha }}
+
+  # Every build, after the typecheck of the projects it builds, which Nx
+  # runs first (nx.json): the typecheck job checks the others.
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          nx-cache: build
       - run: bun run build
+      # Only main saves Nx's cache, which every branch restores: a branch's
+      # copy would be readable by that branch alone, and push main's out of
+      # the repository's 10 GB.
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-build-${{ github.sha }}
 
   # Every project's tests but the server's and Ansible's, which have jobs of
   # their own.
@@ -75,14 +125,30 @@ jobs:
         with:
           nx-cache: test
       - run: bun nx run-many --target=test --exclude=peal-server,peal-infra-ansible
+      # Only main saves Nx's cache, which every branch restores: a branch's
+      # copy would be readable by that branch alone, and push main's out of
+      # the repository's 10 GB.
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-test-${{ github.sha }}
 
   # The server's tests, against a real, throwaway database, reading the
   # emails they send from Mailpit and checking checkout and the billing
-  # portal against stripe-mock. Should they outgrow the other jobs, vitest's
-  # --shard splits them across a matrix.
+  # portal against stripe-mock. Shards split the files by the time each
+  # took (packages/peal-server/test/shards.ts), and `ci` fails when any
+  # shard did not pass. Six keep each shard's tests near 40 seconds, with
+  # room for a slow runner; more workers than vitest's three only spend
+  # the runner's four CPUs on transforming the server again.
   server:
     needs: plan
     if: needs.plan.outputs.server == 'true'
+    name: server (${{ matrix.shard }})
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -129,22 +195,34 @@ jobs:
       # the port and synthetic credentials compose.yaml defaults to.
       - run: docker compose --file packages/peal-docker/compose.yaml up --detach --wait seaweedfs
       - if: github.event_name != 'schedule'
-        run: bun nx run peal-server:test
+        run: bun nx run peal-server:test --shard="$SHARD"
         env:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
           MAILPIT_URL: http://localhost:8025
+          PEAL_TEST_DURATIONS_OUTPUT: ${{ runner.temp }}/server-test-durations.json
+          SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
           SMTP_URL: smtp://localhost:1025
           STRIPE_MOCK_URL: http://localhost:12111
       # Files share their worker's modules (vitest.config.ts): the nightly
       # run takes them in a new order, so a module that keeps one file's
       # state for the next shows.
       - if: github.event_name == 'schedule'
-        run: bun nx run peal-server:test --sequence.shuffle.files
+        run: bun nx run peal-server:test --shard="$SHARD" --sequence.shuffle.files
         env:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
           MAILPIT_URL: http://localhost:8025
+          PEAL_TEST_DURATIONS_OUTPUT: ${{ runner.temp }}/server-test-durations.json
+          SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
           SMTP_URL: smtp://localhost:1025
           STRIPE_MOCK_URL: http://localhost:12111
+      # How long each file took, which `nx run peal-server:test-durations`
+      # reads to split the shards again.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: server-test-durations-${{ matrix.shard }}
+          path: ${{ runner.temp }}/server-test-durations.json
+          if-no-files-found: error
+          retention-days: 30
 
   # ansible-lint, the playbooks' syntax and the pytest suite, whose release
   # and uptime tests run images in Docker.
@@ -315,18 +393,38 @@ jobs:
           nx-cache: e2e
       - run: docker compose --file packages/peal-docker/compose.yaml up --detach --wait seaweedfs
       # Chromium for the Playwright version @e2e-dev/web pins, kept between
-      # runs, with the system libraries it needs, installed each time.
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      # runs (saved by main only, like Nx's cache), with the system libraries
+      # it needs, installed each time.
+      - id: playwright
+        run: >-
+          echo "version=$(node --print 'require(require.resolve("playwright-core/package.json",
+          { paths: [require("node:fs").realpathSync("node_modules/@e2e-dev/web")] })).version')"
+          >> "$GITHUB_OUTPUT"
+        working-directory: packages/peal-e2e
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
       - run: ./node_modules/.bin/e2e-web install chromium --with-deps
         working-directory: packages/peal-e2e
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
       - run: bun nx run peal-e2e:e2e
         env:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
           MAILPIT_URL: http://localhost:8025
           SMTP_URL: smtp://localhost:1025
+      # Only main saves Nx's cache, which every branch restores: a branch's
+      # copy would be readable by that branch alone, and push main's out of
+      # the repository's 10 GB.
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-e2e-${{ github.sha }}
       # The report, a trace page and screenshots for each failed test, and the
       # server's and the web app's output. Every value in them is synthetic.
       - if: ${{ failure() }}
@@ -343,7 +441,7 @@ jobs:
   # added without changing the ruleset.
   ci:
     if: ${{ always() }}
-    needs: [plan, check, test, server, ansible, secrets, workflows, sdks, e2e]
+    needs: [plan, lint, typecheck, build, test, server, ansible, secrets, workflows, sdks, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

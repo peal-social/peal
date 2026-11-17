@@ -216,11 +216,12 @@ self-hostable".
 Every signed-in page has the same frame:
 
 - **Sidebar**, 240 px, on `background`, with a border on its right:
-  - At the top, the **mode switch**, with the Peal mark inside it: Studio,
-    for running a workspace's channels, and Console, for building on the
-    API. The mark and the two modes share one frame; switching is one
-    click, never a menu. The mark's tile is white in Studio and ink in
-    Console, so the mode shows at a glance. Each page belongs to one mode,
+  - At the top, the **mode switch**, with the Peal mark inside it: PealStudio,
+    for running a workspace's channels, and PealAPI, for building on the
+    API. They are the site's product names, one word each, never
+    translated. The mark and the two modes share one frame; switching is one
+    click, never a menu. The mark's tile is white in PealStudio and ink
+    in PealAPI, so the mode shows at a glance. Each page belongs to one mode,
     so the address carries it; switching opens the other mode's first page
     the member may open, and a mode with none is shown disabled.
   - The mode's navigation, in groups with a small label, listing only the
@@ -235,8 +236,8 @@ Every signed-in page has the same frame:
 - **Content** on `background`, in white cards and tables. Full-bleed tools
   (the calendar, the inbox, the composer) are white edge to edge.
 
-Studio holds Home, Calendar, Posts, Channels and Media, then Inbox,
-Analytics and Ads under Engage. Console holds Platforms, then API keys and
+PealStudio holds Home, Calendar, Posts, Channels and Media, then Inbox,
+Analytics and Ads under Engage. PealAPI holds Platforms, then API keys and
 Webhooks under Build, and Partner under Partners; a page the API offers
 later (connect links, activity, usage, OAuth apps) joins it there. The
 person's own pages, outside any workspace (the overview, the agenda, the
@@ -271,8 +272,8 @@ The docs are Blume, dressed in the same tokens: `theme.css` maps Blume's
 blocks and radius are the app's, and no colour is written there twice.
 
 - **Tabs**, across the top: Get started, Guides (running a workspace, the
-  app's Studio), Platforms, Developers (building on the API, the app's
-  Console), the API reference and Self-hosting. Each page belongs to one.
+  app's PealStudio), Platforms, Developers (building on the API, the
+  app's PealAPI), the API reference and Self-hosting. Each page belongs to one.
 - **Sidebar groups** take the names and the order of the app's own
   navigation, so a page and the screen it explains are called the same:
   Guides has Channels, Posts, Media, Engage and Settings as labelled groups
@@ -422,7 +423,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   of the app next to each other (stacked below 1024 px): the frame
   drawn small, a sidebar of 176 px with the mode switch and the mode's
   groups, the 56 px top bar with the breadcrumb, and the content in white
-  cards (Studio's calendar; the API side's keys and webhook deliveries).
+  cards (PealStudio's calendar; PealAPI's keys and webhook deliveries).
   Below 640 px the sidebar folds away and the switch moves into the top
   bar. The pages show only what the app has, with made-up content.
 - **Product opening.** A product's section opens on the faint pixel

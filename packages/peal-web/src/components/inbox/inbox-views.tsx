@@ -13,6 +13,7 @@ import type {
   InboxAbilityStanding,
   InboxAuthor,
   InboxComment,
+  InboxPrivateReply,
   InboxReply,
   InboxThread,
   Platform,
@@ -64,6 +65,10 @@ export const useInboxErrorText = () => {
 
     if (error.key === "unavailable") {
       return t("unavailable", { standing: error.standing });
+    }
+
+    if (error.key === "privateReplyNotPossible") {
+      return t("privateReplyNotPossible", { reason: error.reason });
     }
 
     return t(error.key);
@@ -442,14 +447,16 @@ export const ReplyView = ({
 /**
  * One comment: who wrote it and when, its text as plain text, its state,
  * then the replies sent from Peal (`replies`), what the reader may do
- * (`actions`), the box to answer it (`replyBox`), and the comments that
- * answer it (`children`).
+ * (`actions`), its private reply or what sends one (`privateReply`), the
+ * box to answer it (`replyBox`), and the comments that answer it
+ * (`children`).
  */
 export const CommentView = ({
   actions,
   children,
   comment,
   platform,
+  privateReply,
   replies,
   replyBox,
 }: {
@@ -458,6 +465,8 @@ export const CommentView = ({
   readonly comment: InboxComment;
   /** The thread's platform, which a comment forgotten for its age names. */
   readonly platform?: Platform | null;
+  /** The comment's private reply, or what sends one. */
+  readonly privateReply?: ReactNode;
   readonly replies?: ReactNode;
   readonly replyBox?: ReactNode;
 }) => {
@@ -514,6 +523,7 @@ export const CommentView = ({
           {replies}
         </ul>
       )}
+      {privateReply}
       {replyBox}
       {children === undefined ? null : (
         <ul
@@ -625,6 +635,162 @@ export const ReplyBoxView = ({
         >
           {sending ? t("sending") : t("send")}
         </Button>
+      </div>
+    </form>
+  );
+};
+
+/**
+ * The private message sent from Peal to a comment's author, as the
+ * journal has it: on its way, sent, failed with its reason, or to check
+ * in the person's conversation. `actions` are what the reader may do.
+ */
+export const PrivateReplyView = ({
+  actions,
+  reply,
+}: {
+  readonly actions?: ReactNode;
+  readonly reply: InboxPrivateReply;
+}) => {
+  const t = useTranslations("Inbox.privateReply");
+  const instant = useInstant();
+  const reason = t("reason", { reason: reply.reason ?? "unknown" });
+
+  return (
+    <div className="bg-muted/50 flex flex-col gap-2 rounded-lg p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-muted-foreground text-xs">
+          {t("from", { at: instant(reply.createdAt) })}
+        </span>
+        <Badge
+          variant={
+            reply.status === "failed" || reply.status === "unconfirmed"
+              ? "destructive"
+              : "outline"
+          }
+        >
+          {t("status", { status: reply.status })}
+        </Badge>
+      </div>
+      <p dir="auto" className="text-sm break-words whitespace-pre-wrap">
+        {reply.text}
+      </p>
+      {reply.status === "failed" ? (
+        <p className="text-sm">{t("failed", { reason })}</p>
+      ) : null}
+      {reply.status === "unconfirmed" ? (
+        <p className="text-sm">{t("unconfirmed", { reason })}</p>
+      ) : null}
+      {actions === undefined ? null : (
+        <div className="flex flex-wrap gap-2 empty:hidden">{actions}</div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * What a private reply's dialog asks: one message to the comment's
+ * author, its length against the platform's, until when it may go, and
+ * the hint that saying it is automatic is the member's to write.
+ */
+export const PrivateReplyFormView = ({
+  author,
+  error,
+  fit,
+  onCancel,
+  onChange,
+  onSend,
+  sending,
+  text,
+  until,
+}: {
+  /** Who gets the message, as the description names them. */
+  readonly author: string;
+  /** Why the last send failed, already written. */
+  readonly error: string | null;
+  readonly fit: ReplyFit;
+  readonly onCancel: () => void;
+  readonly onChange: (text: string) => void;
+  readonly onSend: () => void;
+  /** Whether a send is being asked of the server. */
+  readonly sending: boolean;
+  readonly text: string;
+  /** Until when the platform takes it, less Peal's hour. */
+  readonly until: DateTime.Utc;
+}) => {
+  const t = useTranslations("Inbox.privateReply");
+  const instant = useInstant();
+  const id = useId();
+  const hintId = useId();
+  const countId = useId();
+  const tooLong = fit.remaining < 0;
+
+  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(event.target.value);
+  };
+
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSend();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <p className="text-muted-foreground text-sm">
+        {t("description", { author, until: instant(until) })}
+      </p>
+      <Label htmlFor={id}>{t("label")}</Label>
+      <Textarea
+        dir="auto"
+        id={id}
+        value={text}
+        disabled={sending}
+        aria-invalid={tooLong}
+        aria-describedby={`${hintId} ${countId}`}
+        onChange={handleChange}
+      />
+      <p id={hintId} className="text-muted-foreground text-xs">
+        {t("automatic")}
+      </p>
+      {error === null ? null : (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span
+          id={countId}
+          aria-live="polite"
+          className={
+            tooLong
+              ? "text-destructive text-sm"
+              : "text-muted-foreground text-sm"
+          }
+        >
+          {t("count", {
+            length: fit.length,
+            maximum: fit.maximum,
+            unit: fit.unit,
+          })}
+          {tooLong ? (
+            <span className="ml-2 font-medium">
+              {t("tooLong", { over: -fit.remaining })}
+            </span>
+          ) : null}
+        </span>
+        <span className="flex gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+            {t("cancel")}
+          </Button>
+          <Button
+            type="submit"
+            size="sm"
+            disabled={sending || fit.empty || tooLong}
+            focusableWhenDisabled
+          >
+            {sending ? t("sending") : t("send")}
+          </Button>
+        </span>
       </div>
     </form>
   );

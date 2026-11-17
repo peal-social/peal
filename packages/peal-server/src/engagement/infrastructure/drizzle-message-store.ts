@@ -3,6 +3,7 @@ import {
   asc,
   desc,
   eq,
+  gt,
   inArray,
   isNotNull,
   isNull,
@@ -38,7 +39,7 @@ import {
   UserIdSchema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
-import type { WorkspaceId } from "#shared/domain/ids.ts";
+import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { holdFollowingLock } from "./following-lock.ts";
@@ -195,6 +196,7 @@ const statusOf = (row: OutgoingRow) => {
 const outgoingOfRow = (row: OutgoingRow) =>
   decodeOutgoing({
     authorId: Option.fromNullOr(row.authorId),
+    byPerson: row.byPerson,
     channelId: row.channelId,
     conversationId: row.conversationId,
     createdAt: utc(row.createdAt),
@@ -295,7 +297,8 @@ export const DrizzleMessageStore = Layer.effect(
     // with the key now.
     const madeUnder = Effect.fn("MessageStore.madeUnder")(function* madeUnder(
       saved: OutgoingMessage,
-      keyDigest: string
+      keyDigest: string,
+      since: Option.Option<DateTime.Utc> = Option.none()
     ) {
       const [row] = yield* db
         .select()
@@ -303,7 +306,10 @@ export const DrizzleMessageStore = Layer.effect(
         .where(
           and(
             eq(outgoingMessages.workspaceId, saved.workspaceId),
-            eq(outgoingMessages.keyDigest, keyDigest)
+            eq(outgoingMessages.keyDigest, keyDigest),
+            ...Option.toArray(since).map((after) =>
+              gt(outgoingMessages.createdAt, date(after))
+            )
           )
         )
         .limit(1)
@@ -443,6 +449,15 @@ export const DrizzleMessageStore = Layer.effect(
         .set({ subscribedAt: date(at) })
         .where(eq(messageBoxes.channelId, channelId))
         .pipe(Effect.asVoid, Effect.mapError(failed));
+
+    const refollow = (channelIds: readonly ChannelId[]) =>
+      channelIds.length === 0
+        ? Effect.void
+        : db
+            .update(messageBoxes)
+            .set({ subscribedAt: null })
+            .where(inArray(messageBoxes.channelId, [...channelIds]))
+            .pipe(Effect.asVoid, Effect.mapError(failed));
 
     // By the conversations of the channel, so the index of each
     // conversation's ids finds it.
@@ -690,7 +705,8 @@ export const DrizzleMessageStore = Layer.effect(
         const inserted = yield* sql`
           INSERT INTO engagement.outgoing_messages (
             id, conversation_id, workspace_id, channel_id, author_id, text,
-            created_at, status, attempted_at, settled_at, reason, key_digest
+            created_at, status, attempted_at, settled_at, reason, key_digest,
+            by_person
           )
           SELECT ${saved.id}::uuid, conversation.id,
                  conversation.workspace_id, conversation.channel_id,
@@ -698,7 +714,7 @@ export const DrizzleMessageStore = Layer.effect(
                  ${DateTime.formatIso(saved.createdAt)}::timestamptz,
                  ${saved.status._tag}, ${status.attemptedAt}::timestamptz,
                  ${status.settledAt}::timestamptz, ${status.reason}::text,
-                 ${keyDigest}::text
+                 ${keyDigest}::text, ${saved.byPerson}
           FROM engagement.conversations AS conversation
           WHERE conversation.id = ${saved.conversationId}::uuid
           ON CONFLICT DO NOTHING
@@ -745,6 +761,17 @@ export const DrizzleMessageStore = Layer.effect(
               };
 
         return refused;
+      }
+    );
+
+    // What a key made since its lifetime began, read and never changed.
+    const madeWithKey = Effect.fn("MessageStore.madeWithKey")(
+      function* madeWithKey(saved: OutgoingMessage, key: MessageKey) {
+        return yield* madeUnder(
+          saved,
+          yield* hashOf(key.key),
+          Option.some(key.since)
+        );
       }
     );
 
@@ -837,6 +864,38 @@ export const DrizzleMessageStore = Layer.effect(
         return yield* Effect.all(rows.map(outgoingOfRow));
       }
     );
+
+    const handOver = Effect.fn("MessageStore.handOver")(function* handOver(
+      messageId: string,
+      at: DateTime.Utc,
+      calledBefore: DateTime.Utc
+    ) {
+      const [row] = yield* db
+        .update(outgoingMessages)
+        .set({
+          attemptedAt: null,
+          platformMessageId: null,
+          reason: "interrupted",
+          settledAt: date(at),
+          status: "unconfirmed",
+        })
+        .where(
+          and(
+            eq(outgoingMessages.id, messageId),
+            eq(outgoingMessages.status, "sending"),
+            or(
+              isNull(outgoingMessages.callClaimedAt),
+              lte(outgoingMessages.callClaimedAt, date(calledBefore))
+            )
+          )
+        )
+        .returning()
+        .pipe(Effect.mapError(failed));
+
+      return row === undefined
+        ? Option.none<OutgoingMessage>()
+        : Option.some(yield* outgoingOfRow(row));
+    });
 
     const channelGone = Effect.fn("MessageStore.channelGone")(
       function* channelGone(channelId: string) {
@@ -981,7 +1040,9 @@ export const DrizzleMessageStore = Layer.effect(
           and(
             eq(outgoingMessages.channelId, channelId),
             eq(outgoingMessages.status, "sending"),
-            isNull(outgoingMessages.attemptedAt)
+            // Its call never claimed: an attempt recorded that waited for
+            // the gate's turn never left either.
+            isNull(outgoingMessages.callClaimedAt)
           )
         )
         // Locked until the transaction ends: a job that would begin one
@@ -1164,6 +1225,7 @@ export const DrizzleMessageStore = Layer.effect(
       bringForward,
       deleteTakenBack,
       markFollowed,
+      refollow,
       allowApplication,
       allows,
       applications,
@@ -1184,6 +1246,7 @@ export const DrizzleMessageStore = Layer.effect(
       due,
       follow,
       journalMessage,
+      madeWithKey,
       listConversations,
       lockBox,
       messagesOf,
@@ -1193,6 +1256,7 @@ export const DrizzleMessageStore = Layer.effect(
       saveBox,
       saveConversations,
       saveMessages,
+      handOver,
       strandedMessages,
     });
   })

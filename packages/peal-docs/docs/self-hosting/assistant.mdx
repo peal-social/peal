@@ -7,9 +7,9 @@ sidebar:
 
 The composer's writing assistant rewrites a post in a tone, shortens it to fit a platform, translates it, or suggests hashtags. It can also make images into the media library. Both stay off until you name a provider.
 
-## Writing assistant [#ai]
+## Name a text provider [#ai]
 
-The assistant is off until `PEAL_AI_PROVIDER` names a provider: until then, the web app hides it, and its endpoints answer `AssistantUnavailable`. It works with Anthropic's API or any OpenAI-compatible endpoint, such as a model server you run:
+Until `PEAL_AI_PROVIDER` names a provider, the web app hides the assistant and its endpoints answer `AssistantUnavailable`. It works with Anthropic's API or any OpenAI-compatible endpoint, such as a model server you run:
 
 | Setting            | With Anthropic                                  | With an OpenAI-compatible endpoint                                          |
 | ------------------ | ----------------------------------------------- | --------------------------------------------------------------------------- |
@@ -18,33 +18,38 @@ The assistant is off until `PEAL_AI_PROVIDER` names a provider: until then, the 
 | `PEAL_AI_MODEL`    | `claude-opus-5-5` unless it names another model | One of its models                                                           |
 | `PEAL_AI_BASE_URL` | Anthropic's API unless it names a proxy         | The address `/chat/completions` follows, such as `http://127.0.0.1:8000/v1` |
 
-A provider named without the settings it needs stops the server at startup, and the error names the variable missing. The server calls the provider directly, not through the guard that keeps platform calls on public addresses, so the endpoint may run on the same machine or your private network. [Environment variables](/self-hosting/environment-variables#ai) lists every assistant setting.
+If you name a provider without the settings it needs, the server stops at startup, and the error names the missing variable.
+
+The server calls the provider directly. It doesn't go through the guard that keeps platform calls on public addresses, so the endpoint may run on the same machine or on your private network. [Environment variables](/self-hosting/environment-variables#ai) lists every assistant setting.
 
 ### A workspace's own provider [#workspace-provider]
 
-A workspace may also bring its own [text provider](/guides/workspace#text-provider), Anthropic or OpenAI-compatible, with its own key, whether or not the instance sets one. Its requests then go there, through that guard (public HTTPS only), never to the instance's provider, and count against none of the workspace's daily requests, up to 500 a day. The server keeps its key encrypted with `PEAL_TOKEN_KEYS`, and keeps none without it.
+A workspace may also bring its own [text provider](/guides/workspace#text-provider), Anthropic or OpenAI-compatible, with its own key. That works whether or not your instance sets one.
 
-### Daily requests [#daily-requests]
+Its requests then go there, never to the instance's provider, and through the guard, so only to public HTTPS. They count against none of the workspace's daily requests, and are capped at 500 a day. The server keeps the workspace's key encrypted with `PEAL_TOKEN_KEYS`, and keeps none without it.
 
-Each workspace may send the assistant `PEAL_AI_DAILY_REQUESTS` requests per UTC day, 100 unless set; `0` lets none through. With [billing](/self-hosting/options#billing) on, each plan sets its own instead.
+### Set the daily requests [#daily-requests]
+
+Each workspace may send the assistant `PEAL_AI_DAILY_REQUESTS` requests per UTC day. It's 100 unless you set it, and `0` lets none through. With [billing](/self-hosting/options#billing) on, each plan sets its own number instead.
 
 <Callout type="warning" title="Open sign-up adds to your bill">
-  Without billing, every workspace gets that many requests: on an instance where
-  anyone may sign up, each new workspace adds to what your provider can bill.
-  [Who may sign up](/self-hosting/options#sign-up) says how to close it.
+  Without billing, every workspace gets that many requests. On an instance where
+  anyone may sign up, each new workspace adds to what your provider can bill
+  you. [Who may sign up](/self-hosting/options#sign-up) says how to close
+  sign-up.
 </Callout>
 
-A request the provider could not be reached for does not count. One that gets no answer within 90 seconds fails and counts, as the provider may have run it.
+A request that couldn't reach the provider doesn't count. One that gets no answer within 90 seconds fails and still counts, because the provider may have run it.
 
 ### What the provider receives [#sent]
 
-What members send is the post's text, or the subject of a post to write, up to 5,000 characters, and answers are capped at 4,096 tokens. The text is sent as data, with instructions the text cannot change.
+Members send the post's text, or the subject of a post to write, up to 5,000 characters. Answers are capped at 4,096 tokens. The text is sent as data, with instructions the text can't change.
 
-The server never logs or traces the text or the answer, saves neither, and sends the provider no trace context. Its logs and traces name the provider, the model, the token counts and the kind of failure only.
+The server never logs or traces the text or the answer, and saves neither. It sends the provider no trace context. Its logs and traces name only the provider, the model, the token counts and the kind of failure.
 
-### Images [#images]
+## Turn on images [#images]
 
-Images the assistant makes into the media library ([Generate an image](/guides/media#generate)) need an image model of their own, as a writing model may make none. Unset, images are off.
+Images the assistant makes into the media library ([Generate an image](/guides/media#generate)) need an image model of their own, because a writing model may make none. Until you set these, images are off:
 
 | Setting                  | What it is                                |
 | ------------------------ | ----------------------------------------- |
@@ -53,24 +58,24 @@ Images the assistant makes into the media library ([Generate an image](/guides/m
 | `PEAL_AI_IMAGE_MODEL`    | One of its models                         |
 | `PEAL_AI_IMAGE_API_KEY`  | Its key, if it asks for one               |
 
-The server asks for one image of 1024×1024, 1536×1024 or 1024×1536, reads it in base64, or fetches the address the provider answers through the guard, and stores it as it came. An image costs 5 of the workspace's daily requests; the prompt and the image are never logged.
+The server asks for one image of 1024×1024, 1536×1024 or 1024×1536. It reads the image in base64, or fetches the address the provider answers through the guard, and stores it as it came.
 
-<Callout type="info" title="Check your provider first">
+An image costs 5 of the workspace's daily requests. The prompt and the image are never logged.
+
+<Callout type="info" title="Check your provider before you turn images on">
   Peal was tested against a stand-in for this endpoint, written to one
-  provider's reference: check your provider's sizes and answer before you turn
-  it on.
+  provider's reference. Check your provider's sizes and answer first.
 </Callout>
 
 <Accordion>
-  <AccordionItem title="A provider that refuses the instance's settings">
-    A provider that answers 401, 402, 403 or 404 (a key refused, an account that
-    does not pay, a model or an address it does not have) is logged as an error,
-    by its status alone, and images stay off until the server restarts. Members
-    are told images are not available, and lose no request.
-  </AccordionItem>
-  <AccordionItem title="An answer with a url instead of base64">
-    An answer with a `url` instead of base64 is fetched as any outside address
-    is: it must be public HTTPS, so an image server on your private network must
-    answer in base64.
-  </AccordionItem>
+<AccordionItem title="A provider that refuses the instance's settings">
+
+A provider may answer 401, 402, 403 or 404: a key refused, an account that doesn't pay, or a model or an address it doesn't have. The server logs that as an error, by its status alone, and images stay off until the server restarts. Members are told images aren't available, and lose no request.
+
+</AccordionItem>
+<AccordionItem title="An answer with a url instead of base64">
+
+An answer with a `url` instead of base64 is fetched as any outside address is, so it must be public HTTPS. An image server on your private network must answer in base64.
+
+</AccordionItem>
 </Accordion>

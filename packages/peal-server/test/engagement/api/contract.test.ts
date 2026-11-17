@@ -20,6 +20,11 @@ import {
   inboxWindowDays,
   maxInboxPageSize,
   maxInboxReplyLength,
+  InboxPrivateReplyReasonSchema,
+  InboxPrivateReplyStatusSchema,
+  privateReplyLimits,
+  PrivateReplyRefusalSchema,
+  privateReplyWindowDays,
 } from "peal-contract";
 
 import { maxThreadsPerPage } from "#engagement/application/engagement-inbox.ts";
@@ -33,13 +38,24 @@ import {
 } from "#engagement/domain/engagement-abilities.ts";
 import { keptAfterCollection } from "#engagement/domain/engagement-retention.ts";
 import { MessageAbilitySchema } from "#engagement/domain/message-abilities.ts";
-import { maxOutgoingMessageLength } from "#engagement/domain/message-text.ts";
+import {
+  instagramMessageBytes,
+  maxOutgoingMessageLength,
+  messengerMessageCharacters,
+} from "#engagement/domain/message-text.ts";
 import { ModerationActionSchema } from "#engagement/domain/moderation.ts";
 import {
   MessageFailureSchema,
   messageKeyLifetime,
   OutgoingMessageStatusSchema,
 } from "#engagement/domain/outgoing-message.ts";
+import {
+  PrivateReplyFailureSchema,
+  PrivateReplyRefusalSchema as DomainRefusalSchema,
+  PrivateReplyStatusSchema,
+  privateReplyKeyLifetime,
+  privateReplyWindow,
+} from "#engagement/domain/private-reply.ts";
 import { maxReplyLength } from "#engagement/domain/reply-text.ts";
 import {
   ReplyDoubtSchema,
@@ -124,13 +140,49 @@ describe("the contract's direct messages", () => {
         ({ fields }) => fields._tag.schema.literal
       )
     );
-    expect(InboxOutgoingMessageReasonSchema.literals).toStrictEqual([
-      ...MessageFailureSchema.literals,
-      ...ReplyDoubtSchema.literals,
-    ]);
+    // The contract only grows at its end, whichever kind is added.
+    expect(InboxOutgoingMessageReasonSchema.literals.toSorted()).toStrictEqual(
+      [
+        ...MessageFailureSchema.literals,
+        ...ReplyDoubtSchema.literals,
+        // Meta's warning on tag use: a message's own doubt.
+        "tagRestricted",
+      ].toSorted()
+    );
     expect(InboxMessageAbilitiesSchema.fields).toHaveProperty("send");
     expect(Object.keys(InboxMessageAbilitiesSchema.fields)).toStrictEqual(
       MessageAbilitySchema.literals
     );
+  });
+});
+
+describe("the contract's private replies", () => {
+  it("names their states, reasons and refusals as the domain does", () => {
+    expect(InboxPrivateReplyStatusSchema.literals).toStrictEqual(
+      PrivateReplyStatusSchema.members.map(
+        ({ fields }) => fields._tag.schema.literal
+      )
+    );
+    expect(InboxPrivateReplyReasonSchema.literals).toStrictEqual([
+      ...PrivateReplyFailureSchema.literals,
+      ...ReplyDoubtSchema.literals,
+    ]);
+    expect(PrivateReplyRefusalSchema.literals).toStrictEqual(
+      DomainRefusalSchema.literals
+    );
+  });
+
+  it("gives their window, key lifetime and limits as the domain does", () => {
+    // Seven days, which Peal ends an hour early.
+    expect(Duration.toHours(privateReplyWindow)).toBe(
+      privateReplyWindowDays * 24 - 1
+    );
+    expect(Duration.toHours(privateReplyKeyLifetime)).toBe(
+      idempotencyKeyLifetimeHours
+    );
+    expect(privateReplyLimits).toStrictEqual({
+      facebook: { maximum: messengerMessageCharacters, unit: "utf16Units" },
+      instagram: { maximum: instagramMessageBytes, unit: "utf8Bytes" },
+    });
   });
 });

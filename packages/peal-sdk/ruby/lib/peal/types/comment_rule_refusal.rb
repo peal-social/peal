@@ -11,6 +11,8 @@ module Peal
       EMPTY_REPLY = "emptyReply"
       NO_CHANNEL = "noChannel"
       CHANNELS = "channels"
+      EMPTY_PRIVATE_REPLY = "emptyPrivateReply"
+      PRIVATE_REPLY = "privateReply"
     end
   end
 end

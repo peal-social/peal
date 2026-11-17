@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/bluesky.svg
 ---
 
-How to connect a Bluesky account, what a post there may hold, and the options it takes.
+On Bluesky, you can choose who may reply to a post and keep others from quoting it. Peal writes those settings in the same request as the post.
 
 ## At a glance [#at-a-glance]
+
+Here's what a Bluesky post can hold:
 
 |                   |                                 |
 | ----------------- | ------------------------------- |
@@ -19,15 +21,15 @@ How to connect a Bluesky account, what a post there may hold, and the options it
 
 What each file type must be is in [Images and videos](/guides/media#platforms).
 
-## Connect [#connect]
+## Connect an account [#connect]
 
-Under **Bluesky**, give your handle, such as `you.bsky.social`, to go straight to your server's sign-in page, or leave it empty to pick the account on Bluesky. Then choose **Connect Bluesky**.
+Under **Bluesky**, type your handle, such as `you.bsky.social`, to go straight to your server's sign-in page. Or leave it empty to pick the account on Bluesky. Then click **Connect Bluesky**.
 
 **Channels** offers Bluesky once the Peal server is set up for it (see [On your own server](#self-hosting)).
 
 ## Options [#options]
 
-No option is required, and each is sent only when you choose it. **API name** is the option's name through the API. **Parts** says what it applies to in a [thread](/guides/posts#threads).
+None of these is required, and Peal sends each one only when you set it. **API name** is the option's name in the API. **Parts** says what the option applies to in a [thread](/guides/posts#threads).
 
 | Option                                                                          | API name                                             | Values                                                                                                             | Left out   | Parts                             |
 | ------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------- | --------------------------------- |
@@ -37,30 +39,31 @@ No option is required, and each is sent only when you choose it. **API name** is
 | **Your followers**, **Accounts you follow**, **Accounts mentioned in the post** | `replyFollowers`, `replyFollowing`, `replyMentioned` | Yes or no, each; with `replies` limited, one at least                                                              | No         | The thread                        |
 | **Keep others from quoting this post**                                          | `disableQuotes`                                      | Yes or no                                                                                                          | No         | Every part                        |
 
-- A label describes the images or video: a part without media is sent without it.
-- Who can reply and quoting are written with the post, in one request, so a post never goes out without them.
+A content label describes the images or the video, so a part without media is sent without it.
+
+Peal writes who can reply and quoting with the post, in one request. A post never goes out without them.
 
 <Accordion>
-  <AccordionItem title="A channel connected before Peal asked for reply and quote settings">
-    Who can reply and quoting need the account to have been connected since Peal
-    asks for them. On a channel connected before, scheduling refuses them, and
-    its [capabilities](/developers#capabilities) say so
-    (`optionNeedsReconnect`). In the composer, such a channel offers neither and
-    says so. Reconnect the account on the **Channels** page to use them; nothing
-    else changes.
-  </AccordionItem>
-  <AccordionItem title="The account's server refuses the settings">
-    When Peal could not read the channel's scopes and the account's server then
-    refuses these settings, the post is not sent: the channel reads **Failed**,
-    with the code `optionRefused`, and Peal does not send it again. Reconnect
-    the account, or leave the settings out, and post it again.
-  </AccordionItem>
+<AccordionItem title="A channel connected before Peal asked for reply and quote settings">
+
+Who can reply and quoting only work on an account connected since Peal started asking for them. On a channel connected before, scheduling refuses them, and the channel's [capabilities](/developers#capabilities) say so (`optionNeedsReconnect`). In the composer, such a channel offers neither setting, and says why.
+
+To use them, reconnect the account on the **Channels** page. Nothing else changes.
+
+</AccordionItem>
+<AccordionItem title="The account's server refuses the settings">
+
+Sometimes Peal can't read the channel's scopes, and the account's server then refuses these settings. The post isn't sent: the channel shows **Failed**, with the code `optionRefused`, and Peal doesn't send it again.
+
+Reconnect the account, or leave the settings out, and post it again.
+
+</AccordionItem>
 </Accordion>
 
 ## Comments [#comments]
 
-Peal reads the comments under your published posts there, and you answer them from Peal: see [Inbox](/guides/engage/inbox#other-platforms).
+Peal reads the comments under your published posts on Bluesky, and you can answer them from Peal. See [Inbox](/guides/engage/inbox#other-platforms).
 
 ## On your own server [#self-hosting]
 
-A self-hosted server offers Bluesky once its app is registered: see [Bluesky](/self-hosting/platforms#bluesky). Until then, **Channels** does not offer it.
+A self-hosted server offers Bluesky once its app is registered: see [Bluesky](/self-hosting/platforms#bluesky). Until then, **Channels** doesn't offer it.

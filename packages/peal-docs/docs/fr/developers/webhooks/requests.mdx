@@ -5,28 +5,28 @@ sidebar:
   icon: shield-check
 ---
 
-Chaque livraison est un `POST` signé vers votre point de terminaison. Cette page montre ce qu’il contient, et comment votre serveur vérifie qu’il vient de Peal avant d’agir.
+Chaque livraison est un `POST` signé vers votre point de terminaison. Vérifiez la signature avant d’agir sur une livraison, pour que votre serveur ne fasse confiance qu’aux requêtes qui viennent de Peal.
 
 ## Le secret de signature [#secret]
 
-Peal génère un secret pour chaque point de terminaison : `whsec_` suivi de 32 octets aléatoires en base64, que Peal garde chiffré.
+Peal génère un secret pour chaque point de terminaison : `whsec_` suivi de 32 octets aléatoires en base64. Peal le garde chiffré.
 
-<Callout type="warning" title="Affiché une seule fois">
-  Le secret s’affiche une seule fois, à la création du point de terminaison :
-  copiez-le à ce moment-là, dans les secrets de votre serveur.
+<Callout type="warning" title="Le secret ne s’affiche qu’une fois">
+  Vous voyez le secret une seule fois, à la création du point de terminaison.
+  Copiez-le à ce moment-là dans les secrets de votre serveur.
 </Callout>
 
-Renouveler le secret en répond un nouveau, affiché une seule fois lui aussi. Pendant 24 heures, chaque livraison porte alors deux signatures, une par secret : vous changez le secret de votre serveur sans manquer de livraison. Passé ce délai, l’ancien secret ne signe plus rien.
+Renouveler le secret vous en donne un nouveau, affiché une seule fois lui aussi. Pendant les 24 heures suivantes, chaque livraison porte deux signatures, une par secret, pour que vous puissiez passer votre serveur au nouveau secret sans manquer de livraison. Passé ce délai, l’ancien secret ne signe plus rien.
 
 ## Ce que Peal envoie [#request]
 
-Chaque livraison est un `POST` à l’adresse du point de terminaison, avec `content-type: application/json` et trois en-têtes :
+Chaque livraison est un `POST` à l’adresse du point de terminaison, avec `content-type: application/json` et trois en-têtes :
 
-| En-tête             | Ce qu’il contient                                                                                                                                                                   |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `webhook-id`        | L’identifiant de l’événement. Il est le même à chaque tentative d’une livraison, et quand l’événement est renvoyé : [dédupliquez](/developers/webhooks/delivery#ordering) avec lui. |
-| `webhook-timestamp` | Le moment de cette tentative, en secondes depuis l’époque Unix.                                                                                                                     |
-| `webhook-signature` | Une signature par secret valide, séparées par des espaces. Chacune est `v1,` suivi du base64 d’un HMAC-SHA256, comme le dit [Vérifier une livraison](#verify).                      |
+| En-tête             | Ce qu’il contient                                                                                                                                                                                         |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `webhook-id`        | L’identifiant de l’événement. Il est le même à chaque tentative d’une livraison, et quand l’événement est renvoyé, pour que vous puissiez [dédupliquer](/developers/webhooks/delivery#ordering) avec lui. |
+| `webhook-timestamp` | Le moment de cette tentative, en secondes depuis l’époque Unix.                                                                                                                                           |
+| `webhook-signature` | Une signature par secret valide, séparées par des espaces. Chacune est `v1,` suivi du base64 d’un HMAC-SHA256, comme l’explique [Vérifier une livraison](#verify).                                        |
 
 ```http
 POST /peal HTTP/1.1
@@ -38,61 +38,63 @@ webhook-timestamp: 1794301203
 webhook-signature: v1,Mfm1tWLUX4U95AK/DHjduW4e8bHrj/HztAOACn91BF4=
 ```
 
-Le corps est un objet JSON :
+Le corps est un objet JSON avec ces champs :
 
-| Champ                 | Type           | Ce qu’il contient                                                                                                                                                                                                         |
-| --------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                  | chaîne         | L’identifiant de l’événement, comme dans `webhook-id`                                                                                                                                                                     |
-| `type`                | chaîne         | Ce qui s’est passé, comme `post.published`. Il dit ce que contient `data`.                                                                                                                                                |
-| `version`             | entier         | La version de `data` : 1                                                                                                                                                                                                  |
-| `timestamp`           | chaîne         | Le moment où cela s’est passé, en instant ISO 8601 en UTC. Pas celui où la requête est envoyée.                                                                                                                           |
-| `workspaceExternalId` | chaîne ou null | Pour un espace de travail que possède un compte partenaire, l’identifiant que le partenaire lui a donné, tel qu’il était à ce moment-là ; null quand le partenaire n’en a pas donné, et pour tout autre espace de travail |
-| `data`                | objet          | Les champs propres à l’événement, [ci-dessous](/developers/webhooks/events#events)                                                                                                                                        |
+| Champ                 | Type           | Ce qu’il contient                                                                                                                                                                                                                 |
+| --------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                  | chaîne         | L’identifiant de l’événement, comme dans `webhook-id`                                                                                                                                                                             |
+| `type`                | chaîne         | Ce qui s’est passé, comme `post.published`. Il vous dit ce que contient `data`.                                                                                                                                                   |
+| `version`             | entier         | La version de `data` : 1                                                                                                                                                                                                          |
+| `timestamp`           | chaîne         | Le moment où cela s’est passé, en instant ISO 8601 en UTC. Ce n’est pas le moment où la requête a été envoyée.                                                                                                                    |
+| `workspaceExternalId` | chaîne ou null | Pour un espace de travail que possède un compte partenaire, l’identifiant que le partenaire lui donne, tel qu’il était au moment de l’événement. Null quand le partenaire n’en a pas donné, et pour tout autre espace de travail. |
+| `data`                | objet          | Les champs propres à l’événement, [listés par événement](/developers/webhooks/events#events)                                                                                                                                      |
 
 L’ordre des champs dans le corps ne fait pas partie du contrat.
 
 ### Ce qu’un corps ne contient jamais [#thin]
 
-| Un corps porte                                                               | Un corps ne porte jamais                                                                 |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Des identifiants, des états, des codes, des instants et des liens permanents | Ce que dit une publication, dans aucune de ses parties, ni ses images ou vidéos          |
-| Le budget d’une mise en avant, sous forme de montants                        | Ce que dit un commentaire ou la réponse qui lui est faite, ni qui a écrit un commentaire |
-|                                                                              | L’audience d’une mise en avant                                                           |
+Les corps sont légers. Ils portent de quoi vous dire ce qui s’est passé, et aucun contenu :
 
-Le point de terminaison est un tiers pour les personnes qui ont écrit la publication : une adresse que quelqu’un a choisie, et dont Peal ne peut rien vérifier d’autre que son caractère public. Des corps légers gardent le contenu d’un espace de travail derrière des identifiants d’API et leurs permissions, où chaque lecture est vérifiée. Quand votre serveur a besoin de la publication, il la lit par l’API avec une clé à lui : `GET /api/workspaces/{workspaceId}/posts/{postId}`.
+| Un corps porte                                                               | Un corps ne porte jamais                                                        |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Des identifiants, des états, des codes, des instants et des liens permanents | Ce que dit une publication, dans aucune de ses parties, ni ses images ou vidéos |
+| Le budget d’une mise en avant, sous forme de montants                        | Ce que dit un commentaire ou une réponse, ni qui a écrit un commentaire         |
+|                                                                              | L’audience d’une mise en avant                                                  |
+
+Le point de terminaison est un tiers pour les personnes qui ont écrit la publication : une adresse que quelqu’un a choisie, et dont Peal ne peut vérifier que le caractère public. Des corps légers gardent le contenu d’un espace de travail derrière des identifiants d’API et leurs permissions, où chaque lecture est vérifiée. Quand votre serveur a besoin de la publication, il la lit par l’API avec une clé à lui : `GET /api/workspaces/{workspaceId}/posts/{postId}`.
 
 ### Versions [#versions]
 
-Les types d’événements et leurs champs sont un contrat public. Peal ajoute des types d’événements, et des champs à un événement, sans changer `version` : ignorez les champs et les types que vous ne connaissez pas. Rien n’est renommé ni supprimé. Un changement que votre code ne pourrait pas lire viendrait comme une nouvelle version, envoyée à côté de celle-ci.
+Les types d’événements et leurs champs sont un contrat public. Peal ajoute des types d’événements, et des champs à un événement, sans changer `version` : ignorez donc les champs et les types que vous ne connaissez pas. Rien n’est renommé ni supprimé. Un changement que votre code ne pourrait pas lire viendrait comme une nouvelle version, envoyée à côté de celle-ci.
 
 ### Dans le document OpenAPI [#openapi]
 
-Le document OpenAPI de l’API, à `/api/openapi.json`, décrit chaque événement dans sa section `webhooks` (OpenAPI 3.1) : une entrée par type, avec le schéma du corps et les trois en-têtes `webhook-`. La [référence de l’API](/reference) les montre. Les SDK n’ont pas d’événements typés : lisez un corps avec le JSON de votre langage, comme le montrent les exemples ci-dessous.
+Le document OpenAPI de l’API, à `/api/openapi.json`, décrit chaque événement dans sa section `webhooks` (OpenAPI 3.1) : une entrée par type, avec le schéma du corps et les trois en-têtes `webhook-`. La [référence de l’API](/reference) les montre tous. Les SDK n’ont pas d’événements typés : lisez un corps avec l’analyseur JSON de votre langage, comme le font les exemples ci-dessous.
 
 ## Vérifier une livraison [#verify]
 
-Quiconque apprend l’adresse peut lui envoyer des requêtes : vérifiez chacune avant d’agir. La signature couvre l’identifiant de l’événement, l’horodatage de la tentative et le corps, joints par des points :
+Quiconque apprend l’adresse peut lui envoyer des requêtes, alors vérifiez chacune avant d’agir. La signature couvre l’identifiant de l’événement, l’horodatage de la tentative et le corps, joints par des points :
 
 ```text
 <webhook-id>.<webhook-timestamp>.<body>
 ```
 
-C’est un HMAC-SHA256 de ce texte, dont la clé est faite des octets que le secret contient en base64 après `whsec_`, écrit en base64 après `v1,`. Pendant un [renouvellement](#secret), l’en-tête en contient deux, séparées par une espace : acceptez la requête quand l’une des deux correspond.
+C’est un HMAC-SHA256 de ce texte, dont la clé est faite des octets que le secret contient en base64 après `whsec_`, écrit en base64 après `v1,`. Pendant un [renouvellement](#secret), l’en-tête contient deux signatures séparées par une espace. Acceptez la requête quand l’une des deux correspond.
 
 <Callout type="warning" title="Vérifiez le corps brut">
-  Vérifiez le corps tel qu’il est arrivé, octet pour octet. Un corps lu comme du
-  JSON puis réécrit n’est plus le texte qui a été signé.
+  Vérifiez le corps exactement tel qu’il est arrivé, octet pour octet. Un corps
+  lu comme du JSON puis réécrit n’est plus le texte qui a été signé.
 </Callout>
 
-Les bibliothèques Standard Webhooks font tout cela, vérification de l’horodatage comprise. Les exemples pour Java, .NET et Rust sont ceux de la [page des SDK](/developers/sdks#webhooks) :
+Les bibliothèques Standard Webhooks font tout cela, vérification de l’horodatage comprise. Les SDK ne reçoivent pas de webhooks ([SDK](/developers/sdks#webhooks)), alors utilisez la bibliothèque de votre langage :
 
 <CodeGroup>
 
-```js JavaScript
+```ts Node.js
 // npm install standardwebhooks
 import { Webhook } from "standardwebhooks";
 
-const webhook = new Webhook(process.env.PEAL_WEBHOOK_SECRET);
+const webhook = new Webhook(process.env.PEAL_WEBHOOK_SECRET ?? "");
 
 // `rawBody` est le corps de la requête tel que reçu, une chaîne ou un Buffer.
 // Lève une erreur quand la signature ou l’horodatage est faux.
@@ -111,7 +113,7 @@ from standardwebhooks.webhooks import Webhook
 
 webhook = Webhook(os.environ["PEAL_WEBHOOK_SECRET"])
 
-# `raw_body` est le corps de la requête tel que reçu, en bytes.
+# `raw_body` est le corps de la requête tel que reçu, en octets.
 # Lève WebhookVerificationError quand la signature ou l’horodatage est faux.
 event = webhook.verify(
     raw_body,
@@ -172,6 +174,20 @@ event = webhook.verify(raw_body, {
 })
 ```
 
+```java Java
+// Maven: com.standardwebhooks:standardwebhooks:1.2.0
+import com.standardwebhooks.Webhook;
+import com.standardwebhooks.exceptions.WebhookVerificationException;
+
+Webhook webhook = new Webhook(System.getenv("PEAL_WEBHOOK_SECRET"));
+
+// `rawBody` est le corps de la requête tel que reçu, en chaîne, et `headers`
+// ses en-têtes, une Map<String, List<String>> (noms dans n’importe quelle casse).
+// Lève WebhookVerificationException quand la signature ou l’horodatage
+// est faux.
+webhook.verify(rawBody, headers);
+```
+
 ```php PHP
 <?php
 // composer require standard-webhooks/standard-webhooks
@@ -190,20 +206,6 @@ $event = $webhook->verify($rawBody, [
 ]);
 ```
 
-```java Java
-// Maven : com.standardwebhooks:standardwebhooks:1.2.0
-import com.standardwebhooks.Webhook;
-import com.standardwebhooks.exceptions.WebhookVerificationException;
-
-Webhook webhook = new Webhook(System.getenv("PEAL_WEBHOOK_SECRET"));
-
-// `rawBody` est le corps de la requête tel que reçu, en chaîne, et
-// `headers` les en-têtes de la requête, une Map<String, List<String>>
-// (noms en toute casse). Lève WebhookVerificationException quand la
-// signature ou l’horodatage est faux.
-webhook.verify(rawBody, headers);
-```
-
 ```csharp .NET
 // dotnet add package StandardWebhooks.StandardWebhooks
 using System.Net;
@@ -211,7 +213,7 @@ using StandardWebhooks;
 
 var webhook = new Webhook(Environment.GetEnvironmentVariable("PEAL_WEBHOOK_SECRET"));
 
-// `rawBody` est le corps de la requête tel que reçu ; `headers` porte les
+// `rawBody` est le corps de la requête tel que reçu, et `headers` porte les
 // trois en-têtes webhook-. Lève WebhookVerificationException quand la
 // signature ou l’horodatage est faux.
 var headers = new WebHeaderCollection
@@ -231,8 +233,8 @@ use standardwebhooks::Webhook;
 let webhook = Webhook::new(&std::env::var("PEAL_WEBHOOK_SECRET")?)?;
 
 // `raw_body` est le corps de la requête tel que reçu, en octets, et `headers`
-// le http::HeaderMap de la requête. Échoue quand la signature ou
-// l’horodatage est faux.
+// son http::HeaderMap. Échoue quand la signature ou l’horodatage
+// est faux.
 webhook.verify(&raw_body, &headers)?;
 ```
 
@@ -240,32 +242,38 @@ webhook.verify(&raw_body, &headers)?;
 
 ### Sans bibliothèque [#verify-by-hand]
 
-La vérification est courte :
+La vérification est courte :
 
 <Steps>
-  <Step title="Vérifiez l’horodatage">
+  <Step title="Vérifier l’horodatage">
     Refusez un `webhook-timestamp` trop loin de votre horloge, en avance ou en
     retard. Les bibliothèques tolèrent cinq minutes.
   </Step>
-  <Step title="Calculez la signature">
+  <Step title="Calculer la signature">
     Prenez le HMAC-SHA256 de `<webhook-id>.<webhook-timestamp>.<body>`, avec
     pour clé les octets que le secret contient en base64 après `whsec_`.
   </Step>
-  <Step title="Comparez">
+  <Step title="Comparer">
     Comparez-le, en temps constant, à chaque signature `v1,` de
     `webhook-signature`, et acceptez la requête quand l’une d’elles correspond.
   </Step>
 </Steps>
 
-Celle-ci est écrite pour Node, avec cinq minutes de tolérance sur l’horodatage :
+Chaque exemple ci-dessous n’utilise que la bibliothèque standard (Rust demande les crates `hmac`, `sha2` et `base64`) et tolère cinq minutes sur l’horodatage :
 
-```js verify.mjs
+<CodeGroup>
+
+```ts Node.js
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const tolerance = 5 * 60;
 
 // `rawBody` est le corps de la requête tel que reçu, une chaîne ou un Buffer.
-export const verify = (secret, headers, rawBody) => {
+export const verify = (
+  secret: string,
+  headers: Record<string, string | undefined>,
+  rawBody: string | Buffer
+): boolean => {
   const id = headers["webhook-id"];
   const timestamp = headers["webhook-timestamp"];
   const signatures = headers["webhook-signature"];
@@ -274,7 +282,7 @@ export const verify = (secret, headers, rawBody) => {
     return false;
   }
 
-  // Trop ancien ou trop en avance : une requête gardée pour être renvoyée.
+  // Trop ancien ou trop en avance : une requête que quelqu’un a gardée pour la renvoyer.
   const age = Math.abs(Date.now() / 1000 - Number(timestamp));
 
   if (!(age <= tolerance)) {
@@ -301,15 +309,345 @@ export const verify = (secret, headers, rawBody) => {
 };
 ```
 
+```python Python
+import base64
+import binascii
+import hashlib
+import hmac
+import time
+
+TOLERANCE = 5 * 60
+
+
+# `raw_body` est le corps de la requête tel que reçu, en octets.
+def verify(secret: str, headers: dict[str, str], raw_body: bytes) -> bool:
+    msg_id = headers.get("webhook-id")
+    timestamp = headers.get("webhook-timestamp")
+    signatures = headers.get("webhook-signature")
+
+    if not msg_id or not timestamp or not signatures or not timestamp.isdigit():
+        return False
+
+    # Trop ancien ou trop en avance : une requête que quelqu’un a gardée pour la renvoyer.
+    if abs(time.time() - int(timestamp)) > TOLERANCE:
+        return False
+
+    key = base64.b64decode(secret.removeprefix("whsec_"))
+    expected = hmac.new(
+        key, f"{msg_id}.{timestamp}.".encode() + raw_body, hashlib.sha256
+    ).digest()
+
+    # Une signature par secret valide : n’importe laquelle peut correspondre.
+    for signature in signatures.split(" "):
+        version, _, mac = signature.partition(",")
+        if version != "v1":
+            continue
+        try:
+            given = base64.b64decode(mac, validate=True)
+        except binascii.Error:
+            continue
+        if hmac.compare_digest(given, expected):
+            return True
+
+    return False
+```
+
+```go Go
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+)
+
+const tolerance = 5 * time.Minute
+
+// rawBody est le corps de la requête tel que reçu.
+func Verify(secret string, header http.Header, rawBody []byte) bool {
+	id := header.Get("webhook-id")
+	timestamp := header.Get("webhook-timestamp")
+	signatures := header.Get("webhook-signature")
+	if id == "" || timestamp == "" || signatures == "" {
+		return false
+	}
+
+	// Trop ancien ou trop en avance : une requête que quelqu’un a gardée pour la renvoyer.
+	seconds, err := strconv.ParseInt(timestamp, 10, 64)
+	if err != nil {
+		return false
+	}
+	age := time.Since(time.Unix(seconds, 0))
+	if age > tolerance || age < -tolerance {
+		return false
+	}
+
+	key, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(secret, "whsec_"))
+	if err != nil {
+		return false
+	}
+	mac := hmac.New(sha256.New, key)
+	mac.Write([]byte(id + "." + timestamp + "."))
+	mac.Write(rawBody)
+	expected := mac.Sum(nil)
+
+	// Une signature par secret valide : n’importe laquelle peut correspondre.
+	for _, signature := range strings.Split(signatures, " ") {
+		version, encoded, found := strings.Cut(signature, ",")
+		if !found || version != "v1" {
+			continue
+		}
+		given, err := base64.StdEncoding.DecodeString(encoded)
+		if err == nil && hmac.Equal(given, expected) {
+			return true
+		}
+	}
+	return false
+}
+```
+
+```ruby Ruby
+require "openssl"
+
+TOLERANCE = 5 * 60
+
+# `raw_body` est le corps de la requête tel que reçu, en chaîne.
+def verify(secret, id, timestamp, signatures, raw_body)
+  return false if [id, timestamp, signatures].any? { |value| value.nil? || value.empty? }
+  return false unless timestamp.match?(/\A\d+\z/)
+
+  # Trop ancien ou trop en avance : une requête que quelqu’un a gardée pour la renvoyer.
+  return false if (Time.now.to_i - timestamp.to_i).abs > TOLERANCE
+
+  key = secret.delete_prefix("whsec_").unpack1("m0")
+  expected = OpenSSL::HMAC.digest("SHA256", key, "#{id}.#{timestamp}.#{raw_body}")
+
+  # Une signature par secret valide : n’importe laquelle peut correspondre.
+  signatures.split(" ").any? do |signature|
+    version, mac = signature.split(",", 2)
+    next false unless version == "v1" && mac
+
+    given = mac.unpack1("m")
+    given.bytesize == expected.bytesize &&
+      OpenSSL.fixed_length_secure_compare(given, expected)
+  end
+end
+```
+
+```java Java
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.time.Instant;
+import java.util.Base64;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+public final class WebhookSignature {
+    private static final long TOLERANCE_SECONDS = 5 * 60;
+
+    // `rawBody` est le corps de la requête tel que reçu, en octets.
+    public static boolean verify(
+            String secret, String id, String timestamp, String signatures, byte[] rawBody)
+            throws GeneralSecurityException {
+        if (id == null || timestamp == null || signatures == null) {
+            return false;
+        }
+
+        // Trop ancien ou trop en avance : une requête que quelqu’un a gardée pour la renvoyer.
+        long seconds;
+        try {
+            seconds = Long.parseLong(timestamp);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        long now = Instant.now().getEpochSecond();
+        if (seconds < now - TOLERANCE_SECONDS || seconds > now + TOLERANCE_SECONDS) {
+            return false;
+        }
+
+        byte[] key = Base64.getDecoder().decode(secret.replaceFirst("^whsec_", ""));
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(key, "HmacSHA256"));
+        mac.update((id + "." + timestamp + ".").getBytes(StandardCharsets.UTF_8));
+        byte[] expected = mac.doFinal(rawBody);
+
+        // Une signature par secret valide : n’importe laquelle peut correspondre.
+        for (String signature : signatures.split(" ")) {
+            String[] parts = signature.split(",", 2);
+            if (parts.length != 2 || !parts[0].equals("v1")) {
+                continue;
+            }
+            byte[] given;
+            try {
+                given = Base64.getDecoder().decode(parts[1]);
+            } catch (IllegalArgumentException e) {
+                continue;
+            }
+            if (MessageDigest.isEqual(given, expected)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+```php PHP
+<?php
+const TOLERANCE = 5 * 60;
+
+// $rawBody est le corps de la requête tel que reçu.
+function verify(string $secret, ?string $id, ?string $timestamp, ?string $signatures, string $rawBody): bool
+{
+    if (!$id || !$timestamp || !$signatures || !ctype_digit($timestamp)) {
+        return false;
+    }
+
+    // Trop ancien ou trop en avance : une requête que quelqu’un a gardée pour la renvoyer.
+    if (abs(time() - (int) $timestamp) > TOLERANCE) {
+        return false;
+    }
+
+    $key = base64_decode(preg_replace('/^whsec_/', '', $secret), true);
+    if ($key === false) {
+        return false;
+    }
+    $expected = hash_hmac('sha256', $id . '.' . $timestamp . '.' . $rawBody, $key, true);
+
+    // Une signature par secret valide : n’importe laquelle peut correspondre.
+    foreach (explode(' ', $signatures) as $signature) {
+        [$version, $mac] = array_pad(explode(',', $signature, 2), 2, '');
+        $given = base64_decode($mac, true);
+        if ($version === 'v1' && $given !== false && hash_equals($expected, $given)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+```
+
+```csharp .NET
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+
+public static class WebhookSignature
+{
+    private const long ToleranceSeconds = 5 * 60;
+
+    // `rawBody` est le corps de la requête tel que reçu, en octets.
+    public static bool Verify(
+        string secret, string? id, string? timestamp, string? signatures, byte[] rawBody)
+    {
+        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(timestamp)
+            || string.IsNullOrEmpty(signatures))
+        {
+            return false;
+        }
+
+        // Trop ancien ou trop en avance : une requête que quelqu’un a gardée pour la renvoyer.
+        if (!long.TryParse(timestamp, out var seconds))
+        {
+            return false;
+        }
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (seconds < now - ToleranceSeconds || seconds > now + ToleranceSeconds)
+        {
+            return false;
+        }
+
+        var key = Convert.FromBase64String(
+            secret.StartsWith("whsec_") ? secret["whsec_".Length..] : secret);
+        var content = Encoding.UTF8.GetBytes($"{id}.{timestamp}.").Concat(rawBody).ToArray();
+        var expected = HMACSHA256.HashData(key, content);
+
+        // Une signature par secret valide : n’importe laquelle peut correspondre.
+        foreach (var signature in signatures.Split(' '))
+        {
+            var parts = signature.Split(',', 2);
+            if (parts.Length != 2 || parts[0] != "v1")
+            {
+                continue;
+            }
+            var given = new byte[expected.Length];
+            if (Convert.TryFromBase64String(parts[1], given, out var written)
+                && written == expected.Length
+                && CryptographicOperations.FixedTimeEquals(given, expected))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+```rust Rust
+// cargo add hmac sha2 base64
+use base64::{engine::general_purpose::STANDARD, Engine};
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+const TOLERANCE: u64 = 5 * 60;
+
+// `raw_body` est le corps de la requête tel que reçu, en octets.
+pub fn verify(secret: &str, id: &str, timestamp: &str, signatures: &str, raw_body: &[u8]) -> bool {
+    if id.is_empty() || signatures.is_empty() {
+        return false;
+    }
+
+    // Trop ancien ou trop en avance : une requête que quelqu’un a gardée pour la renvoyer.
+    let Ok(sent) = timestamp.parse::<u64>() else {
+        return false;
+    };
+    let Ok(now) = SystemTime::now().duration_since(UNIX_EPOCH) else {
+        return false;
+    };
+    if now.as_secs().abs_diff(sent) > TOLERANCE {
+        return false;
+    }
+
+    let Ok(key) = STANDARD.decode(secret.strip_prefix("whsec_").unwrap_or(secret)) else {
+        return false;
+    };
+
+    // Une signature par secret valide : n’importe laquelle peut correspondre.
+    signatures.split(' ').any(|signature| {
+        let Some(("v1", mac)) = signature.split_once(',') else {
+            return false;
+        };
+        let Ok(given) = STANDARD.decode(mac) else {
+            return false;
+        };
+        let Ok(mut expected) = Hmac::<Sha256>::new_from_slice(&key) else {
+            return false;
+        };
+        expected.update(format!("{id}.{timestamp}.").as_bytes());
+        expected.update(raw_body);
+        // verify_slice compare en temps constant.
+        expected.verify_slice(&given).is_ok()
+    })
+}
+```
+
+</CodeGroup>
+
 ## Sécurité [#security]
 
-| Pratique                                     | Pourquoi                                                                                                                                                                                |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Vérifiez chaque requête avant d’agir         | Vérifiez les octets arrivés, et répondez une erreur à une requête qui ne se vérifie pas.                                                                                                |
-| Refusez les horodatages anciens              | Un `webhook-timestamp` à plus de quelques minutes de votre horloge est une requête que quelqu’un a gardée pour la renvoyer. Les bibliothèques tolèrent cinq minutes.                    |
-| Dédupliquez sur `webhook-id`                 | Une livraison faite deux fois est alors traitée une fois.                                                                                                                               |
-| Répondez vite, travaillez ensuite            | Répondez un succès dès que la requête est vérifiée et enregistrée, et faites le travail après : une réponse qui met plus de 15 secondes compte comme un échec, et la livraison revient. |
-| Gardez le secret secret                      | Rangez-le là où votre serveur garde ses autres secrets, jamais dans le code ni dans les journaux, et [renouvelez-le](#secret) s’il a pu fuiter.                                         |
-| Gardez les secrets hors de l’adresse         | Peal montre l’adresse d’un point de terminaison aux membres qui gèrent les webhooks. C’est la signature qui prouve qu’une requête vient de Peal.                                        |
-| Ne filtrez pas sur l’adresse de Peal         | Les requêtes partent des adresses du serveur Peal. Sur votre propre instance, vous les connaissez ; Peal Cloud ne promet pas de garder les siennes fixes.                               |
-| Confirmez avant tout ce qui ne se défait pas | Un corps dit ce qui s’est passé au moment de son envoi. Lisez la publication ou le canal par l’API avant d’agir pour de bon.                                                            |
+Suivez ces pratiques sur le serveur qui reçoit les livraisons :
+
+| Pratique                                     | Pourquoi                                                                                                                                                                            |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vérifiez chaque requête avant d’agir         | Vérifiez les octets arrivés, et répondez une erreur à une requête qui ne se vérifie pas.                                                                                            |
+| Refusez les horodatages anciens              | Un `webhook-timestamp` à plus de quelques minutes de votre horloge est une requête que quelqu’un a gardée pour la renvoyer. Les bibliothèques tolèrent cinq minutes.                |
+| Dédupliquez sur `webhook-id`                 | Une livraison faite deux fois est alors traitée une fois.                                                                                                                           |
+| Répondez vite, travaillez ensuite            | Répondez un 2xx dès que la requête est vérifiée et enregistrée, et faites le travail après. Une réponse qui met plus de 15 secondes compte comme un échec, et la livraison revient. |
+| Gardez le secret secret                      | Rangez-le là où votre serveur garde ses autres secrets, jamais dans le code ni dans les journaux, et [renouvelez-le](#secret) s’il a pu fuiter.                                     |
+| Gardez les secrets hors de l’adresse         | Peal montre l’adresse d’un point de terminaison aux membres qui gèrent les webhooks. C’est la signature qui prouve qu’une requête vient de Peal.                                    |
+| Ne filtrez pas sur l’adresse de Peal         | Les requêtes partent des adresses du serveur Peal. Sur votre propre instance, vous les connaissez, et Peal Cloud ne promet pas de garder les siennes fixes.                         |
+| Confirmez avant tout ce qui ne se défait pas | Un corps dit ce qui s’est passé au moment de son envoi. Lisez la publication ou le canal par l’API avant d’agir pour de bon.                                                        |

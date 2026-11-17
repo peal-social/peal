@@ -1,7 +1,9 @@
-import { DateTime, Effect, Layer, Option } from "effect";
+import { DateTime, Effect, Layer, Option, Result } from "effect";
+import { constVoid } from "effect/Function";
 
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
 import { CollectMessages } from "#engagement/application/collect-messages.ts";
+import { CurrentHumanAgent } from "#engagement/application/current-human-agent.ts";
 import { EngagementMessages } from "#engagement/application/engagement-messages.ts";
 import { MessageSettings } from "#engagement/application/message-settings.ts";
 import { EngagementChannels } from "#engagement/application/ports/engagement-channels.ts";
@@ -27,6 +29,7 @@ import type {
   MessagesApplication,
   MessagesSwitchedOn,
 } from "#engagement/application/ports/message-store.ts";
+import { PrivateReplyStore } from "#engagement/application/ports/private-reply-store.ts";
 import { ReplyLimits } from "#engagement/application/ports/reply-limits.ts";
 import { PurgeMessages } from "#engagement/application/purge-messages.ts";
 import { ReceiveMessageEvents } from "#engagement/application/receive-message-events.ts";
@@ -36,6 +39,7 @@ import type { Conversation } from "#engagement/domain/conversation.ts";
 import type { DirectMessage } from "#engagement/domain/direct-message.ts";
 import { MessageBox } from "#engagement/domain/message-box.ts";
 import type { OutgoingMessageId } from "#engagement/domain/outgoing-message-id.ts";
+import { settleMessage } from "#engagement/domain/outgoing-message.ts";
 import type {
   MessageSendOutcome,
   OutgoingMessage,
@@ -46,7 +50,10 @@ import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { blueskyChatScopes } from "#shared/domain/bluesky-scopes.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
+import { facebookMessageScopes } from "#shared/domain/inbox-message-platform.ts";
 import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
+
+import { noPrivateReplies } from "./no-private-replies.ts";
 
 // The direct message use cases on memory: a store that keeps what the
 // Postgres one keeps, the channels the channels context lists, a platform
@@ -86,6 +93,13 @@ export const blueskyChannel: EngagedChannel = {
   scopes: ["atproto", ...blueskyChatScopes],
 };
 
+/** A Facebook Page that granted Meta's messaging permissions. */
+export const facebookChannel: EngagedChannel = {
+  connection: Option.none(),
+  platform: "facebook",
+  scopes: ["pages_show_list", ...facebookMessageScopes],
+};
+
 export interface MessageWorldState {
   /** The channels of each account, by `<platform>:<account id>`. */
   readonly accounts: Map<string, AccountChannel[]>;
@@ -104,6 +118,10 @@ export interface MessageWorldState {
   /** The channels whose platform was asked to stop telling their events. */
   readonly unfollows: ChannelId[];
   readonly cancelled: OutgoingMessageId[];
+  /** When the gate last claimed each message's call. */
+  readonly claims: Map<string, DateTime.Utc>;
+  /** What happens just after the stranded messages are listed. */
+  afterListing: () => void;
   readonly channels: Map<ChannelId, EngagedChannel>;
   readonly applications: MessagesApplication[];
   readonly switchedOn: Map<ChannelId, MessagesSwitchedOn>;
@@ -134,7 +152,9 @@ export interface MessageWorldState {
 
 export const makeMessageWorld = (
   messages: InboxMessagePlatforms = new Set(["mastodon", "bluesky"]),
-  meters: Layer.Layer<MeteredUsage> = MeteredUsage.layerUnmetered
+  meters: Layer.Layer<MeteredUsage> = MeteredUsage.layerUnmetered,
+  // Whether the operator says Meta's app holds the Human Agent feature.
+  humanAgent = false
 ) => {
   const state: MessageWorldState = {
     accounts: new Map(),
@@ -144,6 +164,8 @@ export const makeMessageWorld = (
     following: () => Effect.succeed("unneeded"),
     unfollows: [],
     cancelled: [],
+    claims: new Map(),
+    afterListing: constVoid,
     channels: new Map(),
     applications: [],
     switchedOn: new Map(),
@@ -175,6 +197,13 @@ export const makeMessageWorld = (
       (message) => message.conversationId === conversation.id
     ).length,
   });
+
+  // Whether the message's call was never claimed, or last by `bound`.
+  const claimedBy = (messageId: string, bound: DateTime.Utc) => {
+    const claimed = state.claims.get(messageId);
+
+    return claimed === undefined || millis(claimed) <= millis(bound);
+  };
 
   // The conversations a whole listing last missed.
   const unlisted = new Set<string>();
@@ -313,7 +342,11 @@ export const makeMessageWorld = (
           (message) =>
             message.channelId === channelId &&
             message.status._tag === "sending" &&
-            Option.isNone(message.status.attemptedAt)
+            // Its call never claimed: the fake gate claims as it calls.
+            !state.claims.has(message.id) &&
+            ![...state.sent, ...state.resumed].some(
+              (request) => request.messageId === message.id
+            )
         )
       ),
     switchedOn: (workspaceId) =>
@@ -385,6 +418,19 @@ export const makeMessageWorld = (
 
         return gone;
       }),
+    refollow: (channelIds) =>
+      Effect.sync(() => {
+        for (const channelId of channelIds) {
+          const box = state.boxes.get(channelId);
+
+          if (box !== undefined) {
+            state.boxes.set(
+              channelId,
+              boxWith(box, { subscribedAt: Option.none() })
+            );
+          }
+        }
+      }),
     markFollowed: (channelId, at) =>
       Effect.sync(() => {
         const box = state.boxes.get(channelId);
@@ -397,10 +443,16 @@ export const makeMessageWorld = (
         }
       }),
     channelGone: (channelId) => Effect.sync(() => channelGone(channelId)),
-    claimCall: (messageId) =>
-      Effect.sync(
-        () => state.outgoing.get(messageId)?.status._tag === "sending"
-      ),
+    claimCall: (messageId, at) =>
+      Effect.sync(() => {
+        if (state.outgoing.get(messageId)?.status._tag !== "sending") {
+          return false;
+        }
+
+        state.claims.set(messageId, at);
+
+        return true;
+      }),
     conversation: (conversationId) =>
       Effect.sync(() =>
         Option.fromUndefinedOr(state.conversations.get(conversationId)).pipe(
@@ -447,6 +499,27 @@ export const makeMessageWorld = (
         }
 
         return followed;
+      }),
+    madeWithKey: (message, key) =>
+      Effect.sync(() => {
+        const made = state.keys.get(`${message.workspaceId}:${key.key}`);
+
+        const earlier =
+          made === undefined ? undefined : state.outgoing.get(made);
+
+        if (
+          earlier === undefined ||
+          !DateTime.isGreaterThan(earlier.createdAt, key.since)
+        ) {
+          return Option.none<MessageJournalled>();
+        }
+
+        return Option.some<MessageJournalled>(
+          earlier.conversationId === message.conversationId &&
+            earlier.text === message.text
+            ? { _tag: "replayed", message: earlier }
+            : { _tag: "keyReused" }
+        );
       }),
     journalMessage: (message, key) =>
       Effect.sync((): MessageJournalled => {
@@ -620,20 +693,50 @@ export const makeMessageWorld = (
 
         return fresh;
       }),
-    strandedMessages: (writtenBefore, _calledBefore, limit) =>
-      Effect.sync(() =>
-        [...state.outgoing.values()]
+    handOver: (messageId, at, calledBefore) =>
+      Effect.sync(() => {
+        const message = state.outgoing.get(messageId);
+
+        if (
+          message === undefined ||
+          message.status._tag !== "sending" ||
+          !claimedBy(messageId, calledBefore)
+        ) {
+          return Option.none<OutgoingMessage>();
+        }
+
+        const handed = Result.getOrThrow(
+          settleMessage(
+            message,
+            { _tag: "unconfirmed", reason: "interrupted" },
+            at
+          )
+        );
+
+        state.outgoing.set(messageId, handed);
+
+        return Option.some(handed);
+      }),
+    strandedMessages: (writtenBefore, calledBefore, limit) =>
+      Effect.sync(() => {
+        const stranded = [...state.outgoing.values()]
           .filter(
             (message) =>
               message.status._tag === "sending" &&
-              millis(message.createdAt) <= millis(writtenBefore)
+              millis(message.createdAt) <= millis(writtenBefore) &&
+              claimedBy(message.id, calledBefore)
           )
-          .slice(0, limit)
-      ),
+          .slice(0, limit);
+
+        state.afterListing();
+
+        return stranded;
+      }),
   });
 
   const ports = Layer.mergeAll(
     Layer.succeed(MessageStore, store),
+    Layer.succeed(PrivateReplyStore, noPrivateReplies),
     Layer.succeed(
       MessageSource,
       MessageSource.of({
@@ -760,6 +863,7 @@ export const makeMessageWorld = (
       })
     ),
     Layer.succeed(CurrentInboxMessages, messages),
+    Layer.succeed(CurrentHumanAgent, humanAgent),
     Ids.layerTest,
     meters
   );

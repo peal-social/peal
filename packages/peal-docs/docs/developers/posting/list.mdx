@@ -5,31 +5,41 @@ sidebar:
   icon: list-filter
 ---
 
-## List posts [#search]
+You can find the posts that failed last week, everything still scheduled on one channel, or the posts a key created. The samples build the client as [Posting through the API](/developers/posting#start) explains.
 
-`GET …/posts/search` lists the workspace's posts, whatever their state, a page at a time: 20 unless `limit` says otherwise, 100 at most. Every filter given must hold. The [MCP tool](/developers/mcp/tools#tools) `list_posts` takes the same filters, and `peal posts list` lists the same posts ([Command line](/developers/cli/posts#posts)).
+## Filter the posts [#search]
 
-| Parameter    | What it keeps                                                                                                                                            |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`     | `draft`, `awaitingApproval` (it waits for an [approval](/guides/posts/review), and keeps its time), `scheduled`, `publishing`, `finished` or `cancelled` |
-| `outcome`    | How a finished post ended: `published`, `partiallyPublished`, `unconfirmed`, `failed` or `cancelled`                                                     |
-| `channelId`  | Posts with a target on that channel                                                                                                                      |
-| `platform`   | Posts with a target on a connected channel of that platform                                                                                              |
-| `from`, `to` | Posts scheduled from `from` (included) to `to` (excluded). Either leaves out posts without a time.                                                       |
-| `createdVia` | `web`, `apiKey` or `application`                                                                                                                         |
-| `authorId`   | Posts that user created                                                                                                                                  |
-| `sort`       | `createdDesc` (the default) or `createdAsc`, by creation; `scheduledDesc` or `scheduledAsc`, by scheduled instant, which list only posts with a time     |
-| `limit`      | How many posts a page holds, from 1 to 100                                                                                                               |
-| `cursor`     | The `nextCursor` of the page before                                                                                                                      |
+`GET …/posts/search` lists the workspace's posts, whatever their state, a page at a time. A page holds 20 posts unless `limit` says otherwise, and 100 at most. When you give several filters, a post must match all of them. The [MCP tool](/developers/mcp/tools#tools) `list_posts` takes the same filters, and `peal posts list` lists the same posts ([Command line](/developers/cli/posts#posts)).
+
+The request takes these parameters:
+
+| Parameter     | What it keeps                                                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`      | `draft`, `awaitingApproval` (waiting for an [approval](/guides/posts/review), with its time kept), `scheduled`, `publishing`, `finished` or `cancelled`         |
+| `outcome`     | How a finished post ended: `published`, `partiallyPublished`, `unconfirmed`, `failed` or `cancelled`                                                            |
+| `channelId`   | Posts with a target on that channel                                                                                                                             |
+| `platform`    | Posts with a target on a connected channel of that platform                                                                                                     |
+| `tagId`       | Posts filed under that tag                                                                                                                                      |
+| `queueId`     | Posts that queue placed ([Queues](/developers/posting/queues#queues))                                                                                           |
+| `recyclingId` | Posts that recycling rule made ([Repeat a post](/developers/posting/queues#recycling))                                                                          |
+| `removed`     | `true`: posts Peal deleted from at least one channel's platform; `false`: posts deleted from none ([Unpublish a post](/developers/posting/published#unpublish)) |
+| `from`, `to`  | Posts scheduled from `from` (included) to `to` (excluded). Either one leaves out posts without a time.                                                          |
+| `createdVia`  | `web`, `apiKey` or `application`                                                                                                                                |
+| `authorId`    | Posts that user created                                                                                                                                         |
+| `sort`        | `createdDesc` (the default) or `createdAsc`, by creation; `scheduledDesc` or `scheduledAsc`, by scheduled instant, which list only posts with a time            |
+| `limit`       | How many posts a page holds, from 1 to 100                                                                                                                      |
+| `cursor`      | The `nextCursor` of the previous page                                                                                                                           |
+
+This request lists the failed Bluesky posts, the latest scheduled first:
 
 <CodeGroup>
 
-```bash curl
-curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/search?status=finished&outcome=failed&platform=bluesky&sort=scheduledDesc&limit=50" \
-  -H "Authorization: Bearer $PEAL_API_KEY"
-```
+```ts Node.js
+import { PealClient } from "peal-sdk";
 
-```ts TypeScript
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
+
 const page = await peal.posts.search({
   workspaceId,
   status: "finished",
@@ -38,6 +48,148 @@ const page = await peal.posts.search({
   sort: "scheduledDesc",
   limit: "50",
 });
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+workspace_id = os.environ["PEAL_WORKSPACE_ID"]
+
+page = peal.posts.search(
+    workspace_id=workspace_id,
+    status="finished",
+    outcome="failed",
+    platform="bluesky",
+    sort="scheduledDesc",
+    limit="50",
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
+
+page, err := client.Posts.Search(context.TODO(), &peal.SearchPostsRequest{
+	WorkspaceID: workspaceID,
+	Status:      peal.PostStatusFinished.Ptr(),
+	Outcome:     peal.PostOutcomeFailed.Ptr(),
+	Platform:    peal.PlatformBluesky.Ptr(),
+	Sort:        peal.PostSortScheduledDesc.Ptr(),
+	Limit:       peal.String("50"),
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
+
+page = peal.posts.search(
+  workspace_id: workspace_id,
+  status: "finished",
+  outcome: "failed",
+  platform: "bluesky",
+  sort: "scheduledDesc",
+  limit: "50"
+)
+```
+
+```java Java
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.SearchPostsRequest;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
+
+PostPage page = peal.posts().search(
+    workspaceId,
+    SearchPostsRequest.builder()
+        .status(PostStatus.FINISHED)
+        .outcome(PostOutcome.FAILED)
+        .platform(Platform.BLUESKY)
+        .sort(PostSort.SCHEDULED_DESC)
+        .limit("50")
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\SearchPostsRequest;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+$workspaceId = getenv('PEAL_WORKSPACE_ID');
+
+$page = $peal->posts->search($workspaceId, new SearchPostsRequest([
+    'status' => 'finished',
+    'outcome' => 'failed',
+    'platform' => 'bluesky',
+    'sort' => 'scheduledDesc',
+    'limit' => '50',
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
+
+var page = await peal.Posts.SearchAsync(new SearchPostsRequest
+{
+    WorkspaceId = workspaceId,
+    Status = PostStatus.Finished,
+    Outcome = PostOutcome.Failed,
+    Platform = Platform.Bluesky,
+    Sort = PostSort.ScheduledDesc,
+    Limit = "50",
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
+
+let page = peal
+    .posts
+    .search(
+        &workspace_id,
+        &SearchQueryRequest::builder()
+            .status(PostStatus::Finished)
+            .outcome(PostOutcome::Failed)
+            .platform(Platform::Bluesky)
+            .sort(PostSort::ScheduledDesc)
+            .limit("50")
+            .build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/search?status=finished&outcome=failed&platform=bluesky&sort=scheduledDesc&limit=50" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
 ```json MCP (list_posts)
@@ -84,14 +236,16 @@ const page = await peal.posts.search({
 }
 ```
 
-- Each post comes whole, with its targets, their status, address and failure reason.
-- `channels` gives the platform of each channel the page names that is still connected, so a client names each target without another request.
-- For the next page, pass `nextCursor` as `cursor`, with the same filters and sort. It is null on the last page.
-- A cursor marks where its page ended: posts created, moved or deleted meanwhile make no page repeat a post or skip one.
-- A cursor of another sort, or one no page gave, answers 400.
+Each post comes whole, with its targets, their status, address and failure reason. `channels` gives the platform of each channel on the page that's still connected, so you can label each target without another request.
 
-<Callout type="info" title="For calendars">
-  `GET …/posts?from=…&to=…` stays: it lists the posts scheduled between two
-  instants, at most 62 days apart, by scheduled instant, in one answer. Drafts
-  are not among them.
+## Read the next page [#next-page]
+
+Pass `nextCursor` as `cursor`, with the same filters and sort. It's null on the last page.
+
+A cursor marks where its page ended, so posts created, moved or deleted in the meantime never make a page repeat a post or skip one. A cursor from another sort, or one no page returned, answers 400.
+
+<Callout type="info" title="A calendar can read a whole range in one request">
+  `GET …/posts?from=…&to=…` is still available. It lists the posts scheduled
+  between two instants, at most 62 days apart, by scheduled instant, in one
+  answer. Drafts aren't included.
 </Callout>

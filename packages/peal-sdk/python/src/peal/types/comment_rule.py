@@ -21,11 +21,17 @@ class CommentRule(UniversalBaseModel):
     ended_reason: typing_extensions.Annotated[
         typing.Optional[CommentRuleEndReason], FieldMetadata(alias="endedReason"), pydantic.Field(alias="endedReason")
     ] = None
+    holds_private_reply: typing_extensions.Annotated[
+        bool, FieldMetadata(alias="holdsPrivateReply"), pydantic.Field(alias="holdsPrivateReply")
+    ]
     id: str
     keywords: typing.List[str]
     matches: typing.List[CommentRuleMatch]
     post_id: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="postId"), pydantic.Field(alias="postId")
+    ] = None
+    private_reply: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="privateReply"), pydantic.Field(alias="privateReply")
     ] = None
     reply: str
     started_by: typing_extensions.Annotated[

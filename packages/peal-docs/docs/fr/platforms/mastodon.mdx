@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/mastodon.svg
 ---
 
-Comment connecter un compte Mastodon, ce qu’une publication peut y contenir, et les options qu’elle prend.
+Mastodon fonctionne sur n’importe quel serveur, sans rien à configurer côté opérateur. Vous connectez un compte par le nom de son serveur, et Peal s’y enregistre la première fois.
 
 ## En bref [#at-a-glance]
+
+Voici ce qu’une publication Mastodon peut contenir :
 
 |                  |                                  |
 | ---------------- | -------------------------------- |
@@ -19,44 +21,48 @@ Comment connecter un compte Mastodon, ce qu’une publication peut y contenir, e
 
 Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms).
 
-## Connecter [#connect]
+## Connecter un compte [#connect]
 
-Sous **Mastodon**, indiquez le serveur du compte, comme `mastodon.social`, ou l’adresse du compte lui-même, comme `@vous@mastodon.social`, puis choisissez **Connecter Mastodon**.
+Sous **Mastodon**, saisissez le serveur du compte, comme `mastodon.social`, ou l’adresse du compte lui-même, comme `@vous@mastodon.social`. Cliquez ensuite sur **Connecter Mastodon**.
 
-Peal fonctionne avec n’importe quel serveur Mastodon accessible sur Internet en HTTPS. La première fois que quelqu’un connecte un compte d’un serveur, Peal s’y enregistre comme application. Il demande à :
+Peal fonctionne avec n’importe quel serveur Mastodon accessible sur Internet en HTTPS. La première fois que quelqu’un connecte un compte d’un serveur, Peal s’y enregistre comme application. Il demande à :
 
-- lire le profil du compte ;
-- publier des messages et des médias ;
-- relire les publications du compte, pour leurs chiffres dans les [statistiques](/guides/engage/analytics).
+- Lire le profil du compte.
+- Publier des messages et des médias.
+- Relire les publications du compte, pour leurs chiffres dans les [statistiques](/guides/engage/analytics).
 
-<Callout type="info">
+<Callout
+  type="info"
+  title="Les anciens canaux sont à reconnecter pour les statistiques"
+>
   Un compte connecté avant que Peal demande à relire ses publications continue
-  de publier comme avant. Reconnectez-le pour l’accorder aussi.
+  de publier comme avant. Reconnectez-le pour accorder aussi cette autorisation.
 </Callout>
 
 ## Options [#options]
 
-Aucune option n’est obligatoire, et chacune n’est envoyée que si vous la choisissez. **Nom dans l’API** est le nom de l’option par l’API. **Parties** dit si, dans un [fil](/guides/posts#threads), elle part avec chaque partie ou avec la première seule.
+Aucune option n’est obligatoire, et Peal n’envoie chacune que si vous la réglez. **Nom dans l’API** est le nom de l’option dans l’API. **Parties** dit si, dans un [fil](/guides/posts#threads), l’option part avec chaque partie ou avec la première seule.
 
-| Option                                 | Nom dans l’API   | Valeurs                                                                          | Si omise             | Parties       |
-| -------------------------------------- | ---------------- | -------------------------------------------------------------------------------- | -------------------- | ------------- |
-| **Qui peut voir cette publication**    | `visibility`     | `public`, `unlisted` (public discret), `private` (abonnés seulement)             | Le réglage du compte | Chaque partie |
-| **Avertissement de contenu**           | `contentWarning` | Une ligne, 500 caractères au plus                                                | Aucun                | Chaque partie |
-| **Marquer les médias comme sensibles** | `sensitive`      | Oui ou non                                                                       | Le réglage du compte | Chaque partie |
-| **Langue**                             | `language`       | Un code de deux ou trois lettres minuscules, comme `fr`                          | Le réglage du compte | Chaque partie |
-| **Qui peut citer cette publication**   | `quotePolicy`    | `public`, `followers`, `nobody` ; seulement avec `visibility` public ou unlisted | Le réglage du compte | Chaque partie |
+| Option                                 | Nom dans l’API   | Valeurs                                                                         | Si omise             | Parties       |
+| -------------------------------------- | ---------------- | ------------------------------------------------------------------------------- | -------------------- | ------------- |
+| **Qui peut voir cette publication**    | `visibility`     | `public`, `unlisted` (public discret), `private` (abonnés seulement)            | Le réglage du compte | Chaque partie |
+| **Avertissement de contenu**           | `contentWarning` | Une ligne, 500 caractères au plus                                               | Aucun                | Chaque partie |
+| **Marquer les médias comme sensibles** | `sensitive`      | Oui ou non                                                                      | Le réglage du compte | Chaque partie |
+| **Langue**                             | `language`       | Un code de deux ou trois lettres minuscules, comme `fr`                         | Le réglage du compte | Chaque partie |
+| **Qui peut citer cette publication**   | `quotePolicy`    | `public`, `followers`, `nobody`, seulement avec `visibility` public ou unlisted | Le réglage du compte | Chaque partie |
 
-Ce qu’en fait Mastodon :
+### Ce qu’en fait Mastodon [#options-behaviour]
 
-- Un avertissement de contenu compte dans la limite de caractères de la publication, avec le texte : sur un canal Mastodon, les 500 caractères sont l’avertissement et le texte ensemble, sur chaque partie, et l’éditeur les compte ainsi.
-- Un avertissement de contenu marque aussi la publication comme sensible, quoi que dise **Marquer les médias comme sensibles**.
-- Les serveurs antérieurs à Mastodon 4.5 ignorent la règle de citation, et personne ne peut citer une publication réservée aux abonnés, quoi qu’elle dise.
-- Les mentions privées ne sont pas proposées : Peal publie des publications.
+Un avertissement de contenu compte dans la limite de caractères de la publication, avec le texte. Sur un canal Mastodon, les 500 caractères couvrent l’avertissement et le texte ensemble, sur chaque partie, et l’éditeur les compte ainsi. Un avertissement de contenu marque aussi la publication comme sensible, quoi que dise **Marquer les médias comme sensibles**.
+
+Les serveurs antérieurs à Mastodon 4.5 ignorent la règle de citation. Personne ne peut citer une publication réservée aux abonnés, quoi que dise sa règle.
+
+Peal ne propose pas les mentions privées, parce qu’il publie des publications.
 
 ## Commentaires [#comments]
 
-Peal lit les commentaires sous vos publications en ligne, et vous y répondez depuis Peal : voir [Boîte de réception](/guides/engage/inbox#other-platforms).
+Peal lit les commentaires sous vos publications en ligne sur Mastodon, et vous pouvez y répondre depuis Peal. Voyez [Boîte de réception](/guides/engage/inbox#other-platforms).
 
 ## Sur votre propre serveur [#self-hosting]
 
-Mastodon ne demande aucun réglage : Peal s’enregistre comme application sur chaque serveur la première fois qu’un compte y est connecté.
+Mastodon ne demande aucun réglage. Peal s’enregistre comme application sur chaque serveur Mastodon la première fois que quelqu’un y connecte un compte.

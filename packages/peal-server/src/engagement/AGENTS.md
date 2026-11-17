@@ -8,8 +8,8 @@
   build on it. Nothing answers by itself but a comment rule (below), and
   no assistant prompt ever reads a comment.
   slice is comments on posts Peal published, the reviews of Google
-  Business Profile locations, and the direct messages of Mastodon and
-  Bluesky channels (below); mentions will build on it. Nothing here answers by itself: no automation,
+  Business Profile locations, and the direct messages of Mastodon,
+  Bluesky, Facebook Page and Instagram channels (below); mentions will build on it. Nothing here answers by itself: no automation,
   and no assistant prompt ever reads a comment.
 - A `Thread` is the comments under one published target; a `Comment` is
   what its platform gave (its id there, the comment it answers, its
@@ -397,8 +397,37 @@
   The account export holds the rules with the comments each looked at,
   by id.
   The approval policy does not apply, as it does not to a member's
-  reply; staff acting as a member start none. Never a private reply, a
-  like or a follow: decision 6.
+  reply; staff acting as a member start none. A rule may hold a
+  `privateReply` (`comment_rules.private_reply`): its public reply's match
+  is settled `private_code` `waiting` (or, at once, why not: the
+  starter without `engagement:message` as `MissingPermission`, the
+  channel's private ability, `noApi` off Instagram and Facebook,
+  `messagesOff` where the channel's messages are off in the rule's
+  workspace), and each run first takes those waiting (`waitingPrivate`):
+  once the public reply reads `sent`, `EngagementPrivateReplies.send` as
+  the starter under the key `comment-rule-private:<rule>:<comment>`,
+  with the rule's id; a public reply failed, unconfirmed or withdrawn
+  takes none (`publicReply…` codes), and one still `sending` waits. The
+  public reply and its match, and each private reply and its match,
+  are written in one transaction under the rule's row lock, which the
+  run takes and checks `active` before each send (always the rule's row
+  before the channel's box: `channelGone` locks the rules that answer on
+  the channel first), so a member who stops
+  or pauses a rule meanwhile wins; `stop`, a pause, a private text taken
+  off, `starterGone` and `channelGone` settle those waiting `stopped`
+  (`stopWaiting`); the first four also delete, under the rule's row, the
+  rule's private replies whose call was never claimed and give their
+  outbound message back (`EngagementPrivateReplies.holdBack`,
+  `dropUnsentOfRule`). A refusal of the private reply is its tag as the
+  code and never undoes the public one; the caps are the public
+  replies', as a private reply only follows one. Starting or changing a
+  rule with a private text takes `engagement:message` and an
+  application the owner's consent (`EngagementPrivateReplies.mayWrite`),
+  and a channel that answers and can carry it
+  (`CommentRuleNotPossible` `privateReply`, `emptyPrivateReply`). Test
+  the run on Postgres through `#test/engagement/rule-world.ts`. One
+  private reply a comment on Instagram and Facebook Pages, after the
+  public one; never a like or a follow, never a first contact: decision 6.
 - Direct messages are a model of their own beside comments and reviews:
   a `MessageBox` per channel (`engagement.message_boxes`, keyed by the
   channel: its schedule), a `Conversation` per conversation on the
@@ -429,15 +458,19 @@
   set out and deletes the box and conversations (`channelGone`).
 - They are read only where `PEAL_INBOX_MESSAGES` names the platform
   (`#shared/infrastructure/inbox-messages.ts`, read once into
-  `CurrentInboxMessages`; `mastodon`, `bluesky`; another name stops the
-  server). Off, `CollectMessages` follows and calls nothing, the
-  abilities are `unsupported` and Bluesky's sign-in is as before, byte for
-  byte. `messageAbilitiesOf` (`read`, `send`): Mastodon takes
+  `CurrentInboxMessages`; `mastodon`, `bluesky`, `facebook`, `instagram`;
+  another name stops the server, as does a Meta platform without its app
+  or `META_WEBHOOK_VERIFY_TOKEN`). Off, `CollectMessages` follows and
+  calls nothing, the abilities are `unsupported` and the sign-ins are as
+  before, byte for byte. `messageAbilitiesOf` (`read`, `send`): Mastodon takes
   `read:statuses` and `write:statuses`, which its sign-in always asked;
   Bluesky the chat methods' `rpc` scopes at `did:web:api.bsky.chat#bsky_chat`
   (`blueskyChatScopes`, or `transition:chat.bsky` with
-  `transition:generic`), asked only when a member turns a Bluesky
-  channel's messages on: `switchChannel` refuses a channel whose read is
+  `transition:generic`), and Meta's by the channel's way in
+  (`metaMessageScopesOf`: `facebookMessageScopes`,
+  `instagramPageMessageScopes`, `instagramLoginMessageScope`;
+  `messageAbilitiesOf` takes the channel's `connection`), asked only when
+  a member turns a channel's messages on: `switchChannel` refuses a channel whose read is
   not `available` (`MessageAbilityUnavailable`, `reconnect`), and the web
   app reconnects it with `messages=true`, the switch off meanwhile. A
   channel without them is never called (`platform-messages.ts`): one whose
@@ -452,7 +485,8 @@
 - `CollectMessages` runs on `engagement.collect-messages` (minutes 1 and
   21, the free minutes `test/app/cron-schedules.test.ts` leaves; 8
   minutes a run, 8 channels at once, through the gates: `ReadMessages`):
-  it hands stranded messages to a person (`SendMessage.settleStranded`)
+  it hands stranded messages to a person (`SendMessage.settleStranded`,
+  only while no call was claimed since it listed them: `handOver`)
   and reads the boxes due: every run while a message came in the last day,
   hourly otherwise. The adapter is given the revisions Peal holds and
   reads back only the conversations that changed, and those not read back
@@ -520,10 +554,25 @@
   A `MessagePlatform` without `follow`/`unfollow` (Mastodon, Bluesky)
   answers `unneeded` and calls nothing; one with them answers
   `unneeded` to `unfollow` while another channel of Peal's follows the
-  account. `channelGone` asks nothing: it runs in the channels
-  context's transaction, and a moved channel's account is still
-  followed. Never run any of it against Meta before the setting names a
-  Meta platform anywhere: U9b's adapters, and the sandbox's trial first.
+  account, or the channel itself has a box again, its messages turned on
+  since they were turned off (`FollowedElsewhere`: `platform-messages.ts`
+  asks `MessageChannelsOfAccount` and the boxes; Meta's adapter reads with
+  the Page's token which accounts its subscription carries, the Page and
+  the Instagram account linked to it). Once stopped, the others and the
+  channel itself, turned on again while Meta stopped it, follow again at
+  their next read (`refollow`). A follow that finds the box gone when
+  it returns unfollows again (a switch-off ran meanwhile).
+  `channelGone` asks nothing: it runs in the channels context's
+  transaction; a member's disconnect stops Meta's events afterwards with
+  the tokens the channel held (the channels context's
+  `ChannelDepartures`, which asks `EngagementRecords.readsMessages`, and
+  `refollow`s the others after), as does a workspace's erasure before its
+  transaction (`ChannelRecords.releaseWorkspaces`, from
+  `ContextRecords.settleWorkspaces`, which waits ten seconds at most for
+  them all and leaves the rest to finish on its own),
+  and a moved channel's account stays
+  followed (its events are `ignored` until the new workspace turns its
+  messages on).
 - Mastodon (`platforms/mastodon/mastodon-messages.ts`, docs read
   2026-11-14): a message is a status of `direct` visibility;
   `/api/v1/conversations` (40 a page, 5 pages, the `Link` header's next
@@ -562,11 +611,70 @@
   ones would be missed by two whole listings, and deleted.
   Check too that, after a forced token refresh on the Bluesky test
   account, the channel's stored scopes still pass `grantsBlueskyChat`.
+- Facebook Pages and Instagram (`platforms/meta/meta-messages.ts`, one
+  adapter for the three ways in, Meta's pages read 2026-11-16): the
+  Conversations API (`/me/conversations?platform=messenger|instagram`, 50
+  a page, 5 pages, read to the end as its order is not stated, and never
+  `listedWhole`: it is read without `folder`, so a conversation moved in
+  Meta's own inbox may leave it, and absence deletes nothing; a changed
+  `updated_time` read back with `messages.limit(20)`, Meta detailing a
+  conversation's 20 latest only, so `complete` only for 20 or fewer, all
+  detailed; `deleted` always empty, Instagram's taken back come by the
+  event and Messenger tells of none). Every call of one account, from any
+  read, resume or subscription of the process, is half a second after
+  the last (`conversationsPace`, one map per adapter: several runners
+  share the limit unpaced between them), and the usage ceiling stops a
+  read. A message whose sender is neither the account nor one of the
+  conversation's people, or none, is kept nowhere, and a conversation
+  that does not name the account is not read back: counted at every read
+  (`peal.engagement.messages.unknown_senders`) and logged by the
+  channel's id and a code, once a channel, code and hour
+  (`unknownSendersLogEvery`, as a read every ten seconds would log the
+  same conversations at each), as whether a message is the account's own,
+  which opens the window, rests on Meta's ids matching Peal's. Files and
+  a story are a count, never kept. Sending is `POST /me/messages`
+  (`RESPONSE`) with no key: a resume looks among the 20 latest, and may
+  take one of the account's messages read since from its echo, which no
+  other message of Peal's claims (`takenIdsOf`). Meta's codes map by code
+  and subcode, logged by them alone, to `windowClosed`, `refused`,
+  `conversationGone`, `rateLimited` where Meta's page says nothing was
+  sent; code 1, 2, `is_transient` and anything else Peal cannot read are
+  `unconfirmed`. Instagram 1,000 UTF-8 bytes, Messenger 2,000 characters
+  (`chatOverflow`). `follow` is `POST /me/subscribed_apps`
+  (`messages,message_echoes`), `unfollow` its `DELETE`, guarded by
+  `Followers` per app's subscription (`carriedBy`: a Page's carries the
+  Page and the Instagram account linked to it, Instagram Login's the
+  account alone); once stopped, the others of what it carried follow
+  again at their next read (`refollow`). Turning messages off deletes the
+  box first and unfollows after, so two at once both see the other gone;
+  the collection's own switch-off unfollows too. Only messages come by
+  events; once comments do, the guard asks after them too. Never run
+  against Meta. Not verified, for the sandbox's trial with the owner
+  (record each answer in the adapter with its date): which secret signs
+  Instagram Login's events (the route takes either); whether `entry[].id`,
+  a message's `from.id` and the participants' ids are the account ids
+  Peal keeps through each way in (watch `unknown_senders`); the
+  conversations' order, and whether a conversation moved to another
+  folder leaves the list; whether a Page's subscription carries
+  Instagram's events, and needs `pages_messaging` on an Instagram-only
+  channel; whether Meta enforces two calls a second to the second;
+  Messenger's length (the Send API reference needs a sign-in) and the
+  `attachments` and `story` sub-fields; whether Publish asks anything of
+  an app with no reviewed permission; whether a message taken back on
+  Messenger still shows in the Conversations API; and `HUMAN_AGENT` on
+  graph.instagram.com, and Meta's refusal of a tag the app lacks (U9c,
+  `PEAL_META_HUMAN_AGENT` off until Meta's review of the feature). Production keeps the setting off until
+  Meta's App Review, counsel's line and one live run.
 - Sending (`EngagementMessages.send`, `engagement:message`, in
-  `publishingPermissions`): the conversation, the channel able, the
-  platform's `replyWindowOf` open (always, on these two), the text within
-  5,000 characters and the platform's length (Mastodon's status through
-  `ReplyLimits`), then the journal row, the meter's claim (one
+  `publishingPermissions`): the conversation, the channel able, the text
+  within 5,000 characters and the platform's length (Mastodon's status
+  through `ReplyLimits`, `chatOverflow` for the others), the platform's
+  `replyWindowOf` open (always on Mastodon and Bluesky; Meta's 24 hours
+  after the person's last message, ended a minute early,
+  `metaWindowSkew`; for a person's own answer, 7 days, below), refused
+  `MessageAbilityUnavailable` with `reason`
+  `windowClosed` and `closedAt` before anything is journalled or claimed,
+  unless a key names a message it made (`madeWithKey`, read only), then the journal row, the meter's claim (one
   `outboundMessages`, paused refusing first unless the request has a key),
   the job (`SendMessageV1`, payload `messageId`, activity `send`,
   persisted contract) and the conversation marked read, in one
@@ -574,7 +682,8 @@
   or unconfirmed a conversation; `outgoing_messages_key` one a key
   (`messageKeyLifetime`, 24 hours). A message that ends failed, or a
   person finds never went out (`confirm`), gives its claim back, as does
-  each that never set out (`sending`, no call begun) when its channel's
+  each that never set out (`sending`, its call never claimed, an attempt
+  that waited for the gate's turn among them) when its channel's
   messages are turned off or found disconnected (`forgetChannelMessages`),
   its channel leaves or its workspace is erased (`EngagementRecords`, on
   the meters: `MetersContextLive` is built below the channels context in
@@ -586,6 +695,38 @@
   (`journalMessage`), so a send that commits meanwhile is listed and
   given back, or finds its conversation gone: never deleted unseen. The
   gate claims the call first (`claimCall`).
+- A person's answer within Meta's 7 days (U9c): where `PEAL_META_HUMAN_AGENT`
+  is `true` (`CurrentHumanAgent`, `infrastructure/human-agent-config.ts`:
+  the operator holds Meta's App Review of the Human Agent feature, apart
+  from the messaging permissions), a message `byPerson`
+  (`outgoing_messages.by_person`) is held to `personWindowOf` (7 days after
+  the person's last message, less `metaWindowSkew`) through
+  `answerWindowOf` once the 24 hours shut, and the gate sends it with
+  `messaging_type: MESSAGE_TAG`, `tag: HUMAN_AGENT` (`OutgoingDirect.humanAgent`)
+  only when `replyWindowOf` is shut at the call: inside the 24 hours it goes
+  as `RESPONSE`, as Meta keeps the tag for messages "sent outside the 24-hour
+  messaging window" (`page/messages` reference, read 2026-11-16). Each
+  tagged send is counted (`peal.engagement.messages.tagged_sends`, by
+  platform); Meta's refusals of the tag fail apart, logged by their codes:
+  `humanAgentNotGranted` (`100`/`2018276`, `10`/`2534044`, as integrators
+  report them) is `failed`, and `tagRestricted` (`613`/`2018338`, Meta's
+  warning, logged as an error) `unconfirmed` (`MessageDoubtSchema`), as the
+  message may have gone out. `byPerson` is
+  `sending.inSession` (which only the API's `sendMessage` handler passes,
+  from a session principal: no `oauth`, no `impersonatedBy`) and the actor
+  the member themselves: an API key, an OAuth client (MCP, the command
+  line), staff, a rule or an automation (an actor `ActorsNow` resolves
+  looks like the member, which is why the handler, not the actor, vouches
+  for the session) never pass, are refused past the 24 hours, and never
+  tag. Keep it so: no job, cron, rule or tool calls `send` with
+  `inSession` (`test/engagement/api/in-session-callers.test.ts` holds it to
+  the handler). A member's export carries `byPerson`. The conversation's view gives `personWindow`
+  (`window.personClosesAt`) where the feature is on and the channel can
+  send, and the web app shows none of it to staff acting as a member. A
+  private reply is never tagged. Not verified: whether graph.instagram.com
+  takes the tag in the same form, the codes Meta answers an app without
+  the feature, and whether Standard Access lets the sandbox send a tag at
+  all before Meta's review.
 - Retention: each message is deleted `conversationsKeptFor` (30 days)
   after it was sent, a settled outgoing message (`sent`, `failed` or
   left `unconfirmed`) 30 days after it settled, and a conversation once
@@ -602,8 +743,74 @@
   follow: change them together. A conversation is read a page at a time
   (`maxInboxMessagesPerPage`, the cursor the message's time and id). Test the store at 2049 (the purge at
   1935).
+- A private reply (`domain/private-reply.ts`, `EngagementPrivateReplies`,
+  `engagement.private_replies`) is the one private message a member sends
+  the author of a comment on Instagram or a Facebook Page, in answer to it
+  (Meta's private replies: `POST /me/messages` with `recipient:
+  { comment_id }`, never tagged, `meta/meta-private-replies.ts`, Meta's
+  pages read 2026-11-16). Its own journal, never an `OutgoingMessage`: it
+  answers a comment, and Peal makes up no conversation; the person's
+  answer comes as a direct message. `send` refuses, before anything is
+  reserved and in this order: `engagement:message` and the owner's
+  consent for an application (as messages; staff hold neither), the
+  comment in the actor's workspace (`CommentNotFound`), `mayReplyPrivately`
+  (`PrivateReplyNotPossible`: `ownComment`, `gone`, `tooOld`, counted from
+  the comment's `written_at`, `privateReplyWindow`, Meta's 7 days less an
+  hour; a key sent again answers what it made, past them too), the
+  channel's `privateReplyStanding` (`private-reply-standing.ts`: only
+  Facebook and Instagram, read by `PEAL_INBOX_PLATFORMS` and
+  `PEAL_INBOX_MESSAGES`, the channel's messages switched on in the actor's
+  workspace, the comments' and the messages' permissions of the way in;
+  `abilitiesOf` answers `unsupported`, the API puts the standing in
+  `abilities.privateReply`), the text (5,000 characters, `chatOverflow`),
+  the paused meter unless keyed; then the journal row (under the channel's
+  box, only for a comment of the workspace and channel whose box is
+  there), one `outboundMessages` and `SendPrivateReplyV1` (payload
+  `privateReplyId`, activity `send`, persisted contract) in one
+  transaction. `private_replies_comment` is unique on the comment while
+  a reply is not `failed`: never two a comment, whichever request came
+  first; `private_replies_key` one a key. `SendPrivateReply` commits
+  `attempted_at` before the call and resumes after: `resume` never sends,
+  it lists the person's conversation (`/me/conversations?user_id=` the
+  comment's author, sent `Redacted` so no span holds it, and the one
+  conversation answered must name them) and answers
+  `sent` for exactly one of the account's messages there, with the text,
+  since the row less a minute, whose id no other message of Peal's on the
+  channel holds (`sentIdsOf`); anything else is `unconfirmed`, which a
+  person settles (`confirm`). Meta's codes map as the adapter's
+  `privateReplyRefusal` says (`10900` is `alreadyAnswered`, `100`/`2534025`
+  `commentGone`, `368` and `2022` `refused`); Meta's own failures and anything unreadable are
+  `unconfirmed`. The gate (`platform-messages.ts`, RPCs `SendPrivateReply`
+  and `ResumePrivateReply`) checks the comment still shown, the standing
+  again, the box there in the reply's workspace, and claims the call
+  first (`gate-private-replies.test.ts`); one account's calls share the messages' pace
+  (`accountPace`). A failed one, or one confirmed not sent, gives its
+  claim back; one stranded an hour is handed over by the messages'
+  collection cron, first and on its own catch (`collectMessagesAt`), and
+  only while no call was claimed since it was listed (`handOver`). It goes with its
+  comment forgotten (`saveComments` deletes the settled ones; one on its
+  way goes once it settles, `dropIfForgotten`) and thread (cascade), its
+  channel (`channelGone`, all of them,
+  the unsent given back) and workspace, 30 days after it settled
+  (`PurgeMessages`), and, its messages turned off, those that never set
+  out, their call never claimed (`forgetChannelMessages`; `channelGone`
+  gives those back too). A thread's view shows each comment's
+  latest private reply only to who may read messages (`ofThread`), and
+  `privateReplyUntil` where the channel can send one and until it passes;
+  a Meta channel whose token ran out stands `reconnect`
+  (`ChannelUnreadable.platform`, `ChannelAccess.platformOf`). No webhook event
+  yet; a closed account leaves them without an author, and its export
+  lists them by comment id, never the comment. Test the store at 2051
+  (the purge at 1937). Never run against Meta: before `PEAL_INBOX_MESSAGES`
+  names a Meta platform anywhere, send one by hand on a tester's comment
+  through each way in, a second (its refusal's code), one past 7 days,
+  and check whether a comment's author id is the id the Conversations API
+  takes and whether a private reply shows there before the person
+  answers (otherwise every lost answer stays `unconfirmed`, safely), and
+  whether Instagram through a Page works at Standard Access.
 - `EngagementRecords.ensureChannelIdle` refuses (`SendsInFlight`) while a
-  reply, a review's answer or a direct message on the channel is
+  reply, a review's answer, a direct message or a private reply on the
+  channel is
   `sending` with its call claimed, holding those rows in the caller's
   transaction (a claim is written under the row): a channel moving to
   another workspace waits for them.

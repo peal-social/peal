@@ -40,6 +40,7 @@ import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 
 import { forgetChannelMessages } from "./forget-channel-messages.ts";
+import { unfollowWait } from "./message-settings.ts";
 import { MessageOutcomes } from "./ports/message-outcomes.ts";
 import { MessageSource } from "./ports/message-source.ts";
 import type {
@@ -47,6 +48,7 @@ import type {
   MessagesReadFailure,
 } from "./ports/message-source.ts";
 import { MessageStore } from "./ports/message-store.ts";
+import { PrivateReplyStore } from "./ports/private-reply-store.ts";
 import { SendMessage } from "./send-message.ts";
 
 /** What a run of the messages' collection did. */
@@ -135,6 +137,15 @@ type Turn = "deferred" | "read" | "unreached";
  */
 export type BoxReadOutcome = "deferred" | "missing" | "off" | "read";
 
+// A platform that would not stop a channel's message events, logged by
+// the channel's id and the refusal's tag alone.
+const stopRefused =
+  (channelId: ChannelId) =>
+  ({ _tag: reason }: { readonly _tag: string }) =>
+    Effect.logWarning(
+      "Could not tell a platform to stop a channel's message events"
+    ).pipe(Effect.annotateLogs({ channelId, reason }));
+
 /**
  * Reads the direct messages of every channel on a platform the operator
  * turned on (`PEAL_INBOX_MESSAGES`): off, it follows nothing and calls
@@ -167,6 +178,7 @@ export class CollectMessages extends Context.Service<
     CollectMessages,
     Effect.gen(function* CollectMessagesLive() {
       const store = yield* MessageStore;
+      const privateReplies = yield* PrivateReplyStore;
       const source = yield* MessageSource;
       const outcomes = yield* MessageOutcomes;
       const sending = yield* SendMessage;
@@ -342,6 +354,18 @@ export class CollectMessages extends Context.Service<
         );
       });
 
+      // Asks the box's platform to stop the account's events, once and
+      // best effort: a refusal, or a gate too busy to answer in time, is
+      // logged by the channel's id.
+      const stopEvents = (channelId: ChannelId) =>
+        source
+          .unfollow({ channelId })
+          .pipe(
+            Effect.timeout(unfollowWait),
+            Effect.catch(stopRefused(channelId)),
+            Effect.asVoid
+          );
+
       // A channel that left goes now, with what it held, as do the messages
       // of one whose account no longer grants them; one that cannot be read
       // waits.
@@ -368,18 +392,23 @@ export class CollectMessages extends Context.Service<
           failure.reason === "disconnected"
         ) {
           return transaction(
-            forgetChannelMessages(store, meters, box.channelId)
+            forgetChannelMessages(store, privateReplies, meters, box.channelId)
           );
         }
 
         // Its account was signed in again without what reading takes: its
         // messages are turned off, never left on unread, and members told.
+        // Its platform is then asked to stop the account's events, best
+        // effort: a grant that lacks the messages may still allow that.
         if (failure._tag === "MessagesUngranted") {
           return transaction(
-            forgetChannelMessages(store, meters, box.channelId).pipe(
-              Effect.andThen(outcomes.turnedOff(box))
-            )
-          );
+            forgetChannelMessages(
+              store,
+              privateReplies,
+              meters,
+              box.channelId
+            ).pipe(Effect.andThen(outcomes.turnedOff(box)))
+          ).pipe(Effect.andThen(stopEvents(box.channelId)));
         }
 
         return store.saveBox(
@@ -410,16 +439,24 @@ export class CollectMessages extends Context.Service<
             .follow({ channelId: box.channelId })
             .pipe(Effect.result);
 
-          yield* Result.isSuccess(followed)
-            ? store.markFollowed(box.channelId, now)
-            : Effect.logWarning(
-                "Could not ask a platform for a channel's message events"
-              ).pipe(
-                Effect.annotateLogs({
-                  channelId: box.channelId,
-                  reason: followed.failure._tag,
-                })
-              );
+          if (Result.isFailure(followed)) {
+            yield* Effect.logWarning(
+              "Could not ask a platform for a channel's message events"
+            ).pipe(
+              Effect.annotateLogs({
+                channelId: box.channelId,
+                reason: followed.failure._tag,
+              })
+            );
+
+            return;
+          }
+
+          // Its messages were turned off while the platform answered, after
+          // the platform was told to stop: it is told again.
+          yield* Option.isNone(yield* store.box(box.channelId))
+            ? stopEvents(box.channelId)
+            : store.markFollowed(box.channelId, now);
         });
 
       const readOne = (

@@ -72,6 +72,7 @@ const optedOut = {
 const snapshotRequest = {
   currency: eur,
   externalId: account,
+  reachedThrough: Option.none(),
   since: { day: 1, month: 11, year: 2026 },
   timeZone: paris,
   until: { day: 10, month: 11, year: 2026 },
@@ -81,7 +82,10 @@ describe("signing in to Meta for ads", () => {
   it.live("asks for reading only on a server that only reads", () =>
     Effect.gen(function* reading() {
       const { client } = yield* metaAgainstFake({}, "read");
-      const url = new URL(client.authorizationUrl("state-1"));
+
+      const url = new URL(
+        client.authorizationUrl("state-1", "synthetic-challenge")
+      );
 
       assert.strictEqual(url.pathname, "/v27.0/dialog/oauth");
       assert.strictEqual(url.searchParams.get("scope"), "ads_read");
@@ -103,7 +107,10 @@ describe("signing in to Meta for ads", () => {
   it.live("asks for what running ads takes on a server that spends", () =>
     Effect.gen(function* spending() {
       const { client } = yield* metaAgainstFake();
-      const url = new URL(client.authorizationUrl("state-1"));
+
+      const url = new URL(
+        client.authorizationUrl("state-1", "synthetic-challenge")
+      );
 
       assert.strictEqual(
         url.searchParams.get("scope"),
@@ -118,7 +125,7 @@ describe("signing in to Meta for ads", () => {
       Effect.gen(function* exchanging() {
         const { client } = yield* metaAgainstFake({ expiresIn: 5_184_000 });
         const before = yield* DateTime.now;
-        const grant = yield* client.complete("good-code");
+        const grant = yield* client.complete("good-code", Option.none());
 
         assert.strictEqual(grant.platformUserId, adsUserId);
         assert.strictEqual(Redacted.value(grant.token), Redacted.value(token));
@@ -140,7 +147,9 @@ describe("signing in to Meta for ads", () => {
       const { client } = yield* metaAgainstFake();
 
       assert.isTrue(
-        Option.isNone((yield* client.complete("good-code")).expiresAt)
+        Option.isNone(
+          (yield* client.complete("good-code", Option.none())).expiresAt
+        )
       );
     }).pipe(Effect.scoped)
   );
@@ -148,7 +157,7 @@ describe("signing in to Meta for ads", () => {
   it.live("connects a person who allowed reading only, without spending", () =>
     Effect.gen(function* readOnly() {
       const { client } = yield* metaAgainstFake({ permissions: ["ads_read"] });
-      const grant = yield* client.complete("good-code");
+      const grant = yield* client.complete("good-code", Option.none());
 
       assert.isFalse(client.maySpend(grant.scopes));
     }).pipe(Effect.scoped)
@@ -161,11 +170,11 @@ describe("signing in to Meta for ads", () => {
         const { client } = yield* metaAgainstFake({ permissions: [] });
 
         assert.deepStrictEqual(
-          yield* Effect.flip(client.complete("good-code")),
+          yield* Effect.flip(client.complete("good-code", Option.none())),
           new AdSignInFailed({ reason: "denied" })
         );
         assert.deepStrictEqual(
-          yield* Effect.flip(client.complete("stale-code")),
+          yield* Effect.flip(client.complete("stale-code", Option.none())),
           new AdSignInFailed({ reason: "failed" })
         );
       }).pipe(Effect.scoped)
@@ -180,7 +189,9 @@ describe("reading ad accounts", () => {
         pageSize: 1,
       });
 
-      const [euro, yen] = yield* client.accounts(token);
+      const [euro, yen] = yield* client
+        .accounts(token)
+        .pipe(Effect.map(({ accounts: listed }) => listed));
 
       assert.strictEqual(euro?.externalId, "1001");
       assert.strictEqual(euro?.currency, "EUR");
@@ -208,7 +219,7 @@ describe("reading ad accounts", () => {
           ],
         });
 
-        const facts = yield* client.account(token, account);
+        const facts = yield* client.account(token, account, Option.none());
 
         assert.strictEqual(facts.status, "disabled");
         assert.isTrue(Option.isNone(facts.timeZone));
@@ -221,7 +232,11 @@ describe("reading ad accounts", () => {
 
       api.script({ answer: marketingError(190, 463, 401), when: () => true });
       assert.strictEqual(
-        (yield* Effect.flip(client.accounts(token)))._tag,
+        (yield* Effect.flip(
+          client
+            .accounts(token)
+            .pipe(Effect.map(({ accounts: listed }) => listed))
+        ))._tag,
         "TokenRejected"
       );
 
@@ -235,7 +250,11 @@ describe("reading ad accounts", () => {
         when: () => true,
       });
 
-      const limited = yield* Effect.flip(client.accounts(token));
+      const limited = yield* Effect.flip(
+        client
+          .accounts(token)
+          .pipe(Effect.map(({ accounts: listed }) => listed))
+      );
 
       assert.strictEqual(limited._tag, "RateLimited");
       assert.deepStrictEqual(
@@ -245,7 +264,11 @@ describe("reading ad accounts", () => {
 
       api.script({ answer: dropped, when: () => true });
       assert.strictEqual(
-        (yield* Effect.flip(client.accounts(token)))._tag,
+        (yield* Effect.flip(
+          client
+            .accounts(token)
+            .pipe(Effect.map(({ accounts: listed }) => listed))
+        ))._tag,
         "PlatformUnavailable"
       );
 
@@ -254,7 +277,11 @@ describe("reading ad accounts", () => {
         when: () => true,
       });
 
-      const refused = yield* Effect.flip(client.accounts(token));
+      const refused = yield* Effect.flip(
+        client
+          .accounts(token)
+          .pipe(Effect.map(({ accounts: listed }) => listed))
+      );
 
       assert.strictEqual(refused._tag, "AdNetworkRefused");
       assert.strictEqual(

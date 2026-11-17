@@ -15,6 +15,7 @@ import {
   ConversationRowView,
   DirectMessageView,
   MessageBoxView,
+  ReplyWindowView,
 } from "#components/inbox/message-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
@@ -165,5 +166,114 @@ describe("the direct messages' views", () => {
 
     expect(html).toContain("Allow, on Bluesky");
     expect(html).not.toContain("Read its messages");
+  });
+
+  it("say until when Messenger and Instagram take an answer, and why the box is gone once they do not", async () => {
+    const open = await render(
+      "en",
+      <ReplyWindowView
+        window={{
+          closesAt: at("2026-11-15T08:59:00Z"),
+          open: true,
+          personClosesAt: null,
+        }}
+      />
+    );
+
+    const shut = await render(
+      "fr",
+      <ReplyWindowView
+        window={{
+          closesAt: at("2026-11-15T08:59:00Z"),
+          open: false,
+          personClosesAt: null,
+        }}
+      />
+    );
+
+    const first = await render(
+      "en",
+      <ReplyWindowView
+        window={{ closesAt: null, open: false, personClosesAt: null }}
+      />
+    );
+
+    expect(open).toContain("You can answer until Nov 15, 2026, 8:59");
+    expect(shut).toContain("24 heures");
+    expect(first).toContain("never writes first");
+  });
+
+  it("say until when a person may answer by hand past the 24 hours, with Meta's Human Agent tag", async () => {
+    const window = {
+      closesAt: at("2026-11-15T08:59:00Z"),
+      personClosesAt: at("2026-11-21T08:59:00Z"),
+    };
+
+    const within = await render(
+      "en",
+      <ReplyWindowView personOpen window={{ ...window, open: true }} />
+    );
+
+    const byHand = await render(
+      "en",
+      <ReplyWindowView personOpen window={{ ...window, open: false }} />
+    );
+
+    const byHandFr = await render(
+      "fr",
+      <ReplyWindowView personOpen window={{ ...window, open: false }} />
+    );
+
+    expect(within).toContain("You can answer until Nov 15, 2026, 8:59");
+    expect(within).toContain("yourself until Nov 21, 2026, 8:59");
+    expect(byHand).toContain(
+      "you can still answer yourself until Nov 21, 2026, 8:59"
+    );
+    expect(byHand).toContain("Human Agent");
+    expect(byHandFr).toContain("7 jours");
+  });
+
+  it("say when the time a person may answer by hand ended", async () => {
+    const ended = await render(
+      "en",
+      <ReplyWindowView
+        personOpen={false}
+        window={{
+          closesAt: at("2026-11-15T08:59:00Z"),
+          open: false,
+          personClosesAt: at("2026-11-21T08:59:00Z"),
+        }}
+      />
+    );
+
+    expect(ended).toContain("7 days");
+    expect(ended).toContain("ended Nov 21, 2026, 8:59");
+  });
+
+  it("offer to allow Meta's direct messages, and say who may write before Meta's review", async () => {
+    const page = await render(
+      "en",
+      <ChannelMessagesView
+        channel={{ ...channel, platform: "facebook" }}
+        disabled={false}
+        on={false}
+        onGrant={constVoid}
+        onSwitch={constVoid}
+      />
+    );
+
+    const instagram = await render(
+      "fr",
+      <ChannelMessagesView
+        channel={{ ...channel, platform: "instagram" }}
+        disabled={false}
+        on={false}
+        onSwitch={constVoid}
+      />
+    );
+
+    expect(page).toContain("Allow, on Facebook");
+    expect(page).toContain("App Review");
+    expect(instagram).toContain("Outils connectés");
   });
 });

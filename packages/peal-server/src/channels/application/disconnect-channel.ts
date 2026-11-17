@@ -8,6 +8,7 @@ import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 
 import type { ChannelCredentials } from "./channel-credentials.ts";
+import { ChannelDepartures } from "./channel-departures.ts";
 import { ChannelEvents } from "./channel-events.ts";
 import { ChannelNotFound } from "./channel-not-found.ts";
 import { ChannelRepository } from "./channel-repository.ts";
@@ -16,6 +17,13 @@ import { PlatformAuthorizers } from "./platform-authorizer.ts";
 import { TokenCipher } from "./token-cipher.ts";
 
 const decodeChannelId = Schema.decodeUnknownOption(ChannelIdSchema);
+
+// A platform that did not revoke a disconnected channel's tokens.
+const notRevoked = (cause: { readonly _tag: string }) =>
+  Effect.logWarning(
+    "The platform did not revoke a disconnected channel's tokens",
+    cause
+  );
 
 // The longest a disconnect waits on the platform to forget Peal's grant.
 const revokeTimeout = Duration.seconds(10);
@@ -30,7 +38,9 @@ const revokeTimeout = Duration.seconds(10);
  * revoke the tokens, unless another channel, in any workspace, still
  * connects the same account: they share its grant. Revoking is a courtesy
  * to the account's owner: it waits 10 seconds at most, a failure is logged,
- * and the channel stays disconnected.
+ * and the channel stays disconnected. Before that, what the channel set up
+ * on its platform for Peal is undone with the tokens it held
+ * (ChannelDepartures: Meta's message events), best effort too.
  */
 export class DisconnectChannel extends Context.Service<
   DisconnectChannel,
@@ -51,6 +61,7 @@ export class DisconnectChannel extends Context.Service<
       const authorizers = yield* PlatformAuthorizers;
       const cipher = yield* TokenCipher;
       const events = yield* ChannelEvents;
+      const departures = yield* ChannelDepartures;
 
       // Deletes the channel and tells of it in one transaction, the
       // workspace's additions': both happen, or neither.
@@ -117,19 +128,38 @@ export class DisconnectChannel extends Context.Service<
             return yield* Effect.void;
           }
 
-          return yield* revoke(channel.value, credentials.value).pipe(
-            Effect.timeout(revokeTimeout),
-            Effect.catch((error) =>
-              Effect.logWarning(
-                "The platform did not revoke a disconnected channel's tokens",
-                error
-              )
+          // What the channel set up on its platform is undone while the
+          // platform revokes its tokens, side by side, so the member waits
+          // ten seconds at most. Neither fails: what is left is the
+          // platform's to forget.
+          const departing = decryptTokens(
+            credentials.value,
+            channel.value.id
+          ).pipe(
+            Effect.provideService(TokenCipher, cipher),
+            Effect.flatMap((tokens) =>
+              departures.departed(channel.value, tokens)
             ),
+            Effect.catch(() =>
+              Effect.logWarning(
+                "Could not read a disconnected channel's tokens"
+              ).pipe(Effect.annotateLogs({ channelId: channel.value.id }))
+            )
+          );
+
+          const revoked = revoke(channel.value, credentials.value).pipe(
+            Effect.timeout(revokeTimeout),
+            Effect.catch(notRevoked),
             Effect.annotateLogs({
               channelId: channel.value.id,
               platform: channel.value.platform,
             })
           );
+
+          return yield* Effect.all([departing, revoked], {
+            concurrency: 2,
+            discard: true,
+          });
         }
       );
 

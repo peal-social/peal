@@ -23,16 +23,19 @@ public class UpdateCommentRuleTest : BaseMockServerTest
                 {
                   "channelId": "channelId",
                   "platform": "x",
+                  "privateReply": "available",
                   "reply": "available"
                 },
                 {
                   "channelId": "channelId",
                   "platform": "x",
+                  "privateReply": "available",
                   "reply": "available"
                 }
               ],
               "createdAt": "createdAt",
               "endedReason": "stopped",
+              "holdsPrivateReply": true,
               "id": "id",
               "keywords": [
                 "keywords",
@@ -44,6 +47,9 @@ public class UpdateCommentRuleTest : BaseMockServerTest
                   "commentId": "commentId",
                   "lookedAt": "lookedAt",
                   "outcome": "claimed",
+                  "privateCode": "privateCode",
+                  "privateReplyId": "privateReplyId",
+                  "privateStatus": "sending",
                   "replyId": "replyId"
                 },
                 {
@@ -51,10 +57,14 @@ public class UpdateCommentRuleTest : BaseMockServerTest
                   "commentId": "commentId",
                   "lookedAt": "lookedAt",
                   "outcome": "claimed",
+                  "privateCode": "privateCode",
+                  "privateReplyId": "privateReplyId",
+                  "privateStatus": "sending",
                   "replyId": "replyId"
                 }
               ],
               "postId": "postId",
+              "privateReply": "privateReply",
               "reply": "reply",
               "startedBy": "startedBy",
               "status": "active"
@@ -84,6 +94,7 @@ public class UpdateCommentRuleTest : BaseMockServerTest
                 RuleId = "ruleId",
                 Keywords = null,
                 Paused = null,
+                PrivateReply = null,
                 Reply = null,
             }
         );
@@ -104,11 +115,13 @@ public class UpdateCommentRuleTest : BaseMockServerTest
                 {
                   "channelId": "channelId",
                   "platform": "x",
+                  "privateReply": "available",
                   "reply": "available"
                 }
               ],
               "createdAt": "createdAt",
               "endedReason": "stopped",
+              "holdsPrivateReply": true,
               "id": "id",
               "keywords": [
                 "keywords"
@@ -119,10 +132,14 @@ public class UpdateCommentRuleTest : BaseMockServerTest
                   "commentId": "commentId",
                   "lookedAt": "lookedAt",
                   "outcome": "claimed",
+                  "privateCode": "privateCode",
+                  "privateReplyId": "privateReplyId",
+                  "privateStatus": "sending",
                   "replyId": "replyId"
                 }
               ],
               "postId": "postId",
+              "privateReply": "privateReply",
               "reply": "reply",
               "startedBy": "startedBy",
               "status": "active"

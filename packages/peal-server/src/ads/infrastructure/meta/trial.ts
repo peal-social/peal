@@ -442,11 +442,16 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
         .pipe(Effect.map((id) => ({ id, name: object.name })));
 
     return {
-      accounts: () => client.accounts(token),
+      accounts: () =>
+        client
+          .accounts(token)
+          .pipe(Effect.map(({ accounts: listed }) => listed)),
 
       account: (id: string) =>
         objectIdOf(id, "The ad account").pipe(
-          Effect.flatMap((accountId) => client.account(token, accountId))
+          Effect.flatMap((accountId) =>
+            client.account(token, accountId, Option.none())
+          )
         ),
 
       /** The account's objects and the days of `days` up to today. */
@@ -460,13 +465,14 @@ export const makeTrial = Effect.fn("MetaAds.trial")(
         );
 
         const externalId = yield* objectIdOf(id, "The ad account");
-        const facts = yield* client.account(token, externalId);
+        const facts = yield* client.account(token, externalId, Option.none());
         const timeZone = Option.getOrElse(facts.timeZone, () => utc);
         const until = localDateOf(yield* DateTime.now, timeZone);
 
         return yield* client.snapshot(token, {
           currency: facts.currency,
           externalId,
+          reachedThrough: Option.none(),
           since: addDays(until, 1 - Math.max(1, days)),
           timeZone,
           until,

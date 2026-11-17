@@ -6,11 +6,11 @@ sidebar:
   label: "Mises en avant"
 ---
 
-## Événements des mises en avant [#boost-events]
+## Ce que porte chaque événement de mise en avant [#boost-events]
 
-Une [mise en avant](/guides/engage/boosts#boosts) diffuse une publication parue comme publicité, sur une instance où les [publicités](/guides/engage/ads) sont activées. Ses huit événements portent le même `data` : des identifiants, des montants et l’état de la mise en avant.
+Une [mise en avant](/guides/engage/boosts#boosts) diffuse une publication parue comme publicité, sur une instance où les [publicités](/guides/engage/ads) sont activées. Les huit événements des mises en avant portent le même `data` : des identifiants, des montants et l’état de la mise en avant.
 
-Ils ne portent jamais l’audience de la mise en avant, ni qui bénéficie de la publicité ou la paie : lisez la mise en avant par l’API pour cela, avec `GET /api/workspaces/{workspaceId}/ads/boosts/{boostId}`.
+Ils ne disent jamais à qui la mise en avant est montrée, ni qui bénéficie de la publicité ou la paie. Pour cela, lisez la mise en avant par l’API, avec `GET /api/workspaces/{workspaceId}/ads/boosts/{boostId}`.
 
 | Champ         | Type           | Ce qu’il contient                                                                                                                                                                         |
 | ------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -18,18 +18,18 @@ Ils ne portent jamais l’audience de la mise en avant, ni qui bénéficie de la
 | `postId`      | chaîne         | La publication mise en avant                                                                                                                                                              |
 | `boostId`     | chaîne         | La mise en avant                                                                                                                                                                          |
 | `adAccountId` | chaîne         | Le compte publicitaire qui la paie                                                                                                                                                        |
-| `budget`      | objet          | Son budget : `amount`, un entier en [unités mineures](/guides/engage/boosts#money) du compte publicitaire, et `kind`, `total` pour toute la diffusion ou `daily` pour chacun de ses jours |
-| `committed`   | entier         | Ce qu’elle peut coûter au plus, en unités mineures : ce qui est compté dans le [plafond mensuel](/guides/engage/boosts#ceiling) du compte                                                 |
+| `budget`      | objet          | Son budget : `amount`, un entier en [unités mineures](/guides/engage/boosts#money) du compte publicitaire, et `kind`, `total` pour toute la diffusion ou `daily` pour chacun de ses jours |
+| `committed`   | entier         | Ce qu’elle peut coûter au plus, en unités mineures : ce qui est compté dans le [plafond mensuel](/guides/engage/boosts#ceiling) du compte                                                 |
 | `currency`    | chaîne         | La devise du compte publicitaire, en code ISO 4217, comme `EUR`                                                                                                                           |
 | `endsAt`      | chaîne         | La fin de sa diffusion, sous forme d’instant en UTC                                                                                                                                       |
 | `state`       | chaîne         | L’état de la mise en avant, l’un des [états](/guides/engage/boosts#states)                                                                                                                |
-| `reason`      | chaîne ou null | Pourquoi elle a échoué, l’une des [raisons d’échec](/guides/engage/boosts#failure-reasons) ; null sauf si `state` vaut `failed`                                                           |
+| `reason`      | chaîne ou null | Pourquoi elle a échoué, l’une des [raisons d’échec](/guides/engage/boosts#failure-reasons). Null sauf si `state` vaut `failed`                                                            |
 
-Un montant est un entier, jamais un nombre décimal : `5000` en `EUR` vaut 50,00 €, et dans une devise sans unité mineure, comme `JPY`, 5 000 ¥. Le `minorUnitDigits` du compte publicitaire, dans l’API, dit lequel.
+Un montant est un entier, jamais un nombre décimal. `5000` en `EUR` vaut 50,00 €, mais dans une devise sans unité mineure, comme `JPY`, il vaut 5 000 ¥. Le `minorUnitDigits` du compte publicitaire, dans l’API, vous dit lequel.
 
 ## boost.started [#boost-started]
 
-La mise en avant a été créée sur le réseau publicitaire et activée : elle peut dépenser jusqu’à son budget, jusqu’à `endsAt`. Le réseau peut encore examiner la publicité avant de la diffuser.
+La mise en avant a été créée sur le réseau publicitaire et activée. Elle peut dépenser jusqu’à son budget, jusqu’à `endsAt`. Le réseau peut encore examiner la publicité avant de la diffuser.
 
 ```json title="boost.started"
 {
@@ -87,7 +87,7 @@ Un membre a mis la mise en avant en pause, et le réseau l’a confirmé. Son bu
 
 ## boost.resumed [#boost-resumed]
 
-Un membre a relancé une mise en avant en pause : elle peut de nouveau dépenser, jusqu’à `endsAt`.
+Un membre a relancé une mise en avant en pause. Elle peut de nouveau dépenser, jusqu’à `endsAt`.
 
 ```json title="boost.resumed"
 {
@@ -116,7 +116,7 @@ Un membre a relancé une mise en avant en pause : elle peut de nouveau dépenser
 
 ## boost.stopped [#boost-stopped]
 
-Un membre a arrêté la mise en avant pour de bon : elle ne reprend pas. `committed` est ramené à ce qu’elle a pu coûter : rien si elle n’a jamais été diffusée, les jours de diffusion pour un budget quotidien, tout son budget pour un budget total.
+Un membre a arrêté la mise en avant pour de bon, et elle ne reprendra pas. `committed` est ramené à ce qu’elle a pu coûter : rien si elle n’a jamais été diffusée, les jours de diffusion pour un budget quotidien, ou tout son budget pour un budget total.
 
 ```json title="boost.stopped"
 {
@@ -145,7 +145,7 @@ Un membre a arrêté la mise en avant pour de bon : elle ne reprend pas. `commit
 
 ## boost.ended [#boost-ended]
 
-La date de fin de la mise en avant est passée. Le réseau l’arrête de lui-même à cette heure ; Peal l’enregistre dans les dix minutes environ.
+La date de fin de la mise en avant est passée. Le réseau l’arrête de lui-même à cette heure, et Peal l’enregistre dans les dix minutes environ.
 
 ```json title="boost.ended"
 {
@@ -174,7 +174,7 @@ La date de fin de la mise en avant est passée. Le réseau l’arrête de lui-m�
 
 ## boost.failed [#boost-failed]
 
-La mise en avant n’a pas pu être créée : rien n’a été diffusé, et rien n’a été dépensé. `reason` dit pourquoi.
+La mise en avant n’a pas pu être créée : rien n’a été diffusé ni dépensé. `reason` dit pourquoi.
 
 ```json title="boost.failed"
 {
@@ -203,11 +203,14 @@ La mise en avant n’a pas pu être créée : rien n’a été diffusé, et rien
 
 ## boost.unconfirmed [#boost-unconfirmed]
 
-Peal a demandé au réseau de diffuser la mise en avant et n’a pas pu relire si elle l’est. Son budget reste compté, et Peal n’envoie plus rien de lui-même.
+Peal a demandé au réseau de diffuser la mise en avant, et n’a pas pu relire si elle l’est. Son budget reste compté, et Peal n’envoie plus rien de lui-même.
 
-<Callout type="warning" title="Elle dépense peut-être">
-  Quelqu’un vérifie la mise en avant, et
-  [l’arrête](/guides/engage/boosts#control) si elle ne doit pas être diffusée.
+<Callout
+  type="warning"
+  title="Une mise en avant non confirmée dépense peut-être"
+>
+  Quelqu’un doit vérifier la mise en avant, et
+  [l’arrêter](/guides/engage/boosts#control) si elle ne doit pas être diffusée.
 </Callout>
 
 ```json title="boost.unconfirmed"
@@ -237,7 +240,7 @@ Peal a demandé au réseau de diffuser la mise en avant et n’a pas pu relire s
 
 ## boost.budget_reached [#boost-budget-reached]
 
-Les publicités lues par Peal montrent que la mise en avant a dépensé tout son budget total : le réseau ne la diffuse plus. Il est envoyé une fois, pour un budget total seulement, après la lecture horaire qui l’a constaté ; la mise en avant reste `active` jusqu’à sa date de fin.
+Les chiffres publicitaires que lit Peal montrent que la mise en avant a dépensé tout son budget total, si bien que le réseau ne la diffuse plus. Peal l’envoie une fois, pour un budget total seulement, après la lecture horaire qui l’a constaté. La mise en avant reste `active` jusqu’à sa date de fin.
 
 ```json title="boost.budget_reached"
 {

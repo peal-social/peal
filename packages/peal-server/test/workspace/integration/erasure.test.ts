@@ -9,6 +9,10 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
+import { BillingAccounts } from "#billing/application/billing-accounts.ts";
+import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { accountsTest } from "#test/billing/support.ts";
+
 import {
   MigratedSqlLive,
   apiKeyOf,
@@ -85,6 +89,8 @@ const workspaceRows = {
     sql`SELECT count(*)::int AS count FROM ads.boosts WHERE workspace_id = ${id}`,
   "ads.campaigns": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM ads.campaigns WHERE workspace_id = ${id}`,
+  "ads.campaign_days": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM ads.campaign_days WHERE workspace_id = ${id}`,
   "ads.grants": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM ads.grants WHERE workspace_id = ${id}`,
   "ads.active_ad_months": (sql, id) =>
@@ -211,6 +217,8 @@ const workspaceRows = {
     sql`SELECT count(*)::int AS count FROM engagement.message_channels WHERE workspace_id = ${id}`,
   "engagement.outgoing_messages": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM engagement.outgoing_messages WHERE workspace_id = ${id}`,
+  "engagement.private_replies": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM engagement.private_replies WHERE workspace_id = ${id}`,
   "engagement.replies": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM engagement.replies WHERE workspace_id = ${id}`,
   "engagement.review_replies": (sql, id) =>
@@ -403,6 +411,8 @@ const userRows = {
     sql`SELECT count(*)::int AS count FROM engagement.message_channels WHERE enabled_by = ${id}`,
   "engagement.outgoing_messages": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM engagement.outgoing_messages WHERE author_id = ${id}`,
+  "engagement.private_replies": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM engagement.private_replies WHERE author_id = ${id}`,
   "engagement.replies": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM engagement.replies WHERE author_id = ${id}`,
   "engagement.review_replies": (sql, id) =>
@@ -773,19 +783,6 @@ const fill = Effect.fn("fill")(function* fill(
   yield* sql`INSERT INTO billing.contract_references (reference, stripe_subscription_id, workspace_id, issued_at)
     VALUES (${randomUUID()}, ${`sub_${randomUUID()}`}, ${workspaceId}, now())`;
 
-  // Its billing account, made with it, and an offer of it to the person
-  // (made up: an offer goes to another owner).
-  // Made where the workspace was made (Better Auth's workspaceCreated
-  // hook): a seed that finds no account fails here, not at the count.
-  const offered = yield* sql<{
-    readonly id: string;
-  }>`INSERT INTO billing.account_transfers (id, workspace_id, from_account_id, to_user_id, offered_by, offered_at, expires_at)
-    SELECT ${uuid7()}, ${workspaceId}, account_id, ${person.id}, ${person.id}, now(), now() + interval '7 days'
-    FROM billing.account_workspaces WHERE workspace_id = ${workspaceId}
-    RETURNING id`;
-
-  assert.lengthOf(offered, 1, "the workspace's billing account offered it");
-
   yield* sql`INSERT INTO media.media_assets (id, workspace_id, storage_key, content_type, byte_size, status, created_at, updated_at)
     VALUES (${randomUUID()}, ${workspaceId}, ${`media/${workspaceId}/${randomUUID()}.png`}, 'image/png', 128, 'pending', now(), now())`;
 
@@ -858,6 +855,10 @@ const fill = Effect.fn("fill")(function* fill(
 
   yield* sql`INSERT INTO engagement.outgoing_messages (id, conversation_id, workspace_id, channel_id, author_id, text, created_at, status, settled_at)
     VALUES (${uuid7()}, ${conversationId}, ${workspaceId}, ${messageChannelId}, ${person.id}, 'A synthetic answer', now(), 'sent', now())`;
+
+  // The private reply the person sent to the comment's author.
+  yield* sql`INSERT INTO engagement.private_replies (id, workspace_id, channel_id, comment_id, thread_id, text, author_id, created_at, status, settled_at)
+    VALUES (${uuid7()}, ${workspaceId}, ${uuid7()}, ${commentId}, ${threadId}, 'A synthetic private reply', ${person.id}, now(), 'sent', now())`;
   // A sign-in to an ad network, an ad account it connects that an owner
   // allowed to spend, what was read of it, a boost that was stopped with
   // its journal, and the audit trail's line of it.
@@ -888,6 +889,9 @@ const fill = Effect.fn("fill")(function* fill(
 
   yield* sql`INSERT INTO ads.insight_days (account_id, workspace_id, ad_external_id, day, spend, impressions, reach, clicks)
     VALUES (${adAccountId}, ${workspaceId}, '4001', current_date, 1250, 1000, 800, 12)`;
+
+  yield* sql`INSERT INTO ads.campaign_days (account_id, workspace_id, campaign_external_id, day, spend_micros, impressions, clicks)
+    VALUES (${adAccountId}, ${workspaceId}, '2001', current_date, 9900000, 400, 7)`;
 
   yield* sql`INSERT INTO ads.boosts (id, workspace_id, account_id, account_network, account_external_id, channel_id, post_id, target_id, platform, objective, audience, budget_kind, budget_amount, committed, currency, starts_at, ends_at, state, state_at, idempotency_key, requested_by_kind, requested_by_id, created_at, updated_at)
     VALUES (${boostId}, ${workspaceId}, ${adAccountId}, 'meta', '1001', ${uuid7()}, ${uuid7()}, ${uuid7()}, 'facebook', 'engagement', ${JSON.stringify({ ageMax: 65, ageMin: 18, countries: ["US"] })}::jsonb, 'total', 5000, 5000, 'EUR', now() - interval '2 days', now() + interval '5 days', 'stopped', now(), ${uuid7()}, 'user', ${person.id}, now(), now())`;
@@ -949,6 +953,25 @@ const fill = Effect.fn("fill")(function* fill(
 
   yield* sql`INSERT INTO workspace.partner_usage_days (partner_id, day, workspaces, channels)
     VALUES (${partnerId}, '2026-11-09', 0, 1)`;
+
+  // Its billing account, and an offer of it to the person (made up: an
+  // offer goes to another owner). A partner's home is on the partner's
+  // account, which any read of the account applies (another file's server
+  // that bills reads every account when it starts), and a workspace that
+  // leaves an account loses its offers: the rule is applied here first, so
+  // the offer stays whoever reads the account next. The account was made
+  // where the workspace was (Better Auth's workspaceCreated hook): a seed
+  // that finds none fails here, not at the count.
+  yield* (yield* BillingAccounts).of(WorkspaceIdSchema.make(workspaceId));
+
+  const offered = yield* sql<{
+    readonly id: string;
+  }>`INSERT INTO billing.account_transfers (id, workspace_id, from_account_id, to_user_id, offered_by, offered_at, expires_at)
+    SELECT ${uuid7()}, ${workspaceId}, account_id, ${person.id}, ${person.id}, now(), now() + interval '7 days'
+    FROM billing.account_workspaces WHERE workspace_id = ${workspaceId}
+    RETURNING id`;
+
+  assert.lengthOf(offered, 1, "the workspace's billing account offered it");
 
   yield* sql`INSERT INTO channels.connect_attempts (state_hash, workspace_id, started_by, platform, secret, created_at, expires_at)
     VALUES (${randomUUID().replaceAll("-", "")}, ${workspaceId}, ${`user:${person.id}`}, 'mastodon', 'synthetic.iv.ciphertext', now(), now() + interval '15 minutes')`;
@@ -1048,6 +1071,7 @@ const none = (rows: Readonly<Record<string, Count>>) =>
 // records are covered too.
 const RetainingLive = Layer.mergeAll(
   TestApp.layerWith({ PEAL_LEGAL_RETENTION: "true" }),
+  accountsTest,
   MigratedSqlLive
 );
 
@@ -1097,6 +1121,14 @@ layer(RetainingLive, {
         yield* fill(shared, ana);
         yield* fill(own, ana);
         yield* fillPerson(ana);
+
+        // Another server that reads the workspaces' billing accounts
+        // meanwhile, as one that bills reads every account when it starts
+        // (`GraceWarningLive`), gives each the account its partner rule
+        // says, and leaves every row counted below in place.
+        yield* (yield* BillingAccounts).accountsIn(
+          [own, shared].map((id) => WorkspaceIdSchema.make(id))
+        );
 
         // A session staff opened to act as Ben, as the admin plugin does.
         yield* sql`INSERT INTO auth.session (token, user_id, impersonated_by, expires_at, created_at, updated_at)

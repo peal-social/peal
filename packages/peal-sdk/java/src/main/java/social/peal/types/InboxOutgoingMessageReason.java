@@ -7,6 +7,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class InboxOutgoingMessageReason {
+    public static final InboxOutgoingMessageReason TAG_RESTRICTED =
+            new InboxOutgoingMessageReason(Value.TAG_RESTRICTED, "tagRestricted");
+
+    public static final InboxOutgoingMessageReason WINDOW_CLOSED =
+            new InboxOutgoingMessageReason(Value.WINDOW_CLOSED, "windowClosed");
+
+    public static final InboxOutgoingMessageReason ADAPTER_FAILURE =
+            new InboxOutgoingMessageReason(Value.ADAPTER_FAILURE, "adapterFailure");
+
+    public static final InboxOutgoingMessageReason PLATFORM_UNAVAILABLE =
+            new InboxOutgoingMessageReason(Value.PLATFORM_UNAVAILABLE, "platformUnavailable");
+
     public static final InboxOutgoingMessageReason RECONNECT_NEEDED =
             new InboxOutgoingMessageReason(Value.RECONNECT_NEEDED, "reconnectNeeded");
 
@@ -15,8 +27,8 @@ public final class InboxOutgoingMessageReason {
 
     public static final InboxOutgoingMessageReason NOT_SENT = new InboxOutgoingMessageReason(Value.NOT_SENT, "notSent");
 
-    public static final InboxOutgoingMessageReason ADAPTER_FAILURE =
-            new InboxOutgoingMessageReason(Value.ADAPTER_FAILURE, "adapterFailure");
+    public static final InboxOutgoingMessageReason HUMAN_AGENT_NOT_GRANTED =
+            new InboxOutgoingMessageReason(Value.HUMAN_AGENT_NOT_GRANTED, "humanAgentNotGranted");
 
     public static final InboxOutgoingMessageReason CHANNEL_UNAVAILABLE =
             new InboxOutgoingMessageReason(Value.CHANNEL_UNAVAILABLE, "channelUnavailable");
@@ -25,9 +37,6 @@ public final class InboxOutgoingMessageReason {
 
     public static final InboxOutgoingMessageReason NO_RESPONSE =
             new InboxOutgoingMessageReason(Value.NO_RESPONSE, "noResponse");
-
-    public static final InboxOutgoingMessageReason PLATFORM_UNAVAILABLE =
-            new InboxOutgoingMessageReason(Value.PLATFORM_UNAVAILABLE, "platformUnavailable");
 
     public static final InboxOutgoingMessageReason RATE_LIMITED =
             new InboxOutgoingMessageReason(Value.RATE_LIMITED, "rateLimited");
@@ -68,22 +77,28 @@ public final class InboxOutgoingMessageReason {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case TAG_RESTRICTED:
+                return visitor.visitTagRestricted();
+            case WINDOW_CLOSED:
+                return visitor.visitWindowClosed();
+            case ADAPTER_FAILURE:
+                return visitor.visitAdapterFailure();
+            case PLATFORM_UNAVAILABLE:
+                return visitor.visitPlatformUnavailable();
             case RECONNECT_NEEDED:
                 return visitor.visitReconnectNeeded();
             case CONVERSATION_GONE:
                 return visitor.visitConversationGone();
             case NOT_SENT:
                 return visitor.visitNotSent();
-            case ADAPTER_FAILURE:
-                return visitor.visitAdapterFailure();
+            case HUMAN_AGENT_NOT_GRANTED:
+                return visitor.visitHumanAgentNotGranted();
             case CHANNEL_UNAVAILABLE:
                 return visitor.visitChannelUnavailable();
             case REFUSED:
                 return visitor.visitRefused();
             case NO_RESPONSE:
                 return visitor.visitNoResponse();
-            case PLATFORM_UNAVAILABLE:
-                return visitor.visitPlatformUnavailable();
             case RATE_LIMITED:
                 return visitor.visitRateLimited();
             case INTERRUPTED:
@@ -97,22 +112,28 @@ public final class InboxOutgoingMessageReason {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static InboxOutgoingMessageReason valueOf(String value) {
         switch (value) {
+            case "tagRestricted":
+                return TAG_RESTRICTED;
+            case "windowClosed":
+                return WINDOW_CLOSED;
+            case "adapterFailure":
+                return ADAPTER_FAILURE;
+            case "platformUnavailable":
+                return PLATFORM_UNAVAILABLE;
             case "reconnectNeeded":
                 return RECONNECT_NEEDED;
             case "conversationGone":
                 return CONVERSATION_GONE;
             case "notSent":
                 return NOT_SENT;
-            case "adapterFailure":
-                return ADAPTER_FAILURE;
+            case "humanAgentNotGranted":
+                return HUMAN_AGENT_NOT_GRANTED;
             case "channelUnavailable":
                 return CHANNEL_UNAVAILABLE;
             case "refused":
                 return REFUSED;
             case "noResponse":
                 return NO_RESPONSE;
-            case "platformUnavailable":
-                return PLATFORM_UNAVAILABLE;
             case "rateLimited":
                 return RATE_LIMITED;
             case "interrupted":
@@ -143,6 +164,12 @@ public final class InboxOutgoingMessageReason {
 
         ADAPTER_FAILURE,
 
+        WINDOW_CLOSED,
+
+        HUMAN_AGENT_NOT_GRANTED,
+
+        TAG_RESTRICTED,
+
         UNKNOWN
     }
 
@@ -166,6 +193,12 @@ public final class InboxOutgoingMessageReason {
         T visitInterrupted();
 
         T visitAdapterFailure();
+
+        T visitWindowClosed();
+
+        T visitHumanAgentNotGranted();
+
+        T visitTagRestricted();
 
         T visitUnknown(String unknownType);
     }

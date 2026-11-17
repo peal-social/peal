@@ -5,9 +5,11 @@ sidebar:
   icon: /platform-marks/x.svg
 ---
 
-Comment connecter un compte X, ce qu’une publication peut y contenir, et les options qu’elle prend.
+Sur Peal Cloud, chaque publication que vous envoyez sur X est facturée aux tarifs de X ([voir plus bas](#billing)). Un serveur que vous hébergez ne facture rien pour X.
 
 ## En bref [#at-a-glance]
+
+Voici ce qu’une publication X peut contenir :
 
 |                  |                           |
 | ---------------- | ------------------------- |
@@ -19,59 +21,65 @@ Comment connecter un compte X, ce qu’une publication peut y contenir, et les o
 
 Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms).
 
-## Connecter [#connect]
+## Connecter un compte [#connect]
 
-Sous **X**, choisissez **Connecter X**, connectez-vous sur X et autorisez Peal. Il demande à :
+Sous **X**, cliquez sur **Connecter X**, connectez-vous sur X et autorisez Peal. Il demande à :
 
-- lire et écrire des publications ;
-- envoyer des médias ;
-- rester connecté, pour renouveler son accès sans vous.
+- Lire et écrire des publications.
+- Envoyer des médias.
+- Rester connecté, pour renouveler son accès sans vous.
 
 **Canaux** propose X une fois le serveur Peal configuré pour lui (voir [Sur votre propre serveur](#self-hosting)).
 
 ### Comment X compte la longueur [#length]
 
-X compte la longueur d’une publication à sa façon, et Peal compte de même, si bien qu’une publication qu’il accepte tient sur X (voyez [Longueur sur chaque canal](/guides/posts#write)) :
+X compte la longueur d’une publication à sa façon, et Peal compte de la même façon. Une publication que Peal accepte tient donc sur X (voyez [Longueur sur chaque canal](/guides/posts#write)). Deux choses comptent autrement que vous ne le pensez peut-être :
 
-- Un lien compte 23 caractères quelle que soit sa longueur, écrit avec `https://` ou sans, comme `peal.social` (un domaine que X connaît, donc pas `localhost`).
+- Un lien compte 23 caractères quelle que soit sa longueur, avec ou sans `https://`, comme `peal.social`. Il doit s’agir d’un domaine que X connaît, si bien que `localhost` ne compte pas comme un lien.
 - Un emoji, ou un caractère hors des alphabets latin, grec et cyrillique, compte 2.
 
 ## Options [#options]
 
-Aucune option n’est obligatoire, et chacune n’est envoyée que si vous la choisissez. **Nom dans l’API** est le nom de l’option par l’API. **Parties** dit à quoi elle s’applique dans un [fil](/guides/posts#threads).
+Aucune option n’est obligatoire, et Peal n’envoie chacune que si vous la réglez. **Nom dans l’API** est le nom de l’option dans l’API. **Parties** dit à quoi l’option s’applique dans un [fil](/guides/posts#threads).
 
 | Option                              | Nom dans l’API       | Valeurs                                                  | Si omise              | Parties                                    |
 | ----------------------------------- | -------------------- | -------------------------------------------------------- | --------------------- | ------------------------------------------ |
 | **Qui peut répondre**               | `replySettings`      | `following`, `mentionedUsers`, `subscribers`, `verified` | Tout le monde         | La première partie                         |
 | **Communauté**                      | `communityId`        | Le numéro de la communauté, des chiffres seulement       | Les abonnés du compte | La première partie                         |
-| **Partager aussi avec les abonnés** | `shareWithFollowers` | Oui ou non ; seulement avec une communauté               | Non                   | La première partie                         |
+| **Partager aussi avec les abonnés** | `shareWithFollowers` | Oui ou non, seulement avec une communauté                | Non                   | La première partie                         |
 | **Partenariat rémunéré**            | `paidPartnership`    | Oui ou non                                               | Non                   | Chaque partie                              |
 | **Fait avec l’IA**                  | `madeWithAi`         | Oui ou non                                               | Non                   | Chaque partie avec des images ou une vidéo |
 
-X ne documente pas quels comptes peuvent utiliser chacune d’elles. Quand X refuse une publication qui en porte :
+### Quand X refuse une option [#option-refused]
+
+X ne documente pas quels comptes peuvent utiliser chacune de ces options. Quand X refuse une publication qui en porte, ce que vous voyez dépend de la réponse de X :
 
 | Réponse de X                                               | Le canal indique                                                                                                                       | Que faire                           |
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | Elle nomme l’une des options (le champ, ou la communauté)  | **Échec**, avec le code `optionRefused`                                                                                                | Changez les options et republiez-la |
 | Elle la refuse pour autre chose, comme un compte restreint | Le type de problème de X lui-même, comme pour une publication sans options (`client-forbidden`, ou `http403` quand X n’en nomme aucun) | Changer les options n’y fera rien   |
 
-Avec `optionRefused`, Peal ne renvoie pas la publication. Le message de X n’est pas gardé : le canal ne dit donc pas quelle option X a refusée.
+Avec `optionRefused`, Peal ne renvoie pas la publication. Peal ne garde pas le message de X, si bien que le canal ne peut pas vous dire quelle option X a refusée.
 
 ## Commentaires [#comments]
 
 Peal ne lit pas encore les commentaires sur X.
 
-## Sur Peal Cloud : facturé aux tarifs de X [#billing]
+## Sur Peal Cloud : facturé aux tarifs de X [#billing]
 
-X facture chaque appel à son API, et sur Peal Cloud Peal le refacture aux tarifs publiés par X, sans rien ajouter ([X, aux tarifs de X](/guides/workspace/billing#x)). Ainsi :
+X facture chaque appel à son API. Sur Peal Cloud, Peal vous refacture ce coût aux tarifs publiés par X, sans rien ajouter ([X, aux tarifs de X](/guides/workspace/billing#x)). Voici ce que cela change pour un espace de travail :
 
-- un compte X ne se connecte qu’une fois que le compte de facturation a un moyen de paiement au tarif par compte ;
-- chaque publication envoyée sur X, chaque partie d’un fil, est facturée au tarif de X pour une publication ({{x-post-fr}}), ou pour une publication avec un lien ({{x-post-link-fr}}) ;
-- les chiffres et les abonnés de X ne sont lus qu’une fois qu’un membre qui gère la facturation active la lecture de X pour l’espace de travail, sur la page de facturation, chaque lecture facturée au tarif de X, une fois par jour UTC ;
-- le plafond mensuel du compte de facturation pour X borne le tout : un fil sans place pour toutes ses parties n’est pas envoyé du tout, et l’éditeur le dit avant ; la place peut encore être prise entre ses parties (une autre publication ou un autre canal X du compte, les lectures de X), et le fil est alors coupé là.
+- Un compte X ne se connecte qu’une fois que le compte de facturation a un moyen de paiement et est au tarif par compte.
+- Chaque publication envoyée sur X est facturée au tarif de X pour une publication ({{x-post-fr}}), ou pour une publication avec un lien ({{x-post-link-fr}}). Chaque partie d’un fil compte comme une publication.
+- Les chiffres et les abonnés de X ne sont lus qu’une fois qu’un membre qui gère la facturation active la lecture de X pour l’espace de travail, sur la page de facturation. Chaque lecture est facturée au tarif de X, une fois par jour UTC.
+- Le plafond mensuel du compte de facturation pour X couvre le tout.
 
-Une publication refusée pour la facturation échoue sans être envoyée (`paymentMethodRequired`, `paymentFailed`, `perAccountPricingRequired`, `xCeilingReached`), et un fil coupé en route dit où (`xThreadCut`). Un serveur que vous hébergez ne facture rien pour X.
+Quand un fil n’a pas la place, sous le plafond, pour toutes ses parties, Peal ne l’envoie pas du tout, et l’éditeur vous le dit avant que vous le programmiez. La place peut encore manquer entre ses parties, si une autre publication ou un autre canal X du même compte, ou les lectures de X, la prennent avant. Le fil est alors coupé à cet endroit.
+
+Une publication refusée pour la facturation échoue sans être envoyée, avec le code `paymentMethodRequired`, `paymentFailed`, `perAccountPricingRequired` ou `xCeilingReached`. Un fil coupé en route dit où, avec `xThreadCut`.
+
+Un serveur que vous hébergez ne facture rien pour X.
 
 ## Sur votre propre serveur [#self-hosting]
 
-Un serveur auto-hébergé propose X une fois son application enregistrée : voir [X](/self-hosting/platforms#x). D’ici là, **Canaux** ne le propose pas.
+Un serveur auto-hébergé propose X une fois son application enregistrée : voyez [X](/self-hosting/platforms#x). D’ici là, **Canaux** ne le propose pas.

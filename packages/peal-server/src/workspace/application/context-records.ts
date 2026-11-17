@@ -27,6 +27,7 @@ import type {
   ReviewRecord,
   SentReplyRecord,
   SentMessageRecord,
+  SentPrivateReplyRecord,
   SentReviewReplyRecord,
   SavedItemsRecord,
   ShortLinkRecord,
@@ -116,6 +117,11 @@ export interface UserContent {
   readonly notices: readonly NoticeRecord[];
   readonly preferences: PreferencesRecord;
   /**
+   * The private replies they sent from Peal to the authors of comments,
+   * while Peal keeps them; never the comments, which other people wrote.
+   */
+  readonly privateReplies: readonly SentPrivateReplyRecord[];
+  /**
    * The replies they sent from Peal to comments under posts, in any
    * workspace; never the comments, which other people wrote.
    */
@@ -159,7 +165,9 @@ export class ContextRecords extends Context.Service<
      * every subscription that would be cancelled), and while Stripe cannot
      * be reached; then their open checkouts are expired at Stripe and, when
      * `options` says to, the subscriptions that may still bill them
-     * cancelled. Says how many were cancelled.
+     * cancelled; and what their channels set up on their platforms for
+     * Peal let go, best effort (Meta's message events). Says how many were
+     * cancelled.
      */
     readonly settleWorkspaces: (
       workspaceIds: readonly WorkspaceId[],

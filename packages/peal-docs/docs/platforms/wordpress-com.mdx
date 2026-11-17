@@ -5,9 +5,11 @@ sidebar:
   icon: newspaper
 ---
 
-How to connect a site on WordPress.com, or a Jetpack site you reach there, and what an article there may hold. A site takes [articles](/guides/channels/websites), not posts, as a WordPress site of your own does.
+You can connect a site hosted on WordPress.com, or a Jetpack site you reach there. Like a WordPress site of your own, it takes [articles](/guides/channels/websites) rather than posts.
 
 ## At a glance [#at-a-glance]
+
+Here's what an article on WordPress.com can hold, and what Peal can do with it:
 
 |             |                                                      |
 | ----------- | ---------------------------------------------------- |
@@ -17,22 +19,33 @@ How to connect a site on WordPress.com, or a Jetpack site you reach there, and w
 | On the site | Published at once, a draft there, or scheduled there |
 | Unpublish   | Moves the post to the site's trash                   |
 
-## Connect [#connect]
+## Connect a site [#connect]
 
-In **Channels**, under **WordPress.com**, choose **Connect WordPress.com**, sign in on WordPress.com, and pick the site. You must be able to publish posts and upload files there: an Author, an Editor or an Administrator. Peal asks WordPress.com for access to that one site only, keeps the token it gives encrypted, and never sees your password.
+In **Channels**, under **WordPress.com**, click **Connect WordPress.com**, sign in on WordPress.com, and pick the site. You need to be able to publish posts and upload files there, as an Author, an Editor or an Administrator.
 
-**Channels** offers WordPress.com once the Peal server is set up for it (see [On your own server](#self-hosting)). Reconnecting a channel signs in again, and must reach the same site.
+Peal asks WordPress.com for access to that one site only. It keeps the token WordPress.com gives encrypted, and never sees your password.
+
+**Channels** offers WordPress.com once the Peal server is set up for it (see [On your own server](#self-hosting)). Reconnecting a channel signs you in again, and has to reach the same site.
 
 ## Articles [#articles]
 
-A site on WordPress.com gets an article as a WordPress site of your own does: its images go to the site's media library once, its tags and categories are found by name or made, and a lost answer is looked for among your posts before anything else. See [Websites and articles](/guides/channels/websites#send).
+A site on WordPress.com gets an article the same way a WordPress site of your own does:
 
-<Callout type="warning" title="Sharing from WordPress.com">
-  A site set up to share its new posts to its own social accounts (on
-  WordPress.com, under Jetpack Social) shares the article Peal publishes there
-  too, as Peal does not change the site's settings. Where those social accounts
-  are also connected to Peal and you post the article there from Peal, they get
-  it twice: turn the sharing off for them, or leave them out in Peal.
+- Its images go to the site's media library, once.
+- Its tags and categories are found by name, or created.
+- When WordPress.com's answer is lost, Peal looks for the article among your posts before anything else.
+
+See [Websites and articles](/guides/channels/websites#send).
+
+<Callout
+  type="warning"
+  title="A site that shares its new posts shares Peal's articles too"
+>
+  A site can be set up to share its new posts to its own social accounts (on
+  WordPress.com, under Jetpack Social). Peal doesn't change the site's settings,
+  so the site shares the article Peal publishes as well. If those social
+  accounts are also connected to Peal and you post the article there from Peal,
+  they get it twice. Turn the sharing off for them, or leave them out in Peal.
 </Callout>
 
 ## On your own server [#self-hosting]

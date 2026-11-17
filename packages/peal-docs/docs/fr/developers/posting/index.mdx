@@ -5,11 +5,17 @@ sidebar:
   icon: square-pen
 ---
 
-Vérifiez une publication avant de l’envoyer, publiez-la tout de suite et attendez son résultat sur chaque canal, par l’[API HTTP](/developers), les SDK, la ligne de commande ou MCP. Chaque requête vient avec un exemple ; la [référence de l’API](/reference) donne tous les champs.
+Vous pouvez envoyer des publications depuis votre propre code, par l’[API HTTP](/developers), les SDK, la ligne de commande ou MCP. Chaque requête ci-dessous a un exemple dans chaque langage, et la [référence de l’API](/reference) liste tous les champs.
 
 ## Avant de commencer [#start]
 
-Tous les points d’accès de cette page se trouvent sous `/api/workspaces/{workspaceId}/posts`. Les exemples lisent l’identifiant de l’espace de travail dans `$WORKSPACE_ID` et une [clé d’API](/guides/workspace#api-keys), de la forme `peal_…`, dans `$PEAL_API_KEY`. Les identifiants sont inventés, et les réponses abrégées : une publication est toujours répondue en entier, comme la répond `GET …/posts/{postId}`. Les exemples TypeScript utilisent un client `peal` et un `workspaceId`, créés comme le montre [SDK](/developers/sdks#credential) ; les commandes agissent dans l’espace de travail où `peal` est connecté ([Ligne de commande](/developers/cli)).
+Tous les points d’accès de cette page se trouvent sous `/api/workspaces/{workspaceId}/posts`. Il vous faut une [clé d’API](/guides/workspace#api-keys), de la forme `peal_…`, et l’identifiant de son espace de travail.
+
+Les exemples lisent la clé dans `$PEAL_API_KEY` et l’identifiant de l’espace de travail dans `$WORKSPACE_ID` (`PEAL_WORKSPACE_ID` dans les exemples des SDK). Le premier exemple crée le client, comme le montre [SDK](/developers/sdks#credential), et les suivants le réutilisent : `peal` dans chaque langage sauf Go, où il s’appelle `client`. Les commandes agissent dans l’espace de travail où `peal` est connecté ([Ligne de commande](/developers/cli)).
+
+Les identifiants sont inventés et les réponses abrégées. Une vraie réponse contient toujours la publication entière, telle que la renvoie `GET …/posts/{postId}`.
+
+Chaque requête demande ces permissions :
 
 | Requête                        | Ce qu’elle fait                                           | Demande                                      |
 | ------------------------------ | --------------------------------------------------------- | -------------------------------------------- |
@@ -22,34 +28,27 @@ Tous les points d’accès de cette page se trouvent sous `/api/workspaces/{work
 
 Une publication qui montre des médias demande aussi `media:read`. Un jeton d’accès OAuth a besoin du scope `workspace:publish` pour `send`, `bulk` et `import` ([Ce que permet chaque permission](/developers/agents#scopes)).
 
-<Callout type="warning" title="Publier est public">
+<Callout
+  type="warning"
+  title="Peal ne peut pas reprendre une publication une fois partie"
+>
   Ce que publient `send`, `bulk` et `import` atteint le public des plateformes,
-  et Peal ne peut pas le reprendre une fois parti. Avant son heure, annulez ou
-  déprogrammez une publication.
+  et vous ne pouvez plus le reprendre depuis Peal une fois parti. Avant son
+  heure, vous pouvez encore annuler ou déprogrammer une publication.
 </Callout>
 
 ## Vérifier une publication sans la créer [#validate]
 
-`POST …/posts/validate` prend ce que prend `send`, ou un brouillon, qui n’a pas de `when`. Il n’écrit rien. Il répond 200, que la publication puisse passer ou non, avec `valid` et tout ce qui la ferait refuser, d’un coup.
+`POST …/posts/validate` prend le même corps que `send`, ou celui d’un brouillon, qui n’a pas de `when`. Il n’écrit rien. La réponse est 200, que la publication puisse passer ou non, avec `valid` et toutes les raisons qui la feraient refuser, d’un coup.
 
 <CodeGroup>
 
-```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/validate \
-  -H "Authorization: Bearer $PEAL_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "channelIds": ["0190f3a0-0000-7000-8000-00000000c001"],
-    "content": {
-      "text": "Notre catalogue de printemps est sorti : https://example.com/printemps #printemps",
-      "media": [],
-      "overrides": []
-    },
-    "when": { "_tag": "at", "at": "2026-11-16T08:00:00Z", "timeZone": "Europe/Paris" }
-  }'
-```
+```ts Node.js
+import { PealClient } from "peal-sdk";
 
-```ts TypeScript
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
+
 const check = await peal.posts.validate({
   workspaceId,
   channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
@@ -62,7 +61,191 @@ const check = await peal.posts.validate({
 });
 ```
 
-```bash CLI
+```python Python
+import os
+
+from peal import Peal, PostContent, PostTiming_At
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+workspace_id = os.environ["PEAL_WORKSPACE_ID"]
+
+check = peal.posts.validate(
+    workspace_id=workspace_id,
+    channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
+    content=PostContent(
+        text="Our spring catalogue is out. Read it at https://example.com/spring #spring",
+        media=[],
+        overrides=[],
+    ),
+    when=PostTiming_At(at="2026-11-16T08:00:00Z", time_zone="Europe/Paris"),
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
+
+check, err := client.Posts.Validate(context.TODO(), &peal.PostToValidate{
+	WorkspaceID: workspaceID,
+	ChannelIDs:  []string{"0190f3a0-0000-7000-8000-00000000c001"},
+	Content: &peal.PostContent{
+		Text:      "Our spring catalogue is out. Read it at https://example.com/spring #spring",
+		Media:     []*peal.MediaAttachment{},
+		Overrides: []*peal.TextOverride{},
+	},
+	When: &peal.PostTiming{
+		At: &peal.PostTimingAt{At: "2026-11-16T08:00:00Z", TimeZone: "Europe/Paris"},
+	},
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
+
+check = peal.posts.validate(
+  workspace_id: workspace_id,
+  channel_ids: ["0190f3a0-0000-7000-8000-00000000c001"],
+  content: {
+    text: "Our spring catalogue is out. Read it at https://example.com/spring #spring",
+    media: [],
+    overrides: []
+  },
+  when_: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" }
+)
+```
+
+```java Java
+import java.util.List;
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.*;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
+
+PostValidation check = peal.posts().validate(
+    workspaceId,
+    PostToValidate.builder()
+        .content(PostContent.builder()
+            .text("Our spring catalogue is out. Read it at https://example.com/spring #spring")
+            .build())
+        .channelIds(List.of("0190f3a0-0000-7000-8000-00000000c001"))
+        .when(PostTiming.at(PostTimingAt.builder()
+            .at("2026-11-16T08:00:00Z")
+            .timeZone("Europe/Paris")
+            .build()))
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\PostToValidate;
+use Peal\Types\PostContent;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingAt;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+$workspaceId = getenv('PEAL_WORKSPACE_ID');
+
+$check = $peal->posts->validate($workspaceId, new PostToValidate([
+    'channelIds' => ['0190f3a0-0000-7000-8000-00000000c001'],
+    'content' => new PostContent([
+        'text' => 'Our spring catalogue is out. Read it at https://example.com/spring #spring',
+        'media' => [],
+        'overrides' => [],
+    ]),
+    'when' => PostTiming::at(new PostTimingAt([
+        'at' => '2026-11-16T08:00:00Z',
+        'timeZone' => 'Europe/Paris',
+    ])),
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
+
+var check = await peal.Posts.ValidateAsync(new PostToValidate
+{
+    WorkspaceId = workspaceId,
+    ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c001" },
+    Content = new PostContent
+    {
+        Text = "Our spring catalogue is out. Read it at https://example.com/spring #spring",
+    },
+    When = new PostTiming(new PostTiming.At(new PostTimingAt
+    {
+        At = "2026-11-16T08:00:00Z",
+        TimeZone = "Europe/Paris",
+    })),
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
+
+let check = peal
+    .posts
+    .validate(
+        &workspace_id,
+        &PostToValidate::builder()
+            .channel_ids(vec!["0190f3a0-0000-7000-8000-00000000c001".to_string()])
+            .content(
+                PostContent::builder()
+                    .text("Our spring catalogue is out. Read it at https://example.com/spring #spring")
+                    .media(vec![])
+                    .overrides(vec![])
+                    .build()?,
+            )
+            .when(PostTiming::at(
+                "2026-11-16T08:00:00Z".to_string(),
+                "Europe/Paris".to_string(),
+            ))
+            .build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/validate \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "channelIds": ["0190f3a0-0000-7000-8000-00000000c001"],
+    "content": {
+      "text": "Our spring catalogue is out. Read it at https://example.com/spring #spring",
+      "media": [],
+      "overrides": []
+    },
+    "when": { "_tag": "at", "at": "2026-11-16T08:00:00Z", "timeZone": "Europe/Paris" }
+  }'
+```
+
+```sh CLI
 peal post "Our spring catalogue is out. Read it at https://example.com/spring #spring" \
   --channel 0190f3a0-0000-7000-8000-00000000c001 \
   --at 2026-11-16T09:00 --time-zone Europe/Paris \
@@ -94,10 +277,10 @@ peal post "Our spring catalogue is out. Read it at https://example.com/spring #s
     {
       "channelId": "0190f3a0-0000-7000-8000-00000000c001",
       "platform": "bluesky",
-      "text": "Notre catalogue de printemps est sorti : https://example.com/printemps #printemps",
+      "text": "Our spring catalogue is out. Read it at https://example.com/spring #spring",
       "textCounts": [
-        { "length": 81, "maximum": 300, "unit": "graphemes" },
-        { "length": 81, "maximum": 3000, "unit": "utf8Bytes" }
+        { "length": 74, "maximum": 300, "unit": "graphemes" },
+        { "length": 74, "maximum": 3000, "unit": "utf8Bytes" }
       ],
       "hashtags": { "count": 1, "maximum": null },
       "mentions": { "count": 0, "maximum": null },
@@ -117,29 +300,33 @@ peal post "Our spring catalogue is out. Read it at https://example.com/spring #s
 }
 ```
 
-| Champ             | Ce qu’il contient                                                                                                                                                                                                                                                        |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `valid`           | Vrai quand rien de ce qui suit ne refuse la publication                                                                                                                                                                                                                  |
-| `channels`        | Une entrée par canal de l’espace de travail que nomme la publication, dans l’ordre donné                                                                                                                                                                                 |
-| `violations`      | Ce qui ne va pas quel que soit le canal : aucun canal, ou un texte ou des options pour un canal où la publication ne va pas                                                                                                                                              |
-| `unknownChannels` | Les canaux qu’elle nomme et qui ne sont pas à l’espace de travail                                                                                                                                                                                                        |
-| `unknownMedia`    | Les médias qu’elle montre et qui ne sont pas à l’espace de travail, ou pas prêts                                                                                                                                                                                         |
-| `schedule`        | `ok` ; `inPast`, une heure passée de plus d’une minute ; ou `invalidTimeZone`, quand le fuseau n’est pas un fuseau IANA. Null sans `when`.                                                                                                                               |
-| `planLimit`       | La limite de l’abonnement de l’espace de travail que la publication dépasserait, telle que la dit `PlanLimitReached`. Null quand l’abonnement a de la place, sur une instance qui ne facture pas, ou sans `when`.                                                        |
-| `awaitsApproval`  | Si la publication, envoyée telle quelle, attendrait une [approbation](/guides/posts/review) avant d’être programmée, comme l’espace de travail le demande à cet appelant : elle serait créée, avec le statut `awaitingApproval`. Cela ne refuse rien. False sans `when`. |
-| `duplicates`      | Les canaux qui ont déjà le même contenu par une autre publication proche de son heure, chacun avec cette publication ([Publications en double](#duplicates)). Aucun sans `when`, ou quand la requête autorise les doublons.                                              |
+La réponse contient ces champs :
 
-Chaque entrée de `channels` contient :
+| Champ             | Ce qu’il contient                                                                                                                                                                                                                |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `valid`           | Vrai quand rien de ce qui suit ne refuse la publication                                                                                                                                                                          |
+| `channels`        | Une entrée pour chaque canal de l’espace de travail que nomme la publication, dans l’ordre où vous les donnez                                                                                                                    |
+| `violations`      | Ce qui ne va pas quel que soit le canal : aucun canal, ou un texte ou des options pour un canal où la publication ne va pas                                                                                                      |
+| `unknownChannels` | Les canaux qu’elle nomme et qui ne sont pas à l’espace de travail                                                                                                                                                                |
+| `unknownMedia`    | Les médias qu’elle montre et qui ne sont pas à l’espace de travail, ou pas encore prêts                                                                                                                                          |
+| `schedule`        | `ok`, `inPast` (plus d’une minute dans le passé) ou `invalidTimeZone` (pas un fuseau IANA). Null sans `when`.                                                                                                                    |
+| `planLimit`       | La limite de l’abonnement que la publication dépasserait, telle que la décrit `PlanLimitReached`. Null quand l’abonnement a de la place, sur une instance qui ne facture pas, ou sans `when`.                                    |
+| `awaitsApproval`  | Si la publication, envoyée telle quelle, attendrait une [approbation](/guides/posts/review) avant d’être programmée. Elle serait quand même créée, avec le statut `awaitingApproval`. False sans `when`.                         |
+| `duplicates`      | Les canaux qui reçoivent déjà le même contenu par une autre publication proche de son heure, chacun avec cette publication ([Publications en double](#duplicates)). Vide sans `when`, ou quand la requête autorise les doublons. |
 
-| Champ                                      | Ce qu’il contient                                                                                                                                                                                                                                                                                                                                                                                      |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `text`                                     | Le texte que reçoit le canal, c’est-à-dire celui qui lui est propre, ou celui de la publication                                                                                                                                                                                                                                                                                                        |
-| `textCounts`                               | La longueur de ce texte, comptée comme la compte la plateforme du canal, face à chacune de ses limites. Bluesky en a deux, en graphèmes et en octets.                                                                                                                                                                                                                                                  |
-| `hashtags`, `mentions`, `links` et `media` | Combien la publication en contient (`count`) et le maximum que prend la plateforme (`maximum`, null quand Peal ne lui connaît pas de limite). `links` compte les liens différents. `media` compte ce que reçoit le canal : ses médias propres, quand son entrée lui en donne ([Des médias propres sur un canal](#channel-media)), ou ceux de la publication.                                           |
-| `parts`                                    | Les parties qui suivent la première d’un [fil](/guides/posts#threads), dans l’ordre, chacune avec son rang (`part`, à partir de 1), son texte (`text`) sur le canal et les mêmes décomptes ; aucune pour une publication seule. Une plateforme qui ne prend qu’une publication seule les liste quand même, et les refuse avec `tooManyParts`.                                                          |
-| `violations`                               | Chaque règle de la plateforme que la publication enfreint, dans n’importe laquelle de ses parties (texte, formats, tailles, nombre et durées des médias, options), et celles du compte lui-même quand sa plateforme les donne. Celle qui porte sur une partie suivante la désigne par `part`. Elles se lisent comme dans `PostContentInvalid` ([Comment lire les refus](/developers/agents#refusals)). |
+`awaitsApproval` ne refuse rien. Il vous dit ce que l’espace de travail demande à cet appelant.
 
-Une publication qui serait refusée répond 200 aussi, avec `valid` à faux :
+Chaque entrée de `channels` contient :
+
+| Champ                                      | Ce qu’il contient                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`                                     | Le texte que reçoit le canal : le sien, ou celui de la publication                                                                                                                                                                                                                                                                                                                            |
+| `textCounts`                               | La longueur de ce texte face à chacune des limites de la plateforme, comptée comme la plateforme compte. Bluesky en a deux, en graphèmes et en octets.                                                                                                                                                                                                                                        |
+| `hashtags`, `mentions`, `links` et `media` | Combien la publication en contient (`count`) et le maximum que prend la plateforme (`maximum`, null quand Peal ne connaît pas de limite). `links` compte les liens différents. `media` compte ce que reçoit le canal : ses propres médias quand son entrée lui en donne ([Des médias propres sur un canal](#channel-media)), sinon ceux de la publication.                                    |
+| `parts`                                    | Les parties qui suivent la première d’un [fil](/guides/posts#threads), dans l’ordre, chacune avec son rang (`part`, à partir de 1), son texte (`text`) sur le canal et les mêmes décomptes. Vide pour une publication seule. Une plateforme qui ne prend que des publications seules les liste quand même, et les refuse avec `tooManyParts`.                                                 |
+| `violations`                               | Chaque règle de la plateforme que la publication enfreint, dans n’importe quelle partie (texte, formats, tailles, nombre et durées des médias, options), plus celles du compte quand sa plateforme les donne. Une violation qui porte sur une partie suivante la désigne par `part`. Elles se lisent comme dans `PostContentInvalid` ([Comment lire les refus](/developers/agents#refusals)). |
+
+Une publication qui serait refusée reçoit aussi un 200, avec `valid` à faux :
 
 ```json
 {
@@ -170,39 +357,23 @@ Une publication qui serait refusée répond 200 aussi, avec `valid` à faux :
 }
 ```
 
-Sans `when`, la requête est celle d’un brouillon : ni l’heure, ni la place dans l’abonnement, ni les doublons ne sont vérifiés.
+Sans `when`, la requête est vérifiée comme un brouillon : ni l’heure, ni la place dans l’abonnement, ni les doublons ne sont vérifiés.
 
-<Callout type="info">
-  Une publication valide maintenant peut encore être refusée plus tard : un
-  canal déconnecté, un mois rempli entre-temps.
+<Callout
+  type="info"
+  title="Une publication valide maintenant peut encore être refusée plus tard"
+>
+  C’est le cas si un canal est déconnecté ou si le mois de l’abonnement se
+  remplit entre-temps.
 </Callout>
 
 ## Publier maintenant et attendre le résultat [#wait]
 
-`POST …/posts/send` répond dès que la publication est créée, pendant qu’elle se publie. Avec `wait`, un nombre de secondes de 0 à 60, une publication qui part maintenant est répondue une fois que chaque canal a son résultat :
+`POST …/posts/send` répond dès que la publication est créée, pendant qu’elle se publie encore. Ajoutez `wait`, un nombre de secondes de 0 à 60, et une publication qui part maintenant reçoit sa réponse une fois que chaque canal a son résultat. Avec l’en-tête `Idempotency-Key`, vous pouvez renvoyer la requête sans risque si la réponse se perd ([Idempotence](/developers/conventions/idempotency#idempotency)).
 
 <CodeGroup>
 
-```bash curl
-curl -X POST "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send?wait=30" \
-  -H "Authorization: Bearer $PEAL_API_KEY" \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: 5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90" \
-  -d '{
-    "channelIds": [
-      "0190f3a0-0000-7000-8000-00000000c001",
-      "0190f3a0-0000-7000-8000-00000000c002"
-    ],
-    "content": {
-      "text": "Notre catalogue de printemps est sorti. À lire sur https://example.com/printemps",
-      "media": [],
-      "overrides": []
-    },
-    "when": { "_tag": "now" }
-  }'
-```
-
-```ts TypeScript
+```ts Node.js
 const post = await peal.posts.send({
   workspaceId,
   wait: "30",
@@ -220,7 +391,166 @@ const post = await peal.posts.send({
 });
 ```
 
-```bash CLI
+```python Python
+from peal import PostTiming_Now
+
+post = peal.posts.send(
+    workspace_id=workspace_id,
+    wait="30",
+    idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+    channel_ids=[
+        "0190f3a0-0000-7000-8000-00000000c001",
+        "0190f3a0-0000-7000-8000-00000000c002",
+    ],
+    content=PostContent(
+        text="Our spring catalogue is out. Read it at https://example.com/spring",
+        media=[],
+        overrides=[],
+    ),
+    when=PostTiming_Now(),
+)
+```
+
+```go Go
+post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
+	WorkspaceID:    workspaceID,
+	Wait:           peal.String("30"),
+	IdempotencyKey: peal.String("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90"),
+	ChannelIDs: []string{
+		"0190f3a0-0000-7000-8000-00000000c001",
+		"0190f3a0-0000-7000-8000-00000000c002",
+	},
+	Content: &peal.PostContent{
+		Text:      "Our spring catalogue is out. Read it at https://example.com/spring",
+		Media:     []*peal.MediaAttachment{},
+		Overrides: []*peal.TextOverride{},
+	},
+	When: &peal.PostTiming{Now: &peal.PostTimingNow{}},
+})
+```
+
+```ruby Ruby
+post = peal.posts.send_(
+  workspace_id: workspace_id,
+  wait: "30",
+  idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+  channel_ids: [
+    "0190f3a0-0000-7000-8000-00000000c001",
+    "0190f3a0-0000-7000-8000-00000000c002"
+  ],
+  content: {
+    text: "Our spring catalogue is out. Read it at https://example.com/spring",
+    media: [],
+    overrides: []
+  },
+  when_: { _tag: "now" }
+)
+```
+
+```java Java
+Post post = peal.posts().send(
+    workspaceId,
+    NewPost.builder()
+        .content(PostContent.builder()
+            .text("Our spring catalogue is out. Read it at https://example.com/spring")
+            .build())
+        .when(PostTiming.now(PostTimingNow.builder().build()))
+        .wait("30")
+        .idempotencyKey("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
+        .channelIds(List.of(
+            "0190f3a0-0000-7000-8000-00000000c001",
+            "0190f3a0-0000-7000-8000-00000000c002"))
+        .build());
+```
+
+```php PHP
+use Peal\Posts\Requests\NewPost;
+use Peal\Types\PostTimingNow;
+
+$post = $peal->posts->send($workspaceId, new NewPost([
+    'wait' => '30',
+    'idempotencyKey' => '5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90',
+    'channelIds' => [
+        '0190f3a0-0000-7000-8000-00000000c001',
+        '0190f3a0-0000-7000-8000-00000000c002',
+    ],
+    'content' => new PostContent([
+        'text' => 'Our spring catalogue is out. Read it at https://example.com/spring',
+        'media' => [],
+        'overrides' => [],
+    ]),
+    'when' => PostTiming::now(new PostTimingNow([])),
+]));
+```
+
+```csharp .NET
+var post = await peal.Posts.SendAsync(new NewPost
+{
+    WorkspaceId = workspaceId,
+    Wait = "30",
+    IdempotencyKey = "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+    ChannelIds = new List<string>
+    {
+        "0190f3a0-0000-7000-8000-00000000c001",
+        "0190f3a0-0000-7000-8000-00000000c002",
+    },
+    Content = new PostContent
+    {
+        Text = "Our spring catalogue is out. Read it at https://example.com/spring",
+    },
+    When = new PostTiming(new PostTiming.Now(new PostTimingNow())),
+});
+```
+
+```rust Rust
+// NewPost n’a pas de champ pour la clé : elle passe dans les en-têtes de la requête.
+let post = peal
+    .posts
+    .send(
+        &workspace_id,
+        &NewPost::builder()
+            .channel_ids(vec![
+                "0190f3a0-0000-7000-8000-00000000c001".to_string(),
+                "0190f3a0-0000-7000-8000-00000000c002".to_string(),
+            ])
+            .content(
+                PostContent::builder()
+                    .text("Our spring catalogue is out. Read it at https://example.com/spring")
+                    .media(vec![])
+                    .overrides(vec![])
+                    .build()?,
+            )
+            .when(PostTiming::now())
+            .wait("30")
+            .build()?,
+        Some(RequestOptions::new().additional_header(
+            "Idempotency-Key",
+            "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
+        )),
+    )
+    .await?;
+```
+
+```bash curl
+curl -X POST "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send?wait=30" \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90" \
+  -d '{
+    "channelIds": [
+      "0190f3a0-0000-7000-8000-00000000c001",
+      "0190f3a0-0000-7000-8000-00000000c002"
+    ],
+    "content": {
+      "text": "Our spring catalogue is out. Read it at https://example.com/spring",
+      "media": [],
+      "overrides": []
+    },
+    "when": { "_tag": "now" }
+  }'
+```
+
+```sh CLI
 peal post "Our spring catalogue is out. Read it at https://example.com/spring" \
   --channels 0190f3a0-0000-7000-8000-00000000c001,0190f3a0-0000-7000-8000-00000000c002 \
   --now --wait 30 \
@@ -272,21 +602,20 @@ peal post "Our spring catalogue is out. Read it at https://example.com/spring" \
 }
 ```
 
-- La réponse est 201 dans les deux cas : la publication a été créée.
-- Quand chaque canal a son résultat avant la fin de l’attente, le `status` de la publication est `finished`, avec son `outcome`. Chaque cible est `published`, avec son `permalink`, ou `failed`, avec sa `failureReason`.
-- Quand le temps est écoulé avant, la réponse est la publication dans son état du moment, avec des cibles encore `pending` ou `publishing`. Elle continue de se publier.
-- Un [fil](/guides/posts#threads) a son résultat sur un canal quand toutes ses parties y sont parties, ou que l’une a échoué : une cible reste `publishing` entre deux parties, et `parts.live` liste celles qui sont en ligne. Avec une attente entre deux parties plus longue que `wait`, le temps s’écoule avant.
+La réponse est 201 dans les deux cas, puisque la publication a été créée. Son contenu dépend de l’attente :
 
-`GET …/posts/{postId}/outcome` attend la suite. Il prend le même `wait`, et répond la publication une fois que chaque canal a son résultat, ou dans son état du moment quand le temps est écoulé : redemandez alors.
+- Quand chaque canal termine à temps, le `status` de la publication est `finished`, avec son `outcome`. Chaque cible est `published`, avec son `permalink`, ou `failed`, avec sa `failureReason`.
+- Quand le temps s’écoule avant, vous recevez la publication dans son état du moment, avec des cibles encore `pending` ou `publishing`. Elle continue de se publier.
+
+Un [fil](/guides/posts#threads) a son résultat sur un canal quand toutes ses parties y sont parties, ou que l’une a échoué. Entre deux parties, sa cible reste `publishing`, et `parts.live` liste les parties déjà en ligne. Si le fil attend plus longtemps entre deux parties que `wait`, le temps s’écoule avant.
+
+### Attendre la suite [#outcome]
+
+`GET …/posts/{postId}/outcome` prend le même `wait`. Il répond une fois que chaque canal a son résultat, ou avec la publication dans son état du moment quand le temps est écoulé, et vous redemandez alors.
 
 <CodeGroup>
 
-```bash curl
-curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/outcome?wait=30" \
-  -H "Authorization: Bearer $PEAL_API_KEY"
-```
-
-```ts TypeScript
+```ts Node.js
 const outcome = await peal.posts.outcome({
   workspaceId,
   postId: "0190f3a0-0000-7000-8000-00000000b001",
@@ -294,7 +623,74 @@ const outcome = await peal.posts.outcome({
 });
 ```
 
-```bash CLI
+```python Python
+outcome = peal.posts.outcome(
+    workspace_id=workspace_id,
+    post_id="0190f3a0-0000-7000-8000-00000000b001",
+    wait="30",
+)
+```
+
+```go Go
+outcome, err := client.Posts.Outcome(context.TODO(), &peal.OutcomePostsRequest{
+	WorkspaceID: workspaceID,
+	PostID:      "0190f3a0-0000-7000-8000-00000000b001",
+	Wait:        peal.String("30"),
+})
+```
+
+```ruby Ruby
+outcome = peal.posts.outcome(
+  workspace_id: workspace_id,
+  post_id: "0190f3a0-0000-7000-8000-00000000b001",
+  wait: "30"
+)
+```
+
+```java Java
+Post outcome = peal.posts().outcome(
+    workspaceId,
+    "0190f3a0-0000-7000-8000-00000000b001",
+    OutcomePostsRequest.builder().wait("30").build());
+```
+
+```php PHP
+use Peal\Posts\Requests\OutcomePostsRequest;
+
+$outcome = $peal->posts->outcome(
+    $workspaceId,
+    '0190f3a0-0000-7000-8000-00000000b001',
+    new OutcomePostsRequest(['wait' => '30']),
+);
+```
+
+```csharp .NET
+var outcome = await peal.Posts.OutcomeAsync(new OutcomePostsRequest
+{
+    WorkspaceId = workspaceId,
+    PostId = "0190f3a0-0000-7000-8000-00000000b001",
+    Wait = "30",
+});
+```
+
+```rust Rust
+let outcome = peal
+    .posts
+    .outcome(
+        &workspace_id,
+        "0190f3a0-0000-7000-8000-00000000b001",
+        &OutcomeQueryRequest::builder().wait("30").build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/outcome?wait=30" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
+```
+
+```sh CLI
 peal posts wait 0190f3a0-0000-7000-8000-00000000b001 --seconds 30
 ```
 
@@ -304,16 +700,16 @@ peal posts wait 0190f3a0-0000-7000-8000-00000000b001 --seconds 30
 
 </CodeGroup>
 
-Sans `wait`, il n’attend pas. Sont répondus aussitôt, sans attente :
+Sans `wait`, il n’attend pas. Ces requêtes reçoivent aussi leur réponse aussitôt :
 
-- un brouillon, une publication annulée et une publication programmée pour après la fin de l’attente ;
-- une requête qui arrive alors que le serveur, ou l’espace de travail (10 à la fois), a autant de requêtes en attente qu’il en accepte : redemandez alors.
+- Une requête pour un brouillon, une publication annulée, ou une publication programmée pour après la fin de l’attente.
+- Une requête qui arrive alors que le serveur, ou l’espace de travail (10 à la fois), a déjà autant de requêtes en attente qu’il en accepte. Redemandez alors.
 
-Attendre ne change rien et ne retient rien : la publication part dans sa propre tâche dans tous les cas, et les [webhooks](/developers/webhooks/events#events) disent toujours ce qu’elle est devenue sur chaque canal.
+Attendre ne change rien et ne retient rien. La publication part dans sa propre tâche dans tous les cas, et les [webhooks](/developers/webhooks/events#events) vous disent toujours ce qu’elle est devenue sur chaque canal.
 
 ## Publications en double [#duplicates]
 
-Une publication créée en un seul appel est refusée quand une autre publication de l’espace de travail envoie déjà le même contenu à l’un de ses canaux, à moins de 23 heures de son heure. La réponse est 409 `DuplicatePost`, et rien n’est créé :
+Peal refuse une publication quand une autre publication de l’espace de travail envoie déjà le même contenu à l’un de ses canaux, à moins de 23 heures de son heure. La requête répond 409 `DuplicatePost`, et rien n’est créé :
 
 ```json
 {
@@ -327,57 +723,56 @@ Une publication créée en un seul appel est refusée quand une autre publicatio
 }
 ```
 
-`duplicates` nomme chaque canal qui a déjà le contenu, avec la première publication qui l’y envoie dans cet intervalle.
+`duplicates` nomme chaque canal qui reçoit déjà le contenu, avec la première publication qui l’y envoie dans cet intervalle. La vérification suit ces règles :
 
-| Règle              | Détail                                                                                                                                                                                                                                                   |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Le même contenu    | Le texte que reçoit le canal et les mêmes médias, dans le même ordre.                                                                                                                                                                                    |
-| 23 heures          | La journée la plus courte qu’ait un fuseau horaire : une publication qui se répète chaque jour à la même heure locale n’est donc jamais refusée.                                                                                                         |
-| Ce qui compte      | Seules les publications qui partent ou sont parties, y compris celles qui attendent une approbation, puisqu’elles partent une fois approuvées : ni les brouillons, ni les publications annulées, ni un canal où la publication a échoué.                 |
-| Ce qui est vérifié | `send`, chaque élément de `bulk`, chaque ligne d’`import`, les outils MCP `create_post` et `create_posts`, et `peal post`. Programmer un brouillon existant, déplacer une publication et republier sur un canal où elle a échoué ne sont jamais refusés. |
-| Quand c’est voulu  | Renvoyez la requête avec `allowDuplicate: true`, sur la publication ou sur l’élément de `bulk`, ou avec `allow_duplicate` à `true` sur la ligne du CSV.                                                                                                  |
+| Règle              | Détail                                                                                                                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Le même contenu    | Le texte que reçoit le canal, et les mêmes médias dans le même ordre.                                                                                                                                                                          |
+| 23 heures          | La journée la plus courte d’un fuseau horaire, si bien qu’une publication qui se répète chaque jour à la même heure locale n’est jamais refusée.                                                                                               |
+| Ce qui compte      | Les publications qui vont partir ou sont parties, y compris celles qui attendent une approbation, puisqu’elles partent une fois approuvées. Les brouillons, les publications annulées et un canal où la publication a échoué ne comptent pas.  |
+| Ce qui est vérifié | `send`, chaque élément de `bulk`, chaque ligne d’`import`, les outils MCP `create_post` et `create_posts`, et `peal post`. Programmer un brouillon existant, déplacer une publication et republier là où elle a échoué ne sont jamais refusés. |
+| Quand c’est voulu  | Renvoyez la requête avec `allowDuplicate: true` sur la publication ou l’élément de `bulk`, ou avec `allow_duplicate` à `true` sur la ligne du CSV.                                                                                             |
 
-<Callout type="info">
-  Ce refus est distinct des clés d’idempotence. Une clé permet de renvoyer une
-  même requête sans risque. Le refus des doublons rattrape la requête faite deux
-  fois.
+`validate` vous le dit à l’avance, dans `duplicates`.
+
+<Callout
+  type="info"
+  title="Cette vérification est distincte des clés d’idempotence"
+>
+  Avec une clé, vous pouvez renvoyer une même requête sans risque. Le refus des
+  doublons rattrape la même publication demandée deux fois.
 </Callout>
-
-`validate` le dit à l’avance, dans `duplicates`.
 
 ## Des médias propres sur un canal [#channel-media]
 
-Le texte d’une publication sur un canal, une entrée de `content.overrides` ou des `overrides` d’une partie, peut aussi donner à ce canal des images et vidéos propres, dans `media`. Le canal les montre alors à la place de celles de la publication.
+Le texte d’une publication sur un canal, une entrée de `content.overrides` ou des `overrides` d’une partie, peut aussi donner à ce canal ses propres images et vidéos, dans `media`. Le canal les montre alors à la place de celles de la publication :
 
 | `media` sur une entrée | Ce que montre le canal                                                                                            |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Absent                 | Les images et vidéos de la publication. Peal ne répond `media` que sur une entrée qui en donne.                   |
+| Absent                 | Les images et vidéos de la publication. Peal ne renvoie `media` que sur une entrée qui en donne.                  |
 | Une liste vide         | Aucune.                                                                                                           |
-| Une liste              | Celles-là, dans l’ordre, chacune avec son texte alternatif : 20 au plus, des médias prêts de l’espace de travail. |
+| Une liste              | Celles-là, dans l’ordre, chacune avec son texte alternatif : 20 au plus, des médias prêts de l’espace de travail. |
 
-Une entrée a toujours son `text`, qui ne peut pas être vide. Pour ne donner au canal que des médias, envoyez-y le texte de la publication. Ce texte est désormais celui du canal : quand vous changez le texte de la publication, changez-le là aussi (l’application web le fait).
+Une entrée a toujours un `text`, qui ne peut pas être vide. Pour donner à un canal ses propres médias sans rien d’autre, reprenez-y le texte de la publication. Ce texte appartient alors au canal : quand vous changez le texte de la publication, changez-le là aussi (l’application web le fait pour vous).
 
 ```json
 {
-  "text": "Cinq images du catalogue de printemps",
+  "text": "Five pictures of the spring catalogue",
   "media": [
     {
       "mediaId": "0190f3a0-0000-7000-8000-00000000f001",
-      "altText": "La couverture"
+      "altText": "The cover"
     },
-    {
-      "mediaId": "0190f3a0-0000-7000-8000-00000000f002",
-      "altText": "La page deux"
-    }
+    { "mediaId": "0190f3a0-0000-7000-8000-00000000f002", "altText": "Page two" }
   ],
   "overrides": [
     {
       "channelId": "0190f3a0-0000-7000-8000-00000000c001",
-      "text": "Cinq images du catalogue de printemps",
+      "text": "Five pictures of the spring catalogue",
       "media": [
         {
           "mediaId": "0190f3a0-0000-7000-8000-00000000f002",
-          "altText": "La page deux"
+          "altText": "Page two"
         }
       ]
     }
@@ -385,36 +780,132 @@ Une entrée a toujours son `text`, qui ne peut pas être vide. Pour ne donner au
 }
 ```
 
-- Chaque canal est vérifié sur les médias qu’il reçoit, par `validate` (son nombre de `media` et ses `violations`) comme quand la publication est programmée.
+Des médias propres changent quelques autres règles :
+
+- Chaque canal est vérifié sur les médias qu’il reçoit, par `validate` (son nombre de `media` et ses `violations`) et quand la publication est programmée.
 - La [vérification des doublons](#duplicates) compare ce que reçoit chaque canal.
-- Une approbation couvre les médias de chaque canal : changer les médias propres d’un canal après l’approbation de la publication en redemande une.
-- Tant qu’une publication programmée montre un fichier sur un canal, il ne peut pas être supprimé de la médiathèque. Un brouillon le lâche, sur chaque canal.
+- Une approbation couvre les médias de chaque canal. Changer les médias propres d’un canal après l’approbation de la publication en redemande une.
+- Tant qu’une publication programmée montre un fichier sur un canal, vous ne pouvez pas le supprimer de la médiathèque. Un brouillon ne le retient pas, sur aucun canal.
 
 ## Retirer un canal d’une publication programmée [#remove-target]
 
-`DELETE …/posts/{postId}/targets/{targetId}` retire un canal d’une publication qui attend son heure, programmée ou en attente d’approbation. La publication part à son heure sur ses autres canaux, et jamais sur celui-ci, dont la cible est `cancelled` avec `"dropped": true`. Elle garde son heure et son créneau de file d’attente, et son `outcome`, une fois partie, laisse ce canal de côté. La requête répond la publication.
+`DELETE …/posts/{postId}/targets/{targetId}` retire un canal d’une publication qui attend son heure, programmée ou en attente d’approbation. La publication part à son heure sur ses autres canaux, et jamais sur celui-ci. La cible devient `cancelled`, avec `"dropped": true`. La publication garde son heure et son créneau de file d’attente, et une fois partie, son `outcome` laisse ce canal de côté. La requête renvoie la publication.
 
-| Statut | Code                     | Quand                                                                                                                           |
-| ------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| 409    | `last_target_left`       | Le canal est le dernier sur lequel la publication part encore : annulez plutôt la publication (`POST …/posts/{postId}/cancel`). |
-| 409    | `post_status_conflict`   | La publication est en cours d’envoi ou terminée, ou c’est un brouillon, dont les canaux changent par une mise à jour.           |
-| 409    | `target_status_conflict` | Le canal a été annulé avec sa publication.                                                                                      |
+<CodeGroup>
 
-Un canal déjà retiré répond la publication telle qu’elle est : une requête renvoyée après une réponse perdue est sans risque.
+```ts Node.js
+const post = await peal.posts.removeTarget({
+  workspaceId,
+  postId: "0190f3a0-0000-7000-8000-00000000b001",
+  targetId: "0190f3a0-0000-7000-8000-00000000d002",
+});
+```
 
-- C’est une modification de la publication. Là où vos publications demandent une [approbation](/guides/posts/review), l’approbation donnée ne la couvre plus, et la réponse porte `awaitingApproval`, en attente d’une nouvelle. Une publication déjà en attente d’approbation garde sa demande, qui couvre ce qu’elle est maintenant.
+```python Python
+post = peal.posts.remove_target(
+    workspace_id=workspace_id,
+    post_id="0190f3a0-0000-7000-8000-00000000b001",
+    target_id="0190f3a0-0000-7000-8000-00000000d002",
+)
+```
+
+```go Go
+post, err := client.Posts.RemoveTarget(context.TODO(), &peal.RemoveTargetPostsRequest{
+	WorkspaceID: workspaceID,
+	PostID:      "0190f3a0-0000-7000-8000-00000000b001",
+	TargetID:    "0190f3a0-0000-7000-8000-00000000d002",
+})
+```
+
+```ruby Ruby
+post = peal.posts.remove_target(
+  workspace_id: workspace_id,
+  post_id: "0190f3a0-0000-7000-8000-00000000b001",
+  target_id: "0190f3a0-0000-7000-8000-00000000d002"
+)
+```
+
+```java Java
+Post post = peal.posts().removeTarget(
+    workspaceId,
+    "0190f3a0-0000-7000-8000-00000000b001",
+    "0190f3a0-0000-7000-8000-00000000d002");
+```
+
+```php PHP
+$post = $peal->posts->removeTarget(
+    $workspaceId,
+    '0190f3a0-0000-7000-8000-00000000b001',
+    '0190f3a0-0000-7000-8000-00000000d002',
+);
+```
+
+```csharp .NET
+var post = await peal.Posts.RemoveTargetAsync(new RemoveTargetPostsRequest
+{
+    WorkspaceId = workspaceId,
+    PostId = "0190f3a0-0000-7000-8000-00000000b001",
+    TargetId = "0190f3a0-0000-7000-8000-00000000d002",
+});
+```
+
+```rust Rust
+let post = peal
+    .posts
+    .remove_target(
+        &workspace_id,
+        "0190f3a0-0000-7000-8000-00000000b001",
+        "0190f3a0-0000-7000-8000-00000000d002",
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl -X DELETE "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/targets/0190f3a0-0000-7000-8000-00000000d002" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
+```
+
+```sh CLI
+peal posts remove-target 0190f3a0-0000-7000-8000-00000000b001 0190f3a0-0000-7000-8000-00000000d002
+```
+
+</CodeGroup>
+
+La requête peut être refusée avec ces erreurs :
+
+| Statut | Code                     | Quand                                                                                                                          |
+| ------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| 409    | `last_target_left`       | Le canal est le dernier sur lequel la publication part encore. Annulez plutôt la publication (`POST …/posts/{postId}/cancel`). |
+| 409    | `post_status_conflict`   | La publication est en cours d’envoi ou terminée, ou c’est un brouillon, dont les canaux se changent par une mise à jour.       |
+| 409    | `target_status_conflict` | Le canal a été annulé avec sa publication.                                                                                     |
+
+Un canal déjà retiré renvoie la publication telle qu’elle est. Vous pouvez donc renvoyer la requête sans risque après une réponse perdue.
+
+Retirer un canal compte comme une modification de la publication :
+
+- Là où vos publications demandent une [approbation](/guides/posts/review), l’approbation ne la couvre plus. La réponse porte `awaitingApproval`, et la publication attend une nouvelle approbation. Une publication déjà en attente d’approbation garde sa demande, qui couvre désormais la publication telle qu’elle est.
 - Les webhooks reçoivent un [`post.cancelled`](/developers/webhooks/events/posts#post-cancelled) qui nomme ce seul canal, avec `scope` `target`.
-- Une publication repassée en brouillon (`unschedule`, des changements demandés, ou une approbation après son heure) garde les canaux qu’elle avait encore. Le canal retiré part avec sa cible et ses entrées d’`overrides` dans chaque partie. Nommé de nouveau dans `channelIds`, il reçoit une nouvelle cible, en attente.
+- Une publication repassée en brouillon (`unschedule`, des changements demandés, ou une approbation après son heure) garde les canaux qu’elle avait encore. Le canal retiré part avec sa cible et ses entrées d’`overrides` dans chaque partie. Si vous le nommez de nouveau dans `channelIds`, il reçoit une nouvelle cible, en attente.
 
 Il faut post:schedule, ou, sur une publication en attente d’approbation, le droit de demander que des publications partent. Un client OAuth a besoin du scope `workspace:publish`.
 
 ## Sondages et premiers commentaires [#polls]
 
-`content.poll` pose un sondage avec la première partie de la publication, dont le texte est la question : `choices` (2 à 4), `durationMinutes`, et `multipleChoice` (faux quand il est omis). Peal ne le renvoie que sur une publication qui en pose un ; envoyez `null`, ou omettez-le, pour aucun. Les capacités d’une plateforme donnent son `poll` : le nombre de choix, leur `choiceLimit`, `durationMinutes` (`null` là où la plateforme décide de la durée) et `multipleChoice`. Là où elles n’en donnent pas, une publication avec un sondage est refusée avec `pollNotSupported`, et chaque limite dépassée a sa violation (`pollChoiceCount`, `pollChoiceLength`, `pollDurationOutOfRange`, `pollMultipleChoice`, `pollWithMedia`).
+`content.poll` ajoute un sondage à la première partie de la publication, dont le texte est la question. Il a des `choices` (2 à 4), une `durationMinutes`, et `multipleChoice` (faux quand il est omis). Peal ne le renvoie que sur une publication qui en a un. Envoyez `null`, ou omettez-le, pour aucun.
 
-Un premier commentaire est l’unique partie après la première (`content.followUps`), là où les capacités d’une plateforme donnent des `followUps` de type `comment` : du texte seul, dans les `commentTextLimits`. Elles ne le donnent que là où le serveur lit les commentaires de cette plateforme, et un canal connecté avant est refusé avec `partsNeedReconnect`, ce que ses capacités disent à l’avance (`account.restrictions`). Sur une page LinkedIn, `commentNeeds` dit que l’administrateur de la page doit l’avoir connectée. Une vidéo YouTube conçue pour les enfants n’en prend pas (`commentsTurnedOff`). Un commentaire qui échoue après la mise en ligne de la publication la laisse `partiallyPublished`, sa cible toujours listée en ligne pour les statistiques, la boîte de réception et les publicités ; une republication envoie le commentaire seul, et `POST …/posts/{postId}/targets/{targetId}/leave-out-rest` publie la cible comme sa publication, sans lui (`partsLeftOut`). Un choix répété est `pollChoiceRepeated`, et les choix sont gardés sans les espaces qui les entourent. Le [guide des publications](/guides/posts#first-comment) dit comment une réponse perdue est tranchée.
+Les capacités d’une plateforme décrivent son `poll` : le nombre de choix, leur `choiceLimit`, `durationMinutes` (`null` là où la plateforme décide de la durée) et `multipleChoice`. Là où elles n’en décrivent pas, une publication avec un sondage est refusée avec `pollNotSupported`. Chaque limite dépassée a sa propre violation : `pollChoiceCount`, `pollChoiceLength`, `pollDurationOutOfRange`, `pollMultipleChoice` ou `pollWithMedia`. Un choix répété est `pollChoiceRepeated`, et Peal retire les espaces autour de chaque choix.
+
+Un premier commentaire est l’unique partie après la première (`content.followUps`), sur les plateformes dont les capacités donnent des `followUps` de type `comment`. C’est du texte seul, dans les `commentTextLimits`. Les capacités ne le proposent que là où le serveur lit les commentaires de cette plateforme, si bien qu’un canal connecté avant est refusé avec `partsNeedReconnect`. Ses capacités le disent à l’avance, dans `account.restrictions`. Certaines plateformes ajoutent leurs propres règles :
+
+- Sur une page LinkedIn, `commentNeeds` dit que l’administrateur de la page doit l’avoir connectée.
+- Une vidéo YouTube conçue pour les enfants ne prend pas de commentaire (`commentsTurnedOff`).
+
+Un commentaire peut échouer après la mise en ligne de la publication. Celle-ci est alors `partiallyPublished`, et sa cible compte toujours comme en ligne pour les statistiques, la boîte de réception et les publicités. Une republication envoie le commentaire seul. `POST …/posts/{postId}/targets/{targetId}/leave-out-rest` publie la cible comme une publication sans lui (`partsLeftOut`). Le [guide des publications](/guides/posts#first-comment) explique comment une réponse perdue est tranchée.
 
 ## Depuis MCP et la ligne de commande [#tools]
+
+Chaque requête a un outil MCP ou une commande, ou les deux :
 
 | Requête                                      | Outil MCP                         | Commande                                         |
 | -------------------------------------------- | --------------------------------- | ------------------------------------------------ |

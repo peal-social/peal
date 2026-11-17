@@ -425,6 +425,11 @@
     "tag": "InboxMessageNotFound"
   },
   {
+    "code": "inbox_private_reply_not_found",
+    "status": 404,
+    "tag": "InboxPrivateReplyNotFound"
+  },
+  {
     "code": "inbox_reply_not_found",
     "status": 404,
     "tag": "InboxReplyNotFound"
@@ -668,6 +673,16 @@
     "code": "post_status_conflict",
     "status": 409,
     "tag": "PostStatusConflict"
+  },
+  {
+    "code": "private_reply_not_possible",
+    "status": 409,
+    "tag": "PrivateReplyNotPossible"
+  },
+  {
+    "code": "private_reply_pending",
+    "status": 409,
+    "tag": "PrivateReplyPending"
   },
   {
     "code": "queue_has_no_room",

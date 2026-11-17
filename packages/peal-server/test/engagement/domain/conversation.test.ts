@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Duration, Option } from "effect";
+import { humanAgentWindowDays } from "peal-contract";
 
 import {
   changedSince,
@@ -15,7 +16,11 @@ import {
   postponeBoxRead,
   recordBoxRead,
 } from "#engagement/domain/message-box.ts";
-import { replyWindowOf } from "#engagement/domain/reply-window.ts";
+import {
+  humanAgentWindow,
+  personWindowOf,
+  replyWindowOf,
+} from "#engagement/domain/reply-window.ts";
 import {
   conversation,
   conversationReading,
@@ -142,6 +147,143 @@ describe("a conversation", () => {
           DateTime.addDuration(messagedAt, "90 days")
         )
       ).toStrictEqual({ closesAt: Option.none(), open: true });
+    }
+  });
+});
+
+describe("Meta's answer window", () => {
+  it("closes a minute before Meta's 24 hours after the person last wrote", () => {
+    for (const platform of ["facebook", "instagram"] as const) {
+      const closesAt = DateTime.addDuration(
+        messagedAt,
+        Duration.sum(Duration.hours(23), Duration.minutes(59))
+      );
+
+      expect(
+        replyWindowOf(
+          platform,
+          Option.some(messagedAt),
+          DateTime.addDuration(
+            messagedAt,
+            Duration.sum(Duration.hours(23), Duration.minutes(58))
+          )
+        )
+      ).toStrictEqual({ closesAt: Option.some(closesAt), open: true });
+      expect(
+        replyWindowOf(
+          platform,
+          Option.some(messagedAt),
+          DateTime.addDuration(
+            messagedAt,
+            Duration.sum(
+              Duration.sum(Duration.hours(23), Duration.minutes(59)),
+              Duration.seconds(30)
+            )
+          )
+        )
+      ).toStrictEqual({ closesAt: Option.some(closesAt), open: false });
+    }
+  });
+
+  it("stays shut where nobody else wrote", () => {
+    for (const platform of ["facebook", "instagram"] as const) {
+      expect(
+        replyWindowOf(platform, Option.none(), messagedAt).open
+      ).toBeFalsy();
+    }
+  });
+});
+
+const after = (duration: Duration.Duration) =>
+  DateTime.addDuration(messagedAt, duration);
+
+describe("a person's answer window on Meta (Human Agent)", () => {
+  const closesAt = after(
+    Duration.subtract(Duration.days(7), Duration.minutes(1))
+  );
+
+  it("opens past the 24 hours, until a minute before Meta's 7 days", () => {
+    for (const platform of ["facebook", "instagram"] as const) {
+      expect(
+        replyWindowOf(
+          platform,
+          Option.some(messagedAt),
+          after(Duration.hours(25))
+        ).open
+      ).toBeFalsy();
+      expect(
+        personWindowOf(
+          platform,
+          Option.some(messagedAt),
+          after(Duration.hours(25))
+        )
+      ).toStrictEqual(
+        Option.some({ closesAt: Option.some(closesAt), open: true })
+      );
+      expect(
+        personWindowOf(
+          platform,
+          Option.some(messagedAt),
+          after(
+            Duration.sum(
+              Duration.days(6),
+              Duration.sum(Duration.hours(23), Duration.minutes(58))
+            )
+          )
+        )
+      ).toStrictEqual(
+        Option.some({ closesAt: Option.some(closesAt), open: true })
+      );
+      expect(
+        personWindowOf(
+          platform,
+          Option.some(messagedAt),
+          after(
+            Duration.sum(
+              Duration.days(6),
+              Duration.sum(
+                Duration.sum(Duration.hours(23), Duration.minutes(59)),
+                Duration.seconds(30)
+              )
+            )
+          )
+        )
+      ).toStrictEqual(
+        Option.some({ closesAt: Option.some(closesAt), open: false })
+      );
+      expect(
+        personWindowOf(
+          platform,
+          Option.some(messagedAt),
+          after(Duration.days(8))
+        )
+      ).toStrictEqual(
+        Option.some({ closesAt: Option.some(closesAt), open: false })
+      );
+    }
+  });
+
+  it("stays shut where nobody else wrote", () => {
+    for (const platform of ["facebook", "instagram"] as const) {
+      expect(personWindowOf(platform, Option.none(), messagedAt)).toStrictEqual(
+        Option.some({ closesAt: Option.none(), open: false })
+      );
+    }
+  });
+
+  it("lasts the days the contract says", () => {
+    expect(Duration.toDays(humanAgentWindow)).toBe(humanAgentWindowDays);
+  });
+
+  it("is no rule of Mastodon's or Bluesky's", () => {
+    for (const platform of ["mastodon", "bluesky"] as const) {
+      expect(
+        personWindowOf(
+          platform,
+          Option.some(messagedAt),
+          after(Duration.hours(25))
+        )
+      ).toStrictEqual(Option.none());
     }
   });
 });

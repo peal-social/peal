@@ -32,10 +32,13 @@ import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.errors.UnprocessableEntityError;
 import social.peal.resources.inboxmessages.requests.ConfirmMessageInboxMessagesRequest;
+import social.peal.resources.inboxmessages.requests.ConfirmPrivateReplyInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.GetConversationInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.GetMessageSettingsInboxMessagesRequest;
+import social.peal.resources.inboxmessages.requests.GetPrivateReplyInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.ListConversationsInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.NewInboxMessage;
+import social.peal.resources.inboxmessages.requests.NewInboxPrivateReply;
 import social.peal.resources.inboxmessages.requests.SetChannelMessagesInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.SetConversationReadInboxMessagesRequest;
 import social.peal.resources.inboxmessages.requests.SetMessageApplicationInboxMessagesRequest;
@@ -44,6 +47,7 @@ import social.peal.types.InboxConversationDetail;
 import social.peal.types.InboxConversationPage;
 import social.peal.types.InboxMessageSettings;
 import social.peal.types.InboxOutgoingMessage;
+import social.peal.types.InboxPrivateReply;
 import social.peal.types.UnauthenticatedEncoded;
 
 public class RawInboxMessagesClient {
@@ -54,7 +58,7 @@ public class RawInboxMessagesClient {
     }
 
     /**
-     * Lists the workspace's conversations, the latest message first, 30 a page unless <code>limit</code> (at most 100) says otherwise. <code>channelId</code> and <code>unread</code> narrow the list. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon and Bluesky where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
+     * Lists the workspace's conversations, the latest message first, 30 a page unless <code>limit</code> (at most 100) says otherwise. <code>channelId</code> and <code>unread</code> narrow the list. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). On Messenger and Instagram, Meta gives only a conversation's 20 latest messages, so a longer one is never read whole; a message taken back on Instagram is deleted when Meta tells of it, and Messenger tells of none, so one taken back there stays until its 30 days. Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
      */
     public PealClientHttpResponse<InboxConversationPage> listConversations(String workspaceId) {
         return listConversations(
@@ -62,7 +66,7 @@ public class RawInboxMessagesClient {
     }
 
     /**
-     * Lists the workspace's conversations, the latest message first, 30 a page unless <code>limit</code> (at most 100) says otherwise. <code>channelId</code> and <code>unread</code> narrow the list. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon and Bluesky where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
+     * Lists the workspace's conversations, the latest message first, 30 a page unless <code>limit</code> (at most 100) says otherwise. <code>channelId</code> and <code>unread</code> narrow the list. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). On Messenger and Instagram, Meta gives only a conversation's 20 latest messages, so a longer one is never read whole; a message taken back on Instagram is deleted when Meta tells of it, and Messenger tells of none, so one taken back there stays until its 30 days. Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
      */
     public PealClientHttpResponse<InboxConversationPage> listConversations(
             String workspaceId, RequestOptions requestOptions) {
@@ -71,7 +75,7 @@ public class RawInboxMessagesClient {
     }
 
     /**
-     * Lists the workspace's conversations, the latest message first, 30 a page unless <code>limit</code> (at most 100) says otherwise. <code>channelId</code> and <code>unread</code> narrow the list. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon and Bluesky where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
+     * Lists the workspace's conversations, the latest message first, 30 a page unless <code>limit</code> (at most 100) says otherwise. <code>channelId</code> and <code>unread</code> narrow the list. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). On Messenger and Instagram, Meta gives only a conversation's 20 latest messages, so a longer one is never read whole; a message taken back on Instagram is deleted when Meta tells of it, and Messenger tells of none, so one taken back there stays until its 30 days. Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
      */
     public PealClientHttpResponse<InboxConversationPage> listConversations(
             String workspaceId, ListConversationsInboxMessagesRequest request) {
@@ -79,7 +83,7 @@ public class RawInboxMessagesClient {
     }
 
     /**
-     * Lists the workspace's conversations, the latest message first, 30 a page unless <code>limit</code> (at most 100) says otherwise. <code>channelId</code> and <code>unread</code> narrow the list. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon and Bluesky where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
+     * Lists the workspace's conversations, the latest message first, 30 a page unless <code>limit</code> (at most 100) says otherwise. <code>channelId</code> and <code>unread</code> narrow the list. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). On Messenger and Instagram, Meta gives only a conversation's 20 latest messages, so a longer one is never read whole; a message taken back on Instagram is deleted when Meta tells of it, and Messenger tells of none, so one taken back there stays until its 30 days. Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
      */
     public PealClientHttpResponse<InboxConversationPage> listConversations(
             String workspaceId, ListConversationsInboxMessagesRequest request, RequestOptions requestOptions) {
@@ -285,7 +289,7 @@ public class RawInboxMessagesClient {
     }
 
     /**
-     * Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of <code>direct</code> visibility, which mentions every participant first, and a text that mentions any other account is refused (422 <code>MessageMentionsOutside</code>), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message <code>sending</code>, and the conversation shows how it ended. A message whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 <code>MessagePending</code>). With an <code>Idempotency-Key</code> header (255 characters at most, new for each message), the request is safe to send again: within 24 hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 <code>IdempotencyKeyReused</code>). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 <code>UsageAllowanceReached</code>); with one, it is billed past the allowance. A message that never went out is not counted. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     * Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of <code>direct</code> visibility, which mentions every participant first, and a text that mentions any other account is refused (422 <code>MessageMentionsOutside</code>), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept; on Messenger and Instagram a message sent only within 24 hours of the person's last one (<code>window</code>): past it, the message is refused before anything is journalled (409 <code>InboxActionUnavailable</code>, <code>reason</code> <code>windowClosed</code>, with <code>closedAt</code>), unless an <code>Idempotency-Key</code> names a message already made. Where the server's Meta app holds Meta's Human Agent feature, a member signed in to Peal's web app in person may answer until 7 days after the person's last message (<code>window.personClosesAt</code>), with Meta's <code>HUMAN_AGENT</code> tag; an API key, an application (MCP, the command line) or staff acting as a member never may, and are refused past the 24 hours. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message <code>sending</code>, and the conversation shows how it ended. A message whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 <code>MessagePending</code>). With an <code>Idempotency-Key</code> header (255 characters at most, new for each message), the request is safe to send again: within 24 hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 <code>IdempotencyKeyReused</code>). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 <code>UsageAllowanceReached</code>); with one, it is billed past the allowance. A message that never went out is not counted. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
      */
     public PealClientHttpResponse<InboxOutgoingMessage> sendMessage(
             String workspaceId, String conversationId, NewInboxMessage request) {
@@ -293,7 +297,7 @@ public class RawInboxMessagesClient {
     }
 
     /**
-     * Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of <code>direct</code> visibility, which mentions every participant first, and a text that mentions any other account is refused (422 <code>MessageMentionsOutside</code>), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message <code>sending</code>, and the conversation shows how it ended. A message whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 <code>MessagePending</code>). With an <code>Idempotency-Key</code> header (255 characters at most, new for each message), the request is safe to send again: within 24 hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 <code>IdempotencyKeyReused</code>). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 <code>UsageAllowanceReached</code>); with one, it is billed past the allowance. A message that never went out is not counted. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     * Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of <code>direct</code> visibility, which mentions every participant first, and a text that mentions any other account is refused (422 <code>MessageMentionsOutside</code>), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept; on Messenger and Instagram a message sent only within 24 hours of the person's last one (<code>window</code>): past it, the message is refused before anything is journalled (409 <code>InboxActionUnavailable</code>, <code>reason</code> <code>windowClosed</code>, with <code>closedAt</code>), unless an <code>Idempotency-Key</code> names a message already made. Where the server's Meta app holds Meta's Human Agent feature, a member signed in to Peal's web app in person may answer until 7 days after the person's last message (<code>window.personClosesAt</code>), with Meta's <code>HUMAN_AGENT</code> tag; an API key, an application (MCP, the command line) or staff acting as a member never may, and are refused past the 24 hours. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message <code>sending</code>, and the conversation shows how it ended. A message whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 <code>MessagePending</code>). With an <code>Idempotency-Key</code> header (255 characters at most, new for each message), the request is safe to send again: within 24 hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 <code>IdempotencyKeyReused</code>). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 <code>UsageAllowanceReached</code>); with one, it is billed past the allowance. A message that never went out is not counted. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
      */
     public PealClientHttpResponse<InboxOutgoingMessage> sendMessage(
             String workspaceId, String conversationId, NewInboxMessage request, RequestOptions requestOptions) {
@@ -364,6 +368,298 @@ public class RawInboxMessagesClient {
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 422:
                         throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's <code>abilities.privateReply</code>): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's <code>privateReplyUntil</code>), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 <code>InboxActionUnavailable</code>, <code>privateReply</code>, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 <code>PrivateReplyNotPossible</code>, with <code>reason</code>), and a text longer than the platform takes (422 <code>ReplyInvalid</code>). The message is journalled and sent by a job: the answer is the private reply <code>sending</code>; the comment shows how it ended. One whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 <code>PrivateReplyPending</code>), whichever request came first; one that failed lets another through. With an <code>Idempotency-Key</code> header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 <code>IdempotencyKeyReused</code>). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 <code>UsageAllowanceReached</code>); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public PealClientHttpResponse<InboxPrivateReply> sendPrivateReply(
+            String workspaceId, NewInboxPrivateReply request) {
+        return sendPrivateReply(workspaceId, request, null);
+    }
+
+    /**
+     * Sends the author of a comment under the workspace's post one private message, as the channel's account, on Instagram and Facebook Pages (the thread's <code>abilities.privateReply</code>): it goes to a real person, and cannot be taken back from Peal. The platform takes one a comment, within 7 days of when it was written (Peal stops an hour earlier, at the comment's <code>privateReplyUntil</code>), and the person must answer before the account may write again, as a direct message; on Instagram it lands in their requests unless they follow the account. The channel's direct messages must be on, as the answer comes as one (409 <code>InboxActionUnavailable</code>, <code>privateReply</code>, otherwise). Refused before anything is journalled: a comment the account wrote, one the platform no longer shows, or one too old (409 <code>PrivateReplyNotPossible</code>, with <code>reason</code>), and a text longer than the platform takes (422 <code>ReplyInvalid</code>). The message is journalled and sent by a job: the answer is the private reply <code>sending</code>; the comment shows how it ended. One whose outcome is unknown is <code>unconfirmed</code> and never sent again: check the conversation, then confirm it. While the comment's private reply is on its way, unconfirmed or sent, another is refused (409 <code>PrivateReplyPending</code>), whichever request came first; one that failed lets another through. With an <code>Idempotency-Key</code> header (255 characters at most, new for each), the request is safe to send again: within 24 hours the same key with the same comment and text answers the private reply the first request made; with another comment or text it is refused (409 <code>IdempotencyKeyReused</code>). On a server that bills, each counts one of the billing account's inbox messages, as a direct message does (402 <code>UsageAllowanceReached</code>); one that never went out is not counted. Say in your text that it is automatic where the law asks it of an automated message. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public PealClientHttpResponse<InboxPrivateReply> sendPrivateReply(
+            String workspaceId, NewInboxPrivateReply request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("inbox/messages")
+                .addPathSegments("private-replies");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        Request.Builder _requestBuilder = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json");
+        if (request.getIdempotencyKey().isPresent()) {
+            _requestBuilder.addHeader(
+                    "idempotency-key", request.getIdempotencyKey().get());
+        }
+        Request okhttpRequest = _requestBuilder.build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, InboxPrivateReply.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 402:
+                        throw new PaymentRequiredError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 409:
+                        throw new ConflictError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 422:
+                        throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public PealClientHttpResponse<InboxPrivateReply> getPrivateReply(String workspaceId, String privateReplyId) {
+        return getPrivateReply(
+                workspaceId,
+                privateReplyId,
+                GetPrivateReplyInboxMessagesRequest.builder().build());
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public PealClientHttpResponse<InboxPrivateReply> getPrivateReply(
+            String workspaceId, String privateReplyId, RequestOptions requestOptions) {
+        return getPrivateReply(
+                workspaceId,
+                privateReplyId,
+                GetPrivateReplyInboxMessagesRequest.builder().build(),
+                requestOptions);
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public PealClientHttpResponse<InboxPrivateReply> getPrivateReply(
+            String workspaceId, String privateReplyId, GetPrivateReplyInboxMessagesRequest request) {
+        return getPrivateReply(workspaceId, privateReplyId, request, null);
+    }
+
+    /**
+     * Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 <code>Forbidden</code>, <code>personRequired</code>): without that it lists conversations, never their messages.
+     */
+    public PealClientHttpResponse<InboxPrivateReply> getPrivateReply(
+            String workspaceId,
+            String privateReplyId,
+            GetPrivateReplyInboxMessagesRequest request,
+            RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("inbox/messages/private-replies")
+                .addPathSegment(PathSegments.validate(privateReplyId));
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        Request.Builder _requestBuilder = new Request.Builder()
+                .url(httpUrl.build())
+                .method("GET", null)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Accept", "application/json");
+        Request okhttpRequest = _requestBuilder.build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        if (requestOptions != null && requestOptions.getMaxRetries().isPresent()) {
+            okhttpRequest = okhttpRequest
+                    .newBuilder()
+                    .tag(
+                            RetryInterceptor.MaxRetriesOverride.class,
+                            new RetryInterceptor.MaxRetriesOverride(
+                                    requestOptions.getMaxRetries().get()))
+                    .build();
+        }
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, InboxPrivateReply.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Records what someone found in the person's conversation for an unconfirmed private reply: it went out (<code>went: true</code>), or it did not (<code>false</code>), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public PealClientHttpResponse<InboxPrivateReply> confirmPrivateReply(
+            String workspaceId, String privateReplyId, ConfirmPrivateReplyInboxMessagesRequest request) {
+        return confirmPrivateReply(workspaceId, privateReplyId, request, null);
+    }
+
+    /**
+     * Records what someone found in the person's conversation for an unconfirmed private reply: it went out (<code>went: true</code>), or it did not (<code>false</code>), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
+     */
+    public PealClientHttpResponse<InboxPrivateReply> confirmPrivateReply(
+            String workspaceId,
+            String privateReplyId,
+            ConfirmPrivateReplyInboxMessagesRequest request,
+            RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("inbox/messages/private-replies")
+                .addPathSegment(PathSegments.validate(privateReplyId))
+                .addPathSegments("confirm");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, InboxPrivateReply.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 409:
+                        throw new ConflictError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 429:
                         throw new TooManyRequestsError(
@@ -567,7 +863,7 @@ public class RawInboxMessagesClient {
     }
 
     /**
-     * Turns a channel's direct messages on (<code>enabled: true</code>): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 <code>InboxActionUnavailable</code>, <code>unsupported</code>), and a Bluesky channel whose account has not granted the chat methods' permissions too (<code>reconnect</code>): reconnect it with <code>messages=true</code>, then turn its messages on. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 <code>Forbidden</code>, <code>personRequired</code>).
+     * Turns a channel's direct messages on (<code>enabled: true</code>): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 <code>InboxActionUnavailable</code>, <code>unsupported</code>), and a Bluesky, Facebook Page or Instagram channel whose account has not granted the permissions its messages take too (<code>reconnect</code>): reconnect it with <code>messages=true</code>, then turn its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access its messages in Instagram's settings. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 <code>Forbidden</code>, <code>personRequired</code>).
      */
     public PealClientHttpResponse<InboxMessageSettings> setChannelMessages(
             String workspaceId, String channelId, SetChannelMessagesInboxMessagesRequest request) {
@@ -575,7 +871,7 @@ public class RawInboxMessagesClient {
     }
 
     /**
-     * Turns a channel's direct messages on (<code>enabled: true</code>): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 <code>InboxActionUnavailable</code>, <code>unsupported</code>), and a Bluesky channel whose account has not granted the chat methods' permissions too (<code>reconnect</code>): reconnect it with <code>messages=true</code>, then turn its messages on. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 <code>Forbidden</code>, <code>personRequired</code>).
+     * Turns a channel's direct messages on (<code>enabled: true</code>): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 <code>InboxActionUnavailable</code>, <code>unsupported</code>), and a Bluesky, Facebook Page or Instagram channel whose account has not granted the permissions its messages take too (<code>reconnect</code>): reconnect it with <code>messages=true</code>, then turn its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access its messages in Instagram's settings. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 <code>Forbidden</code>, <code>personRequired</code>).
      */
     public PealClientHttpResponse<InboxMessageSettings> setChannelMessages(
             String workspaceId,

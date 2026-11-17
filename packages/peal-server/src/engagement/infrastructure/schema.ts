@@ -508,6 +508,9 @@ export const outgoingMessages = engagement.table(
   {
     attemptedAt: instant("attempted_at"),
     authorId: uuid("author_id"),
+    // Written by a member in person, in their own session of the web app:
+    // the one message Meta's Human Agent tag may carry.
+    byPerson: boolean("by_person").notNull().default(false),
     callClaimedAt: instant("call_claimed_at"),
     channelId: uuid("channel_id").notNull(),
     conversationId: uuid("conversation_id")
@@ -610,6 +613,9 @@ export const commentRules = engagement.table(
     id: uuid("id").primaryKey(),
     keywords: text("keywords").array().notNull(),
     postId: uuid("post_id"),
+    // Sent privately to the author of each comment answered in public,
+    // on the channels that can carry it; null for none.
+    privateReply: text("private_reply"),
     reply: text("reply").notNull(),
     scope: text("scope").notNull(),
     startedBy: uuid("started_by"),
@@ -634,8 +640,11 @@ export const commentRules = engagement.table(
  * A comment a rule looked at, once: what came of it (`outcome`:
  * `claimed` while its reply is being made, `replied` with the reply,
  * `noMatch`, `samePerson` when the rule answered its author already,
- * `refused` with the inbox's refusal as `code`). Ids and words of Peal's
- * only, never what the comment says; it goes with the comment.
+ * `refused` with the inbox's refusal as `code`). A reply's private
+ * follow-up: `private_reply_id` once made, or `private_code` (`waiting`
+ * for the public reply to be out, or why none was made); neither when the
+ * rule had none. Ids and words of Peal's only, never what the comment
+ * says; it goes with the comment.
  */
 export const commentRuleMatches = engagement.table(
   "comment_rule_matches",
@@ -646,6 +655,10 @@ export const commentRuleMatches = engagement.table(
       .references(() => comments.id, { onDelete: "cascade" }),
     lookedAt: instant("looked_at").notNull(),
     outcome: text("outcome").notNull(),
+    privateCode: text("private_code"),
+    // No foreign key: the private reply goes 30 days after it settled,
+    // and the match says it was made.
+    privateReplyId: uuid("private_reply_id"),
     replyId: uuid("reply_id"),
     ruleId: uuid("rule_id")
       .notNull()
@@ -658,5 +671,82 @@ export const commentRuleMatches = engagement.table(
     ),
     index("comment_rule_matches_rule_looked").on(table.ruleId, table.lookedAt),
     index("comment_rule_matches_comment").on(table.commentId),
+    index("comment_rule_matches_waiting")
+      .on(table.ruleId, table.lookedAt)
+      .where(sql`${table.privateCode} = 'waiting'`),
+  ]
+);
+
+/**
+ * The one private message a member, or a comment rule a member set, sends
+ * the author of a comment on Instagram or a Facebook Page (Meta's private
+ * replies): journalled before the platform is called, and sent once. It
+ * goes with its comment and thread (a comment forgotten, a thread
+ * deleted), its channel and workspace, and 30 days after it settled.
+ * `rule_id` names the rule that sent it, with no foreign key: a rule
+ * deleted leaves the row. One a comment while it is on its way,
+ * unconfirmed or sent: Meta takes one only, and a failed one lets another
+ * through.
+ */
+export const privateReplies = engagement.table(
+  "private_replies",
+  {
+    attemptedAt: instant("attempted_at"),
+    authorId: uuid("author_id"),
+    // When a gate last claimed it for a call to its platform: a call that
+    // may still be making keeps it from being handed over.
+    callClaimedAt: instant("call_claimed_at"),
+    channelId: uuid("channel_id").notNull(),
+    commentId: uuid("comment_id")
+      .notNull()
+      .references(() => comments.id, { onDelete: "cascade" }),
+    createdAt: instant("created_at").notNull(),
+    id: uuid("id").primaryKey(),
+    // The SHA-256 of the idempotency key the request came with, never the
+    // key; null without one, and once the key is forgotten.
+    keyDigest: text("key_digest"),
+    platformMessageId: text("platform_message_id"),
+    reason: text("reason"),
+    ruleId: uuid("rule_id"),
+    settledAt: instant("settled_at"),
+    status: text("status").notNull(),
+    text: text("text").notNull(),
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => threads.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id").notNull(),
+  },
+  (table) => [
+    // One a comment, whichever request came first, unless it failed.
+    uniqueIndex("private_replies_comment")
+      .on(table.commentId)
+      .where(sql`${table.status} <> 'failed'`),
+    // One an idempotency key, in its workspace.
+    uniqueIndex("private_replies_key")
+      .on(table.workspaceId, table.keyDigest)
+      .where(sql`${table.keyDigest} IS NOT NULL`),
+    // The retention, which deletes each by when it settled.
+    index("private_replies_settled")
+      .on(table.settledAt)
+      .where(sql`${table.settledAt} IS NOT NULL`),
+    // A channel's: what moving it, or its messages turned off, holds.
+    index("private_replies_channel").on(table.channelId),
+    // The thread's, for its view.
+    index("private_replies_thread").on(table.threadId, table.id),
+    // Those no job settled, which the collection hands to a person.
+    index("private_replies_sending")
+      .on(table.createdAt, table.id)
+      .where(sql`${table.status} = 'sending'`),
+    index("private_replies_author")
+      .on(table.authorId)
+      .where(sql`${table.authorId} IS NOT NULL`),
+    check(
+      "private_replies_status",
+      sql`${table.status} IN ('sending', 'sent', 'failed', 'unconfirmed')`
+    ),
+    check(
+      "private_replies_settled_at",
+      sql`(${table.status} = 'sending') = (${table.settledAt} IS NULL)`
+    ),
   ]
 );

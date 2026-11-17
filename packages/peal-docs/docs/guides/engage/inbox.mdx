@@ -1,25 +1,29 @@
 ---
 title: Inbox
-description: "Read and answer the comments under your published posts, the reviews of your Google Business Profile locations and your Mastodon and Bluesky direct messages, and see what each platform lets Peal read."
+description: "Read and answer the comments under your published posts, the reviews of your Google Business Profile locations and your Mastodon, Bluesky, Messenger and Instagram direct messages, and see what each platform lets Peal read."
 sidebar:
   icon: inbox
 ---
 
-The inbox gathers the comments people leave under the posts Peal published for a workspace, and the reviews of its Google Business Profile locations ([Reviews](#reviews)). Members answer them in public, as the connected account. Open a workspace from **Workspaces**, then **Inbox**.
+In a workspace, click **Inbox** in the sidebar. You'll find the comments people left under the posts Peal published for the workspace, and the reviews of its Google Business Profile locations ([Reviews](#reviews)). Members answer them in public, as the connected account.
 
 The inbox reads comments on posts published from Peal:
 
-- on Mastodon and Bluesky;
-- on Facebook Pages, Instagram, YouTube and LinkedIn company pages, where whoever runs the server turned them on ([Facebook Pages and Instagram](#meta), [YouTube](#youtube), [LinkedIn pages](#linkedin)).
+- On Mastodon and Bluesky.
+- On Facebook Pages, Instagram, YouTube and LinkedIn company pages, where whoever runs the server turned them on ([Facebook Pages and Instagram](#meta), [YouTube](#youtube), [LinkedIn pages](#linkedin)).
 
-Mentions are not collected; direct messages are, on Mastodon and Bluesky, where whoever runs the server turned them on ([Direct messages](#direct-messages)). Peal answers nothing by itself: every reply is written and sent by a person, or by an application a person connected and allowed to publish.
+Mentions aren't collected. Direct messages are, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram, where whoever runs the server turned them on ([Direct messages](#direct-messages)).
+
+Peal answers nothing by itself. Every reply is written and sent by a person, or by an application a person connected and allowed to publish.
 
 ## What Peal collects [#collected]
 
 For each post that went live on a channel, Peal reads the public replies to it on the platform. Two kinds of post are left out:
 
-- [stories](/guides/posts#formats), which disappear after 24 hours and whose replies Peal does not read;
-- Facebook reels, whose comments Peal does not read yet.
+- [Stories](/guides/posts#formats), which disappear after 24 hours and whose replies Peal doesn't read.
+- Facebook reels, whose comments Peal doesn't read yet.
+
+For each comment, Peal keeps this:
 
 | Kept                                                                      | Where it comes from                            |
 | ------------------------------------------------------------------------- | ---------------------------------------------- |
@@ -30,14 +34,14 @@ For each post that went live on a channel, Peal reads the public replies to it o
 | Whether the workspace answered it, hid it or liked it                     | Peal, and the platform for what was done there |
 | The replies members sent from Peal, who wrote each, and how sending ended | The members of the workspace                   |
 
-For a post of several parts, a [thread](/guides/posts#threads), Peal reads the comments under every part and gathers them in the post's one thread in the inbox. The parts themselves, which the account wrote, are not comments. A thread's comments are read once all its parts are live. When it stopped midway, they are read from the moment **Post again**, or what you found on the platform, completes it.
+For a [thread](/guides/posts#threads), a post of several parts, Peal reads the comments under every part and gathers them in the post's one thread in the inbox. The parts themselves, which the account wrote, aren't comments. A thread's comments are read once all its parts are live. If it stopped midway, they're read from the moment **Post again**, or what you found on the platform, completes it.
 
-Peal reads nothing else of the people who comment: no picture, no profile, no follower count, no other post of theirs, no private message. A reply only its author's followers or the people it mentions can see is a private message, and is not collected.
+Peal reads nothing else of the people who comment: no picture, no profile, no follower count, no other post of theirs, no private message. A reply that only its author's followers or the people it mentions can see is a private message, and isn't collected.
 
-<Callout type="info" title="Other people's words">
+<Callout type="info" title="Peal uses comments only to show and answer them">
   Peal uses comments only to show them to the workspace's members and let them
   answer. No profile of their authors, no automation and no writing assistant
-  reads them, and they are never used to train anything. A workspace's
+  reads them, and they're never used to train anything. A workspace's
   [webhooks](/developers/webhooks/events/media-comments#comment-received) and
   notices say that comments arrived, with ids and counts, never their text or
   their authors.
@@ -45,7 +49,7 @@ Peal reads nothing else of the people who comment: no picture, no profile, no fo
 
 ## When comments are read [#schedule]
 
-Peal looks for new comments every ten minutes. How often a post's comments are read depends on its age:
+Peal looks for new comments every ten minutes. How often it reads a post's comments depends on the post's age:
 
 | Post's age                                     | Its comments are read |
 | ---------------------------------------------- | --------------------- |
@@ -56,234 +60,285 @@ Peal looks for new comments every ten minutes. How often a post's comments are r
 
 Whoever runs the server can set another window, of 90 days at most ([`PEAL_ENGAGEMENT_WINDOW_DAYS`](/self-hosting/environment-variables)).
 
-Readings take turns with the channel's publishing: Peal makes one call at a time per account.
+Readings take turns with the channel's publishing, and Peal makes one call at a time per account. Some channels wait:
 
-- When a platform asks Peal to slow down, or does not answer, that channel's threads wait half an hour.
-- A channel that is turned off or needs reconnecting is passed over until it works again.
+- When a platform asks Peal to slow down, or doesn't answer, that channel's threads wait half an hour.
+- A channel that's turned off or needs reconnecting is passed over until it works again.
 - A disconnected channel's posts are no longer read.
 
 When a comment was edited, Peal shows its new text. When a platform no longer shows a comment, Peal erases its text and its author at the next reading, and keeps only that there was a comment. When the post itself is gone from the platform, every comment under it is erased the same way.
 
 ## How long comments are kept [#retention]
 
-A thread (a post's comments on one channel, and the replies sent to them) is deleted {{keep-inbox-en}} after Peal stopped reading the post's comments. With the usual window, that is 60 days after the post went live. The deletion runs once a day.
+A thread (a post's comments on one channel, and the replies sent to them) is deleted {{keep-inbox-en}} after Peal stopped reading the post's comments. With the usual window, that's 60 days after the post went live. The deletion runs once a day.
 
-Some platforms let Peal keep what they give for less time unless Peal reads it again:
+Some platforms let Peal keep what they give for less time, unless Peal reads it again:
 
 - On [YouTube](#youtube), a post's comments, their text and their author, are erased 29 days after the last reading that found all of them.
-- On [LinkedIn](#linkedin), they are erased a day after it.
+- On [LinkedIn](#linkedin), they're erased a day after it.
 
-They are erased as when the platform no longer shows them, and the inbox says "No longer kept". A reading that stops short (a post with more than 500 comments, comments turned off, a day's quota spent) does not count: the comments it did not find are erased at that date. A later reading that finds a comment shows it again. Peal checks this every hour. Disconnecting a channel of such a platform erases its comments at once.
+They're erased as if the platform no longer showed them, and the inbox says "No longer kept". A reading that stops short doesn't count: a post with more than 500 comments, comments turned off, or a day's quota spent. The comments it didn't find are erased at that date. A later reading that finds a comment shows it again. Peal checks this every hour. Disconnecting a channel of such a platform erases its comments at once.
 
 Deleting a workspace deletes its threads at once. When a member closes their account, the replies they sent stay with the workspace, without their name. Their [data export](/guides/workspace) lists the replies they sent, never the comments they answered, which are someone else's.
 
-If you commented under a post published with Peal and want your comment removed from Peal, delete it on the platform: it leaves Peal at the next reading. You can also write to the account that published the post, or to whoever runs the server.
+If you commented under a post published with Peal and want your comment out of Peal, delete it on the platform. It leaves Peal at the next reading. You can also write to the account that published the post, or to whoever runs the server.
 
-## Answering [#replying]
+## Answer a comment [#replying]
 
-A reply is a public message from the connected account: everyone who sees the post sees it. Owners, admins and editors may answer. Contributors and viewers read the inbox and answer nothing. On Peal Cloud, each reply sent counts against its billing account's monthly allowance of messages ([Usage meters](/guides/workspace/billing#meters)).
+A reply is a public message from the connected account, and everyone who sees the post sees it. Owners, admins and editors can answer. Contributors and viewers read the inbox and answer nothing. On Peal Cloud, each reply sent counts against its billing account's monthly allowance of messages ([Usage meters](/guides/workspace/billing#meters)).
 
-When you send a reply, Peal:
+Write your reply under the comment and click **Send**. Peal then:
 
-1. checks it against the platform's length, counted as the platform counts (on Mastodon, the mention of the person you answer is put first, as Mastodon needs it to notify them, and counts);
-2. records it before calling the platform;
-3. sends it once.
+1. Checks it against the platform's length, counted as the platform counts. On Mastodon, the mention of the person you answer goes first, because Mastodon needs it to notify them, and it counts.
+2. Records it before calling the platform.
+3. Sends it once.
 
 The thread shows where each reply is:
 
-| Status        | What it means                                                                                             |
-| ------------- | --------------------------------------------------------------------------------------------------------- |
-| `sending`     | Recorded, and on its way.                                                                                 |
-| `sent`        | On the platform, with its link.                                                                           |
-| `failed`      | Nothing went out, and why. Write it again when the cause is gone.                                         |
-| `unconfirmed` | Peal cannot tell whether it went out: the platform did not answer, or the server stopped during the call. |
-| `withdrawn`   | Sent, then deleted from the platform by a member.                                                         |
+| Status        | What it means                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| `sending`     | Recorded, and on its way.                                                                               |
+| `sent`        | On the platform, with its link.                                                                         |
+| `failed`      | Nothing went out, and why. Write it again once the cause is gone.                                       |
+| `unconfirmed` | Peal can't tell whether it went out: the platform didn't answer, or the server stopped during the call. |
+| `withdrawn`   | Sent, then deleted from the platform by a member.                                                       |
 
-<Callout type="warning" title="Settle an unconfirmed reply yourself">
-  Peal never sends an unconfirmed reply again, as that could post the same
-  answer twice. Look at the post on the platform, then tell Peal what you found:
-  **It is there**, or **It did not go out**. Until then, no other reply can be
-  written to that comment.
+<Callout type="warning" title="Peal never sends an unconfirmed reply again">
+  Sending it again could post the same answer twice, so you settle it. Look at
+  the post on the platform, then tell Peal what you found by clicking **It is
+  there** or **It did not go out**. Until then, nobody can write another reply
+  to that comment.
 </Callout>
 
-A reply still on its way an hour after you wrote it becomes unconfirmed too. Peal stops its sending for good at that moment, so nothing goes out for it afterwards, whatever you then find on the platform.
+A reply still on its way an hour after you wrote it becomes unconfirmed too. Peal stops sending it for good at that moment, so nothing goes out for it afterwards, whatever you then find on the platform.
 
-One comment has one reply on its way at a time: of two requests to answer it sent together, one is refused. Through the API, an `Idempotency-Key` header makes a request safe to send again after a lost answer ([Idempotency](/developers/conventions/idempotency#idempotency)).
+A comment has one reply on its way at a time. If two requests to answer it are sent together, one is refused. Through the API, an `Idempotency-Key` header makes a request safe to send again after a lost answer ([Idempotency](/developers/conventions/idempotency#idempotency)).
 
-You can also:
+### Withdraw a reply [#withdraw]
 
-- take a sent reply back: Peal deletes it from the platform. People who already saw it may have kept it.
-- mark a comment as answered when it needs no reply. A comment the account answered on the platform itself is marked answered at the next reading.
+To take a sent reply back, click **Withdraw**. Peal deletes it from the platform. People who already saw it may have kept it.
+
+### Mark a comment as answered [#mark-answered]
+
+When a comment needs no reply, click **Mark as answered**. A comment the account answered on the platform itself is marked answered at the next reading.
 
 ## What each platform allows [#abilities]
 
-| Ability                                | Mastodon                                      | Bluesky                                       | Facebook Pages ([where on](#meta)) | Instagram ([where on](#meta))   | YouTube ([where on](#youtube))        | LinkedIn pages ([where on](#linkedin))      |
-| -------------------------------------- | --------------------------------------------- | --------------------------------------------- | ---------------------------------- | ------------------------------- | ------------------------------------- | ------------------------------------------- |
-| Read the comments under a post         | Yes                                           | Yes                                           | Yes                                | Yes                             | Yes                                   | Yes                                         |
-| Reply to a comment                     | Yes                                           | Yes                                           | Yes                                | Yes                             | Yes                                   | Yes                                         |
-| Take a reply back                      | Yes                                           | Yes                                           | Yes                                | Yes                             | Yes                                   | Yes                                         |
-| Like a comment                         | Not yet: Peal does not ask for the permission | Not yet: Peal does not ask for the permission | Not yet                            | No: Instagram's API has no like | No: YouTube's API has no like         | Not yet                                     |
-| Hide someone's comment under your post | No: Mastodon offers it to no account          | Not yet: Peal does not ask for the permission | Yes                                | Yes                             | Yes: it is rejected                   | No: the pages API has no hide               |
-| Delete someone else's comment          | No: Mastodon offers it to no account          | No: nobody deletes another account's post     | Not yet                            | Not yet                         | No: only its author deletes a comment | No: nobody deletes another member's comment |
+What you can do with a comment depends on its platform:
 
-`GET /api/workspaces/{workspaceId}/inbox/channels/{channelId}/abilities` and each thread answer the same for one channel:
+| Ability                                | Mastodon                                     | Bluesky                                      | Facebook Pages ([where on](#meta)) | Instagram ([where on](#meta))   | YouTube ([where on](#youtube))        | LinkedIn pages ([where on](#linkedin))      |
+| -------------------------------------- | -------------------------------------------- | -------------------------------------------- | ---------------------------------- | ------------------------------- | ------------------------------------- | ------------------------------------------- |
+| Read the comments under a post         | Yes                                          | Yes                                          | Yes                                | Yes                             | Yes                                   | Yes                                         |
+| Reply to a comment                     | Yes                                          | Yes                                          | Yes                                | Yes                             | Yes                                   | Yes                                         |
+| Take a reply back                      | Yes                                          | Yes                                          | Yes                                | Yes                             | Yes                                   | Yes                                         |
+| Like a comment                         | Not yet: Peal doesn't ask for the permission | Not yet: Peal doesn't ask for the permission | Not yet                            | No: Instagram's API has no like | No: YouTube's API has no like         | Not yet                                     |
+| Hide someone's comment under your post | No: Mastodon offers it to no account         | Not yet: Peal doesn't ask for the permission | Yes                                | Yes                             | Yes: it is rejected                   | No: the pages API has no hide               |
+| Delete someone else's comment          | No: Mastodon offers it to no account         | No: nobody deletes another account's post    | Not yet                            | Not yet                         | No: only its author deletes a comment | No: nobody deletes another member's comment |
 
-- `available`;
-- `reconnect`: the account was connected before Peal asked for what the ability takes. [Connect the account again](/guides/channels), without disconnecting it, and the channel stays with its history;
+`GET /api/workspaces/{workspaceId}/inbox/channels/{channelId}/abilities` and each thread give the same for one channel, as one of these values:
+
+- `available`.
+- `reconnect`: the account was connected before Peal asked for what the ability takes. [Reconnect the channel](/guides/channels#reconnect), or connect the same account again, without disconnecting it. The channel then stays with its history, which disconnecting would erase.
 - `unsupported`.
 
 On Mastodon, replies to public and unlisted posts are read. Peal reads them with the account's access when the account allowed it, which shows every reply. Without it, Peal sees the first 60, twenty replies deep at most. On Bluesky, Peal reads the thread from Bluesky's public service, without the account's session.
 
-A thread keeps its first 500 comments. Under a post with thousands of replies, Peal reads as far as that and no further: the comments past them stay on the platform, and are not shown here.
+A thread keeps its first 500 comments. Under a post with thousands of replies, Peal reads that far and no further. The comments past them stay on the platform, and aren't shown here.
 
 ### Facebook Pages and Instagram [#meta]
 
-Peal reads the comments under Facebook Pages' and Instagram accounts' posts only where whoever runs the server turned them on ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)). The permissions they take are granted by Meta's App Review, which an app's own accounts do not need, and anyone else's do.
+Peal reads the comments under Facebook Pages' and Instagram accounts' posts only where whoever runs the server turned them on ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)). Meta's App Review grants the permissions they take. An app's own accounts don't need the review, and anyone else's do.
+
+Each platform needs this:
 
 | Platform       | What the account allows at sign-in                                                                              | What the server's operator sets                                                          |
 | -------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Facebook Pages | `pages_read_user_content` to read the comments, `pages_manage_engagement` to answer, hide and take a reply back | `facebook` in `PEAL_INBOX_PLATFORMS`, with Meta's app (`META_APP_ID`, `META_APP_SECRET`) |
 | Instagram      | `instagram_manage_comments` through a Page, or `instagram_business_manage_comments` through Instagram Login     | `instagram` in `PEAL_INBOX_PLATFORMS`, with either of Instagram's ways in                |
 
-The sign-in asks for these permissions where the server reads the platform, and a member may decline them: the account still connects and posts, with no inbox. An account connected before shows `reconnect` on what it lacks: [connect it again](/guides/channels), without disconnecting it.
+The sign-in asks for these permissions where the server reads the platform, and a member may decline them. The account still connects and posts, with no inbox. An account connected before shows `reconnect` on what it lacks: [reconnect it](/guides/channels#reconnect), without disconnecting it.
 
 Meta grants them at once for accounts its app's own people manage (Standard Access). For any other account, it grants them only once the app passed App Review, with its business verified (Advanced Access). [Self-hosting](/self-hosting/platforms#meta) says how to set the app up.
 
-On these platforms:
+Each platform has its quirks:
 
-- Facebook shows the name of the person or Page who commented, and no handle. It may not show who wrote a comment at all, which the inbox then calls "Someone". It does not say whether a comment is hidden: Peal shows what was done from Peal.
-- Instagram answers only top-level comments: a reply to a reply goes under the comment it answers. It takes no reply to a hidden comment.
+- Facebook shows the name of the person or Page who commented, and no handle. It may not show who wrote a comment at all, and the inbox then says "Someone".
+- Facebook doesn't say whether a comment is hidden, so Peal shows what was done from Peal.
+- Instagram answers only top-level comments, so a reply to a reply goes under the comment it answers. It takes no reply to a hidden comment.
 - Instagram puts a reply to a reply under the top-level comment, so the next reading shows that comment as answered too.
-- Meta takes no key that would make a reply safe to send twice. When a reply's outcome is unknown, Peal looks for it among the replies under the comment. It finds it only when exactly one by the account, since you wrote it, has its text; otherwise it stays `unconfirmed` for you to settle. It is never sent again.
-- Peal reads comments every ten minutes, as on the other platforms, and stops for the run once Meta says half the account's calls are used, so that publishing keeps the rest. Meta's notifications of new comments are not used yet.
-- Only posts published after the platform was turned on are read: those published before keep no inbox.
+- Meta takes no key that would make a reply safe to send twice. When a reply's outcome is unknown, Peal looks for it among the replies under the comment.
+- Peal finds it only when exactly one reply by the account, written since you sent yours, has its text. Otherwise it stays `unconfirmed` for you to settle. It's never sent again.
+- Peal reads comments every ten minutes, as on the other platforms. It stops for the run once Meta says half the account's calls are used, so that publishing keeps the rest. Meta's notifications of new comments aren't used yet.
+- Only posts published after the platform was turned on are read. Those published before have no inbox.
 
 ### YouTube [#youtube]
 
-Peal reads the comments under a YouTube channel's videos, Shorts included, only where whoever runs the server turned YouTube on ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)). The scope they take, `youtube.force-ssl`, is one Google verifies before an app may ask anyone but its own testers for it.
+Peal reads the comments under a YouTube channel's videos, Shorts included, only where whoever runs the server turned YouTube on ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)). They take the `youtube.force-ssl` scope, which Google verifies before an app may ask anyone but its own testers for it.
+
+YouTube needs this:
 
 | What the account allows at sign-in                                           | What the server's operator sets                                                                           |
 | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `youtube.force-ssl` to read the comments, answer, hide and take a reply back | `youtube` in `PEAL_INBOX_PLATFORMS`, with YouTube's client (`YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`) |
 
-The sign-in asks for this scope where the server reads YouTube, and Google's consent page lets the owner untick it: the channel still connects and posts, with no inbox. A channel connected before shows `reconnect`: [connect it again](/guides/channels), without disconnecting it.
+The sign-in asks for this scope where the server reads YouTube, and Google's consent page lets the owner untick it. The channel still connects and posts, with no inbox. A channel connected before shows `reconnect`: [reconnect it](/guides/channels#reconnect), without disconnecting it.
 
 On YouTube:
 
-- YouTube has one level of replies: a reply to a reply goes under the top-level comment.
-- A comment's author is shown by the name they display, which is often their handle. There is no link to a comment.
+- There's one level of replies, so a reply to a reply goes under the top-level comment.
+- A comment's author shows by the name they display, which is often their handle. There's no link to a comment.
 - YouTube takes no key that would make a reply safe to send twice. When a reply's outcome is unknown, Peal looks for it among the replies under the comment, as on [Meta's platforms](#meta), and never sends it again.
-- YouTube's policies let Peal keep a comment 30 days without reading it again. Peal erases a post's comments 29 days after the last reading that found all of them ([retention](#retention)), and erases them all at once when the channel is disconnected.
-- Only videos published after YouTube was turned on are read: those published before keep no inbox.
+- YouTube's policies let Peal keep a comment 30 days without reading it again. Peal erases a post's comments 29 days after the last reading that found all of them ([retention](#retention)), and all at once when the channel is disconnected.
+- Only videos published after YouTube was turned on are read. Those published before have no inbox.
 
-Hiding a comment rejects it. It and the replies under it are no longer shown on YouTube, and Peal never bans its author. The next reading no longer finds it, since YouTube's API lists no rejected comment, and then erases it as no longer on the platform. Until then, showing it again asks YouTube to publish it, which YouTube may refuse. After that, show it again from YouTube Studio, and Peal reads it once YouTube shows it.
+Hiding a comment rejects it. The comment and the replies under it are no longer shown on YouTube, and Peal never bans its author.
+
+The next reading no longer finds it, because YouTube's API lists no rejected comment, and then erases it as no longer on the platform. Until then, showing it again asks YouTube to publish it, which YouTube may refuse. After that, show it again from YouTube Studio, and Peal reads it once YouTube shows it.
 
 <Accordion>
-  <AccordionItem title="YouTube's daily quota">
-    The project's daily quota of 10,000 units resets at midnight Pacific Time.
-    Peal splits it in three by default:
+<AccordionItem title="YouTube's daily quota">
 
-    | Share                     | Units          | Setting                                                  |
-    | ------------------------- | -------------- | -------------------------------------------------------- |
-    | Comment reads             | 3,000 at most  | `YOUTUBE_DAILY_COMMENT_UNITS`                            |
-    | Custom thumbnails         | About 4,000    | `YOUTUBE_DAILY_THUMBNAILS` (80, at about 50 units each)  |
-    | What Peal does not count  | 3,000 left     | Replies, hides and withdrawals (50 units each), publishing's status reads and lookups, and analytics |
+The project's daily quota of 10,000 units resets at midnight Pacific Time. Peal splits it in three by default:
 
-    Reading comments spends one unit a page. Past its share, or once YouTube
-    says the quota is spent, comments wait for the next day. Replies, hides and
-    withdrawals are never held back for the reading's share.
+| Share                   | Units         | Setting                                                                                              |
+| ----------------------- | ------------- | ---------------------------------------------------------------------------------------------------- |
+| Comment reads           | 3,000 at most | `YOUTUBE_DAILY_COMMENT_UNITS`                                                                        |
+| Custom thumbnails       | About 4,000   | `YOUTUBE_DAILY_THUMBNAILS` (80, at about 50 units each)                                              |
+| What Peal doesn't count | 3,000 left    | Replies, hides and withdrawals (50 units each), publishing's status reads and lookups, and analytics |
 
-  </AccordionItem>
+Reading comments spends one unit a page. Past its share, or once YouTube says the quota is spent, comments wait for the next day. Replies, hides and withdrawals are never held back for the reading's share.
+
+</AccordionItem>
 </Accordion>
 
 ### LinkedIn pages [#linkedin]
 
-Peal reads the comments under a LinkedIn company page's posts only where whoever runs the server turned LinkedIn on ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)), with the pages app (`LINKEDIN_PAGES_CLIENT_ID`, `LINKEDIN_PAGES_CLIENT_SECRET`). A member's own profile is not read: LinkedIn closes the permission that reads a member's posts to almost every app.
+Peal reads the comments under a LinkedIn company page's posts only where whoever runs the server turned LinkedIn on ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core)), with the pages app (`LINKEDIN_PAGES_CLIENT_ID`, `LINKEDIN_PAGES_CLIENT_SECRET`). A member's own profile isn't read, because LinkedIn closes the permission that reads a member's posts to almost every app.
+
+The page's administrator allows two scopes at sign-in:
 
 | What the page's administrator allows at sign-in | What it does                              |
 | ----------------------------------------------- | ----------------------------------------- |
 | `r_organization_social_feed`                    | Read the comments under the page's posts  |
 | `w_organization_social_feed`                    | Answer as the page, and take a reply back |
 
-The pages' sign-in asks for both where the server reads LinkedIn. A page connected before shows `reconnect`: [connect it again](/guides/channels), without disconnecting it.
+The pages' sign-in asks for both where the server reads LinkedIn. A page connected before shows `reconnect`: [reconnect it](/guides/channels#reconnect), without disconnecting it.
 
-<Callout type="warning">
-  LinkedIn grants all that is asked or nothing. An app that does not hold these
-  scopes yet makes LinkedIn refuse the whole sign-in, so turn LinkedIn on only
-  once the app's products list them.
+<Callout type="warning" title="LinkedIn grants everything asked, or nothing">
+  If the app doesn't hold these scopes yet, LinkedIn refuses the whole sign-in.
+  Turn LinkedIn on only once the app's products list them.
 </Callout>
 
 On LinkedIn:
 
 - Peal keeps who commented by their LinkedIn identifier and fetches no name. LinkedIn lets an app keep another member's profile for a day at most, so the inbox shows "A LinkedIn member", or "A LinkedIn page" for a page.
-- LinkedIn lets an app keep comments for 48 hours, and profile data for a day. Peal erases a post's comments a day after the last reading that found all of them ([retention](#retention)). While a post is read, it is read at least every six hours, so its comments stay shown.
-- A comment has nested comments one level deep: an answer to a nested comment goes under the comment it answers.
+- LinkedIn lets an app keep comments for 48 hours, and profile data for a day. Peal erases a post's comments a day after the last reading that found all of them ([retention](#retention)).
+- While a post is read, it's read at least every six hours, so its comments stay shown.
+- A comment has nested comments one level deep. An answer to a nested comment goes under the comment it answers.
 - Nothing is hidden or liked from Peal.
 - LinkedIn takes no key that would make a reply safe to send twice. When a reply's outcome is unknown, Peal looks for it among the comments under the one it answered, as on [Meta's platforms](#meta), and never sends it again.
 - Only posts published after LinkedIn was turned on are read.
 
 <Accordion>
-  <AccordionItem title="LinkedIn's daily calls">
-    LinkedIn's Development tier allows 500 calls a day for the whole app and 100
-    for each member, posting included. Reading comments takes at most 200 of the
-    app's and 40 of each member's by default (`LINKEDIN_DAILY_COMMENT_CALLS`,
-    `LINKEDIN_DAILY_COMMENT_CALLS_PER_MEMBER`), counted by UTC day. It then
-    stops until the next day, while posting and replies go on.
+<AccordionItem title="LinkedIn's daily calls">
 
-    - A member is the administrator who connected the page: every page they connected shares their 40.
-    - Peal keeps that member's LinkedIn identifier with the page only while it reads LinkedIn comments, and forgets it within a day once they are turned off. It counts the calls under a keyed digest of it, never the identifier.
-    - A page connected before Peal kept who connected it, or while LinkedIn comments were off, is counted alone until it is reconnected.
-    - Once a day's share is spent, the posts not read whole that day lose their comments' text a day after their last complete reading ([retention](#retention)), until a reading finds them again. On the Development tier, the inbox may show few comments for much of the day.
-    - The Standard tier has no such limit: raise both there.
-    - A list of comments that LinkedIn gives without its total and that fills its pages (ten comments or more) takes one call more, to find its end.
+LinkedIn's Development tier allows 500 calls a day for the whole app and 100 for each member, posting included. By default, reading comments takes at most 200 of the app's calls and 40 of each member's (`LINKEDIN_DAILY_COMMENT_CALLS`, `LINKEDIN_DAILY_COMMENT_CALLS_PER_MEMBER`), counted by UTC day. It then stops until the next day, while posting and replies go on.
 
-  </AccordionItem>
+How the calls are counted:
+
+- A member is the administrator who connected the page. Every page they connected shares their 40.
+- Peal keeps that member's LinkedIn identifier with the page only while it reads LinkedIn comments, and forgets it within a day once they're turned off. It counts the calls under a keyed digest of it, never the identifier.
+- A page connected before Peal kept who connected it, or while LinkedIn comments were off, is counted alone until it's reconnected.
+- Once a day's share is spent, the posts not read whole that day lose their comments' text a day after their last complete reading ([retention](#retention)), until a reading finds them again. On the Development tier, the inbox may show few comments for much of the day.
+- The Standard tier has no such limit, so raise both settings there.
+- A list of comments that LinkedIn gives without its total and that fills its pages (ten comments or more) takes one more call, to find its end.
+
+</AccordionItem>
 </Accordion>
 
 ### Other platforms [#other-platforms]
 
 Peal reads no comments on the other platforms yet. Each needs a permission its platform grants after a review:
 
-| Platform  | What reading and answering comments needs                                                            |
-| --------- | ---------------------------------------------------------------------------------------------------- |
-| Threads   | `threads_read_replies` and `threads_manage_replies`, granted by Meta's App Review                    |
-| X         | Paid access to X's API for reading replies                                                           |
-| TikTok    | Comments are offered to business accounts through a separate TikTok product, which Peal does not use |
-| Pinterest | Not planned: Pinterest's API has no comments                                                         |
+| Platform  | What reading and answering comments needs                                                           |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| Threads   | `threads_read_replies` and `threads_manage_replies`, granted by Meta's App Review                   |
+| X         | Paid access to X's API for reading replies                                                          |
+| TikTok    | Comments are offered to business accounts through a separate TikTok product, which Peal doesn't use |
+| Pinterest | Not planned: Pinterest's API has no comments                                                        |
 
 If you run your own server, the same reviews apply to your own platform apps.
 
 ## Reviews [#reviews]
 
-A Google Business Profile channel posts as a location, and the people who visit it leave reviews on Google. Where whoever runs the server turned Google Business Profile on ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core), with `googleBusiness`), the inbox reads them beside the comments: one entry per location, its reviews the latest first.
+A Google Business Profile channel posts as a location, and the people who visit it leave reviews on Google. Where whoever runs the server turned Google Business Profile on ([`PEAL_INBOX_PLATFORMS`](/self-hosting/environment-variables#core), with `googleBusiness`), the inbox reads them beside the comments. There's one entry per location, with its reviews latest first.
 
-| What Peal keeps of a review                                                                                                   | What it never keeps                                                   |
-| ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Its stars (1 to 5), its text, when it was written and last changed, the name its author shows (none when they stay anonymous) | The author's picture or profile, the photos (only how many there are) |
-| The location's reply as Google shows it, with whether Google is checking it, showed it or rejected it                         |                                                                       |
-| Whether a member said it needs no answer, and the replies sent from Peal, with who wrote each and how sending ended           |                                                                       |
-
-- **When.** A location is read every hour while it had a review written or changed in the last week, every six hours otherwise, back to the oldest review Peal may keep.
-- **How long.** Google's policies let what its API gives be stored 30 days at most. Peal keeps a review 29 days after it was written or last changed, then deletes it with the replies sent to it; a review changed since is read again and kept from its change. A review Google no longer shows is deleted at the next complete read. A location not read for 29 days (its channel off, or the platform turned off) is deleted, with what Google says of it. Disconnecting the channel, or deleting the workspace, deletes its reviews at once.
-- **Answering.** A review holds one reply on Google, whoever wrote it: a reply from Peal replaces it, and Google may check it before showing it. Replies to reviews count no inbox message. A reply whose outcome is not known is settled by the next read of the location, which Peal brings forward: it went out when the location's reply is its text. **Delete the reply** deletes the location's reply, whoever wrote it. Google takes replies to a verified location only, of 4,096 bytes at most.
-- **In person only.** A member answers a review, or deletes its reply, signed in to Peal in the web app: an API key, an application connected through OAuth, the command line and AI assistants read reviews and mark them answered, and are refused a reply (`403`, `personRequired`). Google's policies ask that review replies never be automated or triggered without the user's prior specific and express consent, which Peal does not record yet.
-- **Events.** A webhook endpoint hears [`review.received`](/developers/webhooks/events/media-comments#review-received) for each review read for the first time, by ids only, and [`review.replied`](/developers/webhooks/events/media-comments#review-replied) for each reply that went out.
-
-<Callout type="info" title="Google's access first">
+<Callout type="info" title="Google has to grant the project access first">
   Google gives a project access to the Business Profile APIs after an
-  application: until then its quota is zero, and every read waits. Google's
+  application. Until then its quota is zero, and every read waits. Google's
   policies also ask that you reply to reviews on behalf of a business only with
   its authorization, and never automatically.
 </Callout>
 
+Of each review, Peal keeps:
+
+- Its stars (1 to 5), its text, when it was written and last changed, and the name its author shows (none when they stay anonymous).
+- The location's reply as Google shows it, with whether Google is checking it, showed it or rejected it.
+- Whether a member said it needs no answer, and the replies sent from Peal, with who wrote each and how sending ended.
+
+Peal never keeps the author's picture or profile, or the photos. It keeps only how many photos there are.
+
+### When reviews are read [#reviews-schedule]
+
+A location is read every hour while it had a review written or changed in the last week, and every six hours otherwise. Each read goes back to the oldest review Peal may keep.
+
+### How long reviews are kept [#reviews-retention]
+
+Google's policies let what its API gives be stored 30 days at most. Peal keeps a review 29 days after it was written or last changed, then deletes it with the replies sent to it. A review changed since is read again and kept from its change.
+
+A few other things delete reviews:
+
+- A review Google no longer shows is deleted at the next complete read.
+- A location not read for 29 days (its channel off, or the platform turned off) is deleted, with what Google says of it.
+- Disconnecting the channel, or deleting the workspace, deletes its reviews at once.
+
+### Answer a review [#reviews-reply]
+
+A review holds one reply on Google, whoever wrote it. A reply from Peal replaces it, and Google may check it before showing it. Replies to reviews don't count as inbox messages. Google takes replies to a verified location only, of 4,096 bytes at most.
+
+When a reply's outcome isn't known, the next read of the location settles it, and Peal brings that read forward. The reply went out if the location's reply is its text.
+
+Click **Delete the reply** to delete the location's reply, whoever wrote it. When a review needs no answer, click **Needs no answer**.
+
+### Only a person answers a review [#reviews-in-person]
+
+A member answers a review, or deletes its reply, signed in to Peal in the web app. An API key, an application connected through OAuth, the command line and AI assistants can read reviews and mark them answered. They're refused a reply (`403`, `personRequired`).
+
+Google's policies ask that review replies never be automated or triggered without the user's prior specific and express consent, which Peal doesn't record yet.
+
+### Review events [#reviews-events]
+
+A webhook endpoint hears these, by ids only:
+
+- [`review.received`](/developers/webhooks/events/media-comments#review-received), for each review read for the first time.
+- [`review.replied`](/developers/webhooks/events/media-comments#review-replied), for each reply that went out.
+
 ## Answer by keyword [#comment-rules]
 
-A comment rule answers by itself, in public, as the channel's account, the comments that hold a keyword you chose, under one post or every post of a channel. In **Settings › Comment replies**, choose the channel, up to 10 keywords and the reply. A rule answers:
+A comment rule answers comments by itself, in public, as the channel's account. It answers the ones that hold a keyword you chose, under one post or every post of a channel.
 
-- a comment written after it started, or after it was last resumed, that holds a keyword as a word, whatever its case and accents (`prix` answers "Quel PRIX ?", not "surprix");
-- once a comment, and once a person: someone who comments again is not answered twice;
-- 25 times a day at most, and 100 times a day for all the rules of a channel together (UTC days);
-- through the inbox's own replies: each is shown in its thread, counts as one of your outbound messages, and is never sent twice. A comment someone already answered, or is answering, is left alone.
+To set one up, click **Settings** at the foot of the sidebar, then **Comment replies**. Select the **Channel**, type up to 10 **Keywords** and the **Reply**, then click **Start**.
+
+A rule answers:
+
+- A comment written after it started, or after it was last resumed, that holds a keyword as a word, whatever its case and accents. `prix` answers "Quel PRIX ?", not "surprix".
+- Once a comment, and once a person. Someone who comments again isn't answered twice.
+- 25 times a day at most, and 100 times a day for all the rules of a channel together (UTC days).
+- Through the inbox's own replies. Each one shows in its thread, counts as one of your outbound messages, and is never sent twice.
+
+A comment someone already answered, or is answering, is left alone.
+
+Rules work on some platforms only:
 
 | Platform                  | Comment rules                                                               |
 | ------------------------- | --------------------------------------------------------------------------- |
@@ -294,84 +349,217 @@ A comment rule answers by itself, in public, as the channel's account, the comme
 | LinkedIn                  | No: its terms forbid automated comments                                     |
 | YouTube                   | No: its policies ask for your consent to each comment                       |
 
-A rule on a post can start before the post is out: it acts on the channels the post is for, and only where their platform allows it, whatever else the post went out on. A rule never likes, follows or writes privately to anyone. It acts as whoever started it: it ends when they can no longer answer comments, and when its channel is disconnected. Either end is [told](/guides/workspace/notifications#other-events) to whoever started it, and the first to every member who may answer comments. A paused rule answers nothing, and never the comments written while it was paused, even those Peal reads after it resumes.
+A rule on a post can start before the post is out. It acts on the channels the post is for, and only where their platform allows it, whatever else the post went out on. A rule never likes or follows anyone, and it writes privately only as [below](#comment-rule-private-replies).
+
+A rule acts as whoever started it. It ends when they can no longer answer comments, and when its channel is disconnected. Either end is [told](/guides/workspace/notifications#other-events) to whoever started it, and the first one to every member who may answer comments.
+
+A paused rule answers nothing. It never answers the comments written while it was paused, even those Peal reads after it resumes.
+
+### A rule's private message [#comment-rule-private-replies]
+
+On Instagram and Facebook Pages, a rule can also send each comment's author a [private reply](#private-replies) after its public one. When you set the rule up, select **Also send a private message**, then type the **Private message**.
+
+The private message goes out at the rules' next run once the public reply is out, within about ten minutes. It never replaces the public reply. If the public reply failed, stayed unconfirmed or was withdrawn, no private message goes.
+
+A comment gets one private message at most. If a member or another rule already sent one, the rule's isn't sent, and a rule that runs again never sends it twice. Like a member's, it goes only to the person who commented, within seven days of the comment.
+
+The rule sends it only where the channel can carry it: the channel's direct messages are turned on in the workspace, with the permissions they take. In practice:
+
+- A rule on a post for several channels sends it on those that can, and answers in public on the others.
+- If a channel's messages are turned off later, the rule keeps answering in public, and says under each comment why no private message went.
+- Peal refuses a rule when none of its channels can carry the private message, or when the message is too long for one that could.
+
+The rule sends it as whoever started the rule. They must be allowed to send direct messages (owners, admins and editors), and an application also needs the owner's consent for messages. If they lose that right, the rule answers in public only. Changing the keywords or the reply of a rule with a private message, or resuming it, takes the same right. Anyone who may answer comments can pause the rule, or click **Remove the private message**.
+
+Once a rule is paused, stopped or loses its message, a private message still waiting for its public reply isn't sent.
+
+The rule's caps don't change, because a private message only ever follows one of its public replies. On a server that bills, each one counts as one inbox message. Under each comment it answered, the rule shows whether its private message went, and if not, why. Only members who read direct messages see the private message's text and which comments got one, and an application sees them only once an owner let it read messages.
+
+<Callout type="warning" title="Peal doesn't mark a rule's message as automatic">
+  A rule's message reaches real people without anyone reading each comment
+  first. Where the law asks an automated message to say so (some states and
+  countries do), say it in your text, because Peal adds nothing to it.
+</Callout>
 
 ## Direct messages [#direct-messages]
 
-Where whoever runs the server turned them on ([`PEAL_INBOX_MESSAGES`](/self-hosting/environment-variables#core), with `mastodon`, `bluesky` or both), the inbox also reads the private conversations people hold with the workspace's Mastodon and Bluesky accounts, and members answer them privately, as the account. Neither platform reviews an app for this. Peal never starts a conversation: it answers those someone else began.
+Where whoever runs the server turned them on ([`PEAL_INBOX_MESSAGES`](/self-hosting/environment-variables#core), with `mastodon`, `bluesky`, `facebook`, `instagram`, or several), the inbox also reads the private conversations people hold with the workspace's Mastodon and Bluesky accounts, Facebook Pages (Messenger) and Instagram professional accounts. Members answer them privately, as the account. Mastodon and Bluesky don't review an app for this, but Meta does ([On Messenger and Instagram](#meta-messages)).
 
-Nothing of a channel's conversations is read until a workspace turns its messages on: an owner or an admin, in person, under **Direct messages: what Peal reads** in the inbox, one channel at a time. Turning them off stops the reading and deletes at once everything Peal kept of that channel's conversations; a message on its way that never set out is not sent.
+Peal never starts a conversation. It answers those someone else began.
 
-| What Peal keeps of a conversation                                                                    | What it never keeps         |
-| ---------------------------------------------------------------------------------------------------- | --------------------------- |
-| The other accounts in it: their identifier, handle and the name they show                            | Anyone's picture or profile |
-| Each message's text, who sent it, when, and how many files it carries                                | The files                   |
-| Whether a member read it, and the messages sent from Peal, with who wrote each and how sending ended |                             |
+### Turn messages on for a channel [#messages-on]
 
-- **Private.** Messages are private correspondence that the workspace receives, and Peal keeps them for the workspace only: staff who act as a member to help them never read them, no writing assistant is given them, and neither a log, a notice nor a webhook event holds what they say or who sent them.
-- **When.** Peal reads a channel's conversations twice an hour (at minutes 1 and 21) while it had a message in the last day, hourly otherwise.
-- **Who reads them.** Reading messages takes its own permission, `engagement:readMessages`, which owners, admins and editors hold; viewers and contributors see the comments and reviews, not the messages.
-- **How long.** Peal keeps each message 30 days after it was sent, a message sent from Peal 30 days after sending ended or it was left unconfirmed, and a conversation until its last message is that old and no message to it is on its way, then deletes them within the hour. Peal reads each kept conversation again at least once a day: a message the platform no longer shows is deleted within a day, and a conversation once two whole listings of the account's conversations in a row no longer show it. A conversation too long to read whole, or an account with more conversations than a listing reads, goes by the 30 days instead; an empty listing deletes nothing. Turning the channel's messages off, disconnecting the channel, or deleting the workspace deletes its conversations at once.
-- **Mastodon.** A direct message is a status of `direct` visibility, which reaches the accounts it mentions: Peal puts the mention of every participant first, and the whole counts in Mastodon's length. A message that mentions anyone else is refused (`message_mentions_outside`), as it would reach them too; a conversation shows only the statuses exchanged between the account and its participants. It takes the permissions Peal's sign-in has always asked (`read:statuses`, `write:statuses`).
-- **Bluesky.** Messages go through Bluesky's chat service, which takes permissions of its own: the sign-in asks only what publishing needs, and turning a Bluesky channel's messages on asks the account to allow its chat first: **Allow, on Bluesky** signs in again asking for it, and the switch stays off until the account allowed it. A later [reconnect](/guides/channels#reconnect) of the channel asks for it again, so its messages stay readable. [Connecting](/guides/channels#connect) the same account again with **Connect Bluesky** asks only what publishing needs: at its next reading Peal then turns the channel's messages off, deletes their conversations, and tells the members who may connect channels; to read them again, choose **Read its messages**, then **Allow, on Bluesky**. A message takes 1,000 characters (graphemes) at most. Answering a message request accepts the conversation. Group conversations are not read.
-- **Answering.** Only a conversation someone else wrote in can be answered. One message to a conversation is on its way at a time. A message whose outcome is unknown is never sent again: check the platform, then say what you found. On a server that bills, each message sent counts one inbox message, as a reply to a comment does.
-- **Events and notices.** A webhook endpoint hears [`message.received`](/developers/webhooks/events/media-comments#message-received) for each message read for the first time, and [`message.sent`](/developers/webhooks/events/media-comments#message-sent) for each one that went out, by ids only. Members who answer messages are told "a new message on" the channel, once a conversation and day, never from whom. Members who may connect channels are told when Peal turned a channel's messages off because its account no longer allows them.
+Nothing of a channel's conversations is read until the workspace turns its messages on. An owner or an admin does it, in person, under **Direct messages: what Peal reads** in the inbox, one channel at a time, by clicking **Read its messages**.
+
+To turn them off, click **Stop, and delete what was kept**. The reading stops, and everything Peal kept of that channel's conversations is deleted at once. A message on its way that never set out isn't sent.
+
+Of each conversation, Peal keeps:
+
+- The other accounts in it: their identifier, handle and the name they show.
+- Each message's text, who sent it, when, and how many files it carries.
+- Whether a member read it, and the messages sent from Peal, with who wrote each and how sending ended.
+
+Peal never keeps anyone's picture or profile, or the files.
+
+### Messages stay private [#messages-private]
+
+Messages are private correspondence that the workspace receives, and Peal keeps them for the workspace only. Staff who act as a member to help them never read them. No writing assistant is given them. No log, notice or webhook event holds what they say or who sent them.
+
+Reading messages takes its own permission, `engagement:readMessages`, which owners, admins and editors hold. Viewers and contributors see the comments and reviews, not the messages.
+
+### When messages are read and how long they're kept [#messages-retention]
+
+Peal reads a channel's conversations twice an hour (at minutes 1 and 21) while it had a message in the last day, and hourly otherwise.
+
+Peal keeps each message for 30 days, then deletes it within the hour. Here's when the 30 days start:
+
+- A message received: when it was sent.
+- A message sent from Peal: when sending ended, or when it was left unconfirmed.
+- A conversation: it's kept until its last message is that old and no message to it is on its way.
+
+Peal reads each kept conversation again at least once a day. A message the platform no longer shows is deleted within a day. A conversation is deleted once two whole listings of the account's conversations in a row no longer show it.
+
+A conversation too long to read whole, or an account with more conversations than a listing reads, goes by the 30 days instead. An empty listing deletes nothing. Turning the channel's messages off, disconnecting the channel, or deleting the workspace deletes its conversations at once.
+
+### On Mastodon [#messages-mastodon]
+
+A direct message is a status of `direct` visibility, which reaches the accounts it mentions. Peal puts the mention of every participant first, and the whole message counts in Mastodon's length.
+
+A message that mentions anyone else is refused (`message_mentions_outside`), because it would reach them too. A conversation shows only the statuses exchanged between the account and its participants. Messages take the permissions Peal's sign-in has always asked for (`read:statuses`, `write:statuses`).
+
+### On Bluesky [#messages-bluesky]
+
+Messages go through Bluesky's chat service, which takes permissions of its own. The sign-in asks only for what publishing needs. So when you turn a Bluesky channel's messages on, the account must allow its chat first. Click **Allow, on Bluesky** to sign in again and grant it. The switch stays off until the account has allowed it.
+
+A later [reconnect](/guides/channels#reconnect) of the channel asks for the chat again, so its messages stay readable. [Connecting](/guides/channels#connect) the same account again with **Connect Bluesky** asks only for what publishing needs. At its next reading, Peal then turns the channel's messages off, deletes their conversations, and tells the members who may connect channels. To read them again, click **Read its messages**, then **Allow, on Bluesky**.
+
+A message takes 1,000 characters (graphemes) at most. Answering a message request accepts the conversation. Group conversations aren't read.
+
+### On Messenger and Instagram [#meta-messages]
+
+Peal reads a Facebook Page's Messenger conversations, and an Instagram professional account's, through Meta's Conversations API. That works whichever way the Instagram account is connected, through its Page or with Instagram Login. Meta also tells Peal when a message arrives, so a new one shows in the inbox within seconds. Peal still reads each account on the schedule above, so a missed notice only delays a message.
+
+Of each message, Peal reads the text and how many files it carries. A story that mentions the account counts as one file. Peal never keeps a file, a story or a link to one, because Meta forbids storing a story mention's media.
+
+Connecting a Page or an Instagram account to post asks for none of Meta's messaging permissions. Turning a channel's messages on does. Click **Allow, on Facebook** (or **Allow, on Instagram**, for an account connected with Instagram Login) to sign in again and grant them. The switch stays off until they're granted, and a later [reconnect](/guides/channels#reconnect) asks for them again.
+
+On Instagram, the account's owner also has to turn on **Settings → Messages and story replies → Message controls → Connected tools → Allow access to messages**. Until then, Peal can't read anything.
+
+Until Meta has reviewed the server's app (its App Review), only people with a role on that app can write to the account and get an answer through Peal.
+
+Meta sets a few more limits:
+
+- Length: 2,000 characters on Messenger, and 1,000 bytes of UTF-8 on Instagram.
+- History: Meta gives the details of a conversation's 20 latest messages only. A longer conversation is never read whole, so its older messages go by the 30 days rather than when they leave the platform.
+- Messages taken back: on Instagram, Peal deletes one as soon as Meta says so. Messenger doesn't say, so the message stays until its 30 days are up.
+- Folders: a conversation that leaves Meta's list, as one moved to another folder of Meta's own inbox may, isn't deleted for that. It goes by its 30 days too.
+
+Turning a channel's messages off, disconnecting it or deleting its workspace asks Meta to stop telling Peal about its messages. Peal doesn't ask while another channel of the same Page, or of the Instagram account linked to it, still reads them.
+
+### Answer within Meta's 24 hours [#messages-meta-window]
+
+Meta takes an answer only within 24 hours of the person's last message. The conversation shows until when you can answer. Peal closes it a minute early, so a message it lets through isn't refused over a clock difference. After that, the answer box is gone, and a message sent through the API is refused before anything is counted (`windowClosed`). Answer from Meta's own inbox if its rules allow it, or wait for the person to write again.
+
+Where whoever runs the server holds Meta's review of its Human Agent feature ([`PEAL_META_HUMAN_AGENT`](/self-hosting/environment-variables#core)), you get longer: up to 7 days after the person's last message, again closing a minute early. You have to be signed in to Peal's web app and write the message yourself, and the conversation shows until when. The message goes out with Meta's `HUMAN_AGENT` tag, which Meta keeps for a person's own answers after the 24 hours. Inside the 24 hours, answers go untagged.
+
+An API key, an application (such as the command line or an AI assistant), staff acting as a member and a rule can't use the 7 days. After the 24 hours, they're refused (`windowClosed`).
+
+Meta can refuse a tagged message in two ways:
+
+| Code                   | What it means                                                                                                                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `humanAgentNotGranted` | Meta refused the tag because the server's app doesn't hold the feature. The message wasn't sent.                                                                                    |
+| `tagRestricted`        | Meta warned that the app's use of tags is restricted. The message may have gone out, so Peal leaves it unconfirmed and never sends it again. Check the conversation on Meta's side. |
+
+### Answer a message [#messages-reply]
+
+You can answer only a conversation someone else wrote in. One message to a conversation is on its way at a time. On a server that bills, each message sent counts as one inbox message, as a reply to a comment does.
+
+A message whose outcome is unknown is never sent again. Check the platform, then say what you found: **It went out** or **It never went out**.
+
+### Message events and notices [#messages-events]
+
+A webhook endpoint hears these, by ids only:
+
+- [`message.received`](/developers/webhooks/events/media-comments#message-received), for each message read for the first time.
+- [`message.sent`](/developers/webhooks/events/media-comments#message-sent), for each one that went out.
+
+Members who answer messages are told "a new message on" the channel, once a conversation and day, never from whom. Members who may connect channels are told when Peal turned a channel's messages off because its account no longer allows them.
+
+### Reply privately [#private-replies]
+
+On Instagram and Facebook Pages, you can send the author of a comment under the workspace's post one private message, as the account. Click **Reply privately** under the comment. Meta calls this a private reply.
+
+The platform takes one private reply per comment, within seven days of when the comment was written. Peal stops an hour earlier, and the comment shows until when. While one is on its way, waiting to be checked or sent, Peal refuses another. If one failed, you can send another.
+
+A private reply doesn't open a conversation you can carry on. The account can write to the person again only once they answer, within Meta's 24 hours, as a [direct message](#meta-messages). On Instagram, it lands in their message requests unless they follow the account.
+
+The channel's direct messages have to be turned on, because the person's answer arrives as one. A channel whose messages are off can't send a private reply, and one missing its messages' permissions is asked to connect again. A [comment rule](#comment-rule-private-replies) can send one too, after its public reply. Where the law asks an automated message to say so, say it in the rule's text, because Peal adds nothing.
+
+A private reply is private correspondence, so the comment shows it only to members who read direct messages. Peal keeps it like a message sent from Peal, 30 days after sending ended, and it's deleted with its comment, its channel or its workspace.
+
+Otherwise it works like a message. On a server that bills, it counts as one inbox message, and it's never sent twice. If its outcome is unknown, Peal never sends it again: check the person's conversation, then say what you found.
 
 ## With the API, the command line and AI assistants [#api]
 
-| Action                                           | Permission                | Who has it                   |
-| ------------------------------------------------ | ------------------------- | ---------------------------- |
-| Read comments and reviews                        | `engagement:read`         | Every role                   |
-| Answer, mark, moderate and take a reply back     | `engagement:reply`        | Owners, admins and editors   |
-| List and read direct messages                    | `engagement:readMessages` | Owners, admins and editors   |
-| Send a direct message, mark a conversation read  | `engagement:message`      | Owners, admins and editors   |
-| See and switch which channels' messages are read | `channel:connect`         | Owners and admins, in person |
-| Let an application read and answer messages      | `organization:secure`     | Owners, in person            |
+Each action takes a permission:
 
-An API key carries what its creator gave it; `engagement:readMessages` and `engagement:message` only an owner gives a key, in person, as letting an application into the messages, and a partner key never holds them. An application connected through OAuth needs the scope `workspace:publish` to do anything but read, as for publishing a post, and the scope `workspace:read` never carries the messages. Without an owner's leave, given under **Applications that may read and answer them** with the client id it shows, an application lists conversations (who is in each, how many messages) and is refused reading or answering them, with a refusal that says why. Staff who act as a member to help them neither read the inbox nor answer.
+| Action                                                             | Permission                | Who has it                   |
+| ------------------------------------------------------------------ | ------------------------- | ---------------------------- |
+| Read comments and reviews                                          | `engagement:read`         | Every role                   |
+| Answer, mark, moderate and take a reply back                       | `engagement:reply`        | Owners, admins and editors   |
+| List and read direct messages                                      | `engagement:readMessages` | Owners, admins and editors   |
+| Send a direct message or a private reply, mark a conversation read | `engagement:message`      | Owners, admins and editors   |
+| See and switch which channels' messages are read                   | `channel:connect`         | Owners and admins, in person |
+| Let an application read and answer messages                        | `organization:secure`     | Owners, in person            |
 
-| Request                                                                                     | What it does                                                                                                                                                                                                                      |
-| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/workspaces/{workspaceId}/inbox/threads`                                           | Lists the threads that have comments, those waiting for an answer first. `channelId`, `postId` and `unanswered=true` narrow the list; `cursor` and `limit` page it.                                                               |
-| `GET /api/workspaces/{workspaceId}/inbox/threads/{threadId}`                                | A thread whole: comments, replies, and what the channel can do.                                                                                                                                                                   |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies`                     | Answers a comment. Answers `202` with the reply, `sending`.                                                                                                                                                                       |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered`                    | Marks a comment answered, or waiting again.                                                                                                                                                                                       |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation`                  | Hides, shows, likes, unlikes or deletes, where the platform allows.                                                                                                                                                               |
-| `POST /api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation`                   | Records what someone found for an unconfirmed reply.                                                                                                                                                                              |
-| `DELETE /api/workspaces/{workspaceId}/inbox/replies/{replyId}`                              | Takes a sent reply back.                                                                                                                                                                                                          |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads`                                   | Lists the locations that have reviews, those waiting for an answer first.                                                                                                                                                         |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}`                        | A location's reviews whole, the replies sent from Peal, and what the channel can do.                                                                                                                                              |
-| `PUT /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                          | Answers a review, replacing its reply, in person only. Answers `202` with the reply, `sending`; with an `Idempotency-Key`, safe to send again.                                                                                    |
-| `DELETE /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                       | Deletes the location's reply to a review.                                                                                                                                                                                         |
-| `POST /api/workspaces/{workspaceId}/inbox/rules`                                            | Starts a [comment rule](#comment-rules) on a post (`postId`) or a channel (`channelId`), with `keywords` and a `reply`. `GET`, `PATCH` (keywords, reply, `paused`) and `DELETE …/inbox/rules/{ruleId}` read, change and stop one. |
-| `POST /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered`                      | Marks a review answered, or waiting again.                                                                                                                                                                                        |
-| Request                                                                                     | What it does                                                                                                                                                                                                                      |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------                                                    |
-| `GET /api/workspaces/{workspaceId}/inbox/threads`                                           | Lists the threads that have comments, those waiting for an answer first. `channelId`, `postId` and `unanswered=true` narrow the list; `cursor` and `limit` page it.                                                               |
-| `GET /api/workspaces/{workspaceId}/inbox/threads/{threadId}`                                | A thread whole: comments, replies, and what the channel can do.                                                                                                                                                                   |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies`                     | Answers a comment. Answers `202` with the reply, `sending`.                                                                                                                                                                       |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered`                    | Marks a comment answered, or waiting again.                                                                                                                                                                                       |
-| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation`                  | Hides, shows, likes, unlikes or deletes, where the platform allows.                                                                                                                                                               |
-| `POST /api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation`                   | Records what someone found for an unconfirmed reply.                                                                                                                                                                              |
-| `DELETE /api/workspaces/{workspaceId}/inbox/replies/{replyId}`                              | Takes a sent reply back.                                                                                                                                                                                                          |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads`                                   | Lists the locations that have reviews, those waiting for an answer first.                                                                                                                                                         |
-| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}`                        | A location's reviews whole, the replies sent from Peal, and what the channel can do.                                                                                                                                              |
-| `PUT /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                          | Answers a review, replacing its reply, in person only. Answers `202` with the reply, `sending`; with an `Idempotency-Key`, safe to send again.                                                                                    |
-| `DELETE /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                       | Deletes the location's reply to a review.                                                                                                                                                                                         |
-| `POST /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered`                      | Marks a review answered, or waiting again.                                                                                                                                                                                        |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations`                            | Lists the conversations, the latest message first. `channelId` and `unread=true` narrow the list; `cursor` and `limit` page it.                                                                                                   |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}`           | A conversation: a page of its messages (the latest 100 unless `limit` says fewer; `nextCursor` as `cursor` for older ones), those sent from Peal, and what the channel can do.                                                    |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/messages` | Sends a direct message. Answers `202` with the message, `sending`; with an `Idempotency-Key`, safe to send again.                                                                                                                 |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/read`     | Marks a conversation read, or unread again.                                                                                                                                                                                       |
-| `POST /api/workspaces/{workspaceId}/inbox/messages/outgoing/{messageId}/confirmation`       | Records what someone found for an unconfirmed message.                                                                                                                                                                            |
-| `GET /api/workspaces/{workspaceId}/inbox/messages/settings`                                 | The channels whose messages are read, and the applications an owner let read them.                                                                                                                                                |
-| `PUT /api/workspaces/{workspaceId}/inbox/messages/channels/{channelId}`                     | Turns a channel's messages on or off (`enabled`), in person.                                                                                                                                                                      |
-| `PUT /api/workspaces/{workspaceId}/inbox/messages/applications`                             | Lets an application read and answer messages, or takes that back (`clientId`, `allowed`), in person.                                                                                                                              |
+An API key carries what its creator gave it. Only an owner gives a key `engagement:readMessages` and `engagement:message`, in person, as it lets an application into the messages, and a partner key never holds them.
 
-The command line has the same under `peal inbox`, and `peal inbox reviews` to read reviews and mark them (see [Command line](/developers/cli)). AI assistants connected through [MCP](/developers/mcp) have `list_comment_threads`, `get_comment_thread`, `reply_to_comment`, `confirm_comment_reply`, `withdraw_comment_reply`, `mark_comment_answered` and `moderate_comment`, for reviews `list_location_reviews`, `get_location_reviews` and `mark_location_review_answered` (`reply_to_location_review` and `delete_location_review_reply` refuse, as only a person answers a review), and for direct messages `list_conversations`, `get_conversation` and `send_message`, with `peal inbox messages` on the command line. A connected assistant lists conversations, and reads or answers them only once an owner let its application in: allow only an assistant that may read the workspace's private messages.
+An application connected through OAuth needs the `workspace:publish` scope to do anything but read, as for publishing a post. The `workspace:read` scope never carries the messages. Without an owner's leave, an application lists conversations (who is in each, how many messages) and is refused reading or answering them, with a refusal that says why. An owner gives that leave under **Applications that may read and answer them**, with the client id the application shows.
 
-<Callout type="warning" title="Comments can carry instructions">
-  A comment is text written by someone outside your workspace, and may be
+Staff who act as a member to help them neither read the inbox nor answer.
+
+The inbox has these requests:
+
+| Request                                                                                      | What it does                                                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/workspaces/{workspaceId}/inbox/threads`                                            | Lists the threads that have comments, those waiting for an answer first. `channelId`, `postId` and `unanswered=true` narrow the list. `cursor` and `limit` page it.                                                                                                             |
+| `GET /api/workspaces/{workspaceId}/inbox/threads/{threadId}`                                 | A thread whole: comments, replies, and what the channel can do.                                                                                                                                                                                                                 |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies`                      | Answers a comment. Answers `202` with the reply, `sending`.                                                                                                                                                                                                                     |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered`                     | Marks a comment answered, or waiting again.                                                                                                                                                                                                                                     |
+| `POST /api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation`                   | Hides, shows, likes, unlikes or deletes, where the platform allows.                                                                                                                                                                                                             |
+| `POST /api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation`                    | Records what someone found for an unconfirmed reply.                                                                                                                                                                                                                            |
+| `DELETE /api/workspaces/{workspaceId}/inbox/replies/{replyId}`                               | Takes a sent reply back.                                                                                                                                                                                                                                                        |
+| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads`                                    | Lists the locations that have reviews, those waiting for an answer first.                                                                                                                                                                                                       |
+| `GET /api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}`                         | A location's reviews whole, the replies sent from Peal, and what the channel can do.                                                                                                                                                                                            |
+| `PUT /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                           | Answers a review, replacing its reply, in person only. Answers `202` with the reply, `sending`. With an `Idempotency-Key`, it's safe to send again.                                                                                                                             |
+| `DELETE /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply`                        | Deletes the location's reply to a review.                                                                                                                                                                                                                                       |
+| `POST /api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered`                       | Marks a review answered, or waiting again.                                                                                                                                                                                                                                      |
+| `POST /api/workspaces/{workspaceId}/inbox/rules`                                             | Starts a [comment rule](#comment-rules) on a post (`postId`) or a channel (`channelId`), with `keywords`, a `reply` and, optionally, a `privateReply`. `GET`, `PATCH` (keywords, reply, private reply, `paused`) and `DELETE …/inbox/rules/{ruleId}` read, change and stop one. |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations`                             | Lists the conversations, the latest message first. `channelId` and `unread=true` narrow the list. `cursor` and `limit` page it.                                                                                                                                                 |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}`            | A conversation: a page of its messages (the latest 100 unless `limit` says fewer, with `nextCursor` as `cursor` for older ones), those sent from Peal, and what the channel can do.                                                                                             |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/messages`  | Sends a direct message. Answers `202` with the message, `sending`. With an `Idempotency-Key`, it's safe to send again.                                                                                                                                                          |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/read`      | Marks a conversation read, or unread again.                                                                                                                                                                                                                                     |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/outgoing/{messageId}/confirmation`        | Records what someone found for an unconfirmed message.                                                                                                                                                                                                                          |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/private-replies`                          | Sends a comment's author its one [private reply](#private-replies) (`commentId`, `text`). Answers `201` with it, `sending`. With an `Idempotency-Key`, it's safe to send again.                                                                                                 |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}`          | A private reply, and where it stands.                                                                                                                                                                                                                                           |
+| `POST /api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}/confirm` | Records what someone found for an unconfirmed private reply (`went`).                                                                                                                                                                                                           |
+| `GET /api/workspaces/{workspaceId}/inbox/messages/settings`                                  | The channels whose messages are read, and the applications an owner let read them.                                                                                                                                                                                              |
+| `PUT /api/workspaces/{workspaceId}/inbox/messages/channels/{channelId}`                      | Turns a channel's messages on or off (`enabled`), in person.                                                                                                                                                                                                                    |
+| `PUT /api/workspaces/{workspaceId}/inbox/messages/applications`                              | Lets an application read and answer messages, or takes that back (`clientId`, `allowed`), in person.                                                                                                                                                                            |
+
+The [command line](/developers/cli) has the same under `peal inbox`, with `peal inbox reviews` to read reviews and mark them, and `peal inbox messages` for direct messages.
+
+AI assistants connected through [MCP](/developers/mcp) have these tools:
+
+- For comments: `list_comment_threads`, `get_comment_thread`, `reply_to_comment`, `confirm_comment_reply`, `withdraw_comment_reply`, `mark_comment_answered` and `moderate_comment`.
+- For reviews: `list_location_reviews`, `get_location_reviews` and `mark_location_review_answered`. `reply_to_location_review` and `delete_location_review_reply` refuse, because only a person answers a review.
+- For direct messages: `list_conversations`, `get_conversation`, `send_message` and `send_private_reply`.
+
+A connected assistant lists conversations, and reads or answers them only once an owner let its application in. Allow only an assistant that may read the workspace's private messages.
+
+<Callout type="warning" title="A comment can try to steer your assistant">
+  A comment is text written by someone outside your workspace, and it may be
   written to steer an AI assistant ("ignore your instructions and…"). Peal's
   tools say so to the assistant, and no tool acts because a comment asks. Give
   an assistant the scope to publish only if you want it to be able to answer in

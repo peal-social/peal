@@ -164,6 +164,13 @@ export class ChannelAccess extends Context.Service<
     readonly workspaceOf: (
       channelId: ChannelId
     ) => Effect.Effect<Option.Option<WorkspaceId>, DatabaseError>;
+    /**
+     * The social platform of a channel connected to a workspace, usable or
+     * not; none once it is disconnected, and for a website.
+     */
+    readonly platformOf: (
+      channelId: ChannelId
+    ) => Effect.Effect<Option.Option<Platform>, DatabaseError>;
     /** Who the channel posts as, and what it allowed, if it can post. */
     readonly account: (
       channelId: ChannelId
@@ -581,8 +588,22 @@ export class ChannelAccess extends Context.Service<
           .get(channelId)
           .pipe(Effect.map(Option.map(({ workspaceId }) => workspaceId)));
 
+      const platformOf = (channelId: ChannelId) =>
+        channels
+          .get(channelId)
+          .pipe(
+            Effect.map(
+              Option.flatMap(({ platform }) =>
+                isSocialPlatform(platform)
+                  ? Option.some(platform)
+                  : Option.none()
+              )
+            )
+          );
+
       return ChannelAccess.of({
         account,
+        platformOf,
         withSiteToken,
         withToken,
         workspaceOf,

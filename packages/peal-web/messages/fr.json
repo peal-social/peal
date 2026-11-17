@@ -113,7 +113,7 @@
   "Ads": {
     "open": "Publicité",
     "openLabel": "Publicité de {workspace}",
-    "network": "{network, select, meta {Meta} other {{network}}}",
+    "network": "{network, select, meta {Meta} google {Google Ads} other {{network}}}",
     "page": {
       "title": "Publicité",
       "description": "Les comptes publicitaires connectés à cet espace de travail, leurs campagnes et ce qu’ils ont dépensé. Le réseau publicitaire facture directement chaque compte publicitaire, sur son propre moyen de paiement : Peal ne manipule jamais l’argent.",
@@ -161,7 +161,11 @@
       "disconnectTitle": "Déconnecter {name} ?",
       "disconnectDescription": "Ce que Peal a lu de ce compte publicitaire est supprimé. L’historique de ses mises en avant reste, et ce qu’elles ont engagé ce mois-ci compte encore si le même compte est reconnecté. Les campagnes en cours auprès du réseau publicitaire restent telles quelles.",
       "disconnected": "{name} est déconnecté.",
-      "untracked": "Les publicités gérées du mois sont épuisées : les nouvelles publicités de ce compte ne sont pas suivies avant le {date, date, long}. Celles déjà comptées, et les boosts faits avec Peal, continuent d’être mis à jour. Un moyen de paiement sur la page de facturation lève cette limite."
+      "untracked": "Les publicités gérées du mois sont épuisées : les nouvelles publicités de ce compte ne sont pas suivies avant le {date, date, long}. Celles déjà comptées, et les boosts faits avec Peal, continuent d’être mis à jour. Un moyen de paiement sur la page de facturation lève cette limite.",
+      "readOnly": "Jamais : Peal ne fait que lire les comptes Google Ads",
+      "reachedThrough": "Lu par le compte administrateur",
+      "syncedEvery": "{network, select, google {Lu toutes les six heures} other {Lu toutes les heures}}",
+      "unreachable": "Inaccessible depuis le {date, date, medium} : le compte administrateur par lequel il était lu ne le gère plus, et la connexion ne l’atteint pas autrement. Rien n’en est lu tant qu’une personne qui y a accès ne s’est pas connectée ; ce qui a été lu reste."
     },
     "spending": {
       "title": "Dépenses via Peal",
@@ -180,12 +184,12 @@
     },
     "campaigns": {
       "title": "Campagnes",
-      "description": "Telles que lues en dernier auprès du réseau publicitaire, toutes les heures, y compris celles créées en dehors de Peal, avec les résultats de leurs publicités sur les 30 derniers jours.",
-      "caption": "Campagnes de {account}, avec les résultats de leurs publicités du {from} au {to}",
+      "description": "{network, select, google {Telles que lues sur Google Ads, toutes les six heures, avec ce que chaque campagne a fait ces 30 derniers jours. Google Ads ne donne ici ni couverture ni résultats.} other {Telles que lues en dernier auprès du réseau publicitaire, toutes les heures, y compris celles créées en dehors de Peal, avec les résultats de leurs publicités sur les 30 derniers jours.}}",
+      "caption": "{network, select, google {Campagnes de {account}, avec ce que chacune a fait du {from} au {to}} other {Campagnes de {account}, avec les résultats de leurs publicités du {from} au {to}}}",
       "empty": "Ce compte publicitaire n’a aucune campagne.",
       "name": "Campagne",
       "status": "Statut",
-      "objective": "Objectif",
+      "objective": "{network, select, google {Type} other {Objectif}}",
       "budget": "Budget",
       "spend": "Dépenses",
       "impressions": "Impressions",
@@ -199,7 +203,7 @@
     },
     "insights": {
       "title": "Dépenses par jour",
-      "description": "Ce que les publicités de ce compte publicitaire ont dépensé chaque jour sur les 30 derniers jours, selon le calendrier du compte.",
+      "description": "{network, select, google {Ce que les campagnes de ce compte Google Ads ont dépensé chaque jour ces 30 derniers jours, selon le calendrier du compte.} other {Ce que les publicités de ce compte publicitaire ont dépensé chaque jour sur les 30 derniers jours, selon le calendrier du compte.}}",
       "views": "Afficher les dépenses par jour sous forme de",
       "chart": "Graphique",
       "table": "Tableau",
@@ -348,6 +352,17 @@
       "notPromotable": "{reason, select, platform {Peal ne met en avant que les publications des Pages Facebook et d’Instagram.} connection {Ce compte Instagram a été connecté avec Instagram Login, qui ne permet pas de diffuser des publicités. Connectez-le par sa Page Facebook.} other {La publication n’est pas publiée sur ce canal, ou le canal a été déconnecté depuis.}}",
       "signInFailed": "{reason, select, denied {Vous avez refusé la connexion, ou écarté une autorisation nécessaire pour lire les comptes publicitaires.} expired {Cette connexion est inconnue, a déjà été finalisée, date de plus de 15 minutes ou a été lancée par quelqu’un d’autre. Recommencez.} notConfigured {Ce serveur ne peut pas conserver la connexion : son opérateur n’a pas défini la clé qui la chiffre.} other {Le réseau publicitaire a refusé la connexion. Recommencez.}}",
       "stateConflict": "{state, select, failed {Cette mise en avant a échoué : elle n’est plus diffusée.} ended {Cette mise en avant est terminée : elle n’est plus diffusée.} stopped {Cette mise en avant a été arrêtée : elle n’est plus diffusée.} other {C’est impossible dans l’état actuel de la mise en avant. Actualisez pour voir où elle en est.}}"
+    },
+    "google": {
+      "title": "Connecter Google Ads",
+      "reads": "Peal lit, pour chaque compte Google Ads que vous choisissez : son nom, ses campagnes, et le coût, les impressions et les clics de chaque campagne, jour par jour. Rien sur les personnes qui ont vu une annonce.",
+      "changes": "L’écran de consentement de Google demande d’afficher, de modifier, de créer et de supprimer vos données Google Ads, car Google n’offre pas d’accès en lecture seule. Peal n’y change jamais rien : ni campagne, ni budget, ni statut, et ne met rien en avant sur Google Ads.",
+      "every": "Peal lit chaque compte toutes les six heures : ce qu’il affiche n’a jamais plus de six heures de retard.",
+      "passkey": "Google vous demande de vous connecter avec une clé d’accès.",
+      "remove": "Retirez la connexion ici quand vous voulez : ce que Peal a lu de ses comptes est supprimé. Vous pouvez aussi révoquer l’accès de Peal dans votre compte Google.",
+      "docs": "Comment Peal utilise Google Ads",
+      "cancel": "Annuler",
+      "continue": "Continuer vers Google"
     }
   },
   "Assistant": {
@@ -2915,9 +2930,9 @@
     "back": "Quitter {section}",
     "modes": {
       "label": "Mode",
-      "studio": "Studio",
-      "console": "Console",
-      "unavailable": "Votre rôle dans cet espace n’a aucune page de la Console"
+      "studio": "PealStudio",
+      "api": "PealAPI",
+      "unavailable": "Votre rôle dans cet espace n’a aucune page de PealAPI"
     },
     "groups": {
       "engage": "Échanger",
@@ -4302,7 +4317,34 @@
       "reviewNotFound": "Cet avis n’existe plus : il a pu disparaître de Google, ou dépasser la durée pendant laquelle Peal le conserve.",
       "conversationNotFound": "Cette conversation n’existe plus : elle est partie avec son canal, ou a dépassé la durée pendant laquelle Peal la conserve.",
       "messagePending": "Un message à cette conversation est en route, ou est peut-être parti. Attendez qu’il soit réglé avant d’en écrire un autre, pour que le même message ne parte jamais deux fois.",
-      "mentionsOutside": "Le message mentionne des comptes extérieurs à la conversation ({mentions}), qu’un message privé Mastodon atteindrait aussi. Retirez ces mentions : rien n’a été envoyé."
+      "mentionsOutside": "Le message mentionne des comptes extérieurs à la conversation ({mentions}), qu’un message privé Mastodon atteindrait aussi. Retirez ces mentions : rien n’a été envoyé.",
+      "windowClosed": "La plateforme n’accepte plus de réponse dans cette conversation : Messenger et Instagram n’en acceptent que dans les 24 heures qui suivent le dernier message de la personne. Rien n’a été envoyé.",
+      "privateReplyPending": "Ce commentaire a déjà sa seule réponse privée, en route, à vérifier ou envoyée : la plateforme en prend une par commentaire, rien de plus n’a été envoyé.",
+      "privateReplyNotFound": "Cette réponse privée n’existe plus : elle est partie avec son commentaire.",
+      "privateReplyNotPossible": "{reason, select, ownComment {Le compte de la chaîne a écrit ce commentaire : une réponse privée va au commentaire de quelqu’un d’autre.} gone {Le commentaire n’est plus sur sa plateforme.} tooOld {Le commentaire a été écrit il y a plus de sept jours, moins l’heure de Peal : la plateforme n’y prend plus de réponse privée.} other {Ce commentaire ne peut pas recevoir de réponse privée.}} Rien n’a été envoyé."
+    },
+    "privateReply": {
+      "open": "Répondre en privé",
+      "title": "Répondre en privé",
+      "description": "Un seul message privé à {author}, au nom du compte de la chaîne. La plateforme en prend un par commentaire, dans les sept jours qui le suivent : vous pouvez envoyer celui-ci jusqu’au {until}. La personne doit répondre avant que vous puissiez lui écrire de nouveau, et sur Instagram il arrive dans ses demandes de messages si elle ne suit pas le compte.",
+      "label": "Votre message",
+      "automatic": "Là où la loi demande qu’un message automatique le dise, dites-le dans votre texte : Peal n’y ajoute rien.",
+      "count": "{length, number} sur {maximum, number} {unit, select, utf8Bytes {octets} other {caractères}}",
+      "tooLong": "{over, number} de trop",
+      "send": "Envoyer en privé",
+      "sending": "Envoi…",
+      "cancel": "Annuler",
+      "sent": "La réponse privée est en route.",
+      "from": "Réponse privée envoyée depuis Peal le {at}",
+      "status": "{status, select, sending {Envoi…} sent {Envoyée} failed {Non envoyée} unconfirmed {À vérifier} other {{status}}}",
+      "failed": "Rien n’est parti : {reason}",
+      "unconfirmed": "Cette réponse privée est peut-être arrivée à la personne : {reason} Peal ne l’envoie jamais de nouveau. Vérifiez la conversation dans la messagerie de la plateforme, puis dites ce que vous avez trouvé.",
+      "reason": "{reason, select, channelUnavailable {la chaîne a été déconnectée ou désactivée, ou ses messages ont été désactivés.} reconnectNeeded {la plateforme refuse l’autorisation du compte. Connectez de nouveau le compte pour ses messages.} rateLimited {la plateforme a continué de refuser les requêtes.} platformUnavailable {la plateforme était injoignable.} commentGone {la plateforme ne prend plus le commentaire pour une réponse privée.} alreadyAnswered {la plateforme dit que le commentaire avait déjà sa seule réponse privée, envoyée d’ailleurs.} refused {la plateforme l’a refusée : la personne ne reçoit peut-être aucun message du compte, ou les messages de la Page sont désactivés.} windowClosed {les sept jours de la plateforme étaient passés.} notSent {quelqu’un a vérifié et ne l’a pas trouvée.} noResponse {la requête est partie et aucune réponse n’est revenue.} interrupted {Peal s’est arrêté pendant l’appel, et la plateforme n’a rien pu dire ensuite.} adapterFailure {une erreur de Peal est survenue après que la requête est peut-être partie.} other {{reason}}}",
+      "confirmSent": "Elle est partie",
+      "confirmNotSent": "Elle n’est pas partie",
+      "confirmed": "{went, select, true {La réponse privée est enregistrée comme envoyée.} other {La réponse privée est enregistrée comme non envoyée : le commentaire peut en recevoir une autre.}}",
+      "reconnect": "Les réponses privées demandent les messages de la chaîne, avec leurs autorisations : {settings}.",
+      "settings": "connectez de nouveau la chaîne pour ses messages dans les réglages de la boîte de réception"
     }
   },
   "InboxReviews": {
@@ -4351,7 +4393,7 @@
   },
   "InboxMessages": {
     "title": "Messages privés",
-    "description": "Les conversations privées que des personnes tiennent avec vos comptes Mastodon et Bluesky, pour les canaux dont votre espace de travail a activé les messages. Peal conserve chaque message {days, number} jours après son envoi, et n’engage jamais de conversation.",
+    "description": "Les conversations privées que des personnes tiennent avec vos comptes Mastodon, Bluesky, vos Pages Facebook et vos comptes Instagram, pour les canaux dont votre espace de travail a activé les messages. Peal conserve chaque message {days, number} jours après son envoi, et n’engage jamais de conversation.",
     "loadFailed": "Les conversations n’ont pas pu être chargées.",
     "retry": "Réessayer",
     "row": {
@@ -4389,7 +4431,12 @@
       "sending": "Envoi…",
       "sentToast": "Le message est en route.",
       "pending": "Un message à cette conversation est en route. Attendez qu’il soit parti pour en écrire un autre.",
-      "closed": "Personne d’autre n’a encore écrit dans cette conversation : Peal répond, et n’écrit jamais le premier."
+      "closed": "Personne d’autre n’a encore écrit dans cette conversation : Peal répond, et n’écrit jamais le premier.",
+      "openUntil": "Vous pouvez répondre jusqu’au {at} : Messenger et Instagram n’acceptent une réponse que dans les 24 heures qui suivent le dernier message de la personne.",
+      "windowClosed": "Messenger et Instagram n’acceptent une réponse que dans les 24 heures qui suivent le dernier message de la personne, et ce délai a pris fin pour cette conversation le {at}. Répondez depuis la messagerie de la plateforme si ses règles le permettent, ou attendez que la personne écrive de nouveau.",
+      "personAfter": "Ensuite, comme Meta laisse une personne répondre elle-même pendant 7 jours, vous pourrez encore répondre vous-même jusqu’au {at}.",
+      "personOpenUntil": "Les 24 heures de Messenger et d’Instagram sont passées, mais Meta laisse une personne répondre elle-même pendant 7 jours après le dernier message de la personne : vous pouvez encore répondre vous-même jusqu’au {at}. Écrivez la réponse vous-même, sur ce qu’elle a demandé : elle part avec la balise Human Agent de Meta, réservée aux réponses écrites par une personne.",
+      "personWindowClosed": "Meta ne laisse une personne répondre elle-même que dans les 7 jours qui suivent le dernier message de la personne, et ce délai a pris fin pour cette conversation le {at}. Répondez depuis la messagerie de la plateforme si ses règles le permettent, ou attendez que la personne écrive de nouveau."
     },
     "settings": {
       "title": "Messages privés : ce que Peal lit",
@@ -4400,14 +4447,18 @@
       "turnOff": "Arrêter, et supprimer ce qui a été conservé",
       "grantNeeded": "Bluesky demande d’abord au compte d’autoriser Peal à accéder à ses messages privés.",
       "grant": "Autoriser, sur Bluesky",
-      "none": "Aucun canal Mastodon ou Bluesky dans cet espace de travail.",
+      "none": "Aucun canal Mastodon, Bluesky, Page Facebook ou Instagram dans cet espace de travail.",
       "applications": "Applications qui peuvent les lire et y répondre",
       "applicationsDescription": "Une application connectée par OAuth, comme un assistant IA, liste les conversations, et ne les lit ou n’y répond qu’une fois que vous l’y autorisez. Indiquez l’identifiant de client qu’elle affiche dans son refus.",
       "clientId": "Identifiant de client",
       "allow": "Autoriser",
       "revoke": "Retirer",
       "noApplications": "Aucune application ne peut les lire.",
-      "failed": "Les réglages n’ont pas pu être enregistrés."
+      "failed": "Les réglages n’ont pas pu être enregistrés.",
+      "metaGrantNeeded": "Meta demande d’abord au compte d’autoriser Peal à accéder à ses messages privés.",
+      "metaGrant": "Autoriser, sur {app, select, instagram {Instagram} other {Facebook}}",
+      "metaReview": "Tant que Meta n’a pas examiné l’application de Peal (son App Review), seules les personnes ayant un rôle sur l’application peuvent écrire au compte par Peal.",
+      "instagramConnectedTools": "Dans Instagram, la personne propriétaire du compte active aussi Paramètres → Messages et réponses aux stories → Contrôles des messages → Outils connectés → Autoriser l’accès aux messages."
     }
   },
   "TwoStep": {
@@ -4607,20 +4658,27 @@
   },
   "CommentRules": {
     "title": "Réponses aux commentaires",
-    "description": "Des règles qui répondent d’elles-mêmes, en public, aux commentaires sous les publications d’un canal qui contiennent un mot-clé que vous avez choisi : une fois par commentaire et une fois par personne, 25 réponses par jour au plus, 100 par jour pour toutes les règles d’un canal ensemble, chacune une réponse de votre boîte de réception. Elles répondent sur Mastodon, et sur les Pages Facebook et Instagram là où Peal lit leurs commentaires ; les règles de Bluesky, X, LinkedIn et YouTube interdisent à une application de répondre d’elle-même. Une règle n’aime, ne suit ni n’écrit jamais en privé à personne.",
+    "description": "Des règles qui répondent d’elles-mêmes, en public, aux commentaires sous les publications d’un canal qui contiennent un mot-clé que vous avez choisi : une fois par commentaire et une fois par personne, 25 réponses par jour au plus, 100 par jour pour toutes les règles d’un canal ensemble, chacune une réponse de votre boîte de réception. Elles répondent sur Mastodon, et sur les Pages Facebook et Instagram là où Peal lit leurs commentaires ; les règles de Bluesky, X, LinkedIn et YouTube interdisent à une application de répondre d’elle-même. Une règle n’aime ni ne suit jamais personne. Sur Instagram et les Pages Facebook, elle peut aussi envoyer à l’auteur de chaque commentaire auquel elle a répondu un message privé, après sa réponse publique, là où les messages privés du canal sont activés.",
     "readOnly": "Vous pouvez lire les règles : les modifier demande un rôle qui répond aux commentaires.",
     "empty": "Aucune règle ne répond d’elle-même aux commentaires.",
     "keywords": "Quand un commentaire dit : {keywords}",
     "status": "{status, select, active {Active} paused {En pause} ended {Terminée} other {Inconnu}}",
     "replied": "{count, plural, =0 {Aucune réponse pour l’instant} one {# réponse parmi les derniers commentaires} other {# réponses parmi les derniers commentaires}}",
     "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {Un canal}} : {reply, select, available {répond là} noApi {aucun commentaire que Peal lit} notAllowed {les règles de la plateforme interdisent à une application de répondre d’elle-même} unsupported {ce serveur ne lit pas ses commentaires} reconnect {reconnectez le canal} textTooLong {la réponse est trop longue} other {ne peut pas répondre}}",
+    "carriesPrivately": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {Un canal}} : {reply, select, available {répond là} noApi {aucun commentaire que Peal lit} notAllowed {les règles de la plateforme interdisent à une application de répondre d’elle-même} unsupported {ce serveur ne lit pas ses commentaires} reconnect {reconnectez le canal} textTooLong {la réponse est trop longue} other {ne peut pas répondre}} ; message privé : {privateReply, select, available {envoyé après la réponse publique} noApi {la plateforme n’a pas de réponses privées} unsupported {ce serveur ne lit pas ses messages privés} messagesOff {activez les messages privés du canal} reconnect {reconnectez le canal pour ses messages} textTooLong {le message est trop long} other {ne peut pas l’envoyer}}",
+    "privateReplyLabel": "Message privé :",
+    "privateMade": "{status, select, waiting {Message privé en attente de la réponse publique} sending {Message privé en cours d’envoi} sent {Message privé envoyé} failed {Message privé en échec} unconfirmed {Message privé non confirmé : vérifiez la conversation} gone {Message privé fait, plus conservé} other {Message privé}}",
+    "privateSkipped": "Pas de message privé : {code, select, stopped {la règle a été arrêtée, mise en pause ou a perdu son message avant} publicReplyFailed {la réponse publique n’est pas partie} publicReplyUnconfirmed {la réponse publique n’est pas confirmée} publicReplyWithdrawn {la réponse publique a été retirée} messagesOff {les messages privés du canal sont désactivés} noApi {la plateforme n’a pas de réponses privées} unsupported {ce serveur ne lit pas les messages privés de la plateforme} reconnect {reconnectez le canal pour ses messages} textTooLong {le message est trop long} MissingPermission {la personne qui a lancé la règle ne peut pas envoyer de messages} MessagesNeedConsent {le propriétaire de l’espace n’a pas permis à l’application d’envoyer des messages} PrivateReplyPending {le commentaire a déjà sa réponse privée} PrivateReplyNotPossible {le commentaire date de plus de 7 jours} AllowanceReached {le compte de facturation n’a plus de place pour un autre message} other {elle a été refusée ({code})}}",
     "started": "La règle est en place : elle répond aux commentaires qui arrivent à partir de maintenant.",
     "pause": "Mettre en pause",
     "paused": "La règle est en pause.",
     "resume": "Reprendre",
     "resumed": "La règle reprend.",
+    "resumeHeld": "Elle envoie des messages privés : un propriétaire, ou un membre autorisé à envoyer des messages, peut la reprendre.",
     "stop": "Arrêter",
     "stopped": "La règle est arrêtée.",
+    "removePrivate": "Retirer le message privé",
+    "removedPrivate": "La règle n’envoie plus de message privé.",
     "form": {
       "channel": "Canal",
       "chooseChannel": "Choisissez un canal",
@@ -4628,15 +4686,20 @@
       "keywordsHelp": "Séparés par des virgules, jusqu’à 10 ; quelles que soient leur casse et leurs accents.",
       "reply": "Réponse",
       "public": "Elle répond en public, d’elle-même, sans que personne ne lise chaque commentaire avant.",
+      "alsoPrivate": "Envoyer aussi un message privé",
+      "privateReply": "Message privé",
+      "privateHint": "Envoyé une fois, en privé, à l’auteur de chaque commentaire auquel la règle répond, après sa réponse publique et dans les 7 jours qui suivent le commentaire. Il faut que les messages privés du canal soient activés, et la personne doit répondre avant que vous puissiez lui écrire à nouveau. Il part tout seul : indiquez-y que le message est automatique là où la loi le demande.",
       "start": "Lancer",
       "missing": {
         "channel": "Choisissez un canal.",
         "keywords": "Donnez de 1 à 10 mots-clés.",
-        "reply": "Écrivez la réponse."
+        "reply": "Écrivez la réponse.",
+        "privateReply": "Écrivez le message privé, ou décochez-le."
       }
     },
     "errors": {
-      "failed": "La modification n’a pas pu être faite ({tag})."
+      "failed": "La modification n’a pas pu être faite ({tag}).",
+      "privateReply": "Aucun canal ne peut envoyer ce message privé : {reason, select, messagesOff {activez d’abord les messages privés du canal} noApi {la plateforme n’a pas de réponses privées} unsupported {ce serveur ne lit pas les messages privés de la plateforme} reconnect {reconnectez le canal pour ses messages} textTooLong {il est trop long pour la plateforme} other {ce n’est pas possible là}}."
     }
   },
   "ShortLinks": {

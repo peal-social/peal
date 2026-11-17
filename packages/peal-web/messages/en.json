@@ -113,7 +113,7 @@
   "Ads": {
     "open": "Ads",
     "openLabel": "Ads of {workspace}",
-    "network": "{network, select, meta {Meta} other {{network}}}",
+    "network": "{network, select, meta {Meta} google {Google Ads} other {{network}}}",
     "page": {
       "title": "Ads",
       "description": "The ad accounts connected to this workspace, their campaigns and what they spent. The ad network bills each ad account directly, on its own payment method: Peal never handles the money.",
@@ -161,7 +161,11 @@
       "disconnectTitle": "Disconnect {name}?",
       "disconnectDescription": "What Peal read of this ad account is deleted. The records of its boosts stay, and what they committed this month still counts if the same account is connected again. Campaigns that run at the ad network are left as they are.",
       "disconnected": "{name} is disconnected.",
-      "untracked": "This month's managed ads are used: new ads of this account are not tracked until {date, date, long}. Ads already counted, and boosts made through Peal, keep updating. A payment method on the billing page lifts it."
+      "untracked": "This month's managed ads are used: new ads of this account are not tracked until {date, date, long}. Ads already counted, and boosts made through Peal, keep updating. A payment method on the billing page lifts it.",
+      "readOnly": "Never: Peal only reads Google Ads accounts",
+      "reachedThrough": "Read through the manager account",
+      "syncedEvery": "{network, select, google {Read every six hours} other {Read every hour}}",
+      "unreachable": "Unreachable since {date, date, medium}: the manager account it was read through no longer holds it, and the sign-in reaches it no other way. Nothing is read of it until someone who reaches it signs in; what was read stays."
     },
     "spending": {
       "title": "Spending through Peal",
@@ -180,12 +184,12 @@
     },
     "campaigns": {
       "title": "Campaigns",
-      "description": "As last read from the ad network, every hour, those made outside Peal included, with what their ads did over the last 30 days.",
-      "caption": "Campaigns of {account}, with what their ads did from {from} to {to}",
+      "description": "{network, select, google {As last read from Google Ads, every six hours, with what each campaign did over the last 30 days. Google Ads reports no reach and no results here.} other {As last read from the ad network, every hour, those made outside Peal included, with what their ads did over the last 30 days.}}",
+      "caption": "{network, select, google {Campaigns of {account}, with what each did from {from} to {to}} other {Campaigns of {account}, with what their ads did from {from} to {to}}}",
       "empty": "This ad account has no campaign.",
       "name": "Campaign",
       "status": "Status",
-      "objective": "Objective",
+      "objective": "{network, select, google {Type} other {Objective}}",
       "budget": "Budget",
       "spend": "Spend",
       "impressions": "Impressions",
@@ -199,7 +203,7 @@
     },
     "insights": {
       "title": "Daily spend",
-      "description": "What this ad account’s ads spent each day over the last 30 days, on the account’s calendar.",
+      "description": "{network, select, google {What this Google Ads account’s campaigns spent each day over the last 30 days, on the account’s calendar.} other {What this ad account’s ads spent each day over the last 30 days, on the account’s calendar.}}",
       "views": "Show the daily spend as",
       "chart": "Chart",
       "table": "Table",
@@ -348,6 +352,17 @@
       "notPromotable": "{reason, select, platform {Peal boosts posts on Facebook Pages and Instagram only.} connection {This Instagram account was connected through Instagram Login, which cannot run ads. Connect it through its Facebook Page.} other {The post is not published on this channel, or the channel was disconnected since.}}",
       "signInFailed": "{reason, select, denied {You refused the sign-in, or left out a permission that reading ad accounts needs.} expired {This sign-in is unknown, was already completed, is older than 15 minutes or was started by someone else. Start again.} notConfigured {This server cannot keep the sign-in: its operator has not set the key that encrypts it.} other {The ad network refused the sign-in. Start again.}}",
       "stateConflict": "{state, select, failed {This boost failed: it does not run again.} ended {This boost has ended: it does not run again.} stopped {This boost was stopped: it does not run again.} other {This cannot be done where the boost stands now. Refresh to see where it is.}}"
+    },
+    "google": {
+      "title": "Connect Google Ads",
+      "reads": "Peal reads, for each Google Ads account you choose: its name, its campaigns, and each campaign's daily cost, impressions and clicks. Nothing about the people who saw an ad.",
+      "changes": "Google's consent screen asks to see, edit, create and delete your Google Ads data, as Google has no reading-only access. Peal never changes anything there: no campaign, no budget, no status, and it boosts nothing on Google Ads.",
+      "every": "Peal reads each account every six hours, so what it shows is never more than six hours behind.",
+      "passkey": "Google asks you to sign in with a passkey.",
+      "remove": "Remove the sign-in here at any time: what Peal read of its accounts is deleted. You can also revoke Peal's access in your Google account.",
+      "docs": "How Peal uses Google Ads",
+      "cancel": "Cancel",
+      "continue": "Continue to Google"
     }
   },
   "Assistant": {
@@ -2915,9 +2930,9 @@
     "back": "Back from {section}",
     "modes": {
       "label": "Mode",
-      "studio": "Studio",
-      "console": "Console",
-      "unavailable": "Your role in this workspace has no Console pages"
+      "studio": "PealStudio",
+      "api": "PealAPI",
+      "unavailable": "Your role in this workspace has no PealAPI pages"
     },
     "groups": {
       "engage": "Engage",
@@ -4302,7 +4317,34 @@
       "reviewNotFound": "This review no longer exists: it may have gone from Google, or be older than Peal keeps one.",
       "conversationNotFound": "This conversation no longer exists: it went with its channel, or past the time Peal keeps one.",
       "messagePending": "A message to this conversation is on its way, or may have gone out. Wait until it is settled before writing another, so the same message never goes twice.",
-      "mentionsOutside": "The message mentions accounts outside the conversation ({mentions}), which a Mastodon direct message would reach too. Take the mentions out: nothing was sent."
+      "mentionsOutside": "The message mentions accounts outside the conversation ({mentions}), which a Mastodon direct message would reach too. Take the mentions out: nothing was sent.",
+      "windowClosed": "The platform takes no answer to this conversation any more: Messenger and Instagram take one only within 24 hours of the person’s last message. Nothing was sent.",
+      "privateReplyPending": "This comment has its one private reply already, on its way, to check or sent: the platform takes one a comment, so nothing more was sent.",
+      "privateReplyNotFound": "This private reply no longer exists: it went with its comment.",
+      "privateReplyNotPossible": "{reason, select, ownComment {The channel’s own account wrote this comment: a private reply goes to someone else’s.} gone {The comment is no longer on its platform.} tooOld {The comment was written more than seven days ago, less Peal’s hour: the platform takes no private reply to it any more.} other {This comment cannot get a private reply.}} Nothing was sent."
+    },
+    "privateReply": {
+      "open": "Reply privately",
+      "title": "Reply privately",
+      "description": "One private message to {author}, as the channel’s account. The platform takes one a comment, within seven days of it: you may send this one until {until}. The person must answer before you can write to them again, and on Instagram it lands in their message requests unless they follow the account.",
+      "label": "Your message",
+      "automatic": "Where the law asks an automated message to say so, say it in your text: Peal adds nothing to it.",
+      "count": "{length, number} of {maximum, number} {unit, select, utf8Bytes {bytes} other {characters}}",
+      "tooLong": "{over, number} too many",
+      "send": "Send privately",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "sent": "The private reply is on its way.",
+      "from": "Private reply sent from Peal on {at}",
+      "status": "{status, select, sending {Sending…} sent {Sent} failed {Not sent} unconfirmed {To check} other {{status}}}",
+      "failed": "Nothing went out: {reason}",
+      "unconfirmed": "This private reply may have reached the person: {reason} Peal never sends it again. Check the conversation in the platform’s inbox, then say what you found.",
+      "reason": "{reason, select, channelUnavailable {the channel was disconnected or turned off, or its messages were turned off.} reconnectNeeded {the platform refuses the account’s authorization. Connect the account again for its messages.} rateLimited {the platform kept turning requests away.} platformUnavailable {the platform could not be reached.} commentGone {the platform no longer takes the comment for a private reply.} alreadyAnswered {the platform says the comment had its one private reply already, sent from somewhere else.} refused {the platform refused it: the person may take no messages from the account, or the Page’s messages are off.} windowClosed {the platform’s seven days had passed.} notSent {someone checked and did not find it.} noResponse {the request left and no answer came.} interrupted {Peal stopped during the call, and the platform could not say afterwards.} adapterFailure {a fault in Peal happened after the request may have left.} other {{reason}}}",
+      "confirmSent": "It went out",
+      "confirmNotSent": "It did not go out",
+      "confirmed": "{went, select, true {The private reply is recorded as sent.} other {The private reply is recorded as not sent: the comment may get another.}}",
+      "reconnect": "Private replies need the channel’s messages, with their permissions: {settings}.",
+      "settings": "connect the channel again for its messages in the inbox’s settings"
     }
   },
   "InboxReviews": {
@@ -4351,7 +4393,7 @@
   },
   "InboxMessages": {
     "title": "Direct messages",
-    "description": "The private conversations people hold with your Mastodon and Bluesky accounts, for the channels whose messages your workspace turned on. Peal keeps each message {days, number} days after it was sent, and never starts a conversation.",
+    "description": "The private conversations people hold with your Mastodon, Bluesky, Facebook Page and Instagram accounts, for the channels whose messages your workspace turned on. Peal keeps each message {days, number} days after it was sent, and never starts a conversation.",
     "loadFailed": "The conversations could not be loaded.",
     "retry": "Try again",
     "row": {
@@ -4389,7 +4431,12 @@
       "sending": "Sending…",
       "sentToast": "The message is on its way.",
       "pending": "A message to this conversation is on its way. Wait until it has gone out to write another.",
-      "closed": "Nobody else wrote in this conversation yet: Peal answers, and never writes first."
+      "closed": "Nobody else wrote in this conversation yet: Peal answers, and never writes first.",
+      "openUntil": "You can answer until {at}: Messenger and Instagram take an answer only within 24 hours of the person’s last message.",
+      "windowClosed": "Messenger and Instagram take an answer only within 24 hours of the person’s last message, and this conversation’s time ended {at}. Answer from the platform’s own inbox if its rules allow it, or wait for the person to write again.",
+      "personAfter": "After that, as Meta lets a person answer by hand for 7 days, you can still answer yourself until {at}.",
+      "personOpenUntil": "Messenger and Instagram’s 24 hours have passed, but Meta lets a person answer by hand for 7 days after the person’s last message: you can still answer yourself until {at}. Write the answer yourself, about what they asked: it goes out with Meta’s Human Agent tag, which is for a person’s answers only.",
+      "personWindowClosed": "Meta lets a person answer by hand only within 7 days of the person’s last message, and this conversation’s time ended {at}. Answer from the platform’s own inbox if its rules allow it, or wait for the person to write again."
     },
     "settings": {
       "title": "Direct messages: what Peal reads",
@@ -4400,14 +4447,18 @@
       "turnOff": "Stop, and delete what was kept",
       "grantNeeded": "Bluesky asks the account to allow Peal its direct messages first.",
       "grant": "Allow, on Bluesky",
-      "none": "No Mastodon or Bluesky channel in this workspace.",
+      "none": "No Mastodon, Bluesky, Facebook Page or Instagram channel in this workspace.",
       "applications": "Applications that may read and answer them",
       "applicationsDescription": "An application connected through OAuth, such as an AI assistant, lists conversations, and reads or answers them only once you let it. Give the client id it shows in its refusal.",
       "clientId": "Client id",
       "allow": "Allow",
       "revoke": "Take back",
       "noApplications": "No application may read them.",
-      "failed": "The settings could not be saved."
+      "failed": "The settings could not be saved.",
+      "metaGrantNeeded": "Meta asks the account to allow Peal its direct messages first.",
+      "metaGrant": "Allow, on {app, select, instagram {Instagram} other {Facebook}}",
+      "metaReview": "Until Meta reviews Peal’s app (its App Review), only people with a role on the app can write to the account through Peal.",
+      "instagramConnectedTools": "In Instagram, the account’s owner also turns on Settings → Messages and story replies → Message controls → Connected tools → Allow access to messages."
     }
   },
   "TwoStep": {
@@ -4607,20 +4658,27 @@
   },
   "CommentRules": {
     "title": "Comment replies",
-    "description": "Rules that answer, by themselves and in public, the comments under a channel’s posts that hold a keyword you chose: once a comment and once a person, 25 replies a day at most, 100 a day for all of a channel’s rules together, each one of your inbox’s replies. They answer on Mastodon, and on Facebook Pages and Instagram where Peal reads their comments; Bluesky’s, X’s, LinkedIn’s and YouTube’s rules forbid an app to answer by itself. A rule never likes, follows or writes privately to anyone.",
+    "description": "Rules that answer, by themselves and in public, the comments under a channel’s posts that hold a keyword you chose: once a comment and once a person, 25 replies a day at most, 100 a day for all of a channel’s rules together, each one of your inbox’s replies. They answer on Mastodon, and on Facebook Pages and Instagram where Peal reads their comments; Bluesky’s, X’s, LinkedIn’s and YouTube’s rules forbid an app to answer by itself. A rule never likes or follows anyone. On Instagram and Facebook Pages, it may also send the author of each comment it answered one private message, after its public reply, where the channel’s direct messages are on.",
     "readOnly": "You may read the rules: changing them takes a role that answers comments.",
     "empty": "No rule answers comments by itself.",
     "keywords": "When a comment says: {keywords}",
     "status": "{status, select, active {Active} paused {Paused} ended {Ended} other {Unknown}}",
     "replied": "{count, plural, =0 {No reply yet} one {# reply among the latest comments} other {# replies among the latest comments}}",
     "carries": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {A channel}}: {reply, select, available {answers there} noApi {no comments Peal reads} notAllowed {the platform’s rules forbid an app to answer by itself} unsupported {this server does not read its comments} reconnect {connect the channel again} textTooLong {the reply is too long} other {cannot answer}}",
+    "carriesPrivately": "{platform, select, x {X} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} linkedin {LinkedIn} instagram {Instagram} facebook {Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} other {A channel}}: {reply, select, available {answers there} noApi {no comments Peal reads} notAllowed {the platform’s rules forbid an app to answer by itself} unsupported {this server does not read its comments} reconnect {connect the channel again} textTooLong {the reply is too long} other {cannot answer}}; private message: {privateReply, select, available {sent after the public reply} noApi {the platform has no private replies} unsupported {this server does not read its direct messages} messagesOff {turn the channel’s direct messages on} reconnect {connect the channel again for its messages} textTooLong {the message is too long} other {cannot send}}",
+    "privateReplyLabel": "Private message:",
+    "privateMade": "{status, select, waiting {Private message waiting for the public reply to go out} sending {Private message on its way} sent {Private message sent} failed {Private message failed} unconfirmed {Private message unconfirmed: check the conversation} gone {Private message made, no longer kept} other {Private message}}",
+    "privateSkipped": "No private message: {code, select, stopped {the rule was stopped, paused or lost its message first} publicReplyFailed {the public reply did not go out} publicReplyUnconfirmed {the public reply is unconfirmed} publicReplyWithdrawn {the public reply was withdrawn} messagesOff {the channel’s direct messages are off} noApi {the platform has no private replies} unsupported {this server does not read the platform’s direct messages} reconnect {connect the channel again for its messages} textTooLong {the message is too long} MissingPermission {whoever started the rule may not send messages} MessagesNeedConsent {the workspace’s owner did not let the app send messages} PrivateReplyPending {the comment has its private reply already} PrivateReplyNotPossible {the comment is more than 7 days old} AllowanceReached {the billing account has no room for another message} other {it was refused ({code})}}",
     "started": "The rule is set: it answers the comments that come from now on.",
     "pause": "Pause",
     "paused": "The rule is paused.",
     "resume": "Resume",
     "resumed": "The rule is going again.",
+    "resumeHeld": "It sends private messages: an owner, or a member allowed to send messages, can resume it.",
     "stop": "Stop",
     "stopped": "The rule is stopped.",
+    "removePrivate": "Remove the private message",
+    "removedPrivate": "The rule sends no private message any more.",
     "form": {
       "channel": "Channel",
       "chooseChannel": "Choose a channel",
@@ -4628,15 +4686,20 @@
       "keywordsHelp": "Separated by commas, up to 10; whatever their case and accents.",
       "reply": "Reply",
       "public": "It answers in public, by itself, without anyone reading each comment first.",
+      "alsoPrivate": "Also send a private message",
+      "privateReply": "Private message",
+      "privateHint": "Sent once, privately, to the author of each comment the rule answers, after its public reply and within 7 days of the comment. It needs the channel’s direct messages turned on, and the person must answer before you can write again. It goes by itself: say in it that the message is automatic where the law asks.",
       "start": "Start",
       "missing": {
         "channel": "Choose a channel.",
         "keywords": "Give 1 to 10 keywords.",
-        "reply": "Write the reply."
+        "reply": "Write the reply.",
+        "privateReply": "Write the private message, or untick it."
       }
     },
     "errors": {
-      "failed": "The change could not be made ({tag})."
+      "failed": "The change could not be made ({tag}).",
+      "privateReply": "No channel can send this private message: {reason, select, messagesOff {turn the channel’s direct messages on first} noApi {the platform has no private replies} unsupported {this server does not read the platform’s direct messages} reconnect {connect the channel again for its messages} textTooLong {it is too long for the platform} other {it is not possible there}}."
     }
   },
   "ShortLinks": {
