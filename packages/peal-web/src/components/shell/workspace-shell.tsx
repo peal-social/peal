@@ -15,7 +15,7 @@ export const AppLink: LinkComponent = ({ children, ...props }) => (
 );
 
 /**
- * The frame of a workspace's pages: its sidebar (Studio and Console), the
+ * The frame of a workspace's pages: its sidebar (PealStudio and PealAPI), the
  * top bar naming the open page, and the page's foot.
  */
 export const WorkspaceShell = ({

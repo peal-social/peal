@@ -34,7 +34,7 @@ const articleCrumb = (path: string) =>
   }).breadcrumb;
 
 describe(navigationOf, () => {
-  it("puts a Studio page in Studio, with the pages the member may open", () => {
+  it("puts a PealStudio page in PealStudio, with the pages the member may open", () => {
     const navigation = navigationOf({
       pathname: `${base}/calendar`,
       permissions: owner,
@@ -76,18 +76,18 @@ describe(navigationOf, () => {
       "channels",
       "media",
     ]);
-    expect(navigation.modes.console).toBeNull();
+    expect(navigation.modes.api).toBeNull();
     expect(navigation.modes.studio).toBe(base);
   });
 
-  it("puts the API's pages in Console, and starts Console at its first", () => {
+  it("puts the API's pages in PealAPI, and starts PealAPI at its first", () => {
     const navigation = navigationOf({
       pathname: `${base}/settings/webhooks`,
       permissions: owner,
       workspaceId,
     });
 
-    expect(navigation.mode).toBe("console");
+    expect(navigation.mode).toBe("api");
     expect(navigation.section).toBeNull();
     expect(pagesOf(navigation)).toStrictEqual([
       "platforms",
@@ -95,7 +95,7 @@ describe(navigationOf, () => {
       "webhooks",
       "partner",
     ]);
-    expect(navigation.modes.console).toBe(`${base}/platforms`);
+    expect(navigation.modes.api).toBe(`${base}/platforms`);
   });
 
   it("opens the Posts section on its pages", () => {

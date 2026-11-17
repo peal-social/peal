@@ -97,13 +97,13 @@ const icons: Readonly<Record<Page, LucideIcon>> = {
 };
 
 const modeIcons: Readonly<Record<Mode, LucideIcon>> = {
-  console: CodeXmlIcon,
+  api: CodeXmlIcon,
   studio: SquarePenIcon,
 };
 
-// The open mode's segment: ink in Console, so the mode shows at a glance.
+// The open mode's segment: ink in PealAPI, so the mode shows at a glance.
 const currentModeClass: Readonly<Record<Mode, string>> = {
-  console: "bg-primary text-primary-foreground font-medium shadow-xs",
+  api: "bg-primary text-primary-foreground font-medium shadow-xs",
   studio: "bg-card ring-border font-medium shadow-xs ring-1",
 };
 
@@ -128,9 +128,7 @@ const ModeSwitch = ({
       <span
         className={cn(
           "flex size-7 shrink-0 items-center justify-center rounded-md",
-          mode === "console"
-            ? "bg-primary"
-            : "bg-card ring-border shadow-xs ring-1"
+          mode === "api" ? "bg-primary" : "bg-card ring-border shadow-xs ring-1"
         )}
       >
         <PealMark className="size-4.5" label={t("productName")} />
@@ -139,7 +137,7 @@ const ModeSwitch = ({
         aria-label={t("modes.label")}
         className="grid flex-1 grid-cols-2 gap-0.5"
       >
-        {(["studio", "console"] as const).map((each) => {
+        {(["studio", "api"] as const).map((each) => {
           const Icon = modeIcons[each];
           const href = modes[each];
 
