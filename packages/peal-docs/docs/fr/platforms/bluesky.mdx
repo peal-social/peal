@@ -44,20 +44,20 @@ Une étiquette de contenu décrit les images ou la vidéo. Une partie sans médi
 Peal écrit qui peut répondre et les citations avec la publication, en une seule requête. Une publication ne part jamais sans eux.
 
 <Accordion>
-  <AccordionItem title="Un canal connecté avant que Peal demande les réglages de réponse et de citation">
+<AccordionItem title="Un canal connecté avant que Peal demande les réglages de réponse et de citation">
 
 Qui peut répondre et les citations ne marchent que sur un compte connecté depuis que Peal les demande. Sur un canal connecté avant, la programmation les refuse, et les [capacités](/developers#capabilities) du canal le disent (`optionNeedsReconnect`). Dans l’éditeur, un tel canal ne propose aucun des deux réglages, et dit pourquoi.
 
 Pour les utiliser, reconnectez le compte sur la page **Canaux**. Rien d’autre ne change.
 
-  </AccordionItem>
-  <AccordionItem title="Le serveur du compte refuse ces réglages">
+</AccordionItem>
+<AccordionItem title="Le serveur du compte refuse ces réglages">
 
 Il arrive que Peal ne puisse pas lire les autorisations du canal, et que le serveur du compte refuse alors ces réglages. La publication n’est pas envoyée : le canal indique **Échec**, avec le code `optionRefused`, et Peal ne la renvoie pas.
 
 Reconnectez le compte, ou retirez ces réglages, et republiez-la.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Commentaires [#comments]

@@ -28,49 +28,49 @@ Un espace de travail peut faire attendre les publications une [approbation](/gui
 Pour commencer, cliquez sur **Publications** dans la barre latérale d’un espace de travail, puis sur **Nouvelle publication**.
 
 <Steps>
-  <Step title="Choisissez les canaux">
+<Step title="Choisissez les canaux">
 
 Sous **Canaux**, cochez les comptes où part la publication. La liste reprend les [canaux](/guides/channels) de l’espace de travail.
 
 À partir de trois canaux, **Tout sélectionner** coche chaque canal qui publie, sans ceux qui sont désactivés ou à reconnecter. **Effacer** les décoche tous.
 
-  </Step>
-  <Step title="Écrivez le texte">
+</Step>
+<Step title="Écrivez le texte">
 
 Saisissez le texte dans **Texte pour tous les canaux**. Les mentions, les hashtags et les liens ressortent pendant la saisie, et sont gardés en texte brut.
 
-  </Step>
-  <Step title="Changez le texte d’un canal, si vous le souhaitez">
+</Step>
+<Step title="Changez le texte d’un canal, si vous le souhaitez">
 
 Ouvrez l’onglet du canal et écrivez-y son propre texte. Si vous le laissez vide, le canal reprend le texte de tous les canaux.
 
-  </Step>
-  <Step title="Ajoutez des images et des vidéos">
+</Step>
+<Step title="Ajoutez des images et des vidéos">
 
 Sous **Images et vidéos**, ajoutez des images ou des vidéos de la médiathèque, ou importez-les à cet endroit. Voyez [Images et vidéos](/guides/media).
 
-  </Step>
-  <Step title="Donnez d’autres images et vidéos à un canal, si vous le souhaitez">
+</Step>
+<Step title="Donnez d’autres images et vidéos à un canal, si vous le souhaitez">
 
 Dans l’onglet du canal, cochez **Images et vidéos propres**. Le canal part des images et vidéos de la publication, et vous pouvez les ajouter, les retirer, les réordonner et les décrire à cet endroit.
 
 Le canal est alors vérifié, compté et envoyé avec elles, et les autres canaux gardent celles de la publication. Décochez la case pour reprendre celles de la publication. Pour partir avec des images et vidéos propres, un canal a besoin d’un texte, le sien ou le texte de tous les canaux.
 
-  </Step>
-  <Step title="Remplissez les options des plateformes">
+</Step>
+<Step title="Remplissez les options des plateformes">
 
 Quand la plateforme d’un canal en demande plus, comme le titre d’une vidéo YouTube, remplissez ses champs sous **Options des plateformes**. Voyez [Options des plateformes](#options).
 
-  </Step>
-  <Step title="Enregistrez le brouillon">
+</Step>
+<Step title="Enregistrez le brouillon">
 
 Cliquez sur **Enregistrer le brouillon** pour garder la publication sans heure. Elle rejoint les **Brouillons** de l’espace de travail, que le calendrier n’affiche pas.
 
-  </Step>
+</Step>
 </Steps>
 
 <Accordion>
-  <AccordionItem title="Écriture de droite à gauche, emoji et collage">
+<AccordionItem title="Écriture de droite à gauche, emoji et collage">
 
 L’écriture et le collage fonctionnent ainsi :
 
@@ -79,9 +79,9 @@ L’écriture et le collage fonctionnent ainsi :
 - Une image ou une vidéo collée seule dans un texte est importée et jointe comme si vous l’aviez déposée là (à sa partie, si vous la collez dans une partie), avec les mêmes limites.
 - Un collage qui contient aussi du texte, comme des cellules copiées d’un tableur, qui viennent avec une image d’elles-mêmes, colle seulement le texte.
 
-      </AccordionItem>
+</AccordionItem>
 
-  </Accordion>
+</Accordion>
 
 ### Vérifier la longueur sur chaque canal [#length]
 
@@ -106,7 +106,7 @@ Sous **Longueur sur chaque canal**, vous voyez la place que laisse la plateforme
 </Callout>
 
 <Accordion>
-  <AccordionItem title="Comment certaines plateformes comptent">
+<AccordionItem title="Comment certaines plateformes comptent">
 
 Certaines plateformes comptent à leur manière :
 
@@ -115,9 +115,9 @@ Certaines plateformes comptent à leur manière :
 - TikTok accepte 2 200 pour la légende d’une vidéo et 4 000 pour la description d’une publication de photos. Peal limite les deux à 2 200.
 - La limite de Facebook est le chiffre couramment rapporté, car Meta n’en nomme aucune. Il en va de même des 1 500 caractères de Google Business Profile, et des 58 du titre d’un événement ou d’une offre, car la référence et les pages d’aide de Google n’en nomment aucune.
 
-      </AccordionItem>
+</AccordionItem>
 
-  </Accordion>
+</Accordion>
 
 ### Prévisualiser [#previews]
 
@@ -300,20 +300,20 @@ Un reel ou une story vidéo n’indique **Publié** qu’une fois que Meta dit l
 S’il n’est toujours pas publié après ce délai, ou si Peal ne sait pas si un reel ou une story est parti, le canal indique **À vérifier** (`stillProcessing` quand Meta le traitait encore). Peal ne l’envoie jamais de nouveau. Regardez sur la Page, puis indiquez ce que vous avez trouvé.
 
 <Accordion>
-  <AccordionItem title="Fréquence d’images, taille et limite quotidienne de Meta">
+<AccordionItem title="Fréquence d’images, taille et limite quotidienne de Meta">
 
 Meta demande que la vidéo d’un reel ou d’une story vidéo défile à 24 à 60 images par seconde, ce que Peal ne vérifie pas. Meta refuse une vidéo hors de cette plage, ou sous 540p, pendant son traitement.
 
 Meta n’accepte aussi que 30 reels par Page sur 24 heures glissantes par son API. Au-delà, le reel échoue avec le code de Meta, et vous pouvez le republier plus tard.
 
-  </AccordionItem>
-  <AccordionItem title="Quand le serveur redémarre pendant un reel ou une story">
+</AccordionItem>
+<AccordionItem title="Quand le serveur redémarre pendant un reel ou une story">
 
 Si le serveur de Peal redémarre pendant qu’un reel ou une story Facebook part, Peal reprend là où il s’était arrêté. Il a noté la vidéo ou la photo envoyée avant de la publier, et relit donc l’état donné par Meta pendant 10 minutes au plus. Il ne renvoie le reel ou la story que si sa note dit qu’il n’a jamais été publié.
 
 Un reel ou une story que le serveur avait commencé avant la mise à jour vers cette version indique **À vérifier**, comme celui dont il ne peut rien dire. Cela peut aussi vouloir dire qu’il n’est jamais parti. Une story Instagram interrompue ainsi indique aussi **À vérifier**, pour que vous vérifiiez le compte, puis la confirmiez ou la republiiez. Peal n’envoie jamais deux fois une story ou un reel.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 Par l’API, les capacités d’un canal listent les formats de sa plateforme dans `postFormats`, chacun avec les médias qu’il prend et si le texte est envoyé.

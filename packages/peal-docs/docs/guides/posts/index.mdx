@@ -28,49 +28,49 @@ A workspace can make posts wait for an [approval](/guides/posts/review) before t
 To start, click **Posts** in a workspace's sidebar, then **New post**.
 
 <Steps>
-  <Step title="Pick the channels">
+<Step title="Pick the channels">
 
 Under **Channels**, tick the accounts the post goes to. The list holds the workspace's [channels](/guides/channels).
 
 From three channels up, **Select all** ticks every channel that publishes, leaving out any that's turned off or needs reconnecting. **Clear** unticks them all.
 
-  </Step>
-  <Step title="Write the text">
+</Step>
+<Step title="Write the text">
 
 Type in **Text for all channels**. Mentions, hashtags and links stand out as you type, and they're kept as plain text.
 
-  </Step>
-  <Step title="Change the text on one channel, if you like">
+</Step>
+<Step title="Change the text on one channel, if you like">
 
 Open the channel's tab and write its own text there. If you leave it empty, the channel uses the text for all channels.
 
-  </Step>
-  <Step title="Add images and videos">
+</Step>
+<Step title="Add images and videos">
 
 Under **Images and videos**, attach images or videos from the media library, or upload them there. See [Images and videos](/guides/media).
 
-  </Step>
-  <Step title="Give one channel other images and videos, if you like">
+</Step>
+<Step title="Give one channel other images and videos, if you like">
 
 In the channel's tab, tick **Images and videos of its own**. The channel starts from the post's images and videos, and you can add, remove, reorder and describe them there.
 
 The channel is then checked, counted and sent with those, while the other channels keep the post's. Untick the box to show the post's again. A channel needs a text to go out with images and videos of its own, either its own or the text for all channels.
 
-  </Step>
-  <Step title="Fill in the platform options">
+</Step>
+<Step title="Fill in the platform options">
 
 When a channel's platform asks for more, such as a YouTube video's title, fill in its fields under **Platform options**. See [Platform options](#options).
 
-  </Step>
-  <Step title="Save the draft">
+</Step>
+<Step title="Save the draft">
 
 Click **Save as draft** to keep the post without a time. It joins the workspace's **Drafts**, which the calendar doesn't show.
 
-  </Step>
+</Step>
 </Steps>
 
 <Accordion>
-  <AccordionItem title="Right-to-left text, emoji and pasting">
+<AccordionItem title="Right-to-left text, emoji and pasting">
 
 Writing and pasting work like this:
 
@@ -79,9 +79,9 @@ Writing and pasting work like this:
 - An image or a video pasted alone into a text is uploaded and attached as if you'd dropped it there (to its part, when you paste it into a part), with the same limits.
 - A paste that also holds text, such as cells copied from a spreadsheet, which come with a picture of them, pastes the text only.
 
-      </AccordionItem>
+</AccordionItem>
 
-  </Accordion>
+</Accordion>
 
 ### Check the length on each channel [#length]
 
@@ -106,7 +106,7 @@ Under **Length on each channel**, you'll see how much room each channel's platfo
 </Callout>
 
 <Accordion>
-  <AccordionItem title="How some platforms count">
+<AccordionItem title="How some platforms count">
 
 Some platforms count in their own way:
 
@@ -115,9 +115,9 @@ Some platforms count in their own way:
 - TikTok takes 2,200 for a video's caption and 4,000 for a photo post's description. Peal holds both to 2,200.
 - Facebook's limit is the figure commonly reported, because Meta names none. So are Google Business Profile's 1,500 characters, and the 58 of an event's or an offer's title, because Google's reference and help pages name none.
 
-      </AccordionItem>
+</AccordionItem>
 
-  </Accordion>
+</Accordion>
 
 ### Preview it [#previews]
 
@@ -298,20 +298,20 @@ A reel or a video story shows **Published** only once Meta says it's published. 
 If it's still not published after that, or Peal doesn't hear whether a reel or a story went out, the channel shows **To check** (`stillProcessing` when Meta was still processing it). Peal never sends it again. Look on the Page, then say what you found.
 
 <Accordion>
-  <AccordionItem title="Frame rate, size and Meta's daily limit">
+<AccordionItem title="Frame rate, size and Meta's daily limit">
 
 Meta asks a reel's and a video story's video to run at 24 to 60 frames a second, which Peal doesn't check. Meta refuses a video outside that range, or below 540p, while it processes it.
 
 Meta also takes 30 reels a Page within any 24 hours through its API. Past that, the reel fails with Meta's code, and you can post it again later.
 
-  </AccordionItem>
-  <AccordionItem title="When the server restarts during a reel or a story">
+</AccordionItem>
+<AccordionItem title="When the server restarts during a reel or a story">
 
 If Peal's server restarts while a Facebook reel or story is going out, Peal carries on where it stopped. It noted the video or photo it sent before publishing it, so it reads Meta's status again for up to 10 minutes. It sends the reel or story again only when its note says it was never published.
 
 A reel or story the server had begun before an upgrade to this release shows **To check**, and so does one it can't tell about. That may also mean it never went out. An Instagram story cut short this way shows **To check** too, so you can check the account, then confirm it or post it again. Peal never sends a story or a reel twice.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 Through the API, a channel's capabilities list its platform's formats in `postFormats`, each with the media it takes and whether the text is sent.

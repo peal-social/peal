@@ -64,7 +64,7 @@ An upload gives the name as `fileName` when it starts (`POST …/media`). The na
 A file that's already online can come into the library without passing through your computer, because the Peal server fetches it itself. All three ways need the right to upload.
 
 <Tabs>
-  <Tab title="CLI">
+<Tab title="CLI">
 
 ```sh
 peal media import https://files.example/spring/cover.jpg --alt "A paper catalogue open on a wooden table"
@@ -72,17 +72,17 @@ peal media import https://files.example/spring/cover.jpg --alt "A paper catalogu
 
 See [`peal media import`](/developers/cli/posts#media).
 
-  </Tab>
-  <Tab title="MCP">
+</Tab>
+<Tab title="MCP">
 
 The `import_media` tool, from an [MCP client](/developers/mcp/tools#tools).
 
-  </Tab>
-  <Tab title="API">
+</Tab>
+<Tab title="API">
 
 `POST /api/workspaces/{workspaceId}/media/import`, with the file's `url` and, if you like, its `altText`.
 
-  </Tab>
+</Tab>
 </Tabs>
 
 The server checks the address before it fetches anything. The address must be:
@@ -104,12 +104,12 @@ Each import adds a new file, read the same way as an upload. On an instance that
 When the workspace has its own [image provider](/guides/workspace#image-provider), or the instance has an image model, the assistant can make an image from a description, straight into the library. You need the right to use the assistant and the right to upload, so contributors and above.
 
 <Tabs>
-  <Tab title="Web app">
+<Tab title="Web app">
 
 Click **Generate an image** on the **Media** page, or in the composer's **Choose from the library** dialog, where the new image is then selected.
 
-  </Tab>
-  <Tab title="CLI">
+</Tab>
+<Tab title="CLI">
 
 ```sh
 peal media generate --prompt "A paper catalogue open on a wooden table, morning light" --aspect landscape
@@ -117,17 +117,17 @@ peal media generate --prompt "A paper catalogue open on a wooden table, morning 
 
 See [`peal media generate`](/developers/cli/posts#media).
 
-  </Tab>
-  <Tab title="MCP">
+</Tab>
+<Tab title="MCP">
 
 The `generate_image` tool, from an [MCP client](/developers/mcp/tools#tools).
 
-  </Tab>
-  <Tab title="API">
+</Tab>
+<Tab title="API">
 
 `POST /api/workspaces/{workspaceId}/assistant/images`, with the `prompt` and the `aspect` (`square`, `landscape` or `portrait`).
 
-  </Tab>
+</Tab>
 </Tabs>
 
 The description can be 1 to 1,000 characters. When the workspace set its own image provider, the description goes as it is to that provider, with the workspace's key. Otherwise it goes to the image provider the instance's administrator chose. Peal never writes the description or the image to its logs.

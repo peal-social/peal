@@ -10,22 +10,22 @@ Programmez une publication une fois son texte et ses canaux prêts ([Écrire une
 ## Fixer l’heure [#schedule]
 
 <Tabs>
-  <Tab title="Application web">
-    <Steps>
-      <Step title="Choisissez la date et l’heure">
+<Tab title="Application web">
+<Steps>
+<Step title="Choisissez la date et l’heure">
 
 Sous **Quand**, réglez la **Date**, l’**Heure** et le **Fuseau horaire**. Le fuseau part de celui de votre navigateur.
 
-      </Step>
-      <Step title="Programmez-la">
+</Step>
+<Step title="Programmez-la">
 
 Cliquez sur **Programmer**. Si le bouton reste inactif, la publication dépasse une limite sur l’un de ses canaux, et l’éditeur liste ce qu’il faut corriger. Une fois le bouton cliqué, l’éditeur liste aussi les [options des plateformes](/guides/posts#options) qui manquent encore à un canal, et les montre sous leurs champs.
 
-      </Step>
-    </Steps>
+</Step>
+</Steps>
 
-  </Tab>
-  <Tab title="CLI">
+</Tab>
+<Tab title="CLI">
 
 ```sh
 peal posts schedule <post-id> --at 2026-11-20T10:00 --time-zone Europe/Paris
@@ -33,7 +33,7 @@ peal posts schedule <post-id> --at 2026-11-20T10:00 --time-zone Europe/Paris
 
 Voyez [Les publications en ligne de commande](/developers/cli/posts#posts).
 
-  </Tab>
+</Tab>
 </Tabs>
 
 Peal lit l’heure comme une horloge de ce fuseau l’affiche. Une publication prévue à 09:00 part donc à 09:00 sur place toute l’année. Deux nuits par an demandent une règle :
@@ -160,7 +160,7 @@ Peal envoie chaque image ou vidéo sous la forme que la plateforme demande, et c
 </Callout>
 
 <Accordion>
-  <AccordionItem title="Quand une plateforme ne répond pas à la requête qui publie">
+<AccordionItem title="Quand une plateforme ne répond pas à la requête qui publie">
 
 Peal ne vérifie que de façons qui ne peuvent pas publier deux fois :
 
@@ -180,5 +180,5 @@ Peal ne vérifie que de façons qui ne peuvent pas publier deux fois :
 
 Peal essaie trois fois, sur environ deux minutes et demie. Si le serveur s’arrête au milieu d’une publication, il vérifie de la même façon à son redémarrage. Ce n’est que si rien de cela ne tranche que la publication indique **À vérifier**. Peal ne la republie jamais de lui-même.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>

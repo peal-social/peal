@@ -18,27 +18,27 @@ Ajouter une publication à une file la programme. Il faut donc ce que demande la
 ### Ajouter une publication à une file [#add-to-queue]
 
 <Tabs>
-  <Tab title="Application web">
-    <Steps>
-      <Step title="Sélectionnez Ajouter à la file">
+<Tab title="Application web">
+<Steps>
+<Step title="Sélectionnez Ajouter à la file">
 
 Dans l’éditeur, sous **Quand**, sélectionnez **Ajouter à la file**.
 
-      </Step>
-      <Step title="Choisissez la file">
+</Step>
+<Step title="Choisissez la file">
 
 Choisissez la file (celle par défaut au départ), et lisez où la publication irait sous **Prochain créneau libre**.
 
-      </Step>
-      <Step title="Programmez">
+</Step>
+<Step title="Programmez">
 
 Cliquez sur **Programmer**. Le créneau est décidé quand Peal reçoit la publication, si bien que deux publications ajoutées au même moment ne prennent jamais le même.
 
-      </Step>
-    </Steps>
+</Step>
+</Steps>
 
-  </Tab>
-  <Tab title="CLI">
+</Tab>
+<Tab title="CLI">
 
 ```sh
 peal post "An evergreen tip" --default-queue
@@ -47,7 +47,7 @@ peal posts queue <post-id> --queue Weekdays
 
 Voyez [Les files en ligne de commande](/developers/cli/posts#queues).
 
-  </Tab>
+</Tab>
 </Tabs>
 
 Une publication qui ne nomme aucun canal va sur les canaux et le groupe de canaux de la file. Si l’un d’eux a été déconnecté depuis, il est laissé de côté, et Peal vous le dit.
@@ -90,7 +90,7 @@ Quelques règles s’appliquent pendant le déplacement :
 Peal dit ensuite combien de publications ont été déplacées, combien sont restées et combien restent à placer. Si vous les replacez deux fois, la seconde fois ne déplace rien.
 
 <Accordion>
-  <AccordionItem title="Approbations et limites de l’abonnement pendant le déplacement">
+<AccordionItem title="Approbations et limites de l’abonnement pendant le déplacement">
 
 Chaque publication est déplacée comme à la main, sauf pour les approbations. Elle prend sa nouvelle heure et compte dans son nouveau mois.
 
@@ -98,7 +98,7 @@ Une publication programmée passe par les approbations de l’espace de travail 
 
 Le déplacement s’arrête, en gardant ce qu’il a déjà déplacé, à un mois où l’abonnement n’a plus de place, quand il ne reste aucun créneau dans les 366 jours, ou quand quelqu’un enregistre la file entre-temps. Replacez les publications de nouveau quand il y a de la place.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Répéter une publication [#recycling]
@@ -202,7 +202,7 @@ Peal refuse une règle sur une publication qui n’a plus rien à mettre en lign
 Quand vous ajoutez un commentaire ou un repartage à une règle sur une publication, il agit aussitôt sur les canaux où la publication est déjà en ligne. Une sorte ajoutée à la règle d’un canal agit sur les publications que le canal met en ligne à partir de là.
 
 <Accordion>
-  <AccordionItem title="Repartages Bluesky, nouvelles tentatives et X">
+<AccordionItem title="Repartages Bluesky, nouvelles tentatives et X">
 
 Un repartage sur un canal Bluesky qui doit être reconnecté pour les repartages l’attend (**Autoriser les repartages** dans **Paramètres › Relances**). Une fois le canal reconnecté, le passage suivant prépare le repartage en moins de dix minutes, si la publication est encore dans ses sept jours. La règle reste ouverte entre-temps.
 
@@ -210,7 +210,7 @@ Quand une plateforme repousse une relance, parce qu’elle est injoignable ou ra
 
 Sur X, quand l’envoi d’un commentaire a été interrompu, Peal le recherche parmi les publications récentes du compte avant tout nouvel envoi. Cette lecture est aux frais de Peal, jamais facturée.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ### Approbations [#follow-up-approvals]
@@ -314,19 +314,19 @@ Un flux agit au nom de la personne qui l’a ajouté, telle qu’elle est quand 
 **Reprendre** relance le flux, en le lisant aussitôt. Si vous reprenez un flux dont l’auteur est parti, vous en devenez responsable, et ses publications agissent dès lors en votre nom.
 
 <Accordion>
-  <AccordionItem title="Quand un site change l’identité de ses éléments">
+<AccordionItem title="Quand un site change l’identité de ses éléments">
 
 Un site qui change l’identité de ses éléments (en déménageant son blog, par exemple) les rend tous nouveaux pour Peal. Jusqu’à trois de ceux datés d’après l’ajout du flux sont publiés de nouveau à ce passage, et le reste est ignoré comme trop nombreux. Mettez le flux en pause avant un tel changement, et reprenez-le après.
 
-  </AccordionItem>
-  <AccordionItem title="Comment Peal vérifie l’hôte d’un flux">
+</AccordionItem>
+<AccordionItem title="Comment Peal vérifie l’hôte d’un flux">
 
 Peal ne lit l’hôte d’un flux qu’une fois son adresse vérifiée comme publique, à chaque redirection aussi. Une seule faille reste : un hôte dont le nom répond autrement entre cette vérification et la connexion. Le client HTTP de Peal ne peut pas se connecter à l’adresse vérifiée tout en gardant le nom pour TLS.
 
-  </AccordionItem>
-  <AccordionItem title="Ce que Peal garde d’un flux">
+</AccordionItem>
+<AccordionItem title="Ce que Peal garde d’un flux">
 
 Ce que dit un flux est le texte d’autres personnes. Peal garde une empreinte de l’identité de chaque élément, jamais l’élément, et ne donne le texte d’un flux qu’aux publications qu’il crée.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>

@@ -408,7 +408,7 @@ Chaque plateforme a ses propres recherches :
 Une recherche ne change rien, et demande `channel:read`. Chacune est une requête à la plateforme, comptée dans ce que la plateforme accorde à cette instance. Lancez-en donc une quand une publication en a besoin, plutôt qu’à intervalles réguliers. Une page peut arriver vide et nommer pourtant la suivante.
 
 <Accordion>
-  <AccordionItem title="Comment Peal espace les recherches">
+<AccordionItem title="Comment Peal espace les recherches">
 
 Peal retient les recherches pour qu’elles ne dépensent jamais ce dont la publication a besoin :
 
@@ -417,9 +417,9 @@ Peal retient les recherches pour qu’elles ne dépensent jamais ce dont la publ
 - Les recherches d’une instance atteignent chaque plateforme un nombre fixé de fois par jour (UTC), pour tous ses espaces de travail réunis. Au-delà, une recherche répond 429 `PlatformRateLimited` avec `retryAfterSeconds` jusqu’au lendemain.
 - Ce qu’une plateforme dit d’elle-même plutôt que d’un compte, comme les catégories de vidéos de YouTube pour une région et une langue, est gardé un jour.
 
-      </AccordionItem>
+</AccordionItem>
 
-  <AccordionItem title="Les erreurs d’une recherche">
+<AccordionItem title="Les erreurs d’une recherche">
 
 Une recherche peut échouer de ces façons :
 
@@ -431,7 +431,7 @@ Une recherche peut échouer de ces façons :
 | 502    | `PlatformUnreachable` | La plateforme ne répond pas.                                                                                                                            |
 | 429    | `PlatformRateLimited` | La plateforme demande de ralentir (avec `retryAfterSeconds` quand elle a dit combien de temps), ou l’espacement de Peal ci-dessus retient la recherche. |
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Webhooks [#webhooks]

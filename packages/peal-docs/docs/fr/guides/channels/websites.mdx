@@ -25,16 +25,16 @@ Peal publie en tant que l’un des utilisateurs du site, avec un **mot de passe 
 Il vous faut WordPress 5.7 ou plus récent, sur un site servi en HTTPS. Les mots de passe d’application sont arrivés avec la 5.6, et la 5.7 permet à Peal de retrouver un article par le moment où il a changé.
 
 <Steps>
-  <Step title="Créer un mot de passe d’application">
+<Step title="Créer un mot de passe d’application">
 
 Dans WordPress, ouvrez **Utilisateurs**, puis le profil de l’utilisateur avec lequel Peal publie. Cet utilisateur doit être auteur, éditeur ou administrateur. Sous **Mots de passe d’application**, nommez-le Peal et cliquez sur **Ajouter un mot de passe d’application**. Copiez le mot de passe, car il ne s’affiche qu’une fois.
 
-  </Step>
-  <Step title="Connecter le site dans Peal">
+</Step>
+<Step title="Connecter le site dans Peal">
 
 Dans **Canaux**, sous **Site WordPress**, saisissez l’adresse du site (sa page d’accueil, comme `https://blog.example.com`), l’identifiant de l’utilisateur et le mot de passe d’application. Cliquez ensuite sur **Connecter le site**.
 
-  </Step>
+</Step>
 </Steps>
 
 Peal trouve l’API REST du site depuis sa page d’accueil, et vérifie que l’utilisateur peut publier des articles et téléverser des fichiers. Il garde ensuite le mot de passe chiffré et ne le montre plus jamais. Il n’envoie le mot de passe qu’à l’API REST du site lui-même, jamais à une que la page d’accueil désigne ailleurs.

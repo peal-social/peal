@@ -18,27 +18,27 @@ Adding a post to a queue schedules it, so it needs what scheduling that post nee
 ### Add a post to a queue [#add-to-queue]
 
 <Tabs>
-  <Tab title="Web app">
-    <Steps>
-      <Step title="Select Add to queue">
+<Tab title="Web app">
+<Steps>
+<Step title="Select Add to queue">
 
 In the composer, under **When**, select **Add to queue**.
 
-      </Step>
-      <Step title="Pick the queue">
+</Step>
+<Step title="Pick the queue">
 
 Pick the queue (the default to start with), and read where the post would go under **Next free slot**.
 
-      </Step>
-      <Step title="Schedule">
+</Step>
+<Step title="Schedule">
 
 Click **Schedule**. The slot is decided when Peal receives the post, so two posts added at the same moment never take the same one.
 
-      </Step>
-    </Steps>
+</Step>
+</Steps>
 
-  </Tab>
-  <Tab title="CLI">
+</Tab>
+<Tab title="CLI">
 
 ```sh
 peal post "An evergreen tip" --default-queue
@@ -47,7 +47,7 @@ peal posts queue <post-id> --queue Weekdays
 
 See [Queues on the command line](/developers/cli/posts#queues).
 
-  </Tab>
+</Tab>
 </Tabs>
 
 A post that names no channel goes to the queue's channels and channel set. If one of them was disconnected since, it's left out, and Peal tells you.
@@ -86,7 +86,7 @@ A few rules apply during the move:
 Peal then says how many posts moved, how many stayed, and how many remain. If you move them twice, the second time moves nothing.
 
 <Accordion>
-  <AccordionItem title="Approvals and plan limits during a move">
+<AccordionItem title="Approvals and plan limits during a move">
 
 Each post moves as if moved by hand, except for approvals. It gets its new time and counts in its new month.
 
@@ -94,7 +94,7 @@ A scheduled post goes through the workspace's approvals as if you scheduled it. 
 
 The move stops, keeping what it already moved, at a month the plan has no room in, when no slot is left within 366 days, or when someone saves the queue meanwhile. Move the posts again once there's room.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Repeat a post [#recycling]
@@ -198,7 +198,7 @@ Peal refuses a rule on a post that has nothing left to publish and that would ar
 When you add a comment or a repost to a rule on a post, it acts at once on the channels the post is already out on. A kind you add to a channel's rule acts on the posts the channel publishes from then on.
 
 <Accordion>
-  <AccordionItem title="Bluesky reposts, retries and X">
+<AccordionItem title="Bluesky reposts, retries and X">
 
 A repost on a Bluesky channel that has to be connected again for reposts waits for it (**Allow reposts** in **Settings › Follow-ups**). Once the channel is connected, the next run arms the repost within ten minutes, if the post is still within its seven days. The rule stays open meanwhile.
 
@@ -206,7 +206,7 @@ When a platform puts a follow-up off, because it's unreachable or slows the acco
 
 On X, when sending a comment was cut short, Peal looks for it among the account's recent posts before it sends anything again. That read is at Peal's cost, never billed to you.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ### Approvals [#follow-up-approvals]
@@ -307,19 +307,19 @@ A feed acts as whoever added it, as they are when an item is made. Peal stops it
 **Resume** sets the feed going again, and reads it at once. If you resume a feed whose starter is gone, you take it over, and its posts act as you from then on.
 
 <Accordion>
-  <AccordionItem title="When a site changes its items' identities">
+<AccordionItem title="When a site changes its items' identities">
 
 A site that changes its items' identities (moving its blog, say) makes them all new to Peal. Up to three of those dated after the feed was added are posted again that run, and the rest are skipped as too many. Pause the feed before such a move, and resume it after.
 
-  </AccordionItem>
-  <AccordionItem title="How Peal checks a feed's host">
+</AccordionItem>
+<AccordionItem title="How Peal checks a feed's host">
 
 Peal reads a feed's host only once its address checked out as public, on every redirect too. One gap is left: a host whose name answers otherwise between that check and the connection. Peal's HTTP client can't connect to the address it checked while keeping the name for TLS.
 
-  </AccordionItem>
-  <AccordionItem title="What Peal keeps of a feed">
+</AccordionItem>
+<AccordionItem title="What Peal keeps of a feed">
 
 What a feed says is other people's text. Peal keeps a digest of each item's identity, never the item, and never gives a feed's text to anything but the posts it makes.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>

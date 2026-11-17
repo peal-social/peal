@@ -100,7 +100,7 @@ The code works for 10 minutes. If you click **Deny**, the sign-in is refused and
 Each instance has its own sign-in, keyed by its address, so you can be signed in to several. `peal` renews its access by itself, and it never prints its tokens.
 
 <Accordion>
-  <AccordionItem title="Two-step verification">
+<AccordionItem title="Two-step verification">
 
 When your account has [two-step verification](/guides/workspace/account#two-step) on, the browser asks for the code from your authenticator app, or a recovery code, as you sign in there. The command stays the same.
 
@@ -108,12 +108,12 @@ A workspace can [require it](/guides/workspace#require-two-step). If yours does 
 
 No command manages two-step verification. With `PEAL_API_KEY` nothing changes, because keys aren't concerned.
 
-  </AccordionItem>
-  <AccordionItem title="A sign-in made before publishing was asked for">
+</AccordionItem>
+<AccordionItem title="A sign-in made before publishing was asked for">
 
 A sign-in made before `peal` asked for publishing doesn't hold it. The commands that put posts out tell you so, and ask you to run `peal login` again and approve it.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Who am I [#whoami]

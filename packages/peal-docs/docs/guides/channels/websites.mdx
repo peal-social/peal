@@ -25,16 +25,16 @@ Peal publishes as one of the site's users, with an **application password**. Tha
 You need WordPress 5.7 or later, on a site served over HTTPS. Application passwords came with 5.6, and 5.7 lets Peal find a post by when it changed.
 
 <Steps>
-  <Step title="Make an application password">
+<Step title="Make an application password">
 
 In WordPress, open **Users**, then the profile of the user Peal publishes as. That user must be an Author, an Editor or an Administrator. Under **Application Passwords**, name it Peal and click **Add New Application Password**. Copy the password it shows, because it's shown once.
 
-  </Step>
-  <Step title="Connect the site in Peal">
+</Step>
+<Step title="Connect the site in Peal">
 
 In **Channels**, under **WordPress website**, type the site's address (its home page, such as `https://blog.example.com`), the user's login name and the application password. Then click **Connect the website**.
 
-  </Step>
+</Step>
 </Steps>
 
 Peal finds the site's REST API from its home page, and checks that the user may publish posts and upload files. It then keeps the password encrypted and never shows it again. It sends the password only to the REST API of the site itself, never to one the home page names elsewhere.

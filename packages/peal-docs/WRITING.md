@@ -373,10 +373,13 @@ average (50 for the longest tenth) and a bold label every 36 words.
     (every platform's behaviour, retry timings) goes last, in an accordion.
 11. **Bold only for labels the reader clicks or reads on screen.** A
     paragraph with more than three of them is a list or a table.
-12. **Markdown inside a component isn't indented**, and has a blank line
-    before and after it. Indented, a list inside `<Tab>` renders as one
-    block of text with no bullets, which is how the schedule page's
-    actions came out.
+12. **Markdown inside a component isn't indented, and neither are the
+    component's own tags**: `<AccordionItem>` and `</AccordionItem>` sit at
+    the start of the line like the text between them, with a blank line
+    before and after that text. Indented Markdown renders as one block of
+    text with no bullets (how the schedule page's actions came out), and a
+    tag indented over unindented text breaks Blume's parser, which then
+    fails the build.
 
 ## Code samples
 

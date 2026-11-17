@@ -10,22 +10,22 @@ Schedule a post once its text and channels are ready ([Write a post](/guides/pos
 ## Set the time [#schedule]
 
 <Tabs>
-  <Tab title="Web app">
-    <Steps>
-      <Step title="Pick the date and time">
+<Tab title="Web app">
+<Steps>
+<Step title="Pick the date and time">
 
 Under **When**, set the **Date**, **Time** and **Time zone**. The time zone starts as your browser's.
 
-      </Step>
-      <Step title="Schedule it">
+</Step>
+<Step title="Schedule it">
 
 Click **Schedule**. If you can't, the post breaks a limit on one of its channels, and the composer lists what to fix. Once you click it, the composer also lists any [platform options](/guides/posts#options) a channel still lacks, and shows them under their fields.
 
-      </Step>
-    </Steps>
+</Step>
+</Steps>
 
-  </Tab>
-  <Tab title="CLI">
+</Tab>
+<Tab title="CLI">
 
 ```sh
 peal posts schedule <post-id> --at 2026-11-20T10:00 --time-zone Europe/Paris
@@ -33,7 +33,7 @@ peal posts schedule <post-id> --at 2026-11-20T10:00 --time-zone Europe/Paris
 
 See [Posts on the command line](/developers/cli/posts#posts).
 
-  </Tab>
+</Tab>
 </Tabs>
 
 Peal reads the time as a clock in that time zone shows it, so a post set for 09:00 goes out at 09:00 there all year. Two nights a year need a rule:
@@ -160,7 +160,7 @@ Peal sends each image or video in the form the platform needs, and some platform
 </Callout>
 
 <Accordion>
-  <AccordionItem title="When a platform doesn't answer the publishing request">
+<AccordionItem title="When a platform doesn't answer the publishing request">
 
 Peal checks only in ways that can't post twice:
 
@@ -180,5 +180,5 @@ Peal checks only in ways that can't post twice:
 
 Peal tries three times, over about two and a half minutes. If the server stops in the middle of a post, it checks the same way when it starts again. Only when none of that settles it does the post show **To check**. Peal never posts it again by itself.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>

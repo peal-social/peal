@@ -159,7 +159,7 @@ The handover is refused in two cases:
 The API's `POST …/billing/transfer`, `POST …/billing/transfer/acceptance` and `DELETE …/billing/transfer` answer only a person in their own session.
 
 <Accordion>
-  <AccordionItem title="When the payer leaves">
+<AccordionItem title="When the payer leaves">
 
 On a server that bills, the payer stays one of the workspace's owners until they hand it over. Leaving it, being removed from it or losing the owner role answers 400 `PAYER_MUST_STAY`, and a reduction that would remove them answers `payerRequired`.
 
@@ -167,7 +167,7 @@ On a server that doesn't bill, nothing is refused. A workspace whose payer is no
 
 When the payer closes their account, each workspace they paid for that others own goes to its oldest other owner's account. It goes there over its plan if that account has no room for its channels.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## What a plan limits [#limits]
@@ -235,7 +235,7 @@ You can get the same from `GET /api/workspaces/:workspaceId/usage?from=2026-10-0
 They're counts only, and nothing is priced, charged or limited by them. A server that doesn't bill keeps and answers the same counts, with `plan` and `allowances` null.
 
 <Accordion>
-  <AccordionItem title="How usage is counted">
+<AccordionItem title="How usage is counted">
 
 - Days are UTC days, as for every limit. `from` and `to` are both included, 92 days at most. Without them, you get the 30 days that end today. A range that ends before it starts, or is longer, answers 400 `invalid_date_range`.
 - Each day counts the posts that went out on it, one for each channel a post went out on, by platform. A thread counts once.
@@ -249,30 +249,30 @@ They're counts only, and nothing is priced, charged or limited by them. A server
 - The counts are kept {{keep-usage-en}}, then deleted. A range that starts earlier answers what's kept. They're deleted with the workspace, and its data export holds them.
 - A partner account reads the same across every workspace it holds, per customer: [Usage per customer](/developers/embedding/operate#usage).
 
-      </AccordionItem>
+</AccordionItem>
 
-  </Accordion>
+</Accordion>
 
 ## Ordering [#ordering]
 
 Owners and admins order per-account pricing on the billing workspace's **Billing** page, in their own session.
 
 <Steps>
-  <Step title="Tick the box">
+<Step title="Tick the box">
 
 Before anything is paid, tick a box that's never ticked for you: "I ask Peal to start per-account pricing now: each connected account past the free ones, counted by the day, and each use past its monthly allowance are billed at the rate card’s prices, excluding tax, each month for the month past. I know that, as a consumer, I may withdraw within 14 days, with “Withdraw from contract here”, at the foot of every page and on this one, and then pay only for what was used." Peal records it with the order.
 
-  </Step>
-  <Step title="Pay at Stripe">
+</Step>
+<Step title="Pay at Stripe">
 
 Click **Order with obligation to pay** to open Stripe's checkout. Stripe asks for a card, though nothing is due yet, the billing address and, for a business, the VAT number, and it computes the VAT.
 
-  </Step>
-  <Step title="Get the confirmation">
+</Step>
+<Step title="Get the confirmation">
 
 A confirmation comes by email, with the rates and the contract number. The contract number lets you cancel or withdraw without signing in.
 
-  </Step>
+</Step>
 </Steps>
 
 Once it's ordered:

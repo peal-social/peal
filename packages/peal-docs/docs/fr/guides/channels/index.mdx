@@ -26,21 +26,21 @@ Un canal Slack se connecte en vous connectant à Slack. Vous ajoutez l’applica
 ## Connecter un compte [#connect]
 
 <Steps>
-  <Step title="Cliquer sur le bouton Connecter de la plateforme">
+<Step title="Cliquer sur le bouton Connecter de la plateforme">
 
 Sur **Canaux**, sous la plateforme, cliquez sur son bouton **Connecter**, comme **Connecter Bluesky**.
 
-  </Step>
-  <Step title="Se connecter sur la plateforme">
+</Step>
+<Step title="Se connecter sur la plateforme">
 
 Connectez-vous, et acceptez ce que Peal demande.
 
-  </Step>
-  <Step title="Revenir sur Peal">
+</Step>
+<Step title="Revenir sur Peal">
 
 La plateforme vous renvoie vers Peal, qui termine la connexion.
 
-  </Step>
+</Step>
 </Steps>
 
 <Callout
@@ -62,7 +62,7 @@ Le compte qu’il vous faut peut appartenir à un client, un collègue ou un usa
 Les membres qui peuvent connecter des canaux, et les clés d’API avec `channel:connect`, peuvent créer un lien pour une plateforme :
 
 <Tabs>
-  <Tab title="CLI">
+<Tab title="CLI">
 
 ```sh
 peal links create --platform linkedin
@@ -70,19 +70,19 @@ peal links create --platform linkedin
 
 Voyez [`peal links create`](/developers/cli/workspace#links).
 
-  </Tab>
-  <Tab title="API">
+</Tab>
+<Tab title="API">
 
 ```http
 POST /api/workspaces/{workspaceId}/connect-links
 ```
 
-  </Tab>
-  <Tab title="MCP">
+</Tab>
+<Tab title="MCP">
 
 L’outil [MCP](/developers/mcp/tools#tools) `create_connect_link`.
 
-  </Tab>
+</Tab>
 </Tabs>
 
 L’adresse du lien est affichée une seule fois. Remettez-la par un canal de confiance.
@@ -146,17 +146,17 @@ Quand une plateforme ne répond pas, Peal réessaie plus tard et laisse le canal
 Chaque plateforme reçoit la publication à sa façon :
 
 <Accordion>
-  <AccordionItem title="Mastodon">
+<AccordionItem title="Mastodon">
 
 Peal publie sur le serveur du compte, avec la visibilité par défaut du compte. Le serveur transforme lui-même mentions, hashtags et liens en liens, et peut traiter une vidéo avant que la publication puisse la montrer.
 
-  </AccordionItem>
-  <AccordionItem title="Bluesky">
+</AccordionItem>
+<AccordionItem title="Bluesky">
 
 Peal publie sur le serveur qui héberge le compte. Les liens et les hashtags deviennent des liens, et les mentions restent du texte brut pour l’instant. Les vidéos passent par le service vidéo de Bluesky, qui les traite avant que la publication parte.
 
-  </AccordionItem>
-  <AccordionItem title="LinkedIn">
+</AccordionItem>
+<AccordionItem title="LinkedIn">
 
 Peal publie au nom du membre, ou de la page d’entreprise. La publication est publique sauf si ses options disent autre chose (les relations d’un profil seulement, ou les membres connectés). Les hashtags deviennent des hashtags LinkedIn.
 
@@ -164,25 +164,25 @@ Une page d’entreprise devient une mention quand le texte la nomme après un `@
 
 Un lien peut s’afficher sous forme de carte, avec le titre et la description que vous lui donnez, car LinkedIn ne lit aucune page lui-même. Un PDF s’affiche page par page, seul, sous le titre que vous lui donnez. LinkedIn traite une vidéo ou un document avant que la publication parte.
 
-  </AccordionItem>
-  <AccordionItem title="X">
+</AccordionItem>
+<AccordionItem title="X">
 
 Peal publie au nom du compte. X transforme lui-même mentions, hashtags et liens en liens, y compris un domaine sans `https://` comme `peal.social`, et traite une vidéo avant que la publication parte.
 
 Quand X refuse l’application du serveur parce que ses crédits sont épuisés, la publication n’y est pour rien. Peal la garde en attente et réessaie toutes les demi-heures, pour qu’elle parte dès que l’opérateur du serveur a réglé. Un jour après son heure, elle échoue avec sa raison (voyez [Notifications](/guides/workspace/notifications)).
 
-  </AccordionItem>
-  <AccordionItem title="Threads et Instagram">
+</AccordionItem>
+<AccordionItem title="Threads et Instagram">
 
 Meta va chercher chaque image et chaque vidéo dans le stockage des médias et la traite, puis Peal publie. Plusieurs fichiers forment un carrousel. Une vidéo Instagram part en reel. Peal vérifie la limite quotidienne de publication du compte avant de commencer.
 
-  </AccordionItem>
-  <AccordionItem title="Pages Facebook">
+</AccordionItem>
+<AccordionItem title="Pages Facebook">
 
 Peal publie le texte sur la Page, avec une photo, plusieurs photos en une publication, ou une vidéo, que Facebook va chercher dans le stockage des médias.
 
-  </AccordionItem>
-  <AccordionItem title="TikTok">
+</AccordionItem>
+<AccordionItem title="TikTok">
 
 Peal publie une vidéo, avec le texte de la publication comme légende, ou jusqu’à 35 photos, avec le texte comme description, comme vous l’avez choisi dans les [options TikTok](/guides/posts#options) de la publication. Juste avant, il relit les réglages du compte sur TikTok, et la publication échoue s’ils ne la permettent plus.
 
@@ -190,8 +190,8 @@ Une vidéo part en morceaux depuis le stockage des médias, sauf si TikTok peut 
 
 TikTok traite ensuite la publication, et Peal la suit jusqu’à sa mise en ligne. Une publication que d’autres voient affiche un lien une fois validée par la modération de TikTok. Une publication que vous seul voyez n’en a pas. TikTok autorise environ 15 publications par jour et par compte, toutes applications confondues.
 
-  </AccordionItem>
-  <AccordionItem title="YouTube">
+</AccordionItem>
+<AccordionItem title="YouTube">
 
 Peal met en ligne la vidéo de la publication sur la chaîne, puis attend que YouTube la traite. Le texte de la publication devient la description, et le titre, la visibilité, la réponse « conçue pour les enfants », les tags et la catégorie viennent de ses [options](/guides/posts#options).
 
@@ -199,15 +199,15 @@ Une vidéo que YouTube ne parvient pas à traiter ou refuse, comme doublon ou po
 
 Un serveur Peal met en ligne un nombre limité de vidéos par jour, sur toutes ses chaînes. Au-delà, une vidéo attend minuit, heure du Pacifique, quand les quotas de YouTube repartent, et la page de la publication montre l’attente.
 
-  </AccordionItem>
-  <AccordionItem title="Google Business Profile">
+</AccordionItem>
+<AccordionItem title="Google Business Profile">
 
 Peal crée une publication sur l’établissement. Le texte de la publication devient sa description, et le type, les dates, le bouton et l’offre viennent de ses [options](/guides/posts#options). Google va chercher chaque photo dans le stockage des médias, et une publication n’y prend aucune vidéo.
 
 Google peut refuser une publication pour ses règles de contenu après l’avoir prise, et elle échoue alors. Une fois la publication en ligne, sa page y renvoie sur Google.
 
-  </AccordionItem>
-  <AccordionItem title="Pinterest">
+</AccordionItem>
+<AccordionItem title="Pinterest">
 
 Peal crée une épingle sur le tableau, et la section du tableau, réglés dans les [options de la plateforme](/guides/posts#options) de la publication. L’épingle prend le texte de la publication pour description, le texte alternatif du premier fichier pour texte alternatif, et le titre et le lien que vous avez donnés.
 
@@ -215,7 +215,7 @@ Une image donne une épingle image, et deux à cinq un carrousel, que Pinterest 
 
 Pinterest ne donne à Peal aucun moyen de distinguer une épingle déjà créée d’une épingle qui ne l’a pas été. Quand sa réponse se perd, Peal cherche l’épingle sur le tableau, et ne l’envoie jamais deux fois.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Nommer un canal [#name]
@@ -243,7 +243,7 @@ Cliquez sur **Réactiver** pour publier de nouveau sur le compte. Si la platefor
 Nommer un canal, le désactiver ou le réactiver demandent le droit de connecter des canaux. Vous pouvez faire la même chose en ligne de commande ou par l’API :
 
 <Tabs>
-  <Tab title="CLI">
+<Tab title="CLI">
 
 ```sh
 peal channels list --platform youtube --status disabled --search "client a"
@@ -253,12 +253,12 @@ peal channels disable <channel-id>
 peal channels enable <channel-id>
 ```
 
-  </Tab>
-  <Tab title="API">
+</Tab>
+<Tab title="API">
 
 `PATCH …/channels/{channelId}`, `POST …/channels/{channelId}/disable` et `…/enable`. `GET …/channels/search` liste les canaux d’un espace de travail page par page, par plateforme, par état ou par texte, avec leur nombre dans chaque état.
 
-  </Tab>
+</Tab>
 </Tabs>
 
 ## Reconnecter [#reconnect]

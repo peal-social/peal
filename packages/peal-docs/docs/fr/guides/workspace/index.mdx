@@ -47,16 +47,16 @@ Seuls les propriétaires peuvent nommer ou retirer un propriétaire. Un espace d
 ### Inviter des personnes [#invitations]
 
 <Steps>
-  <Step title="Envoyer l’invitation">
+<Step title="Envoyer l’invitation">
 
 Sous **Invitations**, saisissez une adresse e-mail et sélectionnez un rôle, puis cliquez sur **Envoyer l’invitation**. Seuls les propriétaires peuvent inviter des propriétaires.
 
-  </Step>
-  <Step title="La personne rejoint l’espace">
+</Step>
+<Step title="La personne rejoint l’espace">
 
 Elle reçoit un lien pour rejoindre l’espace, valable 7 jours. Il est dans sa langue si elle a déjà un compte, et dans la vôtre sinon. Elle rejoint l’espace une fois connectée avec cette adresse.
 
-  </Step>
+</Step>
 </Steps>
 
 Les invitations en attente sont listées avec leur date d’expiration. Pour chacune, vous pouvez :
@@ -95,16 +95,16 @@ Ne plus l’exiger s’applique aussitôt aussi. Les deux changements sont inscr
 ### Créer une clé d’API [#api-keys]
 
 <Steps>
-  <Step title="Créer la clé">
+<Step title="Créer la clé">
 
 Sous **Clés d’API**, donnez un nom à la nouvelle clé, choisissez sa durée de validité (30, 90 ou 365 jours, ou jusqu’à révocation) et ce qu’elle peut faire. Vous ne pouvez lui donner que des permissions que votre propre rôle possède.
 
-  </Step>
-  <Step title="La copier">
+</Step>
+<Step title="La copier">
 
 La clé s’affiche une seule fois, juste après sa création. Copiez-la à ce moment-là, car Peal n’en garde qu’une empreinte. [La présentation de l’API](/developers#authentication) montre comment l’envoyer.
 
-  </Step>
+</Step>
 </Steps>
 
 Cliquez sur **Révoquer** pour arrêter une clé aussitôt. L’équipe qui agit à la place d’un membre ne voit ni ne gère les clés.
@@ -155,7 +155,7 @@ Une fois le fournisseur enregistré, les descriptions d’images de l’espace d
 La [ligne de commande](/developers/cli/posts#assistant) a `peal assistant image-provider`. Aucun outil MCP ne le lit ni ne le règle, car une clé saisie dans une conversation atteint un modèle.
 
 <Accordion>
-  <AccordionItem title="Les adresses que Peal refuse">
+<AccordionItem title="Les adresses que Peal refuse">
 
 Peal refuse une adresse, et dit pourquoi en toutes lettres, avec l’un de ces codes :
 
@@ -171,7 +171,7 @@ Peal refuse une adresse, et dit pourquoi en toutes lettres, avec l’un de ces c
 
 Un serveur dont l’opérateur n’a pas défini de clés pour chiffrer les secrets ne garde aucune clé (`AssistantSecretsNotConfigured`).
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ### Utiliser votre propre fournisseur de texte [#text-provider]
@@ -285,15 +285,15 @@ L’exception de la loi concerne les consommateurs. Si vous avez souscrit en tan
 Pour cesser de payer en gardant l’espace de travail, résiliez plutôt l’abonnement depuis sa page **Facturation**. Il prend alors fin avec la période payée.
 
 <Accordion>
-  <AccordionItem title="Paiements ouverts, pannes et plusieurs espaces de travail">
+<AccordionItem title="Paiements ouverts, pannes et plusieurs espaces de travail">
 
 - Un paiement de l’espace de travail encore ouvert, dans un autre onglet par exemple, est clos chez Stripe quand l’espace de travail disparaît. Il ne peut donc plus être réglé ensuite.
 - Quand Stripe ne peut pas être joint, rien n’est supprimé. Réessayez quelques minutes plus tard. Un abonnement résilié avant l’échec le reste, et réessayer ne résilie rien de plus.
 - Fermer un compte qui supprime plusieurs espaces de travail abonnés liste chaque abonnement résilié, avec la page de facturation de son espace de travail, avant que vous ne cochiez la case.
 
-      </AccordionItem>
+</AccordionItem>
 
-  </Accordion>
+</Accordion>
 
 Une fois l’espace de travail supprimé, Peal envoie une confirmation à votre adresse, dans votre langue.
 

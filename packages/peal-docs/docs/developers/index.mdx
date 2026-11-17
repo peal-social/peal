@@ -404,7 +404,7 @@ Each platform has its own lookups:
 A lookup changes nothing, and needs `channel:read`. Each run is a request to the platform, counted against what the platform allows this instance, so run one when a post needs it rather than on a timer. A page may come back empty and still name a next one.
 
 <Accordion>
-  <AccordionItem title="How Peal paces lookups">
+<AccordionItem title="How Peal paces lookups">
 
 Peal holds lookups back so they never spend what publishing needs:
 
@@ -413,9 +413,9 @@ Peal holds lookups back so they never spend what publishing needs:
 - An instance's lookups reach each platform a set number of times a day (UTC) for all its workspaces together. Past it, a lookup answers 429 `PlatformRateLimited` with `retryAfterSeconds` until the next day.
 - What a platform says of itself rather than of an account, such as YouTube's video categories for a region and a language, is kept for a day.
 
-      </AccordionItem>
+</AccordionItem>
 
-  <AccordionItem title="Errors a lookup answers">
+<AccordionItem title="Errors a lookup answers">
 
 A lookup can fail in these ways:
 
@@ -427,7 +427,7 @@ A lookup can fail in these ways:
 | 502    | `PlatformUnreachable` | The platform doesn't answer.                                                                                                |
 | 429    | `PlatformRateLimited` | The platform asks to slow down (with `retryAfterSeconds` when it said how long), or Peal's pacing above holds the run back. |
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Webhooks [#webhooks]

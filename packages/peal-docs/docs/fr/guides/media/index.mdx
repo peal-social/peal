@@ -64,7 +64,7 @@ Un envoi donne le nom dans `fileName` quand il commence (`POST …/media`). Le n
 Un fichier déjà en ligne peut rejoindre la médiathèque sans passer par votre ordinateur, car le serveur Peal va le chercher lui-même. Les trois façons demandent le droit d’envoyer des médias.
 
 <Tabs>
-  <Tab title="CLI">
+<Tab title="CLI">
 
 ```sh
 peal media import https://files.example/spring/cover.jpg --alt "A paper catalogue open on a wooden table"
@@ -72,17 +72,17 @@ peal media import https://files.example/spring/cover.jpg --alt "A paper catalogu
 
 Voyez [`peal media import`](/developers/cli/posts#media).
 
-  </Tab>
-  <Tab title="MCP">
+</Tab>
+<Tab title="MCP">
 
 L’outil `import_media`, depuis un [client MCP](/developers/mcp/tools#tools).
 
-  </Tab>
-  <Tab title="API">
+</Tab>
+<Tab title="API">
 
 `POST /api/workspaces/{workspaceId}/media/import`, avec l’adresse du fichier (`url`) et, si vous le souhaitez, son texte alternatif (`altText`).
 
-  </Tab>
+</Tab>
 </Tabs>
 
 Le serveur vérifie l’adresse avant de chercher quoi que ce soit. L’adresse doit être :
@@ -104,12 +104,12 @@ Chaque récupération ajoute un nouveau fichier, lu comme un fichier envoyé. Su
 Quand l’espace de travail a son propre [fournisseur d’images](/guides/workspace#image-provider), ou que l’instance a un modèle d’images, l’assistant peut créer une image à partir d’une description, directement dans la médiathèque. Il vous faut le droit d’utiliser l’assistant et celui d’envoyer des médias, donc être contributeur ou au-delà.
 
 <Tabs>
-  <Tab title="Application web">
+<Tab title="Application web">
 
 Cliquez sur **Générer une image** sur la page **Médias**, ou dans la fenêtre **Choisir dans la médiathèque** de l’éditeur, où la nouvelle image est alors sélectionnée.
 
-  </Tab>
-  <Tab title="CLI">
+</Tab>
+<Tab title="CLI">
 
 ```sh
 peal media generate --prompt "A paper catalogue open on a wooden table, morning light" --aspect landscape
@@ -117,17 +117,17 @@ peal media generate --prompt "A paper catalogue open on a wooden table, morning 
 
 Voyez [`peal media generate`](/developers/cli/posts#media).
 
-  </Tab>
-  <Tab title="MCP">
+</Tab>
+<Tab title="MCP">
 
 L’outil `generate_image`, depuis un [client MCP](/developers/mcp/tools#tools).
 
-  </Tab>
-  <Tab title="API">
+</Tab>
+<Tab title="API">
 
 `POST /api/workspaces/{workspaceId}/assistant/images`, avec la description (`prompt`) et le format (`aspect` : `square`, `landscape` ou `portrait`).
 
-  </Tab>
+</Tab>
 </Tabs>
 
 La description fait de 1 à 1 000 caractères. Quand l’espace de travail a réglé son propre fournisseur d’images, la description part telle quelle chez ce fournisseur, avec la clé de l’espace de travail. Sinon, elle part chez le fournisseur d’images qu’a choisi l’administrateur de l’instance. Peal n’écrit jamais la description ni l’image dans ses journaux.

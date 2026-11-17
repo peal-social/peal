@@ -44,20 +44,20 @@ A content label describes the images or the video, so a part without media is se
 Peal writes who can reply and quoting with the post, in one request. A post never goes out without them.
 
 <Accordion>
-  <AccordionItem title="A channel connected before Peal asked for reply and quote settings">
+<AccordionItem title="A channel connected before Peal asked for reply and quote settings">
 
 Who can reply and quoting only work on an account connected since Peal started asking for them. On a channel connected before, scheduling refuses them, and the channel's [capabilities](/developers#capabilities) say so (`optionNeedsReconnect`). In the composer, such a channel offers neither setting, and says why.
 
 To use them, reconnect the account on the **Channels** page. Nothing else changes.
 
-  </AccordionItem>
-  <AccordionItem title="The account's server refuses the settings">
+</AccordionItem>
+<AccordionItem title="The account's server refuses the settings">
 
 Sometimes Peal can't read the channel's scopes, and the account's server then refuses these settings. The post isn't sent: the channel shows **Failed**, with the code `optionRefused`, and Peal doesn't send it again.
 
 Reconnect the account, or leave the settings out, and post it again.
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Comments [#comments]
