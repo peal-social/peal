@@ -107,6 +107,18 @@ jobs:
         with:
           nx-cache: build
       - run: bun run build
+      - if: always()
+        run: |
+          bun nx show target inputs peal-web:typecheck --json > "$RUNNER_TEMP/inputs-typecheck.json"
+          bun nx show target inputs peal-web:build --json > "$RUNNER_TEMP/inputs-build.json"
+          python3 -I .github/nx-debug.py "$RUNNER_TEMP"
+          git status --porcelain --ignored packages/peal-web packages/peal-ui packages/peal-contract | head -50
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nx-debug-build
+          path: ${{ runner.temp }}/*.txt
+          retention-days: 1
       # Only main saves Nx's cache, which every branch restores: a branch's
       # copy would be readable by that branch alone, and push main's out of
       # the repository's 10 GB.
@@ -425,6 +437,18 @@ jobs:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
           MAILPIT_URL: http://localhost:8025
           SMTP_URL: smtp://localhost:1025
+      - if: always()
+        run: |
+          bun nx show target inputs peal-web:typecheck --json > "$RUNNER_TEMP/inputs-typecheck.json"
+          bun nx show target inputs peal-web:build --json > "$RUNNER_TEMP/inputs-build.json"
+          python3 -I .github/nx-debug.py "$RUNNER_TEMP"
+          git status --porcelain --ignored packages/peal-web packages/peal-ui packages/peal-contract | head -50
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nx-debug-e2e
+          path: ${{ runner.temp }}/*.txt
+          retention-days: 1
       # Only main saves Nx's cache, which every branch restores: a branch's
       # copy would be readable by that branch alone, and push main's out of
       # the repository's 10 GB.
