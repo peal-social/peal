@@ -80,7 +80,9 @@ jobs:
   # emails they send from Mailpit and checking checkout and the billing
   # portal against stripe-mock. Shards split the files by the time each
   # took (packages/peal-server/test/shards.ts), and `ci` fails when any
-  # shard did not pass.
+  # shard did not pass. Six keep each shard's tests near 40 seconds, with
+  # room for a slow runner; more workers than vitest's three only spend
+  # the runner's four CPUs on transforming the server again.
   server:
     needs: plan
     if: needs.plan.outputs.server == 'true'
@@ -88,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        shard: [1, 2, 3, 4, 5, 6]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
