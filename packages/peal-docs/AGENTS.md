@@ -40,7 +40,8 @@ icon names (`square-pen`, `cable`…) where a component takes an `icon`, the
 app's own icon for a page the app has (`peal-web`'s
 `components/shell/sidebar-view.tsx`). Every page has a `sidebar.icon`; a
 platform's page shows its mark from `public/platform-marks/`, which
-`scripts/platform-marks.ts` writes from simple-icons, as the app draws them.
+`scripts/platform-marks.ts` writes from simple-icons and peal-ui's brand
+marks, as the app draws them.
 
 ## Plain words
 

@@ -1,13 +1,16 @@
 ---
 import { Font } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { AnnouncementBar } from "peal-ui/components/announcement-bar";
 import { SiteFooter } from "peal-ui/components/site-footer";
 import { SiteHeader } from "peal-ui/components/site-header";
 
 import { chrome } from "../components/chrome.ts";
-import { plausible } from "../config.ts";
+import { indexable, plausible } from "../config.ts";
+import { repository } from "../navigation.ts";
 import type { PageLinks } from "../navigation.ts";
 import { defaultLocale, locales, pageLocale } from "../i18n/locales.ts";
+import { messages } from "../i18n/messages.ts";
 import "../styles/global.css";
 
 interface Props {
@@ -26,6 +29,8 @@ const { current, description, noindex = false, path, title } = Astro.props;
 const locale = pageLocale(Astro.currentLocale);
 
 const { footer, header } = await chrome(locale, path, current);
+
+const { announcement } = messages(locale);
 
 // Canonical and alternate links need absolute URLs, so they are only emitted
 // when SITE_URL gives the site its origin.
@@ -53,7 +58,12 @@ const fallback = absolute(defaultLocale);
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <Font cssVariable="--font-geist-sans" preload />
     <Font cssVariable="--font-geist-mono" />
-    {noindex && <meta name="robots" content="noindex" />}
+    {
+      // Drafts always; every page until the site is indexable.
+      (noindex || !indexable) && (
+        <meta name="robots" content="noindex, nofollow" />
+      )
+    }
     {canonical !== undefined && <link rel="canonical" href={canonical} />}
     {
       alternates.map(
@@ -88,6 +98,10 @@ const fallback = absolute(defaultLocale);
       class="pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-6xl -translate-x-1/2 border-x"
     >
     </div>
+    <AnnouncementBar
+      text={announcement.text}
+      link={{ href: repository, label: announcement.link }}
+    />
     <SiteHeader client:load {...header} />
     <main class="relative flex-1">
       <slot />

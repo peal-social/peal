@@ -454,11 +454,7 @@ export const apiCode = (
 
   return {
     codeCli: { ...block, samples: [code.cli] },
-    codeMcp: {
-      ...block,
-      response: code.mcp.response,
-      samples: [code.mcp.request],
-    },
+    codeMcp: { ...block, samples: [code.mcp] },
     codePublish: { ...block, samples: code.publish.samples },
     codeWebhooks: { ...block, samples: [code.webhook] },
   };
@@ -735,7 +731,7 @@ export interface CtaLinks {
 /** Get started (the app's sign-up) and Read the docs, for the hero and the closing band. */
 export const ctaLinks = (
   labels: { readonly primary: string; readonly secondary: string },
-  settings: HomeSettings
+  settings: Pick<HomeSettings, "app" | "docs">
 ): CtaLinks => {
   const signUp = settings.app("sign-up");
   const docs = settings.docs("");

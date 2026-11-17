@@ -82,6 +82,13 @@ const plausibleHost =
   present(SITE_PLAUSIBLE_HOST)?.replace(/\/+$/u, "") ?? "https://plausible.io";
 
 /**
+ * Whether search engines may index the site. Not until Peal is released:
+ * every page says noindex, nofollow, and public/robots.txt disallows all.
+ * At launch, set it to true and allow crawling in robots.txt.
+ */
+export const indexable = false;
+
+/**
  * Plausible's script tag attributes when SITE_PLAUSIBLE_DOMAIN is set; with
  * SITE_PLAUSIBLE_HOST it loads from a self-hosted instance.
  */

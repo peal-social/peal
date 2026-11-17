@@ -9,9 +9,12 @@ import {
   unconfirmedMeters,
 } from "peal-contract/rate-card";
 import type { AccountBand, Meter } from "peal-contract/rate-card";
+import type { RateCardGroup, RateCardRow } from "peal-ui/components/rate-card";
 
 import type { Locale } from "./i18n/locales.ts";
 import type { Messages } from "./i18n/messages.ts";
+import { siteEntries } from "./platforms.ts";
+import type { PlatformGroup } from "./platforms.ts";
 
 // Per-account pricing as the pricing page states it, from the contract's
 // rate card, which the server bills from (a test there keeps them equal).
@@ -64,7 +67,8 @@ const dollars = (locale: Locale, cents: number) =>
   new Intl.NumberFormat(locale, {
     currency: "USD",
     maximumFractionDigits: 4,
-    minimumFractionDigits: 2,
+    // A whole amount without its cents ($40), any other with both ($41.40).
+    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
     style: "currency",
   }).format(cents / 100);
 
@@ -279,7 +283,7 @@ const meterRow = (
     price,
     priceText: fill(t.meters.prices[meter], {
       per: count(locale, per),
-      price: price.text,
+      price: price.excluded,
     }),
   };
 };
@@ -313,11 +317,193 @@ const xRatesOf = (locale: Locale, t: PricingMessages): XRates => ({
   }),
 });
 
+/** The calculator at the top of the page: peal-ui's AccountPricer's props. */
+export interface Calculator {
+  readonly bands: readonly AccountBand[];
+  readonly cloudItems: readonly string[];
+  /** The count it opens on: the part month's, a small team's. */
+  readonly initial: number;
+  readonly locale: Locale;
+  /** Where the slider ends; the field and the open band go past it. */
+  readonly max: number;
+  readonly text: PricingMessages["calculator"];
+}
+
+// The slider's end: the open band runs on a logarithmic scale to it, and
+// a count typed past it rests the thumb at the end.
+const sliderEnd = 10_000;
+
+const calculatorOf = (locale: Locale, t: PricingMessages): Calculator => ({
+  bands: rateCard.prices.usd.accounts.bands,
+  cloudItems: t.unlimited.items,
+  initial: pricingExamples.partMonth.allMonth,
+  max: sliderEnd,
+  locale,
+  text: t.calculator,
+});
+
+/** Where "Talk to sales" writes: the address the legal pages give. */
+const salesAddress = "hello@peal.social";
+
+/** Enterprise's cell beside the calculator, and its way in. */
+export interface Enterprise {
+  readonly href: string;
+  readonly items: readonly string[];
+  readonly line: string;
+  readonly price: string;
+  readonly talk: string;
+  readonly title: string;
+}
+
+const enterpriseOf = (t: PricingMessages): Enterprise => ({
+  href: `mailto:${salesAddress}?subject=${encodeURIComponent(t.enterprise.subject)}`,
+  items: t.enterprise.items,
+  line: t.enterprise.line,
+  price: t.enterprise.price,
+  talk: t.enterprise.talk,
+  title: t.enterprise.title,
+});
+
+/** The platforms of a menu group, by their marks. */
+const marksOf = (group: PlatformGroup) =>
+  siteEntries.filter((entry) => entry.group === group).map(({ mark }) => mark);
+
+/**
+ * The table of features and rates (peal-ui's RateCard), without its plans'
+ * actions, which take the build's settings: Peal Cloud's column, then
+ * Enterprise's.
+ */
+export interface RateCardData {
+  readonly eyebrow: string;
+  readonly groups: readonly RateCardGroup[];
+  readonly plans: readonly { readonly line: string; readonly name: string }[];
+  readonly rows: readonly RateCardRow[];
+  readonly title: string;
+}
+
+const rateCardOf = (
+  locale: Locale,
+  t: PricingMessages,
+  meters: readonly MeterRow[],
+  x: XRates,
+  api: string,
+  storage: string
+): RateCardData => {
+  const { features, tags, values } = t.rateCard;
+
+  // A feature every plan has in full.
+  const granted = (
+    feature: keyof typeof features,
+    value: string,
+    platforms?: { readonly group: PlatformGroup; readonly tag: string }
+  ): RateCardRow => ({
+    check: true,
+    ...features[feature],
+    marks: platforms === undefined ? undefined : marksOf(platforms.group),
+    tag: platforms?.tag,
+    values: [value, value],
+  });
+
+  const usage = meters.filter(
+    (row) => !passedThroughMeters.includes(row.meter)
+  );
+
+  // X's ceiling under its first rate, the day the rates were read under
+  // its last.
+  const xNotes = new Map([
+    [0, x.ceiling],
+    [x.rates.length - 1, x.readOn],
+  ]);
+
+  return {
+    eyebrow: t.rateCard.eyebrow,
+    groups: [
+      {
+        icon: "activity",
+        id: "usage",
+        lead: t.meters.lead,
+        rows: usage.map((row) => ({
+          name: row.name,
+          note: row.note ?? undefined,
+          values: [
+            row.priceText === null
+              ? row.allowance
+              : `${row.allowance} · ${row.priceText}`,
+            values.custom,
+          ],
+        })),
+        title: t.rateCard.groups.usage,
+      },
+      {
+        icon: "globe",
+        id: "x",
+        lead: t.meters.notes.xApi,
+        rows: x.rates.map((rate, index) => ({
+          name: rate.name,
+          note: xNotes.get(index),
+          values: [rate.price.excluded, rate.price.excluded],
+        })),
+        title: t.rateCard.groups.x,
+      },
+      {
+        icon: "server",
+        id: "limits",
+        rows: [
+          {
+            name: t.storage.title,
+            note: storage,
+            values: [values.included, values.custom],
+          },
+          {
+            name: t.api.title,
+            note: api,
+            values: [values.included, values.custom],
+          },
+        ],
+        title: t.rateCard.groups.limits,
+      },
+    ],
+    plans: [
+      {
+        line: fill(t.rateCard.cloudLine, {
+          free: count(locale, freeAccountsOf(rateCard)),
+        }),
+        name: t.calculator.cloud.title,
+      },
+      { line: t.enterprise.price, name: t.enterprise.title },
+    ],
+    rows: [
+      granted("publishing", values.unlimited, {
+        group: "social",
+        tag: tags.publishing,
+      }),
+      granted("chats", values.included, { group: "chat", tag: tags.chats }),
+      granted("articles", values.included, {
+        group: "blog",
+        tag: tags.articles,
+      }),
+      granted("inbox", values.included),
+      granted("analytics", values.included),
+      granted("ads", values.included, { group: "ads", tag: tags.ads }),
+      granted("developers", values.included),
+      granted("webhooks", values.included),
+      granted("team", values.unlimited),
+      { ...features.assistant, values: [t.coming, t.coming] },
+    ],
+    title: t.rateCard.title,
+  };
+};
+
 /** Everything the pricing page states, in the reader's language. */
 export interface PricingPage {
   /** The API's and the MCP server's rate limit, by standing. */
   readonly api: string;
+  readonly calculator: Calculator;
   readonly dayRule: string;
+  readonly enterprise: Enterprise;
+  readonly rateCard: RateCardData;
+  /** The headline: a sentence, then a second one in muted text. */
+  readonly headline: { readonly muted: string; readonly text: string };
   readonly examples: readonly ExampleRow[];
   readonly ladder: readonly LadderRow[];
   readonly lead: string;
@@ -335,17 +521,36 @@ export const pricingPage = (
   t: PricingMessages
 ): PricingPage => {
   const { bands } = rateCard.prices.usd.accounts;
-  const { storage } = rateCard;
+
+  const api = fill(t.api.body, {
+    onRequest: count(locale, rateCard.apiRequestsPerMinute.onRequest),
+    withPaymentMethod: count(locale, defaultApiRequestsPerMinute),
+    without: count(locale, rateCard.apiRequestsPerMinute.withoutPaymentMethod),
+  });
+
+  const storage = fill(t.storage.body, {
+    minimum: size(locale, rateCard.storage.minimum),
+    perAccount: size(locale, rateCard.storage.perAccount),
+    without: size(locale, rateCard.storage.withoutPaymentMethod),
+  });
+
+  const meters = [...pricedMeters, ...comingMeters, ...passedThroughMeters].map(
+    (meter) => meterRow(locale, t, meter)
+  );
+
+  const x = xRatesOf(locale, t);
 
   return {
-    api: fill(t.api.body, {
-      onRequest: count(locale, rateCard.apiRequestsPerMinute.onRequest),
-      withPaymentMethod: count(locale, defaultApiRequestsPerMinute),
-      without: count(
-        locale,
-        rateCard.apiRequestsPerMinute.withoutPaymentMethod
-      ),
-    }),
+    api,
+    calculator: calculatorOf(locale, t),
+    enterprise: enterpriseOf(t),
+    rateCard: rateCardOf(locale, t, meters, x, api, storage),
+    headline: {
+      muted: fill(t.headline.muted, {
+        free: count(locale, freeAccountsOf(rateCard)),
+      }),
+      text: t.headline.text,
+    },
     dayRule: fill(t.dayRule, {
       days: count(locale, rateCard.daysPerMonth),
       after: count(locale, rateCard.daysPerMonth + 1),
@@ -359,16 +564,10 @@ export const pricingPage = (
       ladderRow(locale, t, band, (bands[index - 1]?.upTo ?? 0) + 1)
     ),
     lead: fill(t.lead, { free: count(locale, freeAccountsOf(rateCard)) }),
-    meters: [...pricedMeters, ...comingMeters, ...passedThroughMeters].map(
-      (meter) => meterRow(locale, t, meter)
-    ),
+    meters,
     partMonth: partMonthOf(locale, t),
-    storage: fill(t.storage.body, {
-      minimum: size(locale, storage.minimum),
-      perAccount: size(locale, storage.perAccount),
-      without: size(locale, storage.withoutPaymentMethod),
-    }),
+    storage,
     vat: fill(t.taxes.shown, { rate: count(locale, rateCard.displayVatRate) }),
-    x: xRatesOf(locale, t),
+    x,
   };
 };

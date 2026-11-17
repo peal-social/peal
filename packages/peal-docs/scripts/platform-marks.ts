@@ -1,18 +1,19 @@
 // Writes public/platform-marks/<slug>.svg, the mark each Platforms page shows
-// in the sidebar: the brand's own, from simple-icons (CC0) in its colour, as
-// the web app's BrandMark draws it, and a lettered tile for a brand that
-// asked to be left out of that set (LinkedIn, Slack). Never draw a logo from memory
-// (DESIGN.md, "Icons"). Run after upgrading simple-icons:
+// in the sidebar, in the brand's colour, as the web app's BrandMark draws
+// it: from simple-icons (CC0), or, for a brand it does not hold (LinkedIn,
+// Slack, Google Business Profile), from the file its owner publishes, in
+// peal-ui's src/brand-marks. Never draw a logo from memory (DESIGN.md,
+// "Icons"). Run after upgrading simple-icons or changing a brand mark:
 // bun packages/peal-docs/scripts/platform-marks.ts
-import { mkdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import type { SimpleIcon } from "simple-icons";
+import { linkedin } from "peal-ui/lib/brand-marks";
 import {
   siBluesky,
   siDiscord,
   siFacebook,
-  siGoogle,
   siInstagram,
   siMastodon,
   siPinterest,
@@ -23,45 +24,53 @@ import {
   siYoutube,
 } from "simple-icons";
 
+/** A mark in one colour on its box, or the owner's file in its colours. */
+type Mark =
+  | {
+      readonly hex: string;
+      readonly path: string;
+      readonly viewBox?: string | undefined;
+    }
+  | { readonly file: string };
+
+const brandFile = (name: string): Mark => ({
+  file: fileURLToPath(import.meta.resolve(`peal-ui/brand-marks/${name}`)),
+});
+
 const marks = {
   bluesky: siBluesky,
   discord: siDiscord,
   facebook: siFacebook,
-  "google-business": siGoogle,
+  "google-business": brandFile("google-business-profile.svg"),
   instagram: siInstagram,
-  linkedin: null,
+  linkedin,
   mastodon: siMastodon,
   pinterest: siPinterest,
-  slack: null,
+  slack: brandFile("slack-color.svg"),
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,
   x: siX,
   youtube: siYoutube,
-} satisfies Readonly<Record<string, SimpleIcon | null>>;
+} satisfies Readonly<Record<string, Mark>>;
 
-// The letters of each tile.
-const tileLetters = new Map([
-  ["linkedin", "in"],
-  ["slack", "S"],
-]);
-
-const svgOf = (icon: SimpleIcon) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#${icon.hex}"><path d="${icon.path}"/></svg>\n`;
-
-// The muted tile and ink of DESIGN.md, with the brand's initials.
-const tile = (letters: string) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#E7E5E4"/><text x="12" y="16.5" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#0C0A09">${letters}</text></svg>\n`;
+const svgOf = (mark: {
+  hex: string;
+  path: string;
+  viewBox?: string | undefined;
+}) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${mark.viewBox ?? "0 0 24 24"}" fill="#${mark.hex}"><path d="${mark.path}"/></svg>\n`;
 
 const folder = path.join(import.meta.dirname, "..", "public", "platform-marks");
 
 await mkdir(folder, { recursive: true });
 
 await Promise.all(
-  Object.entries(marks).map(async ([slug, icon]) => {
-    await writeFile(
-      path.join(folder, `${slug}.svg`),
-      icon === null ? tile(tileLetters.get(slug) ?? "") : svgOf(icon)
-    );
+  Object.entries(marks).map(async ([slug, mark]) => {
+    const target = path.join(folder, `${slug}.svg`);
+
+    await ("file" in mark
+      ? copyFile(mark.file, target)
+      : writeFile(target, svgOf(mark)));
   })
 );

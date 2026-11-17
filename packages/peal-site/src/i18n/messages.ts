@@ -4,20 +4,27 @@ import type { Locale } from "./locales.ts";
 // `legal` content collection instead (src/content/legal/<locale>/).
 
 const en = {
+  // Above every page's header while Peal is not released.
+  announcement: {
+    link: "Follow the build on GitHub",
+    text: "Peal is in development and not released yet. This site shows what it is being built to do.",
+  },
   draft: {
     body: "This document is not in force yet. Text in square brackets is still to be written.",
     title: "Draft pending legal review",
   },
   footer: {
     cancel: "Cancel your contract",
-    contract: "Your contract",
-    follow: "Follow Peal",
+    company: "Company",
+    // The section's id is its heading's slug in privacy.md.
+    cookies: {
+      label: "Cookie settings",
+      section: "cookies-and-similar-technologies",
+    },
     language: "Language",
-    legal: "Legal",
-    license:
-      "Fair source under the Functional Source License (FSL-1.1-ALv2); the SDKs are under the Apache License 2.0.",
-    captions: { end: "fair source · self-hostable", start: "peal.social" },
-    source: "Source code on GitHub",
+    policies: "Policies",
+    socials: "Socials",
+    source: "GitHub",
     withdraw: "Withdraw from contract here",
   },
   home: {
@@ -70,10 +77,10 @@ const en = {
       title: { text: "Or build Peal into your own product." },
     },
     cta: {
-      line: "Plan posts with your team in PealStudio, or let your code and your AI agents publish through PealAPI.",
+      line: "Free to start, with every line of code public on GitHub.",
       primary: "Get started",
       secondary: "Read the docs",
-      title: "The AI marketing platform",
+      title: "Start posting with Peal",
     },
     hardParts: {
       cells: {
@@ -386,13 +393,11 @@ const en = {
         text: "Text",
         time: "Tue 09:00 · Europe/Paris",
       },
-      lead: "Peal comes as two products that share one workspace. Marketing teams plan, write and approve posts in PealStudio. Developers and their AI agents publish through PealAPI: an HTTP API, an MCP server, a command line and SDKs.",
+      lead: "Your team plans, writes and approves posts in PealStudio. Your code and your AI agents publish through PealAPI.",
       primary: "Get started",
       secondary: "Read the docs",
       stage: "Peal's products",
-      status:
-        "Peal is in development and not released yet. This page shows what it is being built to do.",
-      title: "Write once. Schedule everywhere. See what works.",
+      title: "The AI marketing platform",
     },
     title: "Peal: schedule social media posts across platforms",
   },
@@ -436,6 +441,10 @@ const en = {
       calendar: {
         body: "Schedule in your own time zone, move or cancel a post on the calendar, and follow how it went on each channel.",
         headline: "Schedule posts on a calendar",
+      },
+      blog: {
+        body: "Articles from the people who build Peal: what is new, how to use it and how it works.",
+        headline: "News from the Peal team",
       },
       changelog: {
         body: "Release notes for each version of Peal, on GitHub, with a link to every change.",
@@ -513,6 +522,10 @@ const en = {
         description: "Schedule in your time zone, move posts on the calendar.",
         title: "Calendar",
       },
+      blog: {
+        description: "News, guides and how Peal is built.",
+        title: "Blog",
+      },
       changelog: {
         description: "Every release and what changed in it.",
         title: "Changelog",
@@ -584,11 +597,116 @@ const en = {
     studio: "for marketing teams",
   },
   pricing: {
+    // The calculator at the top of the page (peal-ui's AccountPricer).
+    calculator: {
+      average: "{price} per account on average",
+      cloud: { line: "We run it for you.", title: "Peal Cloud" },
+      excluded: "excl. VAT",
+      free: "Free",
+      label: "Connected accounts",
+      last: "{from} and up",
+      perAccount: "{price} each a month",
+      perMonth: "a month",
+      range: "{from} to {to}",
+      valueText: "{count} accounts",
+      decrease: "Remove an account",
+      increase: "Add an account",
+    },
     coming: "Coming soon: prices to be announced",
+    headline: {
+      muted: "Your first {free} are free.",
+      text: "One price per connected account.",
+    },
+    selfHosted: {
+      items: [
+        "Every feature, nothing limited",
+        "Your data stays on your server",
+        "The code is public on GitHub",
+      ],
+      link: "Self-hosting guide",
+      price: "Free",
+      title: "Self-hosted",
+    },
+    enterprise: {
+      items: [
+        "A price for your volume",
+        "A higher API rate limit",
+        "Terms agreed with us",
+      ],
+      line: "For large teams, agencies and partners.",
+      price: "Custom",
+      subject: "Peal Enterprise",
+      talk: "Talk to sales",
+      title: "Enterprise",
+    },
+    // The table of features and rates (peal-ui's RateCard).
+    rateCard: {
+      cloudLine: "Your first {free} accounts free",
+      eyebrow: "Features",
+      features: {
+        ads: {
+          name: "Ads",
+          note: "Boost posts and follow your campaigns' results.",
+        },
+        analytics: {
+          name: "Analytics",
+          note: "Each post's and account's figures, the best times to post, and exports.",
+        },
+        articles: {
+          name: "Articles",
+          note: "Publish articles to blogs, with their images.",
+        },
+        assistant: {
+          name: "Writing assistant",
+          note: "Write, rewrite, shorten or translate a post.",
+        },
+        chats: {
+          name: "Chats",
+          note: "Post to your channels and groups like any other platform.",
+        },
+        developers: {
+          name: "API, MCP server, command line and SDKs",
+          note: "Schedule, publish and read your posts from your code and your AI agents.",
+        },
+        inbox: {
+          name: "Inbox",
+          note: "Comments, reviews and direct messages, answered in one place.",
+        },
+        publishing: {
+          name: "Scheduling and publishing",
+          note: "Posts, threads and first comments, the calendar, queues and approvals.",
+        },
+        team: {
+          name: "Members and workspaces",
+          note: "Your team and your clients, each workspace with its own channels.",
+        },
+        webhooks: {
+          name: "Webhooks",
+          note: "What happens in a workspace, sent to your server as it happens.",
+        },
+      },
+      groups: {
+        limits: "Limits",
+        usage: "Usage",
+        x: "X's API",
+      },
+      tags: {
+        ads: "Ad networks",
+        articles: "Blogs",
+        chats: "Chats",
+        publishing: "Social platforms",
+      },
+      title: "Every feature on every account",
+      values: {
+        custom: "Custom",
+        included: "Included",
+        unlimited: "Unlimited",
+      },
+    },
     dayRule:
       "Counted by the day: each UTC day of the month counts the most accounts connected at once that day, across every workspace of the billing account, for days {first} to {days} only (day {after} is never counted). The month's account-days are added up and divided by {days}, and that number of accounts goes through the ladder, so the first {freeDays} account-days are free. An account you disconnect stops counting from the next day, and nothing else is charged for accounts: no fee of any kind.",
     description:
-      "Peal Cloud's prices: per connected account, by the day, with your first accounts free, in US dollars, excluding VAT and with France's VAT.",
+      "Peal Cloud's prices: per connected account, by the day, with your first accounts free, in US dollars.",
     examples: {
       accounts: "Accounts",
       caption: "What a month costs, each account connected all month",
@@ -607,7 +725,7 @@ const en = {
       range: "Accounts {from} to {to}",
       title: "Connected accounts",
     },
-    lead: "Pay for the accounts you connect, by the day: your first {free} are free, and each one costs less the more you connect. Members, workspaces and posts are unlimited, and every account has every platform, the calendar, analytics, the API, the MCP server and the command line.",
+    lead: "Counted by the day, and each account costs less the more you connect. Members, workspaces and posts are unlimited, and nothing is held back behind a plan.",
     legal: {
       billing:
         "Billed each month, on the first, for the month past: nothing is paid in advance.",
@@ -625,7 +743,7 @@ const en = {
     meters: {
       allowance: "{count} a month included",
       xIncluded: "Nothing included",
-      lead: "What costs Peal by use has a monthly allowance per billing account, across all its workspaces, from the first of each month (UTC). Without a payment method, such a use pauses at its allowance until the next month; with one, each unit past it is billed. Until your first invoice is paid, what usage bills is capped.",
+      lead: "Each billing account gets a monthly allowance. Past it, usage pauses without a payment method, or is billed with one.",
       names: {
         assistantImages: "Writing assistant images",
         assistantRequests: "Writing assistant",
@@ -655,7 +773,7 @@ const en = {
       title: "Usage",
       x: {
         ceiling:
-          "What X bills a month stops at a ceiling of {ceiling} excluding tax by default, which you change on your billing page.",
+          "Capped at {ceiling} a month by default. Change it on your billing page.",
         lead: "X bills each call to its API. Peal passes it on at X's published pay-per-use rates, with nothing added: here are those a scheduler uses. A post's counts and an account's followers are read only for the workspaces that turn X's reads on, and each one once a UTC day.",
         names: {
           postCreate: "A post sent",
@@ -663,8 +781,7 @@ const en = {
           postRead: "A post's counts read",
           userRead: "An account's followers read",
         },
-        readOn:
-          "X's rates as read on X's developer pricing page on {day}. X may change them: the billing page always shows those billed.",
+        readOn: "Rates as of {day}. Your billing page shows the current ones.",
         title: "X's rates",
       },
     },
@@ -674,14 +791,13 @@ const en = {
       extra: "one for {days}",
       title: "A month not held in full",
     },
-    selfHost:
-      "A server you run yourself bills nothing and limits nothing: these prices are Peal Cloud's.",
+    selfHost: "Run Peal on your own server. No fees, no limits.",
     api: {
-      body: "Each API key, and each application acting for a member, sends {without} requests a minute to the API and the MCP server together without a payment method, and {withPaymentMethod} with one; {onRequest} on request.",
+      body: "{without} requests a minute per key without a payment method, {withPaymentMethod} with one, {onRequest} on request.",
       title: "API rate limit",
     },
     storage: {
-      body: "Fair use, across every workspace of the billing account: {without} without a payment method; with one, {perAccount} per connected account, {minimum} at least.",
+      body: "{without} without a payment method. With one, {perAccount} per account, {minimum} minimum.",
       title: "Media storage",
     },
     taxes: {
@@ -691,7 +807,7 @@ const en = {
       reverseCharge:
         "A business with a valid VAT number pays the price excluding VAT, the VAT being reverse-charged; in France, French VAT applies.",
       shown:
-        "Each price is shown excluding VAT and with France's {rate}% VAT, in US dollars.",
+        "All prices are in US dollars and exclude VAT. French VAT of {rate}% applies.",
       vat: "The VAT you pay depends on your country: it is added at checkout for customers in the EU, at their country's rate.",
       withVat: "{excluded} excl. VAT · {included} with France's {rate}% VAT",
     },
@@ -711,20 +827,25 @@ const en = {
 export type Messages = typeof en;
 
 const fr: Messages = {
+  announcement: {
+    link: "Suivre le développement sur GitHub",
+    text: "Peal est en cours de développement et pas encore sorti. Ce site montre ce qu’il est conçu pour faire.",
+  },
   draft: {
     body: "Ce document n’est pas encore en vigueur. Le texte entre crochets reste à rédiger.",
     title: "Projet en attente de relecture juridique",
   },
   footer: {
     cancel: "Résilier votre contrat",
-    contract: "Votre contrat",
-    follow: "Suivre Peal",
+    company: "Entreprise",
+    cookies: {
+      label: "Paramètres des cookies",
+      section: "cookies-et-technologies-similaires",
+    },
     language: "Langue",
-    legal: "Informations juridiques",
-    license:
-      "Fair source sous la Functional Source License (FSL-1.1-ALv2) ; les SDK sont sous licence Apache 2.0.",
-    captions: { end: "fair source · auto-hébergeable", start: "peal.social" },
-    source: "Code source sur GitHub",
+    policies: "Informations légales",
+    socials: "Réseaux sociaux",
+    source: "GitHub",
     withdraw: "Renoncer au contrat ici",
   },
   home: {
@@ -777,10 +898,10 @@ const fr: Messages = {
       title: { text: "Ou intégrez Peal à votre propre produit." },
     },
     cta: {
-      line: "Planifiez vos publications en équipe dans PealStudio, ou laissez votre code et vos agents IA publier avec PealAPI.",
+      line: "Gratuit pour commencer, et tout le code est public sur GitHub.",
       primary: "Commencer",
       secondary: "Lire la documentation",
-      title: "La plateforme marketing IA",
+      title: "Commencez à publier avec Peal",
     },
     hardParts: {
       cells: {
@@ -1099,13 +1220,11 @@ const fr: Messages = {
         text: "Texte",
         time: "mar. 09:00 · Europe/Paris",
       },
-      lead: "Peal se compose de deux produits qui partagent un même espace de travail. Les équipes marketing planifient, écrivent et font approuver leurs publications dans PealStudio. Les développeurs et leurs agents IA publient avec PealAPI : une API HTTP, un serveur MCP, une ligne de commande et des SDK.",
+      lead: "Votre équipe planifie, écrit et fait approuver ses publications dans PealStudio. Votre code et vos agents IA publient avec PealAPI.",
       primary: "Commencer",
       secondary: "Lire la documentation",
       stage: "Les produits de Peal",
-      status:
-        "Peal est en cours de développement et pas encore sorti. Cette page montre ce qu’il est conçu pour faire.",
-      title: "Écrire une fois. Planifier partout. Voir ce qui marche.",
+      title: "La plateforme marketing IA",
     },
     title: "Peal : planifiez vos publications sur les réseaux sociaux",
   },
@@ -1149,6 +1268,10 @@ const fr: Messages = {
       calendar: {
         body: "Programmez dans votre fuseau horaire, déplacez ou annulez une publication sur le calendrier, et suivez comment elle s’est passée sur chaque canal.",
         headline: "Programmez sur un calendrier",
+      },
+      blog: {
+        body: "Les articles de l’équipe qui fait Peal : les nouveautés, comment s’en servir et comment il fonctionne.",
+        headline: "Les nouvelles de l’équipe Peal",
       },
       changelog: {
         body: "Les notes de chaque version de Peal, sur GitHub, avec un lien vers chaque changement.",
@@ -1227,6 +1350,10 @@ const fr: Messages = {
           "Programmer dans votre fuseau, déplacer sur le calendrier.",
         title: "Calendrier",
       },
+      blog: {
+        description: "Nouveautés, guides et coulisses de Peal.",
+        title: "Blog",
+      },
       changelog: {
         description: "Chaque version et ce qu’elle change.",
         title: "Journal des modifications",
@@ -1300,11 +1427,114 @@ const fr: Messages = {
     studio: "pour les équipes marketing",
   },
   pricing: {
+    calculator: {
+      average: "{price} par compte en moyenne",
+      cloud: { line: "Nous le gérons pour vous.", title: "Peal Cloud" },
+      excluded: "HT",
+      free: "Gratuit",
+      label: "Comptes connectés",
+      last: "{from} et plus",
+      perAccount: "{price} chacun par mois",
+      perMonth: "par mois",
+      range: "{from} à {to}",
+      valueText: "{count} comptes",
+      decrease: "Retirer un compte",
+      increase: "Ajouter un compte",
+    },
     coming: "Bientôt : tarifs à venir",
+    headline: {
+      muted: "Vos {free} premiers sont gratuits.",
+      text: "Un prix par compte connecté.",
+    },
+    selfHosted: {
+      items: [
+        "Toutes les fonctionnalités, sans limite",
+        "Vos données restent sur votre serveur",
+        "Le code est public sur GitHub",
+      ],
+      link: "Guide d’auto-hébergement",
+      price: "Gratuit",
+      title: "Auto-hébergé",
+    },
+    enterprise: {
+      items: [
+        "Un prix à la mesure de votre volume",
+        "Une limite de requêtes à l’API plus haute",
+        "Des conditions convenues avec nous",
+      ],
+      line: "Pour les grandes équipes, les agences et les partenaires.",
+      price: "Sur mesure",
+      subject: "Peal Enterprise",
+      talk: "Parler à l’équipe commerciale",
+      title: "Enterprise",
+    },
+    rateCard: {
+      cloudLine: "Vos {free} premiers comptes gratuits",
+      eyebrow: "Fonctionnalités",
+      features: {
+        ads: {
+          name: "Publicités",
+          note: "Mettez en avant vos publications et suivez les résultats de vos campagnes.",
+        },
+        analytics: {
+          name: "Statistiques",
+          note: "Les chiffres de chaque publication et de chaque compte, les meilleurs moments pour publier, et les exports.",
+        },
+        articles: {
+          name: "Articles",
+          note: "Publiez des articles sur vos blogs, avec leurs images.",
+        },
+        assistant: {
+          name: "Assistant de rédaction",
+          note: "Écrire, réécrire, raccourcir ou traduire une publication.",
+        },
+        chats: {
+          name: "Messageries",
+          note: "Publiez dans vos canaux et vos groupes comme sur toute autre plateforme.",
+        },
+        developers: {
+          name: "API, serveur MCP, ligne de commande et SDK",
+          note: "Programmez, publiez et lisez vos publications depuis votre code et vos agents IA.",
+        },
+        inbox: {
+          name: "Boîte de réception",
+          note: "Commentaires, avis et messages privés, traités au même endroit.",
+        },
+        publishing: {
+          name: "Programmation et publication",
+          note: "Publications, fils et premiers commentaires, le calendrier, les files d’attente et les approbations.",
+        },
+        team: {
+          name: "Membres et espaces de travail",
+          note: "Votre équipe et vos clients, chaque espace de travail avec ses propres canaux.",
+        },
+        webhooks: {
+          name: "Webhooks",
+          note: "Ce qui se passe dans un espace de travail, envoyé à votre serveur au moment où cela arrive.",
+        },
+      },
+      groups: {
+        limits: "Limites",
+        usage: "Usage",
+        x: "L’API de X",
+      },
+      tags: {
+        ads: "Régies publicitaires",
+        articles: "Blogs",
+        chats: "Messageries",
+        publishing: "Réseaux sociaux",
+      },
+      title: "Toutes les fonctionnalités sur chaque compte",
+      values: {
+        custom: "Sur mesure",
+        included: "Inclus",
+        unlimited: "Illimité",
+      },
+    },
     dayRule:
       "Compté au jour : chaque jour UTC du mois compte le plus grand nombre de comptes connectés en même temps ce jour-là, dans tous les espaces de travail du compte de facturation, pour les jours {first} à {days} seulement (le jour {after} n’est jamais compté). Les jours-comptes du mois sont additionnés et divisés par {days}, et ce nombre de comptes passe au barème : les {freeDays} premiers jours-comptes sont donc gratuits. Un compte que vous déconnectez cesse de compter dès le lendemain, et rien d’autre n’est facturé pour les comptes : aucuns frais.",
     description:
-      "Les tarifs de Peal Cloud : au compte connecté, au jour, vos premiers comptes gratuits, en dollars américains, HT et avec la TVA française.",
+      "Les tarifs de Peal Cloud : au compte connecté, au jour, vos premiers comptes gratuits, en dollars américains.",
     examples: {
       accounts: "Comptes",
       caption: "Ce que coûte un mois, chaque compte connecté tout le mois",
@@ -1323,7 +1553,7 @@ const fr: Messages = {
       range: "Comptes {from} à {to}",
       title: "Comptes connectés",
     },
-    lead: "Payez les comptes que vous connectez, au jour : vos {free} premiers sont gratuits, et chacun coûte moins à mesure que vous en connectez. Membres, espaces de travail et publications sont illimités, et chaque compte comprend toutes les plateformes, le calendrier, les statistiques, l’API, le serveur MCP et la ligne de commande.",
+    lead: "Compté au jour, et chaque compte coûte moins à mesure que vous en connectez. Membres, espaces de travail et publications sont illimités, et aucune fonction n’est réservée à une offre.",
     legal: {
       billing:
         "Facturé chaque mois, le premier, pour le mois écoulé : rien n’est payé d’avance.",
@@ -1341,7 +1571,7 @@ const fr: Messages = {
     meters: {
       allowance: "{count} inclus par mois",
       xIncluded: "Rien d’inclus",
-      lead: "Ce qui coûte à Peal à l’usage a une franchise mensuelle par compte de facturation, pour tous ses espaces de travail, à partir du premier de chaque mois (UTC). Sans moyen de paiement, cet usage s’interrompt à sa franchise jusqu’au mois suivant ; avec un moyen de paiement, chaque unité au-delà est facturée. Tant que votre première facture n’est pas payée, ce que l’usage facture est plafonné.",
+      lead: "Chaque compte de facturation a une franchise mensuelle. Au-delà, l’usage s’arrête sans moyen de paiement, ou il est facturé avec.",
       names: {
         assistantImages: "Images de l’assistant de rédaction",
         assistantRequests: "Assistant de rédaction",
@@ -1371,7 +1601,7 @@ const fr: Messages = {
       title: "Usage",
       x: {
         ceiling:
-          "Ce que X facture dans un mois s’arrête par défaut à un plafond de {ceiling} hors taxes, que vous modifiez sur votre page de facturation.",
+          "Plafonné à {ceiling} par mois par défaut. Modifiable sur votre page de facturation.",
         lead: "X facture chaque appel à son API. Peal le refacture aux tarifs à l’usage publiés par X, sans rien ajouter : voici ceux dont se sert un outil de programmation. Les chiffres d’une publication et les abonnés d’un compte ne sont lus que pour les espaces de travail qui activent la lecture de X, et chacun une fois par jour UTC.",
         names: {
           postCreate: "Une publication envoyée",
@@ -1380,7 +1610,7 @@ const fr: Messages = {
           userRead: "Les abonnés d’un compte lus",
         },
         readOn:
-          "Tarifs de X relevés sur sa page de tarifs pour développeurs le {day}. X peut les changer : la page de facturation montre toujours ceux qui sont facturés.",
+          "Tarifs au {day}. Votre page de facturation affiche les tarifs en vigueur.",
         title: "Les tarifs de X",
       },
     },
@@ -1390,14 +1620,13 @@ const fr: Messages = {
       extra: "un pendant {days}",
       title: "Un mois incomplet",
     },
-    selfHost:
-      "Un serveur que vous hébergez vous-même ne facture rien et ne limite rien : ces tarifs sont ceux de Peal Cloud.",
+    selfHost: "Installez Peal sur votre propre serveur. Sans frais ni limites.",
     api: {
-      body: "Chaque clé d’API, et chaque application qui agit pour un membre, envoie {without} requêtes par minute à l’API et au serveur MCP réunis sans moyen de paiement, et {withPaymentMethod} avec un moyen de paiement ; {onRequest} sur demande.",
+      body: "{without} requêtes par minute et par clé sans moyen de paiement, {withPaymentMethod} avec, {onRequest} sur demande.",
       title: "Limite de débit de l’API",
     },
     storage: {
-      body: "Usage raisonnable, pour tous les espaces de travail du compte de facturation : {without} sans moyen de paiement ; avec un moyen de paiement, {perAccount} par compte connecté, {minimum} au moins.",
+      body: "{without} sans moyen de paiement. Avec, {perAccount} par compte, {minimum} au minimum.",
       title: "Stockage des médias",
     },
     taxes: {
@@ -1407,7 +1636,7 @@ const fr: Messages = {
       reverseCharge:
         "Une entreprise avec un numéro de TVA valide paie le prix HT, la TVA étant autoliquidée ; en France, la TVA française s’applique.",
       shown:
-        "Chaque prix est affiché HT et avec la TVA française de {rate} %, en dollars américains.",
+        "Tous les prix sont en dollars US, hors TVA. La TVA française de {rate} % s’applique.",
       vat: "La TVA que vous payez dépend de votre pays : elle est ajoutée au paiement pour les clients de l’UE, au taux de leur pays.",
       withVat: "{excluded} HT · {included} avec la TVA française de {rate} %",
     },

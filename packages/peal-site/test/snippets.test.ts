@@ -16,7 +16,7 @@ import {
   channelIds,
   cliRequest,
   idempotencyKey,
-  mcpRefusal,
+  mcpConfig,
   postText,
   publishResponse,
   publishSnippets,
@@ -104,8 +104,7 @@ describe("the home page's highlighted code", () => {
     })),
     { sample: code.publish.response, source: publishResponse },
     { sample: code.cli, source: cliRequest },
-    { sample: code.mcp.request, source: mcpRefusal.request },
-    { sample: code.mcp.response, source: mcpRefusal.response },
+    { sample: code.mcp, source: mcpConfig },
     { sample: code.webhook, source: webhookPayload },
   ];
 

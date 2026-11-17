@@ -26,7 +26,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./sheet";
-import { Mark, siteIcons } from "./site-icons";
+import { Mark, markKey, siteIcons } from "./site-icons";
 import type { SiteIcon, SiteMark } from "./site-icons";
 
 interface SiteLink {
@@ -258,7 +258,7 @@ const FeatureCard = ({ feature }: { readonly feature: SiteMenuFeature }) => (
       <span className="flex gap-2">
         {feature.marks.map((mark) => (
           <span
-            key={mark.kind === "path" ? mark.path : mark.letters}
+            key={markKey(mark)}
             className="bg-card text-foreground flex size-10 items-center justify-center rounded-md border"
           >
             <Mark mark={mark} className="size-5" />
