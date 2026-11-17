@@ -24,18 +24,24 @@ interface CodeDemoTab {
   readonly value: string;
 }
 
+/**
+ * A block of code under its mono caption, on `muted`. Long lines wrap, so
+ * nothing hides past the panel's edge at any width.
+ */
 const Code = ({
   action,
   block,
+  className,
 }: {
   readonly action?: React.ReactNode;
   readonly block: CodeBlock;
+  readonly className?: string | undefined;
 }) => (
-  <figure className="flex h-full min-w-0 flex-col">
+  <figure className={cn("flex h-full min-w-0 flex-col", className)}>
     <figcaption className="text-muted-foreground flex h-11 items-center justify-between gap-2 border-b ps-4 pe-1.5 font-mono text-xs tracking-[0.04em]">
       [ {block.label} ]{action}
     </figcaption>
-    <pre className="bg-muted text-foreground flex-1 overflow-x-auto p-4 font-mono text-[13px] leading-relaxed">
+    <pre className="bg-muted text-foreground flex-1 p-4 font-mono text-[13px] leading-relaxed [overflow-wrap:anywhere] whitespace-pre-wrap">
       <code>{block.code}</code>
     </pre>
   </figure>
@@ -143,6 +149,6 @@ const CodeDemo = ({
   </Tabs>
 );
 
-export { CodeDemo };
+export { Code, CodeDemo, CopyButton };
 
 export type { CodeBlock, CodeDemoTab };
