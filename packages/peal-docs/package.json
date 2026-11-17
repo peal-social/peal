@@ -11,7 +11,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@ai-sdk/anthropic": "4.0.104",
+    "@ai-sdk/anthropic": "4.0.105",
     "blume": "2.2.7",
     "peal-contract": "workspace:*",
     "peal-ui": "workspace:*"
