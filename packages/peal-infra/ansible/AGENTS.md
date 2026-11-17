@@ -162,14 +162,16 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   (`AUD_NAMES`): production's `admin` application covers
   `peal_access_paths`, so a path added there is added to the Pulumi
   project's `adminPaths` too.
-- `tests/` runs in parallel, a worker a CPU (pytest-xdist, `--dist
-  loadgroup`, in `pyproject.toml`), in any order: a test shares nothing
-  with another but what it only reads. Name each container and network
-  for the run (`secrets.token_hex`), publish no fixed host port, write
-  only in pytest's temporary folders, and keep a random value out of a
-  test's id (`ids=`), since every worker collects the tests and they must
-  agree on the names. A module's fixture that starts containers marks the
-  tests that use it with one `xdist_group`, so one worker starts them once.
+- `tests/` runs in parallel, a worker a CPU (pytest-xdist, in
+  `pyproject.toml`), in any order: a test shares nothing with another but
+  what it only reads. Name each container and network for the run
+  (`secrets.token_hex`), publish no fixed host port, write only in
+  pytest's temporary folders, and keep a random value out of a test's id
+  (`ids=`), since every worker collects the tests and they must agree on
+  the names. The tests that use a module's fixture that starts containers
+  are one class: `tests/class_scheduling.py` hands a class's tests to one
+  worker, which starts the containers once, and every other test on its
+  own (`xdist_group` does not group with pytest 9.2 and xdist 3.8.0).
   Templates the tests only read come from `rendered_with` (conftest),
   which renders each set of settings once a run for all the workers; a
   test that changes the files renders its own with `render_inventory`.

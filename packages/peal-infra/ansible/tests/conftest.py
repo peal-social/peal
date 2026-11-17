@@ -25,6 +25,8 @@ import pytest
 import yaml
 from ansible.parsing.dataloader import DataLoader
 from ansible.template import Templar, trust_as_template
+from class_scheduling import ClassScheduling
+from xdist.remote import Producer
 
 INFRA = Path(__file__).resolve().parent.parent
 
@@ -190,12 +192,11 @@ def render_inventory(folder: Path, **extra_vars: Any) -> Path:
     return folder
 
 
-def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
-    """The tests of an xdist_group first, in the order collected otherwise:
-    xdist hands the work out in that order, and a group runs end to end in
-    one worker, so a group handed out last would keep the run going on
-    after the other workers are done."""
-    items.sort(key=lambda item: item.get_closest_marker("xdist_group") is None)
+@pytest.hookimpl(optionalhook=True)
+def pytest_xdist_make_scheduler(config: pytest.Config, log: Producer) -> ClassScheduling | None:
+    """A class's tests to one worker, the others one by one, unless
+    --dist names another way."""
+    return ClassScheduling(config, log) if config.getvalue("dist") == "load" else None
 
 
 @pytest.fixture(scope="session")

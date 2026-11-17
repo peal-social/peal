@@ -17,8 +17,8 @@ dev = ["jinja2==3.1.6", "pytest==9.2.0", "pytest-xdist==3.8.0", "pyyaml==6.0.3"]
 package = false
 
 # No cache folder in the package; tests that need Docker skip without it.
-# The tests run in parallel, one worker a CPU (pytest-xdist), each group of
-# tests that share a module's containers (xdist_group) in one of them.
+# The tests run in parallel, one worker a CPU (pytest-xdist), each class
+# of tests in one of them (tests/class_scheduling.py).
 [tool.pytest]
 testpaths = ["tests"]
 addopts = [
@@ -26,8 +26,6 @@ addopts = [
   "no:cacheprovider",
   "--numprocesses",
   "auto",
-  "--dist",
-  "loadgroup",
   "--durations=60",
   "--durations-min=1",
 ]
