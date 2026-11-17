@@ -40,9 +40,12 @@ jobs:
       sdks: ${{ steps.plan.outputs.sdks }}
       server: ${{ steps.plan.outputs.server }}
     steps:
+      # Every commit, for the merge base, but no file's contents until Git
+      # needs it: the plan reads which files changed, not what they hold.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          filter: blob:none
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: bun test scripts/ci-plan.test.ts
