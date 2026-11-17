@@ -25,7 +25,7 @@ addopts = [
   "-p",
   "no:cacheprovider",
   "--numprocesses",
-  "auto",
+  "8",
   "--durations=60",
   "--durations-min=1",
 ]
