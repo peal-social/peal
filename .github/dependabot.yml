@@ -93,19 +93,10 @@ updates:
       pulumi:
         patterns:
           - "@pulumi/*"
-      # playwright-core, which scripts/logo-gif.ts drives, moves with the
-      # runner, which pins it.
       e2e:
         patterns:
           - e2e
           - "@e2e-dev/*"
-          - playwright-core
-      # The READMEs' animated logo (scripts/logo-gif.ts): three and its
-      # types move together.
-      three:
-        patterns:
-          - three
-          - "@types/three"
       lint-tooling:
         patterns:
           - ultracite
