@@ -157,8 +157,8 @@ open over the hero.
 (5:1 or better there), never over the lavender or yellow glows, which sit
 at the corners for that reason; then the rails and their captions. A button on it is white with ink text, the primary button
 inverted. The site's hero may hold one `background` panel between its
-rails, with the 6 px radius and no border or shadow, for the hero art; no
-other surface sits on the field.
+rails, with the 6 px radius and no border or shadow, for the home page's
+stage (see [Site](#site)); no other surface sits on the field.
 
 The base is `radial-gradient(120% 140% at 50% 50%, #1E2D8C 0%, #16206A 60%, #0F1650 100%)`.
 Five blurred ellipses glow on it. Their sizes and blur are fractions of
@@ -288,6 +288,9 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   a bordered 32 px tile, a title (14 px, 500) and a one-line description
   (13 px, muted), with the `accent` hover; a row that names a brand, such
   as a platform, has its 16 px mark in the same tile and its name alone.
+  A group's label may name a product, in ink and 500, followed by whom
+  it is for in muted text: Products has "PealStudio for marketing teams"
+  and "PealAPI for developers and agents".
   Cells side by side are as tall as each other; cells stacked in one
   column share its height, the last one taking what is left. A featured card
   closes the panel on the right, as tall as its content, never stretched
@@ -351,15 +354,53 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   response on the right, both on `muted` in Geist Mono 13 px, each under
   a mono caption, and a ghost Copy button on the request's caption. The
   requests are the docs' own, the responses the contract's shapes, and
-  every id is made up and reads as such.
+  every id is made up and reads as such. Long lines wrap, breaking
+  anywhere, so nothing hides past a panel's edge at any width.
 - **Tiles.** Bordered cells in rows of four (two on a phone), under a
   mono group label: a 36 px bordered tile with an icon or a brand's mark,
   an arrow pointing out, a title (15 px, 600) and an optional line.
-- **Use cases.** ui-sdk's vertical tabs: cases in a column of bordered
-  rows on the left (an icon, a title, a line), the selected one on
-  `muted` with a 2 px blue bar at its start; on the right, its demo: a
-  chip, a mock window, a short paragraph and a link to its docs page.
-  Below 768 px the column comes first and the demo under it.
+- **Two products.** Peal is presented as two products on one workspace,
+  spelled `PealStudio` (for marketing teams) and `PealAPI` (for
+  developers and agents): the two sides of the app's mode switch (see
+  [The frame](#the-frame)). A product's name is set as one word, in the
+  text's own colour, never as a logo.
+- **Hero stage.** Under the home page's headline (left, with its
+  buttons) and lead (right), one `background` panel on the brand field:
+  ui-sdk's tabs as a segmented switch across its top, on `muted`, one
+  segment per product with the mark in a 20 px tile (white for
+  PealStudio, ink for PealAPI, as the app's switch draws its modes); the
+  selected segment is `card` with the switch's shadow. Its panel holds
+  the product's demo: for PealStudio, the composer (one post, a tab per
+  channel, each platform's count against its limit from the contract, a
+  preview beside it), for PealAPI the code demo. Under the demo, a row of
+  chips, one per feature of the selected product (a 14 px icon, its name
+  and an arrow pointing out, 4 px radius, bordered), each linking to its
+  docs page. Below 768 px the composer's preview goes under its text.
+- **Two platforms panel.** Under a section opener, the two products in
+  two bordered cells (the name, 15 px, 600, then a line at the lead's
+  size, muted), then one wide cell on `muted` holding a page of each side
+  of the app next to each other (stacked below 1024 px): the frame
+  drawn small, a sidebar of 176 px with the mode switch and the mode's
+  groups, the 56 px top bar with the breadcrumb, and the content in white
+  cards (Studio's calendar; the API side's keys and webhook deliveries).
+  Below 640 px the sidebar folds away and the switch moves into the top
+  bar. The pages show only what the app has, with made-up content.
+- **Product opening.** A product's section opens on the faint pixel
+  field, left-aligned: the eyebrow with the product's name, the section
+  headline and an outline button to its docs on the left, the lead on the
+  right, level with the button. On a phone: headline, lead, button.
+- **Product bento.** Under PealStudio's opening: two feature cells side
+  by side, each with a mock from the app (the composer's previews, one
+  row per platform with its count and chip; the page a reviewer opens
+  from a review link), then four tiles in a row (two on a phone), each
+  still pixel art of its icon, the icon and a title (15 px, 600) and a
+  line, linking to its docs page.
+- **Product rows.** Under PealAPI's opening: one bordered row per part,
+  its title (an icon, 15 px, 600), a paragraph and a link to its docs
+  page on the left (5 of 12 columns), and on the right its code (the code
+  demo's blocks, stacked, without tabs), its tiles (the SDKs' marks in
+  bordered cells, four to a row, two on a phone) or a mock from the app
+  (a connect link's page). Stacked below 768 px.
 - **Closing band.** The last section before the footer is a call to
   action on the brand field: a white headline and line, centred, a white
   button with ink text and a white text link, with the field's rails on
@@ -381,16 +422,10 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   licence's line and the language links in a first cell, then a bordered
   cell per column of links (legal, the contract's functions, Peal's
   accounts), and a caption row at the foot.
-- **Hero art.** The home page's hero shows Peal's cube rendered at low
-  resolution, each face in its own colour of the mark (yellow top, blue
-  left, lavender right), on `background`, with crisp edges and no
-  anti-aliasing. By default as square pixels of 5 px, with no gap, in four
-  tones of each face's colour mixed by a 4x4 Bayer dither and a darker
-  outline; or as Geist Mono glyphs in 6 by 8 px cells, chosen by
-  brightness from `-=+x*%#@` (no dots). It starts with a short intro (cells
-  switching on), turns slowly, spins a little with the scroll, stops when
-  off screen, and is one still frame for readers who ask for reduced
-  motion.
+- **Hero art.** The home page's hero shows the product, in its stage,
+  and no other art: the turning cube it once held is gone. Pixel art
+  stays in the menu previews, the section openers, the FAQ and the
+  feature tiles.
 
 ## Writing
 
