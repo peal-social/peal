@@ -81,20 +81,22 @@ const BrandField = ({
       ...props,
       children: (
         <>
+          {/* The glows and the grain paint into one layer of their own
+              (will-change), once: painted with the page, WebKit blurred
+              them again for every tile scrolled into view, a frame of 90
+              to 150 ms each time. One layer, and not one per glow, so the
+              compositor never blurs them itself, which a GPU-less browser
+              does every frame. It looks the same, pixel for pixel. */}
           <div
             aria-hidden="true"
-            className="[container-type:size] pointer-events-none absolute inset-0 -z-10 overflow-hidden [--m:max(100cqw,220cqh)]"
+            className="[container-type:size] pointer-events-none absolute inset-0 -z-10 overflow-hidden will-change-transform [--m:max(100cqw,220cqh)]"
           >
-            {/* Each glow is a layer of its own (will-change), which the
-                compositor blurs once: drawn in the page's layer, WebKit
-                blurred them again for every tile scrolled into view, a
-                frame of 90 to 150 ms each time. It looks the same. */}
             {glows.map((glow) => (
               <span
                 key={glow.name}
                 data-glow={glow.name}
                 className={cn(
-                  "absolute -translate-x-1/2 -translate-y-1/2 rounded-full will-change-transform",
+                  "absolute -translate-x-1/2 -translate-y-1/2 rounded-full",
                   glow.className
                 )}
               />
