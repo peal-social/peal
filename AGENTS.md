@@ -111,9 +111,11 @@ several:
 - CI (`.github/workflows/ci.yml`) runs those checks in parallel jobs, on
   pull requests and in the merge queue, and nightly on `main`; its `ci` job,
   which waits for the others, is the one check the ruleset requires.
-  `scripts/ci-plan.ts` decides from a change's files and the projects Nx
-  finds affected whether it needs the server's tests, Ansible's, the SDKs
-  and the end-to-end run. Nx's graph follows imports only: a test that
+  On a pull request, `scripts/ci-plan.ts` decides from the change's files
+  and the projects Nx finds affected whether it needs the server's tests,
+  Ansible's, the SDKs and the end-to-end run; the merge queue runs every
+  job, so the full suite passes before anything reaches `main`. Only a
+  pull request's run is cancelled by a newer commit. Nx's graph follows imports only: a test that
   reads files in another package names them in the plan's rules, with a
   case in `scripts/ci-plan.test.ts`. actionlint and zizmor
   (`.github/zizmor.yml`) check the workflows.
