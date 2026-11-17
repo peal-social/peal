@@ -203,7 +203,7 @@ bar) and the page patterns. Read it before changing a screen of the web
 app, the site or the docs. Peal is light only: no dark mode, no `dark:`
 class in Peal's own code.
 
-[`WRITING.md`](WRITING.md) is how Peal's words read: the voice, the
+[`packages/peal-docs/WRITING.md`](packages/peal-docs/WRITING.md) is how Peal's words read: the voice, the
 layout of a page and the code samples, for the docs, the site and the
 app's text, with a sample per kind of text for the humanizer skill.
 

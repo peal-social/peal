@@ -44,7 +44,7 @@ platform's page shows its mark from `public/platform-marks/`, which
 
 ## Plain words
 
-[`WRITING.md`](../../WRITING.md) is the voice, the layout and the code
+[`WRITING.md`](WRITING.md) is the voice, the layout and the code
 samples: read it before writing a page, and give the humanizer skill its
 sample for the kind of page. Every API call shows every SDK, Node.js first,
 under the tab labels it lists. The humanizer rules
