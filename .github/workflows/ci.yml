@@ -20,7 +20,8 @@ concurrency:
 env:
   DO_NOT_TRACK: "1"
   NX_NO_CLOUD: "true"
-  # What a job's Nx cache keeps between runs (actions/cache).
+  # What a job's Nx cache keeps between runs (actions/cache), saved from
+  # main's nightly run and restored by every other.
   NX_MAX_CACHE_SIZE: 1GB
 
 jobs:
@@ -61,6 +62,14 @@ jobs:
       - run: bun run check
       - run: bun run typecheck
       - run: bun run build
+      # Only main saves Nx's cache, which every branch restores: a branch's
+      # copy would be readable by that branch alone, and push main's out of
+      # the repository's 10 GB.
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-check-${{ github.sha }}
 
   # Every project's tests but the server's and Ansible's, which have jobs of
   # their own.
@@ -75,6 +84,14 @@ jobs:
         with:
           nx-cache: test
       - run: bun nx run-many --target=test --exclude=peal-server,peal-infra-ansible
+      # Only main saves Nx's cache, which every branch restores: a branch's
+      # copy would be readable by that branch alone, and push main's out of
+      # the repository's 10 GB.
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-test-${{ github.sha }}
 
   # The server's tests, against a real, throwaway database, reading the
   # emails they send from Mailpit and checking checkout and the billing
@@ -315,18 +332,38 @@ jobs:
           nx-cache: e2e
       - run: docker compose --file packages/peal-docker/compose.yaml up --detach --wait seaweedfs
       # Chromium for the Playwright version @e2e-dev/web pins, kept between
-      # runs, with the system libraries it needs, installed each time.
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      # runs (saved by main only, like Nx's cache), with the system libraries
+      # it needs, installed each time.
+      - id: playwright
+        run: >-
+          echo "version=$(node --print 'require(require.resolve("playwright-core/package.json",
+          { paths: [require("node:fs").realpathSync("node_modules/@e2e-dev/web")] })).version')"
+          >> "$GITHUB_OUTPUT"
+        working-directory: packages/peal-e2e
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
       - run: ./node_modules/.bin/e2e-web install chromium --with-deps
         working-directory: packages/peal-e2e
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
       - run: bun nx run peal-e2e:e2e
         env:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
           MAILPIT_URL: http://localhost:8025
           SMTP_URL: smtp://localhost:1025
+      # Only main saves Nx's cache, which every branch restores: a branch's
+      # copy would be readable by that branch alone, and push main's out of
+      # the repository's 10 GB.
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-e2e-${{ github.sha }}
       # The report, a trace page and screenshots for each failed test, and the
       # server's and the web app's output. Every value in them is synthetic.
       - if: ${{ failure() }}
