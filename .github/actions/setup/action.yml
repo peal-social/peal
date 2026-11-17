@@ -43,3 +43,21 @@ runs:
           .nx/workspace-data
         key: nx-${{ runner.os }}-${{ inputs.nx-cache }}-${{ github.sha }}
         restore-keys: nx-${{ runner.os }}-${{ inputs.nx-cache }}-
+    # Nx names its database after the machine: <machine id>-v<version>.db,
+    # the id read from /var/lib/dbus/machine-id or /etc/machine-id, which
+    # differs from one runner to the next. Under another runner's name the
+    # database restored above goes unread, and so does every entry it
+    # records: give it, and SQLite's files beside it, this runner's name.
+    - if: inputs.nx-cache != ''
+      shell: bash
+      run: |
+        id="$(cat /var/lib/dbus/machine-id 2>/dev/null || cat /etc/machine-id)"
+        id="$(printf '%s' "$id" | tr -d '[:space:]')"
+        for database in .nx/workspace-data/*-v*.db; do
+          [ -e "$database" ] || continue
+          name="${id}-v${database##*-v}"
+          [ "$database" = ".nx/workspace-data/$name" ] && continue
+          for file in "$database"*; do
+            mv "$file" ".nx/workspace-data/${name}${file#"$database"}"
+          done
+        done
