@@ -472,6 +472,17 @@ and no socket, for tests.
   it does not declare, person and group properties through their own
   schemas, and no key may name an address, a name, a URL, a text or a
   token (`refusedKeyWords`).
+- The web app measures its use only where `PEAL_POSTHOG_WEB` is on beside
+  the key (`BrowserMeasurement`, provided with product analytics):
+  `GET /api/me` answers `browserAnalytics`, null without it, in a session
+  staff act in, through an application and for an excluded person; else
+  the token, the environment, the person's choice (`undecided` once older
+  than 183 days) and their excluded workspaces. A session request's
+  `x-posthog-session-id`, when a UUID, joins that person's events of the
+  request as `$session_id` (`AnalyticsActor.sessionId`), never a key's,
+  an application's, an impersonated one's or a service identity's. An
+  erasure deletes the persons' recordings too (`delete_recordings`), and
+  counts as done only when PostHog says they are queued.
 - Tests use `ProductAnalytics.none`, or `recordedAnalytics`
   (`#test/shared/recorded-analytics.ts`); through the whole server,
   `appWithPostHog` (`#test/shared/fake-posthog.ts`) reads what a fake

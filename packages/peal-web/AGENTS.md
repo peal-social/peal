@@ -150,6 +150,33 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   where a count is not given or the range before is not all kept, the
   range switch and **Download CSV** (`/api/me/report/export`). Strings in
   `Overview`.
+- Usage measurement (`#measurement/*`, `components/measurement/`, the
+  `Measurement` catalogue): the `app` layout wraps every page under `/app`
+  in `Measurement` only where `GET /api/me` answers `browserAnalytics`
+  (the server measures for this person: never for staff acting as them).
+  `modeOf` decides each page: `off` (outside `/app`, an excluded
+  workspace, Do Not Track or Global Privacy Control), `anonymous` (page
+  views in memory, nothing stored, no person, no workspace, no
+  recording) or `identified` (once the person allowed it: their id, the
+  workspace, local storage, a masked recording, `tracing_headers` naming
+  the session to the API), and `applyState` switches the SDK in place,
+  never with a reload. Only `measurement/sdk.ts` imports `posthog-js`
+  (a test reads `src/`), behind a dynamic import. Every event goes
+  through `sanitized`'s allowlist (ids, enums, numbers, booleans; a key
+  joins it only that way, and a test refuses the server's
+  `refusedKeyWords`). Recordings mask every text, input and attribute
+  and block media; content drawn as a CSS background takes
+  `data-replay-block`. Errors reach PostHog only through
+  `reportBrowserError` (`onReported`), as the report the intake was
+  sent. The relay (`#measurement/relay.ts`, in `src/proxy.ts`) forwards
+  `/pulse/*` to `PEAL_POSTHOG_HOST` only while `PEAL_POSTHOG_WEB` is on,
+  PostHog's ingestion, flags and configuration paths alone, without
+  cookies, credentials, the visitor's address, the referer or their
+  languages; `skipTrailingSlashRedirect` is on for it, and the proxy
+  redirects every other trailing slash itself. The choice lives on the
+  account (`PUT /api/me/browser-analytics/consent`): `ConsentCard` on the
+  personal home while undecided, `ConsentSetting` on the account page;
+  withdrawing and signing out clear the SDK's storage.
 - Pages fetch through the client derived from `peal-contract`, with
   `@effect/atom-react`: query atoms come from `PealApi` in `src/api/client.ts`.
   Browsers call `/api`; server code calls `PEAL_API_URL`.

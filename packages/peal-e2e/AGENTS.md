@@ -46,6 +46,17 @@
   So the functions to cancel and withdraw are on
   (`contract-functions.e2e.ts`): a journey there sends requests no
   contract answers, and reads their acknowledgement in Mailpit.
+- The run measures, against a stand-in for PostHog (`scripts/posthog.ts`):
+  the server and the web app get `PEAL_POSTHOG_WEB=on` and its address,
+  and it writes every request it receives, decoded, to
+  `.e2e/posthog-requests.jsonl`. Each member's home shows the consent
+  card. `tests/usage-measurement.e2e.ts` reads the file: anonymous page
+  views with nothing stored, then, once allowed, identified events, a
+  recording and a server event joined to the browser's session, and
+  anonymous again once withdrawn. The SDK drops a test browser's events
+  as a bot's, so the journey makes the page read as a person's
+  (`asPerson`); it writes the storage keys the SDK kept to
+  `.e2e/posthog-storage.json`, which the privacy policy names.
 - No platform can be connected in a run, so a test that needs a channel
   inserts a synthetic one with `seedChannel` (`tests/support/channels.ts`).
   Update it when `channels.channels` changes. Publish nothing, and cancel any
