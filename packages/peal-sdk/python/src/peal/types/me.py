@@ -6,11 +6,17 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .browser_analytics import BrowserAnalytics
 from .me_user import MeUser
 from .membership import Membership
 
 
 class Me(UniversalBaseModel):
+    browser_analytics: typing_extensions.Annotated[
+        typing.Optional[BrowserAnalytics],
+        FieldMetadata(alias="browserAnalytics"),
+        pydantic.Field(alias="browserAnalytics"),
+    ] = None
     impersonated_by: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="impersonatedBy"), pydantic.Field(alias="impersonatedBy")
     ] = None

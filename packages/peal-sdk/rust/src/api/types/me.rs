@@ -2,6 +2,9 @@ pub use crate::prelude::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Me {
+    #[serde(rename = "browserAnalytics")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub browser_analytics: Option<BrowserAnalytics>,
     #[serde(rename = "impersonatedBy")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub impersonated_by: Option<String>,
@@ -19,12 +22,18 @@ impl Me {
 #[derive(Clone, PartialEq, Default, Debug)]
 #[non_exhaustive]
 pub struct MeBuilder {
+    browser_analytics: Option<BrowserAnalytics>,
     impersonated_by: Option<String>,
     user: Option<MeUser>,
     workspaces: Option<Vec<Membership>>,
 }
 
 impl MeBuilder {
+    pub fn browser_analytics(mut self, value: BrowserAnalytics) -> Self {
+        self.browser_analytics = Some(value);
+        self
+    }
+
     pub fn impersonated_by(mut self, value: impl Into<String>) -> Self {
         self.impersonated_by = Some(value.into());
         self
@@ -46,6 +55,7 @@ impl MeBuilder {
     /// - [`workspaces`](MeBuilder::workspaces)
     pub fn build(self) -> Result<Me, BuildError> {
         Ok(Me {
+            browser_analytics: self.browser_analytics,
             impersonated_by: self.impersonated_by,
             user: self.user.ok_or_else(|| BuildError::missing_field("user"))?,
             workspaces: self

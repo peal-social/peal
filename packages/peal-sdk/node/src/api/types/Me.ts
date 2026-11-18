@@ -3,6 +3,7 @@
 import * as Peal from "../index.js";
 
 export interface Me {
+    browserAnalytics?: (Peal.BrowserAnalytics | null) | undefined;
     impersonatedBy: string | null;
     user: Me.User;
     workspaces: Peal.Membership[];

@@ -29,11 +29,13 @@ const publicTag = "system";
 /**
  * Groups whose every operation refuses API keys and OAuth clients: the
  * account's export and deletion, its connected applications, deleting a
- * workspace, and ordering, cancelling or withdrawing from a plan.
+ * workspace, ordering, cancelling or withdrawing from a plan, and the web
+ * app's measurement consent.
  */
 const ownSessionTags = new Set([
   "account",
   "billingActions",
+  "browserAnalytics",
   "connectedApps",
   "workspaces",
 ]);

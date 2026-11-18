@@ -9,6 +9,12 @@ use Peal\Core\Types\ArrayType;
 class Me extends JsonSerializableType
 {
     /**
+     * @var ?BrowserAnalytics $browserAnalytics
+     */
+    #[JsonProperty('browserAnalytics')]
+    public ?BrowserAnalytics $browserAnalytics;
+
+    /**
      * @var ?string $impersonatedBy
      */
     #[JsonProperty('impersonatedBy')]
@@ -30,12 +36,14 @@ class Me extends JsonSerializableType
      * @param array{
      *   user: MeUser,
      *   workspaces: array<Membership>,
+     *   browserAnalytics?: ?BrowserAnalytics,
      *   impersonatedBy?: ?string,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
+        $this->browserAnalytics = $values['browserAnalytics'] ?? null;
         $this->impersonatedBy = $values['impersonatedBy'] ?? null;
         $this->user = $values['user'];
         $this->workspaces = $values['workspaces'];

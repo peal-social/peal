@@ -9,6 +9,7 @@ import {
 import { ApiKeySchema } from "./api-keys.ts";
 import { Authentication } from "./authentication.ts";
 import { BillingUnavailable } from "./billing-unavailable.ts";
+import { BrowserAnalyticsChoiceSchema } from "./browser-analytics.ts";
 import { ConnectedAppSchema } from "./connected-apps.ts";
 import { DeletionIncomplete } from "./deletion-incomplete.ts";
 import { Forbidden } from "./forbidden.ts";
@@ -33,6 +34,13 @@ const nullable = Schema.NullOr;
 // password hash, session token, API key or channel token.
 
 const ExportedUserSchema = Schema.Struct({
+  // Whether the person allows the web app to link what they do in it to
+  // their account and to record their sessions, and when they chose;
+  // null until they chose.
+  browserAnalyticsConsent: Schema.optionalKey(
+    nullable(BrowserAnalyticsChoiceSchema)
+  ),
+  browserAnalyticsConsentAt: Schema.optionalKey(nullable(instant)),
   createdAt: instant,
   email: Schema.String,
   emailVerified: Schema.Boolean,

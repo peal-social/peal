@@ -10,26 +10,223 @@ import (
 )
 
 var (
-	meFieldImpersonatedBy = big.NewInt(1 << 0)
-	meFieldUser           = big.NewInt(1 << 1)
-	meFieldWorkspaces     = big.NewInt(1 << 2)
+	browserAnalyticsFieldToken                = big.NewInt(1 << 0)
+	browserAnalyticsFieldEnvironment          = big.NewInt(1 << 1)
+	browserAnalyticsFieldConsent              = big.NewInt(1 << 2)
+	browserAnalyticsFieldDecidedAt            = big.NewInt(1 << 3)
+	browserAnalyticsFieldExcludedWorkspaceIDs = big.NewInt(1 << 4)
 )
 
-// meNullableFields maps the wire names of Me's nullable fields (required or optional) to their field bits.
-var meNullableFields = map[string]*big.Int{
-	"impersonatedBy": meFieldImpersonatedBy,
+// browserAnalyticsNullableFields maps the wire names of BrowserAnalytics's nullable fields (required or optional) to their field bits.
+var browserAnalyticsNullableFields = map[string]*big.Int{
+	"decidedAt": browserAnalyticsFieldDecidedAt,
 }
 
-type Me struct {
-	ImpersonatedBy *string       `json:"impersonatedBy,omitempty" url:"impersonatedBy,omitempty"`
-	User           *MeUser       `json:"user" url:"user"`
-	Workspaces     []*Membership `json:"workspaces" url:"workspaces"`
+type BrowserAnalytics struct {
+	Token                string                  `json:"token" url:"token"`
+	Environment          string                  `json:"environment" url:"environment"`
+	Consent              BrowserAnalyticsConsent `json:"consent" url:"consent"`
+	DecidedAt            *string                 `json:"decidedAt,omitempty" url:"decidedAt,omitempty"`
+	ExcludedWorkspaceIDs []string                `json:"excludedWorkspaceIds" url:"excludedWorkspaceIds"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
+}
+
+func (b *BrowserAnalytics) GetToken() string {
+	if b == nil {
+		return ""
+	}
+	return b.Token
+}
+
+func (b *BrowserAnalytics) GetEnvironment() string {
+	if b == nil {
+		return ""
+	}
+	return b.Environment
+}
+
+func (b *BrowserAnalytics) GetConsent() BrowserAnalyticsConsent {
+	if b == nil {
+		return ""
+	}
+	return b.Consent
+}
+
+func (b *BrowserAnalytics) GetDecidedAt() *string {
+	if b == nil {
+		return nil
+	}
+	return b.DecidedAt
+}
+
+func (b *BrowserAnalytics) GetExcludedWorkspaceIDs() []string {
+	if b == nil {
+		return nil
+	}
+	return b.ExcludedWorkspaceIDs
+}
+
+func (b *BrowserAnalytics) GetExtraProperties() map[string]interface{} {
+	if b == nil {
+		return nil
+	}
+	return b.extraProperties
+}
+
+func (b *BrowserAnalytics) require(field *big.Int) {
+	next := new(big.Int)
+	if b.explicitFields != nil {
+		next.Set(b.explicitFields)
+	}
+	next.Or(next, field)
+	b.explicitFields = next
+}
+
+// SetToken sets the Token field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BrowserAnalytics) SetToken(token string) {
+	b.Token = token
+	b.require(browserAnalyticsFieldToken)
+}
+
+// SetEnvironment sets the Environment field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BrowserAnalytics) SetEnvironment(environment string) {
+	b.Environment = environment
+	b.require(browserAnalyticsFieldEnvironment)
+}
+
+// SetConsent sets the Consent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BrowserAnalytics) SetConsent(consent BrowserAnalyticsConsent) {
+	b.Consent = consent
+	b.require(browserAnalyticsFieldConsent)
+}
+
+// SetDecidedAt sets the DecidedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BrowserAnalytics) SetDecidedAt(decidedAt *string) {
+	b.DecidedAt = decidedAt
+	b.require(browserAnalyticsFieldDecidedAt)
+}
+
+// SetExcludedWorkspaceIDs sets the ExcludedWorkspaceIDs field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BrowserAnalytics) SetExcludedWorkspaceIDs(excludedWorkspaceIDs []string) {
+	b.ExcludedWorkspaceIDs = excludedWorkspaceIDs
+	b.require(browserAnalyticsFieldExcludedWorkspaceIDs)
+}
+
+func (b *BrowserAnalytics) UnmarshalJSON(data []byte) error {
+	type unmarshaler BrowserAnalytics
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*b = BrowserAnalytics(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *b)
+	if err != nil {
+		return err
+	}
+	b.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, browserAnalyticsNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		b.require(presentFields)
+	}
+	b.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (b *BrowserAnalytics) MarshalJSON() ([]byte, error) {
+	type embed BrowserAnalytics
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*b),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (b *BrowserAnalytics) String() string {
+	if b == nil {
+		return "<nil>"
+	}
+	if len(b.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(b); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", b)
+}
+
+type BrowserAnalyticsConsent string
+
+const (
+	BrowserAnalyticsConsentUndecided BrowserAnalyticsConsent = "undecided"
+	BrowserAnalyticsConsentGranted   BrowserAnalyticsConsent = "granted"
+	BrowserAnalyticsConsentRefused   BrowserAnalyticsConsent = "refused"
+)
+
+func NewBrowserAnalyticsConsentFromString(s string) (BrowserAnalyticsConsent, error) {
+	switch s {
+	case "undecided":
+		return BrowserAnalyticsConsentUndecided, nil
+	case "granted":
+		return BrowserAnalyticsConsentGranted, nil
+	case "refused":
+		return BrowserAnalyticsConsentRefused, nil
+	}
+	var t BrowserAnalyticsConsent
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (b BrowserAnalyticsConsent) Ptr() *BrowserAnalyticsConsent {
+	return &b
+}
+
+var (
+	meFieldBrowserAnalytics = big.NewInt(1 << 0)
+	meFieldImpersonatedBy   = big.NewInt(1 << 1)
+	meFieldUser             = big.NewInt(1 << 2)
+	meFieldWorkspaces       = big.NewInt(1 << 3)
+)
+
+// meNullableFields maps the wire names of Me's nullable fields (required or optional) to their field bits.
+var meNullableFields = map[string]*big.Int{
+	"browserAnalytics": meFieldBrowserAnalytics,
+	"impersonatedBy":   meFieldImpersonatedBy,
+}
+
+type Me struct {
+	BrowserAnalytics *BrowserAnalytics `json:"browserAnalytics,omitempty" url:"browserAnalytics,omitempty"`
+	ImpersonatedBy   *string           `json:"impersonatedBy,omitempty" url:"impersonatedBy,omitempty"`
+	User             *MeUser           `json:"user" url:"user"`
+	Workspaces       []*Membership     `json:"workspaces" url:"workspaces"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (m *Me) GetBrowserAnalytics() *BrowserAnalytics {
+	if m == nil {
+		return nil
+	}
+	return m.BrowserAnalytics
 }
 
 func (m *Me) GetImpersonatedBy() *string {
@@ -67,6 +264,13 @@ func (m *Me) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	m.explicitFields = next
+}
+
+// SetBrowserAnalytics sets the BrowserAnalytics field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *Me) SetBrowserAnalytics(browserAnalytics *BrowserAnalytics) {
+	m.BrowserAnalytics = browserAnalytics
+	m.require(meFieldBrowserAnalytics)
 }
 
 // SetImpersonatedBy sets the ImpersonatedBy field and marks it as non-optional;

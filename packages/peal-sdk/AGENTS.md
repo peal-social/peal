@@ -5,7 +5,7 @@
   operations a bearer token can call (an API key or an OAuth access token),
   and the health checks, with the schemas they use. It leaves out the groups
   that answer only the person in their own session (`ownSession`: `account`,
-  `connectedApps`, `workspaces`); add a group like those to `ownSessionTags`.
+  `browserAnalytics`, `connectedApps`, `workspaces`); add a group like those to `ownSessionTags`.
   It names Effect's encoding of non-finite numbers `NonFiniteNumber`, and
   stops on any other enum inline in an `anyOf` or `oneOf`: give it a schema
   of its own in the contract. It writes each tagged union (Effect's `anyOf`

@@ -11,6 +11,9 @@ public record Me : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [JsonPropertyName("browserAnalytics")]
+    public BrowserAnalytics? BrowserAnalytics { get; set; }
+
     [JsonPropertyName("impersonatedBy")]
     public string? ImpersonatedBy { get; set; }
 
