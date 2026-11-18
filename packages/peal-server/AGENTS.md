@@ -477,12 +477,15 @@ and no socket, for tests.
   `GET /api/me` answers `browserAnalytics`, null without it, in a session
   staff act in, through an application and for an excluded person; else
   the token, the environment, the person's choice (`undecided` once older
-  than 183 days) and their excluded workspaces. A session request's
-  `x-posthog-session-id`, when a UUID, joins that person's events of the
-  request as `$session_id` (`AnalyticsActor.sessionId`), never a key's,
-  an application's, an impersonated one's or a service identity's. An
-  erasure deletes the persons' recordings too (`delete_recordings`), and
-  counts as done only when PostHog says they are queued.
+  than 183 days) and their excluded workspaces. `PEAL_POSTHOG_WEB=on`
+  requires a project token (`phc_`), which browsers send. A session
+  request's `x-posthog-session-id`, when a UUID, joins that person's
+  events of the request as `$session_id` (`AnalyticsActor.sessionId`)
+  only while the web app is measured and their consent stands
+  (`BrowserSessions`), never a key's, an application's, an impersonated
+  one's or a service identity's. An erasure deletes the persons'
+  recordings too (`delete_recordings`), and counts as done once PostHog
+  says they are queued, or that it found nobody (`persons_found: 0`).
 - Tests use `ProductAnalytics.none`, or `recordedAnalytics`
   (`#test/shared/recorded-analytics.ts`); through the whole server,
   `appWithPostHog` (`#test/shared/fake-posthog.ts`) reads what a fake
