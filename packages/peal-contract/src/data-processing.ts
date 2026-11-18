@@ -881,8 +881,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
   {
     applies: "always",
     data: {
-      en: "The id of each deleted account and workspace, and the time, kept apart from the database. No name, address or content",
-      fr: "L’identifiant de chaque compte et espace de travail supprimé, et la date, conservés à l’écart de la base de données. Ni nom, ni adresse, ni contenu",
+      en: "The id of each deleted account and workspace, and the time, kept apart from the database; and, while the deletion of their records at the product analytics provider waits to be made, the same ids in the database’s job tables. No name, address or content",
+      fr: "L’identifiant de chaque compte et espace de travail supprimé, et la date, conservés à l’écart de la base de données ; et, tant que la suppression de leurs fiches chez le prestataire de mesure d’usage reste à faire, les mêmes identifiants dans les tables de tâches de la base de données. Ni nom, ni adresse, ni contenu",
     },
     id: "erasureLedger",
     legalBasis: {
@@ -899,8 +899,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
       fr: "Appliquer de nouveau les suppressions lorsqu’une sauvegarde est restaurée",
     },
     retention: {
-      en: `${p.erasureLedger.days} days from each deletion, a little longer than the backups keep deleted data`,
-      fr: `${p.erasureLedger.days} jours à compter de chaque suppression, un peu plus longtemps que les sauvegardes ne gardent les données supprimées`,
+      en: `${p.erasureLedger.days} days from each deletion, a little longer than the backups keep deleted data. A deletion at the product analytics provider still to be made keeps the erased ids in the database’s job tables until it is done, then up to 30 days (PEAL_CLUSTER_RETENTION)`,
+      fr: `${p.erasureLedger.days} jours à compter de chaque suppression, un peu plus longtemps que les sauvegardes ne gardent les données supprimées. Une suppression encore à faire chez le prestataire de mesure d’usage garde les identifiants effacés dans les tables de tâches de la base de données jusqu’à ce qu’elle soit faite, puis jusqu’à 30 jours (PEAL_CLUSTER_RETENTION)`,
     },
     source: {
       en: "Your deletion of an account or a workspace",
