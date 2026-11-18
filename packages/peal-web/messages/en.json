@@ -4986,5 +4986,23 @@
       "toCheckNote": "Peal cannot tell whether it reached the site: look there, and send it again only if it is not.",
       "toCheckSeveral": "The site has another article of this title, which Peal cannot tell from this one, so it never sends this one again on its own. Look on the site: if this article is there, it is live, and you can leave it; if it is not, rename or delete the other article there, then send it again."
     }
+  },
+  "Measurement": {
+    "card": {
+      "title": "Help us improve Peal",
+      "text": "Peal counts the pages people open without knowing who they are, and stores nothing in your browser to do it. If you allow it, Peal also links what you do in the app to your account and records your sessions, so we can see where a step fails. Recordings hide every text, field and image, so they show the layout and your clicks but not what you write or read. You can change your mind at any time on your account page.",
+      "allow": "Allow",
+      "refuse": "Don’t allow",
+      "privacy": "Privacy policy",
+      "failed": "Your choice couldn’t be saved. Try again."
+    },
+    "setting": {
+      "title": "Usage and session recordings",
+      "description": "Whether Peal links what you do in the app to your account and records your sessions. Peal counts pages without knowing who you are either way.",
+      "allowed": "Allowed on {date, date, long}.",
+      "refused": "Not allowed since {date, date, long}.",
+      "undecided": "Not chosen yet.",
+      "failed": "Your choice couldn’t be saved. Try again."
+    }
   }
 }

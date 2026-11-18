@@ -258,6 +258,13 @@ their workspaces under it.
   review).
 - **Settings** are rows: label and hint on the left, the control on the
   right, in cards grouped under a heading, with what cannot be undone last.
+- **Consent.** A question Peal must ask, such as whether the app may
+  link what someone does to their account and record their sessions, is
+  a card in the page's content, never a bar across the frame, a dialog or
+  anything that floats. Its two answers are two buttons of the same
+  variant and size (`outline`), side by side, so refusing is as easy as
+  accepting. The card leaves once answered, and the account page keeps
+  the answer, where it can be changed.
 - **The composer** writes one text with a tab per channel, counts each
   platform's limit, and shows a preview beside it.
 - **Hosted pages** (a connect link's page, which a partner's customers

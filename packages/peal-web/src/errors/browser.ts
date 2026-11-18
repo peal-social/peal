@@ -2,7 +2,8 @@ import type { ClientErrorKind, ClientErrorReport } from "peal-contract";
 
 import { releaseMeta } from "./release-meta.ts";
 import { reportOf } from "./report.ts";
-import { makeReporter } from "./reporter.ts";
+import { makeReportChannel } from "./reporter.ts";
+import type { ReportListener } from "./reporter.ts";
 
 // The release the page was served by, read before React hydrates: an error
 // page that replaces the whole document no longer has the tag.
@@ -30,7 +31,15 @@ const post = (report: ClientErrorReport): void => {
   });
 };
 
-const report = makeReporter(post);
+const channel = makeReportChannel(post);
+
+/**
+ * Hands each report the intake is sent to `listener` too, until the
+ * function it answers is called: how errors reach the web app's
+ * measurement, already redacted.
+ */
+export const onReported = (listener: ReportListener): (() => void) =>
+  channel.listen(listener);
 
 /** Reports an error the browser met to the server. */
 export const reportBrowserError = (
@@ -42,7 +51,7 @@ export const reportBrowserError = (
     rememberRelease();
   }
 
-  report(
+  channel.report(
     reportOf(cause, {
       kind,
       page: window.location.pathname,

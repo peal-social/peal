@@ -38,6 +38,7 @@
     "next-intl": "4.15.1",
     "peal-contract": "workspace:*",
     "peal-ui": "workspace:*",
+    "posthog-js": "1.451.1",
     "qrcode.react": "4.2.0",
     "react": "19.3.1",
     "react-day-picker": "10.0.2",
