@@ -20,6 +20,7 @@ import type { OutgoingEvent } from "#shared/application/analytics-delivery.ts";
 import { Ids } from "#shared/application/ids.ts";
 import { countEvents } from "#shared/application/product-analytics.ts";
 import type { EventOutcome } from "#shared/application/product-analytics.ts";
+import { AnalyticsTokenSchema } from "#shared/domain/product-event.ts";
 import type { SafeProperties } from "#shared/domain/product-event.ts";
 import { PostHogDeletionRefused } from "#shared/infrastructure/posthog-deletion-refused.ts";
 import type { PostHogSettings } from "#shared/infrastructure/posthog-settings.ts";
@@ -83,10 +84,14 @@ const AcceptedSchema = Schema.Struct({
 
 const decodeAccepted = Schema.decodeUnknownOption(AcceptedSchema);
 
-// PostHog's label for a refusal, never more of its answer.
+// PostHog's label for a refusal, never more of its answer: a code such as
+// `invalid_token`, one word of letters, digits and `_.:/-`. A sentence,
+// which could quote what was sent, is left out.
 const RefusalSchema = Schema.Struct({
   error: Schema.optionalKey(Schema.String),
 });
+
+const decodeLabel = Schema.decodeUnknownOption(AnalyticsTokenSchema);
 
 const decodeRefusal = Schema.decodeUnknownOption(RefusalSchema);
 
@@ -232,7 +237,11 @@ export const postHogDelivery = (
               Option.some(response.status),
               body.pipe(
                 Option.flatMap(decodeRefusal),
-                Option.flatMap(({ error }) => Option.fromUndefinedOr(error))
+                Option.flatMap(({ error }) => decodeLabel(error)),
+                // Never the token, should PostHog echo it.
+                Option.filter(
+                  (label) => !label.includes(Redacted.value(settings.key))
+                )
               )
             );
           }

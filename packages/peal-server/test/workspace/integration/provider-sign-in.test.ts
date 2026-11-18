@@ -9,6 +9,7 @@ import { SqlClient } from "effect/sql";
 import { CaptchaSchema } from "peal-contract";
 
 import { mcpResource, registeredClient } from "#test/app/mcp-support.ts";
+import { eventsMatching, withFakePostHog } from "#test/shared/fake-posthog.ts";
 import {
   appWithGoogle,
   appWithOidc,
@@ -837,6 +838,36 @@ layer(
 
       assert.isNull(finished.error);
       assert.isTrue(setsSession(finished.reply));
+    })
+  );
+});
+
+// Product analytics hears how an account was made: a provider's sign-up
+// by the provider's id.
+layer(Layer.mergeAll(withFakePostHog(appWithOidc), MigratedSqlLive), {
+  ...settings,
+  excludeTestServices: true,
+})("product analytics of a provider's sign-up", (it) => {
+  it.effect("tells a sign-up through the OpenID Connect provider as oidc", () =>
+    Effect.gen(function* oidcSignUp() {
+      const email = newEmail("analytics-oidc");
+
+      const finished = yield* providerSignIn(verified(email), {
+        body: signUpPage("fr"),
+      });
+
+      assert.isNull(finished.error);
+
+      const account = yield* accountOf(email);
+      const userId = account?.id ?? "";
+
+      const [signedUp] = yield* eventsMatching(
+        ({ distinct_id: distinctId, event }) =>
+          event === "user_signed_up" && distinctId === userId
+      );
+
+      assert.strictEqual(signedUp?.properties["method"], "oidc");
+      assert.strictEqual(signedUp?.properties["locale"], "fr");
     })
   );
 });
