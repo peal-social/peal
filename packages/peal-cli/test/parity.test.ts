@@ -100,6 +100,9 @@ const coverage = {
   "assistant.removeTextProvider": by("assistant text-provider clear"),
   "assistant.setImageProvider": by("assistant image-provider set"),
   "assistant.setTextProvider": by("assistant text-provider set"),
+  "browserAnalytics.setConsent": exempt(
+    "The web app's measurement consent is the person's, in their own session in the browser it measures: the server refuses an OAuth token, the command line's included."
+  ),
   "assistant.status": exempt(
     "The writing assistant serves the web app's composer; an agent writes its own text."
   ),

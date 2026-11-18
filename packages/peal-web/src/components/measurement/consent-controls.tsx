@@ -4,6 +4,7 @@ import type { BrowserAnalyticsChoice } from "peal-contract";
 import { useState } from "react";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { asksConsent } from "#measurement/asks.ts";
 
 import { ConsentCardView, ConsentSettingView } from "./consent-views.tsx";
 import { useMeasurementConsent } from "./measurement.tsx";
@@ -49,12 +50,7 @@ export const ConsentCard = ({
   const hydrated = useHydrated();
   const choosing = useChoosing(measurement);
 
-  if (
-    !hydrated ||
-    measurement === null ||
-    measurement.untracked ||
-    measurement.consent !== "undecided"
-  ) {
+  if (!hydrated || measurement === null || !asksConsent(measurement)) {
     return null;
   }
 
