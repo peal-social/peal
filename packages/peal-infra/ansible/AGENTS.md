@@ -75,8 +75,10 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   as the server refuses to start with one half of an app alone: a new
   platform's pair joins that list. An id may require several:
   `PEAL_POSTHOG_PROJECT_ID` requires `PEAL_POSTHOG_KEY` and
-  `PEAL_POSTHOG_PERSONAL_API_KEY`, so a server that names its PostHog
-  project captures only where it can also delete erased persons there;
+  `PEAL_POSTHOG_PERSONAL_API_KEY`, and `PEAL_POSTHOG_KEY` among the
+  credentials requires the project's id in turn (the role's assertion,
+  `peal_runtime_posthog_on`), so Peal's servers capture only where they
+  can also delete erased persons there;
   `PEAL_POSTHOG_ENVIRONMENT` is `peal_environment`.
 - Containers publish ports on 127.0.0.1 only, and the tunnel reaches them
   there; Docker's own rules would otherwise bypass ufw.

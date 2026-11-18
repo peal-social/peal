@@ -49,13 +49,22 @@ peal_runtime_host_settings: >-
 # #alerts-sandbox) is among its credentials: in the vault, or found by name
 # in credentials.env on the server. Grafana refuses to start on a contact
 # point whose setting is missing, so the file follows the credentials.
-peal_runtime_optional_credentials: [SLACK_ALERTS_WEBHOOK_URL]
-peal_runtime_slack_alerts: >-
-  {{ 'SLACK_ALERTS_WEBHOOK_URL'
-     in ((peal_credentials | dict2items | rejectattr('value', 'equalto', '') | rejectattr('value', 'none')
-          | map(attribute='key') | list)
-         if peal_credentials is defined
-         else (peal_runtime_optional_set.stdout_lines | default([]))) }}
+peal_runtime_optional_credentials: [SLACK_ALERTS_WEBHOOK_URL, PEAL_POSTHOG_KEY]
+# The optional credentials given a value: in the vault, or found by name in
+# credentials.env on the server.
+peal_runtime_optional_given: >-
+  {{ (peal_credentials | dict2items | rejectattr('value', 'equalto', '') | rejectattr('value', 'none')
+      | map(attribute='key') | list)
+     if peal_credentials is defined
+     else (peal_runtime_optional_set.stdout_lines | default([])) }}
+peal_runtime_slack_alerts: "{{ 'SLACK_ALERTS_WEBHOOK_URL' in peal_runtime_optional_given }}"
+
+# Product analytics on Peal's servers only with its erasure: PostHog's
+# project token among the credentials requires PEAL_POSTHOG_PROJECT_ID in
+# peal_settings, which requires the personal key in turn (below), so a
+# server never captures what it could not delete. The software takes a
+# token alone, for a self-hoster who deletes by hand.
+peal_runtime_posthog_on: "{{ 'PEAL_POSTHOG_KEY' in peal_runtime_optional_given }}"
 
 # The credentials this server needs, by name: peal_required_credentials, the
 # heartbeat's token when Grafana sends one, the docs' assistant's key
