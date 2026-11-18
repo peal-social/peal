@@ -169,11 +169,16 @@ const asPerson = async (browser: {
 // from one consent to the next.
 const idsOf = (event: Received): readonly string[] =>
   [
-    event.distinctId,
-    textOf(event.properties["$device_id"]),
-    textOf(event.properties["$session_id"]),
-    textOf(event.properties["$pageview_id"]),
-  ].filter((id) => id !== "");
+    "$device_id",
+    "$pageview_id",
+    "$prev_pageview_id",
+    "$session_id",
+    "$window_id",
+  ].flatMap((key) => {
+    const id = textOf(event.properties[key]);
+
+    return id === "" || id === event.distinctId ? [] : [id];
+  });
 
 // The headers the relay lets reach PostHog, whatever the browser sent:
 // the request's type, and what the relay's own fetch adds.
@@ -460,37 +465,37 @@ describe("the web app's measurement", { serial: true }, () => {
       "a page view of a full load after withdrawing"
     );
 
-    const browserEvents = received().filter(fromBrowser);
+    // Each id the events go by (the member's, then each anonymous one, a
+    // new one per page load and per consent change), with the other ids
+    // its events carry: none of those may appear under two of them. The
+    // SDK sends in batches, so the events are told apart by whom they are
+    // about, never by when they came.
+    const byWhom = new Map<string, Set<string>>();
 
-    const named = browserEvents.filter(
-      (event) => event.distinctId === memberId
-    );
+    for (const event of received().filter(fromBrowser)) {
+      const ids = byWhom.get(event.distinctId) ?? new Set<string>();
 
-    const unnamed = (from: number, to: number) =>
-      new Set(
-        browserEvents
-          .filter(
-            (event) =>
-              event.distinctId !== memberId &&
-              event.line >= from &&
-              event.line < to
-          )
-          .flatMap(idsOf)
-      );
+      for (const id of idsOf(event)) {
+        ids.add(id);
+      }
 
-    const before = unnamed(0, allowedAt);
-    const after = unnamed(withdrawnAt, Number.POSITIVE_INFINITY);
-
-    expect(named.length).toBeGreaterThan(0);
-    expect(before.size).toBeGreaterThan(0);
-    expect(after.size).toBeGreaterThan(0);
-
-    for (const id of named.flatMap(idsOf)) {
-      expect(before.has(id) || after.has(id)).toBeFalsy();
+      byWhom.set(event.distinctId, ids);
     }
 
-    for (const id of before) {
-      expect(after.has(id)).toBeFalsy();
+    const owners = new Map<string, string>();
+
+    for (const [whom, ids] of byWhom) {
+      for (const id of ids) {
+        const owner = owners.get(id) ?? whom;
+
+        expect({ id, owner }).toEqual({ id, owner: whom });
+        owners.set(id, whom);
+      }
     }
+
+    expect(byWhom.has(memberId)).toBeTruthy();
+    expect(byWhom.size).toBeGreaterThan(2);
+    // No property names the member but their own events' id.
+    expect(owners.has(memberId)).toBeFalsy();
   });
 });
