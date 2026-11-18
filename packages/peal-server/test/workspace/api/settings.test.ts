@@ -727,6 +727,9 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
       Effect.gen(function* deletes() {
         const client = yield* as(user());
         const params = { workspaceId: harbour };
+        // What this test asks: others of the block delete Harbour too.
+        const earlier = (yield* calls).length;
+        const since = calls.pipe(Effect.map((all) => all.slice(earlier)));
 
         assert.strictEqual(
           yield* failureOf(
@@ -734,8 +737,8 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           ),
           "WorkspaceNameMismatch"
         );
-        assert.notInclude(yield* calls, `eraseWorkspace:${harbour}`);
-        assert.notInclude(yield* calls, `forget:|${harbour}`);
+        assert.notInclude(yield* since, `eraseWorkspace:${harbour}`);
+        assert.notInclude(yield* since, `forget:|${harbour}`);
 
         yield* client.workspaces.delete({
           params,
@@ -744,7 +747,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
         yield* settle;
 
-        const done = yield* calls;
+        const done = yield* since;
 
         // Its service identity's deletion at PostHog starts in the
         // erasure's transaction, which commits it, and nothing more is sent

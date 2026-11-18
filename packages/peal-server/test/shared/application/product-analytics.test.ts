@@ -5,6 +5,7 @@ import { AnalyticsActor } from "#shared/application/analytics-actor.ts";
 import { AnalyticsDelivery } from "#shared/application/analytics-delivery.ts";
 import { AnalyticsErasures } from "#shared/application/analytics-erasures.ts";
 import { AnalyticsScope } from "#shared/application/analytics-scope.ts";
+import { DatabaseError } from "#shared/application/database-error.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import type { Captured } from "#shared/application/product-analytics.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -314,7 +315,13 @@ describe("product analytics", () => {
           assert.deepStrictEqual(yield* sentEvents, []);
         })
     );
+  });
+});
 
+// What an erasure forgets stays forgotten for the layer: each case has
+// a layer of its own, so no other case runs after it on that state.
+describe("product analytics of an erasure", () => {
+  layer(recordedAnalytics)((it) => {
     it.effect(
       "starts an erasure's durable deletion, and deletes at once on demand",
       () =>
@@ -344,8 +351,9 @@ describe("product analytics", () => {
           assert.deepStrictEqual(yield* forgotten, [excludedId]);
         })
     );
+  });
 
-    // Last in the block: what is forgotten stays forgotten.
+  layer(recordedAnalytics)((it) => {
     it.effect(
       "forgets an erased user and workspace, then sends nothing of them",
       () =>
@@ -369,6 +377,33 @@ describe("product analytics", () => {
           // Forgetting deletes nothing at PostHog: the erasure's job does.
           assert.deepStrictEqual(yield* forgotten, []);
         })
+    );
+  });
+});
+
+describe("product analytics over a database that refuses a job", () => {
+  layer(
+    ProductAnalytics.layer.pipe(
+      Layer.provide(AnalyticsScope.layerTest),
+      Layer.provide(
+        Layer.succeed(AnalyticsErasures, {
+          start: () => Effect.fail(new DatabaseError({ cause: "synthetic" })),
+        })
+      ),
+      Layer.provideMerge(recordedDelivery)
+    )
+  )((it) => {
+    it.effect("fails the erasure, to be tried again, and logs nothing", () =>
+      Effect.gen(function* refused() {
+        const analytics = yield* ProductAnalytics;
+
+        const failure = yield* analytics
+          .erase("erasure-1", { userIds: [userId], workspaceIds: [] })
+          .pipe(Effect.flip);
+
+        assert.strictEqual(failure._tag, "DatabaseError");
+        assert.deepStrictEqual(yield* forgotten, []);
+      })
     );
   });
 });
@@ -420,11 +455,7 @@ describe("product analytics over a delivery that dies", () => {
   layer(
     ProductAnalytics.layer.pipe(
       Layer.provide(AnalyticsScope.layerTest),
-      Layer.provide(
-        Layer.succeed(AnalyticsErasures, {
-          start: () => Effect.die("start died"),
-        })
-      ),
+      Layer.provide(AnalyticsErasures.none),
       Layer.provide(
         Layer.succeed(
           AnalyticsDelivery,
@@ -445,10 +476,6 @@ describe("product analytics over a delivery that dies", () => {
         yield* capture({ actor: asUser });
         yield* analytics.markInternal(userId);
         yield* analytics.forget({ userIds: [userId], workspaceIds: [] });
-        yield* analytics.erase("erasure-1", {
-          userIds: [userId],
-          workspaceIds: [],
-        });
         yield* analytics.eraseNow({ userIds: [userId], workspaceIds: [] });
       })
     );

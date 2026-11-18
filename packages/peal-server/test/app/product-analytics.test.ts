@@ -248,9 +248,25 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
     it.effect("sends only properties that may leave", () =>
       Effect.gen(function* safe() {
+        // Events of its own: a sign-up, a workspace and a write in it.
+        const person = yield* signedUpUnconfirmed("analytics-safe");
+        const workspaceId = yield* workspaceOf(person, "Safe");
+
+        yield* apiKeyOf(person, workspaceId, ["post:read"]);
+
+        yield* eventsMatching(
+          (event) =>
+            named("api_operation", person.id)(event) &&
+            event.properties["workspace_id"] === workspaceId
+        );
+
         const sent = yield* capturedEvents;
 
-        assert.isAbove(sent.length, 0);
+        assert.isAbove(
+          sent.filter(({ distinct_id: distinctId }) => distinctId === person.id)
+            .length,
+          2
+        );
         assert.isTrue(
           sent.every(({ properties }) => isSafeProperties(properties))
         );

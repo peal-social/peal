@@ -8,6 +8,7 @@ import {
 
 import { AnalyticsDelivery } from "#shared/application/analytics-delivery.ts";
 import { AnalyticsErasures } from "#shared/application/analytics-erasures.ts";
+import { DatabaseError } from "#shared/application/database-error.ts";
 import {
   distinctIdsOf,
   erasureGivenUp,
@@ -56,6 +57,12 @@ export const forgetRetryDelays: readonly Duration.Duration[] = [
   Duration.hours(24),
 ];
 
+/** The activity of attempt `number`: persisted contract. */
+export const attemptName = (number: number) => `attempt/${number}`;
+
+/** The durable clock before attempt `number + 1`: persisted contract. */
+export const retryClockName = (number: number) => `retry/${number}`;
+
 // Within an attempt, a blip of the network is tried again at once.
 const quickRetry = { schedule: Schedule.exponential("500 millis"), times: 2 };
 
@@ -88,7 +95,7 @@ const attempt = (erased: Erased, number: number) =>
         )
       );
     }),
-    name: `attempt/${number}`,
+    name: attemptName(number),
     success: ForgetResultSchema,
   });
 
@@ -114,7 +121,7 @@ export const ForgetAnalyticsV1Live = ForgetAnalyticsV1.toLayer(
       yield* DurableClock.sleep({
         duration: delay.value,
         inMemoryThreshold: Duration.zero,
-        name: `retry/${number}`,
+        name: retryClockName(number),
       });
 
       number += 1;
@@ -141,7 +148,10 @@ export const WorkflowAnalyticsErasures = Layer.effect(
           { detached: true, discard: true }
         ).pipe(
           Effect.provideService(WorkflowEngine.WorkflowEngine, engine),
-          Effect.asVoid
+          Effect.asVoid,
+          // The start is a row in the erasure's transaction: a database
+          // that refuses it fails the erasure, which is tried again.
+          Effect.mapError((cause) => new DatabaseError({ cause }))
         ),
     });
   })

@@ -570,3 +570,37 @@ describe("the PostHog delivery's logs", () => {
     }
   );
 });
+
+describe("a delivery without a key", () => {
+  it.effect(
+    "leaves a deletion still asked of it for the operator, logged",
+    () => {
+      const lines: string[] = [];
+
+      return AnalyticsDelivery.use((delivery) =>
+        delivery.forget(["user-1", "workspace:workspace-1"])
+      ).pipe(
+        Effect.tap((outcome) =>
+          Effect.sync(() => {
+            const written = lines.join("\n");
+
+            assert.strictEqual(outcome, "manual");
+            assert.include(written, "peal.erasure.analytics_manual");
+            assert.include(written, "workspace:workspace-1");
+          })
+        ),
+        Effect.provide(AnalyticsDelivery.none),
+        Effect.provide(
+          Logger.layer([
+            Logger.make(({ fiber, message }) => {
+              lines.push(
+                JSON.stringify(message),
+                JSON.stringify(fiber.getRef(References.CurrentLogAnnotations))
+              );
+            }),
+          ])
+        )
+      );
+    }
+  );
+});

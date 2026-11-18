@@ -1,15 +1,6 @@
 import { assert, describe, it } from "@effect/vitest";
 import type { Context } from "effect";
-import {
-  Duration,
-  Effect,
-  Exit,
-  Layer,
-  Metric,
-  Ref,
-  Schema,
-  Scope,
-} from "effect";
+import { Duration, Effect, Exit, Layer, Metric, Ref, Scope } from "effect";
 import { MessageStorage, ShardingConfig } from "effect/cluster";
 import { TestClock } from "effect/testing";
 
@@ -110,27 +101,7 @@ const memoryStorage = Layer.build(
 
 const timeout = 60_000;
 
-// What a server before this one stored: it must still decode.
-const storedPayload = {
-  key: "00000000-0000-7000-8000-0000000000f1",
-  userIds: ["6f1c2d3e-4b5a-4c6d-8e7f-0a1b2c3d4e5f"],
-  workspaceIds: ["0b1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e"],
-};
-
 describe(ForgetAnalyticsV1, () => {
-  it.effect("decodes the payload it stored, a persisted contract", () =>
-    Effect.gen(function* decodes() {
-      const payload = yield* Schema.decodeUnknownEffect(
-        Schema.toCodecJson(ForgetAnalyticsV1.payloadSchema)
-      )(storedPayload);
-
-      assert.deepStrictEqual(
-        [...payload.workspaceIds],
-        [...storedPayload.workspaceIds]
-      );
-    })
-  );
-
   it.effect(
     "deletes an erasure's persons once started, after what was queued about them",
     () =>

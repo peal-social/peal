@@ -23,6 +23,7 @@ import { AnalyticsActor } from "./analytics-actor.ts";
 import { AnalyticsDelivery } from "./analytics-delivery.ts";
 import { AnalyticsErasures } from "./analytics-erasures.ts";
 import { AnalyticsScope } from "./analytics-scope.ts";
+import type { DatabaseError } from "./database-error.ts";
 
 /**
  * Product analytics events, by what became of them: `queued` (handed to
@@ -302,10 +303,14 @@ export class ProductAnalytics extends Context.Service<
     readonly markInternal: (userId: UserId) => Effect.Effect<void>;
     /**
      * Starts the durable deletion of an erasure's persons at the
-     * provider, inside the erasure's transaction, so it commits with it.
-     * A start that fails is logged for the operator, and fails nothing.
+     * provider, inside the erasure's transaction, so it commits with it,
+     * or not at all: a start the database refuses fails the erasure, which
+     * is tried again, and nothing is left to delete by hand.
      */
-    readonly erase: (key: string, erased: Erased) => Effect.Effect<void>;
+    readonly erase: (
+      key: string,
+      erased: Erased
+    ) => Effect.Effect<void, DatabaseError>;
     /**
      * Nothing more is sent about these users and workspaces, in this
      * process: called once their erasure committed.
@@ -498,20 +503,7 @@ export class ProductAnalytics extends Context.Service<
 
       const erase = (key: string, erased: Erased) =>
         delivery.enabled && !nothingErased(erased)
-          ? erasures.start({ ...erased, key }).pipe(
-              Effect.catchCause((cause) =>
-                Effect.logError(
-                  "Could not start deleting an erasure's persons at PostHog: delete them there by hand",
-                  cause
-                ).pipe(
-                  Effect.andThen(countErasure("failed")),
-                  Effect.annotateLogs({
-                    distinctIds: distinctIdsOf(erased).join(","),
-                    "event.name": "peal.erasure.analytics_failed",
-                  })
-                )
-              )
-            )
+          ? erasures.start({ ...erased, key })
           : Effect.void;
 
       const eraseNow = (erased: Erased) =>

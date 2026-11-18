@@ -42,12 +42,25 @@ export class AnalyticsDelivery extends Context.Service<
     ) => Effect.Effect<ErasureOutcome, AnalyticsErasureFailed>;
   }
 >()("peal-server/shared/application/AnalyticsDelivery") {
-  /** Nothing is sent: the default of a server without a key, and of tests. */
+  /**
+   * Nothing is sent: the default of a server without a key, and of tests.
+   * A deletion still asked of it (one a server started before its key was
+   * removed) is logged for the operator to make by hand, never dropped.
+   */
   static readonly none = Layer.succeed(
     AnalyticsDelivery,
     AnalyticsDelivery.of({
       enabled: false,
-      forget: () => Effect.succeed("deleted"),
+      forget: (distinctIds) =>
+        Effect.logWarning(
+          "An erasure's persons stay at PostHog without PEAL_POSTHOG_KEY: delete them there by hand"
+        ).pipe(
+          Effect.annotateLogs({
+            distinctIds: distinctIds.join(","),
+            "event.name": "peal.erasure.analytics_manual",
+          }),
+          Effect.as<ErasureOutcome>("manual")
+        ),
       purge: () => Effect.void,
       send: () => Effect.void,
     })

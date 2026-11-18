@@ -372,7 +372,11 @@ export const postHogDelivery = (
           );
 
           yield* countEvents("dropped", waiting.length - kept.length);
-          yield* Queue.offerAll(queue, kept);
+          // What no longer fits, should sends have filled the queue
+          // meanwhile, is dropped.
+          const refused = yield* Queue.offerAll(queue, kept);
+
+          yield* countEvents("dropped", refused.length);
           yield* posting.withPermits(1)(Effect.void);
         });
 

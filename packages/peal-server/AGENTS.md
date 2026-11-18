@@ -419,7 +419,7 @@ and no socket, for tests.
   which decides who an event is about (the person acting, from the
   caller or the request's `AnalyticsActor`, else the workspace's service
   identity `workspace:<id>`), leaves out what must not go (a session
-  staff act in, a user or a workspace `PEAL_POSTHOG_EXCLUDED_USERS` names,
+  staff act in, a user or a workspace `PEAL_POSTHOG_EXCLUDED_IDS` names,
   an account or workspace
   erased in this process), checks every property against
   `SafePropertiesSchema` and hands the event to `AnalyticsDelivery`: the
@@ -458,7 +458,11 @@ and no socket, for tests.
   `PEAL_POSTHOG_PERSONAL_API_KEY`, tried again after `forgetRetryDelays`
   across restarts, then given up (`peal.erasure.analytics_failed`,
   counted); without the key it logs their ids
-  (`peal.erasure.analytics_manual`) for the operator. `ReplayErasures`,
+  (`peal.erasure.analytics_manual`) for the operator, as it does with no
+  `PEAL_POSTHOG_KEY` at all, for a deletion started before the key was
+  removed. A start the database refuses fails the erasure (a
+  `DatabaseError`, tried again), so no deletion is left to make by hand
+  for an erasure that rolled back. `ReplayErasures`,
   a command, deletes at once and waits (`eraseNow`).
 - What comes from stored data (a Stripe event naming the member who once
   subscribed) is sent as the workspace's service identity
