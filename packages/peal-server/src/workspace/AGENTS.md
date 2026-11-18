@@ -249,6 +249,18 @@ The staff context follows these rules too. What the law has a host keep is in
   publication calls, and `publishing.quota_usage`, the server's daily
   units, names nobody: a bucket by LinkedIn member is a keyed digest
   (`Pseudonyms.ofPlatformMember`), and a day goes after a week.
+- Product analytics (the server guide's section): the activity journal's
+  adapter tells it of each change it keeps, metadata only, never for a
+  session staff act in; `as` in `security.ts` and `mcpAuthentication`
+  provide `AnalyticsActor`, and `StaffAccess` marks staff `internal`.
+  `CloseAccount`, `DeleteWorkspace` and `OffboardWorkspace` start the
+  deletion at PostHog (`ProductAnalytics.erase`, a durable job) inside the
+  erasure's transaction, so it commits with the erasure and survives a
+  restart, and forget the ids in the process once it committed;
+  `ReplayErasures` deletes at once and waits (`eraseNow`). What stays at PostHog: events other members
+  made in a deleted workspace keep its id, which then names nothing, and
+  the `workspace` and `billing_account` group rows (ids, a plan, dates),
+  as PostHog's API deletes no single group; they name nobody.
 - `AccountData` exports what is tied to the user, the posts they wrote in
   the workspaces they share (`exportAuthored`), and the content of the
   workspaces where they are the only member, with their analytics and

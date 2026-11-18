@@ -37,6 +37,7 @@ import {
   webhookOutcomes,
   WebhookPostEvents,
 } from "#publishing/infrastructure/webhook-post-events.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
@@ -158,7 +159,7 @@ const ServerTest = publishingWorkers(FakePlatformPublisher).pipe(
         ToldNotices.layer,
         OriginsTest
       )
-    )
+    ).pipe(Layer.provide(ProductAnalytics.none))
   ),
   Layer.provideMerge(ListChannels.layer),
   Layer.provideMerge(DrizzleChannelRepository),

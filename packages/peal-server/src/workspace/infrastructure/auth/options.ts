@@ -27,6 +27,7 @@ import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { defaultLocale, LocaleSchema } from "#shared/domain/locale.ts";
 import type { Locale } from "#shared/domain/locale.ts";
+import type { SignUpMethod } from "#shared/domain/product-event.ts";
 import { RoleSchema } from "#workspace/domain/roles.ts";
 
 import { accessControl, roles } from "./access-control.ts";
@@ -90,6 +91,14 @@ export interface InvitationLink extends AuthLink {
 
 export type AuthLogLevel = "debug" | "error" | "info" | "warn";
 
+/** An account just made, as product analytics counts it. */
+export interface CreatedUser {
+  readonly locale: Locale;
+  readonly method: SignUpMethod;
+  /** Better Auth's id, as it gave it. */
+  readonly userId: string;
+}
+
 /**
  * What Better Auth calls back into the rest of the server for. The email
  * hooks return at once: Better Auth awaits its email callbacks, and sending
@@ -115,6 +124,11 @@ export interface AuthHooks extends BillingHooks {
   readonly twoStep: TwoStepPolicy;
   /** Emails the account what changed in its two-step verification. */
   readonly twoStepChanged: TwoStepTeller;
+  /**
+   * An account was made: tells product analytics, and returns at once.
+   * The made-up user a known address's sign-up answers makes none.
+   */
+  readonly userCreated: (created: CreatedUser) => void;
   readonly verifyEmail: (link: AuthLink) => void;
   /**
    * Awaited once a route that changes a workspace has answered a browser:
@@ -160,6 +174,32 @@ const localeOf = (user: User): Locale =>
       onSome: ({ locale }) => locale,
     })
   );
+
+// The provider a sign-in's callback (`/callback/:id`) names.
+const decodeProviderParams = Schema.decodeUnknownOption(
+  Schema.Struct({ id: Schema.Literals(signInProviderIds) })
+);
+
+/**
+ * How an account was made, from the route that made it: a password's
+ * sign-up, a provider's callback, or `other` when neither can be read.
+ */
+export const signUpMethodOf = (
+  context: { readonly path?: string; readonly params?: unknown } | null
+): SignUpMethod => {
+  if (context?.path === "/sign-up/email") {
+    return "password";
+  }
+
+  return context?.path?.startsWith("/callback/") === true
+    ? decodeProviderParams(context.params).pipe(
+        Option.match({
+          onNone: (): SignUpMethod => "other",
+          onSome: ({ id }) => id,
+        })
+      )
+    : "other";
+};
 
 const localePrefix = (locale: Locale): string =>
   locale === defaultLocale ? "" : `/${locale}`;
@@ -509,7 +549,20 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
           },
         },
       },
-      user: { create: { before: localeOfProviderSignUp } },
+      user: {
+        create: {
+          after: async (user, context) => {
+            await Promise.resolve();
+
+            hooks.userCreated({
+              locale: localeOf(user),
+              method: signUpMethodOf(context),
+              userId: user.id,
+            });
+          },
+          before: localeOfProviderSignUp,
+        },
+      },
     },
     emailAndPassword: {
       // A sign-up for an email that already has an account answers with a
@@ -575,8 +628,11 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
         invitationLimit: pendingInvitationLimit,
         organizationHooks: {
           // Its creator pays for it: it joins their billing account.
-          afterCreateOrganization: async ({ organization: workspace }) => {
-            await hooks.workspaceCreated(workspace.id);
+          afterCreateOrganization: async ({
+            organization: workspace,
+            user,
+          }) => {
+            await hooks.workspaceCreated(workspace.id, user.id);
           },
           // Its billing account follows its owners, on a server that
           // bills or not: a payer who is no longer an owner pays for it no

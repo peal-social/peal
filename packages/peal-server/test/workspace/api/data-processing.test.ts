@@ -387,6 +387,34 @@ describe("the data processing registry", () => {
     expect(kept("billing")).toContain("which deletes none of them");
   });
 
+  it("says what product analytics sends, never a name or an address, and for how long the provider keeps it", () => {
+    const analytics = categoryOf("productAnalytics");
+
+    // What the events' schema keeps out (SafePropertiesSchema).
+    expect(analytics?.data.en).toContain("Never your name, your email address");
+    expect(analytics?.data.fr).toContain(
+      "Jamais votre nom, votre adresse e-mail"
+    );
+    expect(analytics?.retention.en).toContain(
+      `Each event ${retentionPeriods.productAnalytics.years} year,`
+    );
+    expect(analytics?.retention.fr).toContain(
+      `Chaque événement ${retentionPeriods.productAnalytics.years} an,`
+    );
+  });
+
+  it("lists product analytics after the technical logs, its period the provider's", () => {
+    // The provider's plan, which an operator states for its own.
+    expect(categoryOf("productAnalytics")?.operatorSet).toBeTruthy();
+
+    // After the server's own technical logs, as the policy's table is.
+    const ids = processingRegister.map(({ id }) => id);
+
+    expect(ids.indexOf("productAnalytics")).toBe(
+      ids.indexOf("technicalLogs") + 1
+    );
+  });
+
   it("says something of every category, in both languages", () => {
     const ids = processingRegister.map(({ id }) => id);
 

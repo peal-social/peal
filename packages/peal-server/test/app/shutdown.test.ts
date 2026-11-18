@@ -4,7 +4,11 @@ import path from "node:path";
 import { describe, expect, it } from "@effect/vitest";
 import { Duration } from "effect";
 
-import { httpShutdownTimeout, workflowShutdownTimeout } from "#app/shutdown.ts";
+import {
+  analyticsShutdownTimeout,
+  httpShutdownTimeout,
+  workflowShutdownTimeout,
+} from "#app/shutdown.ts";
 
 // The server's two waits at shutdown (HTTP requests in flight, and the
 // cluster's calls to the platforms) end before Docker kills the container:
@@ -48,6 +52,18 @@ describe("the server's shutdown", () => {
   ])("waits for %s within the grace period", (_name, timeout) => {
     expect(
       Duration.toSeconds(Duration.sum(timeout, margin))
+    ).toBeLessThanOrEqual(Duration.toSeconds(gracePeriod));
+  });
+
+  // Product analytics sends what it queued once the HTTP server and the
+  // workers have stopped: after the longest of their waits.
+  it("sends the analytics events left within the grace period", () => {
+    const longest = Duration.max(httpShutdownTimeout, workflowShutdownTimeout);
+
+    expect(
+      Duration.toSeconds(
+        Duration.sum(Duration.sum(longest, analyticsShutdownTimeout), margin)
+      )
     ).toBeLessThanOrEqual(Duration.toSeconds(gracePeriod));
   });
 });

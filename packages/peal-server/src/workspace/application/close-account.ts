@@ -3,6 +3,7 @@ import type { Redacted } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { planClosure } from "#workspace/domain/account-closure.ts";
 import type { LastOwner } from "#workspace/domain/last-owner.ts";
@@ -95,6 +96,7 @@ export class CloseAccount extends Context.Service<
       const mail = yield* AccountMail;
       const ownership = yield* PartnerOwnership;
       const { transaction } = yield* TransactionRunner;
+      const analytics = yield* ProductAnalytics;
 
       const close = Effect.fn("CloseAccount.close")(function* close(
         principal: UserPrincipal,
@@ -192,6 +194,13 @@ export class CloseAccount extends Context.Service<
 
                 yield* recordErasure(entry);
 
+                // The user and the workspaces it deleted at PostHog,
+                // durably: the job commits with the erasure.
+                yield* analytics.erase(entry.id, {
+                  userIds: [userId],
+                  workspaceIds: plan.deleted,
+                });
+
                 return entry;
               })
             ).pipe(
@@ -216,6 +225,12 @@ export class CloseAccount extends Context.Service<
                 workspaceIds: deleted.join(","),
               })
             );
+
+            // Nothing more is sent about them from this process.
+            yield* analytics.forget({
+              userIds: [userId],
+              workspaceIds: deleted,
+            });
 
             yield* mail.deleted({
               email: user.email,

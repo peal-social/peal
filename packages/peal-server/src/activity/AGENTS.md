@@ -60,6 +60,10 @@
   request that makes several posts (`posts.bulk`, `posts.import`) is one
   event; its refused items carry their errors' codes (`inEnvelope`,
   `#publishing/api/post-refusal.ts`).
+- The journal's adapter (`LoggedActivityJournal`) also tells product
+  analytics of each change the log kept (`api_operation`): metadata only,
+  never for a change through the MCP endpoint (its tool's call is told
+  instead) nor for a session staff act in.
 - `ActivityLog.list` needs `activity:read`, which owners alone hold (an
   admin holds everything else but deleting the workspace); `GET
   …/activity` pages newest first by `cursor`, as the other lists do, and

@@ -2,6 +2,7 @@ import { Context, Effect, Layer, Option, Schema } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { CustomerWorkspace } from "#workspace/domain/customer-workspace.ts";
@@ -72,6 +73,7 @@ export class OffboardWorkspace extends Context.Service<
       const workspaces = yield* CustomerWorkspaces;
       const records = yield* ContextRecords;
       const { transaction } = yield* TransactionRunner;
+      const analytics = yield* ProductAnalytics;
 
       // The workspace, while the key's partner owns it.
       const ownedBy = Effect.fn("OffboardWorkspace.ownedBy")(function* ownedBy(
@@ -132,6 +134,13 @@ export class OffboardWorkspace extends Context.Service<
                   yield* eraseWorkspace(workspaceId).pipe(
                     Effect.catchTag("WorkspaceSubscribed", Effect.die)
                   );
+
+                  // Its service identity deleted at PostHog, durably: the
+                  // job commits with the erasure.
+                  yield* analytics.erase(erasure.id, {
+                    userIds: [],
+                    workspaceIds: [workspaceId],
+                  });
                 })
               ).pipe(
                 discardOnFailure(erasure),
@@ -151,6 +160,12 @@ export class OffboardWorkspace extends Context.Service<
                   workspaceId,
                 })
               );
+
+              // Nothing more is sent about it from this process.
+              yield* analytics.forget({
+                userIds: [],
+                workspaceIds: [workspaceId],
+              });
             })
           );
         },

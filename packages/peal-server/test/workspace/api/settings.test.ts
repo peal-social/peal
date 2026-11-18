@@ -17,6 +17,7 @@ import type { Member, Principal } from "peal-contract";
 
 import { actorOf } from "#shared/api/actor.ts";
 import { Ids } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
@@ -555,6 +556,31 @@ const PortsLive = Layer.mergeAll(
       });
     })
   ),
+  // Product analytics, which records the deletions an erasure starts at
+  // PostHog and what it forgets.
+  Layer.effect(
+    ProductAnalytics,
+    Effect.gen(function* ProductAnalyticsTest() {
+      const fakes = yield* Fakes;
+
+      return ProductAnalytics.of({
+        capture: () => Effect.void,
+        enabled: true,
+        erase: (_key, { userIds, workspaceIds }) =>
+          record(`erase:${userIds.join(",")}|${workspaceIds.join(",")}`).pipe(
+            Effect.provideService(Fakes, fakes)
+          ),
+        eraseNow: () => Effect.die("not used"),
+        forget: ({ userIds, workspaceIds }) =>
+          record(`forget:${userIds.join(",")}|${workspaceIds.join(",")}`).pipe(
+            Effect.provideService(Fakes, fakes)
+          ),
+        groupIdentify: () => Effect.void,
+        identify: () => Effect.void,
+        markInternal: () => Effect.void,
+      });
+    })
+  ),
   Ids.layerTest,
   PartnerOwnership.layerNone,
   // A server that bills, whose operator declared who it is.
@@ -608,12 +634,16 @@ const groups = ["workspaces", "account", "connectedApps"] as const;
 const clientWith = <E, R>(
   security: Layer.Layer<Layer.Success<typeof anonymousSecurityTest>, E, R>
 ) =>
-  HttpApiTest.groups(Api, groups).pipe(
-    Effect.provide(
-      Layer.mergeAll(
-        HandlersLive.pipe(Layer.provideMerge(security)),
-        HttpServer.layerServices
-      )
+  // Built in the test's scope, so what a use case forks into its layer's
+  // scope (product analytics' forgetting) runs while the test does.
+  Layer.build(
+    Layer.mergeAll(
+      HandlersLive.pipe(Layer.provideMerge(security)),
+      HttpServer.layerServices
+    )
+  ).pipe(
+    Effect.flatMap((context) =>
+      HttpApiTest.groups(Api, groups).pipe(Effect.provideContext(context))
     )
   );
 
@@ -673,6 +703,15 @@ const as = (
 
 const calls = Fakes.use(({ calls: made }) => Ref.get(made));
 
+// Lets what a use case forked run, without moving the clock.
+const settle = Effect.forEach(
+  Array.from({ length: 20 }),
+  () => Effect.yieldNow,
+  {
+    discard: true,
+  }
+);
+
 const failureOf = <A, E extends { readonly _tag: string }, R>(
   request: Effect.Effect<A, E, R>
 ) =>
@@ -688,6 +727,9 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
       Effect.gen(function* deletes() {
         const client = yield* as(user());
         const params = { workspaceId: harbour };
+        // What this test asks: others of the block delete Harbour too.
+        const earlier = (yield* calls).length;
+        const since = calls.pipe(Effect.map((all) => all.slice(earlier)));
 
         assert.strictEqual(
           yield* failureOf(
@@ -695,14 +737,30 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           ),
           "WorkspaceNameMismatch"
         );
-        assert.notInclude(yield* calls, `eraseWorkspace:${harbour}`);
+        assert.notInclude(yield* since, `eraseWorkspace:${harbour}`);
+        assert.notInclude(yield* since, `forget:|${harbour}`);
 
         yield* client.workspaces.delete({
           params,
           payload: { name: "Harbour" },
         });
 
-        const done = yield* calls;
+        yield* settle;
+
+        const done = yield* since;
+
+        // Its service identity's deletion at PostHog starts in the
+        // erasure's transaction, which commits it, and nothing more is sent
+        // about it once confirmed.
+        assert.isAbove(done.indexOf(`erase:|${harbour}`), -1);
+        assert.isBelow(
+          done.indexOf(`erase:|${harbour}`),
+          done.indexOf(`ledger:workspace:${harbour}:confirmed`)
+        );
+        assert.isAbove(
+          done.indexOf(`forget:|${harbour}`),
+          done.indexOf(`ledger:workspace:${harbour}:confirmed`)
+        );
 
         assert.includeMembers(
           [...done],
@@ -828,6 +886,8 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         ),
         "WorkspaceBusy"
       );
+      // Refused: nothing is deleted at PostHog.
+      assert.notInclude(yield* calls, `erase:|${busy}`);
     })
   );
 
@@ -1185,6 +1245,8 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           [{ id: shared, name: "Shared" }]
         );
         assert.notInclude(yield* calls, `deleteUser:${userId}`);
+        // Refused before anything was erased: nothing forgotten.
+        assert.notInclude(yield* calls, `erase:${userId}|${harbour}`);
 
         for (const principal of [apiKey, oauth, impersonated]) {
           const refused = yield* as(principal);
@@ -1211,11 +1273,16 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           payload: { password: "correct horse" },
         });
 
+        yield* settle;
+
         const done = yield* calls;
 
         assert.includeMembers(
           [...done],
           [
+            // The user and the workspace it deleted, at product analytics.
+            `erase:${userId}|${harbour}`,
+            `forget:${userId}|${harbour}`,
             `eraseWorkspace:${harbour}`,
             `deleteWorkspace:${harbour}`,
             `eraseUser:${userId}`,

@@ -1,10 +1,11 @@
-import { Option } from "effect";
+import { Effect, Option } from "effect";
 import type {
   Member,
   OAuthGrant as ContractGrant,
   Principal as ContractPrincipal,
 } from "peal-contract";
 
+import { AnalyticsActor } from "#shared/application/analytics-actor.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { ApiKeyPrincipal } from "#workspace/domain/api-key-principal.ts";
@@ -105,3 +106,30 @@ export const memberOf = (actor: Actor, principal: Principal): Member => ({
   principal: toContractPrincipal(principal),
   workspaceId: actor.workspaceId,
 });
+
+/**
+ * Who a principal acts as, for product analytics: a person, and whether
+ * staff act as them; nobody for a key, whose events are its workspace's.
+ */
+export const analyticsActorOf = (
+  principal: Principal
+): AnalyticsActor["Service"] =>
+  principal._tag === "UserPrincipal"
+    ? {
+        impersonated: Option.isSome(principal.impersonatedBy),
+        userId: Option.some(principal.userId),
+      }
+    : { impersonated: false, userId: Option.none() };
+
+/** The person a member acts as, for product analytics: none for a key. */
+export const capturedActorOf = (member: Member) => {
+  const { impersonated, userId } = analyticsActorOf(
+    principalOf(member.principal)
+  );
+
+  return userId.pipe(Option.map((id) => ({ impersonated, userId: id })));
+};
+
+/** Provides who the request acts as, for product analytics. */
+export const actingAs = (principal: Principal) =>
+  Effect.provideService(AnalyticsActor, analyticsActorOf(principal));

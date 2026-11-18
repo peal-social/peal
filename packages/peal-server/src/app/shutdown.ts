@@ -8,3 +8,9 @@ export const httpShutdownTimeout = Duration.seconds(60);
 
 /** The cluster's calls to the platforms in flight. */
 export const workflowShutdownTimeout = Duration.seconds(60);
+
+/**
+ * The product analytics events still queued, sent once the HTTP server
+ * and the workers have stopped: after the longest of the waits above.
+ */
+export const analyticsShutdownTimeout = Duration.seconds(3);

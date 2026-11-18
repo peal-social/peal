@@ -20,6 +20,12 @@ import { Stripe } from "stripe";
 
 import { SqlLive } from "#shared/infrastructure/database.ts";
 import {
+  appWithPostHog,
+  capturedEvents,
+  eventsMatching,
+} from "#test/shared/fake-posthog.ts";
+import type { CapturedEvent } from "#test/shared/fake-posthog.ts";
+import {
   apiKeyOf,
   bodyOf,
   newEmail,
@@ -54,6 +60,23 @@ const billingApp = Layer.unwrap(
 );
 
 const BillingIntegration = Layer.mergeAll(billingApp, SqlLive);
+
+// The same, with product analytics on, sending to a fake PostHog.
+const BillingAnalytics = Layer.mergeAll(
+  Layer.unwrap(
+    stripeMockUrl.pipe(
+      Effect.map((apiUrl) =>
+        appWithPostHog({
+          AUTH_REQUIRE_EMAIL_VERIFICATION: "true",
+          STRIPE_API_URL: apiUrl,
+          STRIPE_SECRET_KEY: "sk_test_0123456789syntheticbilling",
+          STRIPE_WEBHOOK_SECRET: webhookSecret,
+        })
+      )
+    )
+  ),
+  SqlLive
+);
 
 const signer = new Stripe("sk_test_synthetic_signer").webhooks;
 
@@ -2374,6 +2397,90 @@ layer(BillingIntegration, {
             { headers: { cookie: guests[1]?.cookies ?? "" } }
           )).status,
           200
+        );
+      })
+  );
+});
+
+layer(BillingAnalytics, {
+  excludeTestServices: true,
+  timeout: "180 seconds",
+})("product analytics of billing", (it) => {
+  it.effect(
+    "tells a workspace with its billing account, and a recorded subscription once",
+    () =>
+      Effect.gen(function* told() {
+        const delivery = newDelivery();
+
+        const { owner, workspaceId } = yield* billedWorkspace(
+          "analytics-subscriber",
+          delivery.customerId
+        );
+
+        const [created] = yield* eventsMatching(
+          ({ distinct_id: distinctId, event }) =>
+            event === "workspace_created" && distinctId === owner.id
+        );
+
+        assert.strictEqual(created?.properties["workspace_id"], workspaceId);
+        assert.isString(created?.properties["billing_account_id"]);
+        assert.strictEqual(created?.properties["kind"], "person");
+        assert.isBoolean(created?.properties["free_tier"]);
+        assert.isBoolean(created?.properties["standalone"]);
+
+        // Its checkout names the member who started it, as Stripe keeps it.
+        const startedBy = (userId: string) =>
+          payloadOf("customer.subscription.created", delivery).replaceAll(
+            '"metadata": {}',
+            `"metadata": {"userId": "${userId}"}`
+          );
+
+        const [account] = yield* eventsMatching(
+          ({ distinct_id: distinctId, event, properties }) =>
+            event === "$groupidentify" &&
+            distinctId === owner.id &&
+            properties["$group_type"] === "billing_account"
+        );
+
+        assert.isDefined(account);
+
+        assert.strictEqual(yield* deliver(startedBy(owner.id)), 200);
+
+        const ofWorkspace = ({ event, properties }: CapturedEvent) =>
+          event === "subscription_changed" &&
+          properties["workspace_id"] === workspaceId;
+
+        const [changed] = yield* eventsMatching(ofWorkspace);
+
+        // From Stripe, as the workspace: the member a subscription names
+        // may have closed their account since.
+        assert.strictEqual(changed?.distinct_id, `workspace:${workspaceId}`);
+        assert.strictEqual(changed?.properties["plan"], "pro");
+        assert.strictEqual(changed?.properties["status"], "active");
+        assert.strictEqual(changed?.properties["interval"], "month");
+        assert.strictEqual(changed?.properties["cancel_at_period_end"], false);
+        // The groups' facts, as plain properties too, for SQL without groups.
+        assert.strictEqual(
+          changed?.properties["subscription_status"],
+          "active"
+        );
+        assert.strictEqual(changed?.properties["workspace_plan"], "pro");
+        assert.strictEqual(changed?.properties["kind"], "person");
+        assert.isBoolean(changed?.properties["free_tier"]);
+        assert.isBoolean(changed?.properties["standalone"]);
+        assert.strictEqual(
+          changed?.properties["billing_account_id"],
+          created?.properties["billing_account_id"]
+        );
+
+        // The same event again is a duplicate: nothing more is told.
+        assert.strictEqual(yield* deliver(startedBy(owner.id)), 200);
+
+        yield* Effect.sleep("5 seconds");
+
+        assert.strictEqual(
+          (yield* capturedEvents).filter(ofWorkspace).length,
+          1
         );
       })
   );

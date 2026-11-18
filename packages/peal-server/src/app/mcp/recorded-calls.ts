@@ -1,9 +1,16 @@
-import { Effect, Exit, Option, Schema } from "effect";
+import { Clock, Effect, Exit, Option, Schema } from "effect";
 import { McpServer } from "effect/ai";
 import { CurrentMember } from "peal-contract";
+import type { Member } from "peal-contract";
 
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
+import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { ToolErrorTypeSchema } from "#shared/domain/product-event.ts";
 import { recordToolCall } from "#workspace/api/activity-recording.ts";
+import { capturedActorOf } from "#workspace/api/principal.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
+
+const decodeErrorType = Schema.decodeUnknownOption(ToolErrorTypeSchema);
 
 // What a tool answered, as the MCP server hands it on: an error or not.
 const decodeAnswer = Schema.decodeUnknownOption(
@@ -38,24 +45,78 @@ const errorCodeOf = (
  * call ended without an answer. It runs around the tool itself, so a
  * request the endpoint refused before any tool ran (a batch, a session it
  * does not know, a method it does not serve) keeps nothing, however many
- * calls its body names.
+ * calls its body names. Every call that ran, reading ones included, is
+ * then told to product analytics (`mcp_tool_called`), after the log.
  */
 export const recordedCalls = (changingTools: ReadonlySet<string>) =>
   McpServer.middleware()(
     Effect.gen(function* recording() {
       const activity = yield* ActivityJournal;
+      const analytics = yield* ProductAnalytics;
+
+      // Every call that ran, reading or changing, for product analytics:
+      // its name, how it ended and how long it took. Never what it was
+      // asked or answered.
+      const told = (
+        member: Member,
+        target: string,
+        errorCode: Option.Option<string>,
+        startedAt: number
+      ) =>
+        Clock.currentTimeMillis.pipe(
+          Effect.flatMap((endedAt) =>
+            analytics.capture({
+              actor: capturedActorOf(member),
+              asWorkspace: false,
+              billingAccountId: Option.none(),
+              event: {
+                name: "mcp_tool_called",
+                properties: {
+                  ...Option.match(
+                    errorCode.pipe(Option.flatMap(decodeErrorType)),
+                    {
+                      onNone: () => ({}),
+                      onSome: (errorType) => ({ errorType }),
+                    }
+                  ),
+                  changes: changingTools.has(target),
+                  durationMs: Math.max(0, Math.round(endedAt - startedAt)),
+                  isError: Option.isSome(errorCode),
+                  tool: target,
+                },
+              },
+              workspaceId: Option.some(
+                WorkspaceIdSchema.make(member.workspaceId)
+              ),
+            })
+          )
+        );
 
       return (effect, { method, target }) =>
-        method === "tools/call" && changingTools.has(target)
-          ? effect.pipe(
-              Effect.onExit((exit) =>
-                CurrentMember.pipe(
-                  Effect.flatMap((member) =>
-                    recordToolCall(activity, {
-                      errorCode: Option.getOrUndefined(errorCodeOf(exit)),
-                      member,
-                      tool: target,
-                    })
+        method === "tools/call"
+          ? Clock.currentTimeMillis.pipe(
+              Effect.flatMap((startedAt) =>
+                effect.pipe(
+                  Effect.onExit((exit) =>
+                    CurrentMember.pipe(
+                      Effect.flatMap((member) => {
+                        const errorCode = errorCodeOf(exit);
+
+                        return (
+                          changingTools.has(target)
+                            ? recordToolCall(activity, {
+                                errorCode: Option.getOrUndefined(errorCode),
+                                member,
+                                tool: target,
+                              })
+                            : Effect.void
+                        ).pipe(
+                          Effect.andThen(
+                            told(member, target, errorCode, startedAt)
+                          )
+                        );
+                      })
+                    )
                   )
                 )
               )

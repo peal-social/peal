@@ -35,6 +35,7 @@ import { McpLive } from "#app/mcp/server.ts";
 import { MeterErrorsLive } from "#app/meter-errors/route.ts";
 import { ObservabilityLive } from "#app/observability.ts";
 import { PlatformEventsLive } from "#app/platform-events/route.ts";
+import { ProductAnalyticsLive } from "#app/product-analytics.ts";
 import { countRequests } from "#app/request-metrics.ts";
 import { ShortLinkRedirectsLive } from "#app/short-links/redirects.ts";
 import { httpShutdownTimeout } from "#app/shutdown.ts";
@@ -634,6 +635,9 @@ const ServicesLive = Layer.mergeAll(
   ShortLinksContextLive,
   OverviewContextLive
 ).pipe(
+  // Product analytics, one for the routes and the contexts: off without
+  // PEAL_POSTHOG_KEY.
+  Layer.provideMerge(ProductAnalyticsLive),
   Layer.provide(Layer.mergeAll(JobsWithoutWorkersLive, BunDns.layer)),
   Layer.provideMerge(MigrationsLive),
   Layer.provideMerge(DatabaseLive)
@@ -649,6 +653,7 @@ const ServicesLive = Layer.mergeAll(
  */
 export const ErasureReplayServicesLive = ErasureReplayLive.pipe(
   Layer.provide(ErasedContextsLive),
+  Layer.provide(ProductAnalyticsLive),
   Layer.provide(Layer.mergeAll(JobsWithoutWorkersLive, BunDns.layer)),
   Layer.provideMerge(MigrationsLive),
   Layer.provideMerge(DatabaseLive)
@@ -744,6 +749,9 @@ export const ServerLive = Layer.mergeAll(
   WorkersLive
 ).pipe(
   Layer.provide(ContextsLive),
+  // Built after telemetry, released after the HTTP server and the
+  // workers stop, so it sends the last events they queued.
+  Layer.provide(ProductAnalyticsLive),
   // Before anything listens: a server that bills starts only with
   // Stripe's prices as it publishes them.
   Layer.provide(StripePricesCheckedLive),

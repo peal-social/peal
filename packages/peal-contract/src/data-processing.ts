@@ -73,6 +73,9 @@ export type ProcessingText = Readonly<Record<ProcessingLocale, string>>;
  * - `erasureLedger`: the record of deletions kept outside the database
  *   (`workspace/domain/erasure-ledger.ts`), a little longer than `backups`;
  * - `exportLinks`: the links an export gives to media files;
+ * - `productAnalytics`: each product analytics event, at the provider: the
+ *   period of the plan Peal uses (PostHog keeps an event a year on it);
+ *   nothing in the server enforces it;
  * - `serverLogs`, `traces`, `metrics`, `backups`: the production stack
  *   (`packages/peal-docker`: Loki, Tempo, Prometheus, and pgBackRest's
  *   four weekly full backups, which hold deleted data 5 weeks at most).
@@ -106,6 +109,7 @@ export const retentionPeriods = {
   legalIdentity: { years: 5 },
   metrics: { days: 30 },
   partnerUsageDays: { days: 400 },
+  productAnalytics: { years: 1 },
   quotaLedger: { days: 7 },
   requirementMemory: { years: 2 },
   reviewVisitorNames: { months: 24 },
@@ -695,6 +699,39 @@ export const processingRegister: readonly ProcessingCategory[] = [
     },
   },
   {
+    // On a server whose operator set PEAL_POSTHOG_KEY, as the ads and
+    // sign-in providers' texts say "on a server where…".
+    applies: "always",
+    data: {
+      en: "On a server whose operator turned product analytics on: your account’s identifier, the identifiers of your workspaces and of their billing account, and of the posts and connected accounts an event is about, and what you do in the service, as events: that you signed up, when, with your language and how you signed in; that a workspace was made, and when; the operations you ask of the API and the tools an application you connected calls, by name, with whether each succeeded, the error’s code and how long a tool took; that an account was connected or disconnected, and a post scheduled, published or failed, with the platform and the code of a failure’s reason; the plan and status of a subscription; and, of a billing account, whether it is on the free tier, whose it is (a person’s, a partner’s or nobody’s) and whether it stands alone. Never your name, your email address, your IP address, your browser, or what a post, a file or a message holds",
+      fr: "Sur un serveur dont l’exploitant a activé la mesure d’usage : l’identifiant de votre compte, ceux de vos espaces de travail et de leur compte de facturation, et ceux des publications et des comptes connectés qu’un événement concerne, et ce que vous faites dans le service, sous forme d’événements : votre inscription, sa date, avec votre langue et votre moyen de connexion ; la création d’un espace de travail, et sa date ; les opérations que vous demandez à l’API et les outils qu’appelle une application que vous avez connectée, par leur nom, avec leur réussite ou leur échec, le code de l’erreur et la durée d’un outil ; la connexion ou la déconnexion d’un compte, et la programmation, la mise en ligne ou l’échec d’une publication, avec la plateforme et le code du motif d’un échec ; l’abonnement et son état ; et, d’un compte de facturation, s’il relève de l’offre gratuite, à qui il est (une personne, un partenaire ou personne) et s’il est autonome. Jamais votre nom, votre adresse e-mail, votre adresse IP, votre navigateur, ni le contenu d’une publication, d’un fichier ou d’un message",
+    },
+    id: "productAnalytics",
+    legalBasis: {
+      en: "Legitimate interests (GDPR Article 6(1)(f)): understanding how the service is used, to improve it",
+      fr: "Intérêts légitimes (RGPD, article 6, paragraphe 1, point f) : comprendre comment le service est utilisé, pour l’améliorer",
+    },
+    name: {
+      en: "Product analytics",
+      fr: "Mesure d’usage du produit",
+    },
+    // The provider's plan sets the period, which an operator states for
+    // its own.
+    operatorSet: true,
+    purposes: {
+      en: "Measure how the service is used, to decide what to improve",
+      fr: "Mesurer l’usage du service, pour décider quoi améliorer",
+    },
+    retention: {
+      en: `Each event ${years(p.productAnalytics.years).en}, at the analytics provider, and the records it keeps of a person and of a workspace until the account or the workspace is deleted. Closing your account deletes your events and your record there; deleting a workspace deletes the events recorded in its own name. The workspace’s group record stays there, naming nobody, and the events other members made in it keep its identifier until their own period ends`,
+      fr: `Chaque événement ${years(p.productAnalytics.years).fr}, chez le prestataire de mesure d’usage, et les fiches qu’il tient d’une personne et d’un espace de travail jusqu’à la suppression du compte ou de l’espace de travail. La fermeture de votre compte y supprime vos événements et votre fiche ; la suppression d’un espace de travail supprime les événements enregistrés en son nom. La fiche de groupe de l’espace de travail y reste, sans nommer personne, et les événements qu’y ont faits les autres membres gardent son identifiant jusqu’au terme de leur propre durée`,
+    },
+    source: {
+      en: "Your use of the service",
+      fr: "Votre utilisation du service",
+    },
+  },
+  {
     applies: "always",
     data: {
       en: "The action, its time and reason, and for each change staff make while acting as an account, the operation, workspace and ids it named, never its content",
@@ -844,8 +881,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
   {
     applies: "always",
     data: {
-      en: "The id of each deleted account and workspace, and the time, kept apart from the database. No name, address or content",
-      fr: "L’identifiant de chaque compte et espace de travail supprimé, et la date, conservés à l’écart de la base de données. Ni nom, ni adresse, ni contenu",
+      en: "The id of each deleted account and workspace, and the time, kept apart from the database; and, while the deletion of their records at the product analytics provider waits to be made, the same ids in the database’s job tables. No name, address or content",
+      fr: "L’identifiant de chaque compte et espace de travail supprimé, et la date, conservés à l’écart de la base de données ; et, tant que la suppression de leurs fiches chez le prestataire de mesure d’usage reste à faire, les mêmes identifiants dans les tables de tâches de la base de données. Ni nom, ni adresse, ni contenu",
     },
     id: "erasureLedger",
     legalBasis: {
@@ -862,8 +899,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
       fr: "Appliquer de nouveau les suppressions lorsqu’une sauvegarde est restaurée",
     },
     retention: {
-      en: `${p.erasureLedger.days} days from each deletion, a little longer than the backups keep deleted data`,
-      fr: `${p.erasureLedger.days} jours à compter de chaque suppression, un peu plus longtemps que les sauvegardes ne gardent les données supprimées`,
+      en: `${p.erasureLedger.days} days from each deletion, a little longer than the backups keep deleted data. A deletion at the product analytics provider still to be made keeps the erased ids in the database’s job tables until it is done, then up to 30 days (PEAL_CLUSTER_RETENTION)`,
+      fr: `${p.erasureLedger.days} jours à compter de chaque suppression, un peu plus longtemps que les sauvegardes ne gardent les données supprimées. Une suppression encore à faire chez le prestataire de mesure d’usage garde les identifiants effacés dans les tables de tâches de la base de données jusqu’à ce qu’elle soit faite, puis jusqu’à 30 jours (PEAL_CLUSTER_RETENTION)`,
     },
     source: {
       en: "Your deletion of an account or a workspace",

@@ -2,6 +2,7 @@ import { Context, Effect, Layer, Option } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
@@ -86,6 +87,7 @@ export class DeleteWorkspace extends Context.Service<
       const mail = yield* AccountMail;
       const ownership = yield* PartnerOwnership;
       const { transaction } = yield* TransactionRunner;
+      const analytics = yield* ProductAnalytics;
 
       // The workspace, locked when in a transaction.
       const found = (workspaceId: Actor["workspaceId"]) =>
@@ -146,6 +148,13 @@ export class DeleteWorkspace extends Context.Service<
                 yield* found(workspaceId);
                 yield* ownership.ensureDeletable([workspaceId]);
                 yield* eraseWorkspace(workspaceId);
+
+                // Its service identity deleted at PostHog, durably: the
+                // job commits with the erasure.
+                yield* analytics.erase(erasure.id, {
+                  userIds: [],
+                  workspaceIds: [workspaceId],
+                });
               })
             ).pipe(
               discardOnFailure(erasure),
@@ -164,6 +173,12 @@ export class DeleteWorkspace extends Context.Service<
                 workspaceId,
               })
             );
+
+            // Nothing more is sent about it from this process.
+            yield* analytics.forget({
+              userIds: [],
+              workspaceIds: [workspaceId],
+            });
 
             const owner = yield* store.records(userId);
 

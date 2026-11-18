@@ -5,6 +5,7 @@ import { DateTime, Deferred, Effect, Fiber, Layer, Option } from "effect";
 import { SqlClient } from "effect/sql";
 
 import { newId } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import {
   ChannelIdSchema,
@@ -46,7 +47,11 @@ const PausedTest = webhooksWith(
     StartedJobs.layer,
     ToldNotices.layer
   )
-).pipe(Layer.provideMerge(TransactionsTest), Layer.provideMerge(DatabaseTest));
+).pipe(
+  Layer.provide(ProductAnalytics.none),
+  Layer.provideMerge(TransactionsTest),
+  Layer.provideMerge(DatabaseTest)
+);
 
 const tellPublished = Effect.fn("tellPublished")(function* tellPublished(
   actor: Actor

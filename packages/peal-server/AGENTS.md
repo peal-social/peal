@@ -413,6 +413,70 @@ and no socket, for tests.
   never roll back past them while any is stored (the runbook's "Past
   Slack").
 
+### Product analytics
+
+- Contexts call `ProductAnalytics` (`#shared/application/product-analytics.ts`),
+  which decides who an event is about (the person acting, from the
+  caller or the request's `AnalyticsActor`, else the workspace's service
+  identity `workspace:<id>`), leaves out what must not go (a session
+  staff act in, a user or a workspace `PEAL_POSTHOG_EXCLUDED_IDS` names,
+  an account or workspace
+  erased in this process), checks every property against
+  `SafePropertiesSchema` and hands the event to `AnalyticsDelivery`: the
+  PostHog adapter on capture v1 (`#shared/infrastructure/posthog-delivery.ts`,
+  settings in `posthog-settings.ts`), or none without `PEAL_POSTHOG_KEY`.
+  `ProductAnalyticsLive` (`src/app/product-analytics.ts`) is one per build
+  of the server, released after the HTTP server and the workers, so it
+  sends what they queued.
+- Events come from four seams, never calls sprinkled in use cases: the
+  activity journal's adapter (`api_operation`, every write but MCP's), the
+  MCP middleware (`mcp_tool_called`, every tool call), the decorator over
+  `WebhookEvents` (post and channel milestones) and Better Auth's hooks
+  (sign-ups, workspaces, subscriptions). A new event joins
+  `ProductEventSchema` (`#shared/domain/product-event.ts`) and the
+  samples of `test/shared/product-event-samples.ts`; its names are
+  persisted for whoever queries PostHog: add, never rename.
+- Events carry `$groups` (`workspace`, `billing_account`), and every group
+  fact as a plain property too, as Peal's project has no group analytics
+  and its readers query with SQL: `workspace_id` and `billing_account_id`
+  on every event about them, and on `workspace_created` and
+  `subscription_changed` what `$groupidentify` sets (`workspace_plan`,
+  `subscription_status`, `free_tier`, `kind`, `standalone`), so a
+  workspace's latest state is an `argMax` over these events.
+- A property is an id, an enum, a number or a boolean: never a text
+  someone wrote, a name, an address, a URL or what a platform answered.
+  Capture never fails, dies or waits on the network, and nothing is
+  ever sent twice. Staff are marked `internal` when they open the console;
+  what they do as a member sends nothing.
+- An erasure forgets, durably: closing an account and deleting or
+  offboarding a workspace call `ProductAnalytics.erase` inside the
+  erasure's transaction, which starts `ForgetAnalyticsV1`
+  (`#shared/infrastructure/workflows/forget-analytics.ts`, persisted
+  contract) with the erasure, and `forget` once it committed. The
+  workflow forgets them in its process, purges what the delivery holds of
+  them, waits for a request in flight, then deletes them at PostHog with
+  `PEAL_POSTHOG_PERSONAL_API_KEY`, tried again after `forgetRetryDelays`
+  across restarts, then given up (`peal.erasure.analytics_failed`,
+  counted); without the key it logs their ids
+  (`peal.erasure.analytics_manual`) for the operator, as it does with no
+  `PEAL_POSTHOG_KEY` at all, for a deletion started before the key was
+  removed. A start the database refuses fails the erasure (a
+  `DatabaseError`, tried again), so no deletion is left to make by hand
+  for an erasure that rolled back. `ReplayErasures`,
+  a command, deletes at once and waits (`eraseNow`).
+- What comes from stored data (a Stripe event naming the member who once
+  subscribed) is sent as the workspace's service identity
+  (`asWorkspace`), never as a person who may have been erased since:
+  the person behind an event is only ever the request's, or one just
+  made. Every event is encoded through `ProductEventSchema` with no key
+  it does not declare, person and group properties through their own
+  schemas, and no key may name an address, a name, a URL, a text or a
+  token (`refusedKeyWords`).
+- Tests use `ProductAnalytics.none`, or `recordedAnalytics`
+  (`#test/shared/recorded-analytics.ts`); through the whole server,
+  `appWithPostHog` (`#test/shared/fake-posthog.ts`) reads what a fake
+  PostHog received.
+
 ### Metrics and alerts
 
 - Every metric that says a job falls behind has an alert rule

@@ -24,6 +24,7 @@ import {
   Option,
   Redacted,
   References,
+  Schedule,
   Schema,
   Tracer,
 } from "effect";
@@ -66,6 +67,10 @@ import {
   fakeHashnode,
   writerOnHashnode,
 } from "#test/channels/fakes/fake-hashnode.ts";
+import {
+  fakeHttpServer,
+  json as jsonAnswer,
+} from "#test/channels/fakes/fake-http-server.ts";
 import { fakeSlack, slackClient } from "#test/channels/fakes/fake-slack.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
@@ -1613,6 +1618,81 @@ layer(EventsTest, { excludeTestServices: true, timeout: "120 seconds" })(
           ] as const) {
             assert.notInclude(all, secret, name);
           }
+        })
+    );
+  }
+);
+
+// PostHog's project token and personal key, which the server never writes:
+// a PostHog that refuses every event and every deletion, quoting the token
+// it was sent, so the server logs what it can of a failure.
+const projectToken = "phc_synthetic";
+const personalKey = "phx_synthetic";
+
+const failingPostHog = fakeHttpServer((request) =>
+  jsonAnswer(
+    { error: `invalid token ${projectToken} ${personalKey}` },
+    request.path.endsWith("/persons/bulk_delete/") ? 403 : 500
+  )
+);
+
+const PostHogTest = Layer.unwrap(
+  failingPostHog.pipe(
+    Effect.map((posthog) =>
+      Layer.mergeAll(
+        TestApp.layerWith(
+          {
+            ...unconfirmedEmails,
+            PEAL_POSTHOG_APP_HOST: posthog.url,
+            PEAL_POSTHOG_HOST: posthog.url,
+            PEAL_POSTHOG_KEY: projectToken,
+            PEAL_POSTHOG_PERSONAL_API_KEY: personalKey,
+            PEAL_POSTHOG_PROJECT_ID: "12345",
+          },
+          Layer.merge(capture, Layer.succeed(Tracer.Tracer, tracer))
+        ),
+        MigratedSqlLive
+      )
+    )
+  )
+);
+
+layer(PostHogTest, { excludeTestServices: true, timeout: "180 seconds" })(
+  "what the server writes about product analytics",
+  (it) => {
+    it.effect(
+      "holds neither PostHog's project token nor its personal key",
+      () =>
+        Effect.gen(function* posthog() {
+          const app = yield* TestApp;
+          const owner = yield* signedUp("secrets-posthog");
+          const workspaceId = yield* workspaceOf(owner, "Analysed");
+
+          const deleted = yield* app.request(`/api/workspaces/${workspaceId}`, {
+            body: { name: "Analysed" },
+            headers: { cookie: owner.cookies },
+            method: "DELETE",
+          });
+
+          assert.strictEqual(deleted.status, 204);
+
+          // The refused events are logged, then the deletion's first
+          // attempt, which the job tries again later.
+          yield* Effect.sync(() => written()).pipe(
+            Effect.flatMap((text) =>
+              text.includes("PostHog did not delete an erasure")
+                ? Effect.void
+                : Effect.fail(text)
+            ),
+            Effect.retry({ schedule: Schedule.spaced("500 millis"), times: 60 })
+          );
+
+          assert.include(
+            written(),
+            "PostHog did not take product analytics events"
+          );
+          assert.notInclude(written(), projectToken);
+          assert.notInclude(written(), personalKey);
         })
     );
   }

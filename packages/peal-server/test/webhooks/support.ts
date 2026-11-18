@@ -4,6 +4,7 @@ import { ConfigProvider, Effect, Layer, Redacted } from "effect";
 
 import { TokenCipherLive } from "#channels/infrastructure/web-crypto-token-cipher.ts";
 import type { Ids } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import {
@@ -53,7 +54,12 @@ export const WebhooksTest = Layer.merge(
     )
   ),
   DrizzleWebhookRecords
-).pipe(Layer.provideMerge(TransactionsTest), Layer.provideMerge(DatabaseTest));
+).pipe(
+  // Product analytics is told nothing: its own tests record it.
+  Layer.provide(ProductAnalytics.none),
+  Layer.provideMerge(TransactionsTest),
+  Layer.provideMerge(DatabaseTest)
+);
 
 /** An owner, who manages webhooks, in a workspace of their own. */
 export const freshOwner: Effect.Effect<Actor, never, Ids> = freshWorkspace.pipe(

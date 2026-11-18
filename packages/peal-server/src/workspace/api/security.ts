@@ -26,6 +26,7 @@ import {
   makeChangeMark,
 } from "#shared/api/change-mark.ts";
 import { forbidden, refused } from "#shared/api/forbidden.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { UpgradePaths } from "#shared/application/upgrade-paths.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { UserId } from "#shared/domain/ids.ts";
@@ -41,7 +42,12 @@ import { answerAccessDenied } from "#workspace/domain/membership.ts";
 import type { Principal } from "#workspace/domain/principal.ts";
 
 import { recorded } from "./activity-recording.ts";
-import { memberOf, principalOf, toContractPrincipal } from "./principal.ts";
+import {
+  actingAs,
+  memberOf,
+  principalOf,
+  toContractPrincipal,
+} from "./principal.ts";
 import { pastLimit, tooManyRequests } from "./rate-limit.ts";
 import { explaining } from "./refusal.ts";
 
@@ -53,8 +59,14 @@ const decodeWorkspaceId = Schema.decodeUnknownOption(WorkspaceIdSchema);
 
 const unauthenticated = () => Effect.fail(new Unauthenticated());
 
-const as = (principal: Principal) =>
-  Effect.provideService(CurrentPrincipal, toContractPrincipal(principal));
+// The request acts as the principal: for handlers, and for product analytics.
+const as =
+  (principal: Principal) =>
+  <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+    effect.pipe(
+      Effect.provideService(CurrentPrincipal, toContractPrincipal(principal)),
+      actingAs(principal)
+    );
 
 // The ids a request's path names, but its workspace's, which the record
 // keeps apart.
@@ -424,6 +436,7 @@ export const StaffAccessLive = Layer.effect(
   Effect.gen(function* staffAccess() {
     const authenticate = yield* Authenticate;
     const standing = yield* StaffStanding;
+    const analytics = yield* ProductAnalytics;
 
     return StaffAccess.of({
       session: (httpEffect) =>
@@ -467,6 +480,10 @@ export const StaffAccessLive = Layer.effect(
                 ),
             })
           );
+
+          // Staff are internal people, for product analytics: nothing
+          // else of the console is sent.
+          yield* analytics.markInternal(userId);
 
           return yield* httpEffect.pipe(
             Effect.provideService(CurrentStaff, { userId })

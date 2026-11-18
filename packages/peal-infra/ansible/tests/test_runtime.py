@@ -142,6 +142,7 @@ def test_short_links_are_off_without_their_host_name() -> None:
         "peal_blog": False,
         "peal_short_link_hostname": "",
         "peal_runtime_slack_alerts": trust_as_template(role_vars["peal_runtime_slack_alerts"]),
+        "peal_runtime_optional_given": trust_as_template(role_vars["peal_runtime_optional_given"]),
     }
 
     assert "PEAL_SHORT_LINK_BASE" not in ansible_render(expression, **names)
@@ -352,6 +353,52 @@ def test_no_secret_is_required_of_an_app_the_settings_do_not_name() -> None:
     required = ansible_render(expression, **names)
 
     assert {"SLACK_CLIENT_SECRET", "PINTEREST_APP_SECRET", "TIKTOK_CLIENT_SECRET"} <= set(required)
+
+
+def _posthog_allowed(credentials: dict[str, str], peal_settings: dict[str, str]) -> bool:
+    """Whether the role lets a server with these credentials and settings
+    through, as its assertion on PostHog's token decides."""
+    role_vars = role_file("peal_runtime", "vars")
+    found = task("peal_runtime", "Require PostHog's project and personal key with its token")
+    names = {
+        "peal_credentials": credentials,
+        "peal_runtime_optional_given": trust_as_template(role_vars["peal_runtime_optional_given"]),
+        "peal_runtime_posthog_on": trust_as_template(role_vars["peal_runtime_posthog_on"]),
+        "peal_settings": peal_settings,
+    }
+    return bool(ansible_render("{{ " + found["ansible.builtin.assert"]["that"] + " }}", **names))
+
+
+def test_posthog_s_token_requires_its_project_on_peal_s_servers() -> None:
+    """Peal's servers never capture what they could not delete: the token
+    requires the project id, which requires the personal key."""
+    token = {"PEAL_POSTHOG_KEY": "phc_synthetic"}
+
+    assert not _posthog_allowed(token, {})
+    assert _posthog_allowed(token, {"PEAL_POSTHOG_PROJECT_ID": "12345"})
+    assert _posthog_allowed({}, {})
+    assert _posthog_allowed({"PEAL_POSTHOG_KEY": ""}, {})
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_product_analytics_names_its_environment(rendered: Path, environment: str) -> None:
+    """Every event says which server sent it, whether a key is set or not."""
+    assert _host_env(rendered, environment)["PEAL_POSTHOG_ENVIRONMENT"] == environment
+
+
+def test_product_analytics_needs_no_key_until_the_project_is_named() -> None:
+    assert not {"PEAL_POSTHOG_KEY", "PEAL_POSTHOG_PERSONAL_API_KEY"} & set(_required("production"))
+    assert not {"PEAL_POSTHOG_KEY", "PEAL_POSTHOG_PERSONAL_API_KEY"} & set(_required("sandbox"))
+
+
+def test_a_posthog_project_requires_both_its_keys() -> None:
+    """Peal's servers never capture without being able to erase: the
+    project's id requires the project token and the personal key."""
+    expression = role_file("peal_runtime", "vars")["peal_runtime_required_credentials"]
+    names = {**settings("production"), "peal_settings": {"PEAL_POSTHOG_PROJECT_ID": "12345"}}
+    required = ansible_render(expression, **names)
+
+    assert {"PEAL_POSTHOG_KEY", "PEAL_POSTHOG_PERSONAL_API_KEY"} <= set(required)
 
 
 def _unset(tmp_path: Path, credentials: str) -> list[str]:
