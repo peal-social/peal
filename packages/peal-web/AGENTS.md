@@ -169,7 +169,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `router.refresh()` never restarts a recording. A choice or a sign-out
   reaches the other tabs through a storage event (`#measurement/tabs.ts`,
   `peal.measurement-news`, removed as written), and a tab shown again
-  reads the server again. Only `measurement/sdk.ts` imports `posthog-js`
+  reads the server again. `posthog-js` is pinned with its `@posthog/core`,
+  `@posthog/browser-common` and `@posthog/types`, which the root
+  `package.json`'s `overrides` pin to the versions it was released with:
+  move all four together on every bump (Dependabot's `posthog` group
+  holds them). Only `measurement/sdk.ts` imports `posthog-js`
   (a test reads `src/`), behind a dynamic import; its logs never leave
   (`logs.beforeSend`). Every event goes through `sanitized`'s allowlist
   (ids, enums, numbers, booleans; a test refuses the server's
