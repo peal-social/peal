@@ -10,7 +10,7 @@ import { answerAccessDenied } from "#workspace/domain/membership.ts";
 import type { AccessDenied } from "#workspace/domain/membership.ts";
 import type { Principal } from "#workspace/domain/principal.ts";
 
-import { memberOf } from "./principal.ts";
+import { actingAs, memberOf } from "./principal.ts";
 import { limitHeaders, pastLimit, refusalMessage } from "./rate-limit.ts";
 import { contentChangeOf, journalled } from "./security.ts";
 
@@ -175,7 +175,9 @@ export const mcpAuthentication = ({
               : [];
 
           const answered = httpEffect.pipe(
-            Effect.provideService(CurrentMember, member)
+            Effect.provideService(CurrentMember, member),
+            // Bearer tokens never carry an impersonation.
+            actingAs(principal)
           );
 
           const changesContent = called.some((name) => contentTools.has(name));

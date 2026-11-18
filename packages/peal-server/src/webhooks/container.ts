@@ -9,6 +9,7 @@ import { WebhookDeliveries } from "#webhooks/application/webhook-deliveries.ts";
 import { WebhookEndpoints } from "#webhooks/application/webhook-endpoints.ts";
 import { WebhookEvents } from "#webhooks/application/webhook-events.ts";
 import { WebhookOversight } from "#webhooks/application/webhook-oversight.ts";
+import { analysedWebhookEvents } from "#webhooks/infrastructure/analysed-webhook-events.ts";
 import { CipherEndpointSecrets } from "#webhooks/infrastructure/cipher-endpoint-secrets.ts";
 import { DrizzleDeliveryStore } from "#webhooks/infrastructure/drizzle-delivery-store.ts";
 import { DrizzleEndpointStore } from "#webhooks/infrastructure/drizzle-endpoint-store.ts";
@@ -32,11 +33,12 @@ const TransportLive = HttpWebhookTransport.pipe(
  * WebhookDeliveries), the events the other contexts publish
  * (WebhookEvents), the attempts for the workers (DeliverWebhook), the
  * retention (PurgeDeliveries), and WebhookOversight for the staff console.
- * Needs a TransactionRunner and Ids.
+ * Needs a TransactionRunner, Ids and ProductAnalytics, which events tell.
  */
 export const webhooksWith = <ROut, E, R>(adapters: Layer.Layer<ROut, E, R>) =>
   Layer.mergeAll(
-    WebhookEvents.layer,
+    // Every teller tells product analytics too, of the milestones it counts.
+    analysedWebhookEvents(WebhookEvents.layer),
     WebhookEndpoints.layer,
     WebhookDeliveries.layer,
     DeliverWebhook.layer,

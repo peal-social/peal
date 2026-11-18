@@ -98,9 +98,13 @@ export interface BillingHooks {
   /**
    * Gives a workspace just made its billing account: its creator's, made
    * then if they have none. Never throws: the account is given the next
-   * time the workspace is read otherwise.
+   * time the workspace is read otherwise. Product analytics is told who
+   * made it.
    */
-  readonly workspaceCreated: (workspaceId: string) => Promise<void>;
+  readonly workspaceCreated: (
+    workspaceId: string,
+    creatorId: string
+  ) => Promise<void>;
 }
 
 /**

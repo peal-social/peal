@@ -1,6 +1,7 @@
 import { Context, Effect, Layer, Option } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import { planClosure } from "#workspace/domain/account-closure.ts";
@@ -106,6 +107,7 @@ export class ReplayErasures extends Context.Service<
       const store = yield* AccountStore;
       const records = yield* ContextRecords;
       const ledger = yield* ErasureLedger;
+      const analytics = yield* ProductAnalytics;
       const { transaction } = yield* TransactionRunner;
 
       // The account, erased as closing it erased it, if it is back.
@@ -216,6 +218,12 @@ export class ReplayErasures extends Context.Service<
               workspaceIds: replayed.workspaces.join(","),
             })
           );
+
+          // At product analytics too: a command, which waits for it.
+          yield* analytics.forget({
+            userIds: replayed.account === null ? [] : [replayed.account],
+            workspaceIds: replayed.workspaces,
+          });
         }
 
         return replayed;

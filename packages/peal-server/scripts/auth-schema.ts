@@ -65,6 +65,7 @@ const auth = makeAuth({
       requiredBy: async () => await Promise.resolve([]),
     },
     twoStepChanged: ignore,
+    userCreated: ignore,
     verifyEmail: ignore,
     workspaceChange: nothing,
     workspaceCreated: nothing,

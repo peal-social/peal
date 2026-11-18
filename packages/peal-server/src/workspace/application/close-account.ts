@@ -1,8 +1,9 @@
-import { Context, Effect, Layer, Option } from "effect";
+import { Context, Effect, Layer, Option, Scope } from "effect";
 import type { Redacted } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { planClosure } from "#workspace/domain/account-closure.ts";
 import type { LastOwner } from "#workspace/domain/last-owner.ts";
@@ -95,6 +96,9 @@ export class CloseAccount extends Context.Service<
       const mail = yield* AccountMail;
       const ownership = yield* PartnerOwnership;
       const { transaction } = yield* TransactionRunner;
+      const analytics = yield* ProductAnalytics;
+      // Where what PostHog deletes runs, so no answer waits on it.
+      const scope = yield* Scope.Scope;
 
       const close = Effect.fn("CloseAccount.close")(function* close(
         principal: UserPrincipal,
@@ -216,6 +220,11 @@ export class CloseAccount extends Context.Service<
                 workspaceIds: deleted.join(","),
               })
             );
+
+            // The user and the workspaces it deleted, at product analytics.
+            yield* analytics
+              .forget({ userIds: [userId], workspaceIds: deleted })
+              .pipe(Effect.forkIn(scope));
 
             yield* mail.deleted({
               email: user.email,

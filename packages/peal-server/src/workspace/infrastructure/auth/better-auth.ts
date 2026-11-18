@@ -16,6 +16,7 @@ import { CreditProblemDesk } from "#billing/application/credit-problem-desk.ts";
 import { RecordSubscription } from "#billing/application/record-subscription.ts";
 import { WorkspaceEntitlements } from "#billing/application/workspace-entitlements.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { UpgradePaths } from "#shared/application/upgrade-paths.ts";
 import type { UpgradePath } from "#shared/application/upgrade-paths.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -29,6 +30,11 @@ import { SecurityPolicies } from "#workspace/application/security-policies.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
 import { UserPrincipal } from "#workspace/domain/user-principal.ts";
 
+import {
+  toldSignUp,
+  toldSubscription,
+  toldWorkspace,
+} from "./analytics-hooks.ts";
 import { authStarted } from "./auth-start.ts";
 import type { CheckoutAnswer, Upgrade } from "./billing.ts";
 import { makeAuthDatabase } from "./database.ts";
@@ -289,6 +295,7 @@ export const BetterAuthLive = Layer.effect(
     const policies = yield* SecurityPolicies;
     const accountMail = yield* AccountMail;
     const signUps = yield* SignUpGate;
+    const analytics = yield* ProductAnalytics;
 
     // The instance, once made: the email of a recovery code used says how
     // many are left, which only the instance reads.
@@ -403,8 +410,23 @@ export const BetterAuthLive = Layer.effect(
         ),
       // Awaited: the webhook answers an error until the event is recorded,
       // so Stripe sends it again.
+      // What billing recorded is told to product analytics afterwards, on
+      // the layer's fibers: it never changes what Stripe is answered.
       subscriptionChanged: async (event) => {
-        await runPromise(subscriptions.record(event).pipe(Effect.asVoid));
+        await runPromise(
+          subscriptions.record(event).pipe(
+            Effect.tap((outcome) =>
+              Effect.sync(() => {
+                if (outcome === "recorded") {
+                  run(
+                    toldSubscription(analytics, accounts, entitlements, event)
+                  );
+                }
+              })
+            ),
+            Effect.asVoid
+          )
+        );
       },
       // Awaited, as a subscription's event is.
       refundFailed: async (failure) => {
@@ -428,6 +450,9 @@ export const BetterAuthLive = Layer.effect(
           )(kind, userId)
         );
       },
+      userCreated: (created) => {
+        run(toldSignUp(analytics, created));
+      },
       verifyEmail: (link) => {
         run(emails.send({ _tag: "VerifyEmail", ...link }));
       },
@@ -437,11 +462,27 @@ export const BetterAuthLive = Layer.effect(
       },
       // Awaited, so the workspace answered is in its creator's billing
       // account. A failure is logged: the account is given the next time
-      // the workspace is read.
-      workspaceCreated: async (workspaceId) => {
+      // the workspace is read. Product analytics is told afterwards, with
+      // the account when it was read.
+      workspaceCreated: async (workspaceId, creatorId) => {
         await runPromise(
           decodeWorkspaceIdEffect(workspaceId).pipe(
-            Effect.flatMap((id) => accounts.of(id)),
+            Effect.flatMap((id) =>
+              accounts.of(id).pipe(
+                Effect.map(Option.some),
+                Effect.catchCause((cause) =>
+                  Effect.logWarning(
+                    "Giving a new workspace its billing account failed",
+                    cause
+                  ).pipe(Effect.as(Option.none()))
+                ),
+                Effect.tap((account) =>
+                  Effect.sync(() => {
+                    run(toldWorkspace(analytics, id, creatorId, account));
+                  })
+                )
+              )
+            ),
             Effect.asVoid,
             Effect.catchCause((cause) =>
               Effect.logWarning(

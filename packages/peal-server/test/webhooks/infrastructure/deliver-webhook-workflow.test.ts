@@ -5,6 +5,7 @@ import { MessageStorage } from "effect/cluster";
 import { TestClock } from "effect/testing";
 
 import { DatabaseError } from "#shared/application/database-error.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 import { TransactionRunnerLive } from "#shared/infrastructure/transaction-runner-live.ts";
 import { DatabaseTest } from "#test/channels/support.ts";
@@ -78,7 +79,7 @@ const ServerTest = WebhooksWorkersLive.pipe(
         WorkflowDeliveryJobs,
         ToldNotices.layer
       )
-    )
+    ).pipe(Layer.provide(ProductAnalytics.none))
   ),
   Layer.provideMerge(Layer.mergeAll(IdsLive, TransactionRunnerLive)),
   Layer.provideMerge(clusterOver(MessageStorage.layerMemory)),

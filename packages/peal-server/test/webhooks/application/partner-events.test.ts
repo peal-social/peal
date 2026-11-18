@@ -4,6 +4,7 @@ import { assert, layer } from "@effect/vitest";
 import { Context, DateTime, Effect, Layer, Option, Ref, Schema } from "effect";
 
 import { newId } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
@@ -74,6 +75,7 @@ const PartnerWebhooksTest = webhooksWith(
     OriginsTest
   )
 ).pipe(
+  Layer.provide(ProductAnalytics.none),
   Layer.provideMerge(Owned.layer),
   Layer.provideMerge(TransactionsTest),
   Layer.provideMerge(DatabaseTest)

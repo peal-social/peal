@@ -17,6 +17,7 @@ import type { Member, Principal } from "peal-contract";
 
 import { actorOf } from "#shared/api/actor.ts";
 import { Ids } from "#shared/application/ids.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
@@ -130,6 +131,8 @@ class Fakes extends Context.Service<
     >;
     /** What removing a workspace's files waits for, as a test sets it. */
     readonly whileRemovingFiles: Ref.Ref<Effect.Effect<void>>;
+    /** What forgetting at product analytics waits for, as a test sets it. */
+    readonly whileForgetting: Ref.Ref<Effect.Effect<void>>;
   }
 >()("test/workspace/api/Fakes") {
   static readonly layer = Layer.effect(
@@ -139,6 +142,7 @@ class Fakes extends Context.Service<
       standings: Ref.make<ReadonlyMap<UserId, readonly MembershipStanding[]>>(
         new Map()
       ),
+      whileForgetting: Ref.make<Effect.Effect<void>>(Effect.void),
       whileRemovingFiles: Ref.make<Effect.Effect<void>>(Effect.void),
     })
   );
@@ -555,6 +559,30 @@ const PortsLive = Layer.mergeAll(
       });
     })
   ),
+  // Product analytics, which records what an erasure forgets once what
+  // the test set lets it.
+  Layer.effect(
+    ProductAnalytics,
+    Effect.gen(function* ProductAnalyticsTest() {
+      const fakes = yield* Fakes;
+
+      return ProductAnalytics.of({
+        capture: () => Effect.void,
+        enabled: true,
+        forget: ({ userIds, workspaceIds }) =>
+          Ref.get(fakes.whileForgetting).pipe(
+            Effect.flatten,
+            Effect.andThen(
+              record(`forget:${userIds.join(",")}|${workspaceIds.join(",")}`)
+            ),
+            Effect.provideService(Fakes, fakes)
+          ),
+        groupIdentify: () => Effect.void,
+        identify: () => Effect.void,
+        markInternal: () => Effect.void,
+      });
+    })
+  ),
   Ids.layerTest,
   PartnerOwnership.layerNone,
   // A server that bills, whose operator declared who it is.
@@ -608,12 +636,16 @@ const groups = ["workspaces", "account", "connectedApps"] as const;
 const clientWith = <E, R>(
   security: Layer.Layer<Layer.Success<typeof anonymousSecurityTest>, E, R>
 ) =>
-  HttpApiTest.groups(Api, groups).pipe(
-    Effect.provide(
-      Layer.mergeAll(
-        HandlersLive.pipe(Layer.provideMerge(security)),
-        HttpServer.layerServices
-      )
+  // Built in the test's scope, so what a use case forks into its layer's
+  // scope (product analytics' forgetting) runs while the test does.
+  Layer.build(
+    Layer.mergeAll(
+      HandlersLive.pipe(Layer.provideMerge(security)),
+      HttpServer.layerServices
+    )
+  ).pipe(
+    Effect.flatMap((context) =>
+      HttpApiTest.groups(Api, groups).pipe(Effect.provideContext(context))
     )
   );
 
@@ -673,6 +705,15 @@ const as = (
 
 const calls = Fakes.use(({ calls: made }) => Ref.get(made));
 
+// Lets what a use case forked run, without moving the clock.
+const settle = Effect.forEach(
+  Array.from({ length: 20 }),
+  () => Effect.yieldNow,
+  {
+    discard: true,
+  }
+);
+
 const failureOf = <A, E extends { readonly _tag: string }, R>(
   request: Effect.Effect<A, E, R>
 ) =>
@@ -696,13 +737,22 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           "WorkspaceNameMismatch"
         );
         assert.notInclude(yield* calls, `eraseWorkspace:${harbour}`);
+        assert.notInclude(yield* calls, `forget:|${harbour}`);
 
         yield* client.workspaces.delete({
           params,
           payload: { name: "Harbour" },
         });
 
+        yield* settle;
+
         const done = yield* calls;
+
+        // Its service identity, at product analytics, once deleted.
+        assert.isAbove(
+          done.indexOf(`forget:|${harbour}`),
+          done.indexOf(`ledger:workspace:${harbour}:confirmed`)
+        );
 
         assert.includeMembers(
           [...done],
@@ -726,6 +776,24 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           done.indexOf(`deleteWorkspace:${harbour}`)
         );
         assert.notInclude(done, "ledger:discard");
+      })
+  );
+
+  it.effect(
+    "answer a deletion without waiting for product analytics to forget",
+    () =>
+      Effect.gen(function* withoutWaiting() {
+        const { whileForgetting } = yield* Fakes;
+        const client = yield* as(user());
+
+        yield* Ref.set(whileForgetting, Effect.never);
+
+        yield* client.workspaces.delete({
+          params: { workspaceId: harbour },
+          payload: { name: "Harbour" },
+        });
+
+        yield* Ref.set(whileForgetting, Effect.void);
       })
   );
 
@@ -1185,6 +1253,8 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           [{ id: shared, name: "Shared" }]
         );
         assert.notInclude(yield* calls, `deleteUser:${userId}`);
+        // Refused before anything was erased: nothing forgotten.
+        assert.notInclude(yield* calls, `forget:${userId}|${harbour}`);
 
         for (const principal of [apiKey, oauth, impersonated]) {
           const refused = yield* as(principal);
@@ -1211,11 +1281,15 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           payload: { password: "correct horse" },
         });
 
+        yield* settle;
+
         const done = yield* calls;
 
         assert.includeMembers(
           [...done],
           [
+            // The user and the workspace it deleted, at product analytics.
+            `forget:${userId}|${harbour}`,
             `eraseWorkspace:${harbour}`,
             `deleteWorkspace:${harbour}`,
             `eraseUser:${userId}`,

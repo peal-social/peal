@@ -9,9 +9,11 @@ import { Context, Duration, Effect, Layer, Option } from "effect";
 import { RunnerAddress } from "effect/cluster";
 
 import { clusterLayer } from "#app/cluster.ts";
+import { ProductAnalyticsLive } from "#app/product-analytics.ts";
 import { ContextsLive } from "#app/server.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
+import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { DatabaseLive } from "#shared/infrastructure/database.ts";
 import { MigrationsLive } from "#shared/infrastructure/migrations.ts";
 import { storageSettings } from "#test/media/support.ts";
@@ -25,6 +27,7 @@ const Cluster = clusterLayer({
 });
 
 const Built = ContextsLive.pipe(
+  Layer.provideMerge(ProductAnalyticsLive),
   Layer.provide(storageSettings),
   Layer.provide(Cluster),
   Layer.provide(MigrationsLive),
@@ -44,6 +47,9 @@ describe("the server's compositions", () => {
           Option.isSome(Context.getOption(context, EngagementRecords))
         );
         assert.isTrue(Option.isSome(Context.getOption(context, MeteredUsage)));
+
+        // No PEAL_POSTHOG_KEY: product analytics sends nothing.
+        assert.isFalse(Context.get(context, ProductAnalytics).enabled);
       }).pipe(Effect.scoped),
     60_000
   );
