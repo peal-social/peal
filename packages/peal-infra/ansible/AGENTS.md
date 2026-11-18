@@ -162,6 +162,15 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   (`AUD_NAMES`): production's `admin` application covers
   `peal_access_paths`, so a path added there is added to the Pulumi
   project's `adminPaths` too.
+- Peal's blog runs behind `peal_blog`, off by default (README.md, "The
+  blog"): with the flag off, every rendered file stays as it was
+  (`tests/test_blog.py`). On the site's host name the tunnel refuses
+  `/blog/_emdash` (any case), sends `/_emdash/api/media/file/` and `/blog`
+  to the blog, and `/_emdash` too, behind the blog's own Access
+  application in production (`cloudflare_access_aud.blog`, from the
+  stack's `accessAud.blog`); nothing else of the host. Its database role's
+  password goes from `secrets.env` to psql through the environment alone
+  (`docker exec --env NAME`), as Postgres's does.
 - `tests/` runs in parallel, a worker a CPU (pytest-xdist, in
   `pyproject.toml`), in any order: a test shares nothing with another but
   what it only reads. Name each container and network for the run

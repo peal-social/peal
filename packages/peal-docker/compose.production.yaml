@@ -438,11 +438,13 @@ services:
       BLOG_PLAUSIBLE_DOMAIN:
       BLOG_PLAUSIBLE_HOST:
       # EmDash's SMTP, for invitations and magic links; unset, no mail.
+      # Peal's servers send through Resend's SMTP relay, whose password is
+      # the server's RESEND_API_KEY.
       EMAIL_SMTP_HOST:
       EMAIL_SMTP_PORT:
       EMAIL_SMTP_SECURE:
       EMAIL_SMTP_USER:
-      EMAIL_SMTP_PASS:
+      EMAIL_SMTP_PASS: ${EMAIL_SMTP_PASS:-${RESEND_API_KEY:-}}
       EMAIL_SMTP_FROM:
     volumes:
       # Signed-in editors' sessions, kept across releases.

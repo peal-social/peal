@@ -45,6 +45,12 @@ peal_credentials:
   # with, a key of its own, apart from the writing assistant's
   # (PEAL_AI_API_KEY), with a spending limit at Anthropic.
   DOCS_ANTHROPIC_API_KEY: REPLACE
+  # Where the blog runs (peal_blog), its bucket's key, for that bucket
+  # alone, which scripts/cloudflare_from_pulumi.py writes once the
+  # environment's stack has made it (README.md, "The blog"). Optional until
+  # the flag is on. The blog mails with RESEND_API_KEY.
+  # PEAL_BLOG_S3_ACCESS_KEY_ID: REPLACE
+  # PEAL_BLOG_S3_SECRET_ACCESS_KEY: REPLACE
   # Optional, each turning a feature on (the docs' environment variables
   # page): the writing assistant's provider key; Stripe's, with
   # STRIPE_LOOKUP_KEY_PREFIX in peal_settings when its prices' lookup keys

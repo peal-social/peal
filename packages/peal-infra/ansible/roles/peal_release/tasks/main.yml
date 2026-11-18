@@ -156,6 +156,12 @@
       web: peal-web:{{ peal_release_tag }}
       static: peal-static:{{ peal_release_tag }}
 
+# The blog's image, when the environment runs it.
+- name: Name the blog's image
+  ansible.builtin.set_fact:
+    peal_release_built: "{{ peal_release_built | combine({'blog': 'peal-blog:' ~ peal_release_tag}) }}"
+  when: peal_blog | bool
+
 # The docs server's image, when the docs have their assistant.
 - name: Name the docs server's image
   ansible.builtin.set_fact:
@@ -224,7 +230,7 @@
           - --load
           - .
         chdir: "{{ peal_release_local_dir }}/checkout"
-      loop: "{{ peal_release_missing | difference(['static', 'docs']) }}"
+      loop: "{{ peal_release_missing | difference(['static', 'docs', 'blog']) }}"
       delegate_to: localhost
       become: false
       changed_when: true
@@ -270,6 +276,29 @@
       become: false
       changed_when: true
       when: not peal_release_local_archive.stat.exists and 'docs' in peal_release_missing
+
+    # The blog reads its public origin at build time, for its images.
+    - name: Build the blog's image
+      ansible.builtin.command:
+        argv:
+          - docker
+          - buildx
+          - build
+          - --platform
+          - "{{ peal_release_platform }}"
+          - --file
+          - packages/peal-docker/blog.Dockerfile
+          - --tag
+          - "{{ peal_release_built.blog }}"
+          - --build-arg
+          - BLOG_SITE_URL=https://{{ peal_hostnames.site }}
+          - --load
+          - .
+        chdir: "{{ peal_release_local_dir }}/checkout"
+      delegate_to: localhost
+      become: false
+      changed_when: true
+      when: not peal_release_local_archive.stat.exists and 'blog' in peal_release_missing
 
     - name: Save the images
       ansible.builtin.shell: |
@@ -535,6 +564,53 @@
   when: peal_release_password.rc != 0
   changed_when: true
 
+# The blog's role and database on the stack's Postgres, with the password
+# secrets.env holds. The check signs in as the blog does, over the network;
+# only when it is refused (a new blog, or a database restored from another
+# server) does the next task create the role and the database where missing
+# and set the role's password. The password goes from secrets.env to psql
+# through the environment alone (docker exec --env passes the caller's
+# variable by name, and psql reads it with \getenv), never on a command
+# line or in Ansible's output, and the statement stays out of Postgres's
+# log.
+- name: Check the blog's database password
+  ansible.builtin.command:
+    argv:
+      - sh
+      - -c
+      - |
+        set -eu
+        PEAL_BLOG_DATABASE_PASSWORD="$(sed -n 's/^PEAL_BLOG_DATABASE_PASSWORD=//p' {{ peal_root }}/secrets.env)"
+        export PEAL_BLOG_DATABASE_PASSWORD
+        exec docker exec --env PEAL_BLOG_DATABASE_PASSWORD {{ peal_compose_project }}-postgres-1 sh -c \
+          'PGPASSWORD="$PEAL_BLOG_DATABASE_PASSWORD" exec psql --host postgres --username peal_blog --dbname peal_blog --no-psqlrc --quiet --command "SELECT 1"'
+  register: peal_release_blog_password
+  changed_when: false
+  failed_when: false
+  when: peal_blog | bool
+
+# CREATE DATABASE cannot run in a transaction: \gexec runs each statement
+# the query returns, none when the database exists.
+- name: Create the blog's role and database
+  ansible.builtin.command:
+    argv:
+      - sh
+      - -c
+      - |
+        set -eu
+        PEAL_BLOG_DATABASE_PASSWORD="$(sed -n 's/^PEAL_BLOG_DATABASE_PASSWORD=//p' {{ peal_root }}/secrets.env)"
+        export PEAL_BLOG_DATABASE_PASSWORD
+        exec docker exec --interactive --env PEAL_BLOG_DATABASE_PASSWORD {{ peal_compose_project }}-postgres-1 \
+          psql --username peal --dbname peal --no-psqlrc --quiet --set ON_ERROR_STOP=1
+    stdin: |
+      \getenv password PEAL_BLOG_DATABASE_PASSWORD
+      SET log_statement = 'none';
+      SELECT 'CREATE ROLE peal_blog LOGIN' WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'peal_blog') \gexec
+      ALTER ROLE peal_blog PASSWORD :'password';
+      SELECT 'CREATE DATABASE peal_blog OWNER peal_blog' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'peal_blog') \gexec
+  when: peal_blog | bool and peal_release_blog_password.rc | default(0) != 0
+  changed_when: true
+
 # The new server migrates the database before it listens: --wait returns
 # once it is healthy.
 - name: Start the server, which migrates the database
@@ -552,13 +628,14 @@
     peal_release_stack.stderr_lines | reject('search', 'collector-wget-[0-9]+ +Started')
     | select('search', '(Started|Recreated|Removed)') | list | length > 0
 
-- name: Check the server, the web app and the docs server on the server
+- name: Check the server, the web app, the docs server and the blog on the server
   ansible.builtin.uri:
     url: http://127.0.0.1:{{ item.port }}{{ item.path }}
     status_code: [200, 204]
   loop: >-
     {{ [{'port': peal_ports.server, 'path': '/api/ready'}, {'port': peal_ports.web, 'path': '/sign-in'}]
-       + ([{'port': peal_ports.docs_server, 'path': '/'}] if peal_docs_server | bool else []) }}
+       + ([{'port': peal_ports.docs_server, 'path': '/'}] if peal_docs_server | bool else [])
+       + ([{'port': peal_ports.blog, 'path': '/_emdash/api/health'}] if peal_blog | bool else []) }}
   register: peal_release_local
   until: peal_release_local.status in [200, 204]
   retries: 10

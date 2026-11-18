@@ -1,5 +1,11 @@
 # Restore the database
 
+A restore brings back every database of the cluster: Peal's, and the
+blog's (`peal_blog`) where it runs. The blog's media is not in the
+database: it stays in the blog's own bucket, which a restore leaves as it
+is. The release that follows signs in as the blog with `secrets.env`'s
+password, and sets it again on a database restored from another server.
+
 pgBackRest restores Postgres from the backup bucket: to its latest state,
 which loses at most the last 5 minutes, or to a time since the oldest full
 backup kept, three to four weeks back (`pgbackrest info` below shows it),

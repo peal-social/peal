@@ -164,7 +164,7 @@ def test_the_release_sends_the_docs_to_the_server_once_it_answers() -> None:
 
     assert switch["ansible.builtin.include_role"] == {"name": "cloudflared", "tasks_from": "routes.yml"}
     assert (
-        names.index("Check the server, the web app and the docs server on the server")
+        names.index("Check the server, the web app, the docs server and the blog on the server")
         < names.index("Send the docs to the docs server")
         < names.index("Apply a changed route now")
         < names.index("Check the app through the tunnel")

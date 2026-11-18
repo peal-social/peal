@@ -11,6 +11,7 @@ import subprocess
 import time
 from collections.abc import Iterator
 from dataclasses import dataclass
+from pathlib import Path
 
 import pytest
 
@@ -159,3 +160,91 @@ class TestThePassword:
         assert running.returncode == 0
         assert GENERATED not in running.stdout + running.stderr
         assert running.stdout.split()[0] == to_run.stdout.strip()
+
+
+# The blog's database (peal_blog): its role and database on the stack's
+# Postgres, with the password secrets.env holds.
+BLOG_GENERATED = f"blog-generated-{secrets.token_hex(8)}"
+BLOG_RESTORED = f"blog-restored-{secrets.token_hex(8)}"
+
+
+def _blog_step(postgres: Postgres, root: Path, name: str) -> subprocess.CompletedProcess[str]:
+    """Runs a release task's command as the release would: on the host,
+    reading secrets.env in root, against the test's container."""
+    found = task("peal_release", name)
+    command = command_of(found, peal_root=str(root), peal_compose_project=postgres.project)
+    return _run(command, stdin_of(found))
+
+
+def _blog_signs_in(postgres: Postgres, password: str) -> bool:
+    """Whether the blog, another container on the network, signs in."""
+    return _run(["docker", "run", "--rm", "--network", postgres.network, IMAGE, "psql",
+                 f"postgres://peal_blog:{password}@postgres:5432/peal_blog", "--command", "SELECT 1"]).returncode == 0
+
+
+@pytest.fixture
+def blog_root(tmp_path: Path) -> Path:
+    """The server's folder, with the blog's password in secrets.env."""
+    (tmp_path / "secrets.env").write_text(f"POSTGRES_PASSWORD={GENERATED}\nPEAL_BLOG_DATABASE_PASSWORD={BLOG_GENERATED}\n")
+    return tmp_path
+
+
+class TestTheBlogDatabase:
+    """The release's steps on the blog's role and database, against one
+    Postgres of their own, run in order: a new blog, a second release, then
+    a database restored with another password."""
+
+    def test_the_role_and_database_are_made_once_and_kept_in_step(self, postgres: Postgres, blog_root: Path) -> None:
+        check = "Check the blog's database password"
+        create = "Create the blog's role and database"
+
+        # A new blog: no role yet, so the check is refused.
+        assert _blog_step(postgres, blog_root, check).returncode != 0
+
+        _blog_step(postgres, blog_root, create).check_returncode()
+
+        assert _blog_signs_in(postgres, BLOG_GENERATED)
+        assert _blog_step(postgres, blog_root, check).returncode == 0
+
+        # The role owns its database and has no other attribute.
+        owner = _run(["docker", "exec", postgres.container, "psql", "--username", "peal", "--dbname", "peal",
+                      "--tuples-only", "--no-align", "--command",
+                      "SELECT pg_get_userbyid(datdba), r.rolsuper, r.rolcreatedb, r.rolcreaterole "
+                      "FROM pg_database d JOIN pg_roles r ON r.rolname = 'peal_blog' "
+                      "WHERE datname = 'peal_blog'"])
+        assert owner.stdout.strip() == "peal_blog|f|f|f"
+
+        # Running it again (as a second release would, were the check to
+        # fail) changes nothing and fails on nothing.
+        _blog_step(postgres, blog_root, create).check_returncode()
+        assert _blog_signs_in(postgres, BLOG_GENERATED)
+
+        # A database restored from a server with another password.
+        _psql(postgres, f"ALTER ROLE peal_blog PASSWORD '{BLOG_RESTORED}'")
+        assert _blog_step(postgres, blog_root, check).returncode != 0
+
+        _blog_step(postgres, blog_root, create).check_returncode()
+
+        assert _blog_signs_in(postgres, BLOG_GENERATED)
+        assert _blog_step(postgres, blog_root, check).returncode == 0
+
+    def test_the_password_is_logged_nowhere(self, postgres: Postgres, blog_root: Path) -> None:
+        """Not in Postgres's log, even where it logs every statement, nor in
+        the command, which any process on the host could read."""
+        _psql(postgres, f"ALTER ROLE peal PASSWORD '{GENERATED}'")
+        _psql(postgres, "ALTER SYSTEM SET log_statement = 'all'")
+        _psql(postgres, "SELECT pg_reload_conf()")
+        try:
+            ran = _blog_step(postgres, blog_root, "Create the blog's role and database")
+            ran.check_returncode()
+            checked = _blog_step(postgres, blog_root, "Check the blog's database password")
+        finally:
+            _psql(postgres, "ALTER SYSTEM RESET log_statement")
+            _psql(postgres, "SELECT pg_reload_conf()")
+        logs = _run(["docker", "logs", postgres.container])
+
+        assert BLOG_GENERATED not in logs.stdout + logs.stderr
+        assert BLOG_GENERATED not in ran.stdout + ran.stderr + checked.stdout + checked.stderr
+        for name in ["Create the blog's role and database", "Check the blog's database password"]:
+            command = command_of(task("peal_release", name), peal_root=str(blog_root), peal_compose_project="peal")
+            assert all(BLOG_GENERATED not in part for part in command)

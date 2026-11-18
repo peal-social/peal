@@ -242,3 +242,46 @@ def test_the_uptime_vault_must_exist_first(inventory: Path) -> None:
         run(inventory, OUTPUTS, group="uptime")
 
     assert not (inventory / "group_vars" / "uptime" / "vault.yml").exists()
+
+
+# The blog's (peal_blog): its bucket and key in both environments, and in
+# production the Access application over /_emdash, once the stack has made
+# them. Before that, the files are written as they were.
+BLOG_OUTPUTS = {
+    "blogBucket": "peal-production-blog",
+    "blogKey": {"accessKeyId": "blog-id", "secretAccessKey": "blog-secret-synthetic"},
+}
+
+
+def test_production_takes_the_blog_s_bucket_and_access_tag(inventory: Path) -> None:
+    outputs = {
+        **PRODUCTION_OUTPUTS,
+        **BLOG_OUTPUTS,
+        "accessAud": {**PRODUCTION_OUTPUTS["accessAud"], "blog": "aud-blog"},
+    }
+
+    run(inventory, outputs, group="production")
+
+    written = yaml.safe_load((inventory / "group_vars" / "production" / "cloudflare.yml").read_text())
+    assert written["cloudflare_access_aud"]["blog"] == "aud-blog"
+    assert written["peal_blog_bucket"] == "peal-production-blog"
+    credentials = vault_of(inventory, "production")["peal_credentials"]
+    assert credentials["PEAL_BLOG_S3_ACCESS_KEY_ID"] == "blog-id"
+    assert credentials["PEAL_BLOG_S3_SECRET_ACCESS_KEY"] == "blog-secret-synthetic"
+    assert "blog-secret-synthetic" not in (inventory / "group_vars" / "production" / "vault.yml").read_text()
+
+
+def test_a_stack_without_the_blog_writes_nothing_of_it(inventory: Path) -> None:
+    run(inventory, PRODUCTION_OUTPUTS, group="production")
+
+    written = (inventory / "group_vars" / "production" / "cloudflare.yml").read_text()
+    assert "blog" not in written
+    assert not any("BLOG" in name for name in vault_of(inventory, "production")["peal_credentials"])
+
+
+def test_the_sandbox_takes_the_blog_s_bucket_but_no_tag_of_its_own(inventory: Path) -> None:
+    run(inventory, {**OUTPUTS, **BLOG_OUTPUTS, "blogBucket": "peal-sandbox-blog"})
+
+    written = yaml.safe_load((inventory / "group_vars" / "sandbox" / "cloudflare.yml").read_text())
+    assert written["peal_blog_bucket"] == "peal-sandbox-blog"
+    assert "blog" not in written["cloudflare_access_aud"]

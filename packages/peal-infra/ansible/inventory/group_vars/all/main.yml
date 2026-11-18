@@ -62,9 +62,24 @@ peal_compose_bin: /usr/local/bin/peal-compose
 # release.yml builds the docs image, Compose runs its profile, and the
 # tunnel sends the docs' host name to it rather than to the static image.
 peal_docs_server: "{{ peal_static_build_args.DOCS_ASSISTANT_MODEL | default('') | length > 0 }}"
-# Compose profiles the stack runs with: the marketing site and the docs, and
-# the docs server.
-peal_compose_profiles: "{{ ['static'] + (['docs'] if peal_docs_server | bool else []) }}"
+# Peal's own blog at <site>/blog (packages/peal-blog), with EmDash's admin
+# at <site>/_emdash: off until the owner turns it on for an environment
+# (README.md, "The blog"). With it, site.yml generates its secrets and the
+# tunnel routes it, and release.yml builds its image, makes its database
+# and role on the stack's Postgres and runs its Compose profile. Its media
+# goes to a bucket of its own, peal_blog_bucket, which the environment's
+# Pulumi stack makes (cloudflare.yml).
+peal_blog: false
+peal_blog_bucket: ""
+# The blog sends its invitations and sign-in links through Resend's SMTP
+# relay, with the RESEND_API_KEY the server sends with, from MAIL_FROM's
+# address (peal_mail_from). false: the blog sends no mail.
+peal_blog_mail: true
+# Compose profiles the stack runs with: the marketing site and the docs, the
+# docs server, and the blog.
+peal_compose_profiles: >-
+  {{ ['static'] + (['docs'] if peal_docs_server | bool else [])
+     + (['blog'] if peal_blog | bool else []) }}
 # Loopback ports the tunnel reaches (compose.production.yaml).
 peal_ports:
   server: 3000
@@ -72,6 +87,7 @@ peal_ports:
   site: 4321
   docs: 4322
   docs_server: 4323
+  blog: 4324
   grafana: 13000
   otlp_http: 14318
 

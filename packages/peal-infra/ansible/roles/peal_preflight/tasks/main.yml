@@ -91,3 +91,26 @@
                and peal_settings.PEAL_POSTGRES_RANDOM_PAGE_COST | string
                    is not match('^[0-9]+(\.[0-9]+)?\Z')
             else []) }}
+
+# The blog (peal_blog): its bucket, which the environment's Pulumi stack
+# makes (cloudflare.yml), and, where Access guards /_emdash rather than the
+# whole host (production), the audience tag of its Access application,
+# which cloudflared checks. Without the tag, the tunnel would route an
+# admin whose setup anyone could complete; without the bucket, the blog
+# would have nowhere to keep its media.
+- name: Refuse a blog without its bucket or its Access application
+  ansible.builtin.assert:
+    that: peal_preflight_blog_missing | length == 0
+    fail_msg: >-
+      Set {{ peal_preflight_blog_missing | join(', ') }} before turning the
+      blog on (README.md, "The blog"): run the environment's Pulumi stack,
+      then scripts/cloudflare_from_pulumi.py.
+    quiet: true
+  vars:
+    peal_preflight_blog_missing: >-
+      {{ ((['peal_blog_bucket'] if peal_blog_bucket | default('') | length == 0 else [])
+          + (['cloudflare_access_aud.blog']
+             if not peal_access_everything | default(false) | bool
+                and (cloudflare_access_aud | default({})).blog | default('') | length == 0
+             else []))
+         if peal_blog | default(false) | bool else [] }}

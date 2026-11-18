@@ -6,7 +6,8 @@ inventory, so they live in one place, Pulumi's (packages/peal-infra/pulumi):
 
 or production@…. It writes group_vars/<group>/cloudflare.yml, which is
 committed and never edited by hand: the audience tags of the environment's
-Access applications, its buckets and their endpoints. Then, once the stack
+Access applications, its buckets (the blog's too, once made) and their
+endpoints. Then, once the stack
 has made them, it writes the tunnel's token and the buckets' keys into the
 group's vault, as Ansible encrypts it, and names the entries it changed,
 never their values. Run it after each `pulumi up` of the environment, then
@@ -47,11 +48,16 @@ HEADER = """---
 
 # The Access application each audience tag of the inventory names, by
 # environment: the sandbox has one application for its app, site and docs;
-# production, public, one for its admin paths (peal_access_paths) alone.
+# production, public, one for its admin paths (peal_access_paths) and one
+# for the blog's admin, /_emdash (peal_blog).
 AUD_NAMES = {
     "sandbox": {"sandbox": "app", "grafana": "grafana", "ssh": "ssh"},
-    "production": {"admin": "admin", "grafana": "grafana", "ssh": "ssh"},
+    "production": {"admin": "admin", "grafana": "grafana", "ssh": "ssh", "blog": "blog"},
 }
+
+# Audience tags a stack may not have made yet: the inventory names them
+# once it has.
+OPTIONAL_AUD = {"blog"}
 
 # The environment stack whose service token the uptime server's checks of
 # it carry, by the prefix of its names in uptime_credentials: the sandbox
@@ -79,13 +85,22 @@ def inventory_values(group: str, outputs: Outputs) -> dict[str, Any]:
     if group not in AUD_NAMES:
         raise SystemExit(f"No Pulumi stack describes {group} yet")
     endpoint = outputs["r2Endpoint"]
-    return {
-        "cloudflare_access_aud": {name: outputs["accessAud"][key] for name, key in AUD_NAMES[group].items()},
+    audiences = outputs["accessAud"]
+    values = {
+        "cloudflare_access_aud": {
+            name: audiences[key]
+            for name, key in AUD_NAMES[group].items()
+            if key in audiences or name not in OPTIONAL_AUD
+        },
         "peal_media_endpoint": endpoint,
         "peal_media_bucket": outputs["mediaBucket"],
         "peal_backup_endpoint": endpoint.removeprefix("https://"),
         "peal_backup_bucket": outputs["backupBucket"],
     }
+    # The blog's bucket (peal_blog), once the stack has made it.
+    if "blogBucket" in outputs:
+        values["peal_blog_bucket"] = outputs["blogBucket"]
+    return values
 
 
 def vault_values(outputs: Outputs) -> dict[str, str] | None:
@@ -93,12 +108,17 @@ def vault_values(outputs: Outputs) -> dict[str, str] | None:
     has made the buckets' keys."""
     if "mediaKey" not in outputs or "backupKey" not in outputs:
         return None
-    return {
+    values = {
         "PEAL_S3_ACCESS_KEY_ID": outputs["mediaKey"]["accessKeyId"],
         "PEAL_S3_SECRET_ACCESS_KEY": outputs["mediaKey"]["secretAccessKey"],
         "PGBACKREST_REPO1_S3_KEY": outputs["backupKey"]["accessKeyId"],
         "PGBACKREST_REPO1_S3_KEY_SECRET": outputs["backupKey"]["secretAccessKey"],
     }
+    # The blog's bucket key, once the stack has made it.
+    if "blogKey" in outputs:
+        values["PEAL_BLOG_S3_ACCESS_KEY_ID"] = outputs["blogKey"]["accessKeyId"]
+        values["PEAL_BLOG_S3_SECRET_ACCESS_KEY"] = outputs["blogKey"]["secretAccessKey"]
+    return values
 
 
 def write_private(path: Path, data: bytes) -> None:
