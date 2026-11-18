@@ -73,6 +73,11 @@
   `PostTools` and `MediaTools` that change something are `contentTools`,
   whose calls the ConnectionJournal keeps. The account's own
   data (its export, its applications) has no tool.
+- `recordedCalls` tells product analytics of every `tools/call` that ran,
+  reading tools included (`mcp_tool_called`: the tool's name, whether it
+  changes something, how it ended and how long it took, never its
+  arguments or answer), after the activity log, which keeps the changing
+  tools' calls alone; it never changes what the tool answers.
 - `generate_image` (`MediaTools`, a content tool, open world, never
   idempotent) calls the assistant's `generateImage`: its description says
   the prompt goes to the workspace's own image provider when it set one,

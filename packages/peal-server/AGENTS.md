@@ -413,6 +413,50 @@ and no socket, for tests.
   never roll back past them while any is stored (the runbook's "Past
   Slack").
 
+### Product analytics
+
+- Contexts call `ProductAnalytics` (`#shared/application/product-analytics.ts`),
+  which decides who an event is about (the person acting, from the
+  caller or the request's `AnalyticsActor`, else the workspace's service
+  identity `workspace:<id>`), leaves out what must not go (a session
+  staff act in, `PEAL_POSTHOG_EXCLUDED_USERS`, an account or workspace
+  erased in this process), checks every property against
+  `SafePropertiesSchema` and hands the event to `AnalyticsDelivery`: the
+  PostHog adapter on capture v1 (`#shared/infrastructure/posthog-delivery.ts`,
+  settings in `posthog-settings.ts`), or none without `PEAL_POSTHOG_KEY`.
+  `ProductAnalyticsLive` (`src/app/product-analytics.ts`) is one per build
+  of the server, released after the HTTP server and the workers, so it
+  sends what they queued.
+- Events come from four seams, never calls sprinkled in use cases: the
+  activity journal's adapter (`api_operation`, every write but MCP's), the
+  MCP middleware (`mcp_tool_called`, every tool call), the decorator over
+  `WebhookEvents` (post and channel milestones) and Better Auth's hooks
+  (sign-ups, workspaces, subscriptions). A new event joins
+  `ProductEventSchema` (`#shared/domain/product-event.ts`) and the
+  samples of `test/shared/product-event-samples.ts`; its names are
+  persisted for whoever queries PostHog: add, never rename.
+- Events carry `$groups` (`workspace`, `billing_account`), and every group
+  fact as a plain property too, as Peal's project has no group analytics
+  and its readers query with SQL: `workspace_id` and `billing_account_id`
+  on every event about them, and on `workspace_created` and
+  `subscription_changed` what `$groupidentify` sets (`workspace_plan`,
+  `subscription_status`, `free_tier`, `kind`, `standalone`), so a
+  workspace's latest state is an `argMax` over these events.
+- A property is an id, an enum, a number or a boolean: never a text
+  someone wrote, a name, an address, a URL or what a platform answered.
+  Capture never fails, dies or waits on the network, and nothing is
+  ever sent twice. Staff are marked `internal` when they open the console;
+  what they do as a member sends nothing.
+- An erasure forgets: closing an account and deleting or offboarding a
+  workspace call `ProductAnalytics.forget` once confirmed, forked so no
+  answer waits, and with `PEAL_POSTHOG_PERSONAL_API_KEY` the adapter
+  deletes those persons and their events at PostHog; without it, it logs
+  their ids (`peal.erasure.analytics_manual`) for the operator.
+- Tests use `ProductAnalytics.none`, or `recordedAnalytics`
+  (`#test/shared/recorded-analytics.ts`); through the whole server,
+  `appWithPostHog` (`#test/shared/fake-posthog.ts`) reads what a fake
+  PostHog received.
+
 ### Metrics and alerts
 
 - Every metric that says a job falls behind has an alert rule

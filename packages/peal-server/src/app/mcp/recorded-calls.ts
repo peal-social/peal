@@ -45,7 +45,8 @@ const errorCodeOf = (
  * call ended without an answer. It runs around the tool itself, so a
  * request the endpoint refused before any tool ran (a batch, a session it
  * does not know, a method it does not serve) keeps nothing, however many
- * calls its body names.
+ * calls its body names. Every call that ran, reading ones included, is
+ * then told to product analytics (`mcp_tool_called`), after the log.
  */
 export const recordedCalls = (changingTools: ReadonlySet<string>) =>
   McpServer.middleware()(

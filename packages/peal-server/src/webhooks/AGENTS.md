@@ -16,6 +16,15 @@
   and permalinks, never a post's text, a file, a handle or a name: the
   receiver reads those through the API. Keep
   `fixtures/persisted/events/stored.json` decoding.
+- `analysedWebhookEvents` (`infrastructure/analysed-webhook-events.ts`),
+  around `WebhookEvents.layer` in `webhooksWith`, tells product analytics
+  of `channel.connected`, `channel.disconnected`, `post.scheduled`,
+  `post.published` and `post.failed` once `publish` succeeded (ids,
+  platforms, counts and codes; a new type does not compile until it says
+  whether it is told). Known and accepted: the event is queued before the
+  caller's transaction commits, so a rollback leaves one for what did not
+  happen and a step run again can send one twice; only analytics reads
+  them. Tests of the context provide `ProductAnalytics.none`.
 - Contexts publish through `WebhookEvents.publish({ event, key })`, which
   joins the caller's transaction (as `Notify` does): the event, one delivery
   per endpoint that is on, subscribes and whose filters match (`wants`, with
