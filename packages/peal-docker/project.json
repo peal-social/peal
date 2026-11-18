@@ -46,6 +46,9 @@
     "build-docs-image": {
       "command": "docker build --file packages/peal-docker/docs.Dockerfile --tag peal-docs:local --build-arg DOCS_ASSISTANT_MODEL ."
     },
+    "build-blog-image": {
+      "command": "docker build --file packages/peal-docker/blog.Dockerfile --tag peal-blog:local --build-arg BLOG_SITE_URL ."
+    },
     "build-postgres-image": {
       "command": "docker build --file packages/peal-docker/postgres.Dockerfile --tag peal-postgres:local ."
     }

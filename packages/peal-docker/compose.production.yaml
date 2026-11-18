@@ -1,5 +1,5 @@
 # The production stack: Postgres with pgBackRest, the server, the web app, the
-# static site and docs, the docs server for their assistant, and the
+# static site and docs, the docs server for their assistant, Peal's blog, and the
 # telemetry stack (the OpenTelemetry Collector,
 # Loki, Tempo, Prometheus and Grafana with its alerts). peal-infra runs it on
 # Peal's servers behind a Cloudflare Tunnel; self-hosters add Caddy in front
@@ -13,6 +13,8 @@
 #   Marketing site  127.0.0.1:4321    profile "static"
 #   Docs            127.0.0.1:4322    profile "static"
 #   Docs server     127.0.0.1:4323    profile "docs", with the assistant
+#   Blog            127.0.0.1:4324    profile "blog", Peal's own blog, which a
+#                                     self-hoster does not run
 #   Grafana         127.0.0.1:13000
 #   OTLP HTTP       127.0.0.1:14318   where the backup timer reports
 #
@@ -393,6 +395,68 @@ services:
         - --eval
         - 'fetch("http://127.0.0.1:4323/").then((response) => process.exit(response.ok ? 0 : 1), () => process.exit(1));'
 
+  # Peal's own blog at peal.social/blog (packages/peal-blog): EmDash on
+  # Astro's Node adapter, with its database and role on this Postgres and a
+  # bucket of its own. Profile "blog", which a self-hoster does not run.
+  # Every setting only the blog reads defaults to empty rather than `:?`,
+  # so the file still loads with the profile off; packages/peal-blog's
+  # guide says what each does.
+  blog:
+    <<: *service
+    profiles: [blog]
+    image: peal-blog:${PEAL_VERSION:-local}
+    build:
+      context: ../..
+      dockerfile: packages/peal-docker/blog.Dockerfile
+      args:
+        BLOG_SITE_URL: ${PEAL_BLOG_SITE_URL:-}
+    # Node runs as PID 2 under an init, so it stops on SIGTERM.
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGDATABASE: peal_blog
+      PGUSER: peal_blog
+      PGPASSWORD: ${PEAL_BLOG_DATABASE_PASSWORD:-}
+      BLOG_SITE_URL: ${PEAL_BLOG_SITE_URL:-}
+      EMDASH_SITE_URL: ${PEAL_BLOG_SITE_URL:-}
+      EMDASH_ENCRYPTION_KEY: ${PEAL_BLOG_ENCRYPTION_KEY:-}
+      # The header the edge gives each reader's address in, as for the
+      # server.
+      EMDASH_TRUSTED_PROXY_HEADERS: ${AUTH_IP_HEADERS:?Set AUTH_IP_HEADERS}
+      S3_ENDPOINT: ${PEAL_BLOG_S3_ENDPOINT:-}
+      S3_BUCKET: ${PEAL_BLOG_S3_BUCKET:-}
+      S3_ACCESS_KEY_ID: ${PEAL_BLOG_S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${PEAL_BLOG_S3_SECRET_ACCESS_KEY:-}
+      S3_REGION: ${PEAL_BLOG_S3_REGION:-auto}
+      BLOG_APP_URL:
+      BLOG_DOCS_URL:
+      BLOG_DISCORD_URL:
+      BLOG_PLAUSIBLE_DOMAIN:
+      BLOG_PLAUSIBLE_HOST:
+      # EmDash's SMTP, for invitations and magic links; unset, no mail.
+      EMAIL_SMTP_HOST:
+      EMAIL_SMTP_PORT:
+      EMAIL_SMTP_SECURE:
+      EMAIL_SMTP_USER:
+      EMAIL_SMTP_PASS:
+      EMAIL_SMTP_FROM:
+    volumes:
+      # Signed-in editors' sessions, kept across releases.
+      - blog-sessions:/app/packages/peal-blog/node_modules/.astro/sessions
+    ports:
+      - 127.0.0.1:${PEAL_BLOG_PORT:-4324}:4324
+    healthcheck:
+      <<: *healthcheck
+      test:
+        - CMD
+        - node
+        - --eval
+        - 'fetch("http://127.0.0.1:4324/_emdash/api/health").then((response) => process.exit(response.ok ? 0 : 1), () => process.exit(1));'
+
   # The collector's image has no shell or HTTP client, so its health check
   # runs busybox's static wget, which this service copies into a volume at
   # each `up`, then exits. An image mount would be simpler, but Docker does
@@ -547,6 +611,7 @@ services:
 
 volumes:
   postgres:
+  blog-sessions:
   collector-wget:
   loki:
   tempo:

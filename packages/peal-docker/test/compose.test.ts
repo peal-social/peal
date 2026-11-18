@@ -27,7 +27,12 @@ const isShortVolume = Schema.is(Schema.String);
 const Volume = Schema.Union([Schema.String, Mount]);
 
 const ServiceSchema = Schema.Struct({
-  build: Schema.optionalKey(Schema.Struct({ dockerfile: Schema.String })),
+  build: Schema.optionalKey(
+    Schema.Struct({
+      args: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
+      dockerfile: Schema.String,
+    })
+  ),
   command: Schema.optionalKey(Schema.Array(Schema.String)),
   depends_on: Schema.optionalKey(
     Schema.Record(Schema.String, Schema.Struct({ condition: Schema.String }))
@@ -41,6 +46,7 @@ const ServiceSchema = Schema.Struct({
   ),
   image: Schema.String,
   network_mode: Schema.optionalKey(Schema.String),
+  profiles: Schema.optionalKey(Schema.Array(Schema.String)),
   ports: Schema.optionalKey(Schema.Array(Schema.String)),
   read_only: Schema.optionalKey(Schema.Boolean),
   restart: Schema.optionalKey(Schema.String),
@@ -417,6 +423,7 @@ const dockerfiles = [
   "web.Dockerfile",
   "static.Dockerfile",
   "docs.Dockerfile",
+  "blog.Dockerfile",
   "postgres.Dockerfile",
 ];
 
@@ -558,5 +565,59 @@ describe("the docs", () => {
     expect(docs?.ports?.[0]).toMatch(
       /^127\.0\.0\.1:\$\{PEAL_DOCS_SERVER_PORT:-4323\}:4323$/u
     );
+  });
+});
+
+// Credentials the blog reads when it starts, never when it is built.
+const credential = /^(?:PG|S3_)|^EMDASH_ENCRYPTION_KEY$/u;
+
+describe("the blog", () => {
+  const blog = productionService("blog");
+
+  it("runs in a profile of its own, on one loopback port", () => {
+    expect(blog?.profiles).toStrictEqual(["blog"]);
+    expect(blog?.ports).toHaveLength(1);
+    expect(blog?.ports?.[0]).toMatch(
+      /^127\.0\.0\.1:\$\{PEAL_BLOG_PORT:-4324\}:4324$/u
+    );
+  });
+
+  it("checks EmDash's health", () => {
+    expect(blog?.healthcheck?.test.join(" ")).toContain("/_emdash/api/health");
+  });
+
+  it("keeps editors' sessions in a volume", () => {
+    expect(blog?.volumes).toContain(
+      "blog-sessions:/app/packages/peal-blog/node_modules/.astro/sessions"
+    );
+  });
+
+  it("reads its database and bucket only when it starts", () => {
+    const instructions = instructionsOf(read("..", "blog.Dockerfile"));
+
+    const built = [
+      ...instructions("ARG"),
+      ...instructions("ENV").flatMap((env) => env.split(/\s+/u)),
+      ...Object.keys(blog?.build?.args ?? {}),
+    ].map((entry) => entry.split("=").at(0) ?? "");
+
+    expect(built.filter((name) => credential.test(name))).toStrictEqual([]);
+    expect(blog?.environment).toHaveProperty("PGPASSWORD");
+    expect(blog?.environment).toHaveProperty("S3_SECRET_ACCESS_KEY");
+  });
+
+  // A setting only the blog reads has no `:?`: Compose interpolates every
+  // service, so one would refuse the whole stack with the profile off.
+  it("requires no setting of its own", () => {
+    const required = Object.entries(blog?.environment ?? {}).flatMap(
+      ([name, value]) =>
+        value !== null &&
+        value.includes(":?") &&
+        name !== "EMDASH_TRUSTED_PROXY_HEADERS"
+          ? [name]
+          : []
+    );
+
+    expect(required).toStrictEqual([]);
   });
 });
