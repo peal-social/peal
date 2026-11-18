@@ -99,10 +99,10 @@ peal_credentials:
   # Product analytics, production only for now: the PostHog project's token
   # and the personal key (scope person:write) that deletes erased persons
   # there, both with PEAL_POSTHOG_PROJECT_ID in peal_settings, or none: the
-  # release refuses one without the others. The
-  # excluded users are user ids, separated by commas, of people who
-  # objected: they name people, and the inventory is public, so they live
-  # here. The sandbox takes a second project's values the day it has one.
+  # release refuses one without the others. The excluded ids are the
+  # user and workspace ids, separated by commas, of people and customers
+  # who objected: they name people, and the inventory is public, so they
+  # live here. The sandbox takes a second project's values the day it has one.
   # PEAL_POSTHOG_KEY: REPLACE
   # PEAL_POSTHOG_PERSONAL_API_KEY: REPLACE
-  # PEAL_POSTHOG_EXCLUDED_USERS: ""
+  # PEAL_POSTHOG_EXCLUDED_IDS: ""

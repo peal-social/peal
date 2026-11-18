@@ -167,7 +167,7 @@ describe("the PostHog settings", () => {
     () =>
       Effect.gen(function* excluded() {
         const settings = yield* settingsOf({
-          PEAL_POSTHOG_EXCLUDED_USERS: ` ${userId}, ,${otherId} ,`,
+          PEAL_POSTHOG_EXCLUDED_IDS: ` ${userId}, ,${otherId} ,`,
           PEAL_POSTHOG_KEY: key,
         });
 
@@ -177,7 +177,7 @@ describe("the PostHog settings", () => {
         );
         assert.isTrue(
           yield* fails({
-            PEAL_POSTHOG_EXCLUDED_USERS: `${userId},someone@example.com`,
+            PEAL_POSTHOG_EXCLUDED_IDS: `${userId},someone@example.com`,
             PEAL_POSTHOG_KEY: key,
           })
         );

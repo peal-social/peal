@@ -167,7 +167,7 @@ const erasureConfig = Config.all({
  *   each erasure is logged for the operator to delete by hand.
  * - PEAL_POSTHOG_APP_HOST: where persons are deleted,
  *   `https://eu.posthog.com` by default.
- * - PEAL_POSTHOG_EXCLUDED_USERS: user and workspace ids, separated by
+ * - PEAL_POSTHOG_EXCLUDED_IDS: user and workspace ids, separated by
  *   commas: nothing is sent about an excluded user, nor about an excluded
  *   workspace, its service identity included, whoever acts in it.
  */
@@ -182,7 +182,7 @@ export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
             erasure: erasureConfig,
             excluded: Config.schema(
               ExcludedUsersSchema,
-              "PEAL_POSTHOG_EXCLUDED_USERS"
+              "PEAL_POSTHOG_EXCLUDED_IDS"
             ).pipe(Config.withDefault<readonly string[]>([])),
             host: host("PEAL_POSTHOG_HOST", defaultPostHogHost),
           }).pipe(
