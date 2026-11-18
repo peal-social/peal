@@ -386,8 +386,10 @@ def test_product_analytics_names_its_environment(rendered: Path, environment: st
     assert _host_env(rendered, environment)["PEAL_POSTHOG_ENVIRONMENT"] == environment
 
 
-def test_product_analytics_needs_no_key_until_the_project_is_named() -> None:
-    assert not {"PEAL_POSTHOG_KEY", "PEAL_POSTHOG_PERSONAL_API_KEY"} & set(_required("production"))
+def test_product_analytics_keys_are_required_where_the_project_is_named() -> None:
+    """Production names its PostHog project, so it needs both keys; the
+    sandbox names none, so it needs neither."""
+    assert {"PEAL_POSTHOG_KEY", "PEAL_POSTHOG_PERSONAL_API_KEY"} <= set(_required("production"))
     assert not {"PEAL_POSTHOG_KEY", "PEAL_POSTHOG_PERSONAL_API_KEY"} & set(_required("sandbox"))
 
 
