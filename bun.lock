@@ -193,7 +193,7 @@
     "packages/peal-ui": {
       "name": "peal-ui",
       "dependencies": {
-        "@ui-sdk/core": "0.1.0-beta.2",
+        "@ui-sdk/core": "0.1.0-beta.5",
         "@ui-sdk/react": "0.1.0-beta.2",
         "class-variance-authority": "0.7.1",
         "cn": "0.5.2",
@@ -245,7 +245,7 @@
         "@tiptap/pm": "3.34.0",
         "@tiptap/react": "3.34.0",
         "@tiptap/starter-kit": "3.34.0",
-        "@ui-sdk/core": "0.1.0-beta.2",
+        "@ui-sdk/core": "0.1.0-beta.5",
         "@ui-sdk/react": "0.1.0-beta.2",
         "better-auth": "1.7.25",
         "effect": "4.1.4",
@@ -1780,7 +1780,7 @@
 
     "@typescript/vfs": ["@typescript/vfs@1.6.6", "", { "dependencies": { "debug": "^4.4.3" }, "peerDependencies": { "typescript": "*" } }, "sha512-gXw0+tpchiQUjTcbnNIPnyLFIhbwJ7M1VaxLQ1vXhjQxtTBK3sdDLY1ih0jxCu1I5K3V0dDxq8CkVZtIMspC3A=="],
 
-    "@ui-sdk/core": ["@ui-sdk/core@0.1.0-beta.2", "", {}, "sha512-y89M4OKL2Oy1IvFS8FEozn/44BJD9FoRjfecWA4XwFhkSuQADcEcI+eoLdfRK1hkrJZhKkHvhJf4Jtfp1y7aJw=="],
+    "@ui-sdk/core": ["@ui-sdk/core@0.1.0-beta.5", "", {}, "sha512-dmunrxWrZ+vwldKJ6THQNYyyfbLFY6K82hBvIZSnuGwpEQmXKmM0iuANgGXtaqw8unSB2p9E5s3y7zfE9rgP6Q=="],
 
     "@ui-sdk/react": ["@ui-sdk/react@0.1.0-beta.2", "", { "peerDependencies": { "@types/react": ">=19.2.10", "@ui-sdk/core": "^0.1.0-beta.2", "react": ">=19", "react-dom": ">=19" }, "optionalPeers": ["@types/react"] }, "sha512-OVOECM3PYGEF69/iOSZ1U0zxv6O6aTWmZuCt88R6c2Ql2ZQxAy+DjFK8o8hyVkRNlYE5nEm357UMOI6bchn70w=="],
 
