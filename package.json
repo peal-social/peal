@@ -40,14 +40,14 @@
     "typescript": "7.0.2",
     "ultracite": "8.2.1"
   },
-  "engines": {
-    "bun": "1.4.4",
-    "node": ">=26.13.0"
-  },
-  "packageManager": "bun@1.4.4",
   "overrides": {
     "@posthog/browser-common": "0.12.0",
     "@posthog/core": "1.68.0",
     "@posthog/types": "1.425.1"
-  }
+  },
+  "engines": {
+    "bun": "1.4.4",
+    "node": ">=26.13.0"
+  },
+  "packageManager": "bun@1.4.4"
 }
