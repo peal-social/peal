@@ -66,6 +66,41 @@ describe("what the account shares", () => {
     ).toStrictEqual(["blog-redirect-host"]);
   });
 
+  it("caches the blog's resized images at the edge, by their whole query", async () => {
+    await valueOf(result.blogImageCache.id);
+
+    const ruleset = made.find((resource) => resource.name === "site-cache");
+
+    expect(input(ruleset, "phase", Schema.String)).toBe(
+      "http_request_cache_settings"
+    );
+    expect(input(ruleset, "zoneId", Schema.String)).toBe("zone-synthetic");
+    expect(input(ruleset, "rules", Schema.Unknown)).toStrictEqual([
+      {
+        action: "set_cache_settings",
+        actionParameters: {
+          cache: true,
+          cacheKey: {
+            customKey: { queryString: { include: { all: true } } },
+            ignoreQueryStringsOrder: true,
+          },
+          edgeTtl: {
+            default: 31_536_000,
+            mode: "override_origin",
+            // Never a refusal or an error: the blog answers 404 to a
+            // transform it has not handed out yet, as just after a release.
+            statusCodeTtls: [
+              { statusCodeRange: { from: 300, to: 599 }, value: -1 },
+            ],
+          },
+        },
+        description: "The blog's resized images, by their whole query",
+        expression:
+          '(http.host eq "example.test" and http.request.uri.path eq "/blog/_image")',
+      },
+    ]);
+  });
+
   it("sends blog.<domain> to the blog, keeping the path and the query", async () => {
     await valueOf(pulumi.all([result.blogRecord.id, result.blogRedirect.id]));
 

@@ -61,7 +61,16 @@ const uptimeRecords = (
  * Email Routing forwards, and the uptime server's records, once it exists.
  * The owner's address is a secret of the stack.
  */
+/**
+ * How long Cloudflare's edge keeps a resized image of the blog: a year. An
+ * image's URL names its source, with the source's content hash where
+ * EmDash knows it, and every parameter of the transform, so a changed image
+ * has a URL of its own.
+ */
+const blogImageEdgeTtl = 365 * 86_400;
+
 export class PealAccount extends pulumi.ComponentResource {
+  readonly blogImageCache: cloudflare.Ruleset;
   readonly blogRecord: cloudflare.DnsRecord;
   readonly blogRedirect: cloudflare.Ruleset;
   readonly blueskyHandleRecord: cloudflare.DnsRecord | undefined;
@@ -196,6 +205,46 @@ export class PealAccount extends pulumi.ComponentResource {
             },
             description: "blog.<domain> to the blog at <domain>/blog",
             expression: `(http.host eq "blog.${domain}")`,
+          },
+        ],
+        zoneId,
+      },
+      { parent: this, protect: true }
+    );
+
+    // The blog's resized images (packages/peal-blog), from the edge: the
+    // whole query is the cache key, and the blog answers 404 to a transform
+    // its pages never handed out, which is never cached, so varying a
+    // parameter neither fills the cache nor resizes anything. Production's
+    // name alone: the sandbox is behind Access, and its few readers need no
+    // cache. The zone's cache rules live here, as a zone has one ruleset
+    // per phase.
+    this.blogImageCache = new cloudflare.Ruleset(
+      "site-cache",
+      {
+        description: "What the edge caches of the site's host name",
+        kind: "zone",
+        name: "Site cache rules",
+        phase: "http_request_cache_settings",
+        rules: [
+          {
+            action: "set_cache_settings",
+            actionParameters: {
+              cache: true,
+              cacheKey: {
+                customKey: { queryString: { include: { all: true } } },
+                ignoreQueryStringsOrder: true,
+              },
+              edgeTtl: {
+                default: blogImageEdgeTtl,
+                mode: "override_origin",
+                statusCodeTtls: [
+                  { statusCodeRange: { from: 300, to: 599 }, value: -1 },
+                ],
+              },
+            },
+            description: "The blog's resized images, by their whole query",
+            expression: `(http.host eq "${domain}" and http.request.uri.path eq "/blog/_image")`,
           },
         ],
         zoneId,
