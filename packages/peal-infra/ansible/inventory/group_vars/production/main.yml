@@ -136,10 +136,9 @@ peal_settings:
   # Product analytics: the project's id here, with PEAL_POSTHOG_KEY and
   # PEAL_POSTHOG_PERSONAL_API_KEY in the vault, all three or none: the
   # release refuses one without the others, so this server never captures
-  # what it could not delete at PostHog. Set them once the project and its
-  # personal key exist, PostHog's DPA is signed and the privacy policy
-  # names PostHog.
-  # PEAL_POSTHOG_PROJECT_ID: "<id>"
+  # what it could not delete at PostHog. PostHog's DPA is signed and the
+  # privacy policy names PostHog.
+  PEAL_POSTHOG_PROJECT_ID: "356475"
   # Facebook Pages' and Instagram's comments in the inbox: off until Meta's
   # App Review granted the app their permissions, the privacy policy names
   # them (the registry's inbox entry, then the legal pages, through
