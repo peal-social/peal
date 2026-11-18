@@ -170,6 +170,11 @@ const capturedProperties = (
     properties["workspace_id"] = captured.workspaceId.value;
   }
 
+  // Beside the group, for a project without group analytics.
+  if (Option.isSome(captured.billingAccountId)) {
+    properties["billing_account_id"] = captured.billingAccountId.value;
+  }
+
   if (Object.keys(groups).length > 0) {
     properties["$groups"] = groups;
   }

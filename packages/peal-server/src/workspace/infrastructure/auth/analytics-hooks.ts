@@ -9,8 +9,12 @@ import type {
 } from "#shared/application/product-analytics.ts";
 import { UserIdSchema } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
+import type { Plan } from "#shared/domain/plan.ts";
 import { userSubject, workspaceSubject } from "#shared/domain/product-event.ts";
-import type { AnalyticsSubject } from "#shared/domain/product-event.ts";
+import type {
+  AnalyticsSubject,
+  BillingAccountKind,
+} from "#shared/domain/product-event.ts";
 
 import type { CreatedUser } from "./options.ts";
 
@@ -26,13 +30,25 @@ const decodeUserId = Schema.decodeUnknownOption(UserIdSchema);
 const now = DateTime.now.pipe(Effect.map(DateTime.formatIso));
 
 // Whose an account is: a person's, a partner's, or a workspace nobody owns.
-const kindOf = (account: HeldAccount) => {
+const kindOf = (account: HeldAccount): BillingAccountKind => {
   if (Option.isSome(account.payer)) {
     return "person";
   }
 
   return Option.isSome(account.partnerId) ? "partner" : "unowned";
 };
+
+// The billing account's facts as an event carries them, beside its group:
+// none when the account could not be read.
+const accountFacts = (account: Option.Option<HeldAccount>) =>
+  Option.match(account, {
+    onNone: () => ({}),
+    onSome: (held) => ({
+      freeTier: held.freeTier,
+      kind: kindOf(held),
+      standalone: held.standalone,
+    }),
+  });
 
 /** What product analytics keeps of a billing account. */
 export const accountGroup = (account: HeldAccount): GroupProperties => ({
@@ -106,7 +122,10 @@ export const toldWorkspace = (
           yield* analytics.capture({
             actor: asPerson(creator),
             billingAccountId: accountId,
-            event: { name: "workspace_created", properties: {} },
+            event: {
+              name: "workspace_created",
+              properties: accountFacts(account),
+            },
             workspaceId: Option.some(workspaceId),
           });
 
@@ -170,7 +189,9 @@ export const toldSubscription = (
 
       // The workspace's plan now: the subscription's while it gives it.
       const planNow = yield* entitlements.of(workspaceId).pipe(
-        Effect.map(({ plan: held }) => Option.getOrElse(held, () => "free")),
+        Effect.map(({ plan: held }) =>
+          Option.getOrElse(held, (): Plan => "free")
+        ),
         Effect.option
       );
 
@@ -194,10 +215,16 @@ export const toldSubscription = (
         event: {
           name: "subscription_changed",
           properties: {
+            ...accountFacts(account),
             cancelAtPeriodEnd: event.cancelAtPeriodEnd,
             interval,
             plan,
             status: event.status,
+            subscriptionStatus: event.status,
+            ...Option.match(planNow, {
+              onNone: () => ({}),
+              onSome: (workspacePlan) => ({ workspacePlan }),
+            }),
           },
         },
         workspaceId: Option.some(workspaceId),

@@ -79,6 +79,7 @@ describe("product analytics", () => {
             workspace: workspaceId,
           },
           actor_kind: "user",
+          billing_account_id: "billing-account-1",
           environment: "test",
           error_code: "plan_limit_reached",
           operation: "posts.create",

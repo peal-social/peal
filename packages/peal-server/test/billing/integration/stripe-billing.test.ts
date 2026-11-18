@@ -2423,6 +2423,10 @@ layer(BillingAnalytics, {
         );
 
         assert.strictEqual(created?.properties["workspace_id"], workspaceId);
+        assert.isString(created?.properties["billing_account_id"]);
+        assert.strictEqual(created?.properties["kind"], "person");
+        assert.isBoolean(created?.properties["free_tier"]);
+        assert.isBoolean(created?.properties["standalone"]);
 
         const [account] = yield* eventsMatching(
           ({ distinct_id: distinctId, event, properties }) =>
@@ -2448,6 +2452,19 @@ layer(BillingAnalytics, {
         assert.strictEqual(changed?.properties["status"], "active");
         assert.strictEqual(changed?.properties["interval"], "month");
         assert.strictEqual(changed?.properties["cancel_at_period_end"], false);
+        // The groups' facts, as plain properties too, for SQL without groups.
+        assert.strictEqual(
+          changed?.properties["subscription_status"],
+          "active"
+        );
+        assert.strictEqual(changed?.properties["workspace_plan"], "pro");
+        assert.strictEqual(changed?.properties["kind"], "person");
+        assert.isBoolean(changed?.properties["free_tier"]);
+        assert.isBoolean(changed?.properties["standalone"]);
+        assert.strictEqual(
+          changed?.properties["billing_account_id"],
+          created?.properties["billing_account_id"]
+        );
 
         // The same event again is a duplicate: nothing more is told.
         assert.strictEqual(

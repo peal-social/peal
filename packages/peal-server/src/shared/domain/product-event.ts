@@ -8,7 +8,7 @@ import {
 } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import { LocaleSchema } from "#shared/domain/locale.ts";
-import { PaidPlanSchema } from "#shared/domain/plan.ts";
+import { PaidPlanSchema, PlanSchema } from "#shared/domain/plan.ts";
 import {
   ChannelPlatformSchema,
   PlatformSchema,
@@ -57,6 +57,22 @@ export const ToolErrorTypeSchema = Schema.Literals([
   "tool_failed",
 ]);
 
+/** Whose a billing account is: a person's, a partner's, or nobody's. */
+export const BillingAccountKindSchema = Schema.Literals([
+  "person",
+  "partner",
+  "unowned",
+]);
+
+export type BillingAccountKind = typeof BillingAccountKindSchema.Type;
+
+// What an event says of its billing account, when the caller read it.
+const billingAccountFacts = {
+  freeTier: Schema.optionalKey(Schema.Boolean),
+  kind: Schema.optionalKey(BillingAccountKindSchema),
+  standalone: Schema.optionalKey(Schema.Boolean),
+};
+
 const event = <
   const Name extends string,
   const Fields extends Schema.Struct.Fields,
@@ -94,14 +110,21 @@ export const ProductEventSchema = Schema.Union([
     locale: LocaleSchema,
     method: SignUpMethodSchema,
   }),
-  event("workspace_created", {}),
+  // The billing account's facts, when it was read, beside its group's:
+  // a project without group analytics queries them from the event.
+  event("workspace_created", billingAccountFacts),
   // A Stripe subscription's state, as recorded: Stripe's status and the
-  // billing interval are billing's vocabulary, tokens here.
+  // billing interval are billing's vocabulary, tokens here. Beside it, the
+  // workspace's plan now and the billing account's facts, as its groups
+  // get them, so a workspace's latest state is a query over these events.
   event("subscription_changed", {
+    ...billingAccountFacts,
     cancelAtPeriodEnd: Schema.Boolean,
     interval: AnalyticsTokenSchema,
     plan: PaidPlanSchema,
     status: AnalyticsTokenSchema,
+    subscriptionStatus: AnalyticsTokenSchema,
+    workspacePlan: Schema.optionalKey(PlanSchema),
   }),
   event("channel_connected", {
     channelId: ChannelIdSchema,

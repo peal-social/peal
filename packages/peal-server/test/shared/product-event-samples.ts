@@ -103,14 +103,29 @@ export const productEventSamples: ProductEventSamples = {
     },
   },
   subscription_changed: {
-    keys: ["cancel_at_period_end", "interval", "plan", "status"],
+    keys: [
+      "cancel_at_period_end",
+      "free_tier",
+      "interval",
+      "kind",
+      "plan",
+      "standalone",
+      "status",
+      "subscription_status",
+      "workspace_plan",
+    ],
     sample: {
       name: "subscription_changed",
       properties: {
         cancelAtPeriodEnd: false,
+        freeTier: true,
         interval: "month",
+        kind: "person",
         plan: "payAsYouGo",
+        standalone: false,
         status: "active",
+        subscriptionStatus: "active",
+        workspacePlan: "payAsYouGo",
       },
     },
   },
@@ -122,7 +137,10 @@ export const productEventSamples: ProductEventSamples = {
     },
   },
   workspace_created: {
-    keys: [],
-    sample: { name: "workspace_created", properties: {} },
+    keys: ["free_tier", "kind", "standalone"],
+    sample: {
+      name: "workspace_created",
+      properties: { freeTier: true, kind: "partner", standalone: false },
+    },
   },
 };
