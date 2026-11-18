@@ -65,3 +65,5 @@ peal_static_build_args:
   SITE_DISCORD_URL: https://discord.gg/VBZ5pPT9ss
   DOCS_SITE_URL: https://sandbox-docs.peal.social
   DOCS_APP_URL: https://sandbox.peal.social
+# The blog at <site>/blog (README.md, "The blog").
+peal_blog: true

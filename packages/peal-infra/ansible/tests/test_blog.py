@@ -37,6 +37,11 @@ BLOG = {
 
 
 @pytest.fixture(scope="module")
+def rendered_off(rendered_with: Callable[..., Path]) -> Path:
+    return rendered_with(peal_blog=False)
+
+
+@pytest.fixture(scope="module")
 def rendered_blog(rendered_with: Callable[..., Path]) -> Path:
     return rendered_with(**BLOG)
 
@@ -76,9 +81,9 @@ def _audience(rule: dict[str, Any]) -> list[str]:
 
 
 @pytest.mark.parametrize("environment", ENVIRONMENTS)
-def test_without_the_flag_nothing_reaches_a_blog(rendered: Path, environment: str) -> None:
-    text = (rendered / environment / "cloudflared.yml").read_text()
-    host_env = (rendered / environment / "host.env").read_text()
+def test_without_the_flag_nothing_reaches_a_blog(rendered_off: Path, environment: str) -> None:
+    text = (rendered_off / environment / "cloudflared.yml").read_text()
+    host_env = (rendered_off / environment / "host.env").read_text()
 
     assert "_emdash" not in text
     assert str(BLOG_PORT) not in text
@@ -236,13 +241,13 @@ def test_the_blog_requires_its_bucket_key_and_resend(environment: str) -> None:
 
     assert {"PEAL_BLOG_S3_ACCESS_KEY_ID", "PEAL_BLOG_S3_SECRET_ACCESS_KEY", "RESEND_API_KEY"} <= set(on)
     assert "RESEND_API_KEY" not in _required(environment, peal_blog=True, peal_blog_mail=False)
-    assert not {"PEAL_BLOG_S3_ACCESS_KEY_ID", "RESEND_API_KEY"} & set(_required(environment))
+    assert not {"PEAL_BLOG_S3_ACCESS_KEY_ID", "RESEND_API_KEY"} & set(_required(environment, peal_blog=False))
 
 
 def test_the_profile_follows_the_flag() -> None:
     expression = yaml.safe_load((Path(__file__).parent.parent / "inventory/group_vars/all/main.yml").read_text())[
         "peal_compose_profiles"]
-    names = settings("production")
+    names = {**settings("production"), "peal_blog": False}
 
     assert "blog" not in ansible_render(expression, **names)
     assert "blog" in ansible_render(expression, **{**names, "peal_blog": True})
@@ -256,9 +261,12 @@ def _preflight(**names: Any) -> list[str]:
 def test_the_preflight_refuses_a_blog_without_its_bucket_or_access() -> None:
     production = settings("production")
     sandbox = settings("sandbox")
+    audiences = {name: tag for name, tag in production["cloudflare_access_aud"].items() if name != "blog"}
+    without = {**production, "peal_blog_bucket": "", "cloudflare_access_aud": audiences}
 
     assert _preflight(**production) == []
-    assert _preflight(**{**production, "peal_blog": True}) == ["peal_blog_bucket", "cloudflare_access_aud.blog"]
+    assert _preflight(**{**without, "peal_blog": False}) == []
+    assert _preflight(**without) == ["peal_blog_bucket", "cloudflare_access_aud.blog"]
     assert _preflight(**{**production, **BLOG}) == []
     # The sandbox is behind Access throughout: its own application covers it.
     assert _preflight(**{**sandbox, "peal_blog": True, "peal_blog_bucket": "x"}) == []

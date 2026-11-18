@@ -10,3 +10,4 @@ peal_media_endpoint: https://6fdd7e600b33c2c948da88b6cf8b5f26.eu.r2.cloudflarest
 peal_media_bucket: peal-sandbox-media
 peal_backup_endpoint: 6fdd7e600b33c2c948da88b6cf8b5f26.eu.r2.cloudflarestorage.com
 peal_backup_bucket: peal-sandbox-backups
+peal_blog_bucket: peal-sandbox-blog
