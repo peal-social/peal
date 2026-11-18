@@ -194,7 +194,7 @@
       "name": "peal-ui",
       "dependencies": {
         "@ui-sdk/core": "0.1.0-beta.5",
-        "@ui-sdk/react": "0.1.0-beta.2",
+        "@ui-sdk/react": "0.1.0-beta.5",
         "class-variance-authority": "0.7.1",
         "cn": "0.5.2",
         "effect": "4.1.4",
@@ -246,7 +246,7 @@
         "@tiptap/react": "3.34.0",
         "@tiptap/starter-kit": "3.34.0",
         "@ui-sdk/core": "0.1.0-beta.5",
-        "@ui-sdk/react": "0.1.0-beta.2",
+        "@ui-sdk/react": "0.1.0-beta.5",
         "better-auth": "1.7.25",
         "effect": "4.1.4",
         "emojibase-data": "18.0.0",
@@ -1782,7 +1782,7 @@
 
     "@ui-sdk/core": ["@ui-sdk/core@0.1.0-beta.5", "", {}, "sha512-dmunrxWrZ+vwldKJ6THQNYyyfbLFY6K82hBvIZSnuGwpEQmXKmM0iuANgGXtaqw8unSB2p9E5s3y7zfE9rgP6Q=="],
 
-    "@ui-sdk/react": ["@ui-sdk/react@0.1.0-beta.2", "", { "peerDependencies": { "@types/react": ">=19.2.10", "@ui-sdk/core": "^0.1.0-beta.2", "react": ">=19", "react-dom": ">=19" }, "optionalPeers": ["@types/react"] }, "sha512-OVOECM3PYGEF69/iOSZ1U0zxv6O6aTWmZuCt88R6c2Ql2ZQxAy+DjFK8o8hyVkRNlYE5nEm357UMOI6bchn70w=="],
+    "@ui-sdk/react": ["@ui-sdk/react@0.1.0-beta.5", "", { "peerDependencies": { "@types/react": ">=19.2.10", "@ui-sdk/core": "^0.1.0-beta.5", "react": ">=19", "react-dom": ">=19" }, "optionalPeers": ["@types/react"] }, "sha512-Zfvl94ulACX511lQKQDnK7wVjhYUYsR5LLnCZ800NzQ3983TxZasHxXyC+KYNlvppkYfpELPlAbVslsSIGQ9/A=="],
 
     "@ungap/structured-clone": ["@ungap/structured-clone@1.4.0", "", {}, "sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ=="],
 
