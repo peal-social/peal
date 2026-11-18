@@ -5,6 +5,8 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import type {
+  GroupPropertiesInput,
+  PersonPropertiesInput,
   ProductEvent,
   ProductEventName,
 } from "#shared/domain/product-event.ts";
@@ -144,3 +146,23 @@ export const productEventSamples: ProductEventSamples = {
     },
   },
 };
+
+// Objects built elsewhere, as a bug could, with a key the catalogue does
+// not declare beside one it does: the types take them, the guard does not.
+const withEmail = { email: "someone@example.com", freeTier: true };
+
+const withName = { kind: "user" as const, name: "Ana" };
+
+const withTitle = { created_at: "2026-11-18T10:00:00.000Z", title: "Shop" };
+
+/** An event with a key its schema does not declare. */
+export const undeclaredEvent: ProductEvent = {
+  name: "workspace_created",
+  properties: withEmail,
+};
+
+/** Person properties with a key Peal never sets. */
+export const undeclaredPerson: PersonPropertiesInput = withName;
+
+/** Group properties with a key Peal never sets. */
+export const undeclaredGroup: GroupPropertiesInput = withTitle;

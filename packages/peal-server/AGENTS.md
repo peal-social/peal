@@ -419,7 +419,8 @@ and no socket, for tests.
   which decides who an event is about (the person acting, from the
   caller or the request's `AnalyticsActor`, else the workspace's service
   identity `workspace:<id>`), leaves out what must not go (a session
-  staff act in, `PEAL_POSTHOG_EXCLUDED_USERS`, an account or workspace
+  staff act in, a user or a workspace `PEAL_POSTHOG_EXCLUDED_USERS` names,
+  an account or workspace
   erased in this process), checks every property against
   `SafePropertiesSchema` and hands the event to `AnalyticsDelivery`: the
   PostHog adapter on capture v1 (`#shared/infrastructure/posthog-delivery.ts`,
@@ -447,11 +448,26 @@ and no socket, for tests.
   Capture never fails, dies or waits on the network, and nothing is
   ever sent twice. Staff are marked `internal` when they open the console;
   what they do as a member sends nothing.
-- An erasure forgets: closing an account and deleting or offboarding a
-  workspace call `ProductAnalytics.forget` once confirmed, forked so no
-  answer waits, and with `PEAL_POSTHOG_PERSONAL_API_KEY` the adapter
-  deletes those persons and their events at PostHog; without it, it logs
-  their ids (`peal.erasure.analytics_manual`) for the operator.
+- An erasure forgets, durably: closing an account and deleting or
+  offboarding a workspace call `ProductAnalytics.erase` inside the
+  erasure's transaction, which starts `ForgetAnalyticsV1`
+  (`#shared/infrastructure/workflows/forget-analytics.ts`, persisted
+  contract) with the erasure, and `forget` once it committed. The
+  workflow forgets them in its process, purges what the delivery holds of
+  them, waits for a request in flight, then deletes them at PostHog with
+  `PEAL_POSTHOG_PERSONAL_API_KEY`, tried again after `forgetRetryDelays`
+  across restarts, then given up (`peal.erasure.analytics_failed`,
+  counted); without the key it logs their ids
+  (`peal.erasure.analytics_manual`) for the operator. `ReplayErasures`,
+  a command, deletes at once and waits (`eraseNow`).
+- What comes from stored data (a Stripe event naming the member who once
+  subscribed) is sent as the workspace's service identity
+  (`asWorkspace`), never as a person who may have been erased since:
+  the person behind an event is only ever the request's, or one just
+  made. Every event is encoded through `ProductEventSchema` with no key
+  it does not declare, person and group properties through their own
+  schemas, and no key may name an address, a name, a URL, a text or a
+  token (`refusedKeyWords`).
 - Tests use `ProductAnalytics.none`, or `recordedAnalytics`
   (`#test/shared/recorded-analytics.ts`); through the whole server,
   `appWithPostHog` (`#test/shared/fake-posthog.ts`) reads what a fake

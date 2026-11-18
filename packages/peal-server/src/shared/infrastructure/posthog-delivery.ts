@@ -5,24 +5,29 @@ import {
   Effect,
   Fiber,
   Layer,
-  Metric,
   Option,
   Queue,
   Redacted,
   Ref,
-  Schedule,
   Schema,
+  Semaphore,
 } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 
 import { AnalyticsDelivery } from "#shared/application/analytics-delivery.ts";
-import type { OutgoingEvent } from "#shared/application/analytics-delivery.ts";
+import type {
+  ErasureOutcome,
+  OutgoingEvent,
+} from "#shared/application/analytics-delivery.ts";
+import { AnalyticsErasureFailed } from "#shared/application/analytics-erasure-failed.ts";
 import { Ids } from "#shared/application/ids.ts";
-import { countEvents } from "#shared/application/product-analytics.ts";
+import {
+  countErasure,
+  countEvents,
+} from "#shared/application/product-analytics.ts";
 import type { EventOutcome } from "#shared/application/product-analytics.ts";
 import { AnalyticsTokenSchema } from "#shared/domain/product-event.ts";
 import type { SafeProperties } from "#shared/domain/product-event.ts";
-import { PostHogDeletionRefused } from "#shared/infrastructure/posthog-deletion-refused.ts";
 import type { PostHogSettings } from "#shared/infrastructure/posthog-settings.ts";
 
 /** Events waiting to be sent at most: past it, an event is dropped. */
@@ -45,25 +50,6 @@ export const failureLogEvery = Duration.minutes(1);
 
 /** The version of this adapter's wire format, in `PostHog-Sdk-Info`. */
 export const sdkInfo = "peal-server/1.0.0";
-
-/**
- * Requests to delete persons at PostHog, by what became of them:
- * `requested` (PostHog took them), `manual` (no personal key: logged for
- * the operator), `failed` (PostHog refused or did not answer: logged).
- */
-export const productAnalyticsErasures = Metric.counter(
-  "peal.product_analytics.erasures",
-  {
-    description: "Requests to delete persons at PostHog, by outcome",
-    incremental: true,
-  }
-);
-
-const countErasure = (outcome: "failed" | "manual" | "requested") =>
-  Metric.update(
-    Metric.withAttributes(productAnalyticsErasures, { outcome }),
-    1
-  );
 
 // An event as it waits: stamped when it was handed over.
 interface Stamped {
@@ -140,6 +126,14 @@ export const postHogDelivery = (
       const ids = yield* Ids;
       const queue = yield* Queue.dropping<Stamped>(queueCapacity);
       const endpoint = `${settings.host}/i/v1/analytics/events`;
+
+      // What no log line may hold, should PostHog echo it back.
+      const secrets = [
+        Redacted.value(settings.key),
+        ...Option.toArray(settings.erasure).map(({ personalKey }) =>
+          Redacted.value(personalKey)
+        ),
+      ];
 
       // When each kind of failure was last written, so a flood writes one
       // a minute.
@@ -238,9 +232,9 @@ export const postHogDelivery = (
               body.pipe(
                 Option.flatMap(decodeRefusal),
                 Option.flatMap(({ error }) => decodeLabel(error)),
-                // Never the token, should PostHog echo it.
+                // Never a key, should PostHog echo one.
                 Option.filter(
-                  (label) => !label.includes(Redacted.value(settings.key))
+                  (label) => !secrets.some((secret) => label.includes(secret))
                 )
               )
             );
@@ -279,19 +273,48 @@ export const postHogDelivery = (
           )
         );
 
+      // The events not yet sent of persons being forgotten: left out of
+      // every batch, even one already taken from the queue.
+      const purged = yield* Ref.make<ReadonlySet<string>>(new Set());
+
+      // Held while a request is in flight, so a purge waits for it.
+      const posting = yield* Semaphore.make(1);
+
+      // The events taken from the queue and not yet answered: dropped if
+      // the server stops meanwhile.
+      const inFlight = yield* Ref.make(0);
+
+      const post = (taken: readonly Stamped[]) =>
+        posting.withPermits(1)(
+          Effect.gen(function* posted() {
+            const forgotten = yield* Ref.get(purged);
+
+            const batch = taken.filter(
+              ({ distinctId }) => !forgotten.has(distinctId)
+            );
+
+            yield* countEvents("dropped", taken.length - batch.length);
+
+            yield* batch.length === 0 ? Effect.void : sendBatch(batch);
+          })
+        );
+
       const sender = Queue.takeBetween(queue, 1, maxBatch).pipe(
-        Effect.flatMap(sendBatch),
+        Effect.tap((taken) => Ref.set(inFlight, taken.length)),
+        Effect.flatMap(post),
+        Effect.andThen(Ref.set(inFlight, 0)),
         Effect.andThen(Effect.sleep(sendPause)),
         Effect.forever
       );
 
       const running = yield* Effect.forkScoped(sender);
 
-      // At shutdown: what waits, sent within the time given; the rest
-      // dropped.
+      // At shutdown: a batch cut short counted dropped, what waits sent
+      // within the time given, the rest dropped.
       yield* Effect.addFinalizer(() =>
         Effect.gen(function* flushing() {
           yield* Fiber.interrupt(running);
+          yield* countEvents("dropped", yield* Ref.get(inFlight));
 
           const waiting = yield* Queue.clear(queue).pipe(
             Effect.orElseSucceed((): Stamped[] => [])
@@ -302,7 +325,7 @@ export const postHogDelivery = (
           yield* Effect.forEach(
             Arr.chunksOf(waiting, maxBatch),
             (batch) =>
-              sendBatch(batch).pipe(
+              post(batch).pipe(
                 Effect.andThen(
                   Ref.update(left, (count) => count - batch.length)
                 )
@@ -327,6 +350,30 @@ export const postHogDelivery = (
           const queued = yield* Queue.offer(queue, stamped);
 
           yield* queued ? Effect.void : countEvents("dropped");
+        });
+
+      // Nothing waiting, nor taken and not yet sent, goes out about them;
+      // a request in flight is waited for.
+      const purge = (distinctIds: readonly string[]) =>
+        Effect.gen(function* purging() {
+          yield* Ref.update(
+            purged,
+            (forgotten) => new Set([...forgotten, ...distinctIds])
+          );
+
+          const leaving = new Set(distinctIds);
+
+          const waiting = yield* Queue.clear(queue).pipe(
+            Effect.orElseSucceed((): Stamped[] => [])
+          );
+
+          const kept = waiting.filter(
+            ({ distinctId }) => !leaving.has(distinctId)
+          );
+
+          yield* countEvents("dropped", waiting.length - kept.length);
+          yield* Queue.offerAll(queue, kept);
+          yield* posting.withPermits(1)(Effect.void);
         });
 
       const deleteOnce = (
@@ -366,37 +413,20 @@ export const postHogDelivery = (
           return yield* done
             ? Effect.void
             : Effect.fail(
-                new PostHogDeletionRefused({ status: response.status })
+                new AnalyticsErasureFailed({ status: response.status })
               );
-        });
-
-      const forgetChunk = (
-        erasure: Option.Option.Value<PostHogSettings["erasure"]>,
-        distinctIds: readonly string[]
-      ) =>
-        deleteOnce(erasure, distinctIds).pipe(
-          // A deletion is idempotent: PostHog does not queue it twice.
-          Effect.retry({
-            schedule: Schedule.exponential("500 millis"),
-            times: 3,
-          }),
-          Effect.andThen(countErasure("requested")),
-          Effect.catchCause(() =>
-            countErasure("failed").pipe(
-              Effect.andThen(
-                Effect.logError(
-                  "PostHog did not delete the persons of an erasure: delete them there by hand"
-                ).pipe(
-                  Effect.annotateLogs({
-                    "event.name": "peal.erasure.analytics_failed",
-                    distinctIds: distinctIds.join(","),
-                  })
-                )
-              )
-            )
+        }).pipe(
+          // A timeout, a network failure or an answer it cannot read.
+          Effect.mapError((failure) =>
+            failure._tag === "AnalyticsErasureFailed"
+              ? failure
+              : new AnalyticsErasureFailed({})
           )
         );
 
+      // One request a chunk of persons. A deletion is idempotent: PostHog
+      // does not queue it twice, so a chunk deleted before is deleted
+      // again harmlessly when the whole is tried again.
       const forget = (distinctIds: readonly string[]) =>
         Option.match(settings.erasure, {
           // Ids only, as `peal.erasure` logs them.
@@ -407,26 +437,24 @@ export const postHogDelivery = (
                   "An erasure's persons stay at PostHog without PEAL_POSTHOG_PERSONAL_API_KEY: delete them there by hand"
                 ).pipe(
                   Effect.annotateLogs({
-                    "event.name": "peal.erasure.analytics_manual",
                     distinctIds: distinctIds.join(","),
+                    "event.name": "peal.erasure.analytics_manual",
                   })
                 )
-              )
+              ),
+              Effect.as<ErasureOutcome>("manual")
             ),
-          // After what was queued before has gone out, so no event sent
-          // in the meantime makes the person again.
           onSome: (erasure) =>
-            Effect.sleep(Duration.sum(sendPause, requestTimeout)).pipe(
-              Effect.andThen(
-                Effect.forEach(
-                  Arr.chunksOf(distinctIds, maxErasureBatch),
-                  (chunk) => forgetChunk(erasure, chunk),
-                  { discard: true }
-                )
-              )
+            Effect.forEach(
+              Arr.chunksOf(distinctIds, maxErasureBatch),
+              (chunk) => deleteOnce(erasure, chunk),
+              { discard: true }
+            ).pipe(
+              Effect.andThen(countErasure("requested")),
+              Effect.as<ErasureOutcome>("deleted")
             ),
         });
 
-      return AnalyticsDelivery.of({ enabled: true, forget, send });
+      return AnalyticsDelivery.of({ enabled: true, forget, purge, send });
     })
   );

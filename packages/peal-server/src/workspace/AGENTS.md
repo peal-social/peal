@@ -253,10 +253,11 @@ The staff context follows these rules too. What the law has a host keep is in
   adapter tells it of each change it keeps, metadata only, never for a
   session staff act in; `as` in `security.ts` and `mcpAuthentication`
   provide `AnalyticsActor`, and `StaffAccess` marks staff `internal`.
-  Once an erasure is confirmed, `CloseAccount`, `DeleteWorkspace` and
-  `OffboardWorkspace` fork `ProductAnalytics.forget` into their layer's
-  scope (the answer never waits on PostHog), and `ReplayErasures` awaits
-  it for what it erased again. What stays at PostHog: events other members
+  `CloseAccount`, `DeleteWorkspace` and `OffboardWorkspace` start the
+  deletion at PostHog (`ProductAnalytics.erase`, a durable job) inside the
+  erasure's transaction, so it commits with the erasure and survives a
+  restart, and forget the ids in the process once it committed;
+  `ReplayErasures` deletes at once and waits (`eraseNow`). What stays at PostHog: events other members
   made in a deleted workspace keep its id, which then names nothing, and
   the `workspace` and `billing_account` group rows (ids, a plan, dates),
   as PostHog's API deletes no single group; they name nobody.

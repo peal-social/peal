@@ -120,8 +120,9 @@ export const ProductEventSchema = Schema.Union([
   event("subscription_changed", {
     ...billingAccountFacts,
     cancelAtPeriodEnd: Schema.Boolean,
-    interval: AnalyticsTokenSchema,
-    plan: PaidPlanSchema,
+    // Absent for a price this server no longer lists (a legacy one).
+    interval: Schema.optionalKey(AnalyticsTokenSchema),
+    plan: Schema.optionalKey(PaidPlanSchema),
     status: AnalyticsTokenSchema,
     subscriptionStatus: AnalyticsTokenSchema,
     workspacePlan: Schema.optionalKey(PlanSchema),
@@ -215,12 +216,95 @@ export const postHogKeys: ReadonlySet<string> = new Set([
 
 // A key in snake_case, or one of PostHog's that Peal sets. (A record keyed
 // by literals would require every one of them.)
+/**
+ * Words no key may hold, whatever its value: what would name or reach a
+ * person (an address, a name, a phone, an IP), what someone wrote, or a
+ * credential.
+ */
+export const refusedKeyWords: ReadonlySet<string> = new Set([
+  "address",
+  "content",
+  "email",
+  "ip",
+  "mail",
+  "message",
+  "name",
+  "password",
+  "phone",
+  "secret",
+  "text",
+  "token",
+  "uri",
+  "url",
+]);
+
+const holdsRefusedWord = (key: string) =>
+  key.split(/[_$]/u).some((word) => refusedKeyWords.has(word));
+
 const PropertyKeySchema = Schema.String.check(
   Schema.makeFilter(
-    (key) => postHogKeys.has(key) || /^[a-z][a-z0-9_]*$/u.test(key),
-    { expected: "a key in snake_case, or one of PostHog's Peal sets" }
+    (key) =>
+      (postHogKeys.has(key) || /^[a-z][a-z0-9_]*$/u.test(key)) &&
+      !holdsRefusedWord(key),
+    {
+      expected:
+        "a key in snake_case, or one of PostHog's Peal sets, naming no address, name or text",
+    }
   )
 );
+
+/**
+ * The person properties Peal sets, and no other: `kind` and `locale`
+ * replaced, `signed_up_at` and `signup_method` set once, `internal` for
+ * staff.
+ */
+export const PersonPropertiesSchema = Schema.Struct({
+  internal: Schema.optionalKey(Schema.Literal(true)),
+  kind: Schema.optionalKey(Schema.Literals(["user", "service"])),
+  locale: Schema.optionalKey(LocaleSchema),
+  signed_up_at: Schema.optionalKey(AnalyticsTokenSchema),
+  signup_method: Schema.optionalKey(SignUpMethodSchema),
+});
+
+/** The group properties Peal sets, and no other. */
+export const GroupPropertiesSchema = Schema.Struct({
+  billing_account_id: Schema.optionalKey(AnalyticsTokenSchema),
+  created_at: Schema.optionalKey(AnalyticsTokenSchema),
+  free_tier: Schema.optionalKey(Schema.Boolean),
+  kind: Schema.optionalKey(BillingAccountKindSchema),
+  plan: Schema.optionalKey(PlanSchema),
+  standalone: Schema.optionalKey(Schema.Boolean),
+  subscription_status: Schema.optionalKey(AnalyticsTokenSchema),
+});
+
+export type GroupPropertiesInput = typeof GroupPropertiesSchema.Type;
+
+export type PersonPropertiesInput = typeof PersonPropertiesSchema.Type;
+
+// Every declared key and no other: an undeclared one is refused, not left
+// out.
+const strictly = { onExcessProperty: "error" } as const;
+
+const encodeEvent = Schema.encodeUnknownResult(ProductEventSchema, strictly);
+
+const encodePerson = Schema.encodeUnknownResult(
+  PersonPropertiesSchema,
+  strictly
+);
+
+const encodeGroup = Schema.encodeUnknownResult(GroupPropertiesSchema, strictly);
+
+/** Whether an event is one of the catalogue's, with only its own keys. */
+export const isDeclaredEvent = (productEvent: ProductEvent): boolean =>
+  encodeEvent(productEvent)._tag === "Success";
+
+/** Whether person properties are only those Peal sets. */
+export const isDeclaredPerson = (properties: PersonPropertiesInput): boolean =>
+  encodePerson(properties)._tag === "Success";
+
+/** Whether group properties are only those Peal sets. */
+export const isDeclaredGroup = (properties: GroupPropertiesInput): boolean =>
+  encodeGroup(properties)._tag === "Success";
 
 const ScalarSchema = Schema.Union([
   Schema.Boolean,

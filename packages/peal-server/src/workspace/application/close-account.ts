@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Option, Scope } from "effect";
+import { Context, Effect, Layer, Option } from "effect";
 import type { Redacted } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -97,8 +97,6 @@ export class CloseAccount extends Context.Service<
       const ownership = yield* PartnerOwnership;
       const { transaction } = yield* TransactionRunner;
       const analytics = yield* ProductAnalytics;
-      // Where what PostHog deletes runs, so no answer waits on it.
-      const scope = yield* Scope.Scope;
 
       const close = Effect.fn("CloseAccount.close")(function* close(
         principal: UserPrincipal,
@@ -196,6 +194,13 @@ export class CloseAccount extends Context.Service<
 
                 yield* recordErasure(entry);
 
+                // The user and the workspaces it deleted at PostHog,
+                // durably: the job commits with the erasure.
+                yield* analytics.erase(entry.id, {
+                  userIds: [userId],
+                  workspaceIds: plan.deleted,
+                });
+
                 return entry;
               })
             ).pipe(
@@ -221,10 +226,11 @@ export class CloseAccount extends Context.Service<
               })
             );
 
-            // The user and the workspaces it deleted, at product analytics.
-            yield* analytics
-              .forget({ userIds: [userId], workspaceIds: deleted })
-              .pipe(Effect.forkIn(scope));
+            // Nothing more is sent about them from this process.
+            yield* analytics.forget({
+              userIds: [userId],
+              workspaceIds: deleted,
+            });
 
             yield* mail.deleted({
               email: user.email,

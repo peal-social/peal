@@ -5,6 +5,9 @@ import {
   AnalyticsTokenSchema,
   checkedProperties,
   distinctIdOf,
+  isDeclaredEvent,
+  isDeclaredGroup,
+  isDeclaredPerson,
   isSafeProperties,
   userSubject,
   wireProperties,
@@ -13,6 +16,9 @@ import {
 import {
   productEventSamples,
   sampleUserId as userId,
+  undeclaredEvent,
+  undeclaredGroup,
+  undeclaredPerson,
   sampleWorkspaceId as workspaceId,
 } from "#test/shared/product-event-samples.ts";
 
@@ -104,6 +110,41 @@ describe("the properties that may leave", () => {
   it("bounds a token at 120 characters", () => {
     expect(Schema.is(AnalyticsTokenSchema)("a".repeat(120))).toBeTruthy();
     expect(Schema.is(AnalyticsTokenSchema)("a".repeat(121))).toBeFalsy();
+  });
+});
+
+describe("the keys that may leave", () => {
+  it.each([
+    "email",
+    "user_email",
+    "ip",
+    "name",
+    "display_name",
+    "url",
+    "text",
+    "token",
+  ])("refuses a key naming %s, whatever its value", (key) => {
+    expect(isSafe({ [key]: true })).toBeFalsy();
+  });
+
+  it("takes the keys the catalogue sends", () => {
+    expect(
+      isSafe({ $geoip_disable: true, billing_account_id: "x", error_code: "x" })
+    ).toBeTruthy();
+  });
+});
+
+describe("the events and properties the catalogue declares", () => {
+  it("takes every event of the catalogue as it is", () => {
+    for (const { sample } of Object.values(productEventSamples)) {
+      expect(isDeclaredEvent(sample)).toBeTruthy();
+    }
+  });
+
+  it("refuses an event with a key it does not declare", () => {
+    expect(isDeclaredEvent(undeclaredEvent)).toBeFalsy();
+    expect(isDeclaredPerson(undeclaredPerson)).toBeFalsy();
+    expect(isDeclaredGroup(undeclaredGroup)).toBeFalsy();
   });
 });
 

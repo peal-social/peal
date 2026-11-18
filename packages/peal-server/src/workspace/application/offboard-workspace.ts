@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Option, Schema, Scope } from "effect";
+import { Context, Effect, Layer, Option, Schema } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
@@ -74,8 +74,6 @@ export class OffboardWorkspace extends Context.Service<
       const records = yield* ContextRecords;
       const { transaction } = yield* TransactionRunner;
       const analytics = yield* ProductAnalytics;
-      // Where what PostHog deletes runs, so no answer waits on it.
-      const scope = yield* Scope.Scope;
 
       // The workspace, while the key's partner owns it.
       const ownedBy = Effect.fn("OffboardWorkspace.ownedBy")(function* ownedBy(
@@ -136,6 +134,13 @@ export class OffboardWorkspace extends Context.Service<
                   yield* eraseWorkspace(workspaceId).pipe(
                     Effect.catchTag("WorkspaceSubscribed", Effect.die)
                   );
+
+                  // Its service identity deleted at PostHog, durably: the
+                  // job commits with the erasure.
+                  yield* analytics.erase(erasure.id, {
+                    userIds: [],
+                    workspaceIds: [workspaceId],
+                  });
                 })
               ).pipe(
                 discardOnFailure(erasure),
@@ -156,10 +161,11 @@ export class OffboardWorkspace extends Context.Service<
                 })
               );
 
-              // Its service identity, at product analytics.
-              yield* analytics
-                .forget({ userIds: [], workspaceIds: [workspaceId] })
-                .pipe(Effect.forkIn(scope));
+              // Nothing more is sent about it from this process.
+              yield* analytics.forget({
+                userIds: [],
+                workspaceIds: [workspaceId],
+              });
             })
           );
         },

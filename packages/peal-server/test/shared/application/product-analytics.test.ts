@@ -3,19 +3,24 @@ import { Effect, Layer, Option } from "effect";
 
 import { AnalyticsActor } from "#shared/application/analytics-actor.ts";
 import { AnalyticsDelivery } from "#shared/application/analytics-delivery.ts";
+import { AnalyticsErasures } from "#shared/application/analytics-erasures.ts";
 import { AnalyticsScope } from "#shared/application/analytics-scope.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import type { Captured } from "#shared/application/product-analytics.ts";
-import { UserIdSchema } from "#shared/domain/ids.ts";
+import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { isSafeProperties } from "#shared/domain/product-event.ts";
 import type { ProductEvent } from "#shared/domain/product-event.ts";
 import {
   productEventSamples,
   sampleUserId as userId,
+  undeclaredEvent,
+  undeclaredGroup,
+  undeclaredPerson,
   sampleWorkspaceId as workspaceId,
 } from "#test/shared/product-event-samples.ts";
 import {
   clearRecorded,
+  erasureJobs,
   forgotten,
   recordedAnalytics,
   recordedDelivery,
@@ -24,10 +29,15 @@ import {
 
 const excludedId = UserIdSchema.make("1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d");
 
+const excludedWorkspaceId = WorkspaceIdSchema.make(
+  "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e"
+);
+
 const operation: ProductEvent = productEventSamples.api_operation.sample;
 
 const captured = (overrides: Partial<Captured> = {}): Captured => ({
   actor: Option.none(),
+  asWorkspace: false,
   billingAccountId: Option.none(),
   event: operation,
   workspaceId: Option.some(workspaceId),
@@ -43,7 +53,11 @@ describe("product analytics without a key", () => {
   layer(
     ProductAnalytics.layer.pipe(
       Layer.provide(
-        Layer.merge(AnalyticsDelivery.none, AnalyticsScope.layerTest)
+        Layer.mergeAll(
+          AnalyticsDelivery.none,
+          AnalyticsErasures.none,
+          AnalyticsScope.layerTest
+        )
       )
     )
   )((it) => {
@@ -255,6 +269,82 @@ describe("product analytics", () => {
       })
     );
 
+    it.effect(
+      "sends what comes from stored data as the workspace, whoever the request is",
+      () =>
+        Effect.gen(function* stored() {
+          yield* clearRecorded;
+          yield* capture({ actor: asUser, asWorkspace: true }).pipe(
+            Effect.provideService(
+              AnalyticsActor,
+              AnalyticsActor.of({
+                impersonated: false,
+                userId: Option.some(userId),
+              })
+            )
+          );
+
+          const [sent] = yield* sentEvents;
+
+          assert.strictEqual(sent?.distinctId, `workspace:${workspaceId}`);
+          assert.strictEqual(sent?.properties["actor_kind"], "service");
+        })
+    );
+
+    it.effect(
+      "refuses an event with a key the catalogue does not declare",
+      () =>
+        Effect.gen(function* undeclared() {
+          yield* clearRecorded;
+
+          yield* capture({ actor: asUser, event: undeclaredEvent });
+
+          const analytics = yield* ProductAnalytics;
+
+          yield* analytics.identify(userId, {
+            set: undeclaredPerson,
+            setOnce: {},
+          });
+          yield* analytics.groupIdentify(
+            { key: workspaceId, type: "workspace" },
+            undeclaredGroup,
+            { _tag: "user", userId }
+          );
+
+          assert.deepStrictEqual(yield* sentEvents, []);
+        })
+    );
+
+    it.effect(
+      "starts an erasure's durable deletion, and deletes at once on demand",
+      () =>
+        Effect.gen(function* erasing() {
+          yield* clearRecorded;
+
+          const analytics = yield* ProductAnalytics;
+
+          yield* analytics.erase("erasure-1", {
+            userIds: [excludedId],
+            workspaceIds: [excludedWorkspaceId],
+          });
+
+          assert.deepStrictEqual(yield* erasureJobs, [
+            {
+              key: "erasure-1",
+              userIds: [excludedId],
+              workspaceIds: [excludedWorkspaceId],
+            },
+          ]);
+
+          yield* analytics.eraseNow({
+            userIds: [excludedId],
+            workspaceIds: [],
+          });
+
+          assert.deepStrictEqual(yield* forgotten, [excludedId]);
+        })
+    );
+
     // Last in the block: what is forgotten stays forgotten.
     it.effect(
       "forgets an erased user and workspace, then sends nothing of them",
@@ -276,10 +366,8 @@ describe("product analytics", () => {
           });
 
           assert.deepStrictEqual(yield* sentEvents, []);
-          assert.deepStrictEqual(yield* forgotten, [
-            userId,
-            `workspace:${workspaceId}`,
-          ]);
+          // Forgetting deletes nothing at PostHog: the erasure's job does.
+          assert.deepStrictEqual(yield* forgotten, []);
         })
     );
   });
@@ -293,7 +381,7 @@ describe("product analytics with excluded users", () => {
           AnalyticsScope,
           AnalyticsScope.of({
             environment: "test",
-            excludedUsers: new Set([excludedId]),
+            excluded: new Set([excludedId, excludedWorkspaceId]),
           })
         )
       ),
@@ -310,6 +398,18 @@ describe("product analytics with excluded users", () => {
         yield* analytics.markInternal(excludedId);
         yield* analytics.identify(excludedId, { set: {}, setOnce: {} });
 
+        // An excluded workspace: nothing, whoever acts in it.
+        yield* capture({
+          actor: asUser,
+          workspaceId: Option.some(excludedWorkspaceId),
+        });
+        yield* capture({ workspaceId: Option.some(excludedWorkspaceId) });
+        yield* analytics.groupIdentify(
+          { key: excludedWorkspaceId, type: "workspace" },
+          { created_at: "2026-11-18T10:00:00.000Z" },
+          { _tag: "user", userId }
+        );
+
         assert.deepStrictEqual(yield* sentEvents, []);
       })
     );
@@ -321,11 +421,17 @@ describe("product analytics over a delivery that dies", () => {
     ProductAnalytics.layer.pipe(
       Layer.provide(AnalyticsScope.layerTest),
       Layer.provide(
+        Layer.succeed(AnalyticsErasures, {
+          start: () => Effect.die("start died"),
+        })
+      ),
+      Layer.provide(
         Layer.succeed(
           AnalyticsDelivery,
           AnalyticsDelivery.of({
             enabled: true,
             forget: () => Effect.die("forget died"),
+            purge: () => Effect.die("purge died"),
             send: () => Effect.die("send died"),
           })
         )
@@ -339,6 +445,11 @@ describe("product analytics over a delivery that dies", () => {
         yield* capture({ actor: asUser });
         yield* analytics.markInternal(userId);
         yield* analytics.forget({ userIds: [userId], workspaceIds: [] });
+        yield* analytics.erase("erasure-1", {
+          userIds: [userId],
+          workspaceIds: [],
+        });
+        yield* analytics.eraseNow({ userIds: [userId], workspaceIds: [] });
       })
     );
   });

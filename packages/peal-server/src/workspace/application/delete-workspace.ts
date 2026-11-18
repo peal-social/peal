@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Option, Scope } from "effect";
+import { Context, Effect, Layer, Option } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
@@ -88,8 +88,6 @@ export class DeleteWorkspace extends Context.Service<
       const ownership = yield* PartnerOwnership;
       const { transaction } = yield* TransactionRunner;
       const analytics = yield* ProductAnalytics;
-      // Where what PostHog deletes runs, so no answer waits on it.
-      const scope = yield* Scope.Scope;
 
       // The workspace, locked when in a transaction.
       const found = (workspaceId: Actor["workspaceId"]) =>
@@ -150,6 +148,13 @@ export class DeleteWorkspace extends Context.Service<
                 yield* found(workspaceId);
                 yield* ownership.ensureDeletable([workspaceId]);
                 yield* eraseWorkspace(workspaceId);
+
+                // Its service identity deleted at PostHog, durably: the
+                // job commits with the erasure.
+                yield* analytics.erase(erasure.id, {
+                  userIds: [],
+                  workspaceIds: [workspaceId],
+                });
               })
             ).pipe(
               discardOnFailure(erasure),
@@ -169,10 +174,11 @@ export class DeleteWorkspace extends Context.Service<
               })
             );
 
-            // Its service identity, at product analytics.
-            yield* analytics
-              .forget({ userIds: [], workspaceIds: [workspaceId] })
-              .pipe(Effect.forkIn(scope));
+            // Nothing more is sent about it from this process.
+            yield* analytics.forget({
+              userIds: [],
+              workspaceIds: [workspaceId],
+            });
 
             const owner = yield* store.records(userId);
 

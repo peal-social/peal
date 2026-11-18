@@ -131,8 +131,6 @@ class Fakes extends Context.Service<
     >;
     /** What removing a workspace's files waits for, as a test sets it. */
     readonly whileRemovingFiles: Ref.Ref<Effect.Effect<void>>;
-    /** What forgetting at product analytics waits for, as a test sets it. */
-    readonly whileForgetting: Ref.Ref<Effect.Effect<void>>;
   }
 >()("test/workspace/api/Fakes") {
   static readonly layer = Layer.effect(
@@ -142,7 +140,6 @@ class Fakes extends Context.Service<
       standings: Ref.make<ReadonlyMap<UserId, readonly MembershipStanding[]>>(
         new Map()
       ),
-      whileForgetting: Ref.make<Effect.Effect<void>>(Effect.void),
       whileRemovingFiles: Ref.make<Effect.Effect<void>>(Effect.void),
     })
   );
@@ -559,8 +556,8 @@ const PortsLive = Layer.mergeAll(
       });
     })
   ),
-  // Product analytics, which records what an erasure forgets once what
-  // the test set lets it.
+  // Product analytics, which records the deletions an erasure starts at
+  // PostHog and what it forgets.
   Layer.effect(
     ProductAnalytics,
     Effect.gen(function* ProductAnalyticsTest() {
@@ -569,12 +566,13 @@ const PortsLive = Layer.mergeAll(
       return ProductAnalytics.of({
         capture: () => Effect.void,
         enabled: true,
+        erase: (_key, { userIds, workspaceIds }) =>
+          record(`erase:${userIds.join(",")}|${workspaceIds.join(",")}`).pipe(
+            Effect.provideService(Fakes, fakes)
+          ),
+        eraseNow: () => Effect.die("not used"),
         forget: ({ userIds, workspaceIds }) =>
-          Ref.get(fakes.whileForgetting).pipe(
-            Effect.flatten,
-            Effect.andThen(
-              record(`forget:${userIds.join(",")}|${workspaceIds.join(",")}`)
-            ),
+          record(`forget:${userIds.join(",")}|${workspaceIds.join(",")}`).pipe(
             Effect.provideService(Fakes, fakes)
           ),
         groupIdentify: () => Effect.void,
@@ -748,7 +746,14 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
         const done = yield* calls;
 
-        // Its service identity, at product analytics, once deleted.
+        // Its service identity's deletion at PostHog starts in the
+        // erasure's transaction, which commits it, and nothing more is sent
+        // about it once confirmed.
+        assert.isAbove(done.indexOf(`erase:|${harbour}`), -1);
+        assert.isBelow(
+          done.indexOf(`erase:|${harbour}`),
+          done.indexOf(`ledger:workspace:${harbour}:confirmed`)
+        );
         assert.isAbove(
           done.indexOf(`forget:|${harbour}`),
           done.indexOf(`ledger:workspace:${harbour}:confirmed`)
@@ -776,24 +781,6 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           done.indexOf(`deleteWorkspace:${harbour}`)
         );
         assert.notInclude(done, "ledger:discard");
-      })
-  );
-
-  it.effect(
-    "answer a deletion without waiting for product analytics to forget",
-    () =>
-      Effect.gen(function* withoutWaiting() {
-        const { whileForgetting } = yield* Fakes;
-        const client = yield* as(user());
-
-        yield* Ref.set(whileForgetting, Effect.never);
-
-        yield* client.workspaces.delete({
-          params: { workspaceId: harbour },
-          payload: { name: "Harbour" },
-        });
-
-        yield* Ref.set(whileForgetting, Effect.void);
       })
   );
 
@@ -896,6 +883,8 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         ),
         "WorkspaceBusy"
       );
+      // Refused: nothing is deleted at PostHog.
+      assert.notInclude(yield* calls, `erase:|${busy}`);
     })
   );
 
@@ -1254,7 +1243,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         );
         assert.notInclude(yield* calls, `deleteUser:${userId}`);
         // Refused before anything was erased: nothing forgotten.
-        assert.notInclude(yield* calls, `forget:${userId}|${harbour}`);
+        assert.notInclude(yield* calls, `erase:${userId}|${harbour}`);
 
         for (const principal of [apiKey, oauth, impersonated]) {
           const refused = yield* as(principal);
@@ -1289,6 +1278,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           [...done],
           [
             // The user and the workspace it deleted, at product analytics.
+            `erase:${userId}|${harbour}`,
             `forget:${userId}|${harbour}`,
             `eraseWorkspace:${harbour}`,
             `deleteWorkspace:${harbour}`,

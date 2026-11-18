@@ -132,6 +132,7 @@ export const analysedWebhookEvents = <E, R>(
                 onSome: (event) =>
                   analytics.capture({
                     actor: Option.none(),
+                    asWorkspace: false,
                     billingAccountId: Option.none(),
                     event,
                     workspaceId: Option.some(request.event.data.workspaceId),

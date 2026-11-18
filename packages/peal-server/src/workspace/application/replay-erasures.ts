@@ -219,8 +219,9 @@ export class ReplayErasures extends Context.Service<
             })
           );
 
-          // At product analytics too: a command, which waits for it.
-          yield* analytics.forget({
+          // At PostHog too, once each: a command, which waits for it, with
+          // no server running to have queued anything about them.
+          yield* analytics.eraseNow({
             userIds: replayed.account === null ? [] : [replayed.account],
             workspaceIds: replayed.workspaces,
           });

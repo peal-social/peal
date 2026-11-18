@@ -1676,11 +1676,11 @@ layer(PostHogTest, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(deleted.status, 204);
 
-          // The refused events are logged, then the deletion, which is tried
-          // four times after what was queued went out.
+          // The refused events are logged, then the deletion's first
+          // attempt, which the job tries again later.
           yield* Effect.sync(() => written()).pipe(
             Effect.flatMap((text) =>
-              text.includes("peal.erasure.analytics_failed")
+              text.includes("PostHog did not delete an erasure")
                 ? Effect.void
                 : Effect.fail(text)
             ),

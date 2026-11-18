@@ -136,6 +136,7 @@ export const LoggedActivityJournal = Layer.effect(
         ? Effect.void
         : analytics.capture({
             actor: analyticsActorOf(change.principal),
+            asWorkspace: false,
             billingAccountId: Option.none(),
             event: operationEvent(change, change.via, answer),
             workspaceId: Option.some(change.workspaceId),

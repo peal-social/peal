@@ -5,10 +5,12 @@ import {
   Effect,
   Exit,
   Fiber,
+  Logger,
   Layer,
   Metric,
   Option,
   Redacted,
+  References,
   Schema,
   Scope,
 } from "effect";
@@ -18,12 +20,14 @@ import { TestClock } from "effect/testing";
 
 import { AnalyticsDelivery } from "#shared/application/analytics-delivery.ts";
 import { Ids } from "#shared/application/ids.ts";
-import { productAnalyticsEvents } from "#shared/application/product-analytics.ts";
+import {
+  productAnalyticsErasures,
+  productAnalyticsEvents,
+} from "#shared/application/product-analytics.ts";
 import type { EventOutcome } from "#shared/application/product-analytics.ts";
 import {
   maxBatch,
   postHogDelivery,
-  productAnalyticsErasures,
   queueCapacity,
   requestTimeout,
   sendPause,
@@ -47,7 +51,7 @@ const settings = (
 ): PostHogSettings => ({
   environment: "test",
   erasure: Option.none(),
-  excludedUsers: new Set(),
+  excluded: new Set(),
   host: "https://eu.i.posthog.com",
   key: Redacted.make(key),
   ...overrides,
@@ -404,7 +408,36 @@ describe("the PostHog delivery", () => {
         yield* TestClock.adjust(shutdownTimeout);
         yield* Fiber.join(closing);
 
-        assert.strictEqual((yield* countOf("dropped")) - before, 1);
+        assert.strictEqual((yield* countOf("dropped")) - before, 2);
+      })
+  );
+});
+
+describe("the PostHog delivery's purge", () => {
+  it.effect(
+    "sends nothing more about persons it purged, even taken already",
+    () =>
+      Effect.gen(function* purges() {
+        const { close, delivery, sent } = yield* harness(accepted);
+
+        yield* delivery.send({ ...event(1), distinctId: "user-gone" });
+        yield* settle;
+        yield* delivery.send({ ...event(2), distinctId: "user-gone" });
+        yield* delivery.send({ ...event(3), distinctId: "user-kept" });
+        yield* delivery.purge(["user-gone"]);
+        yield* delivery.send({ ...event(4), distinctId: "user-gone" });
+        yield* TestClock.adjust(sendPause);
+        yield* settle;
+
+        assert.strictEqual(sent.length, 2);
+        assert.deepStrictEqual(
+          Schema.decodeUnknownSync(BodySchema)(sent[1]?.body).batch.map(
+            ({ distinct_id: distinctId }) => distinctId
+          ),
+          ["user-kept"]
+        );
+
+        yield* close;
       })
   );
 });
@@ -415,8 +448,7 @@ describe("the PostHog erasure", () => {
       const before = yield* erasuresOf("manual");
       const { close, delivery, sent } = yield* harness(accepted);
 
-      yield* delivery.forget(["user-1"]);
-
+      assert.strictEqual(yield* delivery.forget(["user-1"]), "manual");
       assert.strictEqual(sent.length, 0);
       assert.strictEqual((yield* erasuresOf("manual")) - before, 1);
 
@@ -445,11 +477,7 @@ describe("the PostHog erasure", () => {
 
       const ids = Array.from({ length: 1001 }, (_, index) => `user-${index}`);
 
-      const forgetting = yield* Effect.forkChild(delivery.forget(ids));
-
-      yield* TestClock.adjust(Duration.sum(sendPause, requestTimeout));
-      yield* Fiber.join(forgetting);
-
+      assert.strictEqual(yield* delivery.forget(ids), "deleted");
       assert.strictEqual(sent.length, 2);
       assert.strictEqual(
         sent[0]?.path,
@@ -472,16 +500,14 @@ describe("the PostHog erasure", () => {
       assert.strictEqual(body(sent[0]?.body).distinct_ids.length, 1000);
       assert.isTrue(body(sent[0]?.body).delete_events);
       assert.deepStrictEqual(body(sent[1]?.body).distinct_ids, ["user-1000"]);
-      assert.strictEqual((yield* erasuresOf("requested")) - before, 2);
+      assert.strictEqual((yield* erasuresOf("requested")) - before, 1);
 
       yield* close;
     })
   );
 
-  it.effect("counts a deletion PostHog reports errors for failed", () =>
+  it.effect("fails a deletion PostHog reports errors for, once", () =>
     Effect.gen(function* deletionErrors() {
-      const before = yield* erasuresOf("failed");
-
       const { close, delivery, sent } = yield* harness(
         () =>
           Effect.succeed(
@@ -493,16 +519,54 @@ describe("the PostHog erasure", () => {
         withErasure
       );
 
-      const forgetting = yield* Effect.forkChild(delivery.forget(["user-1"]));
+      const failed = yield* delivery.forget(["user-1"]).pipe(Effect.flip);
 
-      yield* TestClock.adjust(Duration.sum(sendPause, requestTimeout));
-      yield* TestClock.adjust(Duration.seconds(10));
-      yield* Fiber.join(forgetting);
-
-      assert.strictEqual(sent.length, 4);
-      assert.strictEqual((yield* erasuresOf("failed")) - before, 1);
+      assert.strictEqual(failed._tag, "AnalyticsErasureFailed");
+      assert.strictEqual(failed.status, 202);
+      // Trying again is the job's, durably, not the adapter's.
+      assert.strictEqual(sent.length, 1);
 
       yield* close;
     })
+  );
+});
+
+describe("the PostHog delivery's logs", () => {
+  it.effect.each([key, personalKey])(
+    "never write a key PostHog echoes back as its label: %s",
+    (echoed) => {
+      const lines: string[] = [];
+
+      return Effect.gen(function* echoes() {
+        const { close, delivery } = yield* harness(
+          () =>
+            Effect.succeed(Response.json({ error: echoed }, { status: 401 })),
+          withErasure
+        );
+
+        yield* delivery.send(event(1));
+        yield* settle;
+        yield* close;
+
+        const written = lines.join("\n");
+
+        assert.include(
+          written,
+          "PostHog did not take product analytics events"
+        );
+        assert.notInclude(written, echoed);
+      }).pipe(
+        Effect.provide(
+          Logger.layer([
+            Logger.make(({ fiber, message }) => {
+              lines.push(
+                JSON.stringify(message),
+                JSON.stringify(fiber.getRef(References.CurrentLogAnnotations))
+              );
+            }),
+          ])
+        )
+      );
+    }
   );
 });

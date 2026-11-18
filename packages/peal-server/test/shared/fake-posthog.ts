@@ -56,6 +56,11 @@ export class FakePostHog extends Context.Service<FakePostHog, FakeHttpServer>()(
   "peal-server/test/FakePostHog"
 ) {}
 
+/** Every request the fake received so far, in order. */
+export const capturedRequests = FakePostHog.use((fake) =>
+  Effect.sync(() => fake.requests())
+);
+
 /** Every event the fake received so far, in order. */
 export const capturedEvents = FakePostHog.use((fake) =>
   Effect.sync(() => fake.requests().flatMap(batchOf))
@@ -81,19 +86,26 @@ export const eventsMatching = (
     Effect.orElseSucceed(() => [])
   );
 
-/** The deletions of persons the fake received so far, once there is one. */
-export const deletionsReceived = FakePostHog.use((fake) =>
-  Effect.sync(() =>
-    fake.requests().filter(({ path }) => path.endsWith("/persons/bulk_delete/"))
-  )
-).pipe(
-  Effect.flatMap((found) =>
-    found.length > 0 ? Effect.succeed(found) : Effect.fail(found)
-  ),
-  // The server waits for what it queued to go out first (12 seconds).
-  Effect.retry({ schedule: Schedule.spaced("200 millis"), times: 150 }),
-  Effect.orElseSucceed((): readonly FakeRequest[] => [])
-);
+/** The deletions of persons naming `distinctId`, once there is one. */
+export const deletionsOf = (distinctId: string) =>
+  FakePostHog.use((fake) =>
+    Effect.sync(() =>
+      fake
+        .requests()
+        .filter(
+          ({ body, path }) =>
+            path.endsWith("/persons/bulk_delete/") &&
+            body.includes(JSON.stringify(distinctId))
+        )
+    )
+  ).pipe(
+    Effect.flatMap((found) =>
+      found.length > 0 ? Effect.succeed(found) : Effect.fail(found)
+    ),
+    // The deletion is a job, which runs once the erasure committed.
+    Effect.retry({ schedule: Schedule.spaced("200 millis"), times: 150 }),
+    Effect.orElseSucceed((): readonly FakeRequest[] => [])
+  );
 
 /** The settings that turn product analytics on, sending to the fake. */
 export const postHogSettings = (posthog: FakeHttpServer) => ({

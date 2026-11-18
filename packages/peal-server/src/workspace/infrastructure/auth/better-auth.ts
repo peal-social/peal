@@ -417,7 +417,8 @@ export const BetterAuthLive = Layer.effect(
           subscriptions.record(event).pipe(
             Effect.tap((outcome) =>
               Effect.sync(() => {
-                if (outcome === "recorded") {
+                // No read of billing for analytics that sends nothing.
+                if (outcome === "recorded" && analytics.enabled) {
                   run(
                     toldSubscription(analytics, accounts, entitlements, event)
                   );

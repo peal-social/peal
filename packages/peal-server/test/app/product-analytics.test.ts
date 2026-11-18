@@ -1,21 +1,29 @@
 // Product analytics through the whole server, sending to a fake PostHog:
 // who each event is about, and that staff acting as someone send nothing.
+import { randomUUID } from "node:crypto";
+
 import { assert, layer } from "@effect/vitest";
-import { Effect, Layer, Option, Schema } from "effect";
+import { ConfigProvider, Effect, Layer, Option, Schema } from "effect";
 import { McpClient } from "effect/ai";
 
+import { ErasureReplayServicesLive } from "#app/server.ts";
+import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { isSafeProperties } from "#shared/domain/product-event.ts";
+import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 import {
   authorize,
   connect,
   registeredClient,
   toolNamed,
 } from "#test/app/mcp-support.ts";
+import { storageSettings } from "#test/media/support.ts";
 import {
   appWithPostHog,
   capturedEvents,
-  deletionsReceived,
+  capturedRequests,
+  deletionsOf,
   eventsMatching,
+  withFakePostHog,
 } from "#test/shared/fake-posthog.ts";
 import type { CapturedEvent } from "#test/shared/fake-posthog.ts";
 import {
@@ -29,6 +37,16 @@ import {
   TestApp,
   workspaceOf,
 } from "#test/workspace/integration/harness.ts";
+import {
+  bearer,
+  customerOf,
+  keyOf,
+  partnerOf,
+} from "#test/workspace/integration/partner-support.ts";
+import { ErasureLedger } from "#workspace/application/erasure-ledger.ts";
+import { ReplayErasures } from "#workspace/application/replay-erasures.ts";
+import { erasureOf } from "#workspace/application/workspace-erasure.ts";
+import { S3ErasureLedger } from "#workspace/infrastructure/s3-erasure-ledger.ts";
 
 const Test = Layer.mergeAll(appWithPostHog(), MigratedSqlLive);
 
@@ -379,6 +397,7 @@ layer(
   Layer.mergeAll(
     appWithPostHog({
       PEAL_POSTHOG_PERSONAL_API_KEY: "phx_synthetic",
+      PEAL_PARTNER_SELF_SERVICE: "true",
       PEAL_POSTHOG_PROJECT_ID: "12345",
     }),
     MigratedSqlLive
@@ -399,7 +418,7 @@ layer(
 
       assert.strictEqual(deleted.status, 204);
 
-      const [deletion] = yield* deletionsReceived;
+      const [deletion] = yield* deletionsOf(`workspace:${workspaceId}`);
 
       assert.strictEqual(
         deletion?.path,
@@ -422,4 +441,89 @@ layer(
       );
     })
   );
+
+  it.effect(
+    "deletes an offboarded customer's service identity at PostHog",
+    () =>
+      Effect.gen(function* offboarded() {
+        const app = yield* TestApp;
+        const { home, owner } = yield* partnerOf("analytics-partner");
+        const { key } = yield* keyOf(owner, home);
+        const customer = yield* customerOf(key, "Analysed customer");
+
+        const offboarding = yield* app.request(
+          `/api/partner/workspaces/${customer.id}`,
+          { headers: bearer(key), method: "DELETE" }
+        );
+
+        assert.strictEqual(offboarding.status, 204);
+        assert.lengthOf(yield* deletionsOf(`workspace:${customer.id}`), 1);
+      })
+  );
 });
+
+// A replay of the erasure ledger, a command, deletes what it erased again
+// at PostHog itself, and waits for it.
+const replayPrefix = `tests/replay-analytics/${randomUUID()}/`;
+
+const ReplayTest = withFakePostHog((settings) =>
+  Layer.mergeAll(
+    TestApp.layerWith({
+      ...settings,
+      AUTH_REQUIRE_EMAIL_VERIFICATION: "false",
+      PEAL_S3_KEY_PREFIX: replayPrefix,
+    }),
+    ErasureReplayServicesLive.pipe(Layer.provide(storageSettings)),
+    S3ErasureLedger.pipe(Layer.provide(storageSettings)),
+    IdsLive,
+    MigratedSqlLive
+  ).pipe(
+    Layer.provide(
+      ConfigProvider.layerAdd(
+        ConfigProvider.fromUnknown({
+          ...settings,
+          PEAL_POSTHOG_PERSONAL_API_KEY: "phx_synthetic",
+          PEAL_POSTHOG_PROJECT_ID: "12345",
+          PEAL_S3_KEY_PREFIX: replayPrefix,
+        }),
+        { asPrimary: true }
+      )
+    )
+  )
+);
+
+layer(ReplayTest, { excludeTestServices: true, timeout: "180 seconds" })(
+  "product analytics of a replay",
+  (it) => {
+    it.effect("deletes at PostHog what a replay erases again", () =>
+      Effect.gen(function* replayed() {
+        const owner = yield* signedUpUnconfirmed("analytics-replay");
+
+        const workspaceId = WorkspaceIdSchema.make(
+          yield* workspaceOf(owner, "Replayed")
+        );
+
+        // An erasure the ledger holds, which the database still has.
+        const entry = yield* erasureOf(null, [workspaceId]);
+
+        yield* ErasureLedger.use((ledger) => ledger.record(entry));
+
+        const report = yield* ReplayErasures.use((replays) =>
+          replays.replay({ applyUnconfirmed: true })
+        );
+
+        assert.deepStrictEqual(
+          report.erased.map(({ workspaces }) => workspaces),
+          [[workspaceId]]
+        );
+        // Waited for: deleted by the time the command answers.
+        assert.lengthOf(
+          (yield* capturedRequests).filter(({ body }) =>
+            body.includes(`workspace:${workspaceId}`)
+          ),
+          1
+        );
+      })
+    );
+  }
+);

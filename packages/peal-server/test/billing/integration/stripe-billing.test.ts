@@ -2428,6 +2428,13 @@ layer(BillingAnalytics, {
         assert.isBoolean(created?.properties["free_tier"]);
         assert.isBoolean(created?.properties["standalone"]);
 
+        // Its checkout names the member who started it, as Stripe keeps it.
+        const startedBy = (userId: string) =>
+          payloadOf("customer.subscription.created", delivery).replaceAll(
+            '"metadata": {}',
+            `"metadata": {"userId": "${userId}"}`
+          );
+
         const [account] = yield* eventsMatching(
           ({ distinct_id: distinctId, event, properties }) =>
             event === "$groupidentify" &&
@@ -2437,10 +2444,7 @@ layer(BillingAnalytics, {
 
         assert.isDefined(account);
 
-        assert.strictEqual(
-          yield* deliver(payloadOf("customer.subscription.created", delivery)),
-          200
-        );
+        assert.strictEqual(yield* deliver(startedBy(owner.id)), 200);
 
         const ofWorkspace = ({ event, properties }: CapturedEvent) =>
           event === "subscription_changed" &&
@@ -2448,6 +2452,9 @@ layer(BillingAnalytics, {
 
         const [changed] = yield* eventsMatching(ofWorkspace);
 
+        // From Stripe, as the workspace: the member a subscription names
+        // may have closed their account since.
+        assert.strictEqual(changed?.distinct_id, `workspace:${workspaceId}`);
         assert.strictEqual(changed?.properties["plan"], "pro");
         assert.strictEqual(changed?.properties["status"], "active");
         assert.strictEqual(changed?.properties["interval"], "month");
@@ -2467,10 +2474,7 @@ layer(BillingAnalytics, {
         );
 
         // The same event again is a duplicate: nothing more is told.
-        assert.strictEqual(
-          yield* deliver(payloadOf("customer.subscription.created", delivery)),
-          200
-        );
+        assert.strictEqual(yield* deliver(startedBy(owner.id)), 200);
 
         yield* Effect.sleep("5 seconds");
 

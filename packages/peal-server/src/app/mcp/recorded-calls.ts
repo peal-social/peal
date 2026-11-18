@@ -67,6 +67,7 @@ export const recordedCalls = (changingTools: ReadonlySet<string>) =>
           Effect.flatMap((endedAt) =>
             analytics.capture({
               actor: capturedActorOf(member),
+              asWorkspace: false,
               billingAccountId: Option.none(),
               event: {
                 name: "mcp_tool_called",

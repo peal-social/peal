@@ -1,22 +1,27 @@
-import { Context, Effect, Layer, Metric, Option, Ref } from "effect";
+import { Context, Effect, Layer, Metric, Option, Ref, Schedule } from "effect";
 
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import {
   checkedProperties,
   distinctIdOf,
+  isDeclaredEvent,
+  isDeclaredGroup,
+  isDeclaredPerson,
   userSubject,
   wireProperties,
   workspaceSubject,
 } from "#shared/domain/product-event.ts";
 import type {
   AnalyticsSubject,
+  GroupPropertiesInput,
+  PersonPropertiesInput,
   ProductEvent,
   PropertyValue,
-  SafeScalar,
 } from "#shared/domain/product-event.ts";
 
 import { AnalyticsActor } from "./analytics-actor.ts";
 import { AnalyticsDelivery } from "./analytics-delivery.ts";
+import { AnalyticsErasures } from "./analytics-erasures.ts";
 import { AnalyticsScope } from "./analytics-scope.ts";
 
 /**
@@ -52,6 +57,43 @@ export const countEvents = (outcome: EventOutcome, count = 1) =>
         count
       );
 
+/**
+ * Deletions of persons at the provider, by what became of them:
+ * `requested` (the provider took them), `manual` (no key to delete with:
+ * logged for the operator), `failed` (its attempts ran out: logged).
+ */
+export const productAnalyticsErasures = Metric.counter(
+  "peal.product_analytics.erasures",
+  {
+    description: "Deletions of persons at PostHog, by outcome",
+    incremental: true,
+  }
+);
+
+/** Counts a deletion of persons under `outcome`. */
+export const countErasure = (outcome: "failed" | "manual" | "requested") =>
+  Metric.update(
+    Metric.withAttributes(productAnalyticsErasures, { outcome }),
+    1
+  );
+
+/**
+ * Logs and counts a deletion of persons the provider never confirmed, for
+ * the operator to make by hand: ids only, as `peal.erasure` logs them.
+ */
+export const erasureGivenUp = (distinctIds: readonly string[]) =>
+  countErasure("failed").pipe(
+    Effect.andThen(
+      Effect.logError(
+        "PostHog did not delete the persons of an erasure: delete them there by hand"
+      )
+    ),
+    Effect.annotateLogs({
+      distinctIds: distinctIds.join(","),
+      "event.name": "peal.erasure.analytics_failed",
+    })
+  );
+
 /** Who did something, as the caller knows it. */
 export interface CapturedActor {
   readonly userId: UserId;
@@ -72,18 +114,25 @@ export interface Captured {
    * or else the workspace's service identity.
    */
   readonly actor: Option.Option<CapturedActor>;
+  /**
+   * Sent as the workspace's service identity, whoever the request is: for
+   * what comes from stored data rather than a person acting now (a
+   * Stripe event naming the member who once subscribed), whose user may
+   * have been erased since.
+   */
+  readonly asWorkspace: boolean;
 }
 
 /** The kinds of group events are linked to. */
 export type AnalyticsGroupType = "billing_account" | "workspace";
 
-/** A group's properties: scalars only. */
-export type GroupProperties = Readonly<Record<string, SafeScalar>>;
+/** A group's properties, as `GroupPropertiesSchema` declares them. */
+export type GroupProperties = GroupPropertiesInput;
 
 /** A person's properties: `set` replaces, `setOnce` keeps the first. */
 export interface PersonProperties {
-  readonly set: Readonly<Record<string, SafeScalar>>;
-  readonly setOnce: Readonly<Record<string, SafeScalar>>;
+  readonly set: PersonPropertiesInput;
+  readonly setOnce: PersonPropertiesInput;
 }
 
 /** What an erasure removed, whose events product analytics forgets. */
@@ -91,6 +140,12 @@ export interface Erased {
   readonly userIds: readonly UserId[];
   readonly workspaceIds: readonly WorkspaceId[];
 }
+
+/** The ids an erasure's persons go by at the provider. */
+export const distinctIdsOf = ({ userIds, workspaceIds }: Erased) => [
+  ...userIds.map((id) => distinctIdOf(userSubject(id))),
+  ...workspaceIds.map((id) => distinctIdOf(workspaceSubject(id))),
+];
 
 // An event's properties while they are built, before they are checked.
 interface OutgoingProperties {
@@ -121,9 +176,14 @@ const neverFailing = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
     )
   );
 
-// Who acts: the caller's actor, or else the request's.
-const actorOf = (captured: Captured) =>
-  Option.isSome(captured.actor)
+// Who acts: the caller's actor, or else the request's; nobody for what
+// comes from stored data.
+const actorOf = (captured: Captured) => {
+  if (captured.asWorkspace) {
+    return Effect.succeed(Option.none());
+  }
+
+  return Option.isSome(captured.actor)
     ? Effect.succeed(
         Option.some({
           impersonated: captured.actor.value.impersonated,
@@ -135,6 +195,7 @@ const actorOf = (captured: Captured) =>
           Option.map(({ impersonated, userId }) => ({ impersonated, userId }))
         )
       );
+};
 
 // The groups an event is linked to: its workspace, and the billing
 // account where the caller holds it.
@@ -204,13 +265,24 @@ const personProperties = (
   return properties;
 };
 
+const nothingErased = ({ userIds, workspaceIds }: Erased) =>
+  userIds.length === 0 && workspaceIds.length === 0;
+
+// A deletion made at once, for a command that waits for it: a few tries,
+// then given up and logged.
+const deletionRetry = {
+  schedule: Schedule.exponential("500 millis"),
+  times: 3,
+};
+
 /**
  * Product analytics: what contexts call when something worth counting
  * happens. It decides who an event is about, leaves out what must not be
- * sent (staff acting as someone, a person who objected, an account or a
- * workspace erased in this process), checks every property against
- * `SafePropertiesSchema` and hands the event to the delivery. Nothing it
- * does fails, dies or waits on the network.
+ * sent (staff acting as someone, a user or workspace the operator
+ * excluded, an account or a workspace erased in this process), refuses an
+ * event with a key the catalogue does not declare, checks every property
+ * against `SafePropertiesSchema` and hands the event to the delivery.
+ * Nothing it does fails, dies or waits on the network.
  */
 export class ProductAnalytics extends Context.Service<
   ProductAnalytics,
@@ -229,11 +301,22 @@ export class ProductAnalytics extends Context.Service<
     /** Marks a staff member `internal: true`, once per process per user. */
     readonly markInternal: (userId: UserId) => Effect.Effect<void>;
     /**
-     * Forgets these users and these workspaces' service identities: nothing
-     * more is sent about them, and the provider deletes them. It may take
-     * a while: callers that answer someone fork it.
+     * Starts the durable deletion of an erasure's persons at the
+     * provider, inside the erasure's transaction, so it commits with it.
+     * A start that fails is logged for the operator, and fails nothing.
+     */
+    readonly erase: (key: string, erased: Erased) => Effect.Effect<void>;
+    /**
+     * Nothing more is sent about these users and workspaces, in this
+     * process: called once their erasure committed.
      */
     readonly forget: (erased: Erased) => Effect.Effect<void>;
+    /**
+     * Forgets them, then deletes them at the provider and waits for it:
+     * for a command (the replay of erasures). Never fails: a deletion the
+     * provider never confirms is logged.
+     */
+    readonly eraseNow: (erased: Erased) => Effect.Effect<void>;
   }
 >()("peal-server/shared/application/ProductAnalytics") {
   /** Nothing is sent nor kept. */
@@ -242,6 +325,8 @@ export class ProductAnalytics extends Context.Service<
     ProductAnalytics.of({
       capture: () => Effect.void,
       enabled: false,
+      erase: () => Effect.void,
+      eraseNow: () => Effect.void,
       forget: () => Effect.void,
       groupIdentify: () => Effect.void,
       identify: () => Effect.void,
@@ -253,7 +338,8 @@ export class ProductAnalytics extends Context.Service<
     ProductAnalytics,
     Effect.gen(function* ProductAnalyticsLive() {
       const delivery = yield* AnalyticsDelivery;
-      const { environment, excludedUsers } = yield* AnalyticsScope;
+      const erasures = yield* AnalyticsErasures;
+      const { environment, excluded } = yield* AnalyticsScope;
 
       // Who was erased in this process, and who was marked internal: held
       // by the layer, never the module.
@@ -271,19 +357,24 @@ export class ProductAnalytics extends Context.Service<
       };
 
       const userLeftOut = (userId: UserId) =>
-        excludedUsers.has(userId)
+        excluded.has(userId)
           ? Effect.succeed(true)
           : Ref.get(forgottenUsers).pipe(
               Effect.map((forgotten) => forgotten.has(userId))
+            );
+
+      const workspaceLeftOut = (workspaceId: string) =>
+        excluded.has(workspaceId)
+          ? Effect.succeed(true)
+          : Ref.get(forgottenWorkspaces).pipe(
+              Effect.map((forgotten) => forgotten.has(workspaceId))
             );
 
       // Whether nothing may be sent about this subject.
       const leftOut = (subject: AnalyticsSubject) =>
         subject._tag === "user"
           ? userLeftOut(subject.userId)
-          : Ref.get(forgottenWorkspaces).pipe(
-              Effect.map((forgotten) => forgotten.has(subject.workspaceId))
-            );
+          : workspaceLeftOut(subject.workspaceId);
 
       // Checks the properties, then queues the event, unless nothing may
       // be sent about its subject.
@@ -312,6 +403,20 @@ export class ProductAnalytics extends Context.Service<
 
       const capture = (captured: Captured) =>
         Effect.gen(function* capturing() {
+          // An event the catalogue does not declare as it is, an extra key
+          // included, never leaves.
+          if (!isDeclaredEvent(captured.event)) {
+            return yield* refuse(captured.event.name, "properties");
+          }
+
+          // An excluded or erased workspace sends nothing, whoever acted.
+          if (
+            Option.isSome(captured.workspaceId) &&
+            (yield* workspaceLeftOut(captured.workspaceId.value))
+          ) {
+            return yield* countEvents("skipped");
+          }
+
           const actor = yield* actorOf(captured);
 
           if (Option.exists(actor, ({ impersonated }) => impersonated)) {
@@ -337,11 +442,39 @@ export class ProductAnalytics extends Context.Service<
         });
 
       const identify = (userId: UserId, properties: PersonProperties) =>
-        deliver(
-          "$identify",
-          userSubject(userId),
-          personProperties(common, properties)
-        );
+        isDeclaredPerson(properties.set) && isDeclaredPerson(properties.setOnce)
+          ? deliver(
+              "$identify",
+              userSubject(userId),
+              personProperties(common, properties)
+            )
+          : refuse("$identify", "$set");
+
+      const groupIdentify = (
+        group: { readonly type: AnalyticsGroupType; readonly key: string },
+        properties: GroupProperties,
+        as: AnalyticsSubject
+      ) =>
+        Effect.gen(function* identifyingGroup() {
+          if (!isDeclaredGroup(properties)) {
+            return yield* refuse("$groupidentify", "$group_set");
+          }
+
+          // The group of an excluded or erased workspace is left alone.
+          if (
+            group.type === "workspace" &&
+            (yield* workspaceLeftOut(group.key))
+          ) {
+            return yield* countEvents("skipped");
+          }
+
+          return yield* deliver("$groupidentify", as, {
+            ...common,
+            $group_key: group.key,
+            $group_set: properties,
+            $group_type: group.type,
+          });
+        });
 
       const firstMark = (userId: UserId) =>
         Ref.modify(marked, (already) =>
@@ -351,25 +484,50 @@ export class ProductAnalytics extends Context.Service<
         );
 
       const forget = ({ userIds, workspaceIds }: Erased) =>
-        Effect.gen(function* forgetting() {
-          yield* Ref.update(
-            forgottenUsers,
-            (forgotten) => new Set([...forgotten, ...userIds])
+        Ref.update(
+          forgottenUsers,
+          (forgotten) => new Set([...forgotten, ...userIds])
+        ).pipe(
+          Effect.andThen(
+            Ref.update(
+              forgottenWorkspaces,
+              (forgotten) => new Set([...forgotten, ...workspaceIds])
+            )
+          )
+        );
+
+      const erase = (key: string, erased: Erased) =>
+        delivery.enabled && !nothingErased(erased)
+          ? erasures.start({ ...erased, key }).pipe(
+              Effect.catchCause((cause) =>
+                Effect.logError(
+                  "Could not start deleting an erasure's persons at PostHog: delete them there by hand",
+                  cause
+                ).pipe(
+                  Effect.andThen(countErasure("failed")),
+                  Effect.annotateLogs({
+                    distinctIds: distinctIdsOf(erased).join(","),
+                    "event.name": "peal.erasure.analytics_failed",
+                  })
+                )
+              )
+            )
+          : Effect.void;
+
+      const eraseNow = (erased: Erased) =>
+        Effect.gen(function* erasingNow() {
+          yield* forget(erased);
+
+          const distinctIds = distinctIdsOf(erased);
+
+          yield* delivery.purge(distinctIds);
+
+          yield* delivery.forget(distinctIds).pipe(
+            Effect.retry(deletionRetry),
+            Effect.catchTag("AnalyticsErasureFailed", () =>
+              erasureGivenUp(distinctIds)
+            )
           );
-
-          yield* Ref.update(
-            forgottenWorkspaces,
-            (forgotten) => new Set([...forgotten, ...workspaceIds])
-          );
-
-          const distinctIds = [
-            ...userIds.map((id) => distinctIdOf(userSubject(id))),
-            ...workspaceIds.map((id) => distinctIdOf(workspaceSubject(id))),
-          ];
-
-          yield* distinctIds.length === 0
-            ? Effect.void
-            : delivery.forget(distinctIds);
         });
 
       const whenEnabled = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
@@ -378,16 +536,12 @@ export class ProductAnalytics extends Context.Service<
       return ProductAnalytics.of({
         capture: (captured) => whenEnabled(capture(captured)),
         enabled: delivery.enabled,
+        erase,
+        eraseNow: (erased) =>
+          nothingErased(erased) ? Effect.void : whenEnabled(eraseNow(erased)),
         forget: (erased) => neverFailing(forget(erased)),
         groupIdentify: (group, properties, as) =>
-          whenEnabled(
-            deliver("$groupidentify", as, {
-              ...common,
-              $group_key: group.key,
-              $group_set: properties,
-              $group_type: group.type,
-            })
-          ),
+          whenEnabled(groupIdentify(group, properties, as)),
         identify: (userId, properties) =>
           whenEnabled(identify(userId, properties)),
         markInternal: (userId) =>

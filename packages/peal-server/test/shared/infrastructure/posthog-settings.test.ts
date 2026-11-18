@@ -44,7 +44,7 @@ describe("the PostHog settings", () => {
       assert.strictEqual(settings.host, "https://eu.i.posthog.com");
       assert.strictEqual(settings.environment, "development");
       assert.isTrue(Option.isNone(settings.erasure));
-      assert.strictEqual(settings.excludedUsers.size, 0);
+      assert.strictEqual(settings.excluded.size, 0);
     })
   );
 
@@ -162,23 +162,25 @@ describe("the PostHog settings", () => {
     })
   );
 
-  it.effect("read the excluded users, and stop on anything else", () =>
-    Effect.gen(function* excluded() {
-      const settings = yield* settingsOf({
-        PEAL_POSTHOG_EXCLUDED_USERS: ` ${userId}, ,${otherId} ,`,
-        PEAL_POSTHOG_KEY: key,
-      });
-
-      assert.deepStrictEqual(
-        [...settings.excludedUsers].toSorted(),
-        [otherId, userId].toSorted()
-      );
-      assert.isTrue(
-        yield* fails({
-          PEAL_POSTHOG_EXCLUDED_USERS: `${userId},someone@example.com`,
+  it.effect(
+    "read the excluded users and workspaces, and stop on anything else",
+    () =>
+      Effect.gen(function* excluded() {
+        const settings = yield* settingsOf({
+          PEAL_POSTHOG_EXCLUDED_USERS: ` ${userId}, ,${otherId} ,`,
           PEAL_POSTHOG_KEY: key,
-        })
-      );
-    })
+        });
+
+        assert.deepStrictEqual(
+          [...settings.excluded].toSorted(),
+          [otherId, userId].toSorted()
+        );
+        assert.isTrue(
+          yield* fails({
+            PEAL_POSTHOG_EXCLUDED_USERS: `${userId},someone@example.com`,
+            PEAL_POSTHOG_KEY: key,
+          })
+        );
+      })
   );
 });

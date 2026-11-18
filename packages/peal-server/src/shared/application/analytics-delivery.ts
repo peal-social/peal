@@ -2,6 +2,8 @@ import { Context, Effect, Layer } from "effect";
 
 import type { SafeProperties } from "#shared/domain/product-event.ts";
 
+import type { AnalyticsErasureFailed } from "./analytics-erasure-failed.ts";
+
 /** An event as product analytics sends it: checked, and about someone. */
 export interface OutgoingEvent {
   /** The user's id, or `workspace:<id>` for a workspace's service identity. */
@@ -10,6 +12,12 @@ export interface OutgoingEvent {
   readonly event: string;
   readonly properties: SafeProperties;
 }
+
+/**
+ * What deleting persons did: `deleted` at the provider, or `manual`, left
+ * for the operator to delete by hand (no key to delete with), logged.
+ */
+export type ErasureOutcome = "deleted" | "manual";
 
 /**
  * Where product analytics events go: PostHog, when the operator named a
@@ -23,8 +31,15 @@ export class AnalyticsDelivery extends Context.Service<
     readonly enabled: boolean;
     /** Queues the event and returns at once. Never fails, never waits on the network. */
     readonly send: (event: OutgoingEvent) => Effect.Effect<void>;
-    /** Deletes these persons and their events at the provider. Never fails. */
-    readonly forget: (distinctIds: readonly string[]) => Effect.Effect<void>;
+    /**
+     * Drops what waits to be sent about these persons, and waits for a
+     * request in flight to end, so nothing sent after it makes them again.
+     */
+    readonly purge: (distinctIds: readonly string[]) => Effect.Effect<void>;
+    /** Deletes these persons and their events at the provider, once. */
+    readonly forget: (
+      distinctIds: readonly string[]
+    ) => Effect.Effect<ErasureOutcome, AnalyticsErasureFailed>;
   }
 >()("peal-server/shared/application/AnalyticsDelivery") {
   /** Nothing is sent: the default of a server without a key, and of tests. */
@@ -32,7 +47,8 @@ export class AnalyticsDelivery extends Context.Service<
     AnalyticsDelivery,
     AnalyticsDelivery.of({
       enabled: false,
-      forget: () => Effect.void,
+      forget: () => Effect.succeed("deleted"),
+      purge: () => Effect.void,
       send: () => Effect.void,
     })
   );

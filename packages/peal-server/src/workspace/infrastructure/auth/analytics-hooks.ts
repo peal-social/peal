@@ -11,10 +11,7 @@ import { UserIdSchema } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { Plan } from "#shared/domain/plan.ts";
 import { userSubject, workspaceSubject } from "#shared/domain/product-event.ts";
-import type {
-  AnalyticsSubject,
-  BillingAccountKind,
-} from "#shared/domain/product-event.ts";
+import type { BillingAccountKind } from "#shared/domain/product-event.ts";
 
 import type { CreatedUser } from "./options.ts";
 
@@ -91,6 +88,7 @@ export const toldSignUp = (
 
           yield* analytics.capture({
             actor: asPerson(id),
+            asWorkspace: false,
             billingAccountId: Option.none(),
             event: { name: "user_signed_up", properties: { locale, method } },
             workspaceId: Option.none(),
@@ -121,6 +119,7 @@ export const toldWorkspace = (
 
           yield* analytics.capture({
             actor: asPerson(creator),
+            asWorkspace: false,
             billingAccountId: accountId,
             event: {
               name: "workspace_created",
@@ -157,10 +156,12 @@ export const toldWorkspace = (
 /**
  * A subscription's event billing recorded: `subscription_changed` with the
  * state it records (Stripe's events repeat and come out of order, so
- * PostHog derives the transitions), as the member who started it or the
- * workspace, and the plan and status of the workspace and its billing
- * account. Billing records only a status it knows, and an event without
- * its plan is not sent.
+ * PostHog derives the transitions), and the plan and status of the
+ * workspace and its billing account. Always as the workspace's service
+ * identity: the member a subscription's metadata names may have closed
+ * their account since, and a person erased must not come back from a
+ * Stripe event. Billing records only a status it knows; a price this
+ * server no longer lists leaves the plan and the interval out.
  */
 export const toldSubscription = (
   analytics: Analytics,
@@ -172,10 +173,6 @@ export const toldSubscription = (
     "of a subscription",
     Effect.gen(function* subscribed() {
       const { interval, plan, workspaceId } = event;
-
-      if (plan === null || interval === null) {
-        return;
-      }
 
       const account = yield* accounts.of(workspaceId).pipe(
         Effect.map(Option.some),
@@ -195,10 +192,7 @@ export const toldSubscription = (
         Effect.option
       );
 
-      const as: AnalyticsSubject = Option.match(event.startedBy, {
-        onNone: () => workspaceSubject(workspaceId),
-        onSome: userSubject,
-      });
+      const as = workspaceSubject(workspaceId);
 
       const accountId = account.pipe(Option.map(({ id }) => id));
 
@@ -208,17 +202,22 @@ export const toldSubscription = (
       });
 
       yield* analytics.capture({
-        actor: event.startedBy.pipe(
-          Option.map((userId) => ({ impersonated: false, userId }))
-        ),
+        actor: Option.none(),
+        asWorkspace: true,
         billingAccountId: accountId,
         event: {
           name: "subscription_changed",
           properties: {
             ...accountFacts(account),
             cancelAtPeriodEnd: event.cancelAtPeriodEnd,
-            interval,
-            plan,
+            ...Option.match(Option.fromNullishOr(interval), {
+              onNone: () => ({}),
+              onSome: (known) => ({ interval: known }),
+            }),
+            ...Option.match(Option.fromNullishOr(plan), {
+              onNone: () => ({}),
+              onSome: (known) => ({ plan: known }),
+            }),
             status: event.status,
             subscriptionStatus: event.status,
             ...Option.match(planNow, {

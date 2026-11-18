@@ -1,8 +1,12 @@
 import { Config, Option, Redacted, Schema, SchemaTransformation } from "effect";
 
-import { UserIdSchema } from "#shared/domain/ids.ts";
-import type { UserId } from "#shared/domain/ids.ts";
 import { isProduction } from "#shared/infrastructure/environment.ts";
+
+// Users and workspaces are both Better Auth's lowercase UUIDs.
+const ExcludedIdSchema = Schema.String.check(
+  Schema.isUUID(),
+  Schema.isLowercased()
+);
 
 /** Where PostHog's EU Cloud takes events. */
 export const defaultPostHogHost = "https://eu.i.posthog.com";
@@ -29,8 +33,8 @@ export interface PostHogSettings {
   /** The `environment` property of every event. */
   readonly environment: string;
   readonly erasure: Option.Option<PostHogErasure>;
-  /** Users nothing is ever sent about. */
-  readonly excludedUsers: ReadonlySet<UserId>;
+  /** Users and workspaces nothing is ever sent about, by id. */
+  readonly excluded: ReadonlySet<string>;
 }
 
 // A setting that is set: unset and empty both read as none.
@@ -91,7 +95,7 @@ const ProjectIdSchema = Schema.String.check(
 
 const ExcludedUsersSchema = Schema.String.pipe(
   Schema.decodeTo(
-    Schema.Array(UserIdSchema),
+    Schema.Array(ExcludedIdSchema),
     SchemaTransformation.transform({
       decode: (value: string): readonly string[] =>
         value
@@ -163,8 +167,9 @@ const erasureConfig = Config.all({
  *   each erasure is logged for the operator to delete by hand.
  * - PEAL_POSTHOG_APP_HOST: where persons are deleted,
  *   `https://eu.posthog.com` by default.
- * - PEAL_POSTHOG_EXCLUDED_USERS: user ids, separated by commas, nothing is
- *   ever sent about (a person who objected).
+ * - PEAL_POSTHOG_EXCLUDED_USERS: user and workspace ids, separated by
+ *   commas: nothing is sent about an excluded user, nor about an excluded
+ *   workspace, its service identity included, whoever acts in it.
  */
 export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
   optionalSecret("PEAL_POSTHOG_KEY").pipe(
@@ -175,16 +180,16 @@ export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
           Config.all({
             environment: environmentConfig,
             erasure: erasureConfig,
-            excludedUsers: Config.schema(
+            excluded: Config.schema(
               ExcludedUsersSchema,
               "PEAL_POSTHOG_EXCLUDED_USERS"
-            ).pipe(Config.withDefault<readonly UserId[]>([])),
+            ).pipe(Config.withDefault<readonly string[]>([])),
             host: host("PEAL_POSTHOG_HOST", defaultPostHogHost),
           }).pipe(
-            Config.map(({ excludedUsers, ...settings }) =>
+            Config.map(({ excluded, ...settings }) =>
               Option.some<PostHogSettings>({
                 ...settings,
-                excludedUsers: new Set(excludedUsers),
+                excluded: new Set(excluded),
                 key,
               })
             )
