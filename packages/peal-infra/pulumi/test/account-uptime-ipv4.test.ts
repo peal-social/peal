@@ -32,7 +32,10 @@ describe("an uptime server without IPv6", () => {
     expect(
       made
         .filter(
-          (resource) => resource.type === "cloudflare:index/dnsRecord:DnsRecord"
+          (resource) =>
+            // The blog's redirect host is account.test.ts's.
+            resource.type === "cloudflare:index/dnsRecord:DnsRecord" &&
+            resource.name !== "blog-redirect-host"
         )
         .map((record) => input(record, "type", Schema.String))
         .toSorted()

@@ -58,9 +58,52 @@ describe("what the account shares", () => {
 
     expect(result.uptimeRecords).toStrictEqual([]);
     expect(
-      made.filter(
-        (resource) => resource.type === "cloudflare:index/dnsRecord:DnsRecord"
-      )
-    ).toStrictEqual([]);
+      made
+        .filter(
+          (resource) => resource.type === "cloudflare:index/dnsRecord:DnsRecord"
+        )
+        .map((resource) => resource.name)
+    ).toStrictEqual(["blog-redirect-host"]);
+  });
+
+  it("sends blog.<domain> to the blog, keeping the path and the query", async () => {
+    await valueOf(pulumi.all([result.blogRecord.id, result.blogRedirect.id]));
+
+    const record = made.find(
+      (resource) => resource.name === "blog-redirect-host"
+    );
+
+    expect(record?.inputs).toStrictEqual({
+      content: "100::",
+      name: "blog.example.test",
+      proxied: true,
+      ttl: 1,
+      type: "AAAA",
+      zoneId: "zone-synthetic",
+    });
+
+    const ruleset = made.find((resource) => resource.name === "site-redirect");
+
+    expect(input(ruleset, "phase", Schema.String)).toBe(
+      "http_request_dynamic_redirect"
+    );
+    expect(input(ruleset, "zoneId", Schema.String)).toBe("zone-synthetic");
+    expect(input(ruleset, "rules", Schema.Unknown)).toStrictEqual([
+      {
+        action: "redirect",
+        actionParameters: {
+          fromValue: {
+            preserveQueryString: true,
+            statusCode: 301,
+            targetUrl: {
+              expression:
+                'concat("https://example.test/blog", http.request.uri.path)',
+            },
+          },
+        },
+        description: "blog.<domain> to the blog at <domain>/blog",
+        expression: '(http.host eq "blog.example.test")',
+      },
+    ]);
   });
 });

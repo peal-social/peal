@@ -256,7 +256,11 @@ describe("the sandbox at Cloudflare", () => {
 
   it("lets browsers upload to the media bucket from the app alone", async () => {
     await valueOf(result.buckets.media.name);
-    const [cors] = ofType("cloudflare:index/r2BucketCors:R2BucketCors");
+
+    const cors = ofType("cloudflare:index/r2BucketCors:R2BucketCors").find(
+      (resource) => resource.name === "cors-media"
+    );
+
     expect(input(cors, "rules", Schema.Unknown)).toStrictEqual([
       {
         allowed: {
@@ -299,7 +303,9 @@ describe("the sandbox at Cloudflare", () => {
     await valueOf(
       pulumi.all([
         result.cors.id,
+        result.blogCors.id,
         result.keys.backups.accessKeyId,
+        result.keys.blog.accessKeyId,
         result.keys.media.accessKeyId,
         ...result.applications.map((application) => application.id),
         ...result.records.map((record) => record.id),

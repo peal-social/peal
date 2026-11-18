@@ -45,6 +45,8 @@ const settled = Promise.all([
   valueOf(
     pulumi.all([
       result.cors.id,
+      result.blogCors.id,
+      result.keys.blog.accessKeyId,
       result.keys.backups.accessKeyId,
       result.keys.media.accessKeyId,
       ...result.records.map((record) => record.id),
@@ -123,16 +125,28 @@ describe("production at Cloudflare", () => {
     }
   });
 
-  it("guards the admin, Grafana and SSH alone, for the owner", async () => {
+  it("guards the admin, the blog's admin, Grafana and SSH alone, for the owner", async () => {
     await settled;
 
     expect(applications().map((application) => application.name)).toStrictEqual(
-      ["access-admin", "access-grafana", "access-ssh"]
+      [
+        "access-admin",
+        "access-blog",
+        "access-blog-media",
+        "access-grafana",
+        "access-ssh",
+      ]
     );
 
     for (const application of applications()) {
       expect(input(application, "policies", PoliciesSchema)).toStrictEqual([
-        { id: "owner-policy", precedence: 1 },
+        {
+          id:
+            application.name === "access-blog-media"
+              ? "callbacks-policy"
+              : "owner-policy",
+          precedence: 1,
+        },
       ]);
       expect(application.inputs).toMatchObject({
         accountId: "account-synthetic",
@@ -147,6 +161,8 @@ describe("production at Cloudflare", () => {
       )
     ).toStrictEqual([
       "Peal production admin",
+      "Peal production blog admin",
+      "Peal production blog media",
       "Peal production Grafana",
       "Peal production SSH",
     ]);
@@ -191,30 +207,44 @@ describe("production at Cloudflare", () => {
     ).toBe("app.example.test/api/auth/admin");
   });
 
+  // Its setup is first come, first served; the media files its pages show
+  // stay open, through a Bypass policy on the longer path.
+  it("guards the blog's admin on the site, but for its media files", async () => {
+    await settled;
+
+    expect(destinationsOf("access-blog")).toStrictEqual([
+      "example.test/_emdash",
+    ]);
+    expect(destinationsOf("access-blog-media")).toStrictEqual([
+      "example.test/_emdash/api/media/file",
+    ]);
+  });
+
   it("leaves the app, the site, the docs and the short links public", async () => {
     await settled;
 
-    const guarded = applications().flatMap((application) =>
-      destinationsOf(application.name)
-    );
+    const guarded = applications()
+      .filter((application) => application.name !== "access-blog-media")
+      .flatMap((application) => destinationsOf(application.name));
 
-    for (const open of [
-      "app.example.test",
-      "example.test",
-      "docs.example.test",
-      "short.test",
-    ]) {
+    // Each host's guarded paths: the app's admin, the blog's admin.
+    const guardedPaths = {
+      "app.example.test": [
+        "app.example.test/api/auth/admin",
+        "app.example.test/api/admin",
+        "app.example.test/admin",
+        "app.example.test/en/admin",
+        "app.example.test/fr/admin",
+      ],
+      "docs.example.test": [],
+      "example.test": ["example.test/_emdash"],
+      "short.test": [],
+    };
+
+    for (const [open, paths] of Object.entries(guardedPaths)) {
       expect(guarded).not.toContain(open);
       expect(guarded.filter((uri) => uri.startsWith(`${open}/`))).toStrictEqual(
-        open === "app.example.test"
-          ? [
-              "app.example.test/api/auth/admin",
-              "app.example.test/api/admin",
-              "app.example.test/admin",
-              "app.example.test/en/admin",
-              "app.example.test/fr/admin",
-            ]
-          : []
+        paths
       );
     }
   });
@@ -224,6 +254,7 @@ describe("production at Cloudflare", () => {
 
     expect(aud).toStrictEqual({
       admin: "access-admin-aud",
+      blog: "access-blog-aud",
       grafana: "access-grafana-aud",
       ssh: "access-ssh-aud",
     });
@@ -241,6 +272,11 @@ describe("production at Cloudflare", () => {
         accountId: "account-synthetic",
         jurisdiction: "eu",
         name: "peal-production-backups",
+      },
+      {
+        accountId: "account-synthetic",
+        jurisdiction: "eu",
+        name: "peal-production-blog",
       },
       {
         accountId: "account-synthetic",
@@ -286,6 +322,12 @@ describe("production at Cloudflare", () => {
         ],
       },
       {
+        name: "peal-production-blog-key",
+        resources: [
+          '{"com.cloudflare.edge.r2.bucket.account-synthetic_eu_peal-production-blog":"*"}',
+        ],
+      },
+      {
         name: "peal-production-media-key",
         resources: [
           '{"com.cloudflare.edge.r2.bucket.account-synthetic_eu_peal-production-media":"*"}',
@@ -296,7 +338,10 @@ describe("production at Cloudflare", () => {
 
   it("lets browsers upload to the media bucket from the app alone", async () => {
     await settled;
-    const [cors] = ofType("cloudflare:index/r2BucketCors:R2BucketCors");
+
+    const cors = ofType("cloudflare:index/r2BucketCors:R2BucketCors").find(
+      (resource) => resource.name === "cors-media"
+    );
 
     expect(input(cors, "bucketName", Schema.String)).toBe(
       "peal-production-media"
@@ -311,6 +356,34 @@ describe("production at Cloudflare", () => {
         maxAgeSeconds: 3600,
       },
     ]);
+  });
+
+  it("lets the blog's admin upload to the blog's bucket from the site", async () => {
+    await settled;
+
+    const cors = ofType("cloudflare:index/r2BucketCors:R2BucketCors").find(
+      (resource) => resource.name === "cors-blog"
+    );
+
+    expect(input(cors, "bucketName", Schema.String)).toBe(
+      "peal-production-blog"
+    );
+    expect(input(cors, "rules", Schema.Unknown)).toStrictEqual([
+      {
+        allowed: {
+          headers: ["content-type"],
+          methods: ["PUT"],
+          origins: ["https://example.test"],
+        },
+        maxAgeSeconds: 3600,
+      },
+    ]);
+  });
+
+  it("gives the blog's bucket a key as a secret", async () => {
+    await expect(
+      pulumi.isSecret(result.keys.blog.secretAccessKey)
+    ).resolves.toBeTruthy();
   });
 
   it("gives the tunnel's token as a secret", async () => {

@@ -35,11 +35,13 @@ export const { accessAud, r2Endpoint, tunnelToken } = made;
 export const tunnelId = made.tunnel.id;
 export const mediaBucket = made.buckets.media.name;
 export const backupBucket = made.buckets.backups.name;
+export const blogBucket = made.buckets.blog.name;
 
 // The buckets' keys, secret: scripts/cloudflare_from_pulumi.py in the
 // Ansible project writes them into the environment's vault.
 export const mediaKey = made.keys.media;
 export const backupKey = made.keys.backups;
+export const blogKey = made.keys.blog;
 
 // The sandbox's alone: the service token the uptime server's checks carry,
 // secret, which scripts/cloudflare_from_pulumi.py in the Ansible project

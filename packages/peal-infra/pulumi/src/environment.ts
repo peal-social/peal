@@ -50,6 +50,21 @@ const uptimeTokenDuration = "8760h";
 /** Cloudflare's permission group "Workers R2 Storage Bucket Item Write". */
 const bucketItemWrite = "2efd5506f9c8494dacb1fa10a3e7d5b6";
 
+/**
+ * The blog's admin (packages/peal-blog), at the site's /_emdash, which
+ * Access guards in production, and its media files under it, which its
+ * public pages show and a Bypass policy opens (the Ansible project's
+ * cloudflared role routes the same paths).
+ */
+const blogAdminPath = "_emdash";
+const blogMediaPath = "_emdash/api/media/file";
+
+/** The blog's admin uploads with a presigned PUT, signed with the type. */
+const blogUploadRule = (origin: string) => ({
+  allowed: { headers: ["content-type"], methods: ["PUT"], origins: [origin] },
+  maxAgeSeconds: 3600,
+});
+
 /** Browsers upload media straight to the bucket (peal-server:media-cors). */
 const uploadRule = (origin: string) => ({
   allowed: {
@@ -93,20 +108,23 @@ export interface AccessPolicies {
   readonly publicCallbacks: pulumi.Input<string>;
 }
 
-type Kind = "media" | "backups";
+type Kind = "media" | "backups" | "blog";
 
 type Audiences = Readonly<Record<"grafana" | "ssh", pulumi.Output<string>>>;
 
 /**
  * The audience tags of an environment's Access applications: `app` on an
- * environment behind Access throughout (the sandbox), `admin` on one that
- * is public but for its admin (production). The Ansible project's
+ * environment behind Access throughout (the sandbox), `admin` and `blog`
+ * (the blog's admin) on one that is public but for them (production). The Ansible project's
  * scripts/cloudflare_from_pulumi.py reads them by these names, and maps
  * them onto the inventory's (cloudflare_access_aud).
  */
 export type AccessAud =
   | (Audiences & { readonly app: pulumi.Output<string> })
-  | (Audiences & { readonly admin: pulumi.Output<string> });
+  | (Audiences & {
+      readonly admin: pulumi.Output<string>;
+      readonly blog: pulumi.Output<string>;
+    });
 
 /**
  * One environment of Peal at Cloudflare: its tunnel and the host names that
@@ -119,6 +137,8 @@ export class PealEnvironment extends pulumi.ComponentResource {
   readonly accessAud: AccessAud;
   readonly applications: readonly cloudflare.ZeroTrustAccessApplication[];
   readonly buckets: Readonly<Record<Kind, cloudflare.R2Bucket>>;
+  readonly blogCors: cloudflare.R2BucketCors;
+  readonly blogLifecycle: cloudflare.R2BucketLifecycle;
   readonly cors: cloudflare.R2BucketCors;
   readonly keys: Readonly<Record<Kind, BucketKey>>;
   readonly r2Endpoint: string;
@@ -320,26 +340,73 @@ export class PealEnvironment extends pulumi.ComponentResource {
         policies.owner
       );
 
+      // The blog's admin, whose setup is first come, first served, for
+      // the team only; its media files, which its pages show, for anyone.
+      // Access applies the application with the longer path.
+      const blog = new cloudflare.ZeroTrustAccessApplication(
+        "access-blog",
+        {
+          accountId,
+          destinations: [
+            { type: "public", uri: `${host(hostnames.site)}/${blogAdminPath}` },
+          ],
+          domain: `${host(hostnames.site)}/${blogAdminPath}`,
+          name: `${title} blog admin`,
+          policies: [{ id: policies.owner, precedence: 1 }],
+          sessionDuration: "24h",
+          type: "self_hosted",
+        },
+        { parent: this }
+      );
+
+      const blogMedia = new cloudflare.ZeroTrustAccessApplication(
+        "access-blog-media",
+        {
+          accountId,
+          destinations: [
+            { type: "public", uri: `${host(hostnames.site)}/${blogMediaPath}` },
+          ],
+          domain: `${host(hostnames.site)}/${blogMediaPath}`,
+          name: `${title} blog media`,
+          policies: [{ id: policies.publicCallbacks, precedence: 1 }],
+          sessionDuration: "24h",
+          type: "self_hosted",
+        },
+        { parent: this }
+      );
+
       const [grafanaApp, sshApp] = [grafana(), ssh()];
-      this.applications = [admin, grafanaApp, sshApp];
+      this.applications = [admin, blog, blogMedia, grafanaApp, sshApp];
       this.uptimeAccessToken = undefined;
       this.accessAud = {
         admin: admin.aud,
+        blog: blog.aud,
         grafana: grafanaApp.aud,
         ssh: sshApp.aud,
       };
     }
 
     // A bucket outlives its resource: removing it from here leaves it, and
-    // its data, at Cloudflare.
-    const bucket = (kind: Kind) =>
+    // its data, at Cloudflare. The blog's is newer than the component, so
+    // it has no alias to keep.
+    const bucket = (
+      kind: Kind,
+      resourceOptions: pulumi.CustomResourceOptions
+    ) =>
       new cloudflare.R2Bucket(
         `bucket-${kind}`,
         { accountId, jurisdiction: "eu", name: `peal-${env}-${kind}` },
-        { ...child(true), retainOnDelete: true }
+        { ...resourceOptions, retainOnDelete: true }
       );
 
-    this.buckets = { backups: bucket("backups"), media: bucket("media") };
+    this.buckets = {
+      backups: bucket("backups", child(true)),
+      // The blog's media (packages/peal-blog): a bucket of its own, as
+      // EmDash has no key prefix and the server's sweeps own the media
+      // bucket. Private: the blog reads its files back itself.
+      blog: bucket("blog", { parent: this, protect: true }),
+      media: bucket("media", child(true)),
+    };
 
     // An R2 key is an account token: its id is the access key id, the
     // SHA-256 of its value the secret access key.
@@ -373,7 +440,11 @@ export class PealEnvironment extends pulumi.ComponentResource {
       };
     };
 
-    this.keys = { backups: key("backups"), media: key("media") };
+    this.keys = {
+      backups: key("backups"),
+      blog: key("blog"),
+      media: key("media"),
+    };
 
     const lifecycle = (
       kind: Kind,
@@ -407,6 +478,18 @@ export class PealEnvironment extends pulumi.ComponentResource {
     lifecycle("backups", [
       { ...abortIncompleteUploads(7), id: "Default Multipart Abort Rule" },
     ]);
+    this.blogLifecycle = new cloudflare.R2BucketLifecycle(
+      "lifecycle-blog",
+      {
+        accountId,
+        bucketName: this.buckets.blog.name,
+        jurisdiction: "eu",
+        rules: [
+          { ...abortIncompleteUploads(1), id: "abort-incomplete-uploads" },
+        ],
+      },
+      { parent: this }
+    );
     this.cors = new cloudflare.R2BucketCors(
       "cors-media",
       {
@@ -416,6 +499,18 @@ export class PealEnvironment extends pulumi.ComponentResource {
         rules: [uploadRule(`https://${host(hostnames.app)}`)],
       },
       child(false)
+    );
+
+    // The blog's admin runs on the site's host name, at /_emdash.
+    this.blogCors = new cloudflare.R2BucketCors(
+      "cors-blog",
+      {
+        accountId,
+        bucketName: this.buckets.blog.name,
+        jurisdiction: "eu",
+        rules: [blogUploadRule(`https://${host(hostnames.site)}`)],
+      },
+      { parent: this }
     );
 
     this.r2Endpoint = `https://${accountId}.eu.r2.cloudflarestorage.com`;

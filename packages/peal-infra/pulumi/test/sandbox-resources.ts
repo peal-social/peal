@@ -144,10 +144,38 @@ export const sandboxResources = [
     inputs: {
       accountId: "account-synthetic",
       jurisdiction: "eu",
+      name: "peal-sandbox-blog",
+    },
+    name: "bucket-blog",
+    type: "cloudflare:index/r2Bucket:R2Bucket",
+  },
+  {
+    inputs: {
+      accountId: "account-synthetic",
+      jurisdiction: "eu",
       name: "peal-sandbox-media",
     },
     name: "bucket-media",
     type: "cloudflare:index/r2Bucket:R2Bucket",
+  },
+  {
+    inputs: {
+      accountId: "account-synthetic",
+      bucketName: "peal-sandbox-blog",
+      jurisdiction: "eu",
+      rules: [
+        {
+          allowed: {
+            headers: ["content-type"],
+            methods: ["PUT"],
+            origins: ["https://sandbox-site.example.test"],
+          },
+          maxAgeSeconds: 3600,
+        },
+      ],
+    },
+    name: "cors-blog",
+    type: "cloudflare:index/r2BucketCors:R2BucketCors",
   },
   {
     inputs: {
@@ -268,6 +296,26 @@ export const sandboxResources = [
   {
     inputs: {
       accountId: "account-synthetic",
+      name: "peal-sandbox-blog-key",
+      policies: [
+        {
+          effect: "allow",
+          permissionGroups: [
+            {
+              id: "2efd5506f9c8494dacb1fa10a3e7d5b6",
+            },
+          ],
+          resources:
+            '{"com.cloudflare.edge.r2.bucket.account-synthetic_eu_peal-sandbox-blog":"*"}',
+        },
+      ],
+    },
+    name: "key-blog",
+    type: "cloudflare:index/accountToken:AccountToken",
+  },
+  {
+    inputs: {
+      accountId: "account-synthetic",
       name: "peal-sandbox-media-key",
       policies: [
         {
@@ -307,6 +355,30 @@ export const sandboxResources = [
       ],
     },
     name: "lifecycle-backups",
+    type: "cloudflare:index/r2BucketLifecycle:R2BucketLifecycle",
+  },
+  {
+    inputs: {
+      accountId: "account-synthetic",
+      bucketName: "peal-sandbox-blog",
+      jurisdiction: "eu",
+      rules: [
+        {
+          abortMultipartUploadsTransition: {
+            condition: {
+              maxAge: 86_400,
+              type: "Age",
+            },
+          },
+          conditions: {
+            prefix: "",
+          },
+          enabled: true,
+          id: "abort-incomplete-uploads",
+        },
+      ],
+    },
+    name: "lifecycle-blog",
     type: "cloudflare:index/r2BucketLifecycle:R2BucketLifecycle",
   },
   {

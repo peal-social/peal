@@ -62,6 +62,8 @@ const uptimeRecords = (
  * The owner's address is a secret of the stack.
  */
 export class PealAccount extends pulumi.ComponentResource {
+  readonly blogRecord: cloudflare.DnsRecord;
+  readonly blogRedirect: cloudflare.Ruleset;
   readonly blueskyHandleRecord: cloudflare.DnsRecord | undefined;
   readonly forwardedAddresses: readonly pulumi.Output<string>[];
   readonly ownerPolicyId: pulumi.Output<string>;
@@ -152,6 +154,54 @@ export class PealAccount extends pulumi.ComponentResource {
             },
             { parent: this }
           );
+
+    // blog.<domain> leads to the blog at <domain>/blog, which search
+    // engines index there (packages/peal-blog). The name has no origin: a
+    // proxied record to an address that answers nothing (100::, the
+    // discard prefix) lets Cloudflare's edge take the request and apply the
+    // redirect, which keeps the path and the query string. Production's
+    // name alone, as the sandbox needs no second address. The zone's
+    // dynamic redirects live here, as a zone has one ruleset per phase.
+    this.blogRecord = new cloudflare.DnsRecord(
+      "blog-redirect-host",
+      {
+        content: "100::",
+        name: `blog.${domain}`,
+        proxied: true,
+        ttl: 1,
+        type: "AAAA",
+        zoneId,
+      },
+      { parent: this, protect: true }
+    );
+
+    this.blogRedirect = new cloudflare.Ruleset(
+      "site-redirect",
+      {
+        description: "Other names of the site's pages",
+        kind: "zone",
+        name: "Site redirects",
+        phase: "http_request_dynamic_redirect",
+        rules: [
+          {
+            action: "redirect",
+            actionParameters: {
+              fromValue: {
+                preserveQueryString: true,
+                statusCode: 301,
+                targetUrl: {
+                  expression: `concat("https://${domain}/blog", http.request.uri.path)`,
+                },
+              },
+            },
+            description: "blog.<domain> to the blog at <domain>/blog",
+            expression: `(http.host eq "blog.${domain}")`,
+          },
+        ],
+        zoneId,
+      },
+      { parent: this, protect: true }
+    );
 
     this.forwardedAddresses = forwards.map((rule) =>
       rule.matchers.apply((matchers) => matchers[0]?.value ?? "")

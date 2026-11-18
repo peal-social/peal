@@ -25,7 +25,10 @@ describe("the domain as the Bluesky account's handle", () => {
     await valueOf(result.ownerPolicyId);
 
     const records = made.filter(
-      (resource) => resource.type === "cloudflare:index/dnsRecord:DnsRecord"
+      (resource) =>
+        // The blog's redirect host is account.test.ts's.
+        resource.type === "cloudflare:index/dnsRecord:DnsRecord" &&
+        resource.name !== "blog-redirect-host"
     );
 
     expect(

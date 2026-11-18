@@ -52,4 +52,16 @@ credentials and how to adopt what exists.
   checks are public. The token's client id and secret reach the uptime
   server's vault through `scripts/cloudflare_from_pulumi.py --vault-id
   uptime@…`.
+- The blog (`packages/peal-blog`): each environment has a private bucket
+  of its own (`peal-<env>-blog`), its key, a lifecycle rule and the CORS
+  rule its admin's uploads need (PUT, `content-type`, the site's origin),
+  output as `blogBucket` and `blogKey`. In production, Access guards the
+  site's `/_emdash` (`access-blog`, the owner's policy; its tag is
+  `accessAud.blog`), and `access-blog-media` opens
+  `/_emdash/api/media/file` with the Bypass policy, as the pages show
+  those files; the Ansible project's cloudflared role routes the same
+  paths. The sandbox needs neither: `access-app` covers its site. The
+  account stack's `site-redirect` ruleset (the zone's one ruleset of the
+  dynamic redirect phase) sends `blog.<domain>`, a proxied `AAAA 100::`
+  record with no origin, to `<domain>/blog`, path and query kept.
 - Pin `@pulumi/pulumi` and `@pulumi/cloudflare` exactly, as everything else.
