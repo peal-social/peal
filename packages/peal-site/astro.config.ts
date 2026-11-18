@@ -1,6 +1,7 @@
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, envField, fontProviders } from "astro/config";
+import { siteFonts } from "peal-ui/lib/site/fonts";
 
 import { defaultLocale, locales } from "./src/i18n/locales.ts";
 
@@ -46,44 +47,11 @@ const config = defineConfig({
   output: "static",
   vite: { plugins: [tailwindcss()] },
 
-  // Geist and Geist Mono from the geist package, self-hosted: peal-ui's
-  // theme reads them as --font-geist-sans and --font-geist-mono.
-  fonts: [
-    {
-      cssVariable: "--font-geist-sans",
-      fallbacks: ["ui-sans-serif", "system-ui", "sans-serif"],
-      name: "Geist",
-      options: {
-        variants: [
-          {
-            src: [
-              "./node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2",
-            ],
-            style: "normal",
-            weight: "100 900",
-          },
-        ],
-      },
-      provider: fontProviders.local(),
-    },
-    {
-      cssVariable: "--font-geist-mono",
-      fallbacks: ["ui-monospace", "monospace"],
-      name: "Geist Mono",
-      options: {
-        variants: [
-          {
-            src: [
-              "./node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2",
-            ],
-            style: "normal",
-            weight: "100 900",
-          },
-        ],
-      },
-      provider: fontProviders.local(),
-    },
-  ],
+  // Geist and Geist Mono, self-hosted, as the blog has them.
+  fonts: siteFonts().map((font) => ({
+    ...font,
+    provider: fontProviders.local(),
+  })),
 });
 
 if (site !== undefined && site !== "") {

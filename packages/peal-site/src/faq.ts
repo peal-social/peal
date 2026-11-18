@@ -1,10 +1,10 @@
 import { freeAccountsOf, rateCard } from "peal-contract/rate-card";
 import type { FaqGroup } from "peal-ui/components/faq-section";
+import { siteEntries } from "peal-ui/lib/site/platforms";
+import type { PlatformGroup } from "peal-ui/lib/site/platforms";
 
 import type { Locale } from "./i18n/locales.ts";
 import { messages } from "./i18n/messages.ts";
-import { siteEntries } from "./platforms.ts";
-import type { PlatformGroup } from "./platforms.ts";
 
 // The home page's FAQ: its strings, with the figures and lists that come
 // from the contract (the platforms) and the rate card (the free accounts)

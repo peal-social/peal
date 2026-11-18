@@ -1,11 +1,11 @@
 // The home page's FAQ answers from the contract and the rate card, and its
 // JSON-LD says what the page shows, in each language.
 import { freeAccountsOf, rateCard } from "peal-contract/rate-card";
+import { siteEntries } from "peal-ui/lib/site/platforms";
 import { describe, expect, it } from "vitest";
 
 import { faqGroups, faqJsonLd } from "../src/faq.ts";
 import { locales } from "../src/i18n/locales.ts";
-import { siteEntries } from "../src/platforms.ts";
 
 describe("the FAQ", () => {
   it.each(locales)("fills every placeholder in %s", (locale) => {

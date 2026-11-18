@@ -4,12 +4,12 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { AdNetworkSchema, ChannelPlatformSchema } from "peal-contract";
-import type { SiteHeaderProps } from "peal-ui/components/site-header";
 import { describe, expect, it } from "vitest";
 
-import { defaultLocale, locales } from "../src/i18n/locales.ts";
-import type { Locale } from "../src/i18n/locales.ts";
-import { messages } from "../src/i18n/messages.ts";
+import type { SiteHeaderProps } from "../src/components/site-header";
+import { defaultLocale, locales } from "../src/lib/site/locales";
+import type { Locale } from "../src/lib/site/locales";
+import { chromeMessages as messages } from "../src/lib/site/messages";
 import {
   developerRows,
   footerProps,
@@ -19,9 +19,9 @@ import {
   repository,
   resourceRows,
   studioRows,
-} from "../src/navigation.ts";
-import type { PageLinks, SiteSettings } from "../src/navigation.ts";
-import { adEntryOf, entryOf, siteEntries } from "../src/platforms.ts";
+} from "../src/lib/site/navigation";
+import type { PageLinks, SiteSettings } from "../src/lib/site/navigation";
+import { adEntryOf, entryOf, siteEntries } from "../src/lib/site/platforms";
 
 const docsRoot = path.join(import.meta.dirname, "../../peal-docs/docs");
 
@@ -194,7 +194,7 @@ describe("the site's navigation", () => {
       const policy = readFileSync(
         path.join(
           import.meta.dirname,
-          `../src/content/legal/${locale}/privacy.md`
+          `../../peal-site/src/content/legal/${locale}/privacy.md`
         ),
         "utf-8"
       );

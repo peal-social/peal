@@ -334,7 +334,10 @@ self-hoster needs only Postgres and an S3-compatible store:
   the invoice bills it. The legal pages'
   plans section follows it, pointing to the pricing page for figures.
 - Site strings live in `packages/peal-site/src/i18n/messages.ts`, legal
-  documents in `src/content/legal/<locale>/<document>.md`. Keep a legal
+  documents in `src/content/legal/<locale>/<document>.md`. The header's,
+  the footer's and the announcement's strings and links, which the blog
+  shares, live in `packages/peal-ui/src/lib/site/` as plain TypeScript
+  (no Astro there). Keep a legal
   document `draft: true` (banner and noindex) until legal review approves it,
   and never replace a [bracketed placeholder] with a guess.
 - The privacy policy's retention table is the registry's

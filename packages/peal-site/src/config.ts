@@ -5,94 +5,50 @@ import {
   SITE_PLAUSIBLE_DOMAIN,
   SITE_PLAUSIBLE_HOST,
 } from "astro:env/server";
+import {
+  originOf,
+  plausibleScript,
+  present,
+  siteLink,
+} from "peal-ui/lib/site/links";
 
-import { defaultLocale } from "./i18n/locales.ts";
 import type { Locale } from "./i18n/locales.ts";
 
 // Settings read from the environment at build time (declared in
 // astro.config.ts). Each is optional: unset or empty turns its feature off.
 
-const present = (value: string | undefined): string | undefined => {
-  const trimmed = value?.trim();
+export { indexable, socialAccounts } from "peal-ui/lib/site/links";
 
-  return trimmed === undefined || trimmed === "" ? undefined : trimmed;
-};
+export type { PlausibleScript, SocialAccount } from "peal-ui/lib/site/links";
 
-const docsOrigin = present(SITE_DOCS_URL)?.replace(/\/+$/u, "");
+const docsOrigin = originOf(SITE_DOCS_URL);
 
 /**
  * A page of the docs site in the reader's language, or `undefined` when no
  * docs URL is configured. The docs serve English at the root and other
  * locales under their prefix, as this site does.
  */
-export const docsLink = (locale: Locale, path = ""): string | undefined => {
-  if (docsOrigin === undefined) {
-    return undefined;
-  }
+export const docsLink = (locale: Locale, path = ""): string | undefined =>
+  siteLink(docsOrigin, locale, path);
 
-  const prefix = locale === defaultLocale ? "" : `/${locale}`;
-
-  return `${docsOrigin}${prefix}/${path}`;
-};
-
-const appOrigin = present(SITE_APP_URL)?.replace(/\/+$/u, "");
+const appOrigin = originOf(SITE_APP_URL);
 
 /**
  * A page of the web app in the reader's language, or `undefined` when no
  * app URL is configured. The app serves English at the root and other
  * locales under their prefix, as this site does.
  */
-export const appLink = (locale: Locale, path: string): string | undefined => {
-  if (appOrigin === undefined) {
-    return undefined;
-  }
-
-  const prefix = locale === defaultLocale ? "" : `/${locale}`;
-
-  return `${appOrigin}${prefix}/${path}`;
-};
+export const appLink = (locale: Locale, path: string): string | undefined =>
+  siteLink(appOrigin, locale, path);
 
 /** The Discord server's invitation, or `undefined` when none is set. */
 export const discordUrl = present(SITE_DISCORD_URL);
-
-export interface SocialAccount {
-  readonly href: string;
-  readonly name: string;
-  /** Mastodon checks a `rel="me"` link back to the profile to verify it. */
-  readonly rel?: "me";
-}
-
-/** Peal's own accounts, which the footer links to on every page. */
-export const socialAccounts: readonly SocialAccount[] = [
-  { href: "https://www.linkedin.com/company/peal-social", name: "LinkedIn" },
-  { href: "https://x.com/peal_social", name: "X" },
-  { href: "https://bsky.app/profile/peal.social", name: "Bluesky" },
-  { href: "https://mastodon.social/@pealsocial", name: "Mastodon", rel: "me" },
-  { href: "https://www.youtube.com/@pealsocial", name: "YouTube" },
-];
-
-export interface PlausibleScript {
-  readonly domain: string;
-  readonly src: string;
-}
-
-const plausibleDomain = present(SITE_PLAUSIBLE_DOMAIN);
-
-const plausibleHost =
-  present(SITE_PLAUSIBLE_HOST)?.replace(/\/+$/u, "") ?? "https://plausible.io";
-
-/**
- * Whether search engines may index the site. Not until Peal is released:
- * every page says noindex, nofollow, and public/robots.txt disallows all.
- * At launch, set it to true and allow crawling in robots.txt.
- */
-export const indexable = false;
 
 /**
  * Plausible's script tag attributes when SITE_PLAUSIBLE_DOMAIN is set; with
  * SITE_PLAUSIBLE_HOST it loads from a self-hosted instance.
  */
-export const plausible: PlausibleScript | undefined =
-  plausibleDomain === undefined
-    ? undefined
-    : { domain: plausibleDomain, src: `${plausibleHost}/js/script.js` };
+export const plausible = plausibleScript(
+  SITE_PLAUSIBLE_DOMAIN,
+  SITE_PLAUSIBLE_HOST
+);
