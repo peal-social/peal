@@ -380,6 +380,31 @@ def test_posthog_s_token_requires_its_project_on_peal_s_servers() -> None:
     assert _posthog_allowed({"PEAL_POSTHOG_KEY": ""}, {})
 
 
+def _web_measurement_allowed(credentials: dict[str, str], peal_settings: dict[str, str]) -> bool:
+    """Whether the role lets a server with these credentials and settings
+    through, as its assertion on the web app's measurement decides."""
+    role_vars = role_file("peal_runtime", "vars")
+    found = task("peal_runtime", "Require PostHog's token where the web app measures")
+    names = {
+        "peal_credentials": credentials,
+        "peal_runtime_optional_given": trust_as_template(role_vars["peal_runtime_optional_given"]),
+        "peal_runtime_posthog_on": trust_as_template(role_vars["peal_runtime_posthog_on"]),
+        "peal_settings": peal_settings,
+    }
+    return bool(ansible_render("{{ " + found["ansible.builtin.assert"]["that"] + " }}", **names))
+
+
+def test_the_web_app_measures_only_with_posthog_s_token() -> None:
+    """PEAL_POSTHOG_WEB is on or off, and on only beside the token."""
+    token = {"PEAL_POSTHOG_KEY": "phc_synthetic"}
+
+    assert _web_measurement_allowed({}, {})
+    assert _web_measurement_allowed({}, {"PEAL_POSTHOG_WEB": "off"})
+    assert _web_measurement_allowed(token, {"PEAL_POSTHOG_WEB": "on"})
+    assert not _web_measurement_allowed({}, {"PEAL_POSTHOG_WEB": "on"})
+    assert not _web_measurement_allowed(token, {"PEAL_POSTHOG_WEB": "yes"})
+
+
 @pytest.mark.parametrize("environment", ENVIRONMENTS)
 def test_product_analytics_names_its_environment(rendered: Path, environment: str) -> None:
     """Every event says which server sent it, whether a key is set or not."""
