@@ -353,10 +353,11 @@ describe("the web app's measurement", { serial: true }, () => {
       "posthog-storage.json"
     );
 
-    mkdirSync(path.dirname(kept), { recursive: true });
     const local = Schema.decodeUnknownSync(StoredSchema)(
       await browser.evaluate("Object.keys(localStorage)")
     );
+
+    mkdirSync(path.dirname(kept), { recursive: true });
 
     writeFileSync(kept, JSON.stringify({ cookies, local, stored }, null, 2));
 
