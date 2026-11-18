@@ -31,7 +31,7 @@
     "@effect/platform-bun": "4.1.4",
     "@effect/sql-pg": "4.1.4",
     "better-auth": "1.7.25",
-    "better-call": "2.0.6",
+    "better-call": "1.4.5",
     "drizzle-orm": "1.0.0-rc.5",
     "effect": "4.1.4",
     "jose": "6.2.17",
