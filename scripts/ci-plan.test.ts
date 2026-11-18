@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import { everything, outsideProjects, plan } from "./ci-plan.ts";
 
 const roots = [
+  "packages/peal-blog",
   "packages/peal-contract",
   "packages/peal-docker",
   "packages/peal-docs",
@@ -13,10 +14,17 @@ const roots = [
   "packages/peal-sdk/node",
   "packages/peal-server",
   "packages/peal-site",
+  "packages/peal-ui",
   "packages/peal-web",
 ];
 
-const none = { ansible: false, e2e: false, sdks: false, server: false };
+const none = {
+  ansible: false,
+  blog: false,
+  e2e: false,
+  sdks: false,
+  server: false,
+};
 
 describe("the CI plan", () => {
   it("runs no long job for a change to the site alone", () => {
@@ -36,7 +44,7 @@ describe("the CI plan", () => {
         files: ["packages/peal-server/src/main.ts"],
         roots,
       })
-    ).toEqual({ ansible: true, e2e: true, sdks: false, server: true });
+    ).toEqual({ ...none, ansible: true, e2e: true, server: true });
   });
 
   it("runs the SDKs for a contract change, which the project graph does not link", () => {
@@ -69,14 +77,44 @@ describe("the CI plan", () => {
     ).toEqual({ ...none, server: true });
   });
 
-  it("runs the server's tests and the end-to-end run when the compose file changes", () => {
+  it("runs the server's tests, the end-to-end run and the blog's smoke test when the compose file changes", () => {
     expect(
       plan({
         affected: ["peal-docker"],
         files: ["packages/peal-docker/compose.yaml"],
         roots,
       })
-    ).toEqual({ ansible: true, e2e: true, sdks: false, server: true });
+    ).toEqual({ ...none, ansible: true, blog: true, e2e: true, server: true });
+  });
+
+  it("runs the blog's smoke test alone for a blog change", () => {
+    expect(
+      plan({
+        affected: ["peal-blog"],
+        files: ["packages/peal-blog/src/posts.ts"],
+        roots,
+      })
+    ).toEqual({ ...none, blog: true });
+  });
+
+  it("runs the blog's smoke test for a peal-ui change, which Nx finds affects the blog", () => {
+    expect(
+      plan({
+        affected: ["peal-ui", "peal-site", "peal-web", "peal-blog"],
+        files: ["packages/peal-ui/src/lib/site/navigation.ts"],
+        roots,
+      }).blog
+    ).toBe(true);
+  });
+
+  it("does not run the blog's smoke test for a site change", () => {
+    expect(
+      plan({
+        affected: ["peal-site"],
+        files: ["packages/peal-site/src/pages/index.astro"],
+        roots,
+      }).blog
+    ).toBe(false);
   });
 
   it("runs every job for a change outside every project", () => {
