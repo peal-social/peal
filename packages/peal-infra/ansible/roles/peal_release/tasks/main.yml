@@ -16,30 +16,6 @@
     fail_msg: Run site.yml on {{ inventory_hostname }} before releasing.
     quiet: true
 
-# The blog's role takes its password from secrets.env, which site.yml writes
-# once the flag is on: without it, the release would set an empty password
-# and fail once the stack had been replaced. Names only, read-only.
-- name: Find whether secrets.env lacks the blog's secrets
-  ansible.builtin.shell: |
-    set -eu
-    for name in PEAL_BLOG_DATABASE_PASSWORD PEAL_BLOG_ENCRYPTION_KEY; do
-      grep -Eqs "^${name}=.+" {{ peal_root }}/secrets.env || echo "$name"
-    done
-  register: peal_release_blog_secrets
-  changed_when: false
-  check_mode: false
-  when: peal_blog | bool
-
-- name: Stop before the blog would start without its secrets
-  ansible.builtin.assert:
-    that: peal_release_blog_secrets.stdout_lines | length == 0
-    fail_msg: >-
-      {{ peal_root }}/secrets.env holds no {{ peal_release_blog_secrets.stdout_lines | join(', ') }}:
-      run site.yml on {{ inventory_hostname }}, which generates them once the
-      blog is on, then release.yml.
-    quiet: true
-  when: peal_blog | bool
-
 # Grafana stops at start on a contact point whose setting is missing, and the
 # release would only find out once it had replaced the stack: when host.env
 # names the Telegram and Slack contact points, credentials.env must hold
@@ -67,6 +43,30 @@
       Grafana would not start: run site.yml on {{ inventory_hostname }},
       which picks the contact points from the credentials, then release.yml.
     quiet: true
+
+# The blog's role takes its password from secrets.env, which site.yml writes
+# once the flag is on: without it, the release would set an empty password
+# and fail once the stack had been replaced. Names only, read-only.
+- name: Find whether secrets.env lacks the blog's secrets
+  ansible.builtin.shell: |
+    set -eu
+    for name in PEAL_BLOG_DATABASE_PASSWORD PEAL_BLOG_ENCRYPTION_KEY; do
+      grep -Eqs "^${name}=.+" {{ peal_root }}/secrets.env || echo "$name"
+    done
+  register: peal_release_blog_secrets
+  changed_when: false
+  check_mode: false
+  when: peal_blog | bool
+
+- name: Stop before the blog would start without its secrets
+  ansible.builtin.assert:
+    that: peal_release_blog_secrets.stdout_lines | length == 0
+    fail_msg: >-
+      {{ peal_root }}/secrets.env holds no {{ peal_release_blog_secrets.stdout_lines | join(', ') }}:
+      run site.yml on {{ inventory_hostname }}, which generates them once the
+      blog is on, then release.yml.
+    quiet: true
+  when: peal_blog | bool
 
 - name: Create the local release folder
   ansible.builtin.file:
