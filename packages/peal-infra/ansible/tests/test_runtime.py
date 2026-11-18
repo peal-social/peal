@@ -139,6 +139,7 @@ def test_short_links_are_off_without_their_host_name() -> None:
     expression = role_vars["peal_runtime_host_settings"]
     names = {
         **settings("sandbox"),
+        "peal_blog": False,
         "peal_short_link_hostname": "",
         "peal_runtime_slack_alerts": trust_as_template(role_vars["peal_runtime_slack_alerts"]),
     }
