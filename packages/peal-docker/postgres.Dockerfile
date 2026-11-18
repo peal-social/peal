@@ -11,7 +11,7 @@
 # `docker compose exec`. The Debian image is used rather than Alpine because
 # pgBackRest comes from the PostgreSQL project's apt repository, which the
 # image already trusts, at an exact version.
-FROM postgres:18.6-trixie@sha256:e3d24f6906d0760bf4da0dae872415391ededefad23fd471c47dc53b0ddf3c42
+FROM postgres:18.7-trixie@sha256:2ea8630df176ad090ec92136dee850397c5af8781e4bcf2e4162593691c61bbc
 
 # ca-certificates: pgBackRest checks the bucket's TLS certificate.
 RUN apt-get update && \
