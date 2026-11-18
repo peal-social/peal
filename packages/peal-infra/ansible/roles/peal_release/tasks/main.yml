@@ -16,6 +16,30 @@
     fail_msg: Run site.yml on {{ inventory_hostname }} before releasing.
     quiet: true
 
+# The blog's role takes its password from secrets.env, which site.yml writes
+# once the flag is on: without it, the release would set an empty password
+# and fail once the stack had been replaced. Names only, read-only.
+- name: Find whether secrets.env lacks the blog's secrets
+  ansible.builtin.shell: |
+    set -eu
+    for name in PEAL_BLOG_DATABASE_PASSWORD PEAL_BLOG_ENCRYPTION_KEY; do
+      grep -Eqs "^${name}=.+" {{ peal_root }}/secrets.env || echo "$name"
+    done
+  register: peal_release_blog_secrets
+  changed_when: false
+  check_mode: false
+  when: peal_blog | bool
+
+- name: Stop before the blog would start without its secrets
+  ansible.builtin.assert:
+    that: peal_release_blog_secrets.stdout_lines | length == 0
+    fail_msg: >-
+      {{ peal_root }}/secrets.env holds no {{ peal_release_blog_secrets.stdout_lines | join(', ') }}:
+      run site.yml on {{ inventory_hostname }}, which generates them once the
+      blog is on, then release.yml.
+    quiet: true
+  when: peal_blog | bool
+
 # Grafana stops at start on a contact point whose setting is missing, and the
 # release would only find out once it had replaced the stack: when host.env
 # names the Telegram and Slack contact points, credentials.env must hold
@@ -581,6 +605,7 @@
       - |
         set -eu
         PEAL_BLOG_DATABASE_PASSWORD="$(sed -n 's/^PEAL_BLOG_DATABASE_PASSWORD=//p' {{ peal_root }}/secrets.env)"
+        test -n "$PEAL_BLOG_DATABASE_PASSWORD"
         export PEAL_BLOG_DATABASE_PASSWORD
         exec docker exec --env PEAL_BLOG_DATABASE_PASSWORD {{ peal_compose_project }}-postgres-1 sh -c \
           'PGPASSWORD="$PEAL_BLOG_DATABASE_PASSWORD" exec psql --host postgres --username peal_blog --dbname peal_blog --no-psqlrc --quiet --command "SELECT 1"'
@@ -590,7 +615,9 @@
   when: peal_blog | bool
 
 # CREATE DATABASE cannot run in a transaction: \gexec runs each statement
-# the query returns, none when the database exists.
+# the query returns, none when the database exists. Postgres lets every
+# role connect to every database: the app's, which its owner alone uses,
+# is closed to the others, so the blog's role reaches its own alone.
 - name: Create the blog's role and database
   ansible.builtin.command:
     argv:
@@ -599,12 +626,14 @@
       - |
         set -eu
         PEAL_BLOG_DATABASE_PASSWORD="$(sed -n 's/^PEAL_BLOG_DATABASE_PASSWORD=//p' {{ peal_root }}/secrets.env)"
+        test -n "$PEAL_BLOG_DATABASE_PASSWORD"
         export PEAL_BLOG_DATABASE_PASSWORD
         exec docker exec --interactive --env PEAL_BLOG_DATABASE_PASSWORD {{ peal_compose_project }}-postgres-1 \
           psql --username peal --dbname peal --no-psqlrc --quiet --set ON_ERROR_STOP=1
     stdin: |
       \getenv password PEAL_BLOG_DATABASE_PASSWORD
       SET log_statement = 'none';
+      REVOKE CONNECT, TEMPORARY ON DATABASE peal FROM PUBLIC;
       SELECT 'CREATE ROLE peal_blog LOGIN' WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'peal_blog') \gexec
       ALTER ROLE peal_blog PASSWORD :'password';
       SELECT 'CREATE DATABASE peal_blog OWNER peal_blog' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'peal_blog') \gexec

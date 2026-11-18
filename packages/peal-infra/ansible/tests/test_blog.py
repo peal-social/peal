@@ -193,6 +193,9 @@ def test_host_env_gives_the_blog_its_settings(rendered_blog: Path, environment: 
 def test_the_blog_mails_through_resend_s_relay(rendered_blog: Path, environment: str) -> None:
     host_env = _host_env(rendered_blog, environment)
 
+    # Compose hands the blog RESEND_API_KEY as its SMTP password with it alone.
+    assert host_env["PEAL_BLOG_MAIL"] == "true"
+
     assert {name: host_env[name] for name in host_env if name.startswith("EMAIL_SMTP_")} == {
         "EMAIL_SMTP_HOST": "smtp.resend.com",
         "EMAIL_SMTP_PORT": "465",
@@ -200,6 +203,26 @@ def test_the_blog_mails_through_resend_s_relay(rendered_blog: Path, environment:
         "EMAIL_SMTP_USER": "resend",
         "EMAIL_SMTP_FROM": settings(environment.removeprefix("peal-"))["peal_mail_from"],
     }
+
+
+@pytest.fixture(scope="module")
+def rendered_blog_without_mail(rendered_with: Callable[..., Path]) -> Path:
+    return rendered_with(**BLOG, peal_blog_mail=False)
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_a_blog_without_mail_gets_no_smtp(rendered_blog_without_mail: Path, environment: str) -> None:
+    host_env = _host_env(rendered_blog_without_mail, environment)
+
+    assert "PEAL_BLOG_MAIL" not in host_env
+    assert not [name for name in host_env if name.startswith("EMAIL_SMTP_")]
+
+
+def test_compose_hands_the_smtp_password_only_where_the_blog_mails() -> None:
+    compose = yaml.safe_load((Path(__file__).parent.parent.parent.parent / "peal-docker"
+                              / "compose.production.yaml").read_text())
+
+    assert compose["services"]["blog"]["environment"]["EMAIL_SMTP_PASS"] == "${PEAL_BLOG_MAIL:+${RESEND_API_KEY:-}}"
 
 
 def _required(environment: str, **names: Any) -> list[str]:

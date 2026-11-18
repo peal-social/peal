@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import INFRA, command_of, stdin_of, task
+from conftest import INFRA, command_of, render, stdin_of, task
 
 DOCKERFILE = INFRA.parent.parent / "peal-docker" / "postgres.Dockerfile"
 
@@ -228,6 +228,35 @@ class TestTheBlogDatabase:
         assert _blog_signs_in(postgres, BLOG_GENERATED)
         assert _blog_step(postgres, blog_root, check).returncode == 0
 
+    def test_the_blog_s_role_reaches_its_own_database_alone(self, postgres: Postgres, blog_root: Path) -> None:
+        """Postgres lets every role connect to every database: the app's is
+        closed to the blog's role, and still open to the app's."""
+        _psql(postgres, f"ALTER ROLE peal PASSWORD '{GENERATED}'")
+        _blog_step(postgres, blog_root, "Create the blog's role and database").check_returncode()
+
+        into_app = _run(["docker", "run", "--rm", "--network", postgres.network, IMAGE, "psql",
+                         f"postgres://peal_blog:{BLOG_GENERATED}@postgres:5432/peal", "--command", "SELECT 1"])
+
+        assert into_app.returncode != 0
+        assert "permission denied" in into_app.stderr
+        assert _signs_in(postgres, GENERATED)
+        assert _blog_signs_in(postgres, BLOG_GENERATED)
+
+    def test_an_empty_password_is_refused_before_anything_changes(self, postgres: Postgres, tmp_path: Path) -> None:
+        """Without the password in secrets.env, neither step reaches Postgres:
+        the blog's role keeps the password it had, never an empty one."""
+        (tmp_path / "secrets.env").write_text(f"POSTGRES_PASSWORD={GENERATED}\n")
+        _run(["docker", "exec", postgres.container, "psql", "--username", "peal", "--dbname", "peal",
+              "--command", "CREATE ROLE peal_blog LOGIN"])
+        _run(["docker", "exec", postgres.container, "psql", "--username", "peal", "--dbname", "peal",
+              "--command", "CREATE DATABASE peal_blog OWNER peal_blog"])
+        _psql(postgres, f"ALTER ROLE peal_blog PASSWORD '{BLOG_RESTORED}'")
+
+        for name in ["Check the blog's database password", "Create the blog's role and database"]:
+            assert _blog_step(postgres, tmp_path, name).returncode != 0
+
+        assert _blog_signs_in(postgres, BLOG_RESTORED)
+
     def test_the_password_is_logged_nowhere(self, postgres: Postgres, blog_root: Path) -> None:
         """Not in Postgres's log, even where it logs every statement, nor in
         the command, which any process on the host could read."""
@@ -248,3 +277,20 @@ class TestTheBlogDatabase:
         for name in ["Create the blog's role and database", "Check the blog's database password"]:
             command = command_of(task("peal_release", name), peal_root=str(blog_root), peal_compose_project="peal")
             assert all(BLOG_GENERATED not in part for part in command)
+
+
+def test_the_release_stops_early_without_the_blog_s_secrets(tmp_path: Path) -> None:
+    """Before it replaces anything, the release names the blog's secrets
+    secrets.env lacks."""
+    found = task("peal_release", "Find whether secrets.env lacks the blog's secrets")
+    script = render(found["ansible.builtin.shell"], peal_root=str(tmp_path))
+    secrets_env = tmp_path / "secrets.env"
+
+    secrets_env.write_text("POSTGRES_PASSWORD=synthetic\nPEAL_BLOG_DATABASE_PASSWORD=\n")
+    missing = _run(["sh", "-c", script])
+
+    assert missing.stdout.split() == ["PEAL_BLOG_DATABASE_PASSWORD", "PEAL_BLOG_ENCRYPTION_KEY"]
+
+    secrets_env.write_text("PEAL_BLOG_DATABASE_PASSWORD=synthetic\nPEAL_BLOG_ENCRYPTION_KEY=emdash_enc_v1_synthetic\n")
+
+    assert _run(["sh", "-c", script]).stdout == ""

@@ -799,7 +799,10 @@ server:
 4. the new server starts and applies its migrations before it listens;
 5. the rest of the stack starts (the blog applies EmDash's migrations as it
    starts), and the release is checked on the server and, for production,
-   through the tunnel.
+   through the tunnel. Where the blog runs, its health check
+   (`/_emdash/api/health`) is one of the checks: a blog that does not start
+   fails the release of the whole stack, the app's included, until it is
+   fixed or the flag is turned off.
 
 A service's mounts name `/srv/peal/current/…`, which reads the same
 whatever release it points at, so Compose alone would keep a service on
@@ -878,7 +881,11 @@ playbooks render stays as it was. With it:
   another server), creates the role (`LOGIN`, nothing more) and the
   database it owns where missing and sets the role's password, the password
   going from `secrets.env` to psql through the environment alone; it runs
-  the `blog` profile and checks `/_emdash/api/health`.
+  the `blog` profile and checks `/_emdash/api/health`, which then gates
+  every release of the environment. Before it changes anything, it stops
+  when `secrets.env` lacks the blog's secrets (run `site.yml` first). The
+  app's database is closed to every role but its owner, so the blog's role
+  reaches its own database alone.
 - `peal_preflight` refuses the flag without `peal_blog_bucket`, and in
   production without the blog's Access audience tag.
 

@@ -47,7 +47,7 @@ peal_runtime_host_settings: >-
 # The blog's plain settings (compose.production.yaml's blog service): its
 # origin, its bucket on the media's endpoint (so the EU check covers it),
 # the site's links, and EmDash's SMTP through Resend's relay, whose password
-# Compose takes from RESEND_API_KEY by name.
+# Compose hands the blog from RESEND_API_KEY only with PEAL_BLOG_MAIL.
 peal_runtime_blog_settings: >-
   {{ {
        'PEAL_BLOG_PORT': peal_ports.blog,
@@ -67,6 +67,7 @@ peal_runtime_blog_settings: >-
          'EMAIL_SMTP_SECURE': 'tls',
          'EMAIL_SMTP_USER': 'resend',
          'EMAIL_SMTP_FROM': peal_mail_from,
+         'PEAL_BLOG_MAIL': true,
        } if peal_blog_mail | bool else {}) }}
 
 # Grafana alerts Slack too, beside Telegram, once the environment's Slack
