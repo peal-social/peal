@@ -1,0 +1,5 @@
+/* The site's stylesheet, so the blog wears the same theme: peal-ui's
+   tokens and components, and Tailwind's typography plugin, which sets a
+   post's body as the site sets its legal documents. */
+@import "peal-ui/styles/globals.css";
+@plugin "@tailwindcss/typography";

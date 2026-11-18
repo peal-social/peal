@@ -250,6 +250,7 @@ The apps you run from source listen on these ports:
 | Web app           | <http://localhost:3001> | `bun nx run peal-web:dev`    |
 | Marketing site    | <http://localhost:4321> | `bun nx run peal-site:dev`   |
 | Docs              | <http://localhost:4322> | `bun nx run peal-docs:dev`   |
+| Blog              | <http://localhost:4324> | `bun nx run peal-blog:dev`   |
 
 ## Develop
 
@@ -719,8 +720,16 @@ The other production images build the same way, from the repository root:
 `build-web-image` (Next's standalone server on Node, as the `node` user, on
 port 3001), `build-static-image` (the marketing site and the docs, served by
 nginx on ports 8080 and 8081; pass their build-time variables with
-`--build-arg`) and `build-postgres-image` (Postgres 18 with pgBackRest), each
-a target of `peal-docker`.
+`--build-arg`), `build-blog-image` (Peal's blog on Node, as the `node` user,
+on port 4324; pass `BLOG_SITE_URL` with `--build-arg`) and
+`build-postgres-image` (Postgres 18 with pgBackRest), each a target of
+`peal-docker`.
+
+The blog (`packages/peal-blog`, EmDash on Astro) runs against the stack's
+Postgres and SeaweedFS: `bun nx run peal-blog:dev` makes its database and
+bucket first, then serves the blog and EmDash's admin at
+<http://localhost:4324/_emdash/admin>. `bun nx run peal-blog:smoke` checks
+its production build under `/blog`.
 
 ## Deploy
 

@@ -1,0 +1,31 @@
+---
+import { createPublicPageContext } from "emdash/page";
+import { pageLocale } from "peal-ui/lib/site/locales";
+
+import { messages } from "../i18n/messages.ts";
+import Base from "../layouts/base.astro";
+import { blogLink } from "../links.ts";
+
+// A missing post or page, in the language its path names.
+
+Astro.response.status = 404;
+
+const locale = pageLocale(Astro.currentLocale);
+
+const t = messages(locale);
+
+const page = createPublicPageContext({
+  Astro,
+  kind: "custom",
+  pageTitle: `${t.blog.notFound.title} · ${t.nav.brand}`,
+  title: t.blog.notFound.title,
+});
+---
+
+<Base page={page} noindex>
+  <article class="prose mx-auto max-w-3xl px-6 py-16 prose-neutral">
+    <h1>{t.blog.notFound.title}</h1>
+    <p>{t.blog.notFound.body}</p>
+    <p><a href={blogLink(locale)}>{t.blog.notFound.back}</a></p>
+  </article>
+</Base>

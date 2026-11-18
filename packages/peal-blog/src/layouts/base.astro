@@ -1,0 +1,101 @@
+---
+import { Font } from "astro:assets";
+import type { PublicPageContext } from "emdash";
+import { EmDashBodyEnd, EmDashBodyStart, EmDashHead } from "emdash/ui";
+import { AnnouncementBar } from "peal-ui/components/announcement-bar";
+import { SiteFooter } from "peal-ui/components/site-footer";
+import { SiteHeader } from "peal-ui/components/site-header";
+import { indexable } from "peal-ui/lib/site/links";
+import { pageLocale } from "peal-ui/lib/site/locales";
+import { repository } from "peal-ui/lib/site/navigation";
+
+import { chromeProps } from "../chrome.ts";
+import type { Translations } from "../chrome.ts";
+import { serverSettings } from "../config.ts";
+import { messages } from "../i18n/messages.ts";
+import { repositoryStars } from "../stars.ts";
+import "../styles/global.css";
+
+// The site's layout (packages/peal-site/src/layouts/base.astro), with
+// EmDash's head, body start and body end around it: SEO tags, and the
+// editing toolbar for a signed-in editor.
+
+interface Props {
+  /**
+   * EmDash's description of the page (createPublicPageContext), for its
+   * head and toolbar: its title is the page's <title>, its description the
+   * meta description EmDash writes.
+   */
+  readonly page: PublicPageContext;
+  /** Keep the page out of search engines, as a missing page is. */
+  readonly noindex?: boolean;
+  /** The page in the other languages; the index where it has none. */
+  readonly translations?: Translations;
+}
+
+const { noindex = false, page, translations = {} } = Astro.props;
+
+const locale = pageLocale(Astro.currentLocale);
+
+const settings = serverSettings();
+
+const { footer, header } = chromeProps({
+  base: import.meta.env.BASE_URL,
+  locale,
+  settings,
+  stars: await repositoryStars(),
+  translations,
+});
+
+const { announcement } = messages(locale);
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>{page.pageTitle ?? page.title}</title>
+    <EmDashHead page={page} />
+    <link rel="icon" href={`${settings.site}/favicon.svg`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`${settings.site}/apple-touch-icon.png`} />
+    <Font cssVariable="--font-geist-sans" preload />
+    <Font cssVariable="--font-geist-mono" />
+    {
+      // Every page until the site is indexable.
+      (noindex || !indexable) && (
+        <meta name="robots" content="noindex, nofollow" />
+      )
+    }
+    {
+      settings.plausible !== undefined && (
+        <script
+          is:inline
+          defer
+          data-domain={settings.plausible.domain}
+          src={settings.plausible.src}
+        ></script>
+      )
+    }
+  </head>
+  <body class="relative flex min-h-dvh flex-col antialiased">
+    <EmDashBodyStart page={page} />
+    <!-- The blueprint's rails (DESIGN.md, Site), as the site has them. -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-6xl -translate-x-1/2 border-x"
+    >
+    </div>
+    <AnnouncementBar
+      text={announcement.text}
+      link={{ href: repository, label: announcement.link }}
+    />
+    <SiteHeader client:load {...header} />
+    <main class="relative flex-1">
+      <slot />
+    </main>
+    <SiteFooter client:idle {...footer} />
+    <EmDashBodyEnd page={page} />
+  </body>
+</html>

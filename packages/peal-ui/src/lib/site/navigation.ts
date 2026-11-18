@@ -1,21 +1,19 @@
 import type {
   SiteFooterColumn,
   SiteFooterProps,
-} from "peal-ui/components/site-footer";
+} from "../../components/site-footer";
 import type {
   SiteHeaderProps,
   SiteIcon,
   SiteMenuGroup,
   SiteMenuLink,
   SiteNavItem,
-} from "peal-ui/components/site-header";
-
-import type { SocialAccount } from "./config.ts";
-import { locales } from "./i18n/locales.ts";
-import type { Locale } from "./i18n/locales.ts";
-import type { Messages } from "./i18n/messages.ts";
-import { localeNames } from "./i18n/messages.ts";
-import type { LegalDocument } from "./legal.ts";
+} from "../../components/site-header";
+import type { SocialAccount } from "./links";
+import { locales } from "./locales";
+import type { Locale } from "./locales";
+import { localeNames } from "./messages";
+import type { ChromeMessages } from "./messages";
 import {
   discordMark,
   githubMark,
@@ -23,22 +21,26 @@ import {
   slackMark,
   siteEntries,
   telegramMark,
-} from "./platforms.ts";
+} from "./platforms";
 
-// The header's and the footer's props for a page, from its language and
-// the build's settings. Kept apart from config.ts, which reads astro:env,
-// so the tests build them with settings of their own.
+// The header's and the footer's props for a page of peal.social (the
+// site's or the blog's), from its language, its links and the app's
+// settings. Plain data, so each app builds them from its own environment
+// and the tests from settings of their own.
 
 /** Where a menu row leads: a docs page by its path, or a full URL. */
 type Target = { readonly docs: string } | { readonly url: string };
 
-type LinkName = keyof Messages["nav"]["links"];
+type LinkName = keyof ChromeMessages["nav"]["links"];
 
 interface Row {
   readonly icon: SiteIcon;
   readonly name: LinkName;
   readonly target: Target;
 }
+
+/** The legal documents the footer links to, which the site serves. */
+export type FooterDocument = "privacy" | "terms";
 
 export const repository = "https://github.com/peal-social/peal";
 
@@ -107,11 +109,11 @@ export const resourceRows: readonly Row[] = [
 ];
 
 export interface SiteSettings {
-  /** A page of the web app, or `undefined` without SITE_APP_URL. */
+  /** A page of the web app, or `undefined` when no app URL is set. */
   readonly app: (path: string) => string | undefined;
-  /** The Discord server's invitation, or `undefined` without SITE_DISCORD_URL. */
+  /** The Discord server's invitation, or `undefined` when none is set. */
   readonly discord: string | undefined;
-  /** A page of the docs, or `undefined` without SITE_DOCS_URL. */
+  /** A page of the docs, or `undefined` when no docs URL is set. */
   readonly docs: (path: string) => string | undefined;
   /** The repository's star count as shown, or `undefined` when unknown. */
   readonly stars: string | undefined;
@@ -122,7 +124,7 @@ export interface PageLinks {
   readonly home: string;
   /** The current page in a language, for the language links. */
   readonly language: (locale: Locale) => string;
-  readonly legal: (document: LegalDocument) => string;
+  readonly legal: (document: FooterDocument) => string;
   readonly locale: Locale;
   readonly pricing: string;
   /** Which of the header's own pages this is, to mark it current. */
@@ -134,7 +136,7 @@ const hrefOf = (target: Target, settings: SiteSettings) =>
 
 const menuLinks = (
   rows: readonly Row[],
-  t: Messages["nav"],
+  t: ChromeMessages["nav"],
   settings: SiteSettings
 ): SiteMenuLink[] => {
   // The rows a menu preview introduces have an intro; the others none.
@@ -161,7 +163,7 @@ const nonEmpty = (groups: readonly SiteMenuGroup[]) =>
 
 /** The header's items: the three menus, then Pricing and Docs. */
 const navItems = (
-  t: Messages["nav"],
+  t: ChromeMessages["nav"],
   pages: PageLinks,
   pricingLabel: string,
   settings: SiteSettings
@@ -290,7 +292,7 @@ const navItems = (
 };
 
 export const headerProps = (
-  messages: Messages,
+  messages: ChromeMessages,
   pages: PageLinks,
   settings: SiteSettings
 ): SiteHeaderProps => {
@@ -322,7 +324,7 @@ export const headerProps = (
 };
 
 /** The legal documents the footer links to. */
-const footerDocuments: readonly LegalDocument[] = ["privacy", "terms"];
+const footerDocuments: readonly FooterDocument[] = ["privacy", "terms"];
 
 /** The links whose page exists, without those a setting turns off. */
 const present = (
@@ -336,7 +338,7 @@ const present = (
   );
 
 export const footerProps = (
-  messages: Messages,
+  messages: ChromeMessages,
   pages: PageLinks,
   settings: SiteSettings,
   accounts: readonly SocialAccount[]

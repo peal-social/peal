@@ -40,6 +40,24 @@ ingress:
   - {hostname: {{ peal_hostnames.app }}, path: "^/+(api/|\\.well-known/oauth-)", service: "{{ server }}"{{ everything }}}
   - {hostname: {{ peal_hostnames.app }}, service: "{{ web }}"{{ everything }}}
 
+{% if peal_blog | default(false) | bool %}
+{% set blog = 'http://127.0.0.1:' ~ peal_ports.blog %}
+  # The blog (packages/peal-blog), on the site's host name: its pages under
+  # /blog, and EmDash's admin and API at /_emdash, which Access guards where
+  # the host is public, but for the media files its pages show. Never
+  # /blog/_emdash: EmDash would take a call there for a public page, and
+  # skip its CSRF check. Nothing else of the host goes to the blog, which
+  # also answers /robots.txt and /sitemap.xml.
+  - {hostname: {{ peal_hostnames.site }}, path: "(?i)^/+blog/+_emdash", service: http_status:404}
+  - {hostname: {{ peal_hostnames.site }}, path: "^/+_emdash/+api/+media/+file/", service: "{{ blog }}"{{ everything }}}
+{% if peal_access_everything %}
+  - {hostname: {{ peal_hostnames.site }}, path: "(?i)^/+_emdash(/|$)", service: "{{ blog }}"{{ everything }}}
+{% else %}
+  - {hostname: {{ peal_hostnames.site }}, path: "(?i)^/+_emdash(/|$)", service: "{{ blog }}", originRequest: {access: {required: true, teamName: {{ team }}, audTag: [{{ cloudflare_access_aud.blog }}]}}}
+{% endif %}
+  - {hostname: {{ peal_hostnames.site }}, path: "^/+blog(/|$)", service: "{{ blog }}"{{ everything }}}
+
+{% endif %}
   # The marketing site and the docs: the static image, or the docs server
   # when the docs have their assistant (peal_docs_server) and it answers
   # (routes.yml), which counts each reader by cf-connecting-ip

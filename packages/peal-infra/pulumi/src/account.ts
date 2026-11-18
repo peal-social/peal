@@ -61,7 +61,19 @@ const uptimeRecords = (
  * Email Routing forwards, and the uptime server's records, once it exists.
  * The owner's address is a secret of the stack.
  */
+/**
+ * How long Cloudflare's edge keeps a resized image of the blog: a day.
+ * EmDash's "Replace original" overwrites a file under the same key, and in
+ * 1.5.0 an image's URL carries no hash of its content, so a replaced image
+ * shows for up to a day unless it is purged (packages/peal-blog's guide,
+ * "Purging an image"). EmDash itself sends `max-age=0, must-revalidate`.
+ */
+const blogImageEdgeTtl = 86_400;
+
 export class PealAccount extends pulumi.ComponentResource {
+  readonly blogImageCache: cloudflare.Ruleset;
+  readonly blogRecord: cloudflare.DnsRecord;
+  readonly blogRedirect: cloudflare.Ruleset;
   readonly blueskyHandleRecord: cloudflare.DnsRecord | undefined;
   readonly forwardedAddresses: readonly pulumi.Output<string>[];
   readonly ownerPolicyId: pulumi.Output<string>;
@@ -152,6 +164,96 @@ export class PealAccount extends pulumi.ComponentResource {
             },
             { parent: this }
           );
+
+    // blog.<domain> leads to the blog at <domain>/blog, which search
+    // engines index there (packages/peal-blog). The name has no origin: a
+    // proxied record to an address that answers nothing (100::, the
+    // discard prefix) lets Cloudflare's edge take the request and apply the
+    // redirect, which keeps the path and the query string. Production's
+    // name alone, as the sandbox needs no second address. The zone's
+    // dynamic redirects live here, as a zone has one ruleset per phase.
+    this.blogRecord = new cloudflare.DnsRecord(
+      "blog-redirect-host",
+      {
+        content: "100::",
+        name: `blog.${domain}`,
+        proxied: true,
+        ttl: 1,
+        type: "AAAA",
+        zoneId,
+      },
+      { parent: this, protect: true }
+    );
+
+    this.blogRedirect = new cloudflare.Ruleset(
+      "site-redirect",
+      {
+        description: "Other names of the site's pages",
+        kind: "zone",
+        name: "Site redirects",
+        phase: "http_request_dynamic_redirect",
+        rules: [
+          {
+            action: "redirect",
+            actionParameters: {
+              fromValue: {
+                preserveQueryString: true,
+                statusCode: 301,
+                targetUrl: {
+                  expression: `concat("https://${domain}/blog", http.request.uri.path)`,
+                },
+              },
+            },
+            description: "blog.<domain> to the blog at <domain>/blog",
+            expression: `(http.host eq "blog.${domain}")`,
+          },
+        ],
+        zoneId,
+      },
+      { parent: this, protect: true }
+    );
+
+    // The blog's resized images (packages/peal-blog), from the edge: the
+    // whole query is the cache key, and the blog answers 404 to a request
+    // Astro would not build (its src/image-request.ts), which is never
+    // cached (a status TTL of -1 is no-store in the provider's terms), so
+    // varying a parameter neither fills the cache nor resizes anything.
+    // The rule names the one spelling the pages write: the blog refuses
+    // /blog/_image/, with a trailing slash. Production's name alone: the
+    // sandbox is behind Access, and its few readers need no cache. The
+    // zone's cache rules live here, as a zone has one ruleset per phase.
+    this.blogImageCache = new cloudflare.Ruleset(
+      "site-cache",
+      {
+        description: "What the edge caches of the site's host name",
+        kind: "zone",
+        name: "Site cache rules",
+        phase: "http_request_cache_settings",
+        rules: [
+          {
+            action: "set_cache_settings",
+            actionParameters: {
+              cache: true,
+              cacheKey: {
+                customKey: { queryString: { include: { all: true } } },
+                ignoreQueryStringsOrder: true,
+              },
+              edgeTtl: {
+                default: blogImageEdgeTtl,
+                mode: "override_origin",
+                statusCodeTtls: [
+                  { statusCodeRange: { from: 300, to: 599 }, value: -1 },
+                ],
+              },
+            },
+            description: "The blog's resized images, by their whole query",
+            expression: `(http.host eq "${domain}" and http.request.uri.path eq "/blog/_image")`,
+          },
+        ],
+        zoneId,
+      },
+      { parent: this, protect: true }
+    );
 
     this.forwardedAddresses = forwards.map((rule) =>
       rule.matchers.apply((matchers) => matchers[0]?.value ?? "")

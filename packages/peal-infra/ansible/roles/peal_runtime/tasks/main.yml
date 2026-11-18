@@ -38,6 +38,34 @@
   args:
     creates: "{{ peal_root }}/secrets.env"
 
+# The blog's, added to secrets.env once the blog is on (peal_blog), each
+# when the file lacks it, so a server that ran before the blog gets them
+# too: its database role's password, and EmDash's key for the secrets saved
+# in its admin (emdash_enc_v1_ and 32 random bytes in base64url). Never read
+# back by Ansible. The shell module skips in check mode.
+- name: Generate the blog's secrets
+  ansible.builtin.shell: |
+    set -euo pipefail
+    umask 077
+    added=''
+    if ! grep -q '^PEAL_BLOG_DATABASE_PASSWORD=' {{ peal_root }}/secrets.env; then
+      printf 'PEAL_BLOG_DATABASE_PASSWORD=%s\n' "$(openssl rand -hex 32)" >> {{ peal_root }}/secrets.env
+      added=yes
+    fi
+    if ! grep -q '^PEAL_BLOG_ENCRYPTION_KEY=' {{ peal_root }}/secrets.env; then
+      key="$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=\n')"
+      printf 'PEAL_BLOG_ENCRYPTION_KEY=emdash_enc_v1_%s\n' "$key" >> {{ peal_root }}/secrets.env
+      added=yes
+    fi
+    if [ -n "$added" ]; then
+      echo added
+    fi
+  args:
+    executable: /bin/bash
+  register: peal_runtime_blog_secrets
+  changed_when: peal_runtime_blog_secrets.stdout == 'added'
+  when: peal_blog | bool
+
 # Credentials that outside services issued: from the vault when it holds
 # them, otherwise written on the server by hand (README.md).
 - name: Refuse credentials Compose would misread

@@ -1,14 +1,8 @@
-// The header's GitHub star count is read once at build time, and hidden
-// when GitHub does not answer with one.
+// The home page's latest merged pull requests, read once at build time, and
+// hidden when GitHub does not answer with them.
 import { describe, expect, it } from "vitest";
 
-import {
-  fetchMergedPulls,
-  fetchStars,
-  formatStars,
-  pullTitle,
-  starsFrom,
-} from "../src/github.ts";
+import { fetchMergedPulls, pullTitle } from "../src/github.ts";
 
 // A pull request as GitHub's API lists it.
 interface GitHubPull {
@@ -18,10 +12,9 @@ interface GitHubPull {
   readonly title: string;
 }
 
-// What GitHub's API answers, or a refusal with its message.
+// What GitHub's API answers to a refusal.
 interface GitHubAnswer {
   readonly message?: string;
-  readonly stargazers_count?: number;
 }
 
 const answer =
@@ -78,59 +71,4 @@ describe("the latest merged pull requests", () => {
       fetchMergedPulls(answer(403, { message: "rate limited" }))
     ).resolves.toStrictEqual([]);
   });
-});
-
-describe("the star count", () => {
-  it("reads stargazers_count from the repository's answer", async () => {
-    await expect(
-      starsFrom(
-        Response.json({ full_name: "peal-social/peal", stargazers_count: 42 })
-      )
-    ).resolves.toBe(42);
-  });
-
-  it.each([
-    { body: {}, name: "a missing count" },
-    { body: { stargazers_count: "42" }, name: "a count as text" },
-    { body: { stargazers_count: -1 }, name: "a negative count" },
-    { body: { stargazers_count: 1.5 }, name: "a fraction" },
-    { body: [], name: "a list" },
-  ])("reads nothing from $name", async ({ body }) => {
-    await expect(starsFrom(Response.json(body))).resolves.toBeUndefined();
-  });
-
-  it("gives nothing for an answer that is not JSON", async () => {
-    await expect(
-      fetchStars(async () => await Promise.resolve(new Response("<html>")))
-    ).resolves.toBeUndefined();
-  });
-
-  it("fetches the count", async () => {
-    await expect(
-      fetchStars(answer(200, { stargazers_count: 1234 }))
-    ).resolves.toBe(1234);
-  });
-
-  it("gives nothing when GitHub refuses", async () => {
-    await expect(
-      fetchStars(answer(403, { message: "rate limited" }))
-    ).resolves.toBeUndefined();
-  });
-
-  it("gives nothing when the request fails", async () => {
-    await expect(
-      fetchStars(async () => await Promise.reject(new TypeError("offline")))
-    ).resolves.toBeUndefined();
-  });
-
-  it.each([
-    { count: 7, locale: "en", shown: "7" },
-    { count: 1234, locale: "en", shown: "1.2K" },
-    { count: 1234, locale: "fr", shown: "1,2 k" },
-  ] as const)(
-    "shows $count as $shown in $locale",
-    ({ count, locale, shown }) => {
-      expect(formatStars(count, locale).replaceAll(" ", " ")).toBe(shown);
-    }
-  );
 });

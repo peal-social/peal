@@ -32,13 +32,15 @@ env:
 
 jobs:
   # Which of the longer jobs a pull request needs (scripts/ci-plan.ts): the
-  # server's tests, Ansible's, the SDKs and the end-to-end run. The others
+  # server's tests, Ansible's, the SDKs, the end-to-end run and the blog's
+  # smoke test. The others
   # run on every change, and every job runs outside pull requests.
   plan:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       ansible: ${{ steps.plan.outputs.ansible }}
+      blog: ${{ steps.plan.outputs.blog }}
       e2e: ${{ steps.plan.outputs.e2e }}
       sdks: ${{ steps.plan.outputs.sdks }}
       server: ${{ steps.plan.outputs.server }}
@@ -446,12 +448,45 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  # The blog's production build under /blog, run against Postgres and
+  # SeaweedFS on a database and bucket of its own, checked over HTTP
+  # (packages/peal-blog/test/smoke/smoke.ts).
+  blog:
+    needs: plan
+    if: needs.plan.outputs.blog == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18.6-alpine@sha256:123b17998ccaf47e53b502e8c6a1e79afd8f579c6f3eec83c563da026f957395
+        env:
+          POSTGRES_DB: peal
+          POSTGRES_PASSWORD: peal
+          POSTGRES_USER: peal
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready --username peal --dbname peal"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: docker compose --file packages/peal-docker/compose.yaml up --detach --wait seaweedfs
+      - run: bun nx run peal-blog:smoke
+        env:
+          PGPORT: "5432"
+
   # The one check the main branch's ruleset requires: it passes when every
   # job above passed or was not needed, so a job can be split, skipped or
   # added without changing the ruleset.
   ci:
     if: ${{ always() }}
-    needs: [plan, lint, typecheck, build, test, server, ansible, secrets, workflows, sdks, e2e]
+    needs:
+      [plan, lint, typecheck, build, test, server, ansible, secrets, workflows, sdks, e2e, blog]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

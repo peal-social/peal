@@ -10,11 +10,11 @@ import {
 } from "peal-contract/rate-card";
 import type { AccountBand, Meter } from "peal-contract/rate-card";
 import type { RateCardGroup, RateCardRow } from "peal-ui/components/rate-card";
+import { siteEntries } from "peal-ui/lib/site/platforms";
+import type { PlatformGroup } from "peal-ui/lib/site/platforms";
 
 import type { Locale } from "./i18n/locales.ts";
 import type { Messages } from "./i18n/messages.ts";
-import { siteEntries } from "./platforms.ts";
-import type { PlatformGroup } from "./platforms.ts";
 
 // Per-account pricing as the pricing page states it, from the contract's
 // rate card, which the server bills from (a test there keeps them equal).

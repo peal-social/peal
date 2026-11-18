@@ -768,8 +768,9 @@ its backups ([Architecture](#architecture)).
 `release.yml` checks the commit out from GitHub on the machine running
 Ansible, builds there the images (`peal-server`, `peal-web`,
 `peal-static` with the environment's site and docs URLs, `peal-docs` with
-the docs' settings where the docs have their assistant, and `peal-postgres`,
-named after its Dockerfile) that the server does not have yet, and uploads
+the docs' settings where the docs have their assistant, `peal-blog` with
+the site's origin where the blog runs ([The blog](#the-blog)), and
+`peal-postgres`, named after its Dockerfile) that the server does not have yet, and uploads
 them over SSH. An image the server has is never uploaded again, so Postgres's
 changes, and Postgres restarts, only when its Dockerfile does. The servers
 hold no repository or registry credentials, and only pushed commits can be
@@ -793,10 +794,15 @@ server:
    the old server stops first, with 75 seconds to finish its calls to the
    platforms;
 3. Postgres starts, and keeps the database password in step with
-   `secrets.env`;
+   `secrets.env`, and, where the blog runs, the blog's role and database
+   too (made the first time);
 4. the new server starts and applies its migrations before it listens;
-5. the rest of the stack starts, and the release is checked on the server and,
-   for production, through the tunnel.
+5. the rest of the stack starts (the blog applies EmDash's migrations as it
+   starts), and the release is checked on the server and, for production,
+   through the tunnel. Where the blog runs, its health check
+   (`/_emdash/api/health`) is one of the checks: a blog that does not start
+   fails the release of the whole stack, the app's included, until it is
+   fixed or the flag is turned off.
 
 A service's mounts name `/srv/peal/current/…`, which reads the same
 whatever release it points at, so Compose alone would keep a service on
@@ -834,6 +840,71 @@ asking a poll dealt with.
 Every container of the stack runs on a read-only file system, writing only
 to its volumes and to small tmpfs mounts, and none gains privileges it was
 not started with.
+
+### The blog
+
+Peal's blog (`packages/peal-blog`) runs on the site's host name: its pages
+at `/blog` (and `/blog/fr/`), EmDash's admin and API at `/_emdash`. It is
+Peal's own: a self-hoster does not run it, so its settings are documented
+in its guide and here, not on the docs' environment variables page. It is
+off until `peal_blog: true` is set for an environment
+(`group_vars/<environment>/main.yml`); with the flag off, every file the
+playbooks render stays as it was. With it:
+
+- `site.yml` adds to `secrets.env` the blog's database password
+  (`PEAL_BLOG_DATABASE_PASSWORD`) and EmDash's encryption key
+  (`PEAL_BLOG_ENCRYPTION_KEY`), each once, generated on the server and never
+  read back; writes the blog's settings into `host.env` (`PEAL_BLOG_*`, the
+  site's links as `BLOG_*`, and EmDash's SMTP through Resend's relay,
+  `smtp.resend.com:465` as `resend`, from `peal_mail_from`, with the
+  server's `RESEND_API_KEY` as its password; `peal_blog_mail: false` sends
+  none); requires the blog bucket's key (`PEAL_BLOG_S3_ACCESS_KEY_ID`,
+  `PEAL_BLOG_S3_SECRET_ACCESS_KEY`) and `RESEND_API_KEY` in the
+  credentials; and routes the tunnel:
+  1. `/blog/_emdash…`, in any case, answers 404: EmDash would take an API
+     call there for a public page and skip its CSRF check;
+  2. `/_emdash/api/media/file/…` goes to the blog, public in production,
+     as the pages show the media through it;
+  3. `/_emdash` goes to the blog behind the blog's Access application in
+     production (`cloudflare_access_aud.blog`, which cloudflared checks
+     too): EmDash's setup is first come, first served, so only staff may
+     reach it;
+  4. `/blog` goes to the blog.
+
+  Nothing else of the host does: not `/robots.txt`, `/sitemap.xml` or
+  `/.well-known/`, which EmDash also answers. The sandbox is behind Access
+  throughout, its own application covering the blog.
+
+- `release.yml` builds `peal-blog` (with `BLOG_SITE_URL`, the site's
+  origin, which turns image optimisation on), signs in as `peal_blog` and,
+  only when that is refused (a new blog, or a database restored from
+  another server), creates the role (`LOGIN`, nothing more) and the
+  database it owns where missing and sets the role's password, the password
+  going from `secrets.env` to psql through the environment alone; it runs
+  the `blog` profile and checks `/_emdash/api/health`, which then gates
+  every release of the environment. Before it changes anything, it stops
+  when `secrets.env` lacks the blog's secrets (run `site.yml` first). The
+  app's database is closed to every role but its owner, so the blog's role
+  reaches its own database alone.
+- `peal_preflight` refuses the flag without `peal_blog_bucket`, and in
+  production without the blog's Access audience tag.
+
+The blog's media is in a bucket of its own (`peal-<environment>-blog`),
+private, with the CORS rule the admin's uploads need, which the
+environment's Pulumi stack makes. Its database is in the stack's Postgres,
+so pgBackRest backs it up with Peal's.
+
+Turn it on, for the sandbox first:
+
+1. Approve the bucket (a paid resource, by use), then `pulumi preview
+   --diff` and `pulumi up` on the environment's stack, and
+   `scripts/cloudflare_from_pulumi.py --vault-id <environment>@…`, which
+   writes `peal_blog_bucket`, production's `blog` audience tag and the
+   bucket's key.
+2. Set `peal_blog: true`, run `site.yml --check --diff`, then `site.yml`,
+   then `release.yml --limit <environment>`.
+3. Open `https://<site>/_emdash/admin` right away (behind Access), complete
+   EmDash's setup wizard and register a passkey.
 
 ### Stripe catalogue
 

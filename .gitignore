@@ -4,6 +4,7 @@ dist/
 build/
 .next/
 .astro/
+.emdash/
 out/
 coverage/
 *.tsbuildinfo

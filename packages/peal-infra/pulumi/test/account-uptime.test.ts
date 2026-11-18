@@ -49,7 +49,10 @@ const records = async () => {
 
   return made
     .filter(
-      (resource) => resource.type === "cloudflare:index/dnsRecord:DnsRecord"
+      (resource) =>
+        // The blog's redirect host is account.test.ts's.
+        resource.type === "cloudflare:index/dnsRecord:DnsRecord" &&
+        resource.name !== "blog-redirect-host"
     )
     .toSorted((left, right) => left.name.localeCompare(right.name));
 };

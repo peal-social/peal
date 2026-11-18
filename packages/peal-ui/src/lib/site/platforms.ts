@@ -5,13 +5,6 @@ import {
   SitePlatformSchema,
 } from "peal-contract";
 import type { AdNetwork, ChannelPlatform } from "peal-contract";
-import type { SiteMark } from "peal-ui/components/site-header";
-import {
-  googleBusinessProfile,
-  linkedin,
-  slack,
-} from "peal-ui/lib/brand-marks";
-import type { OneColourMark } from "peal-ui/lib/brand-marks";
 import {
   siBluesky,
   siDevdotto,
@@ -32,6 +25,10 @@ import {
   siYoutube,
 } from "simple-icons";
 import type { SimpleIcon } from "simple-icons";
+
+import type { SiteMark } from "../../components/site-header";
+import { googleBusinessProfile, linkedin, slack } from "../brand-marks";
+import type { OneColourMark } from "../brand-marks";
 
 // The header's Platforms menu: every platform a channel connects to and
 // every ad network, from the contract's own lists, so one Peal adds shows

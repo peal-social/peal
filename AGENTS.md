@@ -41,12 +41,16 @@ one per tool under `packages/peal-infra/`:
 - `peal-docker`: the development compose stack, the production images (the
   server's, with sharp's C++ runtime and a static ffprobe; the web app's;
   the site and docs on nginx; Postgres with pgBackRest), the production stack
-  (`compose.production.yaml`) and Caddy in front of it for self-hosters
+  (`compose.production.yaml`, the blog's image in a profile of its own) and
+  Caddy in front of it for self-hosters
   (`compose.self-host.yaml`).
 - `peal-docs`: the documentation site (Blume), with the API reference rendered
   from the contract's `openapi.json`.
 - `peal-site`: the static marketing site (Astro), with the legal pages that
   platforms ask for during app review.
+- `peal-blog`: Peal's own blog at `peal.social/blog`: EmDash on Astro's Node
+  adapter, in the site's chrome (from `peal-ui`), with its own database on
+  the stack's Postgres and its own bucket. A self-hoster does not run it.
 - `peal-skills`: the agent skills, in the Agent Skills format, one folder
   each under `skills/`, Apache-2.0 with a `LICENSE` in each.
 - `peal-e2e`: end-to-end browser tests with the e2e runner (`e2e`,
@@ -87,6 +91,8 @@ several:
   tests.
 - [`packages/peal-docs/AGENTS.md`](packages/peal-docs/AGENTS.md): how a docs
   page is written.
+- [`packages/peal-blog/AGENTS.md`](packages/peal-blog/AGENTS.md): the blog,
+  its settings, and the paths it must never route.
 - [`packages/peal-docker/AGENTS.md`](packages/peal-docker/AGENTS.md): the
   compose files, telemetry and alerting.
 - [`packages/peal-infra/AGENTS.md`](packages/peal-infra/AGENTS.md): the
@@ -295,7 +301,9 @@ self-hoster needs only Postgres and an S3-compatible store:
 - Route `/api/*` and `/.well-known/oauth-*` to the server, or let the web app
   forward them, and everything else to the web app.
 - Document every setting a package reads in the docs' environment variables
-  page, in English and French, in the same change.
+  page, in English and French, in the same change. The blog is the
+  exception: Peal's own, in a profile self-hosters never run, its settings
+  are in its guide and the Ansible README.
 
 ## Docs and marketing site
 
@@ -334,7 +342,10 @@ self-hoster needs only Postgres and an S3-compatible store:
   the invoice bills it. The legal pages'
   plans section follows it, pointing to the pricing page for figures.
 - Site strings live in `packages/peal-site/src/i18n/messages.ts`, legal
-  documents in `src/content/legal/<locale>/<document>.md`. Keep a legal
+  documents in `src/content/legal/<locale>/<document>.md`. The header's,
+  the footer's and the announcement's strings and links, which the blog
+  shares, live in `packages/peal-ui/src/lib/site/` as plain TypeScript
+  (no Astro there). Keep a legal
   document `draft: true` (banner and noindex) until legal review approves it,
   and never replace a [bracketed placeholder] with a guess.
 - The privacy policy's retention table is the registry's

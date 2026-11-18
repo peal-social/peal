@@ -58,9 +58,86 @@ describe("what the account shares", () => {
 
     expect(result.uptimeRecords).toStrictEqual([]);
     expect(
-      made.filter(
-        (resource) => resource.type === "cloudflare:index/dnsRecord:DnsRecord"
-      )
-    ).toStrictEqual([]);
+      made
+        .filter(
+          (resource) => resource.type === "cloudflare:index/dnsRecord:DnsRecord"
+        )
+        .map((resource) => resource.name)
+    ).toStrictEqual(["blog-redirect-host"]);
+  });
+
+  it("caches the blog's resized images at the edge, by their whole query", async () => {
+    await valueOf(result.blogImageCache.id);
+
+    const ruleset = made.find((resource) => resource.name === "site-cache");
+
+    expect(input(ruleset, "phase", Schema.String)).toBe(
+      "http_request_cache_settings"
+    );
+    expect(input(ruleset, "zoneId", Schema.String)).toBe("zone-synthetic");
+    expect(input(ruleset, "rules", Schema.Unknown)).toStrictEqual([
+      {
+        action: "set_cache_settings",
+        actionParameters: {
+          cache: true,
+          cacheKey: {
+            customKey: { queryString: { include: { all: true } } },
+            ignoreQueryStringsOrder: true,
+          },
+          edgeTtl: {
+            default: 86_400,
+            mode: "override_origin",
+            // Never a refusal or an error: -1 is no-store.
+            statusCodeTtls: [
+              { statusCodeRange: { from: 300, to: 599 }, value: -1 },
+            ],
+          },
+        },
+        description: "The blog's resized images, by their whole query",
+        expression:
+          '(http.host eq "example.test" and http.request.uri.path eq "/blog/_image")',
+      },
+    ]);
+  });
+
+  it("sends blog.<domain> to the blog, keeping the path and the query", async () => {
+    await valueOf(pulumi.all([result.blogRecord.id, result.blogRedirect.id]));
+
+    const record = made.find(
+      (resource) => resource.name === "blog-redirect-host"
+    );
+
+    expect(record?.inputs).toStrictEqual({
+      content: "100::",
+      name: "blog.example.test",
+      proxied: true,
+      ttl: 1,
+      type: "AAAA",
+      zoneId: "zone-synthetic",
+    });
+
+    const ruleset = made.find((resource) => resource.name === "site-redirect");
+
+    expect(input(ruleset, "phase", Schema.String)).toBe(
+      "http_request_dynamic_redirect"
+    );
+    expect(input(ruleset, "zoneId", Schema.String)).toBe("zone-synthetic");
+    expect(input(ruleset, "rules", Schema.Unknown)).toStrictEqual([
+      {
+        action: "redirect",
+        actionParameters: {
+          fromValue: {
+            preserveQueryString: true,
+            statusCode: 301,
+            targetUrl: {
+              expression:
+                'concat("https://example.test/blog", http.request.uri.path)',
+            },
+          },
+        },
+        description: "blog.<domain> to the blog at <domain>/blog",
+        expression: '(http.host eq "blog.example.test")',
+      },
+    ]);
   });
 });

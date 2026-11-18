@@ -41,7 +41,34 @@ peal_runtime_host_settings: >-
          'PEAL_GRAFANA_HEARTBEAT': './config/production/grafana/alerting/heartbeat.yaml',
          'PEAL_HEARTBEAT_URL': peal_heartbeat_url,
        } if peal_heartbeat_url else {})
+     | combine(peal_runtime_blog_settings if peal_blog | bool else {})
      | combine(peal_settings) }}
+
+# The blog's plain settings (compose.production.yaml's blog service): its
+# origin, its bucket on the media's endpoint (so the EU check covers it),
+# the site's links, and EmDash's SMTP through Resend's relay, whose password
+# Compose hands the blog from RESEND_API_KEY only with PEAL_BLOG_MAIL.
+peal_runtime_blog_settings: >-
+  {{ {
+       'PEAL_BLOG_PORT': peal_ports.blog,
+       'PEAL_BLOG_SITE_URL': 'https://' ~ peal_hostnames.site,
+       'PEAL_BLOG_S3_ENDPOINT': peal_media_endpoint,
+       'PEAL_BLOG_S3_BUCKET': peal_blog_bucket,
+     }
+     | combine({
+         'BLOG_APP_URL': peal_static_build_args.SITE_APP_URL | default(''),
+         'BLOG_DOCS_URL': peal_static_build_args.SITE_DOCS_URL | default(''),
+         'BLOG_DISCORD_URL': peal_static_build_args.SITE_DISCORD_URL | default(''),
+         'BLOG_PLAUSIBLE_DOMAIN': peal_static_build_args.SITE_PLAUSIBLE_DOMAIN | default(''),
+       })
+     | combine({
+         'EMAIL_SMTP_HOST': 'smtp.resend.com',
+         'EMAIL_SMTP_PORT': 465,
+         'EMAIL_SMTP_SECURE': 'tls',
+         'EMAIL_SMTP_USER': 'resend',
+         'EMAIL_SMTP_FROM': peal_mail_from,
+         'PEAL_BLOG_MAIL': true,
+       } if peal_blog_mail | bool else {}) }}
 
 # Grafana alerts Slack too, beside Telegram, once the environment's Slack
 # webhook (SLACK_ALERTS_WEBHOOK_URL, to #alerts-production or
@@ -65,6 +92,8 @@ peal_runtime_required_credentials: >-
   {{ peal_required_credentials
      + (['PEAL_HEARTBEAT_TOKEN'] if peal_heartbeat_url else [])
      + (['DOCS_ANTHROPIC_API_KEY'] if peal_docs_server | bool else [])
+     + (['PEAL_BLOG_S3_ACCESS_KEY_ID', 'PEAL_BLOG_S3_SECRET_ACCESS_KEY']
+        + (['RESEND_API_KEY'] if peal_blog_mail | bool else []) if peal_blog | bool else [])
      + ({
           'LINKEDIN_CLIENT_ID': 'LINKEDIN_CLIENT_SECRET',
           'LINKEDIN_PAGES_CLIENT_ID': 'LINKEDIN_PAGES_CLIENT_SECRET',

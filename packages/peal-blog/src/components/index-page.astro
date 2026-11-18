@@ -1,0 +1,79 @@
+---
+import { createPublicPageContext } from "emdash/page";
+import { Eyebrow } from "peal-ui/components/section-opener";
+import { pageLocale } from "peal-ui/lib/site/locales";
+
+import { messages } from "../i18n/messages.ts";
+import Base from "../layouts/base.astro";
+import { publishedPosts } from "../posts.ts";
+
+// The blog's index in the page's language: the site's page opener (as the
+// pricing page has it), then the published posts, newest first, in
+// bordered cells on the rails, or a line saying there are none yet.
+
+const locale = pageLocale(Astro.currentLocale);
+
+const t = messages(locale);
+
+const posts = await publishedPosts(locale);
+
+const page = createPublicPageContext({
+  Astro,
+  breadcrumbs: [],
+  description: t.blog.description,
+  kind: "custom",
+  pageTitle: `${t.blog.title} · ${t.nav.brand}`,
+  title: t.blog.title,
+});
+---
+
+<Base page={page}>
+  <section
+    aria-labelledby="blog-title"
+    class="mx-auto flex max-w-3xl flex-col items-center gap-5 px-6 pt-20 pb-16 text-center sm:pt-24"
+  >
+    <Eyebrow icon="newspaper" label={t.blog.title} />
+    <h1
+      id="blog-title"
+      class="text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
+    >
+      {t.blog.headline.text}{" "}
+      <span class="text-muted-foreground">{t.blog.headline.muted}</span>
+    </h1>
+    <p class="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
+      {t.blog.lead}
+    </p>
+  </section>
+  <div class="mx-auto max-w-6xl border-t">
+    {
+      posts.length === 0 ? (
+        <p class="text-muted-foreground px-6 py-16 text-center text-sm">
+          {t.blog.empty}
+        </p>
+      ) : (
+        <ul class="grid md:grid-cols-2">
+          {posts.map((post) => (
+            <li class="border-b md:odd:border-r">
+              <a
+                href={post.href}
+                class="hover:bg-accent flex h-full flex-col gap-2 px-6 py-8 transition-colors"
+              >
+                {post.date !== undefined && (
+                  <span class="text-muted-foreground font-mono text-xs tracking-[0.04em]">
+                    {post.date}
+                  </span>
+                )}
+                <span class="text-[15px] font-semibold">{post.title}</span>
+                {post.excerpt !== undefined && (
+                  <span class="text-muted-foreground text-[13px]">
+                    {post.excerpt}
+                  </span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</Base>

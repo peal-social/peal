@@ -12,6 +12,8 @@ import type {
 } from "peal-ui/components/product-bento";
 import type { ProductRow } from "peal-ui/components/product-rows";
 import type { SiteIcon, SiteMark } from "peal-ui/components/site-icons";
+import { repository } from "peal-ui/lib/site/navigation";
+import { entryOf, githubMark, siteEntries } from "peal-ui/lib/site/platforms";
 import {
   siDotnet,
   siGo,
@@ -28,8 +30,6 @@ import type { HomeCode } from "./code/home-code.ts";
 import type { MergedPull } from "./github.ts";
 import type { Locale } from "./i18n/locales.ts";
 import type { Messages } from "./i18n/messages.ts";
-import { repository } from "./navigation.ts";
-import { entryOf, githubMark, siteEntries } from "./platforms.ts";
 
 // The home page's sections, from its strings, the contract, the docs and
 // what GitHub answered at build time. Kept apart from config.ts, which

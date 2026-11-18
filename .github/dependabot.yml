@@ -83,6 +83,13 @@ updates:
         patterns:
           - astro
           - "@astrojs/*"
+      # The blog's CMS: its packages are released together. A new release
+      # may bring migrations, which run when the blog starts: read EmDash's
+      # changelog, and run nx run peal-blog:smoke.
+      emdash:
+        patterns:
+          - emdash
+          - "@emdash-cms/*"
       # The site highlights its code with Shiki at build time; its packages
       # are released together.
       shiki:

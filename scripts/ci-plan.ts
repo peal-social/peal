@@ -17,7 +17,7 @@ import path from "node:path";
 import { $ } from "bun";
 import { Schema } from "effect";
 
-export const jobs = ["server", "ansible", "sdks", "e2e"] as const;
+export const jobs = ["server", "ansible", "sdks", "e2e", "blog"] as const;
 
 export type Job = (typeof jobs)[number];
 
@@ -53,6 +53,9 @@ export const rules: Readonly<Record<Job, Rule>> = {
     ],
     project: named("peal-infra-ansible"),
   },
+  // The blog's smoke test builds it and runs it against Postgres and the
+  // S3 store the compose file starts.
+  blog: { paths: [compose], project: named("peal-blog") },
   e2e: { paths: [compose], project: named("peal-e2e") },
   // The SDKs are generated from the contract, through a task dependency
   // that the project graph does not hold.
@@ -94,6 +97,7 @@ export const outsideProjects = (change: Change): readonly string[] =>
 
 export const everything: Plan = {
   ansible: true,
+  blog: true,
   e2e: true,
   sdks: true,
   server: true,
@@ -114,6 +118,7 @@ export const plan = (change: Change): Plan => {
 
   return {
     ansible: needs("ansible"),
+    blog: needs("blog"),
     e2e: needs("e2e"),
     sdks: needs("sdks"),
     server: needs("server"),

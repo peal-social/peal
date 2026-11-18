@@ -1,19 +1,11 @@
-// The site's languages. English is the default and has no URL prefix; every
-// other locale lives under /<code>/. astro.config.ts reads this list, so a new
-// language is added here, with its catalogue in ./messages.ts and its legal
-// documents in src/content/legal/<code>/.
-export const locales = ["en", "fr"] as const;
+import { defaultLocale, locales } from "peal-ui/lib/site/locales";
 
-export type Locale = (typeof locales)[number];
+// The site's languages, which it shares with the blog (peal-ui's
+// lib/site/locales.ts). A new language also needs its catalogue in
+// ./messages.ts and its legal documents in src/content/legal/<code>/.
+export { defaultLocale, locales, pageLocale } from "peal-ui/lib/site/locales";
 
-export const defaultLocale: Locale = "en";
-
-/**
- * The locale Astro resolved for the current page (`Astro.currentLocale`),
- * narrowed to one this site defines.
- */
-export const pageLocale = (current: string | undefined): Locale =>
-  locales.find((locale) => locale === current) ?? defaultLocale;
+export type { Locale } from "peal-ui/lib/site/locales";
 
 /**
  * `getStaticPaths` entries for a page under `src/pages/[...locale]/`: the

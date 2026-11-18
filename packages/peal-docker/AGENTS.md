@@ -55,6 +55,16 @@ under Development stack.
   removes it otherwise. It hands Blume `DOCS_TURNSTILE_SECRET_KEY` as
   `TURNSTILE_SECRET_KEY`, which the stack cannot pass under that name: the
   server stops on `TURNSTILE_SECRET_KEY` without `TURNSTILE_SITE_KEY`.
+- The blog (`blog.Dockerfile`, profile `blog`, 127.0.0.1:4324) is Peal's
+  own, which a self-hoster does not run. Every setting only it reads
+  defaults to empty rather than `:?`, since Compose interpolates the
+  services of profiles that are off too and would refuse the whole stack;
+  `AUTH_IP_HEADERS`, the stack's own, keeps its `:?`. It reads its database
+  (`PG*`) and bucket (`S3_*`) only when it starts, never at build
+  (`compose.test.ts` checks the Dockerfile), keeps editors' sessions in the
+  `blog-sessions` volume, and mails through `EMAIL_SMTP_*`, its password
+  the server's `RESEND_API_KEY`, handed over only with `PEAL_BLOG_MAIL`. It mounts no file of the
+  stack, so it has no `config-hash` label.
 - Keep `MP_SMTP_DISABLE_RDNS` on Mailpit, in compose and CI: its reverse DNS
   lookup otherwise stalls each SMTP greeting for about 10 seconds, and the
   email tests time out.
