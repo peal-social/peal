@@ -61,18 +61,3 @@ export const refused = (pathname: string, base: string): boolean => {
   // Astro gives it, before this decodes it.
   return !within(pathname, "/_emdash");
 };
-
-/** Astro's image endpoint under `base`, which EmDash keeps. */
-export const imageRoute = (base: string): string =>
-  `/${base.replaceAll(edgeSlashes, "")}/_image`.replace(/^\/\//u, "/");
-
-/**
- * Whether the blog refuses an image request: one to its image endpoint for
- * a transform no page of this server handed out (src/image-allow.ts).
- */
-export const imageRefused = (
-  url: URL,
-  base: string,
-  registry: { readonly has: (query: URLSearchParams) => boolean }
-): boolean =>
-  url.pathname === imageRoute(base) && !registry.has(url.searchParams);

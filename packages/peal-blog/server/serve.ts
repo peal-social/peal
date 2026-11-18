@@ -13,6 +13,7 @@ import { pathToFileURL } from "node:url";
 
 import { Predicate, Schema } from "effect";
 
+import { portOf } from "./port.ts";
 import { rawPathRefused } from "./raw-path.ts";
 
 process.env["ASTRO_NODE_AUTOSTART"] = "disabled";
@@ -33,7 +34,8 @@ const { handler } = Schema.decodeUnknownSync(EntrySchema)(
 );
 
 const host = process.env["HOST"] ?? "localhost";
-const port = Number(process.env["PORT"] ?? "4324");
+
+const port = portOf(process.env["PORT"]);
 
 const server = createServer((request, response) => {
   if (rawPathRefused(request.url ?? "/")) {

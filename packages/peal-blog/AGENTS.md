@@ -63,17 +63,27 @@ the docs' environment variables page.
   media sweeps own the media bucket). It stays private: media is read back
   through `/_emdash/api/media/file/<key>`, and Astro's image endpoint at
   `/blog/_image` resizes it with sharp. Cloudflare's edge caches
-  `/blog/_image` by its whole query (the Pulumi project's cache rule), and
-  the endpoint serves only the transforms this server's pages handed out:
-  `src/image-service.ts` wraps Astro's sharp service and records each URL
-  it builds while a page renders (`src/image-allow.ts`), and the guard
-  answers 404 to any other width, height, quality, format or parameter,
-  so varying one neither misses the cache nor makes sharp work. A server
-  that just started knows none until it renders a page. The admin uploads with a presigned
-  `PUT` straight to the bucket, which needs the upload CORS rule
-  (`scripts/cors.ts`). Set `AWS_REQUEST_CHECKSUM_CALCULATION=WHEN_REQUIRED`
-  (the image does): the AWS SDK otherwise signs a CRC32 of an empty body
-  into the upload URL, and the store refuses the upload.
+  `/blog/_image` for a day by its whole query (the Pulumi project's
+  `site-cache` rule), and the guard answers 404 to a request Astro would
+  not build (`src/image-request.ts`, stateless): another parameter, a
+  source outside `/_emdash/api/media/file/`, a width or height that is not
+  a whole number up to 4000, a format Astro does not output, a quality,
+  or the endpoint spelled with a trailing slash. The smoke test fetches a
+  real image URL a page writes, so an upgrade that changes those URLs
+  fails CI. The admin uploads with a presigned `PUT` straight to the
+  bucket, which needs the upload CORS rule (`scripts/cors.ts`). Set
+  `AWS_REQUEST_CHECKSUM_CALCULATION=WHEN_REQUIRED` (the image does): the
+  AWS SDK otherwise signs a CRC32 of an empty body into the upload URL,
+  and the store refuses the upload.
+- **Purging an image.** EmDash's "Replace original" overwrites the file
+  under the same key, and its URLs carry no hash in 1.5.0, so the edge may
+  serve the old image for up to a day. To take one down at once (replaced,
+  or deleted and must not show), purge it in Cloudflare's dashboard
+  (peal.social, Caching, Configuration, Custom Purge): by URL, each
+  `https://peal.social/blog/_image?…` address the page's source shows for
+  it (`src` and `srcset`), or by prefix, `peal.social/blog/_image`, every
+  resized image at once (a prefix purge ignores the query). The original
+  at `/_emdash/api/media/file/<key>` is not cached at the edge.
 - **First admin.** EmDash's setup wizard is first come, first served: in
   production Access guards `/_emdash` (but `/_emdash/api/media/file/`),
   and the sandbox is behind Access throughout. Complete the wizard right

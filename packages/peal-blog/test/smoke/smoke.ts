@@ -16,12 +16,18 @@ import { request as httpRequest } from "node:http";
 import { createServer } from "node:net";
 import path from "node:path";
 
-import { DeleteBucketCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteBucketCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { Schema } from "effect";
 
 import { dropDatabase, setup } from "../../scripts/setup.ts";
 import { developmentStack, serverEnvironment } from "../../scripts/stack.ts";
 import type { StackSettings } from "../../scripts/stack.ts";
+import { publishPostWithImage } from "./editor.ts";
 
 const root = path.join(import.meta.dirname, "..", "..");
 
@@ -53,6 +59,19 @@ const dropBucket = async (settings: StackSettings): Promise<void> => {
   });
 
   try {
+    // The run's upload first: a bucket is deleted empty.
+    const listed = await client.send(
+      new ListObjectsV2Command({ Bucket: settings.s3.bucket })
+    );
+
+    await Promise.all(
+      (listed.Contents ?? []).map(
+        async ({ Key }) =>
+          await client.send(
+            new DeleteObjectCommand({ Bucket: settings.s3.bucket, Key })
+          )
+      )
+    );
     await client.send(new DeleteBucketCommand({ Bucket: settings.s3.bucket }));
   } finally {
     client.destroy();
@@ -205,8 +224,10 @@ try {
     "/blog/..%5c_emdash/api/health",
     "/blog/%252e%252e/_emdash/admin",
     "/_emdash/api/media/file/%2e%2e/%2e%2e/setup/status",
-    // A transform no page handed out.
-    "/blog/_image?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F01SYNTHETIC.png&w=640",
+    // An image request Astro would not build, and the endpoint spelled
+    // with a trailing slash.
+    "/blog/_image?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F01SYNTHETIC.png&w=640&q=1",
+    "/blog/_image/?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F01SYNTHETIC.png&w=640",
   ];
 
   const answers = await Promise.all(refused.map(sent));
@@ -215,6 +236,29 @@ try {
     check(
       response.status === 404,
       `GET ${refused[position] ?? ""} answers 404`
+    );
+  }
+
+  // A post with an image, published as an editor would: the image URL its
+  // page writes must answer, so an upgrade that changes those URLs fails.
+  const slug = await publishPostWithImage(origin);
+  const post = await get(`/blog/${slug}`);
+  const markup = await post.text();
+
+  const imageUrl = /src="(?<url>\/blog\/_image\?[^"]+)"/u
+    .exec(markup)
+    ?.groups?.["url"]?.replaceAll("&amp;", "&");
+
+  check(post.status === 200, `GET /blog/${slug} answers 200`);
+  check(imageUrl !== undefined, "the post's page writes a /blog/_image URL");
+
+  if (imageUrl !== undefined) {
+    const image = await get(imageUrl);
+
+    check(
+      image.status === 200 &&
+        (image.headers.get("content-type") ?? "").startsWith("image/"),
+      `GET ${imageUrl} answers 200 with an image`
     );
   }
 
