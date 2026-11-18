@@ -27,6 +27,7 @@ import { ActorsNow } from "#workspace/application/actors-now.ts";
 import { ApiKeys } from "#workspace/application/api-keys.ts";
 import { Authenticate } from "#workspace/application/authenticate.ts";
 import { BrowserAnalyticsChoice } from "#workspace/application/browser-analytics-choice.ts";
+import { BrowserSessions } from "#workspace/application/browser-sessions.ts";
 import { CloseAccount } from "#workspace/application/close-account.ts";
 import { ConnectedApps } from "#workspace/application/connected-apps.ts";
 import { CredentialCheck } from "#workspace/application/credential-check.ts";
@@ -139,6 +140,7 @@ const UseCasesLive = Layer.mergeAll(
   Accounts.layer,
   AccountStanding.layer,
   BrowserAnalyticsChoice.layer,
+  BrowserSessions.layer,
   ApiKeys.layer,
   CredentialCheck.layer.pipe(
     Layer.provide(Layer.merge(Accounts.layer, ResolveMember.layer))

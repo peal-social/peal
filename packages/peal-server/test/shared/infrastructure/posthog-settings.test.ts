@@ -67,6 +67,19 @@ describe("the PostHog settings", () => {
       assert.isTrue(
         yield* fails({ PEAL_POSTHOG_KEY: key, PEAL_POSTHOG_WEB: "yes" })
       );
+      // The browser sends the key: a project token alone.
+      assert.isTrue(
+        yield* fails({
+          PEAL_POSTHOG_KEY: "phx_synthetic_personal",
+          PEAL_POSTHOG_WEB: "on",
+        })
+      );
+      assert.isFalse(
+        (yield* settingsOf({
+          PEAL_POSTHOG_KEY: "phx_synthetic_personal",
+          PEAL_POSTHOG_WEB: "off",
+        })).web
+      );
       // Read only with a key.
       assert.isTrue(Option.isNone(yield* read({ PEAL_POSTHOG_WEB: "yes" })));
     })

@@ -36,19 +36,57 @@ const batchOf = (request: FakeRequest): readonly CapturedEvent[] =>
       )
     : [];
 
-/** Stores every event, and takes every deletion. */
-export const fakePostHog = fakeHttpServer((request) => {
-  if (request.path === capturePath) {
-    return json({
-      results: Object.fromEntries(
-        batchOf(request).map(({ uuid }) => [uuid, { result: "ok" }])
-      ),
-    });
-  }
+const DeletionRequestSchema = Schema.Struct({
+  distinct_ids: Schema.Array(Schema.String),
+});
 
-  return request.path.endsWith("/persons/bulk_delete/")
-    ? json({ deletion_errors: [], recordings_queued_for_deletion: true }, 202)
-    : { status: 404 };
+const decodeDeletionRequest = Schema.decodeUnknownOption(
+  Schema.fromJsonString(DeletionRequestSchema)
+);
+
+/**
+ * Stores every event, and takes every deletion, as PostHog answers it:
+ * the persons it found among the ids it had events of, and recordings
+ * queued only for those.
+ */
+export const fakePostHog = Effect.suspend(() => {
+  // The ids this fake received events of: its own, never the module's.
+  const known = new Set<string>();
+
+  return fakeHttpServer((request) => {
+    if (request.path === capturePath) {
+      const batch = batchOf(request);
+
+      for (const { distinct_id: id } of batch) {
+        known.add(id);
+      }
+
+      return json({
+        results: Object.fromEntries(
+          batch.map(({ uuid }) => [uuid, { result: "ok" }])
+        ),
+      });
+    }
+
+    if (!request.path.endsWith("/persons/bulk_delete/")) {
+      return { status: 404 };
+    }
+
+    const found = Option.match(decodeDeletionRequest(request.body), {
+      onNone: () => 0,
+      onSome: ({ distinct_ids: ids }) =>
+        ids.filter((id) => known.has(id)).length,
+    });
+
+    return json(
+      {
+        deletion_errors: [],
+        persons_found: found,
+        recordings_queued_for_deletion: found > 0,
+      },
+      202
+    );
+  });
 });
 
 /** The fake the server sends its events to. */

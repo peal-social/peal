@@ -32,6 +32,7 @@ import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { UserId } from "#shared/domain/ids.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
 import { Authenticate } from "#workspace/application/authenticate.ts";
+import { BrowserSessions } from "#workspace/application/browser-sessions.ts";
 import { ConnectionJournal } from "#workspace/application/connection-journal.ts";
 import type { ContentChange } from "#workspace/application/connection-journal.ts";
 import { ImpersonationGuard } from "#workspace/application/impersonation-guard.ts";
@@ -213,6 +214,7 @@ export const AuthenticationLive = Layer.effect(
   Authentication,
   Effect.gen(function* authentication() {
     const authenticate = yield* Authenticate;
+    const browserSessions = yield* BrowserSessions;
     const guard = yield* ImpersonationGuard;
     const journal = yield* ConnectionJournal;
     const limits = yield* RequestLimits;
@@ -333,7 +335,15 @@ export const AuthenticationLive = Layer.effect(
             yield* makeChangeMark
           );
 
-          const acting = as(principal, browserSessionOf(request.headers));
+          // The web app's session, only while its measurement is on and
+          // the person's consent stands.
+          const acting = as(
+            principal,
+            yield* browserSessions.joined(
+              principal,
+              browserSessionOf(request.headers)
+            )
+          );
 
           if (!changesContent(request, group, endpoint)) {
             return yield* httpEffect.pipe(acting, marked);

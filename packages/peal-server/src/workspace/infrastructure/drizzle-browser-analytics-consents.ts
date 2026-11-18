@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { DateTime, Effect, Layer } from "effect";
+import { DateTime, Effect, Layer, Option } from "effect";
 
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
@@ -32,6 +32,26 @@ export const DrizzleBrowserAnalyticsConsents = Layer.effect(
           })
           .where(eq(user.id, userId))
           .pipe(Effect.mapError(failed));
+      }),
+      read: Effect.fn("BrowserAnalyticsConsents.read")(function* read(userId) {
+        const [row] = yield* db
+          .select({
+            choice: user.browserAnalyticsConsent,
+            decidedAt: user.browserAnalyticsConsentAt,
+          })
+          .from(user)
+          .where(eq(user.id, userId))
+          .limit(1)
+          .pipe(Effect.mapError(failed));
+
+        return row === undefined ||
+          row.choice === null ||
+          row.decidedAt === null
+          ? Option.none()
+          : Option.some({
+              choice: row.choice,
+              decidedAt: DateTime.makeUnsafe(row.decidedAt),
+            });
       }),
     });
   })

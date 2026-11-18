@@ -118,6 +118,14 @@ const webConfig = Config.schema(
   Config.map((value) => value === "on")
 );
 
+// The web app sends the token from the browser: only a project token
+// (`phc_…`), public by design, may go there, never a personal key.
+const ProjectTokenSchema = Schema.Trim.check(
+  Schema.isPattern(/^phc_[A-Za-z0-9]+$/u, {
+    expected: "a project token, `phc_` then letters and digits",
+  })
+);
+
 const environmentConfig = isProduction.pipe(
   Config.flatMap((production) =>
     Config.schema(EnvironmentSchema, "PEAL_POSTHOG_ENVIRONMENT").pipe(
@@ -183,7 +191,8 @@ const erasureConfig = Config.all({
  *   workspace, its service identity included, whoever acts in it.
  * - PEAL_POSTHOG_WEB: `on` or `off` (the default): whether the web app
  *   measures its use too, in the browser, asking each person before
- *   anything is linked to their account or recorded. A switch of its own,
+ *   anything is linked to their account or recorded; it then requires a
+ *   project token (`phc_…`), which browsers send. A switch of its own,
  *   as measuring browsers needs the privacy policy to say so first.
  */
 export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
@@ -202,6 +211,13 @@ export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
             host: host("PEAL_POSTHOG_HOST", defaultPostHogHost),
             web: webConfig,
           }).pipe(
+            Config.flatMap((settings) =>
+              settings.web
+                ? Config.schema(ProjectTokenSchema, "PEAL_POSTHOG_KEY").pipe(
+                    Config.map(() => settings)
+                  )
+                : Config.succeed(settings)
+            ),
             Config.map(({ excluded, ...settings }) =>
               Option.some<PostHogSettings>({
                 ...settings,

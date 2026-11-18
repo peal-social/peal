@@ -6,8 +6,9 @@ import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
+import { HttpApiClient } from "effect/http-api";
 import { SqlClient } from "effect/sql";
-import { MeSchema } from "peal-contract";
+import { deviceCodeGrantType, MeSchema, OAuthApi } from "peal-contract";
 
 import {
   appWithPostHog,
@@ -19,8 +20,10 @@ import {
   apiKeyOf,
   bodyOf,
   cookiesOf,
+  inProcessHttpClient,
   makeAdmin,
   MigratedSqlLive,
+  origin,
   signedUpUnconfirmed,
   signIn,
   TestApp,
@@ -203,6 +206,66 @@ layer(
     })
   );
 
+  it.effect("refuses an application acting for the person", () =>
+    Effect.gen(function* application() {
+      const app = yield* TestApp;
+      const oauth = yield* HttpApiClient.make(OAuthApi, { baseUrl: origin });
+      const person = yield* signedUpUnconfirmed("measure-oauth");
+
+      // Peal's own command line, through its device grant: an application
+      // all the same.
+      const device = yield* oauth.tokens.deviceAuthorization({
+        payload: {
+          client_id: "peal-cli",
+          resource: `${origin}/api`,
+          scope: "offline_access workspace:read",
+        },
+      });
+
+      const typed = `${device.user_code.slice(0, 4)}-${device.user_code.slice(4)}`;
+
+      const reviewed = yield* app.request(
+        `/api/auth/device?user_code=${typed}`,
+        { headers: { cookie: person.cookies } }
+      );
+
+      assert.strictEqual(reviewed.status, 200);
+
+      const approved = yield* app.request("/api/auth/device/approve", {
+        body: { userCode: device.user_code },
+        headers: { cookie: person.cookies },
+      });
+
+      assert.strictEqual(approved.status, 200);
+
+      const tokens = yield* oauth.tokens.token({
+        payload: {
+          client_id: "peal-cli",
+          device_code: device.device_code,
+          grant_type: deviceCodeGrantType,
+        },
+      });
+
+      const authorization = `Bearer ${tokens.access_token}`;
+
+      const set = yield* app.request(consentPath, {
+        body: { choice: "granted" },
+        headers: { authorization },
+        method: "PUT",
+      });
+
+      assert.strictEqual(set.status, 403);
+
+      // Nor does it measure an application.
+      const me = yield* bodyOf(
+        json(MeSchema),
+        yield* app.request("/api/me", { headers: { authorization } })
+      );
+
+      assert.isNull(me.browserAnalytics ?? null);
+    }).pipe(Effect.provide(inProcessHttpClient))
+  );
+
   it.effect(
     "is null in a session staff act in, which may not choose either",
     () =>
@@ -332,6 +395,12 @@ layer(
         const workspaceId = yield* workspaceOf(person, "Joined");
         const posts = `/api/workspaces/${workspaceId}/posts`;
 
+        // Only once the person allowed it.
+        assert.strictEqual(
+          (yield* choose(person.cookies, "granted")).status,
+          200
+        );
+
         const named = yield* app.request(posts, {
           body: draft,
           headers: {
@@ -394,6 +463,44 @@ layer(
         const all = yield* capturedEvents;
 
         assert.notInclude(JSON.stringify(all), "not-a-session");
+      })
+  );
+
+  it.effect(
+    "joins no session for a person who has not allowed it, or withdrew",
+    () =>
+      Effect.gen(function* notAllowed() {
+        const app = yield* TestApp;
+        const person = yield* signedUpUnconfirmed("measure-unjoined");
+        const workspaceId = yield* workspaceOf(person, "Unjoined");
+        const posts = `/api/workspaces/${workspaceId}/posts`;
+
+        const write = () =>
+          app.request(posts, {
+            body: draft,
+            headers: {
+              cookie: person.cookies,
+              "x-posthog-session-id": browserSessionId,
+            },
+          });
+
+        // Undecided, then refused.
+        assert.strictEqual((yield* write()).status, 201);
+        yield* choose(person.cookies, "refused");
+        assert.strictEqual((yield* write()).status, 201);
+
+        const created = yield* eventsMatching(
+          (event) =>
+            event.event === "api_operation" &&
+            event.properties["operation"] === "posts.create" &&
+            event.properties["workspace_id"] === workspaceId,
+          2
+        );
+
+        assert.deepStrictEqual(
+          created.map(({ properties }) => properties["$session_id"] ?? null),
+          [null, null]
+        );
       })
   );
 });

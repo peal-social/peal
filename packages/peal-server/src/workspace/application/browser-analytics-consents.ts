@@ -1,5 +1,5 @@
 import { Context } from "effect";
-import type { Effect } from "effect";
+import type { Effect, Option } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { UserId } from "#shared/domain/ids.ts";
@@ -18,5 +18,9 @@ export class BrowserAnalyticsConsents extends Context.Service<
       userId: UserId,
       consent: BrowserAnalyticsConsent
     ) => Effect.Effect<void, DatabaseError>;
+    /** The choice kept, none until one was made. */
+    readonly read: (
+      userId: UserId
+    ) => Effect.Effect<Option.Option<BrowserAnalyticsConsent>, DatabaseError>;
   }
 >()("peal-server/workspace/application/BrowserAnalyticsConsents") {}

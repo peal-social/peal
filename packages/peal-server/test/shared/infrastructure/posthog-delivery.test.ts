@@ -533,6 +533,72 @@ describe("the PostHog erasure", () => {
       })
   );
 
+  it.effect(
+    "takes a deletion that found nobody, whose recordings nothing queued",
+    () =>
+      Effect.gen(function* nobodyFound() {
+        let calls = 0;
+
+        const { close, delivery, sent } = yield* harness(
+          () =>
+            Effect.sync(() => {
+              calls += 1;
+
+              // The first thousand ids name nobody PostHog knows.
+              return Response.json(
+                calls === 1
+                  ? {
+                      deletion_errors: [],
+                      persons_found: 0,
+                      recordings_queued_for_deletion: false,
+                    }
+                  : {
+                      deletion_errors: [],
+                      persons_found: 1,
+                      recordings_queued_for_deletion: true,
+                    },
+                { status: 202 }
+              );
+            }),
+          withErasure
+        );
+
+        const ids = Array.from({ length: 1001 }, (_, index) => `user-${index}`);
+
+        assert.strictEqual(yield* delivery.forget(ids), "deleted");
+        assert.strictEqual(sent.length, 2);
+
+        yield* close;
+      })
+  );
+
+  it.effect(
+    "fails a deletion that found persons and queued none of their recordings",
+    () =>
+      Effect.gen(function* foundButNotQueued() {
+        const { close, delivery } = yield* harness(
+          () =>
+            Effect.succeed(
+              Response.json(
+                {
+                  deletion_errors: [],
+                  persons_found: 1,
+                  recordings_queued_for_deletion: false,
+                },
+                { status: 202 }
+              )
+            ),
+          withErasure
+        );
+
+        const failed = yield* delivery.forget(["user-1"]).pipe(Effect.flip);
+
+        assert.strictEqual(failed._tag, "AnalyticsErasureFailed");
+
+        yield* close;
+      })
+  );
+
   it.effect("fails a deletion PostHog reports errors for, once", () =>
     Effect.gen(function* deletionErrors() {
       const { close, delivery, sent } = yield* harness(

@@ -81,11 +81,14 @@ const decodeLabel = Schema.decodeUnknownOption(AnalyticsTokenSchema);
 
 const decodeRefusal = Schema.decodeUnknownOption(RefusalSchema);
 
-// What the bulk deletion answers with a 202: a deletion counts as done
-// only once it says the persons' recordings are queued too.
+// What the bulk deletion answers with a 202. It queues recordings only for
+// persons it found (`recordings_queued_for_deletion` is false when it found
+// none), so a deletion counts as done once it says they are queued, or
+// that it found nobody to delete.
 const DeletionSchema = Schema.Struct({
   deletion_errors: Schema.Array(Schema.Unknown),
-  recordings_queued_for_deletion: Schema.Literal(true),
+  persons_found: Schema.optionalKey(Schema.Number),
+  recordings_queued_for_deletion: Schema.optionalKey(Schema.Boolean),
 });
 
 const decodeDeletion = Schema.decodeUnknownOption(DeletionSchema);
@@ -414,7 +417,10 @@ export const postHogDelivery = (
             response.status === 202 &&
             Option.exists(
               body.pipe(Option.flatMap(decodeDeletion)),
-              ({ deletion_errors: errors }) => errors.length === 0
+              (answer) =>
+                answer.deletion_errors.length === 0 &&
+                (answer.recordings_queued_for_deletion === true ||
+                  answer.persons_found === 0)
             );
 
           return yield* done
