@@ -38,7 +38,7 @@ lifecycle rule and its upload CORS rule for the site's origin
 (`blogBucket`, `blogKey`); the account stack sends `blog.peal.social` to
 `peal.social/blog` (`site-redirect`, on a proxied `AAAA 100::` record with
 no origin), and caches the blog's resized images, `peal.social/blog/_image`,
-at the edge for a year, by their whole query (`site-cache`, never a 3xx,
+at the edge for a day, by their whole query (`site-cache`, never a 3xx,
 4xx or 5xx). Before its first `up` with them, check that the peal.social
 zone has no dynamic redirect or cache ruleset made by hand: a zone has one
 ruleset per phase, so one would need importing first.

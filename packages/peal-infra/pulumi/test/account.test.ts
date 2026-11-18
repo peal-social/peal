@@ -85,10 +85,9 @@ describe("what the account shares", () => {
             ignoreQueryStringsOrder: true,
           },
           edgeTtl: {
-            default: 31_536_000,
+            default: 86_400,
             mode: "override_origin",
-            // Never a refusal or an error: the blog answers 404 to a
-            // transform it has not handed out yet, as just after a release.
+            // Never a refusal or an error: -1 is no-store.
             statusCodeTtls: [
               { statusCodeRange: { from: 300, to: 599 }, value: -1 },
             ],

@@ -62,12 +62,13 @@ const uptimeRecords = (
  * The owner's address is a secret of the stack.
  */
 /**
- * How long Cloudflare's edge keeps a resized image of the blog: a year. An
- * image's URL names its source, with the source's content hash where
- * EmDash knows it, and every parameter of the transform, so a changed image
- * has a URL of its own.
+ * How long Cloudflare's edge keeps a resized image of the blog: a day.
+ * EmDash's "Replace original" overwrites a file under the same key, and in
+ * 1.5.0 an image's URL carries no hash of its content, so a replaced image
+ * shows for up to a day unless it is purged (packages/peal-blog's guide,
+ * "Purging an image"). EmDash itself sends `max-age=0, must-revalidate`.
  */
-const blogImageEdgeTtl = 365 * 86_400;
+const blogImageEdgeTtl = 86_400;
 
 export class PealAccount extends pulumi.ComponentResource {
   readonly blogImageCache: cloudflare.Ruleset;
@@ -213,12 +214,14 @@ export class PealAccount extends pulumi.ComponentResource {
     );
 
     // The blog's resized images (packages/peal-blog), from the edge: the
-    // whole query is the cache key, and the blog answers 404 to a transform
-    // its pages never handed out, which is never cached, so varying a
-    // parameter neither fills the cache nor resizes anything. Production's
-    // name alone: the sandbox is behind Access, and its few readers need no
-    // cache. The zone's cache rules live here, as a zone has one ruleset
-    // per phase.
+    // whole query is the cache key, and the blog answers 404 to a request
+    // Astro would not build (its src/image-request.ts), which is never
+    // cached (a status TTL of -1 is no-store in the provider's terms), so
+    // varying a parameter neither fills the cache nor resizes anything.
+    // The rule names the one spelling the pages write: the blog refuses
+    // /blog/_image/, with a trailing slash. Production's name alone: the
+    // sandbox is behind Access, and its few readers need no cache. The
+    // zone's cache rules live here, as a zone has one ruleset per phase.
     this.blogImageCache = new cloudflare.Ruleset(
       "site-cache",
       {

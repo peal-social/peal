@@ -65,8 +65,9 @@ credentials and how to adopt what exists.
   dynamic redirect phase) sends `blog.<domain>`, a proxied `AAAA 100::`
   record with no origin, to `<domain>/blog`, path and query kept, and its
   `site-cache` ruleset (the zone's cache settings phase) caches
-  `<domain>/blog/_image` at the edge for a year by its whole query, never
-  an error, which the blog's refusal of transforms its pages did not hand
-  out keeps from being bypassed. Production's names alone: the sandbox is
+  `<domain>/blog/_image` at the edge for a day by its whole query, never
+  an error, which the blog's refusal of requests Astro would not build
+  keeps from being bypassed. A day, not more: EmDash overwrites a replaced
+  image under the same key, with no hash in its URLs. Production's names alone: the sandbox is
   behind Access.
 - Pin `@pulumi/pulumi` and `@pulumi/cloudflare` exactly, as everything else.
