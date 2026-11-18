@@ -50,6 +50,12 @@ updates:
       # by hand until 1.0 is npm's latest.
       - dependency-name: drizzle-orm
       - dependency-name: drizzle-kit
+      # better-auth pins better-call to a minor (~1.4.x): a second major
+      # beside it breaks every endpoint's types. Move it when better-auth
+      # does.
+      - dependency-name: better-call
+        update-types:
+          - version-update:semver-major
     groups:
       # The language service patches TypeScript and ships a build for each
       # version it supports: the two move together, or `bun install` fails.
