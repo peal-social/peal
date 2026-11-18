@@ -13,29 +13,46 @@ export interface Wanted {
   readonly workspaceId: string | null;
 }
 
-/** What the SDK was last set to, from the page's start. */
+/**
+ * What the SDK was last set to. The SDK is one per page load, so this
+ * outlives the component that measures: a remount, another person signing
+ * in in the same tab, a language switch.
+ */
 export interface Applied {
   /** How it was started and last switched, none until it was. */
   readonly configured: "anonymous" | "identified" | null;
+  /** The person it names, none while anonymous. */
+  readonly identifiedAs: string | null;
+  /**
+   * Set aside off the signed-in app: in memory, no recording, no tracing
+   * header, nothing in the browser's storage.
+   */
+  readonly parked: boolean;
   /** Whether a recording runs. */
   readonly recording: boolean;
-  /** The workspace it names (identified only). */
+  /** The workspace it names (identified only), once groups were set. */
   readonly workspaceId: string | null;
+  /** Whether its groups were set since it was last identified. */
+  readonly grouped: boolean;
 }
 
 /** Nothing started: the SDK is not even loaded. */
 export const notStarted: Applied = {
   configured: null,
+  grouped: false,
+  identifiedAs: null,
+  parked: false,
   recording: false,
   workspaceId: null,
 };
 
-/** What does not change while the page lives. */
+/** What a page measures with. */
 export interface MeasuredSession {
   readonly token: string;
   readonly environment: string;
   readonly userId: string;
   readonly hostname: string;
+  readonly origin: string;
   readonly beforeSend: (event: MeasuredEvent) => MeasuredEvent | null;
 }
 
@@ -48,6 +65,78 @@ const registerCommon = (sdk: MeasurementSdk, session: MeasuredSession) => {
   });
 };
 
+const anonymous: Applied = { ...notStarted, configured: "anonymous" };
+
+/**
+ * Forgets everyone the SDK knew: a new browser id, nothing in the
+ * browser's storage, in memory, no recording, no tracing header. Nothing
+ * of one person or one consent carries over to the next.
+ */
+const forgotten = (
+  sdk: MeasurementSdk,
+  session: MeasuredSession,
+  applied: Applied
+): Applied => {
+  if (applied.recording) {
+    sdk.stopSessionRecording();
+  }
+
+  sdk.reset(true);
+  sdk.set_config(anonymousConfig);
+  sdk.clearStorage();
+  registerCommon(sdk, session);
+
+  return anonymous;
+};
+
+// The SDK started for the first time, in `mode`.
+const started = (
+  sdk: MeasurementSdk,
+  session: MeasuredSession,
+  mode: "anonymous" | "identified"
+): Applied => {
+  sdk.init(
+    session.token,
+    initOptionsOf({
+      beforeSend: session.beforeSend,
+      hostname: session.hostname,
+      identified: mode === "identified",
+      origin: session.origin,
+    })
+  );
+  registerCommon(sdk, session);
+
+  if (mode === "anonymous") {
+    return anonymous;
+  }
+
+  sdk.identify(session.userId);
+
+  return {
+    ...notStarted,
+    configured: "identified",
+    identifiedAs: session.userId,
+    recording: true,
+  };
+};
+
+// The person allowed it: a new browser id first, so the anonymous one is
+// never merged into theirs, then switched in place, so no draft is lost.
+const allowed = (sdk: MeasurementSdk, session: MeasuredSession): Applied => {
+  sdk.reset(true);
+  sdk.set_config(identifiedConfigOf(session.hostname));
+  registerCommon(sdk, session);
+  sdk.identify(session.userId);
+  sdk.startSessionRecording();
+
+  return {
+    ...notStarted,
+    configured: "identified",
+    identifiedAs: session.userId,
+    recording: true,
+  };
+};
+
 // The configured mode, once the SDK runs in `mode`.
 const configured = (
   sdk: MeasurementSdk,
@@ -56,69 +145,54 @@ const configured = (
   mode: "anonymous" | "identified"
 ): Applied => {
   if (applied.configured === null) {
-    sdk.init(
-      session.token,
-      initOptionsOf({
-        beforeSend: session.beforeSend,
-        hostname: session.hostname,
-        identified: mode === "identified",
-      })
-    );
-    registerCommon(sdk, session);
-
-    if (mode === "identified") {
-      sdk.identify(session.userId);
-    }
-
-    return {
-      configured: mode,
-      recording: mode === "identified",
-      workspaceId: null,
-    };
+    return started(sdk, session, mode);
   }
 
-  // The person just allowed it: switched in place, so no draft is lost.
-  if (applied.configured === "anonymous" && mode === "identified") {
+  // Another person in this tab: nothing of the one before carries over.
+  const current =
+    applied.identifiedAs !== null && applied.identifiedAs !== session.userId
+      ? forgotten(sdk, session, applied)
+      : applied;
+
+  if (mode === "anonymous") {
+    // Withdrawn, or the choice expired.
+    if (current.configured === "identified") {
+      return forgotten(sdk, session, current);
+    }
+
+    // Back from aside, maybe after a sign-out that forgot what every
+    // event carries.
+    if (current.parked) {
+      registerCommon(sdk, session);
+    }
+
+    return { ...current, parked: false };
+  }
+
+  if (current.configured === "anonymous") {
+    return allowed(sdk, session);
+  }
+
+  // Back on a measured page while identified.
+  if (current.parked) {
     sdk.set_config(identifiedConfigOf(session.hostname));
-    sdk.identify(session.userId);
+  }
+
+  if (!current.recording) {
     sdk.startSessionRecording();
-
-    return { configured: mode, recording: true, workspaceId: null };
   }
 
-  // Withdrawn, or the choice expired: what the SDK stored goes.
-  if (applied.configured === "identified" && mode === "anonymous") {
-    if (applied.recording) {
-      sdk.stopSessionRecording();
-    }
-
-    sdk.reset();
-    sdk.set_config(anonymousConfig);
-    // Nothing of the identified session stays in the browser.
-    sdk.clearStorage();
-    // The reset forgot what every event carries.
-    registerCommon(sdk, session);
-
-    return { configured: mode, recording: false, workspaceId: null };
-  }
-
-  // Back on a measured page while identified: the recording again.
-  if (mode === "identified" && !applied.recording) {
-    sdk.startSessionRecording();
-
-    return { ...applied, recording: true };
-  }
-
-  return applied;
+  return { ...current, parked: false, recording: true };
 };
 
-// The workspace an identified page names, or none on a personal page.
+// The workspace an identified page names, or none on a personal page:
+// set once after each identification, then on each change.
 const grouped = (
   sdk: MeasurementSdk,
   applied: Applied,
   workspaceId: string | null
 ): Applied => {
-  if (applied.workspaceId === workspaceId) {
+  if (applied.grouped && applied.workspaceId === workspaceId) {
     return applied;
   }
 
@@ -130,15 +204,15 @@ const grouped = (
     sdk.register({ workspace_id: workspaceId });
   }
 
-  return { ...applied, workspaceId };
+  return { ...applied, grouped: true, workspaceId };
 };
 
 /**
  * Sets the SDK to what the page asks, from what it was last set to, and
  * answers what it is set to now. Off before anything started does
- * nothing (the SDK is not loaded); off after a start stops the recording,
- * and `sanitized` drops every event meanwhile. Asking again for the same
- * calls nothing.
+ * nothing (the SDK is not loaded); off on a page of the app stops the
+ * recording, and `sanitized` drops every event meanwhile. Asking again
+ * for the same calls nothing.
  */
 export const applyState = (
   sdk: MeasurementSdk,
@@ -164,12 +238,37 @@ export const applyState = (
 };
 
 /**
+ * Leaving the signed-in app: no recording, no tracing header, in memory,
+ * nothing left in the browser's storage, until a page of the app asks
+ * again.
+ */
+export const parked = (sdk: MeasurementSdk, applied: Applied): Applied => {
+  if (applied.configured === null || applied.parked) {
+    return applied;
+  }
+
+  if (applied.recording) {
+    sdk.stopSessionRecording();
+  }
+
+  sdk.set_config(anonymousConfig);
+  sdk.clearStorage();
+
+  return { ...applied, parked: true, recording: false };
+};
+
+/**
  * Signing out: nothing the SDK kept of the person stays, in memory or in
  * the browser, and it writes nothing more there.
  */
-export const signedOut = (sdk: MeasurementSdk): void => {
-  sdk.stopSessionRecording();
-  sdk.reset();
+export const signedOut = (sdk: MeasurementSdk, applied: Applied): Applied => {
+  if (applied.recording) {
+    sdk.stopSessionRecording();
+  }
+
+  sdk.reset(true);
   sdk.set_config(anonymousConfig);
   sdk.clearStorage();
+
+  return { ...anonymous, parked: true };
 };

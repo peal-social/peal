@@ -1,18 +1,24 @@
 import { relayPrefix } from "./relay-prefix.ts";
-import { replayMasking } from "./replay-masking.ts";
+import { replayMaskingOf } from "./replay-masking.ts";
 import type { MeasuredEvent } from "./sanitize.ts";
+
+// A log record the SDK would send: never.
+const dropLog = () => null;
 
 /** What the SDK is started with, for one of the two measured modes. */
 export const initOptionsOf = ({
   beforeSend,
   hostname,
   identified,
+  origin,
 }: {
   /** The SDK's `before_send`: `sanitized`, on the page's current state. */
   readonly beforeSend: (event: MeasuredEvent) => MeasuredEvent | null;
   /** Peal's host, whose API requests name the session once identified. */
   readonly hostname: string;
   readonly identified: boolean;
+  /** Peal's origin, whose own addresses a recording keeps as patterns. */
+  readonly origin: string;
 }) => ({
   // Feature flags off, but not the project's configuration, which turns
   // session replay on.
@@ -35,6 +41,9 @@ export const initOptionsOf = ({
   disable_surveys: true,
   disable_web_experiments: true,
   enable_recording_console_log: false,
+  // No log leaves, whatever the project's settings say: they could turn
+  // the console's capture on, which `before_send` never sees.
+  logs: { beforeSend: dropLog, captureConsoleLogs: false },
   mask_all_element_attributes: true,
   mask_all_text: true,
   // Nothing written to the browser until the person allows it.
@@ -45,7 +54,7 @@ export const initOptionsOf = ({
   save_campaign_params: false,
   save_referrer: false,
   secure_cookie: true,
-  session_recording: replayMasking,
+  session_recording: replayMaskingOf(origin),
   tracing_headers: identified ? [hostname] : [],
 });
 

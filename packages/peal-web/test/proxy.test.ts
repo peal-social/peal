@@ -58,7 +58,8 @@ describe("the proxy", () => {
   });
 
   it("leaves the relay's trailing slashes, and the home page", () => {
-    expect(answerTo("/pulse/e/").status).toBe(404);
+    // The relay's route handler answers it, unredirected.
+    expect(answerTo("/pulse/e/").headers.get("x-middleware-next")).toBe("1");
     expect(answerTo("/").status).not.toBe(308);
   });
 });

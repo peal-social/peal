@@ -48,7 +48,6 @@ export const sentEvents: ReadonlySet<string> = new Set([
  */
 export const sentProperties: ReadonlySet<string> = new Set([
   // What PostHog needs to take an event and tie it to a session.
-  "$anon_distinct_id",
   "$config_defaults",
   "$device_id",
   "$geoip_disable",

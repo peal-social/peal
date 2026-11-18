@@ -17,7 +17,8 @@ export type SdkSwitch =
 export interface MeasurementSdk {
   readonly init: (token: string, options: SdkOptions) => void;
   readonly identify: (distinctId: string) => void;
-  readonly reset: () => void;
+  /** Forgets the person; with `newDevice`, the browser's id too. */
+  readonly reset: (newDevice: boolean) => void;
   readonly group: (type: string, key: string) => void;
   readonly resetGroups: () => void;
   readonly register: (properties: Record<string, boolean | string>) => void;
@@ -76,8 +77,8 @@ export const loadSdk = async (): Promise<MeasurementSdk> => {
     register: (properties) => {
       posthog.register(properties);
     },
-    reset: () => {
-      posthog.reset();
+    reset: (newDevice) => {
+      posthog.reset(newDevice);
     },
     resetGroups: () => {
       posthog.resetGroups();

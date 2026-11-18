@@ -143,7 +143,7 @@ describe(sanitized, () => {
     expect(sanitized(snapshot, off)).toBeNull();
   });
 
-  it("names the person once identified, with no property set", () => {
+  it("names the person once identified, with no property set and nothing of the anonymous id", () => {
     const identify: MeasuredEvent = {
       $set: { name: "Synthetic person" },
       event: "$identify",
@@ -158,8 +158,8 @@ describe(sanitized, () => {
 
     expect(sanitized(identify, identified)).toStrictEqual({
       event: "$identify",
+      // Never the anonymous id it came from, which would join the two.
       properties: {
-        $anon_distinct_id: anonymousId,
         distinct_id: userId,
         token: "phc_synthetic",
       },

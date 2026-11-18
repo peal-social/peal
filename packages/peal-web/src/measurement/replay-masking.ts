@@ -1,4 +1,4 @@
-import { addressOf } from "./place.ts";
+import { addressOf, patternOf } from "./place.ts";
 
 // What draws content rather than Peal's layout: media, canvases, frames
 // and file inputs, and any element that shows a picture as a CSS
@@ -31,7 +31,8 @@ const maskedAttributes: ReadonlySet<string> = new Set([
   "value",
 ]);
 
-// Attributes that hold an address, which keeps its path alone.
+// Attributes that hold an address, which keeps its pattern alone when it is
+// Peal's own, and nothing of it otherwise.
 const addressAttributes: ReadonlySet<string> = new Set([
   "action",
   "href",
@@ -40,25 +41,39 @@ const addressAttributes: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * An attribute as a recording keeps it: a text as asterisks of the same
- * length (`data-*` included), an address without its query or fragment,
- * anything else (a class, a role) as it is.
+ * What a recording shows of an address that leads away from Peal (a
+ * profile's link, a link in a post, `mailto:`): nothing of it.
  */
-export const maskAttribute = (name: string, value: string): string => {
-  const lower = name.toLowerCase();
+export const elsewhere = "https://elsewhere.invalid/";
 
-  if (maskedAttributes.has(lower) || lower.startsWith("data-")) {
-    return "*".repeat(value.length);
-  }
+// An address of Peal's own as its pattern, any other as `elsewhere`.
+const ownAddressOf = (value: string, origin: string): string => {
+  const url = URL.parse(value, origin);
 
-  if (addressAttributes.has(lower)) {
-    const [address = ""] = value.split(/[?#]/u);
-
-    return address;
-  }
-
-  return value;
+  return url !== null &&
+    url.origin === origin &&
+    (url.protocol === "https:" || url.protocol === "http:")
+    ? patternOf(url.pathname)
+    : elsewhere;
 };
+
+/**
+ * An attribute as a recording keeps it, on a page of `origin`: a text as
+ * asterisks of the same length (`data-*` included), an address of Peal's
+ * own as its pattern and any other as `elsewhere`, anything else (a
+ * class, a role) as it is.
+ */
+export const maskAttributeFor =
+  (origin: string) =>
+  (name: string, value: string): string => {
+    const lower = name.toLowerCase();
+
+    if (maskedAttributes.has(lower) || lower.startsWith("data-")) {
+      return "*".repeat(value.length);
+    }
+
+    return addressAttributes.has(lower) ? ownAddressOf(value, origin) : value;
+  };
 
 /** A network request as a recording names it. */
 export interface RecordedRequest {
@@ -83,21 +98,22 @@ export const maskRequest = <R extends RecordedRequest>({
 }: R) => ({ ...kept, name: addressOf(kept.name) });
 
 /**
- * The recording's options: every input, text and attribute masked, media
- * blocked, no header, body, font, canvas or cross-origin frame recorded.
- * A recording shows the layout, the clicks and the navigation, never a
- * text or a picture, Peal's own labels included.
+ * The recording's options on a page of `origin`: every input, text and
+ * attribute masked, media blocked, no header, body, font, canvas or
+ * cross-origin frame recorded. A recording shows the layout, the clicks
+ * and the navigation, never a text or a picture, Peal's own labels
+ * included.
  */
-export const replayMasking = {
+export const replayMaskingOf = (origin: string) => ({
   blockSelector: blocked,
   captureCanvas: { recordCanvas: false },
   captureJsonLd: false,
   collectFonts: false,
   maskAllInputs: true,
-  maskAttributeFn: maskAttribute,
+  maskAttributeFn: maskAttributeFor(origin),
   maskCapturedNetworkRequestFn: maskRequest,
   maskTextSelector: "*",
   recordBody: false,
   recordCrossOriginIframes: false,
   recordHeaders: false,
-};
+});

@@ -6,7 +6,7 @@ import { isRefusedPath } from "peal-contract/path-spelling";
 
 import { forwardToApi, servedByApi } from "#api/forward.ts";
 import { routing } from "#i18n/routing.ts";
-import { forwardToPostHog, relayed } from "#measurement/relay.ts";
+import { relayed } from "#measurement/relay.ts";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -24,8 +24,9 @@ const handleI18nRouting = createMiddleware(routing);
 // the staff console to the other (peal-contract/path-spelling). The server
 // refuses such a path under /api itself, in the API's envelope.
 //
-// /pulse/* is the web app's measurement, relayed to PostHog without the
-// visitor's cookies or address (src/measurement/relay.ts). PostHog's paths
+// /pulse/* is the web app's measurement, which its route handler relays to
+// PostHog without the visitor's cookies or address (src/measurement/relay.ts,
+// app/pulse): it passes through, as no language applies to it. PostHog's paths
 // end with a slash, so Next no longer removes trailing slashes
 // (`skipTrailingSlashRedirect`): every other path that ends with one is
 // redirected here to the path without it, as Next did.
@@ -33,7 +34,7 @@ const proxy = (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
   if (relayed(pathname)) {
-    return Effect.runSync(forwardToPostHog(request));
+    return NextResponse.next();
   }
 
   // A Location of this origin's own, as Next writes it, whatever host the

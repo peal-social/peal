@@ -4990,7 +4990,7 @@
   "Measurement": {
     "card": {
       "title": "Help us improve Peal",
-      "text": "Peal counts the pages people open without knowing who they are, and stores nothing in your browser to do it. If you allow it, Peal also links what you do in the app to your account and records your sessions, so we can see where a step fails. Recordings hide every text, field and image, so they show the layout and your clicks but not what you write or read. You can change your mind at any time on your account page.",
+      "text": "Peal counts the pages people open without knowing who they are, and keeps nothing in your browser to do it. If you allow it, Peal also links what you do in the app to your account and records your sessions, so we can see where a step fails. Recordings hide every text, field and image, so they show the layout and your clicks but not what you write or read. You can change your mind at any time on your account page.",
       "allow": "Allow",
       "refuse": "Don’t allow",
       "privacy": "Privacy policy",

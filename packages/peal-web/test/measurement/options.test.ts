@@ -4,15 +4,32 @@ import { describe, expect, it } from "@effect/vitest";
 
 import { initOptionsOf } from "#measurement/options.ts";
 import {
-  maskAttribute,
+  elsewhere,
+  maskAttributeFor,
   maskRequest,
-  replayMasking,
+  replayMaskingOf,
 } from "#measurement/replay-masking.ts";
 
 const beforeSend = () => null;
 
-const optionsOf = (identified: boolean) =>
-  initOptionsOf({ beforeSend, hostname: "app.peal.test", identified });
+const origin = "https://app.peal.test";
+
+const optionsOf = (identified: boolean) => {
+  const {
+    logs,
+    session_recording: recording,
+    ...options
+  } = initOptionsOf({
+    beforeSend,
+    hostname: "app.peal.test",
+    identified,
+    origin,
+  });
+
+  return { logs, options, recording };
+};
+
+const maskAttribute = maskAttributeFor(origin);
 
 // The same in both modes.
 const shared = {
@@ -42,12 +59,11 @@ const shared = {
   save_campaign_params: false,
   save_referrer: false,
   secure_cookie: true,
-  session_recording: replayMasking,
 };
 
 describe(initOptionsOf, () => {
   it("keeps nothing in the browser and records nothing while anonymous", () => {
-    expect(optionsOf(false)).toStrictEqual({
+    expect(optionsOf(false).options).toStrictEqual({
       ...shared,
       disable_session_recording: true,
       persistence: "memory",
@@ -56,7 +72,7 @@ describe(initOptionsOf, () => {
   });
 
   it("keeps a session and records once identified, naming it to Peal alone", () => {
-    expect(optionsOf(true)).toStrictEqual({
+    expect(optionsOf(true).options).toStrictEqual({
       ...shared,
       disable_session_recording: false,
       persistence: "localStorage",
@@ -66,13 +82,26 @@ describe(initOptionsOf, () => {
 
   // Flags off, not the remote configuration replay needs.
   it("leaves the project's configuration on", () => {
-    expect(optionsOf(true)).not.toHaveProperty("advanced_disable_flags");
+    expect(optionsOf(true).options).not.toHaveProperty(
+      "advanced_disable_flags"
+    );
+  });
+});
+
+describe("the SDK's logs", () => {
+  it("never leave, whatever the project's settings say", () => {
+    const { logs } = optionsOf(true);
+
+    expect(logs.captureConsoleLogs).toBeFalsy();
+    expect(logs.beforeSend()).toBeNull();
   });
 });
 
 describe("the recording's masking", () => {
   it("masks every text, input and medium", () => {
-    expect(replayMasking).toMatchObject({
+    const { recording } = optionsOf(true);
+
+    expect(recording).toMatchObject({
       captureCanvas: { recordCanvas: false },
       captureJsonLd: false,
       collectFonts: false,
@@ -91,7 +120,7 @@ describe("the recording's masking", () => {
       "input[type=file]",
       "[data-replay-block]",
     ]) {
-      expect(replayMasking.blockSelector.split(", ")).toContain(blocked);
+      expect(recording.blockSelector.split(", ")).toContain(blocked);
     }
   });
 
@@ -106,12 +135,30 @@ describe("the recording's masking", () => {
     expect(maskAttribute(name, value)).toBe("*".repeat(value.length));
   });
 
-  it("keeps an address's path alone, and other attributes as they are", () => {
-    expect(maskAttribute("href", "/app/x?token=secret#y")).toBe("/app/x");
-    expect(maskAttribute("src", "https://cdn.test/a.png?sig=1")).toBe(
-      "https://cdn.test/a.png"
+  it("keeps Peal's own address as its pattern, and other attributes as they are", () => {
+    expect(
+      maskAttribute(
+        "href",
+        "/fr/app/4d5e6f7a-8b9c-4d0e-9f1a-2b3c4d5e6f70/posts?token=secret#y"
+      )
+    ).toBe("/app/:id/posts");
+    expect(maskAttribute("action", `${origin}/app/account?x=1`)).toBe(
+      "/app/account"
     );
     expect(maskAttribute("class", "flex gap-2")).toBe("flex gap-2");
+    expect(replayMaskingOf(origin).maskAttributeFn("role", "link")).toBe(
+      "link"
+    );
+  });
+
+  it.each([
+    ["href", "https://social.example/@synthetic_handle"],
+    ["href", "mailto:someone@example.test"],
+    ["src", "https://cdn.example/a.png?sig=1"],
+    ["poster", "https://cdn.example/poster.jpg"],
+    ["action", "https://forms.example/submit"],
+  ])("shows nothing of %s %s, which leads away from Peal", (name, value) => {
+    expect(maskAttribute(name, value)).toBe(elsewhere);
   });
 
   it("keeps a request's origin, pattern and timing, never its headers or body", () => {

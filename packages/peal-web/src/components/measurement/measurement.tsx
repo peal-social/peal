@@ -10,7 +10,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -18,6 +17,7 @@ import type { ReactNode } from "react";
 
 import { onReported } from "#errors/browser.ts";
 import { setBrowserAnalyticsConsent } from "#measurement/atoms.ts";
+import { makeController } from "#measurement/controller.ts";
 import {
   errorOfReport,
   exceptionPropertiesOf,
@@ -25,12 +25,9 @@ import {
 import { modeOf } from "#measurement/mode.ts";
 import type { PrivacySignals } from "#measurement/mode.ts";
 import { placeOf } from "#measurement/place.ts";
-import { sanitized } from "#measurement/sanitize.ts";
-import type { SanitizeState } from "#measurement/sanitize.ts";
 import { loadSdk } from "#measurement/sdk.ts";
-import type { MeasurementSdk } from "#measurement/sdk.ts";
-import { applyState, notStarted, signedOut } from "#measurement/session.ts";
-import type { Applied, MeasuredSession, Wanted } from "#measurement/session.ts";
+import { consentNow, tabNewsOf, tabsKey } from "#measurement/tabs.ts";
+import type { Chosen, TabNews } from "#measurement/tabs.ts";
 
 /** What GET /api/me says of the measurement, as the layout hands it over. */
 export interface MeasurementSettings {
@@ -96,34 +93,30 @@ const subscribeToNothing = () => () => {
 const useUntracked = (): boolean =>
   useSyncExternalStore(subscribeToNothing, untrackedNow, () => false);
 
-// What the measurement holds while the layout lives: never in a module.
-interface Runtime {
-  sdk: MeasurementSdk | null;
-  loading: boolean;
-  applied: Applied;
-  wanted: Wanted;
-  state: SanitizeState;
-}
+// The measurement of this page load: one, as the SDK is, so a remount
+// goes on from where the last one left it.
+const controller = makeController(loadSdk);
 
-// What the SDK is set up with for this person, on the page's state.
-const sessionOf = (
-  runtime: Runtime,
-  settings: MeasurementSettings,
-  userId: string
-): MeasuredSession => ({
-  beforeSend: (event) => sanitized(event, runtime.state),
-  environment: settings.environment,
-  hostname: window.location.hostname,
-  token: settings.token,
-  userId,
-});
+// Tells the browser's other tabs: written, then removed at once, so
+// nothing stays. A browser that refuses storage tells nothing, and the
+// other tabs follow when they are shown again.
+const tellTabs = (news: TabNews) => {
+  try {
+    localStorage.setItem(tabsKey, JSON.stringify(news));
+    localStorage.removeItem(tabsKey);
+  } catch {
+    // Nothing more to do.
+  }
+};
 
 /**
  * The web app's measurement around the signed-in app's pages: after
- * hydration, it reads the page's path, decides its mode, loads the SDK the
- * first time a page is measured, and applies each change in place. It
- * hands errors the intake was sent to the SDK while it runs, and gives
- * the consent controls their state.
+ * hydration, it reads the page's path, decides its mode and asks the
+ * page load's controller for it, which loads the SDK the first time a
+ * page is measured and applies each change in place. It hands errors the
+ * intake was sent to the SDK, follows the choices and sign-outs of the
+ * browser's other tabs and the server's answer when the tab is shown
+ * again, and gives the consent controls their state.
  */
 export const Measurement = ({
   children,
@@ -138,101 +131,93 @@ export const Measurement = ({
   const router = useRouter();
   const save = useAtomSet(setBrowserAnalyticsConsent, { mode: "promiseExit" });
   const untracked = useUntracked();
+  const [chosen, setChosen] = useState<Chosen | null>(null);
+  const { environment, token } = settings;
+  const excluded = settings.excludedWorkspaceIds.join(",");
 
-  // The choice made on this page, which holds until the page is left: the
-  // server's answer otherwise.
-  const [chosen, setChosen] = useState<{
-    readonly consent: BrowserAnalyticsChoice;
-    readonly decidedAt: string;
-  } | null>(null);
-
-  const consent = chosen?.consent ?? settings.consent;
-  const decidedAt = chosen?.decidedAt ?? settings.decidedAt;
-
-  const runtime = useRef<Runtime>({
-    applied: notStarted,
-    loading: false,
-    sdk: null,
-    state: { mode: "off", userId },
-    wanted: { mode: "off", workspaceId: null },
-  });
+  const { consent, decidedAt } = consentNow(
+    { consent: settings.consent, decidedAt: settings.decidedAt },
+    chosen
+  );
 
   useEffect(() => {
-    const { current } = runtime;
     const place = placeOf(pathname);
 
     const mode = modeOf({
       place,
       settings: {
         consent,
-        excludedWorkspaceIds: settings.excludedWorkspaceIds,
+        excludedWorkspaceIds: excluded === "" ? [] : excluded.split(","),
       },
       signals: signalsOf(),
     });
 
-    current.state = { mode, userId };
-    current.wanted = { mode, workspaceId: place?.workspaceId ?? null };
+    void controller.ask({
+      session: {
+        environment,
+        hostname: window.location.hostname,
+        origin: window.location.origin,
+        token,
+        userId,
+      },
+      wanted: { mode, workspaceId: place?.workspaceId ?? null },
+    });
+  }, [consent, environment, excluded, pathname, token, userId]);
 
-    const apply = (sdk: MeasurementSdk) => {
-      current.applied = applyState(
-        sdk,
-        sessionOf(current, settings, userId),
-        current.applied,
-        current.wanted
-      );
-    };
-
-    if (current.sdk !== null) {
-      apply(current.sdk);
-
-      return;
-    }
-
-    if (mode === "off" || current.loading) {
-      return;
-    }
-
-    current.loading = true;
-
-    const load = async () => {
-      const sdk = await loadSdk();
-
-      current.sdk = sdk;
-      current.loading = false;
-      // The page's latest state, whatever changed while it loaded.
-      apply(sdk);
-    };
-
-    void load();
-  }, [consent, pathname, settings, userId]);
-
-  // Errors the intake was sent, already redacted, while the SDK runs.
+  // Errors the intake was sent, already redacted, while the SDK runs; and,
+  // on leaving the signed-in app, nothing more measured or recorded.
   useEffect(() => {
-    const { current } = runtime;
-
     const stopListening = onReported((report) => {
-      current.sdk?.captureException(
-        errorOfReport(report),
-        exceptionPropertiesOf(report)
-      );
+      controller
+        .sdk()
+        ?.captureException(
+          errorOfReport(report),
+          exceptionPropertiesOf(report)
+        );
     });
 
     return () => {
       stopListening();
-      // Leaving the signed-in app: nothing more is measured or recorded.
-      current.state = { mode: "off", userId };
-      current.wanted = { mode: "off", workspaceId: null };
+      controller.park();
+    };
+  }, []);
 
-      if (current.sdk !== null) {
-        current.applied = applyState(
-          current.sdk,
-          sessionOf(current, settings, userId),
-          current.applied,
-          current.wanted
-        );
+  // What the browser's other tabs decide, and the server's answer once the
+  // tab is shown again: a choice made elsewhere, or one that expired.
+  useEffect(() => {
+    const heard = (change: StorageEvent) => {
+      if (change.key !== tabsKey) {
+        return;
+      }
+
+      Option.match(tabNewsOf(change.newValue), {
+        onNone: () => {
+          // Nothing of the measurement's.
+        },
+        onSome: (news) => {
+          if (news.kind === "signedOut") {
+            controller.signOut();
+          }
+
+          router.refresh();
+        },
+      });
+    };
+
+    const shown = () => {
+      if (document.visibilityState === "visible") {
+        router.refresh();
       }
     };
-  }, [settings, userId]);
+
+    window.addEventListener("storage", heard);
+    document.addEventListener("visibilitychange", shown);
+
+    return () => {
+      window.removeEventListener("storage", heard);
+      document.removeEventListener("visibilitychange", shown);
+    };
+  }, [router]);
 
   const choose = useCallback(
     async (choice: BrowserAnalyticsChoice) => {
@@ -242,26 +227,24 @@ export const Measurement = ({
         return false;
       }
 
-      setChosen({
+      const made = {
         consent: exit.value.consent,
         decidedAt: DateTime.formatIso(exit.value.decidedAt),
-      });
+      };
+
+      setChosen({ ...made, over: { consent, decidedAt } });
+      tellTabs({ ...made, kind: "chosen" });
       router.refresh();
 
       return true;
     },
-    [router, save]
+    [consent, decidedAt, router, save]
   );
 
   const forget = useCallback(() => {
-    const { current } = runtime;
-
-    current.state = { mode: "off", userId };
-
-    if (current.sdk !== null) {
-      signedOut(current.sdk);
-    }
-  }, [userId]);
+    controller.signOut();
+    tellTabs({ kind: "signedOut" });
+  }, []);
 
   const measured = useMemo(
     () => ({

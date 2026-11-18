@@ -156,27 +156,37 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (the server measures for this person: never for staff acting as them).
   `modeOf` decides each page: `off` (outside `/app`, an excluded
   workspace, Do Not Track or Global Privacy Control), `anonymous` (page
-  views in memory, nothing stored, no person, no workspace, no
-  recording) or `identified` (once the person allowed it: their id, the
-  workspace, local storage, a masked recording, `tracing_headers` naming
-  the session to the API), and `applyState` switches the SDK in place,
-  never with a reload. Only `measurement/sdk.ts` imports `posthog-js`
-  (a test reads `src/`), behind a dynamic import. Every event goes
-  through `sanitized`'s allowlist (ids, enums, numbers, booleans; a key
-  joins it only that way, and a test refuses the server's
-  `refusedKeyWords`). Recordings mask every text, input and attribute
-  and block media; content drawn as a CSS background takes
+  views in memory, nothing kept, no person, no workspace, no recording)
+  or `identified` (once the person allowed it: their id, the workspace,
+  local storage, a masked recording, `tracing_headers` naming the session
+  to the API). The SDK starts once a page load, so one controller
+  (`makeController`, `#measurement/controller.ts`) holds it, what was
+  applied (`applyState`) and the state `before_send` reads, across
+  remounts: leaving the app parks it (memory, no tracing header, no
+  recording, its storage cleared), another person in the tab and every
+  consent change give a new browser id (`reset(true)`), and a load that
+  fails leaves the page unmeasured. Effects depend on primitives, so a
+  `router.refresh()` never restarts a recording. A choice or a sign-out
+  reaches the other tabs through a storage event (`#measurement/tabs.ts`,
+  `peal.measurement-news`, removed as written), and a tab shown again
+  reads the server again. Only `measurement/sdk.ts` imports `posthog-js`
+  (a test reads `src/`), behind a dynamic import; its logs never leave
+  (`logs.beforeSend`). Every event goes through `sanitized`'s allowlist
+  (ids, enums, numbers, booleans; a test refuses the server's
+  `refusedKeyWords`). Recordings mask every text, input and attribute,
+  keep an address of Peal's own as its pattern and any other as
+  `elsewhere`, and block media; content drawn as a CSS background takes
   `data-replay-block`. Errors reach PostHog only through
-  `reportBrowserError` (`onReported`), as the report the intake was
-  sent. The relay (`#measurement/relay.ts`, in `src/proxy.ts`) forwards
-  `/pulse/*` to `PEAL_POSTHOG_HOST` only while `PEAL_POSTHOG_WEB` is on,
-  PostHog's ingestion, flags and configuration paths alone, without
-  cookies, credentials, the visitor's address, the referer or their
-  languages; `skipTrailingSlashRedirect` is on for it, and the proxy
-  redirects every other trailing slash itself. The choice lives on the
-  account (`PUT /api/me/browser-analytics/consent`): `ConsentCard` on the
-  personal home while undecided, `ConsentSetting` on the account page;
-  withdrawing and signing out clear the SDK's storage.
+  `reportBrowserError` (`onReported`). The relay is a route handler
+  (`app/pulse/[...path]`, `#measurement/relay.ts`; `src/proxy.ts` lets
+  `/pulse` through): only while `PEAL_POSTHOG_WEB` is on with the
+  project token in `PEAL_POSTHOG_KEY`, only `/e/` and `/s/` by POST and
+  `/array/<token>/config` by GET, forwarding the request's type alone and
+  answering PostHog's status and type alone; `skipTrailingSlashRedirect`
+  is on for it, and the proxy redirects every other trailing slash
+  itself. The choice lives on the account
+  (`PUT /api/me/browser-analytics/consent`): `ConsentCard` on the
+  personal home while undecided, `ConsentSetting` on the account page.
 - Pages fetch through the client derived from `peal-contract`, with
   `@effect/atom-react`: query atoms come from `PealApi` in `src/api/client.ts`.
   Browsers call `/api`; server code calls `PEAL_API_URL`.

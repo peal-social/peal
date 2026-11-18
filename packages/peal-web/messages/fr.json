@@ -4990,7 +4990,7 @@
   "Measurement": {
     "card": {
       "title": "Aidez-nous à améliorer Peal",
-      "text": "Peal compte les pages ouvertes sans savoir par qui, et n’enregistre rien dans votre navigateur pour cela. Si vous l’autorisez, Peal relie aussi ce que vous faites dans l’application à votre compte et enregistre vos sessions, pour que nous voyions où une étape échoue. Les enregistrements masquent tous les textes, les champs et les images. Ils montrent la mise en page et vos clics, pas ce que vous écrivez ou lisez. Vous pouvez changer d’avis à tout moment sur la page de votre compte.",
+      "text": "Peal compte les pages ouvertes sans savoir par qui, et ne garde rien dans votre navigateur pour cela. Si vous l’autorisez, Peal relie aussi ce que vous faites dans l’application à votre compte et enregistre vos sessions, pour que nous voyions où une étape échoue. Les enregistrements masquent tous les textes, les champs et les images. Ils montrent la mise en page et vos clics, pas ce que vous écrivez ou lisez. Vous pouvez changer d’avis à tout moment sur la page de votre compte.",
       "allow": "Autoriser",
       "refuse": "Refuser",
       "privacy": "Politique de confidentialité",
