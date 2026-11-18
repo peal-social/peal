@@ -73,6 +73,10 @@ const config: NextConfig = {
   outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
   // No X-Powered-By header.
   poweredByHeader: false,
+  // PostHog's paths end with a slash, which the measurement's relay at
+  // /pulse (src/measurement/relay.ts) must keep: src/proxy.ts removes a
+  // trailing slash from every other path itself, as Next would.
+  skipTrailingSlashRedirect: true,
   // peal-contract and peal-ui ship TypeScript sources, which Next compiles
   // with the app.
   transpilePackages: ["peal-contract", "peal-ui"],

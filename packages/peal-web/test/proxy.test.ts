@@ -42,4 +42,23 @@ describe("the proxy", () => {
       expect(answerTo(`${path}?next=%2F..%2Fadmin`).status).not.toBe(400);
     }
   );
+
+  // Next no longer removes them (skipTrailingSlashRedirect), for the
+  // measurement's relay: every other path is redirected as it did.
+  it.each([
+    ["/app/", "/app"],
+    ["/fr/app/account/", "/fr/app/account"],
+    ["/api/health/", "/api/health"],
+    ["/app//?next=%2Fapp", "/app?next=%2Fapp"],
+  ])("redirects %s to %s, without its trailing slash", (path, to) => {
+    const answer = answerTo(path);
+
+    expect(answer.status).toBe(308);
+    expect(answer.headers.get("location")).toBe(to);
+  });
+
+  it("leaves the relay's trailing slashes, and the home page", () => {
+    expect(answerTo("/pulse/e/").status).toBe(404);
+    expect(answerTo("/").status).not.toBe(308);
+  });
 });
