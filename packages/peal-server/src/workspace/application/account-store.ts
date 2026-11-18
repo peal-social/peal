@@ -6,6 +6,7 @@ import type { IdentificationRecord } from "#shared/application/personal-data.ts"
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { Locale } from "#shared/domain/locale.ts";
 import type { MembershipStanding } from "#workspace/domain/account-closure.ts";
+import type { BrowserAnalyticsChoice } from "#workspace/domain/browser-analytics-consent.ts";
 
 /** A workspace, as its settings and exports name it. */
 export interface WorkspaceSummary {
@@ -53,6 +54,12 @@ export interface AccountRecords {
     readonly updatedAt: DateTime.Utc;
   }[];
   readonly user: {
+    /**
+     * Whether they allow the web app to link what they do in it to their
+     * account and to record their sessions, and when they chose.
+     */
+    readonly browserAnalyticsConsent: BrowserAnalyticsChoice | null;
+    readonly browserAnalyticsConsentAt: DateTime.Utc | null;
     readonly createdAt: DateTime.Utc;
     readonly email: string;
     readonly emailVerified: boolean;

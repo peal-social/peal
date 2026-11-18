@@ -4,6 +4,7 @@ import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { LocaleSchema } from "#shared/domain/locale.ts";
 
 import { BanSchema } from "./ban.ts";
+import { BrowserAnalyticsConsentSchema } from "./browser-analytics-consent.ts";
 
 /** A workspace a user belongs to, and the role they hold there. */
 export const WorkspaceMembershipSchema = Schema.Struct({
@@ -20,6 +21,9 @@ export class Account extends Schema.Class<Account>(
   "peal-server/workspace/domain/Account"
 )({
   ban: Schema.Option(BanSchema),
+  // Whether the person allows the web app to link what they do in it to
+  // their account and to record their sessions, and when they chose.
+  browserAnalyticsConsent: Schema.Option(BrowserAnalyticsConsentSchema),
   email: Schema.String,
   emailVerified: Schema.Boolean,
   // Whether the account has a password: one made through a sign-in

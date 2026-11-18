@@ -45,6 +45,30 @@ describe("the PostHog settings", () => {
       assert.strictEqual(settings.environment, "development");
       assert.isTrue(Option.isNone(settings.erasure));
       assert.strictEqual(settings.excluded.size, 0);
+      assert.isFalse(settings.web);
+    })
+  );
+
+  it.effect("measure the web app only when PEAL_POSTHOG_WEB is on", () =>
+    Effect.gen(function* web() {
+      const on = yield* settingsOf({
+        PEAL_POSTHOG_KEY: key,
+        PEAL_POSTHOG_WEB: "on",
+      });
+
+      assert.isTrue(on.web);
+
+      const off = yield* settingsOf({
+        PEAL_POSTHOG_KEY: key,
+        PEAL_POSTHOG_WEB: "off",
+      });
+
+      assert.isFalse(off.web);
+      assert.isTrue(
+        yield* fails({ PEAL_POSTHOG_KEY: key, PEAL_POSTHOG_WEB: "yes" })
+      );
+      // Read only with a key.
+      assert.isTrue(Option.isNone(yield* read({ PEAL_POSTHOG_WEB: "yes" })));
     })
   );
 

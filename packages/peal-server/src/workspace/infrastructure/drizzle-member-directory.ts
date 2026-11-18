@@ -10,6 +10,7 @@ import { DirectoryUnavailable } from "#workspace/application/directory-unavailab
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
 import { Account } from "#workspace/domain/account.ts";
 import type { Ban } from "#workspace/domain/ban.ts";
+import type { BrowserAnalyticsConsent } from "#workspace/domain/browser-analytics-consent.ts";
 import type { Membership } from "#workspace/domain/membership.ts";
 
 import {
@@ -31,6 +32,16 @@ const banOf = (
         ),
       })
     : Option.none();
+
+// A choice is kept with its date, or not at all: one without the other
+// reads as none.
+const consentOf = (
+  choice: BrowserAnalyticsConsent["choice"] | null,
+  decidedAt: Date | null
+): Option.Option<BrowserAnalyticsConsent> =>
+  choice === null || decidedAt === null
+    ? Option.none()
+    : Option.some({ choice, decidedAt: DateTime.makeUnsafe(decidedAt) });
 
 /**
  * Members, bans and two-step verification, read from Better Auth's tables
@@ -164,6 +175,10 @@ export const MemberDirectoryLive = Layer.effect(
       return Option.some(
         new Account({
           ban: banOf(found.banned, found.banExpires),
+          browserAnalyticsConsent: consentOf(
+            found.browserAnalyticsConsent,
+            found.browserAnalyticsConsentAt
+          ),
           email: found.email,
           emailVerified: found.emailVerified,
           hasPassword: hasPassword === true,

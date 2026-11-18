@@ -3,6 +3,7 @@ import { Layer } from "effect";
 import { KeyedPseudonymsLive } from "#shared/infrastructure/keyed-pseudonyms.ts";
 import { AccountHandlers } from "#workspace/api/account.ts";
 import { ApiKeysHandlers } from "#workspace/api/api-keys.ts";
+import { BrowserAnalyticsHandlers } from "#workspace/api/browser-analytics.ts";
 import { CaptchaHandlers } from "#workspace/api/captcha.ts";
 import { ConnectedAppsHandlers } from "#workspace/api/connected-apps.ts";
 import { CredentialHandlers } from "#workspace/api/credential.ts";
@@ -25,6 +26,7 @@ import { Accounts } from "#workspace/application/accounts.ts";
 import { ActorsNow } from "#workspace/application/actors-now.ts";
 import { ApiKeys } from "#workspace/application/api-keys.ts";
 import { Authenticate } from "#workspace/application/authenticate.ts";
+import { BrowserAnalyticsChoice } from "#workspace/application/browser-analytics-choice.ts";
 import { CloseAccount } from "#workspace/application/close-account.ts";
 import { ConnectedApps } from "#workspace/application/connected-apps.ts";
 import { CredentialCheck } from "#workspace/application/credential-check.ts";
@@ -71,6 +73,7 @@ import {
 } from "#workspace/infrastructure/crons.ts";
 import { AccountDirectoryLive } from "#workspace/infrastructure/drizzle-account-directory.ts";
 import { DrizzleAccountStore } from "#workspace/infrastructure/drizzle-account-store.ts";
+import { DrizzleBrowserAnalyticsConsents } from "#workspace/infrastructure/drizzle-browser-analytics-consents.ts";
 import { DrizzleConnectedAppStore } from "#workspace/infrastructure/drizzle-connected-app-store.ts";
 import { DrizzleCredentialNames } from "#workspace/infrastructure/drizzle-credential-names.ts";
 import { DrizzleCustomerWorkspaces } from "#workspace/infrastructure/drizzle-customer-workspaces.ts";
@@ -123,7 +126,8 @@ const AdaptersLive = Layer.mergeAll(
   RandomPartnerKeyTokens,
   PartnerSettingsLive,
   StaffSettingsLive,
-  DrizzleAccountStore
+  DrizzleAccountStore,
+  DrizzleBrowserAnalyticsConsents
 );
 
 const UseCasesLive = Layer.mergeAll(
@@ -134,6 +138,7 @@ const UseCasesLive = Layer.mergeAll(
   ),
   Accounts.layer,
   AccountStanding.layer,
+  BrowserAnalyticsChoice.layer,
   ApiKeys.layer,
   CredentialCheck.layer.pipe(
     Layer.provide(Layer.merge(Accounts.layer, ResolveMember.layer))
@@ -340,6 +345,7 @@ export const WorkspaceApiLive = Layer.mergeAll(
   WorkspacesHandlers,
   AccountHandlers,
   ConnectedAppsHandlers,
+  BrowserAnalyticsHandlers,
   CaptchaHandlers,
   MembersHandlers,
   InvitationsHandlers,

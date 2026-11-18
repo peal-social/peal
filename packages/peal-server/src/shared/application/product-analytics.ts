@@ -214,17 +214,38 @@ const groupsOf = (captured: Captured) => {
   return groups;
 };
 
+// The web app's session a person's event joins: the request's, when the
+// request is that same person's own (never for a service identity).
+const sessionOf = (subject: AnalyticsSubject) =>
+  subject._tag === "user"
+    ? Effect.serviceOption(AnalyticsActor).pipe(
+        Effect.map(
+          Option.flatMap(({ impersonated, sessionId, userId }) =>
+            !impersonated &&
+            Option.exists(userId, (id) => id === subject.userId)
+              ? sessionId
+              : Option.none()
+          )
+        )
+      )
+    : Effect.succeed(Option.none<string>());
+
 // An event's properties, its own and those every event carries.
 const capturedProperties = (
   captured: Captured,
   common: OutgoingProperties,
-  service: boolean
+  service: boolean,
+  session: Option.Option<string>
 ): OutgoingProperties => {
   const properties: OutgoingProperties = {
     ...wireProperties(captured.event),
     ...common,
     actor_kind: service ? "service" : "user",
   };
+
+  if (Option.isSome(session)) {
+    properties["$session_id"] = session.value;
+  }
 
   const groups = groupsOf(captured);
 
@@ -434,16 +455,23 @@ export class ProductAnalytics extends Context.Service<
             ? Option.some(userSubject(userId.value))
             : captured.workspaceId.pipe(Option.map(workspaceSubject));
 
-          return yield* Option.match(subject, {
+          if (Option.isNone(subject)) {
             // An event about nobody: a bug of its caller.
-            onNone: () => refuse(captured.event.name, "distinct_id"),
-            onSome: (about) =>
-              deliver(
-                captured.event.name,
-                about,
-                capturedProperties(captured, common, about._tag === "workspace")
-              ),
-          });
+            return yield* refuse(captured.event.name, "distinct_id");
+          }
+
+          const about = subject.value;
+
+          return yield* deliver(
+            captured.event.name,
+            about,
+            capturedProperties(
+              captured,
+              common,
+              about._tag === "workspace",
+              yield* sessionOf(about)
+            )
+          );
         });
 
       const identify = (userId: UserId, properties: PersonProperties) =>

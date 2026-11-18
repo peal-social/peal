@@ -172,6 +172,11 @@ export const DrizzleAccountStore = Layer.effect(
           updatedAt: utc(row.updatedAt),
         })),
         user: {
+          browserAnalyticsConsent: found.browserAnalyticsConsent ?? null,
+          browserAnalyticsConsentAt:
+            found.browserAnalyticsConsentAt === null
+              ? null
+              : utc(found.browserAnalyticsConsentAt),
           createdAt: utc(found.createdAt),
           email: found.email,
           emailVerified: found.emailVerified,

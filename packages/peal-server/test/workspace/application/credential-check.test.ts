@@ -33,6 +33,7 @@ const staffId = UserIdSchema.make("8b9c0d1e-2f3a-4b4c-9d5e-6f7a8b9c0db4");
 
 const account = new Account({
   ban: Option.none(),
+  browserAnalyticsConsent: Option.none(),
   email: "synthetic@example.test",
   emailVerified: true,
   hasPassword: true,

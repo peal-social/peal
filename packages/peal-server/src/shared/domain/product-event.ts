@@ -206,6 +206,7 @@ export const distinctIdOf = (subject: AnalyticsSubject): string =>
  */
 export const postHogKeys: ReadonlySet<string> = new Set([
   "$geoip_disable",
+  "$session_id",
   "$groups",
   "$set",
   "$set_once",

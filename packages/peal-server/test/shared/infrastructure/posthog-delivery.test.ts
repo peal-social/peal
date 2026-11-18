@@ -54,6 +54,7 @@ const settings = (
   excluded: new Set(),
   host: "https://eu.i.posthog.com",
   key: Redacted.make(key),
+  web: false,
   ...overrides,
 });
 
@@ -456,54 +457,80 @@ describe("the PostHog erasure", () => {
     })
   );
 
-  it.effect("deletes persons and their events, a thousand at a time", () =>
-    Effect.gen(function* deletes() {
-      const before = yield* erasuresOf("requested");
+  it.effect(
+    "deletes persons, their events and their recordings, a thousand at a time",
+    () =>
+      Effect.gen(function* deletes() {
+        const before = yield* erasuresOf("requested");
 
-      const { close, delivery, sent } = yield* harness(
-        () =>
-          Effect.succeed(
-            Response.json(
-              {
-                deletion_errors: [],
-                persons_found: 1,
-                persons_queued_for_deletion: 1,
-              },
-              { status: 202 }
-            )
-          ),
-        withErasure
-      );
+        const { close, delivery, sent } = yield* harness(
+          () =>
+            Effect.succeed(
+              Response.json(
+                {
+                  deletion_errors: [],
+                  persons_found: 1,
+                  persons_queued_for_deletion: 1,
+                  recordings_queued_for_deletion: true,
+                },
+                { status: 202 }
+              )
+            ),
+          withErasure
+        );
 
-      const ids = Array.from({ length: 1001 }, (_, index) => `user-${index}`);
+        const ids = Array.from({ length: 1001 }, (_, index) => `user-${index}`);
 
-      assert.strictEqual(yield* delivery.forget(ids), "deleted");
-      assert.strictEqual(sent.length, 2);
-      assert.strictEqual(
-        sent[0]?.path,
-        "/api/projects/12345/persons/bulk_delete/"
-      );
-      assert.strictEqual(
-        sent[0]?.headers["authorization"],
-        `Bearer ${personalKey}`
-      );
+        assert.strictEqual(yield* delivery.forget(ids), "deleted");
+        assert.strictEqual(sent.length, 2);
+        assert.strictEqual(
+          sent[0]?.path,
+          "/api/projects/12345/persons/bulk_delete/"
+        );
+        assert.strictEqual(
+          sent[0]?.headers["authorization"],
+          `Bearer ${personalKey}`
+        );
 
-      const body = Schema.decodeUnknownSync(
-        Schema.fromJsonString(
-          Schema.Struct({
-            delete_events: Schema.Boolean,
-            distinct_ids: Schema.Array(Schema.String),
-          })
-        )
-      );
+        const body = Schema.decodeUnknownSync(
+          Schema.fromJsonString(
+            Schema.Struct({
+              delete_events: Schema.Boolean,
+              delete_recordings: Schema.Boolean,
+              distinct_ids: Schema.Array(Schema.String),
+            })
+          )
+        );
 
-      assert.strictEqual(body(sent[0]?.body).distinct_ids.length, 1000);
-      assert.isTrue(body(sent[0]?.body).delete_events);
-      assert.deepStrictEqual(body(sent[1]?.body).distinct_ids, ["user-1000"]);
-      assert.strictEqual((yield* erasuresOf("requested")) - before, 1);
+        assert.strictEqual(body(sent[0]?.body).distinct_ids.length, 1000);
+        assert.isTrue(body(sent[0]?.body).delete_events);
+        assert.isTrue(body(sent[0]?.body).delete_recordings);
+        assert.deepStrictEqual(body(sent[1]?.body).distinct_ids, ["user-1000"]);
+        assert.strictEqual((yield* erasuresOf("requested")) - before, 1);
 
-      yield* close;
-    })
+        yield* close;
+      })
+  );
+
+  it.effect(
+    "fails a deletion that does not say its recordings are queued, once",
+    () =>
+      Effect.gen(function* recordingsLeft() {
+        const { close, delivery, sent } = yield* harness(
+          () =>
+            Effect.succeed(
+              Response.json({ deletion_errors: [] }, { status: 202 })
+            ),
+          withErasure
+        );
+
+        const failed = yield* delivery.forget(["user-1"]).pipe(Effect.flip);
+
+        assert.strictEqual(failed._tag, "AnalyticsErasureFailed");
+        assert.strictEqual(sent.length, 1);
+
+        yield* close;
+      })
   );
 
   it.effect("fails a deletion PostHog reports errors for, once", () =>
@@ -512,7 +539,10 @@ describe("the PostHog erasure", () => {
         () =>
           Effect.succeed(
             Response.json(
-              { deletion_errors: [{ distinct_id: "user-1" }] },
+              {
+                deletion_errors: [{ distinct_id: "user-1" }],
+                recordings_queued_for_deletion: true,
+              },
               { status: 202 }
             )
           ),

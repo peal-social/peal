@@ -81,9 +81,11 @@ const decodeLabel = Schema.decodeUnknownOption(AnalyticsTokenSchema);
 
 const decodeRefusal = Schema.decodeUnknownOption(RefusalSchema);
 
-// What the bulk deletion answers with a 202.
+// What the bulk deletion answers with a 202: a deletion counts as done
+// only once it says the persons' recordings are queued too.
 const DeletionSchema = Schema.Struct({
   deletion_errors: Schema.Array(Schema.Unknown),
+  recordings_queued_for_deletion: Schema.Literal(true),
 });
 
 const decodeDeletion = Schema.decodeUnknownOption(DeletionSchema);
@@ -395,6 +397,7 @@ export const postHogDelivery = (
                 ),
                 HttpClientRequest.bodyJsonUnsafe({
                   delete_events: true,
+                  delete_recordings: true,
                   distinct_ids: distinctIds,
                 })
               )

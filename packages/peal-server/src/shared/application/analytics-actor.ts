@@ -16,5 +16,11 @@ export class AnalyticsActor extends Context.Service<
     readonly userId: Option.Option<UserId>;
     /** Whether staff act as that person: nothing is then sent. */
     readonly impersonated: boolean;
+    /**
+     * The web app's measured session the request comes from, which the
+     * person's events of this request join (`$session_id`): only for a
+     * person in their own session whose browser sent a valid one.
+     */
+    readonly sessionId: Option.Option<string>;
   }
 >()("peal-server/shared/application/AnalyticsActor") {}

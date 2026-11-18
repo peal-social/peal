@@ -52,6 +52,7 @@ const DirectoryTest = Layer.succeed(
             (workspaces) =>
               new Account({
                 ban: Option.none(),
+                browserAnalyticsConsent: Option.none(),
                 email: `digest+${userId}@example.test`,
                 emailVerified: true,
                 hasPassword: true,

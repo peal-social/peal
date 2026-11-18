@@ -47,7 +47,7 @@ export const fakePostHog = fakeHttpServer((request) => {
   }
 
   return request.path.endsWith("/persons/bulk_delete/")
-    ? json({ deletion_errors: [] }, 202)
+    ? json({ deletion_errors: [], recordings_queued_for_deletion: true }, 202)
     : { status: 404 };
 });
 

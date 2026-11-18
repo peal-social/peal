@@ -1,43 +1,95 @@
-import { Effect, Option } from "effect";
+import { DateTime, Effect, Option } from "effect";
 import { HttpApiBuilder } from "effect/http-api";
 import { Api, CurrentPrincipal, Unauthenticated } from "peal-contract";
-import type { Me } from "peal-contract";
+import type { BrowserAnalytics, Me } from "peal-contract";
 
 import { forbidden, personRequired } from "#shared/api/forbidden.ts";
+import { BrowserMeasurement } from "#shared/application/browser-measurement.ts";
+import type { BrowserMeasurementSettings } from "#shared/application/browser-measurement.ts";
 import { Accounts } from "#workspace/application/accounts.ts";
 import type { CurrentAccount } from "#workspace/application/accounts.ts";
+import { standingConsent } from "#workspace/domain/browser-analytics-consent.ts";
 
 import { userPrincipalOf } from "./principal.ts";
 
-const toMe = ({ account, principal, workspaces }: CurrentAccount): Me => ({
-  impersonatedBy: Option.getOrNull(principal.impersonatedBy),
-  user: {
-    email: account.email,
-    emailVerified: account.emailVerified,
-    hasPassword: account.hasPassword,
-    id: account.id,
-    image: Option.getOrNull(account.image),
-    locale: account.locale,
-    name: account.name,
-    twoStepEnabled: account.twoStepEnabled,
-  },
-  workspaces: workspaces.map(
-    ({ membership, permissions, twoStepRequired }) => ({
-      id: membership.id,
-      name: membership.name,
-      permissions,
-      role: membership.role,
-      slug: membership.slug,
-      twoStepRequired,
-    })
-  ),
-});
+/**
+ * How the web app measures its use for this person: null where it
+ * measures nothing, in a session staff act in, through an application,
+ * and for an excluded person; otherwise the choice that still stands,
+ * `undecided` once it is too old, and the person's excluded workspaces.
+ */
+export const browserAnalyticsOf = (
+  { account, principal }: CurrentAccount,
+  measurement: Option.Option<BrowserMeasurementSettings>,
+  now: DateTime.Utc
+): BrowserAnalytics | null => {
+  if (
+    Option.isNone(measurement) ||
+    Option.isSome(principal.impersonatedBy) ||
+    Option.isSome(principal.oauth) ||
+    measurement.value.excluded.has(account.id)
+  ) {
+    return null;
+  }
+
+  const { environment, excluded, token } = measurement.value;
+  const consent = standingConsent(account.browserAnalyticsConsent, now);
+
+  return {
+    consent: Option.match(consent, {
+      onNone: () => "undecided" as const,
+      onSome: ({ choice }) => choice,
+    }),
+    decidedAt: consent.pipe(
+      Option.map(({ decidedAt }) => decidedAt),
+      Option.getOrNull
+    ),
+    environment,
+    excludedWorkspaceIds: account.workspaces
+      .map(({ id }) => id)
+      .filter((id) => excluded.has(id)),
+    token,
+  };
+};
+
+const toMe = (
+  current: CurrentAccount,
+  browserAnalytics: BrowserAnalytics | null
+): Me => {
+  const { account, principal, workspaces } = current;
+
+  return {
+    browserAnalytics,
+    impersonatedBy: Option.getOrNull(principal.impersonatedBy),
+    user: {
+      email: account.email,
+      emailVerified: account.emailVerified,
+      hasPassword: account.hasPassword,
+      id: account.id,
+      image: Option.getOrNull(account.image),
+      locale: account.locale,
+      name: account.name,
+      twoStepEnabled: account.twoStepEnabled,
+    },
+    workspaces: workspaces.map(
+      ({ membership, permissions, twoStepRequired }) => ({
+        id: membership.id,
+        name: membership.name,
+        permissions,
+        role: membership.role,
+        slug: membership.slug,
+        twoStepRequired,
+      })
+    ),
+  };
+};
 
 export const SessionHandlers = HttpApiBuilder.group(
   Api,
   "session",
   Effect.fn(function* sessionHandlers(handlers) {
     const accounts = yield* Accounts;
+    const { settings } = yield* BrowserMeasurement;
 
     return handlers.handleAll({
       me: () =>
@@ -49,6 +101,9 @@ export const SessionHandlers = HttpApiBuilder.group(
             return yield* personRequired();
           }
 
+          // The account is read from the database on every request, never
+          // from the session's cached copy, so a choice made a moment ago
+          // shows at once.
           const current = yield* accounts
             .current(userPrincipalOf(principal))
             .pipe(
@@ -59,7 +114,10 @@ export const SessionHandlers = HttpApiBuilder.group(
               })
             );
 
-          return toMe(current);
+          return toMe(
+            current,
+            browserAnalyticsOf(current, settings, yield* DateTime.now)
+          );
         }),
     });
   })

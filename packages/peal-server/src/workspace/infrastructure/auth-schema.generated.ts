@@ -34,6 +34,12 @@ export const user = authSchema.table("user", {
   banExpires: timestamp("ban_expires", { withTimezone: true }),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
   stripeCustomerId: text("stripe_customer_id"),
+  browserAnalyticsConsent: text("browser_analytics_consent", {
+    enum: ["granted", "refused"],
+  }),
+  browserAnalyticsConsentAt: timestamp("browser_analytics_consent_at", {
+    withTimezone: true,
+  }),
   locale: text("locale", { enum: ["en", "fr"] }).default("en"),
 });
 

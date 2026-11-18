@@ -44,6 +44,7 @@ import type { Principal } from "#workspace/domain/principal.ts";
 import { recorded } from "./activity-recording.ts";
 import {
   actingAs,
+  browserSessionOf,
   memberOf,
   principalOf,
   toContractPrincipal,
@@ -59,13 +60,15 @@ const decodeWorkspaceId = Schema.decodeUnknownOption(WorkspaceIdSchema);
 
 const unauthenticated = () => Effect.fail(new Unauthenticated());
 
-// The request acts as the principal: for handlers, and for product analytics.
+// The request acts as the principal: for handlers, and for product
+// analytics, with the web app's session a browser named (a session's
+// request only).
 const as =
-  (principal: Principal) =>
+  (principal: Principal, sessionId: Option.Option<string> = Option.none()) =>
   <A, E, R>(effect: Effect.Effect<A, E, R>) =>
     effect.pipe(
       Effect.provideService(CurrentPrincipal, toContractPrincipal(principal)),
-      actingAs(principal)
+      actingAs(principal, sessionId)
     );
 
 // The ids a request's path names, but its workspace's, which the record
@@ -330,12 +333,14 @@ export const AuthenticationLive = Layer.effect(
             yield* makeChangeMark
           );
 
+          const acting = as(principal, browserSessionOf(request.headers));
+
           if (!changesContent(request, group, endpoint)) {
-            return yield* httpEffect.pipe(as(principal), marked);
+            return yield* httpEffect.pipe(acting, marked);
           }
 
           return yield* httpEffect.pipe(
-            as(principal),
+            acting,
             Effect.flatMap(
               journalled(journal, () =>
                 contentChangeOf(
