@@ -1,0 +1,38 @@
+{
+  "$schema": "https://emdashcms.com/seed.schema.json",
+  "version": "1",
+  "meta": {
+    "name": "Peal blog",
+    "description": "Posts in English and French",
+    "author": "Peal"
+  },
+  "settings": {
+    "title": "Peal blog"
+  },
+  "collections": [
+    {
+      "slug": "posts",
+      "label": "Posts",
+      "labelSingular": "Post",
+      "urlPattern": "/{slug}",
+      "supports": ["drafts", "revisions", "preview", "seo"],
+      "commentsEnabled": false,
+      "fields": [
+        { "slug": "title", "label": "Title", "type": "string", "required": true },
+        { "slug": "excerpt", "label": "Excerpt", "type": "text" },
+        { "slug": "cover", "label": "Cover", "type": "image" },
+        { "slug": "body", "label": "Body", "type": "portableText" }
+      ]
+    }
+  ],
+  "taxonomies": [
+    {
+      "name": "tag",
+      "label": "Tags",
+      "labelSingular": "Tag",
+      "hierarchical": false,
+      "collections": ["posts"]
+    }
+  ],
+  "bylines": [{ "id": "byline-peal", "slug": "peal", "displayName": "Peal" }]
+}

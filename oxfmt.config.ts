@@ -15,6 +15,7 @@ export const generated = [
   "packages/peal-sdk/php/**",
   "packages/peal-sdk/dotnet/**",
   "packages/peal-sdk/rust/**",
+  "packages/peal-blog/emdash-env.d.ts",
   "packages/peal-server/drizzle/**",
   "packages/peal-server/src/*/infrastructure/*.generated.ts",
   ".local/**",

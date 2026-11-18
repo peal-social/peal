@@ -1,0 +1,84 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "peal-blog",
+  "projectType": "application",
+  "targets": {
+    "typegen": {
+      "command": "astro sync",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
+    },
+    "typecheck": {
+      "command": "tsc --noEmit",
+      "options": {
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": ["typegen"]
+    },
+    "test": {
+      "command": "vitest run",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
+    },
+    "build": {
+      "command": "astro build",
+      "options": {
+        "cwd": "{projectRoot}",
+        "env": {
+          "ASTRO_TELEMETRY_DISABLED": "1"
+        }
+      },
+      "inputs": [
+        "...",
+        {
+          "env": "BLOG_BASE"
+        },
+        {
+          "env": "BLOG_SITE_URL"
+        }
+      ],
+      "outputs": ["{projectRoot}/dist", "{projectRoot}/.emdash"]
+    },
+    "setup": {
+      "command": "bun scripts/setup.ts",
+      "options": {
+        "cwd": "{projectRoot}"
+      },
+      "cache": false
+    },
+    "dev": {
+      "command": "astro dev --port 4324",
+      "options": {
+        "cwd": "{projectRoot}",
+        "env": {
+          "ASTRO_DEV_BACKGROUND": "0",
+          "ASTRO_TELEMETRY_DISABLED": "1",
+          "AWS_REQUEST_CHECKSUM_CALCULATION": "WHEN_REQUIRED",
+          "AWS_RESPONSE_CHECKSUM_VALIDATION": "WHEN_REQUIRED",
+          "BLOG_BASE": "/",
+          "PGDATABASE": "peal_blog",
+          "PGHOST": "127.0.0.1",
+          "PGPASSWORD": "peal",
+          "PGPORT": "15432",
+          "PGUSER": "peal",
+          "S3_ACCESS_KEY_ID": "peal",
+          "S3_BUCKET": "peal-blog",
+          "S3_ENDPOINT": "http://127.0.0.1:18333",
+          "S3_REGION": "auto",
+          "S3_SECRET_ACCESS_KEY": "peal-development-secret"
+        }
+      },
+      "dependsOn": ["setup"],
+      "continuous": true
+    },
+    "smoke": {
+      "command": "bun test/smoke/smoke.ts",
+      "options": {
+        "cwd": "{projectRoot}"
+      },
+      "cache": false
+    }
+  }
+}

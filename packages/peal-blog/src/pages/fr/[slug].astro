@@ -1,0 +1,16 @@
+---
+import { pageLocale } from "peal-ui/lib/site/locales";
+
+import PostPage from "../../components/post-page.astro";
+import { findPost, notFoundPath } from "../../posts.ts";
+
+// A missing post rewrites to the 404 here: a component cannot, once the
+// page has started to stream.
+const post = await findPost(Astro.params["slug"], pageLocale(Astro.currentLocale));
+
+if (post === undefined) {
+  return Astro.rewrite(notFoundPath());
+}
+---
+
+<PostPage post={post} />

@@ -1,0 +1,51 @@
+---
+import { createPublicPageContext } from "emdash/page";
+import { Image, PortableText } from "emdash/ui";
+import { pageLocale } from "peal-ui/lib/site/locales";
+
+import { messages } from "../i18n/messages.ts";
+import Base from "../layouts/base.astro";
+import type { FoundPost } from "../posts.ts";
+
+// A post in the page's language: its title and body in the typography of
+// the site's legal pages, its excerpt as a lead and its cover. The admin's
+// preview links lead here by the post's id.
+
+interface Props {
+  readonly post: FoundPost;
+}
+
+const { entry, translations } = Astro.props.post;
+
+const locale = pageLocale(Astro.currentLocale);
+
+const t = messages(locale);
+
+const page = createPublicPageContext({
+  Astro,
+  content: { collection: "posts", id: entry.data.id, slug: entry.data.slug },
+  description: entry.data.excerpt ?? null,
+  kind: "content",
+  pageTitle: `${entry.data.title} · ${t.nav.brand}`,
+  title: entry.data.title,
+});
+---
+
+<Base page={page} translations={translations}>
+  <article
+    class="prose mx-auto max-w-3xl px-6 py-16 prose-neutral prose-table:text-sm"
+  >
+    <h1 {...entry.edit.title}>{entry.data.title}</h1>
+    {
+      entry.data.excerpt !== undefined && (
+        <p class="lead" {...entry.edit.excerpt}>
+          {entry.data.excerpt}
+        </p>
+      )
+    }
+    {entry.data.cover !== undefined && <Image image={entry.data.cover} />}
+    <div {...entry.edit.body}>
+      <PortableText value={entry.data.body ?? []} />
+    </div>
+  </article>
+</Base>
