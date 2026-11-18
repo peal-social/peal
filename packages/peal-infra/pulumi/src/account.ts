@@ -233,11 +233,9 @@ export class PealAccount extends pulumi.ComponentResource {
           {
             action: "set_cache_settings",
             actionParameters: {
+              // The default cache key holds the whole query string: a
+              // custom key is not available on the zone's plan.
               cache: true,
-              cacheKey: {
-                customKey: { queryString: { include: { all: true } } },
-                ignoreQueryStringsOrder: true,
-              },
               edgeTtl: {
                 default: blogImageEdgeTtl,
                 mode: "override_origin",

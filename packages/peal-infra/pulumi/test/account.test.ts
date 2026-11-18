@@ -80,10 +80,6 @@ describe("what the account shares", () => {
         action: "set_cache_settings",
         actionParameters: {
           cache: true,
-          cacheKey: {
-            customKey: { queryString: { include: { all: true } } },
-            ignoreQueryStringsOrder: true,
-          },
           edgeTtl: {
             default: 86_400,
             mode: "override_origin",
