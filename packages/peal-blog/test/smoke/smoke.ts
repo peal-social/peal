@@ -12,6 +12,7 @@
 //
 // It then stops the server and drops the database and the bucket.
 import { once } from "node:events";
+import { request as httpRequest } from "node:http";
 import { createServer } from "node:net";
 import path from "node:path";
 
@@ -101,7 +102,7 @@ try {
     throw new Error("astro build failed");
   }
 
-  server = Bun.spawn(["node", "dist/server/entry.mjs"], {
+  server = Bun.spawn(["node", "server/serve.ts"], {
     cwd: root,
     env: {
       ...serverEnvironment(settings),
@@ -115,6 +116,28 @@ try {
     stderr: "inherit",
     stdout: "ignore",
   });
+
+  // fetch() resolves dot segments before it sends: node:http sends the
+  // target as written.
+  const sent = async (target: string) => {
+    const request = httpRequest({
+      headers: { accept: "text/html" },
+      host: "127.0.0.1",
+      path: target,
+      port,
+    });
+
+    request.end();
+
+    const [response] = Schema.decodeUnknownSync(
+      Schema.Tuple([Schema.Struct({ statusCode: Schema.Number })])
+    )(await once(request, "response"), { onExcessProperty: "ignore" });
+
+    // The status is all it needs: the body is dropped with the socket.
+    request.destroy();
+
+    return { status: response.statusCode };
+  };
 
   const get = async (pathname: string) =>
     await fetch(`${origin}${pathname}`, {
@@ -175,9 +198,16 @@ try {
     "/blog/%5Femdash/api/health",
     "/",
     "/robots.txt",
+    // Spellings a URL parser resolves to /_emdash: sent as written.
+    "/blog/%2e%2e/_emdash/api/setup/status",
+    "/blog/../_emdash/api/health",
+    "/blog/..\\_emdash/api/health",
+    "/blog/..%5c_emdash/api/health",
+    "/blog/%252e%252e/_emdash/admin",
+    "/_emdash/api/media/file/%2e%2e/%2e%2e/setup/status",
   ];
 
-  const answers = await Promise.all(refused.map(get));
+  const answers = await Promise.all(refused.map(sent));
 
   for (const [position, response] of answers.entries()) {
     check(

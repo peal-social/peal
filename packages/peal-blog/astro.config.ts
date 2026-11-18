@@ -67,6 +67,9 @@ const config = defineConfig({
     }),
   ],
   output: "server",
+  // The port the image and dev listen on, which the Node adapter also uses
+  // for a request's origin when its Host names none.
+  server: { port: 4324 },
   vite: { plugins: [tailwindcss()] },
 });
 

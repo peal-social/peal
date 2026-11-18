@@ -76,6 +76,9 @@ COPY --from=dependencies /app/node_modules node_modules
 COPY --from=dependencies /app/packages/peal-blog/node_modules packages/peal-blog/node_modules
 COPY --from=build /app/packages/peal-blog/package.json packages/peal-blog/package.json
 COPY --from=build /app/packages/peal-blog/dist packages/peal-blog/dist
+# The server that checks each request target as sent, then hands it to the
+# build's own handler (packages/peal-blog/server).
+COPY --from=build /app/packages/peal-blog/server packages/peal-blog/server
 
 # Signed-in editors' sessions: the Node adapter writes them under the
 # build's cache folder, which the stack mounts a volume on.
@@ -91,4 +94,4 @@ EXPOSE 4324
 HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --start-interval=1s --retries=3 \
     CMD ["node", "--eval", "fetch(`http://127.0.0.1:${process.env.PORT}/_emdash/api/health`).then((response) => process.exit(response.ok ? 0 : 1), () => process.exit(1));"]
 
-CMD ["node", "packages/peal-blog/dist/server/entry.mjs"]
+CMD ["node", "packages/peal-blog/server/serve.ts"]

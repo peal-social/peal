@@ -30,7 +30,14 @@ the docs' environment variables page.
   page and skips its CSRF check. `src/guard.ts`, registered as a middleware
   ahead of EmDash's (`astro.config.ts`), answers 404 to any path under
   `<base>/_emdash` (any case, any encoding) and to every path outside the
-  base but `/_emdash/…`; the tunnel refuses it too.
+  base but `/_emdash/…`; the tunnel refuses it too. The guard sees Astro's
+  pathname, whose dot segments and backslashes are already resolved, so
+  `/blog/%2e%2e/_emdash/api` would reach it as `/_emdash/api`: the
+  production server is `server/serve.ts` (`node server/serve.ts`, the
+  image's command), which answers 404 to a target sent with a dot segment,
+  `%2e`, a backslash, `%5c` or `%25` (`server/raw-path.ts`) before
+  handing the rest to the Node adapter's handler. Never start the build
+  with `dist/server/entry.mjs` alone.
 - **Every link goes through `src/links.ts`** (`blogLink`, on
   `import.meta.env.BASE_URL`). Build links from `entry.data.slug`, never
   `entry.id`. Page logic lives in typed `.ts` modules (`src/posts.ts`,

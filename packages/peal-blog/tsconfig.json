@@ -10,6 +10,7 @@
     "emdash-env.d.ts",
     "src/**/*.ts",
     "scripts/**/*.ts",
+    "server/**/*.ts",
     "test/**/*.ts",
     "astro.config.ts",
     "vitest.config.ts"

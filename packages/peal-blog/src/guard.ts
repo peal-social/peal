@@ -12,6 +12,11 @@
 //
 // so that it also answers nothing of the site it shares a host name with
 // (/, /robots.txt, /sitemap.xml). Without a base (in development), nothing.
+//
+// The pathname this sees is Astro's: dot segments already resolved and
+// backslashes read as slashes, so /blog/%2e%2e/_emdash arrives here as
+// /_emdash. The server (server/raw-path.ts) refuses those spellings in the
+// target as sent, before Astro reads it.
 
 const edgeSlashes = /^\/+|\/+$/gu;
 
@@ -52,6 +57,7 @@ export const refused = (pathname: string, base: string): boolean => {
     return lower.startsWith(`${prefix}/_emdash`);
   }
 
-  // EmDash's routes, only as EmDash's checks spell them, undecoded.
+  // EmDash's routes, only as EmDash's checks spell them: the pathname as
+  // Astro gives it, before this decodes it.
   return !within(pathname, "/_emdash");
 };
