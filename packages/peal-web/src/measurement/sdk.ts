@@ -30,7 +30,24 @@ export interface MeasurementSdk {
     properties: ExceptionProperties
   ) => void;
   readonly get_session_id: () => string;
+  /**
+   * Removes what the SDK keeps in the browser's storage (its `ph_` keys),
+   * once the person withdrew or signed out.
+   */
+  readonly clearStorage: () => void;
 }
+
+// What the SDK writes to the browser's storage: `ph_<token>_…` keys.
+const isTheSdks = (key: string) =>
+  key.startsWith("ph_") || key.startsWith("__ph");
+
+const clearStorage = () => {
+  for (const storage of [localStorage, sessionStorage]) {
+    for (const key of Object.keys(storage).filter(isTheSdks)) {
+      storage.removeItem(key);
+    }
+  }
+};
 
 /**
  * Loads the SDK, pinned and bundled with the app (session replay and
@@ -45,6 +62,7 @@ export const loadSdk = async (): Promise<MeasurementSdk> => {
     captureException: (error, properties) => {
       posthog.captureException(error, properties);
     },
+    clearStorage,
     get_session_id: () => posthog.get_session_id(),
     group: (type, key) => {
       posthog.group(type, key);

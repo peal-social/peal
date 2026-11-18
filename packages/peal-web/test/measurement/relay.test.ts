@@ -103,19 +103,23 @@ describe("the measurement relay", () => {
   );
 
   it.effect(
-    "forwards neither cookies, credentials nor the visitor's address",
+    "forwards neither cookies, credentials, the visitor's address nor where they came from",
     () =>
       Effect.gen(function* stripped() {
         const response = yield* forward("/pulse/s/?compression=gzip-js", on, {
           headers: {
+            "accept-language": "fr-FR",
             authorization: "Bearer phc_synthetic",
             "cf-connecting-ip": "192.0.2.10",
             "cf-ipcountry": "FR",
             "content-type": "text/plain",
             cookie: "better-auth.session_token=synthetic",
             forwarded: "for=192.0.2.10",
+            referer:
+              "http://localhost:3001/app/4d5e6f7a-8b9c-4d0e-9f1a-2b3c4d5e6f70?token=synthetic",
             "true-client-ip": "192.0.2.10",
             "x-forwarded-for": "192.0.2.10",
+            "x-forwarded-host": "localhost:3001",
             [forwardedHeader]: "1",
             "x-real-ip": "192.0.2.10",
           },
@@ -132,13 +136,16 @@ describe("the measurement relay", () => {
         );
 
         for (const name of [
+          "accept-language",
           "authorization",
           "cf-connecting-ip",
           "cf-ipcountry",
           "cookie",
           "forwarded",
+          "referer",
           "true-client-ip",
           "x-forwarded-for",
+          "x-forwarded-host",
           forwardedHeader,
           "x-real-ip",
         ]) {

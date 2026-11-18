@@ -80,15 +80,21 @@ const methods: ReadonlySet<string> = new Set(["GET", "OPTIONS", "POST"]);
 const paths = ["/e/", "/i/", "/s/", "/flags/", "/array/"];
 
 // What PostHog must never receive: Peal's session cookie, any credential,
-// and the visitor's address, which the privacy policy says it does not get.
+// the visitor's address, which the privacy policy says it does not get,
+// the page they came from (its ids and query) and their languages.
 const strippedHeaders = [
+  "accept-language",
   "authorization",
   "cf-connecting-ip",
   "cf-ipcountry",
   "cookie",
   "forwarded",
+  "referer",
   "true-client-ip",
   "x-forwarded-for",
+  "x-forwarded-host",
+  "x-forwarded-port",
+  "x-forwarded-proto",
   "x-real-ip",
   forwardedHeader,
 ];

@@ -94,6 +94,8 @@ const configured = (
 
     sdk.reset();
     sdk.set_config(anonymousConfig);
+    // Nothing of the identified session stays in the browser.
+    sdk.clearStorage();
     // The reset forgot what every event carries.
     registerCommon(sdk, session);
 
@@ -161,7 +163,13 @@ export const applyState = (
     : now;
 };
 
-/** Signing out: nothing the SDK kept of the person stays. */
+/**
+ * Signing out: nothing the SDK kept of the person stays, in memory or in
+ * the browser, and it writes nothing more there.
+ */
 export const signedOut = (sdk: MeasurementSdk): void => {
+  sdk.stopSessionRecording();
   sdk.reset();
+  sdk.set_config(anonymousConfig);
+  sdk.clearStorage();
 };

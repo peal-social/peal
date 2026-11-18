@@ -33,6 +33,7 @@ const recorded = () => {
 
   const sdk: MeasurementSdk = {
     captureException: record("captureException"),
+    clearStorage: record("clearStorage"),
     get_session_id: () => "019a7b2c-0000-7000-8000-000000000003",
     group: record("group"),
     identify: record("identify"),
@@ -143,6 +144,7 @@ describe(applyState, () => {
           tracing_headers: [],
         },
       ],
+      ["clearStorage"],
       ["register", common],
     ]);
   });
@@ -195,7 +197,12 @@ describe(applyState, () => {
 
     signedOut(sdk);
 
-    expect(calls).toStrictEqual([["reset"]]);
+    expect(names(calls)).toStrictEqual([
+      "stopSessionRecording",
+      "reset",
+      "set_config",
+      "clearStorage",
+    ]);
   });
 });
 
