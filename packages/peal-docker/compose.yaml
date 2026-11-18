@@ -32,7 +32,7 @@ x-healthcheck: &healthcheck
 
 services:
   postgres:
-    image: postgres:18.6-alpine
+    image: postgres:18.7-alpine
     # One run of the server's tests holds up to about 80 connections, and
     # several share this Postgres (a dev server, runs on their own
     # databases): past PostgreSQL's 100, it refuses the next, and the
