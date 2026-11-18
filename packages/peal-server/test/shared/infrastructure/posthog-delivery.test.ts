@@ -589,16 +589,18 @@ describe("a delivery without a key", () => {
             assert.include(written, "workspace:workspace-1");
           })
         ),
-        Effect.provide(AnalyticsDelivery.none),
         Effect.provide(
-          Logger.layer([
-            Logger.make(({ fiber, message }) => {
-              lines.push(
-                JSON.stringify(message),
-                JSON.stringify(fiber.getRef(References.CurrentLogAnnotations))
-              );
-            }),
-          ])
+          Layer.merge(
+            AnalyticsDelivery.none,
+            Logger.layer([
+              Logger.make(({ fiber, message }) => {
+                lines.push(
+                  JSON.stringify(message),
+                  JSON.stringify(fiber.getRef(References.CurrentLogAnnotations))
+                );
+              }),
+            ])
+          )
         )
       );
     }
