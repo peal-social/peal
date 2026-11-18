@@ -133,6 +133,12 @@ peal_settings:
   # allows, a page or a mailto: address. Unset, it tells them to write to
   # whoever runs the server: set it once the address exists.
   # PEAL_CONTACT_URL: https://peal.social/contact/
+  # Product analytics: PEAL_POSTHOG_KEY in the vault turns it on. The
+  # project's id here, which then requires PEAL_POSTHOG_PERSONAL_API_KEY in
+  # the vault, deletes erased persons at PostHog too; without it, each
+  # erasure is logged for deletion by hand. Set neither before the project
+  # exists, PostHog's DPA is signed and the privacy policy names PostHog.
+  # PEAL_POSTHOG_PROJECT_ID: "<id>"
   # Facebook Pages' and Instagram's comments in the inbox: off until Meta's
   # App Review granted the app their permissions, the privacy policy names
   # them (the registry's inbox entry, then the legal pages, through

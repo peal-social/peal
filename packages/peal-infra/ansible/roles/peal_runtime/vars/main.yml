@@ -25,6 +25,7 @@ peal_runtime_host_settings: >-
        'PEAL_GRAFANA_CONTACT_POINTS': './config/production/grafana/alerting/'
                                       ~ ('telegram-slack.yaml' if peal_runtime_slack_alerts | bool else 'telegram.yaml'),
        'PEAL_GRAFANA_ENVIRONMENT': peal_environment,
+       'PEAL_POSTHOG_ENVIRONMENT': peal_environment,
        'PEAL_SERVER_PORT': peal_ports.server,
        'PEAL_WEB_PORT': peal_ports.web,
        'PEAL_SITE_PORT': peal_ports.site,
@@ -76,6 +77,7 @@ peal_runtime_required_credentials: >-
           'WORDPRESS_COM_CLIENT_ID': 'WORDPRESS_COM_CLIENT_SECRET',
           'SLACK_CLIENT_ID': 'SLACK_CLIENT_SECRET',
           'GOOGLE_SIGN_IN_CLIENT_ID': 'GOOGLE_SIGN_IN_CLIENT_SECRET',
+          'PEAL_POSTHOG_PROJECT_ID': ['PEAL_POSTHOG_KEY', 'PEAL_POSTHOG_PERSONAL_API_KEY'],
         } | dict2items
         | selectattr('key', 'in', (peal_settings | default({})).keys() | list)
-        | map(attribute='value') | list) }}
+        | map(attribute='value') | flatten | list) }}

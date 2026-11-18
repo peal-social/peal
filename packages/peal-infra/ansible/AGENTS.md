@@ -73,7 +73,11 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
 - An app's id in `peal_settings` (`SLACK_CLIENT_ID`, `X_CLIENT_ID`…)
   makes its secret a required credential (`peal_runtime_required_credentials`),
   as the server refuses to start with one half of an app alone: a new
-  platform's pair joins that list.
+  platform's pair joins that list. An id may require several:
+  `PEAL_POSTHOG_PROJECT_ID` requires `PEAL_POSTHOG_KEY` and
+  `PEAL_POSTHOG_PERSONAL_API_KEY`, so a server that names its PostHog
+  project captures only where it can also delete erased persons there;
+  `PEAL_POSTHOG_ENVIRONMENT` is `peal_environment`.
 - Containers publish ports on 127.0.0.1 only, and the tunnel reaches them
   there; Docker's own rules would otherwise bypass ufw.
 - A separate server checks uptime (`uptime.yml`, inventory group

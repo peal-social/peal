@@ -96,3 +96,12 @@ peal_credentials:
   # WORDPRESS_COM_CLIENT_SECRET: REPLACE
   # SLACK_CLIENT_SECRET: REPLACE
   # GOOGLE_SIGN_IN_CLIENT_SECRET: REPLACE
+  # Product analytics, production only for now: the PostHog project's token,
+  # and the personal key (scope person:write) that deletes erased persons
+  # there, required once PEAL_POSTHOG_PROJECT_ID is in peal_settings. The
+  # excluded users are user ids, separated by commas, of people who
+  # objected: they name people, and the inventory is public, so they live
+  # here. The sandbox takes a second project's values the day it has one.
+  # PEAL_POSTHOG_KEY: REPLACE
+  # PEAL_POSTHOG_PERSONAL_API_KEY: REPLACE
+  # PEAL_POSTHOG_EXCLUDED_USERS: ""
