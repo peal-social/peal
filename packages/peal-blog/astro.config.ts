@@ -66,6 +66,9 @@ const config = defineConfig({
       updateCheck: false,
     }),
   ],
+  // Sharp, recording each transform a page asks for: the image endpoint
+  // serves those alone (src/image-allow.ts).
+  image: { service: { entrypoint: "./src/image-service.ts" } },
   output: "server",
   // The port the image and dev listen on, which the Node adapter also uses
   // for a request's origin when its Host names none.

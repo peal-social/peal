@@ -62,7 +62,14 @@ the docs' environment variables page.
   bucket of the blog's own (EmDash has no key prefix, and the server's
   media sweeps own the media bucket). It stays private: media is read back
   through `/_emdash/api/media/file/<key>`, and Astro's image endpoint at
-  `/blog/_image` resizes it with sharp. The admin uploads with a presigned
+  `/blog/_image` resizes it with sharp. Cloudflare's edge caches
+  `/blog/_image` by its whole query (the Pulumi project's cache rule), and
+  the endpoint serves only the transforms this server's pages handed out:
+  `src/image-service.ts` wraps Astro's sharp service and records each URL
+  it builds while a page renders (`src/image-allow.ts`), and the guard
+  answers 404 to any other width, height, quality, format or parameter,
+  so varying one neither misses the cache nor makes sharp work. A server
+  that just started knows none until it renders a page. The admin uploads with a presigned
   `PUT` straight to the bucket, which needs the upload CORS rule
   (`scripts/cors.ts`). Set `AWS_REQUEST_CHECKSUM_CALCULATION=WHEN_REQUIRED`
   (the image does): the AWS SDK otherwise signs a CRC32 of an empty body

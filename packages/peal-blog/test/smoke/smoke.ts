@@ -205,6 +205,8 @@ try {
     "/blog/..%5c_emdash/api/health",
     "/blog/%252e%252e/_emdash/admin",
     "/_emdash/api/media/file/%2e%2e/%2e%2e/setup/status",
+    // A transform no page handed out.
+    "/blog/_image?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F01SYNTHETIC.png&w=640",
   ];
 
   const answers = await Promise.all(refused.map(sent));
