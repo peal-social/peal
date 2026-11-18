@@ -2,6 +2,8 @@
 // own origin: off by default, the SDK's events, recordings and its
 // project's configuration alone, and never the visitor's cookies,
 // credentials or address, nor PostHog's cookies back.
+import { once } from "node:events";
+
 import { assert, describe, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Exit, Option } from "effect";
 
@@ -20,6 +22,10 @@ const withEnv =
     );
 
 const on = { PEAL_POSTHOG_KEY: "phc_synthetic", PEAL_POSTHOG_WEB: "on" };
+
+// What Node's Request asks of a body given as a stream, which the DOM's
+// RequestInit does not declare.
+const streamed = { duplex: "half" };
 
 const readRelay = Effect.gen(function* readRelay() {
   return yield* relayConfig;
@@ -206,6 +212,82 @@ describe("the measurement relay", () => {
       ).pipe(withEnv(on));
 
       assert.strictEqual(response.status, 502);
+    })
+  );
+
+  it.effect(
+    "refuses a body over 4 MiB on its declared length, before reading it",
+    () =>
+      Effect.gen(function* declared() {
+        let read = false;
+
+        const body = new ReadableStream<Uint8Array>({
+          pull: (stream) => {
+            read = true;
+            stream.close();
+          },
+        });
+
+        const response = yield* relayToPostHog(
+          new Request("http://localhost:3001/pulse/s/", {
+            body,
+            ...streamed,
+            headers: { "content-length": String(5 * 1024 * 1024) },
+            method: "POST",
+          }),
+          async () => await Promise.resolve(new Response(null))
+        ).pipe(withEnv(on));
+
+        assert.strictEqual(response.status, 413);
+        assert.isFalse(read);
+      })
+  );
+
+  it.effect(
+    "stops reading a body that says nothing of its length past 4 MiB",
+    () =>
+      Effect.gen(function* undeclared() {
+        const chunk = new Uint8Array(1024 * 1024);
+        let pulled = 0;
+
+        const body = new ReadableStream<Uint8Array>({
+          pull: (stream) => {
+            pulled += 1;
+            stream.enqueue(chunk);
+          },
+        });
+
+        const { response, sent } = yield* relay("/pulse/s/", on, {
+          ...streamed,
+          body,
+          method: "POST",
+        });
+
+        assert.strictEqual(response.status, 413);
+        assert.deepStrictEqual(sent, []);
+        assert.isBelow(pulled, 8);
+      })
+  );
+
+  it.effect("answers 504 when PostHog does not answer in time", () =>
+    Effect.gen(function* slow() {
+      const response = yield* relayToPostHog(
+        new Request("http://localhost:3001/pulse/e/", {
+          body: "[]",
+          method: "POST",
+        }),
+        async (_, init) => {
+          // Never answers: only the relay's own timeout ends it.
+          if (init.signal) {
+            await once(init.signal, "abort");
+          }
+
+          throw new Error("aborted");
+        },
+        20
+      ).pipe(withEnv(on));
+
+      assert.strictEqual(response.status, 504);
     })
   );
 

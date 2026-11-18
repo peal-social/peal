@@ -59,7 +59,6 @@ export const sentProperties: ReadonlySet<string> = new Set([
   "$is_identified",
   "$lib",
   "$lib_version",
-  "$pageview_id",
   "$process_person_profile",
   "$recording_status",
   "$session_id",
@@ -68,11 +67,12 @@ export const sentProperties: ReadonlySet<string> = new Set([
   "distinct_id",
   "token",
   // The page, as a pattern: each id written `:id`, no query, no fragment.
+  // Never a page view's id: the SDK keeps it through a reset, so it would
+  // tie a page seen anonymously to the next one seen by the person.
   "$current_url",
   "$host",
   "$pathname",
   "$prev_pageview_duration",
-  "$prev_pageview_id",
   "$prev_pageview_last_scroll",
   "$prev_pageview_last_scroll_percentage",
   "$prev_pageview_max_scroll",

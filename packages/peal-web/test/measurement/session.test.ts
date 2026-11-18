@@ -94,7 +94,9 @@ describe(applyState, () => {
   });
 
   it("starts identified with the person's id alone, and sets its groups even on a personal page", () => {
-    const { calls } = after([], personal("identified"));
+    const { calls, sdk } = recordedSdk(userId);
+
+    applyState(sdk, session, notStarted, personal("identified"));
 
     expect(calls.slice(1)).toStrictEqual([
       ["register", common],
@@ -102,6 +104,31 @@ describe(applyState, () => {
       ["resetGroups"],
       ["unregister", "workspace_id"],
     ]);
+  });
+
+  it("starts identified from a new browser id when the storage held someone else's", () => {
+    for (const stored of [otherId, "019a7b2c-0000-7000-8000-00000000000a"]) {
+      const { calls, sdk } = recordedSdk(stored);
+
+      applyState(sdk, session, notStarted, personal("identified"));
+
+      expect(calls.slice(1, 4)).toStrictEqual([
+        ["reset", true],
+        ["register", common],
+        ["identify", userId],
+      ]);
+    }
+  });
+
+  it("gives each anonymous person in the tab a new browser id", () => {
+    const { calls } = after(
+      [personal("anonymous")],
+      personal("anonymous"),
+      sessionOf(otherId)
+    );
+
+    expect(calls).toContainEqual(["reset", true]);
+    expect(calls).not.toContainEqual(["identify", otherId]);
   });
 
   it("gives the person a new browser id before naming them, once they allow it", () => {

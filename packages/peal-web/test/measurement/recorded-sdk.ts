@@ -6,7 +6,9 @@ import type { MeasurementSdk, SdkOptions } from "#measurement/sdk.ts";
 export type RecordedCall = readonly [string, ...unknown[]];
 
 /** A fake SDK, and the calls it received so far. */
-export const recordedSdk = () => {
+export const recordedSdk = (
+  stored = "019a7b2c-0000-7000-8000-00000000000a"
+) => {
   const calls: RecordedCall[] = [];
   // What each start was given, the `before_send` it keeps among them.
   const started: SdkOptions[] = [];
@@ -20,6 +22,9 @@ export const recordedSdk = () => {
   const sdk: MeasurementSdk = {
     captureException: record("captureException"),
     clearStorage: record("clearStorage"),
+    // What the browser's storage held when the SDK started: an anonymous
+    // id unless a test names another.
+    get_distinct_id: () => stored,
     get_session_id: () => "019a7b2c-0000-7000-8000-000000000003",
     group: record("group"),
     identify: record("identify"),

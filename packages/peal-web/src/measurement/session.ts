@@ -21,8 +21,11 @@ export interface Wanted {
 export interface Applied {
   /** How it was started and last switched, none until it was. */
   readonly configured: "anonymous" | "identified" | null;
-  /** The person it names, none while anonymous. */
-  readonly identifiedAs: string | null;
+  /**
+   * The person it last measured, named or not: another one in the tab
+   * starts from a new browser id.
+   */
+  readonly userId: string | null;
   /**
    * Set aside off the signed-in app: in memory, no recording, no tracing
    * header, nothing in the browser's storage.
@@ -40,9 +43,9 @@ export interface Applied {
 export const notStarted: Applied = {
   configured: null,
   grouped: false,
-  identifiedAs: null,
   parked: false,
   recording: false,
+  userId: null,
   workspaceId: null,
 };
 
@@ -86,7 +89,7 @@ const forgotten = (
   sdk.clearStorage();
   registerCommon(sdk, session);
 
-  return anonymous;
+  return { ...anonymous, userId: session.userId };
 };
 
 // The SDK started for the first time, in `mode`.
@@ -104,10 +107,17 @@ const started = (
       origin: session.origin,
     })
   );
+
+  // What the browser's storage held came from someone else, or from
+  // before they allowed it: a new browser id rather than theirs.
+  if (mode === "identified" && sdk.get_distinct_id() !== session.userId) {
+    sdk.reset(true);
+  }
+
   registerCommon(sdk, session);
 
   if (mode === "anonymous") {
-    return anonymous;
+    return { ...anonymous, userId: session.userId };
   }
 
   sdk.identify(session.userId);
@@ -115,8 +125,8 @@ const started = (
   return {
     ...notStarted,
     configured: "identified",
-    identifiedAs: session.userId,
     recording: true,
+    userId: session.userId,
   };
 };
 
@@ -132,8 +142,8 @@ const allowed = (sdk: MeasurementSdk, session: MeasuredSession): Applied => {
   return {
     ...notStarted,
     configured: "identified",
-    identifiedAs: session.userId,
     recording: true,
+    userId: session.userId,
   };
 };
 
@@ -150,7 +160,7 @@ const configured = (
 
   // Another person in this tab: nothing of the one before carries over.
   const current =
-    applied.identifiedAs !== null && applied.identifiedAs !== session.userId
+    applied.userId !== null && applied.userId !== session.userId
       ? forgotten(sdk, session, applied)
       : applied;
 
@@ -166,7 +176,7 @@ const configured = (
       registerCommon(sdk, session);
     }
 
-    return { ...current, parked: false };
+    return { ...current, parked: false, userId: session.userId };
   }
 
   if (current.configured === "anonymous") {

@@ -31,6 +31,8 @@ export interface MeasurementSdk {
     properties: ExceptionProperties
   ) => void;
   readonly get_session_id: () => string;
+  /** Who the SDK says events are about now. */
+  readonly get_distinct_id: () => string;
   /**
    * Removes what the SDK keeps in the browser's storage (its `ph_` keys),
    * once the person withdrew or signed out.
@@ -64,6 +66,7 @@ export const loadSdk = async (): Promise<MeasurementSdk> => {
       posthog.captureException(error, properties);
     },
     clearStorage,
+    get_distinct_id: () => posthog.get_distinct_id(),
     get_session_id: () => posthog.get_session_id(),
     group: (type, key) => {
       posthog.group(type, key);

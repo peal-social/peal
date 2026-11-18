@@ -93,6 +93,8 @@ export const makeController = (
   };
 
   const signOut = () => {
+    // A load in flight starts nothing for the person who left.
+    latest = null;
     state = { ...state, mode: "off" };
 
     if (sdk !== null) {

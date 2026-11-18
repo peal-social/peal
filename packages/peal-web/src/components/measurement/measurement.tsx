@@ -26,7 +26,12 @@ import { modeOf } from "#measurement/mode.ts";
 import type { PrivacySignals } from "#measurement/mode.ts";
 import { placeOf } from "#measurement/place.ts";
 import { loadSdk } from "#measurement/sdk.ts";
-import { consentNow, tabNewsOf, tabsKey } from "#measurement/tabs.ts";
+import {
+  answerChanged,
+  consentNow,
+  tabNewsOf,
+  tabsKey,
+} from "#measurement/tabs.ts";
 import type { Chosen, TabNews } from "#measurement/tabs.ts";
 
 /** What GET /api/me says of the measurement, as the layout hands it over. */
@@ -204,10 +209,27 @@ export const Measurement = ({
       });
     };
 
-    const shown = () => {
-      if (document.visibilityState === "visible") {
+    // Shown again: GET /api/me alone, and the page refreshed only when
+    // it says something else; never in a browser that is not measured.
+    const reread = async () => {
+      const answer = await fetch("/api/me", { credentials: "same-origin" });
+
+      if (
+        answer.ok &&
+        answerChanged(await answer.text(), { consent, decidedAt })
+      ) {
         router.refresh();
       }
+    };
+
+    const shown = () => {
+      if (document.visibilityState !== "visible" || untracked) {
+        return;
+      }
+
+      reread().catch(() => {
+        // Read again the next time the tab is shown.
+      });
     };
 
     window.addEventListener("storage", heard);
@@ -217,7 +239,7 @@ export const Measurement = ({
       window.removeEventListener("storage", heard);
       document.removeEventListener("visibilitychange", shown);
     };
-  }, [router]);
+  }, [consent, decidedAt, router, untracked]);
 
   const choose = useCallback(
     async (choice: BrowserAnalyticsChoice) => {

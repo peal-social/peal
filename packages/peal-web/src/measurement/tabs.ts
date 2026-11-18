@@ -1,5 +1,4 @@
-import type { Option } from "effect";
-import { Schema } from "effect";
+import { Option, Schema } from "effect";
 
 /**
  * The storage key a tab of Peal writes its news to, and removes at once:
@@ -51,3 +50,32 @@ export const consentNow = (
   chosen.over.decidedAt === server.decidedAt
     ? { consent: chosen.consent, decidedAt: chosen.decidedAt }
     : server;
+
+const AnswerSchema = Schema.Struct({
+  browserAnalytics: Schema.optionalKey(
+    Schema.NullOr(
+      Schema.Struct({
+        consent: Schema.Literals(["granted", "refused", "undecided"]),
+        decidedAt: Schema.NullOr(Schema.String),
+      })
+    )
+  ),
+});
+
+/**
+ * Whether GET /api/me's answer says something else of the measurement
+ * than the page holds: another choice, one that expired, or none measured
+ * any more. An answer it cannot read says nothing changed.
+ */
+export const answerChanged = (answer: string, held: ConsentNow): boolean =>
+  Option.match(
+    Schema.decodeUnknownOption(Schema.fromJsonString(AnswerSchema))(answer),
+    {
+      onNone: () => false,
+      onSome: ({ browserAnalytics }) =>
+        browserAnalytics === undefined ||
+        browserAnalytics === null ||
+        browserAnalytics.consent !== held.consent ||
+        browserAnalytics.decidedAt !== held.decidedAt,
+    }
+  );

@@ -140,6 +140,17 @@ describe(makeController, () => {
     expect(controller.sdk()).toBe(sdk);
   });
 
+  it("starts nothing for a person who signed out while the SDK loaded", async () => {
+    const { calls, controller } = controlled();
+
+    const loading = controller.ask(askedBy(userId, "identified"));
+
+    controller.signOut();
+    await loading;
+
+    expect(calls).toStrictEqual([]);
+  });
+
   it("applies the latest ask once loaded, and none when the app was left meanwhile", async () => {
     const { calls, controller } = controlled();
 

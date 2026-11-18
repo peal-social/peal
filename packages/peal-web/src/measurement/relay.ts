@@ -98,6 +98,74 @@ export type Send = (url: string, init: RequestInit) => Promise<Response>;
 // The most a request may carry: a replay's batch, compressed, is far less.
 const maxBody = 4 * 1024 * 1024;
 
+/** How long PostHog has to answer before the relay gives up (504). */
+export const relayTimeoutMs = 10_000;
+
+// A body past `maxBody`, read no further.
+const tooLarge = Symbol("tooLarge");
+
+// The body, read a chunk at a time, and given up on past `maxBody`.
+const readBounded = async (
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  chunks: readonly Uint8Array[],
+  size: number
+): Promise<readonly Uint8Array[] | typeof tooLarge> => {
+  const { done, value } = await reader.read();
+
+  if (done) {
+    return chunks;
+  }
+
+  if (size + value.byteLength > maxBody) {
+    await reader.cancel();
+
+    return tooLarge;
+  }
+
+  return await readBounded(reader, [...chunks, value], size + value.byteLength);
+};
+
+const boundedBody = async (
+  request: Request
+): Promise<ArrayBuffer | typeof tooLarge> => {
+  const reader = request.body?.getReader();
+
+  if (reader === undefined) {
+    return new ArrayBuffer(0);
+  }
+
+  const chunks = await readBounded(reader, [], 0);
+
+  if (chunks === tooLarge) {
+    return tooLarge;
+  }
+
+  let size = 0;
+
+  for (const chunk of chunks) {
+    size += chunk.byteLength;
+  }
+
+  const body = new ArrayBuffer(size);
+  const view = new Uint8Array(body);
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    view.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return body;
+};
+
+const ContentLengthSchema = Schema.NumberFromString.check(Schema.isInt());
+
+// What a request says it carries, none when it does not say.
+const declaredLength = (request: Request): Option.Option<number> =>
+  Schema.decodeUnknownOption(ContentLengthSchema)(
+    request.headers.get("content-length")
+  );
+
 // The request headers PostHog receives, and no other: never a cookie, a
 // credential, the visitor's address, the page they came from, their
 // languages or their browser's own description.
@@ -123,11 +191,14 @@ const routeOf = (path: string, target: RelayTarget) => {
  * (`/array/<token>/config`, that token alone), with only the request's
  * type, and answers with PostHog's status and type alone (never a
  * cookie). 404 while PEAL_POSTHOG_WEB is off and for any other path, 405
- * for another method, 413 past 4 MiB, 502 when PostHog cannot be reached.
+ * for another method, 413 past 4 MiB (refused on its declared length
+ * before anything is read), 502 when PostHog cannot be reached, 504 when
+ * it does not answer within `timeoutMs`.
  */
 export const relayToPostHog = Effect.fn("relayToPostHog")(function* relay(
   request: Request,
-  send: Send
+  send: Send,
+  timeoutMs: number = relayTimeoutMs
 ) {
   const target = yield* relayConfig;
   const url = new URL(request.url);
@@ -146,12 +217,18 @@ export const relayToPostHog = Effect.fn("relayToPostHog")(function* relay(
     return answer(405);
   }
 
+  // Refused before anything is read when it says it is too large, and
+  // read no further than the limit when it does not say.
+  if (Option.exists(declaredLength(request), (length) => length > maxBody)) {
+    return answer(413);
+  }
+
   const body =
     request.method === "POST"
-      ? yield* Effect.promise(async () => await request.arrayBuffer())
+      ? yield* Effect.promise(async () => await boundedBody(request))
       : null;
 
-  if (body !== null && body.byteLength > maxBody) {
+  if (body === tooLarge) {
     return answer(413);
   }
 
@@ -167,12 +244,15 @@ export const relayToPostHog = Effect.fn("relayToPostHog")(function* relay(
 
   const relayedUrl = `${route.value.host}${url.pathname.slice(relayPrefix.length)}${url.search}`;
 
+  const signal = AbortSignal.timeout(timeoutMs);
+
   return yield* Effect.tryPromise(async () => {
     const reply = await send(relayedUrl, {
       body,
       headers,
       method: request.method,
       redirect: "manual",
+      signal,
     });
 
     const type = reply.headers.get("content-type");
@@ -181,5 +261,8 @@ export const relayToPostHog = Effect.fn("relayToPostHog")(function* relay(
       headers: type === null ? {} : { "content-type": type },
       status: reply.status,
     });
-  }).pipe(Effect.orElseSucceed(() => answer(502)));
+  }).pipe(
+    // Too slow is 504, unreachable 502.
+    Effect.orElseSucceed(() => answer(signal.aborted ? 504 : 502))
+  );
 });
