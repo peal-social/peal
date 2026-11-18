@@ -165,8 +165,34 @@ const asPerson = async (browser: {
   await browser.addInitScript(personLike);
 };
 
+// The ids an event carries that could tie it to another: none may pass
+// from one consent to the next.
+const idsOf = (event: Received): readonly string[] =>
+  [
+    event.distinctId,
+    textOf(event.properties["$device_id"]),
+    textOf(event.properties["$session_id"]),
+    textOf(event.properties["$pageview_id"]),
+  ].filter((id) => id !== "");
+
+// The headers the relay lets reach PostHog, whatever the browser sent:
+// the request's type, and what the relay's own fetch adds.
+const relayedHeaders = new Set([
+  "accept",
+  "accept-encoding",
+  "accept-language",
+  "connection",
+  "content-length",
+  "content-type",
+  "host",
+  "sec-fetch-mode",
+  "user-agent",
+]);
+
 let memberId = "";
 let workspaceId = "";
+let allowedAt = 0;
+let withdrawnAt = 0;
 
 describe("the web app's measurement", { serial: true }, () => {
   test("signs up, confirms and creates a workspace", async ({
@@ -245,10 +271,14 @@ describe("the web app's measurement", { serial: true }, () => {
     const fromTheBrowser = received().filter(fromBrowser);
 
     expect(fromTheBrowser.map(({ event }) => event)).not.toContain("$snapshot");
-    // The relay forwards no cookie.
-    expect(
-      fromTheBrowser.filter(({ headers }) => headers.includes("cookie"))
-    ).toEqual([]);
+
+    // The relay forwards no cookie, and no header of the browser's but
+    // the request's type.
+    for (const { headers } of fromTheBrowser) {
+      expect(headers.filter((header) => !relayedHeaders.has(header))).toEqual(
+        []
+      );
+    }
 
     const stored = Schema.decodeUnknownSync(StoredSchema)(
       await browser.evaluate(storedKeys)
@@ -272,7 +302,7 @@ describe("the web app's measurement", { serial: true }, () => {
     await asPerson(browser);
     await app.open("/app");
 
-    const allowedAt = linesSoFar();
+    allowedAt = linesSoFar();
 
     await screen.getByRole("button", "Allow").tap();
     await expect(
@@ -377,10 +407,10 @@ describe("the web app's measurement", { serial: true }, () => {
     // What the recording held until then may still be sent.
     await sleep(5000);
 
-    const withdrawnAt = linesSoFar();
+    withdrawnAt = linesSoFar();
 
-    await app.open(`/app/${workspaceId}/posts`);
-    await app.open(`/app/${workspaceId}/channels`);
+    // In place, without a reload: a link of the app.
+    await screen.getByRole("link", "Agenda").tap();
 
     const views = await eventually(
       () =>
@@ -411,5 +441,56 @@ describe("the web app's measurement", { serial: true }, () => {
     );
 
     expect(stored.filter((key) => key.startsWith("ph_"))).toEqual([]);
+  });
+
+  test("ties no id of one consent to the next", async ({ app, browser }) => {
+    await asPerson(browser);
+    // A full load after withdrawing too.
+    await app.open(`/app/${workspaceId}/posts`);
+
+    await eventually(
+      () =>
+        received().filter(
+          (event) =>
+            event.line >= withdrawnAt &&
+            fromBrowser(event) &&
+            event.event === "$pageview" &&
+            textOf(event.properties["$current_url"]).endsWith("/posts")
+        ),
+      "a page view of a full load after withdrawing"
+    );
+
+    const browserEvents = received().filter(fromBrowser);
+
+    const named = browserEvents.filter(
+      (event) => event.distinctId === memberId
+    );
+
+    const unnamed = (from: number, to: number) =>
+      new Set(
+        browserEvents
+          .filter(
+            (event) =>
+              event.distinctId !== memberId &&
+              event.line >= from &&
+              event.line < to
+          )
+          .flatMap(idsOf)
+      );
+
+    const before = unnamed(0, allowedAt);
+    const after = unnamed(withdrawnAt, Number.POSITIVE_INFINITY);
+
+    expect(named.length).toBeGreaterThan(0);
+    expect(before.size).toBeGreaterThan(0);
+    expect(after.size).toBeGreaterThan(0);
+
+    for (const id of named.flatMap(idsOf)) {
+      expect(before.has(id) || after.has(id)).toBeFalsy();
+    }
+
+    for (const id of before) {
+      expect(after.has(id)).toBeFalsy();
+    }
   });
 });

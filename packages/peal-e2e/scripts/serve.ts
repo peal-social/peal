@@ -55,6 +55,7 @@ const posthog = await startPostHog();
 
 const measured = {
   PEAL_POSTHOG_HOST: posthog.url,
+  PEAL_POSTHOG_KEY: projectToken,
   PEAL_POSTHOG_WEB: "on",
 };
 
@@ -67,7 +68,6 @@ const server = spawn(process.execPath, ["src/main.ts"], {
     ...process.env,
     ...measured,
     PEAL_POSTHOG_ENVIRONMENT: "e2e",
-    PEAL_POSTHOG_KEY: projectToken,
     PORT: String(serverPort),
     STRIPE_API_URL: stripe.url,
     STRIPE_SECRET_KEY: "sk_test_0123456789syntheticendtoend",

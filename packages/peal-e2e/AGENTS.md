@@ -53,7 +53,10 @@
   card. `tests/usage-measurement.e2e.ts` reads the file: anonymous page
   views with nothing stored, then, once allowed, identified events, a
   recording and a server event joined to the browser's session, and
-  anonymous again once withdrawn. The SDK drops a test browser's events
+  anonymous again once withdrawn, in place; no id passes from one
+  consent to the next, and the relay forwards no header of the
+  browser's but the request's type (`relayedHeaders`, the rest the
+  relay's own fetch adds). The SDK drops a test browser's events
   as a bot's, so the journey makes the page read as a person's
   (`asPerson`); it writes the storage keys the SDK kept to
   `.e2e/posthog-storage.json`, which the privacy policy names.
