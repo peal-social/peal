@@ -4323,7 +4323,7 @@
       "linkedinMember": "A LinkedIn member",
       "linkedinPage": "A LinkedIn page",
       "writtenAt": "Written on {at}",
-      "state": "{state, select, new {New} answered {Answered} hidden {Hidden} deleted {Deleted} other {{state}}}",
+      "state": "{state, select, new {Waiting} answered {Answered} hidden {Hidden} deleted {Deleted} other {{state}}}",
       "deleted": "This comment is no longer on the platform",
       "expired": "No longer kept: {platform} lets Peal keep a comment for a limited time.",
       "expiredState": "No longer kept",
@@ -4362,6 +4362,7 @@
       "pending": "{status, select, sending {A reply to this comment is on its way. Wait until it has gone out to write another.} other {A reply to this comment may have gone out. Say what you found on the platform before writing another.}}"
     },
     "action": {
+      "reply": "Reply",
       "markAnswered": "Mark as answered",
       "markWaiting": "Mark as waiting",
       "like": "Like",

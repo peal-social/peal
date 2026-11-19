@@ -196,7 +196,7 @@ describe(CommentView, () => {
         "Ada Example",
         "@ada@social.example",
         "When does it open?",
-        ">New<",
+        ">Waiting<",
         "Written on Nov 10, 2026, 8:30 AM",
         'href="https://social.example/@ada/2"',
         "View the comment on the platform",
@@ -293,7 +293,7 @@ describe(CommentView, () => {
   it.each([
     { english: ">Answered<", french: ">Répondu<", state: "answered" },
     { english: ">Hidden<", french: ">Masqué<", state: "hidden" },
-    { english: ">New<", french: ">Nouveau<", state: "new" },
+    { english: ">Waiting<", french: ">En attente<", state: "new" },
   ] as const)("badges a comment $state", async ({ english, french, state }) => {
     const view = (
       <ul>
@@ -375,7 +375,7 @@ describe(CommentView, () => {
     );
   });
 
-  it("nests the replies, the actions, the box and the answers under it", async () => {
+  it("nests the replies, the actions and the answers under it", async () => {
     const html = await render(
       "en",
       <ul>
@@ -383,7 +383,6 @@ describe(CommentView, () => {
           comment={{ ...comment, liked: true }}
           actions={<button type="button">Mark as answered</button>}
           replies={<ReplyView reply={reply} />}
-          replyBox={<p>box</p>}
         >
           <CommentView comment={{ ...comment, id: "nested", text: "Me too" }} />
         </CommentView>
@@ -395,7 +394,6 @@ describe(CommentView, () => {
         ">Liked<",
         "Mark as answered",
         'aria-label="Replies sent from Peal"',
-        "<p>box</p>",
         'aria-label="Answers to this comment"',
         "Me too",
       ])

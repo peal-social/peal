@@ -185,7 +185,9 @@ export const SplitDetail = ({
         <div className="flex shrink-0 items-center gap-1">{actions}</div>
       )}
     </div>
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 md:px-6">{children}</div>
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 md:px-6">
+      {children}
+    </div>
   </div>
 );
 

@@ -4323,7 +4323,7 @@
       "linkedinMember": "Un membre de LinkedIn",
       "linkedinPage": "Une page LinkedIn",
       "writtenAt": "Écrit le {at}",
-      "state": "{state, select, new {Nouveau} answered {Répondu} hidden {Masqué} deleted {Supprimé} other {{state}}}",
+      "state": "{state, select, new {En attente} answered {Répondu} hidden {Masqué} deleted {Supprimé} other {{state}}}",
       "deleted": "Ce commentaire n’est plus sur la plateforme",
       "expired": "Plus conservé : {platform} ne laisse Peal conserver un commentaire que pour un temps limité.",
       "expiredState": "Plus conservé",
@@ -4362,6 +4362,7 @@
       "pending": "{status, select, sending {Une réponse à ce commentaire est en route. Attendez qu’elle soit partie pour en écrire une autre.} other {Une réponse à ce commentaire est peut-être partie. Dites ce que vous avez trouvé sur la plateforme avant d’en écrire une autre.}}"
     },
     "action": {
+      "reply": "Répondre",
       "markAnswered": "Marquer comme répondu",
       "markWaiting": "Marquer comme en attente",
       "like": "Aimer",
