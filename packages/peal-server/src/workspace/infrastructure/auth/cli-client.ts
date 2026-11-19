@@ -44,26 +44,28 @@ export const CliClientLive = Layer.effectDiscard(
     const db = yield* Drizzle;
     const now = DateTime.toDateUtc(yield* DateTime.now);
 
-    yield* db
-      .insert(oauthClient)
-      .values({
-        applicationType: "native",
-        clientId: cliClientId,
-        createdAt: now,
-        disabled: false,
-        grantTypes: [DEVICE_CODE_GRANT_TYPE, "refresh_token"],
-        name: "Peal CLI",
-        redirectUris: [],
-        responseTypes: [],
-        scopes: cliScopes,
-        tokenEndpointAuthMethod: "none",
-        updatedAt: now,
-      })
-      // A client registered before a scope existed may now ask for it.
-      .onConflictDoUpdate({
-        set: { scopes: cliScopes, updatedAt: now },
-        target: oauthClient.clientId,
-      });
+    yield* (
+      db
+        .insert(oauthClient)
+        .values({
+          applicationType: "native",
+          clientId: cliClientId,
+          createdAt: now,
+          disabled: false,
+          grantTypes: [DEVICE_CODE_GRANT_TYPE, "refresh_token"],
+          name: "Peal CLI",
+          redirectUris: [],
+          responseTypes: [],
+          scopes: cliScopes,
+          tokenEndpointAuthMethod: "none",
+          updatedAt: now,
+        })
+        // A client registered before a scope existed may now ask for it.
+        .onConflictDoUpdate({
+          set: { scopes: cliScopes, updatedAt: now },
+          target: oauthClient.clientId,
+        })
+    );
 
     yield* db
       .insert(oauthClientResource)

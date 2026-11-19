@@ -108,21 +108,25 @@ export const DrizzleAccountStore = Layer.effect(
         .orderBy(asc(account.createdAt))
         .pipe(Effect.mapError(failed));
 
-      const sessions = yield* db
-        .select({
-          createdAt: session.createdAt,
-          expiresAt: session.expiresAt,
-          ipAddress: session.ipAddress,
-          updatedAt: session.updatedAt,
-          userAgent: session.userAgent,
-        })
-        .from(session)
-        // Not those staff opened to act as the user: their address and
-        // browser are the staff member's, and Better Auth lists them to
-        // nobody but staff.
-        .where(and(eq(session.userId, userId), isNull(session.impersonatedBy)))
-        .orderBy(asc(session.createdAt))
-        .pipe(Effect.mapError(failed));
+      const sessions = yield* (
+        db
+          .select({
+            createdAt: session.createdAt,
+            expiresAt: session.expiresAt,
+            ipAddress: session.ipAddress,
+            updatedAt: session.updatedAt,
+            userAgent: session.userAgent,
+          })
+          .from(session)
+          // Not those staff opened to act as the user: their address and
+          // browser are the staff member's, and Better Auth lists them to
+          // nobody but staff.
+          .where(
+            and(eq(session.userId, userId), isNull(session.impersonatedBy))
+          )
+          .orderBy(asc(session.createdAt))
+          .pipe(Effect.mapError(failed))
+      );
 
       const memberships = yield* db
         .select({
@@ -195,21 +199,23 @@ export const DrizzleAccountStore = Layer.effect(
     const standings = Effect.fn("AccountStore.standings")(function* standings(
       userId: UserId
     ) {
-      const own = yield* db
-        .select({
-          role: member.role,
-          workspaceId: member.organizationId,
-          workspaceName: organization.name,
-        })
-        .from(member)
-        .innerJoin(organization, eq(organization.id, member.organizationId))
-        .where(eq(member.userId, userId))
-        .orderBy(asc(organization.name), asc(organization.id))
-        // Joining a workspace checks its row, which this lock holds back,
-        // as it holds back another account's closure reading the same
-        // workspace: two owners closing at once cannot both leave it.
-        .for("update", { of: organization })
-        .pipe(Effect.mapError(failed));
+      const own = yield* (
+        db
+          .select({
+            role: member.role,
+            workspaceId: member.organizationId,
+            workspaceName: organization.name,
+          })
+          .from(member)
+          .innerJoin(organization, eq(organization.id, member.organizationId))
+          .where(eq(member.userId, userId))
+          .orderBy(asc(organization.name), asc(organization.id))
+          // Joining a workspace checks its row, which this lock holds back,
+          // as it holds back another account's closure reading the same
+          // workspace: two owners closing at once cannot both leave it.
+          .for("update", { of: organization })
+          .pipe(Effect.mapError(failed))
+      );
 
       const everyone =
         own.length === 0
