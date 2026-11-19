@@ -26,7 +26,8 @@ env:
   NX_NO_CLOUD: "true"
   # Nx's cache, in the checkout where actions/cache saves and restores it:
   # Nx otherwise keeps it in a folder of the user's, outside the checkout.
-  # Saved from main's nightly run and restored by every other, up to 1 GB.
+  # Saved from main's nightly run, and for the build and the typecheck after
+  # every merge too (nx-cache.yml), and restored by every other, up to 1 GB.
   NX_CACHE_DIRECTORY: .nx/cache
   NX_MAX_CACHE_SIZE: 1GB
 
@@ -235,10 +236,22 @@ jobs:
           retention-days: 30
 
   # ansible-lint, the playbooks' syntax and the pytest suite, whose release
-  # and uptime tests run images in Docker.
+  # and uptime tests run images in Docker. The suite keeps the runner's four
+  # CPUs busy, so two jobs share it, each class of tests in one of them
+  # (PEAL_PYTEST_SHARD, tests/class_scheduling.py); the first runs the lint
+  # and the syntax check too.
   ansible:
     needs: plan
     if: needs.plan.outputs.ansible == 'true'
+    name: ansible (${{ matrix.shard }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: 1
+            target: test
+          - shard: 2
+            target: pytest
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -248,7 +261,10 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           uv: "true"
-      - run: bun nx run peal-infra-ansible:test
+      - run: bun nx run "peal-infra-ansible:$TARGET"
+        env:
+          PEAL_PYTEST_SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
+          TARGET: ${{ matrix.target }}
 
   # Every commit of the repository, which is public, scanned for secrets with
   # Betterleaks, at medium confidence and above, with the rules and the
@@ -317,10 +333,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   # The SDKs, generated from the contract and committed: a contract change
-  # comes with the SDKs it changes, or the check fails. Each SDK then builds
-  # in its language's image, pinned by digest, as its registry would get it,
-  # and calls a stand-in API as its users would (scripts/test.ts). Two
-  # languages a job, a slower one with a quicker one.
+  # comes with the SDKs it changes, or the check fails. Two languages a job,
+  # a slower one with a quicker one. The `sdk-builds` job builds and tests
+  # the committed SDKs beside it: when this check passes, they are what the
+  # generators write, so neither job waits for the other.
   sdks:
     name: sdks (${{ matrix.languages }})
     needs: plan
@@ -353,6 +369,36 @@ jobs:
       # What `nx run peal-sdk:check` checks after every language's generator.
       - run: bun scripts/check.ts
         working-directory: packages/peal-sdk
+
+  # Each committed SDK builds in its language's image, pinned by digest, as
+  # its registry would get it, and calls a stand-in API as its users would
+  # (scripts/test.ts), while `sdks` checks it is what the generators write.
+  sdk-builds:
+    name: sdk-builds (${{ matrix.languages }})
+    needs: plan
+    if: needs.plan.outputs.sdks == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - languages: rust, python
+            projects: peal-sdk-rust,peal-sdk-python
+          - languages: go, node
+            projects: peal-sdk-go,peal-sdk-node
+          - languages: dotnet, ruby
+            projects: peal-sdk-dotnet,peal-sdk-ruby
+          - languages: java, php
+            projects: peal-sdk-java,peal-sdk-php
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # uv builds the Python SDK.
+      - uses: ./.github/actions/setup
+        with:
+          uv: "true"
       - run: bun nx run-many --target=sdk:build --projects="$PROJECTS"
         env:
           PROJECTS: ${{ matrix.projects }}
@@ -362,10 +408,45 @@ jobs:
 
   # The end-to-end tests: a new member's first steps in Chromium, against the
   # server and the web app's production build, each started by the run on
-  # its own database, Mailpit and SeaweedFS. They need no model.
+  # its own database, Mailpit and SeaweedFS. They need no model. Chromium's
+  # journeys run in three shards, contiguous slices of the suite that keep
+  # a serial journey's tests together (`e2e run --shard`), and WebKit's
+  # measurement journey in a job of its own beside them: one job ran them
+  # one after another in seven minutes, which every pull request waited for.
   e2e:
     needs: plan
     if: needs.plan.outputs.e2e == 'true'
+    name: e2e (${{ matrix.part }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - part: chromium 1/3
+            artifact: chromium-1
+            browser: chromium
+            target: e2e
+            shard: 1/3
+            # One job a browser saves its caches on main, under keys the
+            # others would only collide with.
+            save: true
+          - part: chromium 2/3
+            artifact: chromium-2
+            browser: chromium
+            target: e2e
+            shard: 2/3
+            save: false
+          - part: chromium 3/3
+            artifact: chromium-3
+            browser: chromium
+            target: e2e
+            shard: 3/3
+            save: false
+          - part: webkit
+            artifact: webkit
+            browser: webkit
+            target: e2e-webkit
+            shard: ""
+            save: true
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
@@ -402,10 +483,9 @@ jobs:
         with:
           nx-cache: e2e
       - run: docker compose --file packages/peal-docker/compose.yaml up --detach --wait seaweedfs
-      # Chromium, and WebKit for the measurement's journey, for the
-      # Playwright version @e2e-dev/web pins, kept between runs (saved by
-      # main only, like Nx's cache), with the system libraries they need,
-      # installed each time.
+      # The job's browser, for the Playwright version @e2e-dev/web pins, kept
+      # between runs (saved by main only, like Nx's cache), with the system
+      # libraries it needs, installed each time.
       - id: playwright
         run: >-
           echo "version=$(node --print 'require(require.resolve("playwright-core/package.json",
@@ -415,29 +495,28 @@ jobs:
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-chromium-webkit-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - run: ./node_modules/.bin/e2e-web install chromium webkit --with-deps
+          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - run: ./node_modules/.bin/e2e-web install "$BROWSER" --with-deps
         working-directory: packages/peal-e2e
-      - if: github.ref == 'refs/heads/main'
+        env:
+          BROWSER: ${{ matrix.browser }}
+      - if: github.ref == 'refs/heads/main' && matrix.save
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-chromium-webkit-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - run: bun nx run peal-e2e:e2e
+          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      # Chromium's shard of the suite, or the measurement's journey in WebKit.
+      - run: bun nx run "peal-e2e:$TARGET" ${SHARD:+"--shard=$SHARD"}
         env:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
           MAILPIT_URL: http://localhost:8025
+          SHARD: ${{ matrix.shard }}
           SMTP_URL: smtp://localhost:1025
-      # The measurement's journey in WebKit too, after the Chromium run.
-      - run: bun nx run peal-e2e:e2e-webkit
-        env:
-          DATABASE_URL: postgres://peal:peal@localhost:5432/peal
-          MAILPIT_URL: http://localhost:8025
-          SMTP_URL: smtp://localhost:1025
+          TARGET: ${{ matrix.target }}
       # Only main saves Nx's cache, which every branch restores: a branch's
       # copy would be readable by that branch alone, and push main's out of
       # the repository's 10 GB.
-      - if: github.ref == 'refs/heads/main'
+      - if: github.ref == 'refs/heads/main' && matrix.save && matrix.browser == 'chromium'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -449,7 +528,7 @@ jobs:
       - if: ${{ failure() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: e2e-results
+          name: e2e-results-${{ matrix.artifact }}
           path: packages/peal-e2e/.e2e/
           include-hidden-files: true
           if-no-files-found: ignore
@@ -493,7 +572,21 @@ jobs:
   ci:
     if: ${{ always() }}
     needs:
-      [plan, lint, typecheck, build, test, server, ansible, secrets, workflows, sdks, e2e, blog]
+      [
+        plan,
+        lint,
+        typecheck,
+        build,
+        test,
+        server,
+        ansible,
+        secrets,
+        workflows,
+        sdks,
+        sdk-builds,
+        e2e,
+        blog,
+      ]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
