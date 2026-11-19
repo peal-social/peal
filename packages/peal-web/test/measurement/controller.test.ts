@@ -135,6 +135,35 @@ describe(makeController, () => {
     expect(controller.session()).toBeNull();
   });
 
+  it("names no session once withdrawn, signed out, or on an unmeasured page", async () => {
+    const { controller } = controlled();
+
+    await controller.ask(askedBy(userId, "identified"));
+    await controller.ask(askedBy(userId, "anonymous"));
+
+    expect(controller.session()).toBeNull();
+
+    await controller.ask(askedBy(userId, "identified"));
+    await controller.ask(askedBy(userId, "off"));
+
+    expect(controller.session()).toBeNull();
+
+    await controller.ask(askedBy(userId, "identified"));
+    controller.signOut();
+
+    expect(controller.session()).toBeNull();
+  });
+
+  it("names no session while the SDK is between sessions", async () => {
+    const { calls, sdk } = recordedSdk("", "");
+    const controller = makeController(async () => await Promise.resolve(sdk));
+
+    await controller.ask(askedBy(userId, "identified"));
+
+    expect(calls.length).toBeGreaterThan(0);
+    expect(controller.session()).toBeNull();
+  });
+
   it("stays unmeasured when the SDK cannot load, and tries again later", async () => {
     let attempts = 0;
     const { sdk } = recordedSdk();

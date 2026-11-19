@@ -7,7 +7,8 @@ export type RecordedCall = readonly [string, ...unknown[]];
 
 /** A fake SDK, and the calls it received so far. */
 export const recordedSdk = (
-  stored = "019a7b2c-0000-7000-8000-00000000000a"
+  stored = "019a7b2c-0000-7000-8000-00000000000a",
+  session = "019a7b2c-0000-7000-8000-000000000003"
 ) => {
   const calls: RecordedCall[] = [];
   // What each start was given, the `before_send` it keeps among them.
@@ -25,7 +26,7 @@ export const recordedSdk = (
     // What the browser's storage held when the SDK started: an anonymous
     // id unless a test names another.
     get_distinct_id: () => stored,
-    get_session_id: () => "019a7b2c-0000-7000-8000-000000000003",
+    get_session_id: () => session,
     group: record("group"),
     identify: record("identify"),
     init: (token, options) => {

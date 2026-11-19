@@ -107,13 +107,21 @@ export const makeController = (
     }
   };
 
-  const session = () =>
-    sdk !== null &&
-    state.mode === "identified" &&
-    applied.configured === "identified" &&
-    !applied.parked
-      ? sdk.get_session_id()
-      : null;
+  const session = () => {
+    if (
+      sdk === null ||
+      state.mode !== "identified" ||
+      applied.configured !== "identified" ||
+      applied.parked
+    ) {
+      return null;
+    }
+
+    const id = sdk.get_session_id();
+
+    // An SDK between sessions names none.
+    return id === "" ? null : id;
+  };
 
   return { ask, park, sdk: () => sdk, session, signOut };
 };
