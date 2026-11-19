@@ -284,6 +284,9 @@ self-hoster needs only Postgres and an S3-compatible store:
   card's 60 per billing account, and staff may set a workspace's own;
 - documentation links: `PEAL_DOCS_URL`, unset by default, for the links the
   discovery documents give;
+- product analytics: PostHog, off until `PEAL_POSTHOG_KEY` is set, and
+  the web app's measurement, which asks each person, off until
+  `PEAL_POSTHOG_WEB` is `on` too;
 - telemetry: OTLP export of logs, metrics and traces only when
   `OTEL_EXPORTER_OTLP_ENDPOINT` is set (`src/app/observability.ts` defaults
   each `OTEL_<SIGNAL>_EXPORTER` to `otlp`; set one to `none` to turn that

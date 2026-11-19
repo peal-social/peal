@@ -16,6 +16,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
+import { useMeasurementSignOut } from "#components/measurement/measurement.tsx";
 import { useRouter } from "#i18n/navigation.ts";
 
 interface AccountMenuViewProps {
@@ -31,6 +32,7 @@ export const AccountMenuView = ({ email, name }: AccountMenuViewProps) => {
   const account = useTranslations("AccountSettings");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const forgetMeasurement = useMeasurementSignOut();
 
   // Asks Better Auth for the session as pages open and the tab regains
   // focus. That is what extends the session, and renews the copy cached in
@@ -42,6 +44,8 @@ export const AccountMenuView = ({ email, name }: AccountMenuViewProps) => {
       const result = await authClient.signOut();
 
       if (result.error === null) {
+        // Before leaving, so nothing more is measured as the person.
+        forgetMeasurement();
         router.push("/");
         router.refresh();
       } else {

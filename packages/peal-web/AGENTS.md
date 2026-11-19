@@ -150,6 +150,47 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   where a count is not given or the range before is not all kept, the
   range switch and **Download CSV** (`/api/me/report/export`). Strings in
   `Overview`.
+- Usage measurement (`#measurement/*`, `components/measurement/`, the
+  `Measurement` catalogue): the `app` layout wraps every page under `/app`
+  in `Measurement` only where `GET /api/me` answers `browserAnalytics`
+  (the server measures for this person: never for staff acting as them).
+  `modeOf` decides each page: `off` (outside `/app`, an excluded
+  workspace, Do Not Track or Global Privacy Control), `anonymous` (page
+  views in memory, nothing kept, no person, no workspace, no recording)
+  or `identified` (once the person allowed it: their id, the workspace,
+  local storage, a masked recording, `tracing_headers` naming the session
+  to the API). The SDK starts once a page load, so one controller
+  (`makeController`, `#measurement/controller.ts`) holds it, what was
+  applied (`applyState`) and the state `before_send` reads, across
+  remounts: leaving the app parks it (memory, no tracing header, no
+  recording, its storage cleared), another person in the tab and every
+  consent change give a new browser id (`reset(true)`), and a load that
+  fails leaves the page unmeasured. Effects depend on primitives, so a
+  `router.refresh()` never restarts a recording. A choice or a sign-out
+  reaches the other tabs through a storage event (`#measurement/tabs.ts`,
+  `peal.measurement-news`, removed as written), and a tab shown again
+  reads the server again. `posthog-js` is pinned with its `@posthog/core`,
+  `@posthog/browser-common` and `@posthog/types`, which the root
+  `package.json`'s `overrides` pin to the versions it was released with:
+  move all four together on every bump (Dependabot's `posthog` group
+  holds them). Only `measurement/sdk.ts` imports `posthog-js`
+  (a test reads `src/`), behind a dynamic import; its logs never leave
+  (`logs.beforeSend`). Every event goes through `sanitized`'s allowlist
+  (ids, enums, numbers, booleans; a test refuses the server's
+  `refusedKeyWords`). Recordings mask every text, input and attribute,
+  keep an address of Peal's own as its pattern and any other as
+  `elsewhere`, and block media; content drawn as a CSS background takes
+  `data-replay-block`. Errors reach PostHog only through
+  `reportBrowserError` (`onReported`). The relay is a route handler
+  (`app/pulse/[...path]`, `#measurement/relay.ts`; `src/proxy.ts` lets
+  `/pulse` through): only while `PEAL_POSTHOG_WEB` is on with the
+  project token in `PEAL_POSTHOG_KEY`, only `/e/` and `/s/` by POST and
+  `/array/<token>/config` by GET, forwarding the request's type alone and
+  answering PostHog's status and type alone; `skipTrailingSlashRedirect`
+  is on for it, and the proxy redirects every other trailing slash
+  itself. The choice lives on the account
+  (`PUT /api/me/browser-analytics/consent`): `ConsentCard` on the
+  personal home while undecided, `ConsentSetting` on the account page.
 - Pages fetch through the client derived from `peal-contract`, with
   `@effect/atom-react`: query atoms come from `PealApi` in `src/api/client.ts`.
   Browsers call `/api`; server code calls `PEAL_API_URL`.

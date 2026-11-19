@@ -13,6 +13,16 @@ public class MeTest : BaseMockServerTest
     {
         const string mockResponse = """
             {
+              "browserAnalytics": {
+                "token": "token",
+                "environment": "environment",
+                "consent": "undecided",
+                "decidedAt": "decidedAt",
+                "excludedWorkspaceIds": [
+                  "excludedWorkspaceIds",
+                  "excludedWorkspaceIds"
+                ]
+              },
               "impersonatedBy": "impersonatedBy",
               "user": {
                 "email": "email",
@@ -69,6 +79,15 @@ public class MeTest : BaseMockServerTest
     {
         const string mockResponse = """
             {
+              "browserAnalytics": {
+                "token": "token",
+                "environment": "environment",
+                "consent": "undecided",
+                "decidedAt": "decidedAt",
+                "excludedWorkspaceIds": [
+                  "excludedWorkspaceIds"
+                ]
+              },
               "impersonatedBy": "impersonatedBy",
               "user": {
                 "email": "email",

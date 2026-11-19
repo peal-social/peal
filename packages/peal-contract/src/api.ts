@@ -10,6 +10,7 @@ import { AssistantApi } from "./assistant.ts";
 import { BillingAccountsDeskApi } from "./billing-accounts-desk.ts";
 import { BillingActionsApi } from "./billing-actions.ts";
 import { BillingApi } from "./billing.ts";
+import { BrowserAnalyticsApi } from "./browser-analytics.ts";
 import { CapabilitiesApi } from "./capabilities.ts";
 import { CaptchaApi } from "./captcha.ts";
 import { ChannelDefaultsApi } from "./channel-defaults.ts";
@@ -1695,6 +1696,22 @@ export type {
 
 export { MeSchema, MembershipSchema } from "./session.ts";
 
+export {
+  BrowserAnalyticsApi,
+  BrowserAnalyticsChoiceSchema,
+  BrowserAnalyticsConsentChangeSchema,
+  BrowserAnalyticsConsentSchema,
+  BrowserAnalyticsSchema,
+  browserAnalyticsConsentDays,
+} from "./browser-analytics.ts";
+
+export type {
+  BrowserAnalytics,
+  BrowserAnalyticsChoice,
+  BrowserAnalyticsConsent,
+  BrowserAnalyticsConsentChange,
+} from "./browser-analytics.ts";
+
 export type { Me, Membership } from "./session.ts";
 
 export {
@@ -2534,6 +2551,7 @@ export class Api extends HttpApi.make("peal")
   .add(MediaApi)
   .add(NoticesApi)
   .add(NotificationPreferencesApi)
+  .add(BrowserAnalyticsApi)
   .add(OverviewApi)
   .add(AssistantApi)
   .add(WorkspacesApi)

@@ -26,6 +26,8 @@ import social.peal.core.ObjectMappers;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = Me.Builder.class)
 public final class Me {
+    private final Optional<BrowserAnalytics> browserAnalytics;
+
     private final Optional<String> impersonatedBy;
 
     private final MeUser user;
@@ -35,14 +37,24 @@ public final class Me {
     private final Map<String, Object> additionalProperties;
 
     private Me(
+            Optional<BrowserAnalytics> browserAnalytics,
             Optional<String> impersonatedBy,
             MeUser user,
             List<Membership> workspaces,
             Map<String, Object> additionalProperties) {
+        this.browserAnalytics = browserAnalytics;
         this.impersonatedBy = impersonatedBy;
         this.user = user;
         this.workspaces = workspaces;
         this.additionalProperties = additionalProperties;
+    }
+
+    @JsonIgnore
+    public Optional<BrowserAnalytics> getBrowserAnalytics() {
+        if (browserAnalytics == null) {
+            return Optional.empty();
+        }
+        return browserAnalytics;
     }
 
     @JsonIgnore
@@ -64,6 +76,12 @@ public final class Me {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("browserAnalytics")
+    private Optional<BrowserAnalytics> _getBrowserAnalytics() {
+        return browserAnalytics;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("impersonatedBy")
     private Optional<String> _getImpersonatedBy() {
         return impersonatedBy;
@@ -81,14 +99,15 @@ public final class Me {
     }
 
     private boolean equalTo(Me other) {
-        return impersonatedBy.equals(other.impersonatedBy)
+        return browserAnalytics.equals(other.browserAnalytics)
+                && impersonatedBy.equals(other.impersonatedBy)
                 && user.equals(other.user)
                 && workspaces.equals(other.workspaces);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.impersonatedBy, this.user, this.workspaces);
+        return Objects.hash(this.browserAnalytics, this.impersonatedBy, this.user, this.workspaces);
     }
 
     @java.lang.Override
@@ -113,6 +132,12 @@ public final class Me {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
+        _FinalStage browserAnalytics(Optional<BrowserAnalytics> browserAnalytics);
+
+        _FinalStage browserAnalytics(BrowserAnalytics browserAnalytics);
+
+        _FinalStage browserAnalytics(Nullable<BrowserAnalytics> browserAnalytics);
+
         _FinalStage impersonatedBy(Optional<String> impersonatedBy);
 
         _FinalStage impersonatedBy(String impersonatedBy);
@@ -134,12 +159,15 @@ public final class Me {
 
         private Optional<String> impersonatedBy = Optional.empty();
 
+        private Optional<BrowserAnalytics> browserAnalytics = Optional.empty();
+
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
 
         @java.lang.Override
         public Builder from(Me other) {
+            browserAnalytics(other.getBrowserAnalytics());
             impersonatedBy(other.getImpersonatedBy());
             user(other.getUser());
             workspaces(other.getWorkspaces());
@@ -203,13 +231,39 @@ public final class Me {
         }
 
         @java.lang.Override
+        public _FinalStage browserAnalytics(Nullable<BrowserAnalytics> browserAnalytics) {
+            if (browserAnalytics.isNull()) {
+                this.browserAnalytics = null;
+            } else if (browserAnalytics.isEmpty()) {
+                this.browserAnalytics = Optional.empty();
+            } else {
+                this.browserAnalytics = Optional.of(browserAnalytics.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage browserAnalytics(BrowserAnalytics browserAnalytics) {
+            this.browserAnalytics = Optional.ofNullable(browserAnalytics);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "browserAnalytics", nulls = Nulls.SKIP)
+        public _FinalStage browserAnalytics(Optional<BrowserAnalytics> browserAnalytics) {
+            this.browserAnalytics = browserAnalytics;
+            return this;
+        }
+
+        @java.lang.Override
         public Me build() {
-            return new Me(impersonatedBy, user, workspaces, additionalProperties);
+            return new Me(browserAnalytics, impersonatedBy, user, workspaces, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("impersonatedBy")
+            if (key.equalsIgnoreCase("browserAnalytics")
+                    || key.equalsIgnoreCase("impersonatedBy")
                     || key.equalsIgnoreCase("user")
                     || key.equalsIgnoreCase("workspaces")) {
                 return;

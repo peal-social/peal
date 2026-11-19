@@ -106,6 +106,8 @@ const records: AccountRecords = {
   sessions: [],
   signInMethods: [{ createdAt: at, provider: "credential", updatedAt: at }],
   user: {
+    browserAnalyticsConsent: "granted",
+    browserAnalyticsConsentAt: at,
     createdAt: at,
     email: "ana@example.test",
     emailVerified: true,

@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Effect, Option } from "effect";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -15,8 +15,10 @@ import {
 } from "peal-ui/components/card";
 
 import { currentUser } from "#auth/session.ts";
+import { privacyUrlConfig } from "#billing/terms.ts";
 import { UpgradePrompts } from "#components/billing/upgrade-prompts.tsx";
 import { CreateWorkspaceForm } from "#components/create-workspace-form.tsx";
+import { ConsentCard } from "#components/measurement/consent-controls.tsx";
 import { WorkspaceAttentionView } from "#components/overview/overview-views.tsx";
 import { Link, redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
@@ -67,6 +69,7 @@ const AppPage = async ({ params }: PageProps<"/[locale]/app">) => {
   const review = await getTranslations("Review");
   const inbox = await getTranslations("Inbox");
   const twoStep = await getTranslations("TwoStep");
+  const privacyUrl = await Effect.runPromise(privacyUrlConfig);
 
   return (
     <div className="flex flex-col gap-8">
@@ -76,6 +79,7 @@ const AppPage = async ({ params }: PageProps<"/[locale]/app">) => {
         </h1>
         <p className="text-muted-foreground">{t("description")}</p>
       </div>
+      <ConsentCard privacyUrl={privacyUrl} />
       {workspaces.length === 0 ? (
         <p className="text-muted-foreground">{t("empty")}</p>
       ) : (

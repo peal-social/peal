@@ -254,6 +254,7 @@ services:
       PEAL_POSTHOG_PROJECT_ID:
       PEAL_POSTHOG_APP_HOST:
       PEAL_POSTHOG_EXCLUDED_IDS:
+      PEAL_POSTHOG_WEB:
       GOOGLE_SIGN_IN_CLIENT_ID:
       GOOGLE_SIGN_IN_CLIENT_SECRET:
       PEAL_OIDC_ISSUER:
@@ -321,6 +322,11 @@ services:
       PEAL_PRIVACY_URL:
       # Where to write for more than the largest plan allows.
       PEAL_CONTACT_URL:
+      # The web app's measurement: on with the server's, the project token
+      # its relay at /pulse relays for, and where it sends.
+      PEAL_POSTHOG_WEB:
+      PEAL_POSTHOG_KEY:
+      PEAL_POSTHOG_HOST:
       # Longer than the edge keeps idle connections (90 s for the tunnel, 2
       # minutes for Caddy), so it never reuses one Node has closed.
       KEEP_ALIVE_TIMEOUT: "125000"

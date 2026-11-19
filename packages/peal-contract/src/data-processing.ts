@@ -76,6 +76,9 @@ export type ProcessingText = Readonly<Record<ProcessingLocale, string>>;
  * - `productAnalytics`: each product analytics event, at the provider: the
  *   period of the plan Peal uses (PostHog keeps an event a year on it);
  *   nothing in the server enforces it;
+ * - `sessionRecordings`: each recording of a web app session, at the
+ *   provider: the longest its free plan keeps one; nothing in the server
+ *   enforces it;
  * - `serverLogs`, `traces`, `metrics`, `backups`: the production stack
  *   (`packages/peal-docker`: Loki, Tempo, Prometheus, and pgBackRest's
  *   four weekly full backups, which hold deleted data 5 weeks at most).
@@ -114,6 +117,7 @@ export const retentionPeriods = {
   requirementMemory: { years: 2 },
   reviewVisitorNames: { months: 24 },
   serverLogs: { days: 31 },
+  sessionRecordings: { days: 30 },
   shortLinkClicks: { days: 400 },
   traces: { days: 14 },
   transferOffers: { days: 7 },
@@ -175,8 +179,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
   {
     applies: "always",
     data: {
-      en: "Your name, email address, language, sign-in methods (your password, stored hashed, and, with two-step verification, your authenticator app’s key and your recovery codes, stored encrypted; or your identifier at a sign-in provider, Google or the provider your server’s operator set, never a token of it) and sessions; the workspaces you belong to, your role in each, and the invitations you send or receive",
-      fr: "Vos nom, adresse e-mail, langue, moyens de connexion (votre mot de passe, conservé haché, et, avec la validation en deux étapes, la clé de votre application d’authentification et vos codes de secours, conservés chiffrés ; ou votre identifiant auprès d’un fournisseur de connexion, Google ou celui que l’exploitant de votre serveur a choisi, jamais un de ses jetons) et sessions ; les espaces de travail dont vous êtes membre, votre rôle dans chacun et les invitations envoyées ou reçues",
+      en: "Your name, email address, language, sign-in methods (your password, stored hashed, and, with two-step verification, your authenticator app’s key and your recovery codes, stored encrypted; or your identifier at a sign-in provider, Google or the provider your server’s operator set, never a token of it) and sessions; the workspaces you belong to, your role in each, and the invitations you send or receive; whether you allow the web app to link what you do in it to your account and to record your sessions, and when you chose",
+      fr: "Vos nom, adresse e-mail, langue, moyens de connexion (votre mot de passe, conservé haché, et, avec la validation en deux étapes, la clé de votre application d’authentification et vos codes de secours, conservés chiffrés ; ou votre identifiant auprès d’un fournisseur de connexion, Google ou celui que l’exploitant de votre serveur a choisi, jamais un de ses jetons) et sessions ; les espaces de travail dont vous êtes membre, votre rôle dans chacun et les invitations envoyées ou reçues ; si vous autorisez l’application web à relier ce que vous y faites à votre compte et à enregistrer vos sessions, et la date de votre choix",
     },
     id: "account",
     legalBasis: contract,
@@ -703,8 +707,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
     // sign-in providers' texts say "on a server where…".
     applies: "always",
     data: {
-      en: "On a server whose operator turned product analytics on: your account’s identifier, the identifiers of your workspaces and of their billing account, and of the posts and connected accounts an event is about, and what you do in the service, as events: that you signed up, when, with your language and how you signed in; that a workspace was made, and when; the operations you ask of the API and the tools an application you connected calls, by name, with whether each succeeded, the error’s code and how long a tool took; that an account was connected or disconnected, and a post scheduled, published or failed, with the platform and the code of a failure’s reason; the plan and status of a subscription; and, of a billing account, whether it is on the free tier, whose it is (a person’s, a partner’s or nobody’s) and whether it stands alone. Never your name, your email address, your IP address, your browser, or what a post, a file or a message holds",
-      fr: "Sur un serveur dont l’exploitant a activé la mesure d’usage : l’identifiant de votre compte, ceux de vos espaces de travail et de leur compte de facturation, et ceux des publications et des comptes connectés qu’un événement concerne, et ce que vous faites dans le service, sous forme d’événements : votre inscription, sa date, avec votre langue et votre moyen de connexion ; la création d’un espace de travail, et sa date ; les opérations que vous demandez à l’API et les outils qu’appelle une application que vous avez connectée, par leur nom, avec leur réussite ou leur échec, le code de l’erreur et la durée d’un outil ; la connexion ou la déconnexion d’un compte, et la programmation, la mise en ligne ou l’échec d’une publication, avec la plateforme et le code du motif d’un échec ; l’abonnement et son état ; et, d’un compte de facturation, s’il relève de l’offre gratuite, à qui il est (une personne, un partenaire ou personne) et s’il est autonome. Jamais votre nom, votre adresse e-mail, votre adresse IP, votre navigateur, ni le contenu d’une publication, d’un fichier ou d’un message",
+      en: "On a server whose operator turned product analytics on: your account’s identifier, the identifiers of your workspaces and of their billing account, and of the posts and connected accounts an event is about, and what you do in the service, as events: that you signed up, when, with your language and how you signed in; that a workspace was made, and when; the operations you ask of the API and the tools an application you connected calls, by name, with whether each succeeded, the error’s code and how long a tool took; that an account was connected or disconnected, and a post scheduled, published or failed, with the platform and the code of a failure’s reason; the plan and status of a subscription; and, of a billing account, whether it is on the free tier, whose it is (a person’s, a partner’s or nobody’s) and whether it stands alone. Where you allowed it in the web app, the identifier of your session there joins these events. Never your name, your email address, your IP address, your browser, or what a post, a file or a message holds",
+      fr: "Sur un serveur dont l’exploitant a activé la mesure d’usage : l’identifiant de votre compte, ceux de vos espaces de travail et de leur compte de facturation, et ceux des publications et des comptes connectés qu’un événement concerne, et ce que vous faites dans le service, sous forme d’événements : votre inscription, sa date, avec votre langue et votre moyen de connexion ; la création d’un espace de travail, et sa date ; les opérations que vous demandez à l’API et les outils qu’appelle une application que vous avez connectée, par leur nom, avec leur réussite ou leur échec, le code de l’erreur et la durée d’un outil ; la connexion ou la déconnexion d’un compte, et la programmation, la mise en ligne ou l’échec d’une publication, avec la plateforme et le code du motif d’un échec ; l’abonnement et son état ; et, d’un compte de facturation, s’il relève de l’offre gratuite, à qui il est (une personne, un partenaire ou personne) et s’il est autonome. Là où vous l’avez autorisé dans l’application web, l’identifiant de votre session y est joint à ces événements. Jamais votre nom, votre adresse e-mail, votre adresse IP, votre navigateur, ni le contenu d’une publication, d’un fichier ou d’un message",
     },
     id: "productAnalytics",
     legalBasis: {
@@ -729,6 +733,67 @@ export const processingRegister: readonly ProcessingCategory[] = [
     source: {
       en: "Your use of the service",
       fr: "Votre utilisation du service",
+    },
+  },
+  {
+    // Where the operator also set PEAL_POSTHOG_WEB, as product analytics
+    // says "on a server where…".
+    applies: "always",
+    data: {
+      en: "On a server whose operator turned the web app’s measurement on: the pages of the signed-in app you open, as a pattern without their identifiers (such as /app/:id/posts), when, how long you stayed and how far down you scrolled; a random identifier kept in your browser’s memory until the page is reloaded; your browser’s family and version, your system, the kind of device, and the size of the window and the screen; and the errors the app meets, with their addresses, identifiers and queries removed. Nothing stays in your browser for it: the code only checks that the browser’s storage works, writing a test entry and removing it at once, and reads whether its own debug mode is on. Nothing names you or your workspaces",
+      fr: "Sur un serveur dont l’exploitant a activé la mesure d’usage de l’application web : les pages de l’application connectée que vous ouvrez, sous forme de modèle sans leurs identifiants (comme /app/:id/posts), quand, combien de temps vous y restez et jusqu’où vous faites défiler la page ; un identifiant aléatoire gardé dans la mémoire de votre navigateur jusqu’au rechargement de la page ; la famille et la version de votre navigateur, votre système, le type d’appareil et la taille de la fenêtre et de l’écran ; et les erreurs que rencontre l’application, sans leurs adresses, identifiants ni paramètres. Rien ne reste dans votre navigateur pour cela : le code vérifie seulement que le stockage du navigateur fonctionne, en y écrivant une entrée d’essai qu’il supprime aussitôt, et lit si son propre mode de débogage est activé. Rien ne vous nomme, ni vous ni vos espaces de travail",
+    },
+    id: "browserMeasurement",
+    legalBasis: {
+      en: "Legitimate interests (GDPR Article 6(1)(f)): counting how the app’s pages are used, for our own statistics alone",
+      fr: "Intérêts légitimes (RGPD, article 6, paragraphe 1, point f) : compter l’usage des pages de l’application, pour nos seules statistiques",
+    },
+    name: {
+      en: "Usage measurement in the browser",
+      fr: "Mesure d’usage dans le navigateur",
+    },
+    // The provider's plan sets the period, as for product analytics.
+    operatorSet: true,
+    purposes: {
+      en: "Count which pages of the app are opened, in what order, and the errors met there, to decide what to improve",
+      fr: "Compter quelles pages de l’application sont ouvertes, dans quel ordre, et les erreurs qu’on y rencontre, pour décider quoi améliorer",
+    },
+    retention: {
+      en: `Each event ${years(p.productAnalytics.years).en}, at the analytics provider`,
+      fr: `Chaque événement ${years(p.productAnalytics.years).fr}, chez le prestataire de mesure d’usage`,
+    },
+    source: {
+      en: "Your use of the web app",
+      fr: "Votre utilisation de l’application web",
+    },
+  },
+  {
+    applies: "always",
+    data: {
+      en: "Only once you allow it, on a server that measures the web app: the same events under your account’s identifier, with your workspace’s; a recording of your session in which every text, field and image is masked, so it shows the layout, your clicks and the pages you open, never what you write or read; and your session’s identifier, kept in your browser’s storage and sent with your requests to Peal",
+      fr: "Seulement une fois que vous l’autorisez, sur un serveur qui mesure l’application web : les mêmes événements sous l’identifiant de votre compte, avec celui de votre espace de travail ; un enregistrement de votre session où tous les textes, les champs et les images sont masqués, qui montre la mise en page, vos clics et les pages que vous ouvrez, jamais ce que vous écrivez ou lisez ; et l’identifiant de votre session, gardé dans le stockage de votre navigateur et envoyé avec vos requêtes à Peal",
+    },
+    id: "sessionRecordings",
+    legalBasis: {
+      en: "Your consent (GDPR Article 6(1)(a)), and, for what is stored in your browser, article 82 of the French data protection act. You can withdraw it on your account page at any time",
+      fr: "Votre consentement (RGPD, article 6, paragraphe 1, point a) et, pour ce qui est enregistré dans votre navigateur, l’article 82 de la loi Informatique et Libertés. Vous pouvez le retirer à tout moment sur la page de votre compte",
+    },
+    name: {
+      en: "Session recordings and identified usage",
+      fr: "Enregistrements de session et usage identifié",
+    },
+    operatorSet: true,
+    purposes: {
+      en: "See where a step of the app fails, and follow how the app is used from one step to the next",
+      fr: "Voir où une étape de l’application échoue, et suivre son usage d’une étape à l’autre",
+    },
+    retention: {
+      en: `A recording ${p.sessionRecordings.days} days, each event ${years(p.productAnalytics.years).en}, at the analytics provider. Withdrawing your consent stops both at once, in every tab of Peal you have open, and what was recorded before ends with its period; closing your account deletes your events and your recordings there. Your choice is asked again after six months`,
+      fr: `Un enregistrement ${p.sessionRecordings.days} jours, chaque événement ${years(p.productAnalytics.years).fr}, chez le prestataire de mesure d’usage. Retirer votre consentement arrête les deux aussitôt, dans chaque onglet de Peal ouvert, et ce qui a été enregistré avant prend fin au terme de sa durée ; la fermeture de votre compte y supprime vos événements et vos enregistrements. Votre choix vous est redemandé au bout de six mois`,
+    },
+    source: {
+      en: "Your use of the web app, once you allowed it",
+      fr: "Votre utilisation de l’application web, une fois que vous l’avez autorisée",
     },
   },
   {

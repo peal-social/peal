@@ -39,6 +39,12 @@ The staff context follows these rules too. What the law has a host keep is in
   person may make workspaces and invite in turn: the mode limits who signs
   up, not who invites. Everything else (signing in, resets, accepting,
   staff, partners, connect and review links) is the same in both modes.
+- The person's choice about the web app's measurement is two columns of
+  Better Auth's user row (`browserAnalyticsConsent`,
+  `browserAnalyticsConsentAt`, `input: false`, `returned: false`): only
+  `PUT /api/me/browser-analytics/consent` (`BrowserAnalyticsChoice`, the
+  person in their own session) writes them, on the server's clock; the
+  member directory reads them for `/api/me`, and the export holds them.
 - Workspaces are Better Auth organizations. The five roles (owner, admin,
   editor, contributor, viewer) and their grants are in
   `workspace/domain/roles.ts`, translated for Better Auth in

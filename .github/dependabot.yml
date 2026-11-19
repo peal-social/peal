@@ -77,6 +77,12 @@ updates:
       tiptap:
         patterns:
           - "@tiptap/*"
+      # The web app's measurement: the SDK and the packages it is built on,
+      # released together.
+      posthog:
+        patterns:
+          - posthog-js
+          - "@posthog/*"
       react:
         patterns:
           - react

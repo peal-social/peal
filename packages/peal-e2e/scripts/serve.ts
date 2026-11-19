@@ -11,6 +11,7 @@ import path from "node:path";
 
 import { Schema } from "effect";
 
+import { projectToken, startPostHog } from "./posthog.ts";
 import { startStripe, webhookSecret } from "./stripe.ts";
 
 const packages = path.join(import.meta.dirname, "..", "..");
@@ -47,6 +48,17 @@ const serverPort = await freePort();
 // synthetic secrets: plans limit workspaces as they do on Peal Cloud.
 const stripe = await startStripe();
 
+// Product analytics is on, the web app's included, against a stand-in for
+// PostHog (scripts/posthog.ts): the whole run measures, and asks each
+// member on their home.
+const posthog = await startPostHog();
+
+const measured = {
+  PEAL_POSTHOG_HOST: posthog.url,
+  PEAL_POSTHOG_KEY: projectToken,
+  PEAL_POSTHOG_WEB: "on",
+};
+
 // The server gets every variable the runner passed (DATABASE_URL, PUBLIC_URL
 // and the rest); the web app gets PATH, HOME and where the server is. Bun
 // runs this script, and runs the server as `nx run peal-server:dev` does.
@@ -54,6 +66,8 @@ const server = spawn(process.execPath, ["src/main.ts"], {
   cwd: path.join(packages, "peal-server"),
   env: {
     ...process.env,
+    ...measured,
+    PEAL_POSTHOG_ENVIRONMENT: "e2e",
     PORT: String(serverPort),
     STRIPE_API_URL: stripe.url,
     STRIPE_SECRET_KEY: "sk_test_0123456789syntheticendtoend",
@@ -76,6 +90,7 @@ const web = spawn(
       NEXT_TELEMETRY_DISABLED: "1",
       PATH: process.env["PATH"] ?? "",
       PEAL_API_URL: `http://127.0.0.1:${serverPort}`,
+      ...measured,
     },
     stdio: "inherit",
   }
@@ -113,6 +128,10 @@ process.exitCode = stopping ? 0 : 1;
 stopAll();
 
 await Promise.all(exited);
+
+posthog.server.closeAllConnections();
+
+posthog.server.close();
 
 stripe.server.closeAllConnections();
 

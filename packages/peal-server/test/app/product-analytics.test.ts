@@ -449,11 +449,16 @@ layer(
           Schema.fromJsonString(
             Schema.Struct({
               delete_events: Schema.Boolean,
+              delete_recordings: Schema.Boolean,
               distinct_ids: Schema.Array(Schema.String),
             })
           )
         )(deletion?.body),
-        { delete_events: true, distinct_ids: [`workspace:${workspaceId}`] }
+        {
+          delete_events: true,
+          delete_recordings: true,
+          distinct_ids: [`workspace:${workspaceId}`],
+        }
       );
     })
   );

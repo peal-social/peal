@@ -30,6 +30,11 @@ import {
 
 const excludedId = UserIdSchema.make("1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d");
 
+const otherUserId = UserIdSchema.make("3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f");
+
+// A UUIDv7, as the web app's SDK makes its session ids.
+const browserSessionId = "019a7b2c-3d4e-7f50-8a1b-2c3d4e5f6a7b";
+
 const excludedWorkspaceId = WorkspaceIdSchema.make(
   "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e"
 );
@@ -129,6 +134,7 @@ describe("product analytics", () => {
             AnalyticsActor,
             AnalyticsActor.of({
               impersonated: false,
+              sessionId: Option.none(),
               userId: Option.some(userId),
             })
           )
@@ -140,13 +146,76 @@ describe("product analytics", () => {
       })
     );
 
+    it.effect(
+      "joins the person's events to the web app's session the request names",
+      () =>
+        Effect.gen(function* joined() {
+          yield* clearRecorded;
+
+          const fromSession = Effect.provideService(
+            AnalyticsActor,
+            AnalyticsActor.of({
+              impersonated: false,
+              sessionId: Option.some(browserSessionId),
+              userId: Option.some(userId),
+            })
+          );
+
+          yield* capture().pipe(fromSession);
+          yield* capture({ actor: asUser }).pipe(fromSession);
+          yield* capture({ actor: asUser, asWorkspace: true }).pipe(
+            fromSession
+          );
+
+          const sent = yield* sentEvents;
+
+          assert.strictEqual(
+            sent[0]?.properties["$session_id"],
+            browserSessionId
+          );
+          assert.strictEqual(
+            sent[1]?.properties["$session_id"],
+            browserSessionId
+          );
+          // The workspace's service identity joins no person's session.
+          assert.notProperty(sent[2]?.properties, "$session_id");
+        })
+    );
+
+    it.effect("joins no session to another person's events", () =>
+      Effect.gen(function* otherPerson() {
+        yield* clearRecorded;
+        yield* capture({
+          actor: Option.some({ impersonated: false, userId: otherUserId }),
+        }).pipe(
+          Effect.provideService(
+            AnalyticsActor,
+            AnalyticsActor.of({
+              impersonated: false,
+              sessionId: Option.some(browserSessionId),
+              userId: Option.some(userId),
+            })
+          )
+        );
+
+        const [sent] = yield* sentEvents;
+
+        assert.strictEqual(sent?.distinctId, otherUserId);
+        assert.notProperty(sent?.properties, "$session_id");
+      })
+    );
+
     it.effect("takes a key's request as the workspace's", () =>
       Effect.gen(function* keyActor() {
         yield* clearRecorded;
         yield* capture().pipe(
           Effect.provideService(
             AnalyticsActor,
-            AnalyticsActor.of({ impersonated: false, userId: Option.none() })
+            AnalyticsActor.of({
+              impersonated: false,
+              sessionId: Option.none(),
+              userId: Option.none(),
+            })
           )
         );
 
@@ -165,6 +234,7 @@ describe("product analytics", () => {
             AnalyticsActor,
             AnalyticsActor.of({
               impersonated: true,
+              sessionId: Option.none(),
               userId: Option.some(userId),
             })
           )
@@ -280,6 +350,7 @@ describe("product analytics", () => {
               AnalyticsActor,
               AnalyticsActor.of({
                 impersonated: false,
+                sessionId: Option.none(),
                 userId: Option.some(userId),
               })
             )

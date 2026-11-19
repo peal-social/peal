@@ -26,6 +26,7 @@ import { SessionsList } from "#components/account/sessions-list.tsx";
 import { SetPassword } from "#components/account/set-password.tsx";
 import { TimeFormatForm } from "#components/account/time-format-form.tsx";
 import { TwoStepSection } from "#components/account/two-step-section.tsx";
+import { ConsentSetting } from "#components/measurement/consent-controls.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 
@@ -67,6 +68,7 @@ const AccountPage = async ({ params }: PageProps<"/[locale]/app/account">) => {
   const { user } = me.value;
   const t = await getTranslations("AccountSettings");
   const twoStep = await getTranslations("TwoStep");
+  const measurement = await getTranslations("Measurement.setting");
   // What this server keeps of a closed account for the law, if anything.
   const { legalHold } = await accountClosure();
   const passwordless = needsPassword(user);
@@ -141,6 +143,15 @@ const AccountPage = async ({ params }: PageProps<"/[locale]/app/account">) => {
       <Section title={t("apps.title")} description={t("apps.description")}>
         <ConnectedAppsList />
       </Section>
+      {me.value.browserAnalytics === null ||
+      me.value.browserAnalytics === undefined ? null : (
+        <Section
+          title={measurement("title")}
+          description={measurement("description")}
+        >
+          <ConsentSetting />
+        </Section>
+      )}
       <Section
         title={t("export.title")}
         description={

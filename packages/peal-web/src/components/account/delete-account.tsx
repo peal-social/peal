@@ -21,6 +21,7 @@ import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
 import { FormField } from "#components/auth/form-field.tsx";
+import { useMeasurementSignOut } from "#components/measurement/measurement.tsx";
 import { SettingsError } from "#components/settings/settings-error.tsx";
 import { SubscriptionCancellation } from "#components/settings/subscription-cancellation.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
@@ -97,6 +98,7 @@ export const DeleteAccount = ({
 
   const [agreed, setAgreed] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const forgetMeasurement = useMeasurementSignOut();
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -119,6 +121,7 @@ export const DeleteAccount = ({
       if (Exit.isSuccess(exit)) {
         // The session went with the account: this clears its cookies.
         await authClient.signOut();
+        forgetMeasurement();
         toast.success(t("deleted"));
         router.push("/");
         router.refresh();

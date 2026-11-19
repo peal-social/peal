@@ -4986,5 +4986,23 @@
       "toCheckNote": "Peal ne peut pas savoir s’il a atteint le site : regardez-y, et renvoyez-le seulement s’il n’y est pas.",
       "toCheckSeveral": "Le site a un autre article de ce titre, que Peal ne peut pas distinguer de celui-ci : il ne le renvoie donc jamais de lui-même. Regardez sur le site : si cet article y est, il est en ligne et vous pouvez le laisser ; sinon, renommez ou supprimez l’autre article là-bas, puis renvoyez-le."
     }
+  },
+  "Measurement": {
+    "card": {
+      "title": "Aidez-nous à améliorer Peal",
+      "text": "Peal compte les pages ouvertes sans savoir par qui, et ne garde rien dans votre navigateur pour cela. Si vous l’autorisez, Peal relie aussi ce que vous faites dans l’application à votre compte et enregistre vos sessions, pour que nous voyions où une étape échoue. Les enregistrements masquent tous les textes, les champs et les images. Ils montrent la mise en page et vos clics, pas ce que vous écrivez ou lisez. Vous pouvez changer d’avis à tout moment sur la page de votre compte.",
+      "allow": "Autoriser",
+      "refuse": "Refuser",
+      "privacy": "Politique de confidentialité",
+      "failed": "Votre choix n’a pas pu être enregistré. Réessayez."
+    },
+    "setting": {
+      "title": "Usage et enregistrements de session",
+      "description": "Si Peal relie ce que vous faites dans l’application à votre compte et enregistre vos sessions. Dans tous les cas, Peal compte les pages sans savoir qui vous êtes.",
+      "allowed": "Autorisé le {date, date, long}.",
+      "refused": "Refusé depuis le {date, date, long}.",
+      "undecided": "Pas encore choisi.",
+      "failed": "Votre choix n’a pas pu être enregistré. Réessayez."
+    }
   }
 }

@@ -5,6 +5,8 @@ require_relative "../../peal"
 module Peal
   module Types
     class Me < Internal::Types::Model
+      field :browser_analytics, -> { Peal::Types::BrowserAnalytics }, optional: true, nullable: true, api_name: "browserAnalytics"
+
       field :impersonated_by, -> { String }, optional: false, nullable: true, api_name: "impersonatedBy"
 
       field :user, -> { Peal::Types::MeUser }, optional: false, nullable: false

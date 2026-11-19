@@ -238,6 +238,8 @@ if typing.TYPE_CHECKING:
     from .boost_step_step import BoostStepStep
     from .boost_violation import BoostViolation
     from .breaking_change import BreakingChange
+    from .browser_analytics import BrowserAnalytics
+    from .browser_analytics_consent import BrowserAnalyticsConsent
     from .bulk_post import BulkPost
     from .bulk_post_result import BulkPostResult, BulkPostResult_Created, BulkPostResult_Refused
     from .bulk_post_result_created import BulkPostResultCreated
@@ -1411,6 +1413,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "BoostStepStep": ".boost_step_step",
     "BoostViolation": ".boost_violation",
     "BreakingChange": ".breaking_change",
+    "BrowserAnalytics": ".browser_analytics",
+    "BrowserAnalyticsConsent": ".browser_analytics_consent",
     "BulkPost": ".bulk_post",
     "BulkPostResult": ".bulk_post_result",
     "BulkPostResultCreated": ".bulk_post_result_created",
@@ -2595,6 +2599,8 @@ __all__ = [
     "BoostStepStep",
     "BoostViolation",
     "BreakingChange",
+    "BrowserAnalytics",
+    "BrowserAnalyticsConsent",
     "BulkPost",
     "BulkPostResult",
     "BulkPostResultCreated",

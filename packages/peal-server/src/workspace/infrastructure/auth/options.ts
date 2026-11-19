@@ -805,6 +805,23 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
       // address, no two-step verification, and the sign-up gate.
       validateUserInfo: providerAdmission(hooks.signUp),
       additionalFields: {
+        // Whether the person allows the web app to link what they do in it
+        // to their account and to record their sessions, and when they
+        // chose: set by Peal's consent endpoint alone, on the server's
+        // clock, never through a sign-up or `updateUser` (`input: false`),
+        // and never in Better Auth's answers.
+        browserAnalyticsConsent: {
+          input: false,
+          required: false,
+          returned: false,
+          type: ["granted", "refused"],
+        },
+        browserAnalyticsConsentAt: {
+          input: false,
+          required: false,
+          returned: false,
+          type: "date",
+        },
         locale: {
           defaultValue: defaultLocale,
           input: true,

@@ -1,9 +1,10 @@
-import { Effect, Layer, Option } from "effect";
+import { Effect, Layer, Option, Redacted } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import { analyticsShutdownTimeout } from "#app/shutdown.ts";
 import { AnalyticsDelivery } from "#shared/application/analytics-delivery.ts";
 import { AnalyticsScope } from "#shared/application/analytics-scope.ts";
+import { BrowserMeasurement } from "#shared/application/browser-measurement.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { postHogDelivery } from "#shared/infrastructure/posthog-delivery.ts";
 import { postHogConfig } from "#shared/infrastructure/posthog-settings.ts";
@@ -13,6 +14,22 @@ import {
   ForgetAnalyticsV1Live,
   WorkflowAnalyticsErasures,
 } from "#shared/infrastructure/workflows/forget-analytics.ts";
+
+// The web app measures its use only where PEAL_POSTHOG_WEB is on too,
+// with the project's token, public by design.
+const browserMeasurementOf = (settings: PostHogSettings) =>
+  Layer.succeed(
+    BrowserMeasurement,
+    BrowserMeasurement.of({
+      settings: settings.web
+        ? Option.some({
+            environment: settings.environment,
+            excluded: settings.excluded,
+            token: Redacted.value(settings.key),
+          })
+        : Option.none(),
+    })
+  );
 
 // Events to the operator's PostHog project. The fetch client directly,
 // not the public one: the host is the operator's setting, as the writing
@@ -34,6 +51,7 @@ const postHogAnalytics = (settings: PostHogSettings) =>
         shutdownTimeout: analyticsShutdownTimeout,
       }).pipe(Layer.provide(Layer.merge(FetchHttpClient.layer, IdsLive)))
     ),
+    Layer.merge(browserMeasurementOf(settings)),
     Layer.tap(() =>
       Option.isSome(settings.erasure)
         ? Effect.void
@@ -45,12 +63,17 @@ const postHogAnalytics = (settings: PostHogSettings) =>
 
 // Off: nothing is sent, and a deletion left from when it was on deletes
 // nothing more.
-const noAnalytics = Layer.merge(ProductAnalytics.none, AnalyticsDelivery.none);
+const noAnalytics = Layer.mergeAll(
+  ProductAnalytics.none,
+  AnalyticsDelivery.none,
+  BrowserMeasurement.none
+);
 
 /**
  * Product analytics as the server runs it: to PostHog when
  * PEAL_POSTHOG_KEY is set (`posthog-settings.ts` lists the settings), and
- * nowhere otherwise, with the durable deletion of erased persons
+ * nowhere otherwise, with whether the web app measures its use too
+ * (BrowserMeasurement), and the durable deletion of erased persons
  * (ForgetAnalyticsV1) registered on the workflow engine the server runs.
  * One per build of the server: what it queued is sent when it is
  * released, after the HTTP server and the workers. Needs the

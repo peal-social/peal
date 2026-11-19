@@ -653,6 +653,8 @@ module Peal
     autoload :BoostPage, ::File.join(__dir__, "peal/types/boost_page")
     autoload :BoostQuote, ::File.join(__dir__, "peal/types/boost_quote")
     autoload :BoostStateConflictEncoded, ::File.join(__dir__, "peal/types/boost_state_conflict_encoded")
+    autoload :BrowserAnalyticsConsent, ::File.join(__dir__, "peal/types/browser_analytics_consent")
+    autoload :BrowserAnalytics, ::File.join(__dir__, "peal/types/browser_analytics")
     autoload :DiscordOptions, ::File.join(__dir__, "peal/types/discord_options")
     autoload :FacebookFormat, ::File.join(__dir__, "peal/types/facebook_format")
     autoload :FacebookOptions, ::File.join(__dir__, "peal/types/facebook_options")

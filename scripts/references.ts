@@ -60,6 +60,14 @@ const references: readonly Reference[] = [
     tag: (version) => `@effect/tsgo@${version}`,
   },
   {
+    // The web app's measurement SDK, in PostHog's monorepo of JavaScript
+    // packages, tagged per package.
+    name: "posthog-js",
+    packageName: "posthog-js",
+    repository: "PostHog/posthog-js",
+    tag: (version) => `posthog-js@${version}`,
+  },
+  {
     name: "tiptap",
     packageName: "@tiptap/react",
     repository: "ueberdosis/tiptap",

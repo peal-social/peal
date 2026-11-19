@@ -139,6 +139,7 @@ export const overviewOver = (
         Option.some(
           new Account({
             ban,
+            browserAnalyticsConsent: Option.none(),
             email: "someone@example.test",
             emailVerified: true,
             hasPassword: true,

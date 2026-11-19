@@ -1,4 +1,4 @@
-import { Effect, Option } from "effect";
+import { Effect, Option, Schema } from "effect";
 import type {
   Member,
   OAuthGrant as ContractGrant,
@@ -110,16 +110,38 @@ export const memberOf = (actor: Actor, principal: Principal): Member => ({
 /**
  * Who a principal acts as, for product analytics: a person, and whether
  * staff act as them; nobody for a key, whose events are its workspace's.
+ * The web app's session joins only a person in their own session.
  */
 export const analyticsActorOf = (
-  principal: Principal
+  principal: Principal,
+  sessionId: Option.Option<string> = Option.none()
 ): AnalyticsActor["Service"] =>
   principal._tag === "UserPrincipal"
     ? {
         impersonated: Option.isSome(principal.impersonatedBy),
+        sessionId:
+          Option.isNone(principal.impersonatedBy) &&
+          Option.isNone(principal.oauth)
+            ? sessionId
+            : Option.none(),
         userId: Option.some(principal.userId),
       }
-    : { impersonated: false, userId: Option.none() };
+    : { impersonated: false, sessionId: Option.none(), userId: Option.none() };
+
+/** The header the web app names its measured session in. */
+export const browserSessionHeader = "x-posthog-session-id";
+
+const decodeSessionId = Schema.decodeUnknownOption(
+  Schema.String.check(Schema.isUUID())
+);
+
+/**
+ * The web app's measured session a request names, when the value is a
+ * UUID (the SDK makes UUIDv7s): anything else is ignored, never refused.
+ */
+export const browserSessionOf = (
+  headers: Readonly<Record<string, string | undefined>>
+): Option.Option<string> => decodeSessionId(headers[browserSessionHeader]);
 
 /** The person a member acts as, for product analytics: none for a key. */
 export const capturedActorOf = (member: Member) => {
@@ -130,6 +152,12 @@ export const capturedActorOf = (member: Member) => {
   return userId.pipe(Option.map((id) => ({ impersonated, userId: id })));
 };
 
-/** Provides who the request acts as, for product analytics. */
-export const actingAs = (principal: Principal) =>
-  Effect.provideService(AnalyticsActor, analyticsActorOf(principal));
+/**
+ * Provides who the request acts as, for product analytics, with the web
+ * app's session the request names, if any.
+ */
+export const actingAs = (
+  principal: Principal,
+  sessionId: Option.Option<string> = Option.none()
+) =>
+  Effect.provideService(AnalyticsActor, analyticsActorOf(principal, sessionId));

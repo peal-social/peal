@@ -35,6 +35,8 @@ export interface PostHogSettings {
   readonly erasure: Option.Option<PostHogErasure>;
   /** Users and workspaces nothing is ever sent about, by id. */
   readonly excluded: ReadonlySet<string>;
+  /** Whether the web app measures its use too (PEAL_POSTHOG_WEB). */
+  readonly web: boolean;
 }
 
 // A setting that is set: unset and empty both read as none.
@@ -107,6 +109,23 @@ const ExcludedUsersSchema = Schema.String.pipe(
   )
 );
 
+// `on` or `off`, `off` by default: anything else stops the server.
+const webConfig = Config.schema(
+  Schema.Literals(["on", "off"]),
+  "PEAL_POSTHOG_WEB"
+).pipe(
+  Config.withDefault<"off" | "on">("off"),
+  Config.map((value) => value === "on")
+);
+
+// The web app sends the token from the browser: only a project token
+// (`phc_…`), public by design, may go there, never a personal key.
+const ProjectTokenSchema = Schema.Trim.check(
+  Schema.isPattern(/^phc_[A-Za-z0-9]+$/u, {
+    expected: "a project token, `phc_` then letters and digits",
+  })
+);
+
 const environmentConfig = isProduction.pipe(
   Config.flatMap((production) =>
     Config.schema(EnvironmentSchema, "PEAL_POSTHOG_ENVIRONMENT").pipe(
@@ -170,6 +189,11 @@ const erasureConfig = Config.all({
  * - PEAL_POSTHOG_EXCLUDED_IDS: user and workspace ids, separated by
  *   commas: nothing is sent about an excluded user, nor about an excluded
  *   workspace, its service identity included, whoever acts in it.
+ * - PEAL_POSTHOG_WEB: `on` or `off` (the default): whether the web app
+ *   measures its use too, in the browser, asking each person before
+ *   anything is linked to their account or recorded; it then requires a
+ *   project token (`phc_…`), which browsers send. A switch of its own,
+ *   as measuring browsers needs the privacy policy to say so first.
  */
 export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
   optionalSecret("PEAL_POSTHOG_KEY").pipe(
@@ -185,7 +209,15 @@ export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
               "PEAL_POSTHOG_EXCLUDED_IDS"
             ).pipe(Config.withDefault<readonly string[]>([])),
             host: host("PEAL_POSTHOG_HOST", defaultPostHogHost),
+            web: webConfig,
           }).pipe(
+            Config.flatMap((settings) =>
+              settings.web
+                ? Config.schema(ProjectTokenSchema, "PEAL_POSTHOG_KEY").pipe(
+                    Config.map(() => settings)
+                  )
+                : Config.succeed(settings)
+            ),
             Config.map(({ excluded, ...settings }) =>
               Option.some<PostHogSettings>({
                 ...settings,

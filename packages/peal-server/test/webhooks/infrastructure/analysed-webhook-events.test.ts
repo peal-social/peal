@@ -255,6 +255,7 @@ describe("the webhook events product analytics hears", () => {
             AnalyticsActor,
             AnalyticsActor.of({
               impersonated: false,
+              sessionId: Option.none(),
               userId: Option.some(userId),
             })
           )

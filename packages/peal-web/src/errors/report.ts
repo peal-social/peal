@@ -47,6 +47,10 @@ const withoutQuery = (word: string): string => {
 const idSegment =
   /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|\d{6,}|[\w-]{24,})$/iu;
 
+/** Whether a path's segment is an id, which a page's pattern writes `:id`. */
+export const isIdSegment = (segment: string): boolean =>
+  idSegment.test(segment);
+
 /** At most `limit` characters, the end cut off. */
 export const cut = (text: string, limit: number): string =>
   text.length <= limit ? text : text.slice(0, limit);
@@ -79,7 +83,7 @@ export const pathOf = (url: string): string => {
 
   const redacted = path
     .split("/")
-    .map((segment) => (idSegment.test(segment) ? ":id" : segment))
+    .map((segment) => (isIdSegment(segment) ? ":id" : segment))
     .join("/");
 
   return cut(

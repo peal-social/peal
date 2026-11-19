@@ -155,6 +155,7 @@ export * from "./BoostStep.js";
 export * from "./BoostStepOutcome.js";
 export * from "./BoostViolation.js";
 export * from "./BreakingChange.js";
+export * from "./BrowserAnalytics.js";
 export * from "./BulkPost.js";
 export * from "./BulkPostResult.js";
 export * from "./BulkPostResultCreated.js";
