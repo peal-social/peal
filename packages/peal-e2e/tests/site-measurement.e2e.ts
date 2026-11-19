@@ -205,6 +205,24 @@ const cookieNames = async (browser: {
   return jar.map(({ name }) => name);
 };
 
+// Whether the browser comes to hold the visitor's cookie: the SDK loads
+// once the page is idle and saves it a moment after opting in, later on
+// a slow machine, so it is waited for, ten seconds at most.
+const holdsVisitor = async (
+  browser: Parameters<typeof cookieNames>[0],
+  attempts = 40
+): Promise<boolean> => {
+  const names = await cookieNames(browser);
+
+  if (names.includes(visitorCookie) || attempts === 0) {
+    return names.includes(visitorCookie);
+  }
+
+  await sleep(250);
+
+  return await holdsVisitor(browser, attempts - 1);
+};
+
 // The notice's title, which names its region, in each language.
 const titles = {
   en: "Can we keep a cookie?",
@@ -437,7 +455,7 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
         screen.getByRole("region", "Can we keep a cookie?")
       ).toBeHidden();
 
-      expect(await cookieNames(browser)).toContain(visitorCookie);
+      expect(await holdsVisitor(browser)).toBeTruthy();
 
       const since = linesSoFar();
 
@@ -515,21 +533,8 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
 
       await signUpTab?.activate();
 
-      // The visitor's cookie as the browser sends it with the sign-up: the
-      // SDK saves it a moment after a page's first event.
-      const holdsVisitor = async (attempts: number): Promise<boolean> => {
-        const names = await cookieNames(browser);
-
-        if (names.includes(visitorCookie) || attempts === 0) {
-          return names.includes(visitorCookie);
-        }
-
-        await sleep(250);
-
-        return await holdsVisitor(attempts - 1);
-      };
-
-      expect(await holdsVisitor(40)).toBeTruthy();
+      // The visitor's cookie as the browser sends it with the sign-up.
+      expect(await holdsVisitor(browser)).toBeTruthy();
 
       const since = linesSoFar();
 
