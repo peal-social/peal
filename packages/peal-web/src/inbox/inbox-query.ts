@@ -57,9 +57,20 @@ export const inboxQueryOf = ({ filter, view }: InboxState): string =>
     ...(filter.channelId === null ? [] : [["channel", filter.channelId]]),
   ]).toString();
 
-/** A path with a list's query, when it has one. */
-export const withInboxQuery = (path: string, state: InboxState): string => {
-  const query = inboxQueryOf(state);
+/**
+ * A path with a list's query, when it has one, and the item's own after
+ * it (`more`: a conversation's `cursor`), so a link inside an item keeps
+ * the list as it was.
+ */
+export const withInboxQuery = (
+  path: string,
+  state: InboxState,
+  more: Readonly<Record<string, string>> = {}
+): string => {
+  const query = new URLSearchParams([
+    ...new URLSearchParams(inboxQueryOf(state)),
+    ...Object.entries(more),
+  ]).toString();
 
   return query === "" ? path : `${path}?${query}`;
 };

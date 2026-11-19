@@ -47,6 +47,25 @@ describe(inboxQueryOf, () => {
   });
 });
 
+describe(withInboxQuery, () => {
+  it("keeps the list's query beside an item's own, such as a conversation's older page", () => {
+    const state = {
+      filter: { channelId: "c1", unanswered: true },
+      view: "messages",
+    } as const;
+
+    expect([
+      withInboxQuery("/w/inbox/messages/m1", state, { cursor: "a b&c" }),
+      withInboxQuery("/w/inbox/messages/m1", defaultInbox, { cursor: "x" }),
+      withInboxQuery("/w/inbox/messages/m1", state, {}),
+    ]).toStrictEqual([
+      "/w/inbox/messages/m1?view=messages&status=waiting&channel=c1&cursor=a+b%26c",
+      "/w/inbox/messages/m1?cursor=x",
+      "/w/inbox/messages/m1?view=messages&status=waiting&channel=c1",
+    ]);
+  });
+});
+
 describe(knownThreadFilter, () => {
   it("drops a channel the inbox does not read, and keeps the status", () => {
     expect([

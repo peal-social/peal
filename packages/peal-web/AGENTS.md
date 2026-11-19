@@ -625,13 +625,24 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   location at `…/inbox/reviews/[threadId]`: stars, text as text, the
   reviewer's display name or "anonymous", a photo count (never a photo),
   the location's reply with Google's moderation; a reply counted in
-  UTF-8 bytes (Google's 4,096), withdraw and "needs no answer" where the
-  channel's `abilities` say `available`.
+  UTF-8 bytes (Google's 4,096), withdraw (confirmed in a dialog) and
+  "needs no answer" where the channel's `abilities` say `available`. It
+  reads as DESIGN.md's `split-thread`, like a post's comments:
+  `ReviewSummaryView` on top, each `ReviewView` flat (avatar, a muted
+  line with stars, date and state, `xs` ghost actions with Reply first,
+  the location's reply and Peal's behind a 2 px line), and one
+  `ReviewReplyBoxView` sticky at the pane's foot, naming the reviewer
+  Reply chose (the oldest still waiting until then), with a new
+  `Idempotency-Key` for another review.
 - The inbox's direct messages (`message-screen.tsx`, views in
   `message-views.tsx`, atoms in `#inbox/message-atoms.ts`), for members
   with `engagement:readMessages`, open one at
   `…/inbox/messages/[conversationId]` (`engagement:readMessages`, a page
-  at a time, `?cursor=` for older ones; the box,
+  at a time, `?cursor=` for older ones, its links keeping the list's
+  query through `withInboxQuery`; as a `split-thread`:
+  `ConversationSummaryView`, the messages flat and oldest first, those
+  sent from Peal behind a 2 px line, and one `MessageBoxView` sticky at
+  the pane's foot with `ReplyWindowView` above it; the box,
   "mark read" and confirming an unconfirmed message take
   `engagement:message`): text as text, never markup, a file count (never
   a file), the box only where `abilities.send` is `available` and the

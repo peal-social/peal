@@ -4440,7 +4440,8 @@
       "title": "Avis d’un établissement",
       "pageName": "Avis",
       "empty": "Aucun avis écrit ou modifié ces {days, number} derniers jours.",
-      "readOnly": "Votre rôle permet de lire les avis, pas d’y répondre."
+      "readOnly": "Votre rôle permet de lire les avis, pas d’y répondre.",
+      "kept": "Peal conserve chaque avis {days, number} jours après qu’il a été écrit ou modifié pour la dernière fois."
     },
     "review": {
       "stars": "{rating, plural, one {# étoile} other {# étoiles}}",
@@ -4456,10 +4457,15 @@
       "markWaiting": "Attend une réponse",
       "withdraw": "Supprimer la réponse",
       "withdrawn": "La réponse de l’établissement a été supprimée.",
+      "answer": "Répondre",
+      "withdrawTitle": "Supprimer la réponse de l’établissement ?",
+      "withdrawDescription": "Google retire la réponse pour toutes les personnes qui voient l’avis. Cette action est irréversible.",
+      "cancel": "Annuler",
       "reply": "{status, select, sending {Réponse en cours d’envoi} sent {Réponse envoyée} failed {Réponse non envoyée} unconfirmed {Réponse pas encore confirmée : la prochaine lecture de l’établissement le dira} withdrawn {Réponse supprimée} other {}}"
     },
     "box": {
-      "label": "Répondre au nom de l’établissement",
+      "label": "Répondre à {reviewer} au nom de l’établissement",
+      "labelAnonymous": "Répondre à une personne anonyme au nom de l’établissement",
       "public": "Toute personne qui voit l’avis sur Google voit la réponse, qui remplace celle de l’établissement. Google peut la vérifier avant de l’afficher.",
       "count": "{length, number} sur {maximum, number} octets",
       "send": "Envoyer",
@@ -4499,7 +4505,8 @@
       "noText": "Des fichiers seulement.",
       "sent": "{status, select, sending {Message en route} sent {Message envoyé} failed {Message non envoyé} unconfirmed {Message pas encore confirmé : vérifiez sur la plateforme} other {}}",
       "confirmSent": "Il est parti",
-      "confirmNotSent": "Il n’est jamais parti"
+      "confirmNotSent": "Il n’est jamais parti",
+      "from": "Envoyé depuis Peal le {at}"
     },
     "box": {
       "label": "Répondre au nom du compte",

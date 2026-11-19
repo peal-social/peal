@@ -7,18 +7,24 @@ import type {
   InboxConversationDetail,
   InboxDirectMessage,
   InboxOutgoingMessage,
+  SocialChannel,
 } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
+import { Avatar, AvatarFallback } from "peal-ui/components/avatar";
 import { Button } from "peal-ui/components/button";
 import { Label } from "peal-ui/components/label";
 import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
 
-// The views of the inbox's direct messages: a conversation's row, a
+import { initialOfName, useChannelName } from "./inbox-views.tsx";
+
+// The views of the inbox's direct messages: a conversation's summary, a
 // message, one sent from Peal and the box to answer in, whatever fetched
-// them. Their state lives in messages-list.tsx and message-screen.tsx.
-// What people wrote is shown as text, never as markup: React escapes it.
+// them. Their state lives in inbox-list.tsx and message-screen.tsx. A
+// conversation reads as one (DESIGN.md, "split-thread"): each message
+// flat, oldest first, one composer at the pane's foot. What people wrote
+// is shown as text, never as markup: React escapes it.
 
 const useInstant = () => {
   const format = useFormatter();
@@ -30,7 +36,57 @@ const useInstant = () => {
     });
 };
 
-/** One message, as its platform gave it: who sent it, when, and its text. */
+/**
+ * A conversation's heading on its own page: who is in it, on which
+ * channel, whether someone wrote since a member last read it, that its
+ * messages are private, and the ways out (`actions`, quiet buttons).
+ */
+export const ConversationSummaryView = ({
+  actions,
+  channel,
+  conversation,
+}: {
+  readonly actions?: ReactNode;
+  /** The conversation's channel, unless it was disconnected since. */
+  readonly channel: SocialChannel | undefined;
+  readonly conversation: InboxConversation;
+}) => {
+  const t = useTranslations("InboxMessages");
+  const channelName = useChannelName();
+
+  const people = conversation.participants
+    .map(({ displayName, handle }) => displayName ?? handle)
+    .join(", ");
+
+  return (
+    <div className="flex flex-col gap-2 border-b pb-4">
+      <p className="text-sm">
+        <bdi>{t("row.with", { people })}</bdi>
+      </p>
+      <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+        <span className="flex items-center gap-1.5">
+          {conversation.unread ? (
+            <span aria-hidden className="bg-brand size-1.5 rounded-full" />
+          ) : null}
+          {conversation.unread ? t("row.unread") : t("row.read")}
+        </span>
+        <span>{channelName(channel)}</span>
+        <span className="tabular-nums">
+          {t("row.count", { count: conversation.messages })}
+        </span>
+      </p>
+      <p className="text-muted-foreground text-xs">{t("thread.private")}</p>
+      {actions === undefined ? null : (
+        <div className="-ml-2 flex flex-wrap items-center gap-1">{actions}</div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * One message, flat, as its platform gave it: who sent it, a muted line
+ * with when and how many files it holds (never the files), and its text.
+ */
 export const DirectMessageView = ({
   conversation,
   message,
@@ -41,30 +97,55 @@ export const DirectMessageView = ({
   const t = useTranslations("InboxMessages.message");
   const instant = useInstant();
 
-  const sender = conversation.participants.find(
-    ({ platformId }) => platformId === message.senderPlatformId
-  );
+  const sender = message.fromAccount
+    ? undefined
+    : conversation.participants.find(
+        ({ platformId }) => platformId === message.senderPlatformId
+      );
+
+  const name = message.fromAccount
+    ? t("account")
+    : (sender?.displayName ?? sender?.handle ?? t("them"));
+
+  const handle =
+    sender === undefined ||
+    sender.handle === "" ||
+    sender.displayName === null ||
+    sender.displayName === ""
+      ? null
+      : sender.handle;
 
   return (
-    <li
-      className={
-        message.fromAccount
-          ? "bg-muted ml-8 flex flex-col gap-1 rounded-md px-3 py-2"
-          : "mr-8 flex flex-col gap-1 rounded-md border px-3 py-2"
-      }
-    >
-      <span className="text-muted-foreground text-xs">
-        {message.fromAccount
-          ? t("account")
-          : (sender?.displayName ?? sender?.handle ?? t("them"))}{" "}
-        · {instant(message.sentAt)}
-        {message.attachments > 0
-          ? ` · ${t("files", { count: message.attachments })}`
-          : ""}
-      </span>
-      <p dir="auto" className="text-sm whitespace-pre-line">
-        {message.text === "" ? t("noText") : message.text}
-      </p>
+    <li className="flex gap-3">
+      <Avatar size="sm">
+        <AvatarFallback>
+          {message.fromAccount || sender !== undefined
+            ? initialOfName(name)
+            : "?"}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
+          <bdi className="font-medium break-words">{name}</bdi>
+          {handle === null ? null : (
+            <bdi className="text-muted-foreground text-sm break-all">
+              {handle}
+            </bdi>
+          )}
+          <span className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-xs">
+            <span>{instant(message.sentAt)}</span>
+            {message.attachments > 0 ? (
+              <>
+                <span aria-hidden>·</span>
+                <span>{t("files", { count: message.attachments })}</span>
+              </>
+            ) : null}
+          </span>
+        </div>
+        <p dir="auto" className="text-sm break-words whitespace-pre-wrap">
+          {message.text === "" ? t("noText") : message.text}
+        </p>
+      </div>
     </li>
   );
 };
@@ -86,18 +167,17 @@ export const ReplyWindowView = ({
 }) => {
   const t = useTranslations("InboxMessages.box");
   const instant = useInstant();
+  const className = "text-muted-foreground text-xs";
 
   if (window.closesAt === null) {
-    return window.open ? null : (
-      <p className="text-muted-foreground text-sm">{t("closed")}</p>
-    );
+    return window.open ? null : <p className={className}>{t("closed")}</p>;
   }
 
   const byHand = window.personClosesAt;
 
   if (window.open) {
     return (
-      <p className="text-muted-foreground text-sm">
+      <p className={className}>
         {t("openUntil", { at: instant(window.closesAt) })}
         {byHand === null
           ? null
@@ -108,14 +188,14 @@ export const ReplyWindowView = ({
 
   if (byHand === null) {
     return (
-      <p className="text-muted-foreground text-sm">
+      <p className={className}>
         {t("windowClosed", { at: instant(window.closesAt) })}
       </p>
     );
   }
 
   return (
-    <p className="text-muted-foreground text-sm">
+    <p className={className}>
       {personOpen
         ? t("personOpenUntil", { at: instant(byHand) })
         : t("personWindowClosed", { at: instant(byHand) })}
@@ -123,28 +203,45 @@ export const ReplyWindowView = ({
   );
 };
 
-/** A message sent from Peal, how it ended, and what a member may do about it. */
+/**
+ * A message sent from Peal that is not in the conversation yet, behind a
+ * line at its start: when, how it ended, its text, and what a member may
+ * do about it (`actions`).
+ */
 export const OutgoingMessageView = ({
   actions,
   message,
 }: {
   /** What the member may do, already wired; none otherwise. */
-  readonly actions: ReactNode;
+  readonly actions?: ReactNode;
   readonly message: InboxOutgoingMessage;
 }) => {
   const t = useTranslations("InboxMessages.message");
+  const instant = useInstant();
+
+  const troubled =
+    message.status === "failed" || message.status === "unconfirmed";
 
   return (
-    <li className="flex flex-col gap-2">
-      <p className="text-muted-foreground text-sm">
-        {t("sent", { status: message.status })}
+    <li className="flex flex-col gap-1 border-l-2 pl-3">
+      <p className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+        <span>{t("from", { at: instant(message.createdAt) })}</span>
+        <span aria-hidden>·</span>
+        <span className={troubled ? "text-destructive font-medium" : undefined}>
+          {t("sent", { status: message.status })}
+        </span>
       </p>
-      {actions}
+      <p dir="auto" className="text-sm break-words whitespace-pre-wrap">
+        {message.text}
+      </p>
+      {actions === undefined || actions === null ? null : (
+        <div className="-ml-2 flex flex-wrap gap-1 empty:hidden">{actions}</div>
+      )}
     </li>
   );
 };
 
-/** The buttons that settle a message Peal could not confirm. */
+/** The quiet buttons that settle a message Peal could not confirm. */
 export const ConfirmMessageView = ({
   disabled,
   onConfirm,
@@ -155,11 +252,12 @@ export const ConfirmMessageView = ({
   const t = useTranslations("InboxMessages.message");
 
   return (
-    <span className="flex flex-wrap gap-2">
+    <>
       <Button
-        variant="outline"
-        size="sm"
+        variant="ghost"
+        size="xs"
         disabled={disabled}
+        focusableWhenDisabled
         onClick={() => {
           onConfirm(true);
         }}
@@ -167,20 +265,21 @@ export const ConfirmMessageView = ({
         {t("confirmSent")}
       </Button>
       <Button
-        variant="outline"
-        size="sm"
+        variant="ghost"
+        size="xs"
         disabled={disabled}
+        focusableWhenDisabled
         onClick={() => {
           onConfirm(false);
         }}
       >
         {t("confirmNotSent")}
       </Button>
-    </span>
+    </>
   );
 };
 
-/** The box a member answers a conversation in. */
+/** The conversation's one composer, at the pane's foot. */
 export const MessageBoxView = ({
   error,
   maximum,
@@ -207,7 +306,7 @@ export const MessageBoxView = ({
   // Counted as the server counts the most a member may write.
   const written = text.trim();
   const tooLong = written.length > maximum;
-  const empty = text.trim() === "";
+  const empty = written === "";
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     onChange(event.target.value);
@@ -219,7 +318,10 @@ export const MessageBoxView = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-card flex flex-col gap-2 rounded-lg border p-3 shadow-sm"
+    >
       <Label htmlFor={id}>{t("label")}</Label>
       <Textarea
         dir="auto"
