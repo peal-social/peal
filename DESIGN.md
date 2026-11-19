@@ -1190,7 +1190,9 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   asked.
   Its art is the pixel cookie: beside the text, an 85 px square of 5 px
   cells holding a round cookie, its dough in the blue and lavender tints
-  (`#E8ECFD`, `#EDE7FF`), Bayer-dithered, its rim in lavender, and seven
+  (`#E8ECFD`, `#EDE7FF`), Bayer-dithered, its rim in lavender with a
+  baked edge inside it toward the bottom right (`#D5C9FF`, the pixel
+  glow's light lavender), and seven
   chips in the mark's blue, lavender and yellow that twinkle each on its
   own beat, as the pixel glow's cells do. Under it a readout in Geist
   Mono, 12 px, muted, says what each answer stores: `cookies: ?` at
@@ -1202,7 +1204,8 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   way, 700 ms: allowed, the cookie folds into one yellow pixel that
   drops off the art's foot, toward the footer where the answer can be
   changed, with a burst of pixels as the pricing slider's; refused, its
-  cells crumble and fall, and a scanline sweeps the empty square once.
+  cells crumble and fall, and a dithered scanline sweeps the empty
+  square once.
   The card sinks 8 px and fades over the last 200 ms of either exit. No
   answer is rewarded more than the other, and nothing is coloured as
   right or wrong. It appears by baking in: its cells light in a scatter
