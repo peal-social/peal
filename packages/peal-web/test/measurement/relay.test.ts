@@ -92,6 +92,23 @@ describe("the measurement relay", () => {
     })
   );
 
+  it.effect.each(["/i/v0/e/", "/i/v0/s/"])(
+    "forwards %s, where the project's configuration sends the SDK",
+    (path) =>
+      Effect.gen(function* newer() {
+        const { response, sent } = yield* relay(`/pulse${path}?ip=0`, on, {
+          body: "[]",
+          method: "POST",
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(
+          sent[0]?.url,
+          `https://eu.i.posthog.com${path}?ip=0`
+        );
+      })
+  );
+
   it.effect("forwards events and recordings to the host, query kept", () =>
     Effect.gen(function* events() {
       const { response, sent } = yield* relay(
@@ -141,7 +158,6 @@ describe("the measurement relay", () => {
     "/pulse/static/x.js",
     "/pulse/api/projects",
     "/pulse/flags/?v=2",
-    "/pulse/i/v0/e/",
     "/pulse/i/v1/logs",
     "/pulse/i/v1/metrics",
     "/pulse/array/phc_synthetic/config.js",
