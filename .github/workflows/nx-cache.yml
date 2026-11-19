@@ -1,0 +1,54 @@
+name: Nx cache
+
+# Every commit that lands on main saves Nx's cache for the build and the
+# typecheck, which every pull request's CI restores (ci.yml). Each project's
+# hash reads the whole bun.lock (nx.json's `workspaceConfig`), so a cache
+# saved once a night, by CI's nightly run, was stale by the first dependency
+# update of the day, and pull requests rebuilt everything. This saves it
+# again after each merge, and runs nothing else: CI checked the commit in
+# the merge queue before it landed.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer commit on main makes an older one's cache worth nothing.
+concurrency:
+  group: nx-cache
+  cancel-in-progress: true
+
+env:
+  DO_NOT_TRACK: "1"
+  NX_NO_CLOUD: "true"
+  # As in ci.yml, which restores what this saves.
+  NX_CACHE_DIRECTORY: .nx/cache
+  NX_MAX_CACHE_SIZE: 1GB
+
+jobs:
+  save:
+    name: save (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [build, typecheck]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          nx-cache: ${{ matrix.target }}
+      - run: bun run "$TARGET"
+        env:
+          TARGET: ${{ matrix.target }}
+      # The key ci.yml's jobs restore by its prefix, as its own jobs save it.
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            .nx/cache
+            .nx/workspace-data
+          key: nx-${{ runner.os }}-${{ matrix.target }}-${{ github.sha }}

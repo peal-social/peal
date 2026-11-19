@@ -26,7 +26,8 @@ env:
   NX_NO_CLOUD: "true"
   # Nx's cache, in the checkout where actions/cache saves and restores it:
   # Nx otherwise keeps it in a folder of the user's, outside the checkout.
-  # Saved from main's nightly run and restored by every other, up to 1 GB.
+  # Saved from main's nightly run, and for the build and the typecheck after
+  # every merge too (nx-cache.yml), and restored by every other, up to 1 GB.
   NX_CACHE_DIRECTORY: .nx/cache
   NX_MAX_CACHE_SIZE: 1GB
 
