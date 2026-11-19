@@ -105,6 +105,18 @@ export const keptProperties: ReadonlySet<string> = new Set([
   "results",
 ]);
 
+/**
+ * The user agent as the browser sent it, on a counted event alone: PostHog
+ * counts a visitor without a cookie by a hash of the day's salt, the
+ * address, the host and this, refuses an event without it
+ * (`cookieless_missing_user_agent`), and drops it and the address before
+ * it stores the event. A followed event is no part of that hash, and would
+ * keep it: it goes without.
+ */
+export const hashedProperties: ReadonlySet<string> = new Set([
+  "$raw_user_agent",
+]);
+
 /** The properties written from the page, never from what the SDK read. */
 export const recomputedProperties: ReadonlySet<string> = new Set([
   "$current_url",
@@ -168,8 +180,13 @@ export const sanitized = (
     return null;
   }
 
+  const counted = event.properties["$cookieless_mode"] === true;
+
   const kept = Object.fromEntries(
-    Object.entries(event.properties).filter(([key]) => keptProperties.has(key))
+    Object.entries(event.properties).filter(
+      ([key]) =>
+        keptProperties.has(key) || (counted && hashedProperties.has(key))
+    )
   );
 
   const referringDomain = referringDomainOf(page.referrer, page.host);
