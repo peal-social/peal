@@ -4,6 +4,8 @@ import { filtersOf } from "#posts/post-list-filter.ts";
 import {
   postFilterCommands,
   postFilterHref,
+  postFilterKey,
+  postFilterView,
 } from "#shell/post-filter-commands.ts";
 
 const workspace = "synthetic-studio";
@@ -40,5 +42,28 @@ describe(postFilterHref, () => {
           : { outcome: command.outcome, status: "finished" }
       )
     );
+  });
+});
+
+describe(postFilterKey, () => {
+  it("opens the Drafts and Needs approval tabs with G then D and G then A", () => {
+    expect(
+      postFilterCommands.flatMap((command) => {
+        const key = postFilterKey(command);
+
+        return key === null
+          ? []
+          : [
+              [
+                postFilterView(command),
+                key,
+                postFilterHref(workspace, command),
+              ],
+            ];
+      })
+    ).toStrictEqual([
+      ["drafts", "d", `/${workspace}/posts?status=draft`],
+      ["approval", "a", `/${workspace}/posts?status=awaitingApproval`],
+    ]);
   });
 });

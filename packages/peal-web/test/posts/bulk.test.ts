@@ -3,6 +3,7 @@ import { maxTagsPerPost } from "peal-contract";
 
 import {
   allOf,
+  decisionsOf,
   extended,
   keptTo,
   mayCancel,
@@ -90,6 +91,42 @@ describe(mayCancel, () => {
       ["finished", false, false],
       ["cancelled", false, false],
     ]);
+  });
+});
+
+describe(decisionsOf, () => {
+  const waiting = { id: "a", status: "awaitingApproval" } as const;
+
+  const pending = {
+    id: "approval-a",
+    postId: "a",
+    status: "pending",
+    subjectHash: "5a".repeat(32),
+  } as const;
+
+  it("decides on a waiting post with the approval the list of approvals gave", () => {
+    expect(decisionsOf([waiting], [pending])).toStrictEqual([
+      {
+        post: waiting,
+        shown: { approvalId: "approval-a", subjectHash: "5a".repeat(32) },
+      },
+    ]);
+  });
+
+  it("leaves out a post that does not wait, or whose approval is not listed", () => {
+    expect(
+      decisionsOf(
+        [
+          { id: "b", status: "scheduled" },
+          { id: "c", status: "awaitingApproval" },
+          waiting,
+        ],
+        [
+          { ...pending, id: "approval-b", postId: "b" },
+          { ...pending, id: "approval-c", postId: "c", status: "approved" },
+        ]
+      )
+    ).toStrictEqual([]);
   });
 });
 

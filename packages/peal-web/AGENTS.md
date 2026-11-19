@@ -63,14 +63,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `engagement:read`: not-found otherwise, as for staff acting as a member)
   with `…/inbox/[threadId]`, `…/inbox/reviews/[threadId]` and
   `…/inbox/messages/[conversationId]` beside it, `…/ads`,
-  `…/drafts`, `…/posts` (every post, whatever its state, for post:read
-  and channel:read), `…/posts/import` (a CSV file's posts, for
+  `…/posts` (every post, whatever its state, for post:read and
+  channel:read; its tabs are the drafts and the posts that need an
+  approval, and `…/drafts` and `…/approvals` only redirect to them),
+  `…/posts/import` (a CSV file's posts, for
   post:schedule, post:read and channel:read), `…/posts/new`,
   `…/posts/[postId]`, which opens
   a draft or a scheduled post in the composer, and shows a post that went
   out in `PostDetail` (each channel's status, attempts and reasons, with
-  repost and confirm, and its analytics), `…/approvals` (the posts that
-  wait), `…/settings` (with `members`, `invitations`, `tags`, `signatures`,
+  repost and confirm, and its analytics), `…/settings` (with `members`, `invitations`, `tags`, `signatures`,
   `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys` and `webhooks`) and `…/billing`. The staff console is
   `admin` (the system's health), `admin/users`, `admin/users/[userId]`,
   `admin/workspaces`, `admin/workspaces/[workspaceId]` (with its API
@@ -278,7 +279,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Keep the OAuth pages' views (`WorkspacePickerView`) apart from their state,
   so tests render each state: peal-web has no DOM test environment. A view
   under test imports nothing from `#i18n/navigation.ts`, which needs Next to
-  run: take links as props or children (`DraftItemView`,
+  run: take links as props or children (`PostItemView`,
   `MediaUsageNotice`).
 - Show dates in the reader's time zone. next-intl's server provider hands the
   client the server's zone (UTC in the image): `ViewerTimeZone`
@@ -490,7 +491,18 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `filtersOf`, `queryOf`, `withFilter`), so a link shows the same list,
   and asks `posts.search` (`postSearchPage`) with them; "Show more"
   passes the page's cursor with the same filters and sort, as the API
-  requires. An outcome is a filter on finished posts only.
+  requires. An outcome is a filter on finished posts only. Its tabs
+  (`postViews`, `postViewPath`) are All, Drafts, Scheduled and Needs
+  approval: drafts and approvals have no page of their own, G then D and
+  G then A open the tabs (`goViewKeys`, `#shell/keys.ts`), and the old
+  `…/drafts` and `…/approvals` redirect to them. Members with
+  post:approve decide there, through the calls the post's review makes
+  (`usePostDecisions`, naming the approval `review.pending` listed, so a
+  post changed since is refused): on a row that waits
+  (`PostDecisionActions`, at the row's end through `PostItemView`'s
+  `trailing`) and as actions of the choice in `PostSelectionBar`
+  (**Approve**, V, which asks first; **Request changes**, R, with one
+  comment in `RequestChangesDialog`), one toast saying how it went.
 - The CSV import (`…/posts/import`, `PostImport`, views in
   `post-import-views.tsx`, states in `#posts/import-state.ts`) never
   parses the file: the browser reads it as text (`#posts/import-file.ts`,

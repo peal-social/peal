@@ -192,6 +192,21 @@ export const postViews = [
   readonly view: string;
 }[];
 
+/** A tab of the posts list. */
+export type PostView = (typeof postViews)[number]["view"];
+
+/**
+ * Where a tab of the posts list is, under its workspace: `/posts` with the
+ * tab's status in the query, as the tab's own link writes it.
+ */
+export const postViewPath = (view: PostView): string => {
+  const status = postViews.find((listed) => listed.view === view)?.status;
+
+  return status === undefined
+    ? "/posts"
+    : `/posts?${queryOf({ ...noFilters, status })}`;
+};
+
 /** Whether a tab shows the list's status, so no chip repeats it. */
 export const isViewStatus = (status: PostStatus | undefined): boolean =>
   postViews.some((view) => view.status === status && status !== undefined);

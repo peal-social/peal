@@ -20,6 +20,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { PostDecisionActions } from "#components/posts/post-decision-actions.tsx";
 import { PostListToolbar } from "#components/posts/post-list-toolbar.tsx";
 import { PostSelectionBar } from "#components/posts/post-selection-bar.tsx";
 import { useChoosing } from "#components/posts/use-choosing.ts";
@@ -53,14 +54,20 @@ const noTags: readonly Tag[] = [];
 
 const noQueues: readonly Queue[] = [];
 
-/** One post, opening on its page, with its checkbox where posts are chosen. */
+/**
+ * One post, opening on its page, with its checkbox where posts are chosen,
+ * and Approve and Request changes on one that waits, for who may approve.
+ */
 const PostItem = ({
+  canApprove,
   channels,
   choosing,
   post,
   tags,
   workspaceId,
 }: {
+  /** Whether the member may approve, which a post that waits offers. */
+  readonly canApprove: boolean;
   readonly channels: readonly SocialChannel[];
   readonly choosing: Choosing | null;
   readonly post: Post;
@@ -79,6 +86,15 @@ const PostItem = ({
       focused={choosing?.focused === post.id}
       selected={chosen}
       tags={tagsOf(post.tagIds, tags)}
+      trailing={
+        canApprove && post.status === "awaitingApproval" ? (
+          <PostDecisionActions
+            post={post}
+            title={title}
+            workspaceId={workspaceId}
+          />
+        ) : null
+      }
       onPointerEnter={() => {
         choosing?.onFocus(post.id);
       }}
@@ -127,6 +143,7 @@ const LoadingList = () => {
 };
 
 interface PagesProps {
+  readonly canApprove: boolean;
   readonly channels: readonly SocialChannel[];
   readonly choosing: Choosing | null;
   readonly cursor: Option.Option<string>;
@@ -147,6 +164,7 @@ interface PagesProps {
 // A page of posts, then the pages after it that "Show more" opened, each
 // asked with the same filters and sort as the cursor needs.
 const PostPages = ({
+  canApprove,
   channels,
   choosing,
   cursor,
@@ -205,6 +223,7 @@ const PostPages = ({
             {value.items.map((post) => (
               <PostItem
                 key={post.id}
+                canApprove={canApprove}
                 channels={channels}
                 choosing={choosing}
                 post={post}
@@ -215,6 +234,7 @@ const PostPages = ({
           </ul>
           {Option.isSome(next) && more > 0 ? (
             <PostPages
+              canApprove={canApprove}
               channels={channels}
               choosing={choosing}
               cursor={next}
@@ -241,7 +261,9 @@ const PostPages = ({
 
 // Whether the member may do anything to several posts at once.
 const choosesPosts = (permissions: readonly Permission[]): boolean =>
-  permissions.includes("post:update") || permissions.includes("post:schedule");
+  permissions.includes("post:update") ||
+  permissions.includes("post:schedule") ||
+  permissions.includes("post:approve");
 
 const LoadedList = ({
   emptyAction,
@@ -368,6 +390,7 @@ const LoadedList = ({
         onChange={handleFilters}
       />
       <PostPages
+        canApprove={permissions.includes("post:approve")}
         channels={channels}
         choosing={choosing}
         cursor={Option.none()}

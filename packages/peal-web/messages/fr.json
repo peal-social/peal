@@ -1730,7 +1730,12 @@
       "filteredEmptyTitle": "Aucune publication correspondante",
       "views": "Vues",
       "view": "{view, select, drafts {Brouillons} scheduled {Programmées} approval {À approuver} other {Toutes}}",
-      "emptyView": "{view, select, drafts {Aucun brouillon} scheduled {Aucune publication programmée} approval {Aucune publication à approuver} other {Aucune publication}}"
+      "emptyView": "{view, select, drafts {Aucun brouillon} scheduled {Aucune publication programmée} approval {Aucune publication à approuver} other {Aucune publication}}",
+      "approve": "Approuver",
+      "approveLabel": "Approuver « {post} »",
+      "requestChanges": "Demander des modifications",
+      "requestChangesLabel": "Demander des modifications sur « {post} »",
+      "approvalChanged": "Cette publication a changé depuis le chargement de la liste. Rien n’a été décidé : ouvrez-la pour la relire."
     },
     "Import": {
       "title": "Importer des publications",
@@ -1872,7 +1877,10 @@
         "tagged": "{count, plural, one {# publication classée sous « {tag} ».} other {# publications classées sous « {tag} ».}}",
         "unscheduled": "{count, plural, one {# publication repassée en brouillon.} other {# publications repassées en brouillon.}}",
         "untagged": "{count, plural, one {« {tag} » retirée de # publication.} other {« {tag} » retirée de # publications.}}",
-        "allUntagged": "{count, plural, one {Étiquettes retirées de # publication.} other {Étiquettes retirées de # publications.}}"
+        "allUntagged": "{count, plural, one {Étiquettes retirées de # publication.} other {Étiquettes retirées de # publications.}}",
+        "approved": "{count, plural, one {# publication approuvée.} other {# publications approuvées.}}",
+        "approvedLate": "{count, plural, one {# publication approuvée.} other {# publications approuvées.}} {late, plural, one {# avait passé son heure : elle est de nouveau un brouillon, donnez-lui une nouvelle date.} other {# avaient passé leur heure : elles sont de nouveau des brouillons, donnez-leur une nouvelle date.}}",
+        "changesRequested": "{count, plural, one {Modifications demandées : # publication est de nouveau un brouillon.} other {Modifications demandées : # publications sont de nouveau des brouillons.}}"
       },
       "partly": "{done, number} faites, {failed, plural, one {# n’a pas pu l’être : relisez la liste, elle a pu changer.} other {# n’ont pas pu l’être : relisez la liste, elles ont pu changer.}}",
       "alreadyTagged": "Chaque publication sélectionnée est déjà sous « {tag} », ou a déjà autant d’étiquettes qu’une publication peut en porter.",
@@ -1895,22 +1903,18 @@
       "growUpKey": "Étendre la sélection vers le haut",
       "toggleKey": "Sélectionner la publication",
       "allKey": "Sélectionner toutes les publications listées",
-      "openKey": "Ouvrir la publication"
+      "openKey": "Ouvrir la publication",
+      "approve": "{partial, select, yes {Approuver ({count} sur {total})} other {Approuver}}",
+      "approveKey": "Approuver les publications sélectionnées",
+      "requestChanges": "{partial, select, yes {Demander des modifications ({count} sur {total})} other {Demander des modifications}}",
+      "requestChangesKey": "Demander des modifications sur les publications sélectionnées",
+      "approveTitle": "{count, plural, one {Approuver # publication ?} other {Approuver # publications ?}}",
+      "approveDescription": "{count, plural, one {Elle est programmée pour son heure. Si cette heure est passée, elle redevient un brouillon au lieu de partir en retard. Une approbation est définitive.} other {Chacune est programmée pour son heure. Une publication dont l’heure est passée redevient un brouillon au lieu de partir en retard. Une approbation est définitive.}}",
+      "approveConfirm": "{count, plural, one {Approuver # publication} other {Approuver # publications}}",
+      "notYet": "Pas maintenant",
+      "changesTitle": "{count, plural, one {Demander des modifications sur # publication ?} other {Demander des modifications sur # publications ?}}",
+      "changesDescription": "{count, plural, one {Elle redevient un brouillon et ne partira plus à son heure. Son auteur est prévenu, avec votre commentaire.} other {Elles redeviennent des brouillons et ne partiront plus à leur heure. Chaque auteur est prévenu, avec votre commentaire.}}"
     }
-  },
-  "Drafts": {
-    "title": "Brouillons",
-    "description": "Les publications de {workspace} qui n’ont pas encore d’heure, les plus récentes d’abord. Ouvrez-en une pour la terminer et la programmer.",
-    "loading": "Chargement des brouillons…",
-    "loadFailed": "Les brouillons n’ont pas pu être chargés.",
-    "reload": "Réessayer",
-    "loadMore": "Afficher plus",
-    "empty": "Aucun brouillon. Une publication enregistrée sans heure, ou retirée du calendrier, s’affiche ici.",
-    "noText": "Pas encore de texte",
-    "channels": "{count, plural, =0 {Aucun canal pour l’instant} one {# canal} other {# canaux}}",
-    "media": "{count, plural, =0 {Aucune image ni vidéo} one {# image ou vidéo} other {# images ou vidéos}}",
-    "newPost": "Nouvelle publication",
-    "tags": "Étiquettes"
   },
   "PostDetail": {
     "partsTitle": "Parties",
@@ -2981,8 +2985,6 @@
       "calendar": "Calendrier",
       "posts": "Publications",
       "allPosts": "Toutes les publications",
-      "drafts": "Brouillons",
-      "approvals": "Validations",
       "import": "Importer des publications",
       "channels": "Canaux",
       "media": "Médias",
@@ -4088,16 +4090,6 @@
       "changesSent": "Merci : votre demande est envoyée, et la publication est retournée à son auteur.",
       "decided": "{status, select, approved {Cette publication a été approuvée.} changesRequested {Des modifications ont été demandées sur cette publication.} other {Aucune approbation n’est demandée pour cette publication en ce moment.}}"
     },
-    "approvals": {
-      "nav": "Approbations",
-      "title": "À approuver",
-      "description": "Les publications de {workspace} qui attendent une approbation avant d’être programmées, les plus anciennes d’abord.",
-      "loading": "Chargement des approbations…",
-      "loadFailed": "Les approbations n’ont pas pu être chargées.",
-      "empty": "Aucune publication n’attend d’approbation.",
-      "open": "Ouvrir la publication",
-      "policy": "{policy, select, never {Cet espace de travail ne demande aucune approbation : qui peut programmer programme. Un propriétaire ou un administrateur peut le changer dans les paramètres.} contributorsAndApplications {Les publications des contributeurs et des applications attendent une approbation.} always {Toutes les publications attendent une approbation.} other {{policy}}}"
-    },
     "policy": {
       "title": "Approbations",
       "description": "Si les publications attendent une approbation avant d’être programmées. Une publication qui attend a son heure, et ne part qu’une fois approuvée par une personne qui peut approuver les publications, ou par une personne invitée dont le lien le permet.",
@@ -5097,7 +5089,9 @@
       "tag": "Changer ou ajouter des étiquettes",
       "backToDraft": "Repasser en brouillon",
       "cancel": "Annuler les publications",
-      "filter": "Filtrer la liste"
+      "filter": "Filtrer la liste",
+      "approve": "Approuver les publications",
+      "requestChanges": "Demander des modifications"
     }
   },
   "Lists": {

@@ -19,7 +19,6 @@ export type Page =
   | "platforms"
   | "analytics"
   | "apiKeys"
-  | "approvals"
   | "articles"
   | "assistant"
   | "billing"
@@ -27,7 +26,6 @@ export type Page =
   | "channelSets"
   | "channels"
   | "commentRules"
-  | "drafts"
   | "feeds"
   | "followUps"
   | "general"
@@ -86,12 +84,6 @@ const pages: Readonly<Record<Page, PageRule>> = {
     mode: "api",
     path: "/settings/api-keys",
   },
-  approvals: {
-    may: needs("post:read"),
-    mode: "studio",
-    path: "/approvals",
-    section: "posts",
-  },
   articles: {
     may: needs("post:read"),
     mode: "studio",
@@ -118,12 +110,6 @@ const pages: Readonly<Record<Page, PageRule>> = {
     section: "settings",
   },
   channels: { may: anyone, mode: "studio", path: "/channels" },
-  drafts: {
-    may: needs("post:create"),
-    mode: "studio",
-    path: "/drafts",
-    section: "posts",
-  },
   feeds: {
     may: needs("post:read"),
     mode: "studio",
@@ -253,7 +239,7 @@ const layout: Readonly<
 };
 
 const sectionPages: Readonly<Record<Section, readonly Page[]>> = {
-  posts: ["posts", "drafts", "articles", "approvals", "import"],
+  posts: ["posts", "articles", "import"],
   settings: [
     "general",
     "members",

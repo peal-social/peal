@@ -1,13 +1,13 @@
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 
-import { ApprovalsList } from "#components/review/approvals-list.tsx";
+import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
-import { membershipOf } from "#posts/membership.ts";
-import { workspacePageTitle } from "#shell/page-title.ts";
+import { postViewPath } from "#posts/post-list-filter.ts";
+import { workspacePath } from "#shell/workspace-path.ts";
 
-// The workspace's posts that wait for an approval, each opening on its
-// page, where those who may approve decide.
+// The posts that wait for an approval are a tab of Posts, Needs approval:
+// an address kept from before opens it there.
 const ApprovalsPage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/approvals">) => {
@@ -17,11 +17,10 @@ const ApprovalsPage = async ({
     notFound();
   }
 
-  const membership = await membershipOf(locale, workspaceId);
-
-  return <ApprovalsList workspaceId={membership.id} />;
+  return redirect({
+    href: workspacePath(workspaceId, postViewPath("approval")),
+    locale,
+  });
 };
-
-export const generateMetadata = workspacePageTitle("approvals");
 
 export default ApprovalsPage;

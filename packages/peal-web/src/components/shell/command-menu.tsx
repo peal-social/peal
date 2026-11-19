@@ -33,7 +33,10 @@ import { pageLinksOf } from "#shell/navigation.ts";
 import {
   postFilterCommands,
   postFilterHref,
+  postFilterKey,
+  postFilterView,
 } from "#shell/post-filter-commands.ts";
+import type { PostFilterCommand } from "#shell/post-filter-commands.ts";
 import { shortcutGroupsOf } from "#shell/shortcut-sheet.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
 
@@ -45,7 +48,8 @@ const AppLink: MenuLink = ({ children, href, ...props }) => (
 
 /**
  * The workspace's command menu, and the keys that work on every one of its
- * pages: C for a new post, G then a letter for the pages people open most.
+ * pages: C for a new post, G then a letter for the pages people open most
+ * and for the posts list's Drafts and Needs approval tabs.
  */
 export const CommandMenu = ({
   docsUrl,
@@ -106,6 +110,30 @@ export const CommandMenu = ({
     ? workspacePath(workspaceSlug, "/posts/new")
     : null;
 
+  // What a state of the posts list is called: a tab by its own name
+  // ("Drafts"), any other state as the list's filter names it.
+  const stateOf = (command: PostFilterCommand): string => {
+    const view = postFilterView(command);
+
+    if (view !== null) {
+      return posts("List.view", { view });
+    }
+
+    return command.kind === "status"
+      ? posts("status", { status: command.status })
+      : posts("outcome", { outcome: command.outcome });
+  };
+
+  // The posts list's states, where the member may open the list, with the
+  // keys of a tab that has some.
+  const postFilters = pages.some(({ page }) => page === "posts")
+    ? postFilterCommands.map((command) => ({
+        href: postFilterHref(workspaceSlug, command),
+        key: postFilterKey(command),
+        label: t("postsWith", { state: stateOf(command) }),
+      }))
+    : [];
+
   const bindings: KeyBinding[] = [
     ...(newPostHref === null
       ? []
@@ -133,22 +161,22 @@ export const CommandMenu = ({
             },
           ];
     }),
+    ...postFilters.flatMap(({ href, key, label }) =>
+      key === null
+        ? []
+        : [
+            {
+              description: t("goTo", { page: label }),
+              keys: ["g", key] as const,
+              run: () => {
+                router.push(href);
+              },
+            },
+          ]
+    ),
   ];
 
   useKeyMap(bindings);
-
-  // The posts list's states, where the member may open the list.
-  const postFilters = pages.some(({ page }) => page === "posts")
-    ? postFilterCommands.map((command) => ({
-        href: postFilterHref(workspaceSlug, command),
-        label: t("postsWith", {
-          state:
-            command.kind === "status"
-              ? posts("status", { status: command.status })
-              : posts("outcome", { outcome: command.outcome }),
-        }),
-      }))
-    : [];
 
   return (
     <>
@@ -201,6 +229,9 @@ export const CommandMenu = ({
         })}
         open={sheetOpen}
         pageName={(page) => shell(`pages.${page}`)}
+        viewName={(status) =>
+          t("postsWith", { state: stateOf({ kind: "status", status }) })
+        }
         onOpenChange={setSheetOpen}
       />
     </>

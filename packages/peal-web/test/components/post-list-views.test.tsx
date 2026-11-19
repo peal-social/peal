@@ -163,6 +163,23 @@ describe(PostItemView, () => {
     expect(html).toContain("Pas encore de texte");
     expect(html).toContain("Brouillon");
   });
+
+  it("ends a row with what it offers, after the post", async () => {
+    const html = await render(
+      "en",
+      <PostItemView
+        channels={[channel]}
+        post={post({ status: "awaitingApproval" })}
+        trailing={<button type="button">Approve</button>}
+      >
+        <span>Waiting</span>
+      </PostItemView>
+    );
+
+    expect(html).toMatch(
+      /Awaiting approval.*<\/div><button type="button">Approve<\/button><\/li>$/su
+    );
+  });
 });
 
 describe(PostListEmpty, () => {

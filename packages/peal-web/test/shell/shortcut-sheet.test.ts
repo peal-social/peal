@@ -1,6 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
 
-import { goKeys, listKeys, newPostKey, selectionKeys } from "#shell/keys.ts";
+import {
+  goKeys,
+  goViewKeys,
+  listKeys,
+  newPostKey,
+  selectionKeys,
+} from "#shell/keys.ts";
 import { shortcutGroupsOf } from "#shell/shortcut-sheet.ts";
 
 const rowsOf = (groups: ReturnType<typeof shortcutGroupsOf>) =>
@@ -9,6 +15,12 @@ const rowsOf = (groups: ReturnType<typeof shortcutGroupsOf>) =>
 const actionsOf = (canCreate: boolean) =>
   rowsOf(shortcutGroupsOf({ canCreate, pages: [] })).map(
     ({ action }) => action
+  );
+
+// The posts list's tabs the sheet's "Go to" lines open.
+const viewsOf = (pages: Parameters<typeof shortcutGroupsOf>[0]["pages"]) =>
+  rowsOf(shortcutGroupsOf({ canCreate: true, pages })).flatMap(({ status }) =>
+    status === undefined ? [] : [status]
   );
 
 describe(shortcutGroupsOf, () => {
@@ -25,6 +37,15 @@ describe(shortcutGroupsOf, () => {
     ).toStrictEqual([
       ["home", "g h"],
       ["posts", "g p"],
+      [undefined, "g d"],
+      [undefined, "g a"],
+    ]);
+  });
+
+  it("goes to the Drafts and Needs approval tabs only with the posts list", () => {
+    expect([viewsOf(["home", "posts"]), viewsOf(["home"])]).toStrictEqual([
+      ["draft", "awaitingApproval"],
+      [],
     ]);
   });
 
@@ -47,7 +68,12 @@ describe(shortcutGroupsOf, () => {
   });
 
   it("never binds a list's key to G, New post or a G sequence's second key", () => {
-    const taken = new Set(["g", newPostKey, ...Object.values(goKeys)]);
+    const taken = new Set([
+      "g",
+      newPostKey,
+      ...Object.values(goKeys),
+      ...Object.values(goViewKeys),
+    ]);
 
     const clashes = [
       ...Object.values(listKeys),

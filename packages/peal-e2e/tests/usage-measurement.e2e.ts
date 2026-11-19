@@ -286,7 +286,7 @@ describe("the web app's measurement", { serial: true }, () => {
     // A page opened without a reload counts too.
     await screen
       .getByRole("navigation", "Workspace")
-      .getByRole("link", "Drafts")
+      .getByRole("link", "Articles")
       .tap();
 
     await eventually(
@@ -296,7 +296,7 @@ describe("the web app's measurement", { serial: true }, () => {
             fromBrowser(event) &&
             event.event === "$pageview" &&
             event.distinctId !== memberId &&
-            textOf(event.properties["$current_url"]).endsWith("/:id/drafts")
+            textOf(event.properties["$current_url"]).endsWith("/:id/articles")
         ),
       "an anonymous page view of a page opened without a reload"
     );
@@ -421,7 +421,7 @@ describe("the web app's measurement", { serial: true }, () => {
 
     await screen
       .getByRole("navigation", "Workspace")
-      .getByRole("link", "Drafts")
+      .getByRole("link", "Articles")
       .tap();
 
     await eventually(
@@ -430,7 +430,7 @@ describe("the web app's measurement", { serial: true }, () => {
           (event) =>
             event.event === "$pageview" &&
             event.distinctId === memberId &&
-            textOf(event.properties["$current_url"]).endsWith("/:id/drafts")
+            textOf(event.properties["$current_url"]).endsWith("/:id/articles")
         ),
       "the member's page view of a page opened without a reload"
     );

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import type { Permission } from "peal-contract";
 
-import { navigationOf } from "#shell/navigation.ts";
+import { navigationOf, pageLinksOf } from "#shell/navigation.ts";
 
 const workspace = "synthetic-studio";
 const base = `/${workspace}`;
@@ -99,27 +99,41 @@ describe(navigationOf, () => {
   });
 
   it("opens the Posts section on its pages", () => {
-    const draft = navigationOf({
-      pathname: `${base}/drafts`,
+    const imported = navigationOf({
+      pathname: `${base}/posts/import`,
       permissions: owner,
       workspace,
     });
 
-    expect(draft.section).toBe("posts");
-    expect(draft.sectionLinks.map(({ page }) => page)).toStrictEqual([
+    expect(imported.section).toBe("posts");
+    expect(imported.sectionLinks.map(({ page }) => page)).toStrictEqual([
       "posts",
-      "drafts",
       "articles",
-      "approvals",
       "import",
     ]);
-    expect(draft.sectionLinks.find(({ current }) => current)?.page).toBe(
-      "drafts"
+    expect(imported.sectionLinks.find(({ current }) => current)?.page).toBe(
+      "import"
     );
-    expect(draft.breadcrumb).toStrictEqual({
-      page: "drafts",
+    expect(imported.breadcrumb).toStrictEqual({
+      page: "import",
       section: "posts",
     });
+  });
+
+  it("has no Drafts or Approvals page, as they are tabs of Posts", () => {
+    const opened = ["/drafts", "/approvals"].map(
+      (gone) =>
+        navigationOf({
+          pathname: `${base}${gone}`,
+          permissions: owner,
+          workspace,
+        }).current
+    );
+
+    expect(opened).toStrictEqual([null, null]);
+    expect(
+      pageLinksOf({ permissions: owner, workspace }).map(({ page }) => page)
+    ).toStrictEqual(expect.not.arrayContaining(["drafts", "approvals"]));
   });
 
   it("keeps an article's pages under Posts, and names them", () => {

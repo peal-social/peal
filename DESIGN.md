@@ -654,7 +654,10 @@ last.
 
 **`list`** — A list page's items sit in one bordered list,
 `{rounded.lg}`, a hairline between rows, never a card each. A row is 12 px
-by 16 px inside and opens what it shows.
+by 16 px inside and opens what it shows. A row's own actions sit at its
+end as `xs` ghost buttons, icon first, each naming its item for a screen
+reader: a post that waits for an approval offers **Approve** and
+**Request changes** to members who may approve, as its page does.
 
 **`table-row`** — About 44 px; headers in `{typography.caption}`, upper
 case, muted.
@@ -678,8 +681,9 @@ high, the 4 px radius. Two pressed one after the other read "G then C",
 the word in muted text and in the reader's language.
 
 - **C** opens a new post; **G then** a letter opens the pages people open
-  most (H home, C calendar, P posts, D drafts, A approvals, I inbox, M
-  media, Y analytics, S settings). Letters are the same in every language.
+  most (H home, C calendar, P posts, I inbox, M media, Y analytics, S
+  settings) and two tabs of the posts list (D Drafts, A Needs approval).
+  Letters are the same in every language.
 - A letter never runs while focus is in a field or while a dialog is
   open; keys with ⌘ or Ctrl always do. Every key the app binds is shown
   beside its command in the command menu.
@@ -759,9 +763,10 @@ their workspaces under it.
 **Page names.** A page has one name, used in the sidebar, the breadcrumb,
 its title and the browser's tab ("Posts · Synthetic studio", and "Report
 · Peal" on the person's own pages): the short
-one (Posts, Approvals, Notifications, Billing, Account, Report). A page
+one (Posts, Notifications, Billing, Account, Report). A page
 that opens one item is named after the item's kind (Comment, Message,
-Review). Home keeps "Write once." as a greeting under the name.
+Review). A state of a list is a tab of its page, never a page of its own:
+drafts and the posts that need an approval are tabs of Posts. Home keeps "Write once." as a greeting under the name.
 
 ### Command menu
 
@@ -789,9 +794,10 @@ bar's button or `⌘K` (Ctrl+K elsewhere) on any page of a workspace.
 - **A choice** ("Change or add tags…") opens a page of its options, which
   typing narrows; an option that is on or off has a box (✓ all, – some).
 - **The list** is in groups with a small label: Create, Go to, then the
-  sections (Posts, with the posts list's states: "Posts: Scheduled",
-  "Posts: Failed", "Posts: Partly published", "Posts: To check";
-  Settings), PealAPI, Workspaces and Help. A row is 34 px: the page's icon
+  sections (Posts, with the posts list's states: "Posts: Drafts",
+  "Posts: Scheduled", "Posts: Needs approval", "Posts: Failed", "Posts:
+  Partly published", "Posts: To check", a tab with its keys; Settings),
+  PealAPI, Workspaces and Help. A row is 34 px: the page's icon
   (the sidebar's) at 16 px in muted text, its name, and its keys at the
   end. Only what the member's role opens is listed. The highlighted row
   takes `accent`, as a menu's does.
@@ -899,8 +905,12 @@ way, so a person who learns one screen knows them all.
   (a tag's change, which puts back each item's own tags); what cannot
   asks first, naming how many ("Cancel 3 posts?"). One toast says how it
   went, with how many could not be done when some could not.
-- On the posts list: **Change or add tags…** (L), **Back to draft** (U,
-  scheduled or awaiting approval) and **Cancel** (⇧⌫, not yet out).
+- On the posts list: **Change or add tags…** (L), **Approve** (V,
+  awaiting approval, for members who may approve; it asks first, as an
+  approval cannot be taken back), **Request changes** (R, the same posts;
+  a dialog asks for the one comment their authors are told), **Back to
+  draft** (U, scheduled or awaiting approval) and **Cancel** (⇧⌫, not yet
+  out).
 
 ### Menus, dialogs and sheets
 

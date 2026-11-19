@@ -11,8 +11,13 @@ const app = fileURLToPath(
   new URL("../../src/app/[locale]/(app)", import.meta.url)
 );
 
-// `/` opens a workspace and shows nothing of its own.
-const redirectOnly = "(personal)/page.tsx";
+// `/` opens a workspace and shows nothing of its own; Drafts and Approvals
+// open their tabs of Posts, the addresses they had kept working.
+const redirectsOnly = new Set([
+  "(personal)/page.tsx",
+  "[workspaceId]/approvals/page.tsx",
+  "[workspaceId]/drafts/page.tsx",
+]);
 
 const pagesIn = (folder: string, prefix = ""): string[] =>
   readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
@@ -27,7 +32,7 @@ const pagesIn = (folder: string, prefix = ""): string[] =>
 
 describe("the app's pages", () => {
   it("each name themselves for the browser's tab", () => {
-    const pages = pagesIn(app).filter((page) => page !== redirectOnly);
+    const pages = pagesIn(app).filter((page) => !redirectsOnly.has(page));
 
     const untitled = pages.filter(
       (page) =>

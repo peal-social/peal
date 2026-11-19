@@ -20,6 +20,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { channelName } from "#channels/channel-name.ts";
 import { TagList } from "#components/tags/tag-views.tsx";
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
+import type { PostView } from "#posts/post-list-filter.ts";
 
 // Views of the posts list, which take their links as props or children,
 // so tests render each state without Next.
@@ -37,7 +38,7 @@ const noTags: readonly Tag[] = [];
 /**
  * One post: its title (`children`, which links it to its page), its time
  * in the reader's zone, its status and, once finished, its outcome, its
- * channels by name and its tags.
+ * channels by name and its tags, then what `trailing` offers.
  */
 export const PostItemView = ({
   channels,
@@ -49,6 +50,7 @@ export const PostItemView = ({
   post,
   selected = false,
   tags = noTags,
+  trailing = null,
 }: {
   /** The workspace's channels, which name the post's. */
   readonly channels: readonly SocialChannel[];
@@ -65,6 +67,8 @@ export const PostItemView = ({
   readonly post: Post;
   /** The post's tags, among the workspace's. */
   readonly tags?: readonly Tag[];
+  /** At the row's end: what may be decided on a post that waits. */
+  readonly trailing?: ReactNode;
 }) => {
   const t = useTranslations("Posts.List");
   const tPosts = useTranslations("Posts");
@@ -131,6 +135,7 @@ export const PostItemView = ({
         </p>
         <TagList label={t("tags")} tags={tags} />
       </div>
+      {trailing}
     </li>
   );
 };
@@ -152,7 +157,7 @@ export const PostListEmpty = ({
   /** The next step when there is no post yet: New post, if allowed. */
   readonly newPost?: ReactNode;
   /** The tab the list shows, which names what it lacks ("No drafts"). */
-  readonly view?: "all" | "approval" | "drafts" | "scheduled";
+  readonly view?: PostView;
 }) => {
   const t = useTranslations("Posts.List");
 

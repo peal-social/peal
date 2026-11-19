@@ -1,5 +1,5 @@
 import { maxTagsPerPost } from "peal-contract";
-import type { PostStatus } from "peal-contract";
+import type { ApprovalStatus, PostStatus } from "peal-contract";
 
 // Several posts of the list chosen at once, and what may be done to them
 // together: the list's checkboxes, and the bar that acts on the choice.
@@ -150,6 +150,48 @@ export const mayUnschedule = ({ status }: Bulk): boolean =>
 /** Cancel: a post not yet out, a draft included. */
 export const mayCancel = ({ status }: Bulk): boolean =>
   status === "draft" || mayUnschedule({ status });
+
+/** An approval as the list of those that wait gives it. */
+interface Listed {
+  readonly id: string;
+  readonly postId: string;
+  readonly status: ApprovalStatus;
+  readonly subjectHash: string;
+}
+
+/** A post that waits, and the approval a decision on it names. */
+export interface Decision<P> {
+  readonly post: P;
+  readonly shown: { readonly approvalId: string; readonly subjectHash: string };
+}
+
+/**
+ * The posts that wait for an approval, each with the approval a decision
+ * names (its id and fingerprint), as the list of approvals that wait gave
+ * it: a decision is for what was read. A post whose approval is not listed
+ * is left out, as nothing could be decided on it.
+ */
+export const decisionsOf = <P extends Bulk & { readonly id: string }>(
+  posts: readonly P[],
+  approvals: readonly Listed[]
+): readonly Decision<P>[] =>
+  posts.flatMap((post) => {
+    const approval = approvals.find(
+      ({ postId, status }) => postId === post.id && status === "pending"
+    );
+
+    return post.status === "awaitingApproval" && approval !== undefined
+      ? [
+          {
+            post,
+            shown: {
+              approvalId: approval.id,
+              subjectHash: approval.subjectHash,
+            },
+          },
+        ]
+      : [];
+  });
 
 /** Whether every chosen post has a tag, some do, or none. */
 export type TagState = "all" | "none" | "some";

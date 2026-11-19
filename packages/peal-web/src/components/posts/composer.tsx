@@ -94,6 +94,7 @@ import { followUpsOf, partsFitOn, partsOf } from "#posts/parts.ts";
 import type { PartDraft } from "#posts/parts.ts";
 import { pollContentOf, pollFitsOn, pollOf } from "#posts/poll.ts";
 import type { PollDraft } from "#posts/poll.ts";
+import { postViewPath } from "#posts/post-list-filter.ts";
 import { publishNowOf, whereItGoes } from "#posts/publish-now.ts";
 import { queuedSlotFormat, queuedSlotWeek } from "#posts/queued-slot.ts";
 import { startChoiceOf } from "#posts/start-time.ts";
@@ -780,7 +781,7 @@ export const Composer = ({
   const discard = async (id: string) => {
     if (await requests.discard(id)) {
       toast.success(t("discarded"));
-      router.push(workspaceHref(workspaceId, "/drafts"));
+      router.push(workspaceHref(workspaceId, postViewPath("drafts")));
     }
   };
 

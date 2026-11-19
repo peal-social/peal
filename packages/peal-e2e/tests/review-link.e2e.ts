@@ -64,6 +64,7 @@ describe("a review link", { serial: true }, () => {
 
   test("asks for an approval instead of scheduling", async ({
     app,
+    browser,
     screen,
   }) => {
     await app.open(`/${slug}/posts/new`);
@@ -91,13 +92,19 @@ describe("a review link", { serial: true }, () => {
       screen.getByRole("heading", "Post awaiting approval")
     ).toBeVisible();
 
-    // It also shows under Approvals.
+    // It also shows under the Needs approval tab of Posts, which the old
+    // Approvals page's address opens, with what an owner may decide.
     await app.open(`/${slug}/approvals`);
     await expect(
-      screen.getByRole("heading", "Approvals", { level: 1 })
+      screen.getByRole("heading", "Posts", { level: 1 })
     ).toBeVisible();
+    await expect(browser).toHaveURL(`/${slug}/posts?status=awaitingApproval`);
     await expect(
-      screen.getByRole("main").getByRole("link", "Open the post")
+      screen.getByRole("main").getByRole("link", text)
+    ).toBeVisible();
+    await expect(screen.getByRole("button", `Approve “${text}”`)).toBeVisible();
+    await expect(
+      screen.getByRole("button", `Request changes on “${text}”`)
     ).toBeVisible();
   });
 

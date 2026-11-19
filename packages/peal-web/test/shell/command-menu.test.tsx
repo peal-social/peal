@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { CommandMenuView } from "#components/shell/command-menu-view.tsx";
 import type { MenuLink } from "#components/shell/command-menu-view.tsx";
 import { loadMessages } from "#i18n/messages.ts";
-import { goKeys, newPostKey } from "#shell/keys.ts";
+import { goKeys, goViewKeys, newPostKey } from "#shell/keys.ts";
 import { pageLinksOf } from "#shell/navigation.ts";
 
 const workspaceId = "00000000-0000-7000-8000-0000000000a1";
@@ -69,8 +69,8 @@ describe("the keys", () => {
     pageLinksOf({ permissions: owner, workspace }).map(({ page }) => page)
   );
 
-  it("give each page its own second key", () => {
-    const keys = Object.values(goKeys);
+  it("give each page and each tab of Posts its own second key", () => {
+    const keys = [...Object.values(goKeys), ...Object.values(goViewKeys)];
 
     expect(new Set(keys).size).toBe(keys.length);
   });
@@ -84,7 +84,9 @@ describe("the keys", () => {
   it("bind without a clash between a sequence and a key alone", () => {
     const sequences = [
       newPostKey,
-      ...Object.values(goKeys).map((key) => `g ${key}`),
+      ...[...Object.values(goKeys), ...Object.values(goViewKeys)].map(
+        (key) => `g ${key}`
+      ),
     ];
 
     expect(() => registrationsOf(sequences)).not.toThrow();
