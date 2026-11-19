@@ -51,6 +51,37 @@ describe("the blog's settings", () => {
     });
   });
 
+  it("measures only with a key and a host", () => {
+    const host = "/pulse/site";
+    const key = "phc_synthetic";
+
+    expect(blogSettings({ BLOG_POSTHOG_KEY: key }).measurement).toBeUndefined();
+    expect(
+      blogSettings({ BLOG_POSTHOG_HOST: host }).measurement
+    ).toBeUndefined();
+    expect(
+      blogSettings({
+        BLOG_POSTHOG_COOKIE_DOMAIN: "synthetic.test",
+        BLOG_POSTHOG_HOST: host,
+        BLOG_POSTHOG_KEY: key,
+      }).measurement
+    ).toStrictEqual({
+      cookieDomain: "synthetic.test",
+      environment: "production",
+      host,
+      key,
+    });
+  });
+
+  it("refuses a malformed key", () => {
+    expect(() =>
+      blogSettings({
+        BLOG_POSTHOG_HOST: "/pulse/site",
+        BLOG_POSTHOG_KEY: "synthetic",
+      })
+    ).toThrow(/BLOG_POSTHOG_KEY/u);
+  });
+
   it("reads only the blog's variables from an environment", () => {
     expect(
       blogEnvironment({

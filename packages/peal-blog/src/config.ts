@@ -7,6 +7,8 @@ import {
 } from "peal-ui/lib/site/links";
 import type { PlausibleScript } from "peal-ui/lib/site/links";
 import type { Locale } from "peal-ui/lib/site/locales";
+import { measurementSettings } from "peal-ui/lib/site/measurement/settings";
+import type { MeasurementSettings } from "peal-ui/lib/site/measurement/settings";
 
 // The blog's own settings, read from the environment when the server
 // starts (the image carries none). Each is optional: unset or empty turns
@@ -18,6 +20,10 @@ const SettingsSchema = Schema.Struct({
   BLOG_DOCS_URL: Schema.optional(Schema.String),
   BLOG_PLAUSIBLE_DOMAIN: Schema.optional(Schema.String),
   BLOG_PLAUSIBLE_HOST: Schema.optional(Schema.String),
+  BLOG_POSTHOG_COOKIE_DOMAIN: Schema.optional(Schema.String),
+  BLOG_POSTHOG_ENVIRONMENT: Schema.optional(Schema.String),
+  BLOG_POSTHOG_HOST: Schema.optional(Schema.String),
+  BLOG_POSTHOG_KEY: Schema.optional(Schema.String),
   BLOG_SITE_URL: Schema.optional(Schema.String),
 });
 
@@ -28,6 +34,11 @@ export interface BlogSettings {
   readonly discord: string | undefined;
   /** A page of the docs in a language, when BLOG_DOCS_URL is set. */
   readonly docs: (locale: Locale, path: string) => string | undefined;
+  /**
+   * Measurement with PostHog and its consent notice, as the site has them,
+   * when BLOG_POSTHOG_KEY and BLOG_POSTHOG_HOST are both set.
+   */
+  readonly measurement: MeasurementSettings | undefined;
   readonly plausible: PlausibleScript | undefined;
   /**
    * The site's origin, such as https://peal.social, for the links to its
@@ -55,6 +66,13 @@ export const blogSettings = (values: BlogEnvironment): BlogSettings => {
     app: (locale, path) => siteLink(app, locale, path),
     discord: present(values.BLOG_DISCORD_URL),
     docs: (locale, path) => siteLink(docs, locale, path),
+    measurement: measurementSettings({
+      cookieDomain: values.BLOG_POSTHOG_COOKIE_DOMAIN,
+      environment: values.BLOG_POSTHOG_ENVIRONMENT,
+      host: values.BLOG_POSTHOG_HOST,
+      key: values.BLOG_POSTHOG_KEY,
+      prefix: "BLOG",
+    }),
     plausible: plausibleScript(
       values.BLOG_PLAUSIBLE_DOMAIN,
       values.BLOG_PLAUSIBLE_HOST
