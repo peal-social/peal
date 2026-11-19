@@ -44,4 +44,8 @@ export const retiredVisitor = (): string | undefined =>
 
 /** Whether this browser holds PostHog's cookie for the project. */
 export const holdsVisitor = (key: string): boolean =>
-  Cookies.get(visitorCookieName(key)) !== undefined;
+  // By name alone: js-cookie skips a cookie whose value it cannot decode,
+  // which would read as a cookie lost.
+  document.cookie
+    .split(";")
+    .some((cookie) => cookie.trim().startsWith(`${visitorCookieName(key)}=`));
