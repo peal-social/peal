@@ -6,6 +6,7 @@ import { AnalyticsDelivery } from "#shared/application/analytics-delivery.ts";
 import { AnalyticsScope } from "#shared/application/analytics-scope.ts";
 import { BrowserMeasurement } from "#shared/application/browser-measurement.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
+import { SiteMeasurement } from "#shared/application/site-measurement.ts";
 import { postHogDelivery } from "#shared/infrastructure/posthog-delivery.ts";
 import { postHogConfig } from "#shared/infrastructure/posthog-settings.ts";
 import type { PostHogSettings } from "#shared/infrastructure/posthog-settings.ts";
@@ -31,6 +32,21 @@ const browserMeasurementOf = (settings: PostHogSettings) =>
     })
   );
 
+// A sign-up links the site's visitor only where PEAL_POSTHOG_SITE is on
+// too: the visitor's cookie is named after the project's token.
+const siteMeasurementOf = (settings: PostHogSettings) =>
+  Layer.succeed(
+    SiteMeasurement,
+    SiteMeasurement.of({
+      settings: settings.site.pipe(
+        Option.map(({ cookieDomain }) => ({
+          cookieDomain,
+          token: Redacted.value(settings.key),
+        }))
+      ),
+    })
+  );
+
 // Events to the operator's PostHog project. The fetch client directly,
 // not the public one: the host is the operator's setting, as the writing
 // assistant's is.
@@ -52,6 +68,7 @@ const postHogAnalytics = (settings: PostHogSettings) =>
       }).pipe(Layer.provide(Layer.merge(FetchHttpClient.layer, IdsLive)))
     ),
     Layer.merge(browserMeasurementOf(settings)),
+    Layer.merge(siteMeasurementOf(settings)),
     Layer.tap(() =>
       Option.isSome(settings.erasure)
         ? Effect.void
@@ -66,14 +83,16 @@ const postHogAnalytics = (settings: PostHogSettings) =>
 const noAnalytics = Layer.mergeAll(
   ProductAnalytics.none,
   AnalyticsDelivery.none,
-  BrowserMeasurement.none
+  BrowserMeasurement.none,
+  SiteMeasurement.none
 );
 
 /**
  * Product analytics as the server runs it: to PostHog when
  * PEAL_POSTHOG_KEY is set (`posthog-settings.ts` lists the settings), and
  * nowhere otherwise, with whether the web app measures its use too
- * (BrowserMeasurement), and the durable deletion of erased persons
+ * (BrowserMeasurement), whether a sign-up links the site's visitor to the
+ * account (SiteMeasurement), and the durable deletion of erased persons
  * (ForgetAnalyticsV1) registered on the workflow engine the server runs.
  * One per build of the server: what it queued is sent when it is
  * released, after the HTTP server and the workers. Needs the

@@ -85,6 +85,77 @@ describe("the PostHog settings", () => {
     })
   );
 
+  it.effect(
+    "link the site's visitors only when PEAL_POSTHOG_SITE is on, on the cookie domain named",
+    () =>
+      Effect.gen(function* site() {
+        const off = yield* settingsOf({ PEAL_POSTHOG_KEY: key });
+
+        assert.isTrue(Option.isNone(off.site));
+
+        const on = yield* settingsOf({
+          PEAL_POSTHOG_KEY: key,
+          PEAL_POSTHOG_SITE: "on",
+        });
+
+        assert.deepStrictEqual(
+          on.site,
+          Option.some({ cookieDomain: Option.none() })
+        );
+
+        const domain = yield* settingsOf({
+          PEAL_POSTHOG_KEY: key,
+          PEAL_POSTHOG_SITE: "on",
+          PEAL_POSTHOG_SITE_COOKIE_DOMAIN: " peal.example.test ",
+        });
+
+        assert.deepStrictEqual(
+          domain.site,
+          Option.some({ cookieDomain: Option.some("peal.example.test") })
+        );
+
+        const blank = yield* settingsOf({
+          PEAL_POSTHOG_KEY: key,
+          PEAL_POSTHOG_SITE: "on",
+          PEAL_POSTHOG_SITE_COOKIE_DOMAIN: "",
+        });
+
+        assert.deepStrictEqual(
+          blank.site,
+          Option.some({ cookieDomain: Option.none() })
+        );
+
+        for (const env of [
+          { PEAL_POSTHOG_KEY: key, PEAL_POSTHOG_SITE: "yes" },
+          // The cookie's name holds the key: a project token alone.
+          {
+            PEAL_POSTHOG_KEY: "phx_synthetic_personal",
+            PEAL_POSTHOG_SITE: "on",
+          },
+          {
+            PEAL_POSTHOG_KEY: key,
+            PEAL_POSTHOG_SITE: "on",
+            PEAL_POSTHOG_SITE_COOKIE_DOMAIN: "https://peal.example.test",
+          },
+          {
+            PEAL_POSTHOG_KEY: key,
+            PEAL_POSTHOG_SITE: "on",
+            PEAL_POSTHOG_SITE_COOKIE_DOMAIN: ".peal.example.test",
+          },
+          {
+            PEAL_POSTHOG_KEY: key,
+            PEAL_POSTHOG_SITE: "on",
+            PEAL_POSTHOG_SITE_COOKIE_DOMAIN: "peal.example.test; Path=/",
+          },
+        ]) {
+          assert.isTrue(yield* fails(env), JSON.stringify(env));
+        }
+
+        // Read only with a key.
+        assert.isTrue(Option.isNone(yield* read({ PEAL_POSTHOG_SITE: "on" })));
+      })
+  );
+
   it.effect("name production under NODE_ENV=production", () =>
     Effect.gen(function* production() {
       const settings = yield* settingsOf({

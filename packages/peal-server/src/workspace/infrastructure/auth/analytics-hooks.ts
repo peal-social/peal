@@ -68,12 +68,13 @@ const quietly = <A, E, R>(what: string, effect: Effect.Effect<A, E, R>) =>
   );
 
 /**
- * An account was made: the person's properties (`kind`, `locale`, and
+ * An account was made: the site's visitor the request carried linked to
+ * it, where there is one, the person's properties (`kind`, `locale`, and
  * once, when and how they signed up), then `user_signed_up`.
  */
 export const toldSignUp = (
   analytics: Analytics,
-  { locale, method, userId }: CreatedUser
+  { locale, method, userId, visitorId }: CreatedUser
 ) =>
   quietly(
     "of a sign-up",
@@ -81,6 +82,10 @@ export const toldSignUp = (
       onNone: () => Effect.void,
       onSome: (id) =>
         Effect.gen(function* signedUp() {
+          if (Option.isSome(visitorId)) {
+            yield* analytics.link(id, visitorId.value);
+          }
+
           yield* analytics.identify(id, {
             set: { kind: "user", locale },
             setOnce: { signed_up_at: yield* now, signup_method: method },

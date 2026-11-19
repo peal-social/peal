@@ -80,6 +80,9 @@ several:
   server's architecture, the HTTP API and its middlewares, the cluster, the
   database, and the list of the contexts' guides.
 - [`packages/peal-web/AGENTS.md`](packages/peal-web/AGENTS.md): the web front.
+- [`packages/peal-ui/AGENTS.md`](packages/peal-ui/AGENTS.md): the design
+  system, and the consent notice and measurement the site, the docs and
+  the blog share.
 - [`packages/peal-contract/AGENTS.md`](packages/peal-contract/AGENTS.md):
   the API contract, and how it may change.
 - [`packages/peal-cli/AGENTS.md`](packages/peal-cli/AGENTS.md): the command
@@ -287,6 +290,11 @@ self-hoster needs only Postgres and an S3-compatible store:
 - product analytics: PostHog, off until `PEAL_POSTHOG_KEY` is set, and
   the web app's measurement, which asks each person, off until
   `PEAL_POSTHOG_WEB` is `on` too;
+- the site's, the docs' and the blog's measurement: off until their key
+  and host are set (`SITE_POSTHOG_*`, `DOCS_POSTHOG_*`, `BLOG_POSTHOG_*`),
+  then counted without a cookie until a visitor answers peal-ui's consent
+  notice; `PEAL_POSTHOG_SITE=on` has the web app relay their events and a
+  sign-up link a visitor who allowed it;
 - telemetry: OTLP export of logs, metrics and traces only when
   `OTEL_EXPORTER_OTLP_ENDPOINT` is set (`src/app/observability.ts` defaults
   each `OTEL_<SIGNAL>_EXPORTER` to `otlp`; set one to `none` to turn that
@@ -363,13 +371,14 @@ self-hoster needs only Postgres and an S3-compatible store:
 - `nx run peal-docs:build` and `nx run peal-site:build` write each package's
   `dist/`, cached. Their settings are optional, and unset or empty turns the
   feature off: docs `DOCS_SITE_URL`, `DOCS_APP_URL` (the sidebar's button
-  to the app), `DOCS_PLAUSIBLE_DOMAIN`, `DOCS_PLAUSIBLE_HOST`,
-  `DOCS_ASSISTANT_MODEL` (the assistant, which makes `dist/` a Node server,
+  to the app), `DOCS_POSTHOG_*` and `DOCS_PRIVACY_URL` (measurement and
+  its consent notice, on with a key and a host), `DOCS_ASSISTANT_MODEL` (the assistant, which makes `dist/` a Node server,
   the `docs` image, instead of static files) and `DOCS_TURNSTILE_SITE_KEY`;
   site `SITE_URL`, `SITE_DOCS_URL`, `SITE_APP_URL`
   (the header's Log in and Get started, and the footer's links to the
   app's contract functions), `SITE_DISCORD_URL` (the Discord links),
-  `SITE_PLAUSIBLE_DOMAIN`, `SITE_PLAUSIBLE_HOST`. Nx hashes them from the
+  `SITE_POSTHOG_*` (measurement and its consent notice, on with a key and
+  a host). Nx hashes them from the
   process environment only, not `.env` files: export them, or build with
   `--skip-nx-cache`.
 - The site serves `/.well-known/security.txt` (`public/.well-known/`) for

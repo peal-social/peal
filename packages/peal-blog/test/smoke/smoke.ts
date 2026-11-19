@@ -6,7 +6,9 @@
 //
 // - EmDash's health check answers on a fresh database (start-up ran the
 //   migrations and the seed);
-// - /blog/ renders, its assets under /blog/_astro/;
+// - /blog/ renders, its assets under /blog/_astro/, with the consent notice
+//   while BLOG_POSTHOG_KEY and BLOG_POSTHOG_HOST are set, and without it
+//   once the server restarts without them;
 // - the admin, at /_emdash/admin, sends a fresh site to its setup;
 // - /blog/_emdash/… and every path outside the base answer 404.
 //
@@ -121,19 +123,28 @@ try {
     throw new Error("astro build failed");
   }
 
-  server = Bun.spawn(["node", "server/serve.ts"], {
-    cwd: root,
-    env: {
-      ...serverEnvironment(settings),
-      AWS_REQUEST_CHECKSUM_CALCULATION: "WHEN_REQUIRED",
-      AWS_RESPONSE_CHECKSUM_VALIDATION: "WHEN_REQUIRED",
-      EMDASH_SITE_URL: origin,
-      HOST: "127.0.0.1",
-      PATH: process.env["PATH"] ?? "",
-      PORT: String(port),
-    },
-    stderr: "inherit",
-    stdout: "ignore",
+  const serve = (measurement: Readonly<Record<string, string>>) =>
+    Bun.spawn(["node", "server/serve.ts"], {
+      cwd: root,
+      env: {
+        ...serverEnvironment(settings),
+        ...measurement,
+        AWS_REQUEST_CHECKSUM_CALCULATION: "WHEN_REQUIRED",
+        AWS_RESPONSE_CHECKSUM_VALIDATION: "WHEN_REQUIRED",
+        EMDASH_SITE_URL: origin,
+        HOST: "127.0.0.1",
+        PATH: process.env["PATH"] ?? "",
+        PORT: String(port),
+      },
+      stderr: "inherit",
+      stdout: "ignore",
+    });
+
+  // Measured first: the notice and its settings on every public page.
+  server = serve({
+    BLOG_POSTHOG_ENVIRONMENT: "smoke",
+    BLOG_POSTHOG_HOST: "/pulse/site",
+    BLOG_POSTHOG_KEY: "phc_synthetic",
   });
 
   // fetch() resolves dot segments before it sends: node:http sends the
@@ -196,6 +207,12 @@ try {
   check(
     html.includes("<header") || html.includes("site-header"),
     "/blog/ shows the site's header"
+  );
+  check(
+    html.includes("<peal-consent") &&
+      html.includes('data-key="phc_synthetic"') &&
+      html.includes('data-source="blog"'),
+    "/blog/ holds the consent notice with BLOG_POSTHOG_KEY and BLOG_POSTHOG_HOST set"
   );
 
   const french = await get("/blog/fr/");
@@ -265,6 +282,26 @@ try {
   const missing = await get("/blog/no-such-post");
 
   check(missing.status === 404, "GET /blog/no-such-post answers 404");
+
+  // Then without measurement's settings: no notice at all.
+  server.kill();
+  await server.exited;
+  server = serve({});
+
+  const again = await healthy(120);
+
+  check(
+    again?.ok === true,
+    "the server answers again without measurement's settings"
+  );
+
+  const unmeasuredPage = await get("/blog/");
+  const unmeasured = await unmeasuredPage.text();
+
+  check(
+    !unmeasured.includes("<peal-consent"),
+    "/blog/ holds no consent notice without BLOG_POSTHOG_KEY and BLOG_POSTHOG_HOST"
+  );
 } finally {
   server?.kill();
   await server?.exited;

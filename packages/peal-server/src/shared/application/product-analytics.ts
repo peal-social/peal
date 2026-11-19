@@ -4,6 +4,7 @@ import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import {
   checkedProperties,
   distinctIdOf,
+  isDeclaredAlias,
   isDeclaredEvent,
   isDeclaredGroup,
   isDeclaredPerson,
@@ -320,6 +321,13 @@ export class ProductAnalytics extends Context.Service<
       properties: GroupProperties,
       as: AnalyticsSubject
     ) => Effect.Effect<void>;
+    /**
+     * Links the visitor the site, the docs and the blog followed (their
+     * SDK's id, a version 7 UUID) to an account just made, with PostHog's
+     * alias event, so their visits before the sign-up are the person's:
+     * once, at the sign-up, and never for an excluded or erased user.
+     */
+    readonly link: (userId: UserId, visitorId: string) => Effect.Effect<void>;
     /** Marks a staff member `internal: true`, once per process per user. */
     readonly markInternal: (userId: UserId) => Effect.Effect<void>;
     /**
@@ -356,6 +364,7 @@ export class ProductAnalytics extends Context.Service<
       forget: () => Effect.void,
       groupIdentify: () => Effect.void,
       identify: () => Effect.void,
+      link: () => Effect.void,
       markInternal: () => Effect.void,
     })
   );
@@ -509,6 +518,20 @@ export class ProductAnalytics extends Context.Service<
           });
         });
 
+      // PostHog's alias event, as its capture API takes it: the account as
+      // the event's and the properties' `distinct_id`, the visitor merged
+      // into it as `alias`.
+      const link = (userId: UserId, visitorId: string) => {
+        const own = { alias: visitorId, distinct_id: userId };
+
+        return isDeclaredAlias(own)
+          ? deliver("$create_alias", userSubject(userId), {
+              ...common,
+              ...own,
+            })
+          : refuse("$create_alias", "alias");
+      };
+
       const firstMark = (userId: UserId) =>
         Ref.modify(marked, (already) =>
           already.has(userId)
@@ -564,6 +587,7 @@ export class ProductAnalytics extends Context.Service<
           whenEnabled(groupIdentify(group, properties, as)),
         identify: (userId, properties) =>
           whenEnabled(identify(userId, properties)),
+        link: (userId, visitorId) => whenEnabled(link(userId, visitorId)),
         markInternal: (userId) =>
           whenEnabled(
             firstMark(userId).pipe(

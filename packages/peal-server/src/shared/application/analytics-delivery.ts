@@ -8,7 +8,11 @@ import type { AnalyticsErasureFailed } from "./analytics-erasure-failed.ts";
 export interface OutgoingEvent {
   /** The user's id, or `workspace:<id>` for a workspace's service identity. */
   readonly distinctId: string;
-  /** The event's name: one of the catalogue's, `$identify` or `$groupidentify`. */
+  /**
+   * The event's name: one of the catalogue's, `$identify`,
+   * `$groupidentify` or `$create_alias` (a site's visitor linked to an
+   * account at its sign-up).
+   */
   readonly event: string;
   readonly properties: SafeProperties;
 }

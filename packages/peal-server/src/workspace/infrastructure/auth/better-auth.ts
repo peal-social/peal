@@ -17,6 +17,7 @@ import { RecordSubscription } from "#billing/application/record-subscription.ts"
 import { WorkspaceEntitlements } from "#billing/application/workspace-entitlements.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
+import { SiteMeasurement } from "#shared/application/site-measurement.ts";
 import { UpgradePaths } from "#shared/application/upgrade-paths.ts";
 import type { UpgradePath } from "#shared/application/upgrade-paths.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -296,6 +297,7 @@ export const BetterAuthLive = Layer.effect(
     const accountMail = yield* AccountMail;
     const signUps = yield* SignUpGate;
     const analytics = yield* ProductAnalytics;
+    const { settings: site } = yield* SiteMeasurement;
 
     // The instance, once made: the email of a recovery code used says how
     // many are left, which only the instance reads.
@@ -497,7 +499,7 @@ export const BetterAuthLive = Layer.effect(
       },
     };
 
-    const auth = makeAuth({ database, hooks, settings });
+    const auth = makeAuth({ database, hooks, settings, site });
 
     yield* Deferred.succeed(made, auth);
 

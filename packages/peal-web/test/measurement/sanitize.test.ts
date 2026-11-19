@@ -116,6 +116,49 @@ describe(sanitized, () => {
     expect(sent).not.toHaveProperty("$set_once");
   });
 
+  // A workspace's pages sit at its slug, which holds its name.
+  it("writes a workspace's slug in a page's address as an id", () => {
+    const view = pageView(userId);
+
+    const sent = sanitized(
+      {
+        ...view,
+        properties: {
+          ...view.properties,
+          $current_url: `https://app.peal.test/fr/synthetic-studio/posts/${postId}?token=secret`,
+          $pathname: `/fr/synthetic-studio/posts/${postId}`,
+          $prev_pageview_pathname: "/synthetic-studio",
+        },
+      },
+      identified
+    );
+
+    expect(sent?.properties["$current_url"]).toBe(
+      "https://app.peal.test/:id/posts/:id"
+    );
+    expect(sent?.properties["$pathname"]).toBe("/:id/posts/:id");
+    expect(sent?.properties["$prev_pageview_pathname"]).toBe("/:id");
+    expect(JSON.stringify(sent)).not.toContain("synthetic-studio");
+  });
+
+  it("keeps the person's own pages at the root as they are", () => {
+    const view = pageView(userId);
+
+    const sent = sanitized(
+      {
+        ...view,
+        properties: {
+          ...view.properties,
+          $current_url: "https://app.peal.test/account",
+          $pathname: "/account",
+        },
+      },
+      identified
+    );
+
+    expect(sent?.properties["$pathname"]).toBe("/account");
+  });
+
   it("names no workspace in an anonymous page view", () => {
     const sent = sanitized(pageView(anonymousId), anonymous);
 

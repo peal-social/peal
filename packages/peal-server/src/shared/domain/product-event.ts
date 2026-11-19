@@ -4,6 +4,7 @@ import {
   ChannelIdSchema,
   PostIdSchema,
   UserIdSchema,
+  Uuid7Schema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
@@ -292,6 +293,20 @@ export const GroupPropertiesSchema = Schema.Struct({
 
 export type GroupPropertiesInput = typeof GroupPropertiesSchema.Type;
 
+/**
+ * What the alias event (`$create_alias`) carries beside what every event
+ * does, and no other: the account's id, as PostHog's capture API takes it
+ * (`distinct_id`), and the site's visitor it merges into it (`alias`), a
+ * version 7 UUID as the site's SDK makes them, never an account's or a
+ * workspace's id.
+ */
+export const AliasPropertiesSchema = Schema.Struct({
+  alias: Uuid7Schema,
+  distinct_id: UserIdSchema,
+});
+
+export type AliasPropertiesInput = typeof AliasPropertiesSchema.Encoded;
+
 export type PersonPropertiesInput = typeof PersonPropertiesSchema.Type;
 
 // Every declared key and no other: an undeclared one is refused, not left
@@ -318,6 +333,12 @@ export const isDeclaredPerson = (properties: PersonPropertiesInput): boolean =>
 /** Whether group properties are only those Peal sets. */
 export const isDeclaredGroup = (properties: GroupPropertiesInput): boolean =>
   encodeGroup(properties)._tag === "Success";
+
+const decodeAlias = Schema.decodeUnknownResult(AliasPropertiesSchema, strictly);
+
+/** Whether an alias event's own properties are only those it may carry. */
+export const isDeclaredAlias = (properties: AliasPropertiesInput): boolean =>
+  decodeAlias(properties)._tag === "Success";
 
 const ScalarSchema = Schema.Union([
   Schema.Boolean,

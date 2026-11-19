@@ -285,6 +285,7 @@ export const authWithoutDatabase = (
       trustedOrigins: [],
       trustedProxies: [],
     },
+    site: Option.none(),
   });
 
 /**
