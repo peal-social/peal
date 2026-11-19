@@ -5,9 +5,9 @@ import { Cause, Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { Forbidden } from "peal-contract";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
 
 import { membersOf } from "#billing/members.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";

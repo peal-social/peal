@@ -16,8 +16,8 @@ import {
 } from "peal-ui/components/alert-dialog";
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
-import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";

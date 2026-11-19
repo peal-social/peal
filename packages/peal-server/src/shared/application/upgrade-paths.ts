@@ -19,7 +19,7 @@ export interface UpgradePath {
 
 const starter = (workspaceId: WorkspaceId) =>
   Effect.succeed<UpgradePath>({
-    billingUrl: `http://localhost:3001/app/${workspaceId}/billing`,
+    billingUrl: `http://localhost:3001/${workspaceId}/billing`,
     plan: Option.some("free"),
     planWithRoom: Option.some("starter"),
   });

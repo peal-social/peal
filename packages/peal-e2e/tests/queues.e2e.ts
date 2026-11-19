@@ -5,6 +5,7 @@ import { credentials, expect } from "e2e";
 
 import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // A member makes a queue, adds two posts to it, sees them take its two
 // slots one after the other, then changes the slots and moves the posts
@@ -13,7 +14,6 @@ import { emailedLink } from "./support/mailpit.ts";
 // retry signs up under a new address.
 const run = randomUUID();
 const name = "Robin Example";
-const workspace = "Queued Notes";
 const handle = "@queued@social.example";
 const queue = "Evenings";
 const first = "A field note for the first slot.";
@@ -38,6 +38,7 @@ const address = () =>
 const password = () => credentials.user("member").password;
 
 let workspaceId = "";
+let slug = "";
 
 describe("a member's queue", { serial: true }, () => {
   test("signs up and confirms the address", async ({
@@ -59,21 +60,9 @@ describe("a member's queue", { serial: true }, () => {
     await expect(screen.getByRole("heading", "Email confirmed")).toBeVisible();
   });
 
-  test("creates a workspace", async ({ app, screen }) => {
-    await app.open("/app");
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    await expect(calendar).toBeVisible();
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+  test("opens the workspace made for them", async ({ app, browser }) => {
+    await app.open("/");
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
   });
 
@@ -82,7 +71,7 @@ describe("a member's queue", { serial: true }, () => {
     screen,
   }) => {
     await seedChannel(workspaceId, handle);
-    await app.open(`/app/${workspaceId}/settings`);
+    await app.open(`/${slug}/settings`);
     await screen
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Queues")
@@ -111,7 +100,7 @@ describe("a member's queue", { serial: true }, () => {
   });
 
   test("adds a post to the queue's first slot", async ({ app, screen }) => {
-    await app.open(`/app/${workspaceId}/posts/new`);
+    await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
     await screen.getByRole("checkbox", handle).check();
@@ -131,7 +120,7 @@ describe("a member's queue", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/app/${workspaceId}/posts/new`);
+    await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
     await screen.getByRole("checkbox", handle).check();
@@ -150,7 +139,7 @@ describe("a member's queue", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/app/${workspaceId}/settings/queues`);
+    await app.open(`/${slug}/settings/queues`);
 
     const queues = screen.getByRole("region", "Queues");
 
@@ -181,7 +170,7 @@ describe("a member's queue", { serial: true }, () => {
       screen.getByText("2 posts moved, 0 unchanged, 0 remaining.")
     ).toBeVisible();
 
-    await app.open(`/app/${workspaceId}/calendar?date=${date}`);
+    await app.open(`/${slug}/calendar?date=${date}`);
     await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
   });
 

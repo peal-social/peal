@@ -5,6 +5,7 @@ import type { Membership } from "peal-contract";
 
 import { currentUser } from "#auth/session.ts";
 import { redirect } from "#i18n/navigation.ts";
+import { workspaceAt } from "#shell/workspace-path.ts";
 
 /** A signed-in user in one of their workspaces. */
 export interface Viewer {
@@ -14,12 +15,14 @@ export interface Viewer {
 
 /**
  * For the workspace's pages: the signed-in user, and their membership of
- * it. Anyone signed out is sent to sign in, and a workspace they do not
- * belong to is not found.
+ * the workspace the address names (`workspace`: its slug, or its id in an
+ * older link). Anyone signed out is sent to sign in, and a workspace they
+ * do not belong to is not found. Pages call the API with the
+ * membership's `id`, never the address's segment.
  */
 export const viewerOf = async (
   locale: Locale,
-  workspaceId: string
+  workspace: string
 ): Promise<Viewer> => {
   const me = await currentUser();
 
@@ -27,7 +30,7 @@ export const viewerOf = async (
     return redirect({ href: "/sign-in", locale });
   }
 
-  const membership = me.value.workspaces.find(({ id }) => id === workspaceId);
+  const membership = workspaceAt(me.value.workspaces, workspace);
 
   if (membership === undefined) {
     notFound();
@@ -39,9 +42,9 @@ export const viewerOf = async (
 /** The signed-in user's membership of the workspace (see `viewerOf`). */
 export const membershipOf = async (
   locale: Locale,
-  workspaceId: string
+  workspace: string
 ): Promise<Membership> => {
-  const { membership } = await viewerOf(locale, workspaceId);
+  const { membership } = await viewerOf(locale, workspace);
 
   return membership;
 };

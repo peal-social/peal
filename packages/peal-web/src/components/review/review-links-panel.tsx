@@ -17,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "peal-ui/components/select";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import {
   createReviewLink,

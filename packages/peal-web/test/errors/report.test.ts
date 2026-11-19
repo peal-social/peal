@@ -7,7 +7,7 @@ import type { ErrorPlace } from "#errors/report.ts";
 
 const place: ErrorPlace = {
   kind: "uncaught",
-  page: "/app",
+  page: "/",
   release: "2026.11.0",
   route: null,
   userAgent: "Mozilla/5.0 (Synthetic)",
@@ -57,12 +57,12 @@ describe(reportOf, () => {
       ),
       {
         ...place,
-        page: "/fr/app/5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60/posts/new?draft=1#top",
+        page: "/fr/5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60/posts/new?draft=1#top",
       }
     );
 
     expect(report.message).toBe("No member [email] in [id], key [key]");
-    expect(report.path).toBe("/fr/app/:id/posts/new");
+    expect(report.path).toBe("/fr/:id/posts/new");
     expect(report.stack).not.toContain("sam@example.test");
   });
 
@@ -127,5 +127,14 @@ describe(pathOf, () => {
     );
     expect(pathOf("/reset-password?token=synthetic")).toBe("/reset-password");
     expect(pathOf("")).toBe("/");
+  });
+
+  // A slug holds the workspace's name.
+  it("writes a workspace's slug as an id, never the person's own pages", () => {
+    expect(pathOf("/maximes-workspace-1a2b3c4d/posts")).toBe("/:id/posts");
+    expect(pathOf("/fr/acme/settings/tags")).toBe("/fr/:id/settings/tags");
+    expect(pathOf("/agenda")).toBe("/agenda");
+    expect(pathOf("/new")).toBe("/new");
+    expect(pathOf("/sign-in")).toBe("/sign-in");
   });
 });

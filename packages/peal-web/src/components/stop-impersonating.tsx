@@ -2,8 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
-import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
 import { useRouter } from "#i18n/navigation.ts";

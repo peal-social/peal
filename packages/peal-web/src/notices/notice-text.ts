@@ -5,6 +5,7 @@ import type { NoticeChannel, NoticeEvent } from "peal-contract";
 
 import { formatMoney } from "#ads/money.ts";
 import { useSize } from "#billing/size.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 
 /** What a notice says, and where the reader acts on it. */
 
@@ -31,6 +32,7 @@ export interface NoticeText {
  */
 export const useNoticeText = (workspaces: ReadonlyMap<string, string>) => {
   const t = useTranslations("Notices");
+  const workspaceHref = useWorkspaceHref();
   const format = useFormatter();
   const size = useSize();
   const locale = useLocale();
@@ -54,55 +56,55 @@ export const useNoticeText = (workspaces: ReadonlyMap<string, string>) => {
     const channel = "channel" in event ? channelName(event.channel) : "";
 
     const post = (postId: string, text: string): NoticeText => ({
-      href: `/app/${workspaceId}/posts/${postId}`,
+      href: workspaceHref(workspaceId, `/posts/${postId}`),
       open: t("open", { page: "post" }),
       text,
     });
 
     const channels = (text: string): NoticeText => ({
-      href: `/app/${workspaceId}/channels`,
+      href: workspaceHref(workspaceId, "/channels"),
       open: t("open", { page: "channels" }),
       text,
     });
 
     const billing = (text: string): NoticeText => ({
-      href: `/app/${workspaceId}/billing`,
+      href: workspaceHref(workspaceId, "/billing"),
       open: t("open", { page: "billing" }),
       text,
     });
 
     const webhooks = (text: string): NoticeText => ({
-      href: `/app/${workspaceId}/settings/webhooks`,
+      href: workspaceHref(workspaceId, "/settings/webhooks"),
       open: t("open", { page: "webhooks" }),
       text,
     });
 
     const inbox = (threadId: string, text: string): NoticeText => ({
-      href: `/app/${workspaceId}/inbox/${threadId}`,
+      href: workspaceHref(workspaceId, `/inbox/${threadId}`),
       open: t("open", { page: "inbox" }),
       text,
     });
 
     const ads = (text: string): NoticeText => ({
-      href: `/app/${workspaceId}/ads`,
+      href: workspaceHref(workspaceId, "/ads"),
       open: t("open", { page: "ads" }),
       text,
     });
 
     const recycling = (ruleId: string, text: string): NoticeText => ({
-      href: `/app/${workspaceId}/settings/recycling?rule=${ruleId}`,
+      href: workspaceHref(workspaceId, `/settings/recycling?rule=${ruleId}`),
       open: t("open", { page: "recycling" }),
       text,
     });
 
     const feed = (feedId: string, text: string): NoticeText => ({
-      href: `/app/${workspaceId}/settings/feeds?feed=${feedId}`,
+      href: workspaceHref(workspaceId, `/settings/feeds?feed=${feedId}`),
       open: t("open", { page: "feeds" }),
       text,
     });
 
     const followUps = (ruleId: string, text: string): NoticeText => ({
-      href: `/app/${workspaceId}/settings/follow-ups?rule=${ruleId}`,
+      href: workspaceHref(workspaceId, `/settings/follow-ups?rule=${ruleId}`),
       open: t("open", { page: "followUps" }),
       text,
     });
@@ -171,7 +173,7 @@ export const useNoticeText = (workspaces: ReadonlyMap<string, string>) => {
           t("event.FollowUpRuleStopped", { reason, workspace })
         ),
       CommentRuleStopped: ({ reason }) => ({
-        href: `/app/${workspaceId}/settings/comment-rules`,
+        href: workspaceHref(workspaceId, "/settings/comment-rules"),
         open: t("open", { page: "commentRules" }),
         text: t("event.CommentRuleStopped", { reason, workspace }),
       }),
@@ -181,7 +183,7 @@ export const useNoticeText = (workspaces: ReadonlyMap<string, string>) => {
           t("event.MessagesReceived", { channel, count, workspace })
         ),
       MessagesTurnedOff: () => ({
-        href: `/app/${workspaceId}/inbox`,
+        href: workspaceHref(workspaceId, "/inbox"),
         open: t("open", { page: "inbox" }),
         text: t("event.MessagesTurnedOff", { channel, workspace }),
       }),

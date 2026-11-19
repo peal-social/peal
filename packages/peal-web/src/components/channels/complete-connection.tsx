@@ -11,8 +11,8 @@ import type {
 } from "peal-contract";
 import { Alert, AlertDescription, AlertTitle } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { toast } from "sonner";
 
 import { useChannelErrorText } from "#channels/channel-error-text.ts";
 import { completeConnection, failureOf } from "#channels/channels-api.ts";
@@ -23,6 +23,7 @@ import {
 } from "#channels/pending-connection.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import { AccountPicker } from "#components/channels/account-picker.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 
 // The tab's storage only changes from this page's own actions.
@@ -40,6 +41,7 @@ interface FailedProps {
 }
 
 const Failed = ({ message, workspaceId }: FailedProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("ConnectCallbackPage");
 
   return (
@@ -49,13 +51,13 @@ const Failed = ({ message, workspaceId }: FailedProps) => {
         <AlertDescription>{message}</AlertDescription>
       </Alert>
       {workspaceId === null ? (
-        <Button variant="outline" render={<Link href="/app" />}>
+        <Button variant="outline" render={<Link href="/" />}>
           {t("toWorkspaces")}
         </Button>
       ) : (
         <Button
           variant="outline"
-          render={<Link href={`/app/${workspaceId}/channels`} />}
+          render={<Link href={workspaceHref(workspaceId, "/channels")} />}
         >
           {t("toChannels")}
         </Button>
@@ -76,6 +78,7 @@ export const CompleteConnection = ({
   callback,
   platform,
 }: CompleteConnectionProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("ConnectCallbackPage");
   const errors = useChannelErrorText();
   const router = useRouter();
@@ -138,7 +141,7 @@ export const CompleteConnection = ({
         }
 
         toast.success(t("connected", { handle: outcome.channel.handle }));
-        router.replace(`/app/${workspace}/channels`);
+        router.replace(workspaceHref(workspace, "/channels"));
 
         return;
       }
@@ -151,7 +154,16 @@ export const CompleteConnection = ({
     };
 
     void finish(workspaceId, callback);
-  }, [callback, complete, offerUpgrade, platform, router, t, workspaceId]);
+  }, [
+    callback,
+    complete,
+    offerUpgrade,
+    platform,
+    router,
+    t,
+    workspaceHref,
+    workspaceId,
+  ]);
 
   if (choice !== null) {
     return (

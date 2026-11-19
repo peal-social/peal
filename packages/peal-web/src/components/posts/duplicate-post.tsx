@@ -5,16 +5,13 @@ import { Exit, Option } from "effect";
 import { useTranslations } from "next-intl";
 import type { Permission } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
-import { toast } from "sonner";
 
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useRouter } from "#i18n/navigation.ts";
 import { duplicatePost, postsKeys } from "#posts/api.ts";
-import {
-  duplicateFailureOf,
-  duplicateHref,
-  mayDuplicate,
-} from "#posts/duplicate.ts";
+import { duplicateFailureOf, mayDuplicate } from "#posts/duplicate.ts";
 import { failureOf } from "#posts/outcome.ts";
 
 interface DuplicatePostProps {
@@ -31,6 +28,41 @@ interface DuplicatePostProps {
  * the draft in the composer. The copy has no time: the toast says so. It
  * shows for members who may read and create posts only.
  */
+/**
+ * Copies a post into a new draft and opens it, saying so in a toast, or
+ * why it could not: what the button and the command menu both do.
+ */
+export const useDuplicatePost = (
+  workspaceId: string
+): ((postId: string) => Promise<void>) => {
+  const t = useTranslations("Posts.Duplicate");
+  const router = useRouter();
+  const workspaceHref = useWorkspaceHref();
+  const duplicate = useAtomSet(duplicatePost, { mode: "promiseExit" });
+
+  return async (postId) => {
+    const exit = await duplicate({
+      params: { postId, workspaceId },
+      reactivityKeys: postsKeys,
+    });
+
+    if (Exit.isSuccess(exit)) {
+      toast.success(t("done"));
+      // The composer, on the new draft.
+      router.push(workspaceHref(workspaceId, `/posts/${exit.value.id}`));
+
+      return;
+    }
+
+    const tag = failureOf(exit).pipe(
+      Option.map(({ _tag }) => _tag),
+      Option.getOrUndefined
+    );
+
+    toast.error(t("failed", { reason: duplicateFailureOf(tag) }));
+  };
+};
+
 export const DuplicatePost = ({
   disabled = false,
   permissions,
@@ -38,8 +70,7 @@ export const DuplicatePost = ({
   workspaceId,
 }: DuplicatePostProps) => {
   const t = useTranslations("Posts.Duplicate");
-  const router = useRouter();
-  const duplicate = useAtomSet(duplicatePost, { mode: "promiseExit" });
+  const duplicate = useDuplicatePost(workspaceId);
   const [isCopying, startCopy] = useTransition();
 
   if (postId === undefined || !mayDuplicate(permissions)) {
@@ -48,24 +79,7 @@ export const DuplicatePost = ({
 
   const handleDuplicate = () => {
     startCopy(async () => {
-      const exit = await duplicate({
-        params: { postId, workspaceId },
-        reactivityKeys: postsKeys,
-      });
-
-      if (Exit.isSuccess(exit)) {
-        toast.success(t("done"));
-        router.push(duplicateHref(workspaceId, exit.value.id));
-
-        return;
-      }
-
-      const tag = failureOf(exit).pipe(
-        Option.map(({ _tag }) => _tag),
-        Option.getOrUndefined
-      );
-
-      toast.error(t("failed", { reason: duplicateFailureOf(tag) }));
+      await duplicate(postId);
     });
   };
 

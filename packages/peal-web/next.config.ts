@@ -51,6 +51,9 @@ const hostedLinkHeaders = [
 const hostedLinkSources = ["/connect/link", "/:locale/connect/link"];
 
 const config: NextConfig = {
+  // In development, Next's badge sits at the bottom right: the bottom left
+  // is the frame's account menu (DESIGN.md, "The frame").
+  devIndicators: { position: "bottom-right" },
   // How long, in milliseconds, a request that src/proxy.ts forwards may take
   // before Next answers 500 instead: 30 seconds unless set. The writing
   // assistant waits up to 90 seconds for its language model (peal-server's

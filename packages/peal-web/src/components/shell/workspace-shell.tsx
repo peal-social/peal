@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 import type { Permission } from "peal-contract";
 import type { ReactNode } from "react";
 
+import { CommandMenu } from "#components/shell/command-menu.tsx";
+import { CommandScopeProvider } from "#components/shell/command-scope.tsx";
 import { FrameView } from "#components/shell/frame-view.tsx";
 import { SidebarView } from "#components/shell/sidebar-view.tsx";
 import type { LinkComponent } from "#components/shell/sidebar-view.tsx";
@@ -26,6 +28,7 @@ export const WorkspaceShell = ({
   permissions,
   supportUrl,
   workspaceId,
+  workspaceSlug,
   workspaces,
 }: {
   readonly actions: ReactNode;
@@ -36,37 +39,58 @@ export const WorkspaceShell = ({
   readonly permissions: readonly Permission[];
   readonly supportUrl: string | null;
   readonly workspaceId: string;
+  /** The workspace's slug, which its addresses hold. */
+  readonly workspaceSlug: string;
   readonly workspaces: readonly {
     readonly id: string;
     readonly name: string;
+    readonly slug: string;
   }[];
 }) => {
   const t = useTranslations("WorkspaceShell");
   const pathname = usePathname();
-  const navigation = navigationOf({ pathname, permissions, workspaceId });
+
+  const navigation = navigationOf({
+    pathname,
+    permissions,
+    workspace: workspaceSlug,
+  });
+
   const { page, section } = navigation.breadcrumb;
 
   return (
-    <FrameView
-      actions={actions}
-      breadcrumb={{
-        page: page === null ? null : t(`pages.${page}`),
-        section: section === null ? null : t(`sections.${section}`),
-      }}
-      docsUrl={docsUrl}
-      footer={footer}
-      label={t("label")}
-      supportUrl={supportUrl}
-      sidebar={
-        <SidebarView
-          link={AppLink}
-          navigation={navigation}
-          workspaceId={workspaceId}
-          workspaces={workspaces}
-        />
-      }
-    >
-      {children}
-    </FrameView>
+    <CommandScopeProvider>
+      <FrameView
+        actions={actions}
+        breadcrumb={{
+          page: page === null ? null : t(`pages.${page}`),
+          section: section === null ? null : t(`sections.${section}`),
+        }}
+        docsUrl={docsUrl}
+        footer={footer}
+        label={t("label")}
+        supportUrl={supportUrl}
+        sidebar={
+          <SidebarView
+            link={AppLink}
+            navigation={navigation}
+            tools={
+              <CommandMenu
+                docsUrl={docsUrl}
+                permissions={permissions}
+                supportUrl={supportUrl}
+                workspaceId={workspaceId}
+                workspaceSlug={workspaceSlug}
+                workspaces={workspaces}
+              />
+            }
+            workspaceId={workspaceId}
+            workspaces={workspaces}
+          />
+        }
+      >
+        {children}
+      </FrameView>
+    </CommandScopeProvider>
   );
 };

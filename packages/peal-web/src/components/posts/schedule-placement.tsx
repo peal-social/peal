@@ -13,6 +13,7 @@ import { QueueChoice } from "#components/posts/queue-choice.tsx";
 import type { Placement } from "#components/posts/queue-choice.tsx";
 import { ScheduleFields } from "#components/posts/schedule-fields.tsx";
 import type { ScheduleChoice } from "#components/posts/schedule-fields.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 
 /**
@@ -34,6 +35,7 @@ export const SchedulePlacementFields = ({
   readonly placement: Placement;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.Composer");
   const queueId = placement._tag === "queue" ? placement.queueId : undefined;
 
@@ -73,7 +75,9 @@ export const SchedulePlacementFields = ({
               <Button
                 variant="link"
                 size="sm"
-                render={<Link href={`/app/${workspaceId}/settings/queues`} />}
+                render={
+                  <Link href={workspaceHref(workspaceId, "/settings/queues")} />
+                }
               >
                 {t("queueSettings")}
               </Button>

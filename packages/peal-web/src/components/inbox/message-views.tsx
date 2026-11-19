@@ -17,6 +17,8 @@ import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
 
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
+
 import type { InboxLink } from "./inbox-views.tsx";
 import { useChannelName } from "./inbox-views.tsx";
 
@@ -53,6 +55,7 @@ export const ConversationRowView = ({
   readonly link: InboxLink;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("InboxMessages.row");
   const channelName = useChannelName();
   const instant = useInstant();
@@ -62,7 +65,7 @@ export const ConversationRowView = ({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span dir="auto" className="font-medium">
           {link(
-            `/app/${workspaceId}/inbox/messages/${conversation.id}`,
+            workspaceHref(workspaceId, `/inbox/messages/${conversation.id}`),
             t("with", { people: peopleOf(conversation) })
           )}
         </span>

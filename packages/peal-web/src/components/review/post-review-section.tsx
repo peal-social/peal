@@ -24,8 +24,8 @@ import {
 } from "peal-ui/components/dialog";
 import { Separator } from "peal-ui/components/separator";
 import { Skeleton } from "peal-ui/components/skeleton";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { postsKeys } from "#posts/api.ts";
 import { failureOf } from "#posts/outcome.ts";

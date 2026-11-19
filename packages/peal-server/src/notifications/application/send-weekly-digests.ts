@@ -138,14 +138,14 @@ export class SendWeeklyDigests extends Context.Service<
         const token = yield* digestLinks.tokenOf(userId, links);
 
         const email = renderWeeklyDigest({
-          agendaUrl: appLinks.url("/app/agenda", locale),
+          agendaUrl: appLinks.url("/agenda", locale),
           locale,
-          preferencesUrl: appLinks.url("/app/notices/preferences", locale),
+          preferencesUrl: appLinks.url("/notices/preferences", locale),
           week,
           workspaces: reader.workspaces.filter(hasNews).map((workspace) => ({
             ...workspace,
             calendarUrl: appLinks.url(
-              `/app/${workspace.workspaceId}/calendar`,
+              `/${workspace.workspaceId}/calendar`,
               locale
             ),
           })),

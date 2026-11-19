@@ -5,13 +5,13 @@ import { credentials, expect } from "e2e";
 
 import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // A member files a post under a tag, then filters the calendar by it, in
 // one browser: each test starts where the previous one left off. The module
 // loads again for each attempt, so a retry signs up under a new address.
 const run = randomUUID();
 const name = "Robin Example";
-const workspace = "Tagged Notes";
 const handle = "@tagged@social.example";
 const tag = "Spring campaign";
 const tagged = "A field note filed under the spring campaign.";
@@ -31,9 +31,11 @@ const address = () =>
 
 const password = () => credentials.user("member").password;
 
-// The workspace's pages live under /app/<id>; the test that creates it reads
-// the id from its links.
+// The workspace's pages live under /<slug>; the test that opens it
+// reads the slug from its address, and the id, which seeding takes, from
+// the database.
 let workspaceId = "";
+let slug = "";
 
 describe("a member's tags", { serial: true }, () => {
   test("signs up and confirms the address", async ({
@@ -56,27 +58,15 @@ describe("a member's tags", { serial: true }, () => {
     await expect(screen.getByRole("heading", "Email confirmed")).toBeVisible();
   });
 
-  test("creates a workspace", async ({ app, screen }) => {
-    await app.open("/app");
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    await expect(calendar).toBeVisible();
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+  test("opens the workspace made for them", async ({ app, browser }) => {
+    await app.open("/");
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
   });
 
   test("adds a tag in the workspace's settings", async ({ app, screen }) => {
     await seedChannel(workspaceId, handle);
-    await app.open(`/app/${workspaceId}/settings`);
+    await app.open(`/${slug}/settings`);
     await screen
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Tags")
@@ -93,7 +83,7 @@ describe("a member's tags", { serial: true }, () => {
   });
 
   test("schedules a post filed under the tag", async ({ app, screen }) => {
-    await app.open(`/app/${workspaceId}/posts/new`);
+    await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
     await screen.getByRole("checkbox", handle).check();
@@ -112,7 +102,7 @@ describe("a member's tags", { serial: true }, () => {
   });
 
   test("schedules a post without a tag", async ({ app, screen }) => {
-    await app.open(`/app/${workspaceId}/posts/new`);
+    await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
     await screen.getByRole("checkbox", handle).check();

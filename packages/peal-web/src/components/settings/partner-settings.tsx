@@ -17,9 +17,9 @@ import { Button } from "peal-ui/components/button";
 import { Checkbox } from "peal-ui/components/checkbox";
 import { Label } from "peal-ui/components/label";
 import { Textarea } from "peal-ui/components/textarea";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { FormField } from "#components/auth/form-field.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";

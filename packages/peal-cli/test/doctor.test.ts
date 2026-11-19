@@ -251,7 +251,7 @@ describe("peal doctor", () => {
       );
 
       assert.strictEqual(statuses(bySlug)["workspace"], "failing");
-      assert.include(check(bySlug, "workspace").fix, "/app/<id>/settings");
+      assert.include(check(bySlug, "workspace").fix, "GET /api/me");
 
       const printed = yield* output;
 
@@ -290,7 +290,7 @@ describe("peal doctor", () => {
         );
         assert.strictEqual(
           check(text, "workspace").fix,
-          "Turn it on at http://localhost:3000/app/account, then run the command again."
+          "Turn it on at http://localhost:3000/account, then run the command again."
         );
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );

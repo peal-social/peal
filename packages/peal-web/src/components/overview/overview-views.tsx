@@ -1,97 +1,13 @@
 import { DateTime } from "effect";
 import { useTranslations } from "next-intl";
-import type { AgendaItem, WorkspaceOverview } from "peal-contract";
+import type { AgendaItem } from "peal-contract";
 import { Badge } from "peal-ui/components/badge";
 import type { ReactNode } from "react";
 
-import { attentionOf } from "#overview/attention.ts";
-import type { AttentionItem } from "#overview/attention.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 
 /** A link the page draws, so views stay apart from navigation. */
 export type LinkTo = (href: string, label: string) => ReactNode;
-
-const AttentionLine = ({
-  item,
-  label,
-  linkTo,
-  workspaceId,
-}: {
-  readonly item: AttentionItem;
-  readonly label: string;
-  readonly linkTo: LinkTo;
-  readonly workspaceId: string;
-}) => <li>{linkTo(`/app/${workspaceId}/${item.page}`, label)}</li>;
-
-/**
- * What needs attention in one workspace, each line a link to the page
- * that shows it, or a single line saying nothing does. A workspace that
- * refuses the person shows nothing here: its card says why. Where the
- * person may read none of it, nothing is said either.
- */
-export const WorkspaceAttentionView = ({
-  linkTo,
-  workspace,
-}: {
-  readonly linkTo: LinkTo;
-  readonly workspace: WorkspaceOverview;
-}) => {
-  const t = useTranslations("Overview.home");
-
-  if (workspace.refused !== null) {
-    return null;
-  }
-
-  const { channels, inbox, overPlan, posts } = workspace;
-
-  if (
-    posts === null &&
-    channels === null &&
-    inbox === null &&
-    overPlan === null
-  ) {
-    return null;
-  }
-
-  const items = attentionOf(workspace);
-
-  const labelOf = (item: AttentionItem): string =>
-    item.kind === "overPlan"
-      ? t("overPlan")
-      : t(
-          item.kind === "awaitingApproval" && posts?.mayApprove === true
-            ? "awaitingYourApproval"
-            : item.kind,
-          { count: item.count }
-        );
-
-  return (
-    <div className="flex flex-col gap-2 text-sm">
-      {items.length === 0 ? (
-        <p className="text-muted-foreground">{t("nothing")}</p>
-      ) : (
-        <ul
-          aria-label={t("attentionLabel", { workspace: workspace.name })}
-          className="flex list-disc flex-col gap-1 ps-5"
-        >
-          {items.map((item) => (
-            <AttentionLine
-              key={item.kind}
-              item={item}
-              label={labelOf(item)}
-              linkTo={linkTo}
-              workspaceId={workspace.id}
-            />
-          ))}
-        </ul>
-      )}
-      {posts === null ? null : (
-        <p className="text-muted-foreground">
-          {t("scheduled", { count: posts.scheduledNext7Days })}
-        </p>
-      )}
-    </div>
-  );
-};
 
 /** The posts of the agenda that go out on the same day in the reader's zone. */
 export interface AgendaDay {
@@ -134,6 +50,7 @@ export const AgendaItemView = ({
   readonly workspaceName: string;
 }) => {
   const t = useTranslations("Overview.agenda");
+  const workspaceHref = useWorkspaceHref();
   const at = DateTime.toDate(item.scheduledAt);
 
   // None where the person may not read the workspace's channels; said
@@ -168,7 +85,7 @@ export const AgendaItemView = ({
         </div>
         <p dir="auto" className="text-muted-foreground truncate">
           {linkTo(
-            `/app/${item.workspaceId}/posts/${item.postId}`,
+            workspaceHref(item.workspaceId, `/posts/${item.postId}`),
             item.excerpt === "" ? t("noText") : item.excerpt
           )}
         </p>

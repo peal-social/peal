@@ -24,8 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "peal-ui/components/select";
+import { toast } from "peal-ui/components/toast";
 import { useId, useTransition } from "react";
-import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
 import { membersOf } from "#billing/members.ts";

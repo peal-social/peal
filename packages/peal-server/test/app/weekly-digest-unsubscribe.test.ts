@@ -93,7 +93,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(opened.status, 302);
           assert.strictEqual(
             opened.headers.get("location"),
-            "http://localhost:3001/app/notices/preferences"
+            "http://localhost:3001/notices/preferences"
           );
           assert.isTrue((yield* preferences).email.weeklyDigest);
 

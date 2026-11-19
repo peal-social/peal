@@ -6,7 +6,7 @@ export interface ConsentState {
 }
 
 /**
- * Whether the personal home asks: only where the web app measures, the
+ * Whether a workspace's home asks: only where the web app measures, the
  * person has not chosen (or their choice expired), and the browser does
  * not ask not to be tracked, as nothing is measured there.
  */

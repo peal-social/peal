@@ -6,8 +6,8 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { Checkbox } from "peal-ui/components/checkbox";
 import { Label } from "peal-ui/components/label";
+import { toast } from "peal-ui/components/toast";
 import { useId, useTransition } from "react";
-import { toast } from "sonner";
 
 import {
   setShortLinkDefault,

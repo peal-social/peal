@@ -27,8 +27,8 @@ import {
   SelectValue,
 } from "peal-ui/components/select";
 import { Textarea } from "peal-ui/components/textarea";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { assistantStatus, generateImage } from "#assistant/api.ts";
 import {
@@ -39,6 +39,7 @@ import {
 } from "#assistant/image-failure.ts";
 import type { ImageFailure } from "#assistant/image-failure.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { mediaKey } from "#media/atoms.ts";
 import { failureOf } from "#posts/outcome.ts";
@@ -66,6 +67,7 @@ const GenerateDialog = ({
   status,
   workspaceId,
 }: GenerateImageProps & { readonly status: AssistantStatus }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Assistant.images");
   const promptId = useId();
   const hintId = useId();
@@ -236,7 +238,7 @@ const GenerateDialog = ({
                 {mayConfigure && isProviderRefusal(failure) ? (
                   <Link
                     className="text-sm underline"
-                    href={`/app/${workspaceId}/settings/assistant`}
+                    href={workspaceHref(workspaceId, "/settings/assistant")}
                   >
                     {t("providerSettings")}
                   </Link>

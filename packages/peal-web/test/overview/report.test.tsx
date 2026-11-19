@@ -120,7 +120,7 @@ describe(ReportTableView, () => {
     );
 
     expect(html).toContain(
-      '<a href="/app/5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e41/analytics">Studio</a>'
+      '<a href="/5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e41/analytics">Studio</a>'
     );
     expect(html).toMatch(/400<\/span><span[^>]*>\+250</u);
     expect(html).toMatch(

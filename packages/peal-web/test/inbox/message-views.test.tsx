@@ -91,7 +91,7 @@ describe("the direct messages' views", () => {
     const french = await render("fr", view);
 
     expect(english).toContain(
-      `href="/app/${workspaceId}/inbox/messages/${conversation.id}"`
+      `href="/${workspaceId}/inbox/messages/${conversation.id}"`
     );
     expect(english).toContain("With A synthetic reader");
     expect(english).toMatch(/Unread[\s\S]*2 messages/u);

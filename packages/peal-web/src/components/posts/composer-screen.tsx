@@ -13,10 +13,12 @@ import { PostFollowUp } from "#components/follow-ups/post-follow-up.tsx";
 import { Composer } from "#components/posts/composer.tsx";
 import { DuplicatePost } from "#components/posts/duplicate-post.tsx";
 import { PostChannels } from "#components/posts/post-channels.tsx";
+import { PostCommands } from "#components/posts/post-commands.tsx";
 import { PostDetail } from "#components/posts/post-detail.tsx";
 import { PostLinks } from "#components/posts/post-links.tsx";
 import { PostRepeat } from "#components/recycling/post-repeat.tsx";
 import { PostReviewSection } from "#components/review/post-review-section.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { useRefreshWhileVisible } from "#notices/use-refresh-while-visible.ts";
 import { workspaceChannels, workspacePost } from "#posts/api.ts";
@@ -91,6 +93,7 @@ const ExistingPost = ({
   readonly channels: readonly SocialChannel[];
   readonly postId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.Composer");
   const query = workspacePost(workspaceId, postId);
   const result = useAtomValue(query);
@@ -117,6 +120,12 @@ const ExistingPost = ({
       post.status === "awaitingApproval" ||
       post.status === "scheduled" ? (
       <div className="flex flex-col gap-6">
+        <PostCommands
+          channels={channels}
+          permissions={permissions}
+          post={post}
+          workspaceId={workspaceId}
+        />
         <Composer
           key={`${post.id}/${String(
             post.targets.filter(({ dropped }) => dropped === true).length
@@ -154,6 +163,12 @@ const ExistingPost = ({
       </div>
     ) : (
       <div className="flex flex-col gap-6">
+        <PostCommands
+          channels={channels}
+          permissions={permissions}
+          post={post}
+          workspaceId={workspaceId}
+        />
         <PostDetail
           actions={
             <DuplicatePost
@@ -165,7 +180,7 @@ const ExistingPost = ({
           adsLink={
             <Button
               variant="outline"
-              render={<Link href={`/app/${workspaceId}/ads`} />}
+              render={<Link href={workspaceHref(workspaceId, "/ads")} />}
             >
               {tAds("toAds")}
             </Button>
@@ -219,6 +234,7 @@ export const ComposerScreen = ({
   userId,
   workspaceId,
 }: ComposerScreenProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.Composer");
   const mounted = useMounted();
   const query = workspaceChannels(workspaceId);
@@ -260,13 +276,13 @@ export const ComposerScreen = ({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-4">
         <Link
-          href={`/app/${workspaceId}/calendar`}
+          href={workspaceHref(workspaceId, "/calendar")}
           className="text-muted-foreground text-sm underline-offset-4 hover:underline"
         >
           {t("backToCalendar")}
         </Link>
         <Link
-          href={`/app/${workspaceId}/drafts`}
+          href={workspaceHref(workspaceId, "/drafts")}
           className="text-muted-foreground text-sm underline-offset-4 hover:underline"
         >
           {t("backToDrafts")}

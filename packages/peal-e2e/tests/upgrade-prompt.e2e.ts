@@ -7,6 +7,7 @@ import type { Locator } from "e2e";
 import { confirmedAccount } from "./support/accounts.ts";
 import { postPerAccountSubscription } from "./support/billing.ts";
 import { seedChannel } from "./support/channels.ts";
+import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // The run's server bills (scripts/serve.ts): a new workspace is on the free
 // tier, which connects two accounts across its billing account. The billing
@@ -18,7 +19,7 @@ import { seedChannel } from "./support/channels.ts";
 // refused. Nothing is charged.
 const run = randomUUID();
 const name = "Robin Example";
-const workspace = "Tide Tables";
+const workspace = defaultWorkspaceOf(name);
 
 const address = () =>
   credentials.user("member").username.replace("@", `+${run}-upgrade@`);
@@ -28,6 +29,7 @@ const address = () =>
 const password = "synthetic upgrade dialog password";
 
 let workspaceId = "";
+let slug = "";
 
 type Locale = "en" | "fr";
 
@@ -118,19 +120,7 @@ describe("per-account pricing", { serial: true }, () => {
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password);
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    await expect(calendar).toBeVisible();
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
 
     await Promise.all(
@@ -144,7 +134,7 @@ describe("per-account pricing", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/app/${workspaceId}/billing`);
+    await app.open(`/${slug}/billing`);
 
     const main = screen.getByRole("main");
 
@@ -173,7 +163,7 @@ describe("per-account pricing", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/app/${workspaceId}/channels`);
+    await app.open(`/${slug}/channels`);
     await screen.getByLabel("Server").fill("social.example");
     await screen.getByRole("button", "Connect Mastodon").tap();
 
@@ -207,7 +197,7 @@ describe("per-account pricing", { serial: true }, () => {
   }) => {
     const opened = async (locale: Locale, size: Size) => {
       await browser.setViewport(size);
-      await app.open(`${words[locale].prefix}/app/${workspaceId}/channels`);
+      await app.open(`${words[locale].prefix}/${slug}/channels`);
       await screen.getByLabel(words[locale].server).fill("social.example");
       await screen.getByRole("button", words[locale].connect).tap();
       await fits(screen.getByRole("dialog"), locale, size);
@@ -219,7 +209,7 @@ describe("per-account pricing", { serial: true }, () => {
     await opened("fr", { height: 667, width: 375 });
     await browser.setViewport({ height: 720, width: 1280 });
     // Back to English, which the French pages' language cookie replaced.
-    await app.open(`/en/app/${workspaceId}/channels`);
+    await app.open(`/en/${slug}/channels`);
     await expect(screen.getByLabel("Server")).toBeVisible();
   });
 
@@ -227,7 +217,7 @@ describe("per-account pricing", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/app/${workspaceId}/channels`);
+    await app.open(`/${slug}/channels`);
     await screen.getByLabel("Server").fill("social.example");
     await screen.getByRole("button", "Connect Mastodon").tap();
 
@@ -253,7 +243,7 @@ describe("per-account pricing", { serial: true }, () => {
   }) => {
     await postPerAccountSubscription(app.baseUrl, workspaceId);
 
-    await app.open(`/app/${workspaceId}/billing`);
+    await app.open(`/${slug}/billing`);
 
     const main = screen.getByRole("main");
 
@@ -268,7 +258,7 @@ describe("per-account pricing", { serial: true }, () => {
 
     // No platform is reached in a run: the connection now goes past the
     // plan and stops at the server it names, which does not exist.
-    await app.open(`/app/${workspaceId}/channels`);
+    await app.open(`/${slug}/channels`);
     await screen.getByLabel("Server").fill("social.example");
     await screen.getByRole("button", "Connect Mastodon").tap();
     await expect(

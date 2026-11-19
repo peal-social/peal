@@ -6,9 +6,10 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import type { Permission, Post } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { workspaceQueues } from "#queues/atoms.ts";
 import { rulesChanged, startRule, workspaceRules } from "#recycling/atoms.ts";
@@ -97,6 +98,7 @@ export const PostRepeat = ({
   readonly post: Post;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Recycling");
   const rules = useAtomValue(workspaceRules(workspaceId));
   const [open, setOpen] = useState(false);
@@ -118,7 +120,10 @@ export const PostRepeat = ({
         rule={rule}
         link={
           <Link
-            href={`/app/${workspaceId}/settings/recycling?rule=${rule.id}`}
+            href={workspaceHref(
+              workspaceId,
+              `/settings/recycling?rule=${rule.id}`
+            )}
             className="underline underline-offset-4"
           >
             {t("openRule")}

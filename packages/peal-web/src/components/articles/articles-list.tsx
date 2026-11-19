@@ -3,13 +3,16 @@
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import { DateTime } from "effect";
 import { AsyncResult } from "effect/reactivity";
+import { PlugIcon, PlusIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import type { Article, Channel } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Badge } from "peal-ui/components/badge";
-import { Button } from "peal-ui/components/button";
+import { Button, buttonVariants } from "peal-ui/components/button";
 
 import { workspaceArticles, workspaceSites } from "#articles/api.ts";
+import { PageActions } from "#components/shell/frame-view.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 
 const badgeVariant = {
@@ -38,6 +41,7 @@ const ArticleRow = ({
   readonly sites: readonly Channel[];
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Articles.list");
   const format = useFormatter();
 
@@ -48,7 +52,7 @@ const ArticleRow = ({
     <li className="flex flex-wrap items-center gap-4 py-4">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <Link
-          href={`/app/${workspaceId}/articles/${article.id}`}
+          href={workspaceHref(workspaceId, `/articles/${article.id}`)}
           className="truncate font-medium hover:underline"
         >
           {article.title.trim() === "" ? t("untitled") : article.title}
@@ -105,6 +109,7 @@ export const ArticlesList = ({
   readonly canCreate: boolean;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Articles.list");
   const query = workspaceArticles(workspaceId);
   const articles = useAtomValue(query);
@@ -114,26 +119,31 @@ export const ArticlesList = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-muted-foreground text-sm">
-          {knownSites.length === 0
-            ? t("noSite")
-            : t("sites", { count: knownSites.length })}
-        </p>
+      <PageActions>
         {canCreate && knownSites.length > 0 ? (
-          <Button render={<Link href={`/app/${workspaceId}/articles/new`} />}>
+          <Link
+            href={workspaceHref(workspaceId, "/articles/new")}
+            className={buttonVariants({ size: "sm", variant: "ghost" })}
+          >
+            <PlusIcon aria-hidden />
             {t("new")}
-          </Button>
+          </Link>
         ) : null}
         {knownSites.length === 0 ? (
-          <Button
-            variant="outline"
-            render={<Link href={`/app/${workspaceId}/channels`} />}
+          <Link
+            href={workspaceHref(workspaceId, "/channels")}
+            className={buttonVariants({ size: "sm", variant: "ghost" })}
           >
+            <PlugIcon aria-hidden />
             {t("connect")}
-          </Button>
+          </Link>
         ) : null}
-      </div>
+      </PageActions>
+      <p className="text-muted-foreground text-sm">
+        {knownSites.length === 0
+          ? t("noSite")
+          : t("sites", { count: knownSites.length })}
+      </p>
       {AsyncResult.isFailure(articles) ? (
         <div className="flex flex-wrap items-center gap-2">
           <Alert variant="destructive">

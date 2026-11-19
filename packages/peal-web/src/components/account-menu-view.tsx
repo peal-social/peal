@@ -1,7 +1,15 @@
 "use client";
 
-import { CircleUserIcon } from "lucide-react";
+import { Option } from "effect";
+import {
+  BellIcon,
+  CalendarRangeIcon,
+  ChartNoAxesColumnIcon,
+  LogOutIcon,
+  UserIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Avatar, AvatarFallback, AvatarImage } from "peal-ui/components/avatar";
 import { Button } from "peal-ui/components/button";
 import {
   DropdownMenu,
@@ -12,27 +20,60 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "peal-ui/components/dropdown-menu";
+import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
-import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
 import { useMeasurementSignOut } from "#components/measurement/measurement.tsx";
+import { useHydrated } from "#components/media/use-hydrated.ts";
+import { useUnreadNotices } from "#components/notices/use-unread-notices.ts";
 import { useRouter } from "#i18n/navigation.ts";
 
 interface AccountMenuViewProps {
   readonly email: string;
+  readonly image?: string | null;
   readonly name: string;
 }
 
-// The signed-in user's menu: who they are, their workspaces, their account
-// settings, and signing out, after which the page renders again without the
-// session.
-export const AccountMenuView = ({ email, name }: AccountMenuViewProps) => {
+// The account's round avatar: its picture, or its first letter; a blue dot
+// at its corner while notices wait unread.
+const AccountAvatar = ({
+  image,
+  name,
+  unread,
+}: {
+  readonly image: string | null;
+  readonly name: string;
+  readonly unread: boolean;
+}) => (
+  <span className="relative flex">
+    <Avatar size="sm">
+      {image === null ? null : <AvatarImage src={image} alt="" />}
+      <AvatarFallback>{name.slice(0, 1).toUpperCase()}</AvatarFallback>
+    </Avatar>
+    {unread ? (
+      <span className="bg-brand ring-background absolute -top-0.5 -right-0.5 size-2 rounded-full ring-2" />
+    ) : null}
+  </span>
+);
+
+// The menu itself, with the unread count once it is known.
+const Menu = ({
+  announcement,
+  email,
+  image,
+  name,
+  unread,
+}: AccountMenuViewProps & {
+  readonly announcement: string;
+  readonly unread: Option.Option<number>;
+}) => {
   const t = useTranslations("UserMenu");
   const account = useTranslations("AccountSettings");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const forgetMeasurement = useMeasurementSignOut();
+  const count = Option.getOrElse(unread, () => 0);
 
   // Asks Better Auth for the session as pages open and the tab regains
   // focus. That is what extends the session, and renews the copy cached in
@@ -54,43 +95,86 @@ export const AccountMenuView = ({ email, name }: AccountMenuViewProps) => {
     });
   };
 
-  const handleOpenApp = () => {
-    router.push("/app");
-  };
-
-  const handleOpenAccount = () => {
-    router.push("/app/account");
+  const go = (href: string) => () => {
+    router.push(href);
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={isPending}
-            focusableWhenDisabled
-          />
-        }
-        aria-label={t("trigger", { name })}
-      >
-        <CircleUserIcon data-icon="inline-start" aria-hidden />
-        {name}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>{t("signedInAs", { email })}</DropdownMenuLabel>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={handleOpenApp}>{t("app")}</DropdownMenuItem>
-        <DropdownMenuItem onSelect={handleOpenAccount}>
-          {account("menu")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={handleSignOut}>
-          {t("signOut")}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              disabled={isPending}
+              focusableWhenDisabled
+            />
+          }
+          aria-label={t("trigger", { count, name })}
+        >
+          <AccountAvatar image={image ?? null} name={name} unread={count > 0} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side="top" className="w-60">
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>{t("signedInAs", { email })}</DropdownMenuLabel>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={go("/notices")}>
+            <BellIcon aria-hidden />
+            <span className="flex-1">{t("notifications")}</span>
+            {count > 0 ? (
+              <span className="text-brand-text text-xs font-medium tabular-nums">
+                {count}
+              </span>
+            ) : null}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={go("/agenda")}>
+            <CalendarRangeIcon aria-hidden />
+            {t("agenda")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={go("/report")}>
+            <ChartNoAxesColumnIcon aria-hidden />
+            {t("report")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={go("/account")}>
+            <UserIcon aria-hidden />
+            {account("menu")}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={handleSignOut}>
+            <LogOutIcon aria-hidden />
+            {t("signOut")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <output className="sr-only">{announcement}</output>
+    </>
+  );
+};
+
+// Once hydrated, the menu polls the unread count with the visitor's
+// cookies.
+const LiveMenu = (props: AccountMenuViewProps) => {
+  const { announcement, unread } = useUnreadNotices();
+
+  return <Menu {...props} announcement={announcement} unread={unread} />;
+};
+
+/**
+ * The signed-in person's corner, at the bottom left of the frame (DESIGN.md,
+ * "The frame"): their avatar alone, with a dot while notices wait
+ * unread, opening their notifications (with the count), their agenda and
+ * report across workspaces, their account (its language among its
+ * settings), and signing out, after which the page renders again without
+ * the session.
+ */
+export const AccountMenuView = (props: AccountMenuViewProps) => {
+  const hydrated = useHydrated();
+
+  return hydrated ? (
+    <LiveMenu {...props} />
+  ) : (
+    <Menu {...props} announcement="" unread={Option.none()} />
   );
 };

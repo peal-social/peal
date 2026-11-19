@@ -153,7 +153,7 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
             }
           : refused,
         {
-          billingUrl: `http://localhost:3001/app/${workspaceId}/billing`,
+          billingUrl: `http://localhost:3001/${workspaceId}/billing`,
           dailyLimit: 1,
           plan: "free",
           planWithRoom: "starter",

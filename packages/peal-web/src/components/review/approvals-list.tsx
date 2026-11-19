@@ -8,6 +8,7 @@ import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { pendingApprovals, reviewSettings } from "#review/api.ts";
 
@@ -23,6 +24,7 @@ export const ApprovalsList = ({
 }: {
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Review");
   const hydrated = useHydrated();
   const query = pendingApprovals(workspaceId);
@@ -69,7 +71,7 @@ export const ApprovalsList = ({
           {result.value.map((approval) => (
             <ApprovalItemView key={approval.id} approval={approval}>
               <Link
-                href={`/app/${workspaceId}/posts/${approval.postId}`}
+                href={workspaceHref(workspaceId, `/posts/${approval.postId}`)}
                 className="font-medium underline-offset-4 hover:underline"
               >
                 {t("approvals.open")}

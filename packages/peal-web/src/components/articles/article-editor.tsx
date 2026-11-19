@@ -17,8 +17,8 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import {
   articlesKeys,
@@ -40,6 +40,7 @@ import {
 } from "#articles/article-draft.ts";
 import type { ArticleDraft, ArticleFailure } from "#articles/article-draft.ts";
 import { ArticleFields } from "#components/articles/article-fields.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useRouter } from "#i18n/navigation.ts";
 import { browserTimeZone } from "#posts/zoned-time.ts";
 
@@ -118,6 +119,7 @@ type Done =
 
 // The requests the editor makes, each telling how it ended.
 const useArticleRequests = (workspaceId: string) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Articles.editor");
   const router = useRouter();
   const [failure, setFailure] = useState<ArticleFailure | null>(null);
@@ -147,7 +149,7 @@ const useArticleRequests = (workspaceId: string) => {
   };
 
   const goTo = (path: string) => {
-    router.push(`/app/${workspaceId}/articles${path}`);
+    router.push(workspaceHref(workspaceId, `/articles${path}`));
   };
 
   return { failure, goTo, isPending, run };

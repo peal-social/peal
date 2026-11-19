@@ -269,7 +269,7 @@ describe("the notices of a post's outcomes", () => {
           );
           assert.include(
             sent[0]?.text ?? "",
-            `http://localhost:3001/app/${workspaceId}/posts/${post.id}`
+            `http://localhost:3001/${workspaceId}/posts/${post.id}`
           );
         })
       ),

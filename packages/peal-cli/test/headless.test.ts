@@ -132,7 +132,7 @@ describe("an API key in PEAL_API_KEY", () => {
         missing,
         "With an API key (PEAL_API_KEY), name the workspace by its id, with --workspace or PEAL_WORKSPACE: a key cannot look workspaces up."
       );
-      assert.include(missing, "/app/<id>/settings");
+      assert.include(missing, "GET /api/me");
       assert.include(missing, "peal whoami, signed in as a person, lists it");
 
       assert.include(

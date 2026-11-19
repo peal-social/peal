@@ -24,7 +24,7 @@ const VerifyEmailPage = async ({
 
   return (
     <AuthCard title={t("title")} description={t("description")}>
-      <Link href="/app" className={buttonVariants()}>
+      <Link href="/" className={buttonVariants()}>
         {t("continue")}
       </Link>
     </AuthCard>

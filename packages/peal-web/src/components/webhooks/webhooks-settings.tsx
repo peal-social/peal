@@ -34,9 +34,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "peal-ui/components/tabs";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { channelName } from "#channels/channel-name.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";

@@ -15,6 +15,7 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 
+import { useWorkspaceAddresses } from "#components/shell/workspace-addresses.tsx";
 import { onReported } from "#errors/browser.ts";
 import { setBrowserAnalyticsConsent } from "#measurement/atoms.ts";
 import { makeController } from "#measurement/controller.ts";
@@ -145,8 +146,16 @@ export const Measurement = ({
     chosen
   );
 
+  // The workspace the page is of, from its slug: a primitive, so the
+  // effect below runs again only when it changes.
+  const addresses = useWorkspaceAddresses();
+  const pageWorkspace = placeOf(pathname, addresses)?.workspaceId ?? null;
+
   useEffect(() => {
-    const place = placeOf(pathname);
+    const found = placeOf(pathname);
+
+    const place =
+      found === null ? null : { ...found, workspaceId: pageWorkspace };
 
     const mode = modeOf({
       place,
@@ -167,7 +176,7 @@ export const Measurement = ({
       },
       wanted: { mode, workspaceId: place?.workspaceId ?? null },
     });
-  }, [consent, environment, excluded, pathname, token, userId]);
+  }, [consent, environment, excluded, pageWorkspace, pathname, token, userId]);
 
   // Errors the intake was sent, already redacted, while the SDK runs; and,
   // on leaving the signed-in app, nothing more measured or recorded.

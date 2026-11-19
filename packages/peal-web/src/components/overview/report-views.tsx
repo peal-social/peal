@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "peal-ui/components/table";
 
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { reportMetrics, reportRowOf } from "#overview/report.ts";
 import type { ReportCell } from "#overview/report.ts";
 
@@ -60,6 +61,7 @@ export const ReportTableView = ({
 }) => {
   const t = useTranslations("Overview.report");
   const metric = useTranslations("Analytics");
+  const workspaceHref = useWorkspaceHref();
 
   return (
     <div className="overflow-x-auto">
@@ -79,7 +81,7 @@ export const ReportTableView = ({
         <TableBody>
           {workspaces.map((workspace) => {
             const name = linkTo(
-              `/app/${workspace.id}/analytics`,
+              workspaceHref(workspace.id, "/analytics"),
               workspace.name
             );
 

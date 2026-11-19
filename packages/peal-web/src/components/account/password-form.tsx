@@ -4,9 +4,9 @@ import { useTranslations } from "next-intl";
 import { Button } from "peal-ui/components/button";
 import { Checkbox } from "peal-ui/components/checkbox";
 import { Label } from "peal-ui/components/label";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
 import { FormField } from "#components/auth/form-field.tsx";

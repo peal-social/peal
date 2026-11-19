@@ -18,8 +18,8 @@ import {
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
+import { toast } from "peal-ui/components/toast";
 import { useCallback, useTransition } from "react";
-import { toast } from "sonner";
 
 import {
   adAccounts,

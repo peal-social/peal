@@ -18,14 +18,15 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
-import { toast } from "sonner";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import {
   SettingsLoadFailed,
   SettingsLoading,
 } from "#components/settings/settings-status.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import {
   resumeRule,
@@ -161,6 +162,7 @@ const RuleList = ({
   readonly mayChange: boolean;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Recycling");
   const query = workspaceRules(workspaceId);
   const result = useAtomValue(query);
@@ -187,7 +189,7 @@ const RuleList = ({
           rule={rule}
           source={
             <Link
-              href={`/app/${workspaceId}/posts/${rule.sourcePostId}`}
+              href={workspaceHref(workspaceId, `/posts/${rule.sourcePostId}`)}
               className="underline underline-offset-4"
             >
               {t("source")}

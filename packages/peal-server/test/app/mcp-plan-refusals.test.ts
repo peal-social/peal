@@ -32,7 +32,7 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 
 const workspaceId = "0f5b8c1e-2a3d-4e6f-8a9b-1c2d3e4f5a6b";
 
-const billingUrl = `http://localhost:3001/app/${workspaceId}/billing`;
+const billingUrl = `http://localhost:3001/${workspaceId}/billing`;
 
 const member: Member = {
   permissions: permissionsFor("owner"),

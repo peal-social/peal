@@ -1,3 +1,344 @@
+---
+version: alpha
+name: Peal
+description: "A light, warm-grey product canvas (#FAFAF9) with white cards and tables, ink text (#0C0A09) and the mark's blue (#415EEE) as the one colour that carries meaning: links, focus, selection, today, scheduled. Lavender and yellow, the mark's other colours, are for illustration only. Type is Geist, with Geist Mono for what is read character by character. Structure is drawn with hairline borders, not shadows; a shadow lifts only what floats. The app is dense and keyboard-first: one command menu, one filter bar, one selection bar, the same on every screen."
+
+colors:
+  primary: "#0C0A09"
+  on-primary: "#FAFAF9"
+  brand: "#415EEE"
+  brand-hover: "#2F47C9"
+  brand-pressed: "#22339A"
+  brand-tint: "#E8ECFD"
+  brand-text: "#2F47C9"
+  lavender: "#B9A6FF"
+  lavender-tint: "#EDE7FF"
+  lavender-text: "#5B45C7"
+  sun: "#FFCA00"
+  sun-tint: "#FFF4CC"
+  sun-text: "#7A5B00"
+  canvas: "#FAFAF9"
+  surface-1: "#FFFFFF"
+  surface-2: "#F5F5F4"
+  surface-3: "#EFEEEC"
+  hairline: "#E7E5E4"
+  hairline-strong: "#D6D3D1"
+  ink: "#0C0A09"
+  ink-subtle: "#716B66"
+  destructive: "#D92D20"
+  destructive-text: "#B42318"
+  state-scheduled: "#415EEE"
+  state-published: "#16A34A"
+  state-approval: "#E0A800"
+  state-failed: "#D92D20"
+  state-draft: "#A8A29E"
+  overlay: "rgb(0 0 0 / 0.1)"
+
+typography:
+  display-xl:
+    fontFamily: Geist
+    fontSize: 56px
+    fontWeight: 600
+    lineHeight: 1.05
+    letterSpacing: -0.025em
+  display-lg:
+    fontFamily: Geist
+    fontSize: 40px
+    fontWeight: 600
+    lineHeight: 1.10
+    letterSpacing: -0.025em
+  display-md:
+    fontFamily: Geist
+    fontSize: 30px
+    fontWeight: 600
+    lineHeight: 1.20
+    letterSpacing: -0.025em
+  headline:
+    fontFamily: Geist
+    fontSize: 24px
+    fontWeight: 600
+    lineHeight: 1.25
+    letterSpacing: -0.025em
+  card-title:
+    fontFamily: Geist
+    fontSize: 15px
+    fontWeight: 600
+    lineHeight: 1.40
+    letterSpacing: 0
+  subhead:
+    fontFamily: Geist
+    fontSize: 18px
+    fontWeight: 400
+    lineHeight: 1.50
+    letterSpacing: 0
+  body:
+    fontFamily: Geist
+    fontSize: 14px
+    fontWeight: 400
+    lineHeight: 1.50
+    letterSpacing: 0
+  body-sm:
+    fontFamily: Geist
+    fontSize: 13px
+    fontWeight: 400
+    lineHeight: 1.45
+    letterSpacing: 0
+  caption:
+    fontFamily: Geist
+    fontSize: 12px
+    fontWeight: 400
+    lineHeight: 1.40
+    letterSpacing: 0
+  button:
+    fontFamily: Geist
+    fontSize: 14px
+    fontWeight: 500
+    lineHeight: 1.20
+    letterSpacing: 0
+  eyebrow:
+    fontFamily: Geist Mono
+    fontSize: 12px
+    fontWeight: 400
+    lineHeight: 1.30
+    letterSpacing: 0.04em
+  mono:
+    fontFamily: Geist Mono
+    fontSize: 13px
+    fontWeight: 400
+    lineHeight: 1.50
+    letterSpacing: 0
+  key:
+    fontFamily: Geist Mono
+    fontSize: 12px
+    fontWeight: 400
+    lineHeight: 1
+    letterSpacing: 0
+
+rounded:
+  xs: 4px
+  sm: 6px
+  md: 8px
+  lg: 12px
+  xl: 16px
+  xxl: 24px
+  pill: 9999px
+  full: 9999px
+
+spacing:
+  xxs: 4px
+  xs: 8px
+  sm: 12px
+  md: 16px
+  lg: 24px
+  xl: 32px
+  xxl: 48px
+  section: 96px
+
+components:
+  button-primary:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    padding: 8px 14px
+    height: 34px
+  button-outline:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    padding: 8px 14px
+    height: 34px
+  button-ghost:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    padding: 8px 14px
+    height: 34px
+  button-destructive:
+    backgroundColor: "{colors.destructive}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    padding: 8px 14px
+    height: 34px
+  button-inverse:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    padding: 8px 14px
+    height: 34px
+  text-input:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.md}"
+    padding: 8px 12px
+    height: 34px
+  card:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.lg}"
+    padding: 24px
+  list:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.lg}"
+    padding: 12px 16px
+  table-row:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    height: 44px
+  status-badge:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.xs}"
+    padding: 2px 8px
+  state-chip:
+    backgroundColor: "{colors.brand-tint}"
+    textColor: "{colors.brand-text}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.xs}"
+    padding: 2px 8px
+  empty-state:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink-subtle}"
+    typography: "{typography.body}"
+    width: 448px
+  pixel-icon:
+    backgroundColor: "transparent"
+    textColor: "{colors.brand}"
+    width: 80px
+    height: 80px
+  tag:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.sm}"
+    padding: 2px 6px
+  key:
+    backgroundColor: "{colors.surface-2}"
+    textColor: "{colors.ink-subtle}"
+    typography: "{typography.key}"
+    rounded: "{rounded.xs}"
+    height: 20px
+  menu:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.md}"
+    padding: 4px
+  dialog:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.lg}"
+    padding: 24px
+  command-menu:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.lg}"
+    width: 576px
+  toast:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.md}"
+    padding: 12px 16px
+    width: 384px
+  selection-bar:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink-subtle}"
+    typography: "{typography.body}"
+    rounded: "{rounded.pill}"
+    padding: 4px 4px 4px 16px
+    height: 40px
+  list-toolbar:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    height: 34px
+  list-tool-button:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.md}"
+    height: 30px
+  filter-chip:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.sm}"
+    height: 28px
+  view-tab-default:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink-subtle}"
+    typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    padding: 6px 12px
+  view-tab-selected:
+    backgroundColor: "{colors.surface-3}"
+    textColor: "{colors.ink}"
+    typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    padding: 6px 12px
+  sidebar:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    width: 240px
+  sidebar-row:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.md}"
+    height: 34px
+  bottom-bar:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    height: 44px
+  sidebar-head:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    height: 48px
+  panel:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.lg}"
+    margin: 8px
+  panel-header:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    height: 48px
+    padding: 0 16px
+  site-header:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    height: 56px
+  site-footer:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink-subtle}"
+    typography: "{typography.body-sm}"
+    padding: 48px 16px
+  code-block:
+    backgroundColor: "{colors.surface-2}"
+    textColor: "{colors.ink}"
+    typography: "{typography.mono}"
+    rounded: "{rounded.lg}"
+    padding: 16px
+---
+
 # Peal design
 
 How Peal looks and is laid out: the web app first, and the site and the docs
@@ -7,7 +348,45 @@ peal-ui's `globals.css`, and the docs through
 `packages/peal-docs/theme.css`. Change this file and the
 tokens together: `nx run peal-ui:test` fails when the colour tables or the
 radius here and the tokens differ. Contributors and agents read this before
-changing a screen.
+changing a screen, and never depart from it: a screen that needs something
+else changes this file first.
+
+This file follows the `design.md` format: the front matter holds the
+tokens (`{colors.*}`, `{typography.*}`, `{rounded.*}`, `{spacing.*}`) and
+the components built from them, and the sections below say how and where
+they are used.
+
+## Overview
+
+Peal is light only, on a warm-grey canvas (`{colors.canvas}`, #FAFAF9).
+Content sits in white (`{colors.surface-1}`) cards, lists and tables, cut
+by 1 px hairlines (`{colors.hairline}`); quiet fills step up through
+`{colors.surface-2}` (#F5F5F4) and `{colors.surface-3}` (#EFEEEC, hover
+and the current item). Ink (#0C0A09) carries text, and the page's main
+action is an ink button.
+
+The one colour that means something is the mark's **blue**
+(`{colors.brand}`, #415EEE): links, focus rings, selection, today, and
+the scheduled state. Lavender and yellow, the mark's other colours, are for
+illustration, and yellow also marks what waits for an approval. A post's
+state is the only other colour a list carries.
+
+The app is dense, keyboard-first, and the same
+on every screen. One command menu (`⌘K`) reaches every page and action;
+every list narrows and orders with one Filter menu and one Display panel;
+several items are chosen and acted on with one selection bar; every change
+that can be taken back offers Undo instead of asking first.
+
+**Key characteristics:**
+
+- **Light only** — one theme; no `dark:` class anywhere in Peal's own code.
+- **Blue for meaning only** — selection, focus, links, today, scheduled;
+  never a button, never decoration.
+- **Hairlines before shadows** — a shadow lifts only what floats.
+- **A 4 px base**, one spacing scale, and one set of component sizes.
+- **Geist and Geist Mono**, with negative tracking on large type only.
+- **Keyboard-first** — every action has a command, many a key, and a sheet
+  lists them all.
 
 ## Light only
 
@@ -21,7 +400,7 @@ the operating system's setting and none offers a switch:
 - Write no `dark:` class in Peal's own code, in the web app or the site.
 - The docs set Blume's `theme.mode` to `light`, without its toggle.
 
-## Colour
+## Colors
 
 ### Brand
 
@@ -47,13 +426,16 @@ pairs:
 Blue's hover is `#2F47C9`, its pressed state `#22339A`. White on blue is
 5.2:1.
 
-### Neutrals
+### Surface and text
 
-Warm greys (stone), from the page out:
+Warm greys (stone), from the page out. The token names are peal-ui's; the
+front matter's surface ladder maps onto them (`canvas` is `background`,
+`surface-1` is `card`, `surface-2` is `muted`, `surface-3` is `accent`,
+`hairline` is `border`, `hairline-strong` is `input`):
 
 | Token                | Value     | Use                                                 |
 | -------------------- | --------- | --------------------------------------------------- |
-| `background`         | `#FAFAF9` | The page, the sidebar and the top bar.              |
+| `background`         | `#FAFAF9` | The page and the sidebar, around the panel.         |
 | `card`, `popover`    | `#FFFFFF` | Tables, cards, menus, dialogs, inputs.              |
 | `muted`, `secondary` | `#F5F5F4` | Code blocks, prompts, quiet fills.                  |
 | `accent`             | `#EFEEEC` | Hover, and the current item in the sidebar.         |
@@ -106,48 +488,112 @@ variables rather than values, so each colour is written once.
 4.5:1. Nothing is bold or italic. The kinds differ by colour alone, and
 none of them is needed to read or run the code.
 
-## Type
+## Typography
 
-Geist for text and Geist Mono for what is read character by character: ids,
-slugs, keys, times, counts, code and keyboard shortcuts. peal-ui ships both
-(`peal-ui/lib/fonts`); the docs name `geist` and `geist-mono` in Blume.
+### Font family
 
-| Role            | Size | Weight | Notes                                             |
-| --------------- | ---- | ------ | ------------------------------------------------- |
-| Home headline   | 30   | 600    | Two lines, the second in muted text.              |
-| Page title      | 24   | 600    | Only where a page has no toolbar.                 |
-| Section heading | 15   | 600    |                                                   |
-| Body, controls  | 14   | 400    | 500 for the current item and labels.              |
-| Secondary       | 13   | 400    | Hints, cells' second line.                        |
-| Small           | 12   | 400    | Table headers (upper case), group labels, badges. |
+- **Geist** — every word of the interface, the site and the docs.
+- **Geist Mono** — what is read character by character: ids, slugs, keys,
+  times, counts, code and keyboard shortcuts; the site's eyebrows and
+  captions.
 
-Numbers that line up use `tabular-nums`. Letter spacing is `-0.025em` at
-24 px and above, none below.
+peal-ui ships both (`peal-ui/lib/fonts`); the docs name `geist` and
+`geist-mono` in Blume.
 
-### The site's headlines
+### Hierarchy
 
-The marketing site speaks louder than the app, and only its headlines do:
-everything below them keeps the table above.
+| Token                     | Size (phone) | Weight | Line height | Letter spacing | Use                                                                     |
+| ------------------------- | ------------ | ------ | ----------- | -------------- | ----------------------------------------------------------------------- |
+| `{typography.display-xl}` | 56 (36)      | 600    | 1.05        | -0.025em       | The site's hero headline, one per page.                                 |
+| `{typography.display-lg}` | 40 (30)      | 600    | 1.10        | -0.025em       | The site's section headlines; a second sentence muted.                  |
+| `{typography.display-md}` | 30           | 600    | 1.20        | -0.025em       | The app's home headline, two lines, the second muted.                   |
+| `{typography.headline}`   | 24           | 600    | 1.25        | -0.025em       | Page titles.                                                            |
+| `{typography.card-title}` | 15           | 600    | 1.40        | 0              | Section headings, cards' and tiles' titles.                             |
+| `{typography.subhead}`    | 18 (16)      | 400    | 1.50        | 0              | The site's leads, at most 40 rem wide.                                  |
+| `{typography.body}`       | 14           | 400    | 1.50        | 0              | Body and controls; 500 for the current item and labels.                 |
+| `{typography.body-sm}`    | 13           | 400    | 1.45        | 0              | Hints, cells' second line.                                              |
+| `{typography.caption}`    | 12           | 400    | 1.40        | 0              | Table headers (upper case), group labels, badges.                       |
+| `{typography.button}`     | 14           | 500    | 1.20        | 0              | Every button's label.                                                   |
+| `{typography.eyebrow}`    | 12           | 400    | 1.30        | 0.04em         | Geist Mono, lowercase, in muted text: the site's eyebrows and captions. |
+| `{typography.mono}`       | 13           | 400    | 1.50        | 0              | Code.                                                                   |
+| `{typography.key}`        | 12           | 400    | 1           | 0              | Keys (see Keys).                                                        |
 
-| Role             | Size (phone) | Weight | Notes                                           |
-| ---------------- | ------------ | ------ | ----------------------------------------------- |
-| Hero headline    | 56 (36)      | 600    | One per page, line height 1.05.                 |
-| Section headline | 40 (30)      | 600    | Line height 1.1; a second sentence in muted.    |
-| Lead             | 18 (16)      | 400    | Under a headline, at most 40 rem wide.          |
-| Caption          | 12           | 400    | Geist Mono, lowercase, `0.04em`, in muted text. |
+"Phone" is below 640 px.
 
-Headlines keep `-0.025em`; "phone" is below 640 px.
+### Principles
 
-## Shape and space
+- **Tracking pulls in on large type only**: `-0.025em` at 24 px and above,
+  none below.
+- **One voice**: 600 for what heads, 400 for what is read, 500 for labels
+  and the current item. No 700.
+- **Numbers that line up** use `tabular-nums`.
+- **Mono means "read me exactly"**: ids, keys, times, counts, code. Never
+  for emphasis.
 
-- A 4 px grid. Pages have 16 px of padding inside the content area; cards
-  16 to 18 px.
-- Radius: 6 px for controls, cards, tables, menus and dialogs; 4 px for
-  chips, badges and keys; full for avatars and dots.
-- Borders before shadows. A shadow lifts only what floats: menus,
-  popovers, dialogs, the selected segment of a switch.
+## Layout
+
+### Spacing system
+
+- **Base unit**: 4 px. Everything sits on the 4 px grid.
+- **Tokens**: `{spacing.xxs}` 4 · `{spacing.xs}` 8 · `{spacing.sm}` 12 ·
+  `{spacing.md}` 16 · `{spacing.lg}` 24 · `{spacing.xl}` 32 ·
+  `{spacing.xxl}` 48 · `{spacing.section}` 96.
+- Pages have `{spacing.md}` 16 px of padding inside the content area on a
+  phone, `{spacing.xl}` 32 px from 768 px.
+- Card and dialog interior: `{spacing.lg}` 24 px. A list row: 12 px by
+  16 px. A menu: 4 px around its rows.
+- Between blocks of a page: `{spacing.lg}` 24 px; between a heading and
+  its block: `{spacing.sm}` 12 px; between controls in a row:
+  `{spacing.xs}` 8 px.
+- Button padding: 8 px by 14 px. Field padding: 8 px by 12 px.
+- The site's sections: `{spacing.section}` 96 px apart (48 px on a phone).
+
+### Heights
+
 - Heights: controls 34 px (30 small, 38 for a toolbar's search); sidebar
-  rows 34; table rows about 44; the top bar 56.
+  rows 34; table rows about 44; the sidebar's head and the panel's header
+  48; the site's header 56.
+
+### Grid and container
+
+- The app's content is 72 rem (1152 px) wide at most, centred.
+- The site's column is 72 rem wide at most, with 16 px of gutter on a
+  phone, between its rails (see Site).
+- Grids of cards or tiles are four, three or two up, one on a phone.
+
+## Elevation and depth
+
+| Level | Treatment                                                   | Use                                                           |
+| ----- | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| 0     | `{colors.canvas}`, no border                                | The page and the sidebar.                                     |
+| 1     | `{colors.surface-1}`, 1 px `{colors.hairline}`              | Cards, lists, tables, fields.                                 |
+| 2     | `{colors.surface-3}`                                        | Hover, the focused row, the current sidebar item.             |
+| 3     | `{colors.surface-1}`, a ring of ink at 10%, a medium shadow | Menus, popovers, tooltips.                                    |
+| 4     | `{colors.surface-1}`, the ring, a large shadow              | Dialogs, the command menu, sheets, toasts, the selection bar. |
+| Focus | A 3 px ring of `{colors.brand}` at 50%                      | Every focused control.                                        |
+
+Borders before shadows. A shadow lifts only what floats: menus,
+popovers, dialogs, the selection bar, the selected segment of a switch.
+A modal's backdrop is ink at 10%.
+
+## Shapes
+
+| Token            | Value | Use                                                                                               |
+| ---------------- | ----- | ------------------------------------------------------------------------------------------------- |
+| `{rounded.xs}`   | 4px   | Keys, status badges, state chips, checkboxes, the command menu's chip.                            |
+| `{rounded.sm}`   | 6px   | Tags, filter chips, a menu's rows.                                                                |
+| `{rounded.md}`   | 8px   | Buttons, fields, selects, menus, popovers, toasts, sidebar rows, view tabs and any tab-like chip. |
+| `{rounded.lg}`   | 12px  | The panel, cards, lists, tables, dialogs, the command menu, code blocks.                          |
+| `{rounded.xl}`   | 16px  | The site's product panels (the hero stage).                                                       |
+| `{rounded.pill}` | full  | The selection bar and its buttons.                                                                |
+| `{rounded.full}` | full  | Avatars and dots.                                                                                 |
+
+- Radius: 8 px for controls, menus, popovers and toasts; 12 px for the
+  panel, cards, lists, tables and dialogs; 4 px for keys, status badges
+  and state chips; 6 px for tags and filter chips; full for avatars,
+  dots and the selection bar (with its buttons). In Tailwind,
+  `rounded-sm` is 4 px, `rounded-md` 6, `rounded-lg` 8 and `rounded-xl`
+  12, all from `--radius`.
 
 ## Icons
 
@@ -163,17 +609,368 @@ A sign-in provider's button is an outline button of the control height,
 the provider's own mark at 16 px, half the control's height as Google
 sets its 20 px G in a 40 px button (Google's full-colour "G" from the
 file its branding guidelines publish, byte for byte, never redrawn or
-monochrome; lucide's `KeyRound` for a provider without one), then "Continue with" and its name. The buttons sit
-above the form, with "or" on a divider before it, and never take the
-page's main action, which stays the primary button.
+monochrome; lucide's `KeyRound` for a provider without one), then
+"Continue with" and its name. The buttons sit above the form, with "or" on
+a divider before it, and never take the page's main action, which stays
+the primary button.
+
+## Components
+
+Each component below names its token in the front matter. peal-ui builds
+them from shadcn/ui's look on ui-sdk's behaviour; a page never restyles
+one, it asks for a variant or a size.
+
+### Buttons
+
+**`button-primary`** — The page's main action: ink, `{colors.on-primary}`
+text, 8 px by 14 px, `{rounded.md}`, 34 px high. One per page.
+
+**`button-outline`** — Every other action: white, 1 px
+`{colors.hairline}` border, ink text. A sign-in provider's button is one.
+
+**`button-ghost`** — Actions in a toolbar or a row: no fill until hovered
+(`{colors.surface-3}`).
+
+**`button-destructive`** — Removal that cannot be taken back, in a
+confirmation only: `{colors.destructive}` with white text.
+
+**`button-inverse`** — On the brand field only: white with ink text.
+
+Sizes: default 34 px, `sm` 30 px, `xs` 24 px, `lg` 38 px (a toolbar's
+search); icon buttons are square at the same heights.
+
+### Fields
+
+**`text-input`** — White, 1 px `{colors.hairline-strong}` border, 8 px by
+12 px, `{rounded.md}`, 34 px high; the focus ring is blue at 50%. A select's
+trigger, a combobox and a date field share the look.
+
+### Lists, cards and tables
+
+**`card`** — White, 1 px `{colors.hairline}`, `{rounded.lg}`, 24 px
+inside. Settings are rows in cards: label and hint on the left, the
+control on the right, grouped under a heading, with what cannot be undone
+last.
+
+**`list`** — A list page's items sit in one bordered list,
+`{rounded.lg}`, a hairline between rows, never a card each. A row is 12 px
+by 16 px inside and opens what it shows.
+
+**`table-row`** — About 44 px; headers in `{typography.caption}`, upper
+case, muted.
+
+### Badges, chips and tags
+
+**`status-badge`** — A post's status beside it: 1 px hairline,
+`{rounded.xs}`, `{typography.caption}`, 2 px by 8 px.
+
+**`state-chip`** — Where a state is the point (the calendar's chips), the
+state's tint and text from the States table, with its dot. A post's state
+is the one colour a chip carries.
+
+**`tag`** — A workspace's tag: its dot (`TagDot`) and its name, on white,
+1 px hairline, `{rounded.sm}`. A tag's colour shows in its dot only.
+
+### Keys
+
+**`key`** — Keys are shown as **keys**: Geist Mono 12 on `muted`, 20 px
+high, the 4 px radius. Two pressed one after the other read "G then C",
+the word in muted text and in the reader's language.
+
+- **C** opens a new post; **G then** a letter opens the pages people open
+  most (H home, C calendar, P posts, D drafts, A approvals, I inbox, M
+  media, Y analytics, S settings). Letters are the same in every language.
+- A letter never runs while focus is in a field or while a dialog is
+  open; keys with ⌘ or Ctrl always do. Every key the app binds is shown
+  beside its command in the command menu.
+- **⌘/** (Ctrl+/; ⌘⇧/ where / takes Shift, as on a French keyboard), or
+  "Keyboard shortcuts" in the command menu's Help, opens the **shortcut
+  sheet**: a sheet on the right, its title, a search field (what a line
+  does, or its group's name), then the groups General, Go to, Lists and
+  Selected posts, each line what it does in muted text with its keys at
+  the end (a second way after the first, like J and ↓). It lists every
+  shortcut, not only the page's, and only "Go to" lines for pages the
+  member may open. The lines come from the same constants the pages
+  bind (`#shell/keys.ts`), so the sheet cannot drift from them.
+- A list's single keys never take the second key of a G sequence.
+
+### The frame
+
+Every signed-in page has the same frame: the sidebar on the
+page's `background`, and the page in a white panel beside it. There is no
+bar across the top.
+
+- **`sidebar`**, 240 px, on `background`, with no border:
+  - Its **head** (`sidebar-head`, 48 px): the workspace switcher (the
+    workspace's tile, its name, a chevron; on the person's own pages, the
+    person), then at the end two ghost icon buttons, **Search** (the
+    command menu, ⌘K) and **New post** (C), each with a tooltip naming it
+    and its key.
+  - Under it, the **mode switch**, with the Peal mark inside it:
+    PealStudio, for running a workspace's channels, and PealAPI, for
+    building on the API. They are the site's product names, one word each,
+    never translated. The mark and the two modes share one frame;
+    switching is one click, never a menu. The mark's tile is white in
+    PealStudio and ink in PealAPI, so the mode shows at a glance. Each
+    page belongs to one mode, so the address carries it; switching opens
+    the other mode's first page the member may open, and a mode with none
+    is shown disabled.
+  - The mode's navigation, in groups with a small label, listing only the
+    pages the member's permissions open, in **`sidebar-row`**s (34 px,
+    `{rounded.md}`, the current one on `accent`). A section with pages of
+    its own (Posts and Settings today) shows a chevron and **drills down**:
+    on its pages, the sidebar shows that section's pages under a back link.
+  - Its **foot**: Settings.
+- **`panel`**: the page, white (`card`), a 1 px hairline, `{rounded.lg}`,
+  8 px from the window's top and right edges, its foot on the bottom bar.
+  It scrolls on its own; the sidebar stays. On a phone it fills the
+  window, under a 48 px bar holding the menu button, the page's name and
+  its actions.
+- **`bottom-bar`**, 44 px, across the window's foot, on `background`, as
+  at its start, under the sidebar, the **account**: the
+  person's round avatar alone (their picture, or their initial on the
+  blue tint), a blue dot at its corner while notifications wait unread.
+  It opens their menu: Notifications (with the unread count), Agenda,
+  Report, Account (where the language is chosen), then Sign out. At the
+  bar's end, **Help** (Docs, Support, Keyboard shortcuts) and the
+  **agent's** place: "Agent" and History as ghost buttons, shown and off
+  until the agent comes, a tooltip saying so. No bell, no language
+  switcher in the frame.
+- **`panel-header`**, 48 px, a hairline under it, held at the panel's
+  top: the breadcrumb (the section in muted text, then the page's name,
+  14 px, 500, the page's `h1`) and at its end the page's actions as small
+  ghost buttons ("+ New post"). A page draws no title of its own under
+  it, and no description: what a page holds is said by its empty state.
+- **Content** under the header: a list's toolbar first (its views and
+  tools, 8 px from the panel's edges, see Lists), then the list edge to
+  edge; forms and settings in a column 48 rem wide at most, 24 px from
+  the header; full-bleed tools (the calendar, the inbox, the composer)
+  fill the panel.
+- The contract functions close the panel's content, in small muted text.
+
+PealStudio holds Home, Calendar, Posts, Channels and Media, then Inbox,
+Analytics and Ads under Engage. PealAPI holds Platforms, then API keys and
+Webhooks under Build, and Partner under Partners; a page the API offers
+later (connect links, activity, usage, OAuth apps) joins it there. The
+person's own pages, outside any workspace (the overview, the agenda, the
+report, the notifications, the account), have a sidebar of their own, with
+their workspaces under it.
+
+**Page names.** A page has one name, used in the sidebar, the breadcrumb,
+its title and the browser's tab ("Posts · Synthetic studio"): the short
+one (Posts, Approvals, Notifications, Billing, Account, Report). A page
+that opens one item is named after the item's kind (Comment, Message,
+Review). Home keeps "Write once." as a greeting under the name.
+
+### Command menu
+
+**`command-menu`** — One dialog runs actions and opens pages, from the top
+bar's button or `⌘K` (Ctrl+K elsewhere) on any page of a workspace.
+
+- **The button** is the search icon in the sidebar's head, with a tooltip
+  naming it and ⌘K.
+- **The dialog** sits a sixth of the window down, 576 px wide at most
+  (the window less 16 px a side on a phone), level 4. A search field 48 px
+  high heads it, the list scrolls under it, and a foot 36 px high names
+  the keys that move in it (↑ ↓, ↵, Esc).
+- **What the page shows** comes first. On a post's page, a chip before the
+  search text names the post (the start of its text, on `secondary`, the
+  4 px radius), and the first group, "This post", holds what can be done
+  with it: reschedule it, duplicate it, copy its link, show it on the
+  calendar on its day, open it on each platform where it went out.
+  Backspace in the empty field takes the chip and its group out until the
+  menu opens again.
+- **A question** ("Reschedule…") opens a page of the menu where what is
+  typed is the answer: its own placeholder, and one line that says what
+  Enter does ("Move to Monday, November 23, 2026 at 8:30 AM", how far off
+  in muted text), or why it cannot, or what to type. Esc or Backspace in
+  the empty field goes back. The move offers Undo, as the calendar's does.
+- **A choice** ("Change or add tags…") opens a page of its options, which
+  typing narrows; an option that is on or off has a box (✓ all, – some).
+- **The list** is in groups with a small label: Create, Go to, then the
+  sections (Posts, with the posts list's states: "Posts: Scheduled",
+  "Posts: Failed", "Posts: Partly published", "Posts: To check";
+  Settings), PealAPI, Workspaces and Help. A row is 34 px: the page's icon
+  (the sidebar's) at 16 px in muted text, its name, and its keys at the
+  end. Only what the member's role opens is listed. The highlighted row
+  takes `accent`, as a menu's does.
+- **Typing** filters every group at once; the letters that matched turn
+  semibold, never coloured. Nothing found says so with the text typed.
+
+### Toasts and undo
+
+**`toast`** — A toast says what an action did, once it is done: a white
+card at the bottom right, 384 px wide at most (the window less 16 px a
+side on a phone), level 4, a 16 px icon in muted text (in `destructive`
+for an error), the sentence, and at most one action at its end, an
+extra-small outline button. Toasts stack, the newest in front, and open
+out while the pointer or focus is on them; F6 reaches the newest. They
+leave after five seconds, six when they offer Undo.
+
+- A toast with an action shows the **time it has left**: a 2 px line along
+  its foot in the mark's colours, the gradient staying in place while it
+  is covered from its end toward its start. It stops whenever the toast's
+  time does: while the pointer or focus is on the toasts, during a swipe,
+  and while the window is away. With reduced motion, there is no line.
+- A change that can be taken back says so with **Undo** rather than asking
+  first. Undo, or ⌘Z (Ctrl+Z) while its toast shows and focus is not in a
+  field, takes it back and says so ("Post moved back to …"). What cannot
+  be taken back keeps its confirmation.
+
+### Lists: filters and display
+
+Every list, grid or calendar narrows and orders what it shows the same
+way, so a person who learns one screen knows them all.
+
+- **`list-toolbar`**, under the page's title: its **views** on the left,
+  as **`view-tab-default`** / **`view-tab-selected`** tabs ("All · Drafts
+  · Scheduled · Needs approval"; selected is a lift to `accent`), then at
+  the end **Filter**, **Display** and the page's own actions.
+- **`list-tool-button`** — Filter and Display: small outline icon buttons
+  (30 px, `{rounded.md}`) with a tooltip naming them and their key, the
+  border and icon blue while what they open narrows or orders the list.
+- **Filter** (F) opens a menu (level 3, 288 px): a search field, then the
+  list's properties (Status, Channel, Tag…), each opening a page of its
+  values. Typing searches every value at once ("Channel › Client A"),
+  matching the text it contains. A value chosen becomes a
+  **`filter-chip`** in a row under the toolbar: the property with its
+  icon, "is", the value, and × to take it off, cut by hairlines, 28 px
+  high, `{rounded.sm}`; pressing the value opens the menu on that property
+  to change it. After the chips, **Clear** takes them all off. A property
+  holds one value at a time; properties add up.
+- **Display** opens a small panel (level 3, 288 px, 12 px inside):
+  **Ordering** (what the list is sorted by) with a button that turns its
+  direction, and where a screen has them, grouping and its other views
+  (list, calendar).
+- What a list shows lives in the page's **address**: a reload, the back
+  button or a link shows the same list. Defaults are left out of it, and
+  changing it never scrolls the page.
+- The same words everywhere: a property is named in the singular
+  (Channel, Tag), a value as the app names it elsewhere, a time range is
+  a **Period** ("Last 30 days"), taking every filter off is **Clear**,
+  and the next page of a list is **Show more**.
+- A list the filters leave empty says so, with **Clear**.
+
+### Lists: choosing several
+
+- A list whose items can be acted on together has a **focused row**, the
+  one the keys act on: the pointer moves it, and so do J and K (or ↓ and
+  ↑). It takes a `muted` background, a chosen one keeps its tint.
+- Each row has a **checkbox** at its start, for members whose role
+  allows one such action at least, shown on the focused row and on the
+  chosen ones only (always on a touch screen). A click on it chooses the
+  row; Shift with a click anywhere on a row chooses every row from the
+  last one clicked (or lets them go, as the row clicked goes) and opens
+  nothing. X chooses the focused row, Shift with J or K grows the choice
+  up or down, ⌘A chooses every listed row, Enter or O opens the focused
+  one. A chosen row is tinted `brand-tint`, blue being selection's
+  colour.
+- **`selection-bar`** — While something is chosen: a small white pill
+  (40 px high, `{rounded.pill}`, level 4) that sticks 24 px above the
+  window's foot, centred under the list. It holds three things only: the
+  count in muted text ("3 selected"), **⌘ Actions** (a `secondary` round
+  button) and a round close button that lets go. The actions never sit in
+  the bar. It is one tab stop, its buttons reached with the arrow keys.
+- **Actions** opens the command menu on the choice: a chip names it ("3
+  posts", Backspace takes it out) and the first group holds the actions,
+  each with its key, which works on the list too while something is
+  chosen. An action with options (tags) opens a page of them, each with a
+  box that says whether all the chosen items have it (✓), some (–) or
+  none; choosing one that all have takes it off them all, any other puts
+  it on those without it, and a "Remove all" line comes first. ⌘K opens
+  the same menu. Esc goes back a page, then closes the menu, then lets
+  go; changing the list's filters lets go. An action keeps the choice, so
+  another can follow.
+- Each action reaches the chosen items it applies to, and its label says
+  so when that is not all of them ("Back to draft (2 of 3)"); an action
+  none of them allows is left out. What can be taken back offers Undo
+  (a tag's change, which puts back each item's own tags); what cannot
+  asks first, naming how many ("Cancel 3 posts?"). One toast says how it
+  went, with how many could not be done when some could not.
+- On the posts list: **Change or add tags…** (L), **Back to draft** (U,
+  scheduled or awaiting approval) and **Cancel** (⇧⌫, not yet out).
+
+### Menus, dialogs and sheets
+
+**`menu`** — Menus, selects' lists and popovers: white, level 3,
+`{rounded.md}`, 4 px around rows of 32 px, the highlighted row on
+`accent`.
+
+**`dialog`** — White, level 4, `{rounded.lg}`, 24 px inside, never taller
+than the window (its body scrolls): check each at 320 and 375 px wide, in
+English and French. A sheet slides from its side, 384 px wide at most.
+
+### Empty states
+
+**`empty-state`** — When a list, a page or a pane has nothing to show, it
+says so in its centre, across and down the space the panel leaves under
+its toolbar:
+
+- A **`pixel-icon`**: the page's own icon (the sidebar's lucide icon)
+  drawn as still pixel art, as the site draws its tiles (peal-ui's
+  `PixelFigure`, 5 px cells): 80 px square, in the blue and lavender
+  tints with blue on the brightest cells. It never moves, and screen
+  readers skip it.
+- A **title**, 15 px, 600 ("No posts yet", "No matching posts").
+- Where it helps, one or two lines in muted text, 28 rem wide at most,
+  saying what will appear and how, keys shown as keys.
+- At most two buttons: the next step (the primary button) and one
+  outline ("Documentation").
+- When filters hide what the list holds, the title says "No matching
+  posts", and a bordered strip under it says how many are hidden ("**12
+  posts** hidden by the filters") with **Clear** at its end.
+- A pane with nothing chosen (a reading pane) shows the icon and one muted
+  line ("No conversation selected").
+
+No other illustration, no joke, no exclamation mark.
+
+### Pages
+
+- **Empty states** say what will appear and give the one next step (see
+  Empty states).
+- **Errors** name the cause and carry the fix beside it (crop, reconnect,
+  review).
+- **Consent.** A question Peal must ask, such as whether the app may
+  link what someone does to their account and record their sessions, is
+  a card in the page's content, never a bar across the frame, a dialog or
+  anything that floats. Its two answers are two buttons of the same
+  variant and size (`outline`), side by side, so refusing is as easy as
+  accepting. The card leaves once answered, and the account page keeps
+  the answer, where it can be changed.
+- **The composer** writes one text with a tab per channel, counts each
+  platform's limit, and shows a preview beside it.
+- **A date in words.** Above the date and time pickers, "Type when" reads
+  a date as people say it, in English or in French ("tomorrow 9am",
+  "vendredi 10h30", "in 3 days", "27 nov"), on the schedule's clock. Under
+  the field, in muted text, it says the date it read in full and how far
+  off ("Friday, November 20, 2026 at 10:00 AM, in 19 hours"), that it
+  has passed, or what to try; Enter sets the pickers, which stay. It never
+  guesses: a word it does not understand names nothing. A weekday alone is
+  the coming one; "next friday" and "vendredi prochain" are the week after
+  it.
+- **Hosted pages** (a connect link's page, which a partner's customers
+  open) are one white card on `background`, headed by who asks: the
+  partner's logo and name. A partner's accent colour is a 4 px line along
+  the card's top, above the logo, and nothing else: never text, an icon,
+  a fill or a button, which keep Peal's colours. The server takes only
+  `#RRGGBB` with at least 3:1 contrast against `card` and `background`
+  (WCAG's bar for a line that must be seen), so lavender- or yellow-like
+  colours are refused.
+
+### Code block
+
+**`code-block`** — peal-ui's `CodeBlock`: a bordered panel,
+`{rounded.lg}`, with a header bar, then the code on `muted` in Geist Mono
+13 px, coloured as [Code](#code) says (the site's details are under Site).
 
 ## Brand field
 
 The brand field is Peal's one gradient surface: the mark's colours
 glowing on a deep blue, drawn exactly as Peal's social banners are.
 peal-ui's `BrandField` renders it, from the `--field-*` tokens. The only
-other gradient is a line, the pricing slider's fill (see Account
-calculator).
+other gradient is a line, the mark's colours across it (blue, lavender at
+70%, yellow): the pricing slider's fill (see Account calculator) and a
+toast's time left (see Toasts and undo).
 
 **Where.** Only in the art area of a site menu's preview card, and on
 covers and social images (blog covers, Open Graph images, the social
@@ -185,7 +982,7 @@ show the field's glows as pixels instead (the pixel glow, see
 **On it.** White text only (`#FFFFFF`), over the base and the blue glow
 (5:1 or better there), never over the lavender or yellow glows, which sit
 at the corners for that reason; then the rails and their captions. A
-button on it is white with ink text, the primary button inverted.
+button on it is `button-inverse`.
 
 The base is `radial-gradient(120% 140% at 50% 50%, #1E2D8C 0%, #16206A 60%, #0F1650 100%)`.
 Five blurred ellipses glow on it. Their sizes and blur are fractions of
@@ -214,67 +1011,6 @@ height.
 vertical ones: Captions are white at 60%, lowercase, `0.04em`, 12 px. One
 on each side at most, such as "peal.social" and "fair source ·
 self-hostable".
-
-## The frame
-
-Every signed-in page has the same frame:
-
-- **Sidebar**, 240 px, on `background`, with a border on its right:
-  - At the top, the **mode switch**, with the Peal mark inside it: PealStudio,
-    for running a workspace's channels, and PealAPI, for building on the
-    API. They are the site's product names, one word each, never
-    translated. The mark and the two modes share one frame; switching is one
-    click, never a menu. The mark's tile is white in PealStudio and ink
-    in PealAPI, so the mode shows at a glance. Each page belongs to one mode,
-    so the address carries it; switching opens the other mode's first page
-    the member may open, and a mode with none is shown disabled.
-  - The mode's navigation, in groups with a small label, listing only the
-    pages the member's permissions open. A section with pages of its own
-    (Posts and Settings today) shows a chevron and **drills down**: on its
-    pages, the sidebar shows that section's pages under a back link.
-  - Settings at the foot, then the workspace switcher.
-- **Top bar**, 56 px, aligned with the sidebar's top: the menu button on a
-  phone, the breadcrumb (with a count in Geist Mono where a page has one),
-  then search (`⌘K`, once there is search), Docs and
-  Support.
-- **Content** on `background`, in white cards and tables. Full-bleed tools
-  (the calendar, the inbox, the composer) are white edge to edge.
-
-PealStudio holds Home, Calendar, Posts, Channels and Media, then Inbox,
-Analytics and Ads under Engage. PealAPI holds Platforms, then API keys and
-Webhooks under Build, and Partner under Partners; a page the API offers
-later (connect links, activity, usage, OAuth apps) joins it there. The
-person's own pages, outside any workspace (the overview, the agenda, the
-report, the notices, the account), have a sidebar of their own, with
-their workspaces under it.
-
-## Pages
-
-- **Lists** lead with their toolbar: search, filter menus, sort, the view,
-  then the page's main action on the right. A full-width table follows.
-  Each row opens what it shows, with a chevron at its end.
-- **Empty states** say what will appear and give the one next step.
-- **Errors** name the cause and carry the fix beside it (crop, reconnect,
-  review).
-- **Settings** are rows: label and hint on the left, the control on the
-  right, in cards grouped under a heading, with what cannot be undone last.
-- **Consent.** A question Peal must ask, such as whether the app may
-  link what someone does to their account and record their sessions, is
-  a card in the page's content, never a bar across the frame, a dialog or
-  anything that floats. Its two answers are two buttons of the same
-  variant and size (`outline`), side by side, so refusing is as easy as
-  accepting. The card leaves once answered, and the account page keeps
-  the answer, where it can be changed.
-- **The composer** writes one text with a tab per channel, counts each
-  platform's limit, and shows a preview beside it.
-- **Hosted pages** (a connect link's page, which a partner's customers
-  open) are one white card on `background`, headed by who asks: the
-  partner's logo and name. A partner's accent colour is a 4 px line along
-  the card's top, above the logo, and nothing else: never text, an icon,
-  a fill or a button, which keep Peal's colours. The server takes only
-  `#RRGGBB` with at least 3:1 contrast against `card` and `background`
-  (WCAG's bar for a line that must be seen), so lavender- or yellow-like
-  colours are refused.
 
 ## Docs
 
@@ -319,7 +1055,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   button). Below 1024 px the middle and right collapse into a menu button
   that opens a drawer from the right, with the same items.
 - **Mega menu.** One floating panel (the shadow of a popover), white, with
-  the 6 px radius. Its links are grouped under a small label (12 px,
+  the 8 px radius. Its links are grouped under a small label (12 px,
   muted), in bordered cells side by side. A row is a 16 px lucide icon in
   a bordered 32 px tile, a title (14 px, 500) and a one-line description
   (13 px, muted), with the `accent` hover; a row that names a brand, such
@@ -576,4 +1312,76 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
 
 Sentence case everywhere. Buttons say what they do ("Connect a channel",
 "Create key"). Say what happened and what to do next; no exclamation marks
-and no emoji in the interface.
+and no emoji in the interface. `packages/peal-docs/WRITING.md` holds the
+voice.
+
+## Do's and Don'ts
+
+### Do
+
+- Keep `{colors.brand}` blue for meaning: links, focus, selection, today,
+  scheduled.
+- Make the page's main action one `button-primary`, in ink.
+- Draw structure with `{colors.hairline}` borders; lift only what floats.
+- Use the spacing tokens and the component sizes above; a new size joins
+  the front matter first.
+- Give every list the same toolbar, Filter, Display and selection bar.
+- Offer Undo for what can be taken back; ask first only for what cannot.
+- Give every action a command in `⌘K`, and the frequent ones a key.
+- Show a platform by its own mark, from its owner's file.
+
+### Don't
+
+- Don't add a dark theme or a `dark:` class.
+- Don't make a button blue, or use blue as decoration.
+- Don't write text, icons or a needed line in lavender or yellow.
+- Don't put the brand field in the app or the docs, or twice on a screen.
+- Don't give a list item a card of its own: one bordered list.
+- Don't restyle a peal-ui component from a page; ask for a variant.
+- Don't put actions in the selection bar: they live in the command menu.
+- Don't keep a list's filters out of the address.
+- Don't name a page two ways.
+
+## Responsive behavior
+
+| Name    | Width   | Key changes                                                                              |
+| ------- | ------- | ---------------------------------------------------------------------------------------- |
+| Desktop | 1280 px | The frame as drawn; content 72 rem at most.                                              |
+| Tablet  | 1024 px | The site's header collapses into a drawer; mega menus fit from here.                     |
+| Small   | 768 px  | The sidebar becomes a sheet behind the header's menu button; the panel fills the window. |
+| Phone   | 640 px  | Display type steps down (56 → 36, 40 → 30); one column.                                  |
+| Narrow  | 320 px  | Dialogs and sheets still fit, in English and French.                                     |
+
+### Touch targets
+
+- Controls keep 34 px; on a touch screen a control's hit area reaches
+  44 px around it (a checkbox's reaches past its box).
+- Checkboxes of a list show on every row on a touch screen, with no
+  hover to reveal them.
+
+### Collapsing
+
+- **Sidebar**: a sheet from the left below 768 px; its links close it.
+- **Command menu's button**: its icon alone on a phone.
+- **List toolbar**: wraps; Filter and Display stay at the end of the views.
+- **Display type**: steps down below 640 px as the hierarchy says.
+
+## Iteration guide
+
+1. Change one component at a time, by its `components:` token.
+2. Decide its level (elevation) and its radius from the scales before its
+   look.
+3. Default text to `{typography.body}`; reach for a heading token only for
+   what heads.
+4. Keep blue for meaning; check every new colour against the contrast
+   tables.
+5. Change `tokens.css` with this file; `nx run peal-ui:test` checks them
+   together.
+6. Add a variant as a component entry of its own.
+7. Build a new pattern once, in peal-ui, and reuse it on every screen.
+
+## Known gaps
+
+- Card padding moves from 16–18 px to 24 px: the components follow screen
+  by screen.
+- Form error styling is shadcn/ui's, not yet written down here.

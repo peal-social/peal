@@ -4,11 +4,10 @@ import { buttonVariants } from "peal-ui/components/button";
 
 import { currentUserOrNone } from "#auth/session.ts";
 import { AccountMenuView } from "#components/account-menu-view.tsx";
-import { NotificationBell } from "#components/notices/notification-bell.tsx";
 import { Link } from "#i18n/navigation.ts";
 
-// The header's account corner: the signed-in user, read from GET /api/me
-// while the page renders, with their notifications' bell, or a way to sign
+// The frame's account corner: the signed-in user, read from GET /api/me
+// while the page renders, with their unread notifications, or a way to sign
 // in, also when that read fails.
 export const AccountMenu = async () => {
   const me = await currentUserOrNone();
@@ -24,10 +23,7 @@ export const AccountMenu = async () => {
       </Link>
     ),
     onSome: ({ user }) => (
-      <>
-        <NotificationBell />
-        <AccountMenuView name={user.name} email={user.email} />
-      </>
+      <AccountMenuView name={user.name} email={user.email} image={user.image} />
     ),
   });
 };

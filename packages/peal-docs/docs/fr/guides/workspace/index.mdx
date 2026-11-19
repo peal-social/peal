@@ -299,18 +299,11 @@ Une fois l’espace de travail supprimé, Peal envoie une confirmation à votre 
 
 ## Dans tous vos espaces de travail [#across-workspaces]
 
-Sur la page d’accueil, la carte de chaque espace de travail montre ce qui y demande votre attention. Chaque ligne mène à la page qui le montre :
+À la connexion, Peal ouvre l’espace de travail que vous avez créé ou choisi en dernier, sinon le premier des vôtres. À l’inscription, Peal crée un espace de travail pour vous, à votre nom (_Espace d’Ada_), sauf si une invitation vous attend : vous rejoignez alors cet espace.
 
-- les publications qui ont échoué sur un canal ces 7 derniers jours
-- les publications à vérifier, parce qu’un canal les a peut-être en ligne
-- les publications qui attendent une approbation, et si vous pouvez la donner
-- les canaux à reconnecter ou désactivés
-- les commentaires qui attendent une réponse dans la boîte de réception
-- un espace au-delà de son offre, qui ne publie rien tant qu’il n’y est pas revenu.
+Pour créer un autre espace de travail, ouvrez le menu des espaces en haut de la barre latérale et cliquez sur **Nouvel espace de travail**. Les pages d’un espace ont une adresse tirée de son nom, comme `/acme-studio/posts`. Cette adresse ne change pas quand vous renommez l’espace, et les liens qui contiennent l’identifiant de l’espace, comme ceux des e-mails de Peal, mènent à la même page.
 
-Un espace où rien ne demande votre attention le dit une fois. Les cartes qui demandent votre attention viennent en premier.
-
-Chaque carte ne montre que ce que votre rôle y permet de lire, comme les pages de l’espace le feraient. Là où vous ne pouvez pas lire les commentaires, par exemple, il n’y a aucune ligne de boîte de réception, plutôt qu’un compte à zéro. Un espace qui exige la [validation en deux étapes](#require-two-step) alors que votre compte ne l’a pas activée affiche son badge et aucun chiffre, jusqu’à ce que vous l’activiez.
+La barre latérale de vos propres pages liste vos espaces de travail, et deux pages qui les couvrent tous.
 
 ### Agenda [#agenda]
 
@@ -335,7 +328,7 @@ Cliquez sur **Télécharger le CSV** pour l’enregistrer, une ligne par espace.
 
 ### Par l’API et la ligne de commande [#across-workspaces-api]
 
-Ces points d’accès répondent la même chose que la page d’accueil, l’agenda et le rapport :
+Ces points d’accès disent ce qui demande votre attention dans chaque espace de travail (publications en échec, publications qui attendent une approbation, canaux à reconnecter, commentaires à traiter, espace au-delà de son offre), et répondent la même chose que l’agenda et le rapport :
 
 - `GET /api/me/overview`
 - `GET /api/me/agenda`, avec `from` et `to` (à 31 jours d’écart au plus) et `workspaceIds` (séparés par des virgules)

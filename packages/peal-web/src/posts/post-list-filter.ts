@@ -13,6 +13,7 @@ import type { PostOutcome, PostSort, PostStatus } from "peal-contract";
 export interface PostListFilters {
   readonly channelId?: string;
   readonly outcome?: PostOutcome;
+  readonly queueId?: string;
   readonly sort: PostSort;
   readonly status?: PostStatus;
   readonly tagId?: string;
@@ -46,6 +47,7 @@ export const filtersOf = (query: QueryString): PostListFilters => {
   const outcome = read(PostOutcomeSchema, query.get("outcome"));
   const channelId = read(Schema.String, query.get("channel"));
   const tagId = read(Schema.String, query.get("tag"));
+  const queueId = read(Schema.String, query.get("queue"));
 
   const filters: Writable<PostListFilters> = {
     sort: Option.getOrElse(
@@ -70,6 +72,10 @@ export const filtersOf = (query: QueryString): PostListFilters => {
     filters.tagId = tagId.value;
   }
 
+  if (Option.isSome(queueId)) {
+    filters.queueId = queueId.value;
+  }
+
   return filters;
 };
 
@@ -82,6 +88,7 @@ export const queryOf = (filters: PostListFilters): string =>
       ? []
       : [["channel", filters.channelId]]),
     ...(filters.tagId === undefined ? [] : [["tag", filters.tagId]]),
+    ...(filters.queueId === undefined ? [] : [["queue", filters.queueId]]),
     ...(filters.sort === noFilters.sort ? [] : [["sort", filters.sort]]),
   ]).toString();
 
@@ -112,10 +119,43 @@ export const isFiltering = (filters: PostListFilters): boolean =>
   filters.status !== undefined ||
   filters.channelId !== undefined ||
   filters.tagId !== undefined ||
+  filters.queueId !== undefined ||
   byTime(filters.sort);
 
 /** A filter of the query string, by its name there. */
-export type FilterName = "channel" | "outcome" | "sort" | "status" | "tag";
+export type FilterName =
+  | "channel"
+  | "outcome"
+  | "queue"
+  | "sort"
+  | "status"
+  | "tag";
+
+/** What the posts list can be ordered by, in the Display panel. */
+export type PostOrdering = "created" | "scheduled";
+
+/** A sort as the Display panel shows it: what it orders by, which way. */
+export interface Ordering {
+  readonly field: PostOrdering;
+  readonly direction: "asc" | "desc";
+}
+
+export const orderingOf = (sort: PostSort): Ordering => ({
+  direction: sort === "createdAsc" || sort === "scheduledAsc" ? "asc" : "desc",
+  field: byTime(sort) ? "scheduled" : "created",
+});
+
+/** The sort the Display panel's ordering and direction make. */
+export const sortOf = (
+  field: PostOrdering,
+  direction: "asc" | "desc"
+): PostSort => {
+  if (field === "scheduled") {
+    return direction === "asc" ? "scheduledAsc" : "scheduledDesc";
+  }
+
+  return direction === "asc" ? "createdAsc" : "createdDesc";
+};
 
 /**
  * The filters with one changed, or taken off with `undefined`: read back
@@ -136,4 +176,32 @@ export const withFilter = (
   }
 
   return filtersOf(query);
+};
+
+/**
+ * The posts list's views, its tabs (DESIGN.md, "Filters and display"): all
+ * of them, then the states people open most, each a status.
+ */
+export const postViews = [
+  { status: undefined, view: "all" },
+  { status: "draft", view: "drafts" },
+  { status: "scheduled", view: "scheduled" },
+  { status: "awaitingApproval", view: "approval" },
+] as const satisfies readonly {
+  readonly status: PostStatus | undefined;
+  readonly view: string;
+}[];
+
+/** Whether a tab shows the list's status, so no chip repeats it. */
+export const isViewStatus = (status: PostStatus | undefined): boolean =>
+  postViews.some((view) => view.status === status && status !== undefined);
+
+/**
+ * Whether the filters narrow the list beyond its tab: a status a tab
+ * shows is the view, not a filter.
+ */
+export const isFilteringView = (filters: PostListFilters): boolean => {
+  const { status, ...rest } = filters;
+
+  return isFiltering(isViewStatus(status) ? rest : filters);
 };

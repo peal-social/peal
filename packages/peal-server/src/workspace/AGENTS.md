@@ -48,7 +48,16 @@ The staff context follows these rules too. What the law has a host keep is in
 - Workspaces are Better Auth organizations. The five roles (owner, admin,
   editor, contributor, viewer) and their grants are in
   `workspace/domain/roles.ts`, translated for Better Auth in
-  `access-control.ts`. A member holds exactly one role.
+  `access-control.ts`. A member holds exactly one role. A workspace's
+  slug names its pages in the web app (`/<slug>`): Better Auth's
+  hooks (`auth/workspace-slugs.ts`) make one only with a slug
+  `isWorkspaceSlug` takes (`peal-contract/workspace-slug`: lower-case
+  words, at most 48 characters, never the first segment of another of
+  the app's pages nor an id's shape; 400 `INVALID_WORKSPACE_SLUG`), and refuse
+  any update that names one (400 `WORKSPACE_SLUG_FIXED`): renaming keeps
+  it. A partner's customer workspaces, made in SQL, take their id. The
+  server's own links to the web app (notices, emails, upgrade paths) name
+  a workspace by its id (`/<id>/…`), which the web app sends on to its slug.
 - `MembersApi` and `InvitationsApi` (`WorkspaceMembers`, over the
   `WorkspacePeople` port) list a workspace's members to every member in
   person, never an API key, and its pending invitations to those with

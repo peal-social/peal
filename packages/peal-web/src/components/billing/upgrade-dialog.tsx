@@ -24,6 +24,7 @@ import { useCheckout } from "#billing/use-checkout.ts";
 import type { BillingError } from "#components/billing/billing-view.tsx";
 import { UpgradeView } from "#components/billing/upgrade-view.tsx";
 import type { BilledElsewhere } from "#components/billing/upgrade-view.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 
 /** The workspace a plan is ordered for, and what its member may do. */
@@ -58,6 +59,7 @@ interface WorkspaceBilling {
 // reads, linked for its members; and, for a member who reads billing,
 // whether the workspace is in a legacy trial and the server's rate card.
 const useBillingOf = (workspaceId: string): WorkspaceBilling => {
+  const workspaceHref = useWorkspaceHref();
   const standing = useAtomValue(standingOf(workspaceId));
   const billing = useAtomValue(billingOf(workspaceId));
   const read = AsyncResult.isSuccess(billing) ? billing.value : null;
@@ -68,7 +70,7 @@ const useBillingOf = (workspaceId: string): WorkspaceBilling => {
           link:
             name === null ? null : (
               <Link
-                href={`/app/${id}/billing`}
+                href={workspaceHref(id, "/billing")}
                 className="underline underline-offset-4"
               >
                 {name}

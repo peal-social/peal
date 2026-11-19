@@ -51,7 +51,7 @@ export const isWorkspaceId = (value: string): boolean => isUuid(value);
 
 /** Where a person finds a workspace's id. */
 export const whereTheIdIs =
-  "The id is in the address of the workspace's pages in the web app (/app/<id>/settings), and peal whoami, signed in as a person, lists it.";
+  "peal whoami, signed in as a person, lists it, as GET /api/me does.";
 
 // A key is nobody: it cannot read whose workspaces these are, so the
 // workspace is known by its id alone, which stands for its name.

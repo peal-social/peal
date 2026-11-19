@@ -14,9 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "peal-ui/components/dialog";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
 
 import {
   adAccounts,

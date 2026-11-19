@@ -30,7 +30,7 @@ export const DigestUnsubscribeLive = HttpRouter.use(
   Effect.fn(function* digestUnsubscribe(router) {
     const digest = yield* UnsubscribeWeeklyDigest;
     const publicUrl = yield* publicUrlConfig;
-    const preferences = new URL("/app/notices/preferences", publicUrl).href;
+    const preferences = new URL("/notices/preferences", publicUrl).href;
 
     yield* router.add(
       "POST",

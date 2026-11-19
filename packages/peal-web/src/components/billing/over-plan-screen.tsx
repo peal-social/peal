@@ -21,6 +21,7 @@ import { OverPlanView } from "#components/billing/over-plan-view.tsx";
 import type { OverPlanError } from "#components/billing/over-plan-view.tsx";
 import { UpgradeOffer } from "#components/billing/upgrade-dialog.tsx";
 import type { UpgradeWorkspace } from "#components/billing/upgrade-dialog.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 
 interface OverPlanScreenProps {
@@ -84,6 +85,7 @@ export const OverPlanScreen = ({
   termsUrl,
   workspace,
 }: OverPlanScreenProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("OverPlan");
   const channels = useAtomValue(channelsOf(workspace.id));
   const members = useAtomValue(membersOf(workspace.id));
@@ -141,7 +143,7 @@ export const OverPlanScreen = ({
         <Button
           variant="link"
           size="sm"
-          render={<Link href={`/app/${workspace.id}/billing`} />}
+          render={<Link href={workspaceHref(workspace.id, "/billing")} />}
         >
           {t("billing")}
         </Button>

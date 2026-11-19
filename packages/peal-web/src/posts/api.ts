@@ -262,6 +262,12 @@ export const schedulePost = PealApi.mutation("posts", "schedule");
 
 export const reschedulePost = PealApi.mutation("posts", "reschedule");
 
+/**
+ * The posts scheduled in a range, read once when asked rather than kept:
+ * what holds a queue's slot at the moment a move is undone.
+ */
+export const readScheduledPosts = PealApi.mutation("posts", "list");
+
 export const cancelPost = PealApi.mutation("posts", "cancel");
 
 export const unschedulePost = PealApi.mutation("posts", "unschedule");

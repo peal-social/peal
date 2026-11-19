@@ -18,14 +18,12 @@ import { Badge } from "peal-ui/components/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "peal-ui/components/card";
 import { Separator } from "peal-ui/components/separator";
+import { toast } from "peal-ui/components/toast";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { canGenerateImages } from "#assistant/permissions.ts";
 import { PostMetrics } from "#components/analytics/post-metrics.tsx";
@@ -73,6 +71,8 @@ import { TargetOptionsSection } from "#components/posts/target-options-panel.tsx
 import { TargetStatuses } from "#components/posts/target-statuses.tsx";
 import { TextTabs } from "#components/posts/text-tabs.tsx";
 import { useAiLabels } from "#components/posts/use-ai-labels.ts";
+import { PageTitle } from "#components/shell/frame-view.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
 import { getPathname, useRouter } from "#i18n/navigation.ts";
 import { useAttachedMedia } from "#posts/attached-media.ts";
@@ -250,8 +250,11 @@ const noticeOf = (
   return willWait ? t("willWait") : null;
 };
 
-const calendarOf = (workspaceId: string, date: ScheduleChoice["date"]) =>
-  `/app/${workspaceId}/calendar?date=${dateKey(date)}`;
+const calendarOf = (
+  href: (workspaceId: string, rest?: string) => string,
+  workspaceId: string,
+  date: ScheduleChoice["date"]
+) => href(workspaceId, `/calendar?date=${dateKey(date)}`);
 
 // What the composer starts with: the post's, or nothing for a new one.
 const startOf = (post: Post | undefined) => ({
@@ -292,6 +295,7 @@ export const Composer = ({
   userId,
   workspaceId,
 }: ComposerProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.Composer");
   const tPosts = useTranslations("Posts");
   const format = useFormatter();
@@ -537,8 +541,8 @@ export const Composer = ({
 
     router.push(
       week === undefined
-        ? `/app/${workspaceId}/calendar`
-        : calendarOf(workspaceId, week)
+        ? workspaceHref(workspaceId, "/calendar")
+        : calendarOf(workspaceHref, workspaceId, week)
     );
   };
 
@@ -571,7 +575,7 @@ export const Composer = ({
         null,
         "",
         getPathname({
-          href: `/app/${workspaceId}/posts/${saved.id}`,
+          href: workspaceHref(workspaceId, `/posts/${saved.id}`),
           locale,
         })
       );
@@ -586,7 +590,7 @@ export const Composer = ({
         ? t("sentForApproval", { at: formatted(at, browserTimeZone()) })
         : t("publishedNow")
     );
-    router.push(`/app/${workspaceId}/posts/${sent.id}`);
+    router.push(workspaceHref(workspaceId, `/posts/${sent.id}`));
   };
 
   const saveDraft = async () => {
@@ -702,7 +706,7 @@ export const Composer = ({
         { at: formatted(at.value) }
       )
     );
-    router.push(calendarOf(workspaceId, choice.date));
+    router.push(calendarOf(workspaceHref, workspaceId, choice.date));
   };
 
   // Moves the post to the time chosen, to its queue's next free slot, or,
@@ -761,7 +765,7 @@ export const Composer = ({
 
     if (Option.isSome(cancelled)) {
       toast.success(t("cancelled"));
-      router.push(calendarOf(workspaceId, choice.date));
+      router.push(calendarOf(workspaceHref, workspaceId, choice.date));
     }
   };
 
@@ -776,7 +780,7 @@ export const Composer = ({
   const discard = async (id: string) => {
     if (await requests.discard(id)) {
       toast.success(t("discarded"));
-      router.push(`/app/${workspaceId}/drafts`);
+      router.push(workspaceHref(workspaceId, "/drafts"));
     }
   };
 
@@ -842,14 +846,9 @@ export const Composer = ({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {titleOf(t, post)}
-          </h1>
-        </CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-        {post === undefined ? null : (
+      <PageTitle>{titleOf(t, post)}</PageTitle>
+      {post === undefined ? null : (
+        <CardHeader>
           <div className="flex gap-2">
             <Badge variant="outline">{tPosts("status", { status })}</Badge>
             {post.outcome === null ? null : (
@@ -858,14 +857,10 @@ export const Composer = ({
               </Badge>
             )}
           </div>
-        )}
-        {post === undefined ? null : (
-          <>
-            <PostQueueLine queueId={post.queueId} workspaceId={workspaceId} />
-            <PostOrigins post={post} viewerId={userId} />
-          </>
-        )}
-      </CardHeader>
+          <PostQueueLine queueId={post.queueId} workspaceId={workspaceId} />
+          <PostOrigins post={post} viewerId={userId} />
+        </CardHeader>
+      )}
       <CardContent>
         <div className="flex flex-col gap-6">
           {notice === null ? null : (

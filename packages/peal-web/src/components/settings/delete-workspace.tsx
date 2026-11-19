@@ -16,10 +16,11 @@ import {
 import { Button } from "peal-ui/components/button";
 import { Input } from "peal-ui/components/input";
 import { Label } from "peal-ui/components/label";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { ChangeEvent } from "react";
-import { toast } from "sonner";
 
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 import { deleteWorkspace } from "#settings/atoms.ts";
 import { apiErrorKey, subscriptionsToCancel } from "#settings/errors.ts";
@@ -42,6 +43,7 @@ export const DeleteWorkspace = ({
   readonly name: string;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("WorkspaceSettings.delete");
   const settings = useTranslations("Settings");
   const router = useRouter();
@@ -92,7 +94,7 @@ export const DeleteWorkspace = ({
       Option.match(apiErrorKey(exit), {
         onNone: () => {
           toast.success(t("deleted", { name }));
-          router.push("/app");
+          router.push("/");
           router.refresh();
         },
         onSome: setError,
@@ -123,7 +125,7 @@ export const DeleteWorkspace = ({
                 billed,
                 <Link
                   key={billed}
-                  href={`/app/${billed}/billing`}
+                  href={workspaceHref(billed, "/billing")}
                   className="underline underline-offset-4"
                 >
                   {t("billingPage")}

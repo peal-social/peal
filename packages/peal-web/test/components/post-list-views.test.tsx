@@ -6,10 +6,10 @@ import type { SocialChannel, Post } from "peal-contract";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { PostListToolbar } from "#components/posts/post-list-toolbar.tsx";
 import {
   PostItemView,
   PostListEmpty,
-  PostListFiltersView,
   usePostTitle,
 } from "#components/posts/post-list-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
@@ -169,7 +169,16 @@ describe(PostListEmpty, () => {
   it("says there is no post yet", async () => {
     await expect(
       render("en", <PostListEmpty clearFilters={null} filtering={false} />)
-    ).resolves.toContain("No post yet.");
+    ).resolves.toContain("No posts yet");
+  });
+
+  it("names the empty view", async () => {
+    await expect(
+      render(
+        "en",
+        <PostListEmpty clearFilters={null} filtering={false} view="drafts" />
+      )
+    ).resolves.toContain("No drafts");
   });
 
   it("says the filters keep nothing, and offers to clear them", async () => {
@@ -183,7 +192,7 @@ describe(PostListEmpty, () => {
       />
     );
 
-    expect(html).toContain("No post matches these filters.");
+    expect(html).toContain("No matching posts");
     expect(html).toContain(
       '<a href="https://app.example.test/posts">Clear the filters</a>'
     );
@@ -191,13 +200,15 @@ describe(PostListEmpty, () => {
 });
 
 const renderFilters = async (
-  shown: Parameters<typeof PostListFiltersView>[0]["filters"]
+  shown: Parameters<typeof PostListToolbar>[0]["filters"]
 ) =>
   await render(
     "en",
-    <PostListFiltersView
+    <PostListToolbar
+      actions={null}
       channels={[channel]}
       filters={shown}
+      queues={[]}
       tags={[]}
       onChange={() => {
         // Nothing changes in a render.
@@ -205,14 +216,22 @@ const renderFilters = async (
     />
   );
 
-describe(PostListFiltersView, () => {
-  it("offers the outcome only with the finished posts", async () => {
-    await expect(renderFilters(noFilters)).resolves.not.toContain(
-      "Every outcome"
-    );
-    await expect(
-      renderFilters({ ...noFilters, status: "finished" })
-    ).resolves.toContain("Every outcome");
+describe(PostListToolbar, () => {
+  it("shows a chip for each filter, and Clear, only once one holds", async () => {
+    const none = await renderFilters(noFilters);
+
+    const finished = await renderFilters({
+      ...noFilters,
+      outcome: "failed",
+      status: "finished",
+    });
+
+    expect([
+      none.includes('data-slot="filter-chip"'),
+      finished.match(/data-slot="filter-chip"/gu)?.length,
+      finished.includes("Failed"),
+      finished.includes(">Clear<"),
+    ]).toStrictEqual([false, 2, true, true]);
   });
 
   it("says when it filters by a channel the workspace no longer has", async () => {
@@ -222,7 +241,6 @@ describe(PostListFiltersView, () => {
     });
 
     expect(html).toContain("A channel no longer connected");
-    expect(html).not.toContain("Every channel");
   });
 
   it("says that ordering by time leaves out the posts without one", async () => {

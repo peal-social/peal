@@ -7,6 +7,7 @@ import type { Screen } from "e2e";
 
 import { confirmedAccount } from "./support/accounts.ts";
 import { codeOf } from "./support/totp.ts";
+import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // A member turns two-step verification on, signs out, signs in again with
 // the password then a code from the app, and requires it of their
@@ -14,7 +15,7 @@ import { codeOf } from "./support/totp.ts";
 // under a new address.
 const run = randomUUID();
 const name = "Morgan Example";
-const workspace = "Second Step";
+const workspace = defaultWorkspaceOf(name);
 
 const address = () =>
   credentials.user("member").username.replace("@", `+${run}-two-step@`);
@@ -25,6 +26,9 @@ const password = "synthetic two-step password";
 
 // The key the account page shows, which the app would read from the QR code.
 let key = "";
+
+// The workspace made for the member, whose pages live under /<slug>.
+let slug = "";
 
 const signInWithPassword = async (
   app: { readonly open: (path: string) => Promise<void> },
@@ -51,15 +55,13 @@ describe("two-step verification", { serial: true }, () => {
     });
 
     await signInWithPassword(app, browser, screen);
-    await expect(screen.getByRole("heading", `Hello, ${name}`)).toBeVisible();
+    // Signing in makes the member a workspace of their own, and opens it.
+    ({ slug } = await openedWorkspace(browser));
+    await expect(screen.getByRole("button", "Switch workspace")).toContainText(
+      workspace
+    );
 
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-    await expect(
-      screen.getByRole("navigation", `Posts of ${workspace}`)
-    ).toBeVisible();
-
-    await app.open("/app/account");
+    await app.open("/account");
     await screen.getByRole("main").getByRole("button", "Turn on").tap();
     await screen.getByLabel("Your password").fill(password);
     await screen.getByRole("button", "Continue").tap();
@@ -94,14 +96,11 @@ describe("two-step verification", { serial: true }, () => {
       .fill(codeOf(key));
     await screen.getByRole("button", "Verify").tap();
 
-    await expect(screen.getByRole("heading", `Hello, ${name}`)).toBeVisible();
+    await expect(browser).toHaveURL(`/${slug}`, { timeout: 30_000 });
   });
 
-  test("is required of the workspace's members", async ({ screen }) => {
-    await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", `Settings of ${workspace}`)
-      .tap();
+  test("is required of the workspace's members", async ({ app, screen }) => {
+    await app.open(`/${slug}/settings`);
     await screen
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Security")

@@ -18,9 +18,9 @@ import {
 } from "peal-ui/components/dialog";
 import { Input } from "peal-ui/components/input";
 import { Label } from "peal-ui/components/label";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { useChannelErrorText } from "#channels/channel-error-text.ts";
 import { labelUpdateOf } from "#channels/channel-label.ts";

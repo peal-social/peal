@@ -8,6 +8,7 @@ import type { SocialChannel, TopPost } from "peal-contract";
 
 import { channelName } from "#channels/channel-name.ts";
 import { MetricList } from "#components/analytics/metric-list.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { workspacePost } from "#posts/api.ts";
 
@@ -40,6 +41,7 @@ interface TopPostsProps {
 
 /** The range's posts people did the most with, first the most. */
 export const TopPosts = ({ channels, posts, workspaceId }: TopPostsProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Analytics");
   const tPosts = useTranslations("Posts");
   const format = useFormatter();
@@ -80,7 +82,7 @@ export const TopPosts = ({ channels, posts, workspaceId }: TopPostsProps) => {
             <MetricList counts={post.metrics} />
             <div className="flex flex-wrap gap-4 text-sm">
               <Link
-                href={`/app/${workspaceId}/posts/${post.postId}`}
+                href={workspaceHref(workspaceId, `/posts/${post.postId}`)}
                 className="underline-offset-4 hover:underline"
               >
                 {t("top.open")}

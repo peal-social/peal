@@ -4,9 +4,9 @@ import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import { Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";

@@ -6,6 +6,7 @@ import { credentials, expect } from "e2e";
 import type { Screen } from "e2e";
 
 import { confirmedAccount, makeStaff } from "./support/accounts.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // Staff run the server from its console: a member is not let in, then
 // staff find the member, ban them with a reason, lift the ban, act as them
@@ -81,9 +82,7 @@ describe("the staff console", { serial: true }, () => {
     });
 
     await signIn(app, browser, screen, memberAddress());
-    await expect(
-      screen.getByRole("heading", `Hello, ${memberName}`)
-    ).toBeVisible();
+    await openedWorkspace(browser);
 
     const answer = browser.waitForResponse(/\/admin\/users$/u);
 
@@ -107,9 +106,7 @@ describe("the staff console", { serial: true }, () => {
   }) => {
     await makeStaff(staffAddress());
     await signIn(app, browser, screen, staffAddress());
-    await expect(
-      screen.getByRole("heading", `Hello, ${staffName}`)
-    ).toBeVisible();
+    await openedWorkspace(browser);
 
     await app.open("/admin");
 
@@ -174,9 +171,7 @@ describe("the staff console", { serial: true }, () => {
       title: `Act as ${memberName}?`,
     });
 
-    await expect(
-      screen.getByRole("heading", `Hello, ${memberName}`)
-    ).toBeVisible();
+    await openedWorkspace(browser);
 
     const banner = screen.getByRole("region", "Acting as another account");
 
@@ -256,9 +251,7 @@ describe("the staff console", { serial: true }, () => {
   }) => {
     await makeStaff(staffAddress(), { legal: true });
     await signIn(app, browser, screen, staffAddress());
-    await expect(
-      screen.getByRole("heading", `Hello, ${staffName}`)
-    ).toBeVisible();
+    await openedWorkspace(browser);
 
     await app.open("/admin");
     await screen

@@ -5,9 +5,9 @@ import { Option } from "effect";
 import { useTranslations } from "next-intl";
 import { Button } from "peal-ui/components/button";
 import { Input } from "peal-ui/components/input";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { useRouter } from "#i18n/navigation.ts";
 import { settleCreditProblem } from "#staff/atoms.ts";

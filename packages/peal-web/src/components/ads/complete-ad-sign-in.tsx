@@ -6,6 +6,7 @@ import { constVoid } from "effect/Function";
 import { useTranslations } from "next-intl";
 import type { AdNetwork, ReachableAdAccount } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import {
   useEffect,
   useRef,
@@ -13,13 +14,13 @@ import {
   useSyncExternalStore,
   useTransition,
 } from "react";
-import { toast } from "sonner";
 
 import { adsChanged, completeAdSignIn, connectAdAccounts } from "#ads/api.ts";
 import { adsErrorOf } from "#ads/errors.ts";
 import type { AdsError } from "#ads/errors.ts";
 import { forgetAdSignIn, pendingAdWorkspace } from "#ads/pending-sign-in.ts";
 import type { AdSignInCallback } from "#ads/sign-in-callback.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 
 import { AdSignInView, toggledAccounts } from "./ad-sign-in-view.tsx";
@@ -56,6 +57,7 @@ export const CompleteAdSignIn = ({
   callback,
   network,
 }: CompleteAdSignInProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Ads.callback");
   const router = useRouter();
   const complete = useAtomSet(completeAdSignIn, { mode: "promiseExit" });
@@ -137,7 +139,7 @@ export const CompleteAdSignIn = ({
 
       if (Exit.isSuccess(exit)) {
         toast.success(t("connected", { count: exit.value.length }));
-        router.replace(`/app/${reached.workspaceId}/ads`);
+        router.replace(workspaceHref(reached.workspaceId, "/ads"));
 
         return;
       }
@@ -181,13 +183,13 @@ export const CompleteAdSignIn = ({
       step={step}
       back={
         known === null ? (
-          <Button variant="outline" render={<Link href="/app" />}>
+          <Button variant="outline" render={<Link href="/" />}>
             {t("toWorkspaces")}
           </Button>
         ) : (
           <Button
             variant="outline"
-            render={<Link href={`/app/${known}/ads`} />}
+            render={<Link href={workspaceHref(known, "/ads")} />}
           >
             {t("toAds")}
           </Button>

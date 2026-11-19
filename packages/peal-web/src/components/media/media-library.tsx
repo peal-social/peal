@@ -21,9 +21,10 @@ import {
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
+import { toast } from "peal-ui/components/toast";
 import { useRef, useState, useTransition } from "react";
-import { toast } from "sonner";
 
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { deleteMedia, mediaKey, mediaPage, usageOf } from "#media/atoms.ts";
 import {
@@ -88,6 +89,7 @@ const DeleteConfirmation = ({
   readonly onDelete: () => void;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Media.library");
   const result = useAtomValue(usageOf(workspaceId, media.id));
 
@@ -101,7 +103,7 @@ const DeleteConfirmation = ({
       postLinks={result.value.scheduled.map((postId, index) => (
         <Link
           key={postId}
-          href={`/app/${workspaceId}/posts/${postId}`}
+          href={workspaceHref(workspaceId, `/posts/${postId}`)}
           className="underline underline-offset-4"
         >
           {t("inUsePost", { number: index + 1 })}

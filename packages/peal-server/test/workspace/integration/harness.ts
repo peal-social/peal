@@ -17,6 +17,7 @@ import {
 } from "effect";
 import { FetchHttpClient, HttpRouter, HttpServer } from "effect/http";
 import { SqlClient } from "effect/sql";
+import { workspaceSlugOf } from "peal-contract/workspace-slug";
 
 import { AppLive } from "#app/server.ts";
 import { DatabaseLive, SqlLive } from "#shared/infrastructure/database.ts";
@@ -364,7 +365,7 @@ export const workspaceOf = Effect.fn("workspaceOf")(function* workspaceOf(
   const app = yield* TestApp;
 
   const reply = yield* app.request("/api/auth/organization/create", {
-    body: { name, slug: `${name.toLowerCase()}-${randomUUID()}` },
+    body: { name, slug: workspaceSlugOf(name, randomUUID().slice(0, 12)) },
     headers: { cookie: owner.cookies },
   });
 
