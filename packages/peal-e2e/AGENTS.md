@@ -64,9 +64,10 @@
   `.e2e/posthog-storage.json`, which the privacy policy names. It
   checks pages opened without a reload in both modes, Allow and
   withdrawal in place, the app's own requests naming the session (a tag
-  added in the settings) and the recording going on across pages.
-  `nx run peal-e2e:e2e-webkit` (`e2e.webkit.config.ts`, its report under
-  `.e2e/webkit`) runs that journey alone in WebKit, after the Chromium
+  added in the settings, its header read with `browser.route`) and no
+  longer once withdrawn and the recording going on across pages.
+  `nx run peal-e2e:e2e-webkit` (`e2e.webkit.config.ts`, its report and
+  the stand-in's log under `.e2e/webkit`, through `PEAL_E2E_OUTPUT`) runs that journey alone in WebKit, after the Chromium
   run in CI: install WebKit with `e2e-web install webkit`.
 - No platform can be connected in a run, so a test that needs a channel
   inserts a synthetic one with `seedChannel` (`tests/support/channels.ts`).

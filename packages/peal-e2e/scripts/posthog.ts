@@ -19,7 +19,9 @@ export const projectToken = "phc_synthetic";
 export const requestsFile = path.join(
   import.meta.dirname,
   "..",
-  ".e2e",
+  // Each run's own folder: the WebKit run's is `.e2e/webkit`, so it never
+  // writes over the Chromium run's (e2e.webkit.config.ts).
+  process.env["PEAL_E2E_OUTPUT"] ?? ".e2e",
   "posthog-requests.jsonl"
 );
 

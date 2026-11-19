@@ -194,6 +194,31 @@ const relayedHeaders = new Set([
   "user-agent",
 ]);
 
+// The session header of each tag the page asked to add, as the browser
+// sent it: the app's own requests, which the SDK's patch never reaches.
+const tagRequests: (string | null)[] = [];
+
+const watchTags = async (browser: {
+  readonly route: (
+    pattern: RegExp,
+    handler: (route: {
+      readonly request: {
+        readonly method: string;
+        readonly headers: Readonly<Record<string, string>>;
+      };
+      readonly continue: () => Promise<void>;
+    }) => Promise<void>
+  ) => Promise<void>;
+}) => {
+  await browser.route(/\/api\/workspaces\/[^/]+\/tags$/u, async (route) => {
+    if (route.request.method === "POST") {
+      tagRequests.push(route.request.headers["x-posthog-session-id"] ?? null);
+    }
+
+    await route.continue();
+  });
+};
+
 let memberId = "";
 let workspaceId = "";
 let allowedAt = 0;
@@ -414,6 +439,7 @@ describe("the web app's measurement", { serial: true }, () => {
       "the member's page view of a page opened without a reload"
     );
 
+    await watchTags(browser);
     await app.open(`/app/${workspaceId}/settings`);
     await screen
       .getByRole("navigation", "Workspace")
@@ -451,6 +477,9 @@ describe("the web app's measurement", { serial: true }, () => {
     expect(tagged[0]?.properties["$session_id"]).toBe(
       current[0]?.properties["$session_id"]
     );
+    expect(tagRequests).toEqual([
+      textOf(current[0]?.properties["$session_id"]),
+    ]);
 
     await eventually(
       () =>
@@ -468,12 +497,7 @@ describe("the web app's measurement", { serial: true }, () => {
     const jar = await browser.cookies();
     const cookies = jar.map((cookie) => cookie.name);
 
-    const kept = path.join(
-      import.meta.dirname,
-      "..",
-      ".e2e",
-      "posthog-storage.json"
-    );
+    const kept = path.join(path.dirname(requestsFile), "posthog-storage.json");
 
     const local = Schema.decodeUnknownSync(StoredSchema)(
       await browser.evaluate("Object.keys(localStorage)")
@@ -492,6 +516,7 @@ describe("the web app's measurement", { serial: true }, () => {
     screen,
   }) => {
     await asPerson(browser);
+    await watchTags(browser);
     await app.open("/app/account");
     await screen.getByRole("button", "Don’t allow").tap();
     await expect(screen.getByText(/^Not allowed since /u)).toBeVisible();
@@ -533,6 +558,21 @@ describe("the web app's measurement", { serial: true }, () => {
     );
 
     expect(stored.filter((key) => key.startsWith("ph_"))).toEqual([]);
+
+    // In place, the app's own requests name the session no more.
+    await screen
+      .getByRole("link", new RegExp(`${RegExp.escape(workspace)}$`, "u"))
+      .tap();
+    await screen.getByRole("link", "Settings").tap();
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Tags")
+      .tap();
+    await screen.getByLabel("Name").fill("Unmeasured");
+    await screen.getByRole("button", "Add the tag").tap();
+    await expect(screen.getByText("The tag is added.")).toBeVisible();
+
+    expect(tagRequests.at(-1)).toBeNull();
   });
 
   test("ties no id of one consent to the next", async ({ app, browser }) => {
