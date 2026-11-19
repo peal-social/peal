@@ -126,6 +126,61 @@ const patterned: ReadonlySet<string> = new Set([
 
 const decodeText = Schema.decodeUnknownOption(Schema.String);
 
+// A recording's events, read no deeper than the list: a full snapshot is
+// the whole page.
+const isAnyList = Schema.is(Schema.Array(Schema.Unknown));
+
+const isList = (
+  value: PropertyValue | undefined
+): value is readonly PropertyValue[] => isAnyList(value);
+
+// Whether a recording's event is rrweb's meta event (type 4), which names
+// the page as the browser shows it: read no deeper than its type.
+const isMeta = Schema.is(Schema.Struct({ type: Schema.Literal(4) }));
+
+// A meta event whole, which holds a few small fields: every key kept.
+const decodeMeta = Schema.decodeUnknownOption(
+  Schema.StructWithRest(
+    Schema.Struct({
+      data: Schema.Record(Schema.String, Schema.Json),
+      type: Schema.Literal(4),
+    }),
+    [Schema.Record(Schema.String, Schema.Json)]
+  )
+);
+
+// A recording's events with each page's address as its origin and its
+// pattern, as every other event names it: no id, no query. A recording
+// whose events are not a list is not sent at all.
+const patternedRecording = (event: MeasuredEvent): MeasuredEvent | null => {
+  const items = event.properties["$snapshot_data"];
+
+  if (!isList(items)) {
+    return null;
+  }
+
+  const addressed = items.map((item) =>
+    isMeta(item)
+      ? Option.match(decodeMeta(item), {
+          onNone: () => item,
+          onSome: (meta) =>
+            Option.match(decodeText(meta.data["href"]), {
+              onNone: () => item,
+              onSome: (href) => ({
+                ...meta,
+                data: { ...meta.data, href: addressOf(href) },
+              }),
+            }),
+        })
+      : item
+  );
+
+  return {
+    ...event,
+    properties: { ...event.properties, $snapshot_data: addressed },
+  };
+};
+
 const rewritten = (key: string, value: PropertyValue): PropertyValue =>
   Option.match(decodeText(value), {
     onNone: () => value,
@@ -159,7 +214,8 @@ const keptProperties = (
 /**
  * The SDK's `before_send`: the event to send, or null to drop it. Nothing
  * leaves while the page is `off`; a recording's data only once the person
- * allowed it, untouched (its masking happens as it is recorded); every
+ * allowed it, masked as it was recorded, its pages' addresses as patterns;
+ * every
  * other event keeps only the properties above, never sets a person's
  * properties (the server alone does), and an anonymous one names no
  * workspace and never the person.
@@ -175,7 +231,7 @@ export const sanitized = (
   const identified = mode === "identified";
 
   if (event.event === "$snapshot") {
-    return identified ? event : null;
+    return identified ? patternedRecording(event) : null;
   }
 
   // A guard against a bug: an anonymous event never names the person.

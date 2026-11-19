@@ -3,6 +3,7 @@ import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";
 import { Atom, AtomHttpApi } from "effect/reactivity";
 import { Api } from "peal-contract";
 
+import { namedSession, sessionHeader } from "#measurement/session-header.ts";
 import { noticeAnswer } from "#two-step/refusals.ts";
 
 // The reason a refusal gives, if it gives one.
@@ -22,6 +23,20 @@ const reasonOf = (body: Schema.Json): string | undefined =>
 // instead (see prefetch.ts).
 export const apiBaseUrl = Atom.make("").pipe(Atom.keepAlive);
 
+/**
+ * A request to Peal's API from `baseUrl`, naming the web app's measured
+ * session once the person allowed it, and nothing when there is none.
+ */
+export const addressedFrom =
+  (baseUrl: string) => (request: HttpClientRequest.HttpClientRequest) => {
+    const session = namedSession();
+    const addressed = HttpClientRequest.prependUrl(request, baseUrl);
+
+    return session === null || session === ""
+      ? addressed
+      : HttpClientRequest.setHeader(addressed, sessionHeader, session);
+  };
+
 const fetchFrom = (baseUrl: string) =>
   Layer.effect(
     HttpClient.HttpClient,
@@ -31,10 +46,7 @@ const fetchFrom = (baseUrl: string) =>
       // Every refusal is read once here, for the reason the whole page
       // acts on (two-step verification a workspace now requires); the
       // body stays for the caller, as the response keeps it.
-      return HttpClient.mapRequest(
-        client,
-        HttpClientRequest.prependUrl(baseUrl)
-      ).pipe(
+      return HttpClient.mapRequest(client, addressedFrom(baseUrl)).pipe(
         HttpClient.tap((response) =>
           response.status === 403
             ? response.json.pipe(

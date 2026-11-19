@@ -1,14 +1,22 @@
 import { Context, DateTime, Effect, Layer, Option } from "effect";
 
-import { usageCutoff, usageDayOf } from "#billing/domain/usage-meter.ts";
+import type { BillingAccount } from "#billing/domain/billing-account.ts";
+import {
+  isToldDay,
+  usageCutoff,
+  usageDayOf,
+} from "#billing/domain/usage-meter.ts";
 import type { UsageRecord } from "#billing/domain/usage-meter.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
+import type { WorkspaceId } from "#shared/domain/ids.ts";
 
 import { BillingAccounts } from "./billing-accounts.ts";
 import { AccountDayStore } from "./ports/account-day-store.ts";
+import { BillingAccountStore } from "./ports/billing-account-store.ts";
 import { MeterUsageStore } from "./ports/meter-usage-store.ts";
 import { UsageLedger } from "./ports/usage-ledger.ts";
 import type { WorkspaceUsageRecord } from "./ports/usage-ledger.ts";
+import { UsageSnapshotSink } from "./ports/usage-snapshot-sink.ts";
 import { UsageStates } from "./ports/usage-states.ts";
 import type { WorkspaceDayState } from "./ports/usage-states.ts";
 import { StartAccountDays } from "./start-account-days.ts";
@@ -60,7 +68,10 @@ const recordsOf = (
  * second server, changes nothing. A day it never ran for keeps no state:
  * none is written for it later. A workspace erased while its batch was
  * written has those rows deleted again. Each batch's workspaces are given
- * their billing account, those nobody read yet included (the sweep). Then
+ * their billing account, those nobody read yet included (the sweep), and
+ * where product analytics is on, the days of those still there with a
+ * connected account are told (`UsageSnapshotSink`), with the billing
+ * account each is on, read as stored; nothing told fails the run. Then
  * it starts today's account-days of every billing account
  * (`StartAccountDays`, on a server that bills), and, whether the snapshot
  * went through or not, it deletes the ledger's rows, the account-days, the
@@ -81,6 +92,39 @@ export class SnapshotUsage extends Context.Service<
         const startDays = yield* StartAccountDays;
         const meterUsage = yield* MeterUsageStore;
         const accountDays = yield* AccountDayStore;
+        const sink = yield* UsageSnapshotSink;
+        const store = yield* BillingAccountStore;
+
+        // The days of a batch's workspaces worth telling, with the billing
+        // accounts the sweep just gave them, in one plain read that writes
+        // nothing: accounts that cannot be read leave them without one,
+        // and nothing here stops the snapshot.
+        const tell = (day: DateTime.Utc, told: readonly WorkspaceDayState[]) =>
+          !sink.enabled || told.length === 0
+            ? Effect.void
+            : store.accountsIn(told.map(({ workspaceId }) => workspaceId)).pipe(
+                Effect.catchCause((cause) =>
+                  Effect.logWarning(
+                    "Reading the billing accounts of the snapshot's workspaces failed",
+                    cause
+                  ).pipe(Effect.as(new Map<WorkspaceId, BillingAccount>()))
+                ),
+                Effect.flatMap((held) =>
+                  sink.told(
+                    day,
+                    told.map((state) => ({
+                      billingAccountId: Option.fromUndefinedOr(
+                        held.get(state.workspaceId)?.id
+                      ),
+                      state,
+                    }))
+                  )
+                ),
+                Effect.catchCause((cause) =>
+                  Effect.logWarning("Telling the snapshot's days failed", cause)
+                ),
+                Effect.withSpan("SnapshotUsage.tell")
+              );
 
         // Every workspace's states, batch by batch: how many it wrote.
         const snapshot = Effect.fn("SnapshotUsage.snapshot")(function* snapshot(
@@ -117,6 +161,13 @@ export class SnapshotUsage extends Context.Service<
             // the one it belongs on now; one that fails is left to the next
             // read, or run, and stops none of the others.
             yield* accounts.sweepIn(page.map(({ workspaceId }) => workspaceId));
+
+            yield* tell(
+              day,
+              page.filter(
+                (state) => still.has(state.workspaceId) && isToldDay(state)
+              )
+            );
 
             workspaces += page.length;
             more = page.length === batchSize;

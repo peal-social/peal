@@ -7,8 +7,9 @@ import { Option, Schema } from "effect";
 export const tabsKey = "peal.measurement-news";
 
 /**
- * What one tab tells the others: the person's new choice, or that they
- * signed out. Each then follows at once, rather than when it is reloaded.
+ * What one tab tells the others: the person's new choice, that they signed
+ * out, or that someone signed in. Each then follows at once, rather than
+ * when it is reloaded.
  */
 export const TabNewsSchema = Schema.Union([
   Schema.Struct({
@@ -17,9 +18,24 @@ export const TabNewsSchema = Schema.Union([
     kind: Schema.Literal("chosen"),
   }),
   Schema.Struct({ kind: Schema.Literal("signedOut") }),
+  Schema.Struct({ kind: Schema.Literal("signedIn") }),
 ]);
 
 export type TabNews = typeof TabNewsSchema.Type;
+
+/**
+ * Tells the browser's other tabs: written, then removed at once, so
+ * nothing stays. A browser that refuses storage tells nothing, and the
+ * other tabs follow when they are shown again.
+ */
+export const tellTabs = (news: TabNews): void => {
+  try {
+    localStorage.setItem(tabsKey, JSON.stringify(news));
+    localStorage.removeItem(tabsKey);
+  } catch {
+    // Nothing more to do.
+  }
+};
 
 /** What another tab wrote, none for anything else. */
 export const tabNewsOf = (written: string | null): Option.Option<TabNews> =>
@@ -60,22 +76,39 @@ const AnswerSchema = Schema.Struct({
       })
     )
   ),
+  user: Schema.Struct({ id: Schema.String }),
 });
 
+/** What the page holds of the measurement, and for whom. */
+export interface Held extends ConsentNow {
+  readonly userId: string;
+}
+
 /**
- * Whether GET /api/me's answer says something else of the measurement
- * than the page holds: another choice, one that expired, or none measured
- * any more. An answer it cannot read says nothing changed.
+ * What GET /api/me's answer says against what the page holds: `same`;
+ * `changed` for another choice, one that expired, or none measured any
+ * more; `otherPerson` once someone else signed in, in another tab. An
+ * answer it cannot read says nothing changed.
  */
-export const answerChanged = (answer: string, held: ConsentNow): boolean =>
+export const answerNews = (
+  answer: string,
+  held: Held
+): "changed" | "otherPerson" | "same" =>
   Option.match(
     Schema.decodeUnknownOption(Schema.fromJsonString(AnswerSchema))(answer),
     {
-      onNone: () => false,
-      onSome: ({ browserAnalytics }) =>
-        browserAnalytics === undefined ||
-        browserAnalytics === null ||
-        browserAnalytics.consent !== held.consent ||
-        browserAnalytics.decidedAt !== held.decidedAt,
+      onNone: () => "same" as const,
+      onSome: ({ browserAnalytics, user }) => {
+        if (user.id !== held.userId) {
+          return "otherPerson" as const;
+        }
+
+        return browserAnalytics === undefined ||
+          browserAnalytics === null ||
+          browserAnalytics.consent !== held.consent ||
+          browserAnalytics.decidedAt !== held.decidedAt
+          ? ("changed" as const)
+          : ("same" as const);
+      },
     }
   );

@@ -9,7 +9,7 @@ import { Option, Schema } from "effect";
 
 import { requestsFile } from "../scripts/posthog.ts";
 import { emailedLink } from "./support/mailpit.ts";
-import { openedWorkspace } from "./support/workspaces.ts";
+import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // How the web app measures a member's use, read from what the stand-in for
 // PostHog received (scripts/posthog.ts): anonymous page views with nothing
@@ -159,10 +159,22 @@ const personLike = `(() => {
   as("webdriver", false);
 })()`;
 
+// A browser that refuses PostHog's well-known ingestion path, as tracker
+// blockers do, and as the WebKit browser production was checked in did:
+// what the web app sends must never depend on that path.
+const knownIngestion = /\/i\/v0\/e\//u;
+
 const asPerson = async (browser: {
   readonly addInitScript: (script: string) => Promise<void>;
+  readonly route: (
+    pattern: RegExp,
+    handler: (route: { readonly abort: () => Promise<void> }) => Promise<void>
+  ) => Promise<void>;
 }) => {
   await browser.addInitScript(personLike);
+  await browser.route(knownIngestion, async (route) => {
+    await route.abort();
+  });
 };
 
 // The ids an event carries that could tie it to another: none may pass
@@ -193,6 +205,31 @@ const relayedHeaders = new Set([
   "sec-fetch-mode",
   "user-agent",
 ]);
+
+// The session header of each tag the page asked to add, as the browser
+// sent it: the app's own requests, which the SDK's patch never reaches.
+const tagRequests: (string | null)[] = [];
+
+const watchTags = async (browser: {
+  readonly route: (
+    pattern: RegExp,
+    handler: (route: {
+      readonly request: {
+        readonly method: string;
+        readonly headers: Readonly<Record<string, string>>;
+      };
+      readonly continue: () => Promise<void>;
+    }) => Promise<void>
+  ) => Promise<void>;
+}) => {
+  await browser.route(/\/api\/workspaces\/[^/]+\/tags$/u, async (route) => {
+    if (route.request.method === "POST") {
+      tagRequests.push(route.request.headers["x-posthog-session-id"] ?? null);
+    }
+
+    await route.continue();
+  });
+};
 
 let memberId = "";
 let workspaceId = "";
@@ -244,6 +281,25 @@ describe("the web app's measurement", { serial: true }, () => {
 
     await app.open(`/${slug}/posts`);
     await app.open(`/${slug}/channels`);
+    await app.open(`/${slug}/posts`);
+
+    // A page opened without a reload counts too.
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Drafts")
+      .tap();
+
+    await eventually(
+      () =>
+        received().filter(
+          (event) =>
+            fromBrowser(event) &&
+            event.event === "$pageview" &&
+            event.distinctId !== memberId &&
+            textOf(event.properties["$current_url"]).endsWith("/:id/drafts")
+        ),
+      "an anonymous page view of a page opened without a reload"
+    );
 
     const views = await eventually(
       () =>
@@ -334,11 +390,6 @@ describe("the web app's measurement", { serial: true }, () => {
       "a page view under the member's id with the workspace"
     );
 
-    await eventually(
-      () => after().filter((event) => event.event === "$snapshot"),
-      "a recording"
-    );
-
     // A write from the page names the browser's session to Peal's API.
     const session = textOf(views[0]?.properties["$session_id"]);
 
@@ -362,6 +413,99 @@ describe("the web app's measurement", { serial: true }, () => {
       "a server event joined to the browser's session"
     );
 
+    // Pages opened without a reload count under the member, the recording
+    // goes on across them, and the app's own requests name the session.
+    const recordedSoFar = after().filter(
+      (event) => event.event === "$snapshot"
+    ).length;
+
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Drafts")
+      .tap();
+
+    await eventually(
+      () =>
+        after().filter(
+          (event) =>
+            event.event === "$pageview" &&
+            event.distinctId === memberId &&
+            textOf(event.properties["$current_url"]).endsWith("/app/:id/drafts")
+        ),
+      "the member's page view of a page opened without a reload"
+    );
+
+    await watchTags(browser);
+    await app.open(`/app/${workspaceId}/settings`);
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Tags")
+      .tap();
+    await screen.getByLabel("Name").fill("Measured");
+    await screen.getByRole("button", "Add the tag").tap();
+    await expect(screen.getByText("The tag is added.")).toBeVisible();
+
+    const current = await eventually(
+      () =>
+        after().filter(
+          (event) =>
+            event.event === "$pageview" &&
+            event.distinctId === memberId &&
+            textOf(event.properties["$current_url"]).endsWith(
+              "/app/:id/settings/tags"
+            )
+        ),
+      "the member's page view of the tags"
+    );
+
+    const tagged = await eventually(
+      () =>
+        received().filter(
+          (event) =>
+            event.path === serverCapture &&
+            event.event === "api_operation" &&
+            event.distinctId === memberId &&
+            event.properties["operation"] === "tags.create"
+        ),
+      "the server's event of the tag the page added"
+    );
+
+    expect(tagged[0]?.properties["$session_id"]).toBe(
+      current[0]?.properties["$session_id"]
+    );
+    expect(tagRequests).toEqual([
+      textOf(current[0]?.properties["$session_id"]),
+    ]);
+
+    // The project's configuration has a recording wait for 10 s of a
+    // session before it sends any of it.
+    await sleep(11_000);
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Signatures")
+      .tap();
+
+    const recorded = await eventually(
+      () =>
+        after()
+          .filter((event) => event.event === "$snapshot")
+          .slice(recordedSoFar),
+      "a recording across pages opened without a reload"
+    );
+
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Queues")
+      .tap();
+
+    await eventually(
+      () =>
+        after()
+          .filter((event) => event.event === "$snapshot")
+          .slice(recordedSoFar + recorded.length),
+      "more of the recording after another page"
+    );
+
     // What the SDK keeps once allowed, which the privacy policy names.
     const stored = Schema.decodeUnknownSync(StoredSchema)(
       await browser.evaluate(storedKeys)
@@ -370,12 +514,7 @@ describe("the web app's measurement", { serial: true }, () => {
     const jar = await browser.cookies();
     const cookies = jar.map((cookie) => cookie.name);
 
-    const kept = path.join(
-      import.meta.dirname,
-      "..",
-      ".e2e",
-      "posthog-storage.json"
-    );
+    const kept = path.join(path.dirname(requestsFile), "posthog-storage.json");
 
     const local = Schema.decodeUnknownSync(StoredSchema)(
       await browser.evaluate("Object.keys(localStorage)")
@@ -394,6 +533,7 @@ describe("the web app's measurement", { serial: true }, () => {
     screen,
   }) => {
     await asPerson(browser);
+    await watchTags(browser);
     await app.open("/account");
     await screen.getByRole("button", "Don’t allow").tap();
     await expect(screen.getByText(/^Not allowed since /u)).toBeVisible();
@@ -435,6 +575,19 @@ describe("the web app's measurement", { serial: true }, () => {
     );
 
     expect(stored.filter((key) => key.startsWith("ph_"))).toEqual([]);
+
+    // In place, the app's own requests name the session no more.
+    await screen.getByRole("link", defaultWorkspaceOf(name)).tap();
+    await screen.getByRole("link", "Settings").tap();
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Tags")
+      .tap();
+    await screen.getByLabel("Name").fill("Unmeasured");
+    await screen.getByRole("button", "Add the tag").tap();
+    await expect(screen.getByText("The tag is added.")).toBeVisible();
+
+    expect(tagRequests.at(-1)).toBeNull();
   });
 
   test("ties no id of one consent to the next", async ({ app, browser }) => {

@@ -39,6 +39,7 @@ import { WorkspaceStanding } from "#billing/application/workspace-standing.ts";
 import { XPassThrough } from "#billing/application/x-pass-through.ts";
 import { AccountPlanHoldersLive } from "#billing/infrastructure/account-plan-holders.ts";
 import { AccountPlanPoolsLive } from "#billing/infrastructure/account-plan-pools.ts";
+import { AnalyticsUsageSnapshotSinkLive } from "#billing/infrastructure/analytics-usage-snapshot-sink.ts";
 import { AuditedAccountDeskLive } from "#billing/infrastructure/audited-account-desk.ts";
 import { AuditedCreditProblemReviewLive } from "#billing/infrastructure/audited-credit-problem-review.ts";
 import { AuditedRequestReviewLive } from "#billing/infrastructure/audited-request-review.ts";
@@ -276,9 +277,10 @@ const PoolBound = Layer.effectDiscard(
  * contexts count too: its daily snapshot and its report, which says whose
  * plan a partner's workspace is on (the workspace context's
  * PartnerOwnership), and a partner's per customer, from the workspaces the
- * workspace context's PartnerTenants says it holds. The composition root
- * provides those contexts, PartnerTenants, Ids and the TransactionRunner,
- * with BillingLive.
+ * workspace context's PartnerTenants says it holds. The snapshot tells
+ * product analytics of each day too. The composition root provides those
+ * contexts, PartnerTenants, ProductAnalytics, Ids and the
+ * TransactionRunner, with BillingLive.
  */
 export const BillingOverviewLive = Layer.mergeAll(
   BillingOverview.layer,
@@ -299,8 +301,12 @@ export const BillingOverviewLive = Layer.mergeAll(
       Layer.merge(StripeMeterErrorEventsLive, DrizzleStripeEventLedgerLive)
     )
   ),
-  // Today's account-days start with the snapshot and every hour.
-  SnapshotUsage.layer.pipe(Layer.provideMerge(StartDaysLive)),
+  // Today's account-days start with the snapshot and every hour; its
+  // days are told to product analytics.
+  SnapshotUsage.layer.pipe(
+    Layer.provideMerge(StartDaysLive),
+    Layer.provide(AnalyticsUsageSnapshotSinkLive)
+  ),
   PoolBound,
   UsageReports.layer,
   UsageAtCheckoutBound,

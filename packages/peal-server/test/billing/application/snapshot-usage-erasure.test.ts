@@ -6,6 +6,7 @@ import { TestClock } from "effect/testing";
 
 import { AccountDayStore } from "#billing/application/ports/account-day-store.ts";
 import { UsageLedger } from "#billing/application/ports/usage-ledger.ts";
+import { UsageSnapshotSink } from "#billing/application/ports/usage-snapshot-sink.ts";
 import { UsageStates } from "#billing/application/ports/usage-states.ts";
 import type { WorkspaceDayState } from "#billing/application/ports/usage-states.ts";
 import { SnapshotUsage } from "#billing/application/snapshot-usage.ts";
@@ -81,7 +82,8 @@ const snapshotOn = (states: typeof ErasedMeanwhile) =>
         states,
         AloneInAccountsTest,
         NoAccountDaysTest,
-        NoMetersTest
+        NoMetersTest,
+        UsageSnapshotSink.layerNone
       )
     ),
     Layer.provideMerge(DrizzleUsageLedgerLive),

@@ -27,13 +27,15 @@ import { modeOf } from "#measurement/mode.ts";
 import type { PrivacySignals } from "#measurement/mode.ts";
 import { placeOf } from "#measurement/place.ts";
 import { loadSdk } from "#measurement/sdk.ts";
+import { nameSessionWith } from "#measurement/session-header.ts";
 import {
-  answerChanged,
+  answerNews,
   consentNow,
   tabNewsOf,
   tabsKey,
+  tellTabs,
 } from "#measurement/tabs.ts";
-import type { Chosen, TabNews } from "#measurement/tabs.ts";
+import type { Chosen } from "#measurement/tabs.ts";
 
 /** What GET /api/me says of the measurement, as the layout hands it over. */
 export interface MeasurementSettings {
@@ -103,18 +105,6 @@ const useUntracked = (): boolean =>
 // goes on from where the last one left it.
 const controller = makeController(loadSdk);
 
-// Tells the browser's other tabs: written, then removed at once, so
-// nothing stays. A browser that refuses storage tells nothing, and the
-// other tabs follow when they are shown again.
-const tellTabs = (news: TabNews) => {
-  try {
-    localStorage.setItem(tabsKey, JSON.stringify(news));
-    localStorage.removeItem(tabsKey);
-  } catch {
-    // Nothing more to do.
-  }
-};
-
 /**
  * The web app's measurement around the signed-in app's pages: after
  * hydration, it reads the page's path, decides its mode and asks the
@@ -181,6 +171,10 @@ export const Measurement = ({
   // Errors the intake was sent, already redacted, while the SDK runs; and,
   // on leaving the signed-in app, nothing more measured or recorded.
   useEffect(() => {
+    // The app's own requests name the session, as its HTTP client never
+    // sees the SDK's patch of `fetch`.
+    const stopNaming = nameSessionWith(controller.session);
+
     const stopListening = onReported((report) => {
       controller
         .sdk()
@@ -191,6 +185,7 @@ export const Measurement = ({
     });
 
     return () => {
+      stopNaming();
       stopListening();
       controller.park();
     };
@@ -209,7 +204,9 @@ export const Measurement = ({
           // Nothing of the measurement's.
         },
         onSome: (news) => {
-          if (news.kind === "signedOut") {
+          // Signed out, or someone else signed in: nothing more of this
+          // page is the person's until it is read again.
+          if (news.kind === "signedOut" || news.kind === "signedIn") {
             controller.signOut();
           }
 
@@ -223,10 +220,23 @@ export const Measurement = ({
     const reread = async () => {
       const answer = await fetch("/api/me", { credentials: "same-origin" });
 
-      if (
-        answer.ok &&
-        answerChanged(await answer.text(), { consent, decidedAt })
-      ) {
+      if (!answer.ok) {
+        return;
+      }
+
+      const news = answerNews(await answer.text(), {
+        consent,
+        decidedAt,
+        userId,
+      });
+
+      // Someone else signed in in another tab: this page names nobody's
+      // session until it is read again.
+      if (news === "otherPerson") {
+        controller.signOut();
+      }
+
+      if (news !== "same") {
         router.refresh();
       }
     };
@@ -248,7 +258,7 @@ export const Measurement = ({
       window.removeEventListener("storage", heard);
       document.removeEventListener("visibilitychange", shown);
     };
-  }, [consent, decidedAt, router, untracked]);
+  }, [consent, decidedAt, router, untracked, userId]);
 
   const choose = useCallback(
     async (choice: BrowserAnalyticsChoice) => {

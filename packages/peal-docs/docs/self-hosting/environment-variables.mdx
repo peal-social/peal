@@ -235,7 +235,10 @@ Product analytics is off until you set `PEAL_POSTHOG_KEY`. The server then sends
   own privacy notice before you set the key. Before you set `PEAL_POSTHOG_WEB`
   to `on`, also describe the web app's measurement and its session recordings
   there, and turn session replay on in the PostHog project: the app then asks
-  each person before it records anything.
+  each person before it records anything. Leave the project's authorized domains
+  for replay empty: the relay sends PostHog no `Origin` or `Referer`, so a
+  domain set there turns replay off, and the app records its signed-in pages
+  alone anyway.
 </Callout>
 
 ### Telemetry [#telemetry]

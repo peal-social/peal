@@ -428,11 +428,25 @@ and no socket, for tests.
   `ProductAnalyticsLive` (`src/app/product-analytics.ts`) is one per build
   of the server, released after the HTTP server and the workers, so it
   sends what they queued.
-- Events come from four seams, never calls sprinkled in use cases: the
+- Events come from five seams, never calls sprinkled in use cases: the
   activity journal's adapter (`api_operation`, every write but MCP's), the
   MCP middleware (`mcp_tool_called`, every tool call), the decorator over
-  `WebhookEvents` (post and channel milestones) and Better Auth's hooks
-  (sign-ups, workspaces, subscriptions). A new event joins
+  `WebhookEvents` (post and channel milestones), Better Auth's hooks
+  (sign-ups, workspaces, subscriptions) and the daily usage snapshot's
+  sink (`workspace_snapshot`: billing's `UsageSnapshotSink`, adapter
+  `billing/infrastructure/analytics-usage-snapshot-sink.ts`, one event a
+  workspace with a connected account, as its service identity). A rerun
+  of a day sends that day's snapshots again: readers take one row per
+  workspace and `day`, never the event's timestamp, which is when it was
+  handed over (the next day, from 00:11 UTC). A workspace that loses its
+  last connected account is no longer told: read its latest snapshot
+  with its `channel_disconnected` events. The sink only queues: a fiber
+  hands the events over at half what the delivery sends (`snapshotPace`,
+  50 every 2 seconds), so a day of N workspaces takes about N/25 seconds
+  and never fills the delivery's queue of 5,000; what still waits when
+  the server stops is counted `dropped`, which the alert
+  `peal-product-analytics-dropped` watches. With product analytics off,
+  the snapshot reads nothing for it (`UsageSnapshotSink.enabled`). A new event joins
   `ProductEventSchema` (`#shared/domain/product-event.ts`) and the
   samples of `test/shared/product-event-samples.ts`; its names are
   persisted for whoever queries PostHog: add, never rename.

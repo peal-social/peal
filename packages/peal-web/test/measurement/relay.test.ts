@@ -5,7 +5,7 @@
 import { once } from "node:events";
 
 import { assert, describe, it } from "@effect/vitest";
-import { ConfigProvider, Effect, Exit, Option } from "effect";
+import { ConfigProvider, Effect, Exit, Option, Schema } from "effect";
 
 import {
   assetsHostOf,
@@ -92,6 +92,23 @@ describe("the measurement relay", () => {
     })
   );
 
+  it.effect.each(["/i/v0/e/", "/i/v0/s/"])(
+    "forwards %s, where the project's configuration sends the SDK",
+    (path) =>
+      Effect.gen(function* newer() {
+        const { response, sent } = yield* relay(`/pulse${path}?ip=0`, on, {
+          body: "[]",
+          method: "POST",
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(
+          sent[0]?.url,
+          `https://eu.i.posthog.com${path}?ip=0`
+        );
+      })
+  );
+
   it.effect("forwards events and recordings to the host, query kept", () =>
     Effect.gen(function* events() {
       const { response, sent } = yield* relay(
@@ -136,12 +153,60 @@ describe("the measurement relay", () => {
       })
   );
 
+  it.effect(
+    "gives the SDK its own endpoints, whatever the configuration names",
+    () =>
+      Effect.gen(function* endpoints() {
+        const response = yield* relayToPostHog(
+          new Request("http://localhost:3001/pulse/array/phc_synthetic/config"),
+          async () =>
+            await Promise.resolve(
+              Response.json({
+                analytics: { endpoint: "/i/v0/e/" },
+                sessionRecording: { endpoint: "/i/v0/s/", sampleRate: null },
+                supportedCompression: ["gzip", "gzip-js"],
+              })
+            )
+        ).pipe(withEnv(on));
+
+        const text = yield* Effect.promise(async () => await response.text());
+
+        assert.deepStrictEqual(
+          Schema.decodeUnknownSync(Schema.fromJsonString(Schema.Json))(text),
+          {
+            analytics: { endpoint: "/e/" },
+            sessionRecording: { endpoint: "/s/", sampleRate: null },
+            supportedCompression: ["gzip", "gzip-js"],
+          }
+        );
+      })
+  );
+
+  it.effect(
+    "passes a configuration it cannot read, or one without endpoints, as it is",
+    () =>
+      Effect.gen(function* untouched() {
+        for (const body of ["not json", '{"sessionRecording":false}']) {
+          const response = yield* relayToPostHog(
+            new Request(
+              "http://localhost:3001/pulse/array/phc_synthetic/config"
+            ),
+            async () => await Promise.resolve(new Response(body))
+          ).pipe(withEnv(on));
+
+          assert.strictEqual(
+            yield* Effect.promise(async () => await response.text()),
+            body === "not json" ? body : '{"sessionRecording":false}'
+          );
+        }
+      })
+  );
+
   it.effect.each([
     "/pulse",
     "/pulse/static/x.js",
     "/pulse/api/projects",
     "/pulse/flags/?v=2",
-    "/pulse/i/v0/e/",
     "/pulse/i/v1/logs",
     "/pulse/i/v1/metrics",
     "/pulse/array/phc_synthetic/config.js",

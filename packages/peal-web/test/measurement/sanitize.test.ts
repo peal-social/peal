@@ -138,9 +138,59 @@ describe(sanitized, () => {
       uuid: "019a7b2c-0000-7000-8000-000000000006",
     };
 
-    expect(sanitized(snapshot, identified)).toBe(snapshot);
+    expect(sanitized(snapshot, identified)).toStrictEqual(snapshot);
     expect(sanitized(snapshot, anonymous)).toBeNull();
     expect(sanitized(snapshot, off)).toBeNull();
+  });
+
+  it("drops a recording whose events are not a list", () => {
+    expect(
+      sanitized(
+        {
+          event: "$snapshot",
+          properties: { $snapshot_data: "compressed", distinct_id: userId },
+          uuid: "019a7b2c-0000-7000-8000-00000000000c",
+        },
+        identified
+      )
+    ).toBeNull();
+  });
+
+  it("writes a recording's page addresses as patterns, as every event does", () => {
+    const snapshot: MeasuredEvent = {
+      event: "$snapshot",
+      properties: {
+        $snapshot_data: [
+          {
+            data: {
+              height: 720,
+              href: `https://app.peal.test/fr/app/${workspaceId}/posts/${postId}?rule=x#top`,
+              width: 1280,
+            },
+            timestamp: 1,
+            type: 4,
+          },
+          { data: "compressed", type: 3 },
+        ],
+        distinct_id: userId,
+      },
+      uuid: "019a7b2c-0000-7000-8000-00000000000b",
+    };
+
+    expect(
+      sanitized(snapshot, identified)?.properties["$snapshot_data"]
+    ).toStrictEqual([
+      {
+        data: {
+          height: 720,
+          href: "https://app.peal.test/app/:id/posts/:id",
+          width: 1280,
+        },
+        timestamp: 1,
+        type: 4,
+      },
+      { data: "compressed", type: 3 },
+    ]);
   });
 
   it("names the person once identified, with no property set and nothing of the anonymous id", () => {
