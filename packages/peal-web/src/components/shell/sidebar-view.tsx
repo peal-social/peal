@@ -248,6 +248,7 @@ export const SidebarView = ({
   className,
   link,
   navigation,
+  onChooseWorkspace,
   onNavigate,
   tools = null,
   workspaceId,
@@ -256,6 +257,8 @@ export const SidebarView = ({
   readonly className?: string;
   readonly link: LinkComponent;
   readonly navigation: Navigation;
+  /** Called with the workspace the switcher opens, as it opens. */
+  readonly onChooseWorkspace?: (workspaceId: string) => void;
   /** Called when a link is followed, to close the sidebar on a phone. */
   readonly onNavigate?: () => void;
   /** The head's icon buttons, after the workspace switcher. */
@@ -326,7 +329,13 @@ export const SidebarView = ({
                   <DropdownMenuItem
                     key={id}
                     render={
-                      <LinkTo href={workspacePath(slug)} onClick={navigated}>
+                      <LinkTo
+                        href={workspacePath(slug)}
+                        onClick={() => {
+                          onChooseWorkspace?.(id);
+                          navigated();
+                        }}
+                      >
                         {name}
                       </LinkTo>
                     }

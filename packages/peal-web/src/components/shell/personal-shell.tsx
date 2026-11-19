@@ -12,6 +12,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "peal-ui/lib/utils";
 import type { ReactNode } from "react";
 
+import { chooseWorkspace } from "#auth/choose-workspace.ts";
 import { FrameView, useCloseMenu } from "#components/shell/frame-view.tsx";
 import { PealMark } from "#components/shell/peal-mark.tsx";
 import { itemClass } from "#components/shell/sidebar-view.tsx";
@@ -42,12 +43,15 @@ export const PersonalSidebarView = ({
   className,
   current,
   link: LinkTo,
+  onChooseWorkspace,
   onNavigate,
   workspaces,
 }: {
   readonly className?: string;
   readonly current: PersonalPage | null;
   readonly link: LinkComponent;
+  /** Called with the workspace a link opens, as it opens. */
+  readonly onChooseWorkspace?: (workspaceId: string) => void;
   readonly onNavigate?: () => void;
   readonly workspaces: readonly {
     readonly id: string;
@@ -110,7 +114,10 @@ export const PersonalSidebarView = ({
               key={id}
               href={workspacePath(slug)}
               className={itemClass}
-              {...followed}
+              onClick={() => {
+                onChooseWorkspace?.(id);
+                followed.onClick();
+              }}
             >
               <span
                 aria-hidden
@@ -180,6 +187,7 @@ export const PersonalShell = ({
         <PersonalSidebarView
           current={current}
           link={AppLink}
+          onChooseWorkspace={chooseWorkspace}
           workspaces={workspaces}
         />
       }

@@ -170,7 +170,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `/` is no page: for someone signed in it redirects to the workspace Better Auth keeps
   active on the session (`activeWorkspaceOf`, `#auth/active-workspace.ts`,
   read only for someone with several), else the first (`homeWorkspaceOf`);
-  someone signed out is sent to sign in.
+  someone signed out is sent to sign in. A workspace becomes the active one
+  when it is chosen: from the switcher, the command menu or the person's
+  sidebar, and once created (`createWorkspace`), as Better Auth's own
+  update leaves the session's cached cookie naming the last one.
+  `chooseWorkspace` (`#auth/choose-workspace.ts`) sets it through
+  `workspaceClient` while the link opens, waits for nothing, and only
+  reports a failure; views take it as `onChooseWorkspace`.
   Every way in lands there: sign-in's default `next`, sign-up, a confirmed
   address, an accepted invitation, the OAuth pages. Someone with none gets
   `FirstWorkspace` (`components/first-workspace.tsx`): an invitation still

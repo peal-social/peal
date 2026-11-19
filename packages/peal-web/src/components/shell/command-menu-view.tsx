@@ -89,6 +89,7 @@ const MenuItem = ({
   keywords = noKeywords,
   label,
   link: Link,
+  onSelect,
 }: {
   readonly href: string;
   readonly icon: LucideIcon;
@@ -97,12 +98,15 @@ const MenuItem = ({
   readonly keywords?: readonly string[];
   readonly label: string;
   readonly link: MenuLink;
+  /** Runs as the link opens, without holding it up. */
+  readonly onSelect?: () => void;
 }) => (
   <CommandItem
     value={href}
     label={label}
     keywords={[...keywords]}
     render={<Link href={href} />}
+    {...(onSelect === undefined ? {} : { onSelect })}
   >
     <CommandItemIcon>
       <Icon />
@@ -331,6 +335,7 @@ export const CommandMenuView = ({
   docsUrl,
   link,
   newPostHref,
+  onChooseWorkspace,
   onOpenChange,
   onShortcuts,
   open,
@@ -345,6 +350,8 @@ export const CommandMenuView = ({
   readonly link: MenuLink;
   /** Where a new post starts, or null for a member who may not write one. */
   readonly newPostHref: string | null;
+  /** Called with the workspace a command opens, as it opens. */
+  readonly onChooseWorkspace?: (workspaceId: string) => void;
   readonly onOpenChange: (open: boolean) => void;
   /** Opens the sheet of every shortcut. */
   readonly onShortcuts: () => void;
@@ -555,6 +562,13 @@ export const CommandMenuView = ({
                       icon={ArrowLeftRightIcon}
                       label={t("switchTo", { workspace: workspace.name })}
                       link={link}
+                      {...(onChooseWorkspace === undefined
+                        ? {}
+                        : {
+                            onSelect: () => {
+                              onChooseWorkspace(workspace.id);
+                            },
+                          })}
                     />
                   ))}
                 </CommandGroup>
