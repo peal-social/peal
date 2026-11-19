@@ -433,27 +433,30 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   ask a visitor: whether Peal may keep a cookie to follow their visits.
   It is peal-ui's `<peal-consent>`, the same on all three. A white card
   (`card`, 1 px `border`, the 6 px radius, the shadow of a popover)
-  fixed to the bottom right of the window, 16 px from its edges, 25 rem
-  wide at most; from 1184 px up its right edge stands on the page's
-  right rail. It is the only thing on the site that floats without being
+  fixed to the bottom right of the window, 16 px from its edges, 30 rem
+  wide at most and about 230 px tall; from 1184 px up its right edge
+  stands on the page's right rail. It is the only thing on the site that floats without being
   opened, and it never dims or blocks the page: no backdrop, no focus
-  trap, and it takes no focus when it appears. Inside: the eyebrow
-  `// [cookie] Cookies \\` (Geist Mono, 12 px, muted), a title (15 px,
-  600), the text (14 px), a link to the privacy policy in `brand-text`,
-  and the two answers as two `outline` buttons of the same size, side by
-  side and equally wide, Allow first, as the app's consent card has
-  them. Neither is the primary button and neither has focus. Below
+  trap, and it takes no focus when it appears. Inside, the pixel cookie
+  is the anchor, on the left with its readout under it; beside it a
+  title (15 px, 600), three short sentences (14 px: what is counted
+  without a cookie, what a cookie adds and the account link, how long it
+  lasts and where to change one's mind) ending on a link to the privacy
+  policy in `brand-text`, and under them the two answers as two
+  `outline` buttons of the same size, side by side and equally wide,
+  Allow first, as the app's consent card has them. Neither is the primary button and neither has focus. Below
   640 px it is a sheet along the bottom edge, full width, with a top
   border and no radius, at most half the window's height (its text
   scrolls above the answers), and the page gains that much padding at
   its foot so the footer stays reachable. Once answered it leaves, and
   **Cookie settings** in the footer (a row at the foot of the docs)
-  opens it again, with the answer, its date and a ghost Close button;
+  opens it again, with the answer, its date and a ghost Close button in
+  its corner;
   focus then goes to its title and returns to the link on closing. A
   browser that sends Do Not Track or Global Privacy Control is never
   asked.
-  Its art is the pixel cookie: beside the text, an 85 px square of 5 px
-  cells holding a round cookie, its dough in the blue and lavender tints
+  Its art is the pixel cookie: a 153 px square of 17 by 17 cells of
+  9 px holding a round cookie, its dough in the blue and lavender tints
   (`#E8ECFD`, `#EDE7FF`), Bayer-dithered, its rim in lavender with a
   baked edge inside it toward the bottom right (`#D5C9FF`, the pixel
   glow's light lavender), and seven
@@ -477,7 +480,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   a second, only while on screen; its moves play at the screen's own
   rate, so their easing stays smooth. With reduced motion the cookie is
   still, the readout alone changes, and an answer removes the card at
-  once. On a phone the art is a still 25 px cookie beside the title, and
+  once. On a phone the art is a still 35 px cookie beside the title, and
   the card alone leaves, after the same 700 ms. Screen readers skip the
   art and the readout, and hear "Saved" once an answer is written.
 - **Hero.** On the page's background and grid: the headline (one plain

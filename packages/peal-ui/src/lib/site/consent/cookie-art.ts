@@ -13,6 +13,9 @@ export const gridSize = 17;
 /** A cell's side, in CSS pixels, as every pixel art of the site's. */
 export const cellSize = 5;
 
+/** The notice's cookie draws larger cells: 9 px, the art its anchor. */
+export const artCellSize = 9;
+
 /** What a lit cell is drawn in: each a token of the palette. */
 export type Tone =
   | "blue"
@@ -522,7 +525,8 @@ export interface CookieArt {
 export const drawCells = (
   canvas: HTMLCanvasElement,
   cells: readonly Cell[],
-  columns: number
+  columns: number,
+  cellSide: number = cellSize
 ): void => {
   const context = canvas.getContext("2d");
 
@@ -531,7 +535,7 @@ export const drawCells = (
   }
 
   const ratio = window.devicePixelRatio || 1;
-  const side = Math.round(columns * cellSize * ratio);
+  const side = Math.round(columns * cellSide * ratio);
 
   if (canvas.width !== side || canvas.height !== side) {
     canvas.width = side;
@@ -543,7 +547,7 @@ export const drawCells = (
 
   // Each cell's edges rounded on their own, so cells meet without a gap
   // or an overlap at any ratio.
-  const edge = (index: number) => Math.round(index * cellSize * ratio);
+  const edge = (index: number) => Math.round(index * cellSide * ratio);
 
   context.clearRect(0, 0, side, side);
 
@@ -570,7 +574,10 @@ export const drawCells = (
 const framesPerSecond = 24;
 
 /** The art on `canvas`, at rest until asked. */
-export const createCookieArt = (canvas: HTMLCanvasElement): CookieArt => {
+export const createCookieArt = (
+  canvas: HTMLCanvasElement,
+  cell: number = artCellSize
+): CookieArt => {
   const still = window.matchMedia("(prefers-reduced-motion: reduce)");
   let visible = true;
   let frame = 0;
@@ -596,30 +603,35 @@ export const createCookieArt = (canvas: HTMLCanvasElement): CookieArt => {
 
   const paint = (now: number) => {
     if (gone && shot === undefined) {
-      drawCells(canvas, [], gridSize);
+      drawCells(canvas, [], gridSize, cell);
 
       return;
     }
 
     if (still.matches) {
-      drawCells(canvas, stillFrame(), gridSize);
+      drawCells(canvas, stillFrame(), gridSize, cell);
 
       return;
     }
 
     if (shot !== undefined) {
-      drawCells(canvas, frameOf(shot.state, now - shot.since), gridSize);
+      drawCells(canvas, frameOf(shot.state, now - shot.since), gridSize, cell);
 
       return;
     }
 
     if (progress > 0) {
-      drawCells(canvas, frameOf(previewed, progress * previewMs), gridSize);
+      drawCells(
+        canvas,
+        frameOf(previewed, progress * previewMs),
+        gridSize,
+        cell
+      );
 
       return;
     }
 
-    drawCells(canvas, frameOf("idle", now - start), gridSize);
+    drawCells(canvas, frameOf("idle", now - start), gridSize, cell);
   };
 
   // Whether something moves, rather than only twinkles.
