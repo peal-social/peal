@@ -56,27 +56,3 @@ export const socialAccounts: readonly SocialAccount[] = [
  * disallows all. At launch, set it to true and allow crawling there.
  */
 export const indexable = false;
-
-export interface PlausibleScript {
-  readonly domain: string;
-  readonly src: string;
-}
-
-/**
- * Plausible's script tag attributes for a domain, from a self-hosted
- * instance at `host` or from Plausible's own servers; `undefined` without a
- * domain.
- */
-export const plausibleScript = (
-  domain: string | undefined,
-  host: string | undefined
-): PlausibleScript | undefined => {
-  const name = present(domain);
-
-  return name === undefined
-    ? undefined
-    : {
-        domain: name,
-        src: `${originOf(host) ?? "https://plausible.io"}/js/script.js`,
-      };
-};

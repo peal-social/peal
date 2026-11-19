@@ -1,11 +1,5 @@
 import { Schema } from "effect";
-import {
-  originOf,
-  plausibleScript,
-  present,
-  siteLink,
-} from "peal-ui/lib/site/links";
-import type { PlausibleScript } from "peal-ui/lib/site/links";
+import { originOf, present, siteLink } from "peal-ui/lib/site/links";
 import type { Locale } from "peal-ui/lib/site/locales";
 import { measurementSettings } from "peal-ui/lib/site/measurement/settings";
 import type { MeasurementSettings } from "peal-ui/lib/site/measurement/settings";
@@ -18,8 +12,6 @@ const SettingsSchema = Schema.Struct({
   BLOG_APP_URL: Schema.optional(Schema.String),
   BLOG_DISCORD_URL: Schema.optional(Schema.String),
   BLOG_DOCS_URL: Schema.optional(Schema.String),
-  BLOG_PLAUSIBLE_DOMAIN: Schema.optional(Schema.String),
-  BLOG_PLAUSIBLE_HOST: Schema.optional(Schema.String),
   BLOG_POSTHOG_COOKIE_DOMAIN: Schema.optional(Schema.String),
   BLOG_POSTHOG_ENVIRONMENT: Schema.optional(Schema.String),
   BLOG_POSTHOG_HOST: Schema.optional(Schema.String),
@@ -39,7 +31,6 @@ export interface BlogSettings {
    * when BLOG_POSTHOG_KEY and BLOG_POSTHOG_HOST are both set.
    */
   readonly measurement: MeasurementSettings | undefined;
-  readonly plausible: PlausibleScript | undefined;
   /**
    * The site's origin, such as https://peal.social, for the links to its
    * pages and its icons: "" (the same origin) when BLOG_SITE_URL is unset.
@@ -73,10 +64,6 @@ export const blogSettings = (values: BlogEnvironment): BlogSettings => {
       key: values.BLOG_POSTHOG_KEY,
       prefix: "BLOG",
     }),
-    plausible: plausibleScript(
-      values.BLOG_PLAUSIBLE_DOMAIN,
-      values.BLOG_PLAUSIBLE_HOST
-    ),
     site: originOf(values.BLOG_SITE_URL) ?? "",
   };
 };
