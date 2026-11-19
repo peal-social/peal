@@ -145,6 +145,14 @@ const linesSoFar = () =>
     .split("\n")
     .filter((line) => line !== "").length;
 
+// Where this journey's events start in the stand-in's log, which every
+// file of the run writes to: another file's people, measured as they
+// allowed, are no part of this one.
+let journeyStart = 0;
+
+const ours = (): readonly Received[] =>
+  received().filter((event) => event.line >= journeyStart);
+
 const StoredSchema = Schema.Array(Schema.String);
 
 // Every key of the page's local and session storage.
@@ -217,6 +225,7 @@ describe("the web app's measurement", { serial: true }, () => {
     browser,
     screen,
   }) => {
+    journeyStart = linesSoFar();
     await asPerson(browser);
     await app.open("/sign-up");
     await screen.getByLabel("Name").fill(name);
@@ -265,7 +274,7 @@ describe("the web app's measurement", { serial: true }, () => {
 
     await eventually(
       () =>
-        received().filter(
+        ours().filter(
           (event) =>
             fromBrowser(event) &&
             event.event === "$pageview" &&
@@ -277,7 +286,7 @@ describe("the web app's measurement", { serial: true }, () => {
 
     const views = await eventually(
       () =>
-        received().filter(
+        ours().filter(
           (event) =>
             fromBrowser(event) &&
             event.event === "$pageview" &&
@@ -292,7 +301,7 @@ describe("the web app's measurement", { serial: true }, () => {
       expect(view.properties).not.toHaveProperty("workspace_id");
     }
 
-    const fromTheBrowser = received().filter(fromBrowser);
+    const fromTheBrowser = ours().filter(fromBrowser);
 
     expect(fromTheBrowser.map(({ event }) => event)).not.toContain("$snapshot");
 
@@ -588,7 +597,7 @@ describe("the web app's measurement", { serial: true }, () => {
     // about, never by when they came.
     const byWhom = new Map<string, Set<string>>();
 
-    for (const event of received().filter(fromBrowser)) {
+    for (const event of ours().filter(fromBrowser)) {
       const ids = byWhom.get(event.distinctId) ?? new Set<string>();
 
       for (const id of idsOf(event)) {
