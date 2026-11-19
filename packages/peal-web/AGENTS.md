@@ -660,8 +660,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `aria-current`). What it shows is in the address
   (`#inbox/inbox-query.ts`: `?view=`, `?status=waiting`, `?channel=`),
   which each row's link carries. An item's page draws `SplitDetail`
-  (its name in an `h2`, the way back on a phone); `/inbox` itself is the
-  empty detail. Whose messages Peal reads is chosen at
+  (its name in an `h2`, the way back on a phone, to the list with the
+  page's query: `inboxStateOfParams` reads its `searchParams`); `/inbox`
+  itself is the empty detail. Whose messages Peal reads is chosen at
   `…/settings/messages` (`channel:connect`), not in the inbox.
 - The inbox's reviews (`review-screen.tsx`, views in
   `review-views.tsx`, atoms in `#inbox/review-atoms.ts`) list a
@@ -706,10 +707,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The inbox (`components/inbox/`) lists threads with counts and never a
   comment's text (`ThreadRowView`), and shows one whole (`ThreadScreen`):
   views in `inbox-views.tsx` take links as props, so tests render each
-  state. Render a comment as plain text, never as markup. Offer reply and
-  moderation only where the thread's `abilities` say `available`, show a
-  reply's journal status, and for an `unconfirmed` one only the two
-  answers a person gives after checking the platform: never a resend.
+  state. Its one composer answers the comment Reply chose, else the
+  oldest still waiting (`#inbox/comment-target.ts`); the first keystroke
+  pins the draft to its comment, so a refresh that answers or deletes it
+  never moves the text to another author. Render a comment as plain
+  text, never as markup. Offer reply and moderation only where the
+  thread's `abilities` say `available`, show a reply's journal status,
+  and for an `unconfirmed` one only the two answers a person gives after
+  checking the platform: never a resend.
 - A comment's private reply (`PrivateReplyPart` in `thread-screen.tsx`,
   `PrivateReplyView` and `PrivateReplyFormView` in `inbox-views.tsx`):
   its state shows to who may read messages (the server answers it null
