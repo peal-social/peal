@@ -927,6 +927,30 @@ its toolbar:
 
 No other illustration, no joke, no exclamation mark.
 
+### Split view
+
+A page whose items are read one after another, such as the Inbox, lists
+them beside the one open, so the list stays where it was.
+
+- **`split-list`** — The panel's first pane, 384 px wide on a desktop,
+  with a hairline on its right. The panel's 48 px header sits on top of
+  it: the page's name, and its Filter and Display at the end. Under
+  the header come its views as tabs and the filter chips, then the rows.
+- **`split-row`** — One line naming the item, ellipsed, with the day of
+  its latest news at its end in `muted-foreground` (12 px), and one line of
+  counts under it. A 6 px `brand` dot before the name while something in
+  it waits. The whole row is the link (10 px by 16 px inside); the open
+  one takes `accent`, hovered ones `muted`. Rows are cut by hairlines,
+  with no card around them.
+- **`split-detail`** — The rest of the panel: the item open, under a
+  48 px header of its own that names it (`h2`; the page keeps its `h1`)
+  with its actions at the end. With nothing open it shows an empty state
+  ("Nothing open"), centred.
+- The address names the item open, and the list's views and filters
+  follow it, so a link opens both. On a phone the list fills the panel;
+  an item opens alone under the header, with a way back at its header's
+  start.
+
 ### Pages
 
 - **Empty states** say what will appear and give the one next step (see

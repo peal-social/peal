@@ -72,7 +72,7 @@ const ListViews = ({ className, ...props }: React.ComponentProps<"nav">) => (
  */
 const viewTabClass = (current: boolean): string =>
   cn(
-    "focus-visible:ring-ring/50 inline-flex h-7.5 items-center rounded-lg border px-3 text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-3",
+    "focus-visible:ring-ring/50 inline-flex h-7.5 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-3 [&_svg]:size-3.5 [&_svg]:shrink-0",
     current
       ? "bg-accent text-foreground border-transparent"
       : "text-muted-foreground hover:text-foreground hover:bg-accent/60"

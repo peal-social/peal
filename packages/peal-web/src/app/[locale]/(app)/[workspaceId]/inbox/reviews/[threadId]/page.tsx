@@ -1,9 +1,11 @@
+import { ArrowLeftIcon } from "lucide-react";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { Button } from "peal-ui/components/button";
 
 import { ReviewScreen } from "#components/inbox/review-screen.tsx";
-import { PageTitle } from "#components/shell/frame-view.tsx";
+import { SplitDetail } from "#components/shell/frame-view.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
@@ -30,20 +32,25 @@ const InboxReviewsPage = async ({
   const t = await getTranslations("InboxReviews");
 
   return (
-    <div className="flex flex-col gap-8">
-      <PageTitle>{t("thread.pageName")}</PageTitle>
-      <Link
-        href={workspacePath(membership.slug, "/inbox")}
-        className="text-muted-foreground self-start text-sm underline-offset-4 hover:underline"
-      >
-        {t("thread.back")}
-      </Link>
+    <SplitDetail
+      back={
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={t("thread.back")}
+          render={<Link href={workspacePath(membership.slug, "/inbox")} />}
+        >
+          <ArrowLeftIcon aria-hidden />
+        </Button>
+      }
+      title={t("thread.pageName")}
+    >
       <ReviewScreen
         mayReply={may.has("engagement:reply")}
         threadId={threadId}
         workspaceId={membership.id}
       />
-    </div>
+    </SplitDetail>
   );
 };
 

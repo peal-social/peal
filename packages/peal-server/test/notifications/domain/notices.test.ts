@@ -211,7 +211,7 @@ describe("notice events", () => {
       Option.some("channelReconnect")
     );
     expect(pageOf(events.MessagesTurnedOff, workspaceId)).toBe(
-      `/${workspaceId}/inbox`
+      `/${workspaceId}/settings/messages`
     );
   });
 

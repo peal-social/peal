@@ -69,6 +69,7 @@ export const WorkspaceShell = ({
         docsUrl={docsUrl}
         footer={footer}
         label={t("label")}
+        split={navigation.split}
         supportUrl={supportUrl}
         sidebar={
           <SidebarView

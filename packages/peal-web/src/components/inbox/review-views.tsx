@@ -2,12 +2,7 @@
 
 import { DateTime } from "effect";
 import { useFormatter, useTranslations } from "next-intl";
-import type {
-  SocialChannel,
-  InboxReview,
-  InboxReviewReply,
-  InboxReviewThread,
-} from "peal-contract";
+import type { InboxReview, InboxReviewReply } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
@@ -15,11 +10,6 @@ import { Label } from "peal-ui/components/label";
 import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
-
-import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
-
-import type { InboxLink } from "./inbox-views.tsx";
-import { useChannelName } from "./inbox-views.tsx";
 
 // The views of the inbox's reviews: a location's row, a review, its
 // replies and the reply box, whatever fetched them. Their state lives in
@@ -34,63 +24,6 @@ const useInstant = () => {
       dateStyle: "medium",
       timeStyle: "short",
     });
-};
-
-/** A location's row in the inbox: its counts, and Google's figures. */
-export const ReviewThreadRowView = ({
-  channel,
-  link,
-  thread,
-  workspaceId,
-}: {
-  /** The location's channel, unless it was disconnected since. */
-  readonly channel: SocialChannel | undefined;
-  readonly link: InboxLink;
-  readonly thread: InboxReviewThread;
-  readonly workspaceId: string;
-}) => {
-  const workspaceHref = useWorkspaceHref();
-  const t = useTranslations("InboxReviews.row");
-  const format = useFormatter();
-  const channelName = useChannelName();
-  const instant = useInstant();
-
-  const average =
-    thread.averageRating === null
-      ? "none"
-      : format.number(thread.averageRating, { maximumFractionDigits: 1 });
-
-  const total =
-    thread.totalReviewCount === null
-      ? "none"
-      : format.number(thread.totalReviewCount);
-
-  return (
-    <li className="flex flex-col gap-2 px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-medium">
-          {link(
-            workspaceHref(workspaceId, `/inbox/reviews/${thread.id}`),
-            t("location", { channel: channelName(channel) })
-          )}
-        </span>
-        <Badge variant={thread.unanswered > 0 ? "default" : "outline"}>
-          {t("counts", {
-            reviews: thread.reviews,
-            unanswered: thread.unanswered,
-          })}
-        </Badge>
-      </div>
-      <p className="text-muted-foreground text-sm">
-        {t("figures", { average, total })}
-      </p>
-      {thread.lastReviewAt === null ? null : (
-        <p className="text-muted-foreground text-sm">
-          {t("lastReview", { at: instant(thread.lastReviewAt) })}
-        </p>
-      )}
-    </li>
-  );
 };
 
 /** A reply sent from Peal to a review, and how it ended. */

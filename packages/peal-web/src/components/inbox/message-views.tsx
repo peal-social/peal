@@ -3,24 +3,17 @@
 import { DateTime } from "effect";
 import { useFormatter, useTranslations } from "next-intl";
 import type {
-  SocialChannel,
   InboxConversation,
   InboxConversationDetail,
   InboxDirectMessage,
   InboxOutgoingMessage,
 } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
-import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
 import { Label } from "peal-ui/components/label";
 import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
-
-import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
-
-import type { InboxLink } from "./inbox-views.tsx";
-import { useChannelName } from "./inbox-views.tsx";
 
 // The views of the inbox's direct messages: a conversation's row, a
 // message, one sent from Peal and the box to answer in, whatever fetched
@@ -35,50 +28,6 @@ const useInstant = () => {
       dateStyle: "medium",
       timeStyle: "short",
     });
-};
-
-const peopleOf = (conversation: InboxConversation): string =>
-  conversation.participants
-    .map(({ displayName, handle }) => displayName ?? handle)
-    .join(", ");
-
-/** A conversation's row in the inbox: who is in it, and whether it is read. */
-export const ConversationRowView = ({
-  channel,
-  conversation,
-  link,
-  workspaceId,
-}: {
-  /** The conversation's channel, unless it was disconnected since. */
-  readonly channel: SocialChannel | undefined;
-  readonly conversation: InboxConversation;
-  readonly link: InboxLink;
-  readonly workspaceId: string;
-}) => {
-  const workspaceHref = useWorkspaceHref();
-  const t = useTranslations("InboxMessages.row");
-  const channelName = useChannelName();
-  const instant = useInstant();
-
-  return (
-    <li className="flex flex-col gap-2 px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span dir="auto" className="font-medium">
-          {link(
-            workspaceHref(workspaceId, `/inbox/messages/${conversation.id}`),
-            t("with", { people: peopleOf(conversation) })
-          )}
-        </span>
-        <Badge variant={conversation.unread ? "default" : "outline"}>
-          {conversation.unread ? t("unread") : t("read")}
-        </Badge>
-      </div>
-      <p className="text-muted-foreground text-sm">
-        {channelName(channel)} · {t("count", { count: conversation.messages })}{" "}
-        · {t("lastMessage", { at: instant(conversation.lastMessageAt) })}
-      </p>
-    </li>
-  );
 };
 
 /** One message, as its platform gave it: who sent it, when, and its text. */

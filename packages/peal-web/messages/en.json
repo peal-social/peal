@@ -2253,7 +2253,7 @@
       "PostCommented": "{by, select, visitor {A reviewer} application {An application} other {A member}} commented on a post of {workspace}.",
       "CommentsReceived": "{count, plural, one {# new comment} other {# new comments}} under a post of {workspace}.",
       "MessagesReceived": "{count, plural, one {A new message} other {# new messages}} on {channel}, in {workspace}.",
-      "MessagesTurnedOff": "The direct messages of {channel}, in {workspace}, were turned off and their conversations deleted: the account was connected again without allowing them. To read them again, choose Read its messages in the inbox, then Allow, on Bluesky.",
+      "MessagesTurnedOff": "The direct messages of {channel}, in {workspace}, were turned off and their conversations deleted: the account was connected again without allowing them. To read them again, choose Read its messages in Settings, Direct messages, then Allow, on Bluesky.",
       "ChannelReconnectRequired": "{channel} in {workspace} must be reconnected: nothing is posted there until it is.",
       "ChannelReconnectSoon": "{channel} in {workspace} must be reconnected by {expiresAt, date, long}: its authorization cannot be renewed.",
       "PaymentMethodNeeded": "{workspace} holds {accounts, number} connected accounts, more than the {allowed, number} the free tier includes. It still schedules and publishes on the accounts it had before billing began until {graceUntil} UTC; after that, nothing goes out until a payment method is added or {allowed, number} accounts are kept.",
@@ -3016,12 +3016,12 @@
       "assistant": "Assistant",
       "newPost": "New post",
       "post": "Post",
-      "thread": "Conversation",
       "home": "Home",
       "platforms": "Platforms",
       "articles": "Articles",
       "article": "Article",
-      "newArticle": "New article"
+      "newArticle": "New article",
+      "messages": "Direct messages"
     },
     "help": "Help",
     "shortcuts": "Keyboard shortcuts",
@@ -4297,17 +4297,8 @@
     "loadFailed": "The comments could not be loaded.",
     "retry": "Try again",
     "readOnly": "You can read the comments. Answering them takes the permission to reply to comments.",
-    "filter": {
-      "views": "Views",
-      "all": "All",
-      "unanswered": "Unanswered",
-      "channel": "Channel"
-    },
     "list": {
-      "title": "Posts with comments",
-      "empty": "No comment has been read yet.",
-      "emptyFiltered": "No post matches these filters.",
-      "loadMore": "Load more"
+      "title": "Posts with comments"
     },
     "row": {
       "thread": "Comments under the post on {channel}",
@@ -5130,5 +5121,27 @@
     "remove": "Remove the {property} filter",
     "clear": "Clear",
     "isAnyOf": "is any of"
+  },
+  "InboxList": {
+    "views": "Show",
+    "comments": "Comments",
+    "reviews": "Reviews",
+    "messages": "Messages",
+    "status": "Status",
+    "waiting": "Waiting for an answer",
+    "channel": "Channel",
+    "loading": "Loading…",
+    "loadFailed": "The list could not be loaded.",
+    "retry": "Try again",
+    "noComments": "No comments",
+    "noMatch": "No comment matches these filters",
+    "noReviews": "No reviews",
+    "reviewsKept": "Your locations' Google reviews show here. Peal keeps each one {days, number} days.",
+    "noMessages": "No messages",
+    "messagesKept": "Conversations show here for the channels whose messages Peal reads. It keeps each message {days, number} days.",
+    "messageSettings": "Choose whose messages Peal reads",
+    "showMore": "Show more",
+    "nothingOpen": "Nothing open",
+    "nothingOpenHint": "Choose a comment, a review or a conversation in the list."
   }
 }

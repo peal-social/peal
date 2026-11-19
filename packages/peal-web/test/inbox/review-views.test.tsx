@@ -10,9 +10,10 @@ import type {
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { ReviewThreadRowView } from "#components/inbox/inbox-rows.tsx";
+import type { InboxRowLink } from "#components/inbox/inbox-rows.tsx";
 import {
   ReviewReplyBoxView,
-  ReviewThreadRowView,
   ReviewView,
 } from "#components/inbox/review-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
@@ -30,7 +31,9 @@ const render = async (locale: "en" | "fr", view: ReactNode) =>
 
 const at = (iso: string) => DateTime.makeUnsafe(iso);
 
-const link = (href: string, label: string) => <a href={href}>{label}</a>;
+const RowLink: InboxRowLink = ({ children, ...props }) => (
+  <a {...props}>{children}</a>
+);
 
 const workspaceId = "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f";
 
@@ -82,9 +85,10 @@ describe("the reviews' views", () => {
     const view = (
       <ReviewThreadRowView
         channel={channel}
-        link={link}
+        current={false}
+        href={`/${workspaceId}/inbox/reviews/${thread.id}`}
+        link={RowLink}
         thread={thread}
-        workspaceId={workspaceId}
       />
     );
 

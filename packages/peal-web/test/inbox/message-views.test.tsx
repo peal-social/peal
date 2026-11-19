@@ -10,9 +10,10 @@ import type {
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { ConversationRowView } from "#components/inbox/inbox-rows.tsx";
+import type { InboxRowLink } from "#components/inbox/inbox-rows.tsx";
 import { ChannelMessagesView } from "#components/inbox/message-settings.tsx";
 import {
-  ConversationRowView,
   DirectMessageView,
   MessageBoxView,
   ReplyWindowView,
@@ -32,7 +33,9 @@ const render = async (locale: "en" | "fr", view: ReactNode) =>
 
 const at = (iso: string) => DateTime.makeUnsafe(iso);
 
-const link = (href: string, label: string) => <a href={href}>{label}</a>;
+const RowLink: InboxRowLink = ({ children, ...props }) => (
+  <a {...props}>{children}</a>
+);
 
 const workspaceId = "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f";
 
@@ -82,8 +85,9 @@ describe("the direct messages' views", () => {
       <ConversationRowView
         channel={channel}
         conversation={conversation}
-        link={link}
-        workspaceId={workspaceId}
+        current={false}
+        href={`/${workspaceId}/inbox/messages/${conversation.id}`}
+        link={RowLink}
       />
     );
 

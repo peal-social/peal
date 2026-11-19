@@ -36,6 +36,7 @@ export type Page =
   | "invitations"
   | "media"
   | "members"
+  | "messages"
   | "partner"
   | "posts"
   | "queues"
@@ -46,7 +47,7 @@ export type Page =
   | "webhooks";
 
 /** Pages that are not in the sidebar, which the breadcrumb still names. */
-export type Detail = "article" | "newArticle" | "newPost" | "post" | "thread";
+export type Detail = "article" | "newArticle" | "newPost" | "post";
 
 export type Group = "build" | "engage" | "partners";
 
@@ -57,6 +58,12 @@ interface PageRule {
   readonly section?: Section;
   /** Whether a member with these permissions may open the page. */
   readonly may: (permissions: ReadonlySet<Permission>) => boolean;
+  /**
+   * The page is a list beside the item it opens (DESIGN.md, "Split
+   * view"): its addresses under it open in the same page, which keeps
+   * its name.
+   */
+  readonly split?: true;
 }
 
 const anyone = (): boolean => true;
@@ -136,7 +143,12 @@ const pages: Readonly<Record<Page, PageRule>> = {
     path: "/posts/import",
     section: "posts",
   },
-  inbox: { may: needs("engagement:read"), mode: "studio", path: "/inbox" },
+  inbox: {
+    may: needs("engagement:read"),
+    mode: "studio",
+    path: "/inbox",
+    split: true,
+  },
   invitations: {
     may: needs("invitation:create"),
     mode: "studio",
@@ -148,6 +160,12 @@ const pages: Readonly<Record<Page, PageRule>> = {
     may: anyone,
     mode: "studio",
     path: "/settings/members",
+    section: "settings",
+  },
+  messages: {
+    may: needs("channel:connect"),
+    mode: "studio",
+    path: "/settings/messages",
     section: "settings",
   },
   partner: {
@@ -249,6 +267,7 @@ const sectionPages: Readonly<Record<Section, readonly Page[]>> = {
     "recycling",
     "followUps",
     "commentRules",
+    "messages",
     "feeds",
     "assistant",
   ],
@@ -284,6 +303,8 @@ export interface Navigation {
     readonly section: Section | null;
     readonly page: Detail | Page | null;
   };
+  /** Whether the page is a split view, its list beside the item open. */
+  readonly split: boolean;
 }
 
 /** Where a page is, for a workspace, by its slug. */
@@ -331,7 +352,7 @@ const pageAt = (path: string): PageAt => {
   }
 
   if (path.startsWith("/inbox/")) {
-    return { detail: "thread", page: "inbox" };
+    return { detail: null, page: "inbox" };
   }
 
   return { detail: null, page: null };
@@ -449,5 +470,6 @@ export const navigationOf = ({
     section,
     sectionLinks,
     settings: linkOf("general", "settings"),
+    split: current !== null && pages[current].split === true,
   };
 };
