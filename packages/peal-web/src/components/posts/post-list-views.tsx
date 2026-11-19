@@ -106,36 +106,42 @@ export const PostItemView = ({
           {leading}
         </div>
       )}
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        {children}
-        <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-          <span>
-            {post.schedule === null
-              ? t("noTime")
-              : format.dateTime(DateTime.toDate(post.schedule.at), {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                  ...timeOptions,
-                })}
-          </span>
-          <Badge variant="outline">
-            {tPosts("status", { status: post.status })}
-          </Badge>
-          {post.outcome === null ? null : (
-            <Badge
-              variant={post.outcome === "failed" ? "destructive" : "secondary"}
-            >
-              {tPosts("outcome", { outcome: post.outcome })}
+      {/* What the row offers takes a line of its own under the post on a
+          phone, and sits at the row's end from 640 px. */}
+      <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:gap-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          {children}
+          <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
+            <span>
+              {post.schedule === null
+                ? t("noTime")
+                : format.dateTime(DateTime.toDate(post.schedule.at), {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                    ...timeOptions,
+                  })}
+            </span>
+            <Badge variant="outline">
+              {tPosts("status", { status: post.status })}
             </Badge>
-          )}
+            {post.outcome === null ? null : (
+              <Badge
+                variant={
+                  post.outcome === "failed" ? "destructive" : "secondary"
+                }
+              >
+                {tPosts("outcome", { outcome: post.outcome })}
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground text-xs">
+            <span className="sr-only">{t("channels")}: </span>
+            {named.length === 0 ? t("noChannel") : named.join(" · ")}
+          </p>
+          <TagList label={t("tags")} tags={tags} />
         </div>
-        <p className="text-muted-foreground text-xs">
-          <span className="sr-only">{t("channels")}: </span>
-          {named.length === 0 ? t("noChannel") : named.join(" · ")}
-        </p>
-        <TagList label={t("tags")} tags={tags} />
+        {trailing}
       </div>
-      {trailing}
     </li>
   );
 };

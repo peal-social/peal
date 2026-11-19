@@ -25,6 +25,7 @@ import { PostListToolbar } from "#components/posts/post-list-toolbar.tsx";
 import { PostSelectionBar } from "#components/posts/post-selection-bar.tsx";
 import { useChoosing } from "#components/posts/use-choosing.ts";
 import type { Choosing } from "#components/posts/use-choosing.ts";
+import { PostDecisionsProvider } from "#components/review/post-decisions-provider.tsx";
 import { PageActions } from "#components/shell/frame-view.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
@@ -378,7 +379,7 @@ const LoadedList = ({
     </ListViews>
   );
 
-  return (
+  const list = (
     <>
       <PostListToolbar
         actions={null}
@@ -413,6 +414,16 @@ const LoadedList = ({
         />
       )}
     </>
+  );
+
+  // Decisions on the posts that wait, for a member who may approve: the
+  // rows and the choice share them, one at a time.
+  return permissions.includes("post:approve") ? (
+    <PostDecisionsProvider workspaceId={workspaceId}>
+      {list}
+    </PostDecisionsProvider>
+  ) : (
+    list
   );
 };
 

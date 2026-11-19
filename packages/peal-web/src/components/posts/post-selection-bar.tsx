@@ -70,7 +70,8 @@ const addTagCommand = "selection-tag";
 type Outcome = "done" | "failed";
 
 // One request after the other: a mutation atom runs one call at a time,
-// and a second call interrupts the first, whose promise never settles.
+// and a second call interrupts the first. Decisions also wait for those
+// the list's rows take (`usePostDecisions`).
 const inTurn = async <A, B>(
   items: readonly A[],
   run: (item: A) => Promise<B>
@@ -129,7 +130,7 @@ export const PostSelectionBar = ({
   const [approving, setApproving] = useState(false);
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
-  const decide = usePostDecisions(workspaceId);
+  const decide = usePostDecisions();
 
   const mayTag = permissions.includes("post:update") && tags.length > 0;
   const maySchedule = permissions.includes("post:schedule");
@@ -466,7 +467,8 @@ export const PostSelectionBar = ({
     label: t("scope", { count: posts.length }),
   });
 
-  const idle = () => !busy && !confirming && !approving && !asking;
+  const idle = () =>
+    !busy && !decide.busy && !confirming && !approving && !asking;
 
   useShortcut(
     addTagKey,
@@ -504,7 +506,7 @@ export const PostSelectionBar = ({
 
   return (
     <>
-      <SelectionBar label={t("label")} disabled={busy}>
+      <SelectionBar label={t("label")} disabled={busy || decide.busy}>
         <SelectionCount>{t("count", { count: posts.length })}</SelectionCount>
         <SelectionBarAction
           aria-keyshortcuts={menuHint.ariaKeyshortcuts}
@@ -556,7 +558,7 @@ export const PostSelectionBar = ({
           <AlertDialogFooter>
             <AlertDialogCancel>{t("notYet")}</AlertDialogCancel>
             <AlertDialogAction
-              disabled={busy}
+              disabled={busy || decide.busy}
               onClick={() => {
                 void approveAll();
               }}

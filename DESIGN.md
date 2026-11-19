@@ -657,7 +657,9 @@ last.
 by 16 px inside and opens what it shows. A row's own actions sit at its
 end as `xs` ghost buttons, icon first, each naming its item for a screen
 reader: a post that waits for an approval offers **Approve** and
-**Request changes** to members who may approve, as its page does.
+**Request changes** to members who may approve, as its page does. On a
+phone they take a line of their own under the item's text, aligned with
+it, and wrap there, so the text keeps the row's width.
 
 **`table-row`** — About 44 px; headers in `{typography.caption}`, upper
 case, muted.
@@ -1420,6 +1422,8 @@ voice.
 - **Sidebar**: a sheet from the left below 768 px; its links close it.
 - **Command menu's button**: its icon alone on a phone.
 - **List toolbar**: wraps; Filter and Display stay at the end of the views.
+- **A list row's actions**: a line of their own under the item's text on
+  a phone, at the row's end from 640 px.
 - **Display type**: steps down below 640 px as the hierarchy says.
 
 ## Iteration guide

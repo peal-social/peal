@@ -151,8 +151,8 @@ export const mayUnschedule = ({ status }: Bulk): boolean =>
 export const mayCancel = ({ status }: Bulk): boolean =>
   status === "draft" || mayUnschedule({ status });
 
-/** An approval as the list of those that wait gives it. */
-interface Listed {
+/** An approval as the list of those that wait, or a post's review, gives it. */
+export interface ListedApproval {
   readonly id: string;
   readonly postId: string;
   readonly status: ApprovalStatus;
@@ -167,13 +167,14 @@ export interface Decision<P> {
 
 /**
  * The posts that wait for an approval, each with the approval a decision
- * names (its id and fingerprint), as the list of approvals that wait gave
- * it: a decision is for what was read. A post whose approval is not listed
- * is left out, as nothing could be decided on it.
+ * names (its id and fingerprint), as the list of approvals that wait (100
+ * at most) or the post's own review gave it: a decision is for what was
+ * read. A post whose approval is in neither is left out, as nothing could
+ * be decided on it.
  */
 export const decisionsOf = <P extends Bulk & { readonly id: string }>(
   posts: readonly P[],
-  approvals: readonly Listed[]
+  approvals: readonly ListedApproval[]
 ): readonly Decision<P>[] =>
   posts.flatMap((post) => {
     const approval = approvals.find(

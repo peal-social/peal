@@ -164,7 +164,7 @@ describe(PostItemView, () => {
     expect(html).toContain("Brouillon");
   });
 
-  it("ends a row with what it offers, after the post", async () => {
+  it("puts what a row offers on a line of its own on a phone, at its end from 640 px", async () => {
     const html = await render(
       "en",
       <PostItemView
@@ -177,7 +177,7 @@ describe(PostItemView, () => {
     );
 
     expect(html).toMatch(
-      /Awaiting approval.*<\/div><button type="button">Approve<\/button><\/li>$/su
+      /<div class="[^"]*\bflex-col\b[^"]*\bsm:flex-row\b[^"]*"><div class="[^"]*\bmin-w-0\b[^"]*"><span>Waiting<\/span>.*<button type="button">Approve<\/button><\/div><\/li>$/su
     );
   });
 });

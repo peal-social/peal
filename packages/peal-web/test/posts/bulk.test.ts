@@ -128,6 +128,29 @@ describe(decisionsOf, () => {
       )
     ).toStrictEqual([]);
   });
+
+  it("decides on a post the capped list of approvals leaves out, from its own review", () => {
+    // The list holds the 100 oldest approvals that wait, none of them this
+    // post's; its review, read on its own, names the one it waits for.
+    const listed = Array.from({ length: 100 }, (_, index) => ({
+      ...pending,
+      id: `approval-${String(index)}`,
+      postId: `older-${String(index)}`,
+    }));
+
+    const reviewed = [
+      { ...pending, id: "approval-a-2", subjectHash: "6b".repeat(32) },
+      { ...pending, id: "approval-a-1", status: "changesRequested" as const },
+    ];
+
+    expect(decisionsOf([waiting], listed)).toStrictEqual([]);
+    expect(decisionsOf([waiting], [...listed, ...reviewed])).toStrictEqual([
+      {
+        post: waiting,
+        shown: { approvalId: "approval-a-2", subjectHash: "6b".repeat(32) },
+      },
+    ]);
+  });
 });
 
 describe(allOf, () => {

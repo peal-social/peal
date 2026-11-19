@@ -497,12 +497,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   G then A open the tabs (`goViewKeys`, `#shell/keys.ts`), and the old
   `…/drafts` and `…/approvals` redirect to them. Members with
   post:approve decide there, through the calls the post's review makes
-  (`usePostDecisions`, naming the approval `review.pending` listed, so a
-  post changed since is refused): on a row that waits
-  (`PostDecisionActions`, at the row's end through `PostItemView`'s
-  `trailing`) and as actions of the choice in `PostSelectionBar`
-  (**Approve**, V, which asks first; **Request changes**, R, with one
-  comment in `RequestChangesDialog`), one toast saying how it went.
+  (`usePostDecisions`, which `PostDecisionsProvider` gives the list):
+  a decision names the approval read, so a post changed since is refused,
+  from `review.pending`, or, for a post that list leaves out (it holds
+  the 100 oldest), from the post's own review, which its row reads. The
+  approve and request-changes mutation atoms are not concurrent (a
+  second call interrupts the first and may settle with its result), so
+  every decision of the list, from a row or the choice, waits its turn
+  (`oneAfterAnother`, `#review/decision-queue.ts`) and the list's
+  buttons wait while one runs. Decisions show on a row that waits
+  (`PostDecisionActions`, through `PostItemView`'s `trailing`: under the
+  text on a phone, at the row's end from 640 px) and as actions of the
+  choice in `PostSelectionBar` (**Approve**, V, which asks first;
+  **Request changes**, R, with one comment in `RequestChangesDialog`),
+  one toast saying how it went.
 - The CSV import (`…/posts/import`, `PostImport`, views in
   `post-import-views.tsx`, states in `#posts/import-state.ts`) never
   parses the file: the browser reads it as text (`#posts/import-file.ts`,
