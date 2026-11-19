@@ -1033,22 +1033,24 @@ export const DrizzleMessageStore = Layer.effect(
       // listed here, not deleted unseen.
       yield* lockBox(channelId);
 
-      const rows = yield* db
-        .select()
-        .from(outgoingMessages)
-        .where(
-          and(
-            eq(outgoingMessages.channelId, channelId),
-            eq(outgoingMessages.status, "sending"),
-            // Its call never claimed: an attempt recorded that waited for
-            // the gate's turn never left either.
-            isNull(outgoingMessages.callClaimedAt)
+      const rows = yield* (
+        db
+          .select()
+          .from(outgoingMessages)
+          .where(
+            and(
+              eq(outgoingMessages.channelId, channelId),
+              eq(outgoingMessages.status, "sending"),
+              // Its call never claimed: an attempt recorded that waited for
+              // the gate's turn never left either.
+              isNull(outgoingMessages.callClaimedAt)
+            )
           )
-        )
-        // Locked until the transaction ends: a job that would begin one
-        // waits, then finds it gone.
-        .for("update")
-        .pipe(Effect.mapError(failed));
+          // Locked until the transaction ends: a job that would begin one
+          // waits, then finds it gone.
+          .for("update")
+          .pipe(Effect.mapError(failed))
+      );
 
       return yield* Effect.all(rows.map(outgoingOfRow));
     });

@@ -44,26 +44,28 @@ export const DrizzleChannelDirectory = Layer.effect(
 
     return ChannelDirectory.of({
       after: Effect.fn("ChannelDirectory.after")(function* after(last, limit) {
-        const rows = yield* db
-          .select({
-            channelId: channels.id,
-            platform: channels.platform,
-            workspaceId: channels.workspaceId,
-          })
-          .from(channels)
-          // Social channels only: a website's is followed by none of them.
-          .where(
-            and(
-              inArray(channels.platform, [...platforms]),
-              last.pipe(
-                Option.map((id) => gt(channels.id, id)),
-                Option.getOrUndefined
+        const rows = yield* (
+          db
+            .select({
+              channelId: channels.id,
+              platform: channels.platform,
+              workspaceId: channels.workspaceId,
+            })
+            .from(channels)
+            // Social channels only: a website's is followed by none of them.
+            .where(
+              and(
+                inArray(channels.platform, [...platforms]),
+                last.pipe(
+                  Option.map((id) => gt(channels.id, id)),
+                  Option.getOrUndefined
+                )
               )
             )
-          )
-          .orderBy(asc(channels.id))
-          .limit(limit)
-          .pipe(Effect.mapError(failed));
+            .orderBy(asc(channels.id))
+            .limit(limit)
+            .pipe(Effect.mapError(failed))
+        );
 
         return yield* decodeListed(rows).pipe(Effect.orDie);
       }),
