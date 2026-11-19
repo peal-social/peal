@@ -445,6 +445,12 @@ and no socket, for tests.
   workspace's latest state is an `argMax` over these events.
 - A property is an id, an enum, a number or a boolean: never a text
   someone wrote, a name, an address, a URL or what a platform answered.
+  That rule is the server's: Peal's own PostHog project also holds a copy
+  of Stripe's records of paying customers (names, email addresses,
+  billing addresses, subscriptions, invoices, charges) through PostHog's
+  Stripe source, which the operator sets up in PostHog, not in code. The
+  privacy registry's `billingAnalytics` category and the policy say so;
+  add no Stripe data to an event.
   Capture never fails, dies or waits on the network, and nothing is
   ever sent twice. Staff are marked `internal` when they open the console;
   what they do as a member sends nothing.
