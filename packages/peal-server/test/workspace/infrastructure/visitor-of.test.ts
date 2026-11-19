@@ -35,7 +35,7 @@ const cookieOf = (
 
 // A browser's cookie header, with the consent answer and a session beside.
 const headerWith = (cookie: string) =>
-  `peal.consent=allowed.2026-11-19; ${cookie}; peal.session_token=synthetic`;
+  `peal.consent=1.a.20776; ${cookie}; peal.session_token=synthetic`;
 
 describe("the visitor a sign-up links", () => {
   it("is the id the site's cookie holds", () => {
@@ -50,7 +50,7 @@ describe("the visitor a sign-up links", () => {
   it.each([
     ["no cookie header", undefined],
     ["an empty header", ""],
-    ["no such cookie", "peal.consent=refused.2026-11-19"],
+    ["no such cookie", "peal.consent=1.r.20776"],
     // Users' and workspaces' ids are version 4.
     [
       "a version 4 id",
