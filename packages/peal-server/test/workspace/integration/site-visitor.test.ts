@@ -80,6 +80,12 @@ const visitorCookiesSet = (reply: Reply): readonly string[] =>
     .getSetCookie()
     .filter((cookie) => cookie.startsWith(`${cookieName}=`));
 
+// The cookie naming the visitor a sign-up retired.
+const retiredSet = (reply: Reply): readonly string[] =>
+  reply.headers
+    .getSetCookie()
+    .filter((cookie) => cookie.startsWith("peal_site_retired="));
+
 const aliasOf =
   (visitorId: string) =>
   ({ event, properties }: CapturedEvent): boolean =>
@@ -134,6 +140,9 @@ layer(
 
         assert.strictEqual(reply.status, 200);
         assert.deepStrictEqual(visitorCookiesSet(reply), [expiry]);
+        assert.deepStrictEqual(retiredSet(reply), [
+          `peal_site_retired=${visitorId}; Max-Age=15811200; Domain=${cookieDomain}; Path=/; Secure; SameSite=Lax`,
+        ]);
 
         const [alias] = yield* eventsMatching(aliasOf(visitorId));
         const userId = alias?.distinct_id ?? "";
@@ -164,6 +173,8 @@ layer(
 
         assert.strictEqual(again.status, 200);
         assert.deepStrictEqual(visitorCookiesSet(again), [expiry]);
+        // Retired the same way, linked or not, so nothing tells them apart.
+        assert.strictEqual(retiredSet(again).length, 1);
 
         yield* drained;
 

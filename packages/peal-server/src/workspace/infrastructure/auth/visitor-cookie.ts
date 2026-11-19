@@ -4,7 +4,11 @@ import { Option, Schema } from "effect";
 
 import type { SiteMeasurementSettings } from "#shared/application/site-measurement.ts";
 
-import { asksNotToBeFollowed, siteAnswerAllows } from "./site-answer.ts";
+import {
+  asksNotToBeFollowed,
+  siteAnswerAllows,
+  siteAnswerDays,
+} from "./site-answer.ts";
 import { visitorOf } from "./visitor-of.ts";
 
 /**
@@ -18,6 +22,14 @@ export const visitorCookieName = (token: string): string =>
 // expires the visitor's cookie: Better Auth hands the account's hook and
 // the route's after hook the same request.
 const madeAccount = new WeakSet<Request>();
+
+/**
+ * The cookie naming the visitor a sign-up retired, which the site's pages
+ * compare their own with before anything leaves (peal-ui's
+ * `retiredVisitorCookieName`): a page left open across the sign-up keeps
+ * the visitor in memory and would save its cookie again.
+ */
+export const retiredVisitorCookieName = "peal_site_retired";
 
 /**
  * The visitor to link to an account just made in this request, where a
@@ -78,10 +90,13 @@ const endsVisitor = (ctx: GenericEndpointContext): boolean =>
  * password's sign-up that went through, whether it made an account or
  * answered a known address's made-up one, so the answer never tells which
  * addresses have an account, and after a provider's callback that made
- * one; never after a refused sign-up, which a retry may still link. The browser's
- * later visits then get a new visitor, linked to no account. Same name,
- * `Path=/`, `Max-Age=0`, `Secure`, `SameSite=Lax`, and the registrable
- * domain PostHog's SDK set it on (PEAL_POSTHOG_SITE_COOKIE_DOMAIN).
+ * one; never after a refused sign-up, which a retry may still link. The
+ * browser's later visits then get a new visitor, linked to no account.
+ * Same name, `Path=/`, `Max-Age=0`, `Secure`, `SameSite=Lax`, and the
+ * registrable domain PostHog's SDK set it on
+ * (PEAL_POSTHOG_SITE_COOKIE_DOMAIN). Where the cookie held a visitor,
+ * `peal_site_retired` names it, linked or not alike, for as long as an
+ * answer lasts.
  */
 export const expireVisitorCookie = (
   ctx: GenericEndpointContext,
@@ -96,14 +111,28 @@ export const expireVisitorCookie = (
     return;
   }
 
+  const domain = Option.match(site.value.cookieDomain, {
+    onNone: () => ({}),
+    onSome: (name) => ({ domain: name }),
+  });
+
   ctx.setCookie(visitorCookieName(site.value.token), "", {
-    ...Option.match(site.value.cookieDomain, {
-      onNone: () => ({}),
-      onSome: (domain) => ({ domain }),
-    }),
+    ...domain,
     maxAge: 0,
     path: "/",
     sameSite: "lax",
     secure: true,
   });
+
+  const retired = visitorOf(ctx.headers?.get("cookie"), site.value.token);
+
+  if (Option.isSome(retired)) {
+    ctx.setCookie(retiredVisitorCookieName, retired.value, {
+      ...domain,
+      maxAge: siteAnswerDays * 86_400,
+      path: "/",
+      sameSite: "lax",
+      secure: true,
+    });
+  }
 };
