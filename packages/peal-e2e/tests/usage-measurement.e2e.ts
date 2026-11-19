@@ -159,10 +159,22 @@ const personLike = `(() => {
   as("webdriver", false);
 })()`;
 
+// A browser that refuses PostHog's well-known ingestion path, as tracker
+// blockers do, and as the WebKit browser production was checked in did:
+// what the web app sends must never depend on that path.
+const knownIngestion = /\/i\/v0\/e\//u;
+
 const asPerson = async (browser: {
   readonly addInitScript: (script: string) => Promise<void>;
+  readonly route: (
+    pattern: RegExp,
+    handler: (route: { readonly abort: () => Promise<void> }) => Promise<void>
+  ) => Promise<void>;
 }) => {
   await browser.addInitScript(personLike);
+  await browser.route(knownIngestion, async (route) => {
+    await route.abort();
+  });
 };
 
 // The ids an event carries that could tie it to another: none may pass
@@ -389,11 +401,6 @@ describe("the web app's measurement", { serial: true }, () => {
       "a page view under the member's id with the workspace"
     );
 
-    await eventually(
-      () => after().filter((event) => event.event === "$snapshot"),
-      "a recording"
-    );
-
     // A write from the page names the browser's session to Peal's API.
     const session = textOf(views[0]?.properties["$session_id"]);
 
@@ -481,12 +488,33 @@ describe("the web app's measurement", { serial: true }, () => {
       textOf(current[0]?.properties["$session_id"]),
     ]);
 
-    await eventually(
+    // The project's configuration has a recording wait for 10 s of a
+    // session before it sends any of it.
+    await sleep(11_000);
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Signatures")
+      .tap();
+
+    const recorded = await eventually(
       () =>
         after()
           .filter((event) => event.event === "$snapshot")
           .slice(recordedSoFar),
-      "more of the recording after pages opened without a reload"
+      "a recording across pages opened without a reload"
+    );
+
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Queues")
+      .tap();
+
+    await eventually(
+      () =>
+        after()
+          .filter((event) => event.event === "$snapshot")
+          .slice(recordedSoFar + recorded.length),
+      "more of the recording after another page"
     );
 
     // What the SDK keeps once allowed, which the privacy policy names.

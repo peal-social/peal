@@ -47,8 +47,9 @@
   (`contract-functions.e2e.ts`): a journey there sends requests no
   contract answers, and reads their acknowledgement in Mailpit.
 - The run measures, against a stand-in for PostHog (`scripts/posthog.ts`),
-  whose project configuration names `/i/v0/e/` for events, as PostHog's
-  cloud does:
+  whose project configuration is the one PostHog's cloud served Peal's
+  project (events to `/i/v0/e/`, replay after 10 s), and the journey's
+  browser refuses `/i/v0/e/`, as tracker blockers do:
   the server and the web app get `PEAL_POSTHOG_WEB=on` and its address,
   and it writes every request it receives, decoded, to
   `.e2e/posthog-requests.jsonl`. Each member's home shows the consent

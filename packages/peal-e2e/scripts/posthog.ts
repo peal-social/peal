@@ -68,23 +68,47 @@ const decodedBody = (raw: Buffer, query: URLSearchParams) => {
   );
 };
 
-// What PostHog's project configuration says, as its cloud answers it:
-// events to `/i/v0/e/` rather than the SDK's default `/e/`, and session
-// replay on, with no minimum duration and every session sampled, so a
-// short journey records.
+// What PostHog's project configuration says, exactly as its cloud served
+// Peal's project on 19 November 2026 (the token aside): events to
+// `/i/v0/e/` rather than the SDK's default `/e/`, both compressions, and
+// session replay on with a 10 s minimum.
 const remoteConfig = {
   analytics: { endpoint: "/i/v0/e/" },
+  autocaptureExceptions: false,
   autocapture_opt_out: true,
+  captureDeadClicks: false,
   capturePerformance: false,
+  conversations: false,
+  defaultIdentifiedOnly: true,
+  elementsChainAsString: true,
+  errorTracking: { autocaptureExceptions: false, suppressionRules: [] },
   hasFeatureFlags: false,
+  heatmaps: false,
+  logs: { captureConsoleLogs: false },
+  productTours: false,
+  push: { appIds: [] },
+  sdkVersion: { requested: "1" },
   sessionRecording: {
+    canvasFps: null,
+    canvasQuality: null,
     consoleLogRecordingEnabled: false,
     endpoint: "/s/",
-    minimumDurationMilliseconds: 0,
+    eventTriggers: [],
+    linkedFlag: null,
+    masking: null,
+    minimumDurationMilliseconds: 10_000,
+    networkPayloadCapture: { recordBody: false, recordHeaders: false },
     recordCanvas: false,
+    recorderVersion: "v2",
     sampleRate: null,
+    scriptConfig: { script: "posthog-recorder" },
+    triggerMatchType: null,
+    urlBlocklist: [],
+    urlTriggers: [],
+    version: 1,
   },
-  supportedCompression: ["gzip-js"],
+  siteApps: [],
+  supportedCompression: ["gzip", "gzip-js"],
   surveys: false,
   token: projectToken,
 };
