@@ -47,7 +47,7 @@ const Cluster = clusterLayer({
   entityMessagePollInterval: Duration.millis(100),
   entityTerminationTimeout: Duration.zero,
   runnerAddress: Option.some(
-    RunnerAddress.make("peal-server-workspace-snapshot", 34_432)
+    RunnerAddress.make("peal-server-workspace-snapshot", 34_433)
   ),
 });
 
