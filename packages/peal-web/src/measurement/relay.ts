@@ -184,6 +184,64 @@ const ingestion: ReadonlySet<string> = new Set([
   "/s/",
 ]);
 
+const ConfigSchema = Schema.Record(Schema.String, Schema.Json);
+
+const decodeConfig = Schema.decodeUnknownOption(
+  Schema.fromJsonString(ConfigSchema)
+);
+
+const isAnyRecord = Schema.is(ConfigSchema);
+
+type ConfigPart = typeof ConfigSchema.Type;
+
+const isPart = (
+  value: typeof Schema.Json.Type | undefined
+): value is ConfigPart => isAnyRecord(value);
+
+// A part of the configuration with its endpoint set to `endpoint`, where
+// it names one; anything else as it is.
+const withEndpoint = (
+  part: typeof Schema.Json.Type,
+  endpoint: string
+): typeof Schema.Json.Type =>
+  isPart(part) && part["endpoint"] !== undefined
+    ? Object.fromEntries([
+        ...Object.entries(part).filter(([key]) => key !== "endpoint"),
+        ["endpoint", endpoint],
+      ])
+    : part;
+
+// The SDK's own endpoint for each part of the configuration that names one.
+const ownEndpoints: ReadonlyMap<string, string> = new Map([
+  ["analytics", "/e/"],
+  ["sessionRecording", "/s/"],
+]);
+
+/**
+ * The project's configuration with the SDK's own endpoints, `/e/` and
+ * `/s/`, wherever it names others: PostHog's cloud names `/i/v0/e/` for
+ * events, a path tracker blockers refuse, so a browser that runs one would
+ * send its first page view (to the SDK's default) and none after. PostHog
+ * takes `/e/` all the same. A configuration it cannot read goes as it is.
+ */
+export const withOwnEndpoints = (body: ArrayBuffer): ArrayBuffer | string =>
+  Option.match(decodeConfig(new TextDecoder().decode(body)), {
+    onNone: () => body,
+    onSome: (config) =>
+      JSON.stringify(
+        Object.fromEntries(
+          Object.entries(config).map(([key, part]) => {
+            const endpoint = ownEndpoints.get(key);
+
+            return [
+              key,
+              endpoint === undefined ? part : withEndpoint(part, endpoint),
+            ];
+          })
+        )
+      ),
+  });
+
 // Where a path goes, by what the SDK sends there: its events and its
 // recordings by POST, its project's configuration by GET.
 const routeOf = (path: string, target: RelayTarget) => {
@@ -268,11 +326,17 @@ export const relayToPostHog = Effect.fn("relayToPostHog")(function* relay(
     });
 
     const type = reply.headers.get("content-type");
+    const replied = await reply.arrayBuffer();
 
-    return new Response(await reply.arrayBuffer(), {
-      headers: type === null ? {} : { "content-type": type },
-      status: reply.status,
-    });
+    return new Response(
+      route.value.method === "GET" && reply.ok
+        ? withOwnEndpoints(replied)
+        : replied,
+      {
+        headers: type === null ? {} : { "content-type": type },
+        status: reply.status,
+      }
+    );
   }).pipe(
     // Too slow is 504, unreachable 502.
     Effect.orElseSucceed(() => answer(signal.aborted ? 504 : 502))
