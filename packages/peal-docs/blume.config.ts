@@ -198,6 +198,10 @@ export default defineConfig({
     ],
   },
   redirects,
+  // Blume's search tells the page what readers look for (`blume:track`),
+  // which the docs' measurement counts. Never the query's text: its length
+  // alone, here as a second guard after the measurement's own allowlist.
+  search: { analytics: { queries: false } },
   reference: [
     // Written by `nx run peal-contract:openapi`, which every docs target
     // depends on, so the reference always matches the contract. The overlay
