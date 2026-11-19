@@ -19,7 +19,9 @@ export const projectToken = "phc_synthetic";
 export const requestsFile = path.join(
   import.meta.dirname,
   "..",
-  ".e2e",
+  // Each run's own folder: the WebKit run's is `.e2e/webkit`, so it never
+  // writes over the Chromium run's (e2e.webkit.config.ts).
+  process.env["PEAL_E2E_OUTPUT"] ?? ".e2e",
   "posthog-requests.jsonl"
 );
 
@@ -66,9 +68,12 @@ const decodedBody = (raw: Buffer, query: URLSearchParams) => {
   );
 };
 
-// What PostHog's project configuration says: session replay on, with no
-// minimum duration and every session sampled, so a short journey records.
+// What PostHog's project configuration says, as its cloud answers it:
+// events to `/i/v0/e/` rather than the SDK's default `/e/`, and session
+// replay on, with no minimum duration and every session sampled, so a
+// short journey records.
 const remoteConfig = {
+  analytics: { endpoint: "/i/v0/e/" },
   autocapture_opt_out: true,
   capturePerformance: false,
   hasFeatureFlags: false,

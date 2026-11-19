@@ -237,7 +237,10 @@ La mesure d’usage du produit est désactivée tant que vous n’avez pas défi
   `on`, décrivez-y aussi la mesure d’usage de l’application web et ses
   enregistrements de session, puis activez l’enregistrement de session dans le
   projet PostHog : l’application demande alors à chaque personne avant
-  d’enregistrer quoi que ce soit.
+  d’enregistrer quoi que ce soit. Laissez vides les domaines autorisés pour
+  l’enregistrement de session du projet : le relais n’envoie à PostHog ni
+  `Origin` ni `Referer`, donc un domaine indiqué là désactive l’enregistrement,
+  et l’application n’enregistre de toute façon que ses pages connectées.
 </Callout>
 
 ### Télémétrie [#telemetry]

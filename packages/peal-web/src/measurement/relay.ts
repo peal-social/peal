@@ -173,10 +173,21 @@ const forwardedRequestHeaders = ["accept", "content-type"];
 
 const answer = (status: number) => new Response(null, { status });
 
+// Where the SDK sends events and recordings: its defaults, `/e/` and
+// `/s/`, until the project's configuration names PostHog's newer
+// endpoints, `/i/v0/e/` for events (as PostHog's cloud does) and
+// `/i/v0/s/` for recordings.
+const ingestion: ReadonlySet<string> = new Set([
+  "/e/",
+  "/i/v0/e/",
+  "/i/v0/s/",
+  "/s/",
+]);
+
 // Where a path goes, by what the SDK sends there: its events and its
 // recordings by POST, its project's configuration by GET.
 const routeOf = (path: string, target: RelayTarget) => {
-  if (path === "/e/" || path === "/s/") {
+  if (ingestion.has(path)) {
     return Option.some({ host: target.host, method: "POST" });
   }
 
@@ -187,7 +198,8 @@ const routeOf = (path: string, target: RelayTarget) => {
 
 /**
  * Relays what the web app's SDK sends to PostHog, query kept: its events
- * (`/e/`), its recordings (`/s/`) and its project's configuration
+ * (`/e/`, `/i/v0/e/`), its recordings (`/s/`, `/i/v0/s/`) and its
+ * project's configuration
  * (`/array/<token>/config`, that token alone), with only the request's
  * type, and answers with PostHog's status and type alone (never a
  * cookie). 404 while PEAL_POSTHOG_WEB is off and for any other path, 405

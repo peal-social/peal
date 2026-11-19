@@ -166,10 +166,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   recording, its storage cleared), another person in the tab and every
   consent change give a new browser id (`reset(true)`), and a load that
   fails leaves the page unmeasured. Effects depend on primitives, so a
-  `router.refresh()` never restarts a recording. A choice or a sign-out
-  reaches the other tabs through a storage event (`#measurement/tabs.ts`,
+  `router.refresh()` never restarts a recording. A choice, a sign-out or a
+  sign-in reaches the other tabs through a storage event (`#measurement/tabs.ts`,
   `peal.measurement-news`, removed as written), and a tab shown again
-  reads the server again. `posthog-js` is pinned with its `@posthog/core`,
+  reads `GET /api/me` again: another person there forgets the session,
+  a changed answer refreshes the page. `posthog-js` is pinned with its `@posthog/core`,
   `@posthog/browser-common` and `@posthog/types`, which the root
   `package.json`'s `overrides` pin to the versions it was released with:
   move all four together on every bump (Dependabot's `posthog` group
@@ -184,11 +185,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `reportBrowserError` (`onReported`). The relay is a route handler
   (`app/pulse/[...path]`, `#measurement/relay.ts`; `src/proxy.ts` lets
   `/pulse` through): only while `PEAL_POSTHOG_WEB` is on with the
-  project token in `PEAL_POSTHOG_KEY`, only `/e/` and `/s/` by POST and
-  `/array/<token>/config` by GET, forwarding the request's type alone and
+  project token in `PEAL_POSTHOG_KEY`, only events and recordings by
+  POST (`/e/` and `/s/`, and `/i/v0/e/` and `/i/v0/s/`, where the
+  project's configuration sends the SDK: PostHog's cloud names
+  `/i/v0/e/`) and `/array/<token>/config` by GET, forwarding the request's type alone and
   answering PostHog's status and type alone; `skipTrailingSlashRedirect`
   is on for it, and the proxy redirects every other trailing slash
-  itself. The choice lives on the account
+  itself. The app's HTTP client keeps the `fetch` it started with, so it never
+  sees the SDK's `tracing_headers`: it names the session itself
+  (`#measurement/session-header.ts`, set by `Measurement` from the
+  controller) while identified. A recording's page addresses (rrweb's
+  meta event) leave as patterns, as every event's do. Never set the
+  PostHog project's authorized domains for replay: the relay sends no
+  `Origin` or `Referer`, so PostHog would turn replay off, and the app
+  records its signed-in pages alone anyway. The choice lives on the account
   (`PUT /api/me/browser-analytics/consent`): `ConsentCard` on the
   personal home while undecided, `ConsentSetting` on the account page.
 - Pages fetch through the client derived from `peal-contract`, with

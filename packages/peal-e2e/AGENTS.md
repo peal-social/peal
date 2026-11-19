@@ -46,7 +46,9 @@
   So the functions to cancel and withdraw are on
   (`contract-functions.e2e.ts`): a journey there sends requests no
   contract answers, and reads their acknowledgement in Mailpit.
-- The run measures, against a stand-in for PostHog (`scripts/posthog.ts`):
+- The run measures, against a stand-in for PostHog (`scripts/posthog.ts`),
+  whose project configuration names `/i/v0/e/` for events, as PostHog's
+  cloud does:
   the server and the web app get `PEAL_POSTHOG_WEB=on` and its address,
   and it writes every request it receives, decoded, to
   `.e2e/posthog-requests.jsonl`. Each member's home shows the consent
@@ -59,7 +61,14 @@
   relay's own fetch adds). The SDK drops a test browser's events
   as a bot's, so the journey makes the page read as a person's
   (`asPerson`); it writes the storage keys the SDK kept to
-  `.e2e/posthog-storage.json`, which the privacy policy names.
+  `.e2e/posthog-storage.json`, which the privacy policy names. It
+  checks pages opened without a reload in both modes, Allow and
+  withdrawal in place, the app's own requests naming the session (a tag
+  added in the settings, its header read with `browser.route`) and no
+  longer once withdrawn and the recording going on across pages.
+  `nx run peal-e2e:e2e-webkit` (`e2e.webkit.config.ts`, its report and
+  the stand-in's log under `.e2e/webkit`, through `PEAL_E2E_OUTPUT`) runs that journey alone in WebKit, after the Chromium
+  run in CI: install WebKit with `e2e-web install webkit`.
 - No platform can be connected in a run, so a test that needs a channel
   inserts a synthetic one with `seedChannel` (`tests/support/channels.ts`).
   Update it when `channels.channels` changes. Publish nothing, and cancel any
