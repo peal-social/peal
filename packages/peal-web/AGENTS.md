@@ -166,10 +166,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   recording, its storage cleared), another person in the tab and every
   consent change give a new browser id (`reset(true)`), and a load that
   fails leaves the page unmeasured. Effects depend on primitives, so a
-  `router.refresh()` never restarts a recording. A choice or a sign-out
-  reaches the other tabs through a storage event (`#measurement/tabs.ts`,
+  `router.refresh()` never restarts a recording. A choice, a sign-out or a
+  sign-in reaches the other tabs through a storage event (`#measurement/tabs.ts`,
   `peal.measurement-news`, removed as written), and a tab shown again
-  reads the server again. `posthog-js` is pinned with its `@posthog/core`,
+  reads `GET /api/me` again: another person there forgets the session,
+  a changed answer refreshes the page. `posthog-js` is pinned with its `@posthog/core`,
   `@posthog/browser-common` and `@posthog/types`, which the root
   `package.json`'s `overrides` pin to the versions it was released with:
   move all four together on every bump (Dependabot's `posthog` group

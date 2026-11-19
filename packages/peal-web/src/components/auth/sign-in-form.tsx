@@ -20,6 +20,7 @@ import {
 } from "#components/auth/two-step-challenge-view.tsx";
 import type { ChallengeMode } from "#components/auth/two-step-challenge-view.tsx";
 import { getPathname, useRouter } from "#i18n/navigation.ts";
+import { tellTabs } from "#measurement/tabs.ts";
 
 // What a sign-in answers an account with two-step verification on: no
 // session yet, and the second step to take.
@@ -57,6 +58,9 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
   // Once signed in: on to `next`, in the language the account keeps, which
   // may not be this page's.
   const goNext = (accountLocale: Option.Option<string>) => {
+    // The other tabs of Peal measure nobody's session until they read
+    // who is signed in now.
+    tellTabs({ kind: "signedIn" });
     Option.match(landingLocale(next, Option.getOrUndefined(accountLocale)), {
       onNone: () => {
         router.push(next);
