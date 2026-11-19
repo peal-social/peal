@@ -54,6 +54,9 @@ const RequestSchema = Schema.Struct({
   headers: Schema.Array(Schema.String),
   path: Schema.String,
   query: Schema.String,
+  warnings: Schema.Array(
+    Schema.Struct({ event: Schema.String, type: Schema.String })
+  ),
 });
 
 const decodeRequest = Schema.decodeUnknownSync(
@@ -120,6 +123,14 @@ const received = (): readonly Received[] =>
         })
       );
     });
+
+// What PostHog's ingestion would have dropped so far, with its warning:
+// the stand-in drops it as PostHog does (scripts/posthog.ts).
+const ingestionWarnings = () =>
+  readFileSync(requestsFile, "utf-8")
+    .split("\n")
+    .filter((line) => line !== "")
+    .flatMap((line) => decodeRequest(line).warnings);
 
 const linesSoFar = () =>
   readFileSync(requestsFile, "utf-8")
@@ -1014,6 +1025,14 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
 
       expect(left).not.toContain("peal_site_retired");
       expect(left).not.toContain(visitorCookie);
+    });
+  });
+
+  // Last, over every journey above: PostHog takes a counted event only
+  // with what its hash needs, the user agent, the host and the address.
+  describe("what PostHog takes of the site", () => {
+    test("drops none of the site's events", () => {
+      expect(ingestionWarnings()).toEqual([]);
     });
   });
 });
