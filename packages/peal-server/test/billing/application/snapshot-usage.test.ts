@@ -6,6 +6,7 @@ import { TestClock } from "effect/testing";
 
 import { BillingAccounts } from "#billing/application/billing-accounts.ts";
 import { AccountDayStore } from "#billing/application/ports/account-day-store.ts";
+import { BillingAccountStore } from "#billing/application/ports/billing-account-store.ts";
 import { UsageLedger } from "#billing/application/ports/usage-ledger.ts";
 import { UsageSnapshotSink } from "#billing/application/ports/usage-snapshot-sink.ts";
 import { UsageStates } from "#billing/application/ports/usage-states.ts";
@@ -150,7 +151,8 @@ const SnapshotTest = SnapshotUsage.make(2).pipe(
       AccountsResolvedTest,
       AccountDaysTest,
       NoMetersTest,
-      UsageSnapshotSink.layerNone
+      UsageSnapshotSink.layerNone,
+      Layer.mock(BillingAccountStore, {})
     )
   ),
   Layer.provideMerge(DrizzleUsageLedgerLive),

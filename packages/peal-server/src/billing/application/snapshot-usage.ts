@@ -12,6 +12,7 @@ import type { WorkspaceId } from "#shared/domain/ids.ts";
 
 import { BillingAccounts } from "./billing-accounts.ts";
 import { AccountDayStore } from "./ports/account-day-store.ts";
+import { BillingAccountStore } from "./ports/billing-account-store.ts";
 import { MeterUsageStore } from "./ports/meter-usage-store.ts";
 import { UsageLedger } from "./ports/usage-ledger.ts";
 import type { WorkspaceUsageRecord } from "./ports/usage-ledger.ts";
@@ -68,9 +69,9 @@ const recordsOf = (
  * none is written for it later. A workspace erased while its batch was
  * written has those rows deleted again. Each batch's workspaces are given
  * their billing account, those nobody read yet included (the sweep), and
- * the days of those still there with a connected account are told
- * (`UsageSnapshotSink`: product analytics), with their billing account
- * when it can be read; nothing told fails the run. Then
+ * where product analytics is on, the days of those still there with a
+ * connected account are told (`UsageSnapshotSink`), with the billing
+ * account each is on, read as stored; nothing told fails the run. Then
  * it starts today's account-days of every billing account
  * (`StartAccountDays`, on a server that bills), and, whether the snapshot
  * went through or not, it deletes the ledger's rows, the account-days, the
@@ -92,41 +93,38 @@ export class SnapshotUsage extends Context.Service<
         const meterUsage = yield* MeterUsageStore;
         const accountDays = yield* AccountDayStore;
         const sink = yield* UsageSnapshotSink;
+        const store = yield* BillingAccountStore;
 
-        // The days of a batch's workspaces worth telling, with their
-        // billing accounts in one read: one that cannot be read leaves
-        // them without, and nothing here stops the snapshot.
+        // The days of a batch's workspaces worth telling, with the billing
+        // accounts the sweep just gave them, in one plain read that writes
+        // nothing: accounts that cannot be read leave them without one,
+        // and nothing here stops the snapshot.
         const tell = (day: DateTime.Utc, told: readonly WorkspaceDayState[]) =>
-          told.length === 0
+          !sink.enabled || told.length === 0
             ? Effect.void
-            : accounts
-                .accountsIn(told.map(({ workspaceId }) => workspaceId))
-                .pipe(
-                  Effect.catchCause((cause) =>
-                    Effect.logWarning(
-                      "Reading the billing accounts of the snapshot's workspaces failed",
-                      cause
-                    ).pipe(Effect.as(new Map<WorkspaceId, BillingAccount>()))
-                  ),
-                  Effect.flatMap((held) =>
-                    sink.told(
-                      day,
-                      told.map((state) => ({
-                        billingAccountId: Option.fromUndefinedOr(
-                          held.get(state.workspaceId)?.id
-                        ),
-                        state,
-                      }))
-                    )
-                  ),
-                  Effect.catchCause((cause) =>
-                    Effect.logWarning(
-                      "Telling the snapshot's days failed",
-                      cause
-                    )
-                  ),
-                  Effect.withSpan("SnapshotUsage.tell")
-                );
+            : store.accountsIn(told.map(({ workspaceId }) => workspaceId)).pipe(
+                Effect.catchCause((cause) =>
+                  Effect.logWarning(
+                    "Reading the billing accounts of the snapshot's workspaces failed",
+                    cause
+                  ).pipe(Effect.as(new Map<WorkspaceId, BillingAccount>()))
+                ),
+                Effect.flatMap((held) =>
+                  sink.told(
+                    day,
+                    told.map((state) => ({
+                      billingAccountId: Option.fromUndefinedOr(
+                        held.get(state.workspaceId)?.id
+                      ),
+                      state,
+                    }))
+                  )
+                ),
+                Effect.catchCause((cause) =>
+                  Effect.logWarning("Telling the snapshot's days failed", cause)
+                ),
+                Effect.withSpan("SnapshotUsage.tell")
+              );
 
         // Every workspace's states, batch by batch: how many it wrote.
         const snapshot = Effect.fn("SnapshotUsage.snapshot")(function* snapshot(

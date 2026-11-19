@@ -15,11 +15,13 @@ export interface ToldDayState {
 /**
  * Where the daily usage snapshot tells the days it wrote, beyond the
  * ledger: product analytics, on a server that sends it. Telling never
- * fails, so the snapshot never stops for it.
+ * fails or waits, so the snapshot never stops for it; where nothing is
+ * told (`enabled` false), the snapshot reads nothing for it either.
  */
 export class UsageSnapshotSink extends Context.Service<
   UsageSnapshotSink,
   {
+    readonly enabled: boolean;
     readonly told: (
       day: DateTime.Utc,
       states: readonly ToldDayState[]
@@ -29,6 +31,6 @@ export class UsageSnapshotSink extends Context.Service<
   /** Tells nobody: for tests, and where nothing is told. */
   static readonly layerNone = Layer.succeed(
     UsageSnapshotSink,
-    UsageSnapshotSink.of({ told: () => Effect.void })
+    UsageSnapshotSink.of({ enabled: false, told: () => Effect.void })
   );
 }

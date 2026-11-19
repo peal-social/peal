@@ -6,6 +6,7 @@ import { TestClock } from "effect/testing";
 
 import { BillingAccounts } from "#billing/application/billing-accounts.ts";
 import { AccountDayStore } from "#billing/application/ports/account-day-store.ts";
+import { BillingAccountStore } from "#billing/application/ports/billing-account-store.ts";
 import { UsageLedger } from "#billing/application/ports/usage-ledger.ts";
 import { UsageSnapshotSink } from "#billing/application/ports/usage-snapshot-sink.ts";
 import type { ToldDayState } from "#billing/application/ports/usage-snapshot-sink.ts";
@@ -98,17 +99,28 @@ const AccountDaysTest = Layer.mergeAll(
   Layer.mock(AccountDayStore, { purgeBefore: () => Effect.succeed(0) })
 );
 
-const accountsThat = (readable: boolean) =>
-  Layer.mock(BillingAccounts, {
-    accountsIn: (workspaceIds) =>
-      readable
-        ? Effect.succeed(
-            new Map(workspaceIds.map((id) => [id, aloneAccountOf(id)]))
-          )
-        : Effect.fail(new DatabaseError({ cause: "synthetic" })),
-    repair: () => Effect.succeed({ lapsed: 0, repaired: 0 }),
-    sweepIn: () => Effect.succeed(0),
-  });
+// The sweep gives every workspace its account; the store then reads them
+// as `readable` says: each alone in its own, failing, or never asked.
+const accountsThat = (readable: "alone" | "failing" | "never") =>
+  Layer.mergeAll(
+    Layer.mock(BillingAccounts, {
+      repair: () => Effect.succeed({ lapsed: 0, repaired: 0 }),
+      sweepIn: () => Effect.succeed(0),
+    }),
+    Layer.mock(BillingAccountStore, {
+      accountsIn: (workspaceIds) => {
+        if (readable === "never") {
+          return Effect.die("the accounts are read with nothing to tell");
+        }
+
+        return readable === "alone"
+          ? Effect.succeed(
+              new Map(workspaceIds.map((id) => [id, aloneAccountOf(id)]))
+            )
+          : Effect.fail(new DatabaseError({ cause: "synthetic" }));
+      },
+    })
+  );
 
 // What the sink was told, call by call.
 interface Told {
@@ -120,6 +132,7 @@ const recordingSink = (told: Ref.Ref<readonly Told[]>) =>
   Layer.succeed(
     UsageSnapshotSink,
     UsageSnapshotSink.of({
+      enabled: true,
       told: (day, states) =>
         Ref.update(told, (before) => [...before, { day, states }]),
     })
@@ -127,7 +140,7 @@ const recordingSink = (told: Ref.Ref<readonly Told[]>) =>
 
 const DyingSink = Layer.succeed(
   UsageSnapshotSink,
-  UsageSnapshotSink.of({ told: () => Effect.die("synthetic") })
+  UsageSnapshotSink.of({ enabled: true, told: () => Effect.die("synthetic") })
 );
 
 const snapshotWith = (
@@ -161,7 +174,7 @@ const runAtMidnight = Effect.gen(function* runAtMidnight() {
 
 const toldNow = Ref.makeUnsafe<readonly Told[]>([]);
 
-layer(snapshotWith(accountsThat(true), recordingSink(toldNow)))(
+layer(snapshotWith(accountsThat("alone"), recordingSink(toldNow)))(
   "the snapshot's days told",
   (it) => {
     it.effect(
@@ -199,7 +212,7 @@ layer(snapshotWith(accountsThat(true), recordingSink(toldNow)))(
 
 const toldUnread = Ref.makeUnsafe<readonly Told[]>([]);
 
-layer(snapshotWith(accountsThat(false), recordingSink(toldUnread)))(
+layer(snapshotWith(accountsThat("failing"), recordingSink(toldUnread)))(
   "the snapshot's days told, the billing accounts unreadable",
   (it) => {
     it.effect("tells them without an account, and the run goes on", () =>
@@ -219,7 +232,7 @@ layer(snapshotWith(accountsThat(false), recordingSink(toldUnread)))(
   }
 );
 
-layer(snapshotWith(accountsThat(true), DyingSink))(
+layer(snapshotWith(accountsThat("alone"), DyingSink))(
   "the snapshot's days told to a sink that dies",
   (it) => {
     it.effect("writes and answers as before", () =>
@@ -228,6 +241,20 @@ layer(snapshotWith(accountsThat(true), DyingSink))(
 
         assert.strictEqual(run.workspaces, 4);
         assert.deepStrictEqual(run.day, yesterday);
+      })
+    );
+  }
+);
+
+// Product analytics off: the snapshot reads no account for it.
+layer(snapshotWith(accountsThat("never"), UsageSnapshotSink.layerNone))(
+  "the snapshot's days with product analytics off",
+  (it) => {
+    it.effect("reads no account for them", () =>
+      Effect.gen(function* off() {
+        const run = yield* runAtMidnight;
+
+        assert.strictEqual(run.workspaces, 4);
       })
     );
   }
