@@ -29,12 +29,8 @@ export const initOptionsOf = (
   // The first page view on load; the docs' client router's next ones are
   // captured by start.ts on each page it shows.
   capture_pageview: true,
-  // Web vitals, without attribution (no element names); no network timing.
-  capture_performance: {
-    network_timing: false,
-    web_vitals: true,
-    web_vitals_attribution: false,
-  },
+  // No network timing; web vitals are measured by web-vitals.ts.
+  capture_performance: false,
   cookie_expiration: 183,
   // Counted with the day's server-side hash before an answer and after a
   // refusal: nothing stored in the browser for it.
