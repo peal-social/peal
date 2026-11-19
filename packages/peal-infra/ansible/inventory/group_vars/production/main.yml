@@ -190,7 +190,5 @@ peal_static_build_args:
   DOCS_SITE_URL: https://docs.peal.social
   DOCS_APP_URL: https://app.peal.social
   DOCS_ASSISTANT_MODEL: claude-haiku-5-5
-  SITE_PLAUSIBLE_DOMAIN: peal.social
-  DOCS_PLAUSIBLE_DOMAIN: docs.peal.social
 # The blog at <site>/blog (README.md, "The blog").
 peal_blog: true

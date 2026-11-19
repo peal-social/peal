@@ -60,7 +60,6 @@ peal_runtime_blog_settings: >-
          'BLOG_APP_URL': peal_static_build_args.SITE_APP_URL | default(''),
          'BLOG_DOCS_URL': peal_static_build_args.SITE_DOCS_URL | default(''),
          'BLOG_DISCORD_URL': peal_static_build_args.SITE_DISCORD_URL | default(''),
-         'BLOG_PLAUSIBLE_DOMAIN': peal_static_build_args.SITE_PLAUSIBLE_DOMAIN | default(''),
        })
      | combine({
          'EMAIL_SMTP_HOST': 'smtp.resend.com',
