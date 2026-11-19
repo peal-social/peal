@@ -216,6 +216,28 @@ const cases: readonly Case[] = [
     uid: "peal-usage-report-refused",
   },
   {
+    expected: [
+      ["32m", true],
+      ["95m", false],
+    ],
+    interval: "1m",
+    name: "product analytics events dropped, the counter born at 12",
+    series: {
+      'peal_product_analytics_events_total{outcome="dropped"}': "_x30 12x90",
+    },
+    uid: "peal-product-analytics-dropped",
+  },
+  {
+    expected: [["40m", false]],
+    interval: "1m",
+    name: "a few product analytics events dropped, and many sent",
+    series: {
+      'peal_product_analytics_events_total{outcome="dropped"}': "_x30 3x30",
+      'peal_product_analytics_events_total{outcome="sent"}': "0+100x60",
+    },
+    uid: "peal-product-analytics-dropped",
+  },
+  {
     expected: [["40m", true]],
     interval: "1m",
     name: "a threshold refused after a restart, the counter higher an hour before",
