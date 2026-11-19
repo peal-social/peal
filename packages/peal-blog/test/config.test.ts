@@ -10,7 +10,6 @@ describe("the blog's settings", () => {
 
     expect(settings.site).toBe("");
     expect(settings.discord).toBeUndefined();
-    expect(settings.plausible).toBeUndefined();
     expect(settings.app("en", "sign-in")).toBeUndefined();
     expect(settings.docs("fr", "")).toBeUndefined();
   });
@@ -18,13 +17,11 @@ describe("the blog's settings", () => {
   it("treats a blank value as unset", () => {
     const settings = blogSettings({
       BLOG_DISCORD_URL: "  ",
-      BLOG_PLAUSIBLE_DOMAIN: "",
       BLOG_SITE_URL: " ",
     });
 
     expect(settings.site).toBe("");
     expect(settings.discord).toBeUndefined();
-    expect(settings.plausible).toBeUndefined();
   });
 
   it("reads each setting", () => {
@@ -32,8 +29,6 @@ describe("the blog's settings", () => {
       BLOG_APP_URL: "https://app.synthetic.test/",
       BLOG_DISCORD_URL: "https://discord.synthetic.test/invite",
       BLOG_DOCS_URL: "https://docs.synthetic.test",
-      BLOG_PLAUSIBLE_DOMAIN: "synthetic.test",
-      BLOG_PLAUSIBLE_HOST: "https://plausible.synthetic.test/",
       BLOG_SITE_URL: "https://synthetic.test//",
     });
 
@@ -45,10 +40,6 @@ describe("the blog's settings", () => {
       "https://docs.synthetic.test/self-hosting"
     );
     expect(settings.discord).toBe("https://discord.synthetic.test/invite");
-    expect(settings.plausible).toStrictEqual({
-      domain: "synthetic.test",
-      src: "https://plausible.synthetic.test/js/script.js",
-    });
   });
 
   it("measures only with a key and a host", () => {

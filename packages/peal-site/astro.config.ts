@@ -32,10 +32,6 @@ const config = defineConfig({
       // The docs site's origin, such as https://docs.example.com: adds links
       // to it.
       SITE_DOCS_URL: optional,
-      // Loads Plausible for this domain, from SITE_PLAUSIBLE_HOST when set
-      // (a self-hosted instance) or from Plausible's own servers.
-      SITE_PLAUSIBLE_DOMAIN: optional,
-      SITE_PLAUSIBLE_HOST: optional,
       // Measures the site with PostHog, and asks each visitor with the
       // consent notice, when a key and a host are both set: the project
       // token, where events go (a path on this origin such as /pulse/site,

@@ -80,16 +80,6 @@ const consent =
         <meta name="robots" content="noindex, nofollow" />
       )
     }
-    {
-      settings.plausible !== undefined && (
-        <script
-          is:inline
-          defer
-          data-domain={settings.plausible.domain}
-          src={settings.plausible.src}
-        ></script>
-      )
-    }
   </head>
   <body class="relative flex min-h-dvh flex-col antialiased">
     <EmDashBodyStart page={page} />
