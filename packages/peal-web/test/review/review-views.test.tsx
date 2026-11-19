@@ -7,7 +7,6 @@ import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { ApprovalHistoryView } from "#components/review/approval-history-view.tsx";
-import { ApprovalItemView } from "#components/review/approvals-list-view.tsx";
 import { ChannelPreviewsView } from "#components/review/channel-previews-view.tsx";
 import { CommentThreadsView } from "#components/review/comment-threads-view.tsx";
 import { PolicyFields } from "#components/settings/approval-policy-form.tsx";
@@ -431,24 +430,6 @@ describe(ApprovalHistoryView, () => {
     );
     expect(html).toContain("Asked with an API key");
     expect(html).toContain("Awaiting approval");
-  });
-});
-
-describe(ApprovalItemView, () => {
-  it("shows a post that waits, with its link, when it goes out and who asked", async () => {
-    const listed = await render(
-      "fr",
-      <ul>
-        <ApprovalItemView approval={approval()}>
-          <a href="https://example.test/post">Ouvrir</a>
-        </ApprovalItemView>
-      </ul>,
-      "Europe/Paris"
-    );
-
-    expect(listed).toContain('<a href="https://example.test/post">Ouvrir</a>');
-    expect(listed).toContain("pour partir le 21 nov. 2026, 10:00");
-    expect(listed).toContain("Demandée par Synthetic Contributor");
   });
 });
 

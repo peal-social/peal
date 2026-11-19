@@ -1,3 +1,5 @@
+import type { PostStatus } from "peal-contract";
+
 import type { Page } from "#shell/navigation.ts";
 
 /**
@@ -6,14 +8,22 @@ import type { Page } from "#shell/navigation.ts";
  */
 export const goKeys: Readonly<Partial<Record<Page, string>>> = {
   analytics: "y",
-  approvals: "a",
   calendar: "c",
-  drafts: "d",
   general: "s",
   home: "h",
   inbox: "i",
   media: "m",
   posts: "p",
+};
+
+/**
+ * The second key of G then … for the posts list's tabs people open most,
+ * by the status each shows: D its drafts, A those that need an approval.
+ * None is a page's (`goKeys`).
+ */
+export const goViewKeys: Readonly<Partial<Record<PostStatus, string>>> = {
+  awaitingApproval: "a",
+  draft: "d",
 };
 
 /** The key that opens a new post. */
@@ -49,7 +59,9 @@ export const listKeys = {
 
 /** The keys that act on the chosen posts, as in the command menu. */
 export const selectionKeys = {
+  approve: "v",
   backToDraft: "u",
   cancel: "shift+backspace",
+  requestChanges: "r",
   tag: "l",
 } as const;

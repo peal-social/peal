@@ -48,26 +48,35 @@ const plain = (text: string) =>
  * Every shortcut of the workspace (DESIGN.md, "Keys"), in a sheet on the
  * right that ⌘/ and the command menu open: a search, then each group's
  * lines, what they do and their keys. `groups` comes from
- * `shortcutGroupsOf`, and `pageName` names a "Go to" line's page.
+ * `shortcutGroupsOf`, and `pageName` names a "Go to" line's page,
+ * `viewName` the posts list's tab.
  */
 export const ShortcutSheet = ({
   groups,
   onOpenChange,
   open,
   pageName,
+  viewName,
 }: {
   readonly groups: readonly ShortcutGroup[];
   readonly onOpenChange: (open: boolean) => void;
   readonly open: boolean;
   readonly pageName: (page: NonNullable<ShortcutRow["page"]>) => string;
+  /** Names the tab of the posts list a "Go to" line opens. */
+  readonly viewName: (status: NonNullable<ShortcutRow["status"]>) => string;
 }) => {
   const t = useTranslations("Shortcuts");
   const [query, setQuery] = useState("");
 
-  const textOf = (row: ShortcutRow) =>
-    row.page === undefined
+  const textOf = (row: ShortcutRow) => {
+    if (row.page !== undefined) {
+      return t("rows.goTo", { page: pageName(row.page) });
+    }
+
+    return row.status === undefined
       ? t(`rows.${row.action}`)
-      : t("rows.goTo", { page: pageName(row.page) });
+      : t("rows.goTo", { page: viewName(row.status) });
+  };
 
   const wanted = plain(query.trim());
 

@@ -3,7 +3,15 @@
 import { useAtomSet } from "@effect/atom-react";
 import { useShortcut, useShortcutHint } from "@ui-sdk/react/shortcuts";
 import { Exit } from "effect";
-import { BanIcon, CommandIcon, TagIcon, Undo2Icon, XIcon } from "lucide-react";
+import {
+  BanIcon,
+  CheckIcon,
+  CommandIcon,
+  MessageSquareIcon,
+  TagIcon,
+  Undo2Icon,
+  XIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Permission, Post, Tag } from "peal-contract";
 import {
@@ -26,6 +34,9 @@ import { TagDot } from "peal-ui/components/tag";
 import { toast } from "peal-ui/components/toast";
 import { useState } from "react";
 
+import { RequestChangesDialog } from "#components/review/request-changes-dialog.tsx";
+import { usePostDecisions } from "#components/review/use-post-decisions.ts";
+import type { DecisionOutcome } from "#components/review/use-post-decisions.ts";
 import {
   useOpenCommandMenu,
   usePageCommands,
@@ -45,7 +56,13 @@ import { tagPost } from "#tags/atoms.ts";
 
 // The keys that act on the chosen posts, as in the command menu.
 const addTagKey = selectionKeys.tag;
-const { backToDraft: backToDraftKey, cancel: cancelKey } = selectionKeys;
+
+const {
+  approve: approveKey,
+  backToDraft: backToDraftKey,
+  cancel: cancelKey,
+  requestChanges: requestChangesKey,
+} = selectionKeys;
 
 // The command "Add tag…" opens on its page of tags.
 const addTagCommand = "selection-tag";
@@ -53,12 +70,13 @@ const addTagCommand = "selection-tag";
 type Outcome = "done" | "failed";
 
 // One request after the other: a mutation atom runs one call at a time,
-// and a second call interrupts the first, whose promise never settles.
-const inTurn = async (
-  posts: readonly Post[],
-  run: (post: Post) => Promise<Outcome>
-): Promise<readonly Outcome[]> => {
-  const [first, ...rest] = posts;
+// and a second call interrupts the first. Decisions also wait for those
+// the list's rows take (`usePostDecisions`).
+const inTurn = async <A, B>(
+  items: readonly A[],
+  run: (item: A) => Promise<B>
+): Promise<readonly B[]> => {
+  const [first, ...rest] = items;
 
   return first === undefined
     ? []
@@ -82,9 +100,10 @@ const eachOf = async (
  * What acts on the posts chosen in the list (DESIGN.md, "Choosing
  * several"): the pill with the count, **Actions** and a way to let go, and
  * the actions as commands of the command menu on the choice, each with its
- * key: file them under a tag (L), take them back to draft (U), or cancel
- * them (⇧⌫). Each names how many of the chosen posts it reaches, and is
- * left out where the member's role or the posts' states allow none.
+ * key: file them under a tag (L), approve those that wait (V) or request
+ * changes on them (R), take them back to draft (U), or cancel them (⇧⌫).
+ * Each names how many of the chosen posts it reaches, and is left out
+ * where the member's role or the posts' states allow none.
  */
 export const PostSelectionBar = ({
   onClear,
@@ -108,12 +127,19 @@ export const PostSelectionBar = ({
   const openMenu = useOpenCommandMenu();
   const menuHint = useShortcutHint(commandMenuKey);
   const [confirming, setConfirming] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
+  const decide = usePostDecisions();
 
   const mayTag = permissions.includes("post:update") && tags.length > 0;
   const maySchedule = permissions.includes("post:schedule");
   const unschedulable = maySchedule ? posts.filter(mayUnschedule) : [];
   const cancellable = maySchedule ? posts.filter(mayCancel) : [];
+
+  const decidable = permissions.includes("post:approve")
+    ? decide.decisionsOf(posts)
+    : [];
 
   const sayHowItWent = (
     { done, failed }: { readonly done: number; readonly failed: number },
@@ -273,6 +299,69 @@ export const PostSelectionBar = ({
     setConfirming(true);
   };
 
+  // Decides on each post that waits, in turn, and counts how they ended.
+  const decideEach = async (
+    run: (decision: (typeof decidable)[number]) => Promise<DecisionOutcome>
+  ) => {
+    const outcomes = await inTurn(decidable, run);
+
+    return {
+      done: outcomes.filter(({ kind }) => kind !== "refused").length,
+      failed: outcomes.filter(({ kind }) => kind === "refused").length,
+      late: outcomes.filter(
+        (outcome) => outcome.kind === "approved" && outcome.late
+      ).length,
+    };
+  };
+
+  const approveAll = async () => {
+    setBusy(true);
+
+    const { done, failed, late } = await decideEach(decide.approve);
+
+    setBusy(false);
+    setApproving(false);
+
+    if (failed > 0) {
+      toast.error(t("partly", { done, failed }));
+    } else if (late > 0) {
+      toast.success(t("done.approvedLate", { count: done, late }));
+    } else {
+      toast.success(t("done.approved", { count: done }));
+    }
+  };
+
+  const requestChangesOnAll = async (comment: string) => {
+    setBusy(true);
+
+    const outcome = await decideEach(async (decision) => {
+      const decided = await decide.requestChanges(decision, comment);
+
+      return decided;
+    });
+
+    setBusy(false);
+
+    if (outcome.failed > 0) {
+      toast.error(t("partly", outcome));
+
+      return outcome.done > 0;
+    }
+
+    setAsking(false);
+    toast.success(t("done.changesRequested", { count: outcome.done }));
+
+    return true;
+  };
+
+  const askToApprove = () => {
+    setApproving(true);
+  };
+
+  const askForChanges = () => {
+    setAsking(true);
+  };
+
   // The actions, as commands of the menu on the choice, each with its key.
   const commands: PageCommand[] = [
     ...(mayTag
@@ -314,6 +403,32 @@ export const PostSelectionBar = ({
           },
         ]
       : []),
+    ...(decidable.length === 0
+      ? []
+      : [
+          {
+            icon: CheckIcon,
+            id: "selection-approve",
+            keys: approveKey,
+            label: t("approve", {
+              count: decidable.length,
+              partial: decidable.length < posts.length ? "yes" : "no",
+              total: posts.length,
+            }),
+            run: askToApprove,
+          },
+          {
+            icon: MessageSquareIcon,
+            id: "selection-request-changes",
+            keys: requestChangesKey,
+            label: t("requestChanges", {
+              count: decidable.length,
+              partial: decidable.length < posts.length ? "yes" : "no",
+              total: posts.length,
+            }),
+            run: askForChanges,
+          },
+        ]),
     ...(unschedulable.length === 0
       ? []
       : [
@@ -352,7 +467,8 @@ export const PostSelectionBar = ({
     label: t("scope", { count: posts.length }),
   });
 
-  const idle = () => !busy && !confirming;
+  const idle = () =>
+    !busy && !decide.busy && !confirming && !approving && !asking;
 
   useShortcut(
     addTagKey,
@@ -361,6 +477,16 @@ export const PostSelectionBar = ({
     },
     { description: t("addTag"), when: () => mayTag && idle() }
   );
+
+  useShortcut(approveKey, askToApprove, {
+    description: t("approveKey"),
+    when: () => decidable.length > 0 && idle(),
+  });
+
+  useShortcut(requestChangesKey, askForChanges, {
+    description: t("requestChangesKey"),
+    when: () => decidable.length > 0 && idle(),
+  });
 
   useShortcut(
     backToDraftKey,
@@ -380,7 +506,7 @@ export const PostSelectionBar = ({
 
   return (
     <>
-      <SelectionBar label={t("label")} disabled={busy}>
+      <SelectionBar label={t("label")} disabled={busy || decide.busy}>
         <SelectionCount>{t("count", { count: posts.length })}</SelectionCount>
         <SelectionBarAction
           aria-keyshortcuts={menuHint.ariaKeyshortcuts}
@@ -419,6 +545,35 @@ export const PostSelectionBar = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AlertDialog open={approving} onOpenChange={setApproving}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("approveTitle", { count: decidable.length })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("approveDescription", { count: decidable.length })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("notYet")}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={busy || decide.busy}
+              onClick={() => {
+                void approveAll();
+              }}
+            >
+              {t("approveConfirm", { count: decidable.length })}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <RequestChangesDialog
+        count={decidable.length}
+        open={asking}
+        onOpenChange={setAsking}
+        onSubmit={requestChangesOnAll}
+      />
     </>
   );
 };

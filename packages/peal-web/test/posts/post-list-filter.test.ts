@@ -4,6 +4,7 @@ import {
   filtersOf,
   isFiltering,
   noFilters,
+  postViewPath,
   queryOf,
   searchOf,
   withFilter,
@@ -113,5 +114,18 @@ describe(withFilter, () => {
 
   it("refuses a value the list does not know", () => {
     expect(withFilter(noFilters, "status", "lost")).toStrictEqual(noFilters);
+  });
+});
+
+describe(postViewPath, () => {
+  it("writes each tab's address as its link does", () => {
+    expect(
+      (["all", "drafts", "scheduled", "approval"] as const).map(postViewPath)
+    ).toStrictEqual([
+      "/posts",
+      "/posts?status=draft",
+      "/posts?status=scheduled",
+      "/posts?status=awaitingApproval",
+    ]);
   });
 });

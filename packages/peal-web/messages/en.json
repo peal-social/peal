@@ -1730,7 +1730,12 @@
       "filteredEmptyTitle": "No matching posts",
       "views": "Views",
       "view": "{view, select, drafts {Drafts} scheduled {Scheduled} approval {Needs approval} other {All}}",
-      "emptyView": "{view, select, drafts {No drafts} scheduled {No scheduled posts} approval {No posts waiting for approval} other {No posts yet}}"
+      "emptyView": "{view, select, drafts {No drafts} scheduled {No scheduled posts} approval {No posts waiting for approval} other {No posts yet}}",
+      "approve": "Approve",
+      "approveLabel": "Approve “{post}”",
+      "requestChanges": "Request changes",
+      "requestChangesLabel": "Request changes on “{post}”",
+      "approvalChanged": "This post changed after the list loaded. Nothing was decided: open it and read it again."
     },
     "Import": {
       "title": "Import posts",
@@ -1872,7 +1877,10 @@
         "tagged": "{count, plural, one {# post filed under “{tag}”.} other {# posts filed under “{tag}”.}}",
         "unscheduled": "{count, plural, one {# post back to draft.} other {# posts back to draft.}}",
         "untagged": "{count, plural, one {“{tag}” taken off # post.} other {“{tag}” taken off # posts.}}",
-        "allUntagged": "{count, plural, one {Tags taken off # post.} other {Tags taken off # posts.}}"
+        "allUntagged": "{count, plural, one {Tags taken off # post.} other {Tags taken off # posts.}}",
+        "approved": "{count, plural, one {# post approved.} other {# posts approved.}}",
+        "approvedLate": "{count, plural, one {# post approved.} other {# posts approved.}} {late, plural, one {# was past its time, so it is a draft again: give it a new time.} other {# were past their time, so they are drafts again: give them a new time.}}",
+        "changesRequested": "{count, plural, one {Changes requested: # post is a draft again.} other {Changes requested: # posts are drafts again.}}"
       },
       "partly": "{done, number} done, {failed, plural, one {# could not be: read the list again, as it may have changed.} other {# could not be: read the list again, as they may have changed.}}",
       "alreadyTagged": "Every selected post is under “{tag}” already, or holds as many tags as a post may.",
@@ -1895,22 +1903,18 @@
       "growUpKey": "Select up",
       "toggleKey": "Select the post",
       "allKey": "Select every listed post",
-      "openKey": "Open the post"
+      "openKey": "Open the post",
+      "approve": "{partial, select, yes {Approve ({count} of {total})} other {Approve}}",
+      "approveKey": "Approve the selected posts",
+      "requestChanges": "{partial, select, yes {Request changes ({count} of {total})} other {Request changes}}",
+      "requestChangesKey": "Request changes on the selected posts",
+      "approveTitle": "{count, plural, one {Approve # post?} other {Approve # posts?}}",
+      "approveDescription": "{count, plural, one {It is scheduled for its time. If that time has passed, it goes back to draft instead of going out late. An approval cannot be undone.} other {Each is scheduled for its time. A post whose time has passed goes back to draft instead of going out late. An approval cannot be undone.}}",
+      "approveConfirm": "{count, plural, one {Approve # post} other {Approve # posts}}",
+      "notYet": "Not now",
+      "changesTitle": "{count, plural, one {Request changes on # post?} other {Request changes on # posts?}}",
+      "changesDescription": "{count, plural, one {It goes back to draft and no longer goes out at its time. Its author is told, with your comment.} other {They go back to draft and no longer go out at their time. Each author is told, with your comment.}}"
     }
-  },
-  "Drafts": {
-    "title": "Drafts",
-    "description": "The posts of {workspace} without a time yet, newest first. Open one to finish it and schedule it.",
-    "loading": "Loading the drafts…",
-    "loadFailed": "The drafts could not be loaded.",
-    "reload": "Try again",
-    "loadMore": "Show more",
-    "empty": "No draft. A post saved without a time, or taken back from the calendar, shows here.",
-    "noText": "No text yet",
-    "channels": "{count, plural, =0 {No channel yet} one {# channel} other {# channels}}",
-    "media": "{count, plural, =0 {No image or video} one {# image or video} other {# images or videos}}",
-    "newPost": "New post",
-    "tags": "Tags"
   },
   "PostDetail": {
     "partsTitle": "Parts",
@@ -2981,8 +2985,6 @@
       "calendar": "Calendar",
       "posts": "Posts",
       "allPosts": "All posts",
-      "drafts": "Drafts",
-      "approvals": "Approvals",
       "import": "Import posts",
       "channels": "Channels",
       "media": "Media",
@@ -4088,16 +4090,6 @@
       "changesSent": "Thank you: your request was sent, and the post went back to its author.",
       "decided": "{status, select, approved {This post was approved.} changesRequested {Changes were requested on this post.} other {No approval is asked for this post now.}}"
     },
-    "approvals": {
-      "nav": "Approvals",
-      "title": "Needs approval",
-      "description": "The posts of {workspace} that wait for an approval before they are scheduled, oldest first.",
-      "loading": "Loading the approvals…",
-      "loadFailed": "The approvals could not be loaded.",
-      "empty": "No post waits for an approval.",
-      "open": "Open the post",
-      "policy": "{policy, select, never {This workspace asks for no approval: whoever may schedule does. An owner or an admin can change this in the settings.} contributorsAndApplications {Posts by contributors and applications wait for an approval.} always {Every post waits for an approval.} other {{policy}}}"
-    },
     "policy": {
       "title": "Approvals",
       "description": "Whether posts wait for an approval before they are scheduled. A post that waits has its time, and goes out only once someone who may approve posts, or a reviewer with a link that allows it, approves it.",
@@ -5104,7 +5096,9 @@
       "tag": "Change or add tags",
       "backToDraft": "Back to draft",
       "cancel": "Cancel the posts",
-      "filter": "Filter the list"
+      "filter": "Filter the list",
+      "approve": "Approve the posts",
+      "requestChanges": "Request changes"
     }
   },
   "Lists": {

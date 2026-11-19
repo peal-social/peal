@@ -3,6 +3,7 @@ import { maxTagsPerPost } from "peal-contract";
 
 import {
   allOf,
+  decisionsOf,
   extended,
   keptTo,
   mayCancel,
@@ -89,6 +90,65 @@ describe(mayCancel, () => {
       ["publishing", false, false],
       ["finished", false, false],
       ["cancelled", false, false],
+    ]);
+  });
+});
+
+describe(decisionsOf, () => {
+  const waiting = { id: "a", status: "awaitingApproval" } as const;
+
+  const pending = {
+    id: "approval-a",
+    postId: "a",
+    status: "pending",
+    subjectHash: "5a".repeat(32),
+  } as const;
+
+  it("decides on a waiting post with the approval the list of approvals gave", () => {
+    expect(decisionsOf([waiting], [pending])).toStrictEqual([
+      {
+        post: waiting,
+        shown: { approvalId: "approval-a", subjectHash: "5a".repeat(32) },
+      },
+    ]);
+  });
+
+  it("leaves out a post that does not wait, or whose approval is not listed", () => {
+    expect(
+      decisionsOf(
+        [
+          { id: "b", status: "scheduled" },
+          { id: "c", status: "awaitingApproval" },
+          waiting,
+        ],
+        [
+          { ...pending, id: "approval-b", postId: "b" },
+          { ...pending, id: "approval-c", postId: "c", status: "approved" },
+        ]
+      )
+    ).toStrictEqual([]);
+  });
+
+  it("decides on a post the capped list of approvals leaves out, from its own review", () => {
+    // The list holds the 100 oldest approvals that wait, none of them this
+    // post's; its review, read on its own, names the one it waits for.
+    const listed = Array.from({ length: 100 }, (_, index) => ({
+      ...pending,
+      id: `approval-${String(index)}`,
+      postId: `older-${String(index)}`,
+    }));
+
+    const reviewed = [
+      { ...pending, id: "approval-a-2", subjectHash: "6b".repeat(32) },
+      { ...pending, id: "approval-a-1", status: "changesRequested" as const },
+    ];
+
+    expect(decisionsOf([waiting], listed)).toStrictEqual([]);
+    expect(decisionsOf([waiting], [...listed, ...reviewed])).toStrictEqual([
+      {
+        post: waiting,
+        shown: { approvalId: "approval-a-2", subjectHash: "6b".repeat(32) },
+      },
     ]);
   });
 });

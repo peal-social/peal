@@ -350,9 +350,13 @@ export const CommandMenuView = ({
   readonly onShortcuts: () => void;
   readonly open: boolean;
   readonly pages: readonly PageLink[];
-  /** The posts list narrowed to a state, listed with the Posts pages. */
+  /**
+   * The posts list narrowed to a state, listed with the Posts pages, with
+   * the second key of G then … for a tab that has one.
+   */
   readonly postFilters: readonly {
     readonly href: string;
+    readonly key: string | null;
     readonly label: string;
   }[];
   /** The page's latest wish to open the menu, maybe on a command's page. */
@@ -534,6 +538,7 @@ export const CommandMenuView = ({
                             key={filter.href}
                             href={filter.href}
                             icon={ListFilterIcon}
+                            keys={sequence(filter.key ?? undefined)}
                             keywords={[groupNames.posts]}
                             label={filter.label}
                             link={link}

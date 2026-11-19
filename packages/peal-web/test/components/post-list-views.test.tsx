@@ -163,6 +163,23 @@ describe(PostItemView, () => {
     expect(html).toContain("Pas encore de texte");
     expect(html).toContain("Brouillon");
   });
+
+  it("puts what a row offers on a line of its own on a phone, at its end from 640 px", async () => {
+    const html = await render(
+      "en",
+      <PostItemView
+        channels={[channel]}
+        post={post({ status: "awaitingApproval" })}
+        trailing={<button type="button">Approve</button>}
+      >
+        <span>Waiting</span>
+      </PostItemView>
+    );
+
+    expect(html).toMatch(
+      /<div class="[^"]*\bflex-col\b[^"]*\bsm:flex-row\b[^"]*"><div class="[^"]*\bmin-w-0\b[^"]*"><span>Waiting<\/span>.*<button type="button">Approve<\/button><\/div><\/li>$/su
+    );
+  });
 });
 
 describe(PostListEmpty, () => {

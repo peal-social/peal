@@ -119,13 +119,22 @@ describe("a new member's first post", { serial: true }, () => {
     );
   });
 
-  test("finds it on the drafts page", async ({ app, browser, screen }) => {
+  test("finds it under the Drafts tab of Posts", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    // The old Drafts page's address opens the tab.
     await app.open(`/${slug}/drafts`);
 
     await expect(
-      screen.getByRole("heading", "Drafts", { level: 1 })
+      screen.getByRole("heading", "Posts", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL(`/${slug}/drafts`);
+    await expect(browser).toHaveURL(`/${slug}/posts?status=draft`);
+    await expect(screen.getByRole("link", "Drafts")).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
 
     await screen.getByRole("main").getByRole("link", text).tap();
 

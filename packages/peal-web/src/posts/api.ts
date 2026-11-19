@@ -189,24 +189,6 @@ export const postAttempts = (workspaceId: string, postId: string) =>
     reactivityKeys: postsKeys,
   });
 
-// Post ids and cursors are UUIDs, so a slash cannot appear in either.
-const draftPageKey = (workspaceId: string, cursor: Option.Option<string>) =>
-  `${workspaceId}/${Option.getOrElse(cursor, () => "")}`;
-
-const draftPages = Atom.family((key: string) => {
-  const [workspaceId = "", cursor = ""] = key.split("/");
-
-  return PealApi.query("posts", "drafts", {
-    params: { workspaceId },
-    query: cursor === "" ? {} : { cursor },
-    reactivityKeys: postsKeys,
-  });
-});
-
-/** A page of the workspace's drafts, newest first: the first, or the one at `cursor`. */
-export const draftPage = (workspaceId: string, cursor: Option.Option<string>) =>
-  draftPages(draftPageKey(workspaceId, cursor));
-
 // A search's key: the workspace, then the filters and the cursor as a
 // query string, which reads them back.
 const searchPageKey = (
