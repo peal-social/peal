@@ -26,6 +26,7 @@ import { modeOf } from "#measurement/mode.ts";
 import type { PrivacySignals } from "#measurement/mode.ts";
 import { placeOf } from "#measurement/place.ts";
 import { loadSdk } from "#measurement/sdk.ts";
+import { nameSessionWith } from "#measurement/session-header.ts";
 import {
   answerChanged,
   consentNow,
@@ -172,6 +173,10 @@ export const Measurement = ({
   // Errors the intake was sent, already redacted, while the SDK runs; and,
   // on leaving the signed-in app, nothing more measured or recorded.
   useEffect(() => {
+    // The app's own requests name the session, as its HTTP client never
+    // sees the SDK's patch of `fetch`.
+    const stopNaming = nameSessionWith(controller.session);
+
     const stopListening = onReported((report) => {
       controller
         .sdk()
@@ -182,6 +187,7 @@ export const Measurement = ({
     });
 
     return () => {
+      stopNaming();
       stopListening();
       controller.park();
     };

@@ -20,6 +20,11 @@ export interface MeasurementController {
   readonly signOut: () => void;
   /** The SDK, once loaded: for the errors handed to it. */
   readonly sdk: () => MeasurementSdk | null;
+  /**
+   * The session the app's requests name to Peal's API: only while a page
+   * is measured with the person's consent.
+   */
+  readonly session: () => string | null;
 }
 
 /**
@@ -102,5 +107,13 @@ export const makeController = (
     }
   };
 
-  return { ask, park, sdk: () => sdk, signOut };
+  const session = () =>
+    sdk !== null &&
+    state.mode === "identified" &&
+    applied.configured === "identified" &&
+    !applied.parked
+      ? sdk.get_session_id()
+      : null;
+
+  return { ask, park, sdk: () => sdk, session, signOut };
 };

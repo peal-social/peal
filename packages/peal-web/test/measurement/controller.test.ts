@@ -117,6 +117,24 @@ describe(makeController, () => {
     expect(beforeSend(pageView("anonymous-id"))).toBeNull();
   });
 
+  it("names the session to the app's requests only while identified", async () => {
+    const { controller } = controlled();
+
+    expect(controller.session()).toBeNull();
+
+    await controller.ask(askedBy(userId, "anonymous"));
+
+    expect(controller.session()).toBeNull();
+
+    await controller.ask(askedBy(userId, "identified"));
+
+    expect(controller.session()).toBe("019a7b2c-0000-7000-8000-000000000003");
+
+    controller.park();
+
+    expect(controller.session()).toBeNull();
+  });
+
   it("stays unmeasured when the SDK cannot load, and tries again later", async () => {
     let attempts = 0;
     const { sdk } = recordedSdk();
