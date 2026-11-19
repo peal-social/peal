@@ -49,8 +49,8 @@ describe("the consent notice's strings", () => {
   it("put each number beside its unit with a no-break space", () => {
     expect(consentMessages.en.text).toContain("6 months");
     expect(consentMessages.fr.text).toContain("6 mois");
-    expect(consentMessages.en.readout.allow).toBe("cookies: 1 · 183 d");
-    expect(consentMessages.fr.readout.allow).toBe("cookies : 1 · 183 j");
+    expect(consentMessages.en.readout.allow).toBe("cookie: 183 d");
+    expect(consentMessages.fr.readout.allow).toBe("cookie : 183 j");
   });
 
   it("use the app's labels for the two answers", () => {
