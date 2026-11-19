@@ -519,10 +519,13 @@ and no socket, for tests.
   same, never after a refused one (Better Auth runs after hooks on an
   `APIError` too), and after a `/callback/*` that
   made an account: the browser's later visits get a new visitor, linked
-  to nobody. The same response names the visitor in `peal_site_retired`
-  (183 days, linked or not alike), which the site's pages compare their
-  own with before anything leaves: a page left open across the sign-up
-  keeps the visitor in memory and would save its cookie again. Nothing is linked at a sign-in, nor after the sign-up.
+  to nobody. Where the same request's answer allowed following the
+  visitor, the response also names it in `peal_site_retired`, a session
+  cookie (linked or not alike, so a known address reads as a new one),
+  which the site's pages compare their own with before anything leaves: a
+  page left open across the sign-up keeps the visitor in memory and would
+  save its cookie again. A refusal or the browser's signal on the site
+  removes it. A route's refusal is its status, 400 or more. Nothing is linked at a sign-in, nor after the sign-up.
   Closing the account deletes the person at PostHog, the visits merged
   into it included.
 - Tests use `ProductAnalytics.none`, or `recordedAnalytics`

@@ -1,14 +1,9 @@
 import type { GenericEndpointContext } from "better-auth";
-import { APIError } from "better-auth/api";
 import { Option, Schema } from "effect";
 
 import type { SiteMeasurementSettings } from "#shared/application/site-measurement.ts";
 
-import {
-  asksNotToBeFollowed,
-  siteAnswerAllows,
-  siteAnswerDays,
-} from "./site-answer.ts";
+import { asksNotToBeFollowed, siteAnswerAllows } from "./site-answer.ts";
 import { visitorOf } from "./visitor-of.ts";
 
 /**
@@ -68,11 +63,25 @@ const carriesVisitor = (ctx: GenericEndpointContext, token: string) =>
     .split(";")
     .some((cookie) => cookie.trim().startsWith(`${visitorCookieName(token)}=`));
 
-// What a route answered: a refusal (Better Auth runs its after hooks on
-// an error too, and keeps the cookies they set).
-const isRefusal = Schema.is(
-  Schema.Struct({ returned: Schema.instanceOf(APIError) })
+// The status a route answered, where it says one: a Response's, or an
+// error's (Better Auth runs its after hooks on an error too, and keeps the
+// cookies they set; a plain result says none, and went through).
+const decodeStatus = Schema.decodeUnknownOption(
+  Schema.Struct({
+    returned: Schema.Union([
+      Schema.Struct({ status: Schema.Number }),
+      Schema.Struct({ statusCode: Schema.Number }),
+    ]),
+  })
 );
+
+// Whether the route refused the request: a status of 400 or more.
+const isRefusal = (context: GenericEndpointContext["context"]): boolean =>
+  Option.match(decodeStatus(context), {
+    onNone: () => false,
+    onSome: ({ returned }) =>
+      ("status" in returned ? returned.status : returned.statusCode) >= 400,
+  });
 
 // The routes after which the visitor's cookie goes: a password's sign-up
 // that went through, whether it made an account or answered a known
@@ -94,9 +103,10 @@ const endsVisitor = (ctx: GenericEndpointContext): boolean =>
  * browser's later visits then get a new visitor, linked to no account.
  * Same name, `Path=/`, `Max-Age=0`, `Secure`, `SameSite=Lax`, and the
  * registrable domain PostHog's SDK set it on
- * (PEAL_POSTHOG_SITE_COOKIE_DOMAIN). Where the cookie held a visitor,
- * `peal_site_retired` names it, linked or not alike, for as long as an
- * answer lasts.
+ * (PEAL_POSTHOG_SITE_COOKIE_DOMAIN). Where the cookie held a visitor the
+ * request's answer allowed following, `peal_site_retired` names it, linked
+ * or not alike (a known address reads as a new one), until the browser
+ * closes: it only has to outlive a site tab left open.
  */
 export const expireVisitorCookie = (
   ctx: GenericEndpointContext,
@@ -124,12 +134,21 @@ export const expireVisitorCookie = (
     secure: true,
   });
 
-  const retired = visitorOf(ctx.headers?.get("cookie"), site.value.token);
+  const cookieHeader = ctx.headers?.get("cookie");
+
+  // Named only for a visitor the answer allowed following: a refusal, an
+  // answer past its days and a browser that asks not to be followed leave
+  // nothing behind but the expiry.
+  const retired =
+    asksNotToBeFollowed(ctx.headers) ||
+    !siteAnswerAllows(cookieHeader, Date.now())
+      ? Option.none<string>()
+      : visitorOf(cookieHeader, site.value.token);
 
   if (Option.isSome(retired)) {
+    // A session cookie: it only has to outlive a site tab left open.
     ctx.setCookie(retiredVisitorCookieName, retired.value, {
       ...domain,
-      maxAge: siteAnswerDays * 86_400,
       path: "/",
       sameSite: "lax",
       secure: true,
