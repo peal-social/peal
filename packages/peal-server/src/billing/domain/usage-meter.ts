@@ -94,6 +94,13 @@ export const defaultUsageRangeDays = 30;
 export const usageDayOf = (instant: DateTime.Utc): DateTime.Utc =>
   DateTime.startOf(instant, "day");
 
+/**
+ * Whether a workspace's day is told to product analytics: only one with a
+ * connected account, as one without is known from its creation already.
+ */
+export const isToldDay = (state: { readonly channels: number }): boolean =>
+  state.channels > 0;
+
 /** At `now`, the ledger deletes the days before this one. */
 export const usageCutoff = (now: DateTime.Utc): DateTime.Utc =>
   DateTime.subtract(usageDayOf(now), { days: usageRetentionDays });

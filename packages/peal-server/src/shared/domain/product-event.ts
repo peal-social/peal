@@ -113,6 +113,18 @@ export const ProductEventSchema = Schema.Union([
   // The billing account's facts, when it was read, beside its group's:
   // a project without group analytics queries them from the event.
   event("workspace_created", billingAccountFacts),
+  // A workspace's state at the end of a UTC day, from billing's daily
+  // usage snapshot, for a workspace with a connected account: what it
+  // holds as the snapshot runs, and the day's assistant requests. A rerun
+  // of the day sends it again: readers take one per workspace and day.
+  event("workspace_snapshot", {
+    assistantRequests: Schema.Int,
+    channels: Schema.Int,
+    // The day (UTC) the state is of, `YYYY-MM-DD`.
+    day: AnalyticsTokenSchema,
+    mediaStorageBytes: Schema.Int,
+    members: Schema.Int,
+  }),
   // A Stripe subscription's state, as recorded: Stripe's status and the
   // billing interval are billing's vocabulary, tokens here. Beside it, the
   // workspace's plan now and the billing account's facts, as its groups
