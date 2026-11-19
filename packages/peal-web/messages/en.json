@@ -4898,8 +4898,6 @@
     },
     "report": {
       "title": "Report across workspaces",
-      "description": "What went out in each of your workspaces and how it did, beside the days before. Days run in your time zone, {zone}.",
-      "notComparable": "A table, not a chart: each platform gives different counts, so compare a workspace with itself, not with another.",
       "download": "Download CSV",
       "loading": "Loading the report…",
       "loadFailed": "The report could not be loaded.",
@@ -4913,7 +4911,7 @@
       "noFigure": "Not given",
       "change": "{change, number, ::+!}",
       "previous": "Beside {from} to {to}.",
-      "caption": "Totals of the posts published from {from} to {to}, each with its change against the days before: a dash where no platform gives a count, and no change where the days before are no longer all kept."
+      "caption": "Totals of the posts published from {from} to {to}, each with its change against the days before: a dash where no platform gives a count, and no change where the days before are no longer all kept. Each platform counts differently, so compare a workspace with itself, not with another."
     }
   },
   "Platforms": {
