@@ -59,7 +59,7 @@ services:
   # pair below becomes an admin identity, and the media bucket is created at
   # startup if it is missing.
   seaweedfs:
-    image: chrislusf/seaweedfs:4.53
+    image: chrislusf/seaweedfs:4.54
     command:
       - mini
       - -dir=/data
