@@ -939,6 +939,10 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
       await browser.addInitScript(
         "Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', { configurable: true, get: () => true })"
       );
+      // The page an earlier journey left measures its leaving: it goes
+      // before the count starts.
+      await browser.goto("about:blank");
+      await sleep(500);
       await browser.clearCookies();
 
       const pulses: string[] = [];
