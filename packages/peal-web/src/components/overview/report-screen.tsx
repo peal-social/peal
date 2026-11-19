@@ -1,30 +1,19 @@
 "use client";
 
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
-import { Option, Schema } from "effect";
+import { Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import type { WorkspaceReport } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
-import { Label } from "peal-ui/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "peal-ui/components/select";
 import { Skeleton } from "peal-ui/components/skeleton";
-import { useId, useState } from "react";
+import { useState } from "react";
 
-import {
-  defaultRange,
-  ranges,
-  RangeSchema,
-  summaryTimeZone,
-} from "#analytics/report.ts";
+import { defaultRange, ranges, summaryTimeZone } from "#analytics/report.ts";
 import type { Range } from "#analytics/report.ts";
+import { PeriodMenu, usePeriod } from "#components/lists/period-menu.tsx";
+import { PageActions } from "#components/shell/frame-view.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { reportPage } from "#overview/atoms.ts";
 import { useMounted } from "#posts/use-mounted.ts";
@@ -37,8 +26,6 @@ const workspaceLink = (href: string, label: string) => (
     {label}
   </Link>
 );
-
-const isRange = Schema.is(RangeSchema);
 
 const Loading = () => {
   const t = useTranslations("Overview.report");
@@ -134,15 +121,12 @@ const ReportPages = ({
 // The report, in the reader's zone, which only the browser knows.
 const ReportView = ({ timeZone }: { readonly timeZone: string }) => {
   const t = useTranslations("Overview.report");
-  const rangeId = useId();
-  const [days, setDays] = useState<Range>(defaultRange);
+  const [days, setDays] = usePeriod(ranges, defaultRange);
   const [more, setMore] = useState(0);
 
-  const handleRange = (value: string | null) => {
-    if (isRange(value)) {
-      setDays(value);
-      setMore(0);
-    }
+  const handleRange = (value: Range) => {
+    setDays(value);
+    setMore(0);
   };
 
   const handleMore = () => {
@@ -157,22 +141,10 @@ const ReportView = ({ timeZone }: { readonly timeZone: string }) => {
         {t("description", { zone: timeZone.replaceAll("_", " ") })}
       </p>
       <p className="text-muted-foreground text-sm">{t("notComparable")}</p>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col gap-2 sm:w-xs">
-          <Label id={rangeId}>{t("rangeLabel")}</Label>
-          <Select value={days} onValueChange={handleRange}>
-            <SelectTrigger aria-labelledby={rangeId}>
-              <SelectValue>{t("range", { days: Number(days) })}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {ranges.map((choice) => (
-                <SelectItem key={choice} value={choice}>
-                  {t("range", { days: Number(choice) })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <PageActions>
+        <PeriodMenu choices={ranges} value={days} onChange={handleRange} />
+      </PageActions>
+      <div className="flex flex-wrap items-end justify-end gap-4">
         <Button
           variant="outline"
           render={

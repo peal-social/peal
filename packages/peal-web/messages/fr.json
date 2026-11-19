@@ -10,8 +10,6 @@
     "page": {
       "title": "Statistiques",
       "description": "Ce qu’ont donné, sur leurs plateformes, les publications parues sur une période. Les jours suivent votre fuseau horaire, {zone}.",
-      "rangeLabel": "Période",
-      "range": "{days, plural, one {Aujourd’hui} other {# derniers jours}}",
       "loading": "Chargement des statistiques…",
       "loadFailed": "Les statistiques n’ont pas pu être chargées.",
       "retry": "Réessayer",
@@ -90,8 +88,6 @@
       "title": "Quand les publications de ce canal ont le mieux marché",
       "description": "Par jour de la semaine et par heure dans votre fuseau horaire : combien de publications du canal sont parues à chaque heure, et la médiane des j’aime, partages, réponses et citations que chacune a reçus. Cela montre ce qui s’est passé, pas ce qui se passera : les comptes de plateformes différentes ne sont jamais comparés.",
       "channel": "Canal",
-      "days": "{days, plural, other {# derniers jours}}",
-      "daysLabel": "Période",
       "loading": "Chargement des meilleures heures…",
       "loadFailed": "Les meilleures heures n’ont pas pu être chargées.",
       "retry": "Réessayer",
@@ -2381,8 +2377,6 @@
       "history": {
         "title": "Utilisation par jour",
         "description": "Ce que l’espace de travail a fait chaque jour (UTC), et ce qu’il détenait lors du relevé du jour, peu après.",
-        "rangeLabel": "Période",
-        "range": "{days, number} derniers jours",
         "loading": "Chargement de l’utilisation…",
         "loadFailed": "L’utilisation n’a pas pu être chargée.",
         "retry": "Réessayer",
@@ -2935,8 +2929,6 @@
       "usageReport": {
         "title": "Utilisation par client",
         "description": "Ce que le compte et les espaces de travail de ses clients ont utilisé chaque jour UTC, et par espace de travail sur la période. Des comptes seulement : rien n’est facturé ici.",
-        "period": "Période",
-        "range": "{days, number} derniers jours",
         "loading": "Chargement de l’utilisation…",
         "loadFailed": "L’utilisation n’a pas pu être chargée.",
         "retry": "Réessayer",
@@ -4902,8 +4894,6 @@
       "title": "Rapport de tous les espaces",
       "description": "Ce qui est parti dans chacun de vos espaces de travail et comment cela s’est passé, à côté des jours d’avant. Les jours suivent votre fuseau horaire, {zone}.",
       "notComparable": "Un tableau, pas un graphique : chaque plateforme donne des comptes différents, comparez donc un espace avec lui-même, pas avec un autre.",
-      "rangeLabel": "Période",
-      "range": "{days, plural, other {# derniers jours}}",
       "download": "Télécharger le CSV",
       "loading": "Chargement du rapport…",
       "loadFailed": "Le rapport n’a pas pu être chargé.",
@@ -5108,6 +5098,9 @@
     }
   },
   "Lists": {
+    "period": "Période",
+    "periodIs": "Période : {period}",
+    "lastDays": "{days, number} derniers jours",
     "filter": "Filtrer",
     "filterPlaceholder": "Filtrer…",
     "noMatch": "Rien ne correspond à « {query} ».",

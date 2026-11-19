@@ -1,7 +1,6 @@
 "use client";
 
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
-import { Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { Button } from "peal-ui/components/button";
@@ -9,32 +8,22 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardAction,
   CardHeader,
   CardTitle,
 } from "peal-ui/components/card";
-import { Label } from "peal-ui/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "peal-ui/components/select";
 import { Skeleton } from "peal-ui/components/skeleton";
-import { useId, useState } from "react";
 
 import {
   defaultRange,
   rangeEnding,
   ranges,
-  RangeSchema,
   todayIn,
 } from "#analytics/report.ts";
 import type { Range } from "#analytics/report.ts";
 import { usageOf } from "#billing/api.ts";
 import { WorkspaceUsageHistory } from "#components/billing/usage-history.tsx";
-
-const decodeRange = Schema.decodeUnknownOption(RangeSchema);
+import { PeriodMenu, usePeriod } from "#components/lists/period-menu.tsx";
 
 // The last `range` UTC days, today included, as the usage counts them.
 const periodOf = (range: Range) => {
@@ -85,8 +74,7 @@ export const UsageHistoryScreen = ({
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("Billing.usage.history");
-  const [range, setRange] = useState<Range>(defaultRange);
-  const labelId = useId();
+  const [range, setRange] = usePeriod(ranges, defaultRange);
 
   return (
     <Card>
@@ -95,33 +83,12 @@ export const UsageHistoryScreen = ({
           <h2>{t("title")}</h2>
         </CardTitle>
         <CardDescription>{t("description")}</CardDescription>
+        <CardAction>
+          <PeriodMenu choices={ranges} value={range} onChange={setRange} />
+        </CardAction>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2 sm:max-w-xs">
-            <Label id={labelId}>{t("rangeLabel")}</Label>
-            <Select
-              value={range}
-              onValueChange={(value) => {
-                const picked = decodeRange(value);
-
-                if (Option.isSome(picked)) {
-                  setRange(picked.value);
-                }
-              }}
-            >
-              <SelectTrigger aria-labelledby={labelId}>
-                <SelectValue>{t("range", { days: Number(range) })}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {ranges.map((choice) => (
-                  <SelectItem key={choice} value={choice}>
-                    {t("range", { days: Number(choice) })}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <Loaded range={range} workspaceId={workspaceId} />
         </div>
       </CardContent>
