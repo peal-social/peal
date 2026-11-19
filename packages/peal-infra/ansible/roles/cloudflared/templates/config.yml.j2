@@ -40,6 +40,15 @@ ingress:
   - {hostname: {{ peal_hostnames.app }}, path: "^/+(api/|\\.well-known/oauth-)", service: "{{ server }}"{{ everything }}}
   - {hostname: {{ peal_hostnames.app }}, service: "{{ web }}"{{ everything }}}
 
+{% if peal_site_measurement | default(false) | bool %}
+  # What the marketing site, the docs and the blog measure, sent to their
+  # own origin: the web app's relay forwards it to PostHog (its site mode,
+  # PEAL_POSTHOG_SITE). Nothing else of these host names reaches the web
+  # app.
+  - {hostname: {{ peal_hostnames.site }}, path: "^/+pulse/+site/", service: "{{ web }}"{{ everything }}}
+  - {hostname: {{ peal_hostnames.docs }}, path: "^/+pulse/+site/", service: "{{ web }}"{{ everything }}}
+
+{% endif %}
 {% if peal_blog | default(false) | bool %}
 {% set blog = 'http://127.0.0.1:' ~ peal_ports.blog %}
   # The blog (packages/peal-blog), on the site's host name: its pages under

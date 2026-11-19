@@ -1,6 +1,10 @@
 ---
 # The plain settings host.env gives compose.production.yaml, by name: the
-# inventory's, then peal_settings, which may replace them. Secrets are in
+# inventory's, then peal_settings, which may replace them. With
+# peal_site_measurement, the web app's relay answers the site's measurement
+# (PEAL_POSTHOG_SITE), with the address AUTH_IP_HEADERS names, and the
+# server expires the visitor's cookie on the site's host name, the parent
+# of the docs'. Secrets are in
 # secrets.env (generated on the server) and credentials.env (issued by
 # outside services), beside it.
 peal_runtime_host_settings: >-
@@ -42,13 +46,19 @@ peal_runtime_host_settings: >-
          'PEAL_GRAFANA_HEARTBEAT': './config/production/grafana/alerting/heartbeat.yaml',
          'PEAL_HEARTBEAT_URL': peal_heartbeat_url,
        } if peal_heartbeat_url else {})
+     | combine({
+         'PEAL_POSTHOG_SITE': 'on',
+         'PEAL_POSTHOG_SITE_COOKIE_DOMAIN': peal_hostnames.site,
+       } if peal_site_measurement | bool else {})
      | combine(peal_runtime_blog_settings if peal_blog | bool else {})
      | combine(peal_settings) }}
 
 # The blog's plain settings (compose.production.yaml's blog service): its
 # origin, its bucket on the media's endpoint (so the EU check covers it),
-# the site's links, and EmDash's SMTP through Resend's relay, whose password
-# Compose hands the blog from RESEND_API_KEY only with PEAL_BLOG_MAIL.
+# the site's links, its measurement as the site's (peal_site_measurement:
+# PostHog's project token, public, which the vault gives), and EmDash's
+# SMTP through Resend's relay, whose password Compose hands the blog from
+# RESEND_API_KEY only with PEAL_BLOG_MAIL.
 peal_runtime_blog_settings: >-
   {{ {
        'PEAL_BLOG_PORT': peal_ports.blog,
@@ -61,6 +71,12 @@ peal_runtime_blog_settings: >-
          'BLOG_DOCS_URL': peal_static_build_args.SITE_DOCS_URL | default(''),
          'BLOG_DISCORD_URL': peal_static_build_args.SITE_DISCORD_URL | default(''),
        })
+     | combine({
+         'BLOG_POSTHOG_KEY': peal_site_measurement_token,
+         'BLOG_POSTHOG_HOST': peal_site_measurement_host,
+         'BLOG_POSTHOG_COOKIE_DOMAIN': peal_hostnames.site,
+         'BLOG_POSTHOG_ENVIRONMENT': peal_environment,
+       } if peal_site_measurement | bool else {})
      | combine({
          'EMAIL_SMTP_HOST': 'smtp.resend.com',
          'EMAIL_SMTP_PORT': 465,
