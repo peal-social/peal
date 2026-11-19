@@ -51,3 +51,37 @@ export const forgottenCookie = (
   name,
   value: "",
 });
+
+/**
+ * The name PostHog's own copy of the answer goes by on the site, the docs
+ * and the blog: not the SDK's default (`__ph_opt_in_out_<token>`), which
+ * the web app's SDK, on the same project, would read on the parent domain
+ * and take for its own answer.
+ */
+export const siteConsentCookieName = "peal_site_consent";
+
+/** The cookie PostHog follows a visitor who allowed it in. */
+export const visitorCookieName = (key: string): string => `ph_${key}_posthog`;
+
+const ipAddress = /^(?:\d{1,3}\.){3}\d{1,3}$|^\[?[\da-f:]+\]?$/iu;
+
+/**
+ * Every domain a cookie of a page at `hostname` may have been set on: the
+ * host itself (`undefined`, a host-only cookie) and each parent domain
+ * but the top level, so a cookie is forgotten wherever the SDK set it,
+ * whichever parent it picked.
+ */
+export const cookieDomainsOf = (
+  hostname: string
+): readonly (string | undefined)[] => {
+  if (ipAddress.test(hostname) || !hostname.includes(".")) {
+    return [undefined];
+  }
+
+  const labels = hostname.split(".");
+
+  return [
+    undefined,
+    ...labels.slice(0, -1).map((_, index) => labels.slice(index).join(".")),
+  ];
+};

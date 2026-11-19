@@ -17,6 +17,16 @@ export interface SiteSdk {
   readonly get_explicit_consent_status: () => "denied" | "granted" | "pending";
   /** Who the SDK says events are about now. */
   readonly get_distinct_id: () => string;
+  /** A new visitor, linked to none before. */
+  readonly reset: () => void;
+  /**
+   * Keeps, as the visit's source in the SDK's cookie, only what is given:
+   * the page's address without its query, the referrer's origin.
+   */
+  readonly keepSessionSource: (source: {
+    readonly referrer: string;
+    readonly url: string;
+  }) => void;
 }
 
 /**
@@ -45,11 +55,22 @@ export const loadSdk = async (): Promise<SiteSdk> => {
           event === null ? null : options.before_send(event),
       });
     },
+    keepSessionSource: ({ referrer, url }) => {
+      posthog.persistence?.register({
+        $client_session_props: {
+          props: { r: referrer, u: url },
+          sessionId: posthog.get_session_id(),
+        },
+      });
+    },
     opt_in_capturing: () => {
       posthog.opt_in_capturing();
     },
     opt_out_capturing: () => {
       posthog.opt_out_capturing();
+    },
+    reset: () => {
+      posthog.reset();
     },
   };
 };

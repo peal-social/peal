@@ -1,3 +1,5 @@
+import { consentDays } from "../consent/answer";
+import { siteConsentCookieName } from "../consent/cookies";
 import type { SiteEvent } from "./sanitize";
 import type { MeasurementSettings } from "./settings";
 
@@ -14,7 +16,12 @@ const dropLog = () => null;
  */
 export const initOptionsOf = (
   settings: MeasurementSettings,
-  beforeSend: (event: SiteEvent) => SiteEvent | null
+  beforeSend: (event: SiteEvent) => SiteEvent | null,
+  /**
+   * The days the visitor's answer has left: the SDK sets its cookie for
+   * no longer, however often it saves it.
+   */
+  cookieDays: number = consentDays
 ) => ({
   // No flags and no remote configuration: the SDK keeps its own `/e/`,
   // which the relay's site mode answers.
@@ -31,7 +38,10 @@ export const initOptionsOf = (
   capture_pageview: true,
   // No network timing; web vitals are measured by web-vitals.ts.
   capture_performance: false,
-  cookie_expiration: 183,
+  cookie_expiration: cookieDays,
+  // The SDK's own copy of the answer, under a name the web app's SDK,
+  // on the same project, never reads.
+  consent_persistence_name: siteConsentCookieName,
   // Counted with the day's server-side hash before an answer and after a
   // refusal: nothing stored in the browser for it.
   cookieless_mode: "on_reject" as const,
