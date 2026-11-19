@@ -114,3 +114,37 @@
                 and (cloudflare_access_aud | default({})).blog | default('') | length == 0
              else []))
          if peal_blog | default(false) | bool else [] }}
+
+# The measurement of the site, the docs and the blog (peal_site_measurement):
+# release.yml builds the site and the docs with PostHog's project token on
+# the machine running Ansible, so the token comes from the vault
+# (peal_credentials.PEAL_POSTHOG_KEY), as a project token is written: phc_
+# then letters and digits. A token written on the server alone never
+# reaches the build. The switch alone sets the relay's site mode and the
+# surfaces' settings, never peal_settings or peal_static_build_args, so the
+# relay and the pages agree, and the sandbox, which keeps it off, sends
+# nothing.
+- name: Refuse site measurement without PostHog's token
+  ansible.builtin.assert:
+    that: peal_preflight_site_measurement_refused | length == 0
+    fail_msg: >-
+      Change {{ peal_preflight_site_measurement_refused | join(', ') }}:
+      peal_site_measurement needs PostHog's project token (phc_…) in the
+      vault as PEAL_POSTHOG_KEY, and sets the relay's site mode and the
+      site's, the docs' and the blog's PostHog settings itself (README.md,
+      "Site measurement").
+    quiet: true
+  vars:
+    peal_preflight_site_measurement_names: '^(PEAL_POSTHOG_SITE|(SITE|DOCS|BLOG)_POSTHOG_|DOCS_PRIVACY_URL\Z)'
+    peal_preflight_site_measurement_refused: >-
+      {{ (['peal_credentials.PEAL_POSTHOG_KEY']
+          if peal_site_measurement | default(false) | bool
+             and (peal_credentials | default({})).PEAL_POSTHOG_KEY | default('') | string
+                 is not match('^phc_[A-Za-z0-9]+\Z')
+          else [])
+         + (peal_settings | default({}) | dict2items
+            | selectattr('key', 'match', peal_preflight_site_measurement_names)
+            | map(attribute='key') | map('regex_replace', '^', 'peal_settings.') | list)
+         + (peal_static_build_args | default({}) | dict2items
+            | selectattr('key', 'match', peal_preflight_site_measurement_names)
+            | map(attribute='key') | map('regex_replace', '^', 'peal_static_build_args.') | list) }}

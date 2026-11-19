@@ -28,7 +28,10 @@ def _resolved(environment: str) -> dict[str, Any]:
 def _docs_rule(rendered: Path, environment: str) -> dict[str, Any]:
     rules = yaml.safe_load((rendered / f"peal-{environment}" / "cloudflared.yml").read_text())["ingress"]
     docs = settings(environment)["peal_hostnames"]["docs"]
-    return next(rule for rule in rules if rule.get("hostname") == docs)
+    # The host's last rule, which takes every page: the one before, where the
+    # site is measured, sends /pulse/site/ to the web app
+    # (test_site_measurement.py).
+    return next(rule for rule in rules if rule.get("hostname") == docs and "path" not in rule)
 
 
 @pytest.mark.parametrize("environment", ASSISTANT)
@@ -106,8 +109,8 @@ def test_each_image_gets_the_build_arguments_its_dockerfile_reads(environment: s
     static = task("peal_release", "Build the static image")["vars"]["peal_release_static_args"]
     docs = task("peal_release", "Build the docs server's image")["vars"]["peal_release_docs_args"]
 
-    static_args = ansible_render(static, peal_static_build_args=args)
-    docs_args = ansible_render(docs, peal_static_build_args=args)
+    static_args = ansible_render(static, peal_release_build_args=args)
+    docs_args = ansible_render(docs, peal_release_build_args=args)
 
     assert "DOCS_ASSISTANT_MODEL" not in static_args
     assert "DOCS_SITE_URL" in static_args

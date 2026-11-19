@@ -192,3 +192,7 @@ peal_static_build_args:
   DOCS_ASSISTANT_MODEL: claude-haiku-5-5
 # The blog at <site>/blog (README.md, "The blog").
 peal_blog: true
+# The site, the docs and the blog measured with PostHog, through the web
+# app's relay (group_vars/all; README.md, "Site measurement"), as the
+# privacy policy says. PEAL_POSTHOG_KEY in the vault sends with it.
+peal_site_measurement: true
