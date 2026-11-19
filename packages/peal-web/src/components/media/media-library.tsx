@@ -5,6 +5,7 @@ import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import type { Media, MediaStatus } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import {
@@ -22,7 +23,7 @@ import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { toast } from "peal-ui/components/toast";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
@@ -30,6 +31,8 @@ import { deleteMedia, mediaKey, mediaPage, usageOf } from "#media/atoms.ts";
 import {
   everything,
   isNarrowed,
+  libraryQueryStringOf,
+  librarySearchOf,
   searchDelayMs,
 } from "#media/library-search.ts";
 import type { LibrarySearch } from "#media/library-search.ts";
@@ -444,7 +447,28 @@ export const MediaLibrary = ({
 }) => {
   const t = useTranslations("Media.library");
   const [more, setMore] = useState(0);
-  const [search, setSearch] = useState(everything);
+  // The search lives in the address (DESIGN.md, "Filters and display"),
+  // written in place as it changes, so typing asks nothing of the server.
+  // The page reads it when it opens and when the back or forward button
+  // brings another: never as it writes it, which would race the keys.
+  const opened = useSearchParams();
+  const [search, setSearch] = useState(() => librarySearchOf(opened));
+
+  useEffect(() => {
+    const takeAddress = () => {
+      setSearch(
+        librarySearchOf(new URLSearchParams(globalThis.location.search))
+      );
+      setMore(0);
+    };
+
+    globalThis.addEventListener("popstate", takeAddress);
+
+    return () => {
+      globalThis.removeEventListener("popstate", takeAddress);
+    };
+  }, []);
+
   // What the list asks for: the search once the person paused typing.
   const asked = useDebounced(search, searchDelayMs);
   // The list is fetched with the visitor's cookies, which only the browser
@@ -457,8 +481,17 @@ export const MediaLibrary = ({
 
   // Another search starts again from its first page.
   const handleSearch = (next: LibrarySearch) => {
+    const written = libraryQueryStringOf(next);
+
     setSearch(next);
     setMore(0);
+    globalThis.history.replaceState(
+      null,
+      "",
+      written === ""
+        ? globalThis.location.pathname
+        : `${globalThis.location.pathname}?${written}`
+    );
   };
 
   const searchField = useRef<HTMLInputElement>(null);

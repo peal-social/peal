@@ -531,9 +531,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   its options. The server renders the language's clock; the preference
   applies after hydration.
 - The media library (`components/media/media-library.tsx`) narrows its
-  pages with `LibraryToolbarView` (text and kind, `#media/library-search.ts`:
-  `queryOf`, and the atoms' `pageKeyOf`), asking once the person pauses
-  (`useDebounced`, `searchDelayMs`): never a request per key. A file's name
+  pages with `LibraryToolbarView` (a search field, then the Filter menu
+  with the kind, `#media/library-search.ts`: `queryOf`, and the atoms'
+  `pageKeyOf`), asking once the person pauses (`useDebounced`,
+  `searchDelayMs`): never a request per key. The search lives in the
+  address (`librarySearchOf`, `libraryQueryStringOf`), written with
+  `history.replaceState` as it changes and read when the page opens and
+  on `popstate` only, never as it is written, which would race the keys. A file's name
   is the member's text, rendered as text; one without a name is called by
   its kind (`useMediaName`). A thumbnail, a button of the card's own
   with an inset focus ring, opens `MediaPreviewDialog`: no taller than

@@ -115,7 +115,8 @@
   for 23:59 and moves both posts onto the new slots, then cancels both.
 - `tests/media-library.e2e.ts` seeds named images and a video
   (`seedImage`, `seedVideo`: rows only, no file), finds one by its name
-  whatever its case, narrows the search by kind and clears it (the focus
+  whatever its case, narrows the search by kind (the Filter menu's Kind, `?q=…&kind=image`
+  in the address) and clears it (the focus
   goes back to the search field), then opens a tall image's preview at
   320 × 640 (`browser.setViewport`) and checks the dialog, its title and
   its close button fit the window, and that closing it gives the focus

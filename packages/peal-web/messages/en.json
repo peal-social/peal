@@ -2088,8 +2088,6 @@
       "search": "Search the library",
       "searchPlaceholder": "Search by file name or description",
       "kindFilter": "Kind",
-      "anyKind": "All kinds",
-      "kinds": "{kind, select, image {Images} document {PDF documents} other {Videos}}",
       "noMatch": "No media matches this search. Files added before Peal kept names are found by their description only.",
       "clearSearch": "Clear the search",
       "preview": "Show {name} large",
