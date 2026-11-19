@@ -692,11 +692,12 @@
   a second run or server changes nothing. A missed day keeps no state:
   never backfill one. Each batch, once written, reads its workspaces again
   (`UsageStates.workspaces`) and erases the rows of those erased meanwhile.
-  Each batch then tells `UsageSnapshotSink` (product analytics'
-  `workspace_snapshot`) the days of its workspaces still there with a
-  connected account (`isToldDay`), with their billing accounts in one
-  `accountsIn` read; a read or a sink that fails is logged and never
-  fails the run.
+  Where product analytics is on (`UsageSnapshotSink.enabled`), each batch
+  then tells the sink (`workspace_snapshot`) the days of its workspaces
+  still there with a connected account (`isToldDay`), with the accounts
+  the sweep gave them, read as stored in one read that writes nothing
+  (`BillingAccountStore.accountsIn`); a read or a sink that fails is
+  logged and never fails the run.
   The same run purges the rows past `usageRetentionDays` (400), whether the
   snapshot went through or not. `UsageReports` answers `GET …/usage`
   (billing:read, on a server that bills or not; 92 days at most, 30 by

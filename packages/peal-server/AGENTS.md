@@ -437,7 +437,16 @@ and no socket, for tests.
   `billing/infrastructure/analytics-usage-snapshot-sink.ts`, one event a
   workspace with a connected account, as its service identity). A rerun
   of a day sends that day's snapshots again: readers take one row per
-  workspace and `day`. A new event joins
+  workspace and `day`, never the event's timestamp, which is when it was
+  handed over (the next day, from 00:11 UTC). A workspace that loses its
+  last connected account is no longer told: read its latest snapshot
+  with its `channel_disconnected` events. The sink only queues: a fiber
+  hands the events over at half what the delivery sends (`snapshotPace`,
+  50 every 2 seconds), so a day of N workspaces takes about N/25 seconds
+  and never fills the delivery's queue of 5,000; what still waits when
+  the server stops is counted `dropped`, which the alert
+  `peal-product-analytics-dropped` watches. With product analytics off,
+  the snapshot reads nothing for it (`UsageSnapshotSink.enabled`). A new event joins
   `ProductEventSchema` (`#shared/domain/product-event.ts`) and the
   samples of `test/shared/product-event-samples.ts`; its names are
   persisted for whoever queries PostHog: add, never rename.
