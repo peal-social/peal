@@ -141,7 +141,7 @@ layer(
         assert.strictEqual(reply.status, 200);
         assert.deepStrictEqual(visitorCookiesSet(reply), [expiry]);
         assert.deepStrictEqual(retiredSet(reply), [
-          `peal_site_retired=${visitorId}; Max-Age=15811200; Domain=${cookieDomain}; Path=/; Secure; SameSite=Lax`,
+          `peal_site_retired=${visitorId}; Domain=${cookieDomain}; Path=/; Secure; SameSite=Lax`,
         ]);
 
         const [alias] = yield* eventsMatching(aliasOf(visitorId));
@@ -229,6 +229,8 @@ layer(
 
               assert.strictEqual(reply.status, 200);
               assert.deepStrictEqual(visitorCookiesSet(reply), [expiry]);
+              // Expired, and named nowhere: nothing stays behind.
+              assert.deepStrictEqual(retiredSet(reply), []);
 
               return visitorId;
             })
@@ -260,6 +262,30 @@ layer(
 
         assert.strictEqual(reply.status, 400);
         assert.deepStrictEqual(visitorCookiesSet(reply), []);
+        assert.deepStrictEqual(retiredSet(reply), []);
+
+        yield* drained;
+
+        assert.isFalse((yield* capturedEvents).some(aliasOf(visitorId)));
+      })
+  );
+
+  it.effect(
+    "neither links nor expires anything for a sign-up whose body is malformed",
+    () =>
+      Effect.gen(function* malformed() {
+        const visitorId = newVisitor();
+
+        const reply = yield* TestApp.use((app) =>
+          app.request("/api/auth/sign-up/email", {
+            body: { email: "not an address", name: 42 },
+            headers: { cookie: browserCookies(visitorId) },
+          })
+        );
+
+        assert.isAtLeast(reply.status, 400);
+        assert.deepStrictEqual(visitorCookiesSet(reply), []);
+        assert.deepStrictEqual(retiredSet(reply), []);
 
         yield* drained;
 
