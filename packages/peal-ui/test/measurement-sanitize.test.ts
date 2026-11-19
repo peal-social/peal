@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   campaignOf,
+  hashedProperties,
   keptProperties,
   recomputedProperties,
   sanitized,
@@ -47,6 +48,8 @@ const pageView = (): SiteEvent => ({
     $os: "Mac OS X",
     $pageview_id: "019a0000-0000-7000-8000-000000000002",
     $pathname: "/pricing",
+    $raw_user_agent:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
     $referrer: "https://news.example.com/item?id=42&user=someone",
     $referring_domain: "news.example.com",
     $screen_height: 900,
@@ -81,6 +84,8 @@ describe("what leaves the site", () => {
         $lib_version: "1.450.0",
         $os: "Mac OS X",
         $pathname: "/pricing",
+        $raw_user_agent:
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
         $referring_domain: "news.example.com",
         $screen_height: 900,
         $screen_width: 1440,
@@ -97,6 +102,29 @@ describe("what leaves the site", () => {
       timestamp: new Date("2026-11-19T10:00:00Z"),
       uuid: "019a0000-0000-7000-8000-000000000005",
     });
+  });
+
+  // PostHog counts a visitor without a cookie by a hash of the day's salt,
+  // the address, the host and the user agent, then drops the user agent
+  // and the address before it stores the event; one without it is refused
+  // (cookieless_missing_user_agent).
+  it("keeps the user agent on a counted event, for PostHog's hash", () => {
+    expect(
+      sanitized(pageView(), page, common)?.properties["$raw_user_agent"]
+    ).toBe(pageView().properties["$raw_user_agent"]);
+  });
+
+  // A followed event is no part of that hash, and PostHog would keep it.
+  it("leaves the user agent out of a followed event", () => {
+    const followed = pageView();
+
+    Reflect.deleteProperty(followed.properties, "$cookieless_mode");
+    followed.properties["distinct_id"] = "019a0000-0000-7000-8000-000000000001";
+
+    const sent = sanitized(followed, page, common);
+
+    expect(sent?.properties).not.toHaveProperty("$raw_user_agent");
+    expect(sent?.properties).not.toHaveProperty("$cookieless_mode");
   });
 
   it("names no person's properties, no title and no referrer", () => {
@@ -182,7 +210,11 @@ describe("the properties the site sends", () => {
     // own, as the web app's test excepts them.
     const excepted = new Set(["$current_url", "token"]);
 
-    const refused = [...keptProperties, ...recomputedProperties].filter(
+    const refused = [
+      ...keptProperties,
+      ...hashedProperties,
+      ...recomputedProperties,
+    ].filter(
       (key) =>
         !excepted.has(key) && key.split(/[_$]/u).some((word) => words.has(word))
     );

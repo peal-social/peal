@@ -3,6 +3,9 @@
 // adapter post to, the project's configuration (with session replay on)
 // and the flags, and appends each request it received to `requestsFile`
 // (its path, its headers' names, its body decoded), for a journey to read.
+// It drops what PostHog's ingestion would, as PostHog does after answering
+// 200: a counted event (`$cookieless_mode`) without what its hash needs,
+// listed under `warnings` with PostHog's warning type.
 import { once } from "node:events";
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
@@ -34,7 +37,100 @@ export interface RecordedRequest {
   readonly headers: readonly string[];
   /** Its body, decoded: the events it carried, or null. */
   readonly body: typeof Schema.Json.Type;
+  /** The events PostHog's ingestion would drop, with its warning. */
+  readonly warnings: readonly IngestionWarning[];
 }
+
+/** An event PostHog's ingestion drops, and the warning it records. */
+export interface IngestionWarning {
+  readonly event: string;
+  readonly type: string;
+}
+
+// A counted event, with what PostHog's hash reads of it.
+const CountedSchema = Schema.Struct({
+  event: Schema.String,
+  properties: Schema.Struct({
+    $cookieless_mode: Schema.Literal(true),
+    $host: Schema.optional(Schema.String),
+    $raw_user_agent: Schema.optional(Schema.String),
+  }),
+});
+
+const decodeCounted = Schema.decodeUnknownOption(CountedSchema);
+
+const decodeList = Schema.decodeUnknownOption(Schema.Array(Schema.Json));
+
+const BatchSchema = Schema.Struct({ batch: Schema.Array(Schema.Json) });
+
+const decodeBatch = Schema.decodeUnknownOption(BatchSchema);
+
+const filled = (value: string | undefined) =>
+  value !== undefined && value !== "";
+
+// PostHog counts a cookieless visitor by a hash of the day's salt, the
+// address, the host and the user agent (its cookieless manager): an event
+// without one of them is dropped, with a warning naming it. The address
+// is the request's, which the relay forwards as x-forwarded-for.
+const warningOf = (
+  raw: typeof Schema.Json.Type,
+  headers: readonly string[]
+): Option.Option<IngestionWarning> =>
+  decodeCounted(raw).pipe(
+    Option.flatMap(({ event, properties }) => {
+      if (!filled(properties.$raw_user_agent)) {
+        return Option.some({ event, type: "cookieless_missing_user_agent" });
+      }
+
+      if (!filled(properties.$host)) {
+        return Option.some({ event, type: "cookieless_missing_host" });
+      }
+
+      return headers.includes("x-forwarded-for")
+        ? Option.none()
+        : Option.some({ event, type: "cookieless_missing_ip" });
+    })
+  );
+
+/** A body as PostHog would ingest it, and what it would drop. */
+interface Ingested {
+  readonly body: typeof Schema.Json.Type;
+  readonly warnings: readonly IngestionWarning[];
+}
+
+// A list of events, a batch, or one event.
+const ingested = (
+  body: typeof Schema.Json.Type,
+  headers: readonly string[]
+): Ingested => {
+  const warnings: IngestionWarning[] = [];
+
+  const kept = (events: readonly (typeof Schema.Json.Type)[]) =>
+    events.filter((event) =>
+      Option.match(warningOf(event, headers), {
+        onNone: () => true,
+        onSome: (warning) => {
+          warnings.push(warning);
+
+          return false;
+        },
+      })
+    );
+
+  const list = decodeList(body);
+
+  if (Option.isSome(list)) {
+    return { body: kept(list.value), warnings };
+  }
+
+  const batch = decodeBatch(body);
+
+  if (Option.isSome(batch)) {
+    return { body: { batch: kept(batch.value.batch) }, warnings };
+  }
+
+  return { body: kept([body]).length === 0 ? null : body, warnings };
+};
 
 const decodeJson = Schema.decodeUnknownOption(
   Schema.fromJsonString(Schema.Json)
@@ -164,13 +260,16 @@ export const startPostHog = async (): Promise<{
 
     request.on("end", () => {
       const body = decodedBody(Buffer.concat(chunks), url.searchParams);
+      const headers = Object.keys(request.headers);
+      const taken = ingested(body, headers);
 
       const recorded: RecordedRequest = {
-        body,
-        headers: Object.keys(request.headers),
+        body: taken.body,
+        headers,
         method: request.method ?? "GET",
         path: url.pathname,
         query: url.search,
+        warnings: taken.warnings,
       };
 
       appendFileSync(requestsFile, `${JSON.stringify(recorded)}\n`);
