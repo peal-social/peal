@@ -4298,10 +4298,10 @@
     "retry": "Réessayer",
     "readOnly": "Vous pouvez lire les commentaires. Y répondre demande la permission de répondre aux commentaires.",
     "filter": {
-      "legend": "Afficher",
-      "unanswered": "En attente d’une réponse",
-      "channel": "Canal",
-      "allChannels": "Tous les canaux"
+      "views": "Vues",
+      "all": "Toutes",
+      "unanswered": "Sans réponse",
+      "channel": "Canal"
     },
     "list": {
       "title": "Publications commentées",

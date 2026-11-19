@@ -2,28 +2,36 @@
 
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import { AsyncResult } from "effect/reactivity";
+import { RadioTowerIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { inboxPlatforms, isSocialChannel } from "peal-contract";
 import type { SocialChannel } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
-import { Checkbox } from "peal-ui/components/checkbox";
-import { Label } from "peal-ui/components/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "peal-ui/components/select";
+  FilterChip,
+  FilterChips,
+  FilterChipsClear,
+  ListToolbar,
+  ListToolbarEnd,
+  ListViews,
+  viewTabClass,
+} from "peal-ui/components/list-toolbar";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { useId, useState } from "react";
 
 import { channelsOf } from "#channels/channels-api.ts";
+import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
-import { Link } from "#i18n/navigation.ts";
+import { Link, usePathname, useRouter } from "#i18n/navigation.ts";
 import { threadPage } from "#inbox/atoms.ts";
 import type { ThreadFilter } from "#inbox/atoms.ts";
+import {
+  knownThreadFilter,
+  threadFilterOf,
+  threadQueryOf,
+} from "#inbox/thread-query.ts";
 import { useRefreshWhileVisible } from "#notices/use-refresh-while-visible.ts";
 
 import {
@@ -34,9 +42,6 @@ import {
 
 // How often the list is read again while its tab is visible.
 const refreshEvery = 60_000;
-
-// What the channel filter holds when it shows every channel.
-const everyChannel = "all";
 
 const appLink = (href: string, label: string) => (
   <Link href={href} className="underline-offset-4 hover:underline">
@@ -178,13 +183,14 @@ export const ThreadsList = ({
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("Inbox");
+  const lists = useTranslations("Lists");
   const channelName = useChannelName();
   const hydrated = useHydrated();
   const channels = useAtomValue(channelsOf(workspaceId));
-  const [unanswered, setUnanswered] = useState(false);
-  const [channelId, setChannelId] = useState<string | null>(null);
-  const unansweredId = useId();
-  const channelLabelId = useId();
+  const router = useRouter();
+  const pathname = usePathname();
+  const asked = threadFilterOf(useSearchParams());
+  const menu = useFilterMenu();
   const titleId = useId();
 
   if (!hydrated) {
@@ -201,62 +207,111 @@ export const ThreadsList = ({
     inboxPlatforms.some((read) => read === platform)
   );
 
-  const chosen = readable.find(({ id }) => id === channelId);
+  // A channel the address names that the inbox does not read is left
+  // out once the channels are known.
+  const filter = AsyncResult.isSuccess(channels)
+    ? knownThreadFilter(
+        asked,
+        readable.map(({ id }) => id)
+      )
+    : asked;
+
+  const hrefOf = (next: ThreadFilter) => {
+    const written = threadQueryOf(next);
+
+    return written === "" ? pathname : `${pathname}?${written}`;
+  };
+
+  const go = (next: ThreadFilter) => {
+    router.replace(hrefOf(next), { scroll: false });
+  };
+
+  const chosen = readable.find(({ id }) => id === filter.channelId);
+
+  const views = [
+    { label: t("filter.all"), unanswered: false },
+    { label: t("filter.unanswered"), unanswered: true },
+  ] as const;
 
   return (
-    <div className="flex flex-col gap-6">
-      <fieldset className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <legend className="sr-only">{t("filter.legend")}</legend>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id={unansweredId}
-            checked={unanswered}
-            onCheckedChange={(checked) => {
-              setUnanswered(checked === true);
-            }}
-          />
-          <Label htmlFor={unansweredId}>{t("filter.unanswered")}</Label>
-        </div>
-        {readable.length > 1 ? (
-          <div className="flex items-center gap-2">
-            <Label id={channelLabelId}>{t("filter.channel")}</Label>
-            <Select
-              value={channelId ?? everyChannel}
-              onValueChange={(value) => {
-                setChannelId(
-                  value === null || value === everyChannel ? null : value
-                );
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <ListToolbar>
+          <ListViews aria-label={t("filter.views")}>
+            {views.map((view) => (
+              <Link
+                key={view.label}
+                href={hrefOf({ ...filter, unanswered: view.unanswered })}
+                scroll={false}
+                className={viewTabClass(view.unanswered === filter.unanswered)}
+                {...(view.unanswered === filter.unanswered
+                  ? { "aria-current": "page" as const }
+                  : {})}
+              >
+                {view.label}
+              </Link>
+            ))}
+          </ListViews>
+          {readable.length > 1 ? (
+            <ListToolbarEnd>
+              <FilterMenu
+                chosen={{
+                  channel: filter.channelId === null ? [] : [filter.channelId],
+                }}
+                properties={[
+                  {
+                    icon: RadioTowerIcon,
+                    id: "channel",
+                    label: t("filter.channel"),
+                    values: readable.map((channel) => ({
+                      id: channel.id,
+                      label: channelName(channel),
+                    })),
+                  },
+                ]}
+                state={menu}
+                onChoose={(_, values) => {
+                  go({ ...filter, channelId: values[0] ?? null });
+                }}
+              />
+            </ListToolbarEnd>
+          ) : null}
+        </ListToolbar>
+        {chosen === undefined ? null : (
+          <FilterChips aria-label={lists("filters")}>
+            <FilterChip
+              icon={<RadioTowerIcon aria-hidden />}
+              join={lists("is")}
+              property={t("filter.channel")}
+              removeLabel={lists("remove", {
+                property: t("filter.channel"),
+              })}
+              value={channelName(chosen)}
+              onEdit={() => {
+                menu.openAt("channel");
+              }}
+              onRemove={() => {
+                go({ ...filter, channelId: null });
+              }}
+            />
+            <FilterChipsClear
+              onClick={() => {
+                go({ ...filter, channelId: null });
               }}
             >
-              <SelectTrigger aria-labelledby={channelLabelId}>
-                <SelectValue>
-                  {chosen === undefined
-                    ? t("filter.allChannels")
-                    : channelName(chosen)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={everyChannel}>
-                  {t("filter.allChannels")}
-                </SelectItem>
-                {readable.map((channel) => (
-                  <SelectItem key={channel.id} value={channel.id}>
-                    {channelName(channel)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : null}
-      </fieldset>
+              {lists("clear")}
+            </FilterChipsClear>
+          </FilterChips>
+        )}
+      </div>
       <section aria-labelledby={titleId} className="flex flex-col gap-4">
         <h2 id={titleId} className="sr-only">
           {t("list.title")}
         </h2>
         <FilteredThreads
-          key={`${channelId ?? everyChannel}/${unanswered ? "waiting" : "all"}`}
+          key={`${filter.channelId ?? "all"}/${filter.unanswered ? "waiting" : "all"}`}
           channels={known}
-          filter={{ channelId, unanswered }}
+          filter={filter}
           workspaceId={workspaceId}
         />
       </section>

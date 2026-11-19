@@ -621,7 +621,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `messages=true`), and, for `organization:secure`, the applications let
   read the messages, by client id.
 - The inbox (`components/inbox/`) lists threads with counts and never a
-  comment's text (`ThreadsList`), and shows one whole (`ThreadScreen`):
+  comment's text (`ThreadsList`: All and Unanswered as view tabs, the
+  channel in the Filter menu, both in the address through
+  `#inbox/thread-query.ts`), and shows one whole (`ThreadScreen`):
   views in `inbox-views.tsx` take links as props, so tests render each
   state. Render a comment as plain text, never as markup. Offer reply and
   moderation only where the thread's `abilities` say `available`, show a

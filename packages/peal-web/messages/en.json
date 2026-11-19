@@ -4298,10 +4298,10 @@
     "retry": "Try again",
     "readOnly": "You can read the comments. Answering them takes the permission to reply to comments.",
     "filter": {
-      "legend": "Show",
-      "unanswered": "Waiting for an answer",
-      "channel": "Channel",
-      "allChannels": "All channels"
+      "views": "Views",
+      "all": "All",
+      "unanswered": "Unanswered",
+      "channel": "Channel"
     },
     "list": {
       "title": "Posts with comments",
