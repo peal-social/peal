@@ -317,10 +317,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   # The SDKs, generated from the contract and committed: a contract change
-  # comes with the SDKs it changes, or the check fails. Each SDK then builds
-  # in its language's image, pinned by digest, as its registry would get it,
-  # and calls a stand-in API as its users would (scripts/test.ts). Two
-  # languages a job, a slower one with a quicker one.
+  # comes with the SDKs it changes, or the check fails. Two languages a job,
+  # a slower one with a quicker one. The `sdk-builds` job builds and tests
+  # the committed SDKs beside it: when this check passes, they are what the
+  # generators write, so neither job waits for the other.
   sdks:
     name: sdks (${{ matrix.languages }})
     needs: plan
@@ -353,6 +353,36 @@ jobs:
       # What `nx run peal-sdk:check` checks after every language's generator.
       - run: bun scripts/check.ts
         working-directory: packages/peal-sdk
+
+  # Each committed SDK builds in its language's image, pinned by digest, as
+  # its registry would get it, and calls a stand-in API as its users would
+  # (scripts/test.ts), while `sdks` checks it is what the generators write.
+  sdk-builds:
+    name: sdk-builds (${{ matrix.languages }})
+    needs: plan
+    if: needs.plan.outputs.sdks == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - languages: rust, python
+            projects: peal-sdk-rust,peal-sdk-python
+          - languages: go, node
+            projects: peal-sdk-go,peal-sdk-node
+          - languages: dotnet, ruby
+            projects: peal-sdk-dotnet,peal-sdk-ruby
+          - languages: java, php
+            projects: peal-sdk-java,peal-sdk-php
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # uv builds the Python SDK.
+      - uses: ./.github/actions/setup
+        with:
+          uv: "true"
       - run: bun nx run-many --target=sdk:build --projects="$PROJECTS"
         env:
           PROJECTS: ${{ matrix.projects }}
@@ -526,7 +556,21 @@ jobs:
   ci:
     if: ${{ always() }}
     needs:
-      [plan, lint, typecheck, build, test, server, ansible, secrets, workflows, sdks, e2e, blog]
+      [
+        plan,
+        lint,
+        typecheck,
+        build,
+        test,
+        server,
+        ansible,
+        secrets,
+        workflows,
+        sdks,
+        sdk-builds,
+        e2e,
+        blog,
+      ]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
