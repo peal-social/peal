@@ -936,7 +936,9 @@ No other illustration, no joke, no exclamation mark.
   anything that floats. Its two answers are two buttons of the same
   variant and size (`outline`), side by side, so refusing is as easy as
   accepting. The card leaves once answered, and the account page keeps
-  the answer, where it can be changed.
+  the answer, where it can be changed. The site, the docs and the blog,
+  where a visitor has no page of their own to be asked on, ask with the
+  consent notice (see [Site](#site)).
 - **The composer** writes one text with a tab per channel, counts each
   platform's limit, and shows a preview beside it.
 - **A date in words.** Above the date and time pickers, "Type when" reads
@@ -1033,6 +1035,8 @@ blocks and radius are the app's, and no colour is written there twice.
   link to the Developers page replace a section for each.
 - **Platforms** are shown by their own marks, from the same files as the
   app's, never redrawn.
+- **Consent notice.** As the site's, at the bottom right, with a **Cookie
+  settings** row at the foot of every page.
 
 ## Site
 
@@ -1161,6 +1165,54 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   after a 5 px square in yellow, then a link with an arrow to read more.
   It cannot be dismissed, and the site removes it once it no longer holds;
   no page repeats it.
+- **Consent notice.** The one question the site, the docs and the blog
+  ask a visitor: whether Peal may keep a cookie to follow their visits.
+  It is peal-ui's `<peal-consent>`, the same on all three. A white card
+  (`card`, 1 px `border`, the 6 px radius, the shadow of a popover)
+  fixed to the bottom right of the window, 16 px from its edges, 25 rem
+  wide at most; from 1184 px up its right edge stands on the page's
+  right rail. It is the only thing on the site that floats without being
+  opened, and it never dims or blocks the page: no backdrop, no focus
+  trap, and it takes no focus when it appears. Inside: the eyebrow
+  `// [cookie] Cookies \\` (Geist Mono, 12 px, muted), a title (15 px,
+  600), the text (14 px), a link to the privacy policy in `brand-text`,
+  and the two answers as two `outline` buttons of the same size, side by
+  side and equally wide, Allow first, as the app's consent card has
+  them. Neither is the primary button and neither has focus. Below
+  640 px it is a sheet along the bottom edge, full width, with a top
+  border and no radius, at most half the window's height (its text
+  scrolls above the answers), and the page gains that much padding at
+  its foot so the footer stays reachable. Once answered it leaves, and
+  **Cookie settings** in the footer (a row at the foot of the docs)
+  opens it again, with the answer, its date and a ghost Close button;
+  focus then goes to its title and returns to the link on closing. A
+  browser that sends Do Not Track or Global Privacy Control is never
+  asked.
+  Its art is the pixel cookie: beside the text, an 85 px square of 5 px
+  cells holding a round cookie, its dough in the blue and lavender tints
+  (`#E8ECFD`, `#EDE7FF`), Bayer-dithered, its rim in lavender, and seven
+  chips in the mark's blue, lavender and yellow that twinkle each on its
+  own beat, as the pixel glow's cells do. Under it a readout in Geist
+  Mono, 12 px, muted, says what each answer stores: `cookies: ?` at
+  rest, `cookies: 1 · 183 d` while the pointer or focus is on Allow,
+  `cookies: 0` on the other button. On Allow the chips slide, cell by
+  cell in 280 ms, into the mark's six facets at the cookie's centre; on
+  the other button a bite dissolves from its top right and three crumbs
+  fall two cells. Answering plays an exit of the same length either
+  way, 700 ms: allowed, the cookie folds into one yellow pixel that
+  drops off the art's foot, toward the footer where the answer can be
+  changed, with a burst of pixels as the pricing slider's; refused, its
+  cells crumble and fall, and a scanline sweeps the empty square once.
+  The card sinks 8 px and fades over the last 200 ms of either exit. No
+  answer is rewarded more than the other, and nothing is coloured as
+  right or wrong. It appears by baking in: its cells light in a scatter
+  over 400 ms while the card rises 8 px. Its chips twinkle at 24 frames
+  a second, only while on screen; its moves play at the screen's own
+  rate, so their easing stays smooth. With reduced motion the cookie is
+  still, the readout alone changes, and an answer removes the card at
+  once. On a phone the art is a still 25 px cookie beside the title, and
+  the card alone leaves, after the same 700 ms. Screen readers skip the
+  art and the readout, and hear "Saved" once an answer is written.
 - **Hero.** On the page's background and grid: the headline (one plain
   claim, no slogan), the primary and outline buttons
   on the left, a lead of two short sentences in muted text on the right,
@@ -1290,7 +1342,8 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   links, in this order: PealStudio, PealAPI (each product's docs pages),
   Resources (the docs, the blog, the changelog, self-hosting, status,
   security), Socials (Peal's accounts, Discord and GitHub) and Company
-  (pricing, cookie settings, then the Policies menu). A caption row at
+  (pricing, cookie settings, which opens the consent notice where the
+  site measures, then the Policies menu). A caption row at
   the foot: `© <year> Peal` alone. The Policies menu is Company's last entry, a quiet text
   trigger with a chevron, in the links' type, that opens upward the
   privacy policy, the terms and the contract's functions (cancel,
@@ -1305,8 +1358,8 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
 - **Hero art.** The home page's hero shows the product, in its stage,
   over the pixel glow, and no other art: the turning cube it once held is
   gone. Pixel art stays in the menu previews, the section openers, the
-  FAQ, the feature tiles, and the pixel glow of the hero and the closing
-  band.
+  FAQ, the feature tiles, the consent notice, and the pixel glow of the
+  hero and the closing band.
 
 ## Writing
 
