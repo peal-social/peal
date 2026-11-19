@@ -68,8 +68,8 @@
   added in the settings, its header read with `browser.route`) and no
   longer once withdrawn and the recording going on across pages.
   `nx run peal-e2e:e2e-webkit` (`e2e.webkit.config.ts`, its report and
-  the stand-in's log under `.e2e/webkit`, through `PEAL_E2E_OUTPUT`) runs that journey alone in WebKit (the site's journeys run in Chromium only: CI's Linux WebKit drops Secure cookies on its http 127.0.0.1 origin), after the Chromium
-  run in CI: install WebKit with `e2e-web install webkit`.
+  the stand-in's log under `.e2e/webkit`, through `PEAL_E2E_OUTPUT`) runs that journey alone in WebKit (the site's journeys run in Chromium only: CI's Linux WebKit drops Secure cookies on its http 127.0.0.1 origin), in a CI job of its
+  own beside the Chromium shards: install WebKit with `e2e-web install webkit`.
 - The run serves the marketing site too (`scripts/site.ts`): the build
   `nx run peal-site:build-e2e` writes to `packages/peal-site/dist-e2e`,
   measured with the stand-in's token, `SITE_POSTHOG_HOST=/pulse/site` and
@@ -149,8 +149,13 @@
   page, reading the key written beside the QR code and computing the codes
   an authenticator app would (`tests/support/totp.ts`, RFC 6238), signs in
   again with the password then a code, and requires it of its workspace.
-- CI's `e2e` job runs beside the others when a change can reach the pages
-  (`scripts/ci-plan.ts`), with its own Postgres and Mailpit and SeaweedFS
-  from `compose.yaml`. After a failure, read the report, traces and
-  screenshots under `packages/peal-e2e/.e2e/` (CI uploads it for 7 days), and
-  the server's and the web app's output in `.e2e/logs/app.log`.
+- CI's `e2e` jobs run beside the others when a change can reach the pages
+  (`scripts/ci-plan.ts`), each with its own Postgres and Mailpit and
+  SeaweedFS from `compose.yaml`: Chromium's suite in three shards
+  (`e2e run --shard`, contiguous slices in file order that keep a serial
+  journey's tests together) and WebKit's journey in a fourth. A new file
+  joins a shard by its name, so a long journey can unbalance them: check
+  the shards' durations when one is added. After a failure, read the report,
+  traces and screenshots under `packages/peal-e2e/.e2e/` (CI uploads each
+  job's, as `e2e-results-<part>`, for 7 days), and the server's and the web
+  app's output in `.e2e/logs/app.log`.

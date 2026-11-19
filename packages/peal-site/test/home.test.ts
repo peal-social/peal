@@ -20,6 +20,7 @@ import {
   apiRows,
   heroCode,
   heroTabs,
+  productPair,
   studioBento,
 } from "../src/home.ts";
 import type { HomeSettings } from "../src/home.ts";
@@ -167,6 +168,35 @@ describe("the home page", () => {
             answer.includes("PealAPI")
         )
       ).toBe(true);
+    }
+  );
+
+  it.each(locales)(
+    "names each product's page in its frame as its sidebar does in %s",
+    (locale) => {
+      const { mocks } = productPair(messages(locale).home);
+
+      for (const mock of mocks) {
+        const current = mock.groups
+          .flatMap((group) => group.items)
+          .filter((item) => item.current === true)
+          .map((item) => item.label);
+
+        expect(current).toStrictEqual([mock.page]);
+        expect(mock.workspace).not.toBe("");
+        expect(mock.settings).not.toBe("");
+      }
+    }
+  );
+
+  // The sidebar's head leaves the workspace's name about 60 px at 12 px
+  // medium, eight characters: a longer name is drawn cut off.
+  it.each(locales)(
+    "gives the mock's workspace a name its switcher shows in full in %s",
+    (locale) => {
+      for (const mock of productPair(messages(locale).home).mocks) {
+        expect(mock.workspace.length).toBeLessThanOrEqual(8);
+      }
     }
   );
 });

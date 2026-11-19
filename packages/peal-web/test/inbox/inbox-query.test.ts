@@ -4,11 +4,16 @@ import {
   defaultInbox,
   inboxQueryOf,
   inboxStateOf,
+  inboxStateOfParams,
   knownThreadFilter,
   withInboxQuery,
 } from "#inbox/inbox-query.ts";
+import type { PageQuery } from "#inbox/inbox-query.ts";
 
 const stateOf = (query: string) => inboxStateOf(new URLSearchParams(query));
+
+const back = (params: PageQuery) =>
+  withInboxQuery("/w/inbox", inboxStateOfParams(params));
 
 describe(inboxStateOf, () => {
   it("reads the tab and the comments' filters, and the default from what it does not know", () => {
@@ -18,6 +23,22 @@ describe(inboxStateOf, () => {
     ]).toStrictEqual([
       { filter: { channelId: "c1", unanswered: true }, view: "reviews" },
       defaultInbox,
+    ]);
+  });
+});
+
+describe(inboxStateOfParams, () => {
+  it("reads a page's search params, so an item's way back keeps the list", () => {
+    expect([
+      back({ channel: "c1", cursor: "x", status: "waiting", view: "reviews" }),
+      back({ view: "messages" }),
+      back({ channel: undefined }),
+      back({ status: ["waiting", "all"], view: "reviews" }),
+    ]).toStrictEqual([
+      "/w/inbox?view=reviews&status=waiting&channel=c1",
+      "/w/inbox?view=messages",
+      "/w/inbox",
+      "/w/inbox?view=reviews&status=waiting",
     ]);
   });
 });

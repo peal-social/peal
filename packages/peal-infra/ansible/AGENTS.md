@@ -202,6 +202,11 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   are one class: `tests/class_scheduling.py` hands a class's tests to one
   worker, which starts the containers once, and every other test on its
   own (`xdist_group` does not group with pytest 9.2 and xdist 3.8.0).
+  CI splits the suite between two jobs by the same classes:
+  `PEAL_PYTEST_SHARD=<index>/<total>` keeps one shard's tests (`shard`,
+  whole classes, the largest first, to the shard with the fewest tests),
+  so a test that needs another class's containers must not rely on
+  running beside it.
   Templates the tests only read come from `rendered_with` (conftest),
   which renders each set of settings once a run for all the workers; a
   test that changes the files renders its own with `render_inventory`.

@@ -863,10 +863,10 @@ way, so a person who learns one screen knows them all.
   card with a span of its own beside the page's takes a key of its own
   (`?bestTimes=`).
 - **Time zone** — A screen that places posts at times or counts by day
-  (Calendar, Analytics) says once which zone it reads them in: one line
-  in `{typography.caption}`, muted, at the end of the content's first
-  row (beside the dates the calendar names, under the Period on
-  Analytics): "Times are in your time zone, Europe/Paris." The zone is
+  (Calendar, Analytics, Report) says once which zone it reads them in:
+  one line in `{typography.caption}`, muted, at the end of the content's
+  first row (beside the dates the calendar names, under the Period on
+  Analytics and the Report): "Times are in your time zone, Europe/Paris." The zone is
   the browser's, so the line appears once the page has hydrated. It is
   not a description, and never sits in the panel's header.
 - What a list shows lives in the page's **address**: a reload, the back
@@ -1320,12 +1320,17 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   two bordered cells (the name, 15 px, 600, then a line at the lead's
   size, muted), then one wide cell on `muted` holding a page of each side
   of the app next to each other (stacked below 1024 px): the frame
-  drawn small as the app's frame: a sidebar of 176 px with the workspace
-  switcher, the mode switch and the mode's groups, the page in a white
-  inset panel under a 48 px header naming it, a bottom bar with the
-  avatar and Help, and the content in white cards (PealStudio's
-  calendar; PealAPI's keys and webhook deliveries). Below 640 px the
-  sidebar folds away and the switch moves into the panel's header. The pages show only what the app has, with made-up content.
+  drawn small as The frame draws it, with no bar across the top: on
+  `background`, a sidebar of 176 px (its head with the workspace
+  switcher, Search and New post, the mode switch, the mode's groups,
+  Settings at its foot), the page in a white panel inset 6 px from the
+  mock's top and right edges under its 48 px header (the page's name, and
+  its actions where the page has some), the content in white cards
+  (PealStudio's calendar; PealAPI's keys and webhook deliveries), then a
+  36 px bottom bar with the account's round avatar at its start and Help
+  at its end. Below 640 px the sidebar folds away, the panel fills the
+  width and the switch moves into its header, where the app has its menu
+  button. The pages show only what the app has, with made-up content.
 - **Product opening.** A product's section opens on the faint pixel
   field, left-aligned: the eyebrow with the product's name, the section
   headline and an outline button to its docs on the left, the lead on the

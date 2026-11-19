@@ -25,7 +25,7 @@ import pytest
 import yaml
 from ansible.parsing.dataloader import DataLoader
 from ansible.template import Templar, trust_as_template
-from class_scheduling import ClassScheduling
+from class_scheduling import ClassScheduling, shard
 from xdist.remote import Producer
 
 INFRA = Path(__file__).resolve().parent.parent
@@ -190,6 +190,20 @@ def render_inventory(folder: Path, **extra_vars: Any) -> Path:
         capture_output=True,
     )
     return folder
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """One shard of the suite when PEAL_PYTEST_SHARD names it, as
+    `<index>/<total>` from 1, for CI's jobs; every test otherwise."""
+    value = os.environ.get("PEAL_PYTEST_SHARD", "")
+    if value == "":
+        return
+    match = re.fullmatch(r"([1-9][0-9]*)/([1-9][0-9]*)", value)
+    if match is None or int(match[1]) > int(match[2]):
+        raise pytest.UsageError(f"PEAL_PYTEST_SHARD is {value!r}, not <index>/<total> from 1")
+    kept = shard([item.nodeid for item in items], int(match[1]), int(match[2]))
+    config.hook.pytest_deselected(items=[item for item in items if item.nodeid not in kept])
+    items[:] = [item for item in items if item.nodeid in kept]
 
 
 @pytest.hookimpl(optionalhook=True)

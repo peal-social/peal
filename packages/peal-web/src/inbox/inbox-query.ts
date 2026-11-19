@@ -49,6 +49,25 @@ export const inboxStateOf = (query: QueryString): InboxState => {
   };
 };
 
+/** A server page's `searchParams`: a value, or each value of a name. */
+export type PageQuery = Readonly<
+  Record<string, string | readonly string[] | undefined>
+>;
+
+/**
+ * The list a server page's `searchParams` name, as `inboxStateOf` reads
+ * an address (a repeated name gives its first value), so an item's way
+ * back leads to the list it was opened from.
+ */
+export const inboxStateOfParams = (params: PageQuery): InboxState =>
+  inboxStateOf(
+    new URLSearchParams(
+      Object.entries(params).flatMap(([name, value]) =>
+        [value ?? []].flat().map((each) => [name, each])
+      )
+    )
+  );
+
 /** The address's query for a list, the defaults left out. */
 export const inboxQueryOf = ({ filter, view }: InboxState): string =>
   new URLSearchParams([
