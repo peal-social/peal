@@ -18,6 +18,7 @@ export type Tone =
   | "blue"
   | "dough"
   | "doughAlt"
+  | "doughShade"
   | "lavender"
   | "rim"
   | "scan"
@@ -92,6 +93,12 @@ const cookieCells: readonly Cell[] = Array.from(
 
     if (distance > 6.4) {
       return [{ tone: "rim" as const, x, y }];
+    }
+
+    // A baked edge inside the rim, toward the bottom right, so the cookie
+    // reads round.
+    if (distance > 5.4 && x + y > 2 * centre + 1) {
+      return [{ tone: "doughShade" as const, x, y }];
     }
 
     // The two tints, dithered, a little more lavender toward the foot.
@@ -404,11 +411,12 @@ const refusedCells = (time: number): Cell[] => {
 
   const scan =
     time >= scanFrom && scanRow < gridSize
-      ? Array.from({ length: gridSize }, (_, x) => ({
-          tone: "scan" as const,
-          x,
-          y: scanRow,
-        }))
+      ? Array.from({ length: gridSize }, (_, x) =>
+          // A dithered line, and a fainter trail above it.
+          (x + scanRow) % 2 === 0
+            ? { tone: "scan" as const, x, y: scanRow }
+            : { tone: "doughShade" as const, x, y: scanRow - 1 }
+        )
       : [];
 
   return [...fallen, ...scan];
@@ -491,6 +499,7 @@ const toneTokens: Record<Tone, string> = {
   blue: "--brand",
   dough: "--brand-tint",
   doughAlt: "--consent-lavender-tint",
+  doughShade: "--consent-lavender-shade",
   lavender: "--lavender",
   rim: "--lavender",
   scan: "--lavender",
