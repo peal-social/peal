@@ -1,3 +1,14 @@
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CircleHelpIcon,
+  PlusIcon,
+  SearchIcon,
+  SlidersHorizontalIcon,
+  SquarePenIcon,
+} from "lucide-react";
+import type { ReactNode } from "react";
+
 import { cn } from "../lib/utils";
 import { MockChip } from "./feature-cell";
 import type { MockChipContent, MockRow } from "./feature-cell";
@@ -45,26 +56,45 @@ type AppMockContent =
 type AppMode = "console" | "studio";
 
 interface AppMockProps {
-  readonly breadcrumb: string;
+  /** The account's initial, in the bottom bar's round avatar. */
+  readonly account: string;
+  /** The page's actions, as small ghost buttons at the header's end. */
+  readonly actions?: readonly string[] | undefined;
   readonly className?: string | undefined;
   readonly content: AppMockContent;
   readonly groups: readonly AppMockNavGroup[];
   readonly mode: AppMode;
   /** The switch's two labels, as the app names them: Studio and Console. */
   readonly modes: Readonly<Record<AppMode, string>>;
+  /** The page's name, in the panel's header. */
+  readonly page: string;
+  /** The section the page drills down from, before its name. */
+  readonly section?: string | undefined;
+  /** The sidebar's foot. */
+  readonly settings: string;
+  /** The workspace's name, in the sidebar's head. */
+  readonly workspace: string;
 }
+
+// The open mode's segment, as the app draws it: ink in PealAPI.
+const currentModeClass: Readonly<Record<AppMode, string>> = {
+  console: "bg-primary text-primary-foreground shadow-xs",
+  studio: "bg-card text-foreground ring-border shadow-xs ring-1",
+};
 
 /**
  * The mode switch as the app's sidebar draws it (DESIGN.md, The frame):
  * the mark in a tile, white in Studio and ink in Console, beside the two
- * modes, the selected one lifted.
+ * modes, the selected one lifted (ink in Console).
  */
 const ModeSwitch = ({ mode, modes }: Pick<AppMockProps, "mode" | "modes">) => (
-  <span className="bg-muted flex items-center gap-0.5 rounded-md border p-0.5">
+  <span className="bg-secondary ring-border flex items-center gap-0.5 rounded-md p-0.5 ring-1 ring-inset">
     <span
       className={cn(
         "flex size-6 shrink-0 items-center justify-center rounded-sm",
-        mode === "console" ? "bg-foreground" : "bg-card border"
+        mode === "console"
+          ? "bg-primary"
+          : "bg-card ring-border shadow-xs ring-1"
       )}
     >
       <PealMark className="size-4" />
@@ -74,9 +104,7 @@ const ModeSwitch = ({ mode, modes }: Pick<AppMockProps, "mode" | "modes">) => (
         key={item}
         className={cn(
           "flex h-6 flex-1 items-center justify-center rounded-sm px-1 text-[11px] font-medium whitespace-nowrap",
-          item === mode
-            ? "bg-card text-foreground shadow-sm"
-            : "text-muted-foreground"
+          item === mode ? currentModeClass[item] : "text-muted-foreground"
         )}
       >
         {modes[item]}
@@ -84,6 +112,40 @@ const ModeSwitch = ({ mode, modes }: Pick<AppMockProps, "mode" | "modes">) => (
     ))}
   </span>
 );
+
+// An icon button of the frame, drawn: a ghost square around its icon.
+const IconSpot = ({ children }: { readonly children: ReactNode }) => (
+  <span className="text-muted-foreground flex size-6 shrink-0 items-center justify-center [&_svg]:size-3.5">
+    {children}
+  </span>
+);
+
+/**
+ * The sidebar's head (DESIGN.md, The frame): the workspace switcher (its
+ * tile, its name, a chevron), then Search and New post.
+ */
+const SidebarHead = ({ workspace }: Pick<AppMockProps, "workspace">) => (
+  <span className="flex h-9 shrink-0 items-center gap-0.5">
+    <span className="flex min-w-0 flex-1 items-center gap-1.5 px-1">
+      <span className="bg-brand-tint text-brand-text flex size-4 shrink-0 items-center justify-center rounded-sm text-[8px] font-semibold">
+        {workspace.slice(0, 2).toUpperCase()}
+      </span>
+      <span className="text-foreground min-w-0 truncate text-xs font-medium">
+        {workspace}
+      </span>
+      <ChevronDownIcon className="text-muted-foreground size-3 shrink-0" />
+    </span>
+    <IconSpot>
+      <SearchIcon />
+    </IconSpot>
+    <IconSpot>
+      <SquarePenIcon />
+    </IconSpot>
+  </span>
+);
+
+const navItemClass =
+  "flex h-7 items-center gap-2 rounded-md px-2 text-xs [&_svg]:size-3.5 [&_svg]:shrink-0";
 
 const Calendar = ({
   days,
@@ -162,68 +224,114 @@ const Cards = ({ cards }: { readonly cards: readonly AppMockCard[] }) => (
 
 /**
  * A page of the app in its frame (DESIGN.md, The frame), small enough to
- * sit beside another: the sidebar with the mode switch and the mode's
- * groups, the 56 px top bar with the breadcrumb, and the content, a
- * calendar or white cards. Decoration: screen readers skip it.
+ * sit beside another. On the page's background, the sidebar (its head with
+ * the workspace switcher, Search and New post, the mode switch, the mode's
+ * groups, Settings at its foot) and the page in a white panel, under its
+ * 48 px header (the page's name and its actions), the content a calendar or
+ * white cards; then the bottom bar, the account's avatar at its start and
+ * Help at its end. Below 640 px the sidebar folds away and the switch moves
+ * into the header. Decoration: screen readers skip it.
  */
 const AppMock = ({
-  breadcrumb,
+  account,
+  actions,
   className,
   content,
   groups,
   mode,
   modes,
+  page,
+  section,
+  settings,
+  workspace,
 }: AppMockProps) => (
   <div
     aria-hidden="true"
     data-slot="app-mock"
     className={cn(
-      "bg-background flex min-w-0 overflow-hidden rounded-md border text-start",
+      "bg-background flex min-w-0 flex-col overflow-hidden rounded-md border text-start",
       className
     )}
   >
-    <div className="hidden w-44 shrink-0 flex-col gap-3 border-e p-2 sm:flex">
-      <ModeSwitch mode={mode} modes={modes} />
-      {groups.map((group) => (
-        <div key={group.label ?? ""} className="flex flex-col gap-0.5">
-          {group.label === undefined ? null : (
-            <span className="text-muted-foreground px-2 pb-0.5 text-[11px]">
-              {group.label}
-            </span>
-          )}
-          {group.items.map((item) => (
-            <span
-              key={item.label}
-              className={cn(
-                "flex h-7 items-center gap-2 rounded-md px-2 text-xs",
-                item.current === true
-                  ? "bg-accent text-foreground font-medium"
-                  : "text-muted-foreground"
+    <div className="flex min-h-0 flex-1">
+      <div className="hidden w-44 shrink-0 flex-col gap-1 px-2 sm:flex">
+        <SidebarHead workspace={workspace} />
+        <ModeSwitch mode={mode} modes={modes} />
+        <div className="flex flex-1 flex-col gap-3 py-2">
+          {groups.map((group) => (
+            <div key={group.label ?? ""} className="flex flex-col gap-px">
+              {group.label === undefined ? null : (
+                <span className="text-muted-foreground px-2 pb-0.5 text-[11px]">
+                  {group.label}
+                </span>
               )}
-            >
-              <SiteIconView icon={item.icon} className="size-3.5" />
-              {item.label}
-            </span>
+              {group.items.map((item) => (
+                <span
+                  key={item.label}
+                  className={cn(
+                    navItemClass,
+                    item.current === true
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      : "text-sidebar-foreground"
+                  )}
+                >
+                  <SiteIconView icon={item.icon} />
+                  {item.label}
+                </span>
+              ))}
+            </div>
           ))}
         </div>
-      ))}
+        <span className={cn(navItemClass, "text-sidebar-foreground")}>
+          <SlidersHorizontalIcon />
+          <span className="flex-1 truncate">{settings}</span>
+          <ChevronRightIcon className="text-muted-foreground" />
+        </span>
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col sm:pe-1.5 sm:pt-1.5">
+        <div className="bg-card flex flex-1 flex-col overflow-hidden border-b sm:rounded-lg sm:border">
+          <div className="flex h-12 shrink-0 items-center gap-3 border-b px-3">
+            <span className="sm:hidden">
+              <ModeSwitch mode={mode} modes={modes} />
+            </span>
+            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-[13px]">
+              {section === undefined ? null : (
+                <span className="text-muted-foreground flex shrink-0 items-center gap-1.5">
+                  {section}
+                  <span className="text-muted-foreground/60">›</span>
+                </span>
+              )}
+              <span className="text-foreground truncate font-medium">
+                {page}
+              </span>
+            </span>
+            {actions?.map((action) => (
+              <span
+                key={action}
+                className="text-foreground flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 text-xs font-medium [&_svg]:size-3.5"
+              >
+                <PlusIcon />
+                {action}
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-1 p-3">
+            {content.kind === "calendar" ? (
+              <Calendar days={content.days} />
+            ) : (
+              <Cards cards={content.cards} />
+            )}
+          </div>
+        </div>
+      </div>
     </div>
-    <div className="flex min-w-0 flex-1 flex-col">
-      <div className="flex h-14 shrink-0 items-center gap-3 border-b px-3">
-        <span className="sm:hidden">
-          <ModeSwitch mode={mode} modes={modes} />
-        </span>
-        <span className="text-foreground truncate text-[13px] font-medium">
-          {breadcrumb}
-        </span>
-      </div>
-      <div className="flex flex-1 p-3">
-        {content.kind === "calendar" ? (
-          <Calendar days={content.days} />
-        ) : (
-          <Cards cards={content.cards} />
-        )}
-      </div>
+    <div className="flex h-9 shrink-0 items-center justify-between px-2 sm:ps-3">
+      <span className="bg-brand-tint text-brand-text flex size-5 items-center justify-center rounded-full text-[10px] font-semibold">
+        {account}
+      </span>
+      <IconSpot>
+        <CircleHelpIcon />
+      </IconSpot>
     </div>
   </div>
 );

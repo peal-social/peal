@@ -240,10 +240,19 @@ export const productPair = (t: Messages["home"]): ProductPairContent => {
   const [monday = "", tuesday = ""] = mock.days;
   const [publishingKey = "", analyticsKey = ""] = mock.keys;
 
+  // What both pages' frames share: the account's avatar, the switch's
+  // labels, Settings and the workspace.
+  const frame = {
+    account: mock.workspace.slice(0, 1),
+    modes,
+    settings: mock.settings,
+    workspace: mock.workspace,
+  };
+
   return {
     mocks: [
       {
-        breadcrumb: pages.calendar,
+        ...frame,
         content: {
           days: [
             {
@@ -299,10 +308,10 @@ export const productPair = (t: Messages["home"]): ProductPairContent => {
           },
         ],
         mode: "studio",
-        modes,
+        page: pages.calendar,
       },
       {
-        breadcrumb: mock.groups.build,
+        ...frame,
         content: {
           cards: [
             {
@@ -351,7 +360,7 @@ export const productPair = (t: Messages["home"]): ProductPairContent => {
           },
         ],
         mode: "console",
-        modes,
+        page: pages.apiKeys,
       },
     ],
     products: [
