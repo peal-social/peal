@@ -39,11 +39,14 @@ import type { LibrarySearch } from "#media/library-search.ts";
 import { failureOf } from "#posts/outcome.ts";
 
 import { GenerateImage } from "./generate-image.tsx";
+import { LibraryEmptyView } from "./library-empty.tsx";
+import type { HiddenFiles } from "./library-empty.tsx";
 import { SearchStatus } from "./library-status.tsx";
 import { LibraryToolbarView } from "./library-toolbar.tsx";
 import { MediaPreviewDialog, useMediaName } from "./media-preview.tsx";
 import { MediaThumbnail } from "./media-thumbnail.tsx";
 import { MediaUploader } from "./media-uploader.tsx";
+import type { MediaUploaderHandle } from "./media-uploader.tsx";
 import { MediaUsageNotice } from "./media-usage-notice.tsx";
 import { useDebounced } from "./use-debounced.ts";
 import { useHydrated } from "./use-hydrated.ts";
@@ -318,6 +321,45 @@ const LibraryStatus = ({
   );
 };
 
+// The library with nothing to show. While a search narrows it, the whole
+// library's first page says how many files the search hides; with none
+// there either, the library is empty, search or not.
+const LibraryEmpty = ({
+  onClear,
+  onUpload,
+  search,
+  workspaceId,
+}: {
+  readonly onClear: () => void;
+  readonly onUpload: (() => void) | undefined;
+  readonly search: LibrarySearch;
+  readonly workspaceId: string;
+}) => {
+  const whole = useAtomValue(mediaPage(workspaceId, Option.none()));
+  const narrowed = isNarrowed(search);
+
+  const hidden = ((): HiddenFiles | null => {
+    if (!narrowed) {
+      return null;
+    }
+
+    if (!AsyncResult.isSuccess(whole)) {
+      return "unknown";
+    }
+
+    return whole.value.items.length === 0
+      ? null
+      : {
+          count: whole.value.items.length,
+          more: whole.value.nextCursor !== null,
+        };
+  })();
+
+  return (
+    <LibraryEmptyView hidden={hidden} onClear={onClear} onUpload={onUpload} />
+  );
+};
+
 const grid = "grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4";
 
 const LoadingGrid = () => {
@@ -342,6 +384,7 @@ const MediaPages = ({
   more,
   onClear,
   onMore,
+  onUpload,
   search,
   workspaceId,
 }: {
@@ -351,6 +394,7 @@ const MediaPages = ({
   readonly more: number;
   readonly onClear: () => void;
   readonly onMore: () => void;
+  readonly onUpload: (() => void) | undefined;
   readonly search: LibrarySearch;
   readonly workspaceId: string;
 }) => {
@@ -375,15 +419,13 @@ const MediaPages = ({
     onInitial: () => <LoadingGrid />,
     onSuccess: ({ value }) => {
       if (Option.isNone(cursor) && value.items.length === 0) {
-        return isNarrowed(search) ? (
-          <div className="flex flex-col items-start gap-2">
-            <p className="text-muted-foreground">{t("noMatch")}</p>
-            <Button variant="outline" size="sm" onClick={onClear}>
-              {t("clearSearch")}
-            </Button>
-          </div>
-        ) : (
-          <p className="text-muted-foreground">{t("empty")}</p>
+        return (
+          <LibraryEmpty
+            search={search}
+            workspaceId={workspaceId}
+            onClear={onClear}
+            onUpload={onUpload}
+          />
         );
       }
 
@@ -410,6 +452,7 @@ const MediaPages = ({
               workspaceId={workspaceId}
               onClear={onClear}
               onMore={onMore}
+              onUpload={onUpload}
             />
           ) : null}
           {Option.isSome(next) && more === 0 ? (
@@ -496,6 +539,14 @@ export const MediaLibrary = ({
 
   const searchField = useRef<HTMLInputElement>(null);
 
+  const uploader = useRef<MediaUploaderHandle>(null);
+
+  const handleUpload = canUpload
+    ? () => {
+        uploader.current?.choose();
+      }
+    : undefined;
+
   // The button that cleared the search goes with the message it stood
   // in: the focus goes back to the search field.
   const handleClear = () => {
@@ -505,7 +556,9 @@ export const MediaLibrary = ({
 
   return (
     <div className="flex flex-col gap-8">
-      {canUpload ? <MediaUploader workspaceId={workspaceId} /> : null}
+      {canUpload ? (
+        <MediaUploader ref={uploader} workspaceId={workspaceId} />
+      ) : null}
       {canGenerate && hydrated ? (
         <div>
           <GenerateImage
@@ -535,6 +588,7 @@ export const MediaLibrary = ({
             workspaceId={workspaceId}
             onClear={handleClear}
             onMore={handleMore}
+            onUpload={handleUpload}
           />
         ) : (
           <LoadingGrid />

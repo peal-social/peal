@@ -553,6 +553,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   document as a link to a tab of its own, never embedded. The toolbar is
   a `search` landmark, `SearchStatus` (an `output` that stays mounted)
   says what a search found, and clearing a search focuses the field.
+  With nothing to show, `LibraryEmptyView` is the empty state: no file
+  yet, with Upload (`MediaUploaderHandle.choose` opens the uploader's
+  picker), or, while a search narrows the library, none matching, the
+  strip counting the whole library's first page as hidden, and Clear.
 - A channel's tab in `TextTabs` takes `renderChannelMedia`: the composer
   puts `ChannelMediaField` there, a channel's own media (`MediaAttachments`
   with a `label` of its own), started from the post's. `#posts/channel-media.ts`
