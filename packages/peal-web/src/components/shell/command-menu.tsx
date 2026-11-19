@@ -14,6 +14,7 @@ import { useKeyMap } from "peal-ui/hooks/use-key-map";
 import type { KeyBinding } from "peal-ui/hooks/use-key-map";
 import { useState } from "react";
 
+import { chooseWorkspace } from "#auth/choose-workspace.ts";
 import { CommandMenuView } from "#components/shell/command-menu-view.tsx";
 import type { MenuLink } from "#components/shell/command-menu-view.tsx";
 import {
@@ -184,6 +185,7 @@ export const CommandMenu = ({
         docsUrl={docsUrl}
         link={AppLink}
         newPostHref={newPostHref}
+        onChooseWorkspace={chooseWorkspace}
         onOpenChange={setOpen}
         onShortcuts={() => {
           setSheetOpen(true);

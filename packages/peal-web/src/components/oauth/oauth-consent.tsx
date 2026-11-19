@@ -8,7 +8,8 @@ import { Checkbox } from "peal-ui/components/checkbox";
 import { Label } from "peal-ui/components/label";
 import { useId, useState, useTransition } from "react";
 
-import { authClient } from "#auth/client.ts";
+import { makeAnswerConsent } from "#auth/answer-consent.ts";
+import { authClient, workspaceClient } from "#auth/client.ts";
 import {
   adsScope,
   consentAnswer,
@@ -17,7 +18,6 @@ import {
   withoutPublishing,
 } from "#auth/consent-scopes.ts";
 import type { WithoutPublishing } from "#auth/consent-scopes.ts";
-import { isOAuthRedirect } from "#auth/oauth-redirect.ts";
 import { ScopeList } from "#components/oauth/scope-list.tsx";
 
 // Publishing, which the person may leave out: ticked, the application
@@ -200,6 +200,15 @@ export const OAuthConsentView = ({
   );
 };
 
+// Allowing sets the workspace the page shows as the active one again, through
+// `workspaceClient` (`authClient` would resume the authorization), then
+// posts the consent through `authClient`, which sends the signed query.
+const answerConsent = makeAnswerConsent({
+  consent: async (answer) => await authClient.oauth2.consent(answer),
+  setActive: async (organizationId) =>
+    await workspaceClient.organization.setActive({ organizationId }),
+});
+
 // The consent page of an OAuth authorization: what the client asks to do,
 // in which workspace, and where the browser goes next. Allowing or denying
 // sends the browser back to the client, which Better Auth's client does.
@@ -211,7 +220,8 @@ export const OAuthConsent = ({
   readonly scopes: readonly string[];
 }) => {
   // The workspace picked a moment ago, which the client's tokens are bound
-  // to.
+  // to: another tab may since have opened another, so allowing sets it
+  // again (`makeAnswerConsent`).
   const workspace = authClient.useActiveOrganization();
   const [allowPublishing, setAllowPublishing] = useState(true);
   const [allowAds, setAllowAds] = useState(true);
@@ -222,16 +232,17 @@ export const OAuthConsent = ({
     startTransition(async () => {
       // Without publishing or ads, Better Auth is sent the scopes that
       // remain, and issues tokens for those alone.
-      const answered = await authClient.oauth2.consent(
+      const answered = await answerConsent(
         accept
           ? consentAnswer(scopes, {
               ads: allowAds,
               publishing: allowPublishing,
             })
-          : { accept: false }
+          : { accept: false },
+        workspace.data?.id
       );
 
-      setFailed(answered.error !== null || !isOAuthRedirect(answered.data));
+      setFailed(!answered);
     });
   };
 

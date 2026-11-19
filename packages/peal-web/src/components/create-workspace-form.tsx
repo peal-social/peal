@@ -5,6 +5,7 @@ import { Button } from "peal-ui/components/button";
 import { useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
 
+import { chooseWorkspace } from "#auth/choose-workspace.ts";
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";
 import type { AuthClientError, AuthErrorKey } from "#auth/errors.ts";
@@ -23,7 +24,8 @@ export type Created =
 /**
  * Creates a workspace the user owns, named `name`, under the first of
  * its slugs the server takes (`slugsToTry`): a slug another workspace
- * holds tries the next one.
+ * holds tries the next one. The workspace made becomes the session's
+ * active one.
  */
 export const createWorkspace = async (
   name: string,
@@ -38,6 +40,11 @@ export const createWorkspace = async (
   const result = await authClient.organization.create({ name, slug });
 
   if (result.error === null) {
+    // Better Auth makes it active in the database, but the session's
+    // cached cookie, which `/` reads, still names the last one for five
+    // minutes: setting it again renews the cookie.
+    chooseWorkspace(result.data.id);
+
     return { slug: result.data.slug };
   }
 

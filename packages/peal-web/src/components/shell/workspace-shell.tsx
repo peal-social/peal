@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import type { Permission } from "peal-contract";
 import type { ReactNode } from "react";
 
+import { chooseWorkspace } from "#auth/choose-workspace.ts";
 import { CommandMenu } from "#components/shell/command-menu.tsx";
 import { CommandScopeProvider } from "#components/shell/command-scope.tsx";
 import { FrameView } from "#components/shell/frame-view.tsx";
@@ -75,6 +76,7 @@ export const WorkspaceShell = ({
           <SidebarView
             link={AppLink}
             navigation={navigation}
+            onChooseWorkspace={chooseWorkspace}
             tools={
               <CommandMenu
                 docsUrl={docsUrl}

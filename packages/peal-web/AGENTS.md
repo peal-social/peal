@@ -171,7 +171,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `/` is no page: for someone signed in it redirects to the workspace Better Auth keeps
   active on the session (`activeWorkspaceOf`, `#auth/active-workspace.ts`,
   read only for someone with several), else the first (`homeWorkspaceOf`);
-  someone signed out is sent to sign in.
+  someone signed out is sent to sign in. A workspace becomes the active one
+  when it is chosen: from the switcher, the command menu or the person's
+  sidebar, and once created (`createWorkspace`), as Better Auth's own
+  update leaves the session's cached cookie naming the last one.
+  `chooseWorkspace` (`#auth/choose-workspace.ts`) sets it through
+  `workspaceClient` while the link opens, waits for nothing, and only
+  reports a failure; views take it as `onChooseWorkspace`.
   Every way in lands there: sign-in's default `next`, sign-up, a confirmed
   address, an accepted invitation, the OAuth pages. Someone with none gets
   `FirstWorkspace` (`components/first-workspace.tsx`): an invitation still
@@ -975,6 +981,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The consent page lets a person leave `workspace:ads` out as it does
   publishing (`mayLeaveAdsOut`, `consentAnswer` in
   `#auth/consent-scopes.ts`).
+- Better Auth binds a client's tokens to the session's active workspace
+  when the consent is posted, and choosing a workspace in any tab moves
+  it: allowing first sets the workspace the consent page shows as active
+  again through `workspaceClient`, and fails without consenting when that
+  is refused (`makeAnswerConsent`, `#auth/answer-consent.ts`).
 - The webhooks settings (`components/webhooks/`) offer an endpoint's
   channels as a picker (`workspaceChannels`) and a partner endpoint's
   workspaces as ids, one a line (`#webhooks/endpoint-draft.ts`; an edit
