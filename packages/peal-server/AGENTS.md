@@ -500,6 +500,23 @@ and no socket, for tests.
   one's or a service identity's. An erasure deletes the persons'
   recordings too (`delete_recordings`), and counts as done once PostHog
   says they are queued, or that it found nobody (`persons_found: 0`).
+- Where `PEAL_POSTHOG_SITE` is on beside a project token
+  (`SiteMeasurement`, provided with product analytics), a sign-up links
+  the visitor the site, the docs and the blog followed, once they allowed
+  it, to the new account, once, in the request that made it:
+  `databaseHooks.user.create.after` reads the id in the request's
+  `ph_<token>_posthog` cookie (`visitorOf`, auth's `visitor-of.ts`), only
+  when it is a version 7 UUID, which users' and workspaces' ids (version 4) never are, and `toldSignUp` sends `ProductAnalytics.link` (PostHog's
+  `$create_alias`, the account's id as `distinct_id`, the visitor's as
+  `alias`, `AliasPropertiesSchema`) before `user_signed_up`. Then the after
+  hook expires that cookie (`expireVisitorCookie`, on
+  `PEAL_POSTHOG_SITE_COOKIE_DOMAIN` where set) after every
+  `/sign-up/email` that carried it, whatever it answered, so a known
+  address's made-up user reads the same, and after a `/callback/*` that
+  made an account: the browser's later visits get a new visitor, linked
+  to nobody. Nothing is linked at a sign-in, nor after the sign-up.
+  Closing the account deletes the person at PostHog, the visits merged
+  into it included.
 - Tests use `ProductAnalytics.none`, or `recordedAnalytics`
   (`#test/shared/recorded-analytics.ts`); through the whole server,
   `appWithPostHog` (`#test/shared/fake-posthog.ts`) reads what a fake
