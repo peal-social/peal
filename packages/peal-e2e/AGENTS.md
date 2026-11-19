@@ -87,7 +87,8 @@
   before opening a list beneath it.
 - `tests/tags.e2e.ts` signs up a member of its own, adds a tag in the
   settings, schedules a tagged post and another, filters the calendar by
-  the tag and clears the filter, then cancels both. The calendar names a
+  the tag (the Filter menu's Tag, its chip, `?tag=` in the address) and
+  clears it with **Clear**, then cancels both. The calendar names a
   tagged post "<time>, <status>: <text> Tag: <name>.", so a locator for one
   ends with its tags. A menu or popover that stays open after a choice is
   closed with `press("Escape")` before the page behind it is read.

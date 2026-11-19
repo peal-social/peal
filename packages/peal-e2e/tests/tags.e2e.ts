@@ -115,13 +115,20 @@ describe("a member's tags", { serial: true }, () => {
     await expect(screen.getByRole("link", taggedPost)).toBeVisible();
   });
 
-  test("filters the calendar by the tag", async ({ screen }) => {
-    await screen.getByRole("button", "Tags").tap();
-    await screen.getByRole("menuitemcheckbox", tag).tap();
-    // The menu stays open for more choices: close it to read the calendar.
-    await screen.getByRole("menuitemcheckbox", tag).press("Escape");
+  test("filters the calendar by the tag", async ({ browser, screen }) => {
+    await screen.getByRole("main").getByRole("button", "Filter").tap();
+    await screen.getByRole("option", "Tag").tap();
+    await screen.getByRole("option", tag).tap();
+    // The menu stays open for more choices: Escape goes back to the
+    // properties, then closes it.
+    await screen.getByRole("option", tag).press("Escape");
+    await screen.getByRole("option", "Tag").press("Escape");
 
-    await expect(screen.getByRole("button", "Tags (1)")).toBeVisible();
+    // The filter is in the address, and its chip names the tag.
+    await expect(browser).toHaveURL(/[?&]tag=/u);
+    await expect(
+      screen.getByRole("main").getByRole("button", tag)
+    ).toBeVisible();
     await expect(screen.getByRole("link", taggedPost)).toBeVisible();
     await expect(screen.getByRole("link", plainPost)).toBeHidden();
     await expect(screen.getByText("1 post hidden by filters")).toBeVisible();
@@ -130,12 +137,14 @@ describe("a member's tags", { serial: true }, () => {
   test("shows every post again once the filters are cleared", async ({
     screen,
   }) => {
-    await screen.getByRole("button", "Clear filters").tap();
+    await screen.getByRole("main").getByRole("button", "Clear").tap();
 
     await expect(screen.getByRole("link", taggedPost)).toBeVisible();
     await expect(screen.getByRole("link", plainPost)).toBeVisible();
     await expect(screen.getByText("1 post hidden by filters")).toBeHidden();
-    await expect(screen.getByRole("button", "Clear filters")).toBeHidden();
+    await expect(
+      screen.getByRole("main").getByRole("button", "Clear")
+    ).toBeHidden();
   });
 
   // Nothing goes out: both posts are cancelled.

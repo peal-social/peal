@@ -6,7 +6,8 @@ import type { Tag } from "peal-contract";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { CalendarFilters } from "#components/posts/calendar-filters.tsx";
+import { CalendarToolbar } from "#components/posts/calendar-toolbar.tsx";
+import type { ViewLink } from "#components/posts/calendar-toolbar.tsx";
 import { ChipTags } from "#components/posts/chip-tags.tsx";
 import {
   PostTagsView,
@@ -280,7 +281,37 @@ describe(ChipTags, () => {
   });
 });
 
-describe(CalendarFilters, () => {
+// The calendar's view links, as plain links.
+const PlainLink: ViewLink = ({ children, ...props }) => (
+  <a {...props}>{children}</a>
+);
+
+// The toolbar around a week, with no queue.
+const toolbar = (
+  filter: Parameters<typeof CalendarToolbar>[0]["filter"],
+  options: {
+    readonly channels: Parameters<typeof CalendarToolbar>[0]["channels"];
+    readonly hidden: number;
+    readonly tags: Parameters<typeof CalendarToolbar>[0]["tags"];
+  }
+) => (
+  <CalendarToolbar
+    channels={options.channels}
+    filter={filter}
+    hidden={options.hidden}
+    hrefOf={(view) => `/calendar?view=${view}`}
+    labels={{ next: "Next week", previous: "Previous week" }}
+    link={PlainLink}
+    queues={[]}
+    tags={options.tags}
+    view="week"
+    onFilter={noop}
+    onStep={noop}
+    onToday={noop}
+  />
+);
+
+describe(CalendarToolbar, () => {
   const channel = {
     avatarUrl: null,
     connection: null,
@@ -293,42 +324,36 @@ describe(CalendarFilters, () => {
     tokenExpiresAt: null,
   } as const;
 
-  it("offers the tags and the channels, and says nothing while nothing is chosen", async () => {
+  it("shows its views and Filter, and no chip while nothing is chosen", async () => {
     const html = await render(
       "en",
-      <CalendarFilters
-        queues={[]}
-        channels={[channel]}
-        filter={{ channelIds: [], queueIds: [], tagIds: [] }}
-        hidden={0}
-        tags={[launch]}
-        onChange={noop}
-      />
+      toolbar(
+        { channelIds: [], queueIds: [], tagIds: [] },
+        { channels: [channel], hidden: 0, tags: [launch] }
+      )
     );
 
-    expect(missingFrom(html, [">Tags<", ">Channels<"])).toStrictEqual([]);
-    expect(html).not.toContain("Clear filters");
+    expect(
+      missingFrom(html, [">Day<", ">Week<", ">Month<", 'aria-label="Filter"'])
+    ).toStrictEqual([]);
+    expect(html).not.toContain('data-slot="filter-chip"');
     expect(html).not.toContain("hidden by filters");
   });
 
-  it("says how many posts the choice hides, with a way to clear it", async () => {
+  it("names the chosen values in chips, says how many posts they hide, and offers Clear", async () => {
     const html = await render(
       "en",
-      <CalendarFilters
-        queues={[]}
-        channels={[channel]}
-        filter={{ channelIds: ["c1"], queueIds: [], tagIds: ["t1", "t2"] }}
-        hidden={3}
-        tags={[launch, news]}
-        onChange={noop}
-      />
+      toolbar(
+        { channelIds: ["c1"], queueIds: [], tagIds: ["t1", "t2"] },
+        { channels: [channel], hidden: 3, tags: [launch, news] }
+      )
     );
 
     expect(
       missingFrom(html, [
-        "Tags (2)",
-        "Channels (1)",
-        "Clear filters",
+        "is any of",
+        "Launch week, Newsletter",
+        ">Clear<",
         "3 posts hidden by filters",
         "<output",
       ])
@@ -338,24 +363,20 @@ describe(CalendarFilters, () => {
   it("says so in French, and leaves out a kind with nothing to choose", async () => {
     const html = await render(
       "fr",
-      <CalendarFilters
-        queues={[]}
-        channels={[]}
-        filter={{ channelIds: [], queueIds: [], tagIds: ["t1"] }}
-        hidden={1}
-        tags={[launch]}
-        onChange={noop}
-      />
+      toolbar(
+        { channelIds: [], queueIds: [], tagIds: ["t1"] },
+        { channels: [], hidden: 1, tags: [launch] }
+      )
     );
 
     expect(
       missingFrom(html, [
-        "Étiquettes (1)",
-        "Effacer les filtres",
+        "Étiquette",
+        ">Effacer<",
         "1 publication masquée par les filtres",
       ])
     ).toStrictEqual([]);
 
-    expect(html).not.toContain("Canaux");
+    expect(html).not.toContain("Canal");
   });
 });

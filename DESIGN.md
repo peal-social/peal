@@ -837,7 +837,10 @@ way, so a person who learns one screen knows them all.
   icon, "is", the value, and × to take it off, cut by hairlines, 28 px
   high, `{rounded.sm}`; pressing the value opens the menu on that property
   to change it. After the chips, **Clear** takes them all off. A property
-  holds one value at a time; properties add up.
+  holds one value at a time, unless the screen can show several: then
+  its values have checkboxes, the menu stays open while they are ticked,
+  and the chip says "is any of" with the names joined ("Tag is any of
+  Launch, News"). Properties add up.
 - **Display** opens a small panel (level 3, 288 px, 12 px inside):
   **Ordering** (what the list is sorted by) with a button that turns its
   direction, and where a screen has them, grouping and its other views

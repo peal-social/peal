@@ -5130,6 +5130,7 @@
     "filters": "Filters",
     "is": "is",
     "remove": "Remove the {property} filter",
-    "clear": "Clear"
+    "clear": "Clear",
+    "isAnyOf": "is any of"
   }
 }

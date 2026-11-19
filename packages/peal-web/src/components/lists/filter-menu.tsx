@@ -1,6 +1,6 @@
 "use client";
 
-import { useShortcutHint } from "@ui-sdk/react/shortcuts";
+import { useShortcut, useShortcutHint } from "@ui-sdk/react/shortcuts";
 import type { LucideIcon } from "lucide-react";
 import { CheckIcon, ChevronRightIcon, ListFilterIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -10,6 +10,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandItemCheck,
   CommandItemEnd,
   CommandItemIcon,
   CommandItemText,
@@ -39,44 +40,93 @@ export interface FilterValue {
   readonly mark?: ReactNode;
 }
 
-/** A property a list can be narrowed by, with its values. */
+/**
+ * A property a list can be narrowed by, with its values. `multiple`: the
+ * list can keep several of them at once ("Channel is any of A, B");
+ * otherwise one at a time.
+ */
 export interface FilterProperty {
   readonly id: string;
   readonly label: string;
   readonly icon: LucideIcon;
+  readonly multiple?: boolean;
   readonly values: readonly FilterValue[];
 }
 
 /** The menu's page of a property's values. */
 const pageOf = (property: string) => `property:${property}`;
 
+/** Whether the Filter menu is open, and on which property's page. */
+export interface FilterMenuState {
+  readonly open: boolean;
+  readonly startAt: string | null;
+  /** Opens the menu, on a property's page when one is named. */
+  readonly openAt: (property: string | null) => void;
+  readonly setOpen: (open: boolean) => void;
+}
+
+/**
+ * The Filter menu's state, and F, which opens it on the list's page
+ * (DESIGN.md, "Filters and display"): one per list.
+ */
+export const useFilterMenu = (): FilterMenuState => {
+  const t = useTranslations("Lists");
+
+  const [menu, setMenu] = useState<{
+    readonly open: boolean;
+    readonly startAt: string | null;
+  }>({ open: false, startAt: null });
+
+  const openAt = (property: string | null) => {
+    setMenu({ open: true, startAt: property });
+  };
+
+  useShortcut(
+    listKeys.filter,
+    () => {
+      openAt(null);
+    },
+    { description: t("filter") }
+  );
+
+  return {
+    open: menu.open,
+    openAt,
+    setOpen: (open) => {
+      setMenu({ open, startAt: open ? menu.startAt : null });
+    },
+    startAt: menu.startAt,
+  };
+};
+
 /**
  * The Filter menu (DESIGN.md, "Filters and display"): the toolbar's
  * Filter button and its popover, a search over the list's properties,
  * each opening a page of its values; typed text searches every value at
- * once. Choosing a value calls `onChoose`; choosing the one already chosen
- * takes it off (`null`). `startAt` opens the menu on a property's page,
- * as a chip's value does.
+ * once. Choosing a value calls `onChoose` with the property's values: of
+ * a property with one at a time, that value alone, or none when it was
+ * the one chosen, and the menu closes; of a `multiple` one, the values
+ * with this one put in or taken out, its box ticked or not, and the menu
+ * stays open for the next. The menu opens on `state.startAt`'s page, as a
+ * chip's value does.
  */
 export const FilterMenu = ({
   active,
   chosen,
   onChoose,
-  onOpenChange,
-  open,
   properties,
-  startAt,
+  state,
 }: {
   /** Whether the button shows the list narrowed: by default, a value is chosen. */
   readonly active?: boolean;
-  /** The value chosen for each property, by the property's id. */
-  readonly chosen: Readonly<Record<string, string | undefined>>;
-  readonly onChoose: (property: string, value: string | null) => void;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly open: boolean;
+  /** The values chosen for each property, by the property's id. */
+  readonly chosen: Readonly<Record<string, readonly string[]>>;
+  readonly onChoose: (property: string, values: readonly string[]) => void;
   readonly properties: readonly FilterProperty[];
-  readonly startAt: string | null;
+  readonly state: FilterMenuState;
 }) => {
+  const { open, startAt } = state;
+  const onOpenChange = state.setOpen;
   const t = useTranslations("Lists");
   const hint = useShortcutHint(listKeys.filter);
   const [query, setQuery] = useState("");
@@ -100,32 +150,48 @@ export const FilterMenu = ({
     property: FilterProperty,
     value: FilterValue,
     named: boolean
-  ) => (
-    <CommandItem
-      key={`${property.id}:${value.id}`}
-      value={`value:${property.id}:${value.id}`}
-      label={named ? `${property.label} ${value.label}` : value.label}
-      onSelect={() => {
-        onChoose(
-          property.id,
-          chosen[property.id] === value.id ? null : value.id
-        );
-        onOpenChange(false);
-      }}
-    >
-      {value.mark === undefined ? null : (
-        <CommandItemIcon>{value.mark}</CommandItemIcon>
-      )}
-      <CommandItemText>
-        {named ? `${property.label} › ${value.label}` : value.label}
-      </CommandItemText>
-      {chosen[property.id] === value.id ? (
-        <CommandItemEnd>
-          <CheckIcon aria-label={t("chosen")} />
-        </CommandItemEnd>
-      ) : null}
-    </CommandItem>
-  );
+  ) => {
+    const values = chosen[property.id] ?? [];
+    const isChosen = values.includes(value.id);
+
+    return (
+      <CommandItem
+        key={`${property.id}:${value.id}`}
+        value={`value:${property.id}:${value.id}`}
+        label={named ? `${property.label} ${value.label}` : value.label}
+        onSelect={() => {
+          if (property.multiple === true) {
+            onChoose(
+              property.id,
+              isChosen
+                ? values.filter((id) => id !== value.id)
+                : [...values, value.id]
+            );
+
+            return;
+          }
+
+          onChoose(property.id, isChosen ? [] : [value.id]);
+          onOpenChange(false);
+        }}
+      >
+        {property.multiple === true ? (
+          <CommandItemCheck checked={isChosen} />
+        ) : null}
+        {value.mark === undefined ? null : (
+          <CommandItemIcon>{value.mark}</CommandItemIcon>
+        )}
+        <CommandItemText>
+          {named ? `${property.label} › ${value.label}` : value.label}
+        </CommandItemText>
+        {isChosen && property.multiple !== true ? (
+          <CommandItemEnd>
+            <CheckIcon aria-label={t("chosen")} />
+          </CommandItemEnd>
+        ) : null}
+      </CommandItem>
+    );
+  };
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -139,7 +205,7 @@ export const FilterMenu = ({
                   aria-keyshortcuts={hint.ariaKeyshortcuts}
                   active={
                     active ??
-                    Object.values(chosen).some((value) => value !== undefined)
+                    Object.values(chosen).some((values) => values.length > 0)
                   }
                 />
               }
@@ -166,7 +232,7 @@ export const FilterMenu = ({
             placeholder={shown?.label ?? t("filterPlaceholder")}
           />
           <CommandEmpty>
-            {(state) => t("noMatch", { query: state.query })}
+            {(found) => t("noMatch", { query: found.query })}
           </CommandEmpty>
           <CommandList>
             {properties.map((property) => (

@@ -503,7 +503,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   copies the emailed link, which Better Auth lets only a session of the
   invited, verified address accept: there is no open invitation link.
 - The calendar filters the posts it loaded in the browser
-  (`#posts/calendar-filter.ts`, `CalendarFilters`), and links each day and
+  (`#posts/calendar-filter.ts`) through `CalendarToolbar`, the list
+  toolbar of DESIGN.md (views as tabs, the way through time, the Filter
+  menu, whose channels, tags and queues each keep several, and chips),
+  and keeps its view, date and filters in the address
+  (`#posts/calendar-query.ts`: `calendarStateOf`, `calendarQueryOf`, the
+  defaults left out), so a link shows the same calendar; it links each day and
   each hour still to come to `…/posts/new?at=YYYY-MM-DDTHH:mm`
   (`#posts/start-time.ts`), which the composer reads on the viewer's clock
   and ignores when malformed or past.
