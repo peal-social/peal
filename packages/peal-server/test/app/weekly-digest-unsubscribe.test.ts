@@ -76,7 +76,10 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           // A token of another generation, or a forged one, does nothing.
-          for (const refused of [stale, `${token.slice(0, -2)}AA`, "x"]) {
+          // The forgery changes the signature's end, never to what it was.
+          const forged = `${token.slice(0, -2)}${token.endsWith("AA") ? "BB" : "AA"}`;
+
+          for (const refused of [stale, forged, "x"]) {
             const reply = yield* app.request(path(refused), {
               form: { "List-Unsubscribe": "One-Click" },
               method: "POST",
