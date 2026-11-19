@@ -6,13 +6,27 @@
   "targets": {
     "typecheck": {
       "command": "tsc --noEmit",
-      "options": { "cwd": "{projectRoot}" }
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     },
     "e2e": {
       "command": "e2e run",
       "options": {
         "cwd": "{projectRoot}",
-        "env": { "E2E_TELEMETRY_DISABLED": "1" }
+        "env": {
+          "E2E_TELEMETRY_DISABLED": "1"
+        }
+      },
+      "dependsOn": ["peal-web:build"]
+    },
+    "e2e-webkit": {
+      "command": "e2e run --config e2e.webkit.config.ts",
+      "options": {
+        "cwd": "{projectRoot}",
+        "env": {
+          "E2E_TELEMETRY_DISABLED": "1"
+        }
       },
       "dependsOn": ["peal-web:build"]
     }

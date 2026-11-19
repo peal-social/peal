@@ -255,6 +255,25 @@ describe("the web app's measurement", { serial: true }, () => {
 
     await app.open(`/app/${workspaceId}/posts`);
     await app.open(`/app/${workspaceId}/channels`);
+    await app.open(`/app/${workspaceId}/posts`);
+
+    // A page opened without a reload counts too.
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Drafts")
+      .tap();
+
+    await eventually(
+      () =>
+        received().filter(
+          (event) =>
+            fromBrowser(event) &&
+            event.event === "$pageview" &&
+            event.distinctId !== memberId &&
+            textOf(event.properties["$current_url"]).endsWith("/app/:id/drafts")
+        ),
+      "an anonymous page view of a page opened without a reload"
+    );
 
     const views = await eventually(
       () =>
@@ -371,6 +390,73 @@ describe("the web app's measurement", { serial: true }, () => {
             event.properties["$session_id"] === session
         ),
       "a server event joined to the browser's session"
+    );
+
+    // Pages opened without a reload count under the member, the recording
+    // goes on across them, and the app's own requests name the session.
+    const recordedSoFar = after().filter(
+      (event) => event.event === "$snapshot"
+    ).length;
+
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Drafts")
+      .tap();
+
+    await eventually(
+      () =>
+        after().filter(
+          (event) =>
+            event.event === "$pageview" &&
+            event.distinctId === memberId &&
+            textOf(event.properties["$current_url"]).endsWith("/app/:id/drafts")
+        ),
+      "the member's page view of a page opened without a reload"
+    );
+
+    await app.open(`/app/${workspaceId}/settings`);
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Tags")
+      .tap();
+    await screen.getByLabel("Name").fill("Measured");
+    await screen.getByRole("button", "Add the tag").tap();
+    await expect(screen.getByText("The tag is added.")).toBeVisible();
+
+    const current = await eventually(
+      () =>
+        after().filter(
+          (event) =>
+            event.event === "$pageview" &&
+            event.distinctId === memberId &&
+            textOf(event.properties["$current_url"]).endsWith(
+              "/app/:id/settings/tags"
+            )
+        ),
+      "the member's page view of the tags"
+    );
+
+    const tagged = await eventually(
+      () =>
+        received().filter(
+          (event) =>
+            event.path === serverCapture &&
+            event.event === "api_operation" &&
+            event.properties["operation"] === "tags.create"
+        ),
+      "the server's event of the tag the page added"
+    );
+
+    expect(tagged[0]?.properties["$session_id"]).toBe(
+      current[0]?.properties["$session_id"]
+    );
+
+    await eventually(
+      () =>
+        after()
+          .filter((event) => event.event === "$snapshot")
+          .slice(recordedSoFar),
+      "more of the recording after pages opened without a reload"
     );
 
     // What the SDK keeps once allowed, which the privacy policy names.

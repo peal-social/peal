@@ -402,9 +402,10 @@ jobs:
         with:
           nx-cache: e2e
       - run: docker compose --file packages/peal-docker/compose.yaml up --detach --wait seaweedfs
-      # Chromium for the Playwright version @e2e-dev/web pins, kept between
-      # runs (saved by main only, like Nx's cache), with the system libraries
-      # it needs, installed each time.
+      # Chromium, and WebKit for the measurement's journey, for the
+      # Playwright version @e2e-dev/web pins, kept between runs (saved by
+      # main only, like Nx's cache), with the system libraries they need,
+      # installed each time.
       - id: playwright
         run: >-
           echo "version=$(node --print 'require(require.resolve("playwright-core/package.json",
@@ -414,15 +415,21 @@ jobs:
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - run: ./node_modules/.bin/e2e-web install chromium --with-deps
+          key: playwright-chromium-webkit-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - run: ./node_modules/.bin/e2e-web install chromium webkit --with-deps
         working-directory: packages/peal-e2e
       - if: github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+          key: playwright-chromium-webkit-${{ runner.os }}-${{ steps.playwright.outputs.version }}
       - run: bun nx run peal-e2e:e2e
+        env:
+          DATABASE_URL: postgres://peal:peal@localhost:5432/peal
+          MAILPIT_URL: http://localhost:8025
+          SMTP_URL: smtp://localhost:1025
+      # The measurement's journey in WebKit too, after the Chromium run.
+      - run: bun nx run peal-e2e:e2e-webkit
         env:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
           MAILPIT_URL: http://localhost:8025

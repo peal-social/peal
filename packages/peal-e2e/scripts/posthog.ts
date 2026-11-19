@@ -66,9 +66,12 @@ const decodedBody = (raw: Buffer, query: URLSearchParams) => {
   );
 };
 
-// What PostHog's project configuration says: session replay on, with no
-// minimum duration and every session sampled, so a short journey records.
+// What PostHog's project configuration says, as its cloud answers it:
+// events to `/i/v0/e/` rather than the SDK's default `/e/`, and session
+// replay on, with no minimum duration and every session sampled, so a
+// short journey records.
 const remoteConfig = {
+  analytics: { endpoint: "/i/v0/e/" },
   autocapture_opt_out: true,
   capturePerformance: false,
   hasFeatureFlags: false,
