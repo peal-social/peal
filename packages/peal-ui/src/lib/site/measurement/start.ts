@@ -47,17 +47,18 @@ export type Alignment = "forget" | "follow" | "none" | "renew";
 /**
  * What to do so the SDK follows the answer: `follow` (opt in), `forget`
  * (opt out and forget the visitor), `renew` (a new visitor, linked to
- * none, where the answer still allows it but the cookie is gone: a
- * sign-up or another tab removed it), or nothing.
+ * none, where the answer still allows it but the cookie this page saw is
+ * gone: a sign-up or another tab removed it), or nothing. A cookie the
+ * SDK has yet to write is not lost: it saves it a moment after opting in.
  */
 export const alignmentOf = ({
   answer,
   following,
-  holdsCookie,
+  lostCookie,
 }: {
   readonly answer: Answer;
   readonly following: boolean;
-  readonly holdsCookie: boolean;
+  readonly lostCookie: boolean;
 }): Alignment => {
   if (answer !== "allowed") {
     return following ? "forget" : "none";
@@ -67,7 +68,7 @@ export const alignmentOf = ({
     return "follow";
   }
 
-  return holdsCookie ? "none" : "renew";
+  return lostCookie ? "renew" : "none";
 };
 
 /** The days an answer given on `day` has left on `today`, at least one. */
@@ -126,13 +127,24 @@ export const startMeasurement = async (
 
   let following = false;
   let aligning = false;
+  // Whether this page saw the visitor's cookie since it last followed a
+  // new visitor: only a cookie seen can be lost.
+  let seenCookie = false;
+
+  const lostCookie = () => {
+    const holds = holdsVisitor(key);
+
+    seenCookie ||= holds;
+
+    return seenCookie && !holds;
+  };
 
   // Brings the SDK in line with the answer cookie, as `alignmentOf` says.
   const align = () => {
     const alignment = alignmentOf({
       answer: answerOf(document.cookie, dayOf(Date.now())),
       following,
-      holdsCookie: holdsVisitor(key),
+      lostCookie: lostCookie(),
     });
 
     if (alignment === "none") {
@@ -145,6 +157,7 @@ export const startMeasurement = async (
       following = true;
       sdk.opt_in_capturing();
     } else if (alignment === "renew") {
+      seenCookie = false;
       sdk.reset();
     } else {
       following = false;
@@ -180,7 +193,7 @@ export const startMeasurement = async (
           following &&
           !aligning &&
           (answerOf(document.cookie, dayOf(Date.now())) !== "allowed" ||
-            !holdsVisitor(key))
+            lostCookie())
         ) {
           queueMicrotask(align);
 
