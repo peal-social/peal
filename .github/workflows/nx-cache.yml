@@ -52,3 +52,31 @@ jobs:
             .nx/cache
             .nx/workspace-data
           key: nx-${{ runner.os }}-${{ matrix.target }}-${{ github.sha }}
+
+  # What main saves is read from its newest entry alone: CodeQL's base
+  # database for each language (its default setup, about 530 MB for
+  # JavaScript, saved again at every push and never removed) and Nx's
+  # caches above. The older ones only fill the repository's 10 GB, where
+  # GitHub then evicts what the jobs still read, like the browsers' cache.
+  # This keeps the newest entry of each on main and deletes the others.
+  prune:
+    needs: save
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/caches?ref=refs/heads/main&per_page=100" \
+            --jq '.actions_caches[] | select(.key | test("^(codeql-overlay-base-database-|nx-)")) | [.id, .key, .created_at] | @tsv' |
+            jq --raw-input --slurp --raw-output '
+              split("\n") | map(select(. != "") | split("\t") | {id: .[0], key: .[1], created: .[2]})
+              | group_by(.key | sub("-[0-9a-f]{40}.*$"; ""))
+              | map(sort_by(.created) | .[:-1][]) | .[] | "\(.id)\t\(.key)"' |
+            while IFS=$'\t' read -r id key; do
+              echo "Deleting $key"
+              gh api --method DELETE "repos/$GITHUB_REPOSITORY/actions/caches/$id" --silent
+            done
+        env:
+          GH_TOKEN: ${{ github.token }}
