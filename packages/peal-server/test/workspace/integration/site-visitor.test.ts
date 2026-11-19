@@ -64,9 +64,13 @@ const visitorCookie = (visitorId: string): string =>
     })
   )}`;
 
+// The site's answer, as peal-ui writes it: allowed `daysAgo` days ago.
+const allowed = (daysAgo = 0): string =>
+  `peal.consent=1.a.${String(Math.floor(Date.now() / 86_400_000) - daysAgo)}`;
+
 // The browser's cookies: the consent answer, the visitor's, a session's.
-const browserCookies = (visitorId: string): string =>
-  `peal.consent=allowed; ${visitorCookie(visitorId)}`;
+const browserCookies = (visitorId: string, answer = allowed()): string =>
+  `${answer}; ${visitorCookie(visitorId)}`;
 
 // What expires the visitor's cookie, on its parent domain.
 const expiry = `${cookieName}=; Max-Age=0; Domain=${cookieDomain}; Path=/; Secure; SameSite=Lax`;
@@ -85,11 +89,26 @@ const aliasOf =
 // two seconds at most.
 const drained = Effect.sleep("5 seconds");
 
-const signUp = (email: string, cookie: string) =>
+const signUp = (
+  email: string,
+  cookie: string,
+  {
+    headers = {},
+    secret = password,
+  }: {
+    readonly headers?: Readonly<Record<string, string>>;
+    readonly secret?: string;
+  } = {}
+) =>
   TestApp.use((app) =>
     app.request("/api/auth/sign-up/email", {
-      body: { email, locale: "en", name: "Synthetic Visitor", password },
-      headers: { cookie },
+      body: {
+        email,
+        locale: "en",
+        name: "Synthetic Visitor",
+        password: secret,
+      },
+      headers: { ...headers, cookie },
     })
   );
 
@@ -172,11 +191,75 @@ layer(
     })
   );
 
+  it.effect(
+    "links nothing for an answer 183 days old, a refusal, or a browser that asks not to be followed, and still expires the cookie",
+    () =>
+      Effect.gen(function* notAllowed() {
+        const cases = [
+          { answer: allowed(183), headers: {} },
+          {
+            answer: `peal.consent=1.r.${String(Math.floor(Date.now() / 86_400_000))}`,
+            headers: {},
+          },
+          { answer: allowed(), headers: { "sec-gpc": "1" } },
+          { answer: allowed(), headers: { dnt: "1" } },
+        ];
+
+        const visitors = yield* Effect.forEach(
+          cases,
+          ({ answer, headers }, index) =>
+            Effect.gen(function* oneCase() {
+              const visitorId = newVisitor();
+
+              const reply = yield* signUp(
+                newEmail(`site-visitor-not-${String(index)}`),
+                browserCookies(visitorId, answer),
+                { headers }
+              );
+
+              assert.strictEqual(reply.status, 200);
+              assert.deepStrictEqual(visitorCookiesSet(reply), [expiry]);
+
+              return visitorId;
+            })
+        );
+
+        yield* drained;
+
+        const captured = yield* capturedEvents;
+
+        for (const visitorId of visitors) {
+          assert.isFalse(captured.some(aliasOf(visitorId)));
+        }
+      })
+  );
+
+  it.effect(
+    "neither links nor expires anything for a refused sign-up, which a retry may still link",
+    () =>
+      Effect.gen(function* refused() {
+        const visitorId = newVisitor();
+
+        const reply = yield* signUp(
+          newEmail("site-visitor-refused"),
+          browserCookies(visitorId),
+          { secret: "short" }
+        );
+
+        assert.strictEqual(reply.status, 400);
+        assert.deepStrictEqual(visitorCookiesSet(reply), []);
+
+        yield* drained;
+
+        assert.isFalse((yield* capturedEvents).some(aliasOf(visitorId)));
+      })
+  );
+
   it.effect("expires nothing for a sign-up without the visitor's cookie", () =>
     Effect.gen(function* withoutCookie() {
       const reply = yield* signUp(
         newEmail("site-visitor-none"),
-        "peal.consent=refused"
+        `peal.consent=1.r.${String(Math.floor(Date.now() / 86_400_000))}`
       );
 
       assert.strictEqual(reply.status, 200);

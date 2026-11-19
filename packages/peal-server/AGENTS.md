@@ -506,13 +506,18 @@ and no socket, for tests.
   it, to the new account, once, in the request that made it:
   `databaseHooks.user.create.after` reads the id in the request's
   `ph_<token>_posthog` cookie (`visitorOf`, auth's `visitor-of.ts`), only
-  when it is a version 7 UUID, which users' and workspaces' ids (version 4) never are, and `toldSignUp` sends `ProductAnalytics.link` (PostHog's
+  while the same request's `peal.consent` allows it and is under 183 days
+  old and the browser sends neither `Sec-GPC: 1` nor `DNT: 1`
+  (`site-answer.ts`: the SDK renews its cookie on each visit, so the cookie
+  alone says nothing of the answer), only when it is a version 7 UUID, which users' and workspaces' ids (version 4) never are, and `toldSignUp` sends `ProductAnalytics.link` (PostHog's
   `$create_alias`, the account's id as `distinct_id`, the visitor's as
   `alias`, `AliasPropertiesSchema`) before `user_signed_up`. Then the after
   hook expires that cookie (`expireVisitorCookie`, on
-  `PEAL_POSTHOG_SITE_COOKIE_DOMAIN` where set) after every
-  `/sign-up/email` that carried it, whatever it answered, so a known
-  address's made-up user reads the same, and after a `/callback/*` that
+  `PEAL_POSTHOG_SITE_COOKIE_DOMAIN`, the registrable domain PostHog's SDK
+  sets it on, where set) after every `/sign-up/email` that carried it and
+  went through, so a known address's made-up user (200 too) reads the
+  same, never after a refused one (Better Auth runs after hooks on an
+  `APIError` too), and after a `/callback/*` that
   made an account: the browser's later visits get a new visitor, linked
   to nobody. Nothing is linked at a sign-in, nor after the sign-up.
   Closing the account deletes the person at PostHog, the visits merged

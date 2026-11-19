@@ -138,7 +138,10 @@ const webConfig = Config.schema(
 const CookieDomainSchema = Schema.Trim.check(
   Schema.isPattern(
     /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/u,
-    { expected: "a host name, such as peal.example.com" }
+    {
+      expected:
+        "the registrable domain the site, the docs and the app share, such as example.com",
+    }
   )
 );
 
