@@ -27,14 +27,26 @@ const none = {
 };
 
 describe("the CI plan", () => {
-  it("runs no long job for a change to the site alone", () => {
+  it("runs the end-to-end run for a change to the site, which it measures", () => {
     expect(
       plan({
-        affected: ["peal-site"],
+        // The run serves the site's build: peal-e2e names it as an implicit
+        // dependency.
+        affected: ["peal-site", "peal-e2e"],
         files: ["packages/peal-site/src/pages/index.astro"],
         roots,
       })
-    ).toEqual(none);
+    ).toEqual({ ...none, e2e: true });
+  });
+
+  it("runs the end-to-end run for a change to the site's consent and measurement in peal-ui", () => {
+    expect(
+      plan({
+        affected: ["peal-ui", "peal-site", "peal-docs", "peal-web", "peal-e2e"],
+        files: ["packages/peal-ui/src/lib/site/consent/element.ts"],
+        roots,
+      }).e2e
+    ).toBe(true);
   });
 
   it("runs the server's tests, Ansible's and the end-to-end run for a server change", () => {
