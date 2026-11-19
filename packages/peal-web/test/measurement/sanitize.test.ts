@@ -143,6 +143,19 @@ describe(sanitized, () => {
     expect(sanitized(snapshot, off)).toBeNull();
   });
 
+  it("drops a recording whose events are not a list", () => {
+    expect(
+      sanitized(
+        {
+          event: "$snapshot",
+          properties: { $snapshot_data: "compressed", distinct_id: userId },
+          uuid: "019a7b2c-0000-7000-8000-00000000000c",
+        },
+        identified
+      )
+    ).toBeNull();
+  });
+
   it("writes a recording's page addresses as patterns, as every event does", () => {
     const snapshot: MeasuredEvent = {
       event: "$snapshot",

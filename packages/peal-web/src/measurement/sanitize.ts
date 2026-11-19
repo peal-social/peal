@@ -126,8 +126,19 @@ const patterned: ReadonlySet<string> = new Set([
 
 const decodeText = Schema.decodeUnknownOption(Schema.String);
 
-// A recording's page address (rrweb's meta event, type 4), which names
-// the page as the browser shows it; every other key of it kept.
+// A recording's events, read no deeper than the list: a full snapshot is
+// the whole page.
+const isAnyList = Schema.is(Schema.Array(Schema.Unknown));
+
+const isList = (
+  value: PropertyValue | undefined
+): value is readonly PropertyValue[] => isAnyList(value);
+
+// Whether a recording's event is rrweb's meta event (type 4), which names
+// the page as the browser shows it: read no deeper than its type.
+const isMeta = Schema.is(Schema.Struct({ type: Schema.Literal(4) }));
+
+// A meta event whole, which holds a few small fields: every key kept.
 const decodeMeta = Schema.decodeUnknownOption(
   Schema.StructWithRest(
     Schema.Struct({
@@ -138,29 +149,30 @@ const decodeMeta = Schema.decodeUnknownOption(
   )
 );
 
-const decodeItems = Schema.decodeUnknownOption(Schema.Array(Schema.Json));
-
 // A recording's events with each page's address as its origin and its
-// pattern, as every other event names it: no id, no query.
-const patternedRecording = (event: MeasuredEvent): MeasuredEvent => {
-  const items = decodeItems(event.properties["$snapshot_data"]);
+// pattern, as every other event names it: no id, no query. A recording
+// whose events are not a list is not sent at all.
+const patternedRecording = (event: MeasuredEvent): MeasuredEvent | null => {
+  const items = event.properties["$snapshot_data"];
 
-  if (Option.isNone(items)) {
-    return event;
+  if (!isList(items)) {
+    return null;
   }
 
-  const addressed = items.value.map((item) =>
-    Option.match(decodeMeta(item), {
-      onNone: () => item,
-      onSome: (meta) =>
-        Option.match(decodeText(meta.data["href"]), {
+  const addressed = items.map((item) =>
+    isMeta(item)
+      ? Option.match(decodeMeta(item), {
           onNone: () => item,
-          onSome: (href) => ({
-            ...meta,
-            data: { ...meta.data, href: addressOf(href) },
-          }),
-        }),
-    })
+          onSome: (meta) =>
+            Option.match(decodeText(meta.data["href"]), {
+              onNone: () => item,
+              onSome: (href) => ({
+                ...meta,
+                data: { ...meta.data, href: addressOf(href) },
+              }),
+            }),
+        })
+      : item
   );
 
   return {
