@@ -165,22 +165,22 @@ afterEach(() => {
 describe("how measurement follows the answer", () => {
   it("follows, forgets or renews as the answer and the cookie say", () => {
     expect(
-      alignmentOf({ answer: "allowed", following: false, holdsCookie: false })
+      alignmentOf({ answer: "allowed", following: false, lostCookie: false })
     ).toBe("follow");
     expect(
-      alignmentOf({ answer: "allowed", following: true, holdsCookie: true })
+      alignmentOf({ answer: "allowed", following: true, lostCookie: false })
     ).toBe("none");
     expect(
-      alignmentOf({ answer: "allowed", following: true, holdsCookie: false })
+      alignmentOf({ answer: "allowed", following: true, lostCookie: true })
     ).toBe("renew");
     expect(
-      alignmentOf({ answer: "refused", following: true, holdsCookie: true })
+      alignmentOf({ answer: "refused", following: true, lostCookie: false })
     ).toBe("forget");
     expect(
-      alignmentOf({ answer: "none", following: true, holdsCookie: true })
+      alignmentOf({ answer: "none", following: true, lostCookie: false })
     ).toBe("forget");
     expect(
-      alignmentOf({ answer: "none", following: false, holdsCookie: false })
+      alignmentOf({ answer: "none", following: false, lostCookie: false })
     ).toBe("none");
   });
 
