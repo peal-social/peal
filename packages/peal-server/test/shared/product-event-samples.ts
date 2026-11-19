@@ -145,6 +145,25 @@ export const productEventSamples: ProductEventSamples = {
       properties: { freeTier: true, kind: "partner", standalone: false },
     },
   },
+  workspace_snapshot: {
+    keys: [
+      "assistant_requests",
+      "channels",
+      "day",
+      "media_storage_bytes",
+      "members",
+    ],
+    sample: {
+      name: "workspace_snapshot",
+      properties: {
+        assistantRequests: 4,
+        channels: 3,
+        day: "2026-11-18",
+        mediaStorageBytes: 9_000_000_000,
+        members: 2,
+      },
+    },
+  },
 };
 
 // Objects built elsewhere, as a bug could, with a key the catalogue does
