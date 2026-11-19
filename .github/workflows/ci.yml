@@ -235,10 +235,22 @@ jobs:
           retention-days: 30
 
   # ansible-lint, the playbooks' syntax and the pytest suite, whose release
-  # and uptime tests run images in Docker.
+  # and uptime tests run images in Docker. The suite keeps the runner's four
+  # CPUs busy, so two jobs share it, each class of tests in one of them
+  # (PEAL_PYTEST_SHARD, tests/class_scheduling.py); the first runs the lint
+  # and the syntax check too.
   ansible:
     needs: plan
     if: needs.plan.outputs.ansible == 'true'
+    name: ansible (${{ matrix.shard }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: 1
+            target: test
+          - shard: 2
+            target: pytest
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -248,7 +260,10 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           uv: "true"
-      - run: bun nx run peal-infra-ansible:test
+      - run: bun nx run "peal-infra-ansible:$TARGET"
+        env:
+          PEAL_PYTEST_SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
+          TARGET: ${{ matrix.target }}
 
   # Every commit of the repository, which is public, scanned for secrets with
   # Betterleaks, at medium confidence and above, with the rules and the
