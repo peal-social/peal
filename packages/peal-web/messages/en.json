@@ -4440,7 +4440,8 @@
       "title": "Reviews of a location",
       "pageName": "Review",
       "empty": "No review written or changed in the last {days, number} days.",
-      "readOnly": "Your role may read reviews but not answer them."
+      "readOnly": "Your role may read reviews but not answer them.",
+      "kept": "Peal keeps each review for {days, number} days after it was written or last changed."
     },
     "review": {
       "stars": "{rating, plural, one {# star} other {# stars}}",
@@ -4456,10 +4457,15 @@
       "markWaiting": "Waits for an answer",
       "withdraw": "Delete the reply",
       "withdrawn": "The location’s reply was deleted.",
+      "answer": "Reply",
+      "withdrawTitle": "Delete the location’s reply?",
+      "withdrawDescription": "Google removes the reply for everyone who sees the review. This cannot be undone.",
+      "cancel": "Cancel",
       "reply": "{status, select, sending {Reply on its way} sent {Reply sent} failed {Reply not sent} unconfirmed {Reply not confirmed yet: the next read of the location says} withdrawn {Reply deleted} other {}}"
     },
     "box": {
-      "label": "Reply as the location",
+      "label": "Reply to {reviewer} as the location",
+      "labelAnonymous": "Reply to an anonymous reviewer as the location",
       "public": "Everyone who sees the review on Google sees the reply, which replaces the location’s reply. Google may check it before showing it.",
       "count": "{length, number} of {maximum, number} bytes",
       "send": "Send",
@@ -4499,7 +4505,8 @@
       "noText": "Files only.",
       "sent": "{status, select, sending {Message on its way} sent {Message sent} failed {Message not sent} unconfirmed {Message not confirmed yet: check the platform} other {}}",
       "confirmSent": "It went out",
-      "confirmNotSent": "It never went out"
+      "confirmNotSent": "It never went out",
+      "from": "Sent from Peal on {at}"
     },
     "box": {
       "label": "Answer as the account",

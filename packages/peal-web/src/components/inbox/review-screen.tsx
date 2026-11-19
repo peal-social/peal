@@ -6,19 +6,33 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import {
   inboxReviewRetentionDays,
+  isSocialChannel,
   maxInboxReviewReplyBytes,
 } from "peal-contract";
 import type {
   InboxReview,
   InboxReviewReply,
   InboxReviewThreadDetail,
+  SocialChannel,
 } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { toast } from "peal-ui/components/toast";
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 
+import { channelsOf } from "#channels/channels-api.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";
 import {
@@ -28,10 +42,20 @@ import {
   setReviewAnswered,
   withdrawReviewReply,
 } from "#inbox/review-atoms.ts";
+import {
+  attemptFor,
+  pinnedOnWrite,
+  reviewTargetOf,
+} from "#inbox/review-target.ts";
+import type { ReplyAttempt } from "#inbox/review-target.ts";
 import { useRefreshWhileVisible } from "#notices/use-refresh-while-visible.ts";
 
 import { useInboxErrorText } from "./inbox-views.tsx";
-import { ReviewReplyBoxView, ReviewView } from "./review-views.tsx";
+import {
+  ReviewReplyBoxView,
+  ReviewSummaryView,
+  ReviewView,
+} from "./review-views.tsx";
 
 // How often the reviews are read again while the tab is visible, so a
 // reply on its way shows how it ended.
@@ -39,25 +63,36 @@ const refreshEvery = 30_000;
 
 const bytesOf = (text: string) => new TextEncoder().encode(text.trim()).length;
 
-// What a member who may answer can do about one review.
+// Whether a reply to the review is on its way, or may be out.
+const isPending = (replies: readonly InboxReviewReply[], reviewId: string) =>
+  replies.some(
+    (reply) =>
+      reply.reviewId === reviewId &&
+      (reply.status === "sending" || reply.status === "unconfirmed")
+  );
+
+// The quiet buttons under a review, Reply first: whether it needs an
+// answer, and taking the location's reply back from Google.
 const ReviewActions = ({
-  pending,
+  mayAnswer,
+  mayWithdraw,
+  onReply,
   review,
   workspaceId,
 }: {
-  readonly pending: boolean;
+  /** Whether the member may answer it, and the channel can. */
+  readonly mayAnswer: boolean;
+  /** Whether the member may delete its reply, and the channel can. */
+  readonly mayWithdraw: boolean;
+  /** Aims the composer at the review. */
+  readonly onReply: () => void;
   readonly review: InboxReview;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("InboxReviews");
   const explain = useInboxErrorText();
-  const send = useAtomSet(replyToReview, { mode: "promiseExit" });
   const mark = useAtomSet(setReviewAnswered, { mode: "promiseExit" });
   const withdraw = useAtomSet(withdrawReviewReply, { mode: "promiseExit" });
-  const [text, setText] = useState("");
-  const [attempt, setAttempt] = useState(() => crypto.randomUUID());
-  const [error, setError] = useState<string | null>(null);
-  const [isSending, startSending] = useTransition();
   const [isActing, startActing] = useTransition();
 
   const params = { reviewId: review.id, workspaceId };
@@ -66,7 +101,7 @@ const ReviewActions = ({
   const failed = <A, E extends { readonly _tag: string }>(
     exit: Exit.Exit<A, E>
   ) => {
-    setError(
+    toast.error(
       inboxErrorOf(exit).pipe(
         Option.map(explain),
         Option.getOrElse(() => explain({ key: "unknown" }))
@@ -74,32 +109,7 @@ const ReviewActions = ({
     );
   };
 
-  const handleSend = () => {
-    setError(null);
-    startSending(async () => {
-      // The same key until the reply is made: a reply sent again after a
-      // lost answer is the one the first request made.
-      const exit = await send({
-        headers: { "idempotency-key": attempt },
-        params,
-        payload: { text },
-        reactivityKeys,
-      });
-
-      if (Exit.isSuccess(exit)) {
-        setAttempt(crypto.randomUUID());
-        setText("");
-        toast.success(t("box.sent"));
-
-        return;
-      }
-
-      failed(exit);
-    });
-  };
-
   const handleMark = () => {
-    setError(null);
     startActing(async () => {
       const exit = await mark({
         params,
@@ -114,7 +124,6 @@ const ReviewActions = ({
   };
 
   const handleWithdraw = () => {
-    setError(null);
     startActing(async () => {
       const exit = await withdraw({ params, reactivityKeys });
 
@@ -129,108 +138,248 @@ const ReviewActions = ({
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={isActing}
-          onClick={handleMark}
-        >
-          {review.markedAnswered
-            ? t("review.markWaiting")
-            : t("review.markAnswered")}
-        </Button>
-        {review.reply === null ? null : (
+    <>
+      {mayAnswer ? (
+        <>
+          <Button variant="ghost" size="xs" onClick={onReply}>
+            {t("review.answer")}
+          </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="xs"
             disabled={isActing}
-            onClick={handleWithdraw}
+            focusableWhenDisabled
+            onClick={handleMark}
+          >
+            {review.markedAnswered
+              ? t("review.markWaiting")
+              : t("review.markAnswered")}
+          </Button>
+        </>
+      ) : null}
+      {mayWithdraw && review.reply !== null ? (
+        <AlertDialog>
+          <AlertDialogTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="xs"
+                disabled={isActing}
+                focusableWhenDisabled
+              />
+            }
           >
             {t("review.withdraw")}
-          </Button>
-        )}
-      </div>
-      <ReviewReplyBoxView
-        bytes={bytesOf(text)}
-        error={error}
-        maximum={maxInboxReviewReplyBytes}
-        pending={pending}
-        sending={isSending}
-        text={text}
-        onChange={(changed) => {
-          // Another text is another reply, under a key of its own.
-          setText(changed);
-          setAttempt(crypto.randomUUID());
-        }}
-        onSend={handleSend}
-      />
-    </div>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("review.withdrawTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("review.withdrawDescription")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("review.cancel")}</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={handleWithdraw}>
+                {t("review.withdraw")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      ) : null}
+    </>
   );
 };
 
-// Whether a reply to the review is on its way, or may be out.
-const isPending = (replies: readonly InboxReviewReply[], reviewId: string) =>
-  replies.some(
-    (reply) =>
-      reply.reviewId === reviewId &&
-      (reply.status === "sending" || reply.status === "unconfirmed")
+// The location's one composer: it answers `review`, under a key kept
+// until the reply is made, and made anew for another text or review.
+const ReviewComposer = ({
+  inputId,
+  onWrite,
+  review,
+  replies,
+  workspaceId,
+}: {
+  readonly inputId: string;
+  /** Keeps the draft on `review`, whatever the next read answers. */
+  readonly onWrite: () => void;
+  readonly review: InboxReview;
+  readonly replies: readonly InboxReviewReply[];
+  readonly workspaceId: string;
+}) => {
+  const t = useTranslations("InboxReviews");
+  const explain = useInboxErrorText();
+  const send = useAtomSet(replyToReview, { mode: "promiseExit" });
+  const [text, setText] = useState("");
+
+  const [attempt, setAttempt] = useState<ReplyAttempt>(() => ({
+    key: crypto.randomUUID(),
+    reviewId: review.id,
+  }));
+
+  // A failure tells of the review it was sent to only.
+  const [failure, setFailure] = useState<{
+    readonly reviewId: string;
+    readonly text: string;
+  } | null>(null);
+
+  const [isSending, startSending] = useTransition();
+
+  const handleSend = () => {
+    // The same key until the reply is made: a reply sent again after a
+    // lost answer is the one the first request made. Another review is
+    // another reply, under a key of its own.
+    const current = attemptFor(attempt, review.id, () => crypto.randomUUID());
+
+    setAttempt(current);
+    setFailure(null);
+    startSending(async () => {
+      const exit = await send({
+        headers: { "idempotency-key": current.key },
+        params: { reviewId: current.reviewId, workspaceId },
+        payload: { text },
+        reactivityKeys: reviewsChanged(workspaceId, review.threadId),
+      });
+
+      if (Exit.isSuccess(exit)) {
+        setAttempt({ key: crypto.randomUUID(), reviewId: current.reviewId });
+        setText("");
+        toast.success(t("box.sent"));
+
+        return;
+      }
+
+      setFailure({
+        reviewId: current.reviewId,
+        text: inboxErrorOf(exit).pipe(
+          Option.map(explain),
+          Option.getOrElse(() => explain({ key: "unknown" }))
+        ),
+      });
+    });
+  };
+
+  return (
+    <ReviewReplyBoxView
+      bytes={bytesOf(text)}
+      error={failure?.reviewId === review.id ? failure.text : null}
+      inputId={inputId}
+      maximum={maxInboxReviewReplyBytes}
+      pending={isPending(replies, review.id)}
+      reviewer={review.reviewerName}
+      sending={isSending}
+      text={text}
+      onChange={(changed) => {
+        // Another text is another reply, under a key of its own.
+        setText(changed);
+        setAttempt({ key: crypto.randomUUID(), reviewId: review.id });
+        onWrite();
+      }}
+      onSend={handleSend}
+    />
   );
+};
 
 // The reviews once read.
 const LoadedReviews = ({
+  channels,
   detail,
   mayReply,
   workspaceId,
 }: {
+  readonly channels: readonly SocialChannel[];
   readonly detail: InboxReviewThreadDetail;
   readonly mayReply: boolean;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("InboxReviews");
-  const answers = mayReply && detail.abilities.reply === "available";
+  const listId = useId();
+  const composerId = useId();
+  // The review the composer answers, once a member chose one.
+  const [chosen, setChosen] = useState<string | null>(null);
+  const mayAnswer = mayReply && detail.abilities.reply === "available";
+
+  const mayWithdraw = mayAnswer && detail.abilities.withdraw === "available";
+
+  const target = reviewTargetOf(detail.reviews, chosen);
+
+  const handleReply = (review: InboxReview) => {
+    setChosen(review.id);
+    // React's ids hold colons, which a plain `#id` selector cannot.
+    globalThis.document
+      .querySelector<HTMLTextAreaElement>(`[id="${composerId}"]`)
+      ?.focus();
+  };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-5">
+      <ReviewSummaryView
+        channel={channels.find(({ id }) => id === detail.thread.channelId)}
+        thread={detail.thread}
+      />
       {mayReply ? null : (
         <p className="text-muted-foreground text-sm">{t("thread.readOnly")}</p>
       )}
-      {detail.reviews.length === 0 ? (
-        <p className="text-muted-foreground">
-          {t("thread.empty", { days: inboxReviewRetentionDays })}
-        </p>
-      ) : (
-        <ul className="bg-card divide-y overflow-hidden rounded-md border">
-          {detail.reviews.map((review) => (
-            <ReviewView
-              key={review.id}
-              review={review}
-              replies={detail.replies.filter(
-                ({ reviewId }) => reviewId === review.id
-              )}
-              actions={
-                answers ? (
-                  <ReviewActions
-                    pending={isPending(detail.replies, review.id)}
-                    review={review}
-                    workspaceId={workspaceId}
-                  />
-                ) : null
-              }
-            />
-          ))}
-        </ul>
-      )}
+      <section aria-labelledby={listId} className="flex flex-col gap-4">
+        <h3 id={listId} className="sr-only">
+          {t("thread.title")}
+        </h3>
+        {detail.reviews.length === 0 ? (
+          <p className="text-muted-foreground">
+            {t("thread.empty", { days: inboxReviewRetentionDays })}
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-6">
+            {detail.reviews.map((review) => (
+              <ReviewView
+                key={review.id}
+                review={review}
+                replies={detail.replies.filter(
+                  ({ reviewId }) => reviewId === review.id
+                )}
+                {...(mayAnswer || mayWithdraw
+                  ? {
+                      actions: (
+                        <ReviewActions
+                          mayAnswer={mayAnswer}
+                          mayWithdraw={mayWithdraw}
+                          review={review}
+                          workspaceId={workspaceId}
+                          onReply={() => {
+                            handleReply(review);
+                          }}
+                        />
+                      ),
+                    }
+                  : {})}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
+      {mayAnswer && target !== undefined ? (
+        <div className="bg-card sticky bottom-0 mt-auto pt-2">
+          <ReviewComposer
+            inputId={composerId}
+            replies={detail.replies}
+            review={target}
+            workspaceId={workspaceId}
+            onWrite={() => {
+              setChosen(pinnedOnWrite(chosen, target.id));
+            }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };
 
 /**
- * A location's reviews whole: each review, the location's reply, the
- * replies sent from Peal, and, for a member who may answer and where the
- * channel can, what to do about each. Rendered in the browser, where the
- * reader's time zone is known.
+ * A location's reviews whole, as one conversation: a summary, each
+ * review with the location's reply and the replies sent from Peal under
+ * it, and, for a member who may answer and where the channel can, quiet
+ * actions under each and one composer at the pane's foot. Rendered in the
+ * browser, where the reader's time zone is known.
  */
 export const ReviewScreen = ({
   mayReply,
@@ -246,14 +395,11 @@ export const ReviewScreen = ({
   const atom = reviewLocation(workspaceId, threadId);
   const result = useAtomValue(atom);
   const reload = useAtomRefresh(atom);
+  const channels = useAtomValue(channelsOf(workspaceId));
 
   useRefreshWhileVisible(reload, refreshEvery);
 
-  if (!hydrated) {
-    return <Skeleton className="h-48" />;
-  }
-
-  if (AsyncResult.isInitial(result)) {
+  if (!hydrated || AsyncResult.isInitial(result)) {
     return <Skeleton className="h-48" />;
   }
 
@@ -274,6 +420,11 @@ export const ReviewScreen = ({
 
   return (
     <LoadedReviews
+      channels={
+        AsyncResult.isSuccess(channels)
+          ? channels.value.filter(isSocialChannel)
+          : []
+      }
       detail={result.value}
       mayReply={mayReply}
       workspaceId={workspaceId}

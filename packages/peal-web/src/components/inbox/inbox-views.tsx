@@ -343,17 +343,18 @@ const CommentState = ({
   );
 };
 
-// The first letter of who wrote, for their avatar.
-const initialOf = (author: InboxAuthor | null): string => {
-  const name =
-    author === null
-      ? ""
-      : (author.displayName ?? "") || author.handle.replace(/^@/u, "");
-
-  const [first] = new Intl.Segmenter().segment(name);
+/** The first letter of a name, for its avatar; "?" for none. */
+export const initialOfName = (name: string): string => {
+  const [first] = new Intl.Segmenter().segment(name.replace(/^@/u, ""));
 
   return first === undefined ? "?" : first.segment.toUpperCase();
 };
+
+// The first letter of who wrote, for their avatar.
+const initialOf = (author: InboxAuthor | null): string =>
+  initialOfName(
+    author === null ? "" : (author.displayName ?? "") || author.handle
+  );
 
 /**
  * A reply sent from Peal, as the journal has it: on its way, sent, failed

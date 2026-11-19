@@ -14,8 +14,11 @@ import { ConversationRowView } from "#components/inbox/inbox-rows.tsx";
 import type { InboxRowLink } from "#components/inbox/inbox-rows.tsx";
 import { ChannelMessagesView } from "#components/inbox/message-settings.tsx";
 import {
+  ConfirmMessageView,
+  ConversationSummaryView,
   DirectMessageView,
   MessageBoxView,
+  OutgoingMessageView,
   ReplyWindowView,
 } from "#components/inbox/message-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
@@ -112,7 +115,98 @@ describe("the direct messages' views", () => {
     expect(html).toContain("&lt;b&gt;Open&lt;/b&gt; today?");
     expect(html).not.toContain("<b>Open</b>");
     expect(html).toContain("A synthetic reader");
+    expect(html).toContain("reader@social.example");
     expect(html).toContain("1 file, not shown");
+  });
+
+  it("lay each message out flat, with an avatar, the account's own as the account", async () => {
+    const theirs = await render(
+      "en",
+      <DirectMessageView conversation={conversation} message={message} />
+    );
+
+    const own = await render(
+      "fr",
+      <DirectMessageView
+        conversation={conversation}
+        message={{ ...message, attachments: 0, fromAccount: true }}
+      />
+    );
+
+    expect(theirs).toContain(">A<");
+    expect(theirs).not.toContain("rounded-md border");
+    expect(theirs).not.toContain("bg-muted ml-8");
+    expect(own).toContain("Le compte");
+    expect(own).not.toContain("fichier");
+  });
+
+  it("sum a conversation up: who, on which channel, unread, private, and the quiet ways out", async () => {
+    const html = await render(
+      "en",
+      <ConversationSummaryView
+        actions={<button type="button">Mark as read</button>}
+        channel={channel}
+        conversation={conversation}
+      />
+    );
+
+    const read = await render(
+      "fr",
+      <ConversationSummaryView
+        channel={undefined}
+        conversation={{ ...conversation, unread: false }}
+      />
+    );
+
+    expect(
+      [
+        "With A synthetic reader",
+        "bg-brand",
+        "Unread",
+        "2 messages",
+        "These messages are private",
+        ">Mark as read<",
+      ].filter((text) => !html.includes(text))
+    ).toStrictEqual([]);
+    expect(read).toContain("Lue");
+    expect(read).not.toContain("bg-brand");
+  });
+
+  it("hang a message sent from Peal behind a line, with its text, how it ended and quiet answers", async () => {
+    const html = await render(
+      "en",
+      <ul>
+        <OutgoingMessageView
+          actions={
+            <ConfirmMessageView disabled={false} onConfirm={constVoid} />
+          }
+          message={{
+            authorId: null,
+            conversationId: conversation.id,
+            createdAt: at("2026-11-14T09:30:00Z"),
+            id: "00000000-0000-7000-8000-0000000000f3",
+            platformMessageId: null,
+            reason: "noResponse",
+            settledAt: at("2026-11-14T09:31:00Z"),
+            status: "unconfirmed",
+            text: "<i>Yes</i>, until six.",
+          }}
+        />
+      </ul>
+    );
+
+    expect(
+      [
+        "border-l-2",
+        "Sent from Peal on Nov 14, 2026",
+        "Message not confirmed yet",
+        "&lt;i&gt;Yes&lt;/i&gt;, until six.",
+        "It went out",
+        // Quiet: ghost and extra small, never an outlined button.
+        "h-6 gap-1 px-2 text-xs",
+      ].filter((text) => !html.includes(text))
+    ).toStrictEqual([]);
+    expect(html).not.toContain("border-border bg-background");
   });
 
   it("say a message is private, and keep the box shut while one is on its way", async () => {

@@ -955,8 +955,8 @@ them beside the one open, so the list stays where it was.
   48 px header of its own that names it (`h2`; the page keeps its `h1`)
   with its actions at the end. With nothing open it shows an empty state
   ("Nothing open"), centred.
-- **`split-thread`** — An item that is a conversation (a post's comments)
-  reads as one. On top, a short summary above a hairline: where and since
+- **`split-thread`** — An item that is a conversation (a post's comments,
+  a location's reviews, a direct-message conversation) reads as one. On top, a short summary above a hairline: where and since
   when, then in 12 px muted text what waits and why nothing more comes,
   and the ways out. Then each message flat, never in a card: a 24 px
   avatar, the author (500) with their handle, a 12 px muted line with
@@ -965,6 +965,10 @@ them beside the one open, so the list stays where it was.
   first. What answered it hangs under it behind a 2 px line at its
   start. One composer, sticky at the pane's foot, answers the message
   that Reply chose (the oldest still waiting until then) and names whom.
+  A direct-message conversation is answered whole: its messages come
+  oldest first, with no Reply on each, and above its composer a 12 px
+  muted line says until when the platform takes an answer, or why the
+  composer is gone.
 - The address names the item open, and the list's views and filters
   follow it, so a link opens both. On a phone the list fills the panel;
   an item opens alone under the header, with a way back at its header's

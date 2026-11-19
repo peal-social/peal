@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime } from "effect";
 import { constVoid } from "effect/Function";
 import { NextIntlClientProvider } from "next-intl";
+import { inboxReviewRetentionDays } from "peal-contract";
 import type {
   SocialChannel,
   InboxReview,
@@ -14,6 +15,7 @@ import { ReviewThreadRowView } from "#components/inbox/inbox-rows.tsx";
 import type { InboxRowLink } from "#components/inbox/inbox-rows.tsx";
 import {
   ReviewReplyBoxView,
+  ReviewSummaryView,
   ReviewView,
 } from "#components/inbox/review-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
@@ -123,6 +125,85 @@ describe("the reviews' views", () => {
     expect(html).not.toContain("photos.example");
   });
 
+  it("lay a review out flat, with its state in a muted line and no badge", async () => {
+    const waiting = await render(
+      "en",
+      <ReviewView
+        actions={<button type="button">Reply</button>}
+        replies={[]}
+        review={{
+          ...review,
+          reply: null,
+          reviewerName: "Ada",
+          state: "new",
+        }}
+      />
+    );
+
+    expect(
+      ["Waiting for an answer", "bg-brand", ">A<", ">Reply<"].filter(
+        (text) => !waiting.includes(text)
+      )
+    ).toStrictEqual([]);
+    expect(waiting).not.toContain('data-slot="badge"');
+    expect(waiting).not.toContain("border-l-2");
+  });
+
+  it("hang the location's reply and the replies sent from Peal under the review", async () => {
+    const html = await render(
+      "fr",
+      <ReviewView
+        replies={[
+          {
+            authorId: null,
+            createdAt: at("2026-11-14T09:59:00Z"),
+            id: "00000000-0000-7000-8000-0000000000e3",
+            reason: "noResponse",
+            reviewId: review.id,
+            settledAt: at("2026-11-14T10:00:00Z"),
+            status: "unconfirmed",
+            text: "Sorry about the wait.",
+            threadId: thread.id,
+          },
+        ]}
+        review={review}
+      />
+    );
+
+    expect(html).toContain("border-l-2");
+    expect(html).toMatch(/border-l-2[\s\S]*La réponse de l’établissement/u);
+    expect(html).toContain("Google la vérifie");
+    expect(html).toContain("Réponse pas encore confirmée");
+    expect(html).toContain("text-destructive");
+  });
+
+  it("sum a location up: which, what waits, Google's figures and how long Peal keeps a review", async () => {
+    const english = await render(
+      "en",
+      <ReviewSummaryView channel={channel} thread={thread} />
+    );
+
+    const french = await render(
+      "fr",
+      <ReviewSummaryView
+        channel={undefined}
+        thread={{ ...thread, unanswered: 0 }}
+      />
+    );
+
+    expect(
+      [
+        "Location of",
+        "1 waiting of 2",
+        "4.5 stars on average · 31 on Google",
+        `Peal keeps each review for ${String(inboxReviewRetentionDays)} days`,
+        "bg-brand",
+      ].filter((text) => !english.includes(text))
+    ).toStrictEqual([]);
+    expect(french).toContain("0 en attente sur 2");
+    expect(french).not.toContain("bg-brand");
+  });
+
   it("count a reply in Google's bytes, and hold the send past them", async () => {
     const html = await render(
       "fr",
@@ -131,6 +212,7 @@ describe("the reviews' views", () => {
         error={null}
         maximum={4096}
         pending={false}
+        reviewer={null}
         sending={false}
         text="é"
         onChange={constVoid}
@@ -140,5 +222,28 @@ describe("the reviews' views", () => {
 
     expect(html).toMatch(/4\s100 sur 4\s096 octets/u);
     expect(html).toContain('aria-invalid="true"');
+    expect(html).toContain("Répondre à une personne anonyme");
+  });
+
+  it("name whom the one composer answers", async () => {
+    const html = await render(
+      "en",
+      <ReviewReplyBoxView
+        bytes={0}
+        error={null}
+        inputId="composer"
+        maximum={4096}
+        pending
+        reviewer="Ada"
+        sending={false}
+        text=""
+        onChange={constVoid}
+        onSend={constVoid}
+      />
+    );
+
+    expect(html).toContain("Reply to Ada as the location");
+    expect(html).toContain('id="composer"');
+    expect(html).toContain("A reply to this review is on its way");
   });
 });
