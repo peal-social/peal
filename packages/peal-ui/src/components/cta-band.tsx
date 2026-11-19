@@ -1,6 +1,7 @@
 import { renderElement } from "@ui-sdk/react/primitive";
 import type { PartProps } from "@ui-sdk/react/primitive";
 
+import type { Cta } from "../lib/site/measurement/events";
 import { cn } from "../lib/utils";
 import { buttonVariants } from "./button";
 import { PixelGlow } from "./pixel-glow";
@@ -8,6 +9,8 @@ import { PixelGlow } from "./pixel-glow";
 interface CtaLink {
   readonly href: string;
   readonly label: string;
+  /** The call to action a click on it counts as, where the site measures. */
+  readonly measure?: Cta | undefined;
 }
 
 /**
@@ -46,13 +49,24 @@ const CtaBand = ({
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               {primary === undefined ? null : (
-                <a href={primary.href} className={buttonVariants()}>
+                <a
+                  href={primary.href}
+                  data-measure-cta={primary.measure}
+                  data-measure-place={
+                    primary.measure === undefined ? undefined : "closing"
+                  }
+                  className={buttonVariants()}
+                >
                   {primary.label}
                 </a>
               )}
               {secondary === undefined ? null : (
                 <a
                   href={secondary.href}
+                  data-measure-cta={secondary.measure}
+                  data-measure-place={
+                    secondary.measure === undefined ? undefined : "closing"
+                  }
                   className={buttonVariants({ variant: "outline" })}
                 >
                   {secondary.label}

@@ -1,0 +1,319 @@
+/* The consent notice, `<peal-consent>` (DESIGN.md, Site), in plain CSS on
+   the tokens of tokens.css: the docs do not compile peal-ui's Tailwind
+   classes, and the site, the docs and the blog show the same notice. */
+
+peal-consent {
+  /* The lavender tint DESIGN.md gives the section opener's pixel field,
+     which the cookie's dough dithers with the blue one (--brand-tint). */
+  --consent-lavender-tint: #ede7ff;
+  /* The pixel glow's light lavender, between the tint and the mark's
+     lavender, for the cookie's baked edge. */
+  --consent-lavender-shade: #d5c9ff;
+
+  display: contents;
+}
+
+.peal-consent {
+  position: fixed;
+  z-index: 60;
+  right: 1rem;
+  bottom: 1rem;
+  box-sizing: border-box;
+  /* The cookie on the left, the anchor, as tall as the card's words and
+     answers beside it. */
+  display: grid;
+  grid-template-areas:
+    "art body"
+    "art actions";
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: start;
+  width: min(30rem, calc(100% - 2rem));
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  /* A popover's shadow, as the menus have it. */
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 10%),
+    0 2px 4px -2px rgb(0 0 0 / 10%);
+  font-family: var(--font-geist-sans, inherit);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: start;
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 400ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.peal-consent[hidden] {
+  display: none;
+}
+
+/* It rises 8 px while its cookie bakes in, and sinks back as it leaves. */
+.peal-consent[data-state="entering"] {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: none;
+}
+
+.peal-consent[data-state="leaving"] {
+  opacity: 0;
+  transform: translateY(8px);
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* From 1184 px up, its right edge stands on the page's right rail. */
+@media (min-width: 1184px) {
+  peal-consent:not([data-source="docs"]) .peal-consent {
+    right: calc((100% - 72rem) / 2);
+  }
+}
+
+.peal-consent__art {
+  grid-area: art;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.peal-consent__canvas,
+.peal-consent__small {
+  display: block;
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.peal-consent__readout {
+  display: grid;
+  justify-items: center;
+  color: var(--muted-foreground);
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.peal-consent__readout-line {
+  grid-area: 1 / 1;
+  visibility: hidden;
+}
+
+.peal-consent__readout[data-shown="rest"] [data-readout="rest"],
+.peal-consent__readout[data-shown="allow"] [data-readout="allow"],
+.peal-consent__readout[data-shown="refuse"] [data-readout="refuse"] {
+  visibility: visible;
+}
+
+.peal-consent__body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+/* Room for Close, in the corner, beside the title, while it shows. */
+.peal-consent:has(.peal-consent__close:not([hidden])) .peal-consent__body {
+  padding-inline-end: 3.5rem;
+}
+
+.peal-consent__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* The phone's still cookie, beside the title. */
+.peal-consent__small {
+  display: none;
+}
+
+.peal-consent__title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: normal;
+  outline: none;
+}
+
+.peal-consent__text,
+.peal-consent__status {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  text-wrap: pretty;
+}
+
+.peal-consent__status {
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.peal-consent__policy {
+  border-radius: 2px;
+  color: var(--brand-text);
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  outline: none;
+}
+
+.peal-consent__policy:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+}
+
+.peal-consent__actions {
+  grid-area: actions;
+  align-self: end;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.peal-consent__actions[hidden] {
+  display: none;
+}
+
+/* The two answers reproduce peal-ui's Button (src/components/button.tsx)
+   in its `outline` variant and default size: 34 px high, 10 px across,
+   the 6 px radius, a 1 px border, the background's fill, muted on hover,
+   the ring on focus. Change both together. Close is its `ghost` variant
+   at the small size (30 px). */
+.peal-consent__answer,
+.peal-consent__close {
+  display: inline-flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms,
+    transform 150ms;
+  user-select: none;
+}
+
+.peal-consent__answer {
+  height: 34px;
+  padding: 0 10px;
+}
+
+.peal-consent__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  height: 30px;
+  padding: 0 10px;
+  border-color: transparent;
+  background: transparent;
+  font-size: 0.8rem;
+}
+
+.peal-consent__close[hidden] {
+  display: none;
+}
+
+.peal-consent__answer:hover,
+.peal-consent__close:hover {
+  background: var(--muted);
+}
+
+.peal-consent__answer:active,
+.peal-consent__close:active {
+  transform: translateY(1px);
+}
+
+.peal-consent__answer:focus-visible,
+.peal-consent__close:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.peal-consent__live {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Below 640 px: a sheet along the bottom edge, full width, at most half
+   the window's height, its text scrolling above the answers, and the page
+   padded at its foot by its height so the footer stays reachable. The art
+   becomes a still 25 px cookie beside the title. */
+@media (max-width: 639.98px) {
+  .peal-consent {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 50dvh;
+    padding: 0.875rem 1rem calc(0.875rem + env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+    border-radius: 0;
+  }
+
+  .peal-consent {
+    grid-template-areas:
+      "body"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .peal-consent__body {
+    overflow-y: auto;
+  }
+
+  .peal-consent__art {
+    display: none;
+  }
+
+  .peal-consent__small {
+    display: block;
+  }
+
+  body {
+    padding-bottom: var(--peal-consent-height, 0);
+  }
+}
+
+/* With reduced motion the card neither rises nor sinks. */
+@media (prefers-reduced-motion: reduce) {
+  .peal-consent,
+  .peal-consent[data-state="leaving"],
+  .peal-consent__answer,
+  .peal-consent__close {
+    transition: none;
+  }
+
+  .peal-consent[data-state="entering"] {
+    opacity: 1;
+    transform: none;
+  }
+}

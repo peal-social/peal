@@ -255,6 +255,8 @@ services:
       PEAL_POSTHOG_APP_HOST:
       PEAL_POSTHOG_EXCLUDED_IDS:
       PEAL_POSTHOG_WEB:
+      PEAL_POSTHOG_SITE:
+      PEAL_POSTHOG_SITE_COOKIE_DOMAIN:
       GOOGLE_SIGN_IN_CLIENT_ID:
       GOOGLE_SIGN_IN_CLIENT_SECRET:
       PEAL_OIDC_ISSUER:
@@ -327,6 +329,11 @@ services:
       PEAL_POSTHOG_WEB:
       PEAL_POSTHOG_KEY:
       PEAL_POSTHOG_HOST:
+      # The site's, the docs' and the blog's measurement, which the edge
+      # sends to its relay at /pulse/site, with the visitor's address from
+      # the header the edge sets.
+      PEAL_POSTHOG_SITE:
+      AUTH_IP_HEADERS: ${AUTH_IP_HEADERS:?Set AUTH_IP_HEADERS}
       # Longer than the edge keeps idle connections (90 s for the tunnel, 2
       # minutes for Caddy), so it never reuses one Node has closed.
       KEEP_ALIVE_TIMEOUT: "125000"
@@ -356,12 +363,17 @@ services:
         SITE_APP_URL: ${SITE_APP_URL:-}
         SITE_DOCS_URL: ${SITE_DOCS_URL:-}
         SITE_DISCORD_URL: ${SITE_DISCORD_URL:-}
-        SITE_PLAUSIBLE_DOMAIN: ${SITE_PLAUSIBLE_DOMAIN:-}
-        SITE_PLAUSIBLE_HOST: ${SITE_PLAUSIBLE_HOST:-}
+        SITE_POSTHOG_KEY: ${SITE_POSTHOG_KEY:-}
+        SITE_POSTHOG_HOST: ${SITE_POSTHOG_HOST:-}
+        SITE_POSTHOG_COOKIE_DOMAIN: ${SITE_POSTHOG_COOKIE_DOMAIN:-}
+        SITE_POSTHOG_ENVIRONMENT: ${SITE_POSTHOG_ENVIRONMENT:-}
         DOCS_SITE_URL: ${DOCS_SITE_URL:-}
         DOCS_APP_URL: ${DOCS_APP_URL:-}
-        DOCS_PLAUSIBLE_DOMAIN: ${DOCS_PLAUSIBLE_DOMAIN:-}
-        DOCS_PLAUSIBLE_HOST: ${DOCS_PLAUSIBLE_HOST:-}
+        DOCS_POSTHOG_KEY: ${DOCS_POSTHOG_KEY:-}
+        DOCS_POSTHOG_HOST: ${DOCS_POSTHOG_HOST:-}
+        DOCS_POSTHOG_COOKIE_DOMAIN: ${DOCS_POSTHOG_COOKIE_DOMAIN:-}
+        DOCS_POSTHOG_ENVIRONMENT: ${DOCS_POSTHOG_ENVIRONMENT:-}
+        DOCS_PRIVACY_URL: ${DOCS_PRIVACY_URL:-}
     ports:
       - 127.0.0.1:${PEAL_SITE_PORT:-4321}:8080
       - 127.0.0.1:${PEAL_DOCS_PORT:-4322}:8081
@@ -385,8 +397,11 @@ services:
         DOCS_TURNSTILE_SITE_KEY: ${DOCS_TURNSTILE_SITE_KEY:-}
         DOCS_SITE_URL: ${DOCS_SITE_URL:-}
         DOCS_APP_URL: ${DOCS_APP_URL:-}
-        DOCS_PLAUSIBLE_DOMAIN: ${DOCS_PLAUSIBLE_DOMAIN:-}
-        DOCS_PLAUSIBLE_HOST: ${DOCS_PLAUSIBLE_HOST:-}
+        DOCS_POSTHOG_KEY: ${DOCS_POSTHOG_KEY:-}
+        DOCS_POSTHOG_HOST: ${DOCS_POSTHOG_HOST:-}
+        DOCS_POSTHOG_COOKIE_DOMAIN: ${DOCS_POSTHOG_COOKIE_DOMAIN:-}
+        DOCS_POSTHOG_ENVIRONMENT: ${DOCS_POSTHOG_ENVIRONMENT:-}
+        DOCS_PRIVACY_URL: ${DOCS_PRIVACY_URL:-}
     # Node runs as PID 2 under an init, so it stops on SIGTERM.
     init: true
     environment:
@@ -448,8 +463,11 @@ services:
       BLOG_APP_URL:
       BLOG_DOCS_URL:
       BLOG_DISCORD_URL:
-      BLOG_PLAUSIBLE_DOMAIN:
-      BLOG_PLAUSIBLE_HOST:
+      # Measurement and the consent notice, as the site has them.
+      BLOG_POSTHOG_KEY:
+      BLOG_POSTHOG_HOST:
+      BLOG_POSTHOG_COOKIE_DOMAIN:
+      BLOG_POSTHOG_ENVIRONMENT:
       # EmDash's SMTP, for invitations and magic links; unset, no mail.
       # Peal's servers send through Resend's SMTP relay, whose password is
       # the server's RESEND_API_KEY, handed over only where the blog mails

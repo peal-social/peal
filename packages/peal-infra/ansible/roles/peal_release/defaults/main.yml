@@ -9,3 +9,21 @@ peal_release_keep: 3
 peal_release_platforms:
   x86_64: linux/amd64
   aarch64: linux/arm64
+# The site's and the docs' build arguments: the environment's, and, with
+# peal_site_measurement, their measurement, sent to the web app's relay on
+# their own origin with PostHog's project token from the vault
+# (group_vars/all). The static image reads the SITE_* and DOCS_* ones, the
+# docs server's image the DOCS_* ones.
+peal_release_build_args: >-
+  {{ peal_static_build_args
+     | combine({
+         'SITE_POSTHOG_KEY': peal_site_measurement_token,
+         'SITE_POSTHOG_HOST': peal_site_measurement_host,
+         'SITE_POSTHOG_COOKIE_DOMAIN': peal_hostnames.site,
+         'SITE_POSTHOG_ENVIRONMENT': peal_environment,
+         'DOCS_POSTHOG_KEY': peal_site_measurement_token,
+         'DOCS_POSTHOG_HOST': peal_site_measurement_host,
+         'DOCS_POSTHOG_COOKIE_DOMAIN': peal_hostnames.site,
+         'DOCS_POSTHOG_ENVIRONMENT': peal_environment,
+         'DOCS_PRIVACY_URL': 'https://' ~ peal_hostnames.site ~ '/privacy',
+       } if peal_site_measurement | bool else {}) }}

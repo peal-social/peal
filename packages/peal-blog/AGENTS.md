@@ -18,6 +18,10 @@ the docs' environment variables page.
   cells on the rails; a post uses the typography of the legal pages. Read
   DESIGN.md before changing a page; propose a DESIGN.md change rather than
   drift from it. Light only.
+- **Asks and measures as the site does**, through peal-ui: the layout
+  renders `<peal-consent>` and loads `peal-ui/lib/site/consent/start`, so
+  the consent notice, its answer cookie and the measurement are the site's.
+  Only the public layout has them: EmDash's admin is never measured.
 - **URLs.** Pages under Astro's base (`BLOG_BASE`, `/blog` unless set):
   `/blog/`, `/blog/<slug>`, `/blog/fr/`, `/blog/fr/<slug>`, `/blog/404`,
   and EmDash's base-aware `/blog/sitemap.xml`. EmDash's admin and API
@@ -118,7 +122,8 @@ the docs' environment variables page.
 | `AWS_REQUEST_CHECKSUM_CALCULATION`, `AWS_RESPONSE_CHECKSUM_VALIDATION`                                             | run           | `WHEN_REQUIRED` (set in the image), see Media.                                                                                                                                                                 |
 | `EMDASH_ENCRYPTION_KEY`                                                                                            | run           | Encrypts secrets saved in the admin: `emdash_enc_v1_` and 43 base64url characters.                                                                                                                             |
 | `EMDASH_TRUSTED_PROXY_HEADERS`                                                                                     | run           | The header the edge gives the client's address in.                                                                                                                                                             |
-| `BLOG_APP_URL`, `BLOG_DOCS_URL`, `BLOG_DISCORD_URL`, `BLOG_PLAUSIBLE_DOMAIN`, `BLOG_PLAUSIBLE_HOST`                | run           | As the site's `SITE_*`; unset or empty turns each off.                                                                                                                                                         |
+| `BLOG_APP_URL`, `BLOG_DOCS_URL`, `BLOG_DISCORD_URL`                                                                | run           | As the site's `SITE_*`; unset or empty turns each off.                                                                                                                                                         |
+| `BLOG_POSTHOG_KEY`, `BLOG_POSTHOG_HOST`, `BLOG_POSTHOG_COOKIE_DOMAIN`, `BLOG_POSTHOG_ENVIRONMENT`                  | run, optional | As the site's `SITE_POSTHOG_*`: measurement with PostHog and the consent notice, on only with a key and a host; a malformed value stops the server.                                                            |
 | `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`, `EMAIL_SMTP_SECURE`, `EMAIL_SMTP_USER`, `EMAIL_SMTP_PASS`, `EMAIL_SMTP_FROM` | run, optional | EmDash's SMTP; unset, no mail.                                                                                                                                                                                 |
 | `HOST`, `PORT`                                                                                                     | run           | The Node adapter's (`0.0.0.0`, `4324` in the image).                                                                                                                                                           |
 

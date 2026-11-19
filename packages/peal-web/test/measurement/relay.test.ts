@@ -1,7 +1,10 @@
 // The relay that forwards what the web app measures to PostHog, on Peal's
 // own origin: off by default, the SDK's events, recordings and its
 // project's configuration alone, and never the visitor's cookies,
-// credentials or address, nor PostHog's cookies back.
+// credentials or address, nor PostHog's cookies back. Its site mode, under
+// /pulse/site, relays the site's, the docs' and the blog's events alone,
+// with the visitor's address and browser description, which PostHog works
+// its cookieless count out from.
 import { once } from "node:events";
 
 import { assert, describe, it } from "@effect/vitest";
@@ -406,4 +409,247 @@ describe("the measurement relay", () => {
     assert.isFalse(relayed("/pulse-wave"));
     assert.isFalse(relayed("/fr/pulse/e/"));
   });
+});
+
+const site = {
+  AUTH_IP_HEADERS: "cf-connecting-ip",
+  PEAL_POSTHOG_KEY: "phc_synthetic",
+  PEAL_POSTHOG_SITE: "on",
+};
+
+// What a browser sends with an event, beside what the edge adds.
+const browserHeaders = {
+  accept: "*/*",
+  "accept-language": "fr-FR",
+  authorization: "Bearer phc_synthetic",
+  "cf-connecting-ip": "203.0.113.7",
+  "content-type": "text/plain",
+  cookie: "ph_phc_synthetic_posthog=synthetic; peal.consent=allowed",
+  origin: "https://peal.example.test",
+  referer: "https://peal.example.test/pricing?email=synthetic%40example.test",
+  "sec-ch-ua": '"Chromium";v="142"',
+  "user-agent": "Mozilla/5.0 (Macintosh)",
+  "x-forwarded-for": "192.0.2.10",
+};
+
+describe("the measurement relay's site mode", () => {
+  it.effect(
+    "answers 404 while PEAL_POSTHOG_SITE is off, as by default, while the app's mode still answers",
+    () =>
+      Effect.gen(function* off() {
+        for (const env of [on, { ...on, PEAL_POSTHOG_SITE: "off" }]) {
+          const { response, sent } = yield* relay("/pulse/site/e/", env, {
+            body: "[]",
+            method: "POST",
+          });
+
+          assert.strictEqual(response.status, 404);
+          assert.deepStrictEqual(sent, []);
+
+          const app = yield* relay("/pulse/e/", env, {
+            body: "[]",
+            method: "POST",
+          });
+
+          assert.strictEqual(app.response.status, 200);
+        }
+      })
+  );
+
+  it.effect(
+    "posts to the host's /e/, query kept, with the app's mode off",
+    () =>
+      Effect.gen(function* alone() {
+        const { response, sent } = yield* relay(
+          "/pulse/site/e/?ip=0&ver=1.450.0",
+          site,
+          { body: "[]", method: "POST" }
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(
+          sent[0]?.url,
+          "https://eu.i.posthog.com/e/?ip=0&ver=1.450.0"
+        );
+        assert.strictEqual(sent[0]?.method, "POST");
+        assert.strictEqual(sent[0]?.body, "[]");
+
+        const app = yield* relay("/pulse/e/", site, {
+          body: "[]",
+          method: "POST",
+        });
+
+        assert.strictEqual(app.response.status, 404);
+      })
+  );
+
+  it.effect(
+    "forwards the type, the browser's description and the visitor's address alone, and answers PostHog's type alone",
+    () =>
+      Effect.gen(function* headers() {
+        const { response, sent } = yield* relay("/pulse/site/e/", site, {
+          body: "[]",
+          headers: browserHeaders,
+          method: "POST",
+        });
+
+        assert.deepStrictEqual(
+          [...(sent[0]?.headers.keys() ?? [])].toSorted(),
+          ["accept", "content-type", "user-agent", "x-forwarded-for"]
+        );
+        assert.strictEqual(
+          sent[0]?.headers.get("x-forwarded-for"),
+          "203.0.113.7"
+        );
+        assert.strictEqual(
+          sent[0]?.headers.get("user-agent"),
+          "Mozilla/5.0 (Macintosh)"
+        );
+        assert.deepStrictEqual([...response.headers.keys()], ["content-type"]);
+      })
+  );
+
+  it.effect(
+    "reads the address from the first header AUTH_IP_HEADERS names that the request carries",
+    () =>
+      Effect.gen(function* first() {
+        const { sent } = yield* relay(
+          "/pulse/site/e/",
+          { ...site, AUTH_IP_HEADERS: "x-real-ip, x-forwarded-for" },
+          {
+            body: "[]",
+            headers: { "x-forwarded-for": "2001:db8::7, 192.0.2.10" },
+            method: "POST",
+          }
+        );
+
+        assert.strictEqual(
+          sent[0]?.headers.get("x-forwarded-for"),
+          "2001:db8::7"
+        );
+      })
+  );
+
+  it.effect(
+    "forwards no address when the header holds none, or none is named",
+    () =>
+      Effect.gen(function* noAddress() {
+        const cases: readonly (readonly [
+          Record<string, string>,
+          Record<string, string>,
+        ])[] = [
+          [site, { ...browserHeaders, "cf-connecting-ip": "synthetic" }],
+          [site, { "x-forwarded-for": "192.0.2.10" }],
+          [{ ...site, AUTH_IP_HEADERS: "" }, browserHeaders],
+          [
+            { PEAL_POSTHOG_KEY: "phc_synthetic", PEAL_POSTHOG_SITE: "on" },
+            browserHeaders,
+          ],
+        ];
+
+        for (const [env, headers] of cases) {
+          const { response, sent } = yield* relay("/pulse/site/e/", env, {
+            body: "[]",
+            headers,
+            method: "POST",
+          });
+
+          assert.strictEqual(response.status, 200);
+          assert.isFalse(
+            sent[0]?.headers.has("x-forwarded-for"),
+            JSON.stringify(env)
+          );
+        }
+      })
+  );
+
+  it.effect.each([
+    "/pulse/site",
+    "/pulse/site/",
+    "/pulse/site/e",
+    "/pulse/site/s/",
+    "/pulse/site/i/v0/e/",
+    "/pulse/site/i/v0/s/",
+    "/pulse/site/array/phc_synthetic/config",
+    "/pulse/site/flags/?v=2",
+    "/pulse/site/static/x.js",
+  ])("answers 404 to %s, which the site's SDK never sends", (path) =>
+    Effect.gen(function* refused() {
+      for (const method of ["GET", "POST"]) {
+        const { response, sent } = yield* relay(
+          path,
+          site,
+          method === "POST" ? { body: "[]", method } : { method }
+        );
+
+        assert.strictEqual(response.status, 404);
+        assert.deepStrictEqual(sent, []);
+      }
+    })
+  );
+
+  it.effect("answers 405 to another method than POST", () =>
+    Effect.gen(function* method() {
+      const { response, sent } = yield* relay("/pulse/site/e/", site, {
+        method: "GET",
+      });
+
+      assert.strictEqual(response.status, 405);
+      assert.deepStrictEqual(sent, []);
+    })
+  );
+
+  it.effect("refuses a body over 256 KiB", () =>
+    Effect.gen(function* tooLarge() {
+      const declared = yield* relay("/pulse/site/e/", site, {
+        body: "[]",
+        headers: { "content-length": String(257 * 1024) },
+        method: "POST",
+      });
+
+      assert.strictEqual(declared.response.status, 413);
+
+      const undeclared = yield* relay("/pulse/site/e/", site, {
+        body: "x".repeat(257 * 1024),
+        method: "POST",
+      });
+
+      assert.strictEqual(undeclared.response.status, 413);
+      assert.deepStrictEqual(undeclared.sent, []);
+    })
+  );
+
+  it.effect(
+    "leaves the app's mode forwarding neither the address nor the browser's description",
+    () =>
+      Effect.gen(function* app() {
+        const { sent } = yield* relay(
+          "/pulse/e/",
+          { ...on, ...site },
+          { body: "[]", headers: browserHeaders, method: "POST" }
+        );
+
+        assert.deepStrictEqual(
+          [...(sent[0]?.headers.keys() ?? [])],
+          ["accept", "content-type"]
+        );
+      })
+  );
+
+  it.effect("fails on a key that is not a project token, or none", () =>
+    Effect.gen(function* invalid() {
+      for (const env of [
+        { ...site, PEAL_POSTHOG_KEY: "phx_synthetic_personal" },
+        { PEAL_POSTHOG_SITE: "on" },
+        { ...site, PEAL_POSTHOG_SITE: "yes" },
+      ]) {
+        const exit = yield* relay("/pulse/site/e/", env, {
+          body: "[]",
+          method: "POST",
+        }).pipe(Effect.exit);
+
+        assert.isTrue(Exit.isFailure(exit), JSON.stringify(env));
+      }
+    })
+  );
 });
