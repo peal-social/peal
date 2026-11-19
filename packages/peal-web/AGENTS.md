@@ -929,6 +929,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The consent page lets a person leave `workspace:ads` out as it does
   publishing (`mayLeaveAdsOut`, `consentAnswer` in
   `#auth/consent-scopes.ts`).
+- Better Auth binds a client's tokens to the session's active workspace
+  when the consent is posted, and choosing a workspace in any tab moves
+  it: allowing first sets the workspace the consent page shows as active
+  again through `workspaceClient`, and fails without consenting when that
+  is refused (`makeAnswerConsent`, `#auth/answer-consent.ts`).
 - The webhooks settings (`components/webhooks/`) offer an endpoint's
   channels as a picker (`workspaceChannels`) and a partner endpoint's
   workspaces as ids, one a line (`#webhooks/endpoint-draft.ts`; an edit
