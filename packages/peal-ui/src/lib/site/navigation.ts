@@ -284,10 +284,18 @@ const navItems = (
       href: pages.pricing,
       kind: "link",
       label: pricingLabel,
+      measure: "pricing",
     },
     ...(docs === undefined
       ? []
-      : [{ href: docs, kind: "link" as const, label: t.docs }]),
+      : [
+          {
+            href: docs,
+            kind: "link" as const,
+            label: t.docs,
+            measure: "docs" as const,
+          },
+        ]),
   ];
 };
 
@@ -304,14 +312,22 @@ export const headerProps = (
     discord:
       settings.discord === undefined
         ? undefined
-        : { href: settings.discord, label: t.discord, mark: discordMark },
+        : {
+            href: settings.discord,
+            label: t.discord,
+            mark: discordMark,
+            measure: "discord",
+          },
     drawer: t.drawer,
     getStarted:
-      signUp === undefined ? undefined : { href: signUp, label: t.getStarted },
+      signUp === undefined
+        ? undefined
+        : { href: signUp, label: t.getStarted, measure: "get_started" },
     github: {
       href: repository,
       label: t.github,
       mark: githubMark,
+      measure: "github",
       stars: settings.stars,
       starsLabel: t.stars,
     },
@@ -319,7 +335,9 @@ export const headerProps = (
     items: navItems(t, pages, messages.pricing.nav, settings),
     label: t.main,
     signIn:
-      signIn === undefined ? undefined : { href: signIn, label: t.signIn },
+      signIn === undefined
+        ? undefined
+        : { href: signIn, label: t.signIn, measure: "log_in" },
   };
 };
 
@@ -386,8 +404,9 @@ export const footerProps = (
     ]),
   };
 
-  // Cookie settings leads to the privacy policy's cookies section until
-  // the site sets a cookie that needs consent: Plausible sets none.
+  // Cookie settings opens the consent notice where the page measures
+  // (`<peal-consent>` intercepts the click), and otherwise leads to the
+  // privacy policy's cookies section, as it does without JavaScript.
   const company: SiteFooterColumn = {
     label: t.company,
     links: [
@@ -395,6 +414,7 @@ export const footerProps = (
       {
         href: `${pages.legal("privacy")}#${t.cookies.section}`,
         label: t.cookies.label,
+        opens: "consent",
       },
     ],
     menu: { label: t.policies, links: policies },
