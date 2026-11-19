@@ -269,7 +269,7 @@ self-hoster needs only Postgres and an S3-compatible store:
   [`src/ads/AGENTS.md`](packages/peal-server/src/ads/AGENTS.md));
 - captcha: Turnstile, off when no key is set;
 - product analytics: PostHog, off until `PEAL_POSTHOG_KEY` is set, events
-  from the server only, ids and enums only (see
+  from the server only, ids, enums and counts only (see
   [`packages/peal-server/AGENTS.md`](packages/peal-server/AGENTS.md));
 - sign-up: anyone, unless `PEAL_SIGN_UP=invitation` (an invitation's link
   with its address, and the first account only);

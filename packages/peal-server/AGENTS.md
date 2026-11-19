@@ -428,11 +428,16 @@ and no socket, for tests.
   `ProductAnalyticsLive` (`src/app/product-analytics.ts`) is one per build
   of the server, released after the HTTP server and the workers, so it
   sends what they queued.
-- Events come from four seams, never calls sprinkled in use cases: the
+- Events come from five seams, never calls sprinkled in use cases: the
   activity journal's adapter (`api_operation`, every write but MCP's), the
   MCP middleware (`mcp_tool_called`, every tool call), the decorator over
-  `WebhookEvents` (post and channel milestones) and Better Auth's hooks
-  (sign-ups, workspaces, subscriptions). A new event joins
+  `WebhookEvents` (post and channel milestones), Better Auth's hooks
+  (sign-ups, workspaces, subscriptions) and the daily usage snapshot's
+  sink (`workspace_snapshot`: billing's `UsageSnapshotSink`, adapter
+  `billing/infrastructure/analytics-usage-snapshot-sink.ts`, one event a
+  workspace with a connected account, as its service identity). A rerun
+  of a day sends that day's snapshots again: readers take one row per
+  workspace and `day`. A new event joins
   `ProductEventSchema` (`#shared/domain/product-event.ts`) and the
   samples of `test/shared/product-event-samples.ts`; its names are
   persisted for whoever queries PostHog: add, never rename.
