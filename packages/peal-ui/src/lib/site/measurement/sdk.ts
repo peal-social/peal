@@ -17,7 +17,10 @@ export interface SiteSdk {
   readonly get_explicit_consent_status: () => "denied" | "granted" | "pending";
   /** Who the SDK says events are about now. */
   readonly get_distinct_id: () => string;
-  /** A new visitor, linked to none before. */
+  /**
+   * A new visitor, linked to none before, with a new device id. It clears
+   * the SDK's consent too: the caller opts in again where the answer allows.
+   */
   readonly reset: () => void;
   /**
    * Keeps, as the visit's source in the SDK's cookie, only what is given:
@@ -70,7 +73,7 @@ export const loadSdk = async (): Promise<SiteSdk> => {
       posthog.opt_out_capturing();
     },
     reset: () => {
-      posthog.reset();
+      posthog.reset(true);
     },
   };
 };
