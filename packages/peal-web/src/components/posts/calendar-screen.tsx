@@ -26,6 +26,7 @@ import { cn } from "peal-ui/lib/utils";
 import { useState } from "react";
 import type { ReactNode } from "react";
 
+import { TimeZoneLine } from "#components/lists/time-zone-line.tsx";
 import { CalendarDayView } from "#components/posts/calendar-day-view.tsx";
 import { CalendarToolbar } from "#components/posts/calendar-toolbar.tsx";
 import type { ViewLink } from "#components/posts/calendar-toolbar.tsx";
@@ -923,9 +924,12 @@ const CalendarView = ({
           setAnchor(today);
         }}
       />
-      <h2 className="text-lg font-medium" aria-live="polite">
-        {title}
-      </h2>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 className="text-lg font-medium" aria-live="polite">
+          {title}
+        </h2>
+        <TimeZoneLine of="times" timeZone={timeZone} />
+      </div>
       {grid}
     </div>
   );

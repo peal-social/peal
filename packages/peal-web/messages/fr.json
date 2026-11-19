@@ -9,7 +9,6 @@
     "metric": "{metric, select, posts {Publications} likes {J’aime} reposts {Partages} replies {Réponses} quotes {Citations} impressions {Impressions} engagement {Engagement} followers {Abonnés} views {Vues} reach {Portée} clicks {Clics} saves {Enregistrements} other {{metric}}}",
     "page": {
       "title": "Statistiques",
-      "description": "Ce qu’ont donné, sur leurs plateformes, les publications parues sur une période. Les jours suivent votre fuseau horaire, {zone}.",
       "loading": "Chargement des statistiques…",
       "loadFailed": "Les statistiques n’ont pas pu être chargées.",
       "retry": "Réessayer",
@@ -1643,7 +1642,6 @@
     },
     "Calendar": {
       "title": "Calendrier",
-      "description": "Vos publications programmées, à l’heure de {zone}. Faites-en glisser une pour la déplacer.",
       "views": "Vues",
       "week": "Semaine",
       "month": "Mois",
@@ -5105,6 +5103,7 @@
     "period": "Période",
     "periodIs": "Période : {period}",
     "lastDays": "{days, number} derniers jours",
+    "timeZoneLine": "{of, select, days {Les jours suivent votre fuseau horaire, {zone}.} other {Les heures suivent votre fuseau horaire, {zone}.}}",
     "filter": "Filtrer",
     "filterPlaceholder": "Filtrer…",
     "noMatch": "Rien ne correspond à « {query} ».",

@@ -296,7 +296,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`components/viewer-time-zone.tsx`), in the locale layout, sets the
   browser's on the shared provider once the page has hydrated, so every
   page's dates follow it. `InTimeZone` (`components/notices/in-time-zone.tsx`)
-  sets a given zone on part of a page.
+  sets a given zone on part of a page. Calendar and Analytics name the zone
+  they read in with `TimeZoneLine` (`components/lists/time-zone-line.tsx`,
+  `Lists.timeZoneLine`, tested), rendered after hydration: beside the
+  calendar's dates, and under the Period on Analytics.
 - The account menu at the bottom bar's start (`AccountMenuView`, the
   person's avatar with a dot while notices wait unread, and their count
   beside Notifications) polls `GET /api/me/notices/unread` every 30

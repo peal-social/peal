@@ -22,6 +22,7 @@ import { AccountNumbers } from "#components/analytics/account-numbers.tsx";
 import { AnalyticsSummaryView } from "#components/analytics/analytics-summary.tsx";
 import { BestTimesCard } from "#components/analytics/best-times.tsx";
 import { PeriodMenu, usePeriod } from "#components/lists/period-menu.tsx";
+import { TimeZoneLine } from "#components/lists/time-zone-line.tsx";
 import { InTimeZone } from "#components/notices/in-time-zone.tsx";
 import { PageActions } from "#components/shell/frame-view.tsx";
 import { workspaceChannels } from "#posts/api.ts";
@@ -118,7 +119,10 @@ const AnalyticsView = ({ timeZone, workspaceId }: AnalyticsViewProps) => {
       <PageActions>
         <PeriodMenu choices={ranges} value={range} onChange={setRange} />
       </PageActions>
-      {body}
+      <div className="flex flex-col gap-3">
+        <TimeZoneLine of="days" timeZone={timeZone} className="text-end" />
+        {body}
+      </div>
     </div>
   );
 };

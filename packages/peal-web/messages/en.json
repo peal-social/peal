@@ -9,7 +9,6 @@
     "metric": "{metric, select, posts {Posts} likes {Likes} reposts {Reposts} replies {Replies} quotes {Quotes} impressions {Impressions} engagement {Engagement} followers {Followers} views {Views} reach {Reach} clicks {Clicks} saves {Saves} other {{metric}}}",
     "page": {
       "title": "Analytics",
-      "description": "How the posts published over a range of days did on their platforms. Days run in your time zone, {zone}.",
       "loading": "Loading the analytics…",
       "loadFailed": "The analytics could not be loaded.",
       "retry": "Try again",
@@ -1643,7 +1642,6 @@
     },
     "Calendar": {
       "title": "Calendar",
-      "description": "Your scheduled posts, in {zone}. Drag one to another time to move it.",
       "views": "Views",
       "week": "Week",
       "month": "Month",
@@ -5105,6 +5103,7 @@
     "period": "Period",
     "periodIs": "Period: {period}",
     "lastDays": "Last {days, number} days",
+    "timeZoneLine": "{of, select, days {Days run in your time zone, {zone}.} other {Times are in your time zone, {zone}.}}",
     "filter": "Filter",
     "filterPlaceholder": "Filter…",
     "noMatch": "Nothing matches “{query}”.",
