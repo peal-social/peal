@@ -18,6 +18,7 @@ import { projectToken, requestsFile } from "../scripts/posthog.ts";
 import { siteRoot, siteUrlFile } from "../scripts/site.ts";
 import { emailedLink } from "./support/mailpit.ts";
 import { asPerson } from "./support/person.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // How the marketing site measures, read from what the stand-in for PostHog
 // received (scripts/posthog.ts) through the web app's relay in its site
@@ -691,7 +692,7 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
     const member = () =>
       credentials.user("member").username.replace("@", `+${besideRun}-beside@`);
 
-    let workspaceId = "";
+    let workspaceSlug = "";
     let memberId = "";
 
     test("signs up a member with a workspace", async ({
@@ -711,27 +712,15 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
       await browser.goto(
         await emailedLink(member(), "Confirm your email for Peal")
       );
-      await app.open("/app");
-      await screen.getByLabel("Workspace name").fill("Beside Studio");
-      await screen.getByRole("button", "Create the workspace").tap();
-
-      const calendar = screen
-        .getByRole("navigation", "Posts of Beside Studio")
-        .getByRole("link", "Calendar");
-
-      await expect(calendar).toBeVisible();
-
-      const href = (await calendar.getAttribute("href")) ?? "";
-
-      workspaceId =
-        /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+      await app.open("/");
+      ({ slug: workspaceSlug } = await openedWorkspace(browser));
       memberId = textOf(
         await browser.evaluate(
           "fetch('/api/me').then((answer) => answer.json()).then((me) => me.user.id)"
         )
       );
 
-      expect(workspaceId).not.toBe("");
+      expect(workspaceSlug).not.toBe("");
       expect(memberId).not.toBe("");
     });
 
@@ -750,7 +739,7 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
 
       const since = linesSoFar();
 
-      await app.open(`/app/${workspaceId}/posts`);
+      await app.open(`/${workspaceSlug}/posts`);
 
       await eventually(
         () => fromApp(since).filter((event) => event.event === "$pageview"),
@@ -767,12 +756,12 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
       // whatever the site's answer said.
       const allowedAt = linesSoFar();
 
-      await app.open("/app");
+      await app.open("/");
       await screen.getByRole("button", "Allow").tap();
       await expect(
         screen.getByRole("heading", "Help us improve Peal")
       ).toBeHidden();
-      await app.open(`/app/${workspaceId}/channels`);
+      await app.open(`/${workspaceSlug}/channels`);
 
       await eventually(
         () =>
@@ -799,7 +788,7 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
 
       const since = linesSoFar();
 
-      await app.open(`/app/${workspaceId}/posts`);
+      await app.open(`/${workspaceSlug}/posts`);
 
       const views = await eventually(
         () =>

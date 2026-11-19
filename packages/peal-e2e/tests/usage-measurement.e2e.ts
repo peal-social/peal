@@ -636,7 +636,7 @@ describe("the web app's measurement", { serial: true }, () => {
 
     const before = linesSoFar();
 
-    await app.open(`/app/${workspaceId}/channels`);
+    await app.open(`/${slug}/channels`);
 
     await eventually(
       () =>
