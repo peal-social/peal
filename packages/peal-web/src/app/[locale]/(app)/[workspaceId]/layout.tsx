@@ -19,8 +19,8 @@ import { Link } from "#i18n/navigation.ts";
 import { docsUrlConfig } from "#shell/docs-url.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
-// Around every page of a workspace: its frame (the sidebar, the top bar and
-// the contract functions at the foot), the notice a member whose account lacks
+// Around every page of a workspace: its frame (the sidebar, the panel's
+// header, the bottom bar and the contract functions at the foot), the notice a member whose account lacks
 // the two-step verification the workspace requires sees instead of any of
 // it, the upgrade dialog, which opens where the plan refuses something, and
 // the gate that shows the over-plan screen instead of the page while the

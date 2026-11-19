@@ -1,10 +1,10 @@
 import { Config, Option } from "effect";
 
 /**
- * Where the operator publishes Peal's documentation, which the top bar
+ * Where the operator publishes Peal's documentation, which the Help menu
  * links to: PEAL_DOCS_URL, the one the server gives its discovery documents,
- * read at request time; none when it is unset or empty, and the top bar
- * then shows no link.
+ * read at request time; none when it is unset or empty, and Help then
+ * shows no link.
  */
 export const docsUrlConfig = Config.option(Config.String("PEAL_DOCS_URL")).pipe(
   Config.map((url) =>

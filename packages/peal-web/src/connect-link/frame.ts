@@ -10,8 +10,9 @@ const callbackPage = /^\/connect\/(?<platform>[^/]+)\/callback$/u;
 
 /**
  * The frame a page gets: the app's, with Peal's header and footer; its
- * own, for the signed-in app (`isAppPath`), whose layouts draw a sidebar and
- * a top bar (`WorkspaceShell`, `PersonalShell`); the hosted one, for
+ * own, for the signed-in app (`isAppPath`), whose layouts draw a sidebar, the
+ * page's panel and a bottom bar (`WorkspaceShell`, `PersonalShell`); the
+ * hosted one, for
  * people who come through a connect link and have no Peal account; or
  * none yet, while only the browser can tell which.
  */

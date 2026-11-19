@@ -284,7 +284,7 @@ export interface Navigation {
   readonly settings: Link;
   /** Where each mode starts, or null for a mode the member may not use. */
   readonly modes: Readonly<Record<Mode, string | null>>;
-  /** What the top bar names: the section, then the page. */
+  /** What the panel's header names: the section, then the page. */
   readonly breadcrumb: {
     readonly section: Section | null;
     readonly page: Detail | Page | null;
