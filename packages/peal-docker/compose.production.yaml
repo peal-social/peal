@@ -358,10 +358,19 @@ services:
         SITE_DISCORD_URL: ${SITE_DISCORD_URL:-}
         SITE_PLAUSIBLE_DOMAIN: ${SITE_PLAUSIBLE_DOMAIN:-}
         SITE_PLAUSIBLE_HOST: ${SITE_PLAUSIBLE_HOST:-}
+        SITE_POSTHOG_KEY: ${SITE_POSTHOG_KEY:-}
+        SITE_POSTHOG_HOST: ${SITE_POSTHOG_HOST:-}
+        SITE_POSTHOG_COOKIE_DOMAIN: ${SITE_POSTHOG_COOKIE_DOMAIN:-}
+        SITE_POSTHOG_ENVIRONMENT: ${SITE_POSTHOG_ENVIRONMENT:-}
         DOCS_SITE_URL: ${DOCS_SITE_URL:-}
         DOCS_APP_URL: ${DOCS_APP_URL:-}
         DOCS_PLAUSIBLE_DOMAIN: ${DOCS_PLAUSIBLE_DOMAIN:-}
         DOCS_PLAUSIBLE_HOST: ${DOCS_PLAUSIBLE_HOST:-}
+        DOCS_POSTHOG_KEY: ${DOCS_POSTHOG_KEY:-}
+        DOCS_POSTHOG_HOST: ${DOCS_POSTHOG_HOST:-}
+        DOCS_POSTHOG_COOKIE_DOMAIN: ${DOCS_POSTHOG_COOKIE_DOMAIN:-}
+        DOCS_POSTHOG_ENVIRONMENT: ${DOCS_POSTHOG_ENVIRONMENT:-}
+        DOCS_PRIVACY_URL: ${DOCS_PRIVACY_URL:-}
     ports:
       - 127.0.0.1:${PEAL_SITE_PORT:-4321}:8080
       - 127.0.0.1:${PEAL_DOCS_PORT:-4322}:8081
@@ -387,6 +396,11 @@ services:
         DOCS_APP_URL: ${DOCS_APP_URL:-}
         DOCS_PLAUSIBLE_DOMAIN: ${DOCS_PLAUSIBLE_DOMAIN:-}
         DOCS_PLAUSIBLE_HOST: ${DOCS_PLAUSIBLE_HOST:-}
+        DOCS_POSTHOG_KEY: ${DOCS_POSTHOG_KEY:-}
+        DOCS_POSTHOG_HOST: ${DOCS_POSTHOG_HOST:-}
+        DOCS_POSTHOG_COOKIE_DOMAIN: ${DOCS_POSTHOG_COOKIE_DOMAIN:-}
+        DOCS_POSTHOG_ENVIRONMENT: ${DOCS_POSTHOG_ENVIRONMENT:-}
+        DOCS_PRIVACY_URL: ${DOCS_PRIVACY_URL:-}
     # Node runs as PID 2 under an init, so it stops on SIGTERM.
     init: true
     environment:
@@ -450,6 +464,11 @@ services:
       BLOG_DISCORD_URL:
       BLOG_PLAUSIBLE_DOMAIN:
       BLOG_PLAUSIBLE_HOST:
+      # Measurement and the consent notice, as the site has them.
+      BLOG_POSTHOG_KEY:
+      BLOG_POSTHOG_HOST:
+      BLOG_POSTHOG_COOKIE_DOMAIN:
+      BLOG_POSTHOG_ENVIRONMENT:
       # EmDash's SMTP, for invitations and magic links; unset, no mail.
       # Peal's servers send through Resend's SMTP relay, whose password is
       # the server's RESEND_API_KEY, handed over only where the blog mails
