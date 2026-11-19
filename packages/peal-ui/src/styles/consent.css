@@ -19,10 +19,16 @@ peal-consent {
   right: 1rem;
   bottom: 1rem;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  width: min(25rem, calc(100% - 2rem));
+  /* The cookie on the left, the anchor, as tall as the card's words and
+     answers beside it. */
+  display: grid;
+  grid-template-areas:
+    "art body"
+    "art actions";
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: start;
+  width: min(30rem, calc(100% - 2rem));
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -68,33 +74,8 @@ peal-consent {
   }
 }
 
-.peal-consent__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  min-height: 1.25rem;
-}
-
-.peal-consent__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  margin: 0;
-  color: var(--muted-foreground);
-  font-family: var(--font-geist-mono, ui-monospace, monospace);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  white-space: pre;
-}
-
-.peal-consent__content {
-  display: flex;
-  gap: 1rem;
-  min-height: 0;
-}
-
 .peal-consent__art {
+  grid-area: art;
   display: flex;
   flex: none;
   flex-direction: column;
@@ -131,11 +112,16 @@ peal-consent {
 }
 
 .peal-consent__body {
+  grid-area: body;
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
   min-width: 0;
+}
+
+/* Room for Close, in the corner, beside the title, while it shows. */
+.peal-consent:has(.peal-consent__close:not([hidden])) .peal-consent__body {
+  padding-inline-end: 3.5rem;
 }
 
 .peal-consent__title-row {
@@ -173,7 +159,6 @@ peal-consent {
 }
 
 .peal-consent__policy {
-  width: fit-content;
   border-radius: 2px;
   color: var(--brand-text);
   font-size: 14px;
@@ -187,6 +172,8 @@ peal-consent {
 }
 
 .peal-consent__actions {
+  grid-area: actions;
+  align-self: end;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
@@ -233,8 +220,10 @@ peal-consent {
 }
 
 .peal-consent__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
   height: 30px;
-  margin: -0.375rem -0.375rem -0.375rem 0;
   padding: 0 10px;
   border-color: transparent;
   background: transparent;
@@ -289,9 +278,16 @@ peal-consent {
     border-radius: 0;
   }
 
-  .peal-consent__content {
+  .peal-consent {
+    grid-template-areas:
+      "body"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .peal-consent__body {
     overflow-y: auto;
-    flex: 1 1 auto;
   }
 
   .peal-consent__art {

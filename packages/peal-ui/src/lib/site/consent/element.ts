@@ -6,7 +6,7 @@ import type { Locale } from "../locales";
 import { browserSignals, dayOf, givenAnswerOf, modeOf } from "./answer";
 import { ConsentAnswered } from "./consent-answered";
 import {
-  cellSize,
+  artCellSize,
   createCookieArt,
   drawCells,
   exitMs,
@@ -26,47 +26,6 @@ import type { ConsentMessages } from "./messages";
 // settings) opens it again with the answer and its date. Built with
 // `document.createElement` in its light DOM, so the page's own styles and
 // fonts apply.
-
-const svgNamespace = "http://www.w3.org/2000/svg";
-
-// lucide's cookie, as lucide-react 1.73.0 draws it.
-const cookieIconPaths = [
-  "M11 17h.01",
-  "M11.496 2c.324-.016.558.292.529.615a4 4 0 004.235 4.368.713.713 0 01.758.757 4 4 0 004.366 4.237c.323-.03.63.204.614.527a10 10 0 01-2.915 6.566A1 1 0 114.93 4.918 10 10 0 0111.496 2",
-  "M12 12h.01",
-  "M16 16h.01",
-  "M16 3h.01",
-  "M21 4h.01",
-  "M21 8h.01",
-  "M7 14h.01",
-  "M9 8h.01",
-];
-
-const cookieIcon = (): SVGSVGElement => {
-  const svg = document.createElementNS(svgNamespace, "svg");
-
-  for (const [name, value] of [
-    ["viewBox", "0 0 24 24"],
-    ["width", "12"],
-    ["height", "12"],
-    ["fill", "none"],
-    ["stroke", "currentColor"],
-    ["stroke-width", "2"],
-    ["stroke-linecap", "round"],
-    ["stroke-linejoin", "round"],
-    ["aria-hidden", "true"],
-  ] as const) {
-    svg.setAttribute(name, value);
-  }
-
-  for (const d of cookieIconPaths) {
-    const path = document.createElementNS(svgNamespace, "path");
-    path.setAttribute("d", d);
-    svg.append(path);
-  }
-
-  return svg;
-};
 
 const element = <Name extends keyof HTMLElementTagNameMap>(
   name: Name,
@@ -96,6 +55,9 @@ const presentOrUndefined = (value: string | undefined) => {
 // shows each page in the same one, where the notice asks again, still.
 let asked = false;
 
+// The phone's still cookie, beside the title: 5 cells of 7 px.
+const smallCellSize = 7;
+
 // Below this width the notice is a sheet along the bottom edge.
 const phone = "(max-width: 639.98px)";
 
@@ -118,7 +80,7 @@ export class PealConsent extends HTMLElement {
         readonly readout: HTMLSpanElement;
         readonly region: HTMLElement;
         readonly status: HTMLParagraphElement;
-        readonly text: HTMLParagraphElement;
+        readonly text: HTMLSpanElement;
         readonly title: HTMLHeadingElement;
       }
     | undefined;
@@ -168,24 +130,19 @@ export class PealConsent extends HTMLElement {
     region.dataset["state"] = "hidden";
     region.hidden = true;
 
-    // The eyebrow, as the site's section openers write it, and Close.
-    const head = element("div", "peal-consent__head");
-    const eyebrow = element("p", "peal-consent__eyebrow");
-    eyebrow.setAttribute("aria-hidden", "true");
-    eyebrow.append("// ", cookieIcon(), ` ${t.eyebrow} ${String.raw`\\`}`);
+    // Close, in the corner, when the notice was opened from Cookie settings.
     const close = element("button", "peal-consent__close", t.close);
     close.type = "button";
     close.hidden = true;
     close.addEventListener("click", () => {
       this.#hide();
     });
-    head.append(eyebrow, close);
 
     const art = element("div", "peal-consent__art");
     art.setAttribute("aria-hidden", "true");
     const canvas = element("canvas", "peal-consent__canvas");
-    canvas.style.width = `${String(gridSize * cellSize)}px`;
-    canvas.style.height = `${String(gridSize * cellSize)}px`;
+    canvas.style.width = `${String(gridSize * artCellSize)}px`;
+    canvas.style.height = `${String(gridSize * artCellSize)}px`;
     // The three readouts in one cell, one shown: the column keeps the
     // widest one's width, so the text never moves.
     const readout = element("span", "peal-consent__readout");
@@ -208,25 +165,29 @@ export class PealConsent extends HTMLElement {
     const titleRow = element("div", "peal-consent__title-row");
     const small = element("canvas", "peal-consent__small");
     small.setAttribute("aria-hidden", "true");
-    small.style.width = `${String(5 * cellSize)}px`;
-    small.style.height = `${String(5 * cellSize)}px`;
+    small.style.width = `${String(5 * smallCellSize)}px`;
+    small.style.height = `${String(5 * smallCellSize)}px`;
     const title = element("h2", "peal-consent__title", t.title);
     title.id = id;
     title.tabIndex = -1;
     titleRow.append(small, title);
 
-    const text = element("p", "peal-consent__text", t.text);
-    const status = element("p", "peal-consent__status");
-    status.hidden = true;
-    body.append(titleRow, text, status);
+    // The text, then the privacy policy's link on the same line.
+    const paragraph = element("p", "peal-consent__text");
+    const text = element("span", "", t.text);
+    paragraph.append(text);
 
     const policy = presentOrUndefined(this.dataset["policy"]);
 
     if (policy !== undefined) {
       const link = element("a", "peal-consent__policy", t.policy);
       link.href = policy;
-      body.append(link);
+      paragraph.append(" ", link);
     }
+
+    const status = element("p", "peal-consent__status");
+    status.hidden = true;
+    body.append(titleRow, paragraph, status);
 
     // The two answers, equally weighted: the same outline button, side by
     // side and equally wide, Allow first, as the app's consent card has them.
@@ -262,16 +223,14 @@ export class PealConsent extends HTMLElement {
       actions.append(button);
     }
 
-    const content = element("div", "peal-consent__content");
-    content.append(art, body);
-    region.append(head, content, actions);
+    region.append(art, body, actions, close);
 
     // Outside the region, so it is still heard once the notice is hidden.
     const live = element("span", "peal-consent__live");
     live.setAttribute("aria-live", "polite");
 
     this.append(region, live);
-    drawCells(small, smallFrame, 5);
+    drawCells(small, smallFrame, 5, smallCellSize);
     this.#parts = {
       actions,
       canvas,
