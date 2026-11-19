@@ -1,20 +1,10 @@
 "use client";
 
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
-import { Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { Button } from "peal-ui/components/button";
-import { Label } from "peal-ui/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "peal-ui/components/select";
 import { Skeleton } from "peal-ui/components/skeleton";
-import { useState } from "react";
 
 import {
   analyticsDashboard,
@@ -22,22 +12,21 @@ import {
   exportUrl,
 } from "#analytics/api.ts";
 import {
+  defaultRange,
   rangeEnding,
   ranges,
-  RangeSchema,
   summaryTimeZone,
   todayIn,
 } from "#analytics/report.ts";
-import type { Range } from "#analytics/report.ts";
 import { AccountNumbers } from "#components/analytics/account-numbers.tsx";
 import { AnalyticsSummaryView } from "#components/analytics/analytics-summary.tsx";
 import { BestTimesCard } from "#components/analytics/best-times.tsx";
+import { PeriodMenu, usePeriod } from "#components/lists/period-menu.tsx";
 import { InTimeZone } from "#components/notices/in-time-zone.tsx";
+import { PageActions } from "#components/shell/frame-view.tsx";
 import { workspaceChannels } from "#posts/api.ts";
 import { useMounted } from "#posts/use-mounted.ts";
 import { browserTimeZone } from "#posts/zoned-time.ts";
-
-const decodeRange = Schema.decodeUnknownOption(RangeSchema);
 
 const Loading = ({ label }: { readonly label: string }) => (
   <div aria-busy="true" className="flex flex-col gap-4">
@@ -48,18 +37,13 @@ const Loading = ({ label }: { readonly label: string }) => (
 );
 
 interface AnalyticsViewProps {
-  readonly initialRange: Range;
   readonly timeZone: string;
   readonly workspaceId: string;
 }
 
-const AnalyticsView = ({
-  initialRange,
-  timeZone,
-  workspaceId,
-}: AnalyticsViewProps) => {
+const AnalyticsView = ({ timeZone, workspaceId }: AnalyticsViewProps) => {
   const t = useTranslations("Analytics");
-  const [range, setRange] = useState<Range>(initialRange);
+  const [range, setRange] = usePeriod(ranges, defaultRange);
   const asked = rangeEnding(todayIn(timeZone), range, timeZone);
   const summaryQuery = analyticsSummary(workspaceId, asked);
   const dashboardQuery = analyticsDashboard(workspaceId, asked);
@@ -131,39 +115,15 @@ const AnalyticsView = ({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2 sm:max-w-xs">
-        <Label id="analytics-range-label">{t("page.rangeLabel")}</Label>
-        <Select
-          value={range}
-          onValueChange={(value) => {
-            const picked = decodeRange(value);
-
-            if (Option.isSome(picked)) {
-              setRange(picked.value);
-            }
-          }}
-        >
-          <SelectTrigger aria-labelledby="analytics-range-label">
-            <SelectValue>
-              {t("page.range", { days: Number(range) })}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {ranges.map((choice) => (
-              <SelectItem key={choice} value={choice}>
-                {t("page.range", { days: Number(choice) })}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <PageActions>
+        <PeriodMenu choices={ranges} value={range} onChange={setRange} />
+      </PageActions>
       {body}
     </div>
   );
 };
 
 interface AnalyticsScreenProps {
-  readonly initialRange: Range;
   readonly workspaceId: string;
 }
 

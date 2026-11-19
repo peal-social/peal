@@ -10,8 +10,6 @@
     "page": {
       "title": "Analytics",
       "description": "How the posts published over a range of days did on their platforms. Days run in your time zone, {zone}.",
-      "rangeLabel": "Range",
-      "range": "{days, plural, one {Today} other {Last # days}}",
       "loading": "Loading the analytics…",
       "loadFailed": "The analytics could not be loaded.",
       "retry": "Try again",
@@ -90,8 +88,6 @@
       "title": "When this channel's posts did best",
       "description": "By weekday and hour in your time zone: how many of the channel's posts went live in each hour, and the median of the likes, reposts, replies and quotes each was given. It shows what happened, not what will: counts of different platforms are never compared.",
       "channel": "Channel",
-      "days": "{days, plural, other {Last # days}}",
-      "daysLabel": "Range",
       "loading": "Loading when the posts did best…",
       "loadFailed": "When the posts did best could not be loaded.",
       "retry": "Try again",
@@ -2381,8 +2377,6 @@
       "history": {
         "title": "Usage by day",
         "description": "What the workspace did each UTC day, and what it held when the day's snapshot ran, shortly after.",
-        "rangeLabel": "Period",
-        "range": "Last {days, number} days",
         "loading": "Loading the usage…",
         "loadFailed": "The usage could not be loaded.",
         "retry": "Try again",
@@ -2935,8 +2929,6 @@
       "usageReport": {
         "title": "Usage per customer",
         "description": "What the account and its customers' workspaces used each UTC day, and per workspace over the period. Counts only: nothing here is priced.",
-        "period": "Period",
-        "range": "Last {days, number} days",
         "loading": "Loading the usage…",
         "loadFailed": "The usage could not be loaded.",
         "retry": "Try again",
@@ -4902,8 +4894,6 @@
       "title": "Report across workspaces",
       "description": "What went out in each of your workspaces and how it did, beside the days before. Days run in your time zone, {zone}.",
       "notComparable": "A table, not a chart: each platform gives different counts, so compare a workspace with itself, not with another.",
-      "rangeLabel": "Range",
-      "range": "{days, plural, other {Last # days}}",
       "download": "Download CSV",
       "loading": "Loading the report…",
       "loadFailed": "The report could not be loaded.",
@@ -5108,6 +5098,9 @@
     }
   },
   "Lists": {
+    "period": "Period",
+    "periodIs": "Period: {period}",
+    "lastDays": "Last {days, number} days",
     "filter": "Filter",
     "filterPlaceholder": "Filter…",
     "noMatch": "Nothing matches “{query}”.",

@@ -845,6 +845,14 @@ way, so a person who learns one screen knows them all.
   **Ordering** (what the list is sorted by) with a button that turns its
   direction, and where a screen has them, grouping and its other views
   (list, calendar).
+- **`period-menu`** — Wherever a screen shows a span of days (Analytics,
+  Report, usage), **Period** chooses it: a small outline button (30 px)
+  with a calendar icon and the span's name ("Last 30 days"), opening a
+  menu (level 3) of the spans the screen offers, the chosen one ticked. It
+  sits in the page's actions, or at the end of the header of the card it
+  governs. It lives in the address as `?period=` and a number of days; a
+  card with a span of its own beside the page's takes a key of its own
+  (`?bestTimes=`).
 - What a list shows lives in the page's **address**: a reload, the back
   button or a link shows the same list. Defaults are left out of it, and
   changing it never scrolls the page.

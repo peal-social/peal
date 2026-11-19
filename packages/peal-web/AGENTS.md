@@ -572,6 +572,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   nothing would be refused. Keep `MediaUploader` mounted while the post is
   editable and pass `disabled` while it is busy: unmounting it cancels the
   uploads in flight.
+- A span of days is chosen with `PeriodMenu` and `usePeriod`
+  (`components/lists/period-menu.tsx`), never a select of a screen's own:
+  Analytics and the report in `PageActions`, the billing usage history
+  and the partner's usage per customer in their card's header, each in
+  the address as `?period=` (the default left out); the best-times card
+  keeps its own under `?bestTimes=`.
 - Charts use peal-ui's `chart` (recharts) and come with the same figures as
   a table, behind **Chart** and **Table** tabs; the chart itself is
   `aria-hidden`. Write calendar days, such as a summary's, in UTC

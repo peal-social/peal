@@ -154,6 +154,18 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     await expect(
       exports.getByRole("link", "Accounts, day by day")
     ).toBeVisible();
+
+    // Period, in the header, keeps the days shown in the address.
+    await screen.getByRole("button", "Period: Last 30 days").tap();
+    await screen.getByRole("menuitemradio", "Last 7 days").tap();
+
+    await expect(browser).toHaveURL(`/${slug}/analytics?period=7`);
+    await expect(
+      screen.getByRole("button", "Period: Last 7 days")
+    ).toBeVisible();
+    await expect(
+      screen.getByRole("heading", "Against the 7 days before")
+    ).toBeVisible();
   });
 
   test("reads a comment in the inbox and settles it", async ({

@@ -19,6 +19,7 @@ import { useId, useState } from "react";
 import { bestTimes } from "#analytics/api.ts";
 import { notFollowed } from "#analytics/not-followed.ts";
 import { channelName } from "#channels/channel-name.ts";
+import { PeriodMenu, usePeriod } from "#components/lists/period-menu.tsx";
 
 import { BestTimesView } from "./best-times-view.tsx";
 
@@ -27,9 +28,6 @@ const periods = ["30", "90", "180"] as const;
 type Period = (typeof periods)[number];
 
 const days = { "180": 180, "30": 30, "90": 90 } as const;
-
-const isPeriod = (value: string | null): value is Period =>
-  periods.some((period) => period === value);
 
 const Found = ({
   channelId,
@@ -85,10 +83,10 @@ export const BestTimesCard = ({
 }) => {
   const t = useTranslations("Analytics.bestTimes");
   const channelLabel = useId();
-  const periodLabel = useId();
   const [first] = channels;
   const [chosen, setChosen] = useState(first?.id ?? "");
-  const [period, setPeriod] = useState<Period>("90");
+  // The card's own period, beside the page's.
+  const [period, setPeriod] = usePeriod(periods, "90", "bestTimes");
   const channel = channels.find(({ id }) => id === chosen);
 
   if (first === undefined) {
@@ -98,12 +96,6 @@ export const BestTimesCard = ({
   const handleChannel = (value: string | null) => {
     if (value !== null) {
       setChosen(value);
-    }
-  };
-
-  const handlePeriod = (value: string | null) => {
-    if (isPeriod(value)) {
-      setPeriod(value);
     }
   };
 
@@ -133,20 +125,8 @@ export const BestTimesCard = ({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex flex-col gap-2 sm:w-48">
-          <Label id={periodLabel}>{t("daysLabel")}</Label>
-          <Select value={period} onValueChange={handlePeriod}>
-            <SelectTrigger aria-labelledby={periodLabel}>
-              <SelectValue>{t("days", { days: days[period] })}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {periods.map((each) => (
-                <SelectItem key={each} value={each}>
-                  {t("days", { days: days[each] })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-end">
+          <PeriodMenu choices={periods} value={period} onChange={setPeriod} />
         </div>
       </div>
       <Found

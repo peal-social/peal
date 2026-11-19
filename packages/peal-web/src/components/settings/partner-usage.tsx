@@ -1,7 +1,6 @@
 "use client";
 
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
-import { Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useFormatter, useTranslations } from "next-intl";
 import type {
@@ -11,14 +10,6 @@ import type {
   TenantUsage,
 } from "peal-contract";
 import { Button } from "peal-ui/components/button";
-import { Label } from "peal-ui/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "peal-ui/components/select";
 import { Skeleton } from "peal-ui/components/skeleton";
 import {
   Table,
@@ -29,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "peal-ui/components/table";
-import { useId, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 import {
@@ -37,14 +28,12 @@ import {
   defaultRange,
   rangeEnding,
   ranges,
-  RangeSchema,
   todayIn,
 } from "#analytics/report.ts";
 import type { Range } from "#analytics/report.ts";
 import { UsageHistoryView } from "#components/billing/usage-history.tsx";
+import { PeriodMenu, usePeriod } from "#components/lists/period-menu.tsx";
 import { partnerUsageOf } from "#partner/atoms.ts";
-
-const decodeRange = Schema.decodeUnknownOption(RangeSchema);
 
 const dash = "–";
 
@@ -348,36 +337,14 @@ export const UsagePerCustomer = ({
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("WorkspaceSettings.partner.usageReport");
-  const [range, setRange] = useState<Range>(defaultRange);
-  const labelId = useId();
+  const [range, setRange] = usePeriod(ranges, defaultRange);
   const period = periodOf(range);
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-muted-foreground text-sm">{t("description")}</p>
-      <div className="flex flex-col gap-2 sm:max-w-xs">
-        <Label id={labelId}>{t("period")}</Label>
-        <Select
-          value={range}
-          onValueChange={(value) => {
-            const picked = decodeRange(value);
-
-            if (Option.isSome(picked)) {
-              setRange(picked.value);
-            }
-          }}
-        >
-          <SelectTrigger aria-labelledby={labelId}>
-            <SelectValue>{t("range", { days: Number(range) })}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {ranges.map((choice) => (
-              <SelectItem key={choice} value={choice}>
-                {t("range", { days: Number(choice) })}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
+        <PeriodMenu choices={ranges} value={range} onChange={setRange} />
       </div>
       <FirstPage key={range} period={period} workspaceId={workspaceId} />
     </div>
