@@ -70,6 +70,29 @@
   `nx run peal-e2e:e2e-webkit` (`e2e.webkit.config.ts`, its report and
   the stand-in's log under `.e2e/webkit`, through `PEAL_E2E_OUTPUT`) runs that journey alone in WebKit, after the Chromium
   run in CI: install WebKit with `e2e-web install webkit`.
+- The run serves the marketing site too (`scripts/site.ts`): the build
+  `nx run peal-site:build-e2e` writes to `packages/peal-site/dist-e2e`,
+  measured with the stand-in's token, `SITE_POSTHOG_HOST=/pulse/site` and
+  `SITE_POSTHOG_ENVIRONMENT=e2e`, served on a free port as nginx serves
+  it, its `/pulse/` forwarded to the run's web app with the visitor's
+  address in `cf-connecting-ip` (`203.0.113.7`), as the tunnel does; the
+  web app and the server get `PEAL_POSTHOG_SITE=on`, the web app
+  `AUTH_IP_HEADERS=cf-connecting-ip`. Its address is in `.e2e/site-url`.
+  Site and app share the host name 127.0.0.1, so they share cookies, as
+  peal.social's parent domain makes them. `tests/site-measurement.e2e.ts`
+  reads the consent notice and what the stand-in received: cookieless
+  page views before an answer and after **Don't allow**, the campaign
+  labels alone of a query, **Cookie settings** and its focus, one
+  visitor across pages once allowed (it writes the cookies and storage
+  keys the SDK kept to `.e2e/posthog-site-storage.json`, which the privacy
+  policy names), the server's `$create_alias` at a sign-up in the same
+  browser and the cookie gone after it, nothing for a browser that sends
+  Global Privacy Control, a still notice with reduced motion, and the
+  notice at 320 and 375 px and at 1280 px in both languages (screenshots
+  `.e2e/site-notice-*.png`); and the site's scripts against their gzip
+  budgets (`.e2e/site-budgets.json`). The web app's journey leaves the
+  site's events (`source: "site"`) aside, and checks it never carries the
+  site's visitor.
 - No platform can be connected in a run, so a test that needs a channel
   inserts a synthetic one with `seedChannel` (`tests/support/channels.ts`).
   Update it when `channels.channels` changes. Publish nothing, and cancel any
