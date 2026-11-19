@@ -579,6 +579,7 @@ const PortsLive = Layer.mergeAll(
           ),
         groupIdentify: () => Effect.void,
         identify: () => Effect.void,
+        link: () => Effect.void,
         markInternal: () => Effect.void,
       });
     })

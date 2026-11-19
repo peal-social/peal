@@ -2,15 +2,13 @@ import {
   SITE_APP_URL,
   SITE_DISCORD_URL,
   SITE_DOCS_URL,
-  SITE_PLAUSIBLE_DOMAIN,
-  SITE_PLAUSIBLE_HOST,
+  SITE_POSTHOG_COOKIE_DOMAIN,
+  SITE_POSTHOG_ENVIRONMENT,
+  SITE_POSTHOG_HOST,
+  SITE_POSTHOG_KEY,
 } from "astro:env/server";
-import {
-  originOf,
-  plausibleScript,
-  present,
-  siteLink,
-} from "peal-ui/lib/site/links";
+import { originOf, present, siteLink } from "peal-ui/lib/site/links";
+import { measurementSettings } from "peal-ui/lib/site/measurement/settings";
 
 import type { Locale } from "./i18n/locales.ts";
 
@@ -19,7 +17,7 @@ import type { Locale } from "./i18n/locales.ts";
 
 export { indexable, socialAccounts } from "peal-ui/lib/site/links";
 
-export type { PlausibleScript, SocialAccount } from "peal-ui/lib/site/links";
+export type { SocialAccount } from "peal-ui/lib/site/links";
 
 const docsOrigin = originOf(SITE_DOCS_URL);
 
@@ -45,10 +43,14 @@ export const appLink = (locale: Locale, path: string): string | undefined =>
 export const discordUrl = present(SITE_DISCORD_URL);
 
 /**
- * Plausible's script tag attributes when SITE_PLAUSIBLE_DOMAIN is set; with
- * SITE_PLAUSIBLE_HOST it loads from a self-hosted instance.
+ * Measurement with PostHog and its consent notice, when SITE_POSTHOG_KEY
+ * and SITE_POSTHOG_HOST are both set; a value that is set but wrong stops
+ * the build.
  */
-export const plausible = plausibleScript(
-  SITE_PLAUSIBLE_DOMAIN,
-  SITE_PLAUSIBLE_HOST
-);
+export const measurement = measurementSettings({
+  cookieDomain: SITE_POSTHOG_COOKIE_DOMAIN,
+  environment: SITE_POSTHOG_ENVIRONMENT,
+  host: SITE_POSTHOG_HOST,
+  key: SITE_POSTHOG_KEY,
+  prefix: "SITE",
+});

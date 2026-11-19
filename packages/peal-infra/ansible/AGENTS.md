@@ -80,6 +80,21 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   `peal_runtime_posthog_on`), so Peal's servers capture only where they
   can also delete erased persons there;
   `PEAL_POSTHOG_ENVIRONMENT` is `peal_environment`.
+- The site, the docs and the blog are measured behind
+  `peal_site_measurement` (README.md, "Site measurement"): off by
+  default, on in production; the sandbox keeps it off, as its host names
+  under peal.social would share production's answer cookie. With it, the
+  tunnel sends `^/+pulse/+site/` on the site's and the docs' host names,
+  and nothing else of them, to the web app's relay, ahead of their other
+  rules; `host.env` gains `PEAL_POSTHOG_SITE` and
+  `PEAL_POSTHOG_SITE_COOKIE_DOMAIN`, and the blog's `BLOG_POSTHOG_*`; the
+  release builds the static and docs images with `peal_release_build_args`
+  (the inventory's `peal_static_build_args` and the `SITE_POSTHOG_*`,
+  `DOCS_POSTHOG_*` and `DOCS_PRIVACY_URL` the switch derives). The token is
+  the vault's `PEAL_POSTHOG_KEY`, read on the machine that builds, so
+  `peal_preflight` refuses the switch without it there, and refuses those
+  settings set by hand. Without the switch, the tunnel, `host.env` and the
+  build arguments carry none of it (`tests/test_site_measurement.py`).
 - Containers publish ports on 127.0.0.1 only, and the tunnel reaches them
   there; Docker's own rules would otherwise bypass ufw.
 - A separate server checks uptime (`uptime.yml`, inventory group

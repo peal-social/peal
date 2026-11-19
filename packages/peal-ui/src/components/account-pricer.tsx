@@ -12,6 +12,7 @@ import type * as React from "react";
 
 import { graduatedTotal } from "../lib/graduated";
 import type { PriceBand } from "../lib/graduated";
+import { PricingChanged } from "../lib/site/measurement/pricing-changed";
 import { cn } from "../lib/utils";
 import { Button, buttonVariants } from "./button";
 import { Input } from "./input";
@@ -273,6 +274,38 @@ const useBandBurst = (band: number) => {
   return origin;
 };
 
+// The cleanup of an effect that started nothing.
+const leaveAsIs = () => null;
+
+// How long the count must rest before the site counts it as tried.
+const settledMs = 2000;
+
+/**
+ * Tells the page, 2 s after the count last changed (never on the first
+ * render), which count the visitor settled on and its band, as
+ * `peal:pricing`: the site's measurement counts it, a page without
+ * measurement ignores it.
+ */
+const useSettledCount = (accounts: number, band: number) => {
+  const first = useRef(true);
+
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+
+      return leaveAsIs;
+    }
+
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new PricingChanged({ accounts, band }));
+    }, settledMs);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [accounts, band]);
+};
+
 /**
  * A pricing calculator for graduated per-account prices (DESIGN.md, Account
  * calculator): the count, typed, stepped or slid along a track whose
@@ -297,6 +330,8 @@ const AccountPricer = ({
   const position = positionOf(segments, accounts);
   const bandIndex = bandIndexOf(bands, accounts);
   const burst = useBandBurst(bandIndex);
+
+  useSettledCount(accounts, bandIndex);
 
   const count = (value: number) => new Intl.NumberFormat(locale).format(value);
 
@@ -572,7 +607,12 @@ const AccountPricer = ({
           {cta === undefined ? (
             <span />
           ) : (
-            <a href={cta.href} className={cn(buttonVariants(), "w-fit")}>
+            <a
+              href={cta.href}
+              data-measure-cta="get_started"
+              data-measure-place="pricing"
+              className={cn(buttonVariants(), "w-fit")}
+            >
               {cta.label}
             </a>
           )}

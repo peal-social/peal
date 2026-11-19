@@ -1,7 +1,5 @@
 import { defineConfig } from "blume";
 import { anthropic } from "blume/ai";
-import { plausible } from "blume/analytics";
-import type { PlausibleAdapter, PlausibleOptions } from "blume/analytics";
 import { turnstile } from "blume/captcha";
 import { node } from "blume/deploy";
 import { openapi } from "blume/reference";
@@ -17,26 +15,6 @@ const fromEnvironment = (name: string): string | undefined => {
   const value = process.env[name]?.trim();
 
   return value === undefined || value === "" ? undefined : value;
-};
-
-// Plausible counts visits only when a domain is configured, and Blume adds its
-// script to production builds only. DOCS_PLAUSIBLE_HOST points at a
-// self-hosted instance instead of Plausible's own.
-const analytics = (): PlausibleAdapter[] => {
-  const domain = fromEnvironment("DOCS_PLAUSIBLE_DOMAIN");
-
-  if (domain === undefined) {
-    return [];
-  }
-
-  const options: PlausibleOptions = { domain };
-  const host = fromEnvironment("DOCS_PLAUSIBLE_HOST");
-
-  if (host !== undefined) {
-    options.host = host;
-  }
-
-  return [plausible(options)];
 };
 
 // The public origin, such as https://docs.example.com. Blume needs it for
@@ -141,7 +119,6 @@ export default defineConfig({
     },
   },
   ai: { assistant: assistant() },
-  analytics: analytics(),
   deployment: deployment(),
   description:
     "Schedule social media posts across platforms, from one place. Guides, self-hosting and the HTTP API reference.",
@@ -198,6 +175,10 @@ export default defineConfig({
     ],
   },
   redirects,
+  // Blume's search tells the page what readers look for (`blume:track`),
+  // which the docs' measurement counts. Never the query's text: its length
+  // alone, here as a second guard after the measurement's own allowlist.
+  search: { analytics: { queries: false } },
   reference: [
     // Written by `nx run peal-contract:openapi`, which every docs target
     // depends on, so the reference always matches the contract. The overlay

@@ -43,13 +43,33 @@
           "env": "SITE_DISCORD_URL"
         },
         {
-          "env": "SITE_PLAUSIBLE_DOMAIN"
+          "env": "SITE_POSTHOG_KEY"
         },
         {
-          "env": "SITE_PLAUSIBLE_HOST"
+          "env": "SITE_POSTHOG_HOST"
+        },
+        {
+          "env": "SITE_POSTHOG_COOKIE_DOMAIN"
+        },
+        {
+          "env": "SITE_POSTHOG_ENVIRONMENT"
         }
       ],
       "outputs": ["{projectRoot}/dist"]
+    },
+    "build-e2e": {
+      "command": "astro build --outDir dist-e2e",
+      "options": {
+        "cwd": "{projectRoot}",
+        "env": {
+          "SITE_APP_URL": "",
+          "SITE_POSTHOG_ENVIRONMENT": "e2e",
+          "SITE_POSTHOG_HOST": "/pulse/site",
+          "SITE_POSTHOG_KEY": "phc_synthetic"
+        }
+      },
+      "inputs": ["..."],
+      "outputs": ["{projectRoot}/dist-e2e"]
     },
     "dev": {
       "command": "astro dev --port 4321",

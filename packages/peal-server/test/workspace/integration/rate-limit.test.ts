@@ -9,6 +9,7 @@ import { ConfigProvider, Effect, Layer } from "effect";
 import { BillingLive } from "#billing/container.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
+import { SiteMeasurement } from "#shared/application/site-measurement.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { DatabaseLive } from "#shared/infrastructure/database.ts";
 import { MigrationsLive } from "#shared/infrastructure/migrations.ts";
@@ -79,6 +80,7 @@ const authWith = (env: Record<string, string>) =>
     // Nor changes a workspace.
     Layer.provide(ActivityJournal.none),
     Layer.provide(ProductAnalytics.none),
+    Layer.provide(SiteMeasurement.none),
     Layer.provide(SecurityPolicies.none),
     Layer.provide(SignUpGate.anyone),
     // Nothing here changes two-step verification.
