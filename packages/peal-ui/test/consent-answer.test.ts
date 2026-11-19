@@ -1,3 +1,4 @@
+import { retentionPeriods } from "peal-contract/data-processing";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -33,6 +34,8 @@ describe("the answer cookie", () => {
 
   it("holds for 183 days: day 182 is still an answer, day 183 is none", () => {
     expect(consentDays).toBe(183);
+    // The period the privacy policy gives, from the registry.
+    expect(consentDays).toBe(retentionPeriods.siteConsent.days);
     expect(answerOf(header("allowed", today - 182), today)).toBe("allowed");
     expect(answerOf(header("allowed", today - 183), today)).toBe("none");
   });

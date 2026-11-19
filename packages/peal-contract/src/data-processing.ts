@@ -79,6 +79,10 @@ export type ProcessingText = Readonly<Record<ProcessingLocale, string>>;
  * - `sessionRecordings`: each recording of a web app session, at the
  *   provider: the longest its free plan keeps one; nothing in the server
  *   enforces it;
+ * - `siteConsent`: the answer to the consent notice of the site, the docs
+ *   and the blog, and the cookie that follows a visitor who allowed it,
+ *   both enforced by the cookies' own lifetime (peal-ui's
+ *   `lib/site/consent`);
  * - `serverLogs`, `traces`, `metrics`, `backups`: the production stack
  *   (`packages/peal-docker`: Loki, Tempo, Prometheus, and pgBackRest's
  *   four weekly full backups, which hold deleted data 5 weeks at most).
@@ -119,6 +123,7 @@ export const retentionPeriods = {
   serverLogs: { days: 31 },
   sessionRecordings: { days: 30 },
   shortLinkClicks: { days: 400 },
+  siteConsent: { days: 183 },
   traces: { days: 14 },
   transferOffers: { days: 7 },
   trialMemory: { years: 2 },
@@ -794,6 +799,67 @@ export const processingRegister: readonly ProcessingCategory[] = [
     source: {
       en: "Your use of the web app, once you allowed it",
       fr: "Votre utilisation de l’application web, une fois que vous l’avez autorisée",
+    },
+  },
+  {
+    // Peal's own site, docs and blog, where the operator measures them:
+    // the policy says "on a server whose operator…".
+    applies: "always",
+    data: {
+      en: "On a server whose operator measures its website, its documentation and its blog: the pages you open, as their address without its query, when, how long you stayed and how far down you scrolled; the site you came from, as its domain alone; the campaign labels of the link you followed (source, medium and campaign); which of a fixed list of buttons you clicked; how many accounts you tried in the price calculator; that you searched the documentation, with the length of what you typed and the number of results, never the text; how fast the page loaded; your browser’s family and version, your system, the kind of device, and the size of the window and the screen; and an identifier for the day, which the analytics provider works out from your IP address and your browser’s description with a key it deletes each day, without keeping the address. Nothing is stored in your browser for it, and it names nobody. A browser that sends Do Not Track or Global Privacy Control isn’t measured at all",
+      fr: "Sur un serveur dont l’exploitant mesure son site, sa documentation et son blog : les pages que vous ouvrez, sous forme d’adresse sans ses paramètres, quand, combien de temps vous y restez et jusqu’où vous faites défiler la page ; le site d’où vous venez, par son seul nom de domaine ; les étiquettes de campagne du lien que vous avez suivi (source, support et campagne) ; lequel d’une liste fixe de boutons vous avez cliqué ; combien de comptes vous avez essayés dans le calculateur de prix ; que vous avez cherché dans la documentation, avec la longueur de ce que vous avez tapé et le nombre de résultats, jamais le texte ; la vitesse de chargement de la page ; la famille et la version de votre navigateur, votre système, le type d’appareil et la taille de la fenêtre et de l’écran ; et un identifiant pour la journée, que le prestataire de mesure d’usage calcule à partir de votre adresse IP et de la description de votre navigateur avec une clé qu’il supprime chaque jour, sans garder l’adresse. Rien n’est enregistré dans votre navigateur pour cela, et rien ne vous nomme. Un navigateur qui envoie Do Not Track ou Global Privacy Control n’est pas mesuré du tout",
+    },
+    id: "siteMeasurement",
+    legalBasis: {
+      en: "Legitimate interests (GDPR Article 6(1)(f)): counting visits, for our own statistics alone",
+      fr: "Intérêts légitimes (RGPD, article 6, paragraphe 1, point f) : compter les visites, pour nos seules statistiques",
+    },
+    name: {
+      en: "Website measurement",
+      fr: "Mesure d’audience du site",
+    },
+    // The provider's plan sets the period, as for product analytics.
+    operatorSet: true,
+    purposes: {
+      en: "Count which pages are read and where visitors come from, to improve the website",
+      fr: "Compter quelles pages sont lues et d’où viennent les visiteurs, pour améliorer le site",
+    },
+    retention: {
+      en: `Each event ${years(p.productAnalytics.years).en}, at the analytics provider`,
+      fr: `Chaque événement ${years(p.productAnalytics.years).fr}, chez le prestataire de mesure d’usage`,
+    },
+    source: {
+      en: "Your visits to the website, the documentation and the blog",
+      fr: "Vos visites du site, de la documentation et du blog",
+    },
+  },
+  {
+    applies: "always",
+    data: {
+      en: `Only once you allow it: the same events under an identifier kept in a cookie in your browser for ${String(p.siteConsent.days)} days, shared by the website, the documentation and the blog; and, if you create an account in that browser, the link between that identifier and your account, made once when the account is created, after which the cookie is removed`,
+      fr: `Seulement une fois que vous l’autorisez : les mêmes événements sous un identifiant gardé dans un cookie de votre navigateur pendant ${String(p.siteConsent.days)} jours, commun au site, à la documentation et au blog ; et, si vous créez un compte dans ce navigateur, le lien entre cet identifiant et votre compte, fait une seule fois à la création du compte, après quoi le cookie est supprimé`,
+    },
+    id: "siteJourney",
+    legalBasis: {
+      en: "Your consent (GDPR Article 6(1)(a)), and, for the cookie, article 82 of the French data protection act. You can withdraw it under Cookie settings at any time",
+      fr: "Votre consentement (RGPD, article 6, paragraphe 1, point a) et, pour le cookie, l’article 82 de la loi Informatique et Libertés. Vous pouvez le retirer à tout moment dans les Paramètres des cookies",
+    },
+    name: {
+      en: "Website visits linked across visits and to your account",
+      fr: "Visites du site reliées entre elles et à votre compte",
+    },
+    operatorSet: true,
+    purposes: {
+      en: "See which pages lead to a sign-up",
+      fr: "Voir quelles pages mènent à une inscription",
+    },
+    retention: {
+      en: `The cookie ${String(p.siteConsent.days)} days, each event ${years(p.productAnalytics.years).en}, at the analytics provider. Withdrawing your consent removes the cookie at once, and what was measured before ends with its period; closing your account deletes the events linked to it. Your choice is asked again after six months`,
+      fr: `Le cookie ${String(p.siteConsent.days)} jours, chaque événement ${years(p.productAnalytics.years).fr}, chez le prestataire de mesure d’usage. Retirer votre consentement supprime aussitôt le cookie, et ce qui a été mesuré avant prend fin au terme de sa durée ; la fermeture de votre compte supprime les événements qui y sont liés. Votre choix vous est redemandé au bout de six mois`,
+    },
+    source: {
+      en: "Your visits, once you allowed it",
+      fr: "Vos visites, une fois que vous l’avez autorisé",
     },
   },
   {
