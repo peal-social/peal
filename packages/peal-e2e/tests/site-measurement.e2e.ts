@@ -514,10 +514,12 @@ describe("the site's measurement", { serial: true }, () => {
     const afterSignUp = linesSoFar();
 
     await left.activate();
+
     await browser.evaluate(
       "document.dispatchEvent(new Event('visibilitychange'))"
     );
     await sleep(500);
+
     // Two clicks: the first finds the visitor retired, and leaves nothing.
     const click =
       "(() => { const link = document.querySelector('[data-measure-cta]'); link.addEventListener('click', (event) => event.preventDefault()); link.click(); })()";
@@ -591,7 +593,11 @@ describe("the site's measurement", { serial: true }, () => {
 
     await browser.goto(`${site()}/pricing/`);
 
-    const view = await pageViewOf(next, "/pricing/", "a view after Don't allow");
+    const view = await pageViewOf(
+      next,
+      "/pricing/",
+      "a view after Don't allow"
+    );
 
     expect(view.properties["$cookieless_mode"]).toBe(true);
   });
@@ -633,23 +639,29 @@ const fromApp = (since: number) =>
       event.properties["source"] !== "site"
   );
 
+// The site's answer and PostHog's cookies, the app's session kept.
+const forgetSite = async (browser: {
+  readonly clearCookies: (filter: { readonly name: RegExp }) => Promise<void>;
+}) => {
+  await browser.clearCookies({
+    name: /^(?:peal\.consent|peal_site_consent|peal_site_retired|ph_|__ph)/u,
+  });
+};
+
 describe("the web app beside the site's answers", { serial: true }, () => {
-  const run = randomUUID();
+  const besideRun = randomUUID();
+
   const member = () =>
-    credentials.user("member").username.replace("@", `+${run}-beside@`);
+    credentials.user("member").username.replace("@", `+${besideRun}-beside@`);
+
   let workspaceId = "";
   let memberId = "";
 
-  // The site's answer and PostHog's cookies, the app's session kept.
-  const forgetSite = async (browser: {
-    readonly clearCookies: (filter: { readonly name: RegExp }) => Promise<void>;
+  test("signs up a member with a workspace", async ({
+    app,
+    browser,
+    screen,
   }) => {
-    await browser.clearCookies({
-      name: /^(?:peal\.consent|peal_site_consent|ph_|__ph)/u,
-    });
-  };
-
-  test("signs up a member with a workspace", async ({ app, browser, screen }) => {
     await asPerson(browser);
     await app.open("/sign-up");
     await screen.getByLabel("Name").fill("Alex Example");
