@@ -1,7 +1,8 @@
 import Cookies from "js-cookie";
 
-import { answerOf, dayOf, forgottenCookie } from "../consent/answer";
+import { answerOf, dayOf } from "../consent/answer";
 import { ConsentAnswered } from "../consent/consent-answered";
+import { forgottenCookie } from "../consent/cookies";
 import {
   blumeTrackOf,
   consentAnswered,
@@ -17,6 +18,7 @@ import { sanitized } from "./sanitize";
 import type { CommonProperties } from "./sanitize";
 import { loadSdk } from "./sdk";
 import type { SiteSdk } from "./sdk";
+import { watchWebVitals } from "./web-vitals";
 
 // Measurement on the site, the docs and the blog, which consent/start.ts
 // loads once the page is idle unless the browser asks not to be followed.
@@ -118,6 +120,10 @@ export const startMeasurement = async (
       sdk.capture(measured.event, measured.properties);
     }
   };
+
+  watchWebVitals((properties) => {
+    sdk.capture("$web_vitals", properties, true);
+  });
 
   // The SDK's consent follows the answer cookie.
   const answer = answerOf(document.cookie, dayOf(Date.now()));

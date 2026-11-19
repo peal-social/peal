@@ -32,16 +32,12 @@ describe("the site's SDK options", () => {
     ).toBe(true);
   });
 
-  it("measure page views, leaves and web vitals, and nothing else", () => {
+  it("measure page views and leaves, and nothing else", () => {
     const options = initOptionsOf(settings, keep);
 
     expect(options.capture_pageview).toBe(true);
     expect(options.capture_pageleave).toBe(true);
-    expect(options.capture_performance).toStrictEqual({
-      network_timing: false,
-      web_vitals: true,
-      web_vitals_attribution: false,
-    });
+    expect(options.capture_performance).toBe(false);
     expect(options).toMatchObject({
       advanced_disable_flags: true,
       autocapture: false,

@@ -3,13 +3,7 @@ import Cookies from "js-cookie";
 
 import { defaultLocale, locales } from "../locales";
 import type { Locale } from "../locales";
-import {
-  answerCookie,
-  browserSignals,
-  dayOf,
-  givenAnswerOf,
-  modeOf,
-} from "./answer";
+import { browserSignals, dayOf, givenAnswerOf, modeOf } from "./answer";
 import { ConsentAnswered } from "./consent-answered";
 import {
   cellSize,
@@ -20,6 +14,7 @@ import {
   smallFrame,
 } from "./cookie-art";
 import type { CookieArt } from "./cookie-art";
+import { answerCookie } from "./cookies";
 import { consentMessages } from "./messages";
 import type { ConsentMessages } from "./messages";
 

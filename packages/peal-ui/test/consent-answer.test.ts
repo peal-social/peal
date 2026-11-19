@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  answerCookie,
   answerOf,
   consentDays,
   dayOf,
-  forgottenCookie,
   givenAnswerOf,
   modeOf,
   signalsOf,
 } from "../src/lib/site/consent/answer";
+import { answerCookie, forgottenCookie } from "../src/lib/site/consent/cookies";
 
 const today = dayOf(Date.UTC(2026, 10, 19));
 

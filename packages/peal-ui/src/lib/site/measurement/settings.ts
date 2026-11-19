@@ -88,6 +88,29 @@ const decodeOrThrow =
   };
 
 /**
+ * The attributes of a page's `<peal-consent>`: the notice reads its
+ * language, the policy's address and the cookie domain; measurement reads
+ * the rest.
+ */
+export const consentAttributes = (
+  settings: MeasurementSettings,
+  page: {
+    readonly locale: string;
+    /** The privacy policy's address, or none for no link. */
+    readonly policy: string | undefined;
+    readonly source: "blog" | "docs" | "site";
+  }
+): Record<`data-${string}`, string | undefined> => ({
+  "data-cookie-domain": settings.cookieDomain,
+  "data-environment": settings.environment,
+  "data-host": settings.host,
+  "data-key": settings.key,
+  "data-locale": page.locale,
+  "data-policy": page.policy,
+  "data-source": page.source,
+});
+
+/**
  * The settings, or `undefined` while the key or the host is unset or
  * blank. A value that is set but malformed throws, naming the setting.
  */
