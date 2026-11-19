@@ -362,10 +362,45 @@ jobs:
 
   # The end-to-end tests: a new member's first steps in Chromium, against the
   # server and the web app's production build, each started by the run on
-  # its own database, Mailpit and SeaweedFS. They need no model.
+  # its own database, Mailpit and SeaweedFS. They need no model. Chromium's
+  # journeys run in three shards, contiguous slices of the suite that keep
+  # a serial journey's tests together (`e2e run --shard`), and WebKit's
+  # measurement journey in a job of its own beside them: one job ran them
+  # one after another in seven minutes, which every pull request waited for.
   e2e:
     needs: plan
     if: needs.plan.outputs.e2e == 'true'
+    name: e2e (${{ matrix.part }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - part: chromium 1/3
+            artifact: chromium-1
+            browser: chromium
+            target: e2e
+            shard: 1/3
+            # One job a browser saves its caches on main, under keys the
+            # others would only collide with.
+            save: true
+          - part: chromium 2/3
+            artifact: chromium-2
+            browser: chromium
+            target: e2e
+            shard: 2/3
+            save: false
+          - part: chromium 3/3
+            artifact: chromium-3
+            browser: chromium
+            target: e2e
+            shard: 3/3
+            save: false
+          - part: webkit
+            artifact: webkit
+            browser: webkit
+            target: e2e-webkit
+            shard: ""
+            save: true
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
@@ -402,10 +437,9 @@ jobs:
         with:
           nx-cache: e2e
       - run: docker compose --file packages/peal-docker/compose.yaml up --detach --wait seaweedfs
-      # Chromium, and WebKit for the measurement's journey, for the
-      # Playwright version @e2e-dev/web pins, kept between runs (saved by
-      # main only, like Nx's cache), with the system libraries they need,
-      # installed each time.
+      # The job's browser, for the Playwright version @e2e-dev/web pins, kept
+      # between runs (saved by main only, like Nx's cache), with the system
+      # libraries it needs, installed each time.
       - id: playwright
         run: >-
           echo "version=$(node --print 'require(require.resolve("playwright-core/package.json",
@@ -415,29 +449,28 @@ jobs:
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-chromium-webkit-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - run: ./node_modules/.bin/e2e-web install chromium webkit --with-deps
+          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - run: ./node_modules/.bin/e2e-web install "$BROWSER" --with-deps
         working-directory: packages/peal-e2e
-      - if: github.ref == 'refs/heads/main'
+        env:
+          BROWSER: ${{ matrix.browser }}
+      - if: github.ref == 'refs/heads/main' && matrix.save
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-chromium-webkit-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - run: bun nx run peal-e2e:e2e
+          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      # Chromium's shard of the suite, or the measurement's journey in WebKit.
+      - run: bun nx run "peal-e2e:$TARGET" ${SHARD:+"--shard=$SHARD"}
         env:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
           MAILPIT_URL: http://localhost:8025
+          SHARD: ${{ matrix.shard }}
           SMTP_URL: smtp://localhost:1025
-      # The measurement's journey in WebKit too, after the Chromium run.
-      - run: bun nx run peal-e2e:e2e-webkit
-        env:
-          DATABASE_URL: postgres://peal:peal@localhost:5432/peal
-          MAILPIT_URL: http://localhost:8025
-          SMTP_URL: smtp://localhost:1025
+          TARGET: ${{ matrix.target }}
       # Only main saves Nx's cache, which every branch restores: a branch's
       # copy would be readable by that branch alone, and push main's out of
       # the repository's 10 GB.
-      - if: github.ref == 'refs/heads/main'
+      - if: github.ref == 'refs/heads/main' && matrix.save && matrix.browser == 'chromium'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -449,7 +482,7 @@ jobs:
       - if: ${{ failure() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: e2e-results
+          name: e2e-results-${{ matrix.artifact }}
           path: packages/peal-e2e/.e2e/
           include-hidden-files: true
           if-no-files-found: ignore
