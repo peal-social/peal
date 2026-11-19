@@ -90,7 +90,7 @@ describe("the reviews' views", () => {
 
     const english = await render("en", view);
 
-    expect(english).toContain(`/app/${workspaceId}/inbox/reviews/${thread.id}`);
+    expect(english).toContain(`/${workspaceId}/inbox/reviews/${thread.id}`);
     expect(english).toContain("1 waiting of 2");
     expect(english).toContain("4.5 stars on average · 31 on Google");
 

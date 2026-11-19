@@ -432,7 +432,7 @@ const refused = (reason: string) => new Refused({ reason });
  * web app, which the API shares its address with.
  */
 export const accountPageOf = (url: string): string =>
-  `${new URL(url).origin}/app/account`;
+  `${new URL(url).origin}/account`;
 
 const twoStepRequired = (url: string): string =>
   `This workspace requires two-step verification. Turn it on at ${accountPageOf(url)}, then run the command again.`;

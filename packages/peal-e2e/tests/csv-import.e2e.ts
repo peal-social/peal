@@ -9,6 +9,7 @@ import type { Screen } from "e2e";
 import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
 import { scheduledPosts } from "./support/posts.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // A member imports posts from a CSV file, in one browser: a file whose
 // row names a channel the workspace does not have is refused, with nothing
@@ -17,7 +18,6 @@ import { scheduledPosts } from "./support/posts.ts";
 // so a retry signs up under a new address.
 const run = randomUUID();
 const name = "Kim Example";
-const workspace = "Imported Notes";
 const handle = "@imported@social.example";
 const text = "A field note scheduled from a file.";
 
@@ -45,6 +45,7 @@ const csvFile = async (file: string, rows: readonly string[]) => {
 const nextYear = String(new Date().getUTCFullYear() + 1);
 
 let workspaceId = "";
+let slug = "";
 
 // Whether the import may have scheduled a post not yet cancelled.
 let imported = false;
@@ -56,11 +57,17 @@ const cancelOpenPost = async (screen: Screen) => {
     .getByRole("dialog", "Cancel this post?")
     .getByRole("button", "Cancel the post")
     .tap();
-  await expect(screen.getByText("Post cancelled.")).toBeVisible();
+  await expect(
+    screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+  ).toBeVisible();
 };
 
 describe("a member's CSV import", { serial: true }, () => {
-  test("signs up and creates a workspace", async ({ app, browser, screen }) => {
+  test("signs up and opens the workspace made for them", async ({
+    app,
+    browser,
+    screen,
+  }) => {
     await app.open("/sign-up");
     await screen.getByLabel("Name").fill(name);
     await screen.getByLabel("Email").fill(address());
@@ -74,32 +81,21 @@ describe("a member's CSV import", { serial: true }, () => {
     );
     await expect(screen.getByRole("heading", "Email confirmed")).toBeVisible();
 
-    await app.open("/app");
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    await expect(calendar).toBeVisible({ timeout: 30_000 });
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+    await app.open("/");
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
   });
 
-  test("opens the import from All posts", async ({ app, browser, screen }) => {
-    await app.open(`/app/${workspaceId}/posts`);
+  test("opens the import from Posts", async ({ app, browser, screen }) => {
+    await app.open(`/${slug}/posts`);
+    // The page's actions are in the panel's header.
     await screen
-      .getByRole("main")
+      .getByRole("banner")
       .getByRole("link", "Import from a file")
       .tap();
 
     await expect(screen.getByRole("heading", "Import posts")).toBeVisible();
-    await expect(browser).toHaveURL(`/app/${workspaceId}/posts/import`);
+    await expect(browser).toHaveURL(`/${slug}/posts/import`);
     await expect(
       screen.getByText(
         "No channel is connected yet: connect one before importing."
@@ -135,7 +131,7 @@ describe("a member's CSV import", { serial: true }, () => {
   }) => {
     const channelId = await seedChannel(workspaceId, handle);
 
-    await app.open(`/app/${workspaceId}/posts/import`);
+    await app.open(`/${slug}/posts/import`);
     await expect(screen.getByText(channelId)).toBeVisible();
 
     await screen
@@ -179,7 +175,7 @@ describe("a member's CSV import", { serial: true }, () => {
         return;
       }
 
-      await app.open(`/app/${workspaceId}/posts/${postId}`);
+      await app.open(`/${slug}/posts/${postId}`);
       await cancelOpenPost(screen);
       await cancelEach(rest);
     };

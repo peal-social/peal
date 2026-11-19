@@ -66,7 +66,7 @@ describe(useNoticeText, () => {
     };
 
     await expect(render("en", event)).resolves.toContain(
-      `A post of Studio Nord did not go out on Mastodon (@peal_example): the platform refused one of its images or videos. | Open the post | /app/${workspaceId}/posts/${postId}`
+      `A post of Studio Nord did not go out on Mastodon (@peal_example): the platform refused one of its images or videos. | Open the post | /${workspaceId}/posts/${postId}`
     );
     await expect(render("fr", event)).resolves.toContain(
       "Une publication de Studio Nord n’est pas partie sur Mastodon (@peal_example) : la plateforme a refusé l’une de ses images ou vidéos. | Ouvrir la publication"
@@ -152,7 +152,7 @@ describe(useNoticeText, () => {
     };
 
     await expect(render("en", event)).resolves.toContain(
-      `Mastodon (@peal_example) in Studio Nord must be reconnected by December 1, 2026: its authorization cannot be renewed. | Open the channels | /app/${workspaceId}/channels`
+      `Mastodon (@peal_example) in Studio Nord must be reconnected by December 1, 2026: its authorization cannot be renewed. | Open the channels | /${workspaceId}/channels`
     );
     await expect(render("fr", event)).resolves.toContain(
       "Mastodon (@peal_example) dans Studio Nord doit être reconnecté avant le 1 décembre 2026 : son autorisation ne peut pas être renouvelée. | Ouvrir les canaux"
@@ -170,7 +170,7 @@ describe(useNoticeText, () => {
     });
 
     await expect(render("en", event(1))).resolves.toContain(
-      `1 new comment under a post of Studio Nord. | Open the comments | /app/${workspaceId}/inbox/${threadId}`
+      `1 new comment under a post of Studio Nord. | Open the comments | /${workspaceId}/inbox/${threadId}`
     );
     await expect(render("en", event(3))).resolves.toContain(
       "3 new comments under a post of Studio Nord."
@@ -192,7 +192,7 @@ describe(useNoticeText, () => {
     ): NoticeEvent => ({ _tag: "FollowUpsNotSent", count, reasons, ruleId });
 
     await expect(render("en", event(1, ["failed"]))).resolves.toContain(
-      `A follow-up of a rule of Studio Nord did not go out: it failed, and the rule shows why. | Open the follow-ups | /app/${workspaceId}/settings/follow-ups?rule=${ruleId}`
+      `A follow-up of a rule of Studio Nord did not go out: it failed, and the rule shows why. | Open the follow-ups | /${workspaceId}/settings/follow-ups?rule=${ruleId}`
     );
     await expect(
       render("en", event(3, ["unconfirmed", "windowEnded"]))
@@ -235,7 +235,7 @@ describe(useNoticeText, () => {
         ruleId,
       })
     ).resolves.toContain(
-      `A follow-up rule of Studio Nord stopped by itself: its channel was disconnected. | Open the follow-ups | /app/${workspaceId}/settings/follow-ups?rule=${ruleId}`
+      `A follow-up rule of Studio Nord stopped by itself: its channel was disconnected. | Open the follow-ups | /${workspaceId}/settings/follow-ups?rule=${ruleId}`
     );
     await expect(
       render("en", {
@@ -244,7 +244,7 @@ describe(useNoticeText, () => {
         ruleId,
       })
     ).resolves.toContain(
-      `A comment reply rule of Studio Nord stopped by itself: whoever started it can no longer answer comments there. | Open the comment replies | /app/${workspaceId}/settings/comment-rules`
+      `A comment reply rule of Studio Nord stopped by itself: whoever started it can no longer answer comments there. | Open the comment replies | /${workspaceId}/settings/comment-rules`
     );
     await expect(
       render("fr", {
@@ -275,7 +275,7 @@ describe(useNoticeText, () => {
     };
 
     await expect(render("en", failing)).resolves.toContain(
-      `The webhook endpoint at hooks.example.com in Studio Nord was turned off: every delivery had failed for 5 days. Fix the receiver, then turn it back on. | Open the webhooks | /app/${workspaceId}/settings/webhooks`
+      `The webhook endpoint at hooks.example.com in Studio Nord was turned off: every delivery had failed for 5 days. Fix the receiver, then turn it back on. | Open the webhooks | /${workspaceId}/settings/webhooks`
     );
     await expect(render("fr", failing)).resolves.toContain(
       "Le point de terminaison de webhook de hooks.example.com dans Studio Nord a été désactivé : toutes les livraisons échouaient depuis 5 jours. Corrigez le destinataire, puis réactivez-le. | Ouvrir les webhooks"
@@ -295,7 +295,7 @@ describe(useNoticeText, () => {
     };
 
     await expect(render("en", failing)).resolves.toContain(
-      `A delivery to the webhook endpoint at hooks.example.com in Studio Nord failed for good: the system behind it missed an event. The endpoint is still on. Fix the receiver, then send the failed deliveries again from the delivery log. After 5 days of failures, Peal turns the endpoint off. | Open the webhooks | /app/${workspaceId}/settings/webhooks`
+      `A delivery to the webhook endpoint at hooks.example.com in Studio Nord failed for good: the system behind it missed an event. The endpoint is still on. Fix the receiver, then send the failed deliveries again from the delivery log. After 5 days of failures, Peal turns the endpoint off. | Open the webhooks | /${workspaceId}/settings/webhooks`
     );
     await expect(render("fr", failing)).resolves.toContain(
       "Une livraison vers le point de terminaison de webhook de hooks.example.com dans Studio Nord a échoué pour de bon"
@@ -327,7 +327,7 @@ describe(useNoticeText, () => {
     };
 
     await expect(render("en", event)).resolves.toContain(
-      `A boost started in Studio Nord: it may spend up to its budget of €50.00, from the ad account’s payment method, until November 17, 2026. Pause or stop it at any time on the post’s page. | Open the post | /app/${workspaceId}/posts/${postId}`
+      `A boost started in Studio Nord: it may spend up to its budget of €50.00, from the ad account’s payment method, until November 17, 2026. Pause or stop it at any time on the post’s page. | Open the post | /${workspaceId}/posts/${postId}`
     );
     await expect(render("fr", event)).resolves.toMatch(
       /Une mise en avant a démarré dans Studio Nord\u00A0: elle peut dépenser jusqu’à son budget de 50,00\s€, sur le moyen de paiement du compte publicitaire, jusqu’au 17 novembre 2026\./u
@@ -381,10 +381,10 @@ describe(useNoticeText, () => {
     };
 
     await expect(render("en", event)).resolves.toContain(
-      `Meta refused the sign-in that connects ad accounts to Studio Nord. Their campaigns and numbers are no longer read, and no boost can be made on them, until the person who signed in does so again. Boosts that run keep running at the network. | Open the ads | /app/${workspaceId}/ads`
+      `Meta refused the sign-in that connects ad accounts to Studio Nord. Their campaigns and numbers are no longer read, and no boost can be made on them, until the person who signed in does so again. Boosts that run keep running at the network. | Open the ads | /${workspaceId}/ads`
     );
     await expect(render("fr", event)).resolves.toContain(
-      `Meta a refusé la connexion qui relie des comptes publicitaires à Studio Nord. Leurs campagnes et leurs chiffres ne sont plus lus, et aucune mise en avant ne peut y être créée, tant que la personne qui s’était connectée ne le refait pas. Les mises en avant en cours continuent d’être diffusées par le réseau. | Ouvrir la publicité | /app/${workspaceId}/ads`
+      `Meta a refusé la connexion qui relie des comptes publicitaires à Studio Nord. Leurs campagnes et leurs chiffres ne sont plus lus, et aucune mise en avant ne peut y être créée, tant que la personne qui s’était connectée ne le refait pas. Les mises en avant en cours continuent d’être diffusées par le réseau. | Ouvrir la publicité | /${workspaceId}/ads`
     );
   });
 });

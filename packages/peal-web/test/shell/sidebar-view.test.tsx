@@ -9,6 +9,7 @@ import { loadMessages } from "#i18n/messages.ts";
 import { navigationOf } from "#shell/navigation.ts";
 
 const workspaceId = "00000000-0000-7000-8000-0000000000a1";
+const slug = "synthetic-workspace";
 
 const PlainLink: LinkComponent = ({ children, ...props }) => (
   <a {...props}>{children}</a>
@@ -22,12 +23,12 @@ const render = async (locale: Locale) => {
       <SidebarView
         link={PlainLink}
         navigation={navigationOf({
-          pathname: `/app/${workspaceId}/calendar`,
+          pathname: `/app/${slug}/calendar`,
           permissions: ["channel:read", "apiKey:read"],
-          workspaceId,
+          workspace: slug,
         })}
         workspaceId={workspaceId}
-        workspaces={[{ id: workspaceId, name: "Synthetic workspace" }]}
+        workspaces={[{ id: workspaceId, name: "Synthetic workspace", slug }]}
       />
     </NextIntlClientProvider>
   );

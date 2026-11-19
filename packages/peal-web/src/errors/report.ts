@@ -1,6 +1,10 @@
 import { Option, Schema } from "effect";
+import { hasLocale } from "next-intl";
 import { clientErrorLimits } from "peal-contract";
 import type { ClientErrorKind, ClientErrorReport } from "peal-contract";
+
+import { routing } from "#i18n/routing.ts";
+import { isWorkspaceSegment } from "#shell/workspace-path.ts";
 
 // What could name someone in an error's text, which the server replaces
 // too: an email address, an id, an API key, a token (a JWT, such as an
@@ -74,16 +78,27 @@ export const redactText = (text: string): string =>
 const redactedCut = (text: string, limit: number): string =>
   cut(redactText(cut(text, limit)), limit);
 
+// Whether a path's segment, at `index` among `segments`, is a workspace's
+// (`/<slug>`, `/fr/<slug>`): its slug holds the workspace's name, so it
+// goes as an id does.
+const isWorkspaceAt = (segments: readonly string[], index: number): boolean => {
+  const first = hasLocale(routing.locales, segments[1]) ? 2 : 1;
+
+  return index === first && isWorkspaceSegment(segments[index] ?? "");
+};
+
 /**
  * A page's path, without its query or fragment, which can carry tokens, and
- * with its ids replaced by `:id`.
+ * with its ids, a workspace's slug among them, replaced by `:id`.
  */
 export const pathOf = (url: string): string => {
   const [path = ""] = url.split(/[?#]/u);
+  const segments = path.split("/");
 
-  const redacted = path
-    .split("/")
-    .map((segment) => (isIdSegment(segment) ? ":id" : segment))
+  const redacted = segments
+    .map((segment, index) =>
+      isIdSegment(segment) || isWorkspaceAt(segments, index) ? ":id" : segment
+    )
     .join("/");
 
   return cut(

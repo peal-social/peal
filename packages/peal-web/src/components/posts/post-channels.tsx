@@ -5,8 +5,8 @@ import { Exit } from "effect";
 import { useTranslations } from "next-intl";
 import type { SocialChannel, Post } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useState } from "react";
-import { toast } from "sonner";
 
 import { postsKeys, removePostTarget } from "#posts/api.ts";
 import { capabilitiesOf } from "#posts/composer-capabilities.ts";

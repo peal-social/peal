@@ -187,7 +187,7 @@ peal drafts list --json
 
 `peal` reads the key from the environment only. There's no flag for it, because a flag lands in your shell's history and in the list of processes. `peal` never prints it. While `PEAL_API_KEY` is set, it wins over a saved sign-in, and a blank value counts as no key.
 
-With a key, `--workspace` or `PEAL_WORKSPACE` must give the workspace's id, not its slug. There's no default, because a key can't look workspaces up. You'll find the id in the address of the workspace's pages in the web app (`/app/<id>/settings`), and `peal whoami` lists it when you're signed in as a person. Without it, the command stops with `workspace_id_required`.
+With a key, `--workspace` or `PEAL_WORKSPACE` must give the workspace's id, not its slug. There's no default, because a key can't look workspaces up. `peal whoami` lists it when you're signed in as a person, as `GET /api/me` does. Without it, the command stops with `workspace_id_required`.
 
 The key does what its permissions allow, and no more. Without `post:schedule`, for example, it can write drafts but not schedule them. A refusal comes in the server's words, with the permission the key lacks.
 

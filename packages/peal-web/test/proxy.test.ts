@@ -13,7 +13,8 @@ import proxy from "../src/proxy.ts";
 
 const origin = "http://localhost:3001";
 
-const answerTo = (path: string) => proxy(new NextRequest(`${origin}${path}`));
+const answerTo = async (path: string) =>
+  await proxy(new NextRequest(`${origin}${path}`));
 
 describe("the proxy", () => {
   it.each([
@@ -23,43 +24,62 @@ describe("the proxy", () => {
     "/en/admin/x%5c..",
     "/api%2F..%2Fadmin",
     "/x%2F..%2Fen%2Fadmin",
-  ])("refuses %s", (path) => {
-    expect(answerTo(path).status).toBe(400);
+  ])("refuses %s", async (path) => {
+    const answer = await answerTo(path);
+
+    expect(answer.status).toBe(400);
   });
 
   // The server refuses them itself, in the API's envelope.
-  it("forwards such a path under /api to the server", () => {
-    expect(
-      answerTo("/api/admin/users/x%2F..%2Fhealth").headers.get(
-        "x-middleware-rewrite"
-      )
-    ).toMatch(/\/api\/admin\/users\/x%2F\.\.%2Fhealth$/u);
+  it("forwards such a path under /api to the server", async () => {
+    const answer = await answerTo("/api/admin/users/x%2F..%2Fhealth");
+
+    expect(answer.headers.get("x-middleware-rewrite")).toMatch(
+      /\/api\/admin\/users\/x%2F\.\.%2Fhealth$/u
+    );
   });
 
   it.each(["/admin/users", "/fr/admin/users/x..y"])(
     "leaves %s, an encoded slash in its query included",
-    (path) => {
-      expect(answerTo(`${path}?next=%2F..%2Fadmin`).status).not.toBe(400);
+    async (path) => {
+      const answer = await answerTo(`${path}?next=%2F..%2Fadmin`);
+
+      expect(answer.status).not.toBe(400);
     }
   );
 
   // Next no longer removes them (skipTrailingSlashRedirect), for the
   // measurement's relay: every other path is redirected as it did.
+  // On the request's own address, as Next takes no relative Location from
+  // a proxy.
   it.each([
-    ["/app/", "/app"],
-    ["/fr/app/account/", "/fr/app/account"],
+    ["/synthetic-studio/posts/", "/synthetic-studio/posts"],
+    ["/fr/account/", "/fr/account"],
     ["/api/health/", "/api/health"],
-    ["/app//?next=%2Fapp", "/app?next=%2Fapp"],
-  ])("redirects %s to %s, without its trailing slash", (path, to) => {
-    const answer = answerTo(path);
+    ["/agenda//?next=%2Fagenda", "/agenda?next=%2Fagenda"],
+  ])("redirects %s to %s, without its trailing slash", async (path, to) => {
+    const answer = await answerTo(path);
 
     expect(answer.status).toBe(308);
-    expect(answer.headers.get("location")).toBe(to);
+    expect(answer.headers.get("location")).toBe(`${origin}${to}`);
   });
 
-  it("leaves the relay's trailing slashes, and the home page", () => {
+  it("leaves the relay's trailing slashes, and the home page", async () => {
     // The relay's route handler answers it, unredirected.
-    expect(answerTo("/pulse/e/").headers.get("x-middleware-next")).toBe("1");
-    expect(answerTo("/").status).not.toBe(308);
+    const relay = await answerTo("/pulse/e/");
+    const home = await answerTo("/");
+
+    expect(relay.headers.get("x-middleware-next")).toBe("1");
+    expect(home.status).not.toBe(308);
+  });
+
+  // A workspace named by its id, as the server's emails write it: the
+  // proxy asks the server whose it is, which only a session can say.
+  it("lets a workspace's page named by its id through without a session", async () => {
+    const answer = await answerTo(
+      "/5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e31/posts"
+    );
+
+    expect(answer.status).not.toBe(308);
   });
 });

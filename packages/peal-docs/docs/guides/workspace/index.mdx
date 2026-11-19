@@ -291,18 +291,11 @@ Once the workspace is deleted, Peal sends a confirmation to your address, in you
 
 ## Across your workspaces [#across-workspaces]
 
-On the home page, each workspace's card shows what needs attention there. Each line links to the page that shows it:
+When you sign in, Peal opens the workspace you last created or picked, or else your first one. When you sign up, Peal creates a workspace for you, named after you (_Ada’s workspace_), unless an invitation is waiting for you: you join that workspace instead.
 
-- posts that failed on a channel in the last 7 days;
-- posts to check, because a channel may have them live;
-- posts waiting for an approval, and whether you can give it;
-- channels to reconnect or turned off;
-- comments waiting for an answer in the inbox;
-- a workspace over its plan, which publishes nothing until it's back within it.
+To create another workspace, open the workspace menu at the top of the sidebar and click **New workspace**. A workspace's pages live at an address made from its name, such as `/acme-studio/posts`. The address stays the same when you rename the workspace, and links that hold the workspace's id, as Peal's emails do, lead to the same page.
 
-A workspace with nothing to attend to says so once. Cards with something to attend to come first.
-
-Each card shows only what your role there can read, as the workspace's own pages would. Where you can't read comments, for example, there's no inbox line at all, rather than a count of zero. A workspace that requires [two-step verification](#require-two-step) while your account doesn't have it on shows its badge and no figures, until you turn it on.
+The sidebar of your own pages lists your workspaces, and two pages that look across all of them.
 
 ### Agenda [#agenda]
 
@@ -327,7 +320,7 @@ Click **Download CSV** to save it, one line per workspace. A text a spreadsheet 
 
 ### From the API and the command line [#across-workspaces-api]
 
-These endpoints answer the same as the home page, the agenda and the report:
+These endpoints answer what needs attention in each workspace (failed posts, posts waiting for an approval, channels to reconnect, comments to answer, a workspace over its plan), and the same as the agenda and the report:
 
 - `GET /api/me/overview`
 - `GET /api/me/agenda`, with `from` and `to` (at most 31 days apart) and `workspaceIds` (comma-separated)

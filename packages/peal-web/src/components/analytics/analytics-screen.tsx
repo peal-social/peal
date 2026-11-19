@@ -131,14 +131,6 @@ const AnalyticsView = ({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {t("page.title")}
-        </h1>
-        <p className="text-muted-foreground">
-          {t("page.description", { zone: timeZone.replaceAll("_", " ") })}
-        </p>
-      </div>
       <div className="flex flex-col gap-2 sm:max-w-xs">
         <Label id="analytics-range-label">{t("page.rangeLabel")}</Label>
         <Select

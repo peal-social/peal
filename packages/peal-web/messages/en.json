@@ -584,31 +584,14 @@
   "UserMenu": {
     "signIn": "Sign in",
     "signUp": "Create an account",
-    "trigger": "Account of {name}",
+    "trigger": "Account of {name}{count, plural, =0 {} one {, # unread notification} other {, # unread notifications}}",
     "signedInAs": "Signed in as {email}",
     "app": "Workspaces",
     "signOut": "Sign out",
-    "signOutFailed": "Signing out failed. Try again."
-  },
-  "HomePage": {
-    "title": "Welcome to Peal",
-    "description": "Write posts once, schedule them across platforms and see how they perform."
-  },
-  "ApiStatus": {
-    "title": "API status",
-    "description": "Whether this app can reach the Peal server.",
-    "status": {
-      "loading": "Checking",
-      "healthy": "Healthy",
-      "unreachable": "Unreachable"
-    },
-    "detail": {
-      "loading": "Asking the server for its health…",
-      "healthy": "The server answered its health check.",
-      "unreachable": "The server did not answer. Check that it is running and that PEAL_API_URL points at it."
-    },
-    "retry": "Check again",
-    "retrying": "Checking…"
+    "signOutFailed": "Signing out failed. Try again.",
+    "notifications": "Notifications",
+    "agenda": "Agenda",
+    "report": "Report"
   },
   "NotFoundPage": {
     "title": "Page not found",
@@ -722,16 +705,13 @@
     "requestAgain": "Ask for a new link"
   },
   "AppPage": {
-    "title": "Hello, {name}",
-    "description": "Your workspaces, and what you may do in each.",
-    "empty": "You do not belong to any workspace yet. Create one, or ask for an invitation.",
-    "role": "{role, select, owner {Owner} admin {Admin} editor {Editor} contributor {Contributor} viewer {Viewer} other {{role}}}",
-    "permissions": "{count, plural, one {# permission} other {# permissions}}",
-    "createTitle": "Create a workspace",
     "createDescription": "You will own it, and can invite people to it.",
     "workspaceName": "Workspace name",
     "create": "Create the workspace",
-    "creating": "Creating…"
+    "creating": "Creating…",
+    "settingUp": "Setting up your workspace…",
+    "defaultName": "{elided, select, other {{name}’s workspace}}",
+    "defaultNameNoOne": "My workspace"
   },
   "InvitationPage": {
     "title": "Join a workspace",
@@ -1285,7 +1265,13 @@
         "footer": "Choose an emoji…",
         "category": "{group, select, smileysEmotion {Smileys and emotion} peopleBody {People and body} component {Components} animalsNature {Animals and nature} foodDrink {Food and drink} travelPlaces {Travel and places} activities {Activities} objects {Objects} symbols {Symbols} flags {Flags} other {{group}}}"
       },
-      "publishNowSkipped": "Not on {channels}, turned off or to be reconnected."
+      "publishNowSkipped": "Not on {channels}, turned off or to be reconnected.",
+      "phraseLabel": "Type when",
+      "phrasePlaceholder": "tomorrow 9am, friday 10:30, in 3 days, nov 27",
+      "phraseHint": "Type a date in words, then press Enter: “tomorrow 9am”, “friday 10:30”, “in 3 days”, “nov 27”.",
+      "phraseUnread": "Not understood. Try “tomorrow 9am”, “friday 10:30”, “in 3 days” or “nov 27”.",
+      "phrasePast": "{at} has passed: choose a time to come.",
+      "phraseRead": "{at}, {distance}. Press Enter to use it."
     },
     "Parts": {
       "legend": "Thread and first comment",
@@ -1678,6 +1664,8 @@
       "postLabel": "{time}, {status}: {text}",
       "more": "{count, plural, one {# more} other {# more}}",
       "moved": "Post moved to {at}.",
+      "movedBack": "Post moved back to {at}.",
+      "slotTaken": "Another post of its queue took that slot meanwhile: the post stays on {at}.",
       "moveFailed": "The post could not be moved.",
       "moveInPast": "This time has passed: the post stays where it was.",
       "moveForbidden": "Your role does not let you move posts.",
@@ -1715,9 +1703,9 @@
       "loading": "Loading the posts…",
       "loadFailed": "The posts could not be loaded.",
       "reload": "Try again",
-      "empty": "No post yet.",
-      "filteredEmpty": "No post matches these filters.",
-      "clearFilters": "Clear the filters",
+      "empty": "Every post of the workspace shows here, whatever its state: drafts, scheduled, out. Write one with New post, or press C.",
+      "filteredEmpty": "The filters hide every post.",
+      "clearFilters": "Clear",
       "loadMore": "Show more",
       "filters": "Filters",
       "status": "Status",
@@ -1737,7 +1725,16 @@
       "noChannel": "No channel yet",
       "tags": "Tags",
       "unknownChannel": "A channel no longer connected",
-      "unknownTag": "A tag since deleted"
+      "unknownTag": "A tag since deleted",
+      "queue": "Queue",
+      "unknownQueue": "A queue since deleted",
+      "orderCreated": "Created",
+      "orderScheduled": "Scheduled time",
+      "emptyTitle": "No posts yet",
+      "filteredEmptyTitle": "No matching posts",
+      "views": "Views",
+      "view": "{view, select, drafts {Drafts} scheduled {Scheduled} approval {Needs approval} other {All}}",
+      "emptyView": "{view, select, drafts {No drafts} scheduled {No scheduled posts} approval {No posts waiting for approval} other {No posts yet}}"
     },
     "Import": {
       "title": "Import posts",
@@ -1861,6 +1858,48 @@
         "xPerAccountPricing": "X bills each post, which Peal passes on at X’s rates, and this workspace’s plan is one from before per-account pricing: this post’s parts on X would fail when due, nothing sent.",
         "xPaymentMethod": "X bills each post, which Peal passes on at X’s rates, and the billing account has no payment method: this post’s parts on X would fail when due, nothing sent, unless one is added on the billing page."
       }
+    },
+    "Selection": {
+      "label": "Selected posts",
+      "count": "{count, plural, one {# selected} other {# selected}}",
+      "choose": "Select “{post}”",
+      "addTag": "Change or add tags…",
+      "backToDraft": "{partial, select, yes {Back to draft ({count} of {total})} other {Back to draft}}",
+      "cancel": "{partial, select, yes {Cancel ({count} of {total})} other {Cancel}}",
+      "clear": "Clear the selection",
+      "cancelTitle": "{count, plural, one {Cancel # post?} other {Cancel # posts?}}",
+      "cancelDescription": "{count, plural, one {It will not go out on any channel. This cannot be undone.} other {They will not go out on any channel. This cannot be undone.}}",
+      "keep": "{count, plural, one {Keep it} other {Keep them}}",
+      "cancelConfirm": "{count, plural, one {Cancel # post} other {Cancel # posts}}",
+      "done": {
+        "cancelled": "{count, plural, one {# post cancelled.} other {# posts cancelled.}}",
+        "tagged": "{count, plural, one {# post filed under “{tag}”.} other {# posts filed under “{tag}”.}}",
+        "unscheduled": "{count, plural, one {# post back to draft.} other {# posts back to draft.}}",
+        "untagged": "{count, plural, one {“{tag}” taken off # post.} other {“{tag}” taken off # posts.}}",
+        "allUntagged": "{count, plural, one {Tags taken off # post.} other {Tags taken off # posts.}}"
+      },
+      "partly": "{done, number} done, {failed, plural, one {# could not be: read the list again, as it may have changed.} other {# could not be: read the list again, as they may have changed.}}",
+      "alreadyTagged": "Every selected post is under “{tag}” already, or holds as many tags as a post may.",
+      "untagged": "{count, plural, one {“{tag}” taken off # post.} other {“{tag}” taken off # posts.}}",
+      "tagPlaceholder": "Change or add tags…",
+      "actions": "Actions",
+      "scope": "{count, plural, one {# post} other {# posts}}",
+      "heading": "{count, plural, one {Selected post} other {Selected posts}}",
+      "backToDraftKey": "Take the selected posts back to draft",
+      "cancelKey": "Cancel the selected posts",
+      "removeAllTags": "Remove all tags",
+      "notTagged": "None of the selected posts is under “{tag}”.",
+      "retagged": "{count, plural, one {“{tag}” put back on # post.} other {“{tag}” put back on # posts.}}",
+      "noTags": "The selected posts have no tags.",
+      "tagsBack": "{count, plural, one {Tags put back on # post.} other {Tags put back on # posts.}}",
+      "clearKey": "Clear the selection",
+      "downKey": "Next post",
+      "upKey": "Previous post",
+      "growDownKey": "Select down",
+      "growUpKey": "Select up",
+      "toggleKey": "Select the post",
+      "allKey": "Select every listed post",
+      "openKey": "Open the post"
     }
   },
   "Drafts": {
@@ -2946,7 +2985,7 @@
     "workspaces": {
       "label": "Switch workspace",
       "switch": "Your other workspaces",
-      "all": "All workspaces"
+      "create": "New workspace"
     },
     "pages": {
       "calendar": "Calendar",
@@ -2967,7 +3006,7 @@
       "members": "Members",
       "invitations": "Invitations",
       "security": "Security",
-      "billing": "Plan and billing",
+      "billing": "Billing",
       "tags": "Tags",
       "signatures": "Signatures",
       "channelSets": "Channel sets",
@@ -2985,7 +3024,58 @@
       "articles": "Articles",
       "article": "Article",
       "newArticle": "New article"
-    }
+    },
+    "help": "Help",
+    "shortcuts": "Keyboard shortcuts",
+    "agent": "Agent",
+    "agentSoon": "The agent is coming soon",
+    "history": "History"
+  },
+  "CommandMenu": {
+    "title": "Command menu",
+    "trigger": "Search or jump to…",
+    "inputLabel": "Pages and actions",
+    "placeholder": "Type a page or an action…",
+    "empty": "Nothing matches “{query}”.",
+    "then": "then",
+    "groups": {
+      "create": "Create",
+      "goTo": "Go to",
+      "workspaces": "Workspaces",
+      "help": "Help"
+    },
+    "newPost": "New post",
+    "goTo": "Go to {page}",
+    "switchTo": "Open {workspace}",
+    "footer": {
+      "move": "Move",
+      "open": "Open",
+      "close": "Close"
+    },
+    "postsWith": "Posts: {state}",
+    "post": {
+      "heading": "This post",
+      "untitled": "Post without text",
+      "duplicate": "Duplicate the post",
+      "copyLink": "Copy the link to this post",
+      "linkCopied": "Link copied.",
+      "copyFailed": "The link could not be copied.",
+      "onCalendar": "Show it on the calendar",
+      "viewOn": "Open it on {platform}: {channel}",
+      "reschedule": "Reschedule…",
+      "rescheduleKeyword": "move",
+      "reschedulePlaceholder": "When? tomorrow 9am, friday 10:30, in 3 days…",
+      "rescheduleHint": "Type when: “tomorrow 9am”, “friday 10:30”, “in 3 days”, “nov 27”.",
+      "rescheduleTo": "Move to {at}",
+      "reschedulePast": "{at} has passed"
+    },
+    "shortcuts": "Keyboard shortcuts",
+    "search": "Search"
+  },
+  "Toasts": {
+    "region": "Notifications",
+    "undo": "Undo",
+    "pending": "Working on it…"
   },
   "WorkspaceHome": {
     "title": "Write once.",
@@ -3078,11 +3168,11 @@
     "label": "Your pages",
     "workspaces": "Workspaces",
     "pages": {
-      "overview": "Overview",
       "agenda": "Agenda",
       "report": "Report",
-      "notices": "Notices",
-      "account": "Account"
+      "notices": "Notifications",
+      "account": "Account",
+      "newWorkspace": "New workspace"
     }
   },
   "Webhooks": {
@@ -4232,6 +4322,7 @@
     },
     "thread": {
       "title": "Comments",
+      "pageName": "Comment",
       "channel": "Under the post on {channel}, live since {at}.",
       "back": "Back to the inbox",
       "listTitle": "Oldest first",
@@ -4362,6 +4453,7 @@
     "thread": {
       "back": "Back to the inbox",
       "title": "Reviews of a location",
+      "pageName": "Review",
       "empty": "No review written or changed in the last {days, number} days.",
       "readOnly": "Your role may read reviews but not answer them."
     },
@@ -4406,6 +4498,7 @@
     "thread": {
       "back": "Back to the inbox",
       "title": "A conversation",
+      "pageName": "Message",
       "readOnly": "Your role may read messages but not answer them.",
       "private": "These messages are private: show them only to the people who need them.",
       "markRead": "Mark as read",
@@ -4798,19 +4891,6 @@
     "saved": "The feed is saved."
   },
   "Overview": {
-    "home": {
-      "attentionLabel": "What needs attention in {workspace}",
-      "nothing": "Nothing needs attention.",
-      "overPlan": "Over its plan: nothing goes out until it is back within it",
-      "failed": "{count, plural, one {# post failed} other {# posts failed}} on a channel in the last 7 days",
-      "unconfirmed": "{count, plural, one {# post} other {# posts}} to check: a channel may have it live",
-      "awaitingApproval": "{count, plural, one {# post waits} other {# posts wait}} for an approval",
-      "awaitingYourApproval": "{count, plural, one {# post waits} other {# posts wait}} for your approval",
-      "toReconnect": "{count, plural, one {# channel} other {# channels}} to reconnect",
-      "channelsOff": "{count, plural, one {# channel is} other {# channels are}} off",
-      "unanswered": "{count, plural, one {# thread} other {# threads}} with a comment waiting for an answer",
-      "scheduled": "{count, plural, =0 {Nothing goes out in the next 7 days} one {# post goes out in the next 7 days} other {# posts go out in the next 7 days}}"
-    },
     "agenda": {
       "title": "Agenda",
       "description": "What goes out in the next 14 days, across the workspaces where you may read posts. Each post opens in its workspace.",
@@ -5004,5 +5084,52 @@
       "undecided": "Not chosen yet.",
       "failed": "Your choice couldn’t be saved. Try again."
     }
+  },
+  "Shortcuts": {
+    "title": "Keyboard shortcuts",
+    "search": "Search shortcuts",
+    "empty": "No shortcut matches “{query}”.",
+    "close": "Close",
+    "then": "then",
+    "groups": {
+      "general": "General",
+      "goTo": "Go to",
+      "lists": "Lists",
+      "selection": "Selected posts"
+    },
+    "rows": {
+      "openMenu": "Open the command menu",
+      "showShortcuts": "Show keyboard shortcuts",
+      "newPost": "New post",
+      "undo": "Undo the last change",
+      "goTo": "Go to {page}",
+      "down": "Next row",
+      "up": "Previous row",
+      "toggle": "Select the row",
+      "growDown": "Select down",
+      "growUp": "Select up",
+      "all": "Select every row",
+      "open": "Open the row",
+      "clear": "Clear the selection",
+      "tag": "Change or add tags",
+      "backToDraft": "Back to draft",
+      "cancel": "Cancel the posts",
+      "filter": "Filter the list"
+    }
+  },
+  "Lists": {
+    "filter": "Filter",
+    "filterPlaceholder": "Filter…",
+    "noMatch": "Nothing matches “{query}”.",
+    "chosen": "Chosen",
+    "properties": "Properties",
+    "values": "Values",
+    "display": "Display",
+    "ordering": "Ordering",
+    "direction": "{direction, select, asc {Ascending order} other {Descending order}}",
+    "filters": "Filters",
+    "is": "is",
+    "remove": "Remove the {property} filter",
+    "clear": "Clear"
   }
 }

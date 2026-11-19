@@ -1,17 +1,16 @@
 import { PlatformSchema } from "peal-contract";
 
+import { isAppPath } from "#shell/workspace-path.ts";
+
 import { pendingLink } from "./pending-link.ts";
 
 const linkPage = /^\/connect\/link$/u;
 
 const callbackPage = /^\/connect\/(?<platform>[^/]+)\/callback$/u;
 
-// The signed-in app: the workspaces' and the person's own pages.
-const appPage = /^\/app(?:\/|$)/u;
-
 /**
  * The frame a page gets: the app's, with Peal's header and footer; its
- * own, for the signed-in app under /app, whose layouts draw a sidebar and
+ * own, for the signed-in app (`isAppPath`), whose layouts draw a sidebar and
  * a top bar (`WorkspaceShell`, `PersonalShell`); the hosted one, for
  * people who come through a connect link and have no Peal account; or
  * none yet, while only the browser can tell which.
@@ -25,7 +24,7 @@ export const isCallbackPage = (pathname: string): boolean =>
 /**
  * Which frame a page gets: the hosted one for a connect link's page, and
  * for the platform's callback when the tab came through a link; its own
- * under /app; the app's for every other page.
+ * for the signed-in app's; the app's for every other page.
  */
 export const frameOf = (pathname: string, cameThroughLink: boolean): Frame => {
   if (linkPage.test(pathname)) {
@@ -36,7 +35,7 @@ export const frameOf = (pathname: string, cameThroughLink: boolean): Frame => {
     return "hosted";
   }
 
-  return appPage.test(pathname) ? "own" : "app";
+  return isAppPath(pathname) ? "own" : "app";
 };
 
 /**

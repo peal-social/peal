@@ -26,7 +26,7 @@ describe("a workspace that requires two-step verification", () => {
 
         assert.include(
           yield* session.refused(["channels", "list", "--workspace", "shop"]),
-          "This workspace requires two-step verification. Turn it on at http://localhost:3000/app/account, then run the command again."
+          "This workspace requires two-step verification. Turn it on at http://localhost:3000/account, then run the command again."
         );
 
         assert.deepStrictEqual(

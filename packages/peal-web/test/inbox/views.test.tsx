@@ -121,10 +121,10 @@ describe(ThreadRowView, () => {
 
     expect(
       missingFrom(html, [
-        `<a href="/app/${workspaceId}/inbox/${thread.id}">Comments under the post on @peal@social.example on Mastodon</a>`,
+        `<a href="/${workspaceId}/inbox/${thread.id}">Comments under the post on @peal@social.example on Mastodon</a>`,
         "3 waiting of 12",
         "Latest comment on Nov 10, 2026, 8:30 AM",
-        `<a href="/app/${workspaceId}/posts/${thread.postId}">Open the post</a>`,
+        `<a href="/${workspaceId}/posts/${thread.postId}">Open the post</a>`,
         'href="https://social.example/@peal/1"',
         "View the post on the platform",
       ])

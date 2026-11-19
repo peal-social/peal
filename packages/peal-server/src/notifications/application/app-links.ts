@@ -7,7 +7,7 @@ export class AppLinks extends Context.Service<
   AppLinks,
   {
     /**
-     * The web app's page at `path` (such as `/app/<workspace>/channels`), in
+     * The web app's page at `path` (such as `/<workspace>/channels`), in
      * the reader's language.
      */
     readonly url: (path: string, locale: Locale) => string;

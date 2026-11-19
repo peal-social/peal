@@ -18,8 +18,8 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
-import { toast } from "sonner";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { InTimeZone } from "#components/notices/in-time-zone.tsx";

@@ -8,7 +8,7 @@ import {
   ChartColumnIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChevronsUpDownIcon,
+  ChevronDownIcon,
   CircleCheckIcon,
   CodeXmlIcon,
   CreditCardIcon,
@@ -53,6 +53,8 @@ import type { ComponentProps, ComponentType, ReactNode } from "react";
 import { useCloseMenu } from "#components/shell/frame-view.tsx";
 import { PealMark } from "#components/shell/peal-mark.tsx";
 import type { Link, Mode, Navigation, Page } from "#shell/navigation.ts";
+import { personalHrefOf } from "#shell/personal.ts";
+import { workspacePath } from "#shell/workspace-path.ts";
 
 /** A link of the app, which the container makes from next-intl's. */
 export type LinkComponent = ComponentType<{
@@ -63,7 +65,8 @@ export type LinkComponent = ComponentType<{
   readonly onClick?: () => void;
 }>;
 
-const icons: Readonly<Record<Page, LucideIcon>> = {
+/** Each page's icon, in the sidebar and the command menu. */
+export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
   ads: MegaphoneIcon,
   analytics: ChartColumnIcon,
   apiKeys: KeyRoundIcon,
@@ -202,7 +205,7 @@ const NavLink = ({
   readonly onNavigate?: () => void;
   readonly target: Link;
 }) => {
-  const Icon = icons[target.page];
+  const Icon = pageIcons[target.page];
 
   return (
     <LinkTo
@@ -226,7 +229,7 @@ const SwitcherButton = ({ className, ...props }: ComponentProps<"button">) => (
   <button
     type="button"
     className={cn(
-      "hover:bg-sidebar-accent flex h-15 shrink-0 items-center gap-2.5 border-t px-3.5 text-left",
+      "hover:bg-sidebar-accent flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 text-left",
       className
     )}
     {...props}
@@ -234,15 +237,17 @@ const SwitcherButton = ({ className, ...props }: ComponentProps<"button">) => (
 );
 
 /**
- * The workspace's sidebar (DESIGN.md, "The frame"): the mode switch with
- * Peal's mark, the mode's pages in groups, or the open section's pages
- * under a way back, Settings, and the workspace switcher at its foot.
+ * The workspace's sidebar (DESIGN.md, "The frame"): its head (the
+ * workspace switcher, then `tools`: Search and New post), the mode switch
+ * with Peal's mark, the mode's pages in groups, or the open section's
+ * pages under a way back, and Settings at its foot.
  */
 export const SidebarView = ({
   className,
   link,
   navigation,
   onNavigate,
+  tools = null,
   workspaceId,
   workspaces,
 }: {
@@ -251,10 +256,13 @@ export const SidebarView = ({
   readonly navigation: Navigation;
   /** Called when a link is followed, to close the sidebar on a phone. */
   readonly onNavigate?: () => void;
+  /** The head's icon buttons, after the workspace switcher. */
+  readonly tools?: ReactNode;
   readonly workspaceId: string;
   readonly workspaces: readonly {
     readonly id: string;
     readonly name: string;
+    readonly slug: string;
   }[];
 }) => {
   const closeMenu = useCloseMenu();
@@ -281,10 +289,9 @@ export const SidebarView = ({
   const current = workspaces.find(({ id }) => id === workspaceId);
   const others = workspaces.filter(({ id }) => id !== workspaceId);
 
-  const labelOf = (target: Link): string =>
-    section === "posts" && target.page === "posts"
-      ? t("pages.allPosts")
-      : t(`pages.${target.page}`);
+  // One name per page (DESIGN.md, "The frame"): the sidebar's is the
+  // header's.
+  const labelOf = (target: Link): string => t(`pages.${target.page}`);
 
   return (
     <div
@@ -293,7 +300,54 @@ export const SidebarView = ({
         className
       )}
     >
-      <div className="flex h-14 shrink-0 items-center border-b px-2.5">
+      <div className="flex h-12 shrink-0 items-center gap-1 px-2.5">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<SwitcherButton aria-label={t("workspaces.label")} />}
+          >
+            <span className="bg-brand-tint text-brand-text flex size-5 shrink-0 items-center justify-center rounded-sm text-xs font-semibold">
+              {(current?.name ?? "?").slice(0, 2).toUpperCase()}
+            </span>
+            <span className="min-w-0 truncate text-sm font-medium">
+              {current?.name ?? ""}
+            </span>
+            <ChevronDownIcon
+              aria-hidden
+              className="text-muted-foreground size-3.5 shrink-0"
+            />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" side="bottom" className="w-56">
+            {others.length === 0 ? null : (
+              <>
+                <DropdownMenuLabel>{t("workspaces.switch")}</DropdownMenuLabel>
+                {others.map(({ id, name, slug }) => (
+                  <DropdownMenuItem
+                    key={id}
+                    render={
+                      <LinkTo href={workspacePath(slug)} onClick={navigated}>
+                        {name}
+                      </LinkTo>
+                    }
+                  />
+                ))}
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem
+              render={
+                <LinkTo
+                  href={personalHrefOf("newWorkspace")}
+                  onClick={navigated}
+                >
+                  {t("workspaces.create")}
+                </LinkTo>
+              }
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <div className="flex shrink-0 items-center">{tools}</div>
+      </div>
+      <div className="shrink-0 px-2.5 pb-1">
         <ModeSwitch
           link={link}
           mode={navigation.mode}
@@ -365,48 +419,6 @@ export const SidebarView = ({
           <ChevronRightIcon aria-hidden className="text-muted-foreground" />
         </LinkTo>
       </div>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={<SwitcherButton aria-label={t("workspaces.label")} />}
-        >
-          <span className="bg-brand-tint text-brand-text flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
-            {(current?.name ?? "?").slice(0, 2).toUpperCase()}
-          </span>
-          <span className="min-w-0 flex-1 truncate text-sm font-medium">
-            {current?.name ?? ""}
-          </span>
-          <ChevronsUpDownIcon
-            aria-hidden
-            className="text-muted-foreground size-4"
-          />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="top" className="w-56">
-          {others.length === 0 ? null : (
-            <>
-              <DropdownMenuLabel>{t("workspaces.switch")}</DropdownMenuLabel>
-              {others.map(({ id, name }) => (
-                <DropdownMenuItem
-                  key={id}
-                  render={
-                    <LinkTo href={`/app/${id}`} onClick={navigated}>
-                      {name}
-                    </LinkTo>
-                  }
-                />
-              ))}
-              <DropdownMenuSeparator />
-            </>
-          )}
-          <DropdownMenuItem
-            render={
-              <LinkTo href="/app" onClick={navigated}>
-                {t("workspaces.all")}
-              </LinkTo>
-            }
-          />
-        </DropdownMenuContent>
-      </DropdownMenu>
     </div>
   );
 };

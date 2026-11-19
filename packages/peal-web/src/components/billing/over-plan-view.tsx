@@ -274,11 +274,11 @@ export const OverPlanView = (props: OverPlanViewProps) => {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h2 className="text-base font-semibold">
           {free
             ? t("titleFree", { workspace: workspaceName })
             : t("title", { workspace: workspaceName })}
-        </h1>
+        </h2>
         <p className="text-muted-foreground">{description()}</p>
       </div>
       <ExcessList excesses={standing.over} namespace="OverPlan" />

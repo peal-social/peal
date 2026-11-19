@@ -27,8 +27,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "peal-ui/components/dropdown-menu";
+import { toast } from "peal-ui/components/toast";
 import { useId, useRef, useState } from "react";
-import { toast } from "sonner";
 
 import { assistantStatus, suggestChange } from "#assistant/api.ts";
 import {

@@ -6,9 +6,9 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import type { SocialChannel, ChannelSet, Queue } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useId, useMemo, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { workspaceChannelSets } from "#channel-sets/atoms.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";

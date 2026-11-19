@@ -6,8 +6,8 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { CommentRuleNotPossible } from "peal-contract";
 import type { CommentRule } from "peal-contract";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import {
   commentRulesChanged,

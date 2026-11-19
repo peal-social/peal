@@ -3,14 +3,17 @@
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import { Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
+import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Post, Tag } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
-import { Button } from "peal-ui/components/button";
+import { Button, buttonVariants } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { useState } from "react";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { PageActions } from "#components/shell/frame-view.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { draftPage } from "#posts/api.ts";
 import { workspaceTags } from "#tags/atoms.ts";
@@ -26,6 +29,7 @@ const DraftItem = ({
   readonly post: Post;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const title = useDraftTitle(post);
 
   // The workspace's tags, which name the draft's; none until they are known.
@@ -37,7 +41,7 @@ const DraftItem = ({
   return (
     <DraftItemView post={post} tags={tagsOf(post.tagIds, tags)}>
       <Link
-        href={`/app/${workspaceId}/posts/${post.id}`}
+        href={workspaceHref(workspaceId, `/posts/${post.id}`)}
         dir="auto"
         className="line-clamp-2 font-medium underline-offset-4 hover:underline"
       >
@@ -137,6 +141,7 @@ export const DraftsList = ({
   readonly canCreate: boolean;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Drafts");
   const [more, setMore] = useState(0);
   // The drafts are fetched with the visitor's cookies, which only the
@@ -150,12 +155,15 @@ export const DraftsList = ({
   return (
     <section className="flex flex-col gap-4">
       {canCreate ? (
-        <Link
-          href={`/app/${workspaceId}/posts/new`}
-          className="self-start text-sm underline-offset-4 hover:underline"
-        >
-          {t("newPost")}
-        </Link>
+        <PageActions>
+          <Link
+            href={workspaceHref(workspaceId, "/posts/new")}
+            className={buttonVariants({ size: "sm", variant: "ghost" })}
+          >
+            <PlusIcon aria-hidden />
+            {t("newPost")}
+          </Link>
+        </PageActions>
       ) : null}
       {hydrated ? (
         <DraftPages

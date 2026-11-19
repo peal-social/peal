@@ -7,9 +7,9 @@ import { useTranslations } from "next-intl";
 import { ApprovalPolicySchema } from "peal-contract";
 import type { ApprovalPolicy } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import {
   reviewKeys,

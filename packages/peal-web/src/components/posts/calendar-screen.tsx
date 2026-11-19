@@ -2,8 +2,8 @@
 
 import { DragDropProvider, useDraggable, useDroppable } from "@dnd-kit/react";
 import type { DragDropEventHandlers } from "@dnd-kit/react";
-import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
-import { DateTime, Exit, Option, Schema } from "effect";
+import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
+import { DateTime, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import {
   ChevronLeftIcon,
@@ -32,21 +32,16 @@ import {
 import { cn } from "peal-ui/lib/utils";
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
 
-import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import { CalendarDayView } from "#components/posts/calendar-day-view.tsx";
 import { CalendarFilters } from "#components/posts/calendar-filters.tsx";
 import { ChipTags } from "#components/posts/chip-tags.tsx";
 import { useQueueName } from "#components/posts/queue-choice.tsx";
+import { useMovePost } from "#components/posts/use-move-post.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
 import { Link } from "#i18n/navigation.ts";
-import {
-  postsKeys,
-  reschedulePost,
-  scheduledPosts,
-  workspaceChannels,
-} from "#posts/api.ts";
+import { scheduledPosts, workspaceChannels } from "#posts/api.ts";
 import { filtered, knownFilter, noFilter } from "#posts/calendar-filter.ts";
 import type { CalendarFilter } from "#posts/calendar-filter.ts";
 import {
@@ -56,7 +51,6 @@ import {
   slotStartOf,
 } from "#posts/day-rows.ts";
 import { isRemovedEverywhere } from "#posts/live-post.ts";
-import { failureOf } from "#posts/outcome.ts";
 import { isAhead, startAtOf, startTimeOn } from "#posts/start-time.ts";
 import { useMounted } from "#posts/use-mounted.ts";
 import {
@@ -189,6 +183,7 @@ const PostChip = ({
   timeZone,
   workspaceId,
 }: PostChipProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts");
   const tMedia = useTranslations("PostMedia");
   const format = useFormatter();
@@ -250,7 +245,7 @@ const PostChip = ({
         </button>
       ) : null}
       <Link
-        href={`/app/${workspaceId}/posts/${placed.post.id}`}
+        href={workspaceHref(workspaceId, `/posts/${placed.post.id}`)}
         className="min-w-0 flex-1 truncate underline-offset-2 hover:underline"
         aria-label={filed.length === 0 ? label : `${label} ${tagNames}`}
       >
@@ -314,6 +309,7 @@ const NewPostLink = ({
   time,
   workspaceId,
 }: NewPostLinkProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.Calendar");
   const format = useFormatter();
   const timeOptions = useTimeOptions();
@@ -332,7 +328,10 @@ const NewPostLink = ({
 
   return (
     <Link
-      href={`/app/${workspaceId}/posts/new?at=${startAtOf(date, time)}`}
+      href={workspaceHref(
+        workspaceId,
+        `/posts/new?at=${startAtOf(date, time)}`
+      )}
       title={label}
       className={cn(
         "text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 w-fit shrink-0 rounded-sm outline-none focus-visible:ring-3",
@@ -609,17 +608,14 @@ const CalendarView = ({
   workspaceId,
 }: CalendarViewProps) => {
   const t = useTranslations("Posts.Calendar");
-  const billing = useTranslations("Billing");
   const format = useFormatter();
   const locale = useLocale();
   const firstDay = firstDayOfWeek(locale);
   const today = todayIn(timeZone);
-  const timeOptions = useTimeOptions();
   const [view, setView] = useState<View>("week");
   const [chosen, setChosen] = useState<CalendarFilter>(noFilter);
   const [anchor, setAnchor] = useState<CalendarDate>(initialDate ?? today);
-  const reschedule = useAtomSet(reschedulePost, { mode: "promiseExit" });
-  const offerUpgrade = useOfferUpgrade();
+  const movePost = useMovePost(workspaceId, timeZone);
 
   const days = (() => {
     if (view === "day") {
@@ -717,47 +713,13 @@ const CalendarView = ({
       return;
     }
 
-    const exit = await reschedule({
-      params: { postId: post.id, workspaceId },
-      payload: { at: at.value, timeZone: schedule.timeZone },
-      reactivityKeys: postsKeys,
+    await movePost({
+      at: at.value,
+      from: schedule.at,
+      postId: post.id,
+      queueId: post.queueId,
+      scheduleZone: schedule.timeZone,
     });
-
-    if (Exit.isSuccess(exit)) {
-      toast.success(
-        t("moved", {
-          at: format.dateTime(DateTime.toDate(at.value), {
-            dateStyle: "medium",
-            timeStyle: "short",
-            timeZone,
-            ...timeOptions,
-          }),
-        })
-      );
-
-      return;
-    }
-
-    offerUpgrade(exit);
-
-    const reason = Option.map(failureOf(exit), ({ _tag }) => _tag);
-
-    toast.error(
-      Option.match(reason, {
-        onNone: () => t("moveFailed"),
-        onSome: (tag) => {
-          if (tag === "ScheduleInPast") {
-            return t("moveInPast");
-          }
-
-          if (tag === "PlanLimitReached") {
-            return billing("limitReached", { limit: "scheduledPosts" });
-          }
-
-          return tag === "Forbidden" ? t("moveForbidden") : t("moveFailed");
-        },
-      })
-    );
   };
 
   const handleDragEnd: DragDropEventHandlers["onDragEnd"] = (event) => {
@@ -911,12 +873,6 @@ const CalendarView = ({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground">
-          {t("description", { zone: timeZone.replaceAll("_", " ") })}
-        </p>
-      </div>
       <Tabs
         value={view}
         onValueChange={(value) => {

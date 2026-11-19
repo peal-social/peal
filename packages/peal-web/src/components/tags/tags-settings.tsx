@@ -6,9 +6,9 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import type { Tag } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { DeleteSavedItem } from "#components/settings/delete-saved-item.tsx";

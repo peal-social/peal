@@ -23,6 +23,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "peal-ui/components/tabs";
+import { toast } from "peal-ui/components/toast";
 import { cn } from "peal-ui/lib/utils";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -42,7 +43,6 @@ import {
   siX,
   siYoutube,
 } from "simple-icons";
-import { toast } from "sonner";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { BrandMark } from "#components/shell/brand-mark.tsx";
@@ -210,11 +210,11 @@ export const WorkspaceHome = ({
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-center text-3xl leading-tight font-semibold tracking-tight">
+      <h2 className="text-center text-3xl leading-tight font-semibold tracking-tight">
         {t("title")}
         <br />
         <span className="text-muted-foreground">{t("subtitle")}</span>
-      </h1>
+      </h2>
 
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-4">

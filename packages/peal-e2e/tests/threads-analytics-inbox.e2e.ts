@@ -8,6 +8,7 @@ import type { Screen } from "e2e";
 import { confirmedAccount, makeStaff } from "./support/accounts.ts";
 import { seedChannel } from "./support/channels.ts";
 import { seedComment, seedCountedPost } from "./support/followed.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // A post of several parts, the numbers of a post that went live and the
 // comments under it, as a member finds them; then as staff acting for the
@@ -18,7 +19,6 @@ import { seedComment, seedCountedPost } from "./support/followed.ts";
 const run = randomUUID();
 const name = "Noor Example";
 const staffName = "Robin Staff";
-const workspace = "Tide Pools";
 const handle = "@pools@social.example";
 const first = "A synthetic thread, first part: what we found at low tide.";
 const second = "Second part: the anemones, with a wait before it.";
@@ -33,6 +33,7 @@ const addressOf = (label: string) =>
 const password = "synthetic threads and inbox password";
 
 let workspaceId = "";
+let slug = "";
 
 const signIn = async (
   app: { readonly open: (path: string) => Promise<void> },
@@ -60,23 +61,11 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     });
 
     await signIn(app, browser, screen, addressOf("author"));
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    await expect(calendar).toBeVisible();
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
 
     await seedChannel(workspaceId, handle);
-    await app.open(`/app/${workspaceId}/posts/new`);
+    await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
     await screen.getByRole("checkbox", handle).check();
@@ -97,7 +86,7 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
 
     await expect(screen.getByText("Draft saved.")).toBeVisible();
     await expect(browser).toHaveURL(
-      new RegExp(`/app/${workspaceId}/posts/[0-9a-f-]+$`, "u")
+      new RegExp(`/${slug}/posts/[0-9a-f-]+$`, "u")
     );
 
     // The draft comes back whole: both parts, in order.
@@ -131,16 +120,16 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     screen,
   }) => {
     await seedCountedPost(workspaceId, handle, { likes: 12, reposts: 3 });
-    await app.open("/app");
+    await app.open(`/${slug}`);
     await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", `Analytics of ${workspace}`)
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Analytics")
       .tap();
 
     await expect(
       screen.getByRole("heading", "Analytics", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL(`/app/${workspaceId}/analytics`);
+    await expect(browser).toHaveURL(`/${slug}/analytics`);
 
     // The channel's latest counts, as a table anyone can read.
     const totals = screen.getByRole(
@@ -176,16 +165,16 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
       author: commenter,
       text: comment,
     });
-    await app.open("/app");
+    await app.open(`/${slug}`);
     await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", `Inbox of ${workspace}`)
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Inbox")
       .tap();
 
     await expect(
       screen.getByRole("heading", "Inbox", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL(`/app/${workspaceId}/inbox`);
+    await expect(browser).toHaveURL(`/${slug}/inbox`);
 
     // The list holds counts, not what people wrote.
     await expect(screen.getByText("1 waiting of 1")).toBeVisible();
@@ -197,7 +186,7 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
       .tap();
 
     await expect(
-      screen.getByRole("heading", "Comments", { level: 1 })
+      screen.getByRole("heading", "Comment", { level: 1 })
     ).toBeVisible();
     await expect(screen.getByText(comment)).toBeVisible();
     await expect(screen.getByText(commenter)).toBeVisible();
@@ -231,9 +220,8 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     });
     await makeStaff(addressOf("staff"));
     await signIn(app, browser, screen, addressOf("staff"));
-    await expect(
-      screen.getByRole("heading", `Hello, ${staffName}`)
-    ).toBeVisible();
+    // Staff without a workspace get one of their own, which opens.
+    await openedWorkspace(browser);
 
     await app.open("/admin/users");
     await screen.getByLabel("Email, name or id").fill(addressOf("author"));
@@ -255,7 +243,8 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     await dialog.getByRole("textbox", "Why").fill("Synthetic support request");
     await dialog.getByRole("button", "Act as the account").tap();
 
-    await expect(screen.getByRole("heading", `Hello, ${name}`)).toBeVisible();
+    // Acting as the member opens the member's workspace.
+    await expect(browser).toHaveURL(`/${slug}`, { timeout: 30_000 });
 
     const banner = screen.getByRole("region", "Acting as another account");
 
@@ -263,19 +252,17 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
 
     // The numbers are the workspace's own; the comments are other
     // people's words, which staff need none of to help a member.
-    const links = screen.getByRole("navigation", `Posts of ${workspace}`);
+    const links = screen.getByRole("navigation", "Workspace");
 
-    await expect(
-      links.getByRole("link", `Analytics of ${workspace}`)
-    ).toBeVisible();
-    await expect(links.getByRole("link", `Inbox of ${workspace}`)).toBeHidden();
+    await expect(links.getByRole("link", "Analytics")).toBeVisible();
+    await expect(links.getByRole("link", "Inbox")).toBeHidden();
 
-    await app.open(`/app/${workspaceId}/analytics`);
+    await app.open(`/${slug}/analytics`);
     await expect(
       screen.getByRole("heading", "Analytics", { level: 1 })
     ).toBeVisible();
 
-    await app.open(`/app/${workspaceId}/inbox`);
+    await app.open(`/${slug}/inbox`);
     await expect(screen.getByRole("heading", "Page not found")).toBeVisible();
     await expect(screen.getByText(comment)).toBeHidden();
 

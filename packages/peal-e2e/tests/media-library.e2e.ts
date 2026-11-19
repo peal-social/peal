@@ -5,6 +5,7 @@ import { credentials, expect } from "e2e";
 
 import { emailedLink } from "./support/mailpit.ts";
 import { seedImage, seedVideo } from "./support/media.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // A member finds a file in the media library by its name, narrows it by
 // kind, and looks at it full size on a phone, in one browser: each test
@@ -12,7 +13,6 @@ import { seedImage, seedVideo } from "./support/media.ts";
 // attempt, so a retry signs up under a new address.
 const run = randomUUID();
 const name = "Sasha Example";
-const workspace = "Harbour Notes";
 const harbour = "Harbour at dawn.png";
 
 // Long enough that the preview has more than a phone's height to show.
@@ -27,6 +27,7 @@ const address = () =>
 const password = () => credentials.user("member").password;
 
 let workspaceId = "";
+let slug = "";
 
 describe("a member's media library", { serial: true }, () => {
   test("signs up and confirms the address", async ({
@@ -48,21 +49,9 @@ describe("a member's media library", { serial: true }, () => {
     await expect(screen.getByRole("heading", "Email confirmed")).toBeVisible();
   });
 
-  test("creates a workspace", async ({ app, screen }) => {
-    await app.open("/app");
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    await expect(calendar).toBeVisible();
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+  test("opens the workspace made for them", async ({ app, browser }) => {
+    await app.open("/");
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
   });
 
@@ -73,7 +62,7 @@ describe("a member's media library", { serial: true }, () => {
     await seedImage(workspaceId, harbour, longDescription);
     await seedImage(workspaceId, "Beach.png", "Sand and sea");
     await seedVideo(workspaceId, "A clip of the harbour's boats");
-    await app.open(`/app/${workspaceId}/media`);
+    await app.open(`/${slug}/media`);
 
     const main = screen.getByRole("main");
 

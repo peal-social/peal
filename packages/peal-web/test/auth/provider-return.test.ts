@@ -15,8 +15,8 @@ describe(signUpReturn, () => {
   it("sends a new account to the app, and a refusal back to the page", () => {
     expect(signUpReturn(null, localized)).toStrictEqual({
       errorPath: "/fr/sign-up?from=provider",
-      next: "/fr/app",
-      signUp: { invitationId: null, newUserPath: "/fr/app" },
+      next: "/fr/",
+      signUp: { invitationId: null, newUserPath: "/fr/" },
     });
   });
 

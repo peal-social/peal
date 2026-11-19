@@ -48,10 +48,10 @@ import {
 } from "peal-ui/components/dialog";
 import { Input } from "peal-ui/components/input";
 import { Label } from "peal-ui/components/label";
+import { toast } from "peal-ui/components/toast";
 import { cn } from "peal-ui/lib/utils";
 import { useCallback, useId, useState, useTransition } from "react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
 
 import { channelName as nameOfChannel } from "#channels/channel-name.ts";
 import { BoostDialog } from "#components/ads/boost-dialog.tsx";
@@ -61,6 +61,7 @@ import { PollView } from "#components/posts/poll-view.tsx";
 import { PostOrigins } from "#components/posts/post-origins.tsx";
 import { PostTagsField } from "#components/posts/post-tags-field.tsx";
 import { PostQueueLine } from "#components/posts/queue-choice.tsx";
+import { PageTitle } from "#components/shell/frame-view.tsx";
 import { useRefreshWhileVisible } from "#notices/use-refresh-while-visible.ts";
 import {
   confirmTarget,
@@ -679,17 +680,13 @@ export const PostDetailView = ({
 
   return (
     <Card>
+      <PageTitle>{t("title", { status: post.status })}</PageTitle>
       <CardHeader>
-        <CardTitle>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {t("title", { status: post.status })}
-          </h1>
-        </CardTitle>
-        <CardDescription>
-          {post.schedule === null
-            ? t("description")
-            : t("scheduledFor", { at: at(post.schedule.at) })}
-        </CardDescription>
+        {post.schedule === null ? null : (
+          <CardDescription>
+            {t("scheduledFor", { at: at(post.schedule.at) })}
+          </CardDescription>
+        )}
         <div className="flex gap-2">
           <Badge variant="outline">
             {tPosts("status", { status: post.status })}

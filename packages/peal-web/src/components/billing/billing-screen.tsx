@@ -36,17 +36,11 @@ import type {
 import { UsageHistoryScreen } from "#components/billing/usage-history-screen.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { InTimeZone } from "#components/notices/in-time-zone.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { getPathname, Link } from "#i18n/navigation.ts";
 import { browserTimeZone } from "#posts/zoned-time.ts";
 
 const idle: BillingStep = { _tag: "idle" };
-
-// Another workspace's billing page.
-const billingLink = (id: string, name: string) => (
-  <Link href={`/app/${id}/billing`} className="underline">
-    {name}
-  </Link>
-);
 
 const Loading = () => (
   <div className="flex flex-col gap-3" aria-busy>
@@ -102,6 +96,15 @@ const LoadedBilling = ({
   userId,
   workspaceId,
 }: BillingScreenProps) => {
+  const workspaceHref = useWorkspaceHref();
+
+  // Another workspace's billing page.
+  const billingLink = (id: string, name: string) => (
+    <Link href={workspaceHref(id, "/billing")} className="underline">
+      {name}
+    </Link>
+  );
+
   const locale = useLocale();
   const owners = useOtherOwners(workspaceId, userId);
   const offer = useAtomSet(offerTransfer, { mode: "promiseExit" });
@@ -125,7 +128,11 @@ const LoadedBilling = ({
   const [consented, setConsented] = useState(false);
   const [, startTransition] = useTransition();
 
-  const page = getPathname({ href: `/app/${workspaceId}/billing`, locale });
+  const page = getPathname({
+    href: workspaceHref(workspaceId, "/billing"),
+    locale,
+  });
+
   const params = { workspaceId };
 
   // Runs a request, then says why it failed, if it did.

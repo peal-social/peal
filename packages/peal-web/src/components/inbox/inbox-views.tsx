@@ -26,6 +26,7 @@ import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
 
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import type { InboxError } from "#inbox/errors.ts";
 import type { ReplyFit } from "#inbox/reply-text.ts";
 import { webAddressOf } from "#inbox/web-address.ts";
@@ -184,6 +185,7 @@ export const ThreadRowView = ({
   readonly thread: InboxThread;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Inbox.row");
   const channelName = useChannelName();
   const instant = useInstant();
@@ -193,7 +195,7 @@ export const ThreadRowView = ({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-medium">
           {link(
-            `/app/${workspaceId}/inbox/${thread.id}`,
+            workspaceHref(workspaceId, `/inbox/${thread.id}`),
             t("thread", { channel: channelName(channel) })
           )}
         </span>
@@ -215,7 +217,10 @@ export const ThreadRowView = ({
         </p>
       )}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        {link(`/app/${workspaceId}/posts/${thread.postId}`, t("openPost"))}
+        {link(
+          workspaceHref(workspaceId, `/posts/${thread.postId}`),
+          t("openPost")
+        )}
         <PlatformLink address={thread.permalink}>
           {t("onPlatform")}
         </PlatformLink>
@@ -239,6 +244,7 @@ export const ThreadSummaryView = ({
   readonly thread: InboxThread;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Inbox");
   const channelName = useChannelName();
   const instant = useInstant();
@@ -265,7 +271,10 @@ export const ThreadSummaryView = ({
         </p>
       )}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        {link(`/app/${workspaceId}/posts/${thread.postId}`, t("row.openPost"))}
+        {link(
+          workspaceHref(workspaceId, `/posts/${thread.postId}`),
+          t("row.openPost")
+        )}
         <PlatformLink address={thread.permalink}>
           {t("row.onPlatform")}
         </PlatformLink>

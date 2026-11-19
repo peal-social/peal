@@ -16,8 +16,8 @@ import type {
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";

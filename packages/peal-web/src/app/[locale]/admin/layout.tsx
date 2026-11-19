@@ -51,7 +51,7 @@ const StaffLayout = async ({
         <p className="font-semibold tracking-tight">{t("title")}</p>
         <p>{twoStep("staffConsoleRequires")}</p>
         <div>
-          <Link href="/app/account" className={buttonVariants()}>
+          <Link href="/account" className={buttonVariants()}>
             {twoStep("goToAccount")}
           </Link>
         </div>

@@ -9,6 +9,7 @@ import { Option, Schema } from "effect";
 
 import { requestsFile } from "../scripts/posthog.ts";
 import { emailedLink } from "./support/mailpit.ts";
+import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // How the web app measures a member's use, read from what the stand-in for
 // PostHog received (scripts/posthog.ts): anonymous page views with nothing
@@ -18,7 +19,6 @@ import { emailedLink } from "./support/mailpit.ts";
 // signs up under a new address.
 const run = randomUUID();
 const name = "Robin Example";
-const workspace = "Measured Studio";
 
 const address = () =>
   credentials.user("member").username.replace("@", `+${run}-measure@`);
@@ -233,11 +233,12 @@ const watchTags = async (browser: {
 
 let memberId = "";
 let workspaceId = "";
+let slug = "";
 let allowedAt = 0;
 let withdrawnAt = 0;
 
 describe("the web app's measurement", { serial: true }, () => {
-  test("signs up, confirms and creates a workspace", async ({
+  test("signs up, confirms and opens the workspace made for them", async ({
     app,
     browser,
     screen,
@@ -255,20 +256,8 @@ describe("the web app's measurement", { serial: true }, () => {
     );
     await expect(screen.getByRole("heading", "Email confirmed")).toBeVisible();
 
-    await app.open("/app");
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    await expect(calendar).toBeVisible();
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+    await app.open("/");
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     memberId = textOf(
       await browser.evaluate(
         "fetch('/api/me').then((answer) => answer.json()).then((me) => me.user.id)"
@@ -285,14 +274,14 @@ describe("the web app's measurement", { serial: true }, () => {
     screen,
   }) => {
     await asPerson(browser);
-    await app.open("/app");
+    await app.open("/");
     await expect(
       screen.getByRole("heading", "Help us improve Peal")
     ).toBeVisible();
 
-    await app.open(`/app/${workspaceId}/posts`);
-    await app.open(`/app/${workspaceId}/channels`);
-    await app.open(`/app/${workspaceId}/posts`);
+    await app.open(`/${slug}/posts`);
+    await app.open(`/${slug}/channels`);
+    await app.open(`/${slug}/posts`);
 
     // A page opened without a reload counts too.
     await screen
@@ -307,7 +296,7 @@ describe("the web app's measurement", { serial: true }, () => {
             fromBrowser(event) &&
             event.event === "$pageview" &&
             event.distinctId !== memberId &&
-            textOf(event.properties["$current_url"]).endsWith("/app/:id/drafts")
+            textOf(event.properties["$current_url"]).endsWith("/:id/drafts")
         ),
       "an anonymous page view of a page opened without a reload"
     );
@@ -361,7 +350,7 @@ describe("the web app's measurement", { serial: true }, () => {
     screen,
   }) => {
     await asPerson(browser);
-    await app.open("/app");
+    await app.open("/");
 
     allowedAt = linesSoFar();
 
@@ -372,8 +361,8 @@ describe("the web app's measurement", { serial: true }, () => {
 
     // In place, without a reload: a link of the app.
     await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "All posts")
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Posts")
       .tap();
 
     const after = () =>
@@ -441,13 +430,13 @@ describe("the web app's measurement", { serial: true }, () => {
           (event) =>
             event.event === "$pageview" &&
             event.distinctId === memberId &&
-            textOf(event.properties["$current_url"]).endsWith("/app/:id/drafts")
+            textOf(event.properties["$current_url"]).endsWith("/:id/drafts")
         ),
       "the member's page view of a page opened without a reload"
     );
 
     await watchTags(browser);
-    await app.open(`/app/${workspaceId}/settings`);
+    await app.open(`/${slug}/settings`);
     await screen
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Tags")
@@ -463,7 +452,7 @@ describe("the web app's measurement", { serial: true }, () => {
             event.event === "$pageview" &&
             event.distinctId === memberId &&
             textOf(event.properties["$current_url"]).endsWith(
-              "/app/:id/settings/tags"
+              "/:id/settings/tags"
             )
         ),
       "the member's page view of the tags"
@@ -545,7 +534,7 @@ describe("the web app's measurement", { serial: true }, () => {
   }) => {
     await asPerson(browser);
     await watchTags(browser);
-    await app.open("/app/account");
+    await app.open("/account");
     await screen.getByRole("button", "Don’t allow").tap();
     await expect(screen.getByText(/^Not allowed since /u)).toBeVisible();
 
@@ -588,9 +577,7 @@ describe("the web app's measurement", { serial: true }, () => {
     expect(stored.filter((key) => key.startsWith("ph_"))).toEqual([]);
 
     // In place, the app's own requests name the session no more.
-    await screen
-      .getByRole("link", new RegExp(`${RegExp.escape(workspace)}$`, "u"))
-      .tap();
+    await screen.getByRole("link", defaultWorkspaceOf(name)).tap();
     await screen.getByRole("link", "Settings").tap();
     await screen
       .getByRole("navigation", "Workspace")
@@ -606,7 +593,7 @@ describe("the web app's measurement", { serial: true }, () => {
   test("ties no id of one consent to the next", async ({ app, browser }) => {
     await asPerson(browser);
     // A full load after withdrawing too.
-    await app.open(`/app/${workspaceId}/posts`);
+    await app.open(`/${slug}/posts`);
 
     await eventually(
       () =>

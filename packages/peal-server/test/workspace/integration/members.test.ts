@@ -419,7 +419,7 @@ layer(BillingLive, { excludeTestServices: true, timeout: "180 seconds" })(
           {
             _tag: "PlanLimitReached",
             allowed: 3,
-            billingUrl: `http://localhost:3001/app/${workspaceId}/billing`,
+            billingUrl: `http://localhost:3001/${workspaceId}/billing`,
             limit: "members",
             plan: "starter",
             planWithRoom: "payAsYouGo",

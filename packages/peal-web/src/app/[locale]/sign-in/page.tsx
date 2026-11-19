@@ -25,7 +25,7 @@ const SignInPage = async ({ searchParams }: PageProps<"/[locale]/sign-in">) => {
   const { mode, providers } = await signUpSettings();
   const t = await getTranslations("SignInPage");
   const locale = await getLocale();
-  const nextPath = Option.getOrElse(nextPathOf(next), () => "/app");
+  const nextPath = Option.getOrElse(nextPathOf(next), () => "/");
 
   const refused = providerErrorKey(error, {
     fromProvider: cameFromProvider(from),

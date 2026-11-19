@@ -3,8 +3,8 @@ import type { Permission } from "peal-contract";
 
 import { navigationOf } from "#shell/navigation.ts";
 
-const workspaceId = "00000000-0000-7000-8000-0000000000a1";
-const base = `/app/${workspaceId}`;
+const workspace = "synthetic-studio";
+const base = `/${workspace}`;
 
 const owner: readonly Permission[] = [
   "ads:read",
@@ -30,7 +30,7 @@ const articleCrumb = (path: string) =>
   navigationOf({
     pathname: `${base}/articles${path}`,
     permissions: owner,
-    workspaceId,
+    workspace,
   }).breadcrumb;
 
 describe(navigationOf, () => {
@@ -38,7 +38,7 @@ describe(navigationOf, () => {
     const navigation = navigationOf({
       pathname: `${base}/calendar`,
       permissions: owner,
-      workspaceId,
+      workspace,
     });
 
     expect(navigation.mode).toBe("studio");
@@ -67,7 +67,7 @@ describe(navigationOf, () => {
     const navigation = navigationOf({
       pathname: `${base}/calendar`,
       permissions: ["post:read"],
-      workspaceId,
+      workspace,
     });
 
     expect(pagesOf(navigation)).toStrictEqual([
@@ -84,7 +84,7 @@ describe(navigationOf, () => {
     const navigation = navigationOf({
       pathname: `${base}/settings/webhooks`,
       permissions: owner,
-      workspaceId,
+      workspace,
     });
 
     expect(navigation.mode).toBe("api");
@@ -102,7 +102,7 @@ describe(navigationOf, () => {
     const draft = navigationOf({
       pathname: `${base}/drafts`,
       permissions: owner,
-      workspaceId,
+      workspace,
     });
 
     expect(draft.section).toBe("posts");
@@ -143,7 +143,7 @@ describe(navigationOf, () => {
     const post = navigationOf({
       pathname: `${base}/posts/00000000-0000-7000-8000-0000000000b2`,
       permissions: owner,
-      workspaceId,
+      workspace,
     });
 
     expect(post.section).toBe("posts");
@@ -152,14 +152,14 @@ describe(navigationOf, () => {
       navigationOf({
         pathname: `${base}/posts/new`,
         permissions: owner,
-        workspaceId,
+        workspace,
       }).breadcrumb
     ).toStrictEqual({ page: "newPost", section: "posts" });
     expect(
       navigationOf({
         pathname: `${base}/posts/import`,
         permissions: owner,
-        workspaceId,
+        workspace,
       }).current
     ).toBe("import");
   });
@@ -168,7 +168,7 @@ describe(navigationOf, () => {
     const navigation = navigationOf({
       pathname: `${base}/settings/tags`,
       permissions: ["post:read"],
-      workspaceId,
+      workspace,
     });
 
     expect(navigation.section).toBe("settings");
@@ -187,7 +187,7 @@ describe(navigationOf, () => {
       navigationOf({
         pathname: `${base}/billing`,
         permissions: owner,
-        workspaceId,
+        workspace,
       }).section
     ).toBe("settings");
   });
@@ -197,14 +197,14 @@ describe(navigationOf, () => {
       navigationOf({
         pathname: `${base}/inbox/abc`,
         permissions: owner,
-        workspaceId,
+        workspace,
       }).breadcrumb
     ).toStrictEqual({ page: "thread", section: null });
 
     const elsewhere = navigationOf({
       pathname: `${base}/unknown`,
       permissions: owner,
-      workspaceId,
+      workspace,
     });
 
     expect(elsewhere.current).toBeNull();

@@ -12,10 +12,11 @@ import type {
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { answerWindowOf } from "#inbox/answer-window.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";
@@ -115,6 +116,7 @@ const LoadedConversation = ({
   readonly mayAnswer: boolean;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("InboxMessages");
   const { conversation } = detail;
 
@@ -216,7 +218,7 @@ const LoadedConversation = ({
       )}
       <PagesView
         cursor={cursor}
-        href={`/app/${workspaceId}/inbox/messages/${conversation.id}`}
+        href={workspaceHref(workspaceId, `/inbox/messages/${conversation.id}`)}
         nextCursor={detail.nextCursor}
       />
       <ul className="flex flex-col gap-2">

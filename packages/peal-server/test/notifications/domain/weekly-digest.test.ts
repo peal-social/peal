@@ -25,7 +25,7 @@ const workspaceId = WorkspaceIdSchema.make(
 const week = digestWeekOf(utc("2026-11-16T06:23:00Z"));
 
 const studio: LinkedDigestWorkspace = {
-  calendarUrl: "https://app.example.test/app/2f9a/calendar",
+  calendarUrl: "https://app.example.test/2f9a/calendar",
   counts: {
     awaitingApproval: 1,
     failed: 1,
@@ -46,9 +46,9 @@ const studio: LinkedDigestWorkspace = {
 };
 
 const email = (locale: Locale, workspaces = [studio]): DigestEmail => ({
-  agendaUrl: "https://app.example.test/app/agenda",
+  agendaUrl: "https://app.example.test/agenda",
   locale,
-  preferencesUrl: "https://app.example.test/app/notices/preferences",
+  preferencesUrl: "https://app.example.test/notices/preferences",
   week,
   workspaces,
 });
@@ -108,8 +108,8 @@ describe(renderWeeklyDigest, () => {
         "- November 11, 2026 at 9:30 AM UTC: No text",
         "- and 5 more",
         "Engagement with the week’s posts, as last counted: 1,234.",
-        "Open the calendar of Studio <Nord> & Co: https://app.example.test/app/2f9a/calendar",
-        "turn it off in your notification preferences (https://app.example.test/app/notices/preferences).",
+        "Open the calendar of Studio <Nord> & Co: https://app.example.test/2f9a/calendar",
+        "turn it off in your notification preferences (https://app.example.test/notices/preferences).",
       ].filter((expected) => !text.includes(expected))
     ).toStrictEqual([]);
     expect(text).not.toContain("Impressions");
@@ -122,9 +122,9 @@ describe(renderWeeklyDigest, () => {
     expect(html).toContain("Launch day &lt;b&gt;soon&lt;/b&gt;");
     expect(html).not.toContain("<b>soon</b>");
     expect(html).toContain(
-      '<a href="https://app.example.test/app/notices/preferences" style="color:#52525b;">your notification preferences</a>'
+      '<a href="https://app.example.test/notices/preferences" style="color:#52525b;">your notification preferences</a>'
     );
-    expect(html).toContain('href="https://app.example.test/app/agenda"');
+    expect(html).toContain('href="https://app.example.test/agenda"');
   });
 
   it("is written in French, with French plurals", () => {

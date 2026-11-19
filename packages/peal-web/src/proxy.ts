@@ -1,14 +1,45 @@
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isRefusedPath } from "peal-contract/path-spelling";
 
 import { forwardToApi, servedByApi } from "#api/forward.ts";
+import { currentUserEffect } from "#auth/session.ts";
 import { routing } from "#i18n/routing.ts";
 import { relayed } from "#measurement/relay.ts";
+import { namesWorkspaceById, slugAddressOf } from "#shell/workspace-path.ts";
 
 const handleI18nRouting = createMiddleware(routing);
+
+// A page of a workspace named by its id, as links did before they named
+// its slug (emails, notices, bookmarks): sent on to the same page under
+// the slug, for a member, once GET /api/me says which it is. Anyone else,
+// or an API that does not answer, gets the page as it is, which finds the
+// workspace by its id too or answers not found.
+const toSlug = async (request: NextRequest): Promise<NextResponse> => {
+  const cookie = request.headers.get("cookie");
+
+  const me =
+    cookie === null
+      ? Option.none()
+      : await Effect.runPromise(
+          currentUserEffect(cookie).pipe(
+            Effect.orElseSucceed(() => Option.none())
+          )
+        );
+
+  const location = Option.match(me, {
+    onNone: () => null,
+    onSome: ({ workspaces }) => slugAddressOf(request.nextUrl, workspaces),
+  });
+
+  // Next reads a proxy's Location as a whole URL: the path, on the
+  // request's own address.
+  return location === null
+    ? handleI18nRouting(request)
+    : NextResponse.redirect(new URL(location, request.nextUrl), 308);
+};
 
 // /api/*, the OAuth discovery documents, the API catalogue and llms.txt go
 // to the Peal server (see
@@ -30,27 +61,35 @@ const handleI18nRouting = createMiddleware(routing);
 // end with a slash, so Next no longer removes trailing slashes
 // (`skipTrailingSlashRedirect`): every other path that ends with one is
 // redirected here to the path without it, as Next did.
-const proxy = (request: NextRequest) => {
+//
+// A workspace's page named by its id (`/<id>/posts`), as the server's
+// emails write it, is redirected to
+// the same page under its slug (`toSlug`).
+const proxy = (request: NextRequest): NextResponse | Promise<NextResponse> => {
   const { pathname } = request.nextUrl;
 
   if (relayed(pathname)) {
     return NextResponse.next();
   }
 
-  // A Location of this origin's own, as Next writes it, whatever host the
-  // request came to behind the edge.
+  // The same path without its trailing slashes, on the request's own
+  // address: Next refuses a relative Location from a proxy.
   if (pathname.length > 1 && pathname.endsWith("/")) {
     const location = `${pathname.replace(/\/+$/u, "") || "/"}${request.nextUrl.search}`;
 
-    return new NextResponse(null, { headers: { location }, status: 308 });
+    return NextResponse.redirect(new URL(location, request.nextUrl), 308);
   }
 
   if (servedByApi(pathname)) {
     return Effect.runSync(forwardToApi(request));
   }
 
-  return isRefusedPath(pathname)
-    ? new NextResponse(null, { status: 400 })
+  if (isRefusedPath(pathname)) {
+    return new NextResponse(null, { status: 400 });
+  }
+
+  return namesWorkspaceById(pathname)
+    ? toSlug(request)
     : handleI18nRouting(request);
 };
 

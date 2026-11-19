@@ -11,8 +11,8 @@ import type {
   PostContent,
   PostTarget,
 } from "peal-contract";
+import { toast } from "peal-ui/components/toast";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { platformCapabilities } from "#analytics/api.ts";
 import {

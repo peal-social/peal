@@ -192,7 +192,7 @@ peal drafts list --json
 
 `peal` ne lit la clé que dans l’environnement. Aucune option ne la prend, car une option finit dans l’historique du shell et dans la liste des processus. `peal` ne l’affiche jamais. Tant que `PEAL_API_KEY` est définie, elle l’emporte sur une connexion enregistrée, et une valeur vide ne compte pas comme une clé.
 
-Avec une clé, `--workspace` ou `PEAL_WORKSPACE` doit donner l’identifiant de l’espace de travail, pas son slug. Il n’y a pas de valeur par défaut, car une clé ne peut pas chercher les espaces de travail. L’identifiant figure dans l’adresse des pages de l’espace dans l’application web (`/app/<id>/settings`), et `peal whoami` le liste quand vous êtes connecté en tant que personne. Sans lui, la commande s’arrête avec `workspace_id_required`.
+Avec une clé, `--workspace` ou `PEAL_WORKSPACE` doit donner l’identifiant de l’espace de travail, pas son slug. Il n’y a pas de valeur par défaut, car une clé ne peut pas chercher les espaces de travail. `peal whoami` le liste quand vous êtes connecté en tant que personne, comme `GET /api/me`. Sans lui, la commande s’arrête avec `workspace_id_required`.
 
 La clé fait ce que ses permissions permettent, et rien de plus. Sans `post:schedule`, par exemple, elle écrit des brouillons mais ne les programme pas. Un refus arrive dans les mots du serveur, avec la permission qui manque.
 

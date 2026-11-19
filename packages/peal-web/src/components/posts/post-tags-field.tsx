@@ -15,9 +15,9 @@ import {
   PopoverTrigger,
 } from "peal-ui/components/popover";
 import { TagDot } from "peal-ui/components/tag";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
 
 import { useSavedItemErrorText } from "#components/settings/saved-item-error.tsx";
 import { TagList } from "#components/tags/tag-views.tsx";

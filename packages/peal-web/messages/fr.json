@@ -584,31 +584,14 @@
   "UserMenu": {
     "signIn": "Se connecter",
     "signUp": "Créer un compte",
-    "trigger": "Compte de {name}",
+    "trigger": "Compte de {name}{count, plural, =0 {} one {, # notification non lue} other {, # notifications non lues}}",
     "signedInAs": "Session ouverte : {email}",
     "app": "Espaces de travail",
     "signOut": "Se déconnecter",
-    "signOutFailed": "La déconnexion a échoué. Réessayez."
-  },
-  "HomePage": {
-    "title": "Bienvenue sur Peal",
-    "description": "Rédigez vos publications une fois, planifiez-les sur toutes les plateformes et suivez leurs résultats."
-  },
-  "ApiStatus": {
-    "title": "État de l’API",
-    "description": "Indique si cette application parvient à joindre le serveur Peal.",
-    "status": {
-      "loading": "Vérification",
-      "healthy": "Opérationnelle",
-      "unreachable": "Injoignable"
-    },
-    "detail": {
-      "loading": "Interrogation du serveur sur son état…",
-      "healthy": "Le serveur a répondu à la vérification de son état.",
-      "unreachable": "Le serveur n’a pas répondu. Vérifiez qu’il tourne et qu’PEAL_API_URL pointe vers lui."
-    },
-    "retry": "Vérifier à nouveau",
-    "retrying": "Vérification…"
+    "signOutFailed": "La déconnexion a échoué. Réessayez.",
+    "notifications": "Notifications",
+    "agenda": "Agenda",
+    "report": "Rapport"
   },
   "NotFoundPage": {
     "title": "Page introuvable",
@@ -722,16 +705,13 @@
     "requestAgain": "Demander un nouveau lien"
   },
   "AppPage": {
-    "title": "Bonjour, {name}",
-    "description": "Vos espaces de travail, et ce que vous pouvez y faire.",
-    "empty": "Vous n’appartenez encore à aucun espace de travail. Créez-en un, ou demandez une invitation.",
-    "role": "{role, select, owner {Propriétaire} admin {Administrateur} editor {Éditeur} contributor {Contributeur} viewer {Lecteur} other {{role}}}",
-    "permissions": "{count, plural, one {# permission} other {# permissions}}",
-    "createTitle": "Créer un espace de travail",
     "createDescription": "Vous en serez propriétaire, et pourrez y inviter des personnes.",
     "workspaceName": "Nom de l’espace de travail",
     "create": "Créer l’espace de travail",
-    "creating": "Création…"
+    "creating": "Création…",
+    "settingUp": "Préparation de votre espace de travail…",
+    "defaultName": "{elided, select, yes {Espace d’{name}} other {Espace de {name}}}",
+    "defaultNameNoOne": "Mon espace de travail"
   },
   "InvitationPage": {
     "title": "Rejoindre un espace de travail",
@@ -1285,7 +1265,13 @@
         "footer": "Choisissez un emoji…",
         "category": "{group, select, smileysEmotion {Smileys et émotions} peopleBody {Personnes et corps} component {Composants} animalsNature {Animaux et nature} foodDrink {Nourriture et boissons} travelPlaces {Voyages et lieux} activities {Activités} objects {Objets} symbols {Symboles} flags {Drapeaux} other {{group}}}"
       },
-      "publishNowSkipped": "Pas sur {channels}, {count, plural, one {désactivé ou à reconnecter} other {désactivés ou à reconnecter}}."
+      "publishNowSkipped": "Pas sur {channels}, {count, plural, one {désactivé ou à reconnecter} other {désactivés ou à reconnecter}}.",
+      "phraseLabel": "Écrire quand",
+      "phrasePlaceholder": "demain 9h, vendredi 10h30, dans 3 jours, 27 nov",
+      "phraseHint": "Écrivez une date en toutes lettres, puis appuyez sur Entrée : « demain 9h », « vendredi 10h30 », « dans 3 jours », « 27 nov ».",
+      "phraseUnread": "Date non comprise. Essayez « demain 9h », « vendredi 10h30 », « dans 3 jours » ou « 27 nov ».",
+      "phrasePast": "{at} est passé : choisissez une heure à venir.",
+      "phraseRead": "{at}, {distance}. Appuyez sur Entrée pour la garder."
     },
     "Parts": {
       "legend": "Fil et premier commentaire",
@@ -1678,6 +1664,8 @@
       "postLabel": "{time}, {status} : {text}",
       "more": "{count, plural, one {# de plus} other {# de plus}}",
       "moved": "Publication déplacée à {at}.",
+      "movedBack": "Publication remise à {at}.",
+      "slotTaken": "Une autre publication de sa file a pris ce créneau entre-temps : la publication reste au {at}.",
       "moveFailed": "La publication n’a pas pu être déplacée.",
       "moveInPast": "Cette heure est passée : la publication reste où elle était.",
       "moveForbidden": "Votre rôle ne vous permet pas de déplacer des publications.",
@@ -1715,9 +1703,9 @@
       "loading": "Chargement des publications…",
       "loadFailed": "Les publications n’ont pas pu être chargées.",
       "reload": "Réessayer",
-      "empty": "Aucune publication pour l’instant.",
-      "filteredEmpty": "Aucune publication ne correspond à ces filtres.",
-      "clearFilters": "Effacer les filtres",
+      "empty": "Chaque publication de l’espace de travail s’affiche ici, quel que soit son état : brouillons, programmées, parties. Écrivez-en une avec Nouvelle publication, ou appuyez sur C.",
+      "filteredEmpty": "Les filtres masquent toutes les publications.",
+      "clearFilters": "Effacer",
       "loadMore": "Afficher plus",
       "filters": "Filtres",
       "status": "État",
@@ -1737,7 +1725,16 @@
       "noChannel": "Aucun canal pour l’instant",
       "tags": "Étiquettes",
       "unknownChannel": "Un canal qui n’est plus connecté",
-      "unknownTag": "Une étiquette supprimée depuis"
+      "unknownTag": "Une étiquette supprimée depuis",
+      "queue": "File d’attente",
+      "unknownQueue": "Une file d’attente supprimée depuis",
+      "orderCreated": "Création",
+      "orderScheduled": "Heure prévue",
+      "emptyTitle": "Aucune publication",
+      "filteredEmptyTitle": "Aucune publication correspondante",
+      "views": "Vues",
+      "view": "{view, select, drafts {Brouillons} scheduled {Programmées} approval {À approuver} other {Toutes}}",
+      "emptyView": "{view, select, drafts {Aucun brouillon} scheduled {Aucune publication programmée} approval {Aucune publication à approuver} other {Aucune publication}}"
     },
     "Import": {
       "title": "Importer des publications",
@@ -1861,6 +1858,48 @@
         "xPerAccountPricing": "X facture chaque publication, que Peal refacture aux tarifs de X, et l’abonnement de cet espace de travail est antérieur au tarif par compte : les parties de cette publication sur X échoueraient à leur heure, sans rien envoyer.",
         "xPaymentMethod": "X facture chaque publication, que Peal refacture aux tarifs de X, et le compte de facturation n’a pas de moyen de paiement : les parties de cette publication sur X échoueraient à leur heure, sans rien envoyer, sauf s’il en ajoute un sur la page de facturation."
       }
+    },
+    "Selection": {
+      "label": "Publications sélectionnées",
+      "count": "{count, plural, one {# sélectionnée} other {# sélectionnées}}",
+      "choose": "Sélectionner « {post} »",
+      "addTag": "Changer ou ajouter des étiquettes…",
+      "backToDraft": "{partial, select, yes {Repasser en brouillon ({count} sur {total})} other {Repasser en brouillon}}",
+      "cancel": "{partial, select, yes {Annuler ({count} sur {total})} other {Annuler}}",
+      "clear": "Effacer la sélection",
+      "cancelTitle": "{count, plural, one {Annuler # publication ?} other {Annuler # publications ?}}",
+      "cancelDescription": "{count, plural, one {Elle ne partira sur aucun canal. C’est définitif.} other {Elles ne partiront sur aucun canal. C’est définitif.}}",
+      "keep": "{count, plural, one {La garder} other {Les garder}}",
+      "cancelConfirm": "{count, plural, one {Annuler # publication} other {Annuler # publications}}",
+      "done": {
+        "cancelled": "{count, plural, one {# publication annulée.} other {# publications annulées.}}",
+        "tagged": "{count, plural, one {# publication classée sous « {tag} ».} other {# publications classées sous « {tag} ».}}",
+        "unscheduled": "{count, plural, one {# publication repassée en brouillon.} other {# publications repassées en brouillon.}}",
+        "untagged": "{count, plural, one {« {tag} » retirée de # publication.} other {« {tag} » retirée de # publications.}}",
+        "allUntagged": "{count, plural, one {Étiquettes retirées de # publication.} other {Étiquettes retirées de # publications.}}"
+      },
+      "partly": "{done, number} faites, {failed, plural, one {# n’a pas pu l’être : relisez la liste, elle a pu changer.} other {# n’ont pas pu l’être : relisez la liste, elles ont pu changer.}}",
+      "alreadyTagged": "Chaque publication sélectionnée est déjà sous « {tag} », ou a déjà autant d’étiquettes qu’une publication peut en porter.",
+      "untagged": "{count, plural, one {« {tag} » retirée de # publication.} other {« {tag} » retirée de # publications.}}",
+      "tagPlaceholder": "Changer ou ajouter des étiquettes…",
+      "actions": "Actions",
+      "scope": "{count, plural, one {# publication} other {# publications}}",
+      "heading": "{count, plural, one {Publication sélectionnée} other {Publications sélectionnées}}",
+      "backToDraftKey": "Repasser en brouillon les publications sélectionnées",
+      "cancelKey": "Annuler les publications sélectionnées",
+      "removeAllTags": "Retirer toutes les étiquettes",
+      "notTagged": "Aucune publication sélectionnée n’est sous « {tag} ».",
+      "retagged": "{count, plural, one {« {tag} » remise sur # publication.} other {« {tag} » remise sur # publications.}}",
+      "noTags": "Les publications sélectionnées n’ont pas d’étiquette.",
+      "tagsBack": "{count, plural, one {Étiquettes remises sur # publication.} other {Étiquettes remises sur # publications.}}",
+      "clearKey": "Effacer la sélection",
+      "downKey": "Publication suivante",
+      "upKey": "Publication précédente",
+      "growDownKey": "Étendre la sélection vers le bas",
+      "growUpKey": "Étendre la sélection vers le haut",
+      "toggleKey": "Sélectionner la publication",
+      "allKey": "Sélectionner toutes les publications listées",
+      "openKey": "Ouvrir la publication"
     }
   },
   "Drafts": {
@@ -2946,7 +2985,7 @@
     "workspaces": {
       "label": "Changer d’espace de travail",
       "switch": "Vos autres espaces",
-      "all": "Tous les espaces de travail"
+      "create": "Nouvel espace de travail"
     },
     "pages": {
       "calendar": "Calendrier",
@@ -2967,7 +3006,7 @@
       "members": "Membres",
       "invitations": "Invitations",
       "security": "Sécurité",
-      "billing": "Abonnement et facturation",
+      "billing": "Facturation",
       "tags": "Étiquettes",
       "signatures": "Signatures",
       "channelSets": "Groupes de canaux",
@@ -2985,7 +3024,58 @@
       "articles": "Articles",
       "article": "Article",
       "newArticle": "Nouvel article"
-    }
+    },
+    "help": "Aide",
+    "shortcuts": "Raccourcis clavier",
+    "agent": "Agent",
+    "agentSoon": "L’agent arrive bientôt",
+    "history": "Historique"
+  },
+  "CommandMenu": {
+    "title": "Menu des commandes",
+    "trigger": "Chercher ou aller à…",
+    "inputLabel": "Pages et actions",
+    "placeholder": "Tapez une page ou une action…",
+    "empty": "Rien ne correspond à « {query} ».",
+    "then": "puis",
+    "groups": {
+      "create": "Créer",
+      "goTo": "Aller à",
+      "workspaces": "Espaces de travail",
+      "help": "Aide"
+    },
+    "newPost": "Nouvelle publication",
+    "goTo": "Aller à la page {page}",
+    "switchTo": "Ouvrir {workspace}",
+    "footer": {
+      "move": "Se déplacer",
+      "open": "Ouvrir",
+      "close": "Fermer"
+    },
+    "postsWith": "Publications : {state}",
+    "post": {
+      "heading": "Cette publication",
+      "untitled": "Publication sans texte",
+      "duplicate": "Dupliquer la publication",
+      "copyLink": "Copier le lien de cette publication",
+      "linkCopied": "Lien copié.",
+      "copyFailed": "Le lien n’a pas pu être copié.",
+      "onCalendar": "La voir dans le calendrier",
+      "viewOn": "L’ouvrir sur {platform} : {channel}",
+      "reschedule": "Reprogrammer…",
+      "rescheduleKeyword": "déplacer",
+      "reschedulePlaceholder": "Quand ? demain 9h, vendredi 10h30, dans 3 jours…",
+      "rescheduleHint": "Écrivez quand : « demain 9h », « vendredi 10h30 », « dans 3 jours », « 27 nov ».",
+      "rescheduleTo": "Déplacer au {at}",
+      "reschedulePast": "{at} est passé"
+    },
+    "shortcuts": "Raccourcis clavier",
+    "search": "Rechercher"
+  },
+  "Toasts": {
+    "region": "Notifications",
+    "undo": "Annuler",
+    "pending": "En cours…"
   },
   "WorkspaceHome": {
     "title": "Écrivez une fois.",
@@ -3078,11 +3168,11 @@
     "label": "Vos pages",
     "workspaces": "Espaces de travail",
     "pages": {
-      "overview": "Vue d’ensemble",
       "agenda": "Agenda",
       "report": "Rapport",
       "notices": "Notifications",
-      "account": "Compte"
+      "account": "Compte",
+      "newWorkspace": "Nouvel espace de travail"
     }
   },
   "Webhooks": {
@@ -4232,6 +4322,7 @@
     },
     "thread": {
       "title": "Commentaires",
+      "pageName": "Commentaire",
       "channel": "Sous la publication sur {channel}, en ligne depuis le {at}.",
       "back": "Retour à la boîte de réception",
       "listTitle": "Du plus ancien au plus récent",
@@ -4362,6 +4453,7 @@
     "thread": {
       "back": "Retour à la boîte de réception",
       "title": "Avis d’un établissement",
+      "pageName": "Avis",
       "empty": "Aucun avis écrit ou modifié ces {days, number} derniers jours.",
       "readOnly": "Votre rôle permet de lire les avis, pas d’y répondre."
     },
@@ -4406,6 +4498,7 @@
     "thread": {
       "back": "Retour à la boîte de réception",
       "title": "Une conversation",
+      "pageName": "Message",
       "readOnly": "Votre rôle permet de lire les messages, pas d’y répondre.",
       "private": "Ces messages sont privés : ne les montrez qu’aux personnes qui en ont besoin.",
       "markRead": "Marquer comme lue",
@@ -4798,19 +4891,6 @@
     "saved": "Le flux est enregistré."
   },
   "Overview": {
-    "home": {
-      "attentionLabel": "Ce qui demande votre attention dans {workspace}",
-      "nothing": "Rien ne demande votre attention.",
-      "overPlan": "Au-delà de son offre : rien ne part tant qu’il n’y est pas revenu",
-      "failed": "{count, plural, one {# publication a échoué} other {# publications ont échoué}} sur un canal ces 7 derniers jours",
-      "unconfirmed": "{count, plural, one {# publication} other {# publications}} à vérifier : un canal l’a peut-être en ligne",
-      "awaitingApproval": "{count, plural, one {# publication attend} other {# publications attendent}} une approbation",
-      "awaitingYourApproval": "{count, plural, one {# publication attend} other {# publications attendent}} votre approbation",
-      "toReconnect": "{count, plural, one {# canal} other {# canaux}} à reconnecter",
-      "channelsOff": "{count, plural, one {# canal est désactivé} other {# canaux sont désactivés}}",
-      "unanswered": "{count, plural, one {# fil} other {# fils}} avec un commentaire qui attend une réponse",
-      "scheduled": "{count, plural, =0 {Rien ne part ces 7 prochains jours} one {# publication part ces 7 prochains jours} other {# publications partent ces 7 prochains jours}}"
-    },
     "agenda": {
       "title": "Agenda",
       "description": "Ce qui part ces 14 prochains jours, dans les espaces où vous pouvez lire les publications. Chaque publication s’ouvre dans son espace.",
@@ -5004,5 +5084,52 @@
       "undecided": "Pas encore choisi.",
       "failed": "Votre choix n’a pas pu être enregistré. Réessayez."
     }
+  },
+  "Shortcuts": {
+    "title": "Raccourcis clavier",
+    "search": "Chercher un raccourci",
+    "empty": "Aucun raccourci ne correspond à « {query} ».",
+    "close": "Fermer",
+    "then": "puis",
+    "groups": {
+      "general": "Général",
+      "goTo": "Aller à",
+      "lists": "Listes",
+      "selection": "Publications sélectionnées"
+    },
+    "rows": {
+      "openMenu": "Ouvrir le menu de commandes",
+      "showShortcuts": "Afficher les raccourcis clavier",
+      "newPost": "Nouvelle publication",
+      "undo": "Annuler le dernier changement",
+      "goTo": "Aller à {page}",
+      "down": "Ligne suivante",
+      "up": "Ligne précédente",
+      "toggle": "Sélectionner la ligne",
+      "growDown": "Étendre la sélection vers le bas",
+      "growUp": "Étendre la sélection vers le haut",
+      "all": "Sélectionner toutes les lignes",
+      "open": "Ouvrir la ligne",
+      "clear": "Effacer la sélection",
+      "tag": "Changer ou ajouter des étiquettes",
+      "backToDraft": "Repasser en brouillon",
+      "cancel": "Annuler les publications",
+      "filter": "Filtrer la liste"
+    }
+  },
+  "Lists": {
+    "filter": "Filtrer",
+    "filterPlaceholder": "Filtrer…",
+    "noMatch": "Rien ne correspond à « {query} ».",
+    "chosen": "Choisi",
+    "properties": "Propriétés",
+    "values": "Valeurs",
+    "display": "Affichage",
+    "ordering": "Tri",
+    "direction": "{direction, select, asc {Ordre croissant} other {Ordre décroissant}}",
+    "filters": "Filtres",
+    "is": "est",
+    "remove": "Retirer le filtre {property}",
+    "clear": "Effacer"
   }
 }

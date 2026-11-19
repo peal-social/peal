@@ -155,11 +155,11 @@ layer(Test)("notices", (it) => {
         );
         assert.include(
           toChloe[0]?.text ?? "",
-          `http://localhost:3001/fr/app/${workspaceId}/channels`
+          `http://localhost:3001/fr/${workspaceId}/channels`
         );
         assert.include(
           toAda[0]?.text ?? "",
-          `http://localhost:3001/app/${workspaceId}/channels`
+          `http://localhost:3001/${workspaceId}/channels`
         );
         assert.notStrictEqual(
           toAda[0]?.idempotencyKey,

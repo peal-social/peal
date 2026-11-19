@@ -7,25 +7,46 @@ import type { SubmitEvent } from "react";
 
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";
-import type { AuthErrorKey } from "#auth/errors.ts";
+import type { AuthClientError, AuthErrorKey } from "#auth/errors.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { FormField } from "#components/auth/form-field.tsx";
 import { useOfferAuthUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import { useRouter } from "#i18n/navigation.ts";
+import { workspacePath } from "#shell/workspace-path.ts";
+import { slugsToTry, slugTaken } from "#workspaces/new-workspace.ts";
 
-// A workspace's slug: its name in lowercase ASCII words, and a random tail
-// so two workspaces may share a name.
-const slugOf = (name: string): string => {
-  const words = name
-    .normalize("NFKD")
-    .toLowerCase()
-    .replaceAll(/[^a-z0-9]+/gu, "-")
-    .replaceAll(/^-+|-+$/gu, "");
+/** What creating a workspace answered: its slug, or Better Auth's error. */
+export type Created =
+  | { readonly slug: string }
+  | { readonly error: AuthClientError };
 
-  return `${words === "" ? "workspace" : words}-${crypto.randomUUID().slice(0, 8)}`;
+/**
+ * Creates a workspace the user owns, named `name`, under the first of
+ * its slugs the server takes (`slugsToTry`): a slug another workspace
+ * holds tries the next one.
+ */
+export const createWorkspace = async (
+  name: string,
+  slugs: readonly string[]
+): Promise<Created> => {
+  const [slug, ...others] = slugs;
+
+  if (slug === undefined) {
+    return { error: { status: 400 } };
+  }
+
+  const result = await authClient.organization.create({ name, slug });
+
+  if (result.error === null) {
+    return { slug: result.data.slug };
+  }
+
+  return slugTaken(result.error.code) && others.length > 0
+    ? await createWorkspace(name, others)
+    : { error: result.error };
 };
 
-// Creates a workspace the user owns, then shows it in the list.
+// Creates a workspace the user owns, then opens it.
 export const CreateWorkspaceForm = () => {
   const t = useTranslations("AppPage");
   const router = useRouter();
@@ -38,18 +59,18 @@ export const CreateWorkspaceForm = () => {
     event.preventDefault();
 
     startTransition(async () => {
-      const result = await authClient.organization.create({
+      const created = await createWorkspace(
         name,
-        slug: slugOf(name),
-      });
+        slugsToTry(name, crypto.randomUUID().slice(0, 8))
+      );
 
-      if (result.error === null) {
+      if ("slug" in created) {
         setError(null);
-        setName("");
+        router.push(workspacePath(created.slug));
         router.refresh();
       } else {
-        setError(authErrorKey(result.error));
-        offerUpgrade(result.error);
+        setError(authErrorKey(created.error));
+        offerUpgrade(created.error);
       }
     });
   };

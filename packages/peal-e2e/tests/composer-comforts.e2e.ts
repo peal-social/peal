@@ -6,6 +6,7 @@ import { credentials, expect } from "e2e";
 import { seedPerAccountSubscription } from "./support/billing.ts";
 import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // The composer's comforts, in one browser: each test starts where the
 // previous one left off. Nothing goes out: "Publish now" is opened and
@@ -13,7 +14,6 @@ import { emailedLink } from "./support/mailpit.ts";
 // each attempt, so a retry signs up under a new address.
 const run = randomUUID();
 const name = "Kim Example";
-const workspace = "Comfort Notes";
 
 const handles = [
   "@comfort_one@social.example",
@@ -32,6 +32,7 @@ const guest = () =>
 const password = () => credentials.user("member").password;
 
 let workspaceId = "";
+let slug = "";
 
 describe("the composer's comforts", { serial: true }, () => {
   test("signs up and makes a workspace with three channels", async ({
@@ -52,20 +53,8 @@ describe("the composer's comforts", { serial: true }, () => {
     );
     await expect(screen.getByRole("heading", "Email confirmed")).toBeVisible();
 
-    await app.open("/app");
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    await expect(calendar).toBeVisible();
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+    await app.open("/");
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
 
     // Three accounts are more than the free tier's two: the workspace is
@@ -79,7 +68,7 @@ describe("the composer's comforts", { serial: true }, () => {
   });
 
   test("selects every channel, then none", async ({ app, screen }) => {
-    await app.open(`/app/${workspaceId}/posts/new`);
+    await app.open(`/${slug}/posts/new`);
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
 
     await screen.getByRole("button", "Select all").tap();
@@ -162,30 +151,30 @@ describe("the composer's comforts", { serial: true }, () => {
     browser,
     screen,
   }) => {
-    await app.open("/app");
-    await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "All posts")
-      .tap();
+    await app.open(`/${slug}/posts`);
 
     await expect(
-      screen.getByRole("heading", "All posts", { level: 1 })
+      screen.getByRole("heading", "Posts", { level: 1 })
     ).toBeVisible();
     await expect(
       screen.getByRole("main").getByRole("link", `${text}🚀`)
     ).toBeVisible();
 
-    await screen.getByRole("combobox", "Status").tap();
-    await screen.getByRole("option", "Scheduled").tap();
+    // A status no tab shows is a filter, with its chip.
+    await screen.getByRole("main").getByRole("button", "Filter").tap();
+    await screen.getByRole("option", "Status").tap();
+    await screen.getByRole("option", "Cancelled").tap();
 
-    await expect(browser).toHaveURL(
-      `/app/${workspaceId}/posts?status=scheduled`
-    );
+    await expect(browser).toHaveURL(`/${slug}/posts?status=cancelled`);
     await expect(
-      screen.getByText("No post matches these filters.")
+      screen.getByRole("heading", "No matching posts")
     ).toBeVisible();
+    await expect(
+      screen.getByRole("main").getByRole("link", `${text}🚀`)
+    ).toBeHidden();
 
-    await screen.getByRole("link", "Clear the filters").tap();
+    await screen.getByRole("main").getByRole("link", "Clear").tap();
+    await expect(browser).toHaveURL(`/${slug}/posts`);
     await expect(
       screen.getByRole("main").getByRole("link", `${text}🚀`)
     ).toBeVisible();
@@ -206,7 +195,7 @@ describe("the composer's comforts", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/app/${workspaceId}/settings/invitations`);
+    await app.open(`/${slug}/settings/invitations`);
     await screen.getByLabel("Email").fill(guest());
     await screen.getByRole("button", "Send the invitation").tap();
 

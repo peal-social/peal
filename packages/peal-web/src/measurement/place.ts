@@ -2,10 +2,12 @@ import { hasLocale } from "next-intl";
 
 import { pathOf } from "#errors/report.ts";
 import { routing } from "#i18n/routing.ts";
+import { isAppPath, workspaceAt } from "#shell/workspace-path.ts";
+import type { WorkspaceAddress } from "#shell/workspace-path.ts";
 
 /** A page of the signed-in app, as the web app measures it. */
 export interface Place {
-  /** The page's path without its language, query or ids: `/app/:id/posts`. */
+  /** The page's path without its language, query or ids: `/:id/posts`. */
   readonly pattern: string;
   /** The workspace whose page it is, none for the person's own pages. */
   readonly workspaceId: string | null;
@@ -37,19 +39,24 @@ export const addressOf = (address: string): string => {
 };
 
 /**
- * The page a path is, when it is one of the signed-in app's (`/app` and
- * under it): none for every other page, the auth pages, the OAuth pages,
+ * The page a path is, when it is one of the signed-in app's (`isAppPath`:
+ * `/`, the person's pages, and a workspace's, named by its slug among
+ * `workspaces` or by its id): none for every other page, the auth pages, the OAuth pages,
  * connect links, review links and the staff console included.
  */
-export const placeOf = (pathname: string): Place | null => {
+export const placeOf = (
+  pathname: string,
+  workspaces: readonly WorkspaceAddress[] = []
+): Place | null => {
   const pattern = patternOf(pathname);
 
-  if (pattern !== "/app" && !pattern.startsWith("/app/")) {
+  if (!isAppPath(pathname)) {
     return null;
   }
 
   const segments = withoutLocale(pathname.split(/[?#]/u)[0] ?? "").split("/");
-  const second = segments.at(2) ?? "";
+  const first = segments.at(1) ?? "";
+  const named = workspaceAt(workspaces, first)?.id ?? first;
 
-  return { pattern, workspaceId: uuid.test(second) ? second : null };
+  return { pattern, workspaceId: uuid.test(named) ? named : null };
 };

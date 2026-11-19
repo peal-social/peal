@@ -6,11 +6,12 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import type { Permission, Platform, Post } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { reconnectChannel } from "#channels/channels-api.ts";
 import { rememberConnection } from "#channels/pending-connection.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import {
   followUpsChanged,
   startFollowUp,
@@ -163,6 +164,7 @@ export const PostFollowUp = ({
   readonly post: Post;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("FollowUps");
   const rules = useAtomValue(workspaceFollowUps(workspaceId));
   const [open, setOpen] = useState(false);
@@ -179,7 +181,10 @@ export const PostFollowUp = ({
         rule={rule}
         link={
           <Link
-            href={`/app/${workspaceId}/settings/follow-ups?rule=${rule.id}`}
+            href={workspaceHref(
+              workspaceId,
+              `/settings/follow-ups?rule=${rule.id}`
+            )}
             className="underline underline-offset-4"
           >
             {t("openRule")}

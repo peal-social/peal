@@ -9,13 +9,14 @@ import type {
   ChannelSet,
   PlanLimitReached,
 } from "peal-contract";
+import { toast } from "peal-ui/components/toast";
 import { useMemo, useReducer, useRef, useState } from "react";
-import { toast } from "sonner";
 
 import { workspaceChannelSets } from "#channel-sets/atoms.ts";
 import { channelName } from "#channels/channel-name.ts";
 import { OfferUpgrade } from "#components/billing/offer-upgrade.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { importPosts, postsKeys, workspaceChannels } from "#posts/api.ts";
 import { readImportFile } from "#posts/import-file.ts";
@@ -78,6 +79,7 @@ const download = (name: string, text: string) => {
 // The screen once hydrated: its requests carry the visitor's cookies,
 // which only the browser sends.
 const LoadedImport = ({ workspaceId }: { readonly workspaceId: string }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.Import");
   const send = useAtomSet(importPosts, { mode: "promiseExit" });
   const [state, dispatch] = useReducer(nextImport, idleImport);
@@ -203,7 +205,7 @@ const LoadedImport = ({ workspaceId }: { readonly workspaceId: string }) => {
               row.post.id,
               <Link
                 key={row.post.id}
-                href={`/app/${workspaceId}/posts/${row.post.id}`}
+                href={workspaceHref(workspaceId, `/posts/${row.post.id}`)}
                 className="text-sm underline-offset-4 hover:underline"
               >
                 {t("openPost")}

@@ -6,6 +6,7 @@ import { credentials, expect } from "e2e";
 import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
 import { seedVideo } from "./support/media.ts";
+import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // One new member's first steps, in order, in one browser: each test starts
 // where the previous one left off, ending with a second member Sam invites,
@@ -14,7 +15,7 @@ import { seedVideo } from "./support/media.ts";
 const run = randomUUID();
 const name = "Sam Example";
 const guestName = "Alex Example";
-const workspace = "Field Notes";
+const workspace = defaultWorkspaceOf(name);
 const handle = "@notes@social.example";
 const text = "Our first field note, written once and scheduled from Peal.";
 const edited = "Our first field note, taken back, edited and scheduled again.";
@@ -41,9 +42,11 @@ const guestAddress = () =>
 // The invitation's link, which the guest opens once they have an account.
 let invitationLink = "";
 
-// The workspace's pages live under /app/<id>; the test that creates it reads
-// the id from its links.
+// The workspace's pages live under /<slug>; the test that opens it
+// reads the slug from its address, and the id, which seeding takes, from
+// the database.
 let workspaceId = "";
+let slug = "";
 
 describe("a new member's first post", { serial: true }, () => {
   test("signs up", async ({ app, screen }) => {
@@ -73,31 +76,18 @@ describe("a new member's first post", { serial: true }, () => {
     // The header has a "Sign in" button too.
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
 
-    await expect(screen.getByRole("heading", `Hello, ${name}`)).toBeVisible();
-    await expect(browser).toHaveURL("/app");
-  });
-
-  test("creates a workspace", async ({ screen }) => {
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const links = screen.getByRole("navigation", `Posts of ${workspace}`);
-    const calendar = links.getByRole("link", "Calendar");
-
-    // Creating the workspace, then rendering the page again on the server,
-    // takes a loaded machine longer than an assertion's 5 seconds.
-    await expect(calendar).toBeVisible({ timeout: 30_000 });
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+    // Signing in opens /, which makes the member a workspace of their
+    // own, named after them, and opens it.
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
   });
 
   test("has no channel yet", async ({ browser, screen }) => {
+    await expect(screen.getByRole("button", "Switch workspace")).toContainText(
+      workspace
+    );
     await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
+      .getByRole("navigation", "Workspace")
       .getByRole("link", "Channels")
       .tap();
 
@@ -107,7 +97,7 @@ describe("a new member's first post", { serial: true }, () => {
     await expect(
       screen.getByText("No account is connected yet.")
     ).toBeVisible();
-    await expect(browser).toHaveURL(`/app/${workspaceId}/channels`);
+    await expect(browser).toHaveURL(`/${slug}/channels`);
   });
 
   test("writes a post and saves it as a draft", async ({
@@ -116,11 +106,7 @@ describe("a new member's first post", { serial: true }, () => {
     screen,
   }) => {
     await seedChannel(workspaceId, handle);
-    await app.open("/app");
-    await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "New post")
-      .tap();
+    await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
     await screen.getByRole("checkbox", handle).check();
@@ -129,21 +115,17 @@ describe("a new member's first post", { serial: true }, () => {
 
     await expect(screen.getByText("Draft saved.")).toBeVisible();
     await expect(browser).toHaveURL(
-      new RegExp(`/app/${workspaceId}/posts/[0-9a-f-]+$`, "u")
+      new RegExp(`/${slug}/posts/[0-9a-f-]+$`, "u")
     );
   });
 
   test("finds it on the drafts page", async ({ app, browser, screen }) => {
-    await app.open("/app");
-    await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Drafts")
-      .tap();
+    await app.open(`/${slug}/drafts`);
 
     await expect(
       screen.getByRole("heading", "Drafts", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL(`/app/${workspaceId}/drafts`);
+    await expect(browser).toHaveURL(`/${slug}/drafts`);
 
     await screen.getByRole("main").getByRole("link", text).tap();
 
@@ -164,7 +146,7 @@ describe("a new member's first post", { serial: true }, () => {
 
     await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
     await expect(browser).toHaveURL(
-      new RegExp(`/app/${workspaceId}/calendar\\?date=`, "u")
+      new RegExp(`/${slug}/calendar\\?date=`, "u")
     );
     await expect(screen.getByRole("link", scheduledPost)).toBeVisible();
   });
@@ -198,7 +180,9 @@ describe("a new member's first post", { serial: true }, () => {
       .getByRole("button", "Cancel the post")
       .tap();
 
-    await expect(screen.getByText("Post cancelled.")).toBeVisible();
+    await expect(
+      screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+    ).toBeVisible();
     await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
   });
 
@@ -209,7 +193,7 @@ describe("a new member's first post", { serial: true }, () => {
   }) => {
     await seedChannel(workspaceId, videos, "youtube");
     await seedVideo(workspaceId, video);
-    await app.open(`/app/${workspaceId}/posts/new`);
+    await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
     await screen.getByRole("checkbox", videos).check();
@@ -261,11 +245,7 @@ describe("a new member's first post", { serial: true }, () => {
   });
 
   test("invites a second member", async ({ app, screen }) => {
-    await app.open("/app");
-    await screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", `Settings of ${workspace}`)
-      .tap();
+    await app.open(`/${slug}/settings`);
 
     await expect(
       screen.getByRole("heading", "General", { level: 1 })
@@ -295,7 +275,7 @@ describe("a new member's first post", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/app/${workspaceId}/settings`);
+    await app.open(`/${slug}/settings`);
     // Webhooks are PealAPI's: the mode switch opens it at API keys.
     await screen
       .getByRole("navigation", "Mode")
@@ -324,13 +304,13 @@ describe("a new member's first post", { serial: true }, () => {
   });
 
   test("reads the calendar in French", async ({ app, browser, screen }) => {
-    await app.open(`/app/${workspaceId}/calendar`);
-    await screen.getByRole("button", "Language: English").tap();
-    await screen.getByRole("menuitemradio", "Français").tap();
+    // The frame has no language switcher: the address names the language
+    // the browser reads, and the account page the one the account keeps.
+    await app.open(`/fr/${slug}/calendar`);
 
     await expect(screen.getByRole("heading", "Calendrier")).toBeVisible();
     await expect(screen.getByRole("tab", "Semaine")).toBeVisible();
-    await expect(browser).toHaveURL(`/fr/app/${workspaceId}/calendar`);
+    await expect(browser).toHaveURL(`/fr/${slug}/calendar`);
   });
 
   test("keeps French in the account settings", async ({ browser, screen }) => {
@@ -338,9 +318,9 @@ describe("a new member's first post", { serial: true }, () => {
     await screen.getByRole("menuitem", "Paramètres du compte").tap();
 
     await expect(
-      screen.getByRole("heading", "Paramètres du compte", { level: 1 })
+      screen.getByRole("heading", "Compte", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL("/fr/app/account");
+    await expect(browser).toHaveURL("/fr/account");
 
     // The account still keeps English, which it signed up in.
     await screen.getByRole("combobox", "Langue").tap();
@@ -354,13 +334,15 @@ describe("a new member's first post", { serial: true }, () => {
     await screen.getByRole("button", `Compte de ${name}`).tap();
     await screen.getByRole("menuitem", "Se déconnecter").tap();
 
+    // "/" is no page: signed out, it asks to sign in.
+    await expect(browser).toHaveURL("/fr/sign-in");
     await expect(
-      screen.getByRole("heading", "Bienvenue sur Peal")
+      screen.getByRole("main").getByRole("heading", "Se connecter")
     ).toBeVisible();
     await expect(
       screen.getByRole("banner").getByRole("link", "Se connecter")
     ).toBeVisible();
-    await app.open("/fr/app");
+    await app.open("/fr");
     await expect(browser).toHaveURL("/fr/sign-in");
   });
 
@@ -376,8 +358,7 @@ describe("a new member's first post", { serial: true }, () => {
     await screen.getByLabel("Password").fill(password());
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
 
-    await expect(screen.getByRole("heading", `Bonjour, ${name}`)).toBeVisible();
-    await expect(browser).toHaveURL("/fr/app");
+    await expect(browser).toHaveURL(`/fr/${slug}`, { timeout: 30_000 });
   });
 
   test("lets the invited member sign up and join", async ({
@@ -402,9 +383,10 @@ describe("a new member's first post", { serial: true }, () => {
     await browser.goto(invitationLink);
     await screen.getByRole("button", "Accept the invitation").tap();
 
-    const links = screen.getByRole("navigation", `Posts of ${workspace}`);
-
-    await expect(links.getByRole("link", "New post")).toBeVisible();
-    await expect(browser).toHaveURL("/app");
+    // Joined, the guest has the workspace and none of their own.
+    await expect(browser).toHaveURL(`/${slug}`, { timeout: 30_000 });
+    await expect(screen.getByRole("button", "Switch workspace")).toContainText(
+      workspace
+    );
   });
 });

@@ -7,8 +7,8 @@ import { useTranslations } from "next-intl";
 import type { OAuthSitePlatform, SiteSignInCallback } from "peal-contract";
 import { Alert, AlertDescription, AlertTitle } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { toast } from "sonner";
 
 import { useChannelErrorText } from "#channels/channel-error-text.ts";
 import { completeSiteSignIn, failureOf } from "#channels/channels-api.ts";
@@ -18,6 +18,7 @@ import {
   pendingWorkspace,
 } from "#channels/pending-connection.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 
 const ignoreChanges = () => constVoid;
@@ -41,6 +42,7 @@ export const CompleteSiteSignIn = ({
   callback,
   platform,
 }: CompleteSiteSignInProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("ConnectCallbackPage");
   const errors = useChannelErrorText();
   const router = useRouter();
@@ -81,7 +83,7 @@ export const CompleteSiteSignIn = ({
 
       if (exit._tag === "Success") {
         toast.success(t("connected", { handle: exit.value.handle }));
-        router.replace(`/app/${workspace}/channels`);
+        router.replace(workspaceHref(workspace, "/channels"));
 
         return;
       }
@@ -94,7 +96,16 @@ export const CompleteSiteSignIn = ({
     };
 
     void finish(workspaceId, callback);
-  }, [callback, complete, offerUpgrade, platform, router, t, workspaceId]);
+  }, [
+    callback,
+    complete,
+    offerUpgrade,
+    platform,
+    router,
+    t,
+    workspaceHref,
+    workspaceId,
+  ]);
 
   const failed = (message: string, workspace: string | null) => (
     <div className="flex flex-col gap-4">
@@ -106,7 +117,9 @@ export const CompleteSiteSignIn = ({
         variant="outline"
         render={
           <Link
-            href={workspace === null ? "/app" : `/app/${workspace}/channels`}
+            href={
+              workspace === null ? "/" : workspaceHref(workspace, "/channels")
+            }
           />
         }
       >

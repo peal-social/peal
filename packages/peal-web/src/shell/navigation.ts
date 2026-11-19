@@ -1,5 +1,7 @@
 import type { Permission } from "peal-contract";
 
+import { workspacePath } from "#shell/workspace-path.ts";
+
 /**
  * The two modes of a workspace's frame (DESIGN.md): PealStudio runs its
  * channels and posts; PealAPI builds on the API. A page belongs to one, so
@@ -49,7 +51,7 @@ export type Detail = "article" | "newArticle" | "newPost" | "post" | "thread";
 export type Group = "build" | "engage" | "partners";
 
 interface PageRule {
-  /** Under /app/<workspace>; "" is the section's own address. */
+  /** Under /<workspace>; "" is the section's own address. */
   readonly path: string;
   readonly mode: Mode;
   readonly section?: Section;
@@ -284,9 +286,9 @@ export interface Navigation {
   };
 }
 
-/** Where a page is, for a workspace. */
-export const hrefOf = (workspaceId: string, page: Page): string =>
-  `/app/${workspaceId}${pages[page].path}`;
+/** Where a page is, for a workspace, by its slug. */
+export const hrefOf = (workspace: string, page: Page): string =>
+  workspacePath(workspace, pages[page].path);
 
 /** The page a path shows, and which page under it, if any. */
 interface PageAt {
@@ -335,6 +337,50 @@ const pageAt = (path: string): PageAt => {
   return { detail: null, page: null };
 };
 
+/** A page the command menu opens. */
+export interface PageLink {
+  readonly page: Page;
+  readonly href: string;
+  readonly mode: Mode;
+  readonly section: Section | null;
+}
+
+// Every page in the order the menu lists them: PealStudio's top level
+// with its sections' pages after it, then PealAPI's.
+const menuOrder: readonly Page[] = [
+  ...new Set([
+    ...layout.studio.flatMap(({ pages: listed }) => listed),
+    ...sectionPages.posts,
+    ...sectionPages.settings,
+    ...layout.api.flatMap(({ pages: listed }) => listed),
+  ]),
+];
+
+/** Every page of the workspace a member with these permissions may open. */
+export const pageLinksOf = ({
+  permissions,
+  workspace,
+}: {
+  readonly permissions: readonly Permission[];
+  /** The workspace's slug. */
+  readonly workspace: string;
+}): readonly PageLink[] => {
+  const may = new Set(permissions);
+
+  return menuOrder.flatMap((page) =>
+    pages[page].may(may)
+      ? [
+          {
+            href: hrefOf(workspace, page),
+            mode: pages[page].mode,
+            page,
+            section: pages[page].section ?? null,
+          },
+        ]
+      : []
+  );
+};
+
 /**
  * The frame's navigation for a path (without its locale), in the
  * workspace, for a member with these permissions: the pages they may open,
@@ -343,14 +389,15 @@ const pageAt = (path: string): PageAt => {
 export const navigationOf = ({
   pathname,
   permissions,
-  workspaceId,
+  workspace,
 }: {
   readonly pathname: string;
   readonly permissions: readonly Permission[];
-  readonly workspaceId: string;
+  /** The workspace's slug, as its addresses write it. */
+  readonly workspace: string;
 }): Navigation => {
   const may = new Set(permissions);
-  const base = `/app/${workspaceId}`;
+  const base = workspacePath(workspace);
   const inside = pathname === base || pathname.startsWith(`${base}/`);
   const path = inside ? pathname.slice(base.length) : null;
 
@@ -363,7 +410,7 @@ export const navigationOf = ({
 
   const linkOf = (page: Page, opens: Section | null): Link => ({
     current: opens === null ? page === current : section === opens,
-    href: hrefOf(workspaceId, page),
+    href: hrefOf(workspace, page),
     opens,
     page,
   });
@@ -387,7 +434,7 @@ export const navigationOf = ({
       .flatMap(({ pages: listed }) => listed)
       .find(allowed);
 
-    return page === undefined ? null : hrefOf(workspaceId, page);
+    return page === undefined ? null : hrefOf(workspace, page);
   };
 
   return {

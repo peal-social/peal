@@ -37,7 +37,7 @@ const useChoosing = (measurement: MeasurementConsent | null) => {
 };
 
 /**
- * The question on the personal home, while the person has not chosen and
+ * The question on a workspace's home, while the person has not chosen and
  * the web app measures: it leaves once answered. Never where the browser
  * asks not to be tracked, as nothing is measured there.
  */

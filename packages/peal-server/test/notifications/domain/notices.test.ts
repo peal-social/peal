@@ -211,7 +211,7 @@ describe("notice events", () => {
       Option.some("channelReconnect")
     );
     expect(pageOf(events.MessagesTurnedOff, workspaceId)).toBe(
-      `/app/${workspaceId}/inbox`
+      `/${workspaceId}/inbox`
     );
   });
 
@@ -233,7 +233,7 @@ describe("notice events", () => {
       events.XSpendCeiling,
     ]) {
       expect(audienceOf(billing)).toBe("billing:manage");
-      expect(pageOf(billing, workspaceId)).toBe(`/app/${workspaceId}/billing`);
+      expect(pageOf(billing, workspaceId)).toBe(`/${workspaceId}/billing`);
     }
   });
 
@@ -252,7 +252,7 @@ describe("notice events", () => {
       "webhook:manage"
     );
     expect(pageOf(events.WebhookEndpointDisabled, workspaceId)).toBe(
-      `/app/${workspaceId}/settings/webhooks`
+      `/${workspaceId}/settings/webhooks`
     );
     expect(wantsEmail(nothing, events.WebhookEndpointDisabled)).toBeTruthy();
   });
@@ -265,7 +265,7 @@ describe("notice events", () => {
     expect(audienceOf(events.RecyclingEnded)).toBe("post:schedule");
     expect(isAboutPost(events.RecyclingEnded)).toBeTruthy();
     expect(pageOf(events.RecyclingEnded, workspaceId)).toBe(
-      `/app/${workspaceId}/settings/recycling?rule=00000000-0000-7000-8000-00000000ec01`
+      `/${workspaceId}/settings/recycling?rule=00000000-0000-7000-8000-00000000ec01`
     );
     expect(wantsEmail(defaultPreferences, events.RecyclingEnded)).toBeTruthy();
     expect(wantsEmail(off, events.RecyclingEnded)).toBeFalsy();
@@ -279,7 +279,7 @@ describe("notice events", () => {
     expect(audienceOf(events.FeedStopped)).toBe("post:schedule");
     expect(isAboutPost(events.FeedStopped)).toBeTruthy();
     expect(pageOf(events.FeedStopped, workspaceId)).toBe(
-      `/app/${workspaceId}/settings/feeds?feed=00000000-0000-7000-8000-00000000fe01`
+      `/${workspaceId}/settings/feeds?feed=00000000-0000-7000-8000-00000000fe01`
     );
     expect(wantsEmail(defaultPreferences, events.FeedStopped)).toBeTruthy();
     expect(wantsEmail(off, events.FeedStopped)).toBeFalsy();
@@ -300,7 +300,7 @@ describe("notice events", () => {
       turnedOff: wantsEmail(off, event),
     });
 
-    const followUps = `/app/${workspaceId}/settings/follow-ups?rule=00000000-0000-7000-8000-00000000f001`;
+    const followUps = `/${workspaceId}/settings/follow-ups?rule=00000000-0000-7000-8000-00000000f001`;
 
     expect([
       told(events.FollowUpsNotSent),
@@ -330,7 +330,7 @@ describe("notice events", () => {
         audience: "engagement:reply",
         byDefault: true,
         email: Option.some("automations"),
-        page: `/app/${workspaceId}/settings/comment-rules`,
+        page: `/${workspaceId}/settings/comment-rules`,
         reader: "engagement:read",
         turnedOff: false,
       },
@@ -344,7 +344,7 @@ describe("notice events", () => {
 
     expect(audienceOf(events.WebhookDeliveriesFailing)).toBe("webhook:manage");
     expect(pageOf(events.WebhookDeliveriesFailing, workspaceId)).toBe(
-      `/app/${workspaceId}/settings/webhooks`
+      `/${workspaceId}/settings/webhooks`
     );
     expect(
       wantsEmail(defaultPreferences, events.WebhookDeliveriesFailing)
@@ -365,10 +365,10 @@ describe("notice events", () => {
     expect(audienceOf(events.AdBoostChanged)).toBe("ads:authorize");
     expect(audienceOf(events.AdConnectionReconnectRequired)).toBe("ads:manage");
     expect(pageOf(events.AdBoostChanged, workspaceId)).toBe(
-      `/app/${workspaceId}/posts/00000000-0000-7000-8000-000000000062`
+      `/${workspaceId}/posts/00000000-0000-7000-8000-000000000062`
     );
     expect(pageOf(events.AdConnectionReconnectRequired, workspaceId)).toBe(
-      `/app/${workspaceId}/ads`
+      `/${workspaceId}/ads`
     );
     expect([
       wantsEmail(nothing, events.AdBoostChanged),
@@ -402,10 +402,10 @@ describe("notice events", () => {
 
   it("link to the page where they are acted on", () => {
     expect(pageOf(events.ChannelReconnectSoon, workspaceId)).toBe(
-      `/app/${workspaceId}/channels`
+      `/${workspaceId}/channels`
     );
     expect(pageOf(events.PostFailed, workspaceId)).toBe(
-      `/app/${workspaceId}/posts/${postId}`
+      `/${workspaceId}/posts/${postId}`
     );
   });
 });

@@ -29,7 +29,7 @@ export const AcceptInvitation = ({
       });
 
       if (result.error === null) {
-        router.push("/app");
+        router.push("/");
         router.refresh();
       } else {
         setFailed(

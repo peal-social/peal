@@ -11,7 +11,7 @@ import { publicUrlConfig } from "#shared/infrastructure/environment.ts";
 export const billingUrlOf = (
   publicUrl: string,
   workspaceId: WorkspaceId
-): string => `${publicUrl}/app/${workspaceId}/billing`;
+): string => `${publicUrl}/${workspaceId}/billing`;
 
 /**
  * Upgrade paths from each workspace's plan, as billing holds it, and the

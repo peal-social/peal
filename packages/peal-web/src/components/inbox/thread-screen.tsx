@@ -35,13 +35,14 @@ import {
   DialogTrigger,
 } from "peal-ui/components/dialog";
 import { Skeleton } from "peal-ui/components/skeleton";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
 
 import { channelsOf } from "#channels/channels-api.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import {
   confirmInboxReply,
@@ -728,6 +729,7 @@ const LoadedThread = ({
   readonly onRefresh: () => void;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Inbox");
   const listId = useId();
   // The replies this page sent, until the thread lists them itself.
@@ -766,7 +768,7 @@ const LoadedThread = ({
       {mayReply ? (
         <ReplyAbilityNotice
           channels={appLink(
-            `/app/${workspaceId}/channels`,
+            workspaceHref(workspaceId, "/channels"),
             t("abilities.channels")
           )}
           disconnected={detail.platform === null}
@@ -779,7 +781,10 @@ const LoadedThread = ({
         <p className="text-muted-foreground text-sm">
           {t.rich("privateReply.reconnect", {
             settings: () =>
-              appLink(`/app/${workspaceId}/inbox`, t("privateReply.settings")),
+              appLink(
+                workspaceHref(workspaceId, "/inbox"),
+                t("privateReply.settings")
+              ),
           })}
         </p>
       ) : null}

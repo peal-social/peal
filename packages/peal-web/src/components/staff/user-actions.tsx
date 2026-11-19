@@ -24,9 +24,9 @@ import {
   SelectValue,
 } from "peal-ui/components/select";
 import { Textarea } from "peal-ui/components/textarea";
+import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { ChangeEvent, ReactNode } from "react";
-import { toast } from "sonner";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { useRouter } from "#i18n/navigation.ts";
@@ -225,7 +225,7 @@ export const UserActions = ({
 
   // Signed in as the account: its own pages, which show the banner.
   const openTheirApp = () => {
-    router.push("/app");
+    router.push("/");
     router.refresh();
   };
 

@@ -23,12 +23,16 @@ import { useMemo, useState } from "react";
 import { enUS, fr } from "react-day-picker/locale";
 
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
+import { readPhrase } from "#posts/date-phrase.ts";
+import type { NumericOrder } from "#posts/date-phrase.ts";
 import {
   browserTimeZone,
   firstDayOfWeek,
   instantOf,
   parseTime,
+  timeKey,
   timeZoneChoices,
+  wallClockOf,
 } from "#posts/zoned-time.ts";
 import type { CalendarDate } from "#posts/zoned-time.ts";
 
@@ -58,6 +62,128 @@ const fromPickerDate = (date: Date): CalendarDate => ({
 });
 
 const zoneLabel = (zone: string) => zone.replaceAll("_", " ");
+
+/**
+ * What a phrase would set, read now on the choice's clock: the choice it
+ * makes (its time kept when the phrase gives none) and the instant, or why
+ * it cannot: not understood, or already past.
+ */
+export const choiceOfPhrase = (
+  phrase: string,
+  value: ScheduleChoice,
+  order: NumericOrder,
+  now: DateTime.DateTime
+):
+  | { readonly kind: "empty" }
+  | { readonly kind: "unread" }
+  | { readonly kind: "past"; readonly at: DateTime.Utc }
+  | {
+      readonly kind: "read";
+      readonly at: DateTime.Utc;
+      readonly choice: ScheduleChoice;
+    } => {
+  if (phrase.trim() === "") {
+    return { kind: "empty" };
+  }
+
+  const read = wallClockOf(now, value.timeZone).pipe(
+    Option.flatMap((clock) => readPhrase(phrase, clock, order)),
+    Option.map(({ date, time }): ScheduleChoice => ({
+      ...value,
+      date,
+      time: Option.match(time, {
+        onNone: () => value.time,
+        onSome: timeKey,
+      }),
+    })),
+    Option.flatMap((choice) =>
+      instantOfChoice(choice).pipe(Option.map((at) => ({ at, choice })))
+    )
+  );
+
+  return Option.match(read, {
+    onNone: () => ({ kind: "unread" }),
+    onSome: ({ at, choice }) =>
+      DateTime.isGreaterThan(at, now)
+        ? { at, choice, kind: "read" }
+        : { at, kind: "past" },
+  });
+};
+
+// A date typed in words, above the pickers: what it reads as shows as it
+// is typed, and Enter sets the pickers to it.
+const SchedulePhrase = ({ disabled, onChange, value }: ScheduleFieldsProps) => {
+  const t = useTranslations("Posts.Composer");
+  const format = useFormatter();
+  const locale = useLocale();
+  const timeOptions = useTimeOptions();
+  const [phrase, setPhrase] = useState("");
+
+  const now = DateTime.nowUnsafe();
+  const order: NumericOrder = locale === "en" ? "monthFirst" : "dayFirst";
+  const read = choiceOfPhrase(phrase, value, order, now);
+
+  const said = (at: DateTime.Utc) =>
+    format.dateTime(DateTime.toDate(at), {
+      dateStyle: "full",
+      timeStyle: "short",
+      timeZone: value.timeZone,
+      ...timeOptions,
+    });
+
+  const status = (() => {
+    if (read.kind === "empty") {
+      return t("phraseHint");
+    }
+
+    if (read.kind === "unread") {
+      return t("phraseUnread");
+    }
+
+    return read.kind === "past"
+      ? t("phrasePast", { at: said(read.at) })
+      : t("phraseRead", {
+          at: said(read.at),
+          distance: format.relativeTime(DateTime.toDate(read.at), {
+            now: DateTime.toDate(now),
+          }),
+        });
+  })();
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="schedule-phrase">{t("phraseLabel")}</Label>
+      <Input
+        id="schedule-phrase"
+        value={phrase}
+        disabled={disabled}
+        autoComplete="off"
+        placeholder={t("phrasePlaceholder")}
+        aria-describedby="schedule-phrase-status"
+        onChange={(event) => {
+          setPhrase(event.target.value);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+
+            if (read.kind === "read") {
+              onChange(read.choice);
+              setPhrase("");
+            }
+          }
+        }}
+      />
+      <p
+        id="schedule-phrase-status"
+        aria-live="polite"
+        className="text-muted-foreground text-sm"
+      >
+        {status}
+      </p>
+    </div>
+  );
+};
 
 interface ScheduleFieldsProps {
   readonly disabled: boolean;
@@ -92,6 +218,7 @@ export const ScheduleFields = ({
 
   return (
     <div className="flex flex-col gap-4">
+      <SchedulePhrase disabled={disabled} onChange={onChange} value={value} />
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-2">
           <Label id="schedule-date-label">{t("dateLabel")}</Label>

@@ -17,8 +17,8 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
-import { toast } from "sonner";
 
 import { reconnectChannel } from "#channels/channels-api.ts";
 import { rememberConnection } from "#channels/pending-connection.ts";
@@ -27,6 +27,7 @@ import {
   SettingsLoadFailed,
   SettingsLoading,
 } from "#components/settings/settings-status.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import {
   approveFollowUp,
   followUpsChanged,
@@ -160,6 +161,7 @@ const RuleList = ({
   readonly mayChange: boolean;
   readonly workspaceId: string;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("FollowUps");
   const query = workspaceFollowUps(workspaceId);
   const result = useAtomValue(query);
@@ -222,7 +224,7 @@ const RuleList = ({
               t("onChannel")
             ) : (
               <Link
-                href={`/app/${workspaceId}/posts/${rule.postId}`}
+                href={workspaceHref(workspaceId, `/posts/${rule.postId}`)}
                 className="underline underline-offset-4"
               >
                 {t("post")}

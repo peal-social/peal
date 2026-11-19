@@ -50,7 +50,7 @@ export const EmailedAccountMail = Layer.effect(
             _tag: "DataExported",
             locale,
             to: email,
-            url: `${home(locale)}/app/account`,
+            url: `${home(locale)}/account`,
             via,
           })
         ).pipe(Effect.asVoid),
@@ -63,7 +63,7 @@ export const EmailedAccountMail = Layer.effect(
             locale,
             recoveryCodesLeft,
             to: email,
-            url: `${home(locale)}/app/account`,
+            url: `${home(locale)}/account`,
           })
         ).pipe(Effect.asVoid),
       workspaceDeleted: ({
@@ -79,7 +79,7 @@ export const EmailedAccountMail = Layer.effect(
             locale,
             subscriptionsCancelled,
             to: email,
-            url: `${home(locale)}/app`,
+            url: home(locale),
             workspaceName,
           })
         ).pipe(Effect.asVoid),

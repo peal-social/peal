@@ -5,7 +5,7 @@ import {
   BellIcon,
   CalendarRangeIcon,
   ChartNoAxesColumnIcon,
-  LayoutDashboardIcon,
+  PlusIcon,
   UserIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -24,12 +24,13 @@ import {
   personalPages,
 } from "#shell/personal.ts";
 import type { PersonalPage } from "#shell/personal.ts";
+import { workspacePath } from "#shell/workspace-path.ts";
 
 const icons: Readonly<Record<PersonalPage, LucideIcon>> = {
   account: UserIcon,
   agenda: CalendarRangeIcon,
+  newWorkspace: PlusIcon,
   notices: BellIcon,
-  overview: LayoutDashboardIcon,
   report: ChartNoAxesColumnIcon,
 };
 
@@ -51,6 +52,7 @@ export const PersonalSidebarView = ({
   readonly workspaces: readonly {
     readonly id: string;
     readonly name: string;
+    readonly slug: string;
   }[];
 }) => {
   const t = useTranslations("PersonalShell");
@@ -65,7 +67,7 @@ export const PersonalSidebarView = ({
         className
       )}
     >
-      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b px-4">
+      <div className="flex h-12 shrink-0 items-center gap-2.5 px-4">
         <span className="bg-card ring-border flex size-7 items-center justify-center rounded-md shadow-xs ring-1">
           <PealMark className="size-4.5" />
         </span>
@@ -97,34 +99,48 @@ export const PersonalSidebarView = ({
             );
           })}
         </div>
-        {workspaces.length === 0 ? null : (
-          <div className="flex flex-col gap-px">
+        <div className="flex flex-col gap-px">
+          {workspaces.length === 0 ? null : (
             <p className="text-muted-foreground px-2.5 pb-1.5 text-xs">
               {t("workspaces")}
             </p>
-            {workspaces.map(({ id, name }) => (
-              <LinkTo
-                key={id}
-                href={`/app/${id}`}
-                className={itemClass}
-                {...followed}
+          )}
+          {workspaces.map(({ id, name, slug }) => (
+            <LinkTo
+              key={id}
+              href={workspacePath(slug)}
+              className={itemClass}
+              {...followed}
+            >
+              <span
+                aria-hidden
+                className="bg-brand-tint text-brand-text flex size-5 shrink-0 items-center justify-center rounded-sm text-xs font-semibold"
               >
-                <span className="bg-brand-tint text-brand-text flex size-5 shrink-0 items-center justify-center rounded-sm text-xs font-semibold">
-                  {name.slice(0, 1).toUpperCase()}
-                </span>
-                <span className="flex-1 truncate">{name}</span>
-              </LinkTo>
-            ))}
-          </div>
-        )}
+                {name.slice(0, 1).toUpperCase()}
+              </span>
+              <span className="flex-1 truncate">{name}</span>
+            </LinkTo>
+          ))}
+          <LinkTo
+            href={personalHrefOf("newWorkspace")}
+            className={itemClass}
+            {...(current === "newWorkspace"
+              ? { "aria-current": "page" as const }
+              : {})}
+            {...followed}
+          >
+            <PlusIcon aria-hidden />
+            <span className="flex-1 truncate">{t("pages.newWorkspace")}</span>
+          </LinkTo>
+        </div>
       </nav>
     </div>
   );
 };
 
 /**
- * The frame of the person's own pages (the workspaces, the agenda, the
- * report, the notices, the account): their sidebar, the top bar, and the
+ * The frame of the person's own pages (the agenda, the report, the
+ * notices, the account, a new workspace): their sidebar, the top bar, and the
  * page's foot.
  */
 export const PersonalShell = ({
@@ -143,6 +159,7 @@ export const PersonalShell = ({
   readonly workspaces: readonly {
     readonly id: string;
     readonly name: string;
+    readonly slug: string;
   }[];
 }) => {
   const t = useTranslations("PersonalShell");

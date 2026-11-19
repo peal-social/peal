@@ -52,11 +52,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   deletion status `data-deletion/[code]`, the page behind a review link
   `review` (no sign-in, noindex; the token is the address's fragment, read
   in the browser), and the signed-in
-  app: `app` (workspaces), `app/agenda`, `app/report`, `app/notices`, `app/notices/preferences`,
-  `app/account` (in the `(personal)` route group), `app/[workspaceId]`
-  (the workspace's home: connecting channels and assistants, a
+  app at the root, in the `(app)` route group: `/` (no page: it opens a
+  workspace, below), `agenda`, `report`, `notices`,
+  `notices/preferences`, `account`, `new` (a new workspace; in the
+  `(personal)` route group), `[workspaceId]` (the workspace's home: the
+  measurement's question, connecting channels and assistants, a
   quickstart), `…/platforms` (PealAPI's, for channel:read),
-  `app/[workspaceId]/channels`, `…/media`, `…/calendar`,
+  `[workspaceId]/channels`, `…/media`, `…/calendar`,
   `…/analytics`, `…/inbox` and `…/inbox/[threadId]` (for `engagement:read`:
   not-found otherwise, as for staff acting as a member), `…/ads`,
   `…/drafts`, `…/posts` (every post, whatever its state, for post:read
@@ -88,25 +90,33 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   must be told (Code du travail, art. L1222-4): keep that notice.
   `ImpersonationBanner`, in `AppShell`, shows while staff act as someone.
 - The signed-in app has its own frame (DESIGN.md, "The frame"):
-  `ShellFrame` leaves every page under `/app` to its layouts (`frameOf`
-  answers `own`). `FrameView` (`components/shell/`) is the frame both
-  draw: a sidebar beside the page (in a `Sheet` on a phone; its links close
-  it through `useCloseMenu`), `TopBarView` (the breadcrumb, **Docs** at
-  `PEAL_DOCS_URL` and **Support** at `PEAL_CONTACT_URL` when set, the
-  language switcher and the account menu) and the contract functions at
-  the foot. `app/[workspaceId]/layout.tsx` gives a workspace's pages
-  `WorkspaceShell`, whose `SidebarView` holds the PealStudio and
-  PealAPI switch with Peal's mark, the mode's pages, a section's pages under a way
-  back, Settings and the workspace switcher; `app/(personal)/layout.tsx`
+  `ShellFrame` leaves every page of the app (`isAppPath`: `/`, the
+  person's pages and a workspace's) to its layouts (`frameOf` answers
+  `own`). `FrameView` (`components/shell/`) is the frame both
+  draw: a sidebar on the page's background (in a `Sheet` on a
+  phone; its links close it through `useCloseMenu`), the page in a white
+  panel under a 48 px header (the breadcrumb, the page's `h1`, its
+  actions), the contract functions closing its content, and a bottom bar
+  across the window: the account menu at its start (`AccountMenuView`),
+  Help (**Docs** at `PEAL_DOCS_URL`, **Support** at `PEAL_CONTACT_URL`
+  when set, the shortcut sheet) and the agent's place, off for now, at
+  its end. `(app)/[workspaceId]/layout.tsx`
+  gives a workspace's pages `WorkspaceShell`, whose `SidebarView` holds,
+  in its head, the workspace switcher, Search (the command menu) and New
+  post, then the PealStudio and PealAPI switch with Peal's mark, the
+  mode's pages, a section's pages under a way back, and Settings;
+  `(app)/(personal)/layout.tsx`
   gives the person's pages `PersonalShell` (their pages, then each
   workspace). Someone signed out, not a member, or who must first turn on
   two-step verification, gets the app's `PlainFrame`. Which workspace pages
   exist, their mode, their section and the permission each asks is one
   table, `#shell/navigation.ts` (`navigationOf`, tested): add a workspace
   page there, with its name in `WorkspaceShell.pages`; the person's are in
-  `#shell/personal.ts`. Settings pages without a heading of their own get
-  the page's name from `PageHeading`. Page titles are `text-2xl`; a list
-  page puts its actions at the end of its filters' row, and its items in
+  `#shell/personal.ts`. The frame's panel header holds the page's one
+  `h1`, its name: a page draws no title or description of its own, puts
+  its main actions in `PageActions` (small ghost buttons, icon first) and,
+  where it opens one item, names it with `PageTitle`
+  (`components/shell/frame-view.tsx`). A list page puts its items in
   one bordered list with a line between them, never a card each.
 - The workspace's home builds each assistant's setup (`#home/agents.ts`,
   tested) from the MCP endpoint at the address the browser has Peal open
@@ -126,24 +136,51 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   them without cookies, each error once, ten a page at most. The release
   comes from `PEAL_RELEASE`, through the locale layout's `peal-release`
   meta tag.
-- The signed-in home (`app`) reads `GET /api/me/overview` on the server
-  with the request's cookies (`overviewOrNothing`, `#overview/server.ts`,
-  as `currentUser()` reads `/api/me`), a page at a time, 20 at most, each
-  within 5 seconds and all within 8 (`overviewPages`, `#overview/pages.ts`,
-  `homeBudget`): the pages read before one that fails, or before the
-  budget runs out, are kept, and the cards the others hold show their
-  links alone, never an error. Each card gains what needs attention
-  (`WorkspaceAttentionView`, `components/overview/overview-views.tsx`,
-  links as props), from `attentionOf` (`#overview/attention.ts`): a link
-  to the page that shows each, "Nothing needs attention." once where
-  nothing does, never a row of zeros, nothing for a section the role may
-  not read, and nothing for a workspace that refuses the person, whose
-  card keeps its two-step badge. Cards with something to attend come
-  first (`byAttention`). `app/agenda` lists the next 14 days across
+- A workspace's pages are `/<slug>/…` (`/fr/<slug>/…`), beside the app's
+  other pages at the root: the folder is `(app)/[workspaceId]`, but its
+  segment is the workspace's slug (or its id, as the server's emails and
+  notices write it: `workspaceAt`, `#shell/workspace-path.ts`). Next
+  routes a static segment before the dynamic one, and no slug may be one:
+  `reservedWorkspaceSlugs` (`peal-contract/workspace-slug`) holds every
+  first segment the app routes, which `test/shell/reserved-segments.test.ts`
+  reads from `src/app`, so a new page at the root goes there too.
+  Pages resolve it with `viewerOf`/`membershipOf` (`#posts/membership.ts`)
+  or `workspaceAt`, and call the API with the membership's `id`, never the
+  segment. Write a workspace's address with `workspacePath(slug, rest)` on
+  the server and `useWorkspaceHref()(workspaceId, rest)` in components
+  (`components/shell/workspace-addresses.tsx`: the `(app)` layout gives
+  every page the person's workspaces, by id and slug; outside the app it
+  falls back to the id), never by hand. `src/proxy.ts` sends an address
+  that names a workspace by its id (`/<id>/…`) to the same page under its
+  slug (308, `slugAddressOf`, once `/api/me` says whose it is), as the
+  server's emails and notices link by id. A slug is
+  `peal-contract/workspace-slug`'s (`isWorkspaceSlug`: lower-case words,
+  never `reservedWorkspaceSlugs` nor an id's shape), set once: the server refuses another (Better Auth's hooks,
+  `INVALID_WORKSPACE_SLUG`) and any change (`WORKSPACE_SLUG_FIXED`);
+  renaming keeps it. A new workspace tries its name's words, then the
+  words and a random tail (`slugsToTry`, `#workspaces/new-workspace.ts`).
+  Error reports and the measurement's patterns write the slug's segment
+  `:id` (`pathOf`), as it holds the workspace's name.
+- `/` is no page: for someone signed in it redirects to the workspace Better Auth keeps
+  active on the session (`activeWorkspaceOf`, `#auth/active-workspace.ts`,
+  read only for someone with several), else the first (`homeWorkspaceOf`);
+  someone signed out is sent to sign in.
+  Every way in lands there: sign-in's default `next`, sign-up, a confirmed
+  address, an accepted invitation, the OAuth pages. Someone with none gets
+  `FirstWorkspace` (`components/first-workspace.tsx`): an invitation still
+  open opens instead (`openInvitationOf`), as on a server by invitation;
+  otherwise it creates, once, the workspace named after the first word of
+  their name in their account's language (`AppPage.defaultName`), under
+  a slug ending in their id's first characters, so two tabs make one,
+  then opens it; staff acting as someone are sent to the account page.
+  Another workspace is made at `new` (the switcher's and the
+  person's sidebar's **New workspace**), which opens it once made. The
+  server's `GET /api/me/overview` (what needs attention in each workspace)
+  has no page any more; the CLI and the API still read it. `agenda` lists the next 14 days across
   workspaces (`AgendaScreen`, after hydration: the visitor's cookies, the
   current time and their zone), grouped by day, a filter by workspace and
   **Load more**: a list, never the week's grid, as nothing is moved across
-  workspaces. `app/report` (`ReportScreen`, in the reader's zone) is the
+  workspaces. `report` (`ReportScreen`, in the reader's zone) is the
   report across workspaces as a table only, never a chart, as counts of
   different platforms are not alike, which it says in one line: each
   total with its change (`reportRowOf`, `#overview/report.ts`), a dash
@@ -151,10 +188,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   range switch and **Download CSV** (`/api/me/report/export`). Strings in
   `Overview`.
 - Usage measurement (`#measurement/*`, `components/measurement/`, the
-  `Measurement` catalogue): the `app` layout wraps every page under `/app`
+  `Measurement` catalogue): the `(app)` layout wraps every page of the app
   in `Measurement` only where `GET /api/me` answers `browserAnalytics`
   (the server measures for this person: never for staff acting as them).
-  `modeOf` decides each page: `off` (outside `/app`, an excluded
+  `modeOf` decides each page: `off` (outside the app, `isAppPath`, an excluded
   workspace, Do Not Track or Global Privacy Control), `anonymous` (page
   views in memory, nothing kept, no person, no workspace, no recording)
   or `identified` (once the person allowed it: their id, the workspace,
@@ -202,8 +239,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   PostHog project's authorized domains for replay: the relay sends no
   `Origin` or `Referer`, so PostHog would turn replay off, and the app
   records its signed-in pages alone anyway. The choice lives on the account
-  (`PUT /api/me/browser-analytics/consent`): `ConsentCard` on the
-  personal home while undecided, `ConsentSetting` on the account page.
+  (`PUT /api/me/browser-analytics/consent`): `ConsentCard` on a
+  workspace's home while undecided, `ConsentSetting` on the account page.
 - Pages fetch through the client derived from `peal-contract`, with
   `@effect/atom-react`: query atoms come from `PealApi` in `src/api/client.ts`.
   Browsers call `/api`; server code calls `PEAL_API_URL`.
@@ -243,10 +280,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   browser's on the shared provider once the page has hydrated, so every
   page's dates follow it. `InTimeZone` (`components/notices/in-time-zone.tsx`)
   sets a given zone on part of a page.
-- The header's `NotificationBell`, beside the account menu, polls
-  `GET /api/me/notices/unread` every 30 seconds while the tab is visible and
-  when it is shown again (`useRefreshWhileVisible`), and announces arrivals
-  in a status region. Polling works through any proxy and needs nothing
+- The account menu at the bottom bar's start (`AccountMenuView`, the
+  person's avatar with a dot while notices wait unread, and their count
+  beside Notifications) polls `GET /api/me/notices/unread` every 30
+  seconds while the tab is visible and when it is shown again
+  (`useUnreadNotices`, `useRefreshWhileVisible`), and announces arrivals
+  in a status region. The frame has no bell and no language switcher:
+  the language is chosen on the account page. Polling works through any proxy and needs nothing
   shared between servers; keep it. Write notices from their events with
   `src/notices/notice-text.ts`.
 - The composer's parts after the first (`FollowUpParts`) are a thread or
@@ -641,8 +681,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   member who cannot order, who can; past what any plan holds, how to ask
   for more (`PEAL_CONTACT_URL`). No plan, period or trial is ever
   offered. `UpgradePrompts` puts it around a workspace's pages
-  (`app/[workspaceId]/layout.tsx`), the workspaces list and the connect
-  callback. A place that sends something a plan can refuse calls
+  (`(app)/[workspaceId]/layout.tsx`), the new workspace's page and the
+  connect callback. A place that sends something a plan can refuse calls
   `useOfferUpgrade()(exit)` (`useOfferAuthUpgrade` for Better Auth's
   errors), or renders `OfferUpgrade` with the failure it keeps in state,
   beside its own message: add it to every new such place. The same
@@ -870,7 +910,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   URI and the recovery codes stay in component state, sent nowhere but to
   Better Auth's routes, never logged. A workspace that requires it shows
   `TwoStepRequiredNotice` instead of its pages to a member without it
-  (`app/[workspaceId]/layout.tsx`); a 403 `twoStepRequired` met later is
+  (`(app)/[workspaceId]/layout.tsx`); a 403 `twoStepRequired` met later is
   read once, in the API client (`#two-step/refusals.ts`), and
   `TwoStepRefusalWatch` reads the page again. The owners' switch is
   `settings/security`.

@@ -1,0 +1,59 @@
+import { describe, expect, it } from "@effect/vitest";
+
+import { goKeys, listKeys, newPostKey, selectionKeys } from "#shell/keys.ts";
+import { shortcutGroupsOf } from "#shell/shortcut-sheet.ts";
+
+const rowsOf = (groups: ReturnType<typeof shortcutGroupsOf>) =>
+  groups.flatMap(({ rows }) => rows);
+
+const actionsOf = (canCreate: boolean) =>
+  rowsOf(shortcutGroupsOf({ canCreate, pages: [] })).map(
+    ({ action }) => action
+  );
+
+describe(shortcutGroupsOf, () => {
+  it("lists Go to only for the member's pages that have a key", () => {
+    const groups = shortcutGroupsOf({
+      canCreate: true,
+      pages: ["home", "channels", "posts"],
+    });
+
+    expect(
+      groups
+        .find(({ name }) => name === "goTo")
+        ?.rows.map(({ keys, page }) => [page, keys.join(" ")])
+    ).toStrictEqual([
+      ["home", "g h"],
+      ["posts", "g p"],
+    ]);
+  });
+
+  it("offers New post only to a member who may write one", () => {
+    expect([
+      actionsOf(true).includes("newPost"),
+      actionsOf(false).includes("newPost"),
+    ]).toStrictEqual([true, false]);
+  });
+
+  it("gives every line a key of its own", () => {
+    const keys = rowsOf(
+      shortcutGroupsOf({ canCreate: true, pages: ["home", "posts"] })
+    ).flatMap(({ alternate, keys: pressed }) => [
+      pressed.join(" "),
+      ...(alternate === undefined ? [] : [alternate]),
+    ]);
+
+    expect(keys).toHaveLength(new Set(keys).size);
+  });
+
+  it("never binds a list's key to G, New post or a G sequence's second key", () => {
+    const taken = new Set(["g", newPostKey, ...Object.values(goKeys)]);
+
+    const clashes = [
+      ...Object.values(listKeys),
+      ...Object.values(selectionKeys),
+    ].filter((key) => taken.has(key));
+
+    expect(clashes).toStrictEqual([]);
+  });
+});

@@ -16,10 +16,10 @@ import { Button } from "peal-ui/components/button";
 import { Label } from "peal-ui/components/label";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { Textarea } from "peal-ui/components/textarea";
+import { toast } from "peal-ui/components/toast";
 import { useId, useRef, useState } from "react";
 import type { Ref } from "react";
 import { flushSync } from "react-dom";
-import { toast } from "sonner";
 
 import { MediaThumbnail } from "#components/media/media-thumbnail.tsx";
 import { MediaUploader } from "#components/media/media-uploader.tsx";

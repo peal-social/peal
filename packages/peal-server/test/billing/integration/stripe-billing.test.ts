@@ -1033,7 +1033,7 @@ layer(BillingIntegration, {
         // pricing, the only plan sold.
         assert.deepStrictEqual(yield* bodyOf(LimitErrorSchema, third), {
           allowed: 3,
-          billingUrl: `http://localhost:3001/app/${workspaceId}/billing`,
+          billingUrl: `http://localhost:3001/${workspaceId}/billing`,
           code: "MEMBER_LIMIT_REACHED",
           limit: "members",
           plan: "starter",
@@ -1934,7 +1934,7 @@ layer(BillingIntegration, {
       assert.deepInclude(refused.body, {
         _tag: "PlanLimitReached",
         allowed: 1_000_000_000,
-        billingUrl: `http://localhost:3001/app/${workspaceId}/billing`,
+        billingUrl: `http://localhost:3001/${workspaceId}/billing`,
         code: "plan_limit_reached",
         limit: "mediaStorage",
         plan: "free",

@@ -15,15 +15,16 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
 import type { ReactNode, SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { authClient } from "#auth/client.ts";
 import { FormField } from "#components/auth/form-field.tsx";
 import { useMeasurementSignOut } from "#components/measurement/measurement.tsx";
 import { SettingsError } from "#components/settings/settings-error.tsx";
 import { SubscriptionCancellation } from "#components/settings/subscription-cancellation.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 import { deleteAccount } from "#settings/atoms.ts";
 import { apiErrorKey, subscriptionsToCancel } from "#settings/errors.ts";
@@ -44,6 +45,7 @@ export const LastOwnerOf = ({
 }: {
   readonly workspaces: readonly Workspace[];
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("AccountSettings.delete");
 
   return (
@@ -56,7 +58,7 @@ export const LastOwnerOf = ({
             {workspaces.map((workspace) => (
               <li key={workspace.id}>
                 <Link
-                  href={`/app/${workspace.id}/settings/members`}
+                  href={workspaceHref(workspace.id, "/settings/members")}
                   className="underline underline-offset-4"
                 >
                   {workspace.name}
@@ -83,6 +85,7 @@ export const DeleteAccount = ({
 }: {
   readonly legalHold: ReactNode;
 }) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("AccountSettings.delete");
   const fields = useTranslations("Auth");
   const settings = useTranslations("Settings");
@@ -180,7 +183,7 @@ export const DeleteAccount = ({
                   billed,
                   <Link
                     key={billed}
-                    href={`/app/${billed}/billing`}
+                    href={workspaceHref(billed, "/billing")}
                     className="underline underline-offset-4"
                   >
                     {t("billingPage")}

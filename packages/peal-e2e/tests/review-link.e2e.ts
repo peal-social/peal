@@ -5,6 +5,7 @@ import { credentials, expect } from "e2e";
 
 import { confirmedAccount } from "./support/accounts.ts";
 import { seedChannel } from "./support/channels.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // An owner asks that every post waits for an approval, writes one, and
 // sends a reviewer without an account a link: the reviewer comments and
@@ -14,7 +15,6 @@ import { seedChannel } from "./support/channels.ts";
 const run = randomUUID();
 const name = "Robin Owner";
 const reviewer = "Ada Reviewer";
-const workspace = "Review Studio";
 const handle = "@review@social.example";
 const text = "A synthetic post a client approves before it goes out.";
 const remark = "<b>Friday</b> works for us.";
@@ -27,6 +27,7 @@ const address = () =>
 const password = "synthetic review link password";
 
 let workspaceId = "";
+let slug = "";
 
 // The link the owner copies, which the reviewer opens.
 let link = "";
@@ -46,21 +47,11 @@ describe("a review link", { serial: true }, () => {
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password);
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
-    await screen.getByLabel("Workspace name").fill(workspace);
-    await screen.getByRole("button", "Create the workspace").tap();
-
-    const calendar = screen
-      .getByRole("navigation", `Posts of ${workspace}`)
-      .getByRole("link", "Calendar");
-
-    const href = (await calendar.getAttribute("href")) ?? "";
-
-    workspaceId =
-      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+    ({ id: workspaceId, slug } = await openedWorkspace(browser));
     expect(workspaceId).not.toBe("");
 
     await seedChannel(workspaceId, handle);
-    await app.open(`/app/${workspaceId}/settings`);
+    await app.open(`/${slug}/settings`);
     await screen.getByRole("radio", "Always").check();
     await screen.getByRole("main").getByRole("button", "Save").tap();
 
@@ -75,7 +66,7 @@ describe("a review link", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/app/${workspaceId}/posts/new`);
+    await app.open(`/${slug}/posts/new`);
     await screen.getByRole("checkbox", handle).check();
     await screen.getByRole("textbox", "Text for all channels").fill(text);
     await screen.getByRole("textbox", "Time").fill("23:59");
@@ -93,16 +84,18 @@ describe("a review link", { serial: true }, () => {
     );
 
     postPage = (await waiting.getAttribute("href")) ?? "";
-    expect(postPage).toContain(`/app/${workspaceId}/posts/`);
+    expect(postPage).toContain(`/${slug}/posts/`);
 
     await waiting.tap();
     await expect(
       screen.getByRole("heading", "Post awaiting approval")
     ).toBeVisible();
 
-    // It also shows under "Needs approval".
-    await app.open(`/app/${workspaceId}/approvals`);
-    await expect(screen.getByRole("heading", "Needs approval")).toBeVisible();
+    // It also shows under Approvals.
+    await app.open(`/${slug}/approvals`);
+    await expect(
+      screen.getByRole("heading", "Approvals", { level: 1 })
+    ).toBeVisible();
     await expect(
       screen.getByRole("main").getByRole("link", "Open the post")
     ).toBeVisible();
@@ -165,7 +158,7 @@ describe("a review link", { serial: true }, () => {
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password);
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
-    await expect(screen.getByRole("heading", `Hello, ${name}`)).toBeVisible();
+    await openedWorkspace(browser);
     await app.open(postPage);
 
     await expect(screen.getByRole("heading", "Scheduled post")).toBeVisible();
@@ -182,7 +175,9 @@ describe("a review link", { serial: true }, () => {
       .getByRole("dialog", "Cancel this post?")
       .getByRole("button", "Cancel the post")
       .tap();
-    await expect(screen.getByText("Post cancelled.")).toBeVisible();
+    await expect(
+      screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+    ).toBeVisible();
 
     await browser.clearCookies();
     await browser.goto(link);

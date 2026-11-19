@@ -5,8 +5,8 @@ import { Option } from "effect";
 import { useTranslations } from "next-intl";
 import type { ChoosableAccount, Platform } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import {
   channelsChanged,
@@ -21,6 +21,7 @@ import {
   AccountPickerView,
   toggled,
 } from "#components/channels/account-picker-view.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 
 interface AccountPickerProps {
@@ -38,6 +39,7 @@ export const AccountPicker = ({
   selection,
   workspaceId,
 }: AccountPickerProps) => {
+  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("MetaChannels");
   const router = useRouter();
   const choose = useAtomSet(chooseAccounts, { mode: "promiseExit" });
@@ -61,7 +63,7 @@ export const AccountPicker = ({
 
       if (exit._tag === "Success") {
         toast.success(t("connected", { count: exit.value.length }));
-        router.replace(`/app/${workspaceId}/channels`);
+        router.replace(workspaceHref(workspaceId, "/channels"));
 
         return;
       }
@@ -77,7 +79,7 @@ export const AccountPicker = ({
       cancel={
         <Button
           variant="outline"
-          render={<Link href={`/app/${workspaceId}/channels`} />}
+          render={<Link href={workspaceHref(workspaceId, "/channels")} />}
         >
           {t("cancel")}
         </Button>

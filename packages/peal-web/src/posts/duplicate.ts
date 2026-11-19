@@ -17,7 +17,3 @@ export const duplicateFailureOf = (
 
   return tag === "PostNotFound" ? "notFound" : "other";
 };
-
-/** Where the copy opens: the composer, on the new draft. */
-export const duplicateHref = (workspaceId: string, postId: string): string =>
-  `/app/${workspaceId}/posts/${postId}`;

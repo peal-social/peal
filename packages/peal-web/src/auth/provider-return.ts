@@ -44,8 +44,7 @@ export const signUpReturn = (
   invitationId: string | null,
   localized: (href: string) => string
 ): ProviderReturn => {
-  const landing =
-    invitationId === null ? "/app" : `/invitations/${invitationId}`;
+  const landing = invitationId === null ? "/" : `/invitations/${invitationId}`;
 
   return {
     errorPath: localized(
