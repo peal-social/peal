@@ -3,10 +3,13 @@ import type { E2EConfig } from "e2e";
 
 import config from "./e2e.config.ts";
 
-// The web app's and the site's measurement in WebKit, Safari's engine,
-// which drives history, fetch, cookies and storage on its own terms: the
-// same served app and site as the run in Chromium, for the measurement's
-// journeys alone.
+// The web app's measurement in WebKit, Safari's engine, which drives
+// history, fetch, cookies and storage on its own terms: the same served app
+// as the run in Chromium, for the measurement's journey alone. The site's
+// journeys run in Chromium only: CI's Linux WebKit drops every Secure cookie
+// on its http 127.0.0.1 origin and refuses the app's prefetches beside the
+// site, so the site's measurement is checked in a real WebKit browser on
+// https instead.
 // Where this run writes, its report and what the stand-in for PostHog
 // received, beside the Chromium run's: the journey and the served stand-in
 // both read it from the environment.
@@ -33,5 +36,5 @@ export default {
   })),
   // Its own report beside the Chromium run's, which CI keeps too.
   output,
-  tests: ["tests/site-measurement.e2e.ts", "tests/usage-measurement.e2e.ts"],
+  tests: ["tests/usage-measurement.e2e.ts"],
 } satisfies E2EConfig;

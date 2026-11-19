@@ -68,7 +68,7 @@
   added in the settings, its header read with `browser.route`) and no
   longer once withdrawn and the recording going on across pages.
   `nx run peal-e2e:e2e-webkit` (`e2e.webkit.config.ts`, its report and
-  the stand-in's log under `.e2e/webkit`, through `PEAL_E2E_OUTPUT`) runs that journey and the site's (`site-measurement.e2e.ts`) alone in WebKit, after the Chromium
+  the stand-in's log under `.e2e/webkit`, through `PEAL_E2E_OUTPUT`) runs that journey alone in WebKit (the site's journeys run in Chromium only: CI's Linux WebKit drops Secure cookies on its http 127.0.0.1 origin), after the Chromium
   run in CI: install WebKit with `e2e-web install webkit`.
 - The run serves the marketing site too (`scripts/site.ts`): the build
   `nx run peal-site:build-e2e` writes to `packages/peal-site/dist-e2e`,
