@@ -80,6 +80,9 @@ several:
   server's architecture, the HTTP API and its middlewares, the cluster, the
   database, and the list of the contexts' guides.
 - [`packages/peal-web/AGENTS.md`](packages/peal-web/AGENTS.md): the web front.
+- [`packages/peal-ui/AGENTS.md`](packages/peal-ui/AGENTS.md): the design
+  system, and the consent notice and measurement the site, the docs and
+  the blog share.
 - [`packages/peal-contract/AGENTS.md`](packages/peal-contract/AGENTS.md):
   the API contract, and how it may change.
 - [`packages/peal-cli/AGENTS.md`](packages/peal-cli/AGENTS.md): the command

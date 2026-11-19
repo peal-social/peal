@@ -173,7 +173,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   a changed answer refreshes the page. `posthog-js` is pinned with its `@posthog/core`,
   `@posthog/browser-common` and `@posthog/types`, which the root
   `package.json`'s `overrides` pin to the versions it was released with:
-  move all four together on every bump (Dependabot's `posthog` group
+  move all four together on every bump, in this package and in peal-ui,
+  which pins the same `posthog-js` for the site (Dependabot's `posthog` group
   holds them). Only `measurement/sdk.ts` imports `posthog-js`
   (a test reads `src/`), behind a dynamic import; its logs never leave
   (`logs.beforeSend`). Every event goes through `sanitized`'s allowlist
