@@ -1,7 +1,7 @@
 import { answerOf, consentDays, dayOf, givenAnswerOf } from "../consent/answer";
 import type { Answer } from "../consent/answer";
 import { ConsentAnswered } from "../consent/consent-answered";
-import { forgetVisitor, holdsVisitor } from "../consent/forget";
+import { forgetVisitor, holdsVisitor, retiredVisitor } from "../consent/forget";
 import {
   blumeTrackOf,
   consentAnswered,
@@ -48,17 +48,20 @@ export type Alignment = "forget" | "follow" | "none" | "renew";
  * What to do so the SDK follows the answer: `follow` (opt in), `forget`
  * (opt out and forget the visitor), `renew` (a new visitor, linked to
  * none, where the answer still allows it but the cookie this page saw is
- * gone: a sign-up or another tab removed it), or nothing. A cookie the
- * SDK has yet to write is not lost: it saves it a moment after opting in.
+ * gone, or it still names the visitor a sign-up retired: a sign-up or
+ * another tab removed it), or nothing. A cookie the SDK has yet to write
+ * is not lost: it saves it a moment after opting in.
  */
 export const alignmentOf = ({
   answer,
   following,
   lostCookie,
+  retired = false,
 }: {
   readonly answer: Answer;
   readonly following: boolean;
   readonly lostCookie: boolean;
+  readonly retired?: boolean;
 }): Alignment => {
   if (answer !== "allowed") {
     return following ? "forget" : "none";
@@ -68,7 +71,7 @@ export const alignmentOf = ({
     return "follow";
   }
 
-  return lostCookie ? "renew" : "none";
+  return lostCookie || retired ? "renew" : "none";
 };
 
 /** The days an answer given on `day` has left on `today`, at least one. */
@@ -145,6 +148,7 @@ export const startMeasurement = async (
       answer: answerOf(document.cookie, dayOf(Date.now())),
       following,
       lostCookie: lostCookie(),
+      retired: sdk.get_distinct_id() === retiredVisitor(),
     });
 
     if (alignment === "none") {
@@ -193,7 +197,8 @@ export const startMeasurement = async (
           following &&
           !aligning &&
           (answerOf(document.cookie, dayOf(Date.now())) !== "allowed" ||
-            lostCookie())
+            lostCookie() ||
+            event.properties["distinct_id"] === retiredVisitor())
         ) {
           queueMicrotask(align);
 

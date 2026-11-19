@@ -60,6 +60,14 @@ export const forgottenCookie = (
  */
 export const siteConsentCookieName = "peal_site_consent";
 
+/**
+ * The visitor a sign-up retired, which the server names after linking it
+ * (or not, for a known address) and expiring its cookie: a page left open
+ * still names it in memory, and saves it again with its next event, so a
+ * page compares its visitor with this one before anything leaves.
+ */
+export const retiredVisitorCookieName = "peal_site_retired";
+
 /** The cookie PostHog follows a visitor who allowed it in. */
 export const visitorCookieName = (key: string): string => `ph_${key}_posthog`;
 

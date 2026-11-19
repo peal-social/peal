@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import {
   cookieDomainsOf,
   forgottenCookie,
+  retiredVisitorCookieName,
   siteConsentCookieName,
   visitorCookieName,
 } from "./cookies";
@@ -36,6 +37,10 @@ export const forgetVisitor = (key: string, consent = false): void => {
     }
   }
 };
+
+/** The visitor a sign-up retired in this browser, if any. */
+export const retiredVisitor = (): string | undefined =>
+  Cookies.get(retiredVisitorCookieName);
 
 /** Whether this browser holds PostHog's cookie for the project. */
 export const holdsVisitor = (key: string): boolean =>
