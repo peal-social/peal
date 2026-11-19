@@ -797,6 +797,40 @@ export const processingRegister: readonly ProcessingCategory[] = [
     },
   },
   {
+    // On a server that bills whose operator also links its Stripe account
+    // to its PostHog project (a data warehouse source, set up in PostHog,
+    // not by this software), as product analytics says "on a server
+    // where…".
+    applies: "billing",
+    data: {
+      en: "On a server whose operator links its payment provider’s account to its analytics provider: a copy of the records the payment provider holds of paying customers, as it holds them: their names, email addresses and billing addresses, and their subscriptions, invoices and payments",
+      fr: "Sur un serveur dont l’exploitant relie le compte de son prestataire de paiement à son prestataire de mesure d’usage : une copie des fiches que le prestataire de paiement tient des clients payants, telles qu’il les tient : leurs noms, adresses e-mail et adresses de facturation, et leurs abonnements, factures et paiements",
+    },
+    id: "billingAnalytics",
+    legalBasis: {
+      en: "Legitimate interests (GDPR Article 6(1)(f)): understanding revenue, cancellations and the plans customers choose, to run the service",
+      fr: "Intérêts légitimes (RGPD, article 6, paragraphe 1, point f) : comprendre le chiffre d’affaires, les résiliations et les offres que choisissent les clients, pour faire fonctionner le service",
+    },
+    name: {
+      en: "Billing data in product analytics",
+      fr: "Données de facturation dans la mesure d’usage",
+    },
+    // The operator links the two providers, and decides how long.
+    operatorSet: true,
+    purposes: {
+      en: "Understand revenue, cancellations and which plans customers choose",
+      fr: "Comprendre le chiffre d’affaires, les résiliations et les offres que choisissent les clients",
+    },
+    retention: {
+      en: "As long as the payment provider holds each record and the link stays on, at the analytics provider. The copy follows the payment provider’s notifications: a record it deletes is deleted from the copy at the next sync. Removing the link deletes the copy",
+      fr: "Tant que le prestataire de paiement tient chaque fiche et que le lien reste actif, chez le prestataire de mesure d’usage. La copie suit les notifications du prestataire de paiement : une fiche qu’il supprime est supprimée de la copie à la synchronisation suivante. Retirer le lien supprime la copie",
+    },
+    source: {
+      en: "The payment provider",
+      fr: "Le prestataire de paiement",
+    },
+  },
+  {
     applies: "always",
     data: {
       en: "The action, its time and reason, and for each change staff make while acting as an account, the operation, workspace and ids it named, never its content",

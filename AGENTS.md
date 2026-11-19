@@ -271,6 +271,8 @@ self-hoster needs only Postgres and an S3-compatible store:
 - product analytics: PostHog, off until `PEAL_POSTHOG_KEY` is set, events
   from the server only, ids and enums only (see
   [`packages/peal-server/AGENTS.md`](packages/peal-server/AGENTS.md));
+  Peal's own project also copies Stripe's records through PostHog's
+  Stripe source, an operator's choice made in PostHog, not code;
 - sign-up: anyone, unless `PEAL_SIGN_UP=invitation` (an invitation's link
   with its address, and the first account only);
 - AI: an Anthropic key, or any OpenAI-compatible endpoint that serves
