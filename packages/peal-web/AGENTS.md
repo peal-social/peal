@@ -195,7 +195,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   **Load more**: a list, never the week's grid, as nothing is moved across
   workspaces. `report` (`ReportScreen`, in the reader's zone) is the
   report across workspaces as a table only, never a chart, as counts of
-  different platforms are not alike, which it says in one line: each
+  different platforms are not alike, which the table's caption says; the
+  zone is `TimeZoneLine` (`of="days"`) above the table, as on Analytics: each
   total with its change (`reportRowOf`, `#overview/report.ts`), a dash
   where a count is not given or the range before is not all kept, the
   range switch and **Download CSV** (`/api/me/report/export`). Strings in

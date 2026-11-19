@@ -129,6 +129,9 @@ describe(ReportTableView, () => {
     expect(html).toContain(
       "Totals of the posts published from 2026-10-11 to 2026-11-09"
     );
+    expect(html).toMatch(
+      /<caption[^>]*>[^<]*compare a workspace with itself, not with another\.<\/caption>/u
+    );
   });
 
   it("speaks French", async () => {
@@ -143,5 +146,8 @@ describe(ReportTableView, () => {
     );
 
     expect(html).toContain("Abonnés");
+    expect(html).toMatch(
+      /<caption[^>]*>[^<]*comparez donc un espace avec lui-même, pas avec un autre\.<\/caption>/u
+    );
   });
 });

@@ -4898,8 +4898,6 @@
     },
     "report": {
       "title": "Rapport de tous les espaces",
-      "description": "Ce qui est parti dans chacun de vos espaces de travail et comment cela s’est passé, à côté des jours d’avant. Les jours suivent votre fuseau horaire, {zone}.",
-      "notComparable": "Un tableau, pas un graphique : chaque plateforme donne des comptes différents, comparez donc un espace avec lui-même, pas avec un autre.",
       "download": "Télécharger le CSV",
       "loading": "Chargement du rapport…",
       "loadFailed": "Le rapport n’a pas pu être chargé.",
@@ -4913,7 +4911,7 @@
       "noFigure": "Non donné",
       "change": "{change, number, ::+!}",
       "previous": "À côté du {from} au {to}.",
-      "caption": "Totaux des publications parues du {from} au {to}, chacun avec son évolution par rapport aux jours d’avant : un tiret quand aucune plateforme ne donne un compte, et aucune évolution quand les jours d’avant ne sont plus tous conservés."
+      "caption": "Totaux des publications parues du {from} au {to}, chacun avec son évolution par rapport aux jours d’avant : un tiret quand aucune plateforme ne donne un compte, et aucune évolution quand les jours d’avant ne sont plus tous conservés. Chaque plateforme compte à sa façon : comparez donc un espace avec lui-même, pas avec un autre."
     }
   },
   "Platforms": {

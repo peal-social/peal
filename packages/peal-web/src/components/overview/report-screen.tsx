@@ -14,6 +14,7 @@ import { useState } from "react";
 import { defaultRange, ranges, summaryTimeZone } from "#analytics/report.ts";
 import type { Range } from "#analytics/report.ts";
 import { PeriodMenu, usePeriod } from "#components/lists/period-menu.tsx";
+import { TimeZoneLine } from "#components/lists/time-zone-line.tsx";
 import { PageActions } from "#components/shell/frame-view.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { reportPage } from "#overview/atoms.ts";
@@ -119,7 +120,8 @@ const ReportPages = ({
   });
 };
 
-// The report, in the reader's zone, which only the browser knows.
+// The report, in the reader's zone, which only the browser knows and
+// which one muted line names above the table (DESIGN.md, "Time zone").
 const ReportView = ({ timeZone }: { readonly timeZone: string }) => {
   const t = useTranslations("Overview.report");
   const [days, setDays] = usePeriod(ranges, defaultRange);
@@ -138,10 +140,6 @@ const ReportView = ({ timeZone }: { readonly timeZone: string }) => {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-muted-foreground">
-        {t("description", { zone: timeZone.replaceAll("_", " ") })}
-      </p>
-      <p className="text-muted-foreground text-sm">{t("notComparable")}</p>
       <PageActions>
         <Button
           variant="ghost"
@@ -155,15 +153,18 @@ const ReportView = ({ timeZone }: { readonly timeZone: string }) => {
         />
         <PeriodMenu choices={ranges} value={days} onChange={handleRange} />
       </PageActions>
-      <ReportPages
-        key={days}
-        before={[]}
-        cursor={Option.none()}
-        days={days}
-        more={more}
-        timeZone={timeZone}
-        onMore={handleMore}
-      />
+      <div className="flex flex-col gap-3">
+        <TimeZoneLine of="days" timeZone={timeZone} className="text-end" />
+        <ReportPages
+          key={days}
+          before={[]}
+          cursor={Option.none()}
+          days={days}
+          more={more}
+          timeZone={timeZone}
+          onMore={handleMore}
+        />
+      </div>
     </div>
   );
 };

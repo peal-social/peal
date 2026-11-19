@@ -863,10 +863,10 @@ way, so a person who learns one screen knows them all.
   card with a span of its own beside the page's takes a key of its own
   (`?bestTimes=`).
 - **Time zone** — A screen that places posts at times or counts by day
-  (Calendar, Analytics) says once which zone it reads them in: one line
-  in `{typography.caption}`, muted, at the end of the content's first
-  row (beside the dates the calendar names, under the Period on
-  Analytics): "Times are in your time zone, Europe/Paris." The zone is
+  (Calendar, Analytics, Report) says once which zone it reads them in:
+  one line in `{typography.caption}`, muted, at the end of the content's
+  first row (beside the dates the calendar names, under the Period on
+  Analytics and the Report): "Times are in your time zone, Europe/Paris." The zone is
   the browser's, so the line appears once the page has hydrated. It is
   not a description, and never sits in the panel's header.
 - What a list shows lives in the page's **address**: a reload, the back
