@@ -15,6 +15,7 @@ import {
 } from "./cookie-art";
 import type { CookieArt } from "./cookie-art";
 import { answerCookie } from "./cookies";
+import { forgetVisitor } from "./forget";
 import { consentMessages } from "./messages";
 import type { ConsentMessages } from "./messages";
 
@@ -91,6 +92,10 @@ const presentOrUndefined = (value: string | undefined) => {
   return trimmed === undefined || trimmed === "" ? undefined : trimmed;
 };
 
+// Whether a notice already asked in this document: the docs' client router
+// shows each page in the same one, where the notice asks again, still.
+let asked = false;
+
 // Below this width the notice is a sheet along the bottom edge.
 const phone = "(max-width: 639.98px)";
 
@@ -132,14 +137,18 @@ export class PealConsent extends HTMLElement {
     document.removeEventListener("keydown", this.#onKey);
   }
 
-  /** Shows the notice to a visitor who has not answered: no focus taken. */
+  /**
+   * Shows the notice to a visitor who has not answered: no focus taken.
+   * It bakes in once a page session; the docs' next pages ask still.
+   */
   ask(): void {
-    this.#show(undefined);
+    this.#show(undefined, !asked);
+    asked = true;
   }
 
   /** Opens it from Cookie settings: the answer, its date, and Close. */
   open(opener: HTMLElement): void {
-    this.#show(opener);
+    this.#show(opener, true);
   }
 
   #build() {
@@ -288,7 +297,7 @@ export class PealConsent extends HTMLElement {
     this.#art?.preview(shown);
   }
 
-  #show(opener: HTMLElement | undefined) {
+  #show(opener: HTMLElement | undefined, animate: boolean) {
     this.#build();
     const parts = this.#parts;
 
@@ -310,6 +319,15 @@ export class PealConsent extends HTMLElement {
     this.#opener = opener;
     parts.close.hidden = opener === undefined;
     parts.actions.hidden = signalled;
+
+    // A browser that asks not to be followed keeps nothing of an earlier
+    // visit either: the visitor's cookie and PostHog's copy of the answer go.
+    const key = presentOrUndefined(this.dataset["key"]);
+
+    if (signalled && key !== undefined) {
+      forgetVisitor(key, true);
+    }
+
     parts.text.textContent = signalled ? t.signal : t.text;
 
     if (opener !== undefined && given !== undefined && !signalled) {
@@ -332,7 +350,9 @@ export class PealConsent extends HTMLElement {
 
     this.#art ??= createCookieArt(parts.canvas);
 
-    if (wasHidden) {
+    if (wasHidden && !animate) {
+      parts.region.dataset["state"] = "shown";
+    } else if (wasHidden) {
       parts.region.dataset["state"] = "entering";
       this.#art.bake();
       // One frame at the start position, then the rise.
@@ -414,6 +434,13 @@ export class PealConsent extends HTMLElement {
       return;
     }
 
+    // Where focus goes once the notice hides, when it was inside: back to
+    // what opened it, or to Cookie settings, where the answer changes,
+    // never lost to the page's body.
+    const hadFocus = parts.region.contains(document.activeElement);
+    const opener = this.#opener;
+    this.#opener = undefined;
+
     parts.region.hidden = true;
     parts.region.dataset["state"] = "hidden";
     this.#pointed = undefined;
@@ -421,9 +448,14 @@ export class PealConsent extends HTMLElement {
     this.#stopSizing();
     document.removeEventListener("keydown", this.#onKey);
 
-    const opener = this.#opener;
-    this.#opener = undefined;
-    opener?.focus();
+    const target =
+      opener ??
+      document.querySelector<HTMLElement>("[data-consent-open]") ??
+      undefined;
+
+    if (opener !== undefined || hadFocus) {
+      target?.focus({ preventScroll: true });
+    }
   }
 
   // While shown on a phone, the page's foot gains the sheet's height, so

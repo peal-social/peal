@@ -1,8 +1,8 @@
 ---
 // Blume's own footer, then, where the docs are measured, a row with Cookie
 // settings, which opens the consent notice the site, the docs and the blog
-// share (peal-ui's `<peal-consent>`, DESIGN.md, Docs). The notice persists
-// across the client router's pages, as one element.
+// share (peal-ui's `<peal-consent>`, DESIGN.md, Docs). Each page the
+// client router shows brings its own, in its own language.
 import SiteFooter from "blume/components/layout/SiteFooter.astro";
 
 import { docsConsent } from "./measurement.ts";
@@ -20,7 +20,7 @@ const consent = docsConsent(Astro.props.locale);
     </div>
   )
 }
-{consent !== undefined && <peal-consent transition:persist {...consent.attributes} />}
+{consent !== undefined && <peal-consent {...consent.attributes} />}
 
 <script>
   import "peal-ui/lib/site/consent/start";

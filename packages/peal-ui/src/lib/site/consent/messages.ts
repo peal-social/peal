@@ -12,7 +12,7 @@ export interface ConsentMessages {
   readonly close: string;
   readonly eyebrow: string;
   readonly policy: string;
-  /** What the art's readout says each answer stores. */
+  /** What the art's readout says of the one cookie that follows a visitor. */
   readonly readout: {
     readonly allow: string;
     readonly refuse: string;
@@ -36,9 +36,9 @@ export const consentMessages: Record<Locale, ConsentMessages> = {
     eyebrow: "Cookies",
     policy: "Privacy policy",
     readout: {
-      allow: "cookies: 1 · 183 d",
-      refuse: "cookies: 0",
-      rest: "cookies: ?",
+      allow: "cookie: 183 d",
+      refuse: "cookie: none",
+      rest: "cookie: ?",
     },
     refuse: "Don’t allow",
     refused: "You didn’t allow this on {date}.",
@@ -56,9 +56,9 @@ export const consentMessages: Record<Locale, ConsentMessages> = {
     eyebrow: "Cookies",
     policy: "Politique de confidentialité",
     readout: {
-      allow: "cookies : 1 · 183 j",
-      refuse: "cookies : 0",
-      rest: "cookies : ?",
+      allow: "cookie : 183 j",
+      refuse: "cookie : aucun",
+      rest: "cookie : ?",
     },
     refuse: "Refuser",
     refused: "Vous l’avez refusé le {date}.",

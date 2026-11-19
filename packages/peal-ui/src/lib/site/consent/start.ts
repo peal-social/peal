@@ -30,7 +30,19 @@ const opens = (event: MouseEvent) => {
       ? event.target.closest<HTMLElement>("[data-consent-open]")
       : null;
 
-  if (opener === null || document.querySelector("peal-consent") === null) {
+  // A click that opens a new tab or window keeps its link's own way.
+  const modified =
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey;
+
+  if (
+    opener === null ||
+    modified ||
+    document.querySelector("peal-consent") === null
+  ) {
     return;
   }
 

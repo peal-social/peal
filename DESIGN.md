@@ -1195,9 +1195,9 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   glow's light lavender), and seven
   chips in the mark's blue, lavender and yellow that twinkle each on its
   own beat, as the pixel glow's cells do. Under it a readout in Geist
-  Mono, 12 px, muted, says what each answer stores: `cookies: ?` at
-  rest, `cookies: 1 · 183 d` while the pointer or focus is on Allow,
-  `cookies: 0` on the other button. On Allow the chips slide, cell by
+  Mono, 12 px, muted, says what each answer means for the one cookie
+  that follows a visitor: `cookie: ?` at rest, `cookie: 183 d` while the
+  pointer or focus is on Allow, `cookie: none` on the other button. On Allow the chips slide, cell by
   cell in 280 ms, into the mark's six facets at the cookie's centre; on
   the other button a bite dissolves from its top right and three crumbs
   fall two cells. Answering plays an exit of the same length either
