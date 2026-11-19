@@ -309,7 +309,9 @@ describe("a new member's first post", { serial: true }, () => {
     await app.open(`/fr/${slug}/calendar`);
 
     await expect(screen.getByRole("heading", "Calendrier")).toBeVisible();
-    await expect(screen.getByRole("tab", "Semaine")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Vues").getByRole("link", "Semaine")
+    ).toHaveAttribute("aria-current", "page");
     await expect(browser).toHaveURL(`/fr/${slug}/calendar`);
   });
 

@@ -18,7 +18,7 @@ const EmptyState = ({ className, ...props }: React.ComponentProps<"div">) => (
   <div
     data-slot="empty-state"
     className={cn(
-      "mx-auto flex min-h-[calc(100svh-14rem)] max-w-md flex-col items-center justify-center gap-3 px-4 py-12 text-center",
+      "mx-auto flex min-h-[calc(100svh-14rem)] w-full max-w-md flex-1 flex-col items-center justify-center gap-3 px-4 py-12 text-center",
       className
     )}
     {...props}

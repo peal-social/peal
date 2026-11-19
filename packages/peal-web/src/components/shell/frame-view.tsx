@@ -28,6 +28,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "peal-ui/components/tooltip";
+import { cn } from "peal-ui/lib/utils";
 import {
   createContext,
   use,
@@ -91,6 +92,104 @@ export const PageTitle = ({ children }: { readonly children: string }) => {
 
   return null;
 };
+
+// What a split page places itself: the panel's header and footer, which
+// the frame leaves to it.
+interface SplitPartsValue {
+  readonly footer: ReactNode;
+  readonly header: ReactNode;
+}
+
+const SplitParts = createContext<SplitPartsValue>({
+  footer: null,
+  header: null,
+});
+
+/**
+ * A split page (DESIGN.md, "Split view"): its list in a pane under the
+ * panel's header, which names the page, and the item open beside it. On a
+ * phone, the list alone, or the item alone under the header once one is
+ * open (`open`).
+ */
+export const SplitView = ({
+  detail,
+  list,
+  open,
+}: {
+  readonly detail: ReactNode;
+  readonly list: ReactNode;
+  /** Whether an item is open in the detail pane. */
+  readonly open: boolean;
+}) => {
+  const { footer, header } = use(SplitParts);
+
+  return (
+    <>
+      <div
+        className={cn(
+          "flex min-h-0 w-full flex-col md:w-96 md:shrink-0 md:border-r",
+          open && "max-md:flex-none"
+        )}
+      >
+        {header}
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col overflow-y-auto",
+            open && "max-md:hidden"
+          )}
+        >
+          {list}
+        </div>
+        <footer
+          className={cn(
+            "text-muted-foreground border-t px-4 py-2 text-xs empty:hidden",
+            open && "max-md:hidden"
+          )}
+        >
+          {footer}
+        </footer>
+      </div>
+      <div
+        className={cn(
+          "min-h-0 min-w-0 flex-1 flex-col overflow-y-auto",
+          open ? "flex" : "hidden md:flex"
+        )}
+      >
+        {detail}
+      </div>
+    </>
+  );
+};
+
+/**
+ * The item open in a split view: a 48 px header naming it, with its
+ * actions and, on a phone, the way back to the list, then the item.
+ */
+export const SplitDetail = ({
+  actions,
+  back,
+  children,
+  title,
+}: {
+  readonly actions?: ReactNode;
+  /** The way back to the list, on a phone. */
+  readonly back: ReactNode;
+  readonly children: ReactNode;
+  readonly title: string;
+}) => (
+  <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3 md:px-4">
+      <div className="md:hidden">{back}</div>
+      <h2 className="min-w-0 flex-1 truncate text-sm font-medium">{title}</h2>
+      {actions === undefined ? null : (
+        <div className="flex shrink-0 items-center gap-1">{actions}</div>
+      )}
+    </div>
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 md:px-6">
+      {children}
+    </div>
+  </div>
+);
 
 // Help, at the sidebar's foot: the documentation, support, and the
 // shortcut sheet where the frame has one.
@@ -201,6 +300,7 @@ export const FrameView = ({
   footer,
   label,
   sidebar,
+  split = false,
   supportUrl,
 }: {
   /** The account menu, at the bottom bar's start. */
@@ -216,6 +316,8 @@ export const FrameView = ({
   /** The sidebar's name, for the sheet that holds it on a phone. */
   readonly label: string;
   readonly sidebar: ReactNode;
+  /** The page is a split view, which places the header and the footer. */
+  readonly split?: boolean;
   readonly supportUrl: string | null;
 }) => {
   const t = useTranslations("WorkspaceShell");
@@ -234,6 +336,64 @@ export const FrameView = ({
 
   const shownTitle = title ?? breadcrumb.page;
 
+  // The header naming the page: the panel's top, or the list pane's in a
+  // split view.
+  const panelHeader = useMemo(
+    () => (
+      <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3 md:px-4">
+        <Sheet open={menuOpen} onOpenChange={setMenuOpen} side="left">
+          <SheetTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="md:hidden"
+                aria-label={t("openMenu")}
+              />
+            }
+          >
+            <MenuIcon aria-hidden />
+          </SheetTrigger>
+          {/* Closed by Escape or a tap beside it: a corner button
+          would sit on the sidebar's head. */}
+          <SheetContent>
+            <SheetTitle className="sr-only">{label}</SheetTitle>
+            <CloseMenu value={closeMenu}>
+              <div className="flex min-h-0 flex-1 flex-col">{sidebar}</div>
+            </CloseMenu>
+          </SheetContent>
+        </Sheet>
+        <nav aria-label={t("breadcrumb")} className="min-w-0 flex-1">
+          <ol className="flex items-center gap-1.5 text-sm">
+            {breadcrumb.section === null ? null : (
+              <li className="text-muted-foreground flex items-center gap-1.5">
+                {breadcrumb.section}
+                <span aria-hidden className="text-muted-foreground/60">
+                  ›
+                </span>
+              </li>
+            )}
+            {shownTitle === null ? null : (
+              <li aria-current="page" className="min-w-0">
+                <h1 className="truncate text-sm font-medium">{shownTitle}</h1>
+              </li>
+            )}
+          </ol>
+        </nav>
+        <div
+          ref={setActionsSlot}
+          className="flex shrink-0 items-center gap-1"
+        />
+      </header>
+    ),
+    [breadcrumb.section, closeMenu, label, menuOpen, shownTitle, sidebar, t]
+  );
+
+  const splitParts = useMemo(
+    () => ({ footer, header: panelHeader }),
+    [footer, panelHeader]
+  );
+
   return (
     <PanelHeader value={header}>
       <div className="bg-background flex h-svh flex-col">
@@ -243,63 +403,23 @@ export const FrameView = ({
           </div>
           <div className="flex min-w-0 flex-1 flex-col md:pt-2 md:pr-2">
             <div className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden md:rounded-xl md:border">
-              <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3 md:px-4">
-                <Sheet open={menuOpen} onOpenChange={setMenuOpen} side="left">
-                  <SheetTrigger
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="md:hidden"
-                        aria-label={t("openMenu")}
-                      />
-                    }
-                  >
-                    <MenuIcon aria-hidden />
-                  </SheetTrigger>
-                  {/* Closed by Escape or a tap beside it: a corner button
-                    would sit on the sidebar's head. */}
-                  <SheetContent>
-                    <SheetTitle className="sr-only">{label}</SheetTitle>
-                    <CloseMenu value={closeMenu}>
-                      <div className="flex min-h-0 flex-1 flex-col">
-                        {sidebar}
-                      </div>
-                    </CloseMenu>
-                  </SheetContent>
-                </Sheet>
-                <nav aria-label={t("breadcrumb")} className="min-w-0 flex-1">
-                  <ol className="flex items-center gap-1.5 text-sm">
-                    {breadcrumb.section === null ? null : (
-                      <li className="text-muted-foreground flex items-center gap-1.5">
-                        {breadcrumb.section}
-                        <span aria-hidden className="text-muted-foreground/60">
-                          ›
-                        </span>
-                      </li>
-                    )}
-                    {shownTitle === null ? null : (
-                      <li aria-current="page" className="min-w-0">
-                        <h1 className="truncate text-sm font-medium">
-                          {shownTitle}
-                        </h1>
-                      </li>
-                    )}
-                  </ol>
-                </nav>
-                <div
-                  ref={setActionsSlot}
-                  className="flex shrink-0 items-center gap-1"
-                />
-              </header>
-              <main className="min-h-0 flex-1 overflow-y-auto">
-                <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">
-                  {children}
-                </div>
-                <footer className="text-muted-foreground px-4 pt-2 pb-6 text-xs md:px-6">
-                  {footer}
-                </footer>
-              </main>
+              {split ? null : panelHeader}
+              {split ? (
+                <SplitParts value={splitParts}>
+                  <main className="flex min-h-0 flex-1 max-md:flex-col">
+                    {children}
+                  </main>
+                </SplitParts>
+              ) : (
+                <main className="min-h-0 flex-1 overflow-y-auto">
+                  <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">
+                    {children}
+                  </div>
+                  <footer className="text-muted-foreground px-4 pt-2 pb-6 text-xs md:px-6">
+                    {footer}
+                  </footer>
+                </main>
+              )}
             </div>
           </div>
         </div>

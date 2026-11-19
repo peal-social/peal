@@ -87,7 +87,8 @@
   before opening a list beneath it.
 - `tests/tags.e2e.ts` signs up a member of its own, adds a tag in the
   settings, schedules a tagged post and another, filters the calendar by
-  the tag and clears the filter, then cancels both. The calendar names a
+  the tag (the Filter menu's Tag, its chip, `?tag=` in the address) and
+  clears it with **Clear**, then cancels both. The calendar names a
   tagged post "<time>, <status>: <text> Tag: <name>.", so a locator for one
   ends with its tags. A menu or popover that stays open after a choice is
   closed with `press("Escape")` before the page behind it is read.
@@ -114,7 +115,8 @@
   for 23:59 and moves both posts onto the new slots, then cancels both.
 - `tests/media-library.e2e.ts` seeds named images and a video
   (`seedImage`, `seedVideo`: rows only, no file), finds one by its name
-  whatever its case, narrows the search by kind and clears it (the focus
+  whatever its case, narrows the search by kind (the Filter menu's Kind, `?q=…&kind=image`
+  in the address) and clears it (the focus
   goes back to the search field), then opens a tall image's preview at
   320 × 640 (`browser.setViewport`) and checks the dialog, its title and
   its close button fit the window, and that closing it gives the focus

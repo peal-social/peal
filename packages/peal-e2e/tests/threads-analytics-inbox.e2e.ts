@@ -185,9 +185,18 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
       .getByRole("link", /^Comments under the post on /u)
       .tap();
 
+    // The thread opens beside the list, which stays, its row marked.
     await expect(
-      screen.getByRole("heading", "Comment", { level: 1 })
+      screen.getByRole("heading", "Comment", { level: 2 })
     ).toBeVisible();
+    await expect(
+      screen.getByRole("heading", "Inbox", { level: 1 })
+    ).toBeVisible();
+    await expect(
+      screen
+        .getByRole("main")
+        .getByRole("link", /^Comments under the post on /u)
+    ).toHaveAttribute("aria-current", "page");
     await expect(screen.getByText(comment)).toBeVisible();
     await expect(screen.getByText(commenter)).toBeVisible();
 
@@ -205,7 +214,13 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
       screen.getByText("The comment is marked as answered.")
     ).toBeVisible();
     await expect(screen.getByRole("button", "Mark as waiting")).toBeVisible();
-    await expect(screen.getByText("0 waiting of 1")).toBeVisible();
+    // The thread and its row in the list both count it.
+    await expect(
+      screen
+        .getByRole("main")
+        .getByRole("link", /^Comments under the post on /u)
+        .getByText("0 waiting of 1")
+    ).toBeVisible();
   });
 
   test("lets staff acting as the member read the numbers, and no comment", async ({

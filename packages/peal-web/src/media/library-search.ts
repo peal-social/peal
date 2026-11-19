@@ -104,3 +104,26 @@ export const pageOfKey = (key: string) => {
     workspaceId,
   };
 };
+
+/** What the address holds, as `URLSearchParams` reads it. */
+interface QueryString {
+  readonly get: (name: string) => string | null;
+}
+
+const decodeKind = Schema.decodeUnknownOption(MediaKindSchema);
+
+/**
+ * The search an address names (DESIGN.md, "Filters and display"): `q`,
+ * as typed, and `kind`, left out when it is no kind.
+ */
+export const librarySearchOf = (query: QueryString): LibrarySearch => ({
+  kind: Option.getOrNull(decodeKind(query.get("kind"))),
+  text: query.get("q") ?? "",
+});
+
+/** The address's query for a search, without what is left empty. */
+export const libraryQueryStringOf = (search: LibrarySearch): string =>
+  new URLSearchParams([
+    ...(textOf(search.text) === "" ? [] : [["q", search.text]]),
+    ...(search.kind === null ? [] : [["kind", search.kind]]),
+  ]).toString();

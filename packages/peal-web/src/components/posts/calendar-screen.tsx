@@ -3,17 +3,16 @@
 import { DragDropProvider, useDraggable, useDroppable } from "@dnd-kit/react";
 import type { DragDropEventHandlers } from "@dnd-kit/react";
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
-import { DateTime, Option, Schema } from "effect";
+import { DateTime, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
   GripVerticalIcon,
   ImagesIcon,
   ListOrderedIcon,
   PlusIcon,
 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import type {
   SocialChannel,
   Permission,
@@ -23,27 +22,27 @@ import type {
 } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "peal-ui/components/tabs";
 import { cn } from "peal-ui/lib/utils";
 import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { CalendarDayView } from "#components/posts/calendar-day-view.tsx";
-import { CalendarFilters } from "#components/posts/calendar-filters.tsx";
+import { CalendarToolbar } from "#components/posts/calendar-toolbar.tsx";
+import type { ViewLink } from "#components/posts/calendar-toolbar.tsx";
 import { ChipTags } from "#components/posts/chip-tags.tsx";
 import { useQueueName } from "#components/posts/queue-choice.tsx";
 import { useMovePost } from "#components/posts/use-move-post.ts";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
-import { Link } from "#i18n/navigation.ts";
+import { Link, usePathname, useRouter } from "#i18n/navigation.ts";
 import { scheduledPosts, workspaceChannels } from "#posts/api.ts";
-import { filtered, knownFilter, noFilter } from "#posts/calendar-filter.ts";
+import { filtered, knownFilter } from "#posts/calendar-filter.ts";
 import type { CalendarFilter } from "#posts/calendar-filter.ts";
+import { calendarQueryOf, calendarStateOf } from "#posts/calendar-query.ts";
+import type {
+  CalendarState,
+  CalendarView as View,
+} from "#posts/calendar-query.ts";
 import {
   dayRows,
   queueSlotsOn,
@@ -69,12 +68,6 @@ import type { CalendarDate, TimeOfDay } from "#posts/zoned-time.ts";
 import { workspaceQueues } from "#queues/atoms.ts";
 import { workspaceTags } from "#tags/atoms.ts";
 import { tagsOf } from "#tags/post-tags.ts";
-
-const ViewSchema = Schema.Literals(["day", "week", "month"]);
-
-type View = typeof ViewSchema.Type;
-
-const decodeView = Schema.decodeUnknownOption(ViewSchema);
 
 const hours = Array.from({ length: 24 }, (_, hour) => hour);
 
@@ -594,6 +587,13 @@ const MonthGrid = ({
   );
 };
 
+// A view's tab: the app's link, the page staying where it is.
+const ViewTabLink: ViewLink = ({ children, ...props }) => (
+  <Link {...props} scroll={false}>
+    {children}
+  </Link>
+);
+
 interface CalendarViewProps {
   readonly initialDate: CalendarDate | undefined;
   readonly permissions: readonly Permission[];
@@ -612,9 +612,34 @@ const CalendarView = ({
   const locale = useLocale();
   const firstDay = firstDayOfWeek(locale);
   const today = todayIn(timeZone);
-  const [view, setView] = useState<View>("week");
-  const [chosen, setChosen] = useState<CalendarFilter>(noFilter);
-  const [anchor, setAnchor] = useState<CalendarDate>(initialDate ?? today);
+  const router = useRouter();
+  const pathname = usePathname();
+  // The view, the date and the filters live in the address (DESIGN.md,
+  // "Filters and display"); an old `?date=` link reads the same way.
+  const state = calendarStateOf(useSearchParams());
+  const { view } = state;
+  const chosen = state.filter;
+
+  const anchor = Option.getOrElse(state.date, () => initialDate ?? today);
+
+  // The calendar with something changed, written to the address, the page
+  // staying where it is.
+  const go = (changes: Partial<CalendarState>) => {
+    const written = calendarQueryOf({ ...state, ...changes }, today);
+
+    router.replace(written === "" ? pathname : `${pathname}?${written}`, {
+      scroll: false,
+    });
+  };
+
+  const setAnchor = (next: CalendarDate) => {
+    go({ date: Option.some(next) });
+  };
+
+  const setChosen = (next: CalendarFilter) => {
+    go({ filter: next });
+  };
+
   const movePost = useMovePost(workspaceId, timeZone);
 
   const days = (() => {
@@ -738,20 +763,22 @@ const CalendarView = ({
   };
 
   const step = (direction: -1 | 1) => {
-    setAnchor((current) => {
-      if (view === "day") {
-        return addDays(current, direction);
-      }
+    if (view === "day") {
+      setAnchor(addDays(anchor, direction));
 
-      return view === "week"
-        ? addDays(current, 7 * direction)
-        : addMonths(current, direction);
-    });
+      return;
+    }
+
+    setAnchor(
+      view === "week"
+        ? addDays(anchor, 7 * direction)
+        : addMonths(anchor, direction)
+    );
   };
 
+  // One write, so neither change is lost to the other.
   const openDay = (date: CalendarDate) => {
-    setAnchor(date);
-    setView("day");
+    go({ date: Option.some(date), view: "day" });
   };
 
   const labels = {
@@ -871,72 +898,35 @@ const CalendarView = ({
     );
   })();
 
-  return (
-    <div className="flex flex-col gap-6">
-      <Tabs
-        value={view}
-        onValueChange={(value) => {
-          const picked = decodeView(value);
+  // The address of the calendar in another view, around the same date.
+  const hrefOf = (next: View) => {
+    const written = calendarQueryOf({ ...state, view: next }, today);
 
-          if (Option.isSome(picked)) {
-            setView(picked.value);
-          }
+    return written === "" ? pathname : `${pathname}?${written}`;
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <CalendarToolbar
+        channels={channels}
+        filter={filter}
+        hidden={hidden}
+        hrefOf={hrefOf}
+        labels={labels}
+        link={ViewTabLink}
+        queues={queues}
+        tags={tags}
+        view={view}
+        onFilter={setChosen}
+        onStep={step}
+        onToday={() => {
+          setAnchor(today);
         }}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <TabsList aria-label={t("views")}>
-            <TabsTrigger value="day">{t("day")}</TabsTrigger>
-            <TabsTrigger value="week">{t("week")}</TabsTrigger>
-            <TabsTrigger value="month">{t("month")}</TabsTrigger>
-          </TabsList>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label={labels.previous}
-              onClick={() => {
-                step(-1);
-              }}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setAnchor(today);
-              }}
-            >
-              {t("today")}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label={labels.next}
-              onClick={() => {
-                step(1);
-              }}
-            >
-              <ChevronRightIcon />
-            </Button>
-          </div>
-        </div>
-        <h2 className="text-lg font-medium" aria-live="polite">
-          {title}
-        </h2>
-        <CalendarFilters
-          channels={channels}
-          filter={filter}
-          hidden={hidden}
-          queues={queues}
-          tags={tags}
-          onChange={setChosen}
-        />
-        <TabsContent value="day">{view === "day" ? grid : null}</TabsContent>
-        <TabsContent value="week">{view === "week" ? grid : null}</TabsContent>
-        <TabsContent value="month">
-          {view === "month" ? grid : null}
-        </TabsContent>
-      </Tabs>
+      />
+      <h2 className="text-lg font-medium" aria-live="polite">
+        {title}
+      </h2>
+      {grid}
     </div>
   );
 };

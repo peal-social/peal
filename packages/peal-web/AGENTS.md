@@ -59,8 +59,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   measurement's question, connecting channels and assistants, a
   quickstart), `…/platforms` (PealAPI's, for channel:read),
   `[workspaceId]/channels`, `…/media`, `…/calendar`,
-  `…/analytics`, `…/inbox` and `…/inbox/[threadId]` (for `engagement:read`:
-  not-found otherwise, as for staff acting as a member), `…/ads`,
+  `…/analytics`, `…/inbox` (a split view, its layout the list, for
+  `engagement:read`: not-found otherwise, as for staff acting as a member)
+  with `…/inbox/[threadId]`, `…/inbox/reviews/[threadId]` and
+  `…/inbox/messages/[conversationId]` beside it, `…/ads`,
   `…/drafts`, `…/posts` (every post, whatever its state, for post:read
   and channel:read), `…/posts/import` (a CSV file's posts, for
   post:schedule, post:read and channel:read), `…/posts/new`,
@@ -503,7 +505,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   copies the emailed link, which Better Auth lets only a session of the
   invited, verified address accept: there is no open invitation link.
 - The calendar filters the posts it loaded in the browser
-  (`#posts/calendar-filter.ts`, `CalendarFilters`), and links each day and
+  (`#posts/calendar-filter.ts`) through `CalendarToolbar`, the list
+  toolbar of DESIGN.md (views as tabs, the way through time, the Filter
+  menu, whose channels, tags and queues each keep several, and chips),
+  and keeps its view, date and filters in the address
+  (`#posts/calendar-query.ts`: `calendarStateOf`, `calendarQueryOf`, the
+  defaults left out), so a link shows the same calendar; it links each day and
   each hour still to come to `…/posts/new?at=YYYY-MM-DDTHH:mm`
   (`#posts/start-time.ts`), which the composer reads on the viewer's clock
   and ignores when malformed or past.
@@ -526,9 +533,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   its options. The server renders the language's clock; the preference
   applies after hydration.
 - The media library (`components/media/media-library.tsx`) narrows its
-  pages with `LibraryToolbarView` (text and kind, `#media/library-search.ts`:
-  `queryOf`, and the atoms' `pageKeyOf`), asking once the person pauses
-  (`useDebounced`, `searchDelayMs`): never a request per key. A file's name
+  pages with `LibraryToolbarView` (a search field, then the Filter menu
+  with the kind, `#media/library-search.ts`: `queryOf`, and the atoms'
+  `pageKeyOf`), asking once the person pauses (`useDebounced`,
+  `searchDelayMs`): never a request per key. The search lives in the
+  address (`librarySearchOf`, `libraryQueryStringOf`), written with
+  `history.replaceState` as it changes and read when the page opens and
+  on `popstate` only, never as it is written, which would race the keys. A file's name
   is the member's text, rendered as text; one without a name is called by
   its kind (`useMediaName`). A thumbnail, a button of the card's own
   with an inset focus ring, opens `MediaPreviewDialog`: no taller than
@@ -584,18 +595,31 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   API and other clients set) is shown, counted for that channel
   (`partTextOn`) and editable, or dropped for the text for all channels:
   the composer never sends a text it does not show.
-- The inbox's reviews (`reviews-list.tsx`, `review-screen.tsx`, views in
-  `review-views.tsx`, atoms in `#inbox/review-atoms.ts`) show below the
-  comments only while the workspace has a location with reviews, and a
+- The inbox is a split view (DESIGN.md, "Split view"): `navigation.ts`
+  marks the page `split`, so `FrameView` leaves its header and footer to
+  `SplitView`, which the inbox's layout draws (`InboxSplit`: the list, and
+  the page under it beside it, an item open once the address goes past
+  `/inbox`). `InboxList` (`inbox-list.tsx`) holds its tabs (Comments;
+  Reviews while the workspace has a location with reviews; Messages for
+  `engagement:readMessages`), the comments' Filter in the header
+  (`PageActions`: Status, waiting for an answer, and Channel) with its
+  chips, and the rows (`inbox-rows.tsx`: links passed in, the open one
+  `aria-current`). What it shows is in the address
+  (`#inbox/inbox-query.ts`: `?view=`, `?status=waiting`, `?channel=`),
+  which each row's link carries. An item's page draws `SplitDetail`
+  (its name in an `h2`, the way back on a phone); `/inbox` itself is the
+  empty detail. Whose messages Peal reads is chosen at
+  `…/settings/messages` (`channel:connect`), not in the inbox.
+- The inbox's reviews (`review-screen.tsx`, views in
+  `review-views.tsx`, atoms in `#inbox/review-atoms.ts`) list a
   location at `…/inbox/reviews/[threadId]`: stars, text as text, the
   reviewer's display name or "anonymous", a photo count (never a photo),
   the location's reply with Google's moderation; a reply counted in
   UTF-8 bytes (Google's 4,096), withdraw and "needs no answer" where the
   channel's `abilities` say `available`.
-- The inbox's direct messages (`messages-list.tsx`, `message-screen.tsx`,
-  views in `message-views.tsx`, atoms in `#inbox/message-atoms.ts`) show
-  below the reviews only while the workspace has a conversation and to
-  members with `engagement:readMessages`, and one at
+- The inbox's direct messages (`message-screen.tsx`, views in
+  `message-views.tsx`, atoms in `#inbox/message-atoms.ts`), for members
+  with `engagement:readMessages`, open one at
   `…/inbox/messages/[conversationId]` (`engagement:readMessages`, a page
   at a time, `?cursor=` for older ones; the box,
   "mark read" and confirming an unconfirmed message take
@@ -605,14 +629,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   is made; where the window has an end (Messenger's and Instagram's 24
   hours) `ReplyWindowView` says until when, or why the box is gone.
   Reading a conversation never marks it read. The settings
-  (`message-settings.tsx`) show to `channel:connect`: each Mastodon,
+  (`message-settings.tsx`, at `…/settings/messages`) show to `channel:connect`: each Mastodon,
   Bluesky, Facebook Page and Instagram channel's switch (a Meta one says
   who may write before Meta's App Review, an Instagram one the Connected
   tools setting; one refused `reconnect` offers the sign-in with
   `messages=true`), and, for `organization:secure`, the applications let
   read the messages, by client id.
 - The inbox (`components/inbox/`) lists threads with counts and never a
-  comment's text (`ThreadsList`), and shows one whole (`ThreadScreen`):
+  comment's text (`ThreadRowView`), and shows one whole (`ThreadScreen`):
   views in `inbox-views.tsx` take links as props, so tests render each
   state. Render a comment as plain text, never as markup. Offer reply and
   moderation only where the thread's `abilities` say `available`, show a

@@ -837,7 +837,10 @@ way, so a person who learns one screen knows them all.
   icon, "is", the value, and × to take it off, cut by hairlines, 28 px
   high, `{rounded.sm}`; pressing the value opens the menu on that property
   to change it. After the chips, **Clear** takes them all off. A property
-  holds one value at a time; properties add up.
+  holds one value at a time, unless the screen can show several: then
+  its values have checkboxes, the menu stays open while they are ticked,
+  and the chip says "is any of" with the names joined ("Tag is any of
+  Launch, News"). Properties add up.
 - **Display** opens a small panel (level 3, 288 px, 12 px inside):
   **Ordering** (what the list is sorted by) with a button that turns its
   direction, and where a screen has them, grouping and its other views
@@ -923,6 +926,40 @@ its toolbar:
   line ("No conversation selected").
 
 No other illustration, no joke, no exclamation mark.
+
+### Split view
+
+A page whose items are read one after another, such as the Inbox, lists
+them beside the one open, so the list stays where it was.
+
+- **`split-list`** — The panel's first pane, 384 px wide on a desktop,
+  with a hairline on its right. The panel's 48 px header sits on top of
+  it: the page's name, and its Filter and Display at the end. Under
+  the header come its views as tabs and the filter chips, then the rows.
+- **`split-row`** — One line naming the item, ellipsed, with the day of
+  its latest news at its end in `muted-foreground` (12 px), and one line of
+  counts under it. A 6 px `brand` dot before the name while something in
+  it waits. The whole row is the link (10 px by 16 px inside); the open
+  one takes `accent`, hovered ones `muted`. Rows are cut by hairlines,
+  with no card around them.
+- **`split-detail`** — The rest of the panel: the item open, under a
+  48 px header of its own that names it (`h2`; the page keeps its `h1`)
+  with its actions at the end. With nothing open it shows an empty state
+  ("Nothing open"), centred.
+- **`split-thread`** — An item that is a conversation (a post's comments)
+  reads as one. On top, a short summary above a hairline: where and since
+  when, then in 12 px muted text what waits and why nothing more comes,
+  and the ways out. Then each message flat, never in a card: a 24 px
+  avatar, the author (500) with their handle, a 12 px muted line with
+  when and its state (the `brand` dot while it waits, a small icon
+  otherwise), its text, and its actions as `xs` ghost buttons, Reply
+  first. What answered it hangs under it behind a 2 px line at its
+  start. One composer, sticky at the pane's foot, answers the message
+  that Reply chose (the oldest still waiting until then) and names whom.
+- The address names the item open, and the list's views and filters
+  follow it, so a link opens both. On a phone the list fills the panel;
+  an item opens alone under the header, with a way back at its header's
+  start.
 
 ### Pages
 

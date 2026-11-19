@@ -68,7 +68,7 @@ describe(LibraryToolbarView, () => {
     expect(english).toContain('value="launch"');
     expect(english).toContain('maxLength="100"');
     expect(english).toContain("Search by file name or description");
-    expect(english).toContain("Videos");
+    expect(english).toMatch(/Kind.*is.*Video.*Clear/u);
   });
 
   it("speaks French", async () => {
@@ -78,7 +78,8 @@ describe(LibraryToolbarView, () => {
     );
 
     expect(french).toContain("Rechercher par nom de fichier ou description");
-    expect(french).toContain("Tous les types");
+    expect(french).toContain('aria-label="Filtrer"');
+    expect(french).not.toContain('data-slot="filter-chip"');
   });
 });
 

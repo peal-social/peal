@@ -1,6 +1,7 @@
 "use client";
 
 import { DateTime, Option } from "effect";
+import { CheckIcon, EyeOffIcon, HeartIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import {
   inboxOptionalPlatforms,
@@ -19,7 +20,7 @@ import type {
   Platform,
 } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
-import { Badge } from "peal-ui/components/badge";
+import { Avatar, AvatarFallback } from "peal-ui/components/avatar";
 import { Button } from "peal-ui/components/button";
 import { Label } from "peal-ui/components/label";
 import { Textarea } from "peal-ui/components/textarea";
@@ -115,7 +116,7 @@ const PlatformLink = ({
         href={href}
         target="_blank"
         rel="noreferrer noopener"
-        className="text-sm underline underline-offset-4"
+        className="underline underline-offset-4"
       >
         {children}
       </a>
@@ -151,85 +152,6 @@ export const CollectionNote = () => {
 };
 
 /**
- * What the list shows when it has no thread: that none matches the
- * filters, or that no comment was read yet, and what Peal collects.
- */
-export const InboxEmptyView = ({
-  filtered,
-}: {
-  readonly filtered: boolean;
-}) => {
-  const t = useTranslations("Inbox.list");
-
-  return (
-    <div className="flex flex-col gap-2 rounded-lg border border-dashed p-6">
-      <p>{filtered ? t("emptyFiltered") : t("empty")}</p>
-      <CollectionNote />
-    </div>
-  );
-};
-
-/**
- * One thread of the list: the comments under one post on one channel, how
- * many wait for an answer, and where to read them.
- */
-export const ThreadRowView = ({
-  channel,
-  link,
-  thread,
-  workspaceId,
-}: {
-  /** The thread's channel, unless it was disconnected since. */
-  readonly channel: SocialChannel | undefined;
-  readonly link: InboxLink;
-  readonly thread: InboxThread;
-  readonly workspaceId: string;
-}) => {
-  const workspaceHref = useWorkspaceHref();
-  const t = useTranslations("Inbox.row");
-  const channelName = useChannelName();
-  const instant = useInstant();
-
-  return (
-    <li className="flex flex-col gap-2 px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-medium">
-          {link(
-            workspaceHref(workspaceId, `/inbox/${thread.id}`),
-            t("thread", { channel: channelName(channel) })
-          )}
-        </span>
-        <Badge variant={thread.unanswered > 0 ? "default" : "outline"}>
-          {t("counts", {
-            comments: thread.comments,
-            unanswered: thread.unanswered,
-          })}
-        </Badge>
-      </div>
-      <p className="text-muted-foreground text-sm">
-        {thread.lastCommentAt === null
-          ? t("noComment")
-          : t("lastComment", { at: instant(thread.lastCommentAt) })}
-      </p>
-      {thread.collectionEnded === null ? null : (
-        <p className="text-muted-foreground text-sm">
-          {t("ended", { reason: thread.collectionEnded })}
-        </p>
-      )}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        {link(
-          workspaceHref(workspaceId, `/posts/${thread.postId}`),
-          t("openPost")
-        )}
-        <PlatformLink address={thread.permalink}>
-          {t("onPlatform")}
-        </PlatformLink>
-      </div>
-    </li>
-  );
-};
-
-/**
  * A thread's heading on its own page: its channel, since when the post is
  * live, why its comments are no longer read, and the ways out.
  */
@@ -250,27 +172,28 @@ export const ThreadSummaryView = ({
   const instant = useInstant();
 
   return (
-    <div className="flex flex-col gap-2">
-      <p>
+    <div className="flex flex-col gap-2 border-b pb-4">
+      <p className="text-sm">
         {t("thread.channel", {
           at: instant(thread.publishedAt),
           channel: channelName(channel),
         })}
       </p>
-      <p>
-        <Badge variant={thread.unanswered > 0 ? "default" : "outline"}>
+      <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+        <span className="flex items-center gap-1.5 tabular-nums">
+          {thread.unanswered > 0 ? (
+            <span aria-hidden className="bg-brand size-1.5 rounded-full" />
+          ) : null}
           {t("row.counts", {
             comments: thread.comments,
             unanswered: thread.unanswered,
           })}
-        </Badge>
+        </span>
+        {thread.collectionEnded === null ? null : (
+          <span>{t("row.ended", { reason: thread.collectionEnded })}</span>
+        )}
       </p>
-      {thread.collectionEnded === null ? null : (
-        <p className="text-muted-foreground text-sm">
-          {t("row.ended", { reason: thread.collectionEnded })}
-        </p>
-      )}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
         {link(
           workspaceHref(workspaceId, `/posts/${thread.postId}`),
           t("row.openPost")
@@ -392,12 +315,45 @@ const AuthorLine = ({
   );
 };
 
-const stateVariants = {
-  answered: "outline",
-  deleted: "ghost",
-  hidden: "secondary",
-  new: "default",
-} as const;
+// Where a comment stands, in its meta line: the brand's dot while it
+// waits, as its row in the list has, and a quiet icon otherwise.
+const CommentState = ({
+  expired,
+  state,
+}: {
+  readonly expired: boolean;
+  readonly state: InboxComment["state"];
+}) => {
+  const t = useTranslations("Inbox.comment");
+  const label = expired ? t("expiredState") : t("state", { state });
+
+  return (
+    <span className="flex items-center gap-1">
+      {state === "new" ? (
+        <span aria-hidden className="bg-brand size-1.5 rounded-full" />
+      ) : null}
+      {state === "answered" ? (
+        <CheckIcon aria-hidden className="size-3" />
+      ) : null}
+      {state === "hidden" ? (
+        <EyeOffIcon aria-hidden className="size-3" />
+      ) : null}
+      {label}
+    </span>
+  );
+};
+
+// The first letter of who wrote, for their avatar.
+const initialOf = (author: InboxAuthor | null): string => {
+  const name =
+    author === null
+      ? ""
+      : (author.displayName ?? "") || author.handle.replace(/^@/u, "");
+
+  const [first] = new Intl.Segmenter().segment(name);
+
+  return first === undefined ? "?" : first.segment.toUpperCase();
+};
 
 /**
  * A reply sent from Peal, as the journal has it: on its way, sent, failed
@@ -415,21 +371,24 @@ export const ReplyView = ({
   const instant = useInstant();
   const reason = t("reason", { reason: reply.reason ?? "unknown" });
 
+  const troubled = reply.status === "failed" || reply.status === "unconfirmed";
+
   return (
-    <li className="bg-muted/50 flex flex-col gap-2 rounded-lg p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-muted-foreground text-xs">
-          {t("from", { at: instant(reply.createdAt) })}
-        </span>
-        <Badge
-          variant={
-            reply.status === "failed" || reply.status === "unconfirmed"
-              ? "destructive"
-              : "outline"
-          }
-        >
+    <li className="flex flex-col gap-1 border-l-2 pl-3">
+      <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+        <span>{t("from", { at: instant(reply.createdAt) })}</span>
+        <span aria-hidden>·</span>
+        <span className={troubled ? "text-destructive font-medium" : undefined}>
           {t("status", { status: reply.status })}
-        </Badge>
+        </span>
+        {reply.status === "sent" ? (
+          <>
+            <span aria-hidden>·</span>
+            <PlatformLink address={reply.permalink}>
+              {t("onPlatform")}
+            </PlatformLink>
+          </>
+        ) : null}
       </div>
       <p dir="auto" className="text-sm break-words whitespace-pre-wrap">
         {reply.text}
@@ -443,11 +402,8 @@ export const ReplyView = ({
       {reply.status === "withdrawn" ? (
         <p className="text-muted-foreground text-sm">{t("withdrawnNote")}</p>
       ) : null}
-      {reply.status === "sent" ? (
-        <PlatformLink address={reply.permalink}>{t("onPlatform")}</PlatformLink>
-      ) : null}
       {actions === undefined ? null : (
-        <div className="flex flex-wrap gap-2 empty:hidden">{actions}</div>
+        <div className="-ml-2 flex flex-wrap gap-1 empty:hidden">{actions}</div>
       )}
     </li>
   );
@@ -455,10 +411,10 @@ export const ReplyView = ({
 
 /**
  * One comment: who wrote it and when, its text as plain text, its state,
- * then the replies sent from Peal (`replies`), what the reader may do
- * (`actions`), its private reply or what sends one (`privateReply`), the
- * box to answer it (`replyBox`), and the comments that answer it
- * (`children`).
+ * what the reader may do (`actions`), then the replies sent from Peal
+ * (`replies`), its private reply or what sends one (`privateReply`), and
+ * the comments that answer it (`children`). The thread's one composer
+ * answers it.
  */
 export const CommentView = ({
   actions,
@@ -467,7 +423,6 @@ export const CommentView = ({
   platform,
   privateReply,
   replies,
-  replyBox,
 }: {
   readonly actions?: ReactNode;
   readonly children?: ReactNode;
@@ -477,7 +432,6 @@ export const CommentView = ({
   /** The comment's private reply, or what sends one. */
   readonly privateReply?: ReactNode;
   readonly replies?: ReactNode;
-  readonly replyBox?: ReactNode;
 }) => {
   const t = useTranslations("Inbox.comment");
   const tPosts = useTranslations("Posts");
@@ -488,60 +442,66 @@ export const CommentView = ({
   const expired = deleted && comment.forgotten === "expired";
 
   return (
-    <li className="flex flex-col gap-3 rounded-lg border p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <AuthorLine author={comment.author} platform={platform ?? null} />
-        <span className="flex flex-wrap items-center gap-2">
-          {comment.liked && !deleted ? (
-            <Badge variant="outline">{t("liked")}</Badge>
-          ) : null}
-          <Badge variant={stateVariants[comment.state]}>
-            {expired ? t("expiredState") : t("state", { state: comment.state })}
-          </Badge>
-        </span>
-      </div>
-      {deleted ? (
-        <p className="text-muted-foreground text-sm italic">
-          {expired
-            ? t("expired", {
-                platform:
-                  platform === undefined || platform === null
-                    ? t("somePlatform")
-                    : tPosts("platform", { platform }),
-              })
-            : t("deleted")}
-        </p>
-      ) : (
-        <p dir="auto" className="break-words whitespace-pre-wrap">
-          {comment.text}
-        </p>
-      )}
-      <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-        <span>{t("writtenAt", { at: instant(comment.writtenAt) })}</span>
-        {deleted ? null : (
-          <PlatformLink address={comment.permalink}>
-            {t("onPlatform")}
-          </PlatformLink>
+    <li className="flex gap-3">
+      <Avatar size="sm">
+        <AvatarFallback>{initialOf(comment.author)}</AvatarFallback>
+      </Avatar>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
+          <AuthorLine author={comment.author} platform={platform ?? null} />
+          <span className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-xs">
+            <span>{t("writtenAt", { at: instant(comment.writtenAt) })}</span>
+            <span aria-hidden>·</span>
+            <CommentState expired={expired} state={comment.state} />
+            {comment.liked && !deleted ? (
+              <>
+                <span aria-hidden>·</span>
+                <span className="flex items-center gap-1">
+                  <HeartIcon aria-hidden className="size-3" />
+                  {t("liked")}
+                </span>
+              </>
+            ) : null}
+          </span>
+        </div>
+        {deleted ? (
+          <p className="text-muted-foreground text-sm italic">
+            {expired
+              ? t("expired", {
+                  platform:
+                    platform === undefined || platform === null
+                      ? t("somePlatform")
+                      : tPosts("platform", { platform }),
+                })
+              : t("deleted")}
+          </p>
+        ) : (
+          <p dir="auto" className="text-sm break-words whitespace-pre-wrap">
+            {comment.text}
+          </p>
+        )}
+        <div className="text-muted-foreground -ml-2 flex flex-wrap items-center gap-1 text-xs">
+          {actions}
+          {deleted ? null : (
+            <span className="px-2">
+              <PlatformLink address={comment.permalink}>
+                {t("onPlatform")}
+              </PlatformLink>
+            </span>
+          )}
+        </div>
+        {replies === undefined ? null : (
+          <ul aria-label={t("replies")} className="mt-2 flex flex-col gap-3">
+            {replies}
+          </ul>
+        )}
+        {privateReply}
+        {children === undefined ? null : (
+          <ul aria-label={t("answers")} className="mt-3 flex flex-col gap-4">
+            {children}
+          </ul>
         )}
       </div>
-      {actions === undefined ? null : (
-        <div className="flex flex-wrap gap-2 empty:hidden">{actions}</div>
-      )}
-      {replies === undefined ? null : (
-        <ul aria-label={t("replies")} className="flex flex-col gap-2">
-          {replies}
-        </ul>
-      )}
-      {privateReply}
-      {replyBox}
-      {children === undefined ? null : (
-        <ul
-          aria-label={t("answers")}
-          className="flex flex-col gap-3 border-l pl-4"
-        >
-          {children}
-        </ul>
-      )}
     </li>
   );
 };
@@ -555,6 +515,7 @@ export const ReplyBoxView = ({
   author,
   error,
   fit,
+  inputId,
   onChange,
   onSend,
   pending,
@@ -563,6 +524,8 @@ export const ReplyBoxView = ({
 }: {
   /** Who the reply answers, as the label names them. */
   readonly author: string;
+  /** The text field's id, so a comment's Reply can focus it. */
+  readonly inputId?: string;
   /** Why the last send failed, already written. */
   readonly error: string | null;
   readonly fit: ReplyFit;
@@ -574,7 +537,8 @@ export const ReplyBoxView = ({
   readonly text: string;
 }) => {
   const t = useTranslations("Inbox.box");
-  const id = useId();
+  const ownId = useId();
+  const id = inputId ?? ownId;
   const hintId = useId();
   const countId = useId();
   const tooLong = fit.remaining < 0;
@@ -590,7 +554,10 @@ export const ReplyBoxView = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-card flex flex-col gap-2 rounded-lg border p-3 shadow-sm"
+    >
       <Label htmlFor={id}>{t("label", { author })}</Label>
       <Textarea
         dir="auto"
@@ -666,20 +633,19 @@ export const PrivateReplyView = ({
   const reason = t("reason", { reason: reply.reason ?? "unknown" });
 
   return (
-    <div className="bg-muted/50 flex flex-col gap-2 rounded-lg p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-muted-foreground text-xs">
-          {t("from", { at: instant(reply.createdAt) })}
-        </span>
-        <Badge
-          variant={
+    <div className="flex flex-col gap-1 border-l-2 pl-3">
+      <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+        <span>{t("from", { at: instant(reply.createdAt) })}</span>
+        <span aria-hidden>·</span>
+        <span
+          className={
             reply.status === "failed" || reply.status === "unconfirmed"
-              ? "destructive"
-              : "outline"
+              ? "text-destructive font-medium"
+              : undefined
           }
         >
           {t("status", { status: reply.status })}
-        </Badge>
+        </span>
       </div>
       <p dir="auto" className="text-sm break-words whitespace-pre-wrap">
         {reply.text}
@@ -691,7 +657,7 @@ export const PrivateReplyView = ({
         <p className="text-sm">{t("unconfirmed", { reason })}</p>
       ) : null}
       {actions === undefined ? null : (
-        <div className="flex flex-wrap gap-2 empty:hidden">{actions}</div>
+        <div className="-ml-2 flex flex-wrap gap-1 empty:hidden">{actions}</div>
       )}
     </div>
   );

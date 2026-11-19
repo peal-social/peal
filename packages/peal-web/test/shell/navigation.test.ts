@@ -192,14 +192,18 @@ describe(navigationOf, () => {
     ).toBe("settings");
   });
 
-  it("names an inbox thread, and nothing on a page it does not list", () => {
-    expect(
-      navigationOf({
-        pathname: `${base}/inbox/abc`,
-        permissions: owner,
-        workspace,
-      }).breadcrumb
-    ).toStrictEqual({ page: "thread", section: null });
+  it("keeps the inbox open as a split view on a thread, and names nothing on a page it does not list", () => {
+    const thread = navigationOf({
+      pathname: `${base}/inbox/abc`,
+      permissions: owner,
+      workspace,
+    });
+
+    expect([thread.breadcrumb, thread.split, thread.current]).toStrictEqual([
+      { page: "inbox", section: null },
+      true,
+      "inbox",
+    ]);
 
     const elsewhere = navigationOf({
       pathname: `${base}/unknown`,

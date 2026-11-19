@@ -87,6 +87,18 @@ const whileSending = 3000;
 
 const whileIdle = 60_000;
 
+// Whether the thread's channel may answer its comments from Peal.
+const repliable = (detail: InboxThreadDetail): boolean =>
+  detail.platform !== null && detail.abilities.reply === "available";
+
+// The comment the composer answers first: the oldest still waiting, else
+// the latest one still on the platform.
+const firstToAnswer = (
+  comments: readonly InboxComment[]
+): InboxComment | undefined =>
+  comments.find(({ state }) => state === "new") ??
+  comments.findLast(({ state }) => state !== "deleted");
+
 const appLink = (href: string, label: string) => (
   <Link href={href} className="underline underline-offset-4">
     {label}
@@ -122,9 +134,12 @@ const doneBy = (request: CommentRequest): string => {
 const CommentActions = ({
   comment,
   context,
+  onReply,
 }: {
   readonly comment: InboxComment;
   readonly context: ThreadContext;
+  /** Aims the composer at the comment, where it may be answered. */
+  readonly onReply?: () => void;
 }) => {
   const t = useTranslations("Inbox.action");
   const explain = useInboxErrorText();
@@ -161,8 +176,8 @@ const CommentActions = ({
 
   const button = (label: string, request: CommentRequest) => (
     <Button
-      variant="outline"
-      size="sm"
+      variant="ghost"
+      size="xs"
       disabled={isBusy}
       focusableWhenDisabled
       onClick={() => {
@@ -175,6 +190,11 @@ const CommentActions = ({
 
   return (
     <>
+      {onReply === undefined ? null : (
+        <Button variant="ghost" size="xs" onClick={onReply}>
+          {t("reply")}
+        </Button>
+      )}
       {comment.state === "new"
         ? button(t("markAnswered"), { _tag: "answered", answered: true })
         : null}
@@ -199,7 +219,7 @@ const CommentActions = ({
             render={
               <Button
                 variant="ghost"
-                size="sm"
+                size="xs"
                 disabled={isBusy}
                 focusableWhenDisabled
               />
@@ -287,8 +307,8 @@ const ReplyActions = ({
     return (
       <>
         <Button
-          variant="outline"
-          size="sm"
+          variant="ghost"
+          size="xs"
           disabled={isBusy}
           focusableWhenDisabled
           onClick={() => {
@@ -298,8 +318,8 @@ const ReplyActions = ({
           {t("confirmSent")}
         </Button>
         <Button
-          variant="outline"
-          size="sm"
+          variant="ghost"
+          size="xs"
           disabled={isBusy}
           focusableWhenDisabled
           onClick={() => {
@@ -320,7 +340,7 @@ const ReplyActions = ({
         render={
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             disabled={isBusy}
             focusableWhenDisabled
           />
@@ -404,8 +424,8 @@ const PrivateReplyActions = ({
   return reply.status === "unconfirmed" ? (
     <>
       <Button
-        variant="outline"
-        size="sm"
+        variant="ghost"
+        size="xs"
         disabled={isBusy}
         focusableWhenDisabled
         onClick={() => {
@@ -415,8 +435,8 @@ const PrivateReplyActions = ({
         {t("confirmSent")}
       </Button>
       <Button
-        variant="outline"
-        size="sm"
+        variant="ghost"
+        size="xs"
         disabled={isBusy}
         focusableWhenDisabled
         onClick={() => {
@@ -486,7 +506,7 @@ const PrivateReplyAction = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>
+      <DialogTrigger render={<Button variant="ghost" size="xs" />}>
         {t("open")}
       </DialogTrigger>
       <DialogContent>
@@ -560,7 +580,7 @@ const PrivateReplyPart = ({
         />
       )}
       {offered && detail.platform !== null && until !== null ? (
-        <div>
+        <div className="-ml-2">
           <PrivateReplyAction
             comment={comment}
             context={context}
@@ -578,12 +598,14 @@ const PrivateReplyPart = ({
 const ReplyBox = ({
   comment,
   context,
+  inputId,
   onSent,
   pending,
   platform,
 }: {
   readonly comment: InboxComment;
   readonly context: ThreadContext;
+  readonly inputId: string;
   readonly onSent: (reply: InboxReply) => void;
   readonly pending: "sending" | "unconfirmed" | null;
   readonly platform: Platform;
@@ -633,6 +655,7 @@ const ReplyBox = ({
       author={authorName}
       error={error}
       fit={fit}
+      inputId={inputId}
       pending={pending}
       sending={isSending}
       text={text}
@@ -643,31 +666,26 @@ const ReplyBox = ({
 };
 
 // One comment with everything under it but the comments that answer it,
-// which `children` are.
+// which `children` are. The thread's one composer answers it.
 const CommentItem = ({
   children,
   comment,
   context,
-  onSent,
+  onReply,
   replies,
 }: {
   readonly children?: ReactNode;
   readonly comment: InboxComment;
   readonly context: ThreadContext;
-  readonly onSent: (reply: InboxReply) => void;
+  /** Aims the composer at this comment. */
+  readonly onReply: (comment: InboxComment) => void;
   /** Every reply of the thread, those just sent included. */
   readonly replies: readonly InboxReply[];
 }) => {
   const { detail, mayReply } = context;
   const own = repliesTo(replies, comment.id);
   const present = comment.state !== "deleted";
-
-  const pending = pendingReplyTo(replies, comment.id).pipe(
-    Option.map(({ status }) =>
-      status === "sending" ? ("sending" as const) : ("unconfirmed" as const)
-    ),
-    Option.getOrNull
-  );
+  const answerable = mayReply && present && repliable(detail);
 
   return (
     <CommentView
@@ -675,7 +693,21 @@ const CommentItem = ({
       platform={detail.platform}
       privateReply={<PrivateReplyPart comment={comment} context={context} />}
       {...(mayReply && present
-        ? { actions: <CommentActions comment={comment} context={context} /> }
+        ? {
+            actions: (
+              <CommentActions
+                comment={comment}
+                context={context}
+                {...(answerable
+                  ? {
+                      onReply: () => {
+                        onReply(comment);
+                      },
+                    }
+                  : {})}
+              />
+            ),
+          }
         : {})}
       {...(own.length > 0
         ? {
@@ -690,22 +722,6 @@ const CommentItem = ({
                   : {})}
               />
             )),
-          }
-        : {})}
-      {...(mayReply &&
-      present &&
-      detail.platform !== null &&
-      detail.abilities.reply === "available"
-        ? {
-            replyBox: (
-              <ReplyBox
-                comment={comment}
-                context={context}
-                pending={pending}
-                platform={detail.platform}
-                onSent={onSent}
-              />
-            ),
           }
         : {})}
     >
@@ -732,6 +748,9 @@ const LoadedThread = ({
   const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Inbox");
   const listId = useId();
+  const composerId = useId();
+  // The comment the composer answers, once a member chose one.
+  const [chosen, setChosen] = useState<string | null>(null);
   // The replies this page sent, until the thread lists them itself.
   const [sent, setSent] = useState<readonly InboxReply[]>([]);
   const replies = withSentReplies(detail.replies, sent);
@@ -757,8 +776,45 @@ const LoadedThread = ({
     setSent((before) => [...before, reply]);
   };
 
+  const handleReply = (comment: InboxComment) => {
+    setChosen(comment.id);
+    // React's ids hold colons, which a plain `#id` selector cannot.
+    globalThis.document
+      .querySelector<HTMLTextAreaElement>(`[id="${composerId}"]`)
+      ?.focus();
+  };
+
+  const target =
+    detail.comments.find(
+      ({ id, state }) => id === chosen && state !== "deleted"
+    ) ?? firstToAnswer(detail.comments);
+
+  const composer =
+    mayReply &&
+    target !== undefined &&
+    detail.platform !== null &&
+    repliable(detail) ? (
+      <div className="bg-card sticky bottom-0 mt-auto pt-2">
+        <ReplyBox
+          comment={target}
+          context={context}
+          inputId={composerId}
+          pending={pendingReplyTo(replies, target.id).pipe(
+            Option.map(({ status }) =>
+              status === "sending"
+                ? ("sending" as const)
+                : ("unconfirmed" as const)
+            ),
+            Option.getOrNull
+          )}
+          platform={detail.platform}
+          onSent={handleSent}
+        />
+      </div>
+    ) : null;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-5">
       <ThreadSummaryView
         channel={channels.find(({ id }) => id === detail.thread.channelId)}
         link={appLink}
@@ -789,20 +845,20 @@ const LoadedThread = ({
         </p>
       ) : null}
       <section aria-labelledby={listId} className="flex flex-col gap-4">
-        <h2 id={listId} className="text-xl font-semibold">
+        <h3 id={listId} className="sr-only">
           {t("thread.listTitle")}
-        </h2>
+        </h3>
         {detail.comments.length === 0 ? (
           <p className="text-muted-foreground">{t("thread.empty")}</p>
         ) : (
-          <ul className="flex flex-col gap-4">
+          <ul className="flex flex-col gap-6">
             {nestComments(detail.comments).map(({ answers, comment }) => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
                 context={context}
                 replies={replies}
-                onSent={handleSent}
+                onReply={handleReply}
               >
                 {answers.length === 0
                   ? undefined
@@ -812,7 +868,7 @@ const LoadedThread = ({
                         comment={answer}
                         context={context}
                         replies={replies}
-                        onSent={handleSent}
+                        onReply={handleReply}
                       />
                     ))}
               </CommentItem>
@@ -820,6 +876,7 @@ const LoadedThread = ({
           </ul>
         )}
       </section>
+      {composer}
     </div>
   );
 };

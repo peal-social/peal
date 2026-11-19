@@ -79,14 +79,22 @@ describe("a member's media library", { serial: true }, () => {
     await expect(main.getByText("1 file shown.")).toBeAttached();
   });
 
-  test("narrows the search by kind, and clears it", async ({ screen }) => {
+  test("narrows the search by kind, and clears it", async ({
+    browser,
+    screen,
+  }) => {
     const main = screen.getByRole("main");
 
     await main.getByRole("searchbox", "Search the library").fill("harbour");
     await expect(main.getByRole("button", "Show Video large")).toBeVisible();
 
-    await main.getByRole("combobox", "Kind").tap();
-    await screen.getByRole("option", "Images").tap();
+    await main.getByRole("button", "Filter").tap();
+    await screen.getByRole("option", "Kind").tap();
+    await screen.getByRole("option", "Image").tap();
+
+    // The search and the kind are in the address, the kind in a chip.
+    await expect(browser).toHaveURL(/\?q=harbour&kind=image$/u);
+    await expect(main.getByRole("button", "Image")).toBeVisible();
 
     await expect(main.getByRole("button", "Show Video large")).toBeHidden();
     await expect(

@@ -655,7 +655,7 @@ export const pageOf = (event: NoticeEvent, workspaceId: WorkspaceId): string =>
     CommentsReceived: ({ threadId }) => `/${workspaceId}/inbox/${threadId}`,
     MessagesReceived: ({ conversationId }) =>
       `/${workspaceId}/inbox/messages/${conversationId}`,
-    MessagesTurnedOff: () => `/${workspaceId}/inbox`,
+    MessagesTurnedOff: () => `/${workspaceId}/settings/messages`,
     FeedStopped: ({ feedId }) =>
       `/${workspaceId}/settings/feeds?feed=${feedId}`,
     FollowUpsNotSent: ({ ruleId }) =>

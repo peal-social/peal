@@ -12,15 +12,16 @@ import type {
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { ThreadRowView } from "#components/inbox/inbox-rows.tsx";
+import type { InboxRowLink } from "#components/inbox/inbox-rows.tsx";
 import {
+  CollectionNote,
   CommentView,
-  InboxEmptyView,
   PrivateReplyFormView,
   PrivateReplyView,
   ReplyAbilityNotice,
   ReplyBoxView,
   ReplyView,
-  ThreadRowView,
 } from "#components/inbox/inbox-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 import { privateReplyFit } from "#inbox/private-reply-text.ts";
@@ -43,9 +44,9 @@ const at = (iso: string) => DateTime.makeUnsafe(iso);
 const missingFrom = (html: string, expected: readonly string[]) =>
   expected.filter((text) => !html.includes(text));
 
-const link = (href: string, label: string) => <a href={href}>{label}</a>;
-
-const workspaceId = "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f";
+const RowLink: InboxRowLink = ({ children, ...props }) => (
+  <a {...props}>{children}</a>
+);
 
 const channel: SocialChannel = {
   avatarUrl: null,
@@ -106,45 +107,42 @@ const reply: InboxReply = {
 };
 
 describe(ThreadRowView, () => {
-  it("shows a thread: its channel, what waits, and the ways to it", async () => {
+  it("names a thread's channel, what waits, and its latest day, as one link", async () => {
     const html = await render(
       "en",
       <ul>
         <ThreadRowView
           channel={channel}
-          link={link}
+          current
+          href={`/w/inbox/${thread.id}?status=waiting`}
+          link={RowLink}
           thread={thread}
-          workspaceId={workspaceId}
         />
       </ul>
     );
 
     expect(
       missingFrom(html, [
-        `<a href="/${workspaceId}/inbox/${thread.id}">Comments under the post on @peal@social.example on Mastodon</a>`,
+        `href="/w/inbox/${thread.id}?status=waiting"`,
+        'aria-current="page"',
+        "Comments under the post on @peal@social.example on Mastodon",
         "3 waiting of 12",
-        "Latest comment on Nov 10, 2026, 8:30 AM",
-        `<a href="/${workspaceId}/posts/${thread.postId}">Open the post</a>`,
-        'href="https://social.example/@peal/1"',
-        "View the post on the platform",
+        "Nov 10",
+        "bg-brand",
       ])
     ).toStrictEqual([]);
   });
 
-  it("says why comments are no longer read, in French, without a channel", async () => {
+  it("speaks French, without a channel, and marks nothing while nothing waits", async () => {
     const html = await render(
       "fr",
       <ul>
         <ThreadRowView
           channel={undefined}
-          link={link}
-          thread={{
-            ...thread,
-            collectionEnded: "disconnected",
-            permalink: null,
-            unanswered: 0,
-          }}
-          workspaceId={workspaceId}
+          current={false}
+          href="/w/inbox/t"
+          link={RowLink}
+          thread={{ ...thread, unanswered: 0 }}
         />
       </ul>
     );
@@ -153,49 +151,21 @@ describe(ThreadRowView, () => {
       missingFrom(html, [
         "Commentaires sous la publication sur Un canal déconnecté",
         "0 en attente sur 12",
-        "Ses commentaires ne sont plus lus : son canal a été déconnecté.",
       ])
     ).toStrictEqual([]);
-    expect(html).not.toContain("Voir la publication sur la plateforme");
-  });
-
-  it("links no address a platform gave that is not a web address", async () => {
-    const html = await render(
-      "en",
-      <ul>
-        <ThreadRowView
-          channel={channel}
-          link={link}
-          thread={{ ...thread, permalink: "data:text/html,hello" }}
-          workspaceId={workspaceId}
-        />
-      </ul>
-    );
-
-    expect(html).not.toContain("data:text/html");
-    expect(html).not.toContain("View the post on the platform");
+    expect(html).not.toContain("aria-current");
+    expect(html).not.toContain("bg-brand");
   });
 });
 
-describe(InboxEmptyView, () => {
+describe(CollectionNote, () => {
   it("says what Peal collects, and for how long", async () => {
-    await expect(
-      render("en", <InboxEmptyView filtered={false} />)
-    ).resolves.toContain(
+    await expect(render("en", <CollectionNote />)).resolves.toContain(
       "Peal reads comments on Mastodon and Bluesky, and on Facebook, Instagram, YouTube, and LinkedIn where whoever runs Peal turned them on, for 30 days after a post went live unless whoever runs Peal set another window, and keeps them 30 days after that."
     );
-    await expect(
-      render("fr", <InboxEmptyView filtered={false} />)
-    ).resolves.toContain(
+    await expect(render("fr", <CollectionNote />)).resolves.toContain(
       "Peal lit les commentaires sur Mastodon et Bluesky, et sur Facebook, Instagram, YouTube et LinkedIn là où la personne qui exploite Peal les a activés, pendant 30 jours après la mise en ligne d’une publication sauf si la personne qui exploite Peal a fixé une autre fenêtre, et les conserve 30 jours de plus."
     );
-  });
-
-  it("says when the filters alone leave nothing", async () => {
-    const html = await render("en", <InboxEmptyView filtered />);
-
-    expect(html).toContain("No post matches these filters.");
-    expect(html).not.toContain("No comment has been read yet.");
   });
 });
 
@@ -226,7 +196,7 @@ describe(CommentView, () => {
         "Ada Example",
         "@ada@social.example",
         "When does it open?",
-        ">New<",
+        ">Waiting<",
         "Written on Nov 10, 2026, 8:30 AM",
         'href="https://social.example/@ada/2"',
         "View the comment on the platform",
@@ -323,7 +293,7 @@ describe(CommentView, () => {
   it.each([
     { english: ">Answered<", french: ">Répondu<", state: "answered" },
     { english: ">Hidden<", french: ">Masqué<", state: "hidden" },
-    { english: ">New<", french: ">Nouveau<", state: "new" },
+    { english: ">Waiting<", french: ">En attente<", state: "new" },
   ] as const)("badges a comment $state", async ({ english, french, state }) => {
     const view = (
       <ul>
@@ -405,7 +375,7 @@ describe(CommentView, () => {
     );
   });
 
-  it("nests the replies, the actions, the box and the answers under it", async () => {
+  it("nests the replies, the actions and the answers under it", async () => {
     const html = await render(
       "en",
       <ul>
@@ -413,7 +383,6 @@ describe(CommentView, () => {
           comment={{ ...comment, liked: true }}
           actions={<button type="button">Mark as answered</button>}
           replies={<ReplyView reply={reply} />}
-          replyBox={<p>box</p>}
         >
           <CommentView comment={{ ...comment, id: "nested", text: "Me too" }} />
         </CommentView>
@@ -425,7 +394,6 @@ describe(CommentView, () => {
         ">Liked<",
         "Mark as answered",
         'aria-label="Replies sent from Peal"',
-        "<p>box</p>",
         'aria-label="Answers to this comment"',
         "Me too",
       ])

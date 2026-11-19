@@ -1,6 +1,5 @@
 "use client";
 
-import { useShortcut } from "@ui-sdk/react/shortcuts";
 import {
   CircleDashedIcon,
   CircleCheckBigIcon,
@@ -20,12 +19,11 @@ import {
   ListToolbarEnd,
 } from "peal-ui/components/list-toolbar";
 import { TagDot } from "peal-ui/components/tag";
-import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { channelName } from "#channels/channel-name.ts";
 import { DisplayMenu } from "#components/lists/display-menu.tsx";
-import { FilterMenu } from "#components/lists/filter-menu.tsx";
+import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import type { FilterProperty } from "#components/lists/filter-menu.tsx";
 import {
   byTime,
@@ -40,7 +38,6 @@ import type {
   PostListFilters,
   PostOrdering,
 } from "#posts/post-list-filter.ts";
-import { listKeys } from "#shell/keys.ts";
 
 const statuses = PostStatusSchema.literals;
 const outcomes = PostOutcomeSchema.literals;
@@ -75,6 +72,10 @@ const valueOf = (
  * workspace no longer has says so, never "every". An outcome goes with
  * finished posts only, so choosing one chooses them too.
  */
+// The menu's values of a filter: one at most, as the API takes one.
+const valuesOf = (value: string | undefined): readonly string[] =>
+  value === undefined ? [] : [value];
+
 export const PostListToolbar = ({
   actions,
   channels,
@@ -96,18 +97,7 @@ export const PostListToolbar = ({
   const lists = useTranslations("Lists");
   const tPosts = useTranslations("Posts");
 
-  const [menu, setMenu] = useState<{
-    readonly open: boolean;
-    readonly startAt: string | null;
-  }>({ open: false, startAt: null });
-
-  useShortcut(
-    listKeys.filter,
-    () => {
-      setMenu({ open: true, startAt: null });
-    },
-    { description: lists("filter") }
-  );
+  const menu = useFilterMenu();
 
   const properties: (FilterProperty & { readonly id: PostProperty })[] = [
     {
@@ -243,11 +233,11 @@ export const PostListToolbar = ({
   const ordering = orderingOf(filters.sort);
 
   const chosen = {
-    channel: filters.channelId,
-    outcome: filters.outcome,
-    queue: filters.queueId,
-    status: filters.status,
-    tag: filters.tagId,
+    channel: valuesOf(filters.channelId),
+    outcome: valuesOf(filters.outcome),
+    queue: valuesOf(filters.queueId),
+    status: valuesOf(filters.status),
+    tag: valuesOf(filters.tagId),
   };
 
   return (
@@ -258,18 +248,14 @@ export const PostListToolbar = ({
           <FilterMenu
             active={chips.length > 0}
             chosen={chosen}
-            open={menu.open}
             properties={properties}
-            startAt={menu.startAt}
-            onChoose={(property, value) => {
+            state={menu}
+            onChoose={(property, values) => {
               const known = properties.find(({ id }) => id === property);
 
               if (known !== undefined) {
-                choose(known.id, value);
+                choose(known.id, values[0] ?? null);
               }
-            }}
-            onOpenChange={(open) => {
-              setMenu({ open, startAt: open ? menu.startAt : null });
             }}
           />
           <DisplayMenu
@@ -304,7 +290,7 @@ export const PostListToolbar = ({
                 removeLabel={lists("remove", { property: names[property] })}
                 value={shownValue(property, value)}
                 onEdit={() => {
-                  setMenu({ open: true, startAt: property });
+                  menu.openAt(property);
                 }}
                 onRemove={() => {
                   choose(property, null);

@@ -4,10 +4,40 @@ import { maxMediaQueryLength } from "peal-contract";
 
 import {
   isNarrowed,
+  libraryQueryStringOf,
+  librarySearchOf,
   pageKeyOf,
   pageOfKey,
   queryOf,
 } from "#media/library-search.ts";
+
+describe(librarySearchOf, () => {
+  it("reads the text as typed and a known kind, and leaves an unknown one out", () => {
+    expect([
+      librarySearchOf(new URLSearchParams("q=Harbour+at&kind=video")),
+      librarySearchOf(new URLSearchParams("kind=sound")),
+    ]).toStrictEqual([
+      { kind: "video", text: "Harbour at" },
+      { kind: null, text: "" },
+    ]);
+  });
+});
+
+describe(libraryQueryStringOf, () => {
+  it("writes what narrows the library, and reads it back", () => {
+    const written = libraryQueryStringOf({ kind: "image", text: "beach" });
+
+    expect([
+      written,
+      libraryQueryStringOf({ kind: null, text: "   " }),
+      librarySearchOf(new URLSearchParams(written)),
+    ]).toStrictEqual([
+      "q=beach&kind=image",
+      "",
+      { kind: "image", text: "beach" },
+    ]);
+  });
+});
 
 describe(queryOf, () => {
   it("asks for the whole library when nothing narrows it", () => {
