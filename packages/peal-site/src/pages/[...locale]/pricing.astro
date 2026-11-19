@@ -106,6 +106,8 @@ const plans = [
         </p>
         <a
           href={page.enterprise.href}
+          data-measure-cta="talk_to_sales"
+          data-measure-place="pricing"
           class={buttonVariants({ className: "w-fit", variant: "outline" })}
         >
           {page.enterprise.talk}
@@ -144,6 +146,8 @@ const plans = [
           ) : (
             <a
               href={selfHosting}
+              data-measure-cta="self_host"
+              data-measure-place="pricing"
               class={buttonVariants({ className: "w-fit", variant: "outline" })}
             >
               {t.selfHosted.link}
@@ -197,7 +201,11 @@ const plans = [
     client:visible
     line={catalogue.home.cta.line}
     primary={closing.primary}
-    secondary={{ href: page.enterprise.href, label: page.enterprise.talk }}
+    secondary={{
+      href: page.enterprise.href,
+      label: page.enterprise.talk,
+      measure: "talk_to_sales",
+    }}
     title={catalogue.home.cta.title}
   />
 </Base>

@@ -75,6 +75,22 @@ peal_blog_bucket: ""
 # relay, with the RESEND_API_KEY the server sends with, from MAIL_FROM's
 # address (peal_mail_from). false: the blog sends no mail.
 peal_blog_mail: true
+# Peal's own measurement of the marketing site, the docs and the blog with
+# PostHog (README.md, "Site measurement"): off by default, and on in
+# production alone. With it, the tunnel sends /pulse/site/ on the site's
+# and the docs' host names to the web app's relay (PEAL_POSTHOG_SITE), the
+# server expires the visitor's cookie on the site's host name after a
+# sign-up, release.yml builds the site and the docs with the project's
+# token, and the blog reads it at run time. The token is the server's
+# PEAL_POSTHOG_KEY, from the vault, which the build on the machine running
+# Ansible reads: peal_preflight refuses the switch without it there. It is
+# public (browsers send it), but stays out of Git with the other
+# credentials. The sandbox keeps it off: its host names are under
+# peal.social too, and would share the visitor's answer with production.
+peal_site_measurement: false
+peal_site_measurement_token: "{{ (peal_credentials | default({})).PEAL_POSTHOG_KEY | default('') }}"
+# Where the surfaces send, on their own origin.
+peal_site_measurement_host: /pulse/site
 # Compose profiles the stack runs with: the marketing site and the docs, the
 # docs server, and the blog.
 peal_compose_profiles: >-

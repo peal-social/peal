@@ -23,6 +23,7 @@ import {
 } from "better-auth/plugins";
 import { Option, Redacted, Schema } from "effect";
 
+import type { SiteMeasurementSettings } from "#shared/application/site-measurement.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { defaultLocale, LocaleSchema } from "#shared/domain/locale.ts";
@@ -73,6 +74,7 @@ import {
   tellTwoStepChange,
 } from "./two-step.ts";
 import type { TwoStepPolicy, TwoStepTeller } from "./two-step.ts";
+import { expireVisitorCookie, visitorOfSignUp } from "./visitor-cookie.ts";
 import { recordWorkspaceChange } from "./workspace-changes.ts";
 import type { WorkspaceChangeRecorder } from "./workspace-changes.ts";
 import { checkNewSlug, keepSlug } from "./workspace-slugs.ts";
@@ -98,6 +100,11 @@ export interface CreatedUser {
   readonly method: SignUpMethod;
   /** Better Auth's id, as it gave it. */
   readonly userId: string;
+  /**
+   * The site's visitor the request that made the account carried, to link
+   * to it: none without one, or where a sign-up links none.
+   */
+  readonly visitorId: Option.Option<string>;
 }
 
 /**
@@ -152,6 +159,11 @@ export interface AuthDependencies {
   readonly database: AuthDatabase;
   readonly hooks: AuthHooks;
   readonly settings: AuthConfiguration;
+  /**
+   * Where a sign-up links the site's visitor to the account, and expires
+   * the visitor's cookie: none where it links none.
+   */
+  readonly site: Option.Option<SiteMeasurementSettings>;
 }
 
 // Better Auth serves its routes, and writes its links, under this path of
@@ -437,7 +449,12 @@ const localeOfProviderSignUp = async <
  * generates the tables with the Stripe plugin on, which Better Auth runs
  * without when billing is off, so every deployment has the same tables.
  */
-export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
+export const makeAuth = ({
+  database,
+  hooks,
+  settings,
+  site,
+}: AuthDependencies) =>
   betterAuth({
     account: {
       // A provider reaches an account only through an address both sides
@@ -559,6 +576,7 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
               locale: localeOf(user),
               method: signUpMethodOf(context),
               userId: user.id,
+              visitorId: visitorOfSignUp(context, site),
             });
           },
           before: localeOfProviderSignUp,
@@ -605,6 +623,7 @@ export const makeAuth = ({ database, hooks, settings }: AuthDependencies) =>
         await forgetTrustedBrowsers(ctx);
         await tellTwoStepChange(ctx, hooks.twoStepChanged);
         await followOwnersAfterLeaving(ctx, hooks);
+        expireVisitorCookie(ctx, site);
       }),
       before: beforeEveryRoute(hooks),
     },

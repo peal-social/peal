@@ -90,6 +90,7 @@ const auth = makeAuth({
     trustedOrigins: [],
     trustedProxies: [],
   },
+  site: Option.none(),
 });
 
 const context = await auth.$context;

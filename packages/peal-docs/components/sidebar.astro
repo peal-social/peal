@@ -17,7 +17,7 @@ const href = appUrl === undefined || appUrl === "" ? undefined : `${appUrl}${fre
 {
   href !== undefined && (
     <div class="peal-app-link">
-      <a href={href}>
+      <a href={href} data-measure-cta="dashboard" data-measure-place="sidebar">
         <Icon name="layout-dashboard" size={16} />
         <span>{label}</span>
         <Icon name="arrow-up-right" size={14} />

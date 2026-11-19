@@ -1,12 +1,8 @@
 import { Schema } from "effect";
-import {
-  originOf,
-  plausibleScript,
-  present,
-  siteLink,
-} from "peal-ui/lib/site/links";
-import type { PlausibleScript } from "peal-ui/lib/site/links";
+import { originOf, present, siteLink } from "peal-ui/lib/site/links";
 import type { Locale } from "peal-ui/lib/site/locales";
+import { measurementSettings } from "peal-ui/lib/site/measurement/settings";
+import type { MeasurementSettings } from "peal-ui/lib/site/measurement/settings";
 
 // The blog's own settings, read from the environment when the server
 // starts (the image carries none). Each is optional: unset or empty turns
@@ -16,8 +12,10 @@ const SettingsSchema = Schema.Struct({
   BLOG_APP_URL: Schema.optional(Schema.String),
   BLOG_DISCORD_URL: Schema.optional(Schema.String),
   BLOG_DOCS_URL: Schema.optional(Schema.String),
-  BLOG_PLAUSIBLE_DOMAIN: Schema.optional(Schema.String),
-  BLOG_PLAUSIBLE_HOST: Schema.optional(Schema.String),
+  BLOG_POSTHOG_COOKIE_DOMAIN: Schema.optional(Schema.String),
+  BLOG_POSTHOG_ENVIRONMENT: Schema.optional(Schema.String),
+  BLOG_POSTHOG_HOST: Schema.optional(Schema.String),
+  BLOG_POSTHOG_KEY: Schema.optional(Schema.String),
   BLOG_SITE_URL: Schema.optional(Schema.String),
 });
 
@@ -28,7 +26,11 @@ export interface BlogSettings {
   readonly discord: string | undefined;
   /** A page of the docs in a language, when BLOG_DOCS_URL is set. */
   readonly docs: (locale: Locale, path: string) => string | undefined;
-  readonly plausible: PlausibleScript | undefined;
+  /**
+   * Measurement with PostHog and its consent notice, as the site has them,
+   * when BLOG_POSTHOG_KEY and BLOG_POSTHOG_HOST are both set.
+   */
+  readonly measurement: MeasurementSettings | undefined;
   /**
    * The site's origin, such as https://peal.social, for the links to its
    * pages and its icons: "" (the same origin) when BLOG_SITE_URL is unset.
@@ -55,10 +57,13 @@ export const blogSettings = (values: BlogEnvironment): BlogSettings => {
     app: (locale, path) => siteLink(app, locale, path),
     discord: present(values.BLOG_DISCORD_URL),
     docs: (locale, path) => siteLink(docs, locale, path),
-    plausible: plausibleScript(
-      values.BLOG_PLAUSIBLE_DOMAIN,
-      values.BLOG_PLAUSIBLE_HOST
-    ),
+    measurement: measurementSettings({
+      cookieDomain: values.BLOG_POSTHOG_COOKIE_DOMAIN,
+      environment: values.BLOG_POSTHOG_ENVIRONMENT,
+      host: values.BLOG_POSTHOG_HOST,
+      key: values.BLOG_POSTHOG_KEY,
+      prefix: "BLOG",
+    }),
     site: originOf(values.BLOG_SITE_URL) ?? "",
   };
 };

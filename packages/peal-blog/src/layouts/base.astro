@@ -7,6 +7,7 @@ import { SiteFooter } from "peal-ui/components/site-footer";
 import { SiteHeader } from "peal-ui/components/site-header";
 import { indexable } from "peal-ui/lib/site/links";
 import { pageLocale } from "peal-ui/lib/site/locales";
+import { consentAttributes } from "peal-ui/lib/site/measurement/settings";
 import { repository } from "peal-ui/lib/site/navigation";
 
 import { chromeProps } from "../chrome.ts";
@@ -48,6 +49,17 @@ const { footer, header } = chromeProps({
 });
 
 const { announcement } = messages(locale);
+
+// The consent notice and measurement, as the site has them; EmDash's admin
+// never renders this layout, so it is never measured.
+const consent =
+  settings.measurement === undefined
+    ? undefined
+    : consentAttributes(settings.measurement, {
+        locale,
+        policy: `${settings.site}${locale === "en" ? "" : `/${locale}`}/privacy/`,
+        source: "blog",
+      });
 ---
 
 <!doctype html>
@@ -68,19 +80,10 @@ const { announcement } = messages(locale);
         <meta name="robots" content="noindex, nofollow" />
       )
     }
-    {
-      settings.plausible !== undefined && (
-        <script
-          is:inline
-          defer
-          data-domain={settings.plausible.domain}
-          src={settings.plausible.src}
-        ></script>
-      )
-    }
   </head>
   <body class="relative flex min-h-dvh flex-col antialiased">
     <EmDashBodyStart page={page} />
+    {consent !== undefined && <peal-consent {...consent} />}
     <!-- The blueprint's rails (DESIGN.md, Site), as the site has them. -->
     <div
       aria-hidden="true"
@@ -97,5 +100,8 @@ const { announcement } = messages(locale);
     </main>
     <SiteFooter client:idle {...footer} />
     <EmDashBodyEnd page={page} />
+    <script>
+      import "peal-ui/lib/site/consent/start";
+    </script>
   </body>
 </html>

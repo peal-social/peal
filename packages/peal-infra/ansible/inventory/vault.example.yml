@@ -109,6 +109,9 @@ peal_credentials:
   # user and workspace ids, separated by commas, of people and customers
   # who objected: they name people, and the inventory is public, so they
   # live here. The sandbox takes a second project's values the day it has one.
+  # Where peal_site_measurement is on, release.yml also builds the site and
+  # the docs with the token, from here: the vault, not the server, must hold
+  # it (README.md, "Site measurement").
   # PEAL_POSTHOG_KEY: REPLACE
   # PEAL_POSTHOG_PERSONAL_API_KEY: REPLACE
   # PEAL_POSTHOG_EXCLUDED_IDS: ""

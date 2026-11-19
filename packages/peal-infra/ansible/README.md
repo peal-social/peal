@@ -35,8 +35,10 @@ The tunnel's routes, for production (`roles/cloudflared/templates/config.yml.j2`
 | `app.peal.social`     | `/api/auth/admin/*`, `/api/admin/*`, `/admin`, `/en/admin`, `/fr/admin` | the server or the web app                                                                | team only |
 | `app.peal.social`     | `/api/*`, `/.well-known/oauth-*`                                        | the server, 127.0.0.1:3000                                                               | public    |
 | `app.peal.social`     | anything else                                                           | the web app, 127.0.0.1:3001                                                              | public    |
-| `peal.social`         | any                                                                     | the site, 127.0.0.1:4321                                                                 | public    |
-| `docs.peal.social`    | any                                                                     | the docs server, 127.0.0.1:4323 (the static docs, 127.0.0.1:4322, without the assistant) | public    |
+| `peal.social`         | `/pulse/site/*` ([Site measurement](#site-measurement))                 | the web app's relay, 127.0.0.1:3001                                                      | public    |
+| `peal.social`         | anything else                                                           | the site, 127.0.0.1:4321                                                                 | public    |
+| `docs.peal.social`    | `/pulse/site/*` ([Site measurement](#site-measurement))                 | the web app's relay, 127.0.0.1:3001                                                      | public    |
+| `docs.peal.social`    | anything else                                                           | the docs server, 127.0.0.1:4323 (the static docs, 127.0.0.1:4322, without the assistant) | public    |
 | `peal.link`           | `/api/l/<code>`, which the edge rewrote from `/<code>`                  | the server, 127.0.0.1:3000                                                               | public    |
 | `peal.link`           | anything else                                                           | 404                                                                                      | public    |
 
@@ -905,6 +907,63 @@ Turn it on, for the sandbox first:
    then `release.yml --limit <environment>`.
 3. Open `https://<site>/_emdash/admin` right away (behind Access), complete
    EmDash's setup wizard and register a passkey.
+
+### Site measurement
+
+Peal measures its marketing site, its docs and its blog with PostHog, in
+the project the server and the web app send to, so one funnel runs from a
+page read to a sign-up. It is off until `peal_site_measurement: true` is
+set for an environment (`group_vars/<environment>/main.yml`): production
+has it on. The sandbox keeps it off: its host names are under
+`peal.social` too, and would share production's answer cookie, so a
+visitor's choice on one would apply on the other. With the switch:
+
+- the tunnel sends `/pulse/site/…` on the site's and the docs' host names
+  to the web app, ahead of their other rules, and nothing else of those
+  host names reaches it: the pages send their events to their own origin,
+  and the web app's relay forwards them to PostHog with the visitor's
+  address (`cf-connecting-ip`, `AUTH_IP_HEADERS`), from which PostHog
+  works out the day's identifier;
+- `site.yml` writes into `host.env` `PEAL_POSTHOG_SITE=on`, which turns the
+  relay's site mode on and has the server link a consenting visitor to
+  the account they create, and `PEAL_POSTHOG_SITE_COOKIE_DOMAIN`, the
+  site's host name, where the server expires the visitor's cookie after
+  that sign-up; and, where the blog runs, its `BLOG_POSTHOG_KEY`,
+  `BLOG_POSTHOG_HOST` (`/pulse/site`), `BLOG_POSTHOG_COOKIE_DOMAIN` (the
+  site's host name) and `BLOG_POSTHOG_ENVIRONMENT`;
+- `release.yml` builds `peal-static` with `SITE_POSTHOG_KEY`,
+  `SITE_POSTHOG_HOST`, `SITE_POSTHOG_COOKIE_DOMAIN` and
+  `SITE_POSTHOG_ENVIRONMENT`, and both `peal-static` and `peal-docs` with
+  the four `DOCS_POSTHOG_*` and `DOCS_PRIVACY_URL`
+  (`https://<site>/privacy`), the address of the policy the docs' notice
+  links to (`peal_release_build_args`).
+
+The key is PostHog's project token, the server's `PEAL_POSTHOG_KEY`.
+Browsers send it, so it is no secret, but it stays out of Git with the
+other credentials: the release reads it from the vault on the machine
+running Ansible, where it builds the images, so `peal_preflight` refuses
+the switch unless the vault holds it, written `phc_` then letters and
+digits. A token written on the server alone is not enough. The preflight
+also refuses `PEAL_POSTHOG_SITE`, `PEAL_POSTHOG_SITE_COOKIE_DOMAIN`, the
+`SITE_`, `DOCS_` and `BLOG_POSTHOG_*` settings and `DOCS_PRIVACY_URL` in
+`peal_settings` or `peal_static_build_args`: the switch alone sets them,
+so the relay and the pages agree.
+
+The site and the docs read these settings when their image is built, and
+an image is named after its commit: turning the switch on or off takes
+effect with `site.yml`, then the release of a commit the server has no
+images of yet. No new host name is needed, so the Pulumi stacks do not
+change.
+
+Turn it on:
+
+1. In the PostHog project (Settings, Project, Web analytics), turn on
+   **Enable cookieless tracking**, which PostHog needs to keep the events
+   of visitors who did not allow the cookie, and check that the project
+   discards client IP data.
+2. Check that production's vault holds `PEAL_POSTHOG_KEY`.
+3. Set `peal_site_measurement: true`, run `site.yml --check --diff`, then
+   `site.yml`, then `release.yml --limit production`.
 
 ### Stripe catalogue
 

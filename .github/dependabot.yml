@@ -83,6 +83,13 @@ updates:
         patterns:
           - posthog-js
           - "@posthog/*"
+      # The site's consent notice and measurement (peal-ui): the library
+      # that writes its cookies, with its types, and web vitals.
+      site-measurement:
+        patterns:
+          - js-cookie
+          - "@types/js-cookie"
+          - web-vitals
       react:
         patterns:
           - react

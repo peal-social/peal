@@ -262,7 +262,8 @@
 
     # The site and the docs read their settings at build time, so each
     # environment builds its own; docker takes each --build-arg's value from
-    # the environment.
+    # the environment (peal_release_build_args: the inventory's, and the
+    # measurement's with peal_site_measurement).
     - name: Build the static image
       ansible.builtin.command:
         argv: >-
@@ -272,11 +273,11 @@
              + (['--build-arg'] | product(peal_release_static_args) | flatten)
              + ['.'] }}
         chdir: "{{ peal_release_local_dir }}/checkout"
-      environment: "{{ peal_static_build_args }}"
+      environment: "{{ peal_release_build_args }}"
       vars:
         # The docs server's own, which static.Dockerfile does not read.
         peal_release_static_args: >-
-          {{ peal_static_build_args.keys()
+          {{ peal_release_build_args.keys()
              | difference(['DOCS_ASSISTANT_MODEL', 'DOCS_TURNSTILE_SITE_KEY']) }}
       delegate_to: localhost
       become: false
@@ -293,9 +294,9 @@
              + (['--build-arg'] | product(peal_release_docs_args) | flatten)
              + ['.'] }}
         chdir: "{{ peal_release_local_dir }}/checkout"
-      environment: "{{ peal_static_build_args }}"
+      environment: "{{ peal_release_build_args }}"
       vars:
-        peal_release_docs_args: "{{ peal_static_build_args.keys() | select('match', 'DOCS_') | list }}"
+        peal_release_docs_args: "{{ peal_release_build_args.keys() | select('match', 'DOCS_') | list }}"
       delegate_to: localhost
       become: false
       changed_when: true

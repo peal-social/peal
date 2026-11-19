@@ -82,4 +82,17 @@ describe("the proxy", () => {
 
     expect(answer.status).not.toBe(308);
   });
+
+  // The site's and the docs' host names reach the relay's site mode
+  // through the edge, with their own Host.
+  it("lets the site's events through, whatever host they came to", async () => {
+    const answer = await proxy(
+      new NextRequest("https://docs.example.test/pulse/site/e/?ip=0", {
+        headers: { host: "docs.example.test" },
+        method: "POST",
+      })
+    );
+
+    expect(answer.headers.get("x-middleware-next")).toBe("1");
+  });
 });
