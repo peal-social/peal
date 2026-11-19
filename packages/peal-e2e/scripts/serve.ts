@@ -12,6 +12,7 @@ import path from "node:path";
 import { Schema } from "effect";
 
 import { projectToken, startPostHog } from "./posthog.ts";
+import { startSite } from "./site.ts";
 import { startStripe, webhookSecret } from "./stripe.ts";
 
 const packages = path.join(import.meta.dirname, "..", "..");
@@ -56,6 +57,9 @@ const posthog = await startPostHog();
 const measured = {
   PEAL_POSTHOG_HOST: posthog.url,
   PEAL_POSTHOG_KEY: projectToken,
+  // The site's events too, through the relay's site mode, and the link
+  // a sign-up makes to the site's visitor.
+  PEAL_POSTHOG_SITE: "on",
   PEAL_POSTHOG_WEB: "on",
 };
 
@@ -91,10 +95,16 @@ const web = spawn(
       PATH: process.env["PATH"] ?? "",
       PEAL_API_URL: `http://127.0.0.1:${serverPort}`,
       ...measured,
+      // The header the run's site gives the visitor's address in, as the
+      // tunnel does in production.
+      AUTH_IP_HEADERS: "cf-connecting-ip",
     },
     stdio: "inherit",
   }
 );
+
+// The marketing site, measured, its /pulse/ forwarded to the web app.
+const site = await startSite(webPort);
 
 const children: readonly ChildProcess[] = [server, web];
 
@@ -128,6 +138,10 @@ process.exitCode = stopping ? 0 : 1;
 stopAll();
 
 await Promise.all(exited);
+
+site.server.closeAllConnections();
+
+site.server.close();
 
 posthog.server.closeAllConnections();
 

@@ -35,6 +35,9 @@ const otherUserId = UserIdSchema.make("3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f");
 // A UUIDv7, as the web app's SDK makes its session ids.
 const browserSessionId = "019a7b2c-3d4e-7f50-8a1b-2c3d4e5f6a7b";
 
+// A UUIDv7, as the site's SDK makes its visitors' ids.
+const siteVisitorId = "019a9c4e-7b21-7d3f-9a4b-5c6d7e8f9a0b";
+
 const excludedWorkspaceId = WorkspaceIdSchema.make(
   "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e"
 );
@@ -73,6 +76,7 @@ describe("product analytics without a key", () => {
 
         assert.isFalse(analytics.enabled);
         yield* analytics.capture(captured({ actor: asUser }));
+        yield* analytics.link(userId, siteVisitorId);
       })
     );
   });
@@ -386,6 +390,49 @@ describe("product analytics", () => {
           assert.deepStrictEqual(yield* sentEvents, []);
         })
     );
+
+    it.effect(
+      "links a site's visitor to an account with one alias event, under the account's id",
+      () =>
+        Effect.gen(function* linking() {
+          yield* clearRecorded;
+
+          const analytics = yield* ProductAnalytics;
+
+          yield* analytics.link(userId, siteVisitorId);
+
+          assert.deepStrictEqual(yield* sentEvents, [
+            {
+              distinctId: userId,
+              event: "$create_alias",
+              properties: {
+                $geoip_disable: true,
+                alias: siteVisitorId,
+                distinct_id: userId,
+                environment: "test",
+              },
+            },
+          ]);
+        })
+    );
+
+    it.effect("links no visitor whose id is not a version 7 UUID", () =>
+      Effect.gen(function* notAVisitor() {
+        yield* clearRecorded;
+
+        const analytics = yield* ProductAnalytics;
+
+        for (const visitor of [
+          otherUserId,
+          `workspace:${workspaceId}`,
+          "$posthog_cookieless",
+        ]) {
+          yield* analytics.link(userId, visitor);
+        }
+
+        assert.deepStrictEqual(yield* sentEvents, []);
+      })
+    );
   });
 });
 
@@ -443,6 +490,7 @@ describe("product analytics of an erasure", () => {
             set: { kind: "user" },
             setOnce: {},
           });
+          yield* analytics.link(userId, siteVisitorId);
 
           assert.deepStrictEqual(yield* sentEvents, []);
           // Forgetting deletes nothing at PostHog: the erasure's job does.
@@ -503,6 +551,7 @@ describe("product analytics with excluded users", () => {
         });
         yield* analytics.markInternal(excludedId);
         yield* analytics.identify(excludedId, { set: {}, setOnce: {} });
+        yield* analytics.link(excludedId, siteVisitorId);
 
         // An excluded workspace: nothing, whoever acts in it.
         yield* capture({

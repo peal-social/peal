@@ -548,9 +548,12 @@ environment:
   started, and the pages to cancel a contract and to withdraw from one.
 - `SITE_DISCORD_URL`: the Discord server's invitation, which the marketing
   site's header and footer link to.
-- `DOCS_PLAUSIBLE_DOMAIN` and `SITE_PLAUSIBLE_DOMAIN`: turn on Plausible.
-- `DOCS_PLAUSIBLE_HOST` and `SITE_PLAUSIBLE_HOST`: point Plausible at a
-  self-hosted instance.
+- `SITE_POSTHOG_KEY` and `SITE_POSTHOG_HOST`, `DOCS_POSTHOG_KEY` and
+  `DOCS_POSTHOG_HOST`: measure the site and the docs with PostHog, and ask
+  each visitor in the consent notice; `*_POSTHOG_COOKIE_DOMAIN` shares the
+  answer between them, `*_POSTHOG_ENVIRONMENT` names the events'
+  environment, and `DOCS_PRIVACY_URL` is the policy the docs' notice links
+  to. The docs' environment variables page says more.
 - `DOCS_APP_URL`: the web app's origin, which the docs' sidebar links to
   with an **Open Peal** button.
 - `DOCS_ASSISTANT_MODEL`: turns on the docs' assistant with this Anthropic

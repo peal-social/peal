@@ -54,6 +54,7 @@ const settings = (
   excluded: new Set(),
   host: "https://eu.i.posthog.com",
   key: Redacted.make(key),
+  site: Option.none(),
   web: false,
   ...overrides,
 });

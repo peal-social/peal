@@ -1,6 +1,8 @@
 # Dependencies and builds
 node_modules/
 dist/
+# The site's build for the end-to-end run (nx run peal-site:build-e2e).
+dist-e2e/
 build/
 .next/
 .astro/

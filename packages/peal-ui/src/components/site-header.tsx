@@ -3,6 +3,7 @@
 import { ArrowRightIcon, MenuIcon, StarIcon } from "lucide-react";
 import { useId } from "react";
 
+import type { Cta, Place } from "../lib/site/measurement/events";
 import { cn } from "../lib/utils";
 import { Button, buttonVariants } from "./button";
 import { FanOutArt } from "./fan-out-art";
@@ -32,6 +33,8 @@ import type { SiteIcon, SiteMark } from "./site-icons";
 interface SiteLink {
   readonly href: string;
   readonly label: string;
+  /** The call to action a click on it counts as, where the site measures. */
+  readonly measure?: Cta | undefined;
 }
 
 /**
@@ -373,13 +376,17 @@ const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => {
 
 const RepositoryLink = ({
   className,
+  place,
   repository,
 }: {
   readonly className?: string | undefined;
+  readonly place: Place;
   readonly repository: NonNullable<SiteHeaderProps["github"]>;
 }) => (
   <a
     href={repository.href}
+    data-measure-cta={repository.measure}
+    data-measure-place={repository.measure === undefined ? undefined : place}
     className={cn(navigationMenuTriggerClassName, "gap-1.5", className)}
   >
     <Mark mark={repository.mark} className="text-foreground" />
@@ -396,11 +403,15 @@ const RepositoryLink = ({
 
 const DiscordLink = ({
   discord,
+  place,
 }: {
   readonly discord: NonNullable<SiteHeaderProps["discord"]>;
+  readonly place: Place;
 }) => (
   <a
     href={discord.href}
+    data-measure-cta={discord.measure}
+    data-measure-place={discord.measure === undefined ? undefined : place}
     aria-label={discord.label}
     className={cn(navigationMenuTriggerClassName, "w-8 px-0")}
   >
@@ -436,6 +447,10 @@ const MobileMenu = ({
             <a
               key={item.href}
               href={item.href}
+              data-measure-cta={item.measure}
+              data-measure-place={
+                item.measure === undefined ? undefined : "drawer"
+              }
               aria-current={item.current === true ? "page" : undefined}
               className="text-foreground text-[15px] font-semibold"
             >
@@ -500,16 +515,26 @@ const MobileMenu = ({
       <div className="mt-auto flex flex-col gap-2 border-t p-4">
         <div className="flex items-center gap-1">
           {repository === undefined ? null : (
-            <RepositoryLink repository={repository} className="-ms-2.5" />
+            <RepositoryLink
+              repository={repository}
+              className="-ms-2.5"
+              place="drawer"
+            />
           )}
           {repository === undefined || discord === undefined ? null : (
             <Separator orientation="vertical" className="h-5 self-center!" />
           )}
-          {discord === undefined ? null : <DiscordLink discord={discord} />}
+          {discord === undefined ? null : (
+            <DiscordLink discord={discord} place="drawer" />
+          )}
         </div>
         {signIn === undefined ? null : (
           <a
             href={signIn.href}
+            data-measure-cta={signIn.measure}
+            data-measure-place={
+              signIn.measure === undefined ? undefined : "drawer"
+            }
             className={buttonVariants({
               className: "w-full",
               variant: "outline",
@@ -521,6 +546,10 @@ const MobileMenu = ({
         {getStarted === undefined ? null : (
           <a
             href={getStarted.href}
+            data-measure-cta={getStarted.measure}
+            data-measure-place={
+              getStarted.measure === undefined ? undefined : "drawer"
+            }
             className={buttonVariants({ className: "w-full" })}
           >
             {getStarted.label}
@@ -561,6 +590,10 @@ const SiteHeader = (props: SiteHeaderProps) => {
                 <NavigationMenuItem key={item.href}>
                   <NavigationMenuLink
                     href={item.href}
+                    data-measure-cta={item.measure}
+                    data-measure-place={
+                      item.measure === undefined ? undefined : "header"
+                    }
                     current={item.current === true}
                     className={cn(navigationMenuTriggerClassName, "p-0 px-2.5")}
                   >
@@ -580,17 +613,25 @@ const SiteHeader = (props: SiteHeaderProps) => {
           <NavigationMenuViewport />
         </NavigationMenu>
         <div className="ms-auto hidden items-center gap-1 lg:flex">
-          {github === undefined ? null : <RepositoryLink repository={github} />}
+          {github === undefined ? null : (
+            <RepositoryLink repository={github} place="header" />
+          )}
           {github === undefined || discord === undefined ? null : (
             <Separator
               orientation="vertical"
               className="mx-1 h-5 self-center!"
             />
           )}
-          {discord === undefined ? null : <DiscordLink discord={discord} />}
+          {discord === undefined ? null : (
+            <DiscordLink discord={discord} place="header" />
+          )}
           {signIn === undefined ? null : (
             <a
               href={signIn.href}
+              data-measure-cta={signIn.measure}
+              data-measure-place={
+                signIn.measure === undefined ? undefined : "header"
+              }
               className={buttonVariants({
                 className: "ms-2",
                 variant: "ghost",
@@ -600,7 +641,14 @@ const SiteHeader = (props: SiteHeaderProps) => {
             </a>
           )}
           {getStarted === undefined ? null : (
-            <a href={getStarted.href} className={buttonVariants()}>
+            <a
+              href={getStarted.href}
+              data-measure-cta={getStarted.measure}
+              data-measure-place={
+                getStarted.measure === undefined ? undefined : "header"
+              }
+              className={buttonVariants()}
+            >
               {getStarted.label}
             </a>
           )}

@@ -500,6 +500,34 @@ and no socket, for tests.
   one's or a service identity's. An erasure deletes the persons'
   recordings too (`delete_recordings`), and counts as done once PostHog
   says they are queued, or that it found nobody (`persons_found: 0`).
+- Where `PEAL_POSTHOG_SITE` is on beside a project token
+  (`SiteMeasurement`, provided with product analytics), a sign-up links
+  the visitor the site, the docs and the blog followed, once they allowed
+  it, to the new account, once, in the request that made it:
+  `databaseHooks.user.create.after` reads the id in the request's
+  `ph_<token>_posthog` cookie (`visitorOf`, auth's `visitor-of.ts`), only
+  while the same request's `peal.consent` allows it and is under 183 days
+  old and the browser sends neither `Sec-GPC: 1` nor `DNT: 1`
+  (`site-answer.ts`: the SDK renews its cookie on each visit, so the cookie
+  alone says nothing of the answer), only when it is a version 7 UUID, which users' and workspaces' ids (version 4) never are, and `toldSignUp` sends `ProductAnalytics.link` (PostHog's
+  `$create_alias`, the account's id as `distinct_id`, the visitor's as
+  `alias`, `AliasPropertiesSchema`) before `user_signed_up`. Then the after
+  hook expires that cookie (`expireVisitorCookie`, on
+  `PEAL_POSTHOG_SITE_COOKIE_DOMAIN`, the registrable domain PostHog's SDK
+  sets it on, where set) after every `/sign-up/email` that carried it and
+  went through, so a known address's made-up user (200 too) reads the
+  same, never after a refused one (Better Auth runs after hooks on an
+  `APIError` too), and after a `/callback/*` that
+  made an account: the browser's later visits get a new visitor, linked
+  to nobody. Where the same request's answer allowed following the
+  visitor, the response also names it in `peal_site_retired`, a session
+  cookie (linked or not alike, so a known address reads as a new one),
+  which the site's pages compare their own with before anything leaves: a
+  page left open across the sign-up keeps the visitor in memory and would
+  save its cookie again. A refusal or the browser's signal on the site
+  removes it. A route's refusal is its status, 400 or more. Nothing is linked at a sign-in, nor after the sign-up.
+  Closing the account deletes the person at PostHog, the visits merged
+  into it included.
 - Tests use `ProductAnalytics.none`, or `recordedAnalytics`
   (`#test/shared/recorded-analytics.ts`); through the whole server,
   `appWithPostHog` (`#test/shared/fake-posthog.ts`) reads what a fake
