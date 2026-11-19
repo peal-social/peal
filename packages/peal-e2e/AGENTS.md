@@ -91,16 +91,20 @@
   tagged post "<time>, <status>: <text> Tag: <name>.", so a locator for one
   ends with its tags. A menu or popover that stays open after a choice is
   closed with `press("Escape")` before the page behind it is read.
+- A toast's text is also in the page's live region, which keeps it after
+  the toast has gone: find a toast inside the `region` "Notifications",
+  as the journeys find "Post cancelled.".
 - `tests/composer-comforts.e2e.ts` seeds three channels, selects them all
   and none, inserts an emoji from the picker, reads the previews, opens
   **Publish now** and leaves it ("Not now": nothing goes out), finds the
-  saved draft among **All posts**, filters it out by status and back, then
+  saved draft among **Posts**, filters it out by status (the Filter
+  menu's Cancelled, which no tab shows) and back with **Clear**, then
   discards it, and reads a pending invitation's **Copy link**. Pasting
   files is tested below the pages (`#posts/paste.ts`): the runner offers
   no clipboard.
-- `tests/csv-import.e2e.ts` opens **Import from a file** from **All
-  posts**, sets the file input (`setInputFiles`) to files it writes under
-  `.e2e/csv-import/`: a row on a channel the workspace lacks is refused
+- `tests/csv-import.e2e.ts` opens **Import from a file** from the
+  header of **Posts**, sets the file input (`setInputFiles`) to files it
+  writes under `.e2e/csv-import/`: a row on a channel the workspace lacks is refused
   and nothing is offered to import; a row next year on a seeded channel
   (`seedChannel` answers its id) is checked, imported and its post
   cancelled. It never imports a row dated `now`.

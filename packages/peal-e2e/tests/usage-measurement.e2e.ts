@@ -430,13 +430,13 @@ describe("the web app's measurement", { serial: true }, () => {
           (event) =>
             event.event === "$pageview" &&
             event.distinctId === memberId &&
-            textOf(event.properties["$current_url"]).endsWith("/app/:id/drafts")
+            textOf(event.properties["$current_url"]).endsWith("/:id/drafts")
         ),
       "the member's page view of a page opened without a reload"
     );
 
     await watchTags(browser);
-    await app.open(`/app/${workspaceId}/settings`);
+    await app.open(`/${slug}/settings`);
     await screen
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Tags")
@@ -452,7 +452,7 @@ describe("the web app's measurement", { serial: true }, () => {
             event.event === "$pageview" &&
             event.distinctId === memberId &&
             textOf(event.properties["$current_url"]).endsWith(
-              "/app/:id/settings/tags"
+              "/:id/settings/tags"
             )
         ),
       "the member's page view of the tags"

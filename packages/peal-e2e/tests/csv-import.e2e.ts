@@ -57,7 +57,9 @@ const cancelOpenPost = async (screen: Screen) => {
     .getByRole("dialog", "Cancel this post?")
     .getByRole("button", "Cancel the post")
     .tap();
-  await expect(screen.getByText("Post cancelled.")).toBeVisible();
+  await expect(
+    screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+  ).toBeVisible();
 };
 
 describe("a member's CSV import", { serial: true }, () => {
@@ -84,10 +86,11 @@ describe("a member's CSV import", { serial: true }, () => {
     expect(workspaceId).not.toBe("");
   });
 
-  test("opens the import from All posts", async ({ app, browser, screen }) => {
+  test("opens the import from Posts", async ({ app, browser, screen }) => {
     await app.open(`/${slug}/posts`);
+    // The page's actions are in the panel's header.
     await screen
-      .getByRole("main")
+      .getByRole("banner")
       .getByRole("link", "Import from a file")
       .tap();
 

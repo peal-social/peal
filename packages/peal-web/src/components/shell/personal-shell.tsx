@@ -112,7 +112,10 @@ export const PersonalSidebarView = ({
               className={itemClass}
               {...followed}
             >
-              <span className="bg-brand-tint text-brand-text flex size-5 shrink-0 items-center justify-center rounded-sm text-xs font-semibold">
+              <span
+                aria-hidden
+                className="bg-brand-tint text-brand-text flex size-5 shrink-0 items-center justify-center rounded-sm text-xs font-semibold"
+              >
                 {name.slice(0, 1).toUpperCase()}
               </span>
               <span className="flex-1 truncate">{name}</span>

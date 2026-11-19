@@ -91,9 +91,11 @@ describe("a review link", { serial: true }, () => {
       screen.getByRole("heading", "Post awaiting approval")
     ).toBeVisible();
 
-    // It also shows under "Needs approval".
+    // It also shows under Approvals.
     await app.open(`/${slug}/approvals`);
-    await expect(screen.getByRole("heading", "Needs approval")).toBeVisible();
+    await expect(
+      screen.getByRole("heading", "Approvals", { level: 1 })
+    ).toBeVisible();
     await expect(
       screen.getByRole("main").getByRole("link", "Open the post")
     ).toBeVisible();
@@ -173,7 +175,9 @@ describe("a review link", { serial: true }, () => {
       .getByRole("dialog", "Cancel this post?")
       .getByRole("button", "Cancel the post")
       .tap();
-    await expect(screen.getByText("Post cancelled.")).toBeVisible();
+    await expect(
+      screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+    ).toBeVisible();
 
     await browser.clearCookies();
     await browser.goto(link);

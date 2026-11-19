@@ -154,21 +154,27 @@ describe("the composer's comforts", { serial: true }, () => {
     await app.open(`/${slug}/posts`);
 
     await expect(
-      screen.getByRole("heading", "All posts", { level: 1 })
+      screen.getByRole("heading", "Posts", { level: 1 })
     ).toBeVisible();
     await expect(
       screen.getByRole("main").getByRole("link", `${text}🚀`)
     ).toBeVisible();
 
-    await screen.getByRole("combobox", "Status").tap();
-    await screen.getByRole("option", "Scheduled").tap();
+    // A status no tab shows is a filter, with its chip.
+    await screen.getByRole("main").getByRole("button", "Filter").tap();
+    await screen.getByRole("option", "Status").tap();
+    await screen.getByRole("option", "Cancelled").tap();
 
-    await expect(browser).toHaveURL(`/${slug}/posts?status=scheduled`);
+    await expect(browser).toHaveURL(`/${slug}/posts?status=cancelled`);
     await expect(
-      screen.getByText("No post matches these filters.")
+      screen.getByRole("heading", "No matching posts")
     ).toBeVisible();
+    await expect(
+      screen.getByRole("main").getByRole("link", `${text}🚀`)
+    ).toBeHidden();
 
-    await screen.getByRole("link", "Clear the filters").tap();
+    await screen.getByRole("main").getByRole("link", "Clear").tap();
+    await expect(browser).toHaveURL(`/${slug}/posts`);
     await expect(
       screen.getByRole("main").getByRole("link", `${text}🚀`)
     ).toBeVisible();

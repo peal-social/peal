@@ -185,9 +185,13 @@ describe("a member's queue", { serial: true }, () => {
       .getByRole("button", "Cancel the post")
       .tap();
 
-    await expect(screen.getByText("Post cancelled.")).toBeVisible();
+    await expect(
+      screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+    ).toBeVisible();
     await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
-    await expect(screen.getByText("Post cancelled.")).toBeHidden({
+    await expect(
+      screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+    ).toBeHidden({
       timeout: 10_000,
     });
 
@@ -200,9 +204,13 @@ describe("a member's queue", { serial: true }, () => {
       .getByRole("button", "Cancel the post")
       .tap();
 
-    await expect(screen.getByText("Post cancelled.")).toBeVisible();
+    await expect(
+      screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+    ).toBeVisible();
     await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
-    await expect(screen.getByText("Post cancelled.")).toBeHidden({
+    await expect(
+      screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+    ).toBeHidden({
       timeout: 10_000,
     });
   });

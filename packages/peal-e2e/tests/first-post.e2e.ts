@@ -180,7 +180,9 @@ describe("a new member's first post", { serial: true }, () => {
       .getByRole("button", "Cancel the post")
       .tap();
 
-    await expect(screen.getByText("Post cancelled.")).toBeVisible();
+    await expect(
+      screen.getByRole("region", "Notifications").getByText("Post cancelled.")
+    ).toBeVisible();
     await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
   });
 
@@ -302,9 +304,9 @@ describe("a new member's first post", { serial: true }, () => {
   });
 
   test("reads the calendar in French", async ({ app, browser, screen }) => {
-    await app.open(`/${slug}/calendar`);
-    await screen.getByRole("button", "Language: English").tap();
-    await screen.getByRole("menuitemradio", "Français").tap();
+    // The frame has no language switcher: the address names the language
+    // the browser reads, and the account page the one the account keeps.
+    await app.open(`/fr/${slug}/calendar`);
 
     await expect(screen.getByRole("heading", "Calendrier")).toBeVisible();
     await expect(screen.getByRole("tab", "Semaine")).toBeVisible();
@@ -316,7 +318,7 @@ describe("a new member's first post", { serial: true }, () => {
     await screen.getByRole("menuitem", "Paramètres du compte").tap();
 
     await expect(
-      screen.getByRole("heading", "Paramètres du compte", { level: 1 })
+      screen.getByRole("heading", "Compte", { level: 1 })
     ).toBeVisible();
     await expect(browser).toHaveURL("/fr/account");
 
@@ -332,8 +334,10 @@ describe("a new member's first post", { serial: true }, () => {
     await screen.getByRole("button", `Compte de ${name}`).tap();
     await screen.getByRole("menuitem", "Se déconnecter").tap();
 
+    // "/" is no page: signed out, it asks to sign in.
+    await expect(browser).toHaveURL("/fr/sign-in");
     await expect(
-      screen.getByRole("heading", "Bienvenue sur Peal")
+      screen.getByRole("main").getByRole("heading", "Se connecter")
     ).toBeVisible();
     await expect(
       screen.getByRole("banner").getByRole("link", "Se connecter")

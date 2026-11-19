@@ -186,7 +186,7 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
       .tap();
 
     await expect(
-      screen.getByRole("heading", "Comments", { level: 1 })
+      screen.getByRole("heading", "Comment", { level: 1 })
     ).toBeVisible();
     await expect(screen.getByText(comment)).toBeVisible();
     await expect(screen.getByText(commenter)).toBeVisible();
