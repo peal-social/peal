@@ -42,6 +42,12 @@ import {
   setReviewAnswered,
   withdrawReviewReply,
 } from "#inbox/review-atoms.ts";
+import {
+  attemptFor,
+  pinnedOnWrite,
+  reviewTargetOf,
+} from "#inbox/review-target.ts";
+import type { ReplyAttempt } from "#inbox/review-target.ts";
 import { useRefreshWhileVisible } from "#notices/use-refresh-while-visible.ts";
 
 import { useInboxErrorText } from "./inbox-views.tsx";
@@ -64,13 +70,6 @@ const isPending = (replies: readonly InboxReviewReply[], reviewId: string) =>
       reply.reviewId === reviewId &&
       (reply.status === "sending" || reply.status === "unconfirmed")
   );
-
-// The review the composer answers first: the oldest still waiting (the
-// reviews come latest first), else the latest.
-const firstToAnswer = (
-  reviews: readonly InboxReview[]
-): InboxReview | undefined =>
-  reviews.findLast(({ state }) => state === "new") ?? reviews[0];
 
 // The quiet buttons under a review, Reply first: whether it needs an
 // answer, and taking the location's reply back from Google.
@@ -193,20 +192,17 @@ const ReviewActions = ({
 };
 
 // The location's one composer: it answers `review`, under a key kept
-// until the reply is made.
+// until the reply is made, and made anew for another text or review.
 const ReviewComposer = ({
-  attempt,
   inputId,
-  onAttempt,
+  onWrite,
   review,
   replies,
   workspaceId,
 }: {
-  /** The idempotency key of the reply being written. */
-  readonly attempt: string;
   readonly inputId: string;
-  /** Makes another key, for another reply. */
-  readonly onAttempt: () => void;
+  /** Keeps the draft on `review`, whatever the next read answers. */
+  readonly onWrite: () => void;
   readonly review: InboxReview;
   readonly replies: readonly InboxReviewReply[];
   readonly workspaceId: string;
@@ -215,42 +211,58 @@ const ReviewComposer = ({
   const explain = useInboxErrorText();
   const send = useAtomSet(replyToReview, { mode: "promiseExit" });
   const [text, setText] = useState("");
-  const [error, setError] = useState<string | null>(null);
+
+  const [attempt, setAttempt] = useState<ReplyAttempt>(() => ({
+    key: crypto.randomUUID(),
+    reviewId: review.id,
+  }));
+
+  // A failure tells of the review it was sent to only.
+  const [failure, setFailure] = useState<{
+    readonly reviewId: string;
+    readonly text: string;
+  } | null>(null);
+
   const [isSending, startSending] = useTransition();
 
   const handleSend = () => {
-    setError(null);
+    // The same key until the reply is made: a reply sent again after a
+    // lost answer is the one the first request made. Another review is
+    // another reply, under a key of its own.
+    const current = attemptFor(attempt, review.id, () => crypto.randomUUID());
+
+    setAttempt(current);
+    setFailure(null);
     startSending(async () => {
-      // The same key until the reply is made: a reply sent again after a
-      // lost answer is the one the first request made.
       const exit = await send({
-        headers: { "idempotency-key": attempt },
-        params: { reviewId: review.id, workspaceId },
+        headers: { "idempotency-key": current.key },
+        params: { reviewId: current.reviewId, workspaceId },
         payload: { text },
         reactivityKeys: reviewsChanged(workspaceId, review.threadId),
       });
 
       if (Exit.isSuccess(exit)) {
-        onAttempt();
+        setAttempt({ key: crypto.randomUUID(), reviewId: current.reviewId });
         setText("");
         toast.success(t("box.sent"));
 
         return;
       }
 
-      setError(
-        inboxErrorOf(exit).pipe(
+      setFailure({
+        reviewId: current.reviewId,
+        text: inboxErrorOf(exit).pipe(
           Option.map(explain),
           Option.getOrElse(() => explain({ key: "unknown" }))
-        )
-      );
+        ),
+      });
     });
   };
 
   return (
     <ReviewReplyBoxView
       bytes={bytesOf(text)}
-      error={error}
+      error={failure?.reviewId === review.id ? failure.text : null}
       inputId={inputId}
       maximum={maxInboxReviewReplyBytes}
       pending={isPending(replies, review.id)}
@@ -260,7 +272,8 @@ const ReviewComposer = ({
       onChange={(changed) => {
         // Another text is another reply, under a key of its own.
         setText(changed);
-        onAttempt();
+        setAttempt({ key: crypto.randomUUID(), reviewId: review.id });
+        onWrite();
       }}
       onSend={handleSend}
     />
@@ -284,21 +297,13 @@ const LoadedReviews = ({
   const composerId = useId();
   // The review the composer answers, once a member chose one.
   const [chosen, setChosen] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(() => crypto.randomUUID());
   const mayAnswer = mayReply && detail.abilities.reply === "available";
 
   const mayWithdraw = mayAnswer && detail.abilities.withdraw === "available";
 
-  const target =
-    detail.reviews.find(({ id }) => id === chosen) ??
-    firstToAnswer(detail.reviews);
+  const target = reviewTargetOf(detail.reviews, chosen);
 
   const handleReply = (review: InboxReview) => {
-    if (review.id !== target?.id) {
-      // A reply to another review is another reply, under a key of its own.
-      setAttempt(crypto.randomUUID());
-    }
-
     setChosen(review.id);
     // React's ids hold colons, which a plain `#id` selector cannot.
     globalThis.document
@@ -355,13 +360,12 @@ const LoadedReviews = ({
       {mayAnswer && target !== undefined ? (
         <div className="bg-card sticky bottom-0 mt-auto pt-2">
           <ReviewComposer
-            attempt={attempt}
             inputId={composerId}
             replies={detail.replies}
             review={target}
             workspaceId={workspaceId}
-            onAttempt={() => {
-              setAttempt(crypto.randomUUID());
+            onWrite={() => {
+              setChosen(pinnedOnWrite(chosen, target.id));
             }}
           />
         </div>

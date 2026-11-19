@@ -633,7 +633,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   the location's reply and Peal's behind a 2 px line), and one
   `ReviewReplyBoxView` sticky at the pane's foot, naming the reviewer
   Reply chose (the oldest still waiting until then), with a new
-  `Idempotency-Key` for another review.
+  `Idempotency-Key` for another review. Whom it answers and under which
+  key is `#inbox/review-target.ts`: the first keystroke pins the draft to
+  its review, so a refresh that answers that review elsewhere never moves
+  the text to another reviewer, and a failure shows only under the review
+  it was sent to.
 - The inbox's direct messages (`message-screen.tsx`, views in
   `message-views.tsx`, atoms in `#inbox/message-atoms.ts`), for members
   with `engagement:readMessages`, open one at
