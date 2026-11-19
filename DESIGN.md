@@ -1320,11 +1320,12 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   two bordered cells (the name, 15 px, 600, then a line at the lead's
   size, muted), then one wide cell on `muted` holding a page of each side
   of the app next to each other (stacked below 1024 px): the frame
-  drawn small, a sidebar of 176 px with the mode switch and the mode's
-  groups, the 56 px top bar with the breadcrumb, and the content in white
-  cards (PealStudio's calendar; PealAPI's keys and webhook deliveries).
-  Below 640 px the sidebar folds away and the switch moves into the top
-  bar. The pages show only what the app has, with made-up content.
+  drawn small as the app's frame: a sidebar of 176 px with the workspace
+  switcher, the mode switch and the mode's groups, the page in a white
+  inset panel under a 48 px header naming it, a bottom bar with the
+  avatar and Help, and the content in white cards (PealStudio's
+  calendar; PealAPI's keys and webhook deliveries). Below 640 px the
+  sidebar folds away and the switch moves into the panel's header. The pages show only what the app has, with made-up content.
 - **Product opening.** A product's section opens on the faint pixel
   field, left-aligned: the eyebrow with the product's name, the section
   headline and an outline button to its docs on the left, the lead on the

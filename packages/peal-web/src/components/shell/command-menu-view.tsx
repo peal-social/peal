@@ -327,7 +327,7 @@ const useMenuPages = (scope: CommandScope | null, request: MenuRequest) => {
 };
 
 /**
- * The command menu (DESIGN.md, "Command menu"): the top bar's button, and
+ * The command menu (DESIGN.md, "Command menu"): the sidebar's Search, and
  * the dialog it and ⌘K open, to create, to open any page the member may,
  * another workspace, the documentation or support. A command closes it.
  */

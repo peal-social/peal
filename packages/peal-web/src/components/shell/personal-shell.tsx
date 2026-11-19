@@ -147,8 +147,8 @@ export const PersonalSidebarView = ({
 
 /**
  * The frame of the person's own pages (the agenda, the report, the
- * notices, the account, a new workspace): their sidebar, the top bar, and the
- * page's foot.
+ * notices, the account, a new workspace): their sidebar, the panel's header,
+ * the bottom bar, and the page's foot.
  */
 export const PersonalShell = ({
   actions,
