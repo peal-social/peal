@@ -188,4 +188,15 @@ describe("the home page", () => {
       }
     }
   );
+
+  // The sidebar's head leaves the workspace's name about 60 px at 12 px
+  // medium, eight characters: a longer name is drawn cut off.
+  it.each(locales)(
+    "gives the mock's workspace a name its switcher shows in full in %s",
+    (locale) => {
+      for (const mock of productPair(messages(locale).home).mocks) {
+        expect(mock.workspace.length).toBeLessThanOrEqual(8);
+      }
+    }
+  );
 });

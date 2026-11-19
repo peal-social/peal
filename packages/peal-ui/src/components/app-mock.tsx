@@ -152,7 +152,7 @@ const Calendar = ({
 }: {
   readonly days: Extract<AppMockContent, { kind: "calendar" }>["days"];
 }) => (
-  <div className="bg-card grid flex-1 auto-cols-fr grid-flow-col rounded-md border">
+  <div className="bg-card grid min-w-0 flex-1 auto-cols-fr grid-flow-col rounded-md border">
     {days.map((day, index) => (
       <div
         key={day.label}
@@ -173,7 +173,7 @@ const Calendar = ({
               <Mark mark={post.mark} className="size-3" />
               {post.time}
             </span>
-            <span className="[&>span]:whitespace-nowrap">
+            <span className="flex min-w-0 [&>span]:block [&>span]:max-w-full [&>span]:truncate">
               <MockChip state={post.chip.state} text={post.chip.text} />
             </span>
           </span>
@@ -184,7 +184,7 @@ const Calendar = ({
 );
 
 const Cards = ({ cards }: { readonly cards: readonly AppMockCard[] }) => (
-  <div className="flex flex-1 flex-col gap-3">
+  <div className="flex min-w-0 flex-1 flex-col gap-3">
     {cards.map((card) => (
       <div key={card.title} className="bg-card rounded-md border">
         <div className="flex items-center justify-between gap-2 border-b px-3 py-2">

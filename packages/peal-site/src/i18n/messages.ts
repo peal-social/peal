@@ -187,7 +187,7 @@ const en = {
         },
         days: ["Mon 17", "Tue 18"],
         settings: "Settings",
-        workspace: "Maple Studio",
+        workspace: "Maple",
       },
       studio: "Write, schedule, approve and measure posts as a team.",
       title: {
@@ -803,7 +803,7 @@ const fr: Messages = {
         },
         days: ["lun. 17", "mar. 18"],
         settings: "Paramètres",
-        workspace: "Atelier Érable",
+        workspace: "Érable",
       },
       studio:
         "Écrivez, programmez, faites approuver et mesurez vos publications en équipe.",
