@@ -104,6 +104,8 @@ describe("a member's media library", { serial: true }, () => {
     await main
       .getByRole("searchbox", "Search the library")
       .fill("nothing here");
+    // The empty state says nothing matches, and Clear shows every file again.
+    await expect(main.getByRole("heading", "No matching files")).toBeVisible();
     await expect(main.getByRole("button", "Clear the search")).toBeVisible();
     await main.getByRole("button", "Clear the search").tap();
 

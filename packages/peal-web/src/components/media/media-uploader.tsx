@@ -356,6 +356,8 @@ export interface MediaUploaderHandle {
    * took them: not while it is disabled.
    */
   readonly add: (files: readonly File[]) => boolean;
+  /** Opens the file picker, as a click on the zone does: not while disabled. */
+  readonly choose: () => void;
 }
 
 /**
@@ -390,6 +392,7 @@ export const MediaUploader = ({
   const [entries, setEntries] = useState<readonly Entry[]>([]);
   const [dragging, setDragging] = useState(false);
   const live = useRef<readonly Entry[]>([]);
+  const picker = useRef<HTMLInputElement>(null);
 
   // Leaving the page cancels what is still uploading.
   useEffect(
@@ -444,6 +447,11 @@ export const MediaUploader = ({
       add(files);
 
       return true;
+    },
+    choose: () => {
+      if (!disabled) {
+        picker.current?.click();
+      }
     },
   }));
 
@@ -500,6 +508,7 @@ export const MediaUploader = ({
               {t("accepted")}
             </p>
             <input
+              ref={picker}
               type="file"
               accept={accept}
               multiple

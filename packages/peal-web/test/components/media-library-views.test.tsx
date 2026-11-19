@@ -5,6 +5,7 @@ import type { Media } from "peal-contract";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { LibraryEmptyView } from "#components/media/library-empty.tsx";
 import { SearchStatus } from "#components/media/library-status.tsx";
 import { LibraryToolbarView } from "#components/media/library-toolbar.tsx";
 import {
@@ -230,5 +231,72 @@ describe(SearchStatus, () => {
     await expect(
       render("en", <SearchStatus count={3} more={false} narrowed={false} />)
     ).resolves.not.toContain("files shown");
+  });
+});
+
+const nothing = () => {
+  // The view only shows the buttons.
+};
+
+describe(LibraryEmptyView, () => {
+  it("says the library holds no file yet, with the way to upload one", async () => {
+    const html = await render(
+      "en",
+      <LibraryEmptyView hidden={null} onClear={nothing} onUpload={nothing} />
+    );
+
+    expect(html).toMatch(
+      /data-slot="empty-state".*aria-hidden="true".*<h2[^>]*>No files yet<\/h2>/u
+    );
+    expect(html).toContain("Upload images, videos or PDFs");
+    expect(html).toMatch(/<button[^>]*>.*Upload files<\/button>/u);
+    expect(html).not.toContain('data-slot="empty-state-hidden"');
+  });
+
+  it("offers no upload to a member who may not upload", async () => {
+    const html = await render(
+      "fr",
+      <LibraryEmptyView hidden={null} onClear={nothing} />
+    );
+
+    expect(html).toContain("Aucun fichier");
+    expect(html).not.toContain("Importer des fichiers");
+  });
+
+  it("says how many files the filters hide, with Clear", async () => {
+    const html = await render(
+      "en",
+      <LibraryEmptyView
+        hidden={{ count: 12, more: false }}
+        onClear={nothing}
+        onUpload={nothing}
+      />
+    );
+
+    expect(html).toMatch(/<h2[^>]*>No matching files<\/h2>/u);
+    expect(html).toMatch(
+      /data-slot="empty-state-hidden".*<strong>12 files<\/strong> hidden by the filters/u
+    );
+    expect(html).toMatch(
+      /<button[^>]*aria-label="Clear the search"[^>]*>Clear</u
+    );
+    expect(html).not.toContain("Upload files");
+  });
+
+  it("says when more files are hidden than a page holds, and when it cannot tell", async () => {
+    await expect(
+      render(
+        "fr",
+        <LibraryEmptyView
+          hidden={{ count: 24, more: true }}
+          onClear={nothing}
+        />
+      )
+    ).resolves.toContain(
+      "<strong>Plus de 24 fichiers masqués</strong> par les filtres"
+    );
+    await expect(
+      render("en", <LibraryEmptyView hidden="unknown" onClear={nothing} />)
+    ).resolves.toContain("The filters hide every file.");
   });
 });
