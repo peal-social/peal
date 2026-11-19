@@ -1,3 +1,5 @@
+import { isIP } from "node:net";
+
 import { Config, Effect, Option, Schema } from "effect";
 
 import { relayPrefix } from "./relay-prefix.ts";
@@ -47,33 +49,69 @@ export interface RelayTarget {
   readonly token: string;
 }
 
-/**
- * The relay's settings, read per request: PEAL_POSTHOG_WEB (`on` or `off`,
- * `off` by default) and, when it is on, PEAL_POSTHOG_KEY (the project
- * token, required) and PEAL_POSTHOG_HOST (PostHog's EU Cloud by default).
- * None while it is off.
- */
-export const relayConfig = Config.schema(
-  Schema.Literals(["on", "off"]),
-  "PEAL_POSTHOG_WEB"
-).pipe(
-  Config.withDefault<"off" | "on">("off"),
-  Config.flatMap((web) =>
-    web === "on"
-      ? Config.all({
-          host: Config.schema(HostSchema, "PEAL_POSTHOG_HOST").pipe(
-            Config.withDefault(defaultPostHogHost)
-          ),
-          token: Config.schema(TokenSchema, "PEAL_POSTHOG_KEY"),
-        }).pipe(
-          Config.map(({ host, token }) =>
-            Option.some<RelayTarget>({
-              host: host.replace(/\/+$/u, ""),
-              token,
-            })
+// A mode's switch (`on` or `off`, `off` by default) and, when it is on,
+// PEAL_POSTHOG_KEY (the project token, required) and PEAL_POSTHOG_HOST
+// (PostHog's EU Cloud by default). None while it is off.
+const targetWhen = (name: string) =>
+  Config.schema(Schema.Literals(["on", "off"]), name).pipe(
+    Config.withDefault<"off" | "on">("off"),
+    Config.flatMap((mode) =>
+      mode === "on"
+        ? Config.all({
+            host: Config.schema(HostSchema, "PEAL_POSTHOG_HOST").pipe(
+              Config.withDefault(defaultPostHogHost)
+            ),
+            token: Config.schema(TokenSchema, "PEAL_POSTHOG_KEY"),
+          }).pipe(
+            Config.map(({ host, token }) =>
+              Option.some<RelayTarget>({
+                host: host.replace(/\/+$/u, ""),
+                token,
+              })
+            )
           )
-        )
-      : Config.succeed(Option.none<RelayTarget>())
+        : Config.succeed(Option.none<RelayTarget>())
+    )
+  );
+
+/**
+ * The relay's settings for the web app's own measurement, read per
+ * request: PEAL_POSTHOG_WEB (`on` or `off`, `off` by default) and, when it
+ * is on, PEAL_POSTHOG_KEY (the project token, required) and
+ * PEAL_POSTHOG_HOST (PostHog's EU Cloud by default). None while it is off.
+ */
+export const relayConfig = targetWhen("PEAL_POSTHOG_WEB");
+
+/** Where the site mode sends, and the headers it reads the address from. */
+export interface SiteRelayTarget extends RelayTarget {
+  /** The headers that may carry the visitor's address, in order. */
+  readonly addressHeaders: readonly string[];
+}
+
+/**
+ * The relay's settings for the site's, the docs' and the blog's
+ * measurement, read per request, independent of the app's:
+ * PEAL_POSTHOG_SITE (`on` or `off`, `off` by default) and, when it is on,
+ * PEAL_POSTHOG_KEY and PEAL_POSTHOG_HOST as for the app, and
+ * AUTH_IP_HEADERS (comma-separated, as the server reads it, none by
+ * default): the headers the edge gives the visitor's address in. None
+ * while it is off.
+ */
+export const siteRelayConfig = Config.all({
+  addressHeaders: Config.Array(Schema.String, "AUTH_IP_HEADERS").pipe(
+    Config.withDefault<readonly string[]>([]),
+    Config.map((names) =>
+      names
+        .map((name) => name.trim().toLowerCase())
+        .filter((name) => name !== "")
+    )
+  ),
+  target: targetWhen("PEAL_POSTHOG_SITE"),
+}).pipe(
+  Config.map(({ addressHeaders, target }) =>
+    target.pipe(
+      Option.map((found): SiteRelayTarget => ({ ...found, addressHeaders }))
+    )
   )
 );
 
@@ -95,18 +133,24 @@ export const relayed = (pathname: string): boolean =>
 /** What sends a request on, as `fetch` does. */
 export type Send = (url: string, init: RequestInit) => Promise<Response>;
 
-// The most a request may carry: a replay's batch, compressed, is far less.
-const maxBody = 4 * 1024 * 1024;
+// The most the app's SDK may send at once: a replay's batch, compressed, is
+// far less.
+const maxAppBody = 4 * 1024 * 1024;
+
+// The most the site's SDK may send at once: a batch of events, without
+// recordings.
+const maxSiteBody = 256 * 1024;
 
 /** How long PostHog has to answer before the relay gives up (504). */
 export const relayTimeoutMs = 10_000;
 
-// A body past `maxBody`, read no further.
+// A body past its bound, read no further.
 const tooLarge = Symbol("tooLarge");
 
-// The body, read a chunk at a time, and given up on past `maxBody`.
+// The body, read a chunk at a time, and given up on past `bound` bytes.
 const readBounded = async (
   reader: ReadableStreamDefaultReader<Uint8Array>,
+  bound: number,
   chunks: readonly Uint8Array[],
   size: number
 ): Promise<readonly Uint8Array[] | typeof tooLarge> => {
@@ -116,17 +160,23 @@ const readBounded = async (
     return chunks;
   }
 
-  if (size + value.byteLength > maxBody) {
+  if (size + value.byteLength > bound) {
     await reader.cancel();
 
     return tooLarge;
   }
 
-  return await readBounded(reader, [...chunks, value], size + value.byteLength);
+  return await readBounded(
+    reader,
+    bound,
+    [...chunks, value],
+    size + value.byteLength
+  );
 };
 
 const boundedBody = async (
-  request: Request
+  request: Request,
+  bound: number
 ): Promise<ArrayBuffer | typeof tooLarge> => {
   const reader = request.body?.getReader();
 
@@ -134,7 +184,7 @@ const boundedBody = async (
     return new ArrayBuffer(0);
   }
 
-  const chunks = await readBounded(reader, [], 0);
+  const chunks = await readBounded(reader, bound, [], 0);
 
   if (chunks === tooLarge) {
     return tooLarge;
@@ -166,10 +216,45 @@ const declaredLength = (request: Request): Option.Option<number> =>
     request.headers.get("content-length")
   );
 
-// The request headers PostHog receives, and no other: never a cookie, a
-// credential, the visitor's address, the page they came from, their
-// languages or their browser's own description.
+// The request headers PostHog receives from the app's mode, and no other:
+// never a cookie, a credential, the visitor's address, the page they came
+// from, their languages or their browser's own description.
 const forwardedRequestHeaders = ["accept", "content-type"];
+
+// The request headers PostHog receives from the site's mode beside those:
+// the browser's own description, which its cookieless count is worked out
+// from with the visitor's address (set apart, from the edge's header).
+// Never a cookie, a credential, the page they came from or their languages.
+const forwardedSiteHeaders = [...forwardedRequestHeaders, "user-agent"];
+
+// The named headers of a request, as it carries them.
+const copied = (request: Request, names: readonly string[]): Headers => {
+  const headers = new Headers();
+
+  for (const name of names) {
+    const value = request.headers.get(name);
+
+    if (value !== null) {
+      headers.set(name, value);
+    }
+  }
+
+  return headers;
+};
+
+/**
+ * The visitor's address: the first value of the first of `names` that the
+ * request carries, when it is an IP address; none otherwise.
+ */
+export const visitorAddress = (
+  request: Request,
+  names: readonly string[]
+): Option.Option<string> =>
+  Option.fromNullishOr(
+    names
+      .map((name) => request.headers.get(name)?.split(",")[0]?.trim())
+      .find((value) => value !== undefined && value !== "")
+  ).pipe(Option.filter((address) => isIP(address) !== 0));
 
 const answer = (status: number) => new Response(null, { status });
 
@@ -242,42 +327,121 @@ export const withOwnEndpoints = (body: ArrayBuffer): ArrayBuffer | string =>
       ),
   });
 
-// Where a path goes, by what the SDK sends there: its events and its
-// recordings by POST, its project's configuration by GET.
-const routeOf = (path: string, target: RelayTarget) => {
+/** Where the site's, the docs' and the blog's SDK sends, on their origin. */
+export const siteRelayPrefix = `${relayPrefix}/site`;
+
+const isSitePath = (pathname: string): boolean =>
+  pathname === siteRelayPrefix || pathname.startsWith(`${siteRelayPrefix}/`);
+
+// Where a request goes, by what the SDK sends there, and with what.
+interface Route {
+  /** The host and path at PostHog. */
+  readonly to: string;
+  readonly method: "GET" | "POST";
+  /** The most its body may hold. */
+  readonly bound: number;
+  readonly headers: () => Headers;
+}
+
+// The app's: its events and its recordings by POST, its project's
+// configuration by GET, with the request's type alone.
+const appRouteOf = (
+  request: Request,
+  path: string,
+  target: RelayTarget
+): Option.Option<Route> => {
+  const headers = () => copied(request, forwardedRequestHeaders);
+
   if (ingestion.has(path)) {
-    return Option.some({ host: target.host, method: "POST" });
+    return Option.some({
+      bound: maxAppBody,
+      headers,
+      method: "POST",
+      to: `${target.host}${path}`,
+    });
   }
 
   return path === `/array/${target.token}/config`
-    ? Option.some({ host: assetsHostOf(target.host), method: "GET" })
+    ? Option.some({
+        bound: 0,
+        headers,
+        method: "GET",
+        to: `${assetsHostOf(target.host)}${path}`,
+      })
     : Option.none();
 };
 
+// The site's: its events alone, by POST, to the SDK's default endpoint (it
+// loads no remote configuration, so it never names another), with the
+// browser's description and the visitor's address beside the type.
+const siteRouteOf = (
+  request: Request,
+  path: string,
+  target: SiteRelayTarget
+): Option.Option<Route> =>
+  path === "/e/"
+    ? Option.some({
+        bound: maxSiteBody,
+        headers: () => {
+          const headers = copied(request, forwardedSiteHeaders);
+
+          Option.map(visitorAddress(request, target.addressHeaders), (ip) => {
+            headers.set("x-forwarded-for", ip);
+          });
+
+          return headers;
+        },
+        method: "POST",
+        to: `${target.host}${path}`,
+      })
+    : Option.none();
+
+// The route of a request's path, under the mode its prefix names, while
+// that mode is on.
+const routeOf = (request: Request, pathname: string) =>
+  isSitePath(pathname)
+    ? siteRelayConfig.pipe(
+        Effect.map(
+          Option.flatMap((target) =>
+            siteRouteOf(request, pathname.slice(siteRelayPrefix.length), target)
+          )
+        )
+      )
+    : relayConfig.pipe(
+        Effect.map(
+          Option.flatMap((target) =>
+            appRouteOf(request, pathname.slice(relayPrefix.length), target)
+          )
+        )
+      );
+
 /**
- * Relays what the web app's SDK sends to PostHog, query kept: its events
- * (`/e/`, `/i/v0/e/`), its recordings (`/s/`, `/i/v0/s/`) and its
- * project's configuration
- * (`/array/<token>/config`, that token alone), with only the request's
- * type, and answers with PostHog's status and type alone (never a
- * cookie). 404 while PEAL_POSTHOG_WEB is off and for any other path, 405
- * for another method, 413 past 4 MiB (refused on its declared length
- * before anything is read), 502 when PostHog cannot be reached, 504 when
- * it does not answer within `timeoutMs`.
+ * Relays to PostHog, query kept, and answers with PostHog's status and type
+ * alone (never a cookie), in two modes that are on or off apart:
+ *
+ * - The web app's, while PEAL_POSTHOG_WEB is on: its SDK's events (`/e/`,
+ *   `/i/v0/e/`), recordings (`/s/`, `/i/v0/s/`) and project's
+ *   configuration (`/array/<token>/config`, that token alone), with only
+ *   the request's type (`accept`, `content-type`); 413 past 4 MiB.
+ * - The site's, the docs' and the blog's, under `/pulse/site`, while
+ *   PEAL_POSTHOG_SITE is on: their SDK's events alone (`/e/`), with the
+ *   request's type, its `user-agent`, and `x-forwarded-for` set to the
+ *   visitor's address, read from the header AUTH_IP_HEADERS names (none
+ *   when it holds no IP address), which PostHog's cookieless count is
+ *   worked out from; 413 past 256 KiB.
+ *
+ * 404 while a mode is off and for any path it does not relay, 405 for
+ * another method, 413 on a declared length before anything is read, 502
+ * when PostHog cannot be reached, 504 when it does not answer within
+ * `timeoutMs`.
  */
 export const relayToPostHog = Effect.fn("relayToPostHog")(function* relay(
   request: Request,
   send: Send,
   timeoutMs: number = relayTimeoutMs
 ) {
-  const target = yield* relayConfig;
   const url = new URL(request.url);
-
-  if (Option.isNone(target)) {
-    return answer(404);
-  }
-
-  const route = routeOf(url.pathname.slice(relayPrefix.length), target.value);
+  const route = yield* routeOf(request, url.pathname);
 
   if (Option.isNone(route)) {
     return answer(404);
@@ -287,32 +451,26 @@ export const relayToPostHog = Effect.fn("relayToPostHog")(function* relay(
     return answer(405);
   }
 
+  const { bound } = route.value;
+
   // Refused before anything is read when it says it is too large, and
   // read no further than the limit when it does not say.
-  if (Option.exists(declaredLength(request), (length) => length > maxBody)) {
+  if (Option.exists(declaredLength(request), (length) => length > bound)) {
     return answer(413);
   }
 
   const body =
     request.method === "POST"
-      ? yield* Effect.promise(async () => await boundedBody(request))
+      ? yield* Effect.promise(async () => await boundedBody(request, bound))
       : null;
 
   if (body === tooLarge) {
     return answer(413);
   }
 
-  const headers = new Headers();
+  const headers = route.value.headers();
 
-  for (const name of forwardedRequestHeaders) {
-    const value = request.headers.get(name);
-
-    if (value !== null) {
-      headers.set(name, value);
-    }
-  }
-
-  const relayedUrl = `${route.value.host}${url.pathname.slice(relayPrefix.length)}${url.search}`;
+  const relayedUrl = `${route.value.to}${url.search}`;
 
   const signal = AbortSignal.timeout(timeoutMs);
 

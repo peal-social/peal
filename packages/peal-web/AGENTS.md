@@ -230,7 +230,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   name the SDK's own `/e/` and `/s/` (`withOwnEndpoints`): the cloud's
   `/i/v0/e/` is a path tracker blockers refuse, so such a browser would
   send its first page view and nothing after. It forwards the request's
-  type alone and answers PostHog's status and type alone; `skipTrailingSlashRedirect`
+  type alone and answers PostHog's status and type alone. Its site mode,
+  under `/pulse/site` (`siteRelayPrefix`), is on apart from the app's,
+  while `PEAL_POSTHOG_SITE` is on with the token: the edge sends it the
+  site's, the docs' and the blog's events from their own host names, and
+  it relays `/e/` by POST alone (their SDK loads no configuration), 256
+  KiB at most, with the type, the `user-agent` and an `x-forwarded-for`
+  set to the address the first header `AUTH_IP_HEADERS` names carries
+  when it is an IP address (`visitorAddress`), as PostHog's cookieless
+  count is worked out from both; never a cookie, `referer`, `origin` or
+  a language. The app's mode never forwards those two; `skipTrailingSlashRedirect`
   is on for it, and the proxy redirects every other trailing slash
   itself. The app's HTTP client keeps the `fetch` it started with, so it never
   sees the SDK's `tracing_headers`: it names the session itself
