@@ -6,6 +6,7 @@ import { ComposerScreen } from "#components/posts/composer-screen.tsx";
 import { routing } from "#i18n/routing.ts";
 import { viewerOf } from "#posts/membership.ts";
 import { StartAtSchema } from "#posts/start-time.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 const decodeStartAt = Schema.decodeUnknownOption(StartAtSchema);
 
@@ -35,5 +36,7 @@ const NewPostPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("newPost");
 
 export default NewPostPage;

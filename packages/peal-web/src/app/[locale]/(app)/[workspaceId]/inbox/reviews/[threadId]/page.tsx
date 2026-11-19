@@ -9,6 +9,7 @@ import { SplitDetail } from "#components/shell/frame-view.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
 
 // One location's reviews, for members who may read them
@@ -53,5 +54,7 @@ const InboxReviewsPage = async ({
     </SplitDetail>
   );
 };
+
+export const generateMetadata = workspacePageTitle("review");
 
 export default InboxReviewsPage;

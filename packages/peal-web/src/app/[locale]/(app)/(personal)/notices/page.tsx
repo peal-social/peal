@@ -10,6 +10,7 @@ import { NoticeList } from "#components/notices/notice-list.tsx";
 import { PageActions } from "#components/shell/frame-view.tsx";
 import { Link, redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { personalPageTitle } from "#shell/page-title.ts";
 
 // The signed-in user's notices, across their workspaces, which the list
 // names from GET /api/me. Anyone signed out is sent to sign in.
@@ -47,5 +48,7 @@ const NoticesPage = async ({ params }: PageProps<"/[locale]/notices">) => {
     </>
   );
 };
+
+export const generateMetadata = personalPageTitle("notices");
 
 export default NoticesPage;

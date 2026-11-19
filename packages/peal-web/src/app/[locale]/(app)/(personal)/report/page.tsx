@@ -6,6 +6,7 @@ import { currentUser } from "#auth/session.ts";
 import { ReportScreen } from "#components/overview/report-screen.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { personalPageTitle } from "#shell/page-title.ts";
 
 // What went out in each of the signed-in person's workspaces and how it
 // did, beside the days before, as GET /api/me/report answers it, with its
@@ -25,5 +26,7 @@ const ReportPage = async ({ params }: PageProps<"/[locale]/report">) => {
 
   return <ReportScreen />;
 };
+
+export const generateMetadata = personalPageTitle("report");
 
 export default ReportPage;

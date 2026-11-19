@@ -5,6 +5,7 @@ import { ImageProviderSettings } from "#components/assistant/image-provider-sett
 import { TextProviderSettings } from "#components/assistant/text-provider-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // The assistant's settings: the text and image providers the workspace
 // brings, for members with assistant:configure (owners and admins).
@@ -30,5 +31,7 @@ const AssistantSettingsPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("assistant");
 
 export default AssistantSettingsPage;

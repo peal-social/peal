@@ -7,6 +7,8 @@ import {
   EmptyStateTitle,
 } from "peal-ui/components/empty-state";
 
+import { workspacePageTitle } from "#shell/page-title.ts";
+
 // The inbox with nothing open: the list beside it (the layout's) says
 // what there is, and this pane what to do.
 const InboxPage = async () => {
@@ -20,5 +22,7 @@ const InboxPage = async () => {
     </EmptyState>
   );
 };
+
+export const generateMetadata = workspacePageTitle("inbox");
 
 export default InboxPage;

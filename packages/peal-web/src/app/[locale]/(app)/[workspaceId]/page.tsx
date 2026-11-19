@@ -8,6 +8,7 @@ import { ConsentCard } from "#components/measurement/consent-controls.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { hrefOf } from "#shell/navigation.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // The workspace's home: the question about the web app's measurement while
 // the person has not answered it, connecting channels and assistants, and
@@ -38,5 +39,7 @@ const WorkspaceHomePage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("home");
 
 export default WorkspaceHomePage;

@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { RecyclingSettings } from "#components/recycling/recycling-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 const decodeRule = Schema.decodeUnknownOption(Schema.String);
 
@@ -47,5 +48,7 @@ const RecyclingPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("recycling");
 
 export default RecyclingPage;

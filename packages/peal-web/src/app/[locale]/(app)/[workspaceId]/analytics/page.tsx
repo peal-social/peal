@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AnalyticsScreen } from "#components/analytics/analytics-screen.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // How the workspace's posts did on their platforms, for members who may
 // read its analytics. `?period=7`, `30` or `90` picks the days it shows.
@@ -24,5 +25,7 @@ const AnalyticsPage = async ({
 
   return <AnalyticsScreen workspaceId={membership.id} />;
 };
+
+export const generateMetadata = workspacePageTitle("analytics");
 
 export default AnalyticsPage;

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArticleScreen } from "#components/articles/article-screen.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // Writes a new article for one of the workspace's websites.
 const NewArticlePage = async ({
@@ -27,5 +28,7 @@ const NewArticlePage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("newArticle");
 
 export default NewArticlePage;

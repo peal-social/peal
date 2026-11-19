@@ -6,6 +6,7 @@ import { CalendarScreen } from "#components/posts/calendar-screen.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { DateKeySchema, parseDate } from "#posts/zoned-time.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 const decodeDateKey = Schema.decodeUnknownOption(DateKeySchema);
 
@@ -34,5 +35,7 @@ const CalendarPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("calendar");
 
 export default CalendarPage;

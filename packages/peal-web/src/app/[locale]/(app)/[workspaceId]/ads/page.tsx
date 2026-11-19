@@ -6,6 +6,7 @@ import { AdsScreen } from "#components/ads/ads-screen.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { docsUrlConfig } from "#shell/docs-url.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's ad accounts, their campaigns and what they spent, for
 // members who may read its ads. Connecting takes ads:manage, and deciding
@@ -48,5 +49,7 @@ const AdsPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("ads");
 
 export default AdsPage;

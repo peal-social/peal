@@ -757,7 +757,8 @@ report, the notifications, the account), have a sidebar of their own, with
 their workspaces under it.
 
 **Page names.** A page has one name, used in the sidebar, the breadcrumb,
-its title and the browser's tab ("Posts · Synthetic studio"): the short
+its title and the browser's tab ("Posts · Synthetic studio", and "Report
+· Peal" on the person's own pages): the short
 one (Posts, Approvals, Notifications, Billing, Account, Report). A page
 that opens one item is named after the item's kind (Comment, Message,
 Review). Home keeps "Write once." as a greeting under the name.

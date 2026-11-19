@@ -6,6 +6,7 @@ import { maxSignaturesPerWorkspace } from "peal-contract";
 import { SignaturesSettings } from "#components/signatures/signatures-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's signatures, for members who may read its posts. Adding,
 // changing or deleting one takes post:update.
@@ -41,5 +42,7 @@ const SignaturesPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("signatures");
 
 export default SignaturesPage;

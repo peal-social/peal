@@ -9,6 +9,7 @@ import { SplitDetail } from "#components/shell/frame-view.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
 
 // One thread of the inbox: the comments under a post on one channel, for
@@ -55,5 +56,7 @@ const InboxThreadPage = async ({
     </SplitDetail>
   );
 };
+
+export const generateMetadata = workspacePageTitle("comment");
 
 export default InboxThreadPage;

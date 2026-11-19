@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { MessageSettingsPanel } from "#components/inbox/message-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // Whose direct messages Peal reads, for members who connect channels
 // (channel:connect), and which applications may read them, for owners
@@ -31,5 +32,7 @@ const MessageSettingsPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("messages");
 
 export default MessageSettingsPage;

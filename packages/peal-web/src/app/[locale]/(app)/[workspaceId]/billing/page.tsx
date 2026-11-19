@@ -7,6 +7,7 @@ import { termsUrlConfig } from "#billing/terms.ts";
 import { BillingScreen } from "#components/billing/billing-screen.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
 // A workspace's billing, for members with billing:read: its plan, what it
@@ -51,5 +52,7 @@ const BillingPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("billing");
 
 export default BillingPage;

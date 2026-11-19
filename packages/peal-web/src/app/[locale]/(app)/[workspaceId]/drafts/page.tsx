@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { DraftsList } from "#components/posts/drafts-list.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // The workspace's drafts, newest first, each opening in the composer.
 const DraftsPage = async ({
@@ -24,5 +25,7 @@ const DraftsPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("drafts");
 
 export default DraftsPage;

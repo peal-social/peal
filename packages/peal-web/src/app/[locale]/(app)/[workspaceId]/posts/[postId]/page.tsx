@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ComposerScreen } from "#components/posts/composer-screen.tsx";
 import { routing } from "#i18n/routing.ts";
 import { viewerOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // Opens a post of the workspace in the composer.
 const PostPage = async ({
@@ -26,5 +27,7 @@ const PostPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("post");
 
 export default PostPage;

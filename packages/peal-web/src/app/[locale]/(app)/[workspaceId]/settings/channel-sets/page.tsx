@@ -6,6 +6,7 @@ import { maxChannelSetsPerWorkspace } from "peal-contract";
 import { ChannelSetsSettings } from "#components/channel-sets/channel-sets-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's channel sets, for members who may read its posts and its
 // channels. Adding, changing or deleting one takes post:update.
@@ -41,5 +42,7 @@ const ChannelSetsPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("channelSets");
 
 export default ChannelSetsPage;

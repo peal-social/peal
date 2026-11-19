@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ApiKeysSettings } from "#components/settings/api-keys.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's API keys, for members who may read them. A key may do at
 // most what its creator may, and the direct messages' permissions only an
@@ -48,5 +49,7 @@ const ApiKeysPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("apiKeys");
 
 export default ApiKeysPage;

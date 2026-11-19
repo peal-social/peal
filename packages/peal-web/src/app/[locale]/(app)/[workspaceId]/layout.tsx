@@ -1,4 +1,5 @@
 import { Effect, Option } from "effect";
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { buttonVariants } from "peal-ui/components/button";
 import { Suspense } from "react";
@@ -28,6 +29,27 @@ import { workspaceAt } from "#shell/workspace-path.ts";
 // not a member gets the page's own answer, in the app's plain frame.
 // `workspaceId` is the address's segment: the workspace's slug, or its id
 // in an older link (`workspaceAt`).
+// Each page's title is followed by the workspace's name: "Analytics ·
+// Client A", so tabs of several workspaces tell apart.
+export const generateMetadata = async ({
+  params,
+}: LayoutProps<"/[locale]/[workspaceId]">): Promise<Metadata> => {
+  const { workspaceId: segment } = await params;
+  const me = await currentUserOrNone();
+
+  return me.pipe(
+    Option.flatMapNullishOr(({ workspaces }) =>
+      workspaceAt(workspaces, segment)
+    ),
+    Option.match({
+      onNone: () => ({}),
+      onSome: ({ name }) => ({
+        title: { default: name, template: `%s · ${name}` },
+      }),
+    })
+  );
+};
+
 const WorkspaceLayout = async ({
   children,
   params,

@@ -7,6 +7,7 @@ import { currentUser } from "#auth/session.ts";
 import { MediaLibrary } from "#components/media/media-library.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
 // A workspace's media library, for its members: what they may do there
@@ -44,5 +45,7 @@ const MediaPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("media");
 
 export default MediaPage;

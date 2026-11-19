@@ -26,7 +26,7 @@ export const generateMetadata = async ({
   return {
     referrer: "no-referrer",
     robots: { follow: false, index: false },
-    title: t("title"),
+    title: { absolute: t("title") },
   };
 };
 

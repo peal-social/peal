@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { PostList } from "#components/posts/post-list.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 const isText = Schema.is(Schema.String);
 
@@ -50,5 +51,7 @@ const PostsPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("posts");
 
 export default PostsPage;
