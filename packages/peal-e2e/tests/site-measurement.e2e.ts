@@ -16,6 +16,7 @@ import { Option, Schema } from "effect";
 
 import { projectToken, requestsFile } from "../scripts/posthog.ts";
 import { siteRoot, siteUrlFile } from "../scripts/site.ts";
+import { emailedLink } from "./support/mailpit.ts";
 import { asPerson } from "./support/person.ts";
 
 // How the marketing site measures, read from what the stand-in for PostHog
@@ -434,6 +435,16 @@ describe("the site's measurement", { serial: true }, () => {
       await browser.evaluate(storedKeys)
     );
 
+    // The visit's source the SDK keeps: a page without its query, the
+    // referrer's origin alone.
+    const kept = decodeURIComponent(
+      jar.find(({ name }) => name === visitorCookie)?.value ?? ""
+    );
+
+    expect(kept).toContain('"u":"');
+    expect(kept).not.toMatch(/"u":"[^"]*\?/u);
+    expect(kept).not.toMatch(/"r":"https?:\/\/[^"]*\/[^"]/u);
+
     mkdirSync(output, { recursive: true });
     writeFileSync(
       path.join(output, "posthog-site-storage.json"),
@@ -457,6 +468,16 @@ describe("the site's measurement", { serial: true }, () => {
     screen,
   }) => {
     await asPerson(browser);
+
+    // A tab of the site left open across the sign-up, as a docs tab would
+    // be, which must never follow the visitor the sign-up linked.
+    const left = await browser.newTab();
+
+    await browser.goto(`${site()}/pricing/`);
+
+    const [signUpTab] = browser.tabs();
+
+    await signUpTab?.activate();
 
     const since = linesSoFar();
 
@@ -488,6 +509,49 @@ describe("the site's measurement", { serial: true }, () => {
 
     expect(await cookieNames(browser)).not.toContain(visitorCookie);
 
+    // The tab left open is shown again, and its visitor clicks: it follows
+    // a new visitor, linked to none, never the one just linked.
+    const afterSignUp = linesSoFar();
+
+    await left.activate();
+    await browser.evaluate(
+      "document.dispatchEvent(new Event('visibilitychange'))"
+    );
+    await sleep(500);
+    // Two clicks: the first finds the visitor retired, and leaves nothing.
+    const click =
+      "(() => { const link = document.querySelector('[data-measure-cta]'); link.addEventListener('click', (event) => event.preventDefault()); link.click(); })()";
+
+    await browser.evaluate(click);
+    await sleep(500);
+    await browser.evaluate(click);
+
+    await eventually(
+      () =>
+        fromSite(afterSignUp).filter(
+          (event) => event.event === "site_cta_clicked"
+        ),
+      "the left tab's click"
+    );
+
+    expect(
+      fromSite(afterSignUp).filter((event) => event.distinctId === visitor)
+    ).toEqual([]);
+
+    // PostHog's cookie, if the tab saved it again, names a new visitor;
+    // only peal_site_retired still names the one linked.
+    const jar = await browser.cookies();
+    const posthogCookie = jar.find(({ name }) => name === visitorCookie);
+
+    expect(decodeURIComponent(posthogCookie?.value ?? "")).not.toContain(
+      visitor
+    );
+    expect(jar.find(({ name }) => name === "peal_site_retired")?.value).toBe(
+      visitor
+    );
+
+    await left.close();
+
     const next = linesSoFar();
 
     await browser.goto(`${site()}/`);
@@ -496,6 +560,224 @@ describe("the site's measurement", { serial: true }, () => {
 
     expect(view.distinctId).not.toBe(visitor);
     expect(view.distinctId).not.toBe("$posthog_cookieless");
+  });
+
+  test("forgets everything once Don't allow follows Allow", async ({
+    browser,
+    screen,
+  }) => {
+    await asPerson(browser);
+    await browser.goto(`${site()}/`);
+    await screen
+      .getByRole("contentinfo")
+      .getByRole("link", "Cookie settings")
+      .tap();
+    await screen.getByRole("button", "Don’t allow").tap();
+    await expect(
+      screen.getByRole("region", "Can we keep a cookie?")
+    ).toBeHidden();
+
+    expect(await cookieNames(browser)).not.toContain(visitorCookie);
+
+    const stored = Schema.decodeUnknownSync(StoredSchema)(
+      await browser.evaluate(storedKeys)
+    );
+
+    expect(
+      stored.filter((key) => key.startsWith("ph_") || key.startsWith("__ph"))
+    ).toEqual([]);
+
+    const next = linesSoFar();
+
+    await browser.goto(`${site()}/pricing/`);
+
+    const view = await pageViewOf(next, "/pricing/", "a view after Don't allow");
+
+    expect(view.properties["$cookieless_mode"]).toBe(true);
+  });
+
+  test("asks again, and counts without a cookie, once an answer is 183 days old", async ({
+    browser,
+    screen,
+  }) => {
+    await asPerson(browser);
+    await browser.clearCookies();
+    await browser.setCookies([
+      {
+        name: "peal.consent",
+        url: site(),
+        value: `1.a.${String(Math.floor(Date.now() / 86_400_000) - 183)}`,
+      },
+    ]);
+
+    const next = linesSoFar();
+
+    await browser.goto(`${site()}/`);
+    await expect(
+      screen.getByRole("region", "Can we keep a cookie?")
+    ).toBeVisible();
+
+    const view = await pageViewOf(next, "/", "a view past the answer's days");
+
+    expect(view.properties["$cookieless_mode"]).toBe(true);
+    expect(await cookieNames(browser)).not.toContain(visitorCookie);
+  });
+});
+
+// What the web app's SDK sends, beside the site's: its own events.
+const fromApp = (since: number) =>
+  received().filter(
+    (event) =>
+      event.line >= since &&
+      event.path !== serverCapture &&
+      event.properties["source"] !== "site"
+  );
+
+describe("the web app beside the site's answers", { serial: true }, () => {
+  const run = randomUUID();
+  const member = () =>
+    credentials.user("member").username.replace("@", `+${run}-beside@`);
+  let workspaceId = "";
+  let memberId = "";
+
+  // The site's answer and PostHog's cookies, the app's session kept.
+  const forgetSite = async (browser: {
+    readonly clearCookies: (filter: { readonly name: RegExp }) => Promise<void>;
+  }) => {
+    await browser.clearCookies({
+      name: /^(?:peal\.consent|peal_site_consent|ph_|__ph)/u,
+    });
+  };
+
+  test("signs up a member with a workspace", async ({ app, browser, screen }) => {
+    await asPerson(browser);
+    await app.open("/sign-up");
+    await screen.getByLabel("Name").fill("Alex Example");
+    await screen.getByLabel("Email").fill(member());
+    await screen
+      .getByLabel("Password")
+      .fill(credentials.user("member").password);
+    await screen.getByRole("button", "Create my account").tap();
+    await expect(screen.getByText("Check your inbox")).toBeVisible();
+    await browser.goto(
+      await emailedLink(member(), "Confirm your email for Peal")
+    );
+    await app.open("/app");
+    await screen.getByLabel("Workspace name").fill("Beside Studio");
+    await screen.getByRole("button", "Create the workspace").tap();
+
+    const calendar = screen
+      .getByRole("navigation", "Posts of Beside Studio")
+      .getByRole("link", "Calendar");
+
+    await expect(calendar).toBeVisible();
+
+    const href = (await calendar.getAttribute("href")) ?? "";
+
+    workspaceId =
+      /^\/app\/(?<id>[^/]+)\/calendar$/u.exec(href)?.groups?.["id"] ?? "";
+    memberId = textOf(
+      await browser.evaluate(
+        "fetch('/api/me').then((answer) => answer.json()).then((me) => me.user.id)"
+      )
+    );
+
+    expect(workspaceId).not.toBe("");
+    expect(memberId).not.toBe("");
+  });
+
+  test("keeps measuring the app, and keeps nothing of the site's answer, after the site's Don't allow", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    await asPerson(browser);
+    await forgetSite(browser);
+    await browser.goto(`${site()}/`);
+    await screen.getByRole("button", "Don’t allow").tap();
+    await expect(
+      screen.getByRole("region", "Can we keep a cookie?")
+    ).toBeHidden();
+
+    const since = linesSoFar();
+
+    await app.open(`/app/${workspaceId}/posts`);
+
+    await eventually(
+      () => fromApp(since).filter((event) => event.event === "$pageview"),
+      "the app's anonymous page view after the site's refusal"
+    );
+
+    const local = Schema.decodeUnknownSync(StoredSchema)(
+      await browser.evaluate("Object.keys(localStorage)")
+    );
+
+    expect(local.filter((key) => key.startsWith("__ph"))).toEqual([]);
+
+    // The member allows the app's own measurement: it follows them,
+    // whatever the site's answer said.
+    const allowedAt = linesSoFar();
+
+    await app.open("/app");
+    await screen.getByRole("button", "Allow").tap();
+    await expect(
+      screen.getByRole("heading", "Help us improve Peal")
+    ).toBeHidden();
+    await app.open(`/app/${workspaceId}/channels`);
+
+    await eventually(
+      () =>
+        fromApp(allowedAt).filter(
+          (event) =>
+            event.event === "$pageview" && event.distinctId === memberId
+        ),
+      "the member's page view once they allowed the app"
+    );
+  });
+
+  test("keeps the app as it is after the site's Allow", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    await asPerson(browser);
+    await browser.goto(`${site()}/`);
+    await screen
+      .getByRole("contentinfo")
+      .getByRole("link", "Cookie settings")
+      .tap();
+    await screen.getByRole("button", "Allow").tap();
+
+    const since = linesSoFar();
+
+    await app.open(`/app/${workspaceId}/posts`);
+
+    const views = await eventually(
+      () =>
+        fromApp(since).filter(
+          (event) =>
+            event.event === "$pageview" && event.distinctId === memberId
+        ),
+      "the member's page view after the site's Allow"
+    );
+
+    const siteVisitor = textOf(
+      await browser.evaluate(
+        `(() => { const raw = document.cookie.split('; ').find((c) => c.startsWith('${visitorCookie}=')); return raw === undefined ? '' : JSON.parse(decodeURIComponent(raw.slice(${String(visitorCookie.length + 1)}))).distinct_id; })()`
+      )
+    );
+
+    for (const view of views) {
+      expect(JSON.stringify(view.properties)).not.toContain(
+        siteVisitor === "" ? "no-visitor" : siteVisitor
+      );
+    }
+
+    const local = Schema.decodeUnknownSync(StoredSchema)(
+      await browser.evaluate("Object.keys(localStorage)")
+    );
+
+    expect(local.filter((key) => key.startsWith("__ph"))).toEqual([]);
   });
 });
 
