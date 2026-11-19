@@ -89,8 +89,12 @@ const sdkOf = (recorded: Recorded): SiteSdk => ({
     recorded.calls.push("opt_out");
     recorded.status = "denied";
   },
+  // As posthog.reset(true): a new visitor and device, and the SDK's
+  // consent forgotten.
   reset: () => {
     recorded.calls.push("reset");
+    recorded.id = "019a0000-0000-7000-8000-0000000000ff";
+    recorded.status = "pending";
   },
 });
 
@@ -298,6 +302,29 @@ describe("startMeasurement", () => {
 
     await Promise.resolve();
 
-    expect(recorded.calls).toContain("reset");
+    // A new visitor, followed again: the reset's lost consent is restored.
+    const afterReset = recorded.calls.slice(recorded.calls.indexOf("reset"));
+
+    expect(afterReset).toContain("opt_in");
+    expect(recorded.status).toBe("granted");
+    expect(jar.has("peal_site_retired")).toBe(false);
+    expect(recorded.options?.before_send(pageView())).not.toBeNull();
+  });
+
+  it("removes the retired visitor with the rest on a refusal", async () => {
+    const { jar } = page({
+      "peal.consent": `1.r.${String(today)}`,
+      peal_site_retired: "019a0000-0000-7000-8000-000000000001",
+      [visitor]: "%7B%7D",
+    });
+
+    await start({
+      calls: [],
+      id: "$posthog_cookieless",
+      status: "granted",
+    });
+
+    expect(jar.has("peal_site_retired")).toBe(false);
+    expect(jar.has(visitor)).toBe(false);
   });
 });

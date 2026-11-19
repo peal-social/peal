@@ -161,8 +161,12 @@ export const startMeasurement = async (
       following = true;
       sdk.opt_in_capturing();
     } else if (alignment === "renew") {
+      // A new visitor and device; the reset forgets the SDK's consent,
+      // which the answer still gives.
       seenCookie = false;
       sdk.reset();
+      sdk.opt_in_capturing();
+      following = sdk.get_explicit_consent_status() === "granted";
     } else {
       following = false;
 

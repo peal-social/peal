@@ -13,15 +13,15 @@ const isTheSdks = (key: string) =>
 
 /**
  * Forgets the visitor in this browser: PostHog's cookie on every domain it
- * may sit on, its session and local storage entries, and, with `consent`,
- * its own copy of the answer too.
+ * may sit on, the retired visitor a sign-up named, its session and local
+ * storage entries, and, with `consent`, its own copy of the answer too.
  */
 export const forgetVisitor = (key: string, consent = false): void => {
   const secure = location.protocol === "https:";
 
   const names = consent
-    ? [visitorCookieName(key), siteConsentCookieName]
-    : [visitorCookieName(key)];
+    ? [visitorCookieName(key), retiredVisitorCookieName, siteConsentCookieName]
+    : [visitorCookieName(key), retiredVisitorCookieName];
 
   for (const domain of cookieDomainsOf(location.hostname)) {
     for (const name of names) {
