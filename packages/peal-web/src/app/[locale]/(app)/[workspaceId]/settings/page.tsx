@@ -15,6 +15,7 @@ import { RenameWorkspaceForm } from "#components/settings/rename-workspace-form.
 import { ShortLinkDefaultForm } from "#components/settings/short-link-default-form.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's general settings: its name, which posts wait for an
 // approval, whether new posts shorten their links, and deleting it, for
@@ -104,5 +105,7 @@ const GeneralSettingsPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("general");
 
 export default GeneralSettingsPage;

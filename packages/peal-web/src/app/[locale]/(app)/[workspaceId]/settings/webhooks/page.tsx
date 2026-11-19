@@ -10,6 +10,7 @@ import {
 import { WebhooksSettings } from "#components/webhooks/webhooks-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's webhook endpoints and their deliveries, for members who may
 // read them. Changing anything takes webhook:manage.
@@ -49,5 +50,7 @@ const WebhooksPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("webhooks");
 
 export default WebhooksPage;

@@ -117,7 +117,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `#shell/personal.ts`. The frame's panel header holds the page's one
   `h1`, its name: a page draws no title or description of its own, puts
   its main actions in `PageActions` (small ghost buttons, icon first) and,
-  where it opens one item, names it with `PageTitle`
+  where it opens one item, names it with `PageTitle`. Each page also
+  exports `generateMetadata = workspacePageTitle("<page>")` (or
+  `personalPageTitle`, `#shell/page-title.ts`), its name from the
+  sidebar's catalogue, which the layouts' templates follow with the
+  workspace's name or "Peal" for the browser's tab
   (`components/shell/frame-view.tsx`). A list page puts its items in
   one bordered list with a line between them, never a card each.
 - The workspace's home builds each assistant's setup (`#home/agents.ts`,

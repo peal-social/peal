@@ -35,7 +35,9 @@ export const generateMetadata = async ({
   return {
     description: t("description"),
     other: { [releaseMeta]: release },
-    title: t("title"),
+    // A page that names itself reads "<page> · Peal"; a workspace's
+    // layout puts the workspace's name there instead.
+    title: { default: t("title"), template: `%s · ${t("title")}` },
   };
 };
 

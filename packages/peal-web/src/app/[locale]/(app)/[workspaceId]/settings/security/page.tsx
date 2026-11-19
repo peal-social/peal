@@ -8,6 +8,7 @@ import { currentUser } from "#auth/session.ts";
 import { WorkspaceSecurityForm } from "#components/settings/workspace-security-form.tsx";
 import { Link, redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
 // What the workspace requires of its members: every member reads it; an
@@ -59,5 +60,7 @@ const SecurityPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("security");
 
 export default SecurityPage;

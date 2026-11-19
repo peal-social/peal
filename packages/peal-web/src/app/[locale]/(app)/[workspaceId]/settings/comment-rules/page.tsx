@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { CommentRulesSettings } from "#components/comment-rules/comment-rules-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's comment rules, for members who read the inbox; starting,
 // pausing and stopping one takes engagement:reply, and giving one a
@@ -43,5 +44,7 @@ const CommentRulesPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("commentRules");
 
 export default CommentRulesPage;

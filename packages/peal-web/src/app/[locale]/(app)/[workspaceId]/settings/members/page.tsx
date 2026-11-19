@@ -7,6 +7,7 @@ import { currentUser } from "#auth/session.ts";
 import { MembersList } from "#components/settings/members-list.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
 // A workspace's members: everyone sees them; owners and admins change roles
@@ -50,5 +51,7 @@ const MembersPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("members");
 
 export default MembersPage;

@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { FeedsSettings } from "#components/feeds/feeds-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 const decodeFeed = Schema.decodeUnknownOption(Schema.String);
 
@@ -49,5 +50,7 @@ const FeedsPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("feeds");
 
 export default FeedsPage;

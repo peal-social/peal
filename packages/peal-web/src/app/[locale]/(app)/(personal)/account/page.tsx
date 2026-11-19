@@ -29,6 +29,7 @@ import { TwoStepSection } from "#components/account/two-step-section.tsx";
 import { ConsentSetting } from "#components/measurement/consent-controls.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { personalPageTitle } from "#shell/page-title.ts";
 
 const Section = ({
   children,
@@ -168,5 +169,7 @@ const AccountPage = async ({ params }: PageProps<"/[locale]/account">) => {
     </div>
   );
 };
+
+export const generateMetadata = personalPageTitle("account");
 
 export default AccountPage;

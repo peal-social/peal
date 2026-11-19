@@ -6,6 +6,7 @@ import { currentUser } from "#auth/session.ts";
 import { AgendaScreen } from "#components/overview/agenda-screen.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { personalPageTitle } from "#shell/page-title.ts";
 
 // What goes out across the signed-in person's workspaces, which the list
 // names from GET /api/me: those where they may read posts. A list, not
@@ -30,5 +31,7 @@ const AgendaPage = async ({ params }: PageProps<"/[locale]/agenda">) => {
 
   return <AgendaScreen workspaces={workspaces} />;
 };
+
+export const generateMetadata = personalPageTitle("agenda");
 
 export default AgendaPage;

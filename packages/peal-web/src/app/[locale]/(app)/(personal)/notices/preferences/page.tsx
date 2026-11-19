@@ -8,6 +8,7 @@ import { NotificationPreferencesForm } from "#components/notices/notification-pr
 import { PageTitle } from "#components/shell/frame-view.tsx";
 import { Link, redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { personalPageTitle } from "#shell/page-title.ts";
 
 // Which notices the signed-in user also receives by email. Anyone signed
 // out is sent to sign in.
@@ -41,5 +42,7 @@ const NotificationPreferencesPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = personalPageTitle("notices");
 
 export default NotificationPreferencesPage;

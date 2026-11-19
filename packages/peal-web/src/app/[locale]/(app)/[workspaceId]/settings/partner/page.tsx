@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { PartnerSettings } from "#components/settings/partner-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's partner account, for the members who may read it: what a
 // product that embeds Peal sets up once, before its backend takes over
@@ -37,5 +38,7 @@ const PartnerPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("partner");
 
 export default PartnerPage;

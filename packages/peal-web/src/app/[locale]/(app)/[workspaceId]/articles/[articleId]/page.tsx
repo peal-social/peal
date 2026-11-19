@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArticleScreen } from "#components/articles/article-screen.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // An article of the workspace, in the editor, with what it can do next.
 const ArticlePage = async ({
@@ -27,5 +28,7 @@ const ArticlePage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("article");
 
 export default ArticlePage;

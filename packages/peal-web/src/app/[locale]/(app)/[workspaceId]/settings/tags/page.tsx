@@ -6,6 +6,7 @@ import { maxTagsPerPost, maxTagsPerWorkspace } from "peal-contract";
 import { TagsSettings } from "#components/tags/tags-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's tags, for members who may read its posts. Adding, renaming,
 // recolouring or deleting one takes post:update.
@@ -41,5 +42,7 @@ const TagsPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("tags");
 
 export default TagsPage;

@@ -6,6 +6,7 @@ import { maxQueuesPerWorkspace } from "peal-contract";
 import { QueuesSettings } from "#components/queues/queues-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's queues, for members who may read its posts and its
 // channels. Adding, changing or deleting one takes post:update; moving its
@@ -46,5 +47,7 @@ const QueuesPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("queues");
 
 export default QueuesPage;

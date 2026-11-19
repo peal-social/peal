@@ -9,6 +9,7 @@ import {
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { assignableRoles } from "#settings/member-rules.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // Inviting people to a workspace, and the invitations still pending, for
 // members who may invite.
@@ -52,5 +53,7 @@ const InvitationsPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("invitations");
 
 export default InvitationsPage;

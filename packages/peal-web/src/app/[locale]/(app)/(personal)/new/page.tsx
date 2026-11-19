@@ -8,6 +8,7 @@ import { UpgradePrompts } from "#components/billing/upgrade-prompts.tsx";
 import { CreateWorkspaceForm } from "#components/create-workspace-form.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { personalPageTitle } from "#shell/page-title.ts";
 
 // A new workspace, which the person owns and which opens once made: the
 // workspace switcher and the person's sidebar link here. The upgrade
@@ -36,5 +37,7 @@ const NewWorkspacePage = async ({ params }: PageProps<"/[locale]/new">) => {
     </div>
   );
 };
+
+export const generateMetadata = personalPageTitle("newWorkspace");
 
 export default NewWorkspacePage;

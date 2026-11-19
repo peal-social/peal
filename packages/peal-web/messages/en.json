@@ -3013,7 +3013,10 @@
       "articles": "Articles",
       "article": "Article",
       "newArticle": "New article",
-      "messages": "Direct messages"
+      "messages": "Direct messages",
+      "comment": "Comment",
+      "review": "Review",
+      "message": "Message"
     },
     "help": "Help",
     "shortcuts": "Keyboard shortcuts",

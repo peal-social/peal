@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArticlesList } from "#components/articles/articles-list.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 // The workspace's articles, for its websites, newest first.
 const ArticlesPage = async ({
@@ -24,5 +25,7 @@ const ArticlesPage = async ({
     />
   );
 };
+
+export const generateMetadata = workspacePageTitle("articles");
 
 export default ArticlesPage;

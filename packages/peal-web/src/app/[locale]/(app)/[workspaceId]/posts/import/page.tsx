@@ -7,6 +7,7 @@ import { PostImport } from "#components/posts/post-import.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
 
 // What an import asks of the member.
@@ -49,5 +50,7 @@ const PostImportPage = async ({
     </div>
   );
 };
+
+export const generateMetadata = workspacePageTitle("import");
 
 export default PostImportPage;
