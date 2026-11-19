@@ -55,6 +55,9 @@ import {
   setCommentAnswered,
   withdrawInboxReply,
 } from "#inbox/atoms.ts";
+import { commentTargetOf } from "#inbox/comment-target.ts";
+import { choiceOnDraft, replyChoice } from "#inbox/composer-choice.ts";
+import type { ComposerChoice } from "#inbox/composer-choice.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";
 import { privateReplyFit } from "#inbox/private-reply-text.ts";
 import { replyFit } from "#inbox/reply-text.ts";
@@ -90,14 +93,6 @@ const whileIdle = 60_000;
 // Whether the thread's channel may answer its comments from Peal.
 const repliable = (detail: InboxThreadDetail): boolean =>
   detail.platform !== null && detail.abilities.reply === "available";
-
-// The comment the composer answers first: the oldest still waiting, else
-// the latest one still on the platform.
-const firstToAnswer = (
-  comments: readonly InboxComment[]
-): InboxComment | undefined =>
-  comments.find(({ state }) => state === "new") ??
-  comments.findLast(({ state }) => state !== "deleted");
 
 const appLink = (href: string, label: string) => (
   <Link href={href} className="underline underline-offset-4">
@@ -599,6 +594,7 @@ const ReplyBox = ({
   comment,
   context,
   inputId,
+  onDraft,
   onSent,
   pending,
   platform,
@@ -606,6 +602,8 @@ const ReplyBox = ({
   readonly comment: InboxComment;
   readonly context: ThreadContext;
   readonly inputId: string;
+  /** Pins the draft to the comment it answers, until it is emptied. */
+  readonly onDraft: (text: string) => void;
   readonly onSent: (reply: InboxReply) => void;
   readonly pending: "sending" | "unconfirmed" | null;
   readonly platform: Platform;
@@ -659,7 +657,10 @@ const ReplyBox = ({
       pending={pending}
       sending={isSending}
       text={text}
-      onChange={setText}
+      onChange={(changed) => {
+        setText(changed);
+        onDraft(changed);
+      }}
       onSend={handleSend}
     />
   );
@@ -750,7 +751,7 @@ const LoadedThread = ({
   const listId = useId();
   const composerId = useId();
   // The comment the composer answers, once a member chose one.
-  const [chosen, setChosen] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<ComposerChoice | null>(null);
   // The replies this page sent, until the thread lists them itself.
   const [sent, setSent] = useState<readonly InboxReply[]>([]);
   const replies = withSentReplies(detail.replies, sent);
@@ -774,20 +775,19 @@ const LoadedThread = ({
 
   const handleSent = (reply: InboxReply) => {
     setSent((before) => [...before, reply]);
+    // The draft is gone: the composer moves on to the next comment waiting.
+    setChosen(null);
   };
 
   const handleReply = (comment: InboxComment) => {
-    setChosen(comment.id);
+    setChosen(replyChoice(comment.id));
     // React's ids hold colons, which a plain `#id` selector cannot.
     globalThis.document
       .querySelector<HTMLTextAreaElement>(`[id="${composerId}"]`)
       ?.focus();
   };
 
-  const target =
-    detail.comments.find(
-      ({ id, state }) => id === chosen && state !== "deleted"
-    ) ?? firstToAnswer(detail.comments);
+  const target = commentTargetOf(detail.comments, chosen);
 
   const composer =
     mayReply &&
@@ -808,6 +808,9 @@ const LoadedThread = ({
             Option.getOrNull
           )}
           platform={detail.platform}
+          onDraft={(text) => {
+            setChosen(choiceOnDraft(chosen, target.id, text));
+          }}
           onSent={handleSent}
         />
       </div>

@@ -8,6 +8,7 @@ import { ThreadScreen } from "#components/inbox/thread-screen.tsx";
 import { SplitDetail } from "#components/shell/frame-view.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { inboxStateOfParams, withInboxQuery } from "#inbox/inbox-query.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
@@ -17,8 +18,10 @@ import { workspacePath } from "#shell/workspace-path.ts";
 // take engagement:reply; a private reply, engagement:message.
 const InboxThreadPage = async ({
   params,
+  searchParams,
 }: PageProps<"/[locale]/[workspaceId]/inbox/[threadId]">) => {
   const { locale, threadId, workspaceId } = await params;
+  const query = await searchParams;
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
@@ -33,6 +36,12 @@ const InboxThreadPage = async ({
 
   const t = await getTranslations("Inbox");
 
+  // On a phone, back to the list as it was beside the item.
+  const back = withInboxQuery(
+    workspacePath(membership.slug, "/inbox"),
+    inboxStateOfParams(query)
+  );
+
   return (
     <SplitDetail
       back={
@@ -40,7 +49,7 @@ const InboxThreadPage = async ({
           variant="ghost"
           size="icon-sm"
           aria-label={t("thread.back")}
-          render={<Link href={workspacePath(membership.slug, "/inbox")} />}
+          render={<Link href={back} />}
         >
           <ArrowLeftIcon aria-hidden />
         </Button>

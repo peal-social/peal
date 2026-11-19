@@ -10,6 +10,7 @@ import { MessageScreen } from "#components/inbox/message-screen.tsx";
 import { SplitDetail } from "#components/shell/frame-view.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { inboxStateOfParams, withInboxQuery } from "#inbox/inbox-query.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
@@ -25,9 +26,9 @@ const InboxConversationPage = async ({
 }: PageProps<"/[locale]/[workspaceId]/inbox/messages/[conversationId]">) => {
   const { conversationId, locale, workspaceId } = await params;
 
-  const cursor = Schema.decodeUnknownOption(QuerySchema)(
-    await searchParams
-  ).pipe(
+  const query = await searchParams;
+
+  const cursor = Schema.decodeUnknownOption(QuerySchema)(query).pipe(
     Option.flatMapNullishOr(({ cursor: named }) => named),
     Option.getOrElse(() => "")
   );
@@ -51,6 +52,12 @@ const InboxConversationPage = async ({
     ({ impersonatedBy }) => impersonatedBy === null
   );
 
+  // On a phone, back to the list as it was beside the item.
+  const back = withInboxQuery(
+    workspacePath(membership.slug, "/inbox"),
+    inboxStateOfParams(query)
+  );
+
   return (
     <SplitDetail
       back={
@@ -58,7 +65,7 @@ const InboxConversationPage = async ({
           variant="ghost"
           size="icon-sm"
           aria-label={t("thread.back")}
-          render={<Link href={workspacePath(membership.slug, "/inbox")} />}
+          render={<Link href={back} />}
         >
           <ArrowLeftIcon aria-hidden />
         </Button>

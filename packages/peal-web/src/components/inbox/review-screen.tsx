@@ -34,6 +34,8 @@ import { useId, useState, useTransition } from "react";
 
 import { channelsOf } from "#channels/channels-api.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { choiceOnDraft, replyChoice } from "#inbox/composer-choice.ts";
+import type { ComposerChoice } from "#inbox/composer-choice.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";
 import {
   replyToReview,
@@ -42,11 +44,7 @@ import {
   setReviewAnswered,
   withdrawReviewReply,
 } from "#inbox/review-atoms.ts";
-import {
-  attemptFor,
-  pinnedOnWrite,
-  reviewTargetOf,
-} from "#inbox/review-target.ts";
+import { attemptFor, reviewTargetOf } from "#inbox/review-target.ts";
 import type { ReplyAttempt } from "#inbox/review-target.ts";
 import { useRefreshWhileVisible } from "#notices/use-refresh-while-visible.ts";
 
@@ -195,14 +193,17 @@ const ReviewActions = ({
 // until the reply is made, and made anew for another text or review.
 const ReviewComposer = ({
   inputId,
-  onWrite,
+  onDraft,
+  onSent,
   review,
   replies,
   workspaceId,
 }: {
   readonly inputId: string;
-  /** Keeps the draft on `review`, whatever the next read answers. */
-  readonly onWrite: () => void;
+  /** Keeps the draft on `review`, whatever the next read answers, until it is emptied. */
+  readonly onDraft: (text: string) => void;
+  /** Lets the composer move on to the next review waiting. */
+  readonly onSent: () => void;
   readonly review: InboxReview;
   readonly replies: readonly InboxReviewReply[];
   readonly workspaceId: string;
@@ -244,6 +245,7 @@ const ReviewComposer = ({
       if (Exit.isSuccess(exit)) {
         setAttempt({ key: crypto.randomUUID(), reviewId: current.reviewId });
         setText("");
+        onSent();
         toast.success(t("box.sent"));
 
         return;
@@ -273,7 +275,7 @@ const ReviewComposer = ({
         // Another text is another reply, under a key of its own.
         setText(changed);
         setAttempt({ key: crypto.randomUUID(), reviewId: review.id });
-        onWrite();
+        onDraft(changed);
       }}
       onSend={handleSend}
     />
@@ -296,7 +298,7 @@ const LoadedReviews = ({
   const listId = useId();
   const composerId = useId();
   // The review the composer answers, once a member chose one.
-  const [chosen, setChosen] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<ComposerChoice | null>(null);
   const mayAnswer = mayReply && detail.abilities.reply === "available";
 
   const mayWithdraw = mayAnswer && detail.abilities.withdraw === "available";
@@ -304,7 +306,7 @@ const LoadedReviews = ({
   const target = reviewTargetOf(detail.reviews, chosen);
 
   const handleReply = (review: InboxReview) => {
-    setChosen(review.id);
+    setChosen(replyChoice(review.id));
     // React's ids hold colons, which a plain `#id` selector cannot.
     globalThis.document
       .querySelector<HTMLTextAreaElement>(`[id="${composerId}"]`)
@@ -364,8 +366,11 @@ const LoadedReviews = ({
             replies={detail.replies}
             review={target}
             workspaceId={workspaceId}
-            onWrite={() => {
-              setChosen(pinnedOnWrite(chosen, target.id));
+            onDraft={(text) => {
+              setChosen(choiceOnDraft(chosen, target.id, text));
+            }}
+            onSent={() => {
+              setChosen(null);
             }}
           />
         </div>

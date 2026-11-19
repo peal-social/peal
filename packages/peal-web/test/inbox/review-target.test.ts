@@ -2,11 +2,8 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime } from "effect";
 import type { InboxReview } from "peal-contract";
 
-import {
-  attemptFor,
-  pinnedOnWrite,
-  reviewTargetOf,
-} from "#inbox/review-target.ts";
+import { choiceOnDraft, replyChoice } from "#inbox/composer-choice.ts";
+import { attemptFor, reviewTargetOf } from "#inbox/review-target.ts";
 
 const at = (iso: string) => DateTime.makeUnsafe(iso);
 
@@ -53,9 +50,9 @@ const makeKey = () => "synthetic-key-2";
 describe("whom the review composer answers", () => {
   it("answers the oldest review still waiting until the member chooses one", () => {
     expect(reviewTargetOf([latest, waiting, answered], null)).toBe(waiting);
-    expect(reviewTargetOf([latest, waiting, answered], answered.id)).toBe(
-      answered
-    );
+    expect(
+      reviewTargetOf([latest, waiting, answered], replyChoice(answered.id))
+    ).toBe(answered);
   });
 
   it("answers the latest when none waits, and nothing without reviews", () => {
@@ -66,12 +63,38 @@ describe("whom the review composer answers", () => {
   });
 
   it("keeps a draft on its review once the member writes, whatever a refresh answers", () => {
-    const chosen = pinnedOnWrite(null, waiting.id);
+    const chosen = choiceOnDraft(null, waiting.id, "Thanks");
     // Answered elsewhere: the next read no longer has it waiting.
     const reread = [latest, { ...waiting, state: "answered" as const }];
 
     expect(reviewTargetOf(reread, chosen)?.id).toBe(waiting.id);
-    expect(pinnedOnWrite(answered.id, waiting.id)).toBe(answered.id);
+  });
+
+  it("moves on to the next review waiting once the draft is sent or emptied", () => {
+    const older = reviewOf(
+      "00000000-0000-7000-8000-0000000000a0",
+      "new",
+      "2026-11-11T10:00:00Z"
+    );
+
+    const reread = [
+      latest,
+      waiting,
+      answered,
+      { ...older, state: "answered" as const },
+    ];
+
+    // A sent reply leaves no choice; an emptied draft lets go of its pin.
+    const emptied = choiceOnDraft(
+      choiceOnDraft(null, older.id, "T"),
+      older.id,
+      ""
+    );
+
+    expect([
+      reviewTargetOf(reread, null)?.id,
+      reviewTargetOf(reread, emptied)?.id,
+    ]).toStrictEqual([waiting.id, waiting.id]);
   });
 
   it("keeps a reply's key for its review, and makes another for another review", () => {
