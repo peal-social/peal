@@ -43,12 +43,28 @@
 #
 # {$PEAL_SITE_DOMAIN} {
 # 	encode zstd gzip
-# 	reverse_proxy static:8080
+#
+# 	# Only with SITE_POSTHOG_HOST=/pulse/site and PEAL_POSTHOG_SITE=on: the web app's relay takes the site's measurement.
+# 	handle /pulse/site/* {
+# 		reverse_proxy web:3001
+# 	}
+#
+# 	handle {
+# 		reverse_proxy static:8080
+# 	}
 # }
 #
 # {$PEAL_DOCS_DOMAIN} {
 # 	encode zstd gzip
-# 	reverse_proxy static:8081
+#
+# 	# Only with DOCS_POSTHOG_HOST=/pulse/site and PEAL_POSTHOG_SITE=on: the web app's relay takes the docs' measurement.
+# 	handle /pulse/site/* {
+# 		reverse_proxy web:3001
+# 	}
+#
+# 	handle {
+# 		reverse_proxy static:8081
+# 	}
 # }
 #
 # Or, with the docs' assistant (DOCS_ASSISTANT_MODEL set, and the stack
@@ -59,8 +75,16 @@
 #
 # {$PEAL_DOCS_DOMAIN} {
 # 	encode zstd gzip
-# 	reverse_proxy docs:4323 {
-# 		flush_interval -1
+#
+# 	# Only with DOCS_POSTHOG_HOST=/pulse/site and PEAL_POSTHOG_SITE=on: the web app's relay takes the docs' measurement.
+# 	handle /pulse/site/* {
+# 		reverse_proxy web:3001
+# 	}
+#
+# 	handle {
+# 		reverse_proxy docs:4323 {
+# 			flush_interval -1
+# 		}
 # 	}
 # }
 
