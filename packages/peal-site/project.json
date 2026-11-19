@@ -47,6 +47,18 @@
         },
         {
           "env": "SITE_PLAUSIBLE_HOST"
+        },
+        {
+          "env": "SITE_POSTHOG_KEY"
+        },
+        {
+          "env": "SITE_POSTHOG_HOST"
+        },
+        {
+          "env": "SITE_POSTHOG_COOKIE_DOMAIN"
+        },
+        {
+          "env": "SITE_POSTHOG_ENVIRONMENT"
         }
       ],
       "outputs": ["{projectRoot}/dist"]

@@ -4,6 +4,10 @@ import {
   SITE_DOCS_URL,
   SITE_PLAUSIBLE_DOMAIN,
   SITE_PLAUSIBLE_HOST,
+  SITE_POSTHOG_COOKIE_DOMAIN,
+  SITE_POSTHOG_ENVIRONMENT,
+  SITE_POSTHOG_HOST,
+  SITE_POSTHOG_KEY,
 } from "astro:env/server";
 import {
   originOf,
@@ -11,6 +15,7 @@ import {
   present,
   siteLink,
 } from "peal-ui/lib/site/links";
+import { measurementSettings } from "peal-ui/lib/site/measurement/settings";
 
 import type { Locale } from "./i18n/locales.ts";
 
@@ -52,3 +57,16 @@ export const plausible = plausibleScript(
   SITE_PLAUSIBLE_DOMAIN,
   SITE_PLAUSIBLE_HOST
 );
+
+/**
+ * Measurement with PostHog and its consent notice, when SITE_POSTHOG_KEY
+ * and SITE_POSTHOG_HOST are both set; a value that is set but wrong stops
+ * the build.
+ */
+export const measurement = measurementSettings({
+  cookieDomain: SITE_POSTHOG_COOKIE_DOMAIN,
+  environment: SITE_POSTHOG_ENVIRONMENT,
+  host: SITE_POSTHOG_HOST,
+  key: SITE_POSTHOG_KEY,
+  prefix: "SITE",
+});
