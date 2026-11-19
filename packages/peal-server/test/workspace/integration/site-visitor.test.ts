@@ -216,9 +216,8 @@ layer(
           { answer: allowed(), headers: { dnt: "1" } },
         ];
 
-        const visitors = yield* Effect.forEach(
-          cases,
-          ({ answer, headers }, index) =>
+        const visitors = yield* Effect.all(
+          cases.map(({ answer, headers }, index) =>
             Effect.gen(function* oneCase() {
               const visitorId = newVisitor();
 
@@ -233,6 +232,8 @@ layer(
 
               return visitorId;
             })
+          ),
+          { concurrency: 1 }
         );
 
         yield* drained;
