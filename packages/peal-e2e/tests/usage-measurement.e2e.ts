@@ -7,8 +7,9 @@ import { describe, test } from "@e2e-dev/web";
 import { credentials, expect } from "e2e";
 import { Option, Schema } from "effect";
 
-import { requestsFile } from "../scripts/posthog.ts";
+import { projectToken, requestsFile } from "../scripts/posthog.ts";
 import { emailedLink } from "./support/mailpit.ts";
+import { asPerson } from "./support/person.ts";
 import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // How the web app measures a member's use, read from what the stand-in for
@@ -112,7 +113,10 @@ const received = (): readonly Received[] =>
       );
     });
 
-const fromBrowser = (event: Received) => event.path !== serverCapture;
+// The web app's own events: the site's come through the same relay, under
+// `source: "site"`, and are another journey's (site-measurement.e2e.ts).
+const fromBrowser = (event: Received) =>
+  event.path !== serverCapture && event.properties["source"] !== "site";
 
 // The SDK sends a batch every few seconds: wait for what a test expects.
 const eventually = async (
@@ -141,41 +145,19 @@ const linesSoFar = () =>
     .split("\n")
     .filter((line) => line !== "").length;
 
+// Where this journey's events start in the stand-in's log, which every
+// file of the run writes to: another file's people, measured as they
+// allowed, are no part of this one.
+let journeyStart = 0;
+
+const ours = (): readonly Received[] =>
+  received().filter((event) => event.line >= journeyStart);
+
 const StoredSchema = Schema.Array(Schema.String);
 
 // Every key of the page's local and session storage.
 const storedKeys =
   "[...Object.keys(localStorage), ...Object.keys(sessionStorage)]";
-
-// The SDK drops what a browser driven by a test sends as a bot's (its
-// user agent says headless, `navigator.webdriver` is set): this one reads
-// as a person's.
-const personLike = `(() => {
-  const userAgent = navigator.userAgent.replace("HeadlessChrome", "Chrome");
-  const as = (name, value) =>
-    Object.defineProperty(navigator, name, { configurable: true, get: () => value });
-  as("userAgent", userAgent);
-  as("userAgentData", undefined);
-  as("webdriver", false);
-})()`;
-
-// A browser that refuses PostHog's well-known ingestion path, as tracker
-// blockers do, and as the WebKit browser production was checked in did:
-// what the web app sends must never depend on that path.
-const knownIngestion = /\/i\/v0\/e\//u;
-
-const asPerson = async (browser: {
-  readonly addInitScript: (script: string) => Promise<void>;
-  readonly route: (
-    pattern: RegExp,
-    handler: (route: { readonly abort: () => Promise<void> }) => Promise<void>
-  ) => Promise<void>;
-}) => {
-  await browser.addInitScript(personLike);
-  await browser.route(knownIngestion, async (route) => {
-    await route.abort();
-  });
-};
 
 // The ids an event carries that could tie it to another: none may pass
 // from one consent to the next.
@@ -243,6 +225,7 @@ describe("the web app's measurement", { serial: true }, () => {
     browser,
     screen,
   }) => {
+    journeyStart = linesSoFar();
     await asPerson(browser);
     await app.open("/sign-up");
     await screen.getByLabel("Name").fill(name);
@@ -291,7 +274,7 @@ describe("the web app's measurement", { serial: true }, () => {
 
     await eventually(
       () =>
-        received().filter(
+        ours().filter(
           (event) =>
             fromBrowser(event) &&
             event.event === "$pageview" &&
@@ -303,7 +286,7 @@ describe("the web app's measurement", { serial: true }, () => {
 
     const views = await eventually(
       () =>
-        received().filter(
+        ours().filter(
           (event) =>
             fromBrowser(event) &&
             event.event === "$pageview" &&
@@ -318,7 +301,7 @@ describe("the web app's measurement", { serial: true }, () => {
       expect(view.properties).not.toHaveProperty("workspace_id");
     }
 
-    const fromTheBrowser = received().filter(fromBrowser);
+    const fromTheBrowser = ours().filter(fromBrowser);
 
     expect(fromTheBrowser.map(({ event }) => event)).not.toContain("$snapshot");
 
@@ -614,7 +597,7 @@ describe("the web app's measurement", { serial: true }, () => {
     // about, never by when they came.
     const byWhom = new Map<string, Set<string>>();
 
-    for (const event of received().filter(fromBrowser)) {
+    for (const event of ours().filter(fromBrowser)) {
       const ids = byWhom.get(event.distinctId) ?? new Set<string>();
 
       for (const id of idsOf(event)) {
@@ -639,5 +622,53 @@ describe("the web app's measurement", { serial: true }, () => {
     expect(byWhom.size).toBeGreaterThan(2);
     // No property names the member but their own events' id.
     expect(owners.has(memberId)).toBeFalsy();
+  });
+
+  test("never carries the site's visitor, whose cookie it never reads", async ({
+    app,
+    browser,
+  }) => {
+    await asPerson(browser);
+
+    // The cookie the site keeps once a visitor allowed it, on the same
+    // host name as the app, as peal.social's parent domain makes it.
+    const visitor = "019a0000-0000-7000-8000-00000000517e";
+    const appUrl = new URL(await browser.url());
+
+    await browser.setCookies([
+      {
+        name: `ph_${projectToken}_posthog`,
+        url: appUrl.origin,
+        value: encodeURIComponent(JSON.stringify({ distinct_id: visitor })),
+      },
+    ]);
+
+    const before = linesSoFar();
+
+    await app.open(`/${slug}/channels`);
+
+    await eventually(
+      () =>
+        received().filter(
+          (event) =>
+            event.line >= before &&
+            fromBrowser(event) &&
+            event.event === "$pageview"
+        ),
+      "an anonymous page view beside the site's visitor cookie"
+    );
+
+    await sleep(3000);
+
+    const after = received().filter(
+      (event) => event.line >= before && fromBrowser(event)
+    );
+
+    for (const event of after) {
+      expect(event.distinctId).not.toBe(visitor);
+      expect(JSON.stringify(event.properties)).not.toContain(visitor);
+    }
+
+    await browser.clearCookies({ name: `ph_${projectToken}_posthog` });
   });
 });

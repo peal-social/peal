@@ -31,11 +31,14 @@
       "inputs": [
         "...",
         { "env": "DOCS_SITE_URL" },
-        { "env": "DOCS_PLAUSIBLE_DOMAIN" },
-        { "env": "DOCS_PLAUSIBLE_HOST" },
         { "env": "DOCS_APP_URL" },
         { "env": "DOCS_ASSISTANT_MODEL" },
-        { "env": "DOCS_TURNSTILE_SITE_KEY" }
+        { "env": "DOCS_TURNSTILE_SITE_KEY" },
+        { "env": "DOCS_POSTHOG_KEY" },
+        { "env": "DOCS_POSTHOG_HOST" },
+        { "env": "DOCS_POSTHOG_COOKIE_DOMAIN" },
+        { "env": "DOCS_POSTHOG_ENVIRONMENT" },
+        { "env": "DOCS_PRIVACY_URL" }
       ],
       "outputs": ["{projectRoot}/dist"]
     },

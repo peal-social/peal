@@ -97,14 +97,19 @@ def test_the_blog_s_routes_come_first_in_their_order(rendered_blog: Path, enviro
     site = _site(environment)
     on_site = [rule for rule in rules if rule.get("hostname") == site]
 
+    # Where the site is measured (production), its measurement's rule comes
+    # first (test_site_measurement.py).
+    measured = ["^/+pulse/+site/"] if settings(environment.removeprefix("peal-"))["peal_site_measurement"] else []
+
     assert [rule.get("path") for rule in on_site] == [
+        *measured,
         "(?i)^/+blog/+_emdash",
         "^/+_emdash/+api/+media/+file/",
         "(?i)^/+_emdash(/|$)",
         "^/+blog(/|$)",
         None,
     ]
-    assert on_site[0]["service"] == "http_status:404"
+    assert on_site[len(measured)]["service"] == "http_status:404"
 
 
 @pytest.mark.parametrize("environment", ENVIRONMENTS)

@@ -14,6 +14,8 @@ interface SiteFooterLink {
   readonly current?: boolean | undefined;
   readonly href: string;
   readonly label: string;
+  /** What a click opens in place, where the page has it: the consent notice. */
+  readonly opens?: "consent" | undefined;
   /** Such as `me`, which a Mastodon profile checks for. */
   readonly rel?: string | undefined;
 }
@@ -63,6 +65,7 @@ const FooterLink = ({ link }: { readonly link: SiteFooterLink }) => (
   <a
     href={link.href}
     rel={link.rel}
+    data-consent-open={link.opens === "consent" ? "" : undefined}
     aria-current={link.current === true ? "page" : undefined}
     className={linkClassName}
   >

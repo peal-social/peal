@@ -105,7 +105,12 @@ const bento = studioBento(locale, t, settings);
           <div class="mt-8 flex flex-wrap items-center gap-3">
             {
               hero.primary === undefined ? null : (
-                <a href={hero.primary.href} class={buttonVariants()}>
+                <a
+                  href={hero.primary.href}
+                  data-measure-cta="get_started"
+                  data-measure-place="hero"
+                  class={buttonVariants()}
+                >
                   {hero.primary.label}
                 </a>
               )
@@ -114,6 +119,8 @@ const bento = studioBento(locale, t, settings);
               hero.secondary === undefined ? null : (
                 <a
                   href={hero.secondary.href}
+                  data-measure-cta="docs"
+                  data-measure-place="hero"
                   class={buttonVariants({ variant: "outline" })}
                 >
                   {hero.secondary.label}

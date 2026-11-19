@@ -6,7 +6,8 @@ import { SiteFooter } from "peal-ui/components/site-footer";
 import { SiteHeader } from "peal-ui/components/site-header";
 
 import { chrome } from "../components/chrome.ts";
-import { indexable, plausible } from "../config.ts";
+import { indexable, measurement } from "../config.ts";
+import { consentAttributes } from "peal-ui/lib/site/measurement/settings";
 import { repository } from "peal-ui/lib/site/navigation";
 import type { PageLinks } from "peal-ui/lib/site/navigation";
 import { defaultLocale, locales, pageLocale } from "../i18n/locales.ts";
@@ -44,6 +45,16 @@ const canonical = absolute(locale);
 const alternates = locales.map((code) => ({ code, href: absolute(code) }));
 
 const fallback = absolute(defaultLocale);
+
+// The consent notice and measurement, where the build configures them.
+const consent =
+  measurement === undefined
+    ? undefined
+    : consentAttributes(measurement, {
+        locale,
+        policy: getRelativeLocaleUrl(locale, "privacy"),
+        source: "site",
+      });
 ---
 
 <!doctype html>
@@ -78,19 +89,11 @@ const fallback = absolute(defaultLocale);
         <link rel="alternate" hreflang="x-default" href={fallback} />
       )
     }
-    {
-      plausible !== undefined && (
-        <script
-          is:inline
-          defer
-          data-domain={plausible.domain}
-          src={plausible.src}
-        ></script>
-      )
-    }
     <slot name="head" />
   </head>
   <body class="relative flex min-h-dvh flex-col antialiased">
+    <!-- First in the tab order, before the announcement and the header. -->
+    {consent !== undefined && <peal-consent {...consent} />}
     <!-- The blueprint's rails (DESIGN.md, Site): the content column's edges,
          from the header to the footer, under everything that has a fill. -->
     <div
@@ -110,5 +113,8 @@ const fallback = absolute(defaultLocale);
          reader scrolls down to it (on view, a first click could come
          before the menu listens). -->
     <SiteFooter client:idle {...footer} />
+    <script>
+      import "peal-ui/lib/site/consent/start";
+    </script>
   </body>
 </html>

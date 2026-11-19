@@ -740,8 +740,10 @@ export const ctaLinks = (
     primary:
       signUp === undefined
         ? undefined
-        : { href: signUp, label: labels.primary },
+        : { href: signUp, label: labels.primary, measure: "get_started" },
     secondary:
-      docs === undefined ? undefined : { href: docs, label: labels.secondary },
+      docs === undefined
+        ? undefined
+        : { href: docs, label: labels.secondary, measure: "docs" },
   };
 };
