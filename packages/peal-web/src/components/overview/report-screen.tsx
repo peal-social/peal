@@ -3,6 +3,7 @@
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import { Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
+import { DownloadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { WorkspaceReport } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
@@ -142,18 +143,18 @@ const ReportView = ({ timeZone }: { readonly timeZone: string }) => {
       </p>
       <p className="text-muted-foreground text-sm">{t("notComparable")}</p>
       <PageActions>
-        <PeriodMenu choices={ranges} value={days} onChange={handleRange} />
-      </PageActions>
-      <div className="flex flex-wrap items-end justify-end gap-4">
         <Button
-          variant="outline"
+          variant="ghost"
+          size="sm"
           render={
             <a href={download} download>
+              <DownloadIcon aria-hidden />
               {t("download")}
             </a>
           }
         />
-      </div>
+        <PeriodMenu choices={ranges} value={days} onChange={handleRange} />
+      </PageActions>
       <ReportPages
         key={days}
         before={[]}
