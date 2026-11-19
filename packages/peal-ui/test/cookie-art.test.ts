@@ -56,6 +56,7 @@ describe("the pixel cookie", () => {
       "blue",
       "dough",
       "doughAlt",
+      "doughShade",
       "lavender",
       "rim",
       "sun",

@@ -163,7 +163,7 @@ export class PealConsent extends HTMLElement {
     const head = element("div", "peal-consent__head");
     const eyebrow = element("p", "peal-consent__eyebrow");
     eyebrow.setAttribute("aria-hidden", "true");
-    eyebrow.append("// ", cookieIcon(), ` ${t.eyebrow} \\\\`);
+    eyebrow.append("// ", cookieIcon(), ` ${t.eyebrow} ${String.raw`\\`}`);
     const close = element("button", "peal-consent__close", t.close);
     close.type = "button";
     close.hidden = true;
@@ -177,7 +177,22 @@ export class PealConsent extends HTMLElement {
     const canvas = element("canvas", "peal-consent__canvas");
     canvas.style.width = `${String(gridSize * cellSize)}px`;
     canvas.style.height = `${String(gridSize * cellSize)}px`;
-    const readout = element("span", "peal-consent__readout", t.readout.rest);
+    // The three readouts in one cell, one shown: the column keeps the
+    // widest one's width, so the text never moves.
+    const readout = element("span", "peal-consent__readout");
+    readout.dataset["shown"] = "rest";
+
+    for (const key of ["rest", "allow", "refuse"] as const) {
+      const line = element(
+        "span",
+        "peal-consent__readout-line",
+        t.readout[key]
+      );
+
+      line.dataset["readout"] = key;
+      readout.append(line);
+    }
+
     art.append(canvas, readout);
 
     const body = element("div", "peal-consent__body");
@@ -269,10 +284,7 @@ export class PealConsent extends HTMLElement {
       return;
     }
 
-    parts.readout.textContent =
-      shown === undefined
-        ? this.#messages.readout.rest
-        : this.#messages.readout[shown];
+    parts.readout.dataset["shown"] = shown ?? "rest";
     this.#art?.preview(shown);
   }
 
@@ -316,7 +328,7 @@ export class PealConsent extends HTMLElement {
 
     const wasHidden = parts.region.hidden !== false;
     parts.region.hidden = false;
-    parts.readout.textContent = t.readout.rest;
+    parts.readout.dataset["shown"] = "rest";
 
     this.#art ??= createCookieArt(parts.canvas);
 
@@ -366,10 +378,7 @@ export class PealConsent extends HTMLElement {
 
     Cookies.set(cookie.name, cookie.value, cookie.attributes);
     window.dispatchEvent(new ConsentAnswered(answer));
-    parts.readout.textContent =
-      answer === "allowed"
-        ? this.#messages.readout.allow
-        : this.#messages.readout.refuse;
+    parts.readout.dataset["shown"] = answer === "allowed" ? "allow" : "refuse";
 
     // Announced once the region's contents settle.
     parts.live.textContent = "";
