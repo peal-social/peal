@@ -126,6 +126,49 @@ const patterned: ReadonlySet<string> = new Set([
 
 const decodeText = Schema.decodeUnknownOption(Schema.String);
 
+// A recording's page address (rrweb's meta event, type 4), which names
+// the page as the browser shows it; every other key of it kept.
+const decodeMeta = Schema.decodeUnknownOption(
+  Schema.StructWithRest(
+    Schema.Struct({
+      data: Schema.Record(Schema.String, Schema.Json),
+      type: Schema.Literal(4),
+    }),
+    [Schema.Record(Schema.String, Schema.Json)]
+  )
+);
+
+const decodeItems = Schema.decodeUnknownOption(Schema.Array(Schema.Json));
+
+// A recording's events with each page's address as its origin and its
+// pattern, as every other event names it: no id, no query.
+const patternedRecording = (event: MeasuredEvent): MeasuredEvent => {
+  const items = decodeItems(event.properties["$snapshot_data"]);
+
+  if (Option.isNone(items)) {
+    return event;
+  }
+
+  const addressed = items.value.map((item) =>
+    Option.match(decodeMeta(item), {
+      onNone: () => item,
+      onSome: (meta) =>
+        Option.match(decodeText(meta.data["href"]), {
+          onNone: () => item,
+          onSome: (href) => ({
+            ...meta,
+            data: { ...meta.data, href: addressOf(href) },
+          }),
+        }),
+    })
+  );
+
+  return {
+    ...event,
+    properties: { ...event.properties, $snapshot_data: addressed },
+  };
+};
+
 const rewritten = (key: string, value: PropertyValue): PropertyValue =>
   Option.match(decodeText(value), {
     onNone: () => value,
@@ -159,7 +202,8 @@ const keptProperties = (
 /**
  * The SDK's `before_send`: the event to send, or null to drop it. Nothing
  * leaves while the page is `off`; a recording's data only once the person
- * allowed it, untouched (its masking happens as it is recorded); every
+ * allowed it, masked as it was recorded, its pages' addresses as patterns;
+ * every
  * other event keeps only the properties above, never sets a person's
  * properties (the server alone does), and an anonymous one names no
  * workspace and never the person.
@@ -175,7 +219,7 @@ export const sanitized = (
   const identified = mode === "identified";
 
   if (event.event === "$snapshot") {
-    return identified ? event : null;
+    return identified ? patternedRecording(event) : null;
   }
 
   // A guard against a bug: an anonymous event never names the person.
