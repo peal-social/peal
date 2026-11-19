@@ -2,7 +2,8 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime } from "effect";
 import type { InboxComment } from "peal-contract";
 
-import { commentTargetOf, writtenTo } from "#inbox/comment-target.ts";
+import { commentTargetOf } from "#inbox/comment-target.ts";
+import { choiceOnDraft, replyChoice } from "#inbox/composer-choice.ts";
 
 const at = DateTime.makeUnsafe("2026-11-10T09:00:00Z");
 
@@ -31,10 +32,7 @@ describe("whom the comment composer answers", () => {
   it("answers the oldest comment still waiting until the member chooses one", () => {
     expect([
       commentTargetOf([answered, waiting, later, latest], null),
-      commentTargetOf([answered, waiting, later], {
-        id: later.id,
-        written: false,
-      }),
+      commentTargetOf([answered, waiting, later], replyChoice(later.id)),
     ]).toStrictEqual([waiting, later]);
   });
 
@@ -52,15 +50,12 @@ describe("whom the comment composer answers", () => {
     const gone = { ...later, state: "deleted" as const };
 
     expect(
-      commentTargetOf([answered, waiting, gone], {
-        id: later.id,
-        written: false,
-      })
+      commentTargetOf([answered, waiting, gone], replyChoice(later.id))
     ).toBe(waiting);
   });
 
   it("keeps a draft on its comment once the member writes, whatever a refresh answers", () => {
-    const choice = writtenTo(waiting.id);
+    const choice = choiceOnDraft(null, waiting.id, "Thanks");
 
     // Answered elsewhere: the next read no longer has it waiting.
     const reread = [
@@ -80,5 +75,25 @@ describe("whom the comment composer answers", () => {
       commentTargetOf(reread, choice)?.id,
       commentTargetOf(deleted, choice)?.id,
     ]).toStrictEqual([waiting.id, waiting.id]);
+  });
+
+  it("moves on to the next comment waiting once the draft is sent or emptied", () => {
+    const reread = [
+      answered,
+      { ...waiting, state: "answered" as const },
+      later,
+    ];
+
+    // A sent reply leaves no choice; an emptied draft lets go of its pin.
+    const emptied = choiceOnDraft(
+      choiceOnDraft(null, waiting.id, "T"),
+      waiting.id,
+      ""
+    );
+
+    expect([
+      commentTargetOf(reread, null)?.id,
+      commentTargetOf(reread, emptied)?.id,
+    ]).toStrictEqual([later.id, later.id]);
   });
 });

@@ -678,10 +678,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `ReviewReplyBoxView` sticky at the pane's foot, naming the reviewer
   Reply chose (the oldest still waiting until then), with a new
   `Idempotency-Key` for another review. Whom it answers and under which
-  key is `#inbox/review-target.ts`: the first keystroke pins the draft to
-  its review, so a refresh that answers that review elsewhere never moves
-  the text to another reviewer, and a failure shows only under the review
-  it was sent to.
+  key is `#inbox/review-target.ts`, and what the member chose
+  `#inbox/composer-choice.ts`, as for comments: the first keystroke pins
+  the draft to its review, so a refresh that answers that review
+  elsewhere never moves the text to another reviewer, and sending or
+  emptying the draft lets go, so the box moves on to the next review
+  waiting. A failure shows only under the review it was sent to.
 - The inbox's direct messages (`message-screen.tsx`, views in
   `message-views.tsx`, atoms in `#inbox/message-atoms.ts`), for members
   with `engagement:readMessages`, open one at
@@ -709,8 +711,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   views in `inbox-views.tsx` take links as props, so tests render each
   state. Its one composer answers the comment Reply chose, else the
   oldest still waiting (`#inbox/comment-target.ts`); the first keystroke
-  pins the draft to its comment, so a refresh that answers or deletes it
-  never moves the text to another author. Render a comment as plain
+  pins the draft to its comment (`#inbox/composer-choice.ts`), so a
+  refresh that answers or deletes it never moves the text to another
+  author, and sending or emptying the draft lets go, so the box moves on
+  to the next comment waiting. Render a comment as plain
   text, never as markup. Offer reply and moderation only where the
   thread's `abilities` say `available`, show a reply's journal status,
   and for an `unconfirmed` one only the two answers a person gives after

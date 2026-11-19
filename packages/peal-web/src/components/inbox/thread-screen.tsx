@@ -55,8 +55,9 @@ import {
   setCommentAnswered,
   withdrawInboxReply,
 } from "#inbox/atoms.ts";
-import { commentTargetOf, writtenTo } from "#inbox/comment-target.ts";
-import type { CommentChoice } from "#inbox/comment-target.ts";
+import { commentTargetOf } from "#inbox/comment-target.ts";
+import { choiceOnDraft, replyChoice } from "#inbox/composer-choice.ts";
+import type { ComposerChoice } from "#inbox/composer-choice.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";
 import { privateReplyFit } from "#inbox/private-reply-text.ts";
 import { replyFit } from "#inbox/reply-text.ts";
@@ -593,17 +594,17 @@ const ReplyBox = ({
   comment,
   context,
   inputId,
+  onDraft,
   onSent,
-  onWrite,
   pending,
   platform,
 }: {
   readonly comment: InboxComment;
   readonly context: ThreadContext;
   readonly inputId: string;
+  /** Pins the draft to the comment it answers, until it is emptied. */
+  readonly onDraft: (text: string) => void;
   readonly onSent: (reply: InboxReply) => void;
-  /** Pins the draft to the comment it answers. */
-  readonly onWrite: () => void;
   readonly pending: "sending" | "unconfirmed" | null;
   readonly platform: Platform;
 }) => {
@@ -658,7 +659,7 @@ const ReplyBox = ({
       text={text}
       onChange={(changed) => {
         setText(changed);
-        onWrite();
+        onDraft(changed);
       }}
       onSend={handleSend}
     />
@@ -750,7 +751,7 @@ const LoadedThread = ({
   const listId = useId();
   const composerId = useId();
   // The comment the composer answers, once a member chose one.
-  const [chosen, setChosen] = useState<CommentChoice | null>(null);
+  const [chosen, setChosen] = useState<ComposerChoice | null>(null);
   // The replies this page sent, until the thread lists them itself.
   const [sent, setSent] = useState<readonly InboxReply[]>([]);
   const replies = withSentReplies(detail.replies, sent);
@@ -774,10 +775,12 @@ const LoadedThread = ({
 
   const handleSent = (reply: InboxReply) => {
     setSent((before) => [...before, reply]);
+    // The draft is gone: the composer moves on to the next comment waiting.
+    setChosen(null);
   };
 
   const handleReply = (comment: InboxComment) => {
-    setChosen({ id: comment.id, written: false });
+    setChosen(replyChoice(comment.id));
     // React's ids hold colons, which a plain `#id` selector cannot.
     globalThis.document
       .querySelector<HTMLTextAreaElement>(`[id="${composerId}"]`)
@@ -805,10 +808,10 @@ const LoadedThread = ({
             Option.getOrNull
           )}
           platform={detail.platform}
-          onSent={handleSent}
-          onWrite={() => {
-            setChosen(writtenTo(target.id));
+          onDraft={(text) => {
+            setChosen(choiceOnDraft(chosen, target.id, text));
           }}
+          onSent={handleSent}
         />
       </div>
     ) : null;
