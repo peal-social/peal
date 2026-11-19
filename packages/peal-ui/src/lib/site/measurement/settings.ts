@@ -12,7 +12,9 @@ export interface MeasurementSettings {
   /**
    * The parent domain the answer and the visitor cookie are set on, so
    * one answer covers the site, the docs and the blog; `undefined` for
-   * host-only cookies.
+   * host-only cookies. It must be the registrable domain (`example.com`,
+   * never `www.example.com`): PostHog's SDK sets its own cookies there,
+   * whatever is configured, and the server expires them there.
    */
   readonly cookieDomain: string | undefined;
   /** Every event's `environment`: `production` unless set. */
@@ -67,7 +69,8 @@ const KeySchema = Schema.String.check(
 
 const DomainSchema = Schema.String.check(
   Schema.isPattern(/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/u, {
-    expected: "a host name such as example.com",
+    expected:
+      "the registrable domain the site and the docs share, such as example.com",
   })
 );
 
