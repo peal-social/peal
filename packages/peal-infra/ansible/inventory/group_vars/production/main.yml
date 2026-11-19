@@ -139,6 +139,9 @@ peal_settings:
   # what it could not delete at PostHog. PostHog's DPA is signed and the
   # privacy policy names PostHog.
   PEAL_POSTHOG_PROJECT_ID: "356475"
+  # The web app's measurement (anonymous page views for everyone, replay
+  # and identified events after consent): on, as the privacy policy says.
+  PEAL_POSTHOG_WEB: "on"
   # Facebook Pages' and Instagram's comments in the inbox: off until Meta's
   # App Review granted the app their permissions, the privacy policy names
   # them (the registry's inbox entry, then the legal pages, through
