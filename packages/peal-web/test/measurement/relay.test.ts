@@ -5,7 +5,7 @@
 import { once } from "node:events";
 
 import { assert, describe, it } from "@effect/vitest";
-import { ConfigProvider, Effect, Exit, Option } from "effect";
+import { ConfigProvider, Effect, Exit, Option, Schema } from "effect";
 
 import {
   assetsHostOf,
@@ -150,6 +150,55 @@ describe("the measurement relay", () => {
         const other = yield* relay("/pulse/array/phc_another/config", on);
 
         assert.strictEqual(other.response.status, 404);
+      })
+  );
+
+  it.effect(
+    "gives the SDK its own endpoints, whatever the configuration names",
+    () =>
+      Effect.gen(function* endpoints() {
+        const response = yield* relayToPostHog(
+          new Request("http://localhost:3001/pulse/array/phc_synthetic/config"),
+          async () =>
+            await Promise.resolve(
+              Response.json({
+                analytics: { endpoint: "/i/v0/e/" },
+                sessionRecording: { endpoint: "/i/v0/s/", sampleRate: null },
+                supportedCompression: ["gzip", "gzip-js"],
+              })
+            )
+        ).pipe(withEnv(on));
+
+        const text = yield* Effect.promise(async () => await response.text());
+
+        assert.deepStrictEqual(
+          Schema.decodeUnknownSync(Schema.fromJsonString(Schema.Json))(text),
+          {
+            analytics: { endpoint: "/e/" },
+            sessionRecording: { endpoint: "/s/", sampleRate: null },
+            supportedCompression: ["gzip", "gzip-js"],
+          }
+        );
+      })
+  );
+
+  it.effect(
+    "passes a configuration it cannot read, or one without endpoints, as it is",
+    () =>
+      Effect.gen(function* untouched() {
+        for (const body of ["not json", '{"sessionRecording":false}']) {
+          const response = yield* relayToPostHog(
+            new Request(
+              "http://localhost:3001/pulse/array/phc_synthetic/config"
+            ),
+            async () => await Promise.resolve(new Response(body))
+          ).pipe(withEnv(on));
+
+          assert.strictEqual(
+            yield* Effect.promise(async () => await response.text()),
+            body === "not json" ? body : '{"sessionRecording":false}'
+          );
+        }
       })
   );
 

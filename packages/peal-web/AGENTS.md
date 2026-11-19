@@ -188,8 +188,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   project token in `PEAL_POSTHOG_KEY`, only events and recordings by
   POST (`/e/` and `/s/`, and `/i/v0/e/` and `/i/v0/s/`, where the
   project's configuration sends the SDK: PostHog's cloud names
-  `/i/v0/e/`) and `/array/<token>/config` by GET, forwarding the request's type alone and
-  answering PostHog's status and type alone; `skipTrailingSlashRedirect`
+  `/i/v0/e/`) and `/array/<token>/config` by GET, whose answer it rewrites to
+  name the SDK's own `/e/` and `/s/` (`withOwnEndpoints`): the cloud's
+  `/i/v0/e/` is a path tracker blockers refuse, so such a browser would
+  send its first page view and nothing after. It forwards the request's
+  type alone and answers PostHog's status and type alone; `skipTrailingSlashRedirect`
   is on for it, and the proxy redirects every other trailing slash
   itself. The app's HTTP client keeps the `fetch` it started with, so it never
   sees the SDK's `tracing_headers`: it names the session itself
