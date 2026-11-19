@@ -184,6 +184,17 @@ describe("how measurement follows the answer", () => {
     ).toBe("none");
   });
 
+  it("renews a visitor a sign-up retired, whose cookie a page saved again", () => {
+    expect(
+      alignmentOf({
+        answer: "allowed",
+        following: true,
+        lostCookie: false,
+        retired: true,
+      })
+    ).toBe("renew");
+  });
+
   it("gives the visitor's cookie no more days than the answer has left", () => {
     expect(daysLeft(today, today)).toBe(183);
     expect(daysLeft(today - 100, today)).toBe(83);
