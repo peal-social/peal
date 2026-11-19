@@ -37,6 +37,21 @@ export interface PostHogSettings {
   readonly excluded: ReadonlySet<string>;
   /** Whether the web app measures its use too (PEAL_POSTHOG_WEB). */
   readonly web: boolean;
+  /**
+   * Whether a sign-up links the site's visitor to the new account
+   * (PEAL_POSTHOG_SITE), and where the visitor's cookie is set.
+   */
+  readonly site: Option.Option<PostHogSite>;
+}
+
+/** The site's measurement, as a sign-up links its visitor. */
+export interface PostHogSite {
+  /**
+   * The parent domain the site's visitor cookie is set on
+   * (PEAL_POSTHOG_SITE_COOKIE_DOMAIN), where a sign-up expires it: none
+   * for a cookie of the host alone.
+   */
+  readonly cookieDomain: Option.Option<string>;
 }
 
 // A setting that is set: unset and empty both read as none.
@@ -118,6 +133,46 @@ const webConfig = Config.schema(
   Config.map((value) => value === "on")
 );
 
+// A host name, lowercase, with at least one dot: what a cookie's Domain
+// takes, and nothing that would add an attribute.
+const CookieDomainSchema = Schema.Trim.check(
+  Schema.isPattern(
+    /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/u,
+    { expected: "a host name, such as peal.example.com" }
+  )
+);
+
+// Unset or empty: a cookie of the host alone.
+const cookieDomainConfig = Config.option(
+  Config.String("PEAL_POSTHOG_SITE_COOKIE_DOMAIN")
+).pipe(
+  Config.flatMap((domain) =>
+    Option.isSome(domain) && domain.value.trim() !== ""
+      ? Config.schema(
+          CookieDomainSchema,
+          "PEAL_POSTHOG_SITE_COOKIE_DOMAIN"
+        ).pipe(Config.map(Option.some))
+      : Config.succeed(Option.none<string>())
+  )
+);
+
+// `on` or `off`, `off` by default, and, when on, the cookie's domain.
+const siteConfig = Config.schema(
+  Schema.Literals(["on", "off"]),
+  "PEAL_POSTHOG_SITE"
+).pipe(
+  Config.withDefault<"off" | "on">("off"),
+  Config.flatMap((value) =>
+    value === "on"
+      ? cookieDomainConfig.pipe(
+          Config.map((cookieDomain) =>
+            Option.some<PostHogSite>({ cookieDomain })
+          )
+        )
+      : Config.succeed(Option.none<PostHogSite>())
+  )
+);
+
 // The web app sends the token from the browser: only a project token
 // (`phc_…`), public by design, may go there, never a personal key.
 const ProjectTokenSchema = Schema.Trim.check(
@@ -194,6 +249,13 @@ const erasureConfig = Config.all({
  *   anything is linked to their account or recorded; it then requires a
  *   project token (`phc_…`), which browsers send. A switch of its own,
  *   as measuring browsers needs the privacy policy to say so first.
+ * - PEAL_POSTHOG_SITE: `on` or `off` (the default): whether a sign-up
+ *   links the visitor that the site, the docs and the blog followed, once
+ *   they allowed it, to the new account, then expires the visitor's
+ *   cookie; it then requires a project token, which names that cookie.
+ * - PEAL_POSTHOG_SITE_COOKIE_DOMAIN: the parent domain that cookie is set
+ *   on, such as `peal.example.com`, where a sign-up expires it; unset for
+ *   a cookie of the host alone.
  */
 export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
   optionalSecret("PEAL_POSTHOG_KEY").pipe(
@@ -209,10 +271,11 @@ export const postHogConfig: Config.Config<Option.Option<PostHogSettings>> =
               "PEAL_POSTHOG_EXCLUDED_IDS"
             ).pipe(Config.withDefault<readonly string[]>([])),
             host: host("PEAL_POSTHOG_HOST", defaultPostHogHost),
+            site: siteConfig,
             web: webConfig,
           }).pipe(
             Config.flatMap((settings) =>
-              settings.web
+              settings.web || Option.isSome(settings.site)
                 ? Config.schema(ProjectTokenSchema, "PEAL_POSTHOG_KEY").pipe(
                     Config.map(() => settings)
                   )
