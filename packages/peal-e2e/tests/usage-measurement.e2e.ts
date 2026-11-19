@@ -442,6 +442,7 @@ describe("the web app's measurement", { serial: true }, () => {
           (event) =>
             event.path === serverCapture &&
             event.event === "api_operation" &&
+            event.distinctId === memberId &&
             event.properties["operation"] === "tags.create"
         ),
       "the server's event of the tag the page added"
