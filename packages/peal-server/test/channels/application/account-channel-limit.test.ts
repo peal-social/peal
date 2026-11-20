@@ -8,6 +8,7 @@ import { SqlClient } from "effect/sql";
 import { BillingAccounts } from "#billing/application/billing-accounts.ts";
 import { BillingMode } from "#billing/application/ports/billing-mode.ts";
 import { AccountPlanPoolsLive } from "#billing/infrastructure/account-plan-pools.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelEvents } from "#channels/application/channel-events.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ChannelUsage } from "#channels/application/channel-usage.ts";
@@ -53,6 +54,7 @@ const AccountFreePlanTest = Layer.mergeAll(
     Layer.mergeAll(
       DrizzleChannelRepository,
       ChannelEvents.none,
+      ChannelDepartures.none,
       DrizzleConnectAttempts,
       DrizzleConnectChoices,
       SqlChannelLocks,

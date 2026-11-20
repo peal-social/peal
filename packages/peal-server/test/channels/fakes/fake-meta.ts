@@ -82,13 +82,23 @@ export const unifiedPermissions = [
 export interface FakeSharedAccount {
   readonly id: string;
   readonly name?: string;
-  readonly username: string;
+  /** None when Meta leaves it out of the listing. */
+  readonly username?: string;
 }
 
 /** What Unified login's sign-in hands over, set by each test. */
 export interface FakeUnifiedGrant {
   /** The accounts the business shares. */
   readonly accounts: readonly FakeSharedAccount[];
+  /** The app `debug_token` names, the main app's unless told. */
+  readonly debuggedAppId?: string;
+  /** Whether `debug_token` says the token is valid (true unless told). */
+  readonly debuggedValid?: boolean;
+  /**
+   * Whether the listing refuses the fields beyond `id,username` with
+   * Graph code 100, as an API version without them would.
+   */
+  readonly refusesProfileFields?: boolean;
   /** Seconds the token lasts; none when it never expires. */
   readonly expiresIn?: number;
   /** The permissions `debug_token` says the token holds. */
@@ -197,6 +207,10 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
   let issued = 0;
   let pages: readonly FakePage[] = [];
   let declined: readonly string[] = [];
+  // Permissions granted beyond those posting asks, as the messages'.
+  let alsoGranted: readonly string[] = [];
+  // The Pages whose subscription was stopped, in order.
+  const unsubscribed: string[] = [];
   let userId = facebookUserId;
 
   let unified: FakeUnifiedGrant = {
@@ -255,14 +269,56 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
         : graphError(100);
     };
 
-  // `/me` answers the Facebook user, or the system user a Unified login
-  // token is.
-  const me = (request: FakeRequest): FakeResponse =>
-    systemTokens.has(request.query.get("access_token") ?? "")
+  // The Page whose token a request carries, with its proof.
+  const pageOfToken = (request: FakeRequest): FakePage | undefined => {
+    const token = request.query.get("access_token") ?? "";
+    const page = pages.find((listed) => pageToken(listed) === token);
+
+    return page !== undefined &&
+      request.query.get("appsecret_proof") === proofOf(token, metaApp.appSecret)
+      ? page
+      : undefined;
+  };
+
+  // `/me` answers the Facebook user, the system user a Unified login
+  // token is, or the Page whose token it is.
+  const me = (request: FakeRequest): FakeResponse => {
+    const token = request.query.get("access_token") ?? "";
+    const page = pageOfToken(request);
+
+    if (page !== undefined) {
+      return json(
+        present([
+          ["id", page.id],
+          [
+            "instagram_business_account",
+            page.instagram === undefined
+              ? undefined
+              : { id: page.instagram.id },
+          ],
+        ])
+      );
+    }
+
+    return systemTokens.has(token)
       ? systemRead(() =>
           json({ client_business_id: clientBusinessId, id: systemUserId })
         )(request)
       : userRead(() => json({ id: userId }))(request);
+  };
+
+  // A Page's subscription to its events, stopped with its own token.
+  const unsubscribe = (request: FakeRequest): FakeResponse => {
+    const page = pageOfToken(request);
+
+    if (page === undefined) {
+      return graphError(190);
+    }
+
+    unsubscribed.push(page.id);
+
+    return json({ success: true });
+  };
 
   // `debug_token`, read with the app's own token and its proof.
   const debugToken = ({ query }: FakeRequest): FakeResponse => {
@@ -278,8 +334,8 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
     return systemTokens.has(query.get("input_token") ?? "")
       ? json({
           data: {
-            app_id: metaApp.appId,
-            is_valid: true,
+            app_id: unified.debuggedAppId ?? metaApp.appId,
+            is_valid: unified.debuggedValid ?? true,
             scopes: [...unified.permissions],
             type: "SYSTEM_USER",
           },
@@ -291,15 +347,23 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
     const size = options.sharedPageSize ?? 100;
     const from = Number(request.query.get("after") ?? "0");
     const cursors = { after: String(from + size), before: String(from) };
+    const fields = (request.query.get("fields") ?? "").split(",");
+    const profile = fields.includes("name");
+
+    if (profile && unified.refusesProfileFields === true) {
+      return graphError(100);
+    }
 
     return json({
       data: unified.accounts.slice(from, from + size).map((account) =>
         present([
           ["id", account.id],
-          ["name", account.name],
+          ["name", profile ? account.name : undefined],
           [
             "profile_picture_url",
-            `https://cdn.instagram.example/${account.id}.jpg`,
+            profile
+              ? `https://cdn.instagram.example/${account.id}.jpg`
+              : undefined,
           ],
           ["username", account.username],
         ])
@@ -456,13 +520,14 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
       "GET /v27.0/me/permissions",
       userRead(() =>
         json({
-          data: allPermissions.map((permission) => ({
+          data: [...allPermissions, ...alsoGranted].map((permission) => ({
             permission,
             status: declined.includes(permission) ? "declined" : "granted",
           })),
         })
       ),
     ],
+    ["DELETE /v27.0/me/subscribed_apps", unsubscribe],
     ["GET /v27.0/oauth/access_token", facebookToken],
     ["POST /oauth/access_token", threadsCode],
   ]);
@@ -517,6 +582,12 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
     revoke: (token: string) => {
       revoked.add(token);
     },
+    /** The permissions the user grants beyond posting's from now on. */
+    setAlsoGranted: (next: readonly string[]) => {
+      alsoGranted = next;
+    },
+    /** The Pages whose subscription to their events was stopped. */
+    unsubscribed: (): readonly string[] => [...unsubscribed],
     /** The permissions the user declines from now on. */
     setDeclined: (next: readonly string[]) => {
       declined = next;

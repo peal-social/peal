@@ -4,6 +4,7 @@ import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
 
 import type { WorkspaceEntitlements } from "#billing/application/workspace-entitlements.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelEvents } from "#channels/application/channel-events.ts";
 import type { ChatVerifier } from "#channels/application/chat-verifier.ts";
 import { ConnectChannel } from "#channels/application/connect-channel.ts";
@@ -146,6 +147,7 @@ export const connectChannelWith = <E, R>(
       Layer.mergeAll(
         DrizzleChannelRepository,
         ChannelEvents.none,
+        ChannelDepartures.none,
         DrizzleConnectAttempts,
         DrizzleConnectChoices,
         SqlChannelLocks,
@@ -289,6 +291,7 @@ export const connectAdaptersOn = (entitlements: typeof UnmeteredTest) =>
   Layer.mergeAll(
     DrizzleChannelRepository,
     ChannelEvents.none,
+    ChannelDepartures.none,
     DrizzleConnectAttempts,
     DrizzleConnectChoices,
     SqlChannelLocks,
@@ -302,7 +305,7 @@ export const connectChannelOver = (
   ...authorizers: readonly PlatformAuthorizer[]
 ) =>
   Layer.build(
-    ConnectChannel.layer.pipe(
+    Layer.fresh(ConnectChannel.layer).pipe(
       Layer.provide(
         Layer.succeed(PlatformAuthorizers, authorizersOf(...authorizers))
       )

@@ -212,11 +212,22 @@ export const platformMessagesWith = (settings: {
           })
         );
 
-        if (
-          !readsMessagesOn(account.platform, messages) ||
-          lacksMessages(account.platform, account.connection)
-        ) {
+        if (!readsMessagesOn(account.platform, messages)) {
           return yield* new ChannelUnreadable({ reason: "unsupported" });
+        }
+
+        // A way in without messages in Peal yet (Unified login) is never
+        // called. A box it has came through another way in, before a
+        // sign-in moved the channel: its messages are turned off, and
+        // members told, as for a grant without them.
+        if (lacksMessages(account.platform, account.connection)) {
+          const box = yield* store
+            .box(request.channelId)
+            .pipe(Effect.catchTag("DatabaseError", databaseDown));
+
+          return yield* Option.isSome(box)
+            ? new MessagesUngranted()
+            : new ChannelUnreadable({ reason: "unsupported" });
         }
 
         // A channel whose account does not grant what reading takes is
@@ -364,7 +375,13 @@ export const platformMessagesWith = (settings: {
 
           const { platform } = account;
 
-          if (!readsMessagesOn(platform, messages)) {
+          // Nor through a way in without messages in Peal yet: its token
+          // is not the one a subscription was made with, which the
+          // channels context undid when the sign-in moved the channel.
+          if (
+            !readsMessagesOn(platform, messages) ||
+            lacksMessages(platform, account.connection)
+          ) {
             return "unneeded" satisfies MessagesFollowOutcome;
           }
 
