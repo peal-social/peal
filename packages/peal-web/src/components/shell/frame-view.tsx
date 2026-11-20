@@ -424,7 +424,9 @@ export const FrameView = ({
           </div>
         </div>
         <div className="flex h-11 shrink-0 items-center">
-          <div className="flex items-center px-2.5 md:w-60">{actions}</div>
+          <div className="flex items-center gap-1.5 px-2.5 md:w-60">
+            {actions}
+          </div>
           <div className="flex flex-1 items-center justify-end gap-1 pr-2.5">
             <HelpMenu docsUrl={docsUrl} supportUrl={supportUrl} />
             <AgentButtons />

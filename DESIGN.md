@@ -712,15 +712,10 @@ it. There is no bar across the top.
     workspace**, the setup page), then at the end two ghost icon buttons, **Search** (the
     command menu, ⌘K) and **New post** (C), each with a tooltip naming it
     and its key.
-  - Under it, the **mode switch**, with the Peal mark inside it:
-    PealStudio, for running a workspace's channels, and PealAPI, for
-    building on the API. They are the site's product names, one word each,
-    never translated. The mark and the two modes share one frame;
-    switching is one click, never a menu. The mark's tile is white in
-    PealStudio and ink in PealAPI, so the mode shows at a glance. Each
-    page belongs to one mode, so the address carries it; switching opens
-    the other mode's first page the member may open, and a mode with none
-    is shown disabled.
+  - The **modes**: PealStudio, for running a workspace's channels, and
+    PealAPI, for building on the API. They are the site's product names,
+    one word each, never translated. Each page belongs to one mode, so the
+    address carries it.
   - The mode's navigation, in groups with a small label, listing only the
     pages the member's permissions open, in **`sidebar-row`**s (34 px,
     `{rounded.md}`, the current one on `accent`). A section with pages of
@@ -738,7 +733,13 @@ it. There is no bar across the top.
   blue tint), a blue dot at its corner while notifications wait unread.
   It opens their menu: Notifications (with the unread count), Account
   (where the language is chosen), both pages of the workspace's Settings,
-  then Sign out. At the
+  then Sign out. Beside it, on a workspace's pages, the **mode switch**:
+  the open mode's name (14 px, 500), no mark, and **Switch**, an outline
+  `xs` button shown while the row is hovered, focused or its menu open.
+  Switch opens a menu beside it, each mode a row with its name and one
+  muted line saying what it is for; choosing one opens that mode's
+  first page the member may open, and a mode with none is shown
+  disabled, saying why. At the
   bar's end, **Help** (Docs, Support, Keyboard shortcuts) and the
   **agent's** place: "Agent" and History as ghost buttons, shown and off
   until the agent comes, a tooltip saying so. No bell, no language

@@ -2989,7 +2989,11 @@
       "label": "Mode",
       "studio": "PealStudio",
       "api": "PealAPI",
-      "unavailable": "Votre rôle dans cet espace n’a aucune page de PealAPI"
+      "unavailable": "Votre rôle dans cet espace n’a aucune page de PealAPI",
+      "switch": "Changer",
+      "switchLabel": "Passer de PealStudio à PealAPI",
+      "studioDescription": "Écrire, programmer et répondre sur vos comptes",
+      "apiDescription": "Construire sur Peal avec l’API, les clés et les webhooks"
     },
     "groups": {
       "engage": "Échanger",

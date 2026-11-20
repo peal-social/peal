@@ -2989,7 +2989,11 @@
       "label": "Mode",
       "studio": "PealStudio",
       "api": "PealAPI",
-      "unavailable": "Your role in this workspace has no PealAPI pages"
+      "unavailable": "Your role in this workspace has no PealAPI pages",
+      "switch": "Switch",
+      "switchLabel": "Switch between PealStudio and PealAPI",
+      "studioDescription": "Write, schedule and answer across your channels",
+      "apiDescription": "Build on Peal with the API, keys and webhooks"
     },
     "groups": {
       "engage": "Engage",
