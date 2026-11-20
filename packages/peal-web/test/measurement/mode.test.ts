@@ -21,7 +21,7 @@ describe(modeOf, () => {
     // PEAL_POSTHOG_WEB off, staff acting as them, an excluded person.
     ["no measurement", null, "/", none, "off"],
     ["an older server", undefined, "/", none, "off"],
-    ["a page outside the app", settings("granted"), "/sign-in", none, "off"],
+    ["a page outside the app", settings("granted"), "/login", none, "off"],
     ["the staff console", settings("granted"), "/admin", none, "off"],
     [
       "an excluded workspace",
@@ -92,7 +92,7 @@ describe(placeOf, () => {
   it.each([
     "/admin",
     "/fr/admin/users",
-    "/sign-in",
+    "/login",
     "/connect/link",
     "/oauth/consent",
     "/review",

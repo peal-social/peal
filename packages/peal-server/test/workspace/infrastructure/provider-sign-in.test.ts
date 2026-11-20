@@ -9,7 +9,7 @@ const invitation = "0b9f1c2e-4f2a-4d4b-9a51-3c1f6f0a2b7e";
 
 const start = {
   callbackURL: "/",
-  errorCallbackURL: "/sign-in",
+  errorCallbackURL: "/login",
   provider: "oidc",
 };
 

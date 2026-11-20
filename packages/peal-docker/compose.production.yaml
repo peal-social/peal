@@ -350,7 +350,7 @@ services:
         - CMD
         - node
         - --eval
-        - 'fetch("http://127.0.0.1:3001/sign-in", { redirect: "manual" }).then((response) => process.exit(response.status < 500 ? 0 : 1), () => process.exit(1));'
+        - 'fetch("http://127.0.0.1:3001/login", { redirect: "manual" }).then((response) => process.exit(response.status < 500 ? 0 : 1), () => process.exit(1));'
 
   # The marketing site and the docs, built with the settings below.
   static:

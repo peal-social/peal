@@ -25,7 +25,7 @@ const CreateWorkspacePage = async ({
   const me = await currentUser();
 
   if (Option.isNone(me)) {
-    return redirect({ href: "/sign-in", locale });
+    return redirect({ href: "/login", locale });
   }
 
   return (

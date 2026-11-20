@@ -21,7 +21,7 @@ export const AccountMenu = async ({
   return Option.match(me, {
     onNone: () => (
       <Link
-        href="/sign-in"
+        href="/login"
         className={buttonVariants({ size: "sm", variant: "ghost" })}
       >
         {t("signIn")}

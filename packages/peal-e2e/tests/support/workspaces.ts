@@ -10,7 +10,7 @@ export interface OpenedWorkspace {
 }
 
 // A workspace's page at the root (`/<slug>`, `/fr/<slug>`), as a full URL: a slug, never
-// one of the app's other first segments (`/sign-in`, `/create`).
+// one of the app's other first segments (`/login`, `/create`).
 const workspacePage = new RegExp(
   String.raw`^https?://[^/]+(?:/fr)?/(?<slug>(?!(?:${reservedWorkspaceSlugs
     .map((segment) => segment.replaceAll(".", String.raw`\.`))

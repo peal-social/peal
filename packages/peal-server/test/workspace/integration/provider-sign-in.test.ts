@@ -148,7 +148,7 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), settings)(
             });
 
             assert.strictEqual(finished.error, "provider_email_unverified");
-            assert.strictEqual(finished.location.pathname, "/sign-up");
+            assert.strictEqual(finished.location.pathname, "/signup");
             assert.isFalse(setsSession(finished.reply));
             assert.isUndefined(yield* accountOf(email));
             assert.deepStrictEqual(yield* ownersOf(identity.sub), []);
@@ -649,7 +649,7 @@ layer(
         origin
       );
 
-      assert.strictEqual(signInPageUrl.pathname, "/sign-in");
+      assert.strictEqual(signInPageUrl.pathname, "/login");
 
       const started = yield* startSignIn({
         ...signInPage,

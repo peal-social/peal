@@ -46,8 +46,8 @@ export const BrandMark = ({
   readonly icon: Brand;
 }) =>
   "src" in icon ? (
-    // The owner's file as it is, drawn by an SVG image as GoogleMark draws
-    // Google's: square, so it fills the box.
+    // The owner's file as it is, drawn by an SVG image: square, so it
+    // fills the box.
     <svg viewBox="0 0 24 24" aria-hidden className={className}>
       <image href={icon.src} width={24} height={24} />
     </svg>

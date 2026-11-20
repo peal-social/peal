@@ -7,6 +7,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { lastSignInOf, methodsOf } from "#auth/last-sign-in.ts";
 import { needsPassword } from "#auth/password-state.ts";
 import { SetPasswordView } from "#components/account/set-password.tsx";
+import { googleMarkPaths } from "#components/auth/google-mark.tsx";
 import { SignInChoicesView } from "#components/auth/sign-in-choices.tsx";
 import { SignUpTerms } from "#components/auth/sign-up-terms.tsx";
 
@@ -66,8 +67,9 @@ describe("the ways to sign in", () => {
   it("show Google's own mark, and lucide's key for the other", async () => {
     const html = await render("en", choices(null));
 
-    expect(html).toMatch(/<image href="[^"]+" width="40" height="40">/u);
     expect(html).toContain('viewBox="10 10 20 20"');
+    expect(html.match(/<path d="M/gu)?.length).toBeGreaterThanOrEqual(4);
+    expect(html).not.toContain("<image");
     expect(html).toContain("lucide-key-round");
   });
 
@@ -169,6 +171,16 @@ describe("Google's mark", () => {
 
   it("draws with paths alone, which every browser renders", () => {
     expect(asset().toString("utf-8")).not.toContain("foreignObject");
+  });
+
+  it("draws the file's G, path for path and colour for colour", () => {
+    const fromFile = [
+      ...asset()
+        .toString("utf-8")
+        .matchAll(/<path d="(?<d>[^"]+)" fill="(?<fill>[^"]+)"\/>/gu),
+    ].map(({ groups }) => ({ d: groups?.["d"], fill: groups?.["fill"] }));
+
+    expect(googleMarkPaths).toStrictEqual(fromFile);
   });
 });
 

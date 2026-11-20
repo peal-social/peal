@@ -62,8 +62,7 @@ export const PlainFrame = ({ children }: { readonly children: ReactNode }) => (
 // someone, a header with the product name, the language switcher and the
 // account menu, the page itself, then a footer with the functions to
 // cancel a contract and to withdraw from one. The sign-in pages have no
-// header, and a quiet foot with those functions and the language
-// switcher. A connect link's pages, whose
+// header, and a quiet foot with those functions alone. A connect link's pages, whose
 // visitors have no Peal account, get a plain footer in their place
 // (ShellFrame).
 export const AppShell = ({ children }: { readonly children: ReactNode }) => {
@@ -78,11 +77,10 @@ export const AppShell = ({ children }: { readonly children: ReactNode }) => {
         header={<AppHeader />}
         footer={<AppFooter />}
         signIn={
-          <footer className="text-muted-foreground flex items-center justify-between gap-4 px-4 py-4 text-xs">
+          <footer className="text-muted-foreground px-4 py-4 text-xs">
             <Suspense fallback={null}>
               <ContractLinks />
             </Suspense>
-            <LanguageSwitcher />
           </footer>
         }
         hosted={

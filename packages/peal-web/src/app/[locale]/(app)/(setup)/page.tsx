@@ -31,7 +31,7 @@ const AppPage = async ({ params }: PageProps<"/[locale]">) => {
   const me = await currentUser();
 
   if (Option.isNone(me)) {
-    return redirect({ href: "/sign-in", locale });
+    return redirect({ href: "/login", locale });
   }
 
   const { impersonatedBy, user, workspaces } = me.value;

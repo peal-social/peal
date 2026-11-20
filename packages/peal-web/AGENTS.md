@@ -40,7 +40,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   component variants and sizes rather than restyling a component; the
   `@shadcn/lint` rules check pages against peal-ui. Peal is light only
   ([DESIGN.md](../../DESIGN.md)): write no `dark:` class.
-- Pages live under `src/app/[locale]/`: the auth pages (`sign-up`, `sign-in`,
+- Pages live under `src/app/[locale]/`: the auth pages (`signup`, `login`,
   `verify-email`, `forgot-password`, `reset-password`, `invitations/[id]`),
   the contract functions anyone reaches (`cancel`, `withdraw`, and
   `contract-request`, the page of the link emailed to a request's
@@ -895,8 +895,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `SIGN_UP_BY_INVITATION` reads from `Auth.errors`.
 - The sign-in pages (sign-in, sign-up, forgot and reset password,
   verify email) have a frame of their own (`frameOf` answers `signIn`:
-  no header, the contract functions and the language switcher at the
-  foot) and draw `AuthCard`, DESIGN.md's `sign-in` column. The sign-in
+  no header, the contract functions alone at the foot, no language
+  switcher) and draw `AuthCard`, DESIGN.md's `sign-in` column. The sign-in
   and sign-up pages offer the ways in through `SignInChoices` (its view
   `SignInChoicesView`): the server's sign-in providers
   (`signUpSettings().providers`, `GET /api/captcha`'s `signInProviders`)

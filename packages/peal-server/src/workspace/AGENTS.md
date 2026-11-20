@@ -443,7 +443,7 @@ The staff context follows these rules too. What the law has a host keep is in
 - No provider token is kept: the account hooks null the token columns of
   `google` and `oidc` accounts, and `updateAccountOnSignIn` is off. A
   provider's sign-up keeps the page's language (`user.create.before`,
-  from the state). `onAPIError.errorURL` is the web app's `/sign-in`.
+  from the state). `onAPIError.errorURL` is the web app's `/login`.
   `advanced.disableOriginCheck: false` makes tests run Better Auth's check
   of `callbackURL` and the like, which it skips under NODE_ENV=test.
 - An account a provider made has no password (`Account.hasPassword`,

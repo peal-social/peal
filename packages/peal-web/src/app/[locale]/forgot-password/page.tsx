@@ -20,7 +20,7 @@ const ForgotPasswordPage = async () => {
       title={t("title")}
       description={t("description")}
       footer={
-        <Link href="/sign-in" className="text-foreground underline">
+        <Link href="/login" className="text-foreground underline">
           {t("back")}
         </Link>
       }

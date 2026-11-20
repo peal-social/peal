@@ -23,7 +23,7 @@ export const SignInToContinue = async ({
 
   return (
     <AuthCard title={title} description={description ?? t("signedOut")}>
-      <Link href={{ pathname: "/sign-in", query }} className={buttonVariants()}>
+      <Link href={{ pathname: "/login", query }} className={buttonVariants()}>
         {t("signIn")}
       </Link>
     </AuthCard>

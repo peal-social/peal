@@ -41,7 +41,7 @@ The uptime server watches production and the sandbox as people reach them, throu
 | Check                 | Passes when                                                                |
 | --------------------- | -------------------------------------------------------------------------- |
 | The site and the docs | `/` answers `200` within a second, every minute                            |
-| The web app           | `/sign-in` answers `200` within two seconds, every minute                  |
+| The web app           | `/login` answers `200` within two seconds, every minute                    |
 | The API               | `/api/ready` answers `204` within a second, every minute                   |
 | Each host name        | Its certificate is valid for two more weeks, and it resolves through Quad9 |
 | Production's Grafana  | Its heartbeat arrived in the last 15 minutes                               |

@@ -1147,7 +1147,7 @@ unless said otherwise:
 | ------------------------ | ---------------------------------------------------------------------- |
 | The site (`/`)           | 200 within 1 second                                                    |
 | The docs (`/`)           | 200 within 1 second                                                    |
-| The web app (`/sign-in`) | 200 within 2 seconds                                                   |
+| The web app (`/login`)   | 200 within 2 seconds                                                   |
 | The API (`/api/ready`)   | 204 within 1 second: the server answers, and its database too          |
 | Short links (`/0000000`) | The server's 404 (`not_found`) within 1 second, on the short-link host |
 | Each host's certificate  | Valid for 14 more days, the uptime server's own included (hourly)      |

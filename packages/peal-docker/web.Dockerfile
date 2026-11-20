@@ -64,6 +64,6 @@ EXPOSE 3001
 
 # Any answer below 500 means the server is up; pages render without the API.
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --start-interval=1s --retries=3 \
-    CMD ["node", "--eval", "fetch(`http://127.0.0.1:${process.env.PORT}/sign-in`, { redirect: 'manual' }).then((response) => process.exit(response.status < 500 ? 0 : 1), () => process.exit(1));"]
+    CMD ["node", "--eval", "fetch(`http://127.0.0.1:${process.env.PORT}/login`, { redirect: 'manual' }).then((response) => process.exit(response.status < 500 ? 0 : 1), () => process.exit(1));"]
 
 CMD ["node", "packages/peal-web/server.js"]

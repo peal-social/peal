@@ -28,11 +28,9 @@ const MethodIcon = ({ method }: { readonly method: SignInMethod }) => {
   );
 };
 
-// The first way is the page's main action, but Google's, which is always
-// the white outline button, as Google's light button is (DESIGN.md,
-// Icons); every other is an outline button.
-const variantOf = (method: SignInMethod, index: number) =>
-  index === 0 && method !== "google" ? "default" : "outline";
+// The first way is the page's main action, the ink button, Google's
+// included; every other is an outline button (DESIGN.md, Icons).
+const variantOf = (index: number) => (index === 0 ? "default" : "outline");
 
 /**
  * The ways to sign in, as markup: one button each, the width of the
@@ -72,7 +70,7 @@ export const SignInChoicesView = ({
           <Button
             type="button"
             size="lg"
-            variant={variantOf(method, index)}
+            variant={variantOf(index)}
             disabled={pending && method !== "email"}
             focusableWhenDisabled
             onClick={() => {
@@ -166,9 +164,14 @@ export const SignInChoices = ({
     return <div className="flex flex-col">{children}</div>;
   }
 
+  // Each step fades in as it takes the other's place (DESIGN.md,
+  // `sign-in`); with reduced motion it appears at once.
   if (emailOpen) {
     return (
-      <div className="flex flex-col gap-4">
+      <div
+        key="email"
+        className="animate-in fade-in flex flex-col gap-4 duration-300 ease-out motion-reduce:animate-none"
+      >
         {children}
         <Button
           type="button"
@@ -185,15 +188,20 @@ export const SignInChoices = ({
   }
 
   return (
-    <SignInChoicesView
-      error={error}
-      last={last}
-      pending={pending}
-      providers={providers}
-      onChoose={choose}
-      onEmail={() => {
-        setEmailOpen(true);
-      }}
-    />
+    <div
+      key="choices"
+      className="animate-in fade-in duration-300 ease-out motion-reduce:animate-none"
+    >
+      <SignInChoicesView
+        error={error}
+        last={last}
+        pending={pending}
+        providers={providers}
+        onChoose={choose}
+        onEmail={() => {
+          setEmailOpen(true);
+        }}
+      />
+    </div>
   );
 };

@@ -20,7 +20,7 @@ import { getPathname, Link } from "#i18n/navigation.ts";
 // request time, as it says the providers to sign in with. A provider's
 // refusal comes back here as ?error=<code>, which only names a message,
 // with ?from=provider; the authorization server's comes without it.
-const SignInPage = async ({ searchParams }: PageProps<"/[locale]/sign-in">) => {
+const SignInPage = async ({ searchParams }: PageProps<"/[locale]/login">) => {
   await connection();
 
   const { error, from, next } = await searchParams;
@@ -47,7 +47,7 @@ const SignInPage = async ({ searchParams }: PageProps<"/[locale]/sign-in">) => {
         offersSignUp(mode) ? (
           <p>
             {t("noAccount")}{" "}
-            <Link href="/sign-up" className="text-foreground font-medium">
+            <Link href="/signup" className="text-foreground font-medium">
               {t("signUp")}
             </Link>
           </p>

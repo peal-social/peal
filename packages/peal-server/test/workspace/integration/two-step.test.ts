@@ -626,7 +626,7 @@ layer(TwoStepLive, { excludeTestServices: true, timeout: "180 seconds" })(
             origin
           );
 
-          assert.strictEqual(signInPage.pathname, "/sign-in");
+          assert.strictEqual(signInPage.pathname, "/login");
 
           const oauthQuery = signInPage.search.slice(1);
 

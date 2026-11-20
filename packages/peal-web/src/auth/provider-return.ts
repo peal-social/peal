@@ -49,7 +49,7 @@ export const signUpReturn = (
   return {
     errorPath: localized(
       marked(
-        "/sign-up",
+        "/signup",
         invitationId === null ? {} : { invitation: invitationId }
       )
     ),
@@ -66,6 +66,6 @@ export const signInReturn = (
   next: string,
   localized: (href: string) => string
 ): ProviderReturn => ({
-  errorPath: localized(marked("/sign-in", { next })),
+  errorPath: localized(marked("/login", { next })),
   next,
 });

@@ -43,7 +43,7 @@ describe("a review link", { serial: true }, () => {
   }) => {
     await confirmedAccount(app.baseUrl, { email: address(), name, password });
     await browser.clearCookies();
-    await app.open("/sign-in");
+    await app.open("/login");
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password);
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
@@ -161,7 +161,7 @@ describe("a review link", { serial: true }, () => {
     browser,
     screen,
   }) => {
-    await app.open("/sign-in");
+    await app.open("/login");
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password);
     await screen.getByRole("main").getByRole("button", "Sign in").tap();

@@ -134,6 +134,6 @@ describe(pathOf, () => {
     expect(pathOf("/maximes-workspace-1a2b3c4d/posts")).toBe("/:id/posts");
     expect(pathOf("/fr/acme/settings/tags")).toBe("/fr/:id/settings/tags");
     expect(pathOf("/create")).toBe("/create");
-    expect(pathOf("/sign-in")).toBe("/sign-in");
+    expect(pathOf("/login")).toBe("/login");
   });
 });

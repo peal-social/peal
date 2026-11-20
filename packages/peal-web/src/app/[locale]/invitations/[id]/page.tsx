@@ -26,11 +26,11 @@ const InvitationPage = async ({
         <div className="flex flex-col gap-4">
           <p className="text-muted-foreground text-sm">{t("signedOut")}</p>
           <div className="flex gap-2">
-            <Link href="/sign-in" className={buttonVariants()}>
+            <Link href="/login" className={buttonVariants()}>
               {t("signIn")}
             </Link>
             <Link
-              href={{ pathname: "/sign-up", query: { invitation: id } }}
+              href={{ pathname: "/signup", query: { invitation: id } }}
               className={buttonVariants({ variant: "outline" })}
             >
               {t("signUp")}

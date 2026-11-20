@@ -29,7 +29,7 @@ import { getPathname, Link } from "#i18n/navigation.ts";
 // it, and their sign-up carries the invitation too; the terms line under
 // both covers every way. A provider's refusal comes back here as
 // ?error=<code>, which only names a message, with ?from=provider.
-const SignUpPage = async ({ searchParams }: PageProps<"/[locale]/sign-up">) => {
+const SignUpPage = async ({ searchParams }: PageProps<"/[locale]/signup">) => {
   await connection();
 
   const { error, from, invitation } = await searchParams;
@@ -52,7 +52,7 @@ const SignUpPage = async ({ searchParams }: PageProps<"/[locale]/sign-up">) => {
       footer={
         <p>
           {t("haveAccount")}{" "}
-          <Link href="/sign-in" className="text-foreground font-medium">
+          <Link href="/login" className="text-foreground font-medium">
             {t("signIn")}
           </Link>
         </p>

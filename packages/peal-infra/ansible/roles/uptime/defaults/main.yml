@@ -52,7 +52,7 @@ uptime_checks:
   - name: web app
     title: Web app
     host: app
-    path: /sign-in
+    path: /login
     status: 200
     max_ms: 2000
   # Readiness: the server answers and its database too.

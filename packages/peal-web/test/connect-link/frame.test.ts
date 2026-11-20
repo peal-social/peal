@@ -24,8 +24,8 @@ describe(frameOf, () => {
 
   it("gives the sign-in pages theirs", () => {
     for (const path of [
-      "/sign-in",
-      "/fr/sign-up",
+      "/login",
+      "/fr/signup",
       "/forgot-password",
       "/reset-password",
       "/verify-email",

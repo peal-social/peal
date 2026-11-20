@@ -305,8 +305,8 @@ export const headerProps = (
   settings: SiteSettings
 ): SiteHeaderProps => {
   const t = messages.nav;
-  const signIn = settings.app("sign-in");
-  const signUp = settings.app("sign-up");
+  const signIn = settings.app("login");
+  const signUp = settings.app("signup");
 
   return {
     discord:

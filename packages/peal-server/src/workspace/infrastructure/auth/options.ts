@@ -631,7 +631,7 @@ export const makeAuth = ({
     },
     // A provider's callback that fails before its state is read sends the
     // browser back to Peal's sign-in page, never to Better Auth's own.
-    onAPIError: { errorURL: `${settings.publicUrl}/sign-in` },
+    onAPIError: { errorURL: `${settings.publicUrl}/login` },
     logger: {
       level: "warn",
       // Messages only: Better Auth passes request details as further

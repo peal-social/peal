@@ -8,7 +8,7 @@ const linkPage = /^\/connect\/link$/u;
 
 // The pages someone signs in, signs up or finds their way back in on.
 const signInPage =
-  /^(?:\/fr)?\/(?:sign-in|sign-up|forgot-password|reset-password|verify-email)$/u;
+  /^(?:\/fr)?\/(?:login|signup|forgot-password|reset-password|verify-email)$/u;
 
 const callbackPage = /^\/connect\/(?<platform>[^/]+)\/callback$/u;
 

@@ -50,7 +50,7 @@ let slug = "";
 
 describe("a new member's first post", { serial: true }, () => {
   test("signs up", async ({ app, screen }) => {
-    await app.open("/sign-up");
+    await app.open("/signup");
     await screen.getByLabel("Name").fill(name);
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password());
@@ -70,7 +70,7 @@ describe("a new member's first post", { serial: true }, () => {
   test("signs in", async ({ app, browser, screen }) => {
     // The confirmation link signed the member in: start a new session.
     await browser.clearCookies();
-    await app.open("/sign-in");
+    await app.open("/login");
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password());
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
@@ -346,12 +346,12 @@ describe("a new member's first post", { serial: true }, () => {
     await screen.getByRole("menuitem", "Se déconnecter").tap();
 
     // "/" is no page: signed out, it asks to sign in.
-    await expect(browser).toHaveURL("/fr/sign-in");
+    await expect(browser).toHaveURL("/fr/login");
     await expect(
       screen.getByRole("main").getByRole("heading", "Se connecter à Peal")
     ).toBeVisible();
     await app.open("/fr");
-    await expect(browser).toHaveURL("/fr/sign-in");
+    await expect(browser).toHaveURL("/fr/login");
   });
 
   test("signs in to the language the account keeps", async ({
@@ -361,7 +361,7 @@ describe("a new member's first post", { serial: true }, () => {
   }) => {
     // A browser that remembers no language, signing in from an English page.
     await browser.clearCookies();
-    await app.open("/sign-in");
+    await app.open("/login");
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password());
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
@@ -375,7 +375,7 @@ describe("a new member's first post", { serial: true }, () => {
     screen,
   }) => {
     await browser.clearCookies();
-    await app.open("/sign-up");
+    await app.open("/signup");
     await screen.getByLabel("Name").fill(guestName);
     await screen.getByLabel("Email").fill(guestAddress());
     await screen.getByLabel("Password").fill(password());
