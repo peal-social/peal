@@ -11,7 +11,9 @@ import type { AuthClientError } from "#auth/errors.ts";
 const reasons = new Map<string, SettingsErrorKey>([
   ["IMPERSONATION_READ_ONLY", "impersonating"],
   ["INVALID_PASSWORD", "incorrectPassword"],
+  ["INVALID_WORKSPACE_SLUG", "slugInvalid"],
   ["MEMBER_LIMIT_REACHED", "memberLimit"],
+  ["ORGANIZATION_SLUG_ALREADY_TAKEN", "slugTaken"],
   ["PASSWORD_TOO_LONG", "passwordTooLong"],
   ["PASSWORD_TOO_SHORT", "passwordTooShort"],
   ["USER_IS_ALREADY_A_MEMBER_OF_THIS_ORGANIZATION", "alreadyMember"],
@@ -43,6 +45,8 @@ export const SettingsErrorKeySchema = Schema.Literals([
   "partnerOwnsWorkspaces",
   "passwordTooLong",
   "passwordTooShort",
+  "slugInvalid",
+  "slugTaken",
   "storeUnavailable",
   "subscribed",
   "tooManyRequests",

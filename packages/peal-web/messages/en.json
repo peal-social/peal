@@ -2781,7 +2781,9 @@
       "storeUnavailable": "The deletion could not be recorded where backups cannot undo it, so nothing was deleted. Try again in a few minutes.",
       "partnerClosed": "This server opens partner accounts through its staff: ask the people who run it for one.",
       "partnerInvalid": "A value cannot be kept. Check the name, the logo’s address (HTTPS), the accent colour (#RRGGBB, dark enough to read on white) and the origins: each as https://host, with nothing after, 20 at most.",
-      "partnerOwnsWorkspaces": "The partner account of a workspace this would delete still owns workspaces. Delete each through the partner API first."
+      "partnerOwnsWorkspaces": "The partner account of a workspace this would delete still owns workspaces. Delete each through the partner API first.",
+      "slugInvalid": "That address can't be used. Use lower-case letters and digits, with words joined by hyphens, and not a word Peal's own pages use.",
+      "slugTaken": "Another workspace already has that address."
     },
     "cancellation": {
       "title": "{count, plural, one {Deleting cancels a subscription} other {Deleting cancels # subscriptions}}",
@@ -2804,6 +2806,15 @@
       "name": "Workspace name",
       "rename": "Rename",
       "renamed": "The workspace is now called {name}."
+    },
+    "address": {
+      "title": "Address",
+      "description": "The name your workspace's links use, after the site's address. Links shared before a change stop working. Links in Peal's emails and notices keep working.",
+      "label": "Address",
+      "hint": "Lower-case letters and digits, with words joined by hyphens, 48 characters at most.",
+      "invalid": "Use lower-case letters and digits, with words joined by hyphens, 48 characters at most. A few words are kept for Peal's own pages.",
+      "change": "Change address",
+      "changed": "The workspace's pages are now at /{slug}."
     },
     "delete": {
       "title": "Delete the workspace",

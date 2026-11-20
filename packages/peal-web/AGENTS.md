@@ -162,10 +162,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   slug (308, `slugAddressOf`, once `/api/me` says whose it is), as the
   server's emails and notices link by id. A slug is
   `peal-contract/workspace-slug`'s (`isWorkspaceSlug`: lower-case words,
-  never `reservedWorkspaceSlugs` nor an id's shape), set once: the server refuses another (Better Auth's hooks,
-  `INVALID_WORKSPACE_SLUG`) and any change (`WORKSPACE_SLUG_FIXED`);
-  renaming keeps it. A new workspace tries its name's words, then the
-  words and a random tail (`slugsToTry`, `#workspaces/new-workspace.ts`).
+  never `reservedWorkspaceSlugs` nor an id's shape): the server refuses
+  another (Better Auth's hooks, `INVALID_WORKSPACE_SLUG`), when a
+  workspace is made and when its slug changes. Renaming keeps it; owners
+  and admins change it on the general settings (`WorkspaceAddressForm`,
+  which then opens the page under the new address). A new workspace tries
+  its name's words, then the words and a random tail (`slugsToTry`,
+  `#workspaces/new-workspace.ts`).
   Error reports and the measurement's patterns write the slug's segment
   `:id` (`pathOf`), as it holds the workspace's name.
 - `/` is no page: for someone signed in it redirects to the workspace Better Auth keeps
@@ -184,7 +187,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   open opens instead (`openInvitationOf`), as on a server by invitation;
   otherwise it creates, once, the workspace named after the first word of
   their name in their account's language (`AppPage.defaultName`), under
-  a slug ending in their id's first characters, so two tabs make one,
+  a slug ending in the name part of their email address
+  (`emailSlugTailOf`: `sam-lee` for `sam.lee@…`), so two tabs
+  make one, a random tail should another workspace hold it,
   then opens it; staff acting as someone are sent to the account page.
   Another workspace is made at `new` (the switcher's and the
   person's sidebar's **New workspace**), which opens it once made. The

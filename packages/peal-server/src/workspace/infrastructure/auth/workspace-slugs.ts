@@ -19,19 +19,16 @@ export const checkNewSlug = async (slug: string | undefined): Promise<void> => {
 };
 
 /**
- * A workspace's slug is set when it is made and never changes after, so
- * the links to its pages keep working: an update that names one is
- * refused, whatever it names.
+ * A workspace's slug may change, to one the web app can route, as when it
+ * is made: an update that names none keeps it. Better Auth's route has
+ * checked that no other workspace holds it, and that the member may update
+ * the workspace. The server's own links name the workspace by its id, so
+ * they keep working.
  */
-export const keepSlug = async (data: {
+export const checkChangedSlug = async (data: {
   readonly slug?: string | undefined;
 }): Promise<void> => {
   if (data.slug !== undefined) {
-    throw APIError.from("BAD_REQUEST", {
-      code: "WORKSPACE_SLUG_FIXED",
-      message: "A workspace's slug is set when it is made and never changes",
-    });
+    await checkNewSlug(data.slug);
   }
-
-  await Promise.resolve();
 };

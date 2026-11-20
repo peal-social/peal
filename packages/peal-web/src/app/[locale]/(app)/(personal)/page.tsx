@@ -3,7 +3,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { workspaceSlugOf } from "peal-contract/workspace-slug";
+import { emailSlugTailOf, workspaceSlugOf } from "peal-contract/workspace-slug";
 
 import { activeWorkspaceOf } from "#auth/active-workspace.ts";
 import { currentUser } from "#auth/session.ts";
@@ -68,10 +68,12 @@ const AppPage = async ({ params }: PageProps<"/[locale]">) => {
           name: first,
         });
 
-  // Its own slug first, the same on every try, so two tabs make one; a
-  // random one should another workspace hold it.
+  // Its own slug first, ending in the name part of the person's email
+  // address, the same on every try, so two tabs make one; a random one
+  // should another workspace hold it. They may change it in the
+  // workspace's settings.
   const slugs = [
-    workspaceSlugOf(name, user.id.replaceAll("-", "").slice(0, 8)),
+    workspaceSlugOf(name, emailSlugTailOf(user.email)),
     workspaceSlugOf(name, crypto.randomUUID().replaceAll("-", "").slice(0, 8)),
   ];
 

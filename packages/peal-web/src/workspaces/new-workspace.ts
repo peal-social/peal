@@ -7,7 +7,7 @@ import {
 
 /**
  * The slugs a new workspace of this name tries, in turn: its words alone
- * (`/acme-studio`) when they make a slug the server takes, then its
+ * (`/maple-studio`) when they make a slug the server takes, then its
  * words and `tail` (a few random letters and digits), for a name another
  * workspace holds or a reserved word. A slug never changes after.
  */

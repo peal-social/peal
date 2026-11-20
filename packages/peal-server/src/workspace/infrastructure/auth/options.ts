@@ -77,7 +77,7 @@ import type { TwoStepPolicy, TwoStepTeller } from "./two-step.ts";
 import { expireVisitorCookie, visitorOfSignUp } from "./visitor-cookie.ts";
 import { recordWorkspaceChange } from "./workspace-changes.ts";
 import type { WorkspaceChangeRecorder } from "./workspace-changes.ts";
-import { checkNewSlug, keepSlug } from "./workspace-slugs.ts";
+import { checkChangedSlug, checkNewSlug } from "./workspace-slugs.ts";
 
 /** A link Better Auth wants mailed, in the recipient's language. */
 export interface AuthLink {
@@ -677,12 +677,12 @@ export const makeAuth = ({
             await checkMemberRoom(hooks, member.organizationId, Option.none());
           },
           // A workspace's slug names its pages in the web app's addresses:
-          // one the app can route when it is made, the same ever after.
+          // one the app can route, when it is made and when it changes.
           beforeCreateOrganization: async ({ organization: workspace }) => {
             await checkNewSlug(workspace.slug);
           },
           beforeUpdateOrganization: async ({ organization: workspace }) => {
-            await keepSlug(workspace);
+            await checkChangedSlug(workspace);
           },
           beforeCreateInvitation: async ({ invitation }) => {
             await oneRole(invitation.role);

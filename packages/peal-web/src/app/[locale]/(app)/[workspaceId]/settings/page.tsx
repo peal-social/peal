@@ -13,11 +13,12 @@ import { ApprovalPolicyForm } from "#components/settings/approval-policy-form.ts
 import { DeleteWorkspace } from "#components/settings/delete-workspace.tsx";
 import { RenameWorkspaceForm } from "#components/settings/rename-workspace-form.tsx";
 import { ShortLinkDefaultForm } from "#components/settings/short-link-default-form.tsx";
+import { WorkspaceAddressForm } from "#components/settings/workspace-address-form.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 
-// A workspace's general settings: its name, which posts wait for an
+// A workspace's general settings: its name, its address, which posts wait for an
 // approval, whether new posts shorten their links, and deleting it, for
 // those whose role allows each.
 const GeneralSettingsPage = async ({
@@ -57,6 +58,22 @@ const GeneralSettingsPage = async ({
           </CardContent>
         ) : null}
       </Card>
+      {may.has("organization:update") ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <h2>{t("address.title")}</h2>
+            </CardTitle>
+            <CardDescription>{t("address.description")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <WorkspaceAddressForm
+              slug={workspace.slug}
+              workspaceId={workspace.id}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
       <Card>
         <CardHeader>
           <CardTitle>

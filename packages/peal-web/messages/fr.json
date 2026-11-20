@@ -2781,7 +2781,9 @@
       "storeUnavailable": "La suppression n’a pas pu être consignée là où les sauvegardes ne peuvent pas la défaire, donc rien n’a été supprimé. Réessayez dans quelques minutes.",
       "partnerClosed": "Ce serveur ouvre les comptes partenaires par son équipe : demandez-en un aux personnes qui l’exploitent.",
       "partnerInvalid": "Une valeur ne peut pas être conservée. Vérifiez le nom, l’adresse du logo (HTTPS), la couleur d’accent (#RRGGBB, assez foncée pour se lire sur du blanc) et les origines : chacune comme https://hôte, sans rien après, 20 au plus.",
-      "partnerOwnsWorkspaces": "Le compte partenaire d’un espace de travail que cela supprimerait possède encore des espaces de travail. Supprimez chacun par l’API partenaire d’abord."
+      "partnerOwnsWorkspaces": "Le compte partenaire d’un espace de travail que cela supprimerait possède encore des espaces de travail. Supprimez chacun par l’API partenaire d’abord.",
+      "slugInvalid": "Cette adresse ne peut pas servir. Utilisez des lettres minuscules et des chiffres, des mots reliés par des tirets, et pas un mot que prennent les pages de Peal.",
+      "slugTaken": "Un autre espace a déjà cette adresse."
     },
     "cancellation": {
       "title": "{count, plural, one {La suppression résilie un abonnement} other {La suppression résilie # abonnements}}",
@@ -2804,6 +2806,15 @@
       "name": "Nom de l’espace de travail",
       "rename": "Renommer",
       "renamed": "L’espace de travail s’appelle désormais {name}."
+    },
+    "address": {
+      "title": "Adresse",
+      "description": "Le nom que prennent les liens de votre espace, après l’adresse du site. Les liens partagés avant un changement ne marchent plus. Ceux des e-mails et des avis de Peal continuent de marcher.",
+      "label": "Adresse",
+      "hint": "Lettres minuscules et chiffres, mots reliés par des tirets, 48 caractères au plus.",
+      "invalid": "Utilisez des lettres minuscules et des chiffres, des mots reliés par des tirets, 48 caractères au plus. Quelques mots sont réservés aux pages de Peal.",
+      "change": "Changer l’adresse",
+      "changed": "Les pages de l’espace sont maintenant à /{slug}."
     },
     "delete": {
       "title": "Supprimer l’espace de travail",

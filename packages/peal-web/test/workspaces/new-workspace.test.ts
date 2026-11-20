@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Option } from "effect";
 import {
+  emailSlugTailOf,
   isWorkspaceSlug,
   workspaceSlugOf,
   workspaceSlugWordsOf,
@@ -17,7 +18,7 @@ import {
 
 describe(isWorkspaceSlug, () => {
   it("takes lower-case words, never a personal page, an id or other characters", () => {
-    expect(isWorkspaceSlug("acme-studio")).toBeTruthy();
+    expect(isWorkspaceSlug("maple-studio")).toBeTruthy();
     expect(isWorkspaceSlug("studio2")).toBeTruthy();
 
     for (const refused of [
@@ -51,6 +52,34 @@ describe(workspaceSlugOf, () => {
     expect(workspaceSlugWordsOf("  Café  Crème! ")).toBe("cafe-creme");
   });
 
+  it("ends a first workspace's slug with the name part of the email address", () => {
+    expect(emailSlugTailOf("sam.lee@example.com")).toBe("sam.lee");
+    expect(
+      workspaceSlugOf(
+        "Maxime’s workspace",
+        emailSlugTailOf("sam.lee@example.com")
+      )
+    ).toBe("maximes-workspace-sam-lee");
+    expect(
+      workspaceSlugOf("Espace d’Élise", emailSlugTailOf("Élise+Pro@example.fr"))
+    ).toBe("espace-delise-elise-pro");
+    expect(workspaceSlugOf("日本", emailSlugTailOf("@example.com"))).toBe(
+      "workspace"
+    );
+  });
+
+  it("keeps the tail within its own limit, and the slug within 48", () => {
+    const slug = workspaceSlugOf(
+      `${"long ".repeat(20)}name`,
+      emailSlugTailOf(`${"first.last.".repeat(6)}x@example.com`)
+    );
+
+    expect(slug.length).toBeLessThanOrEqual(48);
+    expect(isWorkspaceSlug(slug)).toBeTruthy();
+    expect(slug.startsWith("long-long-")).toBeTruthy();
+    expect(slug).toContain("-first-last-");
+  });
+
   it("stays within the limit, cut where a word ends", () => {
     const slug = workspaceSlugOf(`${"long ".repeat(20)}name`, "1a2b3c4d");
 
@@ -62,9 +91,9 @@ describe(workspaceSlugOf, () => {
 
 describe(slugsToTry, () => {
   it("tries the words alone first, then with the tail", () => {
-    expect(slugsToTry("Acme Studio", "1a2b3c4d")).toStrictEqual([
-      "acme-studio",
-      "acme-studio-1a2b3c4d",
+    expect(slugsToTry("Maple Studio", "1a2b3c4d")).toStrictEqual([
+      "maple-studio",
+      "maple-studio-1a2b3c4d",
     ]);
   });
 
