@@ -9,6 +9,7 @@ import type {
 } from "#channels/application/platform-authorizer.ts";
 import { ConnectAttempt } from "#channels/domain/connect-attempt.ts";
 import { facebookAuthorizer } from "#channels/infrastructure/platforms/meta/facebook-authorizer.ts";
+import { portfolioPagesScope } from "#channels/infrastructure/platforms/meta/facebook-login.ts";
 import { instagramAuthorizer } from "#channels/infrastructure/platforms/meta/instagram-authorizer.ts";
 import { instagramLoginAuthorizer } from "#channels/infrastructure/platforms/meta/instagram-login-authorizer.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -28,9 +29,10 @@ import type { FakePage } from "#test/channels/fakes/fake-meta.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
 
 // What Facebook Login and Instagram Login ask for, with the inbox's
-// optional platforms off and on: off, exactly what they asked before the
-// inbox read Meta; on, the comment permissions too, which a member may
-// decline and still connect.
+// optional platforms off and on: off, what they asked before the inbox
+// read Meta (Facebook Login with the portfolio's Pages too, optional);
+// on, the comment permissions too, which a member may decline and still
+// connect.
 
 const off: InboxPlatforms = new Set();
 
@@ -139,11 +141,11 @@ describe("the comment permissions at sign-in", () => {
 
       assert.strictEqual(
         yield* scopeOf(built.facebook),
-        "pages_show_list,pages_read_engagement,pages_manage_posts"
+        "pages_show_list,pages_read_engagement,pages_manage_posts,business_management"
       );
       assert.strictEqual(
         yield* scopeOf(built.instagramPage),
-        "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights"
+        "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights,business_management"
       );
       assert.strictEqual(
         yield* scopeOf(built.instagramLogin),
@@ -158,11 +160,11 @@ describe("the comment permissions at sign-in", () => {
 
       assert.strictEqual(
         yield* scopeOf(built.facebook),
-        "pages_show_list,pages_read_engagement,pages_manage_posts,pages_read_user_content,pages_manage_engagement"
+        "pages_show_list,pages_read_engagement,pages_manage_posts,business_management,pages_read_user_content,pages_manage_engagement"
       );
       assert.strictEqual(
         yield* scopeOf(built.instagramPage),
-        "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights,instagram_manage_comments"
+        "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights,business_management,instagram_manage_comments"
       );
       assert.strictEqual(
         yield* scopeOf(built.instagramLogin),
@@ -214,6 +216,45 @@ describe("the comment permissions at sign-in", () => {
       assert.deepStrictEqual("tokens" in outcome ? outcome.tokens.scopes : [], [
         ...instagramPermissions,
       ]);
+    }).pipe(Effect.scoped, Effect.provide(Services))
+  );
+});
+
+// A Page a business portfolio owns is missing from `/me/accounts` unless
+// the member granted `business_management`; Facebook Login asks for it as
+// optional, so a member whose Pages are their own declines it and connects.
+describe("the portfolio permission at sign-in", () => {
+  it.effect("is asked by Facebook Login, and not by Instagram Login", () =>
+    Effect.gen(function* asked() {
+      const built = yield* authorizers(off);
+
+      for (const authorizer of [built.facebook, built.instagramPage]) {
+        assert.include(
+          ((yield* scopeOf(authorizer)) ?? "").split(","),
+          portfolioPagesScope
+        );
+      }
+
+      assert.notInclude(
+        ((yield* scopeOf(built.instagramLogin)) ?? "").split(","),
+        portfolioPagesScope
+      );
+    }).pipe(Effect.scoped, Effect.provide(Services))
+  );
+
+  it.effect("connects a Page and its Instagram account when declined", () =>
+    Effect.gen(function* declined() {
+      const built = yield* authorizers(off);
+
+      built.meta.setDeclined([portfolioPagesScope]);
+
+      for (const authorizer of [built.facebook, built.instagramPage]) {
+        const outcome = yield* signIn(authorizer, built.meta.approve);
+        const [account] = "accounts" in outcome ? outcome.accounts : [];
+
+        assert.isDefined(account);
+        assert.notInclude(account?.tokens.scopes ?? [], portfolioPagesScope);
+      }
     }).pipe(Effect.scoped, Effect.provide(Services))
   );
 });

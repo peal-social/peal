@@ -203,7 +203,7 @@ layer(MetaConnectTest)("connecting Meta accounts", (it) => {
         assert.strictEqual(url.searchParams.get("client_id"), metaApp.appId);
         assert.strictEqual(
           url.searchParams.get("scope"),
-          "pages_show_list,pages_read_engagement,pages_manage_posts"
+          "pages_show_list,pages_read_engagement,pages_manage_posts,business_management"
         );
         assert.strictEqual(
           url.searchParams.get("redirect_uri"),

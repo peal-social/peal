@@ -171,10 +171,10 @@ const signIn = Effect.fnUntraced(function* signIn(
 });
 
 const facebookBefore =
-  "pages_show_list,pages_read_engagement,pages_manage_posts";
+  "pages_show_list,pages_read_engagement,pages_manage_posts,business_management";
 
 const instagramPageBefore =
-  "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights";
+  "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights,business_management";
 
 const instagramLoginBefore =
   "instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights";
