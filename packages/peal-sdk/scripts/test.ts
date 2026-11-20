@@ -41,12 +41,27 @@ const me = {
   ],
 };
 
-/** The version of the API the SDKs were generated from: their document's. */
-const { info } = Schema.decodeUnknownSync(
-  Schema.fromJsonString(
-    Schema.Struct({ info: Schema.Struct({ version: Schema.String }) })
-  )
-)(await Bun.file(path.join(sdkRoot, "openapi.json")).text());
+/**
+ * The version of the API the SDKs were generated from: the day of the
+ * latest release the contract's changelog records, as its document says.
+ * The changelog is read rather than the SDKs' document, which only
+ * `peal-sdk:spec` writes.
+ */
+const releases = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Schema.Array(Schema.Struct({ date: Schema.String })))
+)(
+  await Bun.file(
+    path.join(sdkRoot, "..", "peal-contract", "src", "api-changelog.json")
+  ).text()
+);
+
+const info = {
+  version:
+    releases
+      .map(({ date }) => date)
+      .toSorted()
+      .at(-1) ?? "",
+};
 
 const seen = { health: false, me: false };
 
