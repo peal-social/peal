@@ -4,6 +4,7 @@ import { SqlClient } from "effect/sql";
 import {
   AccountExportSchema,
   ConnectedAppSchema,
+  lastSignInCookie,
   MeSchema,
   PreparedUploadSchema,
 } from "peal-contract";
@@ -829,8 +830,14 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
         // No secret: not the API key, nor the session's token.
         assert.notInclude(text, key);
 
+        // The cookie naming how the browser last signed in (`email`) is no
+        // secret, and its value is a word the export uses.
         for (const cookie of lee.cookies.split("; ")) {
-          assert.notInclude(text, cookie.split("=")[1]?.split(".")[0] ?? "");
+          const [name, value] = cookie.split("=");
+
+          if (name !== lastSignInCookie) {
+            assert.notInclude(text, value?.split(".")[0] ?? "");
+          }
         }
       })
   );

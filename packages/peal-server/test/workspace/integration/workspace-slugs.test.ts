@@ -31,7 +31,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           for (const slug of [
             "create",
             "admin",
-            "sign-in",
+            "login",
             "invitations",
             randomUUID(),
             "Capitals",
