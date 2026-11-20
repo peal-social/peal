@@ -28,7 +28,10 @@ __pycache__/
 .ansible/
 .e2e/
 .cache/
-/.claude/
+# Claude Code's local state and worktrees; its shared settings (Trail-code's
+# SessionStart hook) are committed
+/.claude/*
+!/.claude/settings.json
 *.log
 .idea/
 .vscode/
