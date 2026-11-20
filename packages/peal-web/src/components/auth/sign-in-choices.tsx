@@ -28,15 +28,11 @@ const MethodIcon = ({ method }: { readonly method: SignInMethod }) => {
   );
 };
 
-// The first way is the page's main action, in Google's colours when it
-// is Google's (DESIGN.md, Icons); every other is an outline button.
-const variantOf = (method: SignInMethod, index: number) => {
-  if (index > 0) {
-    return "outline";
-  }
-
-  return method === "google" ? "google" : "default";
-};
+// The first way is the page's main action, but Google's, which is always
+// the white outline button, as Google's light button is (DESIGN.md,
+// Icons); every other is an outline button.
+const variantOf = (method: SignInMethod, index: number) =>
+  index === 0 && method !== "google" ? "default" : "outline";
 
 /**
  * The ways to sign in, as markup: one button each, the width of the

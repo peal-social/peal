@@ -448,15 +448,6 @@ front matter's surface ladder maps onto them (`canvas` is `background`,
 page is a black button. Blue is for what is selected or links somewhere,
 not for buttons.
 
-One colour is another brand's, for its button alone: Google's blue, as
-its own filled sign-in button has it, with white text and Google's G on
-a white square.
-
-| Token               | Value     | Use                                                         |
-| ------------------- | --------- | ----------------------------------------------------------- |
-| `google-blue`       | `#1A73E8` | **Continue with Google** when it is the page's main way in. |
-| `google-blue-hover` | `#1765CC` | The same button under the pointer.                          |
-
 ### States
 
 A post's state has a colour, and nothing else in a list does. Each pairs a
@@ -619,9 +610,8 @@ provider's own mark at 16 px, as Google sets its 20 px G in a 40 px
 button (Google's full-colour "G" from the file its branding guidelines
 publish, byte for byte, never redrawn or monochrome; lucide's
 `KeyRound` for a provider without one), then "Continue with" and its
-name. As the page's main way in, Google's takes Google's colours
-(`google-blue`, white text, the G on its own white square, as Google's
-filled button has it), never the ink. Email is one of these ways,
+name. Google's is always the white outline button, wherever it
+stands, as Google's light button is. Email is one of these ways,
 **Continue with email** with lucide's `Mail`, and opens the form (see
 `sign-in` under The frame).
 
@@ -790,7 +780,8 @@ it. There is no bar across the top.
   The column holds Peal's mark (48 px), the title (`headline`, centred,
   the page's `h1`: "Sign in to Peal", "Create your account"), then the
   ways in, one button each, stacked: the way this browser used last
-  first, as the page's primary button (Google's in Google's blue), with a muted line under it ("You
+  first, as the page's primary button (Google's stays the white outline
+  button), with a muted line under it ("You
   used Google to sign in last time"); without one, the server's first
   provider; every other way outline. **Continue with email** opens the
   form in their place, with **Back** (a ghost button) under it; a
