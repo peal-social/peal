@@ -72,13 +72,13 @@ describe(ChannelRow, () => {
     const [english, french] = await Promise.all([render("en"), render("fr")]);
 
     expect(english).toContain(
-      'aria-label="Reconnect @peal_example@social.example"'
+      'aria-label="Reconnect @peal_example@social.example on Mastodon"'
     );
     expect(english).toContain(
       'aria-label="Disconnect @peal_example@social.example"'
     );
     expect(french).toContain(
-      'aria-label="Reconnecter @peal_example@social.example"'
+      'aria-label="Reconnecter @peal_example@social.example sur Mastodon"'
     );
     expect(french).toContain(
       'aria-label="Déconnecter @peal_example@social.example"'

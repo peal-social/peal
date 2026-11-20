@@ -447,7 +447,10 @@ export const ReconnectWebsite = ({
         size="sm"
         disabled={isPending}
         focusableWhenDisabled
-        aria-label={t("reconnectAccount", { handle })}
+        aria-label={t("reconnectAccount", {
+          handle,
+          platform: t("platform", { platform }),
+        })}
         onClick={onClick}
       >
         {t("reconnect")}
@@ -464,7 +467,10 @@ export const ReconnectWebsite = ({
           <Button
             variant={needsReconnect ? "default" : "outline"}
             size="sm"
-            aria-label={t("reconnectAccount", { handle })}
+            aria-label={t("reconnectAccount", {
+              handle,
+              platform: t("platform", { platform }),
+            })}
           />
         }
       >

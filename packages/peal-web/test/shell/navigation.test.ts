@@ -34,7 +34,7 @@ const articleCrumb = (path: string) =>
   }).breadcrumb;
 
 describe(navigationOf, () => {
-  it("puts a PealStudio page in PealStudio, with the pages the member may open", () => {
+  it("puts a PealCreative page in PealCreative, with the pages the member may open", () => {
     const navigation = navigationOf({
       pathname: `${base}/calendar`,
       permissions: owner,

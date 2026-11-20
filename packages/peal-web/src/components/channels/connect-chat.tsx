@@ -254,7 +254,10 @@ export const ReconnectChat = ({
           <Button
             variant={needsReconnect ? "default" : "outline"}
             size="sm"
-            aria-label={t("reconnectAccount", { handle })}
+            aria-label={t("reconnectAccount", {
+              handle,
+              platform: t("platform", { platform }),
+            })}
           />
         }
       >

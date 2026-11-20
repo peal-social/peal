@@ -34,8 +34,8 @@ describe(ModeSwitch, () => {
     async (locale) => {
       const html = await render(locale);
 
-      expect(html).toContain(">PealStudio</span>");
-      expect(html).toMatch(/aria-label="[^"]*PealStudio[^"]*PealAPI[^"]*"/u);
+      expect(html).toContain(">PealCreative</span>");
+      expect(html).toMatch(/aria-label="[^"]*PealCreative[^"]*PealAPI[^"]*"/u);
     }
   );
 });
