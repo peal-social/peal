@@ -50,6 +50,15 @@ peal_settings:
   # Google sign-in: its own OAuth client, "Peal: Google sign-in", in this
   # environment's project; the consent screen is in Testing until published.
   GOOGLE_SIGN_IN_CLIENT_ID: 342335857798-hn185gb2jd5d4cj7t8vc3ce3t93rcj8j.apps.googleusercontent.com
+  # TikTok: the sandbox of the app "Peal", which serves both environments;
+  # until TikTok audits it, only its target users connect, posting privately.
+  TIKTOK_CLIENT_KEY: sbaw9hybxp3434y7v1
+  # Meta: the test app "Peal Sandbox" of production's app "Peal", which
+  # shares its use cases and, once granted, its permissions; Facebook Pages
+  # and Instagram through a Page. Instagram Login is not offered to new
+  # apps, so INSTAGRAM_APP_ID stays unset.
+  META_APP_ID: "4619272408353325"
+  THREADS_APP_ID: "1621475403358445"
   # X bills each read: the sandbox reads, but little.
   X_ANALYTICS: "true"
   X_ANALYTICS_DAILY_READS: "50"
