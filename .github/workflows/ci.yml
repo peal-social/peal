@@ -410,8 +410,7 @@ jobs:
   # server and the web app's production build, each started by the run on
   # its own database, Mailpit and SeaweedFS. They need no model. Chromium's
   # journeys run in three shards, contiguous slices of the suite that keep
-  # a serial journey's tests together (`e2e run --shard`), and WebKit's
-  # measurement journey in a job of its own beside them: one job ran them
+  # a serial journey's tests together (`e2e run --shard`): one job ran them
   # one after another in seven minutes, which every pull request waited for.
   e2e:
     needs: plan
@@ -426,8 +425,8 @@ jobs:
             browser: chromium
             target: e2e
             shard: 1/3
-            # One job a browser saves its caches on main, under keys the
-            # others would only collide with.
+            # One job saves the caches on main, under keys the others would
+            # only collide with.
             save: true
           - part: chromium 2/3
             artifact: chromium-2
@@ -441,12 +440,6 @@ jobs:
             target: e2e
             shard: 3/3
             save: false
-          - part: webkit
-            artifact: webkit
-            browser: webkit
-            target: e2e-webkit
-            shard: ""
-            save: true
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
@@ -505,7 +498,7 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      # Chromium's shard of the suite, or the measurement's journey in WebKit.
+      # Chromium's shard of the suite.
       - run: bun nx run "peal-e2e:$TARGET" ${SHARD:+"--shard=$SHARD"}
         env:
           DATABASE_URL: postgres://peal:peal@localhost:5432/peal
