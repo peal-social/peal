@@ -1,4 +1,4 @@
-import { Effect, Layer, Match, Option } from "effect";
+import { Effect, Layer, Match, Metric, Option } from "effect";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { isSocialChannel } from "#channels/application/social-channels.ts";
@@ -69,6 +69,34 @@ const eventOf = (target: PostTarget, channel: Channel) => {
   });
 };
 
+/**
+ * Each target a round settled, by platform, outcome (`published`,
+ * `failed`, `unconfirmed`) and reason (a failure's or an unconfirmed
+ * target's, from Peal's own lists; `none` when published): how a platform
+ * fares, which no log line adds up. A settlement retried after the
+ * database failed counts again. `peal-publishing-failing` watches it.
+ */
+export const publishingOutcomes = Metric.counter("peal.publishing.outcomes", {
+  description: "Targets settled, by platform, outcome and reason",
+  incremental: true,
+});
+
+const counted = (target: PostTarget, platform: string) =>
+  Match.valueTags(target.status, {
+    cancelled: () => Effect.void,
+    failed: ({ reason }) => countOutcome(platform, "failed", reason),
+    pending: () => Effect.void,
+    published: () => countOutcome(platform, "published", "none"),
+    publishing: () => Effect.void,
+    unconfirmed: ({ reason }) => countOutcome(platform, "unconfirmed", reason),
+  });
+
+const countOutcome = (platform: string, outcome: string, reason: string) =>
+  Metric.update(
+    Metric.withAttributes(publishingOutcomes, { outcome, platform, reason }),
+    1
+  );
+
 // The key of what a target's round brought: one notice per target and round.
 const keyOf = (target: PostTarget) =>
   `post-target:${target.id}:${target.round}`;
@@ -101,6 +129,14 @@ export const NotifiedPublicationOutcomes = Layer.effect(
       const channel = (yield* channels.get(target.channelId)).pipe(
         Option.filter(isSocialChannel),
         Option.map(({ handle, platform }) => ({ handle, platform }))
+      );
+
+      yield* counted(
+        target,
+        Option.match(channel, {
+          onNone: () => "unknown",
+          onSome: ({ platform }) => platform,
+        })
       );
 
       const event = eventOf(target, channel);
