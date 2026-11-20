@@ -4836,6 +4836,13 @@ func TestEnumInstagramConnection(t *testing.T) {
 		assert.Equal(t, InstagramConnection("facebookLogin"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_unifiedLogin", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewInstagramConnectionFromString("unifiedLogin")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, InstagramConnection("unifiedLogin"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewInstagramConnectionFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)

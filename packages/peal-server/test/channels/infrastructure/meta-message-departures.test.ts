@@ -46,7 +46,10 @@ const otherId = ChannelIdSchema.make("01900000-0000-7000-8000-0000000000a3");
 const channelOf = (
   platform: "facebook" | "instagram",
   scopes: readonly string[],
-  connection: "facebookLogin" | "instagramLogin" = "facebookLogin"
+  connection:
+    | "facebookLogin"
+    | "instagramLogin"
+    | "unifiedLogin" = "facebookLogin"
 ) =>
   new Channel({
     accountId: platform === "facebook" ? facebookPageId : instagramUserId,
@@ -306,6 +309,26 @@ describe("a Meta channel disconnected", () => {
       assert.strictEqual(stop?.method, "DELETE");
       assert.isFalse(stop?.query.has("appsecret_proof"));
     }).pipe(Effect.scoped, Effect.provide(Services))
+  );
+
+  it.effect(
+    "leaves Meta alone for a Unified login channel, whose messages were never followed",
+    () =>
+      Effect.gen(function* unified() {
+        const on = yield* departures({});
+
+        yield* depart(
+          channelOf(
+            "instagram",
+            ["instagram_basic", "instagram_manage_messages"],
+            "unifiedLogin"
+          ),
+          on.layer
+        );
+
+        assert.lengthOf(on.graph.requests(), 0);
+        assert.deepStrictEqual(on.asked, []);
+      }).pipe(Effect.scoped, Effect.provide(Services))
   );
 
   it.effect(

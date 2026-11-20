@@ -12,6 +12,8 @@ public readonly record struct InstagramConnection : IStringEnum
 
     public static readonly InstagramConnection FacebookLogin = new(Values.FacebookLogin);
 
+    public static readonly InstagramConnection UnifiedLogin = new(Values.UnifiedLogin);
+
     public InstagramConnection(string value)
     {
         Value = value;
@@ -111,5 +113,7 @@ public readonly record struct InstagramConnection : IStringEnum
         public const string InstagramLogin = "instagramLogin";
 
         public const string FacebookLogin = "facebookLogin";
+
+        public const string UnifiedLogin = "unifiedLogin";
     }
 }

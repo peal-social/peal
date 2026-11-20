@@ -158,6 +158,9 @@
   their app (`<PLATFORM>_CLIENT_ID` and `_CLIENT_SECRET`, read by
   `oauthClientConfig`; one half alone stops the server), Facebook Pages and
   Instagram through a Page with `META_APP_ID`/`META_APP_SECRET`, Instagram
+  through Meta's Unified login with those and `META_INSTAGRAM_CONFIG_ID`
+  (`metaInstagramConfigIdConfig`: 1 to 32 digits, and without the main app
+  it stops the server), Instagram
   through Instagram Login with `INSTAGRAM_APP_ID`/`INSTAGRAM_APP_SECRET`,
   Threads with
   `THREADS_APP_ID`/`THREADS_APP_SECRET`, TikTok with
@@ -178,6 +181,9 @@
   (`expires_in` decides; refresh tokens end 180 days after sign-in),
   Google's last an hour and do not rotate, Threads' and Instagram Login's
   (`instagramLogin`) last 60 days and renew themselves a week ahead,
+  Unified login's (`instagramUnified`) never expire and are never renewed
+  (a configuration set to 60 days answers `expires_in`, and its channels
+  are reconnected then),
   Pinterest's last 30 days and are renewed a week ahead, each refresh
   bringing a refresh token good for 60 days more, which replaces the one
   sent. A
@@ -278,7 +284,7 @@
   `AuthorizationDenied` in `connect-channel.ts`.
 - A channel names the way in it came through on the platforms that have
   several (`ChannelConnectionSchema`, `#shared/domain/channel-connection.ts`:
-  Instagram's two logins, LinkedIn's `linkedinProfile` and `linkedinPage`);
+  Instagram's three ways in, LinkedIn's `linkedinProfile` and `linkedinPage`);
   one stored without any came the first way there was (`connectionOf`).
   The registry answers the authorizer of a platform and connection, and
   `linkedinConnections` beside `instagramConnections`.
@@ -350,19 +356,42 @@
   personal data of the member, maybe someone without an account (a
   connect link): it leaves Peal with the channel (disconnect, workspace
   erasure) and is in the registry's `channels` category.
-- Instagram has two ways in, one platform with a connection kind
+- Instagram has three ways in, one platform with a connection kind
   (`InstagramConnectionSchema` in `#shared/domain/instagram-connection.ts`,
-  copied by the contract): `instagramLogin`, the default, and
-  `facebookLogin`, through a Page. Channels, attempts and choices keep it
+  copied by the contract): `unifiedLogin`, Meta's Unified login,
+  `instagramLogin`, and `facebookLogin`, through a Page, preferred in that
+  order where configured (the registry's order, not the schema's).
+  Channels, attempts and choices keep it
   (`connection`, null on other platforms; an Instagram row without one
   came through Facebook Login, `storedConnection`), and it picks the
   authorizer (`PlatformAuthorizers.for(platform, connection)`; for a new
-  account without one, the first of `instagramConnections`, Instagram
-  Login when configured), the token policy, the refresh, the publishing
-  host and the insights scope. Everything else (text and media rules,
+  account without one, the first of `instagramConnections`), the token
+  policy, the refresh, the publishing host and the insights scope. All
+  three redirect to `/connect/instagram/callback`; the attempt's
+  connection picks the authorizer. Everything else (text and media rules,
   options, analytics' list) is the platform's, so a channel can move
-  between the two: connecting an account the workspace has through the
-  other way reconnects its channel there. Instagram Login
+  between them: connecting an account the workspace has through another
+  way reconnects its channel there. Unified login
+  (`meta/instagram-unified-authorizer.ts`) is Facebook Login for Business
+  on the main app, its dialog opened with the operator's configuration
+  (`config_id`, `prompt=login`, no `scope`: the configuration holds the
+  permissions and the assets, and grants all or none); the code buys the
+  business portfolio's system user token, which serves every account it
+  shared (`/me/assigned_instagram_accounts`, an `AccountChoice`, each
+  account with the same token, encrypted per channel). Its `grantedBy` is
+  the system user's app-scoped id (`/me`), its scopes what `debug_token`
+  (read with the app's own token, `Redacted`) says the token holds, and
+  one without `instagram_basic` or `instagram_content_publish` is
+  `AuthorizationDenied`. No refresh and no `revoke`: one token serves every
+  account the business shared. Its Graph calls go to `graph.facebook.com`
+  with `appsecret_proof` and the account's id in the path, as through a
+  Page, so publishing, insights and comments take the Page's code paths;
+  direct messages, which Meta addresses by the account rather than a
+  Page, stay off for it (`lacksMessages`, the engagement guide) and its
+  disconnection leaves Meta's subscriptions alone. What Meta's pages leave
+  open (the exchange's `redirect_uri`, the fields of the accounts listed,
+  ids across ways in, data deletion's `user_id`) waits on the sandbox's
+  checks. Instagram Login
   (`meta/instagram-login-authorizer.ts`, Business Login for Instagram:
   `www.instagram.com/oauth/authorize` with `force_reauth`, the code on
   `api.instagram.com`, then `ig_exchange_token` and `ig_refresh_token` on
@@ -410,7 +439,8 @@
   answers its first receipt and deletes nothing more. Each app (`facebook`,
   `instagram`, `threads`) answers for the channels it signs in
   (`channelsSignedInWith`): an Instagram Login channel only to `instagram`,
-  which may name it by its grant or its account id. Their deauthorization
+  which may name it by its grant or its account id; a Unified login
+  channel only to `facebook` (it is the main app's), by either too. Their deauthorization
   callbacks (`POST /api/data-deletion/:app/deauthorize`,
   `DeauthorizePlatformUser`) mark those channels `refreshNeeded` under
   their locks and tell their workspaces; a channel changed after the

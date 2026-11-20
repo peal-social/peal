@@ -44,6 +44,7 @@ const connections: Readonly<Record<ChannelConnection, string>> = {
   instagramLogin: "Instagram Login",
   linkedinPage: "company page",
   linkedinProfile: "profile",
+  unifiedLogin: "Unified login",
 };
 
 // The platform, and for Instagram and LinkedIn the way in, which

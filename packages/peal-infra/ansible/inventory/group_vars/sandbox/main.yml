@@ -56,8 +56,12 @@ peal_settings:
   # Meta: the test app "Peal Sandbox" of production's app "Peal", which
   # shares its use cases and, once granted, its permissions; Facebook Pages
   # and Instagram through a Page. Instagram Login is not offered to new
-  # apps, so INSTAGRAM_APP_ID stays unset.
+  # apps, so INSTAGRAM_APP_ID stays unset: Meta's Unified login replaces
+  # it, through the configuration "API Instagram (connexion unifiée)"
+  # (Instagram accounts only, a system user token that never expires),
+  # whose id is no secret: it is in the sign-in's address.
   META_APP_ID: "4619272408353325"
+  META_INSTAGRAM_CONFIG_ID: "1322301810003383"
   THREADS_APP_ID: "1621475403358445"
   # Facebook Pages' comments in the inbox and first comments: the parent
   # app "Peal" holds pages_read_user_content and pages_manage_engagement

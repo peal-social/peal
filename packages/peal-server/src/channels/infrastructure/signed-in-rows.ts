@@ -29,7 +29,9 @@ export const signedInRows = (
  * The user's channels among those the app signs in, in every workspace:
  * granted by them, or their own account. An Instagram Login channel keeps
  * the app-scoped id as its grant and the professional account's id as its
- * account, and Meta's request may name either.
+ * account, and Meta's request may name either; so does a Unified login
+ * channel, whose grant is the business's system user, until the sandbox
+ * shows which one Meta names.
  */
 export const userChannels = (
   signedIn: readonly SignedInChannels[],
@@ -39,7 +41,10 @@ export const userChannels = (
     ...signedIn.map((rows) =>
       and(
         signedInRows(channels, rows),
-        Option.contains(rows.connection, "instagramLogin")
+        Option.exists(
+          rows.connection,
+          (way) => way === "instagramLogin" || way === "unifiedLogin"
+        )
           ? or(eq(channels.grantedBy, userId), eq(channels.accountId, userId))
           : or(
               eq(channels.grantedBy, userId),

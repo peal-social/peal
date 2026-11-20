@@ -80880,6 +80880,13 @@ func TestEnumChannelConnection(t *testing.T) {
 		assert.Equal(t, ChannelConnection("facebookLogin"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_unifiedLogin", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewChannelConnectionFromString("unifiedLogin")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ChannelConnection("unifiedLogin"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_linkedinProfile", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewChannelConnectionFromString("linkedinProfile")

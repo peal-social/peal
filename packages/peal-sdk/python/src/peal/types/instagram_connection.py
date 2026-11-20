@@ -2,4 +2,4 @@
 
 import typing
 
-InstagramConnection = typing.Union[typing.Literal["instagramLogin", "facebookLogin"], typing.Any]
+InstagramConnection = typing.Union[typing.Literal["instagramLogin", "facebookLogin", "unifiedLogin"], typing.Any]

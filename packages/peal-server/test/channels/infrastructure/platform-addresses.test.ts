@@ -135,6 +135,12 @@ describe("the addresses to register with each platform", () => {
     ]);
   });
 
+  it("send Unified login, on Facebook Login's app, back to Instagram's callback", () => {
+    expect(addressesOf("instagramUnified")).toStrictEqual([
+      "https://peal.example/connect/instagram/callback",
+    ]);
+  });
+
   it("list the documents Bluesky's servers read, which nobody registers", () => {
     expect(addressesOf("bluesky")).toStrictEqual([
       "https://peal.example/api/channels/oauth/bluesky/client-metadata.json",
@@ -191,6 +197,11 @@ describe("the addresses to register with each platform", () => {
         "GOOGLE_BUSINESS_CLIENT_SECRET",
       ],
       instagramLogin: ["INSTAGRAM_APP_ID", "INSTAGRAM_APP_SECRET"],
+      instagramUnified: [
+        "META_APP_ID",
+        "META_APP_SECRET",
+        "META_INSTAGRAM_CONFIG_ID",
+      ],
       linkedin: ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"],
       linkedinPages: [
         "LINKEDIN_PAGES_CLIENT_ID",

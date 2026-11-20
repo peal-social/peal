@@ -9,6 +9,7 @@ module Peal
 
       INSTAGRAM_LOGIN = "instagramLogin"
       FACEBOOK_LOGIN = "facebookLogin"
+      UNIFIED_LOGIN = "unifiedLogin"
       LINKEDIN_PROFILE = "linkedinProfile"
       LINKEDIN_PAGE = "linkedinPage"
     end

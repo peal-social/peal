@@ -122,6 +122,18 @@ export const tokenPolicies = {
       sweep: { _tag: "beforeExpiry", ahead: Duration.days(7) },
     },
   }),
+  // Through Meta's Unified login, the business portfolio's system user
+  // token, set in the configuration to never expire: it stops working "if
+  // your client removes your app from their business portfolio or moves
+  // the Instagram account to another business portfolio. When an access
+  // token stops working, stop retrying and ask your client to connect
+  // again." Renewing it takes the token management API and
+  // `business_management`, which Peal does not ask: a configuration set to
+  // 60 days answers `expires_in`, and its channels are reconnected then.
+  instagramUnified: new TokenPolicy({
+    lifetime: Option.none(),
+    refresh: { _tag: "none" },
+  }),
   // Self-serve apps get no refresh token: members reconnect every 60 days.
   linkedin: new TokenPolicy({
     lifetime: Option.some(Duration.days(60)),
