@@ -66,10 +66,9 @@
   checks pages opened without a reload in both modes, Allow and
   withdrawal in place, the app's own requests naming the session (a tag
   added in the settings, its header read with `browser.route`) and no
-  longer once withdrawn and the recording going on across pages.
-  `nx run peal-e2e:e2e-webkit` (`e2e.webkit.config.ts`, its report and
-  the stand-in's log under `.e2e/webkit`, through `PEAL_E2E_OUTPUT`) runs that journey alone in WebKit (the site's journeys run in Chromium only: CI's Linux WebKit drops Secure cookies on its http 127.0.0.1 origin), in a CI job of its
-  own beside the Chromium shards: install WebKit with `e2e-web install webkit`.
+  longer once withdrawn and the recording going on across pages. Every
+  journey runs in Chromium alone: WebKit's runs in CI failed more often
+  than they found anything, and are gone.
 - The run serves the marketing site too (`scripts/site.ts`): the build
   `nx run peal-site:build-e2e` writes to `packages/peal-site/dist-e2e`,
   measured with the stand-in's token, `SITE_POSTHOG_HOST=/pulse/site` and
@@ -153,7 +152,7 @@
   (`scripts/ci-plan.ts`), each with its own Postgres and Mailpit and
   SeaweedFS from `compose.yaml`: Chromium's suite in three shards
   (`e2e run --shard`, contiguous slices in file order that keep a serial
-  journey's tests together) and WebKit's journey in a fourth. A new file
+  journey's tests together). A new file
   joins a shard by its name, so a long journey can unbalance them: check
   the shards' durations when one is added. After a failure, read the report,
   traces and screenshots under `packages/peal-e2e/.e2e/` (CI uploads each

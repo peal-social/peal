@@ -26,7 +26,7 @@ export const siteRoot = path.join(
 export const siteUrlFile = path.join(
   import.meta.dirname,
   "..",
-  process.env["PEAL_E2E_OUTPUT"] ?? ".e2e",
+  ".e2e",
   "site-url"
 );
 
