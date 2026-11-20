@@ -75,10 +75,10 @@ The staff context follows these rules too. What the law has a host keep is in
   one read of the memberships (`MemberDirectory.memberships`), each through
   `actorFor` as `resolve` decides one: anything that reads across
   workspaces uses it, never one query a membership.
-- Each workspace stands alone: the API has no read across the workspaces
-  a person belongs to (no overview, agenda or report of their own), and
-  no page, command or tool gives one. Only a partner's overview of its
-  customers (below) and the weekly digest, which sums up each of a
+- Each workspace stands alone: the API has no overview, agenda or report
+  across the workspaces a person belongs to, and no page, command or
+  tool gives one. Only a partner's overview of its customers (below), the
+  person's notices and the weekly digest, which sums up each of a
   member's workspaces in one email, read several workspaces at once.
 - `ActorsNow` (`application/actors-now.ts`) is who someone a job acts for
   is now, from the ids it kept (a member, an application's grant read with

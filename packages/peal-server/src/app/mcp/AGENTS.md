@@ -22,7 +22,8 @@
 - No tool reads across workspaces: a connection acts in the one workspace
   the person chose, and a tool that read the others would hand a model
   what the person did not connect. Each workspace stands alone, and the
-  API has no read across a person's workspaces either.
+  API has no overview, agenda or report across a person's workspaces
+  either.
 - The use cases' permission checks refuse a client the user let read only.
   Tools answer with the views the API handlers answer
   (`#<context>/api/*-view.ts`). Each area has its toolkit (`posts-tools.ts`,

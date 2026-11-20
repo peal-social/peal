@@ -248,9 +248,9 @@
   printed through `printableConsole` like everything else, and a reply
   that is `unconfirmed` is never sent again, so `explain` sends the user
   to the platform, then to `peal inbox confirm`.
-- Each workspace stands alone: no command reads across the person's
-  workspaces, as the API has no such read and no MCP tool gives one
-  (`src/app/mcp/AGENTS.md`). `peal partner overview` reads a partner's
+- Each workspace stands alone: no command gives an overview, an agenda
+  or a report across the person's workspaces, as the API has none and no
+  MCP tool gives one (`src/app/mcp/AGENTS.md`). `peal partner overview` reads a partner's
   customers, which is the partner's own list.
 - `peal usage` (`--from`, `--to`: UTC days) reads `usage.get`: the plan
   line, the limits against what is used now (`usageLines`, shared with
