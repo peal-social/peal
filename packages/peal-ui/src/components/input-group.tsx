@@ -10,7 +10,6 @@ import { Input } from "./input";
 const InputGroup = ({ className, ...props }: React.ComponentProps<"div">) => (
   <div
     data-slot="input-group"
-    role="group"
     className={cn(
       "group/input-group border-input has-disabled:bg-input/50 has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50 has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-destructive/20 relative flex h-8.5 w-full min-w-0 items-center overflow-hidden rounded-lg border transition-colors outline-none has-disabled:opacity-50 has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-3 has-[>[data-align=inline-end][data-variant=plain]]:[&>input]:pr-1.5 has-[>[data-align=inline-start][data-variant=plain]]:[&>input]:pl-1.5",
       className
@@ -52,12 +51,6 @@ const inputGroupAddonVariants = cva(
   }
 );
 
-// A click on the addon's text puts the caret in the group's input, as a
-// label would.
-const focusInput = (event: React.MouseEvent<HTMLDivElement>) => {
-  event.currentTarget.parentElement?.querySelector("input")?.focus();
-};
-
 const InputGroupAddon = ({
   align = "inline-start",
   className,
@@ -66,12 +59,10 @@ const InputGroupAddon = ({
 }: React.ComponentProps<"div"> &
   VariantProps<typeof inputGroupAddonVariants>) => (
   <div
-    role="group"
     data-slot="input-group-addon"
     data-align={align}
     data-variant={variant}
     className={cn(inputGroupAddonVariants({ align, variant }), className)}
-    onClick={focusInput}
     {...props}
   />
 );

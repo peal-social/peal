@@ -10,7 +10,7 @@ import {
   InputGroupText,
 } from "peal-ui/components/input-group";
 import { Label } from "peal-ui/components/label";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 
 import { chooseWorkspace } from "#auth/choose-workspace.ts";
@@ -46,10 +46,6 @@ const useSlugAvailability = (slug: string): SlugAvailability => {
   } | null>(null);
 
   useEffect(() => {
-    if (!isWorkspaceSlug(settled)) {
-      return;
-    }
-
     let current = true;
 
     const check = async () => {
@@ -71,7 +67,10 @@ const useSlugAvailability = (slug: string): SlugAvailability => {
       }
     };
 
-    void check();
+    // A slug the web app cannot route is refused without asking.
+    if (isWorkspaceSlug(settled)) {
+      void check();
+    }
 
     return () => {
       current = false;
@@ -98,33 +97,28 @@ export const CreateWorkspaceForm = ({
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [written, setWritten] = useState<string | null>(null);
-  const [tail, setTail] = useState<string | null>(null);
   const [error, setError] = useState<AuthErrorKey | null>(null);
   const [isPending, startTransition] = useTransition();
+  // The few random letters an offered address takes when its words are
+  // another workspace's, or a word the web app keeps.
+  const spare = useMemo(() => crypto.randomUUID().slice(0, 4), []);
   const offerUpgrade = useOfferAuthUpgrade();
-  const slug = (written ?? suggestedSlugOf(name, tail)).trim();
+  const words = suggestedSlugOf(name, null);
+  const wordsAvailability = useSlugAvailability(words);
+
+  const wordsUnusable =
+    words !== "" &&
+    (wordsAvailability === "taken" || wordsAvailability === "invalid");
+
+  const slug = (
+    written ?? (wordsUnusable ? suggestedSlugOf(name, spare) : words)
+  ).trim();
+
   const availability = useSlugAvailability(slug);
-  const offered = written === null;
   const named = name.trim();
   // The address's start, as the browser has Peal open, once hydrated.
   const host = useMounted() ? globalThis.location.host : "";
-
-  // The address offered is taken or reserved: offer it with a tail.
-  useEffect(() => {
-    if (
-      offered &&
-      tail === null &&
-      (availability === "taken" || (availability === "invalid" && slug !== ""))
-    ) {
-      setTail(crypto.randomUUID().slice(0, 4));
-    }
-  }, [availability, offered, slug, tail]);
-
-  // A new name offers its own words again, without the tail.
-  const handleName = (typed: string) => {
-    setName(typed);
-    setTail(null);
-  };
+  const handleName = setName;
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
