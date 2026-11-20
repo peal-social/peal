@@ -48,7 +48,7 @@ The status tells you whether to fix the request, tell someone, wait or retry:
 
 A request that doesn't match what its endpoint takes answers 400 `invalid_request`, and nothing was done. The error says where:
 
-- `issues` lists what was found wrong, 20 problems at most. Each has a `path`, which starts with the part of the request (`path`, `query`, `headers` or `body`) and goes down to the value, and a `message`.
+- `issues` lists what was found wrong, 20 problems at most. Each has a `path`, which starts with the part of the request (`path`, `query`, `headers` or `body`) and goes down to the value, and a `message`. Each part is checked in turn, and the answer lists every problem in the first part found wrong: a body without three of its fields names all three.
 - `field` is the first problem's path, dotted.
 - Reading may stop at the first problem, so fixing what's listed can reveal another.
 - A query parameter the endpoint doesn't take is refused too, never ignored, so a misspelled filter can't answer as if it applied. The health checks, `/api/health` and `/api/ready`, take any query.
