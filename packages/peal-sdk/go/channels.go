@@ -2270,12 +2270,13 @@ func (c *ConnectablePlatforms) String() string {
 	return fmt.Sprintf("%#v", c)
 }
 
-// How an Instagram channel reaches its account.
+// How an Instagram channel reaches its account: Instagram Login, a Facebook Page, or Meta's Unified login.
 type InstagramConnection string
 
 const (
 	InstagramConnectionInstagramLogin InstagramConnection = "instagramLogin"
 	InstagramConnectionFacebookLogin  InstagramConnection = "facebookLogin"
+	InstagramConnectionUnifiedLogin   InstagramConnection = "unifiedLogin"
 )
 
 func NewInstagramConnectionFromString(s string) (InstagramConnection, error) {
@@ -2284,6 +2285,8 @@ func NewInstagramConnectionFromString(s string) (InstagramConnection, error) {
 		return InstagramConnectionInstagramLogin, nil
 	case "facebookLogin":
 		return InstagramConnectionFacebookLogin, nil
+	case "unifiedLogin":
+		return InstagramConnectionUnifiedLogin, nil
 	}
 	var t InstagramConnection
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

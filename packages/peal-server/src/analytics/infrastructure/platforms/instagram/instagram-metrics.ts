@@ -19,6 +19,8 @@ import {
 import type { PlatformHttp } from "#analytics/infrastructure/platforms/platform-http.ts";
 import { ChannelAccess } from "#channels/application/channel-access.ts";
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
+import { InstagramConnectionSchema } from "#shared/domain/instagram-connection.ts";
+import type { InstagramConnection } from "#shared/domain/instagram-connection.ts";
 import { graphRefusalOf } from "#shared/infrastructure/platforms/graph-refusal.ts";
 import {
   appSecretProof,
@@ -39,11 +41,24 @@ export interface InstagramMetricsOptions {
   readonly metaAppSecret: Option.Option<Redacted.Redacted>;
 }
 
-// The permission each way in gives the insights for.
-const insightsScope = {
+// The permission each way in gives the insights for. Unified login's
+// configuration grants it with the rest, or the channel has none.
+const insightsScope: Readonly<Record<InstagramConnection, string>> = {
   facebookLogin: "instagram_manage_insights",
   instagramLogin: "instagram_business_manage_insights",
-} as const;
+  unifiedLogin: "instagram_manage_insights",
+};
+
+const isInstagramConnection = Schema.is(InstagramConnectionSchema);
+
+// The channel's way in: one stored without any came through a Page.
+const insightsScopeOf = (account: ChannelAccount): string =>
+  insightsScope[
+    account.connection.pipe(
+      Option.filter(isInstagramConnection),
+      Option.getOrElse((): InstagramConnection => "facebookLogin")
+    )
+  ];
 
 // From the Instagram Platform's "Insights" page and the IG Media Insights
 // reference: `views` (which replaced impressions in 2025), `likes`,
@@ -233,9 +248,7 @@ export const instagramMetrics = Effect.fn("InstagramMetrics.make")(
       account: ChannelAccount,
       posts: readonly PostToRead[]
     ): Effect.Effect<MetricsBatch, MetricsReadFailure> => {
-      const scope = viaInstagramLogin(account)
-        ? insightsScope.instagramLogin
-        : insightsScope.facebookLogin;
+      const scope = insightsScopeOf(account);
 
       return account.scopes.includes(scope)
         ? access

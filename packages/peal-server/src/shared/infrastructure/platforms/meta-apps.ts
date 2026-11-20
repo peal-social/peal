@@ -74,6 +74,35 @@ export const threadsAppConfig = appConfig("THREADS");
  */
 export const instagramAppConfig = appConfig("INSTAGRAM");
 
+/**
+ * `META_INSTAGRAM_CONFIG_ID`: the configuration of Facebook Login for
+ * Business that Meta's Unified login for Instagram opens with (the
+ * dashboard's "API setup with Unified login"), which holds the
+ * permissions and the assets asked for. Not a secret: it is in the
+ * dialog's address. None when unset or blank; anything but 1 to 32
+ * digits stops the server. It belongs to Meta's main app, which
+ * `channelPlatformsConfig` checks is set beside it.
+ */
+export const metaInstagramConfigIdConfig = Effect.gen(
+  function* readInstagramConfigId() {
+    const configId = yield* nonBlank("META_INSTAGRAM_CONFIG_ID");
+
+    if (Option.isNone(configId)) {
+      return Option.none<string>();
+    }
+
+    const trimmed = configId.value.trim();
+
+    return yield* appIdPattern.test(trimmed)
+      ? Effect.succeed(Option.some(trimmed))
+      : Effect.fail(
+          new InvalidMetaSettings({
+            reason: "META_INSTAGRAM_CONFIG_ID is not a configuration id",
+          })
+        );
+  }
+);
+
 /** The fewest characters of META_WEBHOOK_VERIFY_TOKEN: too long to guess. */
 export const minVerifyTokenLength = 32;
 

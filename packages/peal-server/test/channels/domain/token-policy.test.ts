@@ -215,6 +215,7 @@ describe(isRefreshDue, () => {
       googleBusiness: "keepAlive",
       instagram: "none",
       instagramLogin: "beforeExpiry",
+      instagramUnified: "none",
       linkedin: "none",
       linkedinPage: "beforeExpiry",
       mastodon: "none",

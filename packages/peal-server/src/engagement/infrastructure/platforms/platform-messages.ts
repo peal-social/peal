@@ -26,6 +26,7 @@ import { PrivateReplyStore } from "#engagement/application/ports/private-reply-s
 import { dueForCheck } from "#engagement/domain/conversation.ts";
 import type { DirectMessage } from "#engagement/domain/direct-message.ts";
 import {
+  lacksMessages,
   messageAbilitiesOf,
   namesMessageScopes,
   readsMessagesOn,
@@ -211,7 +212,10 @@ export const platformMessagesWith = (settings: {
           })
         );
 
-        if (!readsMessagesOn(account.platform, messages)) {
+        if (
+          !readsMessagesOn(account.platform, messages) ||
+          lacksMessages(account.platform, account.connection)
+        ) {
           return yield* new ChannelUnreadable({ reason: "unsupported" });
         }
 

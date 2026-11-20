@@ -47,6 +47,7 @@ const settings = (apps: { readonly threads: boolean }) =>
       bluesky: Option.none(),
       googleBusiness: Option.none(),
       instagram: Option.some(instagramApp),
+      instagramUnified: Option.none(),
       linkedin: Option.none(),
       linkedinPages: Option.none(),
       messages: new Set(),
@@ -410,6 +411,59 @@ layer(deletionsWith({ threads: true }))(
         assert.strictEqual(receipt.deletion.channelsDeleted, 1);
         assert.deepStrictEqual(yield* channelIdsIn(workspaceId), [direct.id]);
       })
+    );
+
+    it.effect(
+      "delete a Unified login account for the main app by its grant or its id, never for the Instagram app",
+      () =>
+        Effect.gen(function* unified() {
+          const workspaceId = yield* freshWorkspace;
+          const systemUser = userIdOf(workspaceId);
+          const professional = `17842${systemUser.slice(-12)}`;
+
+          const byGrant = yield* seeded(workspaceId, "instagram", {
+            accountId: `${professional}1`,
+            connection: "unifiedLogin",
+            grantedBy: systemUser,
+          });
+
+          // A request of the Instagram app's is not about it.
+          const elsewhere = yield* DeletePlatformUserData.use((deletions) =>
+            deletions.request(
+              "instagram",
+              request(systemUser, instagramApp.appSecret)
+            )
+          );
+
+          assert.strictEqual(elsewhere.deletion.channelsDeleted, 0);
+          assert.deepStrictEqual(yield* channelIdsIn(workspaceId), [
+            byGrant.id,
+          ]);
+
+          yield* seeded(workspaceId, "instagram", {
+            accountId: professional,
+            connection: "unifiedLogin",
+            grantedBy: `${systemUser}7`,
+          });
+
+          const viaGrant = yield* DeletePlatformUserData.use((deletions) =>
+            deletions.request(
+              "facebook",
+              request(systemUser, metaApp.appSecret)
+            )
+          );
+
+          const viaAccount = yield* DeletePlatformUserData.use((deletions) =>
+            deletions.request(
+              "facebook",
+              request(professional, metaApp.appSecret)
+            )
+          );
+
+          assert.strictEqual(viaGrant.deletion.channelsDeleted, 1);
+          assert.strictEqual(viaAccount.deletion.channelsDeleted, 1);
+          assert.deepStrictEqual(yield* channelIdsIn(workspaceId), []);
+        })
     );
 
     it.effect("answer the status page through the API, and nothing else", () =>

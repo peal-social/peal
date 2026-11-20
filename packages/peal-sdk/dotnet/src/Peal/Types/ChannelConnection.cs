@@ -12,6 +12,8 @@ public readonly record struct ChannelConnection : IStringEnum
 
     public static readonly ChannelConnection FacebookLogin = new(Values.FacebookLogin);
 
+    public static readonly ChannelConnection UnifiedLogin = new(Values.UnifiedLogin);
+
     public static readonly ChannelConnection LinkedinProfile = new(Values.LinkedinProfile);
 
     public static readonly ChannelConnection LinkedinPage = new(Values.LinkedinPage);
@@ -115,6 +117,8 @@ public readonly record struct ChannelConnection : IStringEnum
         public const string InstagramLogin = "instagramLogin";
 
         public const string FacebookLogin = "facebookLogin";
+
+        public const string UnifiedLogin = "unifiedLogin";
 
         public const string LinkedinProfile = "linkedinProfile";
 

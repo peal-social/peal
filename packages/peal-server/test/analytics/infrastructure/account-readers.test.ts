@@ -241,12 +241,27 @@ describe("reading an account's numbers", () => {
         accountOf("facebook", "104000000000001", ["pages_read_engagement"])
       );
 
+      // Through Unified login, the same account read on Facebook's host.
+      const unified = yield* reading(
+        { metaGraph: server.url },
+        accountOf(
+          "instagram",
+          "17841400000000077",
+          ["instagram_basic"],
+          Option.some("unifiedLogin")
+        )
+      );
+
       const gone = yield* reading(
         { metaGraph: server.url },
         accountOf("facebook", "104000000000009", ["pages_read_engagement"])
       );
 
       assert.deepStrictEqual(successOf(instagram.found), {
+        counters: counters(5400, 120, 310),
+        days: [],
+      });
+      assert.deepStrictEqual(successOf(unified.found), {
         counters: counters(5400, 120, 310),
         days: [],
       });
@@ -264,6 +279,7 @@ describe("reading an account's numbers", () => {
         [
           "followers_count,follows_count,media_count",
           "followers_count,fan_count",
+          "followers_count,follows_count,media_count",
           "followers_count,fan_count",
         ]
       );

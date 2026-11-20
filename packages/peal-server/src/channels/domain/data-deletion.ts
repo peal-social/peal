@@ -32,7 +32,9 @@ export interface SignedInChannels {
  * The channels a user of the app connects, which a request through it is
  * about. Each app signs in its own way: a request through the main app
  * never touches an account connected with Instagram Login, nor one through
- * the Instagram app an account reached through a Page.
+ * the Instagram app an account reached through a Page. Unified login is
+ * the main app's Facebook Login for Business, so its channels are the
+ * main app's.
  */
 export const channelsSignedInWith = (
   app: MetaAppKind
@@ -41,6 +43,7 @@ export const channelsSignedInWith = (
     return [
       { connection: Option.none(), platform: "facebook" },
       { connection: Option.some("facebookLogin"), platform: "instagram" },
+      { connection: Option.some("unifiedLogin"), platform: "instagram" },
     ];
   }
 

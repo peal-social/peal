@@ -488,13 +488,14 @@ layer(DatabaseTest)("the channels context's Bluesky settings", (it) => {
 });
 
 // A value the server takes for a setting that holds an app's credentials:
-// the Bluesky key, digits for Meta's app ids, any text for the rest.
+// the Bluesky key, digits for Meta's app and configuration ids, any text
+// for the rest.
 const syntheticSetting = (name: string, blueskyKey: string) => {
   if (name === "BLUESKY_CLIENT_KEYS") {
     return blueskyKey;
   }
 
-  return name.endsWith("_APP_ID")
+  return name.endsWith("_APP_ID") || name.endsWith("_CONFIG_ID")
     ? "1234567890123456"
     : `synthetic-${name.toLowerCase()}`;
 };
@@ -506,6 +507,7 @@ const connections: Partial<
 > = {
   facebookLogin: "facebookLogin",
   instagramLogin: "instagramLogin",
+  instagramUnified: "unifiedLogin",
   linkedin: "linkedinProfile",
   linkedinPages: "linkedinPage",
 };
@@ -568,6 +570,7 @@ layer(DatabaseTest)(
           "linkedinPage",
         ]);
         assert.deepStrictEqual(authorizers.instagramConnections, [
+          "unifiedLogin",
           "instagramLogin",
           "facebookLogin",
         ]);

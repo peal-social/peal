@@ -3,5 +3,5 @@
 import typing
 
 ChannelConnection = typing.Union[
-    typing.Literal["instagramLogin", "facebookLogin", "linkedinProfile", "linkedinPage"], typing.Any
+    typing.Literal["instagramLogin", "facebookLogin", "unifiedLogin", "linkedinProfile", "linkedinPage"], typing.Any
 ]

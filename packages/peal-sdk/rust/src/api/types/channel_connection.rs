@@ -6,6 +6,7 @@ pub use crate::prelude::*;
 pub enum ChannelConnection {
     InstagramLogin,
     FacebookLogin,
+    UnifiedLogin,
     LinkedinProfile,
     LinkedinPage,
     /// This variant is used for forward compatibility.
@@ -18,6 +19,7 @@ impl Serialize for ChannelConnection {
         match self {
             Self::InstagramLogin => serializer.serialize_str("instagramLogin"),
             Self::FacebookLogin => serializer.serialize_str("facebookLogin"),
+            Self::UnifiedLogin => serializer.serialize_str("unifiedLogin"),
             Self::LinkedinProfile => serializer.serialize_str("linkedinProfile"),
             Self::LinkedinPage => serializer.serialize_str("linkedinPage"),
             Self::__Unknown(val) => serializer.serialize_str(val),
@@ -31,6 +33,7 @@ impl<'de> Deserialize<'de> for ChannelConnection {
         match value.as_str() {
             "instagramLogin" => Ok(Self::InstagramLogin),
             "facebookLogin" => Ok(Self::FacebookLogin),
+            "unifiedLogin" => Ok(Self::UnifiedLogin),
             "linkedinProfile" => Ok(Self::LinkedinProfile),
             "linkedinPage" => Ok(Self::LinkedinPage),
             _ => Ok(Self::__Unknown(value)),
@@ -43,6 +46,7 @@ impl fmt::Display for ChannelConnection {
         match self {
             Self::InstagramLogin => write!(f, "instagramLogin"),
             Self::FacebookLogin => write!(f, "facebookLogin"),
+            Self::UnifiedLogin => write!(f, "unifiedLogin"),
             Self::LinkedinProfile => write!(f, "linkedinProfile"),
             Self::LinkedinPage => write!(f, "linkedinPage"),
             Self::__Unknown(val) => write!(f, "{}", val),

@@ -410,6 +410,68 @@ const onInstagramLogin = Effect.fn("test.onInstagramLogin")(
   }
 );
 
+const systemUserToken = "synthetic-system-user-token-1";
+
+describe("publishing on Instagram through Unified login", () => {
+  it.live(
+    "publishes on Facebook's host with the business's token, its proof and the account's id",
+    () =>
+      Effect.gen(function* unified() {
+        const photo = jpeg();
+        const facebook = yield* fakeMetaGraph([systemUserToken]);
+
+        const client = yield* metaClientWith({
+          appSecret: graphAppSecret,
+          credentials: credentialsOf(
+            {
+              accountId: instagramUserId,
+              connection: Option.some("unifiedLogin"),
+              platform: "instagram",
+            },
+            [systemUserToken]
+          ),
+          files: [photo],
+          platform: "instagram",
+          url: facebook.url,
+        });
+
+        const result = yield* client.publish(
+          yield* outgoing({
+            accountId: instagramUserId,
+            media: [attached(photo)],
+            text: "Shared by the business",
+          })
+        );
+
+        assert.strictEqual(result._tag, "published");
+
+        const proof = createHmac("sha256", graphAppSecret)
+          .update(systemUserToken)
+          .digest("hex");
+
+        const paths = facebook
+          .requests()
+          .map((request) => `${request.method} ${request.path}`);
+
+        // The account's id in the path, never `/me`, which is the
+        // business's system user.
+        assert.include(paths, `POST /v27.0/${instagramUserId}/media`);
+        assert.include(paths, `POST /v27.0/${instagramUserId}/media_publish`);
+        assert.isFalse(paths.some((path) => /\/me(?:\/|$)/u.test(path)));
+
+        for (const request of facebook.requests()) {
+          const params =
+            request.method === "GET"
+              ? request.query
+              : new URLSearchParams(new TextDecoder().decode(request.body));
+
+          assert.strictEqual(params.get("access_token"), systemUserToken);
+          assert.strictEqual(params.get("appsecret_proof"), proof);
+        }
+      }).pipe(Effect.scoped)
+  );
+});
+
 describe("publishing on Instagram through Instagram Login", () => {
   it.live(
     "publishes on Instagram's host with the account's own token, unproved",

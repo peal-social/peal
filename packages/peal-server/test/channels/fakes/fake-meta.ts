@@ -60,9 +60,46 @@ export const threadsAccount = {
   username: "alice_example",
 } as const;
 
+/** The business portfolio's system user a Unified login token is. */
+export const systemUserId = "61550000000000001";
+
+/** The business portfolio that shares its Instagram accounts. */
+export const clientBusinessId = "1980000000000001";
+
+/** The Unified login configuration the operator made, for tests only. */
+export const unifiedConfigId = "1300000000000001";
+
+/** What the configuration grants, as Peal's docs ask it. */
+export const unifiedPermissions = [
+  "instagram_basic",
+  "instagram_content_publish",
+  "instagram_manage_insights",
+  "instagram_manage_comments",
+  "instagram_manage_messages",
+] as const;
+
+/** An Instagram account a business shares through Unified login. */
+export interface FakeSharedAccount {
+  readonly id: string;
+  readonly name?: string;
+  readonly username: string;
+}
+
+/** What Unified login's sign-in hands over, set by each test. */
+export interface FakeUnifiedGrant {
+  /** The accounts the business shares. */
+  readonly accounts: readonly FakeSharedAccount[];
+  /** Seconds the token lasts; none when it never expires. */
+  readonly expiresIn?: number;
+  /** The permissions `debug_token` says the token holds. */
+  readonly permissions: readonly string[];
+}
+
 export interface FakeMetaOptions {
   /** How many Pages Meta lists at once, to test paging. */
   readonly pageSize?: number;
+  /** How many shared Instagram accounts Meta lists at once. */
+  readonly sharedPageSize?: number;
 }
 
 const proofOf = (token: string, secret: Redacted.Redacted) =>
@@ -151,6 +188,9 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
   options: FakeMetaOptions = {}
 ) {
   const codes = new Map<string, string>();
+  // The codes a Unified login dialog (`config_id`) issued.
+  const unifiedCodes = new Set<string>();
+  const systemTokens = new Set<string>();
   const facebookTokens = new Set<string>();
   const threadsTokens = new Set<string>();
   const revoked = new Set<string>();
@@ -158,6 +198,11 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
   let pages: readonly FakePage[] = [];
   let declined: readonly string[] = [];
   let userId = facebookUserId;
+
+  let unified: FakeUnifiedGrant = {
+    accounts: [],
+    permissions: unifiedPermissions,
+  };
 
   const issue = (tokens: Set<string>, prefix: string) => {
     issued += 1;
@@ -194,6 +239,78 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
         : graphError(100);
     };
 
+  // A Graph read with a Unified login token, with its proof.
+  const systemRead =
+    (answer: (request: FakeRequest) => FakeResponse) =>
+    (request: FakeRequest): FakeResponse => {
+      const token = request.query.get("access_token") ?? "";
+
+      if (!systemTokens.has(token) || revoked.has(token)) {
+        return graphError(190);
+      }
+
+      return request.query.get("appsecret_proof") ===
+        proofOf(token, metaApp.appSecret)
+        ? answer(request)
+        : graphError(100);
+    };
+
+  // `/me` answers the Facebook user, or the system user a Unified login
+  // token is.
+  const me = (request: FakeRequest): FakeResponse =>
+    systemTokens.has(request.query.get("access_token") ?? "")
+      ? systemRead(() =>
+          json({ client_business_id: clientBusinessId, id: systemUserId })
+        )(request)
+      : userRead(() => json({ id: userId }))(request);
+
+  // `debug_token`, read with the app's own token and its proof.
+  const debugToken = ({ query }: FakeRequest): FakeResponse => {
+    const appToken = `${metaApp.appId}|${Redacted.value(metaApp.appSecret)}`;
+
+    if (
+      query.get("access_token") !== appToken ||
+      query.get("appsecret_proof") !== proofOf(appToken, metaApp.appSecret)
+    ) {
+      return graphError(190);
+    }
+
+    return systemTokens.has(query.get("input_token") ?? "")
+      ? json({
+          data: {
+            app_id: metaApp.appId,
+            is_valid: true,
+            scopes: [...unified.permissions],
+            type: "SYSTEM_USER",
+          },
+        })
+      : json({ data: { is_valid: false } });
+  };
+
+  const sharedAccounts = (request: FakeRequest): FakeResponse => {
+    const size = options.sharedPageSize ?? 100;
+    const from = Number(request.query.get("after") ?? "0");
+    const cursors = { after: String(from + size), before: String(from) };
+
+    return json({
+      data: unified.accounts.slice(from, from + size).map((account) =>
+        present([
+          ["id", account.id],
+          ["name", account.name],
+          [
+            "profile_picture_url",
+            `https://cdn.instagram.example/${account.id}.jpg`,
+          ],
+          ["username", account.username],
+        ])
+      ),
+      paging:
+        from + size < unified.accounts.length
+          ? { cursors, next: "https://graph.facebook.example/next" }
+          : { cursors },
+    });
+  };
+
   const accounts = (request: FakeRequest): FakeResponse => {
     const size = options.pageSize ?? 100;
     const from = Number(request.query.get("after") ?? "0");
@@ -223,14 +340,31 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
         : graphError(190);
     }
 
-    const redirect = redeem(query.get("code"));
+    const code = query.get("code") ?? "";
+    const viaConfiguration = unifiedCodes.has(code);
+    const redirect = redeem(code);
 
-    return redirect !== undefined && redirect === query.get("redirect_uri")
-      ? json({
-          access_token: issue(facebookTokens, "fb-user-short"),
-          token_type: "bearer",
-        })
-      : graphError(100);
+    unifiedCodes.delete(code);
+
+    if (redirect === undefined || redirect !== query.get("redirect_uri")) {
+      return graphError(100);
+    }
+
+    // A Unified login code buys the business's system user token.
+    if (viaConfiguration) {
+      return json(
+        present([
+          ["access_token", issue(systemTokens, "synthetic-system-user")],
+          ["expires_in", unified.expiresIn],
+          ["token_type", "bearer"],
+        ])
+      );
+    }
+
+    return json({
+      access_token: issue(facebookTokens, "fb-user-short"),
+      token_type: "bearer",
+    });
   };
 
   const threadsCode = (request: FakeRequest): FakeResponse => {
@@ -292,8 +426,10 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
           ? json(threadsAccount)
           : graphError(190),
     ],
-    ["GET /v27.0/me", userRead(() => json({ id: userId }))],
+    ["GET /v27.0/debug_token", debugToken],
+    ["GET /v27.0/me", me],
     ["GET /v27.0/me/accounts", userRead(accounts)],
+    ["GET /v27.0/me/assigned_instagram_accounts", systemRead(sharedAccounts)],
     [
       "GET /v27.0/me/permissions",
       userRead(() =>
@@ -326,11 +462,24 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
     threadsGraph: new URL(server.url),
   };
 
-  /** The member approves on the authorization page: back with a code. */
+  /**
+   * The member approves on the authorization page: back with a code. A
+   * dialog opened with the configuration (`config_id`) is Unified login's,
+   * which takes no `scope` beside it.
+   */
   const approve = (authorizationUrl: string) => {
     const url = new URL(authorizationUrl);
     const state = url.searchParams.get("state") ?? "";
     const code = `code-${codes.size + 1}-${state.slice(0, 6)}`;
+    const configId = url.searchParams.get("config_id");
+
+    if (configId !== null) {
+      if (configId !== unifiedConfigId || url.searchParams.has("scope")) {
+        throw new Error("Unified login's dialog takes its configuration alone");
+      }
+
+      unifiedCodes.add(code);
+    }
 
     codes.set(code, url.searchParams.get("redirect_uri") ?? "");
 
@@ -353,6 +502,10 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
     /** The Pages the user manages from now on. */
     setPages: (next: readonly FakePage[]) => {
       pages = next;
+    },
+    /** What Unified login's sign-in hands over from now on. */
+    setUnified: (next: FakeUnifiedGrant) => {
+      unified = next;
     },
     /** The Facebook user who signs in from now on. */
     setUser: (next: string) => {

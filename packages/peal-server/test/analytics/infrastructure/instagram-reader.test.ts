@@ -201,6 +201,44 @@ describe("reading counts on Instagram", () => {
     }).pipe(Effect.scoped)
   );
 
+  it.live(
+    "reads a Unified login account with the business's token and its proof",
+    () =>
+      Effect.gen(function* unified() {
+        const server = yield* fakeInsights({
+          posts: new Map([["18000000000000004", 6]]),
+          proved: true,
+          token: "synthetic-system-user-1",
+        });
+
+        const posts = [toRead("18000000000000004", 0)];
+
+        const { batch } = yield* reading(
+          server.url,
+          posts,
+          {
+            ...direct,
+            connection: Option.some("unifiedLogin"),
+            scopes: [
+              "instagram_basic",
+              "instagram_content_publish",
+              "instagram_manage_insights",
+            ],
+          },
+          ["synthetic-system-user-1"]
+        );
+
+        assert.strictEqual(
+          batch._tag === "Success" ? batch.success.readings[0]?._tag : "",
+          "counted"
+        );
+        assert.deepStrictEqual(
+          server.requests().map(({ path }) => path),
+          ["/v27.0/18000000000000004/insights"]
+        );
+      }).pipe(Effect.scoped)
+  );
+
   it.live("says a post Meta does not know is missing, and reads on", () =>
     Effect.gen(function* missing() {
       const server = yield* fakeInsights({

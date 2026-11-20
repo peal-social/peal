@@ -13,6 +13,9 @@ public final class InstagramConnection {
     public static final InstagramConnection INSTAGRAM_LOGIN =
             new InstagramConnection(Value.INSTAGRAM_LOGIN, "instagramLogin");
 
+    public static final InstagramConnection UNIFIED_LOGIN =
+            new InstagramConnection(Value.UNIFIED_LOGIN, "unifiedLogin");
+
     private final Value value;
 
     private final String string;
@@ -49,6 +52,8 @@ public final class InstagramConnection {
                 return visitor.visitFacebookLogin();
             case INSTAGRAM_LOGIN:
                 return visitor.visitInstagramLogin();
+            case UNIFIED_LOGIN:
+                return visitor.visitUnifiedLogin();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -62,6 +67,8 @@ public final class InstagramConnection {
                 return FACEBOOK_LOGIN;
             case "instagramLogin":
                 return INSTAGRAM_LOGIN;
+            case "unifiedLogin":
+                return UNIFIED_LOGIN;
             default:
                 return new InstagramConnection(Value.UNKNOWN, value);
         }
@@ -72,6 +79,8 @@ public final class InstagramConnection {
 
         FACEBOOK_LOGIN,
 
+        UNIFIED_LOGIN,
+
         UNKNOWN
     }
 
@@ -79,6 +88,8 @@ public final class InstagramConnection {
         T visitInstagramLogin();
 
         T visitFacebookLogin();
+
+        T visitUnifiedLogin();
 
         T visitUnknown(String unknownType);
     }

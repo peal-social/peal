@@ -4,6 +4,7 @@
 export const ChannelConnection = {
         InstagramLogin: "instagramLogin",
         FacebookLogin: "facebookLogin",
+        UnifiedLogin: "unifiedLogin",
         LinkedinProfile: "linkedinProfile",
         LinkedinPage: "linkedinPage"
     } as const;

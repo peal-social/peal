@@ -12,7 +12,11 @@ import type { Platform } from "#shared/domain/platform.ts";
 
 import type { AbilityStanding } from "./engagement-abilities.ts";
 import { readsCommentsOn } from "./engagement-abilities.ts";
-import { metaMessageScopesOf, readsMessagesOn } from "./message-abilities.ts";
+import {
+  lacksMessages,
+  metaMessageScopesOf,
+  readsMessagesOn,
+} from "./message-abilities.ts";
 
 /**
  * The permissions a private reply takes, by the channel's way in: the
@@ -50,8 +54,10 @@ const privateReplyScopesOf = (
  *   permission it takes.
  * - `reconnect`: all that, but a permission is missing: connecting the
  *   channel again for its messages asks it.
- * - `unsupported`: anything else. The person's answer comes as a direct
- *   message, so a private reply needs the messages read, never more.
+ * - `unsupported`: anything else, Instagram through Unified login
+ *   included, whose messages Peal does not read yet. The person's answer
+ *   comes as a direct message, so a private reply needs the messages
+ *   read, never more.
  */
 export const privateReplyStanding = (
   platform: Platform,
@@ -65,6 +71,7 @@ export const privateReplyStanding = (
     (platform !== "facebook" && platform !== "instagram") ||
     !readsCommentsOn(platform, inbox) ||
     !readsMessagesOn(platform, messages) ||
+    lacksMessages(platform, connection) ||
     !switchedOn
   ) {
     return "unsupported";

@@ -25,7 +25,24 @@ const page = Option.some("facebookLogin" as const);
 
 const instagramLogin = Option.some("instagramLogin" as const);
 
+const unifiedLogin = Option.some("unifiedLogin" as const);
+
 describe("what a channel can do with its messages", () => {
+  it("is nothing through Instagram's Unified login, whatever its token holds", () => {
+    expect(
+      messageAbilitiesOf(
+        "instagram",
+        [
+          ...instagramPageMessageScopes,
+          instagramLoginMessageScope,
+          "instagram_basic",
+        ],
+        all,
+        unifiedLogin
+      )
+    ).toStrictEqual({ read: "unsupported", send: "unsupported" });
+  });
+
   it("is nothing where the server reads no messages, or on another platform", () => {
     for (const platform of ["mastodon", "bluesky", "facebook"] as const) {
       expect(

@@ -34,4 +34,9 @@ describe("a channel's connection", () => {
     expect(isConnectionOf("instagram", "linkedinProfile")).toBeFalsy();
     expect(isConnectionOf("x", "linkedinPage")).toBeFalsy();
   });
+
+  it("is Instagram's for Unified login", () => {
+    expect(isConnectionOf("instagram", "unifiedLogin")).toBeTruthy();
+    expect(isConnectionOf("linkedin", "unifiedLogin")).toBeFalsy();
+  });
 });
