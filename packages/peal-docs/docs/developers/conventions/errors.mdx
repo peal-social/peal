@@ -51,6 +51,7 @@ A request that doesn't match what its endpoint takes answers 400 `invalid_reques
 - `issues` lists what was found wrong, 20 problems at most. Each has a `path`, which starts with the part of the request (`path`, `query`, `headers` or `body`) and goes down to the value, and a `message`.
 - `field` is the first problem's path, dotted.
 - Reading may stop at the first problem, so fixing what's listed can reveal another.
+- A query parameter the endpoint doesn't take is refused too, never ignored, so a misspelled filter can't answer as if it applied. The health checks, `/api/health` and `/api/ready`, take any query.
 
 This request asks for more media than a page holds:
 

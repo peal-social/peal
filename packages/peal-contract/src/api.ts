@@ -2577,6 +2577,12 @@ export class Api extends HttpApi.make("peal")
   .add(FeedsApi)
   .add(ChannelDefaultsApi)
   .add(ShortLinksApi)
+  // A query parameter the endpoint does not take is refused
+  // (InvalidRequest), never ignored: a misspelt filter (`channelIds` for
+  // `channelId`) would otherwise answer every post as if it were applied.
+  // Bodies keep Schema's default, as a client may post a platform's whole
+  // callback query.
+  .annotate(HttpApi.QueryParseOptions, { onExcessProperty: "error" })
   // The contract is Apache-2.0, unlike the rest of Peal, so the clients
   // generated from this document may be too. Its version is the API's
   // (`Peal-Version`): the day of its latest release.
