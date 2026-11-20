@@ -28,6 +28,6 @@ describe("paths written to slip past the proxy", () => {
     expect(await api.json()).toMatchObject({ code: "bad_request" });
 
     // A page as it is written still opens.
-    expect(await statusOf("/sign-in")).toBe(200);
+    expect(await statusOf("/login")).toBe(200);
   });
 });

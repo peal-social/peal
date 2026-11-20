@@ -43,7 +43,7 @@ describe("a member's tags", { serial: true }, () => {
     browser,
     screen,
   }) => {
-    await app.open("/sign-up");
+    await app.open("/signup");
     await screen.getByLabel("Name").fill(name);
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password());

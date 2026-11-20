@@ -27,11 +27,14 @@ export const ShellFrame = ({
   footer,
   header,
   hosted,
+  signIn,
 }: {
   readonly children: ReactNode;
   readonly footer: ReactNode;
   readonly header: ReactNode;
   readonly hosted: ReactNode;
+  /** The sign-in pages' foot, under the page with no header above it. */
+  readonly signIn: ReactNode;
 }): ReactNode => {
   const pathname = usePathname();
 
@@ -44,6 +47,17 @@ export const ShellFrame = ({
   // The signed-in app's layouts draw their own frame around its pages.
   if (frame === "own") {
     return children;
+  }
+
+  if (frame === "signIn") {
+    return (
+      <>
+        <main className="flex flex-1 flex-col justify-center px-4">
+          {children}
+        </main>
+        {signIn}
+      </>
+    );
   }
 
   return (

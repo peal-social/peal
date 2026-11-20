@@ -10,7 +10,7 @@ describe("the blog's settings", () => {
 
     expect(settings.site).toBe("");
     expect(settings.discord).toBeUndefined();
-    expect(settings.app("en", "sign-in")).toBeUndefined();
+    expect(settings.app("en", "login")).toBeUndefined();
     expect(settings.docs("fr", "")).toBeUndefined();
   });
 
@@ -33,8 +33,8 @@ describe("the blog's settings", () => {
     });
 
     expect(settings.site).toBe("https://synthetic.test");
-    expect(settings.app("fr", "sign-in")).toBe(
-      "https://app.synthetic.test/fr/sign-in"
+    expect(settings.app("fr", "login")).toBe(
+      "https://app.synthetic.test/fr/login"
     );
     expect(settings.docs("en", "self-hosting")).toBe(
       "https://docs.synthetic.test/self-hosting"

@@ -322,6 +322,8 @@ services:
       PEAL_TERMS_URL:
       # The privacy policy the sign-up form links to.
       PEAL_PRIVACY_URL:
+      # The data processing agreement the sign-up page links to.
+      PEAL_DPA_URL:
       # Where to write for more than the largest plan allows.
       PEAL_CONTACT_URL:
       # The web app's measurement: on with the server's, the project token
@@ -348,7 +350,7 @@ services:
         - CMD
         - node
         - --eval
-        - 'fetch("http://127.0.0.1:3001/sign-in", { redirect: "manual" }).then((response) => process.exit(response.status < 500 ? 0 : 1), () => process.exit(1));'
+        - 'fetch("http://127.0.0.1:3001/login", { redirect: "manual" }).then((response) => process.exit(response.status < 500 ? 0 : 1), () => process.exit(1));'
 
   # The marketing site and the docs, built with the settings below.
   static:

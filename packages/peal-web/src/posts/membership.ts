@@ -27,7 +27,7 @@ export const viewerOf = async (
   const me = await currentUser();
 
   if (Option.isNone(me)) {
-    return redirect({ href: "/sign-in", locale });
+    return redirect({ href: "/login", locale });
   }
 
   const membership = workspaceAt(me.value.workspaces, workspace);

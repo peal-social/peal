@@ -61,7 +61,8 @@ export const PlainFrame = ({ children }: { readonly children: ReactNode }) => (
 // The frame around every page: the impersonation banner while staff act as
 // someone, a header with the product name, the language switcher and the
 // account menu, the page itself, then a footer with the functions to
-// cancel a contract and to withdraw from one. A connect link's pages, whose
+// cancel a contract and to withdraw from one. The sign-in pages have no
+// header, and a quiet foot with those functions alone. A connect link's pages, whose
 // visitors have no Peal account, get a plain footer in their place
 // (ShellFrame).
 export const AppShell = ({ children }: { readonly children: ReactNode }) => {
@@ -75,6 +76,13 @@ export const AppShell = ({ children }: { readonly children: ReactNode }) => {
       <ShellFrame
         header={<AppHeader />}
         footer={<AppFooter />}
+        signIn={
+          <footer className="text-muted-foreground px-4 py-4 text-xs">
+            <Suspense fallback={null}>
+              <ContractLinks />
+            </Suspense>
+          </footer>
+        }
         hosted={
           <footer className="border-t">
             <div className="text-muted-foreground mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 text-sm">

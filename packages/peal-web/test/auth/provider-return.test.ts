@@ -14,7 +14,7 @@ const invitation = "0b9f1c2e-4f2a-4d4b-9a51-3c1f6f0a2b7e";
 describe(signUpReturn, () => {
   it("sends a new account to the app, and a refusal back to the page", () => {
     expect(signUpReturn(null, localized)).toStrictEqual({
-      errorPath: "/fr/sign-up?from=provider",
+      errorPath: "/fr/signup?from=provider",
       next: "/fr/",
       signUp: { invitationId: null, newUserPath: "/fr/" },
     });
@@ -24,7 +24,7 @@ describe(signUpReturn, () => {
   // it lands on the invitation, as a new one does.
   it("sends every account back to the invitation it came from", () => {
     expect(signUpReturn(invitation, localized)).toStrictEqual({
-      errorPath: `/fr/sign-up?invitation=${invitation}&from=provider`,
+      errorPath: `/fr/signup?invitation=${invitation}&from=provider`,
       next: `/fr/invitations/${invitation}`,
       signUp: {
         invitationId: invitation,
@@ -39,7 +39,7 @@ describe(signInReturn, () => {
   // too, without the mark: the page tells them from the provider's.
   it("marks a refusal as the provider's, and keeps where to go next", () => {
     expect(signInReturn("/device?code=ABCD", localized)).toStrictEqual({
-      errorPath: "/fr/sign-in?next=%2Fdevice%3Fcode%3DABCD&from=provider",
+      errorPath: "/fr/login?next=%2Fdevice%3Fcode%3DABCD&from=provider",
       next: "/device?code=ABCD",
     });
   });

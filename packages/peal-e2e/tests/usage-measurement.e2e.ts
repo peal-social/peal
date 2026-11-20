@@ -227,7 +227,7 @@ describe("the web app's measurement", { serial: true }, () => {
   }) => {
     journeyStart = linesSoFar();
     await asPerson(browser);
-    await app.open("/sign-up");
+    await app.open("/signup");
     await screen.getByLabel("Name").fill(name);
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password());

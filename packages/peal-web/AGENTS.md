@@ -40,7 +40,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   component variants and sizes rather than restyling a component; the
   `@shadcn/lint` rules check pages against peal-ui. Peal is light only
   ([DESIGN.md](../../DESIGN.md)): write no `dark:` class.
-- Pages live under `src/app/[locale]/`: the auth pages (`sign-up`, `sign-in`,
+- Pages live under `src/app/[locale]/`: the auth pages (`signup`, `login`,
   `verify-email`, `forgot-password`, `reset-password`, `invitations/[id]`),
   the contract functions anyone reaches (`cancel`, `withdraw`, and
   `contract-request`, the page of the link emailed to a request's
@@ -893,11 +893,21 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   hides its link to sign up (`offersSignUp`). The server answers `open`
   while it has no account, so the first one can be made. The server decides: its
   `SIGN_UP_BY_INVITATION` reads from `Auth.errors`.
-- The sign-in and sign-up pages show the server's sign-in providers
+- The sign-in pages (sign-in, sign-up, forgot and reset password,
+  verify email) have a frame of their own (`frameOf` answers `signIn`:
+  no header, the contract functions alone at the foot, no language
+  switcher) and draw `AuthCard`, DESIGN.md's `sign-in` column. The sign-in
+  and sign-up pages offer the ways in through `SignInChoices` (its view
+  `SignInChoicesView`): the server's sign-in providers
   (`signUpSettings().providers`, `GET /api/captcha`'s `signInProviders`)
-  above the form (`ProviderButtons`, its view `ProviderButtonsView`), as
-  DESIGN.md's Icons say; the sign-up page only where its form shows, its
-  sign-in with `requestSignUp`, the page's locale and the invitation in
+  and **Continue with email**, which shows the page's form in their
+  place; a server with no provider shows the form at once. The way this
+  browser last signed in comes first, as the main action (`methodsOf`,
+  `#auth/last-sign-in.ts`), read at request time from the server's
+  `lastSignInCookie` (`peal-contract`, set by Better Auth's
+  `lastLoginMethod` plugin, `#auth/last-sign-in-cookie.ts`); the sign-up
+  page offers them only where its form shows, its providers' sign-in
+  with `requestSignUp`, the page's locale and the invitation in
   `additionalData`. Every address given is a path of this origin. The
   provider's callback comes back with `?error=<code>` and the mark
   `?from=provider` (`signInReturn`, `signUpReturn`, `cameFromProvider`),
@@ -911,10 +921,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `hasPassword: false`, the account page offers `SetPassword` (the reset
   link to the account's address) in place of the password form, and says
   two-step verification and closing need it first (`needsPassword`).
-- Creating an account accepts the terms of service: the sign-up form says
-  so under its button, linking `PEAL_TERMS_URL` and, when set,
-  `PEAL_PRIVACY_URL` (`#billing/terms.ts`, read at request time). Keep
-  that line.
+- Creating an account accepts the terms of service: the sign-up page
+  says so under every way to sign up (`SignUpTerms`), linking
+  `PEAL_TERMS_URL` and, when set, `PEAL_PRIVACY_URL` and `PEAL_DPA_URL`
+  (`#billing/terms.ts`, read at request time; `documentsOf` picks the
+  sentence). Keep that line.
 - `src/proxy.ts` rewrites `/api/*` and `/.well-known/oauth-*` to
   `PEAL_API_URL`, read per request. Keep it there, not in `next.config.ts`:
   Next resolves config rewrites at build time and writes the URL into the

@@ -158,8 +158,8 @@ describe("the site's navigation", () => {
       "Pricing",
       "Docs",
     ]);
-    expect(header.signIn?.href).toBe("https://app.test/sign-in");
-    expect(header.getStarted?.href).toBe("https://app.test/sign-up");
+    expect(header.signIn?.href).toBe("https://app.test/login");
+    expect(header.getStarted?.href).toBe("https://app.test/signup");
     expect(header.discord?.href).toBe(everything.discord);
     expect(header.github?.stars).toBe("1.2K");
     expect(hrefs(header)).toContain(`${repository}/releases`);

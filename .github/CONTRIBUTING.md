@@ -285,7 +285,7 @@ that hostname only, so on `127.0.0.1` pages never hydrate.
 
 ### A first account
 
-1. Open <http://localhost:3001/sign-up> and create an account, with a password
+1. Open <http://localhost:3001/signup> and create an account, with a password
    of at least 12 characters.
 2. Open the confirmation email in Mailpit, <http://127.0.0.1:18025>, and follow
    its link, which signs you in.

@@ -605,14 +605,16 @@ the file its owner publishes, kept in peal-ui's `src/brand-marks` with
 where it came from; a lettered tile only for a brand with neither. Never
 draw a platform's logo from memory.
 
-A sign-in provider's button is an outline button of the control height,
-the provider's own mark at 16 px, half the control's height as Google
-sets its 20 px G in a 40 px button (Google's full-colour "G" from the
-file its branding guidelines publish, byte for byte, never redrawn or
-monochrome; lucide's `KeyRound` for a provider without one), then
-"Continue with" and its name. The buttons sit above the form, with "or" on
-a divider before it, and never take the page's main action, which stays
-the primary button.
+A sign-in provider's button is an `lg` button the column's width, the
+provider's own mark at 16 px, as Google sets its 20 px G in a 40 px
+button (Google's full-colour "G": the paths of the file its branding
+guidelines publish, inline and without that file's white square, as
+Google's dark button sets it, never redrawn or monochrome; lucide's
+`KeyRound` for a provider without one), then "Continue with" and its
+name. Google's follows the same rule as every way in: the ink button
+when first, outline after. Email is one of these ways,
+**Continue with email** with lucide's `Mail`, and opens the form (see
+`sign-in` under The frame).
 
 ## Components
 
@@ -626,7 +628,7 @@ one, it asks for a variant or a size.
 text, 8 px by 14 px, `{rounded.md}`, 34 px high. One per page.
 
 **`button-outline`** — Every other action: white, 1 px
-`{colors.hairline}` border, ink text. A sign-in provider's button is one.
+`{colors.hairline}` border, ink text. Every way in on a sign-in page but the first is one.
 
 **`button-ghost`** — Actions in a toolbar or a row: no fill until hovered
 (`{colors.surface-3}`).
@@ -771,6 +773,29 @@ it. There is no bar across the top.
   button the column's width. Under the URL,
   only what stops the workspace being made (taken, or a word it cannot
   be), in destructive text. Only this page draws its own title.
+- **`sign-in`**: the pages where someone signs in, signs up or gets back
+  in (a forgotten password, a new one, a confirmed address). No frame of
+  the app's and no header: the window's `background` alone, a column
+  24 rem wide centred in the window, then at the window's foot the
+  contract functions alone, in small muted text: no language switcher
+  (the page follows the browser's language, or the address's `/fr`).
+  The column holds Peal's mark (48 px), the title (`headline`, centred,
+  the page's `h1`: "Sign in to Peal", "Create your account"), then the
+  ways in, one button each, stacked: the way this browser used last
+  first, as the page's primary button, with a muted line under it ("You
+  used Google to sign in last time"); without one, the server's first
+  provider; every other way outline. **Continue with email** opens the
+  form in their place, with **Back** (a ghost button) under it, the
+  one fading in as the other goes (300 ms, easing out); a
+  server with no provider shows the form at once. On the sign-up page
+  the terms line follows, centred, its documents' names as ink links:
+  the terms of service, the privacy policy and the data processing
+  agreement, each where the server names it.
+  Last, centred and muted, the way to the other page with its link in
+  ink ("Don't have an account? **Sign up**"). No card. As a page opens,
+  the column fades in and rises 8 px (500 ms, easing out), so going
+  from one page to the other reads as a step. With reduced motion, nothing
+  moves. The pages are at `/login` and `/signup`.
 - The contract functions close the panel's content, in small muted text.
 
 PealStudio holds Home, Calendar, Posts, Channels and Media, then Inbox,

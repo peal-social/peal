@@ -24,7 +24,7 @@ describe(isWorkspaceSlug, () => {
     for (const refused of [
       "create",
       "admin",
-      "sign-in",
+      "login",
       "invitations",
       "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e31",
       "Studio",

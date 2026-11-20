@@ -59,6 +59,6 @@ export const servesMcp = (publicUrl: string): boolean => {
 export const oauthPages = {
   consent: "/oauth/consent",
   device: "/device",
-  signIn: "/sign-in",
+  signIn: "/login",
   workspace: "/oauth/workspace",
 } as const;

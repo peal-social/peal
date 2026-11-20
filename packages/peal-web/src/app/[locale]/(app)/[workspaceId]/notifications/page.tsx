@@ -30,7 +30,7 @@ const NotificationsPage = async ({
   const me = await currentUser();
 
   if (Option.isNone(me)) {
-    return redirect({ href: "/sign-in", locale });
+    return redirect({ href: "/login", locale });
   }
 
   const workspace = workspaceAt(me.value.workspaces, workspaceId);

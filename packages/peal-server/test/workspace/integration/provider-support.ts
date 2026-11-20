@@ -42,7 +42,7 @@ export type StartBody = Readonly<Record<string, JsonValue>>;
 export const signInPage = {
   callbackURL: "/after-sign-in",
   disableRedirect: true,
-  errorCallbackURL: "/sign-in",
+  errorCallbackURL: "/login",
   provider: "oidc",
 };
 
@@ -54,7 +54,7 @@ export const signUpPage = (
   ...signInPage,
   additionalData:
     invitation === undefined ? { locale } : { invitation, locale },
-  errorCallbackURL: "/sign-up",
+  errorCallbackURL: "/signup",
   newUserCallbackURL: "/welcome",
   requestSignUp: true,
 });

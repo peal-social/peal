@@ -125,6 +125,10 @@ layer(TestApp.layer, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(signedIn.status, 200);
           assert.include(cookiesOf(signedIn), "peal.session_token=");
+          // The sign-in pages offer the way this browser used last first;
+          // a refused sign-in says nothing of it.
+          assert.include(cookiesOf(signedIn), "peal.last-sign-in=email");
+          assert.notInclude(cookiesOf(early), "peal.last-sign-in");
         })
     );
 

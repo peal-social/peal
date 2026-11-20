@@ -217,6 +217,9 @@ layer(TwoStepLive, { excludeTestServices: true, timeout: "180 seconds" })(
           yield* meStatus(withCookies(browser, verified)),
           200
         );
+        // The second step completes a sign-in by password, which the
+        // sign-in pages offer first next time.
+        assert.include(withCookies("", verified), "peal.last-sign-in=email");
 
         // A challenge works once.
         const replayed = yield* secondStep(browser, {
@@ -623,7 +626,7 @@ layer(TwoStepLive, { excludeTestServices: true, timeout: "180 seconds" })(
             origin
           );
 
-          assert.strictEqual(signInPage.pathname, "/sign-in");
+          assert.strictEqual(signInPage.pathname, "/login");
 
           const oauthQuery = signInPage.search.slice(1);
 

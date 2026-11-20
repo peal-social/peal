@@ -13,11 +13,11 @@ When the server, its network or Grafana stops, Grafana's alerts stop too. Watch 
 
 Check what people reach, through your edge:
 
-| Check                                     | Passes when                                                        |
-| ----------------------------------------- | ------------------------------------------------------------------ |
-| `GET /api/ready`                          | It answers `204 No Content`, so the server and its database answer |
-| A page of the web app, such as `/sign-in` | It answers `200`                                                   |
-| The certificate                           | It has time left                                                   |
+| Check                                   | Passes when                                                        |
+| --------------------------------------- | ------------------------------------------------------------------ |
+| `GET /api/ready`                        | It answers `204 No Content`, so the server and its database answer |
+| A page of the web app, such as `/login` | It answers `200`                                                   |
+| The certificate                         | It has time left                                                   |
 
 Count a redirect as a failure, so a sign-in page in front of the instance never passes for it.
 

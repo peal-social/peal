@@ -18,10 +18,12 @@ import {
   admin,
   genericOAuth,
   jwt,
+  lastLoginMethod,
   organization,
   twoFactor,
 } from "better-auth/plugins";
 import { Option, Redacted, Schema } from "effect";
+import { lastSignInCookie } from "peal-contract";
 
 import type { SiteMeasurementSettings } from "#shared/application/site-measurement.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -629,7 +631,7 @@ export const makeAuth = ({
     },
     // A provider's callback that fails before its state is read sends the
     // browser back to Peal's sign-in page, never to Better Auth's own.
-    onAPIError: { errorURL: `${settings.publicUrl}/sign-in` },
+    onAPIError: { errorURL: `${settings.publicUrl}/login` },
     logger: {
       level: "warn",
       // Messages only: Better Auth passes request details as further
@@ -793,6 +795,14 @@ export const makeAuth = ({
             }),
           ]
         : []),
+      // A cookie naming the way the browser last signed in (`email`,
+      // `google`, `oidc`), which the sign-in and sign-up pages read to
+      // offer it first. A second step completes a sign-in by password.
+      lastLoginMethod({
+        cookieName: lastSignInCookie,
+        customResolveMethod: (context) =>
+          context.path.startsWith("/two-factor/verify-") ? "email" : null,
+      }),
       oauthServer(settings),
       // The command line's sign-in (RFC 8628): it shows a code, which the
       // user enters on the web app's /device page.

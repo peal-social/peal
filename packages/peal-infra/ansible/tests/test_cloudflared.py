@@ -281,7 +281,7 @@ def test_sandbox_lets_through_every_address_the_platforms_call(rendered: Path) -
 SANDBOX_GUARDED = [
     *[s for p in ADMIN_PATHS for s in _spellings(p)],
     "/",
-    "/sign-in",
+    "/login",
     "/api/me",
     "/api/auth/sign-in/email",
     "/api/auth/stripe/webhook/../../admin/list-users",

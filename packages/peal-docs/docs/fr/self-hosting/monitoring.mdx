@@ -13,11 +13,11 @@ Quand le serveur, son réseau ou Grafana s’arrête, les alertes de Grafana s�
 
 Vérifiez ce que les gens atteignent, à travers votre frontal :
 
-| Vérification                                    | Réussit quand                                                               |
-| ----------------------------------------------- | --------------------------------------------------------------------------- |
-| `GET /api/ready`                                | Il répond `204 No Content`, donc le serveur et sa base de données répondent |
-| Une page de l’application web, comme `/sign-in` | Elle répond `200`                                                           |
-| Le certificat                                   | Il lui reste du temps                                                       |
+| Vérification                                  | Réussit quand                                                               |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| `GET /api/ready`                              | Il répond `204 No Content`, donc le serveur et sa base de données répondent |
+| Une page de l’application web, comme `/login` | Elle répond `200`                                                           |
+| Le certificat                                 | Il lui reste du temps                                                       |
 
 Comptez une redirection comme un échec, pour qu’une page de connexion placée devant l’instance ne passe jamais pour elle.
 

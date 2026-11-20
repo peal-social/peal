@@ -742,7 +742,7 @@ export const ctaLinks = (
   labels: { readonly primary: string; readonly secondary: string },
   settings: Pick<HomeSettings, "app" | "docs">
 ): CtaLinks => {
-  const signUp = settings.app("sign-up");
+  const signUp = settings.app("signup");
   const docs = settings.docs("");
 
   return {

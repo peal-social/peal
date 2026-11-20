@@ -559,7 +559,7 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
 
       const since = linesSoFar();
 
-      await app.open("/sign-up");
+      await app.open("/signup");
       await screen.getByLabel("Name").fill("Sam Example");
       await screen.getByLabel("Email").fill(address());
       await screen
@@ -729,7 +729,7 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
       screen,
     }) => {
       await asPerson(browser);
-      await app.open("/sign-up");
+      await app.open("/signup");
       await screen.getByLabel("Name").fill("Alex Example");
       await screen.getByLabel("Email").fill(member());
       await screen

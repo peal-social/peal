@@ -663,7 +663,7 @@
     url: http://127.0.0.1:{{ item.port }}{{ item.path }}
     status_code: [200, 204]
   loop: >-
-    {{ [{'port': peal_ports.server, 'path': '/api/ready'}, {'port': peal_ports.web, 'path': '/sign-in'}]
+    {{ [{'port': peal_ports.server, 'path': '/api/ready'}, {'port': peal_ports.web, 'path': '/login'}]
        + ([{'port': peal_ports.docs_server, 'path': '/'}] if peal_docs_server | bool else [])
        + ([{'port': peal_ports.blog, 'path': '/_emdash/api/health'}] if peal_blog | bool else []) }}
   register: peal_release_local
