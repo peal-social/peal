@@ -1,5 +1,6 @@
 import { Context, DateTime, Effect, Layer, Option } from "effect";
 
+import { countReconnect } from "#channels/application/reconnects-required.ts";
 import { markRefreshNeeded } from "#channels/domain/channel.ts";
 import type { Channel } from "#channels/domain/channel.ts";
 import { channelsSignedInWith } from "#channels/domain/data-deletion.ts";
@@ -80,6 +81,7 @@ export class DeauthorizePlatformUser extends Context.Service<
             }
 
             yield* channels.update(marked, Option.none());
+            yield* countReconnect(channel, marked, "deauthorized");
 
             return Option.some(marked);
           })

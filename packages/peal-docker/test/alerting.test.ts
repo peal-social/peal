@@ -54,6 +54,7 @@ const watched = [
   "peal_channels_release_left_subscribed_total",
   "peal_product_analytics_events_total",
   "peal_meta_refusals_total",
+  "peal_channels_reconnect_required_total",
 ];
 
 const RuleSchema = Schema.Struct({

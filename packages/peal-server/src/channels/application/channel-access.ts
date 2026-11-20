@@ -9,6 +9,7 @@ import {
   Schedule,
 } from "effect";
 
+import { countReconnect } from "#channels/application/reconnects-required.ts";
 import {
   isTokenExpired,
   markRefreshNeeded,
@@ -266,6 +267,7 @@ export class ChannelAccess extends Context.Service<
         const marked = markRefreshNeeded(channel, yield* DateTime.now);
 
         yield* channels.update(marked, Option.none());
+        yield* countReconnect(channel, marked, "tokenRefused");
 
         const renewal: Renewal = { _tag: "reconnect", marked };
 

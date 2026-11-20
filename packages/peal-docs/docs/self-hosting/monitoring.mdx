@@ -74,3 +74,16 @@ When Meta refuses a call to Facebook, Instagram or Threads, the server counts it
 The span of each refusal holds the same fields, plus `meta.error.type` and `meta.error.trace_id`, the id Meta's support asks for. A refused token is also logged as a warning, "Meta refused a token".
 
 `permission` means the app lacks a permission the call needs, or the account didn't grant it. A new token doesn't help: the post fails with Meta's code and the channel stays connected. The production stack's `peal-meta-permission-refused` alert fires on the first one. Add the permission to your Meta app's use case, or stop sending the option that needs it.
+
+### Channels to reconnect [#reconnects]
+
+Each channel marked to reconnect is counted once in `peal.channels.reconnect_required` (Prometheus: `peal_channels_reconnect_required_total`), by platform and cause:
+
+| Cause            | What happened                                          |
+| ---------------- | ------------------------------------------------------ |
+| `tokenRefused`   | The platform refused the token when it was used, twice |
+| `renewalRefused` | The token sweep could not renew the token              |
+| `expired`        | The token expired and couldn't be renewed              |
+| `deauthorized`   | The account removed the app on the platform            |
+
+Accounts rarely need reconnecting all at once. The production stack's `peal-channels-reconnect-wave` alert fires when more than four channels of one platform are marked within an hour, removals left out. It usually means a revoked app, a permission taken away or a changed secret, so check the platform's developer console before telling the workspaces.
