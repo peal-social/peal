@@ -87,3 +87,9 @@ Each channel marked to reconnect is counted once in `peal.channels.reconnect_req
 | `deauthorized`   | The account removed the app on the platform            |
 
 Accounts rarely need reconnecting all at once. The production stack's `peal-channels-reconnect-wave` alert fires when more than four channels of one platform are marked within an hour, removals left out. It usually means a revoked app, a permission taken away or a changed secret, so check the platform's developer console before telling the workspaces.
+
+### Publishing outcomes [#publishing-outcomes]
+
+Each channel of a post is counted once its round settles, in `peal.publishing.outcomes` (Prometheus: `peal_publishing_outcomes_total`). Each count has the platform, the outcome (`published`, `failed` or `unconfirmed`) and the reason: why it failed or wasn't confirmed, or `none` when it was published. A settlement the server retries after a database failure counts again.
+
+The production stack's `peal-publishing-failing` alert fires when more than five posts failed on one platform in an hour and those are over half of what settled there. The reason label usually says which: a permission the app lost, a platform change or a broken adapter.

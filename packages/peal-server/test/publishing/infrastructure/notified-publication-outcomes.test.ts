@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { DateTime, Effect, Layer, Option } from "effect";
+import { DateTime, Effect, Layer, Metric, Option } from "effect";
 import type { Scope } from "effect";
 import { MessageStorage } from "effect/cluster";
 
@@ -31,7 +31,10 @@ import {
   FakePlatformPublisher,
 } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { ListedWorkspaceChannels } from "#publishing/infrastructure/listed-workspace-channels.ts";
-import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified-publication-outcomes.ts";
+import {
+  NotifiedPublicationOutcomes,
+  publishingOutcomes,
+} from "#publishing/infrastructure/notified-publication-outcomes.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import type { ChannelId, UserId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
@@ -205,6 +208,12 @@ const schedule = (
     })
   ).pipe(Effect.map(({ post }) => post));
 
+// How many targets were counted with these attributes so far.
+const outcomeCount = (attributes: Readonly<Record<string, string>>) =>
+  Metric.value(Metric.withAttributes(publishingOutcomes, attributes)).pipe(
+    Effect.map(({ count }) => count)
+  );
+
 describe("the notices of a post's outcomes", () => {
   it.effect(
     "tell the workspace's editors in the app, and email a failure",
@@ -217,6 +226,23 @@ describe("the notices of a post's outcomes", () => {
 
           const published = yield* connect(workspaceId, "mastodon");
           const failed = yield* connect(workspaceId, "bluesky");
+
+          const publishedOnMastodon = {
+            outcome: "published",
+            platform: "mastodon",
+            reason: "none",
+          };
+
+          const failedOnBluesky = {
+            outcome: "failed",
+            platform: "bluesky",
+            reason: "mediaRejected",
+          };
+
+          const before = [
+            yield* outcomeCount(publishedOnMastodon),
+            yield* outcomeCount(failedOnBluesky),
+          ];
 
           yield* FakePlatform.use((platform) =>
             platform.script(failed, [
@@ -232,6 +258,15 @@ describe("the notices of a post's outcomes", () => {
           yield* eventually("the job sleeps", isSuspended(post.id));
           yield* setTime("2026-06-15T08:00:00Z");
           yield* eventually("the post finishes", isFinished(post.id));
+
+          // Each target is counted by its platform, outcome and reason.
+          assert.deepStrictEqual(
+            [
+              yield* outcomeCount(publishedOnMastodon),
+              yield* outcomeCount(failedOnBluesky),
+            ],
+            before.map((count) => count + 1)
+          );
 
           const notices = yield* noticesOf(userId);
 

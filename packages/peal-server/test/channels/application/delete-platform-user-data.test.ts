@@ -414,6 +414,42 @@ layer(deletionsWith({ threads: true }))(
     );
 
     it.effect(
+      "leave a Unified login account alone when a Facebook user's request deletes their Pages",
+      () =>
+        Effect.gen(function* person() {
+          const workspaceId = yield* freshWorkspace;
+          const userId = userIdOf(workspaceId);
+
+          const page = yield* seeded(workspaceId, "facebook", {
+            grantedBy: userId,
+          });
+
+          const viaPage = yield* seeded(workspaceId, "instagram", {
+            connection: "facebookLogin",
+            grantedBy: userId,
+          });
+
+          // Granted by the business's system user, whose id is not theirs.
+          const unified = yield* seeded(workspaceId, "instagram", {
+            accountId: `17843${userId.slice(-12)}`,
+            connection: "unifiedLogin",
+            grantedBy: `6155${userId.slice(-12)}`,
+          });
+
+          const receipt = yield* DeletePlatformUserData.use((deletions) =>
+            deletions.request("facebook", request(userId, metaApp.appSecret))
+          );
+
+          assert.strictEqual(receipt.deletion.channelsDeleted, 2);
+          assert.deepStrictEqual(yield* channelIdsIn(workspaceId), [
+            unified.id,
+          ]);
+          assert.notInclude(yield* channelIdsIn(workspaceId), page.id);
+          assert.notInclude(yield* channelIdsIn(workspaceId), viaPage.id);
+        })
+    );
+
+    it.effect(
       "delete a Unified login account for the main app by its grant or its id, never for the Instagram app",
       () =>
         Effect.gen(function* unified() {
@@ -594,6 +630,78 @@ layer(deletionsWith({ threads: true }))(
               kind: "reconnectRequired",
             },
           ]);
+        })
+    );
+
+    it.effect(
+      "mark a Unified login channel by its grant or its id for the main app, never for the Instagram app",
+      () =>
+        Effect.gen(function* unified() {
+          const workspaceId = yield* freshWorkspace;
+          const systemUser = userIdOf(workspaceId);
+          const professional = `17842${systemUser.slice(-12)}`;
+
+          const byGrant = yield* seeded(workspaceId, "instagram", {
+            accountId: `${professional}1`,
+            connection: "unifiedLogin",
+            grantedBy: systemUser,
+          });
+
+          const byAccount = yield* seeded(workspaceId, "instagram", {
+            accountId: professional,
+            connection: "unifiedLogin",
+            grantedBy: `${systemUser}7`,
+          });
+
+          // The Instagram app's request is not about them.
+          const elsewhere = yield* DeauthorizePlatformUser.use((users) =>
+            Effect.all([
+              users.deauthorize(
+                "instagram",
+                request(systemUser, instagramApp.appSecret, afterConnecting)
+              ),
+              users.deauthorize(
+                "instagram",
+                request(professional, instagramApp.appSecret, afterConnecting)
+              ),
+            ])
+          );
+
+          assert.deepStrictEqual(elsewhere, [0, 0]);
+          assert.sameDeepMembers(yield* statusesIn(workspaceId), [
+            { id: byGrant.id, status: "active" },
+            { id: byAccount.id, status: "active" },
+          ]);
+
+          const viaGrant = yield* DeauthorizePlatformUser.use((users) =>
+            users.deauthorize(
+              "facebook",
+              request(systemUser, metaApp.appSecret, afterConnecting)
+            )
+          );
+
+          assert.strictEqual(viaGrant, 1);
+          assert.sameDeepMembers(yield* statusesIn(workspaceId), [
+            { id: byGrant.id, status: "refreshNeeded" },
+            { id: byAccount.id, status: "active" },
+          ]);
+
+          const viaAccount = yield* DeauthorizePlatformUser.use((users) =>
+            users.deauthorize(
+              "facebook",
+              request(professional, metaApp.appSecret, afterConnecting)
+            )
+          );
+
+          assert.strictEqual(viaAccount, 1);
+          assert.sameDeepMembers(yield* statusesIn(workspaceId), [
+            { id: byGrant.id, status: "refreshNeeded" },
+            { id: byAccount.id, status: "refreshNeeded" },
+          ]);
+          assert.lengthOf(
+            yield* RecordedNotices.use((recorded) => recorded.of(workspaceId)),
+            2
+          );
         })
     );
 

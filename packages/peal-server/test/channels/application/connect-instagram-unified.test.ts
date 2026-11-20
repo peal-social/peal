@@ -13,6 +13,7 @@ import { Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
 
+import { ChannelDirectory } from "#channels/application/channel-directory.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ConnectChannel } from "#channels/application/connect-channel.ts";
 import type { ConnectOutcome } from "#channels/application/connect-channel.ts";
@@ -22,11 +23,15 @@ import { TokenCipher } from "#channels/application/token-cipher.ts";
 import type { Channel } from "#channels/domain/channel.ts";
 import { instagramAuthorizer } from "#channels/infrastructure/platforms/meta/instagram-authorizer.ts";
 import { instagramUnifiedAuthorizer } from "#channels/infrastructure/platforms/meta/instagram-unified-authorizer.ts";
+import { metaMessageDepartures } from "#channels/infrastructure/platforms/meta/meta-message-departures.ts";
+import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
+import { instagramPageMessageScopes } from "#shared/domain/inbox-message-platform.ts";
 import type { InstagramConnection } from "#shared/domain/instagram-connection.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import {
   authorizersOf,
+  connectChannelOver,
   connectChannelWith,
   connectedChannel,
   testPublicUrl,
@@ -38,7 +43,10 @@ import {
   unifiedConfigId,
   unifiedPermissions,
 } from "#test/channels/fakes/fake-meta.ts";
-import type { FakeSharedAccount } from "#test/channels/fakes/fake-meta.ts";
+import type {
+  FakePage,
+  FakeSharedAccount,
+} from "#test/channels/fakes/fake-meta.ts";
 import {
   actorIn,
   freshWorkspace,
@@ -56,6 +64,13 @@ class FakeMeta extends Context.Service<
     fakeMeta({ sharedPageSize: 2 })
   );
 }
+
+// What Meta's sign-ins need against the fake on loopback.
+const MetaServicesTest = Layer.mergeAll(
+  FetchHttpClient.layer,
+  OpenOutboundGuard,
+  Mac.layerWebCrypto
+).pipe(Layer.provideMerge(SecureRandom.layerWebCrypto));
 
 // Instagram's ways in as the server builds them with Unified login set:
 // Unified login first, then through a Page.
@@ -80,19 +95,67 @@ const UnifiedAuthorizersTest = Layer.effect(
       yield* instagramAuthorizer(options)
     );
   })
-).pipe(
-  Layer.provide(
-    Layer.mergeAll(
-      FetchHttpClient.layer,
-      OpenOutboundGuard,
-      Mac.layerWebCrypto
-    ).pipe(Layer.provideMerge(SecureRandom.layerWebCrypto))
-  )
-);
+).pipe(Layer.provide(MetaServicesTest));
 
 const UnifiedConnectTest = connectChannelWith(UnifiedAuthorizersTest).pipe(
   Layer.provideMerge(RecordedNotices.layer),
   Layer.provideMerge(FakeMeta.layer)
+);
+
+// No other channel of any account, and none reading messages.
+const ChannelDirectoryTest = Layer.succeed(
+  ChannelDirectory,
+  ChannelDirectory.of({
+    after: () => Effect.succeed([]),
+    withAccount: () => Effect.succeed([]),
+  })
+);
+
+const EngagementRecordsTest = Layer.succeed(
+  EngagementRecords,
+  EngagementRecords.of({
+    channelGone: () => Effect.void,
+    ensureChannelIdle: () => Effect.void,
+    eraseWorkspace: () => Effect.void,
+    exportCommentRules: () => Effect.succeed([]),
+    exportUser: () => Effect.succeed([]),
+    exportUserMessages: () => Effect.succeed([]),
+    exportUserPrivateReplies: () => Effect.succeed([]),
+    exportUserReviewReplies: () => Effect.succeed([]),
+    forgetUser: () => Effect.void,
+    postRemoved: () => Effect.void,
+    readsMessages: () => Effect.succeed(false),
+    refollow: () => Effect.void,
+  })
+);
+
+// Meta's message events undone on the fake, on a server whose inbox reads
+// Instagram's messages.
+const DeparturesTest = Layer.unwrap(
+  Effect.gen(function* DeparturesTest() {
+    const meta = yield* FakeMeta;
+
+    return metaMessageDepartures({
+      hosts: meta.hosts,
+      http: yield* publicHttpClient,
+      mainApp: Option.some(metaApp),
+      messages: new Set(["instagram"]),
+    });
+  })
+).pipe(
+  Layer.provide(
+    Layer.mergeAll(
+      ChannelDirectoryTest,
+      EngagementRecordsTest,
+      MetaServicesTest
+    )
+  )
+);
+
+// ConnectChannel with those departures instead of none.
+const DepartingConnectTest = Layer.fresh(ConnectChannel.layer).pipe(
+  Layer.provide(DeparturesTest),
+  Layer.provideMerge(UnifiedConnectTest)
 );
 
 const manager = (workspaceId: WorkspaceId) =>
@@ -477,6 +540,126 @@ layer(UnifiedConnectTest)(
         })
     );
 
+    it.effect(
+      "fails a sign-in whose token debug_token says is not valid, or is another app's",
+      () =>
+        Effect.gen(function* debugged() {
+          const meta = yield* FakeMeta;
+          const workspaceId = yield* freshWorkspace;
+
+          for (const grant of [
+            { debuggedValid: false },
+            { debuggedAppId: "1111111111" },
+          ]) {
+            meta.setUnified({
+              accounts: [account("91")],
+              permissions: unifiedPermissions,
+              ...grant,
+            });
+
+            const failure = yield* signIn(workspaceId).pipe(Effect.flip);
+
+            assert.strictEqual(failure._tag, "AuthorizationFailed");
+          }
+
+          assert.lengthOf(
+            yield* ChannelRepository.use((channels) =>
+              channels.list(workspaceId)
+            ),
+            0
+          );
+        })
+    );
+
+    it.effect(
+      "leaves out a shared account Meta lists without its username",
+      () =>
+        Effect.gen(function* withoutUsername() {
+          const meta = yield* FakeMeta;
+          const workspaceId = yield* freshWorkspace;
+
+          meta.setUnified({
+            accounts: [account("92"), { id: "17841400000093" }],
+            permissions: unifiedPermissions,
+          });
+
+          const channel = yield* signIn(workspaceId).pipe(
+            Effect.flatMap(connectedChannel)
+          );
+
+          assert.strictEqual(channel.accountId, "17841400000092");
+        })
+    );
+
+    it.effect(
+      "lists the shared accounts by id and username when Meta refuses their profile's fields",
+      () =>
+        Effect.gen(function* fallback() {
+          const meta = yield* FakeMeta;
+          const workspaceId = yield* freshWorkspace;
+
+          meta.setUnified({
+            accounts: [account("94", { name: "Synthetic Studio" })],
+            permissions: unifiedPermissions,
+            refusesProfileFields: true,
+          });
+
+          const channel = yield* signIn(workspaceId).pipe(
+            Effect.flatMap(connectedChannel)
+          );
+
+          assert.strictEqual(channel.accountId, "17841400000094");
+          assert.strictEqual(channel.handle, "@shared_94");
+          assert.deepStrictEqual(channel.displayName, Option.none());
+          assert.deepStrictEqual(channel.avatarUrl, Option.none());
+        })
+    );
+
+    it.effect(
+      "answers that Unified login is not configured to reconnect its channel on a server without it",
+      () =>
+        Effect.gen(function* unset() {
+          const meta = yield* FakeMeta;
+          const workspaceId = yield* freshWorkspace;
+
+          meta.setUnified({
+            accounts: [account("71")],
+            permissions: unifiedPermissions,
+          });
+
+          const channel = yield* signIn(workspaceId).pipe(
+            Effect.flatMap(connectedChannel)
+          );
+
+          // The same database, on a server whose Instagram goes through a
+          // Page alone: META_INSTAGRAM_CONFIG_ID was unset.
+          const withoutUnified = yield* Effect.gen(function* pageOnly() {
+            const http = yield* publicHttpClient;
+
+            return yield* connectChannelOver(
+              yield* instagramAuthorizer({
+                app: metaApp,
+                hosts: meta.hosts,
+                http,
+                publicUrl: testPublicUrl,
+              })
+            );
+          }).pipe(Effect.provide(MetaServicesTest), Effect.scoped);
+
+          const failure = yield* withoutUnified
+            .reconnect(manager(workspaceId), channel.id)
+            .pipe(Effect.flip);
+
+          assert.strictEqual(failure._tag, "PlatformNotConnectable");
+          assert.strictEqual(
+            failure._tag === "PlatformNotConnectable"
+              ? failure.reason
+              : undefined,
+            "notConfigured"
+          );
+        })
+    );
+
     it.effect("lists Unified login first among Instagram's ways in", () =>
       Effect.gen(function* connectable() {
         const workspaceId = yield* freshWorkspace;
@@ -490,6 +673,78 @@ layer(UnifiedConnectTest)(
           "facebookLogin",
         ]);
       })
+    );
+  }
+);
+
+layer(DepartingConnectTest)(
+  "a Page's Instagram channel with its messages on, moved to Unified login",
+  (it) => {
+    it.effect(
+      "stops the Page's events with the Page's token, and never with the system user's",
+      () =>
+        Effect.gen(function* moved() {
+          const meta = yield* FakeMeta;
+          const workspaceId = yield* freshWorkspace;
+          const shared = account("81");
+
+          const page: FakePage = {
+            id: "981",
+            instagram: { id: shared.id, username: shared.username },
+            name: "Synthetic Page 981",
+          };
+
+          // Signed in through the Page with its messages' permissions.
+          meta.setPages([page]);
+          meta.setAlsoGranted([...instagramPageMessageScopes]);
+
+          const viaPage = yield* signIn(
+            workspaceId,
+            Option.some("facebookLogin")
+          ).pipe(Effect.flatMap(connectedChannel));
+
+          assert.include(viaPage.scopes, "instagram_manage_messages");
+          assert.deepStrictEqual(meta.unsubscribed(), []);
+
+          meta.setUnified({
+            accounts: [shared],
+            permissions: unifiedPermissions,
+          });
+
+          const unified = yield* signIn(workspaceId).pipe(
+            Effect.flatMap(connectedChannel)
+          );
+
+          assert.strictEqual(unified.id, viaPage.id);
+          assert.deepStrictEqual(
+            unified.connection,
+            Option.some("unifiedLogin")
+          );
+          // The departure ran with the Page's token, which alone reaches
+          // the Page's subscription.
+          assert.deepStrictEqual(meta.unsubscribed(), [page.id]);
+
+          // The system user's token signed in, and did nothing else.
+          const asSystemUser = meta
+            .requests()
+            .filter(({ query }) =>
+              (query.get("access_token") ?? "").startsWith(
+                "synthetic-system-user"
+              )
+            )
+            .map(({ method, path }) => `${method} ${path}`);
+
+          assert.sameMembers(
+            [...new Set(asSystemUser)],
+            ["GET /v27.0/me", "GET /v27.0/me/assigned_instagram_accounts"]
+          );
+
+          // Signed in through Unified login again: its way in does not
+          // change, so nothing more is undone.
+          yield* signIn(workspaceId).pipe(Effect.flatMap(connectedChannel));
+
+          assert.deepStrictEqual(meta.unsubscribed(), [page.id]);
+        })
     );
   }
 );

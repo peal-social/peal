@@ -189,7 +189,7 @@ export interface PlatformAuthorizer {
   readonly platform: Platform;
   /**
    * The way in this authorizer is, for the platforms that have several
-   * (Instagram's two logins, LinkedIn's profile or page): its channels keep
+   * (Instagram's three ways in, LinkedIn's profile or page): its channels keep
    * it, so their tokens are renewed, and their posts sent, the same way.
    */
   readonly connection?: ChannelConnection;

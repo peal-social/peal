@@ -11,6 +11,8 @@ import {
   Redacted,
   Ref,
 } from "effect";
+import { Mac, SecureRandom } from "effect/crypto";
+import { FetchHttpClient } from "effect/http";
 import { TestClock } from "effect/testing";
 
 import { ChannelAccess } from "#channels/application/channel-access.ts";
@@ -37,6 +39,7 @@ import type { Channel, TokenLifetime } from "#channels/domain/channel.ts";
 import type { Platform } from "#channels/domain/platform.ts";
 import { tokenPolicies } from "#channels/domain/token-policy.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
+import { instagramUnifiedAuthorizer } from "#channels/infrastructure/platforms/meta/instagram-unified-authorizer.ts";
 import { SqlChannelLocks } from "#channels/infrastructure/sql-channel-locks.ts";
 import { newId } from "#shared/application/ids.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
@@ -44,11 +47,15 @@ import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
+import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
+import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import { authorizersOf } from "#test/channels/connect-support.ts";
+import { metaApp, unifiedConfigId } from "#test/channels/fakes/fake-meta.ts";
 import {
   DatabaseTest,
   freshChannel,
   freshWorkspace,
+  OpenOutboundGuard,
   RecordedNotices,
   TokenCipherTest,
 } from "#test/channels/support.ts";
@@ -779,5 +786,84 @@ layer(FileTest)("ChannelAccess", (it) => {
         `access-${channel.id}`
       );
     })
+  );
+
+  it.effect(
+    "marks a Unified login channel whose token Meta refused, with Unified login set or not",
+    () =>
+      Effect.gen(function* unified() {
+        const workspaceId = yield* freshWorkspace;
+
+        const withUnified = yield* Effect.gen(function* building() {
+          return yield* instagramUnifiedAuthorizer({
+            app: metaApp,
+            configId: unifiedConfigId,
+            hosts: metaHosts,
+            http: yield* publicHttpClient,
+            publicUrl: "https://peal.test",
+          });
+        }).pipe(
+          Effect.provide(
+            Layer.mergeAll(
+              FetchHttpClient.layer,
+              OpenOutboundGuard,
+              Mac.layerWebCrypto
+            ).pipe(Layer.provideMerge(SecureRandom.layerWebCrypto))
+          )
+        );
+
+        // A server whose Instagram has no Unified login any more.
+        const { authorizer: without } = yield* scripted("x");
+
+        for (const authorizer of [withUnified, without]) {
+          const channel = yield* freshChannel(workspaceId, {
+            connection: "unifiedLogin",
+            platform: "instagram",
+            token: { _tag: "nonExpiring" },
+          });
+
+          const credentials = yield* encryptTokens(
+            {
+              accessToken: Redacted.make(`synthetic-system-user-${channel.id}`),
+              expiresAt: Option.none(),
+              refreshToken: Option.none(),
+              renewable: false,
+              scopes: ["instagram_basic", "instagram_content_publish"],
+            },
+            channel.id
+          );
+
+          yield* ChannelRepository.use((channels) =>
+            channels.insert(channel, credentials)
+          );
+
+          const seen = yield* recording();
+
+          // Meta answered 190: the system user's token was revoked.
+          const failure = yield* ChannelAccess.use((access) =>
+            access.withToken(channel.id, (token) =>
+              seen
+                .record(token.accessToken)
+                .pipe(Effect.andThen(Effect.fail(new TokenRejected())))
+            )
+          ).pipe(Effect.provide(accessWith(authorizer)), Effect.flip);
+
+          assert.deepStrictEqual(failure, new TokenExpired());
+          // The token was sent once, and nothing renewed it.
+          assert.deepStrictEqual(yield* seen.seen, [
+            `synthetic-system-user-${channel.id}`,
+          ]);
+          assert.strictEqual(yield* statusOf(channel.id), "refreshNeeded");
+        }
+
+        const notices = yield* RecordedNotices.use((recorded) =>
+          recorded.of(workspaceId)
+        );
+
+        assert.lengthOf(notices, 2);
+        assert.isTrue(
+          notices.every(({ kind }) => kind === "reconnectRequired")
+        );
+      })
   );
 });

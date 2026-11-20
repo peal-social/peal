@@ -30,6 +30,7 @@ import {
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
+import { namesMetaMessaging } from "#shared/domain/inbox-message-platform.ts";
 import type { InstagramConnection } from "#shared/domain/instagram-connection.ts";
 import type { LinkedInConnection } from "#shared/domain/linkedin-connection.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
@@ -38,12 +39,14 @@ import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
 import { AuthorizationDenied } from "./authorization-denied.ts";
 import { AuthorizationFailed } from "./authorization-failed.ts";
 import { ChannelAllowance } from "./channel-allowance.ts";
+import type { ChannelCredentials } from "./channel-credentials.ts";
+import { ChannelDepartures } from "./channel-departures.ts";
 import { ChannelEvents } from "./channel-events.ts";
 import { ChannelLocks } from "./channel-locks.ts";
 import { ChannelNotFound } from "./channel-not-found.ts";
 import { ChannelRepository } from "./channel-repository.ts";
 import { channelRoomOf } from "./channel-room.ts";
-import { encryptTokens } from "./channel-tokens.ts";
+import { decryptTokens, encryptTokens } from "./channel-tokens.ts";
 import { ConnectAttempts } from "./connect-attempts.ts";
 import { ConnectChoices } from "./connect-choices.ts";
 import type { MissingTokenKey } from "./missing-token-key.ts";
@@ -183,6 +186,18 @@ const connectedOf = (
   token: tokenLifetimeOf(authorizer.policy, account.tokens, now),
 });
 
+/**
+ * Whether a sign-in moves the channel to another way in while its old one
+ * held the messaging permissions, whose subscription the old tokens alone
+ * can undo (Meta's, made with a Page's token, which Unified login's system
+ * user cannot see). The repository reads a row stored without a way in as
+ * the platform's first.
+ */
+const movesAway = (channel: Channel, connected: ConnectedAccount) =>
+  Option.getOrUndefined(channel.connection) !==
+    Option.getOrUndefined(connected.connection) &&
+  namesMetaMessaging(channel.scopes);
+
 const connectedTo = (channel: Channel): ConnectOutcome => ({
   _tag: "connected",
   channel,
@@ -277,7 +292,23 @@ export class ConnectChannel extends Context.Service<
       const events = yield* ChannelEvents;
       const allowance = yield* ChannelAllowance;
       const ids = yield* Ids;
+      const departures = yield* ChannelDepartures;
       const tokenServices = Effect.provideService(TokenCipher, cipher);
+
+      // Undoes, with the tokens it held, what the channel's old way in set
+      // up, as a disconnection does: best effort, logged by the channel's
+      // id, and never a reason to fail the reconnect.
+      const departFrom = (left: Channel, held: ChannelCredentials) =>
+        decryptTokens(held, left.id).pipe(
+          tokenServices,
+          Effect.flatMap((tokens) => departures.departed(left, tokens)),
+          Effect.asVoid,
+          Effect.catch(() =>
+            Effect.logWarning(
+              "Could not read a reconnected channel's former tokens"
+            ).pipe(Effect.annotateLogs({ channelId: left.id }))
+          )
+        );
 
       // The platform's authorizer, for Instagram the connection's: one the
       // server lacks the settings for is not configured.
@@ -518,46 +549,64 @@ export class ConnectChannel extends Context.Service<
           account: AuthorizedAccount,
           connected: ConnectedAccount
         ) {
-          return yield* locks.withLock(
-            channelId,
-            Effect.gen(function* reconnectLocked() {
-              const current = yield* channels.findById(
-                actor.workspaceId,
-                channelId
-              );
+          return yield* locks
+            .withLock(
+              channelId,
+              Effect.gen(function* reconnectLocked() {
+                const current = yield* channels.findById(
+                  actor.workspaceId,
+                  channelId
+                );
 
-              if (Option.isNone(current)) {
-                return yield* new ChannelNotFound({ channelId });
-              }
+                if (Option.isNone(current)) {
+                  return yield* new ChannelNotFound({ channelId });
+                }
 
-              if (current.value.accountId !== account.accountId) {
-                return yield* new ReconnectAccountMismatch({ channelId });
-              }
+                if (current.value.accountId !== account.accountId) {
+                  return yield* new ReconnectAccountMismatch({ channelId });
+                }
 
-              const now = yield* DateTime.now;
-              const channel = reconnectChannel(current.value, connected, now);
+                const now = yield* DateTime.now;
+                const channel = reconnectChannel(current.value, connected, now);
 
-              const credentials = yield* encryptTokens(
-                account.tokens,
-                channel.id
-              ).pipe(tokenServices);
+                const credentials = yield* encryptTokens(
+                  account.tokens,
+                  channel.id
+                ).pipe(tokenServices);
 
-              // In one transaction, the workspace's additions': the tokens
-              // are saved with what tells of it, or neither.
-              yield* channels.addingTo(
-                actor.workspaceId,
-                channels
-                  .update(channel, Option.some(credentials))
-                  .pipe(
-                    Effect.flatMap((saved) =>
-                      saved ? events.connected(channel, true) : Effect.void
+                // What the channel held before, when it leaves its way in:
+                // its old tokens undo what that way in set up.
+                const leaving = movesAway(current.value, connected)
+                  ? yield* channels.credentials(channel.id)
+                  : Option.none<ChannelCredentials>();
+
+                // In one transaction, the workspace's additions': the tokens
+                // are saved with what tells of it, or neither.
+                yield* channels.addingTo(
+                  actor.workspaceId,
+                  channels
+                    .update(channel, Option.some(credentials))
+                    .pipe(
+                      Effect.flatMap((saved) =>
+                        saved ? events.connected(channel, true) : Effect.void
+                      )
                     )
-                  )
-              );
+                );
 
-              return channel;
-            })
-          );
+                return { channel, left: current.value, leaving };
+              })
+            )
+            .pipe(
+              // Once the new tokens are saved, and outside the lock, as
+              // DisconnectChannel does: never a platform's wait under it.
+              Effect.tap(({ leaving, left }) =>
+                Option.match(leaving, {
+                  onNone: () => Effect.void,
+                  onSome: (held) => departFrom(left, held),
+                })
+              ),
+              Effect.map(({ channel }) => channel)
+            );
         }
       );
 

@@ -63,11 +63,12 @@ peal_settings:
   META_APP_ID: "4619272408353325"
   META_INSTAGRAM_CONFIG_ID: "1322301810003383"
   THREADS_APP_ID: "1621475403358445"
-  # Facebook Pages' comments in the inbox and first comments: the parent
-  # app "Peal" holds pages_read_user_content and pages_manage_engagement
-  # (ready for testing, before App Review). Instagram joins once the app
-  # holds instagram_manage_comments.
-  PEAL_INBOX_PLATFORMS: facebook
+  # Facebook Pages' and Instagram's comments in the inbox and first
+  # comments: the parent app "Peal" holds pages_read_user_content,
+  # pages_manage_engagement and instagram_manage_comments (ready for
+  # testing, before App Review); Unified login's configuration grants the
+  # last one too.
+  PEAL_INBOX_PLATFORMS: facebook,instagram
   # X bills each read: the sandbox reads, but little.
   X_ANALYTICS: "true"
   X_ANALYTICS_DAILY_READS: "50"

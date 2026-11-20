@@ -21,7 +21,7 @@ import type { MetaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 
 import { avatarOf, facebookLoginCallbackPath } from "./facebook-login.ts";
 import { exchange, getWith, signInFailure } from "./meta-exchange.ts";
-import type { MetaHttp } from "./meta-exchange.ts";
+import type { ExchangeFailure, MetaHttp } from "./meta-exchange.ts";
 
 // From Meta's "Instagram API with Unified Login" pages (read 2026-11-20):
 // the dialog is Facebook Login for Business's, opened with the
@@ -39,19 +39,24 @@ const TokenSchema = Schema.Struct({
 
 const SystemUserSchema = Schema.Struct({ id: Schema.NonEmptyString });
 
-// `debug_token`, read with the app's own token: the permissions the token
-// holds, as the configuration granted them.
+// `debug_token`, read with the app's own token: whether the token is
+// valid, the app it was issued for, and the permissions it holds, as the
+// configuration granted them.
 const DebugTokenSchema = Schema.Struct({
   data: Schema.Struct({
+    app_id: Schema.optionalKey(Schema.String),
+    is_valid: Schema.optionalKey(Schema.Boolean),
     scopes: Schema.optionalKey(Schema.Array(Schema.String)),
   }),
 });
 
+// Meta's pages name `username` among the fields listed, but a row without
+// it cannot be a channel's handle: it is left out.
 const AssignedAccountSchema = Schema.Struct({
   id: Schema.NonEmptyString,
   name: Schema.optionalKey(Schema.String),
   profile_picture_url: Schema.optionalKey(Schema.String),
-  username: Schema.NonEmptyString,
+  username: Schema.optionalKey(Schema.String),
 });
 
 const AssignedAccountsSchema = Schema.Struct({
@@ -79,6 +84,17 @@ export const instagramUnifiedRequiredScopes = [
 ] as const;
 
 const accountFields = "id,username,name,profile_picture_url";
+
+// What the listing is asked again for when Meta refuses the profile's
+// fields (Graph code 100), which its pages do not promise.
+const leanAccountFields = "id,username";
+
+// Whether Meta refused a request's parameters: Graph code 100, with or
+// without a subcode.
+const refusesParameters = (failure: ExchangeFailure) =>
+  failure._tag === "refused" &&
+  failure.refusal._tag === "refused" &&
+  /^graph100(?:\.\d+)?$/u.test(failure.refusal.code);
 
 // Meta lists a hundred accounts at a time; no business shares more than
 // this.
@@ -180,9 +196,11 @@ export const instagramUnifiedAuthorizer = Effect.fn(
       )
     );
 
-  // Every account the business shared, a hundred at a time.
-  const accountsOf = Effect.fnUntraced(function* accountsOf(
-    token: Redacted.Redacted
+  // Every account the business shared, a hundred at a time, with the
+  // fields given.
+  const listedWith = Effect.fnUntraced(function* listedWith(
+    token: Redacted.Redacted,
+    fields: string
   ) {
     const accounts: AssignedAccount[] = [];
     let after = Option.none<string>();
@@ -192,7 +210,7 @@ export const instagramUnifiedAuthorizer = Effect.fn(
         "/me/assigned_instagram_accounts",
         token,
         {
-          fields: accountFields,
+          fields,
           limit: String(pageSize),
           ...Option.match(after, {
             onNone: () => ({}),
@@ -212,6 +230,17 @@ export const instagramUnifiedAuthorizer = Effect.fn(
 
     return accounts;
   });
+
+  // Every account the business shared: with its name and picture, or,
+  // when Meta refuses those fields, by id and username alone.
+  const accountsOf = (token: Redacted.Redacted) =>
+    listedWith(token, accountFields).pipe(
+      Effect.catchIf(refusesParameters, () =>
+        Effect.logWarning(
+          "Meta refused the shared accounts' profile fields; listing them by id and username"
+        ).pipe(Effect.andThen(listedWith(token, leanAccountFields)))
+      )
+    );
 
   const complete: PlatformAuthorizer["complete"] = ({ callback }) =>
     Effect.gen(function* completing() {
@@ -251,12 +280,30 @@ export const instagramUnifiedAuthorizer = Effect.fn(
         SystemUserSchema
       ).pipe(Effect.mapError(signInFailure("Reading the system user")));
 
+      // Open check, for the sandbox: whether Meta takes `appsecret_proof`
+      // on a call made with the app's own token (here, the proof of
+      // `app_id|app_secret`), or refuses it; `read` sends one on every
+      // call, as through a Page.
       const debugged = yield* read(
         "/debug_token",
         appToken,
         { input_token: token },
         DebugTokenSchema
       ).pipe(Effect.mapError(signInFailure("Reading the token's permissions")));
+
+      // A token Meta no longer takes, or one issued for another app, is
+      // not the sign-in Peal started: nothing is connected with it.
+      if (debugged.data.is_valid !== true) {
+        return yield* new AuthorizationFailed({
+          reason: "debug_token says the token is not valid",
+        });
+      }
+
+      if (debugged.data.app_id !== app.appId) {
+        return yield* new AuthorizationFailed({
+          reason: "debug_token names another app",
+        });
+      }
 
       const granted = debugged.data.scopes ?? [];
 
@@ -281,13 +328,24 @@ export const instagramUnifiedAuthorizer = Effect.fn(
       const accounts = new Map<string, AuthorizedAccount>();
 
       for (const account of shared) {
+        const username = account.username?.trim() ?? "";
+
+        // No handle to show it by: left out, and logged by its id alone.
+        if (username === "") {
+          yield* Effect.logWarning(
+            "Meta listed a shared Instagram account without its username"
+          ).pipe(Effect.annotateLogs({ accountId: account.id }));
+
+          continue;
+        }
+
         accounts.set(account.id, {
           accountId: account.id,
           avatarUrl: avatarOf(account.profile_picture_url),
           displayName: Option.fromUndefinedOr(account.name).pipe(
             Option.filter((name) => name.trim() !== "")
           ),
-          handle: `@${account.username}`,
+          handle: `@${username}`,
           tokens: {
             accessToken: token,
             expiresAt,

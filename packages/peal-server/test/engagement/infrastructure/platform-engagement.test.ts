@@ -66,6 +66,7 @@ import {
 import {
   facebookPageId,
   graphAppSecret,
+  instagramUserId,
 } from "#test/publishing/fakes/fake-meta-graph.ts";
 import {
   json,
@@ -770,6 +771,77 @@ describe("the gate's message source", () => {
 
         assert.deepStrictEqual(read, new MessagesUngranted());
         assert.lengthOf(server.requests(), 0);
+      }).pipe(Effect.scoped)
+  );
+
+  it.effect(
+    "turns off the messages of a channel a sign-in moved to Unified login, and calls Meta for nothing",
+    () =>
+      Effect.gen(function* movedToUnified() {
+        const graph = yield* fakeMetaMessages(["synthetic-system-user-1"], {
+          me: instagramUserId,
+        });
+
+        const world = makeMessageWorld(new Set(["instagram"]));
+
+        // Its box, from when it came through a Page with its messages on.
+        world.state.boxes.set(
+          channelId(1),
+          followBox(
+            { channelId: channelId(1), workspaceId },
+            yield* DateTime.now
+          )
+        );
+
+        const source = yield* messageSourceOn(
+          new URL(graph.url),
+          world.store,
+          {
+            accountId: instagramUserId,
+            channelId: channelId(1),
+            connection: Option.some("unifiedLogin"),
+            platform: "instagram",
+            // The system user's token holds the messaging permission
+            // whatever the business chose.
+            scopes: [
+              "instagram_basic",
+              "instagram_content_publish",
+              "instagram_manage_messages",
+            ],
+          },
+          { others: noOtherChannels, token: "synthetic-system-user-1" }
+        );
+
+        const readNow = Effect.gen(function* readNow() {
+          return yield* source
+            .read({
+              channelId: channelId(1),
+              keptSince: DateTime.subtractDuration(
+                yield* DateTime.now,
+                "30 days"
+              ),
+            })
+            .pipe(Effect.flip);
+        });
+
+        assert.deepStrictEqual(yield* readNow, new MessagesUngranted());
+        assert.strictEqual(
+          yield* source.follow({ channelId: channelId(1) }),
+          "unneeded"
+        );
+        assert.strictEqual(
+          yield* source.unfollow({ channelId: channelId(1) }),
+          "unneeded"
+        );
+
+        // Without a box, it is a way in that has no messages yet.
+        world.state.boxes.delete(channelId(1));
+
+        assert.deepStrictEqual(
+          yield* readNow,
+          new ChannelUnreadable({ reason: "unsupported" })
+        );
+        assert.lengthOf(graph.requests(), 0);
       }).pipe(Effect.scoped)
   );
 

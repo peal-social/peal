@@ -6,7 +6,7 @@ import type { Platform } from "./platform.ts";
 
 /**
  * The way in a channel came through, on the platforms that have several:
- * Instagram's two logins, and LinkedIn's profile or page. Its tokens are
+ * Instagram's three ways in, and LinkedIn's profile or page. Its tokens are
  * renewed, and its posts sent, the same way. Every other platform has one
  * way in, so its channels have none.
  */
