@@ -35,7 +35,7 @@ const owner: readonly Permission[] = [
 ];
 
 describe(pageLinksOf, () => {
-  it("lists PealStudio's pages, its sections' and then PealAPI's, once each", () => {
+  it("lists PealCreative's pages, its sections' and then PealAPI's, once each", () => {
     const pages = pageLinksOf({ permissions: owner, workspace }).map(
       ({ page }) => page
     );

@@ -746,7 +746,7 @@
     },
     "expires": "Must be reconnected by {date, date, long}",
     "reconnect": "Reconnect",
-    "reconnectAccount": "Reconnect {handle}",
+    "reconnectAccount": "Reconnect {handle} on {platform}",
     "reconnecting": "Opening…",
     "disconnect": "Disconnect",
     "disconnectAccount": "Disconnect {handle}",
@@ -2987,11 +2987,11 @@
     "back": "Back from {section}",
     "modes": {
       "label": "Mode",
-      "studio": "PealStudio",
+      "studio": "PealCreative",
       "api": "PealAPI",
       "unavailable": "Your role in this workspace has no PealAPI pages",
       "switch": "Switch",
-      "switchLabel": "Switch between PealStudio and PealAPI",
+      "switchLabel": "Switch between PealCreative and PealAPI",
       "studioDescription": "Write, schedule and answer across your channels",
       "apiDescription": "Build on Peal with the API, keys and webhooks"
     },

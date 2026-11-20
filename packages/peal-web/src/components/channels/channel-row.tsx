@@ -116,7 +116,12 @@ const ReconnectControl = ({
       focusableWhenDisabled
       onClick={handleReconnect}
       aria-label={
-        isReconnecting ? undefined : t("reconnectAccount", { handle })
+        isReconnecting
+          ? undefined
+          : t("reconnectAccount", {
+              handle,
+              platform: t("platform", { platform: channel.platform }),
+            })
       }
     >
       {isReconnecting ? t("reconnecting") : t("reconnect")}

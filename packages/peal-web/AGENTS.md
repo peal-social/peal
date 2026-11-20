@@ -114,7 +114,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   in its head, the workspace switcher, Search (the command menu) and New
   post, then the mode's pages, a section's pages under a way back,
   and Settings; the bottom bar holds, beside the account, `ModeSwitch`
-  (the open mode, and **Switch** on hover, whose menu offers PealStudio
+  (the open mode, and **Switch** on hover, whose menu offers PealCreative
   and PealAPI);
   `(app)/(setup)/layout.tsx` gives the setup page `SetupFrame`
   (`components/setup/`): no sidebar and no bottom bar, the way back to

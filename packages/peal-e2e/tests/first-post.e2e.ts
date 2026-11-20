@@ -287,7 +287,7 @@ describe("a new member's first post", { serial: true }, () => {
     // Webhooks are PealAPI's: the mode switch, at the sidebar's foot,
     // opens it.
     await screen
-      .getByRole("button", "Switch between PealStudio and PealAPI")
+      .getByRole("button", "Switch between PealCreative and PealAPI")
       .tap();
     await screen.getByRole("menuitem", /^PealAPI/u).tap();
     await screen

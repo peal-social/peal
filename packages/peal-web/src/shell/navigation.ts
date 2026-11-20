@@ -3,7 +3,7 @@ import type { Permission } from "peal-contract";
 import { workspacePath } from "#shell/workspace-path.ts";
 
 /**
- * The two modes of a workspace's frame (DESIGN.md): PealStudio runs its
+ * The two modes of a workspace's frame (DESIGN.md): PealCreative runs its
  * channels and posts; PealAPI builds on the API. A page belongs to one, so
  * the address carries the mode.
  */
@@ -378,7 +378,7 @@ export interface PageLink {
   readonly section: Section | null;
 }
 
-// Every page in the order the menu lists them: PealStudio's top level
+// Every page in the order the menu lists them: PealCreative's top level
 // with its sections' pages after it, then PealAPI's.
 const menuOrder: readonly Page[] = [
   ...new Set([
