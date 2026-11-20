@@ -584,9 +584,7 @@
     "app": "Espaces de travail",
     "signOut": "Se déconnecter",
     "signOutFailed": "La déconnexion a échoué. Réessayez.",
-    "notifications": "Notifications",
-    "agenda": "Agenda",
-    "report": "Rapport"
+    "notifications": "Notifications"
   },
   "NotFoundPage": {
     "title": "Page introuvable",
@@ -702,7 +700,6 @@
     "requestAgain": "Demander un nouveau lien"
   },
   "AppPage": {
-    "createDescription": "Vous en serez propriétaire, et pourrez y inviter des personnes.",
     "workspaceName": "Nom",
     "create": "Créer l’espace",
     "creating": "Création…",
@@ -718,7 +715,9 @@
       "invalid": "Utilisez des lettres minuscules et des chiffres, des mots reliés par des tirets. Quelques mots sont réservés aux pages de Peal.",
       "unknown": "Peal n’a pas pu vérifier /{slug}. Vous pouvez quand même essayer."
     },
-    "createTitle": "Créer un espace de travail"
+    "createTitle": "Créer un espace de travail",
+    "back": "Retour",
+    "staffNoWorkspace": "Cette personne n’a pas encore d’espace de travail. L’équipe qui agit à sa place ne peut pas en créer."
   },
   "InvitationPage": {
     "title": "Rejoindre un espace de travail",
@@ -2321,9 +2320,7 @@
       "empty": "Rien pour l’instant. Quand une publication part, échoue ou doit être vérifiée, ou qu’un canal doit être reconnecté, cela s’affiche ici."
     },
     "preferences": {
-      "title": "Préférences de notification",
       "description": "Toutes les notifications s’affichent dans Peal. Choisissez celles que vous recevez aussi par e-mail, et si vous êtes prévenu pour les publications des autres membres.",
-      "back": "Retour aux notifications",
       "legend": "M’envoyer un e-mail quand",
       "postFailed": "Une publication n’est pas partie",
       "postUnconfirmed": "Une publication est peut-être partie, et doit être vérifiée sur la plateforme",
@@ -3045,7 +3042,10 @@
       "messages": "Messages privés",
       "comment": "Commentaire",
       "review": "Avis",
-      "message": "Message"
+      "message": "Message",
+      "account": "Compte",
+      "notifications": "Notifications",
+      "notificationSettings": "Préférences de notification"
     },
     "help": "Aide",
     "shortcuts": "Raccourcis clavier",
@@ -3184,17 +3184,6 @@
         "install": "Installez le SDK",
         "call": "Faites un premier appel"
       }
-    }
-  },
-  "PersonalShell": {
-    "label": "Vos pages",
-    "workspaces": "Espaces de travail",
-    "pages": {
-      "agenda": "Agenda",
-      "report": "Rapport",
-      "notices": "Notifications",
-      "account": "Compte",
-      "newWorkspace": "Nouvel espace de travail"
     }
   },
   "Webhooks": {
@@ -4900,42 +4889,6 @@
     "edit": "Modifier",
     "save": "Enregistrer",
     "saved": "Le flux est enregistré."
-  },
-  "Overview": {
-    "agenda": {
-      "title": "Agenda",
-      "description": "Ce qui part ces 14 prochains jours, dans les espaces où vous pouvez lire les publications. Chaque publication s’ouvre dans son espace.",
-      "filter": "Espace",
-      "allWorkspaces": "Tous les espaces",
-      "loading": "Chargement de l’agenda…",
-      "loadFailed": "L’agenda n’a pas pu être chargé.",
-      "reload": "Réessayer",
-      "empty": "Rien ne part ces 14 prochains jours.",
-      "loadMore": "Afficher plus",
-      "listLabel": "Publications du {day}",
-      "noPlatform": "Plus aucun canal",
-      "noText": "(sans texte)",
-      "status": "{status, select, awaitingApproval {En attente d’approbation} scheduled {Programmée} publishing {En cours de publication} finished {Terminée} other {{status}}}",
-      "time": "{at, time, short}",
-      "day": "{at, date, full}"
-    },
-    "report": {
-      "title": "Rapport de tous les espaces",
-      "download": "Télécharger le CSV",
-      "loading": "Chargement du rapport…",
-      "loadFailed": "Le rapport n’a pas pu être chargé.",
-      "reload": "Réessayer",
-      "loadMore": "Afficher plus",
-      "empty": "Vous n’appartenez encore à aucun espace de travail.",
-      "workspace": "Espace",
-      "followers": "Abonnés",
-      "notRead": "Votre rôle ici ne permet pas de lire les statistiques.",
-      "refused": "Exige la validation en deux étapes.",
-      "noFigure": "Non donné",
-      "change": "{change, number, ::+!}",
-      "previous": "À côté du {from} au {to}.",
-      "caption": "Totaux des publications parues du {from} au {to}, chacun avec son évolution par rapport aux jours d’avant : un tiret quand aucune plateforme ne donne un compte, et aucune évolution quand les jours d’avant ne sont plus tous conservés. Chaque plateforme compte à sa façon : comparez donc un espace avec lui-même, pas avec un autre."
-    }
   },
   "Platforms": {
     "title": "Plateformes",

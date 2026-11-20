@@ -14,27 +14,18 @@
  */
 export const workspaceSlugMaxLength = 48;
 
-/** The person's own pages, across their workspaces: `/agenda`… */
-export const personalPageSegments: readonly string[] = [
-  "account",
-  "agenda",
-  "new",
-  "notices",
-  "report",
-];
-
 /**
  * Every first segment of the web app's addresses that is not a workspace:
- * the person's pages, the other pages (a test reads the web app's folders
- * so none is left out), what the proxy and the server answer, the
- * languages, and `app`, the old prefix.
+ * its other pages (`create`, where another workspace is made, and the rest:
+ * a test reads the web app's folders so none is left out), what the proxy
+ * and the server answer, the languages, and `app`, the old prefix.
  */
 export const reservedWorkspaceSlugs: readonly string[] = [
-  ...personalPageSegments,
   "admin",
   "cancel",
   "connect",
   "contract-request",
+  "create",
   "data-deletion",
   "device",
   "forgot-password",

@@ -1,13 +1,7 @@
 "use client";
 
 import { Option } from "effect";
-import {
-  BellIcon,
-  CalendarRangeIcon,
-  ChartNoAxesColumnIcon,
-  LogOutIcon,
-  UserIcon,
-} from "lucide-react";
+import { BellIcon, LogOutIcon, UserIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "peal-ui/components/avatar";
 import { Button } from "peal-ui/components/button";
@@ -28,11 +22,17 @@ import { useMeasurementSignOut } from "#components/measurement/measurement.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { useUnreadNotices } from "#components/notices/use-unread-notices.ts";
 import { useRouter } from "#i18n/navigation.ts";
+import { hrefOf } from "#shell/navigation.ts";
 
 interface AccountMenuViewProps {
   readonly email: string;
   readonly image?: string | null;
   readonly name: string;
+  /**
+   * The workspace whose settings hold the person's pages (the one open, or
+   * their first): none for someone without any, who has only Sign out.
+   */
+  readonly workspaceSlug: string | null;
 }
 
 // The account's round avatar: its picture, or its first letter; a blue dot
@@ -64,6 +64,7 @@ const Menu = ({
   image,
   name,
   unread,
+  workspaceSlug,
 }: AccountMenuViewProps & {
   readonly announcement: string;
   readonly unread: Option.Option<number>;
@@ -120,28 +121,26 @@ const Menu = ({
             <DropdownMenuLabel>{t("signedInAs", { email })}</DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={go("/notices")}>
-            <BellIcon aria-hidden />
-            <span className="flex-1">{t("notifications")}</span>
-            {count > 0 ? (
-              <span className="text-brand-text text-xs font-medium tabular-nums">
-                {count}
-              </span>
-            ) : null}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={go("/agenda")}>
-            <CalendarRangeIcon aria-hidden />
-            {t("agenda")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={go("/report")}>
-            <ChartNoAxesColumnIcon aria-hidden />
-            {t("report")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={go("/account")}>
-            <UserIcon aria-hidden />
-            {account("menu")}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          {workspaceSlug === null ? null : (
+            <>
+              <DropdownMenuItem
+                onSelect={go(hrefOf(workspaceSlug, "notifications"))}
+              >
+                <BellIcon aria-hidden />
+                <span className="flex-1">{t("notifications")}</span>
+                {count > 0 ? (
+                  <span className="text-brand-text text-xs font-medium tabular-nums">
+                    {count}
+                  </span>
+                ) : null}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={go(hrefOf(workspaceSlug, "account"))}>
+                <UserIcon aria-hidden />
+                {account("menu")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem onSelect={handleSignOut}>
             <LogOutIcon aria-hidden />
             {t("signOut")}
@@ -164,10 +163,9 @@ const LiveMenu = (props: AccountMenuViewProps) => {
 /**
  * The signed-in person's corner, at the bottom left of the frame (DESIGN.md,
  * "The frame"): their avatar alone, with a dot while notices wait
- * unread, opening their notifications (with the count), their agenda and
- * report across workspaces, their account (its language among its
- * settings), and signing out, after which the page renders again without
- * the session.
+ * unread, opening their notifications (with the count) and their account
+ * (its language among its settings), both in a workspace's settings, and
+ * signing out, after which the page renders again without the session.
  */
 export const AccountMenuView = (props: AccountMenuViewProps) => {
   const hydrated = useHydrated();

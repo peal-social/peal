@@ -8,7 +8,7 @@ import { mcpEndpoint } from "#commands/mcp.ts";
 import { CredentialStore } from "#credentials.ts";
 import { display } from "#display.ts";
 import { DoctorFailed } from "#doctor-failed.ts";
-import { accountPageOf, adsScope, publishScope } from "#explain.ts";
+import { adsScope, publishScope, twoStepFixOf } from "#explain.ts";
 import { jsonFlag, printJson } from "#json.ts";
 import { columns } from "#print.ts";
 import {
@@ -175,7 +175,7 @@ const lockedOut = (
         failing(
           "workspace",
           `${membershipLine(workspace)} requires two-step verification, which your account does not have on: the server refuses every command there.`,
-          `Turn it on at ${accountPageOf(url)}, then run the command again.`
+          twoStepFixOf(url)
         )
       )
     : Option.none();

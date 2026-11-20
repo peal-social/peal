@@ -67,7 +67,12 @@
   post:read, analytics' totals where they hold analytics:read: the
   workspace's own posts, counted and the first five of each week
   (`digestListed`), never a comment or its author. Weeks and days are
-  UTC (`digestWeekOf`), as readers' zones are not known.
+  UTC (`digestWeekOf`), as readers' zones are not known. Its links are
+  the web app's workspace pages, named by the workspace's id as the
+  server's other links are (the web app sends them on to the slug): each
+  workspace's calendar, and, for its button and its footer's preferences,
+  the calendar and `settings/notifications` of the first workspace with
+  news.
 - A reader is taken before being read (`claimDigest`: a lease in
   `weekly_digest_lease`, stale after `DigestPaceRef.lease`, refused once
   they no longer want it), and the week is marked
@@ -90,11 +95,11 @@
 - Each digest carries `List-Unsubscribe` and `List-Unsubscribe-Post`
   (RFC 8058) to `/api/notifications/weekly-digest/unsubscribe/<token>`
   (`src/app/weekly-digest/`, outside the contract): a POST turns that
-  digest off and nothing else, a GET only redirects to the preferences.
+  digest off and nothing else, a GET only redirects to the web app's `/`
+  (which opens the reader's workspace), as the token names none.
   Tokens (`DigestLinks`, `HmacDigestLinks`) are the HMAC of the user and
   `weekly_digest_links` with a key derived from BETTER_AUTH_SECRET (a
   fixed label), have no lifetime, and are revoked when the digest goes
   from off to on, which moves the generation (said on while on, it does
   not). The path is never traced (`src/app/untraced-paths.ts`), as
-  `url.full` would keep the token. Its footer links the notification
-  preferences too.
+  `url.full` would keep the token.

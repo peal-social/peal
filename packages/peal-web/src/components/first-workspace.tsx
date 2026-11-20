@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { authClient } from "#auth/client.ts";
 import { CreateWorkspaceForm } from "#components/create-workspace-form.tsx";
+import { SetupColumn } from "#components/setup/setup-column.tsx";
 import { useRouter } from "#i18n/navigation.ts";
 import {
   decodeInvitations,
@@ -54,18 +55,16 @@ export const FirstWorkspace = ({ name }: { readonly name: string }) => {
   }, [router]);
 
   if (invited !== false) {
-    return <output className="text-muted-foreground">{t("settingUp")}</output>;
+    return (
+      <output className="text-muted-foreground mx-auto py-24 text-sm">
+        {t("settingUp")}
+      </output>
+    );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-8 py-[12vh]">
-      <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {t("createTitle")}
-        </h1>
-        <p className="text-muted-foreground text-sm">{t("firstDescription")}</p>
-      </div>
+    <SetupColumn>
       <CreateWorkspaceForm initialName={name} />
-    </div>
+    </SetupColumn>
   );
 };

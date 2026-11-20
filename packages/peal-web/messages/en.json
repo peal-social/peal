@@ -584,9 +584,7 @@
     "app": "Workspaces",
     "signOut": "Sign out",
     "signOutFailed": "Signing out failed. Try again.",
-    "notifications": "Notifications",
-    "agenda": "Agenda",
-    "report": "Report"
+    "notifications": "Notifications"
   },
   "NotFoundPage": {
     "title": "Page not found",
@@ -702,7 +700,6 @@
     "requestAgain": "Ask for a new link"
   },
   "AppPage": {
-    "createDescription": "You will own it, and can invite people to it.",
     "workspaceName": "Name",
     "create": "Create workspace",
     "creating": "Creating…",
@@ -718,7 +715,9 @@
       "invalid": "Use lower-case letters and digits, with words joined by hyphens. A few words are kept for Peal's own pages.",
       "unknown": "Peal couldn't check /{slug}. You can still try it."
     },
-    "createTitle": "Create a workspace"
+    "createTitle": "Create a workspace",
+    "back": "Back",
+    "staffNoWorkspace": "This person has no workspace yet. Staff acting as them can’t create one."
   },
   "InvitationPage": {
     "title": "Join a workspace",
@@ -2321,9 +2320,7 @@
       "empty": "Nothing yet. When a post goes out, fails or needs checking, or a channel must be reconnected, it shows here."
     },
     "preferences": {
-      "title": "Notification preferences",
       "description": "Every notification appears in Peal. Choose which ones also reach you by email, and whether you hear about other members’ posts.",
-      "back": "Back to the notifications",
       "legend": "Email me when",
       "postFailed": "A post did not go out",
       "postUnconfirmed": "A post may have gone out, and needs checking on the platform",
@@ -3045,7 +3042,10 @@
       "messages": "Direct messages",
       "comment": "Comment",
       "review": "Review",
-      "message": "Message"
+      "message": "Message",
+      "account": "Account",
+      "notifications": "Notifications",
+      "notificationSettings": "Notification preferences"
     },
     "help": "Help",
     "shortcuts": "Keyboard shortcuts",
@@ -3184,17 +3184,6 @@
         "install": "Install the SDK",
         "call": "Make a first call"
       }
-    }
-  },
-  "PersonalShell": {
-    "label": "Your pages",
-    "workspaces": "Workspaces",
-    "pages": {
-      "agenda": "Agenda",
-      "report": "Report",
-      "notices": "Notifications",
-      "account": "Account",
-      "newWorkspace": "New workspace"
     }
   },
   "Webhooks": {
@@ -4900,42 +4889,6 @@
     "edit": "Edit",
     "save": "Save",
     "saved": "The feed is saved."
-  },
-  "Overview": {
-    "agenda": {
-      "title": "Agenda",
-      "description": "What goes out in the next 14 days, across the workspaces where you may read posts. Each post opens in its workspace.",
-      "filter": "Workspace",
-      "allWorkspaces": "All workspaces",
-      "loading": "Loading the agenda…",
-      "loadFailed": "The agenda could not be loaded.",
-      "reload": "Try again",
-      "empty": "Nothing goes out in the next 14 days.",
-      "loadMore": "Load more",
-      "listLabel": "Posts going out on {day}",
-      "noPlatform": "No channel left",
-      "noText": "(no text)",
-      "status": "{status, select, awaitingApproval {Waiting for approval} scheduled {Scheduled} publishing {Publishing} finished {Finished} other {{status}}}",
-      "time": "{at, time, short}",
-      "day": "{at, date, full}"
-    },
-    "report": {
-      "title": "Report across workspaces",
-      "download": "Download CSV",
-      "loading": "Loading the report…",
-      "loadFailed": "The report could not be loaded.",
-      "reload": "Try again",
-      "loadMore": "Load more",
-      "empty": "You do not belong to any workspace yet.",
-      "workspace": "Workspace",
-      "followers": "Followers",
-      "notRead": "Your role here does not read analytics.",
-      "refused": "Requires two-step verification.",
-      "noFigure": "Not given",
-      "change": "{change, number, ::+!}",
-      "previous": "Beside {from} to {to}.",
-      "caption": "Totals of the posts published from {from} to {to}, each with its change against the days before: a dash where no platform gives a count, and no change where the days before are no longer all kept. Each platform counts differently, so compare a workspace with itself, not with another."
-    }
   },
   "Platforms": {
     "title": "Platforms",

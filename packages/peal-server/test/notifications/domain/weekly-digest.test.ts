@@ -46,9 +46,9 @@ const studio: LinkedDigestWorkspace = {
 };
 
 const email = (locale: Locale, workspaces = [studio]): DigestEmail => ({
-  agendaUrl: "https://app.example.test/agenda",
+  calendarUrl: "https://app.example.test/2f9a/calendar",
   locale,
-  preferencesUrl: "https://app.example.test/notices/preferences",
+  preferencesUrl: "https://app.example.test/2f9a/settings/notifications",
   week,
   workspaces,
 });
@@ -109,7 +109,7 @@ describe(renderWeeklyDigest, () => {
         "- and 5 more",
         "Engagement with the week’s posts, as last counted: 1,234.",
         "Open the calendar of Studio <Nord> & Co: https://app.example.test/2f9a/calendar",
-        "turn it off in your notification preferences (https://app.example.test/notices/preferences).",
+        "turn it off in your notification preferences (https://app.example.test/2f9a/settings/notifications).",
       ].filter((expected) => !text.includes(expected))
     ).toStrictEqual([]);
     expect(text).not.toContain("Impressions");
@@ -122,9 +122,9 @@ describe(renderWeeklyDigest, () => {
     expect(html).toContain("Launch day &lt;b&gt;soon&lt;/b&gt;");
     expect(html).not.toContain("<b>soon</b>");
     expect(html).toContain(
-      '<a href="https://app.example.test/notices/preferences" style="color:#52525b;">your notification preferences</a>'
+      '<a href="https://app.example.test/2f9a/settings/notifications" style="color:#52525b;">your notification preferences</a>'
     );
-    expect(html).toContain('href="https://app.example.test/agenda"');
+    expect(html).toContain('href="https://app.example.test/2f9a/calendar"');
   });
 
   it("is written in French, with French plurals", () => {

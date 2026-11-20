@@ -2,6 +2,8 @@
 
 import type { LucideIcon } from "lucide-react";
 import {
+  BellIcon,
+  BellRingIcon,
   NewspaperIcon,
   CableIcon,
   CalendarDaysIcon,
@@ -33,6 +35,7 @@ import {
   SparklesIcon,
   SquarePenIcon,
   TagIcon,
+  UserIcon,
   UsersIcon,
   WebhookIcon,
 } from "lucide-react";
@@ -52,8 +55,7 @@ import type { ComponentProps, ComponentType, ReactNode } from "react";
 import { useCloseMenu } from "#components/shell/frame-view.tsx";
 import { PealMark } from "#components/shell/peal-mark.tsx";
 import type { Link, Mode, Navigation, Page } from "#shell/navigation.ts";
-import { personalHrefOf } from "#shell/personal.ts";
-import { workspacePath } from "#shell/workspace-path.ts";
+import { createWorkspacePath, workspacePath } from "#shell/workspace-path.ts";
 
 /** A link of the app, which the container makes from next-intl's. */
 export type LinkComponent = ComponentType<{
@@ -66,6 +68,7 @@ export type LinkComponent = ComponentType<{
 
 /** Each page's icon, in the sidebar and the command menu. */
 export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
+  account: UserIcon,
   ads: MegaphoneIcon,
   analytics: ChartColumnIcon,
   apiKeys: KeyRoundIcon,
@@ -91,6 +94,8 @@ export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
   followUps: ReplyIcon,
   commentRules: MessageSquareReplyIcon,
   messages: MessagesSquareIcon,
+  notificationSettings: BellRingIcon,
+  notifications: BellIcon,
   security: ShieldIcon,
   signatures: PenLineIcon,
   tags: TagIcon,
@@ -342,10 +347,7 @@ export const SidebarView = ({
             )}
             <DropdownMenuItem
               render={
-                <LinkTo
-                  href={personalHrefOf("newWorkspace")}
-                  onClick={navigated}
-                >
+                <LinkTo href={createWorkspacePath} onClick={navigated}>
                   {t("workspaces.create")}
                 </LinkTo>
               }

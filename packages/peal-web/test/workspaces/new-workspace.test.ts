@@ -17,16 +17,15 @@ import {
 } from "#workspaces/new-workspace.ts";
 
 describe(isWorkspaceSlug, () => {
-  it("takes lower-case words, never a personal page, an id or other characters", () => {
+  it("takes lower-case words, never another page, an id or other characters", () => {
     expect(isWorkspaceSlug("maple-studio")).toBeTruthy();
     expect(isWorkspaceSlug("studio2")).toBeTruthy();
 
     for (const refused of [
-      "agenda",
-      "account",
-      "notices",
-      "report",
-      "new",
+      "create",
+      "admin",
+      "sign-in",
+      "invitations",
       "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e31",
       "Studio",
       "two words",
@@ -73,15 +72,15 @@ describe(suggestedSlugOf, () => {
 
   it("offers nothing for an empty name, and the tail for a reserved word", () => {
     expect(suggestedSlugOf("", null)).toBe("");
-    expect(suggestedSlugOf("Agenda", null)).toBe("agenda");
-    expect(suggestedSlugOf("Agenda", "1a2b")).toBe("agenda-1a2b");
+    expect(suggestedSlugOf("Create", null)).toBe("create");
+    expect(suggestedSlugOf("Create", "1a2b")).toBe("create-1a2b");
     expect(suggestedSlugOf("!!!", "1a2b")).toBe("workspace-1a2b");
   });
 });
 
 describe(slugAvailabilityOf, () => {
   it("refuses before asking, and reads only the answer for that slug", () => {
-    expect(slugAvailabilityOf("agenda", null)).toBe("invalid");
+    expect(slugAvailabilityOf("create", null)).toBe("invalid");
     expect(slugAvailabilityOf("Two Words", null)).toBe("invalid");
     expect(slugAvailabilityOf("maple-studio", null)).toBe("checking");
     expect(
@@ -93,12 +92,6 @@ describe(slugAvailabilityOf, () => {
         slug: "maple-studio",
       })
     ).toBe("taken");
-  });
-
-  it("knows Better Auth's answers for a slug another workspace holds", () => {
-    expect(slugTaken("ORGANIZATION_ALREADY_EXISTS")).toBeTruthy();
-    expect(slugTaken("ORGANIZATION_SLUG_ALREADY_TAKEN")).toBeTruthy();
-    expect(slugTaken("FREE_WORKSPACE_LIMIT_REACHED")).toBeFalsy();
   });
 
   it("knows Better Auth's answers for a slug another workspace holds", () => {

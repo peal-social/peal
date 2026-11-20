@@ -354,9 +354,15 @@ describe(SendWeeklyDigests, () => {
 
         assert.isDefined(french);
         assert.include(french.subject, "Votre semaine sur Peal");
+        // Its button and its preferences are the first workspace's pages
+        // with news, named by its id.
         assert.include(
           french.text,
-          "https://app.example.test/fr/notices/preferences"
+          `https://app.example.test/fr/${workspaceId}/settings/notifications`
+        );
+        assert.include(
+          french.text,
+          `Ouvrir mon calendrier : https://app.example.test/fr/${workspaceId}/calendar`
         );
         assert.include(
           french.text,

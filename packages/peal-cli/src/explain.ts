@@ -428,14 +428,15 @@ const amountsIn = (currency: string, digits: MinorUnitDigits | undefined) => ({
 const refused = (reason: string) => new Refused({ reason });
 
 /**
- * Where a person turns two-step verification on: the account page of the
- * web app, which the API shares its address with.
+ * Where a person turns two-step verification on: their account's settings
+ * in the web app, which the API shares its address with, and whose `/`
+ * opens their workspace (one that requires it offers it in its place).
  */
-export const accountPageOf = (url: string): string =>
-  `${new URL(url).origin}/account`;
+export const twoStepFixOf = (url: string): string =>
+  `Turn it on in your account settings in the web app (${new URL(url).origin}/), then run the command again.`;
 
 const twoStepRequired = (url: string): string =>
-  `This workspace requires two-step verification. Turn it on at ${accountPageOf(url)}, then run the command again.`;
+  `This workspace requires two-step verification. ${twoStepFixOf(url)}`;
 
 const reasonOf =
   (url: string, digits?: MinorUnitDigits) =>

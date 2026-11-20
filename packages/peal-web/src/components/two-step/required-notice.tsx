@@ -10,9 +10,8 @@ import type { ReactNode } from "react";
 
 /**
  * What a member whose account lacks two-step verification sees instead of
- * a workspace that requires it: what its owners ask, and the way to the
- * account page (`action`, a link the page gives), nothing of the
- * workspace.
+ * a workspace that requires it: what its owners ask, and the way to turn
+ * it on (`action`, which the layout gives), nothing of the workspace.
  */
 export const TwoStepRequiredNotice = ({
   action,

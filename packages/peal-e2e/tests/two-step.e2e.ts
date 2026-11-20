@@ -61,7 +61,7 @@ describe("two-step verification", { serial: true }, () => {
       workspace
     );
 
-    await app.open("/account");
+    await app.open(`/${slug}/settings/account`);
     await screen.getByRole("main").getByRole("button", "Turn on").tap();
     await screen.getByLabel("Your password").fill(password);
     await screen.getByRole("button", "Continue").tap();

@@ -29,7 +29,7 @@ import { TwoStepSection } from "#components/account/two-step-section.tsx";
 import { ConsentSetting } from "#components/measurement/consent-controls.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
-import { personalPageTitle } from "#shell/page-title.ts";
+import { workspacePageTitle } from "#shell/page-title.ts";
 
 const Section = ({
   children,
@@ -51,9 +51,13 @@ const Section = ({
   </Card>
 );
 
-// The signed-in user's account: their name and language, password,
-// sessions, connected applications, and their rights over their data.
-const AccountPage = async ({ params }: PageProps<"/[locale]/account">) => {
+// The signed-in person's account, in every workspace's settings (the
+// settings' layout checks the membership): their name and language,
+// password, sessions, connected applications, and their rights over their
+// data.
+const AccountPage = async ({
+  params,
+}: PageProps<"/[locale]/[workspaceId]/settings/account">) => {
   const { locale } = await params;
 
   if (!hasLocale(routing.locales, locale)) {
@@ -170,6 +174,6 @@ const AccountPage = async ({ params }: PageProps<"/[locale]/account">) => {
   );
 };
 
-export const generateMetadata = personalPageTitle("account");
+export const generateMetadata = workspacePageTitle("account");
 
 export default AccountPage;

@@ -22,18 +22,17 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
   "workspace slugs",
   (it) => {
     it.effect(
-      "refuse a slug the web app cannot route: a personal page, an id, other characters",
+      "refuse a slug the web app cannot route: another page, an id, other characters",
       () =>
         Effect.gen(function* refused() {
           const app = yield* TestApp;
           const owner = yield* signedUp("slugs");
 
           for (const slug of [
-            "agenda",
-            "account",
-            "notices",
-            "report",
-            "new",
+            "create",
+            "admin",
+            "sign-in",
+            "invitations",
             randomUUID(),
             "Capitals",
             "two words",
@@ -52,10 +51,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             );
           }
 
-          const taken = `agenda-${randomUUID().slice(0, 8)}`;
+          const taken = `create-${randomUUID().slice(0, 8)}`;
 
           const made = yield* app.request("/api/auth/organization/create", {
-            body: { name: "Agenda", slug: taken },
+            body: { name: "Create", slug: taken },
             headers: { cookie: owner.cookies },
           });
 
@@ -79,7 +78,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
               headers: { cookie: owner.cookies },
             });
 
-          for (const slug of ["agenda", randomUUID(), "Two Words"]) {
+          for (const slug of ["create", randomUUID(), "Two Words"]) {
             const refused = yield* update(workspaceId, slug);
 
             assert.strictEqual(refused.status, 400, slug);

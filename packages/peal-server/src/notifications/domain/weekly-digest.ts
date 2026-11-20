@@ -104,8 +104,8 @@ export interface LinkedDigestWorkspace extends DigestWorkspace {
 
 /** A person's digest, as an email in their language. */
 export interface DigestEmail {
-  /** The pages across their workspaces, in their language. */
-  readonly agendaUrl: string;
+  /** Where its button opens: a workspace's calendar, in their language. */
+  readonly calendarUrl: string;
   readonly locale: Locale;
   /** Where they turn the digest off, in their language. */
   readonly preferencesUrl: string;
@@ -358,7 +358,7 @@ export const renderWeeklyDigest = (email: DigestEmail): RenderedEmail => {
       linkFallback: escapeHtml(catalog.layout.linkFallback),
       locale: email.locale,
       signature: escapeHtml(catalog.layout.signature),
-      url: escapeHtml(email.agendaUrl),
+      url: escapeHtml(email.calendarUrl),
     }),
     subject: fill(words.subject, range, keep),
     text: [
@@ -368,7 +368,7 @@ export const renderWeeklyDigest = (email: DigestEmail): RenderedEmail => {
         catalog.layout.textLink,
         new Map([
           ["action", words.action],
-          ["url", email.agendaUrl],
+          ["url", email.calendarUrl],
         ]),
         keep
       ),

@@ -6,12 +6,10 @@ import { getTranslations } from "next-intl/server";
 import { routing } from "#i18n/routing.ts";
 
 // The browser tab names the page, then where it is: "Analytics · Client A"
-// in a workspace (its layout's template adds the name), "Report · Peal" on
-// the person's own pages (the locale layout's).
+// in a workspace (its layout's template adds the name), "Create a
+// workspace · Peal" on the setup page (the locale layout's).
 
 type WorkspacePage = keyof Messages["WorkspaceShell"]["pages"];
-
-type PersonalPage = keyof Messages["PersonalShell"]["pages"];
 
 interface TitledProps {
   readonly params: Promise<{ readonly locale: string }>;
@@ -35,14 +33,12 @@ export const workspacePageTitle =
     return { title: t(page) };
   };
 
-/** One of the person's own pages' `generateMetadata`. */
-export const personalPageTitle =
-  (page: PersonalPage) =>
-  async (props: TitledProps): Promise<Metadata> => {
-    const t = await getTranslations({
-      locale: await localeOf(props),
-      namespace: "PersonalShell.pages",
-    });
+/** The setup page's `generateMetadata`, at `/` and `/create`: its title. */
+export const setupPageTitle = async (props: TitledProps): Promise<Metadata> => {
+  const t = await getTranslations({
+    locale: await localeOf(props),
+    namespace: "AppPage",
+  });
 
-    return { title: t(page) };
-  };
+  return { title: t("createTitle") };
+};

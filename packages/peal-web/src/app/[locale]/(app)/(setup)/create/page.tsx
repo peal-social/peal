@@ -1,19 +1,21 @@
 import { Option } from "effect";
 import { hasLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { currentUser } from "#auth/session.ts";
 import { UpgradePrompts } from "#components/billing/upgrade-prompts.tsx";
 import { CreateWorkspaceForm } from "#components/create-workspace-form.tsx";
+import { SetupColumn } from "#components/setup/setup-column.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
-import { personalPageTitle } from "#shell/page-title.ts";
+import { setupPageTitle } from "#shell/page-title.ts";
 
-// A new workspace, which the person owns and which opens once made: the
-// workspace switcher and the person's sidebar link here. The upgrade
-// dialog opens where the plan refuses one more.
-const NewWorkspacePage = async ({ params }: PageProps<"/[locale]/new">) => {
+// Another workspace, on the setup page with its name empty: the workspace
+// switcher's New workspace opens it. The person owns it, and it opens once
+// made. The upgrade dialog opens where the plan refuses one more.
+const CreateWorkspacePage = async ({
+  params,
+}: PageProps<"/[locale]/create">) => {
   const { locale } = await params;
 
   if (!hasLocale(routing.locales, locale)) {
@@ -26,18 +28,15 @@ const NewWorkspacePage = async ({ params }: PageProps<"/[locale]/new">) => {
     return redirect({ href: "/sign-in", locale });
   }
 
-  const t = await getTranslations("AppPage");
-
   return (
-    <div className="flex max-w-sm flex-col gap-4">
-      <p className="text-muted-foreground">{t("createDescription")}</p>
+    <SetupColumn>
       <UpgradePrompts current={null}>
         <CreateWorkspaceForm />
       </UpgradePrompts>
-    </div>
+    </SetupColumn>
   );
 };
 
-export const generateMetadata = personalPageTitle("newWorkspace");
+export const generateMetadata = setupPageTitle;
 
-export default NewWorkspacePage;
+export default CreateWorkspacePage;

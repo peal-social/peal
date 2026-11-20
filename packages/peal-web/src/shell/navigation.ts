@@ -14,6 +14,7 @@ export type Section = "posts" | "settings";
 
 /** The workspace pages the sidebar links to. */
 export type Page =
+  | "account"
   | "ads"
   | "home"
   | "platforms"
@@ -35,6 +36,8 @@ export type Page =
   | "media"
   | "members"
   | "messages"
+  | "notificationSettings"
+  | "notifications"
   | "partner"
   | "posts"
   | "queues"
@@ -72,7 +75,15 @@ const needs =
     required.every((permission) => permissions.has(permission));
 
 // What each page asks of its member, as the page itself checks it.
+// The person's own pages (their account, their notifications) are in every
+// workspace's settings, for anyone.
 const pages: Readonly<Record<Page, PageRule>> = {
+  account: {
+    may: anyone,
+    mode: "studio",
+    path: "/settings/account",
+    section: "settings",
+  },
   ads: { may: needs("ads:read"), mode: "studio", path: "/ads" },
   analytics: {
     may: needs("analytics:read"),
@@ -152,6 +163,18 @@ const pages: Readonly<Record<Page, PageRule>> = {
     may: needs("channel:connect"),
     mode: "studio",
     path: "/settings/messages",
+    section: "settings",
+  },
+  notificationSettings: {
+    may: anyone,
+    mode: "studio",
+    path: "/settings/notifications",
+    section: "settings",
+  },
+  notifications: {
+    may: anyone,
+    mode: "studio",
+    path: "/notifications",
     section: "settings",
   },
   partner: {
@@ -256,6 +279,9 @@ const sectionPages: Readonly<Record<Section, readonly Page[]>> = {
     "messages",
     "feeds",
     "assistant",
+    "account",
+    "notifications",
+    "notificationSettings",
   ],
 };
 

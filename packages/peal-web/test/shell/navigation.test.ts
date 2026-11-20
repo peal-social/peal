@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import type { Permission } from "peal-contract";
 
-import { navigationOf, pageLinksOf } from "#shell/navigation.ts";
+import { hrefOf, navigationOf, pageLinksOf } from "#shell/navigation.ts";
 
 const workspace = "synthetic-studio";
 const base = `/${workspace}`;
@@ -196,6 +196,9 @@ describe(navigationOf, () => {
       "recycling",
       "followUps",
       "feeds",
+      "account",
+      "notifications",
+      "notificationSettings",
     ]);
     expect(
       navigationOf({
@@ -204,6 +207,26 @@ describe(navigationOf, () => {
         workspace,
       }).section
     ).toBe("settings");
+  });
+
+  it("keeps the person's own pages in Settings, for any member", () => {
+    for (const [path, page] of [
+      ["/settings/account", "account"],
+      ["/notifications", "notifications"],
+      ["/settings/notifications", "notificationSettings"],
+    ] as const) {
+      const navigation = navigationOf({
+        pathname: `${base}${path}`,
+        permissions: [],
+        workspace,
+      });
+
+      expect([navigation.current, navigation.breadcrumb]).toStrictEqual([
+        page,
+        { page, section: "settings" },
+      ]);
+      expect(hrefOf(workspace, page)).toBe(`${base}${path}`);
+    }
   });
 
   it("keeps the inbox open as a split view on a thread, and names nothing on a page it does not list", () => {

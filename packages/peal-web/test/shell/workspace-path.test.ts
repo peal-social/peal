@@ -87,10 +87,10 @@ describe(homeWorkspaceOf, () => {
 });
 
 describe(isWorkspaceSegment, () => {
-  it("tells a workspace's segment from the person's own pages", () => {
+  it("tells a workspace's segment from the app's other pages", () => {
     expect(isWorkspaceSegment("synthetic-studio")).toBeTruthy();
-    expect(isWorkspaceSegment("agenda")).toBeFalsy();
-    expect(isWorkspaceSegment("new")).toBeFalsy();
+    expect(isWorkspaceSegment("create")).toBeFalsy();
+    expect(isWorkspaceSegment("sign-in")).toBeFalsy();
     expect(isWorkspaceSegment("")).toBeFalsy();
   });
 });

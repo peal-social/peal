@@ -10,7 +10,7 @@ import { Option, Schema } from "effect";
 import { projectToken, requestsFile } from "../scripts/posthog.ts";
 import { emailedLink } from "./support/mailpit.ts";
 import { asPerson } from "./support/person.ts";
-import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
+import { openedWorkspace } from "./support/workspaces.ts";
 
 // How the web app measures a member's use, read from what the stand-in for
 // PostHog received (scripts/posthog.ts): anonymous page views with nothing
@@ -517,7 +517,7 @@ describe("the web app's measurement", { serial: true }, () => {
   }) => {
     await asPerson(browser);
     await watchTags(browser);
-    await app.open("/account");
+    await app.open(`/${slug}/settings/account`);
     await screen.getByRole("button", "Don’t allow").tap();
     await expect(screen.getByText(/^Not allowed since /u)).toBeVisible();
 
@@ -527,7 +527,10 @@ describe("the web app's measurement", { serial: true }, () => {
     withdrawnAt = linesSoFar();
 
     // In place, without a reload: a link of the app.
-    await screen.getByRole("link", "Agenda").tap();
+    await screen
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Members")
+      .tap();
 
     const views = await eventually(
       () =>
@@ -560,8 +563,6 @@ describe("the web app's measurement", { serial: true }, () => {
     expect(stored.filter((key) => key.startsWith("ph_"))).toEqual([]);
 
     // In place, the app's own requests name the session no more.
-    await screen.getByRole("link", defaultWorkspaceOf(name)).tap();
-    await screen.getByRole("link", "Settings").tap();
     await screen
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Tags")

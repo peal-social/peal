@@ -331,7 +331,7 @@ describe("a new member's first post", { serial: true }, () => {
     await expect(
       screen.getByRole("heading", "Compte", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL("/fr/account");
+    await expect(browser).toHaveURL(`/fr/${slug}/settings/account`);
 
     // The account still keeps English, which it signed up in.
     await screen.getByRole("combobox", "Langue").tap();

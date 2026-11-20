@@ -10,7 +10,7 @@ export interface OpenedWorkspace {
 }
 
 // A workspace's page at the root (`/<slug>`, `/fr/<slug>`), as a full URL: a slug, never
-// one of the app's other first segments (`/sign-in`, `/account`).
+// one of the app's other first segments (`/sign-in`, `/create`).
 const workspacePage = new RegExp(
   String.raw`^https?://[^/]+(?:/fr)?/(?<slug>(?!(?:${reservedWorkspaceSlugs
     .map((segment) => segment.replaceAll(".", String.raw`\.`))
@@ -35,17 +35,17 @@ export const openedWorkspace = async (
   // to a workspace's page; someone without one stays there, where the
   // form shows once their invitations are read and the address it offers
   // is checked. Wait for whichever comes.
-  await expect
-    .poll(
-      async () =>
-        workspacePage.test(await browser.url())
-          ? "workspace"
-          : (await create.count()) > 0 && (await create.isEnabled())
-            ? "form"
-            : "waiting",
-      { timeout: 30_000 }
-    )
-    .not.toBe("waiting");
+  const arrived = async (): Promise<"form" | "waiting" | "workspace"> => {
+    if (workspacePage.test(await browser.url())) {
+      return "workspace";
+    }
+
+    return (await create.count()) > 0 && (await create.isEnabled())
+      ? "form"
+      : "waiting";
+  };
+
+  await expect.poll(arrived, { timeout: 30_000 }).not.toBe("waiting");
 
   if (!workspacePage.test(await browser.url())) {
     await create.tap();

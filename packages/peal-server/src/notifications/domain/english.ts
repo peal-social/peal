@@ -605,7 +605,7 @@ export const english: EmailCatalog = {
     gone: "it answered 410 Gone, which asks for no more deliveries.",
   },
   weeklyDigest: {
-    action: "Open my agenda",
+    action: "Open my calendar",
     calendar: "Open the calendar of {workspaceName}",
     counts: {
       awaitingApproval: {

@@ -64,7 +64,7 @@ describe(placeOf, () => {
   it.each([
     ["/", { pattern: "/", workspaceId: null }],
     ["/fr", { pattern: "/", workspaceId: null }],
-    ["/account", { pattern: "/account", workspaceId: null }],
+    ["/create", { pattern: "/create", workspaceId: null }],
     [
       `/${workspaceId}/posts?status=draft#top`,
       { pattern: "/:id/posts", workspaceId },
