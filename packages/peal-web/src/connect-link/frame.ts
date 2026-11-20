@@ -6,6 +6,10 @@ import { pendingLink } from "./pending-link.ts";
 
 const linkPage = /^\/connect\/link$/u;
 
+// The pages someone signs in, signs up or finds their way back in on.
+const signInPage =
+  /^(?:\/fr)?\/(?:sign-in|sign-up|forgot-password|reset-password|verify-email)$/u;
+
 const callbackPage = /^\/connect\/(?<platform>[^/]+)\/callback$/u;
 
 /**
@@ -17,7 +21,7 @@ const callbackPage = /^\/connect\/(?<platform>[^/]+)\/callback$/u;
  * people who come through a connect link and have no Peal account; or
  * none yet, while only the browser can tell which.
  */
-export type Frame = "app" | "hosted" | "own" | "unknown";
+export type Frame = "app" | "hosted" | "own" | "signIn" | "unknown";
 
 /** Whether the path is the platforms' callback page. */
 export const isCallbackPage = (pathname: string): boolean =>
@@ -35,6 +39,10 @@ export const frameOf = (pathname: string, cameThroughLink: boolean): Frame => {
 
   if (isCallbackPage(pathname) && cameThroughLink) {
     return "hosted";
+  }
+
+  if (signInPage.test(pathname)) {
+    return "signIn";
   }
 
   return isAppPath(pathname) ? "own" : "app";

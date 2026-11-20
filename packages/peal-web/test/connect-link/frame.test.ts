@@ -17,13 +17,20 @@ describe(frameOf, () => {
   });
 
   it("keeps the app's frame elsewhere", () => {
+    for (const path of ["/admin/users", "/oauth/consent", "/cancel"]) {
+      expect(frameOf(path, false)).toBe("app");
+    }
+  });
+
+  it("gives the sign-in pages theirs", () => {
     for (const path of [
       "/sign-in",
-      "/admin/users",
-      "/oauth/consent",
-      "/cancel",
+      "/fr/sign-up",
+      "/forgot-password",
+      "/reset-password",
+      "/verify-email",
     ]) {
-      expect(frameOf(path, false)).toBe("app");
+      expect(frameOf(path, false)).toBe("signIn");
     }
   });
 

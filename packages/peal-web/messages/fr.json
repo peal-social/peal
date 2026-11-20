@@ -641,33 +641,34 @@
     },
     "providers": {
       "continueWith": "Continuer avec {name}",
-      "or": "ou"
+      "email": "Continuer avec l’e-mail",
+      "lastUsed": "Vous avez utilisé {method} lors de votre dernière connexion",
+      "emailMethod": "l’e-mail",
+      "back": "Retour"
     }
   },
   "SignInPage": {
-    "title": "Se connecter",
-    "description": "Bon retour sur Peal.",
+    "title": "Se connecter à Peal",
     "submit": "Se connecter",
     "submitting": "Connexion…",
     "forgotPassword": "Mot de passe oublié ?",
-    "noAccount": "Pas encore de compte ?",
-    "signUp": "Créez-en un",
+    "noAccount": "Pas encore de compte ?",
+    "signUp": "S’inscrire",
     "resend": "Renvoyer le lien de confirmation",
     "resent": "Nous avons envoyé un nouveau lien de confirmation à {email}."
   },
   "SignUpPage": {
     "title": "Créez votre compte",
-    "description": "Rédigez une fois, planifiez partout.",
     "submit": "Créer mon compte",
     "submitting": "Création du compte…",
-    "acceptTerms": "En créant un compte, vous acceptez les conditions d’utilisation.",
-    "privacy": "Le traitement de vos données : la politique de confidentialité.",
     "haveAccount": "Vous avez déjà un compte ?",
     "signIn": "Se connecter",
     "checkInbox": "Consultez votre boîte de réception",
     "sent": "Nous avons envoyé un lien à {email}. Ouvrez-le pour confirmer votre adresse : il vous connecte.",
     "byInvitation": "Les comptes sont créés ici sur invitation",
-    "byInvitationDescription": "Ouvrez le lien de l’e-mail qui vous a invité dans un espace de travail, puis créez votre compte depuis cette page."
+    "byInvitationDescription": "Ouvrez le lien de l’e-mail qui vous a invité dans un espace de travail, puis créez votre compte depuis cette page.",
+    "terms": "En vous inscrivant, vous acceptez les <terms>conditions d’utilisation</terms> et la <privacy>politique de confidentialité</privacy>.",
+    "termsOnly": "En vous inscrivant, vous acceptez les <terms>conditions d’utilisation</terms>."
   },
   "VerifyEmailPage": {
     "title": "Adresse confirmée",

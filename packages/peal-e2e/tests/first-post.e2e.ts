@@ -73,7 +73,6 @@ describe("a new member's first post", { serial: true }, () => {
     await app.open("/sign-in");
     await screen.getByLabel("Email").fill(address());
     await screen.getByLabel("Password").fill(password());
-    // The header has a "Sign in" button too.
     await screen.getByRole("main").getByRole("button", "Sign in").tap();
 
     // Signing in opens /, which makes the member a workspace of their
@@ -349,10 +348,7 @@ describe("a new member's first post", { serial: true }, () => {
     // "/" is no page: signed out, it asks to sign in.
     await expect(browser).toHaveURL("/fr/sign-in");
     await expect(
-      screen.getByRole("main").getByRole("heading", "Se connecter")
-    ).toBeVisible();
-    await expect(
-      screen.getByRole("banner").getByRole("link", "Se connecter")
+      screen.getByRole("main").getByRole("heading", "Se connecter à Peal")
     ).toBeVisible();
     await app.open("/fr");
     await expect(browser).toHaveURL("/fr/sign-in");

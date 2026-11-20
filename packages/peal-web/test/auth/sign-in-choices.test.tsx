@@ -4,9 +4,10 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "@effect/vitest";
 
+import { lastSignInOf, methodsOf } from "#auth/last-sign-in.ts";
 import { needsPassword } from "#auth/password-state.ts";
 import { SetPasswordView } from "#components/account/set-password.tsx";
-import { ProviderButtonsView } from "#components/auth/provider-buttons.tsx";
+import { SignInChoicesView } from "#components/auth/sign-in-choices.tsx";
 
 import { ignore, render } from "../two-step/render.tsx";
 
@@ -16,75 +17,92 @@ import { ignore, render } from "../two-step/render.tsx";
 const googleAssetDigest =
   "4e5ead045e381e934bcfc37bbb36297fbb28060cc1023947909df392f14b271d";
 
-describe("the sign-in providers' buttons", () => {
-  it("show one outline button per provider, then the form's divider", async () => {
-    const html = await render(
-      "en",
-      <ProviderButtonsView
-        error={null}
-        pending={false}
-        providers={[
-          { id: "google", name: "Google" },
-          { id: "oidc", name: "Example Corp" },
-        ]}
-        onChoose={ignore}
-      />
-    );
+const providers = [
+  { id: "google", name: "Google" },
+  { id: "oidc", name: "Example Corp" },
+] as const;
 
-    expect(html).toContain("Continue with Google");
-    expect(html).toContain("Continue with Example Corp");
-    expect(html.match(/<button/gu)).toHaveLength(2);
-    expect(html).toContain(">or<");
+const choices = (last: "email" | "google" | "oidc" | null) => (
+  <SignInChoicesView
+    error={null}
+    last={last}
+    pending={false}
+    providers={providers}
+    onChoose={ignore}
+    onEmail={ignore}
+  />
+);
+
+describe("the ways to sign in", () => {
+  it("offer each provider, then email, the first as the main action", async () => {
+    const html = await render("en", choices(null));
+
+    expect(html.match(/<button/gu)).toHaveLength(3);
+    expect(html.indexOf("Continue with Google")).toBeLessThan(
+      html.indexOf("Continue with Example Corp")
+    );
+    expect(html.indexOf("Continue with Example Corp")).toBeLessThan(
+      html.indexOf("Continue with email")
+    );
+    expect(html).not.toContain("last time");
+  });
+
+  it("put the way used last first, saying so", async () => {
+    const html = await render("en", choices("email"));
+
+    expect(html.indexOf("Continue with email")).toBeLessThan(
+      html.indexOf("Continue with Google")
+    );
+    expect(html).toContain("You used email to sign in last time");
+  });
+
+  it("name a provider used last by its name", async () => {
+    const html = await render("en", choices("oidc"));
+
+    expect(html).toContain("You used Example Corp to sign in last time");
   });
 
   it("show Google's own mark, and lucide's key for the other", async () => {
-    const html = await render(
-      "en",
-      <ProviderButtonsView
-        error={null}
-        pending={false}
-        providers={[
-          { id: "google", name: "Google" },
-          { id: "oidc", name: "Example Corp" },
-        ]}
-        onChoose={ignore}
-      />
-    );
+    const html = await render("en", choices(null));
 
     expect(html).toMatch(/<image href="[^"]+" width="40" height="40">/u);
     expect(html).toContain('viewBox="10 10 20 20"');
     expect(html).toContain("lucide-key-round");
   });
 
-  it("show nothing on a server without providers", async () => {
-    await expect(
-      render(
-        "en",
-        <ProviderButtonsView
-          error={null}
-          pending={false}
-          providers={[]}
-          onChoose={ignore}
-        />
-      )
-    ).resolves.toBe("");
-  });
-
   it("speak French", async () => {
     const html = await render(
       "fr",
-      <ProviderButtonsView
+      <SignInChoicesView
         error="PROVIDER_TWO_STEP_PASSWORD"
+        last="google"
         pending={false}
         providers={[{ id: "google", name: "Google" }]}
         onChoose={ignore}
+        onEmail={ignore}
       />
     );
 
     expect(html).toContain("Continuer avec Google");
+    expect(html).toContain("Continuer avec l’e-mail");
+    expect(html).toContain(
+      "Vous avez utilisé Google lors de votre dernière connexion"
+    );
     expect(html).toContain(
       "Ce compte a la validation en deux étapes. Connectez-vous avec votre mot de passe et votre code."
     );
+  });
+});
+
+describe(methodsOf, () => {
+  it("leaves out a way the server no longer offers", () => {
+    expect(methodsOf([], "google")).toStrictEqual(["email"]);
+  });
+
+  it("reads only a way it knows from the cookie", () => {
+    expect(lastSignInOf("google")).toBe("google");
+    expect(lastSignInOf("passkey")).toBeNull();
+    expect(lastSignInOf(undefined)).toBeNull();
   });
 });
 
