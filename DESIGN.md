@@ -712,14 +712,15 @@ it. There is no bar across the top.
     workspace**, the setup page), then at the end two ghost icon buttons, **Search** (the
     command menu, ⌘K) and **New post** (C), each with a tooltip naming it
     and its key.
-  - The **modes**: PealStudio, for running a workspace's channels, and
+  - The **modes**: PealCreative, for running a workspace's channels, and
     PealAPI, for building on the API. They are the site's product names,
     one word each, never translated. Each page belongs to one mode, so the
     address carries it.
-  - The mode's navigation, in groups with a small label, listing only the
-    pages the member's permissions open, in **`sidebar-row`**s (34 px,
-    `{rounded.md}`, the current one on `accent`). A section with pages of
-    its own (Posts and Settings today) shows a chevron and **drills down**:
+  - The mode's navigation, in groups with a small label where the mode
+    has groups, listing only the pages the member's permissions open, in
+    **`sidebar-row`**s (34 px, `{rounded.md}`, the current one on
+    `accent`). A section with pages of its own (Posts, Automations and
+    Settings) shows a chevron and **drills down**:
     on its pages, the sidebar shows that section's pages under a back link.
   - Its **foot**: Settings.
 - **`panel`**: the page, white (`card`), a 1 px hairline, `{rounded.lg}`,
@@ -773,13 +774,23 @@ it. There is no bar across the top.
   be), in destructive text. Only this page draws its own title.
 - The contract functions close the panel's content, in small muted text.
 
-PealStudio holds Home, Calendar, Posts, Channels and Media, then Inbox,
-Analytics and Ads under Engage. PealAPI holds Platforms, then API keys and
-Webhooks under Build, and Partner under Partners; a page the API offers
-later (connect links, activity, usage, OAuth apps) joins it there. The
-person's own pages (Account, Notifications, Notification preferences) are
-in every workspace's Settings, after the workspace's own: there is no page
-across workspaces, and no sidebar of the person's.
+PealCreative holds, in this order and without group labels: Home,
+Channels, Posts, Analytics, Inbox, Ads and Automations. Posts drills down
+to the posts list (its states as tabs), Calendar, Articles, Media and
+Import; Automations to Queues, Repeating posts, Follow-ups, Feeds and
+Comment rules. The creator tool is the composer: New post (C) opens it
+full-bleed, with the writing assistant, the media library and the
+signatures inside it. PealAPI holds Platforms, then API keys and Webhooks
+under Build, and Partner under Partners; a page the API offers later
+(connect links, activity, usage, OAuth apps) joins it there. Settings
+keeps what runs the workspace itself: its name, members, invitations,
+security, billing, tags, channel sets, signatures and the assistant's
+providers. The person's own pages (Account, Notifications, Notification
+preferences) are in every workspace's Settings, after the workspace's own.
+
+Each workspace stands alone: no page reads across workspaces, and there is
+no sidebar of the person's (an agency sees its clients' workspaces
+together in PealAPI's Partner, or builds its own view with the SDKs).
 
 **Page names.** A page has one name, used in the sidebar, the breadcrumb,
 its title and the browser's tab ("Posts · Synthetic studio", and "Create
@@ -1109,12 +1120,12 @@ The docs are Blume, dressed in the same tokens: `theme.css` maps Blume's
 blocks and radius are the app's, and no colour is written there twice.
 
 - **Tabs**, across the top: Get started, Guides (running a workspace, the
-  app's PealStudio), Platforms, Developers (building on the API, the
+  app's PealCreative), Platforms, Developers (building on the API, the
   app's PealAPI), the API reference and Self-hosting. Each page belongs to one.
 - **Sidebar groups** take the names and the order of the app's own
   navigation, so a page and the screen it explains are called the same:
-  Guides has Channels, Posts, Media, Engage and Settings as labelled groups
-  (Blume's `flat` display). Elsewhere a section with pages of its own drills
+  Guides has Channels, Posts, Analytics, Inbox, Ads, Automations and
+  Settings as labelled groups (Blume's `flat` display). Elsewhere a section with pages of its own drills
   down, as the app's sidebar does (Blume's `page` display).
 - **Figures** a platform or a plan sets (text limits, prices) come from the
   contract as Blume variables, never typed into a page.
@@ -1153,7 +1164,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   (13 px, muted), with the `accent` hover; a row that names a brand, such
   as a platform, has its 16 px mark in the same tile and its name alone.
   A group's label may name a product, in ink and 500, followed by whom
-  it is for in muted text: Products has "PealStudio for marketing teams"
+  it is for in muted text: Products has "PealCreative for marketing teams"
   and "PealAPI for developers and agents".
   Cells side by side are as tall as each other; cells stacked in one
   column share its height, the last one taking what is left. A featured card
@@ -1243,7 +1254,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   mono group label: a 36 px bordered tile with an icon or a brand's mark,
   an arrow pointing out, a title (15 px, 600) and an optional line.
 - **Two products.** Peal is presented as two products on one workspace,
-  spelled `PealStudio` (for marketing teams) and `PealAPI` (for
+  spelled `PealCreative` (for marketing teams) and `PealAPI` (for
   developers and agents): the two sides of the app's mode switch (see
   [The frame](#the-frame)). A product's name is set as one word, in the
   text's own colour, never as a logo.
@@ -1326,9 +1337,9 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   buttons) and lead (right), one bordered `background` panel:
   ui-sdk's tabs as a segmented switch across its top, on `muted`, one
   segment per product with the mark in a 20 px tile (white for
-  PealStudio, ink for PealAPI, as the app's switch draws its modes); the
+  PealCreative, ink for PealAPI, as the app's switch draws its modes); the
   selected segment is `card` with the switch's shadow. Its panel holds
-  the product's demo: for PealStudio, the composer (one post, a tab per
+  the product's demo: for PealCreative, the composer (one post, a tab per
   channel, each platform's count against its limit from the contract, a
   preview beside it), for PealAPI a code block with line numbers, the
   request beside its response. Under the demo, a row of chips, one per
@@ -1345,7 +1356,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   Settings at its foot), the page in a white panel inset 6 px from the
   mock's top and right edges under its 48 px header (the page's name, and
   its actions where the page has some), the content in white cards
-  (PealStudio's calendar; PealAPI's keys and webhook deliveries), then a
+  (PealCreative's calendar; PealAPI's keys and webhook deliveries), then a
   36 px bottom bar with the account's round avatar at its start and Help
   at its end. Below 640 px the sidebar folds away, the panel fills the
   width and the switch moves into its header, where the app has its menu
@@ -1354,7 +1365,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   field, left-aligned: the eyebrow with the product's name, the section
   headline and an outline button to its docs on the left, the lead on the
   right, level with the button. On a phone: headline, lead, button.
-- **Product bento.** Under PealStudio's opening: two feature cells side
+- **Product bento.** Under PealCreative's opening: two feature cells side
   by side, each with a mock from the app (the composer's previews, one
   row per platform with its count and chip; the page a reviewer opens
   from a review link), then four tiles in a row (two on a phone), each
@@ -1439,7 +1450,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   questions are also the page's FAQPage JSON-LD.
 - **Footer**, on `background` under a full-width rule: the mark and the
   language menu in a first cell, then a bordered cell per column of
-  links, in this order: PealStudio, PealAPI (each product's docs pages),
+  links, in this order: PealCreative, PealAPI (each product's docs pages),
   Resources (the docs, the blog, the changelog, self-hosting, status,
   security), Socials (Peal's accounts, Discord and GitHub) and Company
   (pricing, cookie settings, which opens the consent notice where the
