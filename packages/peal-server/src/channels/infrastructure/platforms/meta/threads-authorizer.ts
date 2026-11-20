@@ -25,9 +25,14 @@ import type { MetaHttp } from "./meta-exchange.ts";
 
 export const threadsCallbackPath = "/connect/threads/callback";
 
-// Reading the account and publishing for it; replies and insights are not
+// Reading the account, publishing for it, and saying who may reply to a
+// post (`reply_control` needs threads_manage_replies); insights are not
 // asked for.
-const threadsScopes = ["threads_basic", "threads_content_publish"] as const;
+const threadsScopes = [
+  "threads_basic",
+  "threads_content_publish",
+  "threads_manage_replies",
+] as const;
 
 // Meta's Threads "Get Access Tokens and Permissions" and "Long-Lived Access
 // Tokens" pages: the code buys a short-lived token (an hour), which buys a

@@ -7,6 +7,7 @@ import { commentViolationsOn } from "#publishing/domain/first-comments.ts";
 import type { MediaFile } from "#publishing/domain/media-file.ts";
 import { followUpsOn } from "#publishing/domain/platform-rules.ts";
 import type { TargetOptions } from "#publishing/domain/target-options.ts";
+import { replyControlViolationsOn } from "#publishing/domain/threads-reply-control.ts";
 import { creatorViolationsOn } from "#publishing/domain/tiktok-creator.ts";
 
 import { ChannelGrants } from "./channel-grants.ts";
@@ -160,10 +161,34 @@ export class AccountRules extends Context.Service<
             );
       };
 
+      // A reply setting the channel's scopes do not cover; unknown scopes
+      // let the post through, and Threads refuses it.
+      const threads = (target: AccountTarget) =>
+        grants.scopesOf(target.channel.channelId).pipe(
+          Effect.map((scopes) => [
+            ...partsOff(target),
+            ...scopes.pipe(
+              Option.match({
+                onNone: () => [],
+                onSome: (granted) =>
+                  replyControlViolationsOn(
+                    target.channel,
+                    target.options,
+                    granted
+                  ),
+              })
+            ),
+          ])
+        );
+
       return AccountRules.of({
         violationsOn: (target) => {
           if (target.channel.platform === "tiktok") {
             return tiktok(target);
+          }
+
+          if (target.channel.platform === "threads") {
+            return threads(target);
           }
 
           return target.channel.platform === "bluesky"
