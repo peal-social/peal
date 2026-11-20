@@ -538,7 +538,7 @@ layer(MetaConnectTest)("connecting Meta accounts", (it) => {
       assert.strictEqual(url.searchParams.get("client_id"), threadsApp.appId);
       assert.strictEqual(
         url.searchParams.get("scope"),
-        "threads_basic,threads_content_publish"
+        "threads_basic,threads_content_publish,threads_manage_replies"
       );
       assert.strictEqual(
         url.searchParams.get("redirect_uri"),

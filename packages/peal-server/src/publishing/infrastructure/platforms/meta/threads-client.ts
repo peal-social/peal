@@ -118,7 +118,9 @@ const optionParams = (post: OutgoingPost): ContainerOptions => {
 
   const { linkAttachment, replyControl, topicTag } = chosen.value;
 
-  if (replyControl !== undefined) {
+  // Everyone may reply unless said otherwise: Threads' default is not
+  // sent, as any reply_control needs threads_manage_replies.
+  if (replyControl !== undefined && replyControl !== "everyone") {
     params.reply_control = replyControl;
   }
 

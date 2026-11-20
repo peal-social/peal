@@ -9,6 +9,7 @@ import type { ChannelOnPlatform } from "#publishing/domain/content-rules.ts";
 import { commentRestrictions } from "#publishing/domain/first-comments.ts";
 import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import { followUpsOn } from "#publishing/domain/platform-rules.ts";
+import { replyControlRestrictions } from "#publishing/domain/threads-reply-control.ts";
 import {
   creatorRestrictions,
   photosRefused,
@@ -147,10 +148,32 @@ export class AccountStandings extends Context.Service<
             )
           : Effect.succeed(unrestricted);
 
+      // Who may reply on a Threads channel: read from the scopes the
+      // channels context stored, asking Threads nothing.
+      const threads = (channel: ChannelOnPlatform) =>
+        grants.scopesOf(channel.channelId).pipe(
+          Effect.map(
+            Option.match({
+              onNone: () => unrestricted,
+              onSome: (scopes): AccountStanding => {
+                const restrictions = replyControlRestrictions(scopes);
+
+                return restrictions.length === 0
+                  ? unrestricted
+                  : { _tag: "read", blocked: undefined, restrictions };
+              },
+            })
+          )
+        );
+
       return AccountStandings.of({
         read: (channel) => {
           if (channel.platform === "tiktok") {
             return tiktok(channel);
+          }
+
+          if (channel.platform === "threads") {
+            return threads(channel);
           }
 
           return channel.platform === "bluesky"

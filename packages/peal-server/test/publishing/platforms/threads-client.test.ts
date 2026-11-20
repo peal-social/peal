@@ -507,6 +507,26 @@ describe("a Threads post's options", () => {
       });
     }).pipe(Effect.scoped)
   );
+
+  it.live(
+    "leave out everyone, Threads' default, which needs no permission",
+    () =>
+      Effect.gen(function* everyone() {
+        const { client, graph } = yield* onThreads();
+
+        yield* client.publish(
+          yield* outgoing({
+            accountId: threadsUserId,
+            options: Option.some(
+              new ThreadsOptions({ replyControl: "everyone" })
+            ),
+            text: "Anyone may reply",
+          })
+        );
+
+        assert.isUndefined(graph.containers()[0]?.params["reply_control"]);
+      }).pipe(Effect.scoped)
+  );
 });
 
 describe("a poll on Threads", () => {

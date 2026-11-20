@@ -148,7 +148,12 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   Bluesky names root and parent as strong references whose `cid` it reads
   back from the PDS, and refuses a part whose parent is gone
   (`replyTargetGone`). Threads' `reply_to_id` needs
-  `threads_manage_replies`, which Peal does not ask for: no parts there.
+  `threads_manage_replies`: no parts there yet. Its `reply_control` needs it
+  too, which Peal asks for since 2026-11-20: a channel whose stored scopes
+  lack it is refused `replyControl` other than `everyone` (`optionInvalid`,
+  `replyControlViolationsOn`) and told `optionNeedsReconnect`
+  (`replyControlRestrictions`), and `everyone`, Threads' default, is
+  never sent.
 - X documents that an app on self-serve access may reply only under a post
   whose author mentioned or quoted the replying account, and gives no code
   for the refusal: a 403 naming a reply, on a part after the first, is
