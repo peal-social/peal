@@ -25,6 +25,7 @@ import { useRouter } from "#i18n/navigation.ts";
 import { useMounted } from "#posts/use-mounted.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
 import {
+  createRefusalOf,
   slugAvailabilityOf,
   slugTaken,
   suggestedSlugOf,
@@ -80,13 +81,20 @@ const useSlugAvailability = (slug: string): SlugAvailability => {
   return slugAvailabilityOf(slug, checked);
 };
 
+// Better Auth's answer to making a workspace of this name and address.
+const createWorkspace = async (name: string, slug: string) =>
+  await authClient.organization.create({ name, slug });
+
 /**
  * Creates a workspace the user owns, then opens it: its name and its
  * address, both offered (`initialName`, the address from its words) and
  * both the person's to replace. The address follows the name until the
  * person writes one, and is checked as it changes: one another workspace
  * holds, while still the one offered, gets a few random letters at its
- * end. The workspace made becomes the session's active one.
+ * end, and so does one another workspace took between the check and
+ * Create, which is then tried again once (`createRefusalOf`); one the
+ * person wrote is said taken under the address. The workspace made
+ * becomes the session's active one.
  */
 export const CreateWorkspaceForm = ({
   initialName = "",
@@ -98,6 +106,11 @@ export const CreateWorkspaceForm = ({
   const [name, setName] = useState(initialName);
   const [written, setWritten] = useState<string | null>(null);
   const [error, setError] = useState<AuthErrorKey | null>(null);
+  // The offered address takes the spare letters once another workspace
+  // took its words under Create, until the name changes.
+  const [spareNeeded, setSpareNeeded] = useState(false);
+  // The address Create was last refused as taken.
+  const [refused, setRefused] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   // The few random letters an offered address takes when its words are
   // another workspace's, or a word the web app keeps.
@@ -111,23 +124,43 @@ export const CreateWorkspaceForm = ({
     (wordsAvailability === "taken" || wordsAvailability === "invalid");
 
   const slug = (
-    written ?? (wordsUnusable ? suggestedSlugOf(name, spare) : words)
+    written ??
+    (wordsUnusable || spareNeeded ? suggestedSlugOf(name, spare) : words)
   ).trim();
 
-  const availability = useSlugAvailability(slug);
+  const checkedAvailability = useSlugAvailability(slug);
+  const availability = refused === slug ? "taken" : checkedAvailability;
   const named = name.trim();
   // The address's start, as the browser has Peal open, once hydrated.
   const host = useMounted() ? globalThis.location.host : "";
-  const handleName = setName;
+
+  const handleName = (value: string) => {
+    setName(value);
+    setSpareNeeded(false);
+  };
+
+  // What to do once Create is refused for `tried`.
+  const refusalOf = (code: string | undefined, tried: string) =>
+    createRefusalOf({ code, name, spare, tried, written: written !== null });
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     startTransition(async () => {
-      const result = await authClient.organization.create({
-        name: named,
-        slug,
-      });
+      let tried = slug;
+      let result = await createWorkspace(named, tried);
+
+      // The offered address another workspace took since it was checked:
+      // once more, with the spare letters.
+      if (result.error !== null) {
+        const refusal = refusalOf(result.error.code, tried);
+
+        if (refusal.kind === "retry") {
+          setSpareNeeded(true);
+          tried = refusal.slug;
+          result = await createWorkspace(named, tried);
+        }
+      }
 
       if (result.error === null) {
         // Better Auth makes it active in the database, but the session's
@@ -137,9 +170,12 @@ export const CreateWorkspaceForm = ({
         setError(null);
         router.push(workspacePath(result.data.slug));
         router.refresh();
-      } else {
+      } else if (refusalOf(result.error.code, tried).kind === "form") {
         setError(authErrorKey(result.error));
         offerUpgrade(result.error);
+      } else {
+        setError(null);
+        setRefused(tried);
       }
     });
   };
