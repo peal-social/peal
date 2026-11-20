@@ -1,5 +1,5 @@
 // The deletion at PostHog an erasure starts is a message in the erasure's
-// own transaction, on the server's SQL cluster: it commits with the
+// own transaction, on a SQL cluster of its own tables: it commits with the
 // erasure, or leaves nothing, and nothing is logged for a rollback.
 import { randomUUID } from "node:crypto";
 
@@ -32,13 +32,16 @@ import {
 } from "#shared/infrastructure/workflows/forget-analytics.ts";
 import { sampleUserId as userId } from "#test/shared/product-event-samples.ts";
 
-const Cluster = clusterLayer({
-  entityMessagePollInterval: Duration.millis(100),
-  entityTerminationTimeout: Duration.zero,
-  runnerAddress: Option.some(
-    RunnerAddress.make("peal-server-analytics-erasures", 34_432)
-  ),
-});
+const Cluster = clusterLayer(
+  {
+    entityMessagePollInterval: Duration.millis(100),
+    entityTerminationTimeout: Duration.zero,
+    runnerAddress: Option.some(
+      RunnerAddress.make("peal-server-analytics-erasures", 34_432)
+    ),
+  },
+  "test_analytics_erasures"
+);
 
 const lines: string[] = [];
 
@@ -91,7 +94,7 @@ const messagesOf = (key: string) =>
   SqlClient.SqlClient.pipe(
     Effect.flatMap(
       (sql) =>
-        sql`SELECT count(*)::int AS count FROM cluster_messages WHERE payload LIKE ${`%${key}%`}`
+        sql`SELECT count(*)::int AS count FROM test_analytics_erasures_messages WHERE payload LIKE ${`%${key}%`}`
     ),
     Effect.flatMap(Schema.decodeUnknownEffect(CountSchema)),
     Effect.map((rows) => rows[0]?.count ?? 0)

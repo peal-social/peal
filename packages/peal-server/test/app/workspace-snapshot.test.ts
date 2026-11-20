@@ -43,13 +43,16 @@ const excluded = WorkspaceIdSchema.make(`${prefix}0`);
 
 const included = WorkspaceIdSchema.make(`${prefix}1`);
 
-const Cluster = clusterLayer({
-  entityMessagePollInterval: Duration.millis(100),
-  entityTerminationTimeout: Duration.zero,
-  runnerAddress: Option.some(
-    RunnerAddress.make("peal-server-workspace-snapshot", 34_433)
-  ),
-});
+const Cluster = clusterLayer(
+  {
+    entityMessagePollInterval: Duration.millis(100),
+    entityTerminationTimeout: Duration.zero,
+    runnerAddress: Option.some(
+      RunnerAddress.make("peal-server-workspace-snapshot", 34_433)
+    ),
+  },
+  "test_workspace_snapshot"
+);
 
 // The server's contexts, product analytics sending to the fake, with the
 // one workspace excluded.

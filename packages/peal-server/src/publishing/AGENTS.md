@@ -980,8 +980,12 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   (`isSuspended`, `isTargetWaiting`) before moving time; count calls with
   `callsOn` for your own channels. `test/publishing/posts-server.ts` runs the
   use cases and workflows on an in-memory cluster. `AppLive` gives publishing
-  an engine that runs no job, so scheduling through it fails. Only
-  `test/app/cluster.test.ts` runs a SQL runner.
+  an engine that runs no job, so scheduling through it fails.
+  `test/app/cluster.test.ts` runs a SQL runner on the server's own
+  `cluster_*` tables; another test that needs one passes `clusterLayer` a
+  table prefix of its own (`test_<name>`), as two SQL runners on one
+  database wait on each other's shards and a message lands where no runner
+  reads it.
 - Test files share one database and run together: a test that runs a
   purge of every workspace (`forgetExpiredKeys`) does so at virtual days
   well before every other test's (2025), so it deletes nothing of theirs.
