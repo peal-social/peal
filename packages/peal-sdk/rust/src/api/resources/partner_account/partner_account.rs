@@ -46,6 +46,13 @@ impl PartnerAccountClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<PartnerStanding, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -99,6 +106,9 @@ impl PartnerAccountClient {
     ) -> Result<Partner, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -146,6 +156,13 @@ impl PartnerAccountClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,
@@ -199,6 +216,9 @@ impl PartnerAccountClient {
     ) -> Result<Partner, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -246,6 +266,13 @@ impl PartnerAccountClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<PartnerKey>, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -302,6 +329,9 @@ impl PartnerAccountClient {
     ) -> Result<CreatedPartnerKey, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -354,6 +384,13 @@ impl PartnerAccountClient {
         partner_key_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,
@@ -408,6 +445,13 @@ impl PartnerAccountClient {
         request: &PartnerAccountOverviewQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<PartnerHealth, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -462,6 +506,13 @@ impl PartnerAccountClient {
         request: &PartnerAccountListWorkspacesQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<CustomerWorkspacePage, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,

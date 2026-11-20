@@ -46,6 +46,13 @@ impl ReviewClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ReviewSettings, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -97,6 +104,13 @@ impl ReviewClient {
         request: &ReviewSettings,
         options: Option<RequestOptions>,
     ) -> Result<ReviewSettings, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::PUT,
@@ -141,6 +155,13 @@ impl ReviewClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<ApprovalRequest>, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -186,6 +207,13 @@ impl ReviewClient {
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<PostReview, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -243,6 +271,9 @@ impl ReviewClient {
     ) -> Result<ReviewComment, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -301,6 +332,9 @@ impl ReviewClient {
     ) -> Result<ReviewComment, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -363,6 +397,9 @@ impl ReviewClient {
     ) -> Result<ApprovalOutcome, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -423,6 +460,9 @@ impl ReviewClient {
     ) -> Result<ChangesOutcome, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -474,6 +514,13 @@ impl ReviewClient {
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<ReviewLink>, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -533,6 +580,9 @@ impl ReviewClient {
     ) -> Result<CreatedReviewLink, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -584,6 +634,13 @@ impl ReviewClient {
         link_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ReviewLink, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,

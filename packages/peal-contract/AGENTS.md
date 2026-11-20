@@ -22,7 +22,12 @@
   /api/changelog` serves `api-changelog.json`, which only `bun
   scripts/compat.ts --release --date … --title …` (in `packages/peal-sdk`)
   writes, when the SDKs are released: it records what changed and makes the
-  current document the released one.
+  current document the released one. The latest entry's day is the API's
+  version (`apiVersion`, `src/api-version.ts`): the document's
+  `info.version`, the `Peal-Version` header the server answers with and
+  the one the SDKs and the command line send. The server counts what
+  clients send and answers them alike; it translates nothing between
+  versions.
 - `openApiDocument()` (`peal-contract/openapi-document`) is the API's
   OpenAPI 3.1 document with a `webhooks` section: one entry per event type
   and `webhook.test`, each a `post` with its `operationId`

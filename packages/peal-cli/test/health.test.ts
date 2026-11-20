@@ -2,6 +2,7 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Fiber, Layer, Runtime } from "effect";
 import type { HttpClient } from "effect/http";
 import { TestClock } from "effect/testing";
+import { apiVersion, apiVersionHeader } from "peal-contract";
 
 import { runWith } from "#cli.ts";
 import { HealthCheckFailed, healthTimeout } from "#commands/health.ts";
@@ -88,6 +89,22 @@ describe("peal health", () => {
       assert.instanceOf(error, HealthCheckFailed);
       assert.strictEqual(error.reason, "unreachable");
       assert.strictEqual(error.detail, "no answer within 5s");
+    })
+  );
+
+  it.effect("names the version of the API it was built against", () =>
+    Effect.gen(function* versioned() {
+      const sent: (string | null)[] = [];
+
+      yield* health(
+        fetching((request) => {
+          sent.push(request.headers.get(apiVersionHeader));
+
+          return new Response(null, { status: 204 });
+        })
+      );
+
+      assert.deepStrictEqual(sent, [apiVersion]);
     })
   );
 });

@@ -140,8 +140,12 @@ and no socket, for tests.
   otherwise; `peal.request_id` on log lines and the span; `RequestId` from
   `#shared/api/request-id.ts` for handlers), the headers handlers and
   middlewares left for it (`setAnswerHeader`, `#shared/api/answer-headers.ts`:
-  an error is encoded after they ran), a deprecated endpoint's headers, and
-  the error envelope.
+  an error is encoded after they ran), the API's version (`Peal-Version`,
+  `src/app/api-versions.ts`), a deprecated endpoint's headers, and the
+  error envelope. It counts each request of the API but the probes in
+  `peal.api.versions` by the `Peal-Version` its client sent (a release's
+  day, `none` or `unknown`, so the series stay few), and answers every
+  version alike.
 - Before any route runs, `ApiAnswersLive` answers 400 (`BadRequest`) to a
   path holding an encoded slash or backslash (`%2F`, `%5C`, any case), a
   backslash, or a dot segment, raw or encoded (`isRefusedPath`,
