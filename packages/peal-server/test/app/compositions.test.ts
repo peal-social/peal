@@ -18,13 +18,16 @@ import { DatabaseLive } from "#shared/infrastructure/database.ts";
 import { MigrationsLive } from "#shared/infrastructure/migrations.ts";
 import { storageSettings } from "#test/media/support.ts";
 
-const Cluster = clusterLayer({
-  entityMessagePollInterval: Duration.millis(100),
-  entityTerminationTimeout: Duration.zero,
-  runnerAddress: Option.some(
-    RunnerAddress.make("peal-server-compositions", 34_431)
-  ),
-});
+const Cluster = clusterLayer(
+  {
+    entityMessagePollInterval: Duration.millis(100),
+    entityTerminationTimeout: Duration.zero,
+    runnerAddress: Option.some(
+      RunnerAddress.make("peal-server-compositions", 34_431)
+    ),
+  },
+  "test_compositions"
+);
 
 const Built = ContextsLive.pipe(
   Layer.provideMerge(ProductAnalyticsLive),

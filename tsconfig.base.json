@@ -82,6 +82,8 @@
           "effect/cluster/ShardingConfig",
           "effect/cluster/SingleRunner",
           "effect/cluster/Snowflake",
+          "effect/cluster/SqlMessageStorage",
+          "effect/cluster/SqlRunnerStorage",
           "effect/crypto/Aead",
           "effect/crypto/Digest",
           "effect/crypto/Mac",
