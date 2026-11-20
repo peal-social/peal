@@ -32,6 +32,18 @@ export const SignInProviderSchema = Schema.Struct({
 export type SignInProvider = typeof SignInProviderSchema.Type;
 
 /**
+ * The cookie the server sets when a browser signs in, naming how: with a
+ * password (`email`) or a provider's id. The sign-in and sign-up pages
+ * offer that way first. It holds nothing else, and lasts 30 days.
+ */
+export const lastSignInCookie = "peal.last-sign-in";
+
+/** What `lastSignInCookie` may hold. */
+export const LastSignInSchema = Schema.Literals(["email", "google", "oidc"]);
+
+export type LastSignIn = typeof LastSignInSchema.Type;
+
+/**
  * Whether signing up and asking for a password reset need a Cloudflare
  * Turnstile token, and the site key the widget is shown with. Clients send
  * the widget's token in the `x-captcha-response` header. It also says who

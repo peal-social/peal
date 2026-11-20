@@ -641,33 +641,34 @@
     },
     "providers": {
       "continueWith": "Continue with {name}",
-      "or": "or"
+      "email": "Continue with email",
+      "lastUsed": "You used {method} to sign in last time",
+      "emailMethod": "email",
+      "back": "Back"
     }
   },
   "SignInPage": {
-    "title": "Sign in",
-    "description": "Welcome back to Peal.",
+    "title": "Sign in to Peal",
     "submit": "Sign in",
     "submitting": "Signing in…",
     "forgotPassword": "Forgot your password?",
-    "noAccount": "No account yet?",
-    "signUp": "Create one",
+    "noAccount": "Don’t have an account?",
+    "signUp": "Sign up",
     "resend": "Send the confirmation link again",
     "resent": "We sent a new confirmation link to {email}."
   },
   "SignUpPage": {
     "title": "Create your account",
-    "description": "Write posts once, schedule them everywhere.",
     "submit": "Create my account",
     "submitting": "Creating your account…",
-    "acceptTerms": "By creating an account, you accept the terms of service.",
-    "privacy": "How your data is processed: the privacy policy.",
     "haveAccount": "Already have an account?",
     "signIn": "Sign in",
     "checkInbox": "Check your inbox",
     "sent": "We sent a link to {email}. Open it to confirm your address: it signs you in.",
     "byInvitation": "Accounts here are made by invitation",
-    "byInvitationDescription": "Open the link in the email that invited you to a workspace, then create your account from there."
+    "byInvitationDescription": "Open the link in the email that invited you to a workspace, then create your account from there.",
+    "terms": "By signing up, you agree to the <terms>terms of service</terms> and the <privacy>privacy policy</privacy>.",
+    "termsOnly": "By signing up, you agree to the <terms>terms of service</terms>."
   },
   "VerifyEmailPage": {
     "title": "Email confirmed",

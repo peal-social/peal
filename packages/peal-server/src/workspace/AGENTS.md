@@ -377,6 +377,12 @@ The staff context follows these rules too. What the law has a host keep is in
 
 ## Sign-in providers
 
+- Better Auth's `lastLoginMethod` plugin sets `lastSignInCookie`
+  (`peal-contract`, `peal.last-sign-in`, 30 days, readable by the page)
+  to `email`, `google` or `oidc` whenever a sign-in sets the session
+  cookie, a second step counting as `email`; the web app's sign-in pages
+  read it to offer that way first. It stores nothing in the database.
+
 - Google (`GOOGLE_SIGN_IN_CLIENT_*`) and one OpenID Connect provider
   (`PEAL_OIDC_*`), read by `sign-in-provider-settings.ts` (each group all
   or nothing, the issuer https but on a loopback host, scopes with

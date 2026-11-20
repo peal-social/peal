@@ -991,12 +991,14 @@ export { PlatformRateLimited } from "./platform-rate-limited.ts";
 export {
   CaptchaApi,
   CaptchaSchema,
+  LastSignInSchema,
+  lastSignInCookie,
   SignInProviderSchema,
   SignUpModeSchema,
   signUpInvitationHeader,
 } from "./captcha.ts";
 
-export type { SignInProvider, SignUpMode } from "./captcha.ts";
+export type { LastSignIn, SignInProvider, SignUpMode } from "./captcha.ts";
 
 export type { Captcha } from "./captcha.ts";
 
