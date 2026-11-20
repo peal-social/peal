@@ -87,3 +87,9 @@ Chaque canal marqué à reconnecter est compté une fois dans `peal.channels.rec
 | `deauthorized`   | Le compte a retiré l’application sur la plateforme          |
 
 Les comptes ont rarement besoin d’être reconnectés tous en même temps. L’alerte `peal-channels-reconnect-wave` de la pile de production se déclenche quand plus de quatre canaux d’une même plateforme sont marqués en une heure, retraits exclus. Le plus souvent, l’application a été révoquée, une autorisation retirée ou un secret changé : vérifiez la console développeur de la plateforme avant de prévenir les espaces de travail.
+
+### Résultats de publication [#publishing-outcomes]
+
+Chaque canal d’une publication est compté une fois son tour réglé, dans `peal.publishing.outcomes` (Prometheus : `peal_publishing_outcomes_total`). Chaque compte porte la plateforme, le résultat (`published`, `failed` ou `unconfirmed`) et la raison : pourquoi il a échoué ou n’a pas été confirmé, ou `none` s’il a été publié. Un règlement que le serveur refait après une panne de la base compte une seconde fois.
+
+L’alerte `peal-publishing-failing` de la pile de production se déclenche quand plus de cinq publications ont échoué sur une même plateforme en une heure et qu’elles représentent plus de la moitié de ce qui s’y est réglé. Le libellé de la raison dit le plus souvent laquelle : une autorisation que l’application a perdue, un changement de la plateforme ou un adaptateur cassé.

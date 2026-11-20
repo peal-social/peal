@@ -243,6 +243,38 @@ groups:
                     type: gt
                     params: [4.5]
 
+      - uid: peal-publishing-failing
+        title: Most posts on one platform fail
+        condition: B
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: More than five posts failed on one platform in the last hour, over half of those that settled there (peal.publishing.outcomes, by platform, outcome and reason). One account's mistakes rarely do that; a platform change, a permission the app lost or a broken adapter does. Read the reason label, then the server's warnings for that platform ("Meta refused a token", refusal codes on the attempts).
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 3600
+              to: 0
+            model:
+              refId: A
+              instant: true
+              # The failed share of each platform's settled targets, where it failed more than five.
+              expr: max((sum by (platform) (increase(peal_publishing_outcomes_total{outcome="failed"}[1h])) > 5) and (sum by (platform) (increase(peal_publishing_outcomes_total{outcome="failed"}[1h])) / sum by (platform) (increase(peal_publishing_outcomes_total[1h])) > 0.5)) or vector(0)
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+
       - uid: peal-web-error-spike
         title: The web app reports a spike of errors
         condition: B
