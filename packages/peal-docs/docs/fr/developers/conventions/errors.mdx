@@ -55,6 +55,7 @@ Une requête qui ne correspond pas à ce que son point d’accès attend répond
 - `issues` liste ce qui ne va pas, 20 problèmes au plus. Chacun a un chemin (`path`), qui commence par la partie de la requête concernée (`path`, `query`, `headers` ou `body`) et descend jusqu’à la valeur, et un `message`.
 - `field` est le chemin du premier problème, séparé par des points.
 - La lecture peut s’arrêter au premier problème : corriger ce qui est listé peut en révéler un autre.
+- Un paramètre de requête que le point d’accès ne prend pas est refusé aussi, jamais ignoré : un filtre mal écrit ne peut pas répondre comme s’il s’appliquait. Les vérifications de santé, `/api/health` et `/api/ready`, prennent n’importe quelle requête.
 
 Cette requête demande plus de médias qu’une page n’en contient :
 
