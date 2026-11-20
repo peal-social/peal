@@ -9,6 +9,7 @@ const forwardedLocals = [
   "maxime",
   "notifications",
   "sandbox",
+  "security",
 ] as const;
 
 /**
