@@ -297,26 +297,15 @@ Pour cesser de payer en gardant l’espace de travail, résiliez plutôt l’abo
 
 Une fois l’espace de travail supprimé, Peal envoie une confirmation à votre adresse, dans votre langue.
 
-## Dans tous vos espaces de travail [#across-workspaces]
+## Vos espaces de travail [#your-workspaces]
 
 À la connexion, ou quand vous allez à l’adresse de Peal, vous arrivez dans l’espace de travail que vous avez créé ou choisi en dernier, sinon dans le premier des vôtres. À l’inscription, une page à part vous demande de nommer votre premier espace de travail et de choisir son adresse. Il remplit les deux pour vous (_Espace d’Ada_, à `/espace-dada`), et vous pouvez changer l’un ou l’autre, tant qu’aucun autre espace n’a cette adresse. Si une invitation vous attend, vous rejoignez cet espace à la place. Vous pourrez changer le nom et l’adresse plus tard dans les réglages généraux de l’espace.
 
-Pour créer un autre espace de travail, ouvrez le menu des espaces en haut de la barre latérale et cliquez sur **Nouvel espace de travail**, qui ouvre la même page, le nom vide. **Retour**, en haut, ramène à votre espace de travail. Les pages d’un espace ont une adresse tirée de son nom, comme `/acme-studio/posts`. Cette adresse ne change pas quand vous renommez l’espace, et les liens qui contiennent l’identifiant de l’espace, comme ceux des e-mails de Peal, mènent à la même page.
+Pour créer un autre espace de travail, ouvrez le menu des espaces en haut de la barre latérale et cliquez sur **Nouvel espace de travail**, qui ouvre la même page, le nom vide. **Retour**, en haut, ramène à votre espace de travail. Les pages d’un espace ont une adresse tirée de son nom, comme `/espace-dada/posts`. Cette adresse ne change pas quand vous renommez l’espace, et les liens qui contiennent l’identifiant de l’espace, comme ceux des e-mails de Peal, mènent à la même page.
 
 Votre compte et vos notifications sont à vous dans chaque espace de travail : ils sont sous **Paramètres** dans chacun, après les réglages de l’espace ([Compte](/guides/workspace/account), [Notifications](/guides/workspace/notifications)).
 
-### Par l’API et la ligne de commande [#across-workspaces-api]
-
-L’application n’a pas de page qui couvre tous les espaces, mais ces points d’accès disent ce qui demande votre attention dans chaque espace de travail (publications en échec, publications qui attendent une approbation, canaux à reconnecter, commentaires à traiter, espace au-delà de son offre), ce qui part dans l’ensemble, et ce que chacun a donné :
-
-- `GET /api/me/overview`
-- `GET /api/me/agenda`, avec `from` et `to` (à 31 jours d’écart au plus) et `workspaceIds` (séparés par des virgules)
-- `GET /api/me/report`, avec `days` et `timeZone`
-- `GET /api/me/report/export`
-
-La ligne de commande les propose sous `peal overview`, `peal agenda` et `peal report` ([Ligne de commande](/developers/cli#across-workspaces)).
-
-Ils répondent à une personne. Les clés d’API, qui appartiennent à un espace, reçoivent 403, tout comme les jetons OAuth liés à un seul espace, comme celui d’un client MCP. Aucun outil MCP ne lit dans tous les espaces, car une connexion agit dans l’espace que vous lui avez choisi.
+Chaque espace de travail garde ses propres publications, canaux, boîte de réception et statistiques, et vous les voyez depuis cet espace : aucune page, aucun point d’accès, aucune commande ni aucun outil MCP ne les rassemble d’un espace à l’autre. Pour voir un autre espace, passez-y depuis le menu des espaces. Vos [notifications](/guides/workspace/notifications) et le [récapitulatif hebdomadaire](/guides/workspace/notifications#digest) sont les seuls endroits qui couvrent tous vos espaces à la fois.
 
 ## Par l’API [#api]
 

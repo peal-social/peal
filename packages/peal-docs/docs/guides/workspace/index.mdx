@@ -289,26 +289,15 @@ To stop paying and keep the workspace, cancel the subscription from its **Billin
 
 Once the workspace is deleted, Peal sends a confirmation to your address, in your language.
 
-## Across your workspaces [#across-workspaces]
+## Your workspaces [#your-workspaces]
 
 When you sign in or go to Peal's address, you land in the workspace you last created or switched to, or else in your first one. When you sign up, a page of its own asks you to name your first workspace and choose its address. It fills in both for you (_Ada’s workspace_, at `/adas-workspace`), and you can change either, as long as no other workspace has that address. If an invitation is waiting for you, you join that workspace instead. You can change the name and the address later in the workspace's general settings.
 
-To create another workspace, open the workspace menu at the top of the sidebar and click **New workspace**, which opens the same page with the name empty. **Back**, at its top, returns to your workspace. A workspace's pages live at an address made from its name, such as `/acme-studio/posts`. The address stays the same when you rename the workspace, and links that hold the workspace's id, as Peal's emails do, lead to the same page.
+To create another workspace, open the workspace menu at the top of the sidebar and click **New workspace**, which opens the same page with the name empty. **Back**, at its top, returns to your workspace. A workspace's pages live at an address made from its name, such as `/adas-workspace/posts`. The address stays the same when you rename the workspace, and links that hold the workspace's id, as Peal's emails do, lead to the same page.
 
 Your account and your notifications are yours in every workspace: they're under **Settings** in each one, after the workspace's own settings ([Account](/guides/workspace/account), [Notifications](/guides/workspace/notifications)).
 
-### From the API and the command line [#across-workspaces-api]
-
-The app has no page across workspaces, but these endpoints answer what needs attention in each workspace (failed posts, posts waiting for an approval, channels to reconnect, comments to answer, a workspace over its plan), what goes out across them, and how each one did:
-
-- `GET /api/me/overview`
-- `GET /api/me/agenda`, with `from` and `to` (at most 31 days apart) and `workspaceIds` (comma-separated)
-- `GET /api/me/report`, with `days` and `timeZone`
-- `GET /api/me/report/export`
-
-The command line has them as `peal overview`, `peal agenda` and `peal report` ([Command line](/developers/cli#across-workspaces)).
-
-They answer a person. API keys, which belong to a workspace, get 403, and so do OAuth tokens bound to one workspace, such as an MCP client's. No MCP tool reads across workspaces, because a connection acts in the one workspace you chose for it.
+Each workspace keeps its own posts, channels, inbox and analytics, and you see them from inside that workspace: no page, endpoint, command or MCP tool gathers them across workspaces. To see another workspace, switch to it in the workspace menu. Your [notifications](/guides/workspace/notifications) and the [weekly digest](/guides/workspace/notifications#digest) are the only places that cover all your workspaces at once.
 
 ## Through the API [#api]
 

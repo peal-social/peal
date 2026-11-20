@@ -449,11 +449,8 @@ What belongs to you rather than to a workspace lives under `/api/me`:
 | `GET /api/me`                      | Who you are                                               |
 | `/api/me/notices`                  | Your [notifications](/guides/workspace/notifications#api) |
 | `/api/me/notification-preferences` | Which notifications are emailed                           |
-| `GET /api/me/overview`             | What needs attention in each of your workspaces           |
-| `GET /api/me/agenda`               | What goes out across them                                 |
-| `GET /api/me/report`               | How it did                                                |
 
-The last three answer as far as your role in each workspace may read ([Across your workspaces](/guides/workspace#across-workspaces)). These endpoints answer 403 to API keys, which belong to a workspace, and to OAuth tokens bound to one workspace, such as an MCP client's.
+These endpoints answer 403 to API keys, which belong to a workspace, and to OAuth tokens bound to one workspace, such as an MCP client's.
 
 Three more answer only your own session in the web app: a copy of your data (`GET /api/me/export`), deleting your account (`DELETE /api/me`) and your connected applications (`/api/me/connected-apps`). API keys, OAuth tokens and staff acting as you get 403 ([Workspaces and your account](/guides/workspace#api)).
 
