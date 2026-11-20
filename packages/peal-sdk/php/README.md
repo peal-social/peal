@@ -87,7 +87,7 @@ use Peal\Exceptions\PealApiException;
 use Peal\Exceptions\PealException;
 
 try {
-    $response = $client->apiKeys->create(...);
+    $response = $client->apiKeys->create(/* ... */);
 } catch (PealApiException $e) {
     echo 'API Exception occurred: ' . $e->getMessage() . "\n";
     echo 'Status Code: ' . $e->getCode() . "\n";
@@ -136,12 +136,8 @@ A request is deemed retryable when any of the following HTTP status codes is ret
 
 - [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
 - [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
-- [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses) (Internal Server Error)
+- [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses) (All server errors, including 500)
 
-The `retryStatusCodes` configuration controls which [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses) status codes are retried:
-
-- `legacy` (default): Retries `408`, `429`, and all `>= 500`
-- `recommended`: Retries `408`, `429`, `502`, `503`, `504` only (excludes `500 Internal Server Error` to avoid retrying non-idempotent failures)
 
 Use the `maxRetries` request option to configure this behavior.
 
@@ -156,7 +152,8 @@ $response = $client->apiKeys->create(
 
 ### Timeouts
 
-The SDK defaults to a 30 second timeout. Use the `timeout` option to configure this behavior.
+The SDK does not set a default timeout, so the underlying HTTP client's own default applies. Use the
+`timeout` option to configure this behavior.
 
 ```php
 $response = $client->apiKeys->create(

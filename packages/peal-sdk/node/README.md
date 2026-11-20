@@ -536,19 +536,12 @@ The SDK is instrumented with automatic retries with exponential backoff. A reque
 as the request is deemed retryable and the number of retry attempts has not grown larger than the configured
 retry limit (default: 2).
 
-Which status codes are retried depends on the `retryStatusCodes` generator configuration:
+A request is deemed retryable when any of the following HTTP status codes is returned:
 
-**`legacy`** (current default): retries on
 - [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
 - [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
 - [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses) (All server errors, including 500)
 
-**`recommended`**: retries on
-- [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
-- [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
-- [502](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502) (Bad Gateway)
-- [503](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503) (Service Unavailable)
-- [504](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504) (Gateway Timeout)
 
 Use the `maxRetries` request option to configure this behavior.
 
@@ -589,7 +582,7 @@ The `.withRawResponse()` method returns a promise that results to an object with
 const { data, rawResponse } = await client.apiKeys.create(...).withRawResponse();
 
 console.log(data);
-console.log(rawResponse.headers['X-My-Header']);
+console.log(rawResponse.headers.get('X-My-Header'));
 ```
 
 ### Logging
@@ -626,6 +619,7 @@ To provide a custom logger, you can pass in an object that implements the `loggi
 
 Here's an example using the popular `winston` logging library.
 ```ts
+import { logging } from "peal-sdk";
 import winston from 'winston';
 
 const winstonLogger = winston.createLogger({...});
@@ -641,6 +635,7 @@ const logger: logging.ILogger = {
 Here's an example using the popular `pino` logging library.
 
 ```ts
+import { logging } from "peal-sdk";
 import pino from 'pino';
 
 const pinoLogger = pino({...});
@@ -688,6 +683,7 @@ The SDK works in the following runtimes:
 - Deno v1.25+
 - Bun 1.0+
 - React Native
+
 
 
 ## Contributing
