@@ -914,7 +914,7 @@ module Peal
         body_params = params.except(*path_param_names)
 
         headers = {}
-        headers["idempotency-key"] = params[:idempotency_key] if params[:idempotency_key]
+        headers["idempotency-key"] = params[:idempotency_key] unless params[:idempotency_key].nil?
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],

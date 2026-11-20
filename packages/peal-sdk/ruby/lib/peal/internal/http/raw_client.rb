@@ -178,7 +178,8 @@ module Peal
         # @param request [Peal::Internal::Http::BaseRequest] The HTTP request.
         # @return [URI::Generic] The URL.
         def build_url(request)
-          encoded_query = request.encode_query
+          # A nil value means the parameter is omitted (e.g. the cursor of a first page), not sent as a bare key.
+          encoded_query = request.encode_query&.compact
 
           # If the path is already an absolute URL, use it directly
           if request.path.start_with?("http://", "https://")
@@ -239,7 +240,7 @@ module Peal
           )
 
           request_headers = @default_headers.merge(auth_headers).merge(headers)
-          request_headers.each { |name, value| request[name] = value }
+          request_headers.each { |name, value| request[name] = value == false ? "false" : value }
           request.body = body if body
 
           # Net::HTTP disables its transparent gzip/deflate decoding as soon as an

@@ -5,10 +5,40 @@ require "socket"
 require "zlib"
 
 describe Peal::Internal::Http::RawClient do
+  it "preserves false header values without opening a connection" do
+    client = Peal::Internal::Http::RawClient.new(base_url: "https://fixture.invalid")
+    [false, true, nil, "", "false", 0].each do |value|
+      request = client.__send__(
+        :build_http_request,
+        url: URI("https://fixture.invalid"),
+        method: "GET",
+        headers: { "X-Boolean" => value }
+      )
+      if value.nil?
+        assert_nil request["X-Boolean"]
+      else
+        assert_equal value.to_s, request["X-Boolean"]
+      end
+    end
+  end
+
   def make_response(status_code)
     response = Minitest::Mock.new
     response.expect(:code, status_code.to_s)
     response
+  end
+
+  it "omits nil query parameters instead of sending a bare key" do
+    client = Peal::Internal::Http::RawClient.new(base_url: "https://fixture.invalid")
+    build = ->(query) do
+      request = Peal::Internal::JSON::Request.new(base_url: nil, path: "items", method: "GET", query: query)
+      client.__send__(:build_url, request).to_s
+    end
+
+    assert_equal "https://fixture.invalid/items", build.call({ "pageToken" => nil })
+    assert_equal "https://fixture.invalid/items?pageSize=2", build.call({ "pageToken" => nil, "pageSize" => 2 })
+    assert_equal "https://fixture.invalid/items?pageToken=", build.call({ "pageToken" => "" })
+    assert_equal "https://fixture.invalid/items?active=false", build.call({ "active" => false })
   end
 
   describe "#should_retry?" do

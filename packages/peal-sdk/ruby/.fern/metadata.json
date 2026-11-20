@@ -1,7 +1,7 @@
 {
-  "cliVersion": "5.210.3",
+  "cliVersion": "5.225.0",
   "generatorName": "fernapi/fern-ruby-sdk",
-  "generatorVersion": "1.41.3",
+  "generatorVersion": "1.45.4",
   "generatorConfig": {},
   "requestedVersion": "0.3.0"
 }
