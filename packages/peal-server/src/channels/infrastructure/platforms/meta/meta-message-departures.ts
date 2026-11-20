@@ -9,11 +9,7 @@ import type { StoredTokens } from "#channels/application/platform-authorizer.ts"
 import type { Channel } from "#channels/domain/channel.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
-import {
-  facebookMessageScopes,
-  instagramLoginMessageScope,
-  instagramPageMessageScopes,
-} from "#shared/domain/inbox-message-platform.ts";
+import { namesMetaMessaging } from "#shared/domain/inbox-message-platform.ts";
 import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { MetaApp } from "#shared/infrastructure/platforms/meta-apps.ts";
@@ -28,14 +24,6 @@ import type { MetaHttp } from "./meta-exchange.ts";
 
 /** How long a departure waits on Meta at most. */
 export const departureWait = Duration.seconds(10);
-
-// The permissions that name messages: a channel that granted none was
-// never subscribed to their events by Peal.
-const messaging: ReadonlySet<string> = new Set([
-  ...facebookMessageScopes,
-  ...instagramPageMessageScopes,
-  instagramLoginMessageScope,
-]);
 
 const NodeSchema = Schema.Struct({
   id: Schema.NonEmptyString,
@@ -219,7 +207,7 @@ export const metaMessageDepartures = (settings: {
           (platform !== "facebook" && platform !== "instagram") ||
           !settings.messages.has(platform) ||
           Option.contains(channel.connection, "unifiedLogin") ||
-          !channel.scopes.some((scope) => messaging.has(scope))
+          !namesMetaMessaging(channel.scopes)
         ) {
           return;
         }

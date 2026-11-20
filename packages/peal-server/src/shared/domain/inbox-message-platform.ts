@@ -57,3 +57,17 @@ export const instagramPageMessageScopes = [
  * `instagram_business_basic`, which posting asks, and this one.
  */
 export const instagramLoginMessageScope = "instagram_business_manage_messages";
+
+// Every permission that names Meta's messages, by any way in.
+const metaMessagingScopes: ReadonlySet<string> = new Set([
+  ...facebookMessageScopes,
+  ...instagramPageMessageScopes,
+  instagramLoginMessageScope,
+]);
+
+/**
+ * Whether a Meta channel's scopes name its messages: one that granted none
+ * was never subscribed to their events by Peal.
+ */
+export const namesMetaMessaging = (scopes: readonly string[]): boolean =>
+  scopes.some((scope) => metaMessagingScopes.has(scope));

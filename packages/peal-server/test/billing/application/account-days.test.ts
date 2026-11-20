@@ -19,6 +19,7 @@ import { AccountPlanPoolsLive } from "#billing/infrastructure/account-plan-pools
 import { DrizzleAccountDayStoreLive } from "#billing/infrastructure/drizzle-account-day-store.ts";
 import { DrizzleBillingAccountStoreLive } from "#billing/infrastructure/drizzle-billing-account-store.ts";
 import { DrizzleSubscriptionsLive } from "#billing/infrastructure/drizzle-subscriptions.ts";
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelEvents } from "#channels/application/channel-events.ts";
 import { ChannelMoves } from "#channels/application/channel-moves.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
@@ -103,6 +104,7 @@ const ConnectingTest = Layer.mergeAll(
     Layer.mergeAll(
       DrizzleChannelRepository,
       ChannelEvents.none,
+      ChannelDepartures.none,
       DrizzleConnectAttempts,
       DrizzleConnectChoices,
       SqlChannelLocks,

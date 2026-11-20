@@ -4,6 +4,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Option } from "effect";
 import { SqlClient } from "effect/sql";
 
+import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelEvents } from "#channels/application/channel-events.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ChannelUsage } from "#channels/application/channel-usage.ts";
@@ -66,6 +67,7 @@ const SharedFreePlanTest = Layer.mergeAll(
     Layer.mergeAll(
       DrizzleChannelRepository,
       ChannelEvents.none,
+      ChannelDepartures.none,
       DrizzleConnectAttempts,
       DrizzleConnectChoices,
       SqlChannelLocks,
