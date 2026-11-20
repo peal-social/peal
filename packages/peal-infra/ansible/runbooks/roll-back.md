@@ -553,3 +553,32 @@ runs; rolled forward again, those still within their 7 days go.
 2. **The first lists a row:** wait a few minutes for its job to settle
    it, and check again; roll back once it lists none. The second needs no
    wait.
+
+## Past Unified login
+
+The release that connects Instagram through Meta's Unified login
+(`META_INSTAGRAM_CONFIG_ID`; no migration: the way in is text) stores a
+way in the release before cannot read: `unifiedLogin` in the `connection`
+of a channel, a sign-in in progress, an account choice or a connect link.
+The release before fails to decode such a channel wherever it reads
+channels (the workspace's channels, and the jobs that walk every channel:
+analytics' collection, the inbox's, the token sweep and the reconnect
+warnings), for every workspace, and such an attempt, choice or link where
+it completes, chooses or opens it.
+
+Unsetting `META_INSTAGRAM_CONFIG_ID` stops new ones and leaves the
+channels as they are: they keep posting until their token stops working,
+and can no longer be reconnected (`notConfigured`) until it is set again.
+It makes no roll-back safe.
+
+1. **Rows that name Unified login:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT 'channel' AS kind, count(*) FROM channels.channels WHERE connection = 'unifiedLogin' UNION ALL SELECT 'attempt', count(*) FROM channels.connect_attempts WHERE connection = 'unifiedLogin' UNION ALL SELECT 'choice', count(*) FROM channels.connect_choices WHERE connection = 'unifiedLogin' UNION ALL SELECT 'link', count(*) FROM channels.connect_links WHERE connection = 'unifiedLogin'"
+   ```
+
+2. **A count is above zero:** an attempt or a choice is gone within 15
+   minutes; wait and check again. While a channel or a connect link names
+   it, do not roll back past this release; release a fix forward instead.
+   Never change the rows by hand.
