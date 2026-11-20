@@ -12,10 +12,14 @@
     state: directory
     mode: "0755"
 
+# The key is pinned by its digest: a key that is not Docker's is refused,
+# and check mode compares the file instead of reporting a change each run.
+# Docker publishes a new key rarely; bump the digest with the key.
 - name: Add Docker's signing key
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
     dest: /etc/apt/keyrings/docker.asc
+    checksum: "sha256:{{ docker_signing_key_sha256 }}"
     mode: "0644"
 
 # deb822_repository reads and writes sources with it, in check mode too.

@@ -30,3 +30,7 @@ docker_daemon:
     max-size: 10m
     max-file: "3"
   live-restore: true
+
+# The SHA-256 of https://download.docker.com/linux/ubuntu/gpg, checked
+# 2026-11-20 against the key the servers already hold.
+docker_signing_key_sha256: 1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570
