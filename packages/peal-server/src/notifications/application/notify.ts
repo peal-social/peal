@@ -9,8 +9,9 @@ import type { NoticeEvent } from "#notifications/domain/notice-event.ts";
 import { NoticeIdSchema } from "#notifications/domain/notice-id.ts";
 import { Notice } from "#notifications/domain/notice.ts";
 import {
+  awaitsReconnect,
   defaultPreferences,
-  wantsEmail,
+  emailedTo,
 } from "#notifications/domain/notification-preferences.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids } from "#shared/application/ids.ts";
@@ -141,11 +142,24 @@ export class Notify extends Context.Service<
           told.has(userId)
         );
 
+        // Who gets the channel's reconnect email, read only for a post
+        // that awaits a reconnection.
+        const reconnecting = awaitsReconnect(request.event)
+          ? new Set(
+              (yield* recipients.withPermission(
+                request.workspaceId,
+                "channel:connect"
+              )).recipients.map(({ userId }) => userId)
+            )
+          : new Set<UserId>();
+
         const notices = yield* Effect.all(
           people.map(({ userId }) =>
             ids.next.pipe(
               Effect.map((uuid): NewNotice => ({
-                email: wantsEmail(preferencesOf(userId), request.event),
+                email: emailedTo(preferencesOf(userId), request.event, {
+                  mayReconnect: reconnecting.has(userId),
+                }),
                 notice: new Notice({
                   createdAt: now,
                   event: request.event,

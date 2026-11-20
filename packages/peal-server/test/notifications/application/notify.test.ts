@@ -305,6 +305,63 @@ layer(Test)("notices", (it) => {
       })
   );
 
+  it.effect(
+    "email no post a broken channel kept back to those its reconnect email reaches",
+    () =>
+      Effect.gen(function* awaitingReconnect() {
+        const { people, workspaceId } = yield* workspaceWith([
+          { locale: "en", permissions: owner },
+          { locale: "en", permissions: editor },
+          { locale: "en", permissions: owner },
+        ]);
+
+        const [manager, writer, quiet] = people;
+
+        assert(
+          manager !== undefined && writer !== undefined && quiet !== undefined
+        );
+
+        yield* NotificationSettings.use((settings) =>
+          settings.change(readerOf(quiet.userId), {
+            email: { channelReconnect: false },
+          })
+        );
+
+        const keptBack = Effect.fn("keptBack")(function* keptBack(
+          author: UserId
+        ) {
+          const request = yield* failedPost(workspaceId);
+
+          const told: NoticeRequest = {
+            ...request,
+            author,
+            event:
+              request.event._tag === "PostFailed"
+                ? { ...request.event, reason: "tokenExpired" }
+                : request.event,
+          };
+
+          yield* Notify.use((notify) => notify.notify(told));
+          yield* deliver(told.key);
+        });
+
+        yield* keptBack(manager.userId);
+        yield* keptBack(writer.userId);
+        yield* keptBack(quiet.userId);
+
+        // Each sees their post in the app.
+        assert.lengthOf(yield* noticesOf(manager), 1);
+        assert.lengthOf(yield* noticesOf(writer), 1);
+        assert.lengthOf(yield* noticesOf(quiet), 1);
+        // The channel's reconnect email tells the owner; the editor, who
+        // cannot reconnect it, and the owner who turned that email off
+        // hear of their post.
+        assert.lengthOf(yield* sentTo(manager.email), 0);
+        assert.lengthOf(yield* sentTo(writer.email), 1);
+        assert.lengthOf(yield* sentTo(quiet.email), 1);
+      })
+  );
+
   it.effect("start no delivery when nobody wants the email", () =>
     Effect.gen(function* quiet() {
       const { workspaceId } = yield* workspaceWith([

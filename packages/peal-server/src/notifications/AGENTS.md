@@ -42,6 +42,11 @@
   (`engagement:read` for the last), by default,
   not published posts; billing's and a webhook endpoint turned off always,
   as no preference covers them). A preferences change writes only what it names.
+  A post failed `tokenExpired` (`awaitsReconnect`) is not emailed to a
+  reader who may connect channels and keeps the `channelReconnect` email
+  (`emailedTo`): the channel's `ChannelReconnectRequired`, once per break,
+  tells them, and a broken channel would otherwise send an email for every
+  post it held. The notice still reaches the app.
 - `Notify.resolve(key)` says an event was dealt with: its notices are marked
   read for everyone and its pending emails skipped. Publishing resolves a
   round once a member confirms or reposts it.

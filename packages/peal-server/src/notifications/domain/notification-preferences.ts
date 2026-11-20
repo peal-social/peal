@@ -113,3 +113,29 @@ export const wantsEmail = (
     onNone: () => true,
     onSome: (kind) => preferences.email[kind],
   });
+
+/**
+ * A post that did not go out because its channel must be reconnected
+ * (`tokenExpired`). The channel's own notice, `ChannelReconnectRequired`,
+ * once per break, tells it to whoever can reconnect the channel.
+ */
+export const awaitsReconnect = (event: NoticeEvent): boolean =>
+  event._tag === "PostFailed" && event.reason === "tokenExpired";
+
+/**
+ * Whether this reader is emailed the event when it is told: as
+ * `wantsEmail` says, but a post that awaits a reconnection is not emailed
+ * to a reader who may reconnect the channel and gets its reconnect emails,
+ * as each post's email would only repeat that one, and a broken channel
+ * would send one email for every post it had to send.
+ */
+export const emailedTo = (
+  preferences: NotificationPreferences,
+  event: NoticeEvent,
+  reader: { readonly mayReconnect: boolean }
+): boolean =>
+  !(
+    awaitsReconnect(event) &&
+    reader.mayReconnect &&
+    preferences.email.channelReconnect
+  ) && wantsEmail(preferences, event);
