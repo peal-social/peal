@@ -212,6 +212,37 @@ groups:
                     type: gt
                     params: [0.5]
 
+      - uid: peal-channels-reconnect-wave
+        title: Many channels of one platform need reconnecting
+        condition: B
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: More than four channels of one platform were marked to reconnect within an hour (peal.channels.reconnect_required, by platform and cause; removals of the app by their accounts left out). Accounts rarely do that together. The platform or the app is the likelier cause, such as a revoked app, a permission taken away or a changed secret. Read the cause label and the server's "Meta refused a token" warnings, then check the platform's developer console before telling the workspaces.
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 3600
+              to: 0
+            model:
+              refId: A
+              instant: true
+              expr: max(sum by (platform) (increase(peal_channels_reconnect_required_total{cause!="deauthorized"}[1h]))) or vector(0)
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [4.5]
+
       - uid: peal-web-error-spike
         title: The web app reports a spike of errors
         condition: B

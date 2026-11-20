@@ -12,6 +12,7 @@ import {
   Schedule,
 } from "effect";
 
+import { countReconnect } from "#channels/application/reconnects-required.ts";
 import { markRefreshNeeded, renewToken } from "#channels/domain/channel.ts";
 import type { Channel } from "#channels/domain/channel.ts";
 import { platforms } from "#channels/domain/platform.ts";
@@ -182,6 +183,7 @@ export class RefreshChannelTokens extends Context.Service<
           const marked = markRefreshNeeded(channel, yield* DateTime.now);
 
           yield* channels.update(marked, Option.none());
+          yield* countReconnect(channel, marked, "renewalRefused");
 
           const locked: Locked = {
             needsReconnect: Option.some(marked),

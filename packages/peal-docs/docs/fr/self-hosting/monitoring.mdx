@@ -74,3 +74,16 @@ Quand Meta refuse un appel à Facebook, Instagram ou Threads, le serveur le comp
 Le span de chaque refus porte les mêmes champs, avec `meta.error.type` et `meta.error.trace_id`, l’identifiant que demande le support de Meta. Un jeton refusé est aussi journalisé en avertissement, « Meta refused a token ».
 
 `permission` veut dire que l’application n’a pas une autorisation dont l’appel a besoin, ou que le compte ne l’a pas accordée. Un nouveau jeton n’y change rien : la publication échoue avec le code de Meta et le canal reste connecté. L’alerte `peal-meta-permission-refused` de la pile de production se déclenche dès le premier. Ajoutez l’autorisation au cas d’utilisation de votre application Meta, ou n’envoyez plus l’option qui en a besoin.
+
+### Canaux à reconnecter [#reconnects]
+
+Chaque canal marqué à reconnecter est compté une fois dans `peal.channels.reconnect_required` (Prometheus : `peal_channels_reconnect_required_total`), par plateforme et par cause :
+
+| Cause            | Ce qui s’est passé                                          |
+| ---------------- | ----------------------------------------------------------- |
+| `tokenRefused`   | La plateforme a refusé le jeton à son usage, deux fois      |
+| `renewalRefused` | Le renouvellement des jetons n’a pas pu renouveler celui-ci |
+| `expired`        | Le jeton a expiré et ne pouvait pas être renouvelé          |
+| `deauthorized`   | Le compte a retiré l’application sur la plateforme          |
+
+Les comptes ont rarement besoin d’être reconnectés tous en même temps. L’alerte `peal-channels-reconnect-wave` de la pile de production se déclenche quand plus de quatre canaux d’une même plateforme sont marqués en une heure, retraits exclus. Le plus souvent, l’application a été révoquée, une autorisation retirée ou un secret changé : vérifiez la console développeur de la plateforme avant de prévenir les espaces de travail.

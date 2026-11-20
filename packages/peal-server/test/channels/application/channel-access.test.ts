@@ -6,6 +6,7 @@ import {
   Effect,
   Fiber,
   Layer,
+  Metric,
   Option,
   Redacted,
   Ref,
@@ -25,6 +26,7 @@ import type {
   IssuedTokens,
   PlatformAuthorizer,
 } from "#channels/application/platform-authorizer.ts";
+import { reconnectsRequired } from "#channels/application/reconnects-required.ts";
 import type { TokenCipher } from "#channels/application/token-cipher.ts";
 import {
   disable,
@@ -377,13 +379,26 @@ layer(FileTest)("ChannelAccess", (it) => {
       const channel = yield* stored(workspaceId, { token: inAnHour(now) });
       const { authorizer, calls } = yield* scripted("x");
 
-      const failure = yield* ChannelAccess.use((access) =>
+      const counted = Metric.value(
+        Metric.withAttributes(reconnectsRequired, {
+          cause: "tokenRefused",
+          platform: "x",
+        })
+      ).pipe(Effect.map(({ count }) => count));
+
+      const before = yield* counted;
+
+      const refused = ChannelAccess.use((access) =>
         access.withToken(channel.id, () => Effect.fail(new TokenRejected()))
       ).pipe(Effect.provide(accessWith(authorizer)), Effect.flip);
+
+      const failure = yield* refused;
 
       assert.deepStrictEqual(failure, new TokenExpired());
       assert.strictEqual(yield* calls, 1);
       assert.strictEqual(yield* statusOf(channel.id), "refreshNeeded");
+      // Counted once, as the channel left active.
+      assert.strictEqual(yield* counted, before + 1);
     })
   );
 

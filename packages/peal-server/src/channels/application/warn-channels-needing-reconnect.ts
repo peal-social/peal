@@ -1,5 +1,6 @@
 import { Context, DateTime, Effect, Layer, Option } from "effect";
 
+import { countReconnect } from "#channels/application/reconnects-required.ts";
 import {
   isTokenExpired,
   markRefreshNeeded,
@@ -69,6 +70,7 @@ export class WarnChannelsNeedingReconnect extends Context.Service<
               const updated = markRefreshNeeded(current.value, now);
 
               yield* channels.update(updated, Option.none());
+              yield* countReconnect(current.value, updated, "expired");
 
               return Option.some(updated);
             })
