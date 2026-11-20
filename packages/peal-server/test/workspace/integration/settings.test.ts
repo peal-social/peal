@@ -58,6 +58,16 @@ const decodeJson = <S extends Schema.Top>(schema: S) =>
 
 const decodeExport = decodeJson(AccountExportSchema);
 
+// The secret part of each cookie a browser holds, which no export may
+// show. The cookie naming how the browser last signed in (`email`) is no
+// secret, and its value is a word the export uses.
+const secretsOf = (cookies: string): readonly string[] =>
+  cookies.split("; ").flatMap((cookie) => {
+    const [name, value] = cookie.split("=");
+
+    return name === lastSignInCookie ? [] : [value?.split(".")[0] ?? ""];
+  });
+
 const decodeApps = decodeJson(Schema.Array(ConnectedAppSchema));
 
 const decodeUpload = decodeJson(PreparedUploadSchema);
@@ -830,14 +840,8 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
         // No secret: not the API key, nor the session's token.
         assert.notInclude(text, key);
 
-        // The cookie naming how the browser last signed in (`email`) is no
-        // secret, and its value is a word the export uses.
-        for (const cookie of lee.cookies.split("; ")) {
-          const [name, value] = cookie.split("=");
-
-          if (name !== lastSignInCookie) {
-            assert.notInclude(text, value?.split(".")[0] ?? "");
-          }
+        for (const secret of secretsOf(lee.cookies)) {
+          assert.notInclude(text, secret);
         }
       })
   );
