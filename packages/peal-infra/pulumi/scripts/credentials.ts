@@ -1,29 +1,24 @@
-// What Pulumi needs before it runs, kept in one item of the owner's login
-// keychain (README.md, "State and credentials"): one item, so a run asks
-// once. Its password is this struct as JSON.
+// What Pulumi needs before it runs, kept in Proton Pass as the fields of one
+// item, named like the variables (README.md, "State and credentials").
 import type { Option } from "effect";
 import { Schema } from "effect";
 
-export const keychainService = "peal-pulumi";
-export const keychainAccount = "peal";
+/** The Proton Pass vault, unless `PEAL_PASS_VAULT` names another. */
+export const defaultPassVault = "Peal";
 
-export const CredentialsSchema = Schema.Struct({
-  AWS_ACCESS_KEY_ID: Schema.NonEmptyString,
-  AWS_SECRET_ACCESS_KEY: Schema.NonEmptyString,
-  CLOUDFLARE_API_TOKEN: Schema.NonEmptyString,
-  PULUMI_CONFIG_PASSPHRASE: Schema.NonEmptyString,
-});
+/** The item whose fields are the credentials. */
+export const passItem = "Pulumi";
 
-export type Credentials = typeof CredentialsSchema.Type;
-
-export const credentialNames: readonly (keyof Credentials)[] = [
+export const credentialNames = [
   "CLOUDFLARE_API_TOKEN",
   "AWS_ACCESS_KEY_ID",
   "AWS_SECRET_ACCESS_KEY",
   "PULUMI_CONFIG_PASSPHRASE",
-];
+] as const;
 
-// None when the text is not the struct: the caller says so without quoting
-// it, as a decoding error would.
-export const credentialsFrom = (text: string): Option.Option<Credentials> =>
-  Schema.decodeUnknownOption(Schema.fromJsonString(CredentialsSchema))(text);
+export type CredentialName = (typeof credentialNames)[number];
+
+// None when the field holds nothing: the caller says so without quoting
+// what `pass-cli` answered.
+export const credentialFrom = (text: string): Option.Option<string> =>
+  Schema.decodeUnknownOption(Schema.NonEmptyString)(text.trim());

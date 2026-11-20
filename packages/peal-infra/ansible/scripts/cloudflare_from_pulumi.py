@@ -2,7 +2,7 @@
 inventory, so they live in one place, Pulumi's (packages/peal-infra/pulumi):
 
     uv run python scripts/cloudflare_from_pulumi.py \\
-      --vault-id sandbox@scripts/vault-keychain-client.py
+      --vault-id sandbox@scripts/vault-pass-client.py
 
 or production@…. It writes group_vars/<group>/cloudflare.yml, which is
 committed and never edited by hand: the audience tags of the environment's
