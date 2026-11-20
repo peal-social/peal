@@ -605,6 +605,39 @@ layer(MetaConnectTest)("connecting Meta accounts", (it) => {
     })
   );
 
+  it.effect(
+    "keeps the permissions a Threads sign-in granted, and refuses one without publishing",
+    () =>
+      Effect.gen(function* granted() {
+        const meta = yield* FakeMeta;
+        const workspaceId = yield* freshWorkspace;
+
+        const reset = Effect.sync(() => {
+          meta.setDeclined([]);
+        });
+
+        meta.setDeclined(["threads_manage_replies"]);
+
+        const channel = yield* signIn(workspaceId, "threads").pipe(
+          Effect.flatMap(connectedChannel),
+          Effect.ensuring(reset)
+        );
+
+        assert.deepStrictEqual(channel.scopes, [
+          "threads_basic",
+          "threads_content_publish",
+        ]);
+
+        meta.setDeclined(["threads_content_publish"]);
+
+        const failure = yield* Effect.flip(
+          signIn(yield* freshWorkspace, "threads")
+        ).pipe(Effect.ensuring(reset));
+
+        assert.strictEqual(failure._tag, "AuthorizationDenied");
+      })
+  );
+
   it.effect("renews a Threads token a week before it expires", () =>
     Effect.gen(function* renews() {
       const meta = yield* FakeMeta;

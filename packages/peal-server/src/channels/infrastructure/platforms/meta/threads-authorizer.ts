@@ -2,6 +2,7 @@ import { DateTime, Duration, Effect, Option, Redacted, Schema } from "effect";
 import { SecureRandom } from "effect/crypto";
 import { Base64Url } from "effect/encoding";
 
+import { AuthorizationDenied } from "#channels/application/authorization-denied.ts";
 import { AuthorizationFailed } from "#channels/application/authorization-failed.ts";
 import type {
   AuthorizedAccount,
@@ -55,6 +56,20 @@ const ProfileSchema = Schema.Struct({
 
 const decodeAvatar = Schema.decodeUnknownOption(AvatarUrlSchema);
 
+// What Threads' `/debug_token` says of a token (Threads' "Debug Access
+// Token" page, read 2026-11-21): the permissions the user granted. Threads'
+// consent page lists publishing and managing replies as optional, so a
+// sign-in may grant less than it asked.
+const DebugTokenSchema = Schema.Struct({
+  data: Schema.Struct({
+    scopes: Schema.optionalKey(Schema.Array(Schema.String)),
+  }),
+});
+
+// Without it the channel can post nothing: the sign-in is refused, as
+// Facebook Login's is.
+const publishScope = "threads_content_publish";
+
 // Meta's tokens expire 60 days after they were issued or renewed; an answer
 // without `expires_in` is taken to say so.
 const lifetimeOf = (expiresIn: number | undefined) =>
@@ -63,7 +78,8 @@ const lifetimeOf = (expiresIn: number | undefined) =>
     : Duration.seconds(expiresIn);
 
 const issuedNow = Effect.fnUntraced(function* issuedNow(
-  token: typeof LongLivedSchema.Type
+  token: typeof LongLivedSchema.Type,
+  scopes: readonly string[]
 ) {
   const now = yield* DateTime.now;
 
@@ -75,7 +91,7 @@ const issuedNow = Effect.fnUntraced(function* issuedNow(
     // The long-lived token renews itself: there is no refresh token.
     refreshToken: Option.none(),
     renewable: true,
-    scopes: [...threadsScopes],
+    scopes: [...scopes],
   };
 
   return tokens;
@@ -158,6 +174,40 @@ export const threadsAuthorizer = Effect.fn("ThreadsAuthorizer.make")(
           Redacted.make(shortLived.access_token)
         ).pipe(Effect.mapError(signInFailure("The long-lived token exchange")));
 
+        // The permissions the user granted, read with the app's own token
+        // (`TH|<app id>|<app secret>`, server side only). A token Threads
+        // will not describe keeps what was asked: the post finds out.
+        const granted = yield* exchange(
+          http,
+          getWith(threadsUrl(hosts, "/debug_token"), {
+            access_token: Redacted.make(
+              `TH|${app.appId}|${Redacted.value(app.appSecret)}`
+            ),
+            input_token: Redacted.make(token.access_token),
+          }),
+          DebugTokenSchema
+        ).pipe(
+          Effect.map(({ data }) =>
+            Option.fromUndefinedOr(data.scopes).pipe(
+              Option.getOrElse((): readonly string[] => [...threadsScopes])
+            )
+          ),
+          Effect.catch((error) =>
+            Effect.logWarning(
+              "Threads did not describe a new token: its scopes are taken as asked",
+              error
+            ).pipe(Effect.as<readonly string[]>([...threadsScopes]))
+          )
+        );
+
+        if (!granted.includes(publishScope)) {
+          yield* Effect.logWarning(
+            "A Threads sign-in did not grant publishing"
+          );
+
+          return yield* new AuthorizationDenied();
+        }
+
         const profile = yield* exchange(
           http,
           getWith(threadsUrl(hosts, "/me"), {
@@ -176,14 +226,15 @@ export const threadsAuthorizer = Effect.fn("ThreadsAuthorizer.make")(
             Option.filter((name) => name.trim() !== "")
           ),
           handle: `@${profile.username}`,
-          tokens: yield* issuedNow(token),
+          tokens: yield* issuedNow(token, granted),
         };
 
         return account;
       });
 
-    // The long-lived token is its own refresh token.
-    const refresh: PlatformAuthorizer["refresh"] = (_channel, tokens) =>
+    // The long-lived token is its own refresh token, and keeps the
+    // permissions the sign-in granted.
+    const refresh: PlatformAuthorizer["refresh"] = (channel, tokens) =>
       exchange(
         http,
         getWith(new URL("/refresh_access_token", hosts.threadsGraph), {
@@ -191,7 +242,10 @@ export const threadsAuthorizer = Effect.fn("ThreadsAuthorizer.make")(
           grant_type: "th_refresh_token",
         }),
         LongLivedSchema
-      ).pipe(Effect.mapError(refreshFailure), Effect.flatMap(issuedNow));
+      ).pipe(
+        Effect.mapError(refreshFailure),
+        Effect.flatMap((renewed) => issuedNow(renewed, channel.scopes))
+      );
 
     const authorizer: PlatformAuthorizer = {
       begin,

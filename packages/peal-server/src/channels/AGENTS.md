@@ -318,7 +318,13 @@
   `/me/accounts` leaves out a Page a business portfolio owns, Instagram
   account and all, from a token without it, even for the Page's admin
   (`meta-comment-scopes.test.ts`). Threads has its own OAuth: a 60-day
-  long-lived token that renews itself. Every Graph call through Facebook
+  long-lived token that renews itself. Its consent page makes publishing
+  and managing replies optional, so the sign-in reads what was granted
+  from Threads' `/debug_token` (asked with the app's token,
+  `TH|<app id>|<app secret>`), refuses one without
+  `threads_content_publish` (`AuthorizationDenied`), keeps the rest as
+  the channel's scopes, and a renewal keeps them; a token Threads will not
+  describe keeps what was asked, logged. Every Graph call through Facebook
   Login carries `appsecret_proof`
   (`#shared/infrastructure/platforms/meta-graph.ts`). Where
   `PEAL_INBOX_PLATFORMS` names Facebook or Instagram
