@@ -182,6 +182,22 @@ the docs: shadcn/ui's registry (`shadcn mcp`) and 21st.dev's component library.
 The second needs your own key from 21st.dev, exported as `TWENTYFIRST_API_KEY`
 in your shell; never commit it.
 
+Claude Code also gets Trail-code, a map of the code and the learnings past
+sessions saved in `.trail/learnings/`. `.claude/settings.json` runs its hook
+at session start: without Trail-code installed, it shows Claude the learnings
+and offers to set it up. To get the map too, install it once and wire your
+clone:
+
+```bash
+npm install -g @trailhq/trail-code
+trail init --agents claude --team
+```
+
+The map is built in `.trail/cache/`, ignored by Git, in each clone and
+worktree. A learning is published with the change it comes with, so review it
+like the code: no secrets, no private notes, no product names. Run
+`trail check` before you open a pull request.
+
 You are responsible for every line you send, whoever wrote it: review it, run
 the checks, and say in the pull request when an agent wrote a large part of it.
 

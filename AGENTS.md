@@ -433,6 +433,9 @@ The servers' other rules are in
 - Never name a competitor or another product in this field, in code,
   comments, docs, commits, pull requests or issues. Describe the behaviour
   instead.
+- Trail-code's learnings (`.trail/learnings/`) are committed, so published:
+  save one only when asked, with these rules, and never from private notes,
+  memory or links.
 
 ## Maintain these guides
 
