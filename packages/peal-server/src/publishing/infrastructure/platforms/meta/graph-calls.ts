@@ -52,7 +52,8 @@ const rateLimited = (retryAfter: Option.Option<Duration.Duration>) =>
 /**
  * What Meta refusing a call means for publishing, from the Graph API's
  * "Handling Errors" page: a token that does not work is renewed once, then
- * the channel is reconnected; a rate limit waits as long as Meta's usage
+ * the channel is reconnected, but a permission the token lacks fails the
+ * post alone; a rate limit waits as long as Meta's usage
  * headers say; Meta failing is the platform being down, except on the post
  * itself, whose fate is then unknown; a duplicate (506) or anything else
  * refuses the media or the post as sent. Meta's messages are never kept.
@@ -66,7 +67,13 @@ export const graphRefusal = (
     rateLimited: ({ retryAfter }) => rateLimited(retryAfter),
     refused: ({ code }) =>
       call === "media" ? new MediaRejected({ code }) : new BadRequest({ code }),
-    token: () => new TokenRejected(),
+    // A permission the call needs and the token lacks (code 10, 200 to
+    // 299) is refused again with any token the same sign-in gives, as when
+    // the app was never granted it (Threads' `reply_control` without
+    // `threads_manage_replies`): the post fails with Meta's code, and the
+    // channel, which works for every other post, stays connected.
+    token: ({ code, permission }) =>
+      permission ? new BadRequest({ code }) : new TokenRejected(),
     unavailable: () =>
       call === "post"
         ? new OutcomeUnknown({ reason: "noResponse" })

@@ -283,6 +283,28 @@ describe("publishing on Threads", () => {
     }).pipe(Effect.scoped)
   );
 
+  it.live(
+    "fails the post alone, keeping Meta's code, on a permission the token lacks",
+    () =>
+      Effect.gen(function* permission() {
+        const { client, graph, log } = yield* onThreads();
+
+        graph.script.push(`POST /v1.0/${threadsUserId}/threads`, [
+          metaError(10, 403),
+        ]);
+
+        const failure = yield* Effect.flip(
+          client.publish(yield* outgoing({ accountId: threadsUserId }))
+        );
+
+        assert.strictEqual(failure._tag, "BadRequest");
+        assert(failure._tag === "BadRequest");
+        assert.strictEqual(failure.code, "graph10");
+        // No other token gets a permission the app was not granted.
+        assert.strictEqual(yield* log.renewals, 0);
+      }).pipe(Effect.scoped)
+  );
+
   it.live("takes Meta failing before the post as the platform being down", () =>
     Effect.gen(function* down() {
       const { client, graph } = yield* onThreads();
