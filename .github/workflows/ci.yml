@@ -72,7 +72,19 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - run: bun run check
+      # The check takes about two minutes; a few runs hung until the job's
+      # limit with nothing logged (2026-11-20). A run past eight minutes is
+      # stopped and run once more, with a warning; a lint failure fails at
+      # once.
+      - run: |
+          status=0
+          timeout 8m bun run check || status=$?
+          if [ "$status" -eq 124 ]; then
+            echo "::warning::bun run check ran past 8 minutes and was stopped: running it again"
+            bun run check
+          else
+            exit "$status"
+          fi
 
   # tsc with Effect's language service, on the workspace and every project.
   typecheck:
