@@ -8,18 +8,30 @@ import { retryAfterOf } from "./retry-after.ts";
 // and Threads calls, answers `{ error: { message, type, code,
 // error_subcode, is_transient, fbtrace_id } }`; the Threads token endpoints
 // answer `{ error_type, code, error_message }`. Messages are never kept:
-// they may quote what was sent.
+// they may quote what was sent. The type (`OAuthException`…) and
+// `fbtrace_id`, which Meta's support asks for, are logged and traced only
+// when they read as a name and an id do.
+const MetaNameSchema = Schema.String.check(Schema.isPattern(/^[\w.]{1,64}$/u));
+
 const GraphErrorSchema = Schema.Struct({
   error: Schema.Struct({
     code: Schema.optionalKey(Schema.Number),
     error_subcode: Schema.optionalKey(Schema.Number),
+    fbtrace_id: Schema.optionalKey(Schema.String),
     is_transient: Schema.optionalKey(Schema.Boolean),
+    type: Schema.optionalKey(Schema.String),
   }),
 });
 
 const OAuthErrorSchema = Schema.Struct({
   code: Schema.optionalKey(Schema.Number),
+  error_type: Schema.optionalKey(Schema.String),
 });
+
+const isMetaName = Schema.is(MetaNameSchema);
+
+const nameOf = (value: string | undefined): Option.Option<string> =>
+  value !== undefined && isMetaName(value) ? Option.some(value) : Option.none();
 
 const decodeErrorBody = Schema.decodeUnknownOption(
   Schema.Union([GraphErrorSchema, OAuthErrorSchema])
@@ -31,13 +43,17 @@ type ErrorBody = typeof GraphErrorSchema.Type | typeof OAuthErrorSchema.Type;
 interface GraphError {
   readonly code: Option.Option<number>;
   readonly subcode: Option.Option<number>;
+  readonly trace: Option.Option<string>;
   readonly transient: boolean;
+  readonly type: Option.Option<string>;
 }
 
 const noError: GraphError = {
   code: Option.none(),
   subcode: Option.none(),
+  trace: Option.none(),
   transient: false,
+  type: Option.none(),
 };
 
 const errorOf = (body: ErrorBody): GraphError =>
@@ -45,9 +61,28 @@ const errorOf = (body: ErrorBody): GraphError =>
     ? {
         code: Option.fromUndefinedOr(body.error.code),
         subcode: Option.fromUndefinedOr(body.error.error_subcode),
+        trace: nameOf(body.error.fbtrace_id),
         transient: body.error.is_transient ?? false,
+        type: nameOf(body.error.type),
       }
-    : { ...noError, code: Option.fromUndefinedOr(body.code) };
+    : {
+        ...noError,
+        code: Option.fromUndefinedOr(body.code),
+        type: nameOf(body.error_type),
+      };
+
+/**
+ * What Meta said of a refusal, as span attributes and log annotations:
+ * the status, the code and subcode, the type and the trace id, never the
+ * message.
+ */
+const describedOf = (error: GraphError, status: number) => ({
+  "meta.error.code": Option.getOrUndefined(error.code),
+  "meta.error.subcode": Option.getOrUndefined(error.subcode),
+  "meta.error.trace_id": Option.getOrUndefined(error.trace),
+  "meta.error.type": Option.getOrUndefined(error.type),
+  "meta.status": status,
+});
 
 /**
  * Why Meta refused a call, sorted for the code that acts on it:
@@ -115,6 +150,17 @@ const codeName = (error: GraphError, status: number): string =>
       }),
   });
 
+// A refused token marks the channel to reconnect once renewing it fails:
+// what Meta said is logged, so the reason is known without its message.
+const tokenRefusedLog = (described: ReturnType<typeof describedOf>) =>
+  Effect.logWarning("Meta refused a token").pipe(
+    Effect.annotateLogs(
+      Object.fromEntries(
+        Object.entries(described).filter(([, value]) => value !== undefined)
+      )
+    )
+  );
+
 /**
  * What a Meta answer that is not a success means, from its status, its
  * error body and its usage headers. A body that cannot be read is judged by
@@ -134,6 +180,16 @@ export const graphRefusalOf = Effect.fn("MetaGraph.refusalOf")(
 
     const { status } = response;
     const now = yield* DateTime.now;
+    const described = describedOf(error, status);
+
+    yield* Effect.forEach(
+      Object.entries(described),
+      ([key, value]) =>
+        value === undefined
+          ? Effect.void
+          : Effect.annotateCurrentSpan(key, value),
+      { discard: true }
+    );
 
     const retryAfter = graphUsageOf(response.headers).pipe(
       Option.flatMap(({ regainAccessIn }) => regainAccessIn),
@@ -147,6 +203,8 @@ export const graphRefusalOf = Effect.fn("MetaGraph.refusalOf")(
       const code = error.code.value;
 
       if (isTokenCode(code)) {
+        yield* tokenRefusedLog(described);
+
         return {
           _tag: "token",
           coded: true,
@@ -180,6 +238,8 @@ export const graphRefusalOf = Effect.fn("MetaGraph.refusalOf")(
     }
 
     if (Option.isNone(error.code) && (status === 401 || status === 403)) {
+      yield* tokenRefusedLog(described);
+
       return {
         _tag: "token",
         coded: false,

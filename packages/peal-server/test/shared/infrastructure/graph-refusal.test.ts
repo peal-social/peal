@@ -1,5 +1,12 @@
 import { assert, describe, expect, it } from "@effect/vitest";
-import { ConfigProvider, Duration, Effect, Option } from "effect";
+import {
+  ConfigProvider,
+  Duration,
+  Effect,
+  Logger,
+  Option,
+  References,
+} from "effect";
 import type { Schema } from "effect";
 import { Headers, HttpClientRequest, HttpClientResponse } from "effect/http";
 
@@ -137,6 +144,87 @@ describe(graphRefusalOf, () => {
           false,
         ]);
       })
+  );
+
+  it.effect("logs what Meta said of a refused token, never its message", () =>
+    Effect.gen(function* logged() {
+      const lines: string[] = [];
+
+      const capture = Logger.layer([
+        Logger.make(({ fiber, message }) => {
+          lines.push(
+            JSON.stringify({
+              ...fiber.getRef(References.CurrentLogAnnotations),
+              message,
+            })
+          );
+        }),
+      ]);
+
+      yield* Effect.all([
+        refusalOf(403, {
+          error: {
+            code: 10,
+            error_subcode: 2_207_051,
+            fbtrace_id: "AbCdEf_synthetic",
+            message: "synthetic words Meta wrote",
+            type: "OAuthException",
+          },
+        }),
+        refusalOf(403, undefined),
+        refusalOf(400, {
+          error: {
+            code: 190,
+            fbtrace_id: "not an id",
+            message: "synthetic",
+            type: "<b>not a name</b>",
+          },
+        }),
+        refusalOf(400, graphError(100)),
+      ]).pipe(Effect.provide(capture));
+
+      assert.deepStrictEqual(
+        lines,
+        [
+          {
+            "meta.error.code": 10,
+            "meta.error.subcode": 2_207_051,
+            "meta.error.trace_id": "AbCdEf_synthetic",
+            "meta.error.type": "OAuthException",
+            "meta.status": 403,
+            message: ["Meta refused a token"],
+          },
+          { "meta.status": 403, message: ["Meta refused a token"] },
+          {
+            "meta.error.code": 190,
+            "meta.status": 400,
+            message: ["Meta refused a token"],
+          },
+        ].map((line) => JSON.stringify(line))
+      );
+    })
+  );
+
+  it.effect("reads the Threads token endpoints' error type", () =>
+    Effect.gen(function* threadsType() {
+      const types: unknown[] = [];
+
+      const capture = Logger.layer([
+        Logger.make(({ fiber }) => {
+          types.push(
+            fiber.getRef(References.CurrentLogAnnotations)["meta.error.type"]
+          );
+        }),
+      ]);
+
+      yield* refusalOf(400, {
+        code: 190,
+        error_message: "synthetic",
+        error_type: "OAuthException",
+      }).pipe(Effect.provide(capture));
+
+      assert.deepStrictEqual(types, ["OAuthException"]);
+    })
   );
 
   it.effect("takes every rate limit code as one, with Meta's wait", () =>

@@ -733,7 +733,11 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   containers (Instagram's on the host its channel's connection names, from
   `PublishingAccount.connection`, the same container flow on both), and read Graph refusals with
   `#shared/infrastructure/platforms/graph-refusal.ts`, whose rate limits wait
-  as long as `X-Business-Use-Case-Usage` says.
+  as long as `X-Business-Use-Case-Usage` says. It puts what Meta said of
+  every refusal on the span (`meta.status`, `meta.error.code`, `subcode`,
+  `type`, `trace_id`, the last two only when they read as a name and an
+  id) and logs each refused token with them ("Meta refused a token"),
+  never Meta's message.
 - Derive whatever an adapter sends from the request's `idempotencyKey` and
   `startedAt`, which every run of an attempt shares.
 - An adapter whose publish is several requests that the `sequenced` steps
