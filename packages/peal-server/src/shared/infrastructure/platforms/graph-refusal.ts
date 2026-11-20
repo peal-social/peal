@@ -100,6 +100,8 @@ const describedOf = (error: GraphError, status: number) => ({
 export type GraphRefusal =
   | {
       readonly _tag: "token";
+      // Meta's code, as `refused` names it (`graph10`, `http403`).
+      readonly code: string;
       readonly permission: boolean;
       // Meta named the refusal with a Graph error code; false for a bare
       // 401 or 403, which a proxy on the way may give as well.
@@ -207,6 +209,7 @@ export const graphRefusalOf = Effect.fn("MetaGraph.refusalOf")(
 
         return {
           _tag: "token",
+          code: codeName(error, status),
           coded: true,
           permission: isPermissionCode(code),
         } satisfies GraphRefusal;
@@ -242,6 +245,7 @@ export const graphRefusalOf = Effect.fn("MetaGraph.refusalOf")(
 
       return {
         _tag: "token",
+        code: codeName(error, status),
         coded: false,
         permission: false,
       } satisfies GraphRefusal;
