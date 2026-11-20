@@ -307,7 +307,11 @@
   encrypted (`connect_choices`, `choice:<selection>`, 15 minutes, used once)
   for `choose`, which puts a choice back when it fails before connecting
   any account. `IssuedTokens.grantedBy` keeps the Facebook user a Page token
-  rests on, in `channels.granted_by`. Threads has its own OAuth: a 60-day
+  rests on, in `channels.granted_by`. Both ask `business_management` as
+  optional (`portfolioPagesScope`): with Facebook Login for Business,
+  `/me/accounts` leaves out a Page a business portfolio owns, Instagram
+  account and all, from a token without it, even for the Page's admin
+  (`meta-comment-scopes.test.ts`). Threads has its own OAuth: a 60-day
   long-lived token that renews itself. Every Graph call through Facebook
   Login carries `appsecret_proof`
   (`#shared/infrastructure/platforms/meta-graph.ts`). Where

@@ -104,6 +104,15 @@ const isInboxPlatform = Schema.is(OptionalInboxPlatformSchema);
 
 const isMessagePlatform = Schema.is(InboxMessagePlatformSchema);
 
+/**
+ * The permission that lists the Pages a business portfolio owns: with
+ * Facebook Login for Business, `/me/accounts` leaves such a Page out of a
+ * token without it, Instagram account and all, even for the Page's admin.
+ * Asked as optional: a member whose Pages are their own declines it and
+ * still connects.
+ */
+export const portfolioPagesScope = "business_management";
+
 /** The picture at a URL Meta gave, if it is one clients can show. */
 export const avatarOf = (url: string | undefined): Option.Option<AvatarUrl> =>
   Option.fromUndefinedOr(url).pipe(Option.flatMap(decodeAvatar));
@@ -180,10 +189,11 @@ export const facebookLogin = Effect.fn("FacebookLogin.make")(
     const { app, hosts, http } = options;
     const { platform, scopes } = product;
 
-    // What a member may decline and still connect: off the inbox, exactly
-    // what the sign-in asked before the inbox read Meta.
+    // What a member may decline and still connect: the product's own, the
+    // portfolio's Pages, and the inbox's comments where it reads them.
     const optionalScopes = [
       ...(product.optionalScopes ?? []),
+      portfolioPagesScope,
       ...(isInboxPlatform(platform) && options.inbox?.has(platform) === true
         ? (product.commentScopes ?? [])
         : []),
