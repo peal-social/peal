@@ -292,6 +292,28 @@ export const fakeMeta = Effect.fnUntraced(function* fakeMeta(
           ? json(threadsAccount)
           : graphError(190),
     ],
+    // Threads' token description, asked with the app's own token: the
+    // permissions granted, less those the user declined.
+    [
+      "GET /v1.0/debug_token",
+      ({ query }) =>
+        query.get("access_token") ===
+          `TH|${threadsApp.appId}|${Redacted.value(threadsApp.appSecret)}` &&
+        threadsTokens.has(query.get("input_token") ?? "")
+          ? json({
+              data: {
+                is_valid: true,
+                scopes: [
+                  "threads_basic",
+                  "threads_content_publish",
+                  "threads_manage_replies",
+                ].filter((scope) => !declined.includes(scope)),
+                type: "USER",
+                user_id: threadsAccount.id,
+              },
+            })
+          : graphError(190),
+    ],
     ["GET /v27.0/me", userRead(() => json({ id: userId }))],
     ["GET /v27.0/me/accounts", userRead(accounts)],
     [
