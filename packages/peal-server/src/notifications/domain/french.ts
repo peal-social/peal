@@ -623,7 +623,7 @@ export const french: EmailCatalog = {
     gone: "il a répondu 410 Gone, ce qui demande de ne plus rien lui envoyer.",
   },
   weeklyDigest: {
-    action: "Ouvrir mon agenda",
+    action: "Ouvrir mon calendrier",
     calendar: "Ouvrir le calendrier de {workspaceName}",
     counts: {
       awaitingApproval: {

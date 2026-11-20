@@ -290,7 +290,7 @@ describe("peal doctor", () => {
         );
         assert.strictEqual(
           check(text, "workspace").fix,
-          "Turn it on at http://localhost:3000/account, then run the command again."
+          "Turn it on in your account settings in the web app (http://localhost:3000/), then run the command again."
         );
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );

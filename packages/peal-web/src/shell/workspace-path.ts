@@ -1,8 +1,5 @@
 import { hasLocale } from "next-intl";
-import {
-  personalPageSegments,
-  reservedWorkspaceSlugs,
-} from "peal-contract/workspace-slug";
+import { reservedWorkspaceSlugs } from "peal-contract/workspace-slug";
 
 import { routing } from "#i18n/routing.ts";
 
@@ -62,18 +59,21 @@ const split = (
 export const isWorkspaceSegment = (segment: string): boolean =>
   segment !== "" && !reservedWorkspaceSlugs.includes(segment);
 
+/** Where another workspace is made: the setup page, its name empty. */
+export const createWorkspacePath = "/create";
+
 /**
  * Whether a path (its language, if any, before it) is the signed-in app's:
- * `/`, which opens a workspace, the person's own pages (`/agenda`) and a
- * workspace's (`/<slug>/…`). The auth pages, the OAuth pages, connect and
- * review links and the staff console are not.
+ * `/`, which opens a workspace or makes the first, `/create`, which makes
+ * another, and a workspace's pages (`/<slug>/…`). The auth pages, the
+ * OAuth pages, connect and review links and the staff console are not.
  */
 export const isAppPath = (pathname: string): boolean => {
   const [first = ""] = split(pathname.split(/[?#]/u)[0] ?? "").segments;
 
   return (
     first === "" ||
-    personalPageSegments.includes(first) ||
+    `/${first}` === createWorkspacePath ||
     isWorkspaceSegment(first)
   );
 };

@@ -1,7 +1,5 @@
 import { Effect, Option } from "effect";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { buttonVariants } from "peal-ui/components/button";
 import { Suspense } from "react";
 
 import { currentUserOrNone } from "#auth/session.ts";
@@ -15,7 +13,7 @@ import { ContractLinks } from "#components/contract/contract-links.tsx";
 import { WorkspaceShell } from "#components/shell/workspace-shell.tsx";
 import { TwoStepRefusalWatch } from "#components/two-step/refusal-watch.tsx";
 import { TwoStepRequiredNotice } from "#components/two-step/required-notice.tsx";
-import { Link } from "#i18n/navigation.ts";
+import { TwoStepTurnOnHere } from "#components/two-step/turn-on-here.tsx";
 import { docsUrlConfig } from "#shell/docs-url.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
@@ -68,17 +66,9 @@ const WorkspaceLayout = async ({
   }
 
   if (workspace.value.twoStepRequired && !me.value.user.twoStepEnabled) {
-    const t = await getTranslations("TwoStep");
-
     return (
       <PlainFrame>
-        <TwoStepRequiredNotice
-          action={
-            <Link href="/account" className={buttonVariants()}>
-              {t("goToAccount")}
-            </Link>
-          }
-        />
+        <TwoStepRequiredNotice action={<TwoStepTurnOnHere />} />
       </PlainFrame>
     );
   }
@@ -96,7 +86,7 @@ const WorkspaceLayout = async ({
     <WorkspaceShell
       actions={
         <Suspense fallback={null}>
-          <AccountMenu />
+          <AccountMenu workspaceSlug={slug} />
         </Suspense>
       }
       docsUrl={docsUrl}

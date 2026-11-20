@@ -141,7 +141,7 @@ describe(sanitized, () => {
     expect(JSON.stringify(sent)).not.toContain("synthetic-studio");
   });
 
-  it("keeps the person's own pages at the root as they are", () => {
+  it("keeps the setup page at the root as it is", () => {
     const view = pageView(userId);
 
     const sent = sanitized(
@@ -149,14 +149,14 @@ describe(sanitized, () => {
         ...view,
         properties: {
           ...view.properties,
-          $current_url: "https://app.peal.test/account",
-          $pathname: "/account",
+          $current_url: "https://app.peal.test/create",
+          $pathname: "/create",
         },
       },
       identified
     );
 
-    expect(sent?.properties["$pathname"]).toBe("/account");
+    expect(sent?.properties["$pathname"]).toBe("/create");
   });
 
   it("names no workspace in an anonymous page view", () => {

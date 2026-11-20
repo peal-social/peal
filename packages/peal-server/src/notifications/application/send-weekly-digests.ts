@@ -137,12 +137,24 @@ export class SendWeeklyDigests extends Context.Service<
         const { locale } = reader;
         const token = yield* digestLinks.tokenOf(userId, links);
 
+        const told = reader.workspaces.filter(hasNews);
+        // The web app's pages are a workspace's, named by its id, which
+        // it sends on to the slug: the first that has news, else the
+        // first, else the web app, which opens theirs.
+        const first = told[0] ?? reader.workspaces[0];
+
+        const pageOf = (rest: string) =>
+          appLinks.url(
+            first === undefined ? "/" : `/${first.workspaceId}${rest}`,
+            locale
+          );
+
         const email = renderWeeklyDigest({
-          agendaUrl: appLinks.url("/agenda", locale),
+          calendarUrl: pageOf("/calendar"),
           locale,
-          preferencesUrl: appLinks.url("/notices/preferences", locale),
+          preferencesUrl: pageOf("/settings/notifications"),
           week,
-          workspaces: reader.workspaces.filter(hasNews).map((workspace) => ({
+          workspaces: told.map((workspace) => ({
             ...workspace,
             calendarUrl: appLinks.url(
               `/${workspace.workspaceId}/calendar`,

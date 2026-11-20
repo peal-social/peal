@@ -8,6 +8,7 @@ import { currentUser } from "#auth/session.ts";
 import { WorkspaceSecurityForm } from "#components/settings/workspace-security-form.tsx";
 import { Link, redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { hrefOf } from "#shell/navigation.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
@@ -50,7 +51,7 @@ const SecurityPage = async ({
         ownEnabled={me.value.user.twoStepEnabled}
         accountLink={
           <Link
-            href="/account"
+            href={hrefOf(workspace.slug, "account")}
             className={buttonVariants({ variant: "outline" })}
           >
             {t("goToAccount")}

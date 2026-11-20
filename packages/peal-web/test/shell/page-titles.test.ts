@@ -11,10 +11,9 @@ const app = fileURLToPath(
   new URL("../../src/app/[locale]/(app)", import.meta.url)
 );
 
-// `/` opens a workspace and shows nothing of its own; Drafts and Approvals
-// open their tabs of Posts, the addresses they had kept working.
+// Drafts and Approvals open their tabs of Posts, the addresses they had
+// kept working.
 const redirectsOnly = new Set([
-  "(personal)/page.tsx",
   "[workspaceId]/approvals/page.tsx",
   "[workspaceId]/drafts/page.tsx",
 ]);
@@ -36,7 +35,7 @@ describe("the app's pages", () => {
 
     const untitled = pages.filter(
       (page) =>
-        !/export const generateMetadata = (?:workspace|personal)PageTitle\(/u.test(
+        !/export const generateMetadata = (?:workspacePageTitle\(|setupPageTitle;)/u.test(
           readFileSync(`${app}/${page}`, "utf-8")
         )
     );

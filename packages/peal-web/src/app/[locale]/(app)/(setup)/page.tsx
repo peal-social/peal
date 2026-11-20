@@ -3,24 +3,24 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { workspaceSlugOf } from "peal-contract/workspace-slug";
 
 import { activeWorkspaceOf } from "#auth/active-workspace.ts";
 import { currentUser } from "#auth/session.ts";
 import { FirstWorkspace } from "#components/first-workspace.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { setupPageTitle } from "#shell/page-title.ts";
 import { homeWorkspaceOf, workspacePath } from "#shell/workspace-path.ts";
 import { elidesBefore, firstNameOf } from "#workspaces/new-workspace.ts";
 
 // `/` opens the person's workspace, for someone signed in: the one
 // Better Auth keeps active on the session, else their first. Every way into
 // the app lands here (signing in or up, a confirmed address, an accepted
-// invitation, the OAuth pages). Someone with no workspace gets one made
-// for them, named after them in their account's language
-// (`FirstWorkspace`), unless an invitation waits for them; staff acting
-// as them are sent to the account page instead, as they may not create
-// one. Anyone signed out is sent to sign in.
+// invitation, the OAuth pages). Someone with no workspace makes their
+// first one on the setup page, its name offered after them in their
+// account's language (`FirstWorkspace`), unless an invitation waits for
+// them; staff acting as them are told they have none, as staff may not
+// create one. Anyone signed out is sent to sign in.
 const AppPage = async ({ params }: PageProps<"/[locale]">) => {
   const { locale } = await params;
 
@@ -50,7 +50,13 @@ const AppPage = async ({ params }: PageProps<"/[locale]">) => {
   }
 
   if (impersonatedBy !== null) {
-    return redirect({ href: "/account", locale });
+    const t = await getTranslations("AppPage");
+
+    return (
+      <p className="text-muted-foreground mx-auto max-w-sm py-24 text-center text-sm">
+        {t("staffNoWorkspace")}
+      </p>
+    );
   }
 
   const t = await getTranslations({
@@ -68,14 +74,9 @@ const AppPage = async ({ params }: PageProps<"/[locale]">) => {
           name: first,
         });
 
-  // Its own slug first, the same on every try, so two tabs make one; a
-  // random one should another workspace hold it.
-  const slugs = [
-    workspaceSlugOf(name, user.id.replaceAll("-", "").slice(0, 8)),
-    workspaceSlugOf(name, crypto.randomUUID().replaceAll("-", "").slice(0, 8)),
-  ];
-
-  return <FirstWorkspace name={name} slugs={slugs} />;
+  return <FirstWorkspace name={name} />;
 };
+
+export const generateMetadata = setupPageTitle;
 
 export default AppPage;

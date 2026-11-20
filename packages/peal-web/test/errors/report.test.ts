@@ -130,11 +130,10 @@ describe(pathOf, () => {
   });
 
   // A slug holds the workspace's name.
-  it("writes a workspace's slug as an id, never the person's own pages", () => {
+  it("writes a workspace's slug as an id, never the setup page's", () => {
     expect(pathOf("/maximes-workspace-1a2b3c4d/posts")).toBe("/:id/posts");
     expect(pathOf("/fr/acme/settings/tags")).toBe("/fr/:id/settings/tags");
-    expect(pathOf("/agenda")).toBe("/agenda");
-    expect(pathOf("/new")).toBe("/new");
+    expect(pathOf("/create")).toBe("/create");
     expect(pathOf("/sign-in")).toBe("/sign-in");
   });
 });

@@ -90,13 +90,13 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.isTrue((yield* preferences).email.weeklyDigest);
 
-          // Opening the link only shows where to turn it off.
+          // Opening the link only opens the web app, where they turn it off.
           const opened = yield* app.request(path(token));
 
           assert.strictEqual(opened.status, 302);
           assert.strictEqual(
             opened.headers.get("location"),
-            "http://localhost:3001/notices/preferences"
+            "http://localhost:3001/"
           );
           assert.isTrue((yield* preferences).email.weeklyDigest);
 

@@ -8,8 +8,13 @@ import { Link } from "#i18n/navigation.ts";
 
 // The frame's account corner: the signed-in user, read from GET /api/me
 // while the page renders, with their unread notifications, or a way to sign
-// in, also when that read fails.
-export const AccountMenu = async () => {
+// in, also when that read fails. Their pages open in the settings of the
+// workspace open (`workspaceSlug`), or, outside any, of their first.
+export const AccountMenu = async ({
+  workspaceSlug,
+}: {
+  readonly workspaceSlug?: string;
+}) => {
   const me = await currentUserOrNone();
   const t = await getTranslations("UserMenu");
 
@@ -22,8 +27,13 @@ export const AccountMenu = async () => {
         {t("signIn")}
       </Link>
     ),
-    onSome: ({ user }) => (
-      <AccountMenuView name={user.name} email={user.email} image={user.image} />
+    onSome: ({ user, workspaces }) => (
+      <AccountMenuView
+        name={user.name}
+        email={user.email}
+        image={user.image}
+        workspaceSlug={workspaceSlug ?? workspaces[0]?.slug ?? null}
+      />
     ),
   });
 };

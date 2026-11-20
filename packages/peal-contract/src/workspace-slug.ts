@@ -1,8 +1,9 @@
 /**
  * A workspace's slug: the name its pages go by in the web app's addresses
- * (`/<slug>/posts`, `/fr/<slug>/posts`). It is set once, when the
- * workspace is made, and never changes after, so links to it keep working:
- * renaming a workspace keeps its slug.
+ * (`/<slug>/posts`, `/fr/<slug>/posts`). The person who makes the
+ * workspace chooses it, and whoever may rename the workspace may change it
+ * after; renaming alone keeps it. The server's own links name a workspace
+ * by its id, so they keep working when its slug changes.
  *
  * A slug is lower-case ASCII letters and digits in words joined by single
  * hyphens, at most `workspaceSlugMaxLength` characters. It is never the
@@ -13,27 +14,18 @@
  */
 export const workspaceSlugMaxLength = 48;
 
-/** The person's own pages, across their workspaces: `/agenda`… */
-export const personalPageSegments: readonly string[] = [
-  "account",
-  "agenda",
-  "new",
-  "notices",
-  "report",
-];
-
 /**
  * Every first segment of the web app's addresses that is not a workspace:
- * the person's pages, the other pages (a test reads the web app's folders
- * so none is left out), what the proxy and the server answer, the
- * languages, and `app`, the old prefix.
+ * its other pages (`create`, where another workspace is made, and the rest:
+ * a test reads the web app's folders so none is left out), what the proxy
+ * and the server answer, the languages, and `app`, the old prefix.
  */
 export const reservedWorkspaceSlugs: readonly string[] = [
-  ...personalPageSegments,
   "admin",
   "cancel",
   "connect",
   "contract-request",
+  "create",
   "data-deletion",
   "device",
   "forgot-password",

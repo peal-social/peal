@@ -584,9 +584,7 @@
     "app": "Workspaces",
     "signOut": "Sign out",
     "signOutFailed": "Signing out failed. Try again.",
-    "notifications": "Notifications",
-    "agenda": "Agenda",
-    "report": "Report"
+    "notifications": "Notifications"
   },
   "NotFoundPage": {
     "title": "Page not found",
@@ -637,7 +635,9 @@
       "PROVIDER_FAILED": "The sign-in with your provider failed. Try again.",
       "PROVIDER_EMAIL_NOT_AUTHORITATIVE": "Sign in with your password: Google can't confirm this address is still yours.",
       "PROVIDER_EMAIL_INVALID": "Your provider gave an email address Peal can't use. Sign in with your password.",
-      "AUTHORIZATION_FAILED": "The application's sign-in request was refused. Go back to the application and start again."
+      "AUTHORIZATION_FAILED": "The application's sign-in request was refused. Go back to the application and start again.",
+      "ORGANIZATION_SLUG_ALREADY_TAKEN": "Another workspace already has that address. Choose another.",
+      "INVALID_WORKSPACE_SLUG": "That address can't be used. Use lower-case letters and digits, with words joined by hyphens."
     },
     "providers": {
       "continueWith": "Continue with {name}",
@@ -700,13 +700,24 @@
     "requestAgain": "Ask for a new link"
   },
   "AppPage": {
-    "createDescription": "You will own it, and can invite people to it.",
-    "workspaceName": "Workspace name",
-    "create": "Create the workspace",
+    "workspaceName": "Name",
+    "create": "Create workspace",
     "creating": "Creating…",
     "settingUp": "Setting up your workspace…",
     "defaultName": "{elided, select, other {{name}’s workspace}}",
-    "defaultNameNoOne": "My workspace"
+    "defaultNameNoOne": "My workspace",
+    "firstDescription": "Where your channels, posts and team live. You can change its name and URL later.",
+    "address": {
+      "label": "URL",
+      "checking": "Checking whether /{slug} is free…",
+      "free": "/{slug} is free.",
+      "taken": "Another workspace already uses this URL.",
+      "invalid": "Use lower-case letters and digits, with words joined by hyphens. A few words are kept for Peal's own pages.",
+      "unknown": "Peal couldn't check /{slug}. You can still try it."
+    },
+    "createTitle": "Create a workspace",
+    "back": "Back",
+    "staffNoWorkspace": "This person has no workspace yet. Staff acting as them can’t create one."
   },
   "InvitationPage": {
     "title": "Join a workspace",
@@ -2309,9 +2320,7 @@
       "empty": "Nothing yet. When a post goes out, fails or needs checking, or a channel must be reconnected, it shows here."
     },
     "preferences": {
-      "title": "Notification preferences",
       "description": "Every notification appears in Peal. Choose which ones also reach you by email, and whether you hear about other members’ posts.",
-      "back": "Back to the notifications",
       "legend": "Email me when",
       "postFailed": "A post did not go out",
       "postUnconfirmed": "A post may have gone out, and needs checking on the platform",
@@ -2781,7 +2790,9 @@
       "storeUnavailable": "The deletion could not be recorded where backups cannot undo it, so nothing was deleted. Try again in a few minutes.",
       "partnerClosed": "This server opens partner accounts through its staff: ask the people who run it for one.",
       "partnerInvalid": "A value cannot be kept. Check the name, the logo’s address (HTTPS), the accent colour (#RRGGBB, dark enough to read on white) and the origins: each as https://host, with nothing after, 20 at most.",
-      "partnerOwnsWorkspaces": "The partner account of a workspace this would delete still owns workspaces. Delete each through the partner API first."
+      "partnerOwnsWorkspaces": "The partner account of a workspace this would delete still owns workspaces. Delete each through the partner API first.",
+      "slugInvalid": "That address can't be used. Use lower-case letters and digits, with words joined by hyphens, and not a word Peal's own pages use.",
+      "slugTaken": "Another workspace already has that address."
     },
     "cancellation": {
       "title": "{count, plural, one {Deleting cancels a subscription} other {Deleting cancels # subscriptions}}",
@@ -2804,6 +2815,15 @@
       "name": "Workspace name",
       "rename": "Rename",
       "renamed": "The workspace is now called {name}."
+    },
+    "address": {
+      "title": "Address",
+      "description": "The name your workspace's links use, after the site's address. Links shared before a change stop working. Links in Peal's emails and notices keep working.",
+      "label": "Address",
+      "hint": "Lower-case letters and digits, with words joined by hyphens, 48 characters at most.",
+      "invalid": "Use lower-case letters and digits, with words joined by hyphens, 48 characters at most. A few words are kept for Peal's own pages.",
+      "change": "Change address",
+      "changed": "The workspace's pages are now at /{slug}."
     },
     "delete": {
       "title": "Delete the workspace",
@@ -2969,7 +2989,11 @@
       "label": "Mode",
       "studio": "PealStudio",
       "api": "PealAPI",
-      "unavailable": "Your role in this workspace has no PealAPI pages"
+      "unavailable": "Your role in this workspace has no PealAPI pages",
+      "switch": "Switch",
+      "switchLabel": "Switch between PealStudio and PealAPI",
+      "studioDescription": "Write, schedule and answer across your channels",
+      "apiDescription": "Build on Peal with the API, keys and webhooks"
     },
     "groups": {
       "engage": "Engage",
@@ -3022,7 +3046,10 @@
       "messages": "Direct messages",
       "comment": "Comment",
       "review": "Review",
-      "message": "Message"
+      "message": "Message",
+      "account": "Account",
+      "notifications": "Notifications",
+      "notificationSettings": "Notification preferences"
     },
     "help": "Help",
     "shortcuts": "Keyboard shortcuts",
@@ -3161,17 +3188,6 @@
         "install": "Install the SDK",
         "call": "Make a first call"
       }
-    }
-  },
-  "PersonalShell": {
-    "label": "Your pages",
-    "workspaces": "Workspaces",
-    "pages": {
-      "agenda": "Agenda",
-      "report": "Report",
-      "notices": "Notifications",
-      "account": "Account",
-      "newWorkspace": "New workspace"
     }
   },
   "Webhooks": {
@@ -4877,42 +4893,6 @@
     "edit": "Edit",
     "save": "Save",
     "saved": "The feed is saved."
-  },
-  "Overview": {
-    "agenda": {
-      "title": "Agenda",
-      "description": "What goes out in the next 14 days, across the workspaces where you may read posts. Each post opens in its workspace.",
-      "filter": "Workspace",
-      "allWorkspaces": "All workspaces",
-      "loading": "Loading the agenda…",
-      "loadFailed": "The agenda could not be loaded.",
-      "reload": "Try again",
-      "empty": "Nothing goes out in the next 14 days.",
-      "loadMore": "Load more",
-      "listLabel": "Posts going out on {day}",
-      "noPlatform": "No channel left",
-      "noText": "(no text)",
-      "status": "{status, select, awaitingApproval {Waiting for approval} scheduled {Scheduled} publishing {Publishing} finished {Finished} other {{status}}}",
-      "time": "{at, time, short}",
-      "day": "{at, date, full}"
-    },
-    "report": {
-      "title": "Report across workspaces",
-      "download": "Download CSV",
-      "loading": "Loading the report…",
-      "loadFailed": "The report could not be loaded.",
-      "reload": "Try again",
-      "loadMore": "Load more",
-      "empty": "You do not belong to any workspace yet.",
-      "workspace": "Workspace",
-      "followers": "Followers",
-      "notRead": "Your role here does not read analytics.",
-      "refused": "Requires two-step verification.",
-      "noFigure": "Not given",
-      "change": "{change, number, ::+!}",
-      "previous": "Beside {from} to {to}.",
-      "caption": "Totals of the posts published from {from} to {to}, each with its change against the days before: a dash where no platform gives a count, and no change where the days before are no longer all kept. Each platform counts differently, so compare a workspace with itself, not with another."
-    }
   },
   "Platforms": {
     "title": "Platforms",

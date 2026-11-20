@@ -4,12 +4,8 @@ import type { Locale } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import type { LinkComponent } from "#components/shell/sidebar-view.tsx";
-import { SidebarView } from "#components/shell/sidebar-view.tsx";
+import { ModeSwitch } from "#components/shell/sidebar-view.tsx";
 import { loadMessages } from "#i18n/messages.ts";
-import { navigationOf } from "#shell/navigation.ts";
-
-const workspaceId = "00000000-0000-7000-8000-0000000000a1";
-const slug = "synthetic-workspace";
 
 const PlainLink: LinkComponent = ({ children, ...props }) => (
   <a {...props}>{children}</a>
@@ -20,38 +16,26 @@ const render = async (locale: Locale) => {
 
   return renderToStaticMarkup(
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <SidebarView
+      <ModeSwitch
         link={PlainLink}
-        navigation={navigationOf({
-          pathname: `/app/${slug}/calendar`,
-          permissions: ["channel:read", "apiKey:read"],
-          workspace: slug,
-        })}
-        workspaceId={workspaceId}
-        workspaces={[{ id: workspaceId, name: "Synthetic workspace", slug }]}
+        mode="studio"
+        modes={{
+          api: "/synthetic-workspace/platforms",
+          studio: "/synthetic-workspace",
+        }}
       />
     </NextIntlClientProvider>
   );
 };
 
-// What each link of the mode switch reads, in order.
-const modeNames = (html: string) => {
-  const nav = /<nav aria-label="Mode"[^>]*>(?<inner>.*?)<\/nav>/su.exec(html)
-    ?.groups?.["inner"];
-
-  return [...(nav ?? "").matchAll(/<\/svg>(?<name>[^<]+)</gu)].map(
-    (match) => match.groups?.["name"] ?? ""
-  );
-};
-
-describe(SidebarView, () => {
+describe(ModeSwitch, () => {
   it.each(["en", "fr"] as const)(
-    "names the two sides PealStudio and PealAPI, untranslated (%s)",
+    "names the open mode, untranslated, beside its switch (%s)",
     async (locale) => {
-      expect(modeNames(await render(locale))).toStrictEqual([
-        "PealStudio",
-        "PealAPI",
-      ]);
+      const html = await render(locale);
+
+      expect(html).toContain(">PealStudio</span>");
+      expect(html).toMatch(/aria-label="[^"]*PealStudio[^"]*PealAPI[^"]*"/u);
     }
   );
 });

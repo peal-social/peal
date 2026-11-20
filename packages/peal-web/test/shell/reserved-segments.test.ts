@@ -8,12 +8,11 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "@effect/vitest";
 import {
   isWorkspaceSlug,
-  personalPageSegments,
   reservedWorkspaceSlugs,
 } from "peal-contract/workspace-slug";
 
 import { routing } from "#i18n/routing.ts";
-import { personalHrefOf, personalPages } from "#shell/personal.ts";
+import { createWorkspacePath } from "#shell/workspace-path.ts";
 
 const app = fileURLToPath(new URL("../../src/app", import.meta.url));
 
@@ -47,11 +46,9 @@ describe("the first segments of the app's addresses", () => {
     }
   });
 
-  it("hold the person's pages, as the sidebar links them", () => {
-    for (const page of [...personalPages, "newWorkspace" as const]) {
-      const [, first = ""] = personalHrefOf(page).split("/");
+  it("hold the setup page's, as the workspace switcher links it", () => {
+    const [, first = ""] = createWorkspacePath.split("/");
 
-      expect(personalPageSegments).toContain(first);
-    }
+    expect(reservedWorkspaceSlugs).toContain(first);
   });
 });

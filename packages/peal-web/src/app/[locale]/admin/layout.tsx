@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { buttonVariants } from "peal-ui/components/button";
 
 import { StaffNav } from "#components/staff/staff-nav.tsx";
-import { Link } from "#i18n/navigation.ts";
+import { TwoStepTurnOnHere } from "#components/two-step/turn-on-here.tsx";
 import { routing } from "#i18n/routing.ts";
 import { answersLegalRequests, consoleVisitor } from "#staff/server.ts";
 
@@ -50,11 +49,7 @@ const StaffLayout = async ({
       <div className="flex max-w-xl flex-col gap-4">
         <p className="font-semibold tracking-tight">{t("title")}</p>
         <p>{twoStep("staffConsoleRequires")}</p>
-        <div>
-          <Link href="/account" className={buttonVariants()}>
-            {twoStep("goToAccount")}
-          </Link>
-        </div>
+        <TwoStepTurnOnHere />
       </div>
     );
   }

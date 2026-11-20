@@ -1,6 +1,6 @@
 // A workspace's slug names its pages in the web app's addresses
 // (`/<slug>/posts`): Better Auth's routes make a workspace only with a
-// slug the app can route, and never change it after.
+// slug the app can route, and change it only to another such slug.
 import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
@@ -22,18 +22,17 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
   "workspace slugs",
   (it) => {
     it.effect(
-      "refuse a slug the web app cannot route: a personal page, an id, other characters",
+      "refuse a slug the web app cannot route: another page, an id, other characters",
       () =>
         Effect.gen(function* refused() {
           const app = yield* TestApp;
           const owner = yield* signedUp("slugs");
 
           for (const slug of [
-            "agenda",
-            "account",
-            "notices",
-            "report",
-            "new",
+            "create",
+            "admin",
+            "sign-in",
+            "invitations",
             randomUUID(),
             "Capitals",
             "two words",
@@ -52,10 +51,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             );
           }
 
-          const taken = `agenda-${randomUUID().slice(0, 8)}`;
+          const taken = `create-${randomUUID().slice(0, 8)}`;
 
           const made = yield* app.request("/api/auth/organization/create", {
-            body: { name: "Agenda", slug: taken },
+            body: { name: "Create", slug: taken },
             headers: { cookie: owner.cookies },
           });
 
@@ -64,25 +63,52 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         })
     );
 
+    it.effect(
+      "change a workspace's slug to one the web app can route and no other workspace holds",
+      () =>
+        Effect.gen(function* changed() {
+          const app = yield* TestApp;
+          const owner = yield* signedUp("slug-changed");
+          const workspaceId = yield* workspaceOf(owner, "Moving");
+          const otherId = yield* workspaceOf(owner, "Other");
+
+          const update = (id: string, slug: string) =>
+            app.request("/api/auth/organization/update", {
+              body: { data: { slug }, organizationId: id },
+              headers: { cookie: owner.cookies },
+            });
+
+          for (const slug of ["create", randomUUID(), "Two Words"]) {
+            const refused = yield* update(workspaceId, slug);
+
+            assert.strictEqual(refused.status, 400, slug);
+            assert.strictEqual(
+              (yield* bodyOf(RefusalSchema, refused)).code,
+              "INVALID_WORKSPACE_SLUG"
+            );
+          }
+
+          const slug = `moved-${randomUUID().slice(0, 8)}`;
+          const moved = yield* update(workspaceId, slug);
+
+          assert.strictEqual(moved.status, 200);
+          assert.strictEqual((yield* bodyOf(SlugSchema, moved)).slug, slug);
+
+          const taken = yield* update(otherId, slug);
+
+          assert.strictEqual(taken.status, 400);
+          assert.strictEqual(
+            (yield* bodyOf(RefusalSchema, taken)).code,
+            "ORGANIZATION_SLUG_ALREADY_TAKEN"
+          );
+        })
+    );
+
     it.effect("keep a workspace's slug when it is renamed", () =>
       Effect.gen(function* kept() {
         const app = yield* TestApp;
         const owner = yield* signedUp("slug-kept");
         const workspaceId = yield* workspaceOf(owner, "Before");
-
-        const moved = yield* app.request("/api/auth/organization/update", {
-          body: {
-            data: { slug: `after-${randomUUID().slice(0, 8)}` },
-            organizationId: workspaceId,
-          },
-          headers: { cookie: owner.cookies },
-        });
-
-        assert.strictEqual(moved.status, 400);
-        assert.strictEqual(
-          (yield* bodyOf(RefusalSchema, moved)).code,
-          "WORKSPACE_SLUG_FIXED"
-        );
 
         const renamed = yield* app.request("/api/auth/organization/update", {
           body: { data: { name: "After" }, organizationId: workspaceId },

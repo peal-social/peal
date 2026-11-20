@@ -2,6 +2,8 @@
 
 import type { LucideIcon } from "lucide-react";
 import {
+  BellIcon,
+  BellRingIcon,
   NewspaperIcon,
   CableIcon,
   CalendarDaysIcon,
@@ -9,7 +11,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronDownIcon,
-  CodeXmlIcon,
   CreditCardIcon,
   FileUpIcon,
   HouseIcon,
@@ -33,13 +34,16 @@ import {
   SparklesIcon,
   SquarePenIcon,
   TagIcon,
+  UserIcon,
   UsersIcon,
   WebhookIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Button } from "peal-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -50,10 +54,8 @@ import { useState } from "react";
 import type { ComponentProps, ComponentType, ReactNode } from "react";
 
 import { useCloseMenu } from "#components/shell/frame-view.tsx";
-import { PealMark } from "#components/shell/peal-mark.tsx";
 import type { Link, Mode, Navigation, Page } from "#shell/navigation.ts";
-import { personalHrefOf } from "#shell/personal.ts";
-import { workspacePath } from "#shell/workspace-path.ts";
+import { createWorkspacePath, workspacePath } from "#shell/workspace-path.ts";
 
 /** A link of the app, which the container makes from next-intl's. */
 export type LinkComponent = ComponentType<{
@@ -66,6 +68,7 @@ export type LinkComponent = ComponentType<{
 
 /** Each page's icon, in the sidebar and the command menu. */
 export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
+  account: UserIcon,
   ads: MegaphoneIcon,
   analytics: ChartColumnIcon,
   apiKeys: KeyRoundIcon,
@@ -91,27 +94,24 @@ export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
   followUps: ReplyIcon,
   commentRules: MessageSquareReplyIcon,
   messages: MessagesSquareIcon,
+  notificationSettings: BellRingIcon,
+  notifications: BellIcon,
   security: ShieldIcon,
   signatures: PenLineIcon,
   tags: TagIcon,
   webhooks: WebhookIcon,
 };
 
-const modeIcons: Readonly<Record<Mode, LucideIcon>> = {
-  api: CodeXmlIcon,
-  studio: SquarePenIcon,
-};
-
-// The open mode's segment: ink in PealAPI, so the mode shows at a glance.
-const currentModeClass: Readonly<Record<Mode, string>> = {
-  api: "bg-primary text-primary-foreground font-medium shadow-xs",
-  studio: "bg-card ring-border font-medium shadow-xs ring-1",
-};
-
 export const itemClass =
   "flex h-8.5 items-center gap-2.5 rounded-md px-2.5 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent aria-[current=page]:bg-sidebar-accent aria-[current=page]:font-medium aria-[current=page]:text-sidebar-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0";
 
-const ModeSwitch = ({
+/**
+ * The mode switch, in the bottom bar beside the account: the open mode's
+ * name, and **Switch**, shown while the row is hovered or focused, whose
+ * menu offers both modes with what each is for. A mode the member may
+ * open no page of is shown disabled, saying why.
+ */
+export const ModeSwitch = ({
   link: LinkTo,
   mode,
   modes,
@@ -125,69 +125,66 @@ const ModeSwitch = ({
   const t = useTranslations("WorkspaceShell");
 
   return (
-    <div className="bg-secondary ring-border flex w-full items-center gap-0.75 rounded-lg p-0.75 ring-1 ring-inset">
-      <span
-        className={cn(
-          "flex size-7 shrink-0 items-center justify-center rounded-md",
-          mode === "api" ? "bg-primary" : "bg-card ring-border shadow-xs ring-1"
-        )}
-      >
-        <PealMark className="size-4.5" label={t("productName")} />
+    <div className="group/mode flex h-8 min-w-0 flex-1 items-center gap-2 pl-1">
+      <span className="min-w-0 truncate text-sm font-medium">
+        {t(`modes.${mode}`)}
       </span>
-      <nav
-        aria-label={t("modes.label")}
-        className="grid flex-1 grid-cols-2 gap-0.5"
-      >
-        {(["studio", "api"] as const).map((each) => {
-          const Icon = modeIcons[each];
-          const href = modes[each];
+      <DropdownMenu>
+        <span className="opacity-0 transition-opacity group-hover/mode:opacity-100 has-[:focus-visible]:opacity-100 has-[[aria-expanded=true]]:opacity-100">
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="outline"
+                size="xs"
+                aria-label={t("modes.switchLabel")}
+              />
+            }
+          >
+            {t("modes.switch")}
+          </DropdownMenuTrigger>
+        </span>
+        <DropdownMenuContent side="right" align="end" className="w-80">
+          <DropdownMenuGroup>
+            {(["studio", "api"] as const).map((each) => {
+              const href = modes[each];
 
-          const content = (
-            <>
-              <Icon aria-hidden />
-              {t(`modes.${each}`)}
-            </>
-          );
+              const content = (
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-medium">{t(`modes.${each}`)}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {href === null
+                      ? t("modes.unavailable")
+                      : t(`modes.${each}Description`)}
+                  </span>
+                </span>
+              );
 
-          const shared =
-            "flex h-7 items-center justify-center gap-1.5 rounded-md text-sm [&_svg]:size-3.5";
-
-          if (href === null) {
-            return (
-              <span
-                key={each}
-                aria-disabled
-                title={t("modes.unavailable")}
-                className={cn(
-                  shared,
-                  "text-muted-foreground/60 cursor-not-allowed"
-                )}
-              >
-                {content}
-              </span>
-            );
-          }
-
-          const current = each === mode;
-
-          return (
-            <LinkTo
-              key={each}
-              href={href}
-              {...(current ? { "aria-current": "page" as const } : {})}
-              {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
-              className={cn(
-                shared,
-                current
-                  ? currentModeClass[each]
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {content}
-            </LinkTo>
-          );
-        })}
-      </nav>
+              return href === null ? (
+                <DropdownMenuItem key={each} disabled>
+                  {content}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  key={each}
+                  render={
+                    <LinkTo
+                      href={href}
+                      {...(each === mode
+                        ? { "aria-current": "page" as const }
+                        : {})}
+                      {...(onNavigate === undefined
+                        ? {}
+                        : { onClick: onNavigate })}
+                    >
+                      {content}
+                    </LinkTo>
+                  }
+                />
+              );
+            })}
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
@@ -320,32 +317,33 @@ export const SidebarView = ({
           <DropdownMenuContent align="start" side="bottom" className="w-56">
             {others.length === 0 ? null : (
               <>
-                <DropdownMenuLabel>{t("workspaces.switch")}</DropdownMenuLabel>
-                {others.map(({ id, name, slug }) => (
-                  <DropdownMenuItem
-                    key={id}
-                    render={
-                      <LinkTo
-                        href={workspacePath(slug)}
-                        onClick={() => {
-                          onChooseWorkspace?.(id);
-                          navigated();
-                        }}
-                      >
-                        {name}
-                      </LinkTo>
-                    }
-                  />
-                ))}
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>
+                    {t("workspaces.switch")}
+                  </DropdownMenuLabel>
+                  {others.map(({ id, name, slug }) => (
+                    <DropdownMenuItem
+                      key={id}
+                      render={
+                        <LinkTo
+                          href={workspacePath(slug)}
+                          onClick={() => {
+                            onChooseWorkspace?.(id);
+                            navigated();
+                          }}
+                        >
+                          {name}
+                        </LinkTo>
+                      }
+                    />
+                  ))}
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
               </>
             )}
             <DropdownMenuItem
               render={
-                <LinkTo
-                  href={personalHrefOf("newWorkspace")}
-                  onClick={navigated}
-                >
+                <LinkTo href={createWorkspacePath} onClick={navigated}>
                   {t("workspaces.create")}
                 </LinkTo>
               }
@@ -353,14 +351,6 @@ export const SidebarView = ({
           </DropdownMenuContent>
         </DropdownMenu>
         <div className="flex shrink-0 items-center">{tools}</div>
-      </div>
-      <div className="shrink-0 px-2.5 pb-1">
-        <ModeSwitch
-          link={link}
-          mode={navigation.mode}
-          modes={navigation.modes}
-          onNavigate={navigated}
-        />
       </div>
 
       <nav

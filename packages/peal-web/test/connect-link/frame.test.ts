@@ -6,8 +6,9 @@ describe(frameOf, () => {
   it("leaves the signed-in app's pages to their own frame", () => {
     for (const path of [
       "/",
-      "/account",
-      "/notices/preferences",
+      "/create",
+      "/fr/create",
+      "/synthetic-studio/settings/account",
       "/00000000-0000-7000-8000-0000000000a1",
       "/00000000-0000-7000-8000-0000000000a1/settings/tags",
     ]) {

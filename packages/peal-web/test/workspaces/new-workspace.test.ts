@@ -11,21 +11,21 @@ import {
   elidesBefore,
   firstNameOf,
   openInvitationOf,
-  slugsToTry,
+  slugAvailabilityOf,
   slugTaken,
+  suggestedSlugOf,
 } from "#workspaces/new-workspace.ts";
 
 describe(isWorkspaceSlug, () => {
-  it("takes lower-case words, never a personal page, an id or other characters", () => {
-    expect(isWorkspaceSlug("acme-studio")).toBeTruthy();
+  it("takes lower-case words, never another page, an id or other characters", () => {
+    expect(isWorkspaceSlug("maple-studio")).toBeTruthy();
     expect(isWorkspaceSlug("studio2")).toBeTruthy();
 
     for (const refused of [
-      "agenda",
-      "account",
-      "notices",
-      "report",
-      "new",
+      "create",
+      "admin",
+      "sign-in",
+      "invitations",
       "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e31",
       "Studio",
       "two words",
@@ -60,17 +60,38 @@ describe(workspaceSlugOf, () => {
   });
 });
 
-describe(slugsToTry, () => {
-  it("tries the words alone first, then with the tail", () => {
-    expect(slugsToTry("Acme Studio", "1a2b3c4d")).toStrictEqual([
-      "acme-studio",
-      "acme-studio-1a2b3c4d",
-    ]);
+describe(suggestedSlugOf, () => {
+  it("offers the name's words alone, then with the tail once given", () => {
+    expect(suggestedSlugOf("Maxime’s workspace", null)).toBe(
+      "maximes-workspace"
+    );
+    expect(suggestedSlugOf("Maxime’s workspace", "1a2b")).toBe(
+      "maximes-workspace-1a2b"
+    );
   });
 
-  it("goes straight to the tail for a reserved word or a name without words", () => {
-    expect(slugsToTry("Agenda", "1a2b3c4d")).toStrictEqual(["agenda-1a2b3c4d"]);
-    expect(slugsToTry("!!!", "1a2b3c4d")).toStrictEqual(["workspace-1a2b3c4d"]);
+  it("offers nothing for an empty name, and the tail for a reserved word", () => {
+    expect(suggestedSlugOf("", null)).toBe("");
+    expect(suggestedSlugOf("Create", null)).toBe("create");
+    expect(suggestedSlugOf("Create", "1a2b")).toBe("create-1a2b");
+    expect(suggestedSlugOf("!!!", "1a2b")).toBe("workspace-1a2b");
+  });
+});
+
+describe(slugAvailabilityOf, () => {
+  it("refuses before asking, and reads only the answer for that slug", () => {
+    expect(slugAvailabilityOf("create", null)).toBe("invalid");
+    expect(slugAvailabilityOf("Two Words", null)).toBe("invalid");
+    expect(slugAvailabilityOf("maple-studio", null)).toBe("checking");
+    expect(
+      slugAvailabilityOf("maple-studio", { answer: "free", slug: "maple" })
+    ).toBe("checking");
+    expect(
+      slugAvailabilityOf("maple-studio", {
+        answer: "taken",
+        slug: "maple-studio",
+      })
+    ).toBe("taken");
   });
 
   it("knows Better Auth's answers for a slug another workspace holds", () => {

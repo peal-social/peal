@@ -52,10 +52,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   deletion status `data-deletion/[code]`, the page behind a review link
   `review` (no sign-in, noindex; the token is the address's fragment, read
   in the browser), and the signed-in
-  app at the root, in the `(app)` route group: `/` (no page: it opens a
-  workspace, below), `agenda`, `report`, `notices`,
-  `notices/preferences`, `account`, `new` (a new workspace; in the
-  `(personal)` route group), `[workspaceId]` (the workspace's home: the
+  app at the root, in the `(app)` route group: `/` (it opens a
+  workspace, or shows the setup page, below) and `create` (the setup page
+  for another workspace), both in the `(setup)` route group,
+  `[workspaceId]` (the workspace's home: the
   measurement's question, connecting channels and assistants, a
   quickstart), `…/platforms` (PealAPI's, for channel:read),
   `[workspaceId]/channels`, `…/media`, `…/calendar`,
@@ -72,7 +72,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   a draft or a scheduled post in the composer, and shows a post that went
   out in `PostDetail` (each channel's status, attempts and reasons, with
   repost and confirm, and its analytics), `…/settings` (with `members`, `invitations`, `tags`, `signatures`,
-  `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys` and `webhooks`) and `…/billing`. The staff console is
+  `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys` and `webhooks`) and `…/billing`. The person's own
+  pages are every workspace's too, in its Settings: `…/settings/account`
+  (their account), `…/notifications` (their notifications across
+  workspaces) and `…/settings/notifications` (which reach them by email);
+  the account menu opens them in the workspace open. There is no personal
+  area: no page across workspaces, no sidebar of the person's own.
+  `GET /api/me/agenda`, `/api/me/report` and `/api/me/overview` have no
+  page; the CLI and the API still read them. The staff console is
   `admin` (the system's health), `admin/users`, `admin/users/[userId]`,
   `admin/workspaces`, `admin/workspaces/[workspaceId]` (with its API
   rate limit, `WorkspaceRequestLimit`: staff set a limit of its own, with
@@ -93,9 +100,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   must be told (Code du travail, art. L1222-4): keep that notice.
   `ImpersonationBanner`, in `AppShell`, shows while staff act as someone.
 - The signed-in app has its own frame (DESIGN.md, "The frame"):
-  `ShellFrame` leaves every page of the app (`isAppPath`: `/`, the
-  person's pages and a workspace's) to its layouts (`frameOf` answers
-  `own`). `FrameView` (`components/shell/`) is the frame both
+  `ShellFrame` leaves every page of the app (`isAppPath`: `/`, `/create`
+  and a workspace's) to its layouts (`frameOf` answers `own`). `FrameView` (`components/shell/`) is the frame both
   draw: a sidebar on the page's background (in a `Sheet` on a
   phone; its links close it through `useCloseMenu`), the page in a white
   panel under a 48 px header (the breadcrumb, the page's `h1`, its
@@ -106,23 +112,28 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   its end. `(app)/[workspaceId]/layout.tsx`
   gives a workspace's pages `WorkspaceShell`, whose `SidebarView` holds,
   in its head, the workspace switcher, Search (the command menu) and New
-  post, then the PealStudio and PealAPI switch with Peal's mark, the
-  mode's pages, a section's pages under a way back, and Settings;
-  `(app)/(personal)/layout.tsx`
-  gives the person's pages `PersonalShell` (their pages, then each
-  workspace). Someone signed out, not a member, or who must first turn on
-  two-step verification, gets the app's `PlainFrame`. Which workspace pages
+  post, then the mode's pages, a section's pages under a way back,
+  and Settings; the bottom bar holds, beside the account, `ModeSwitch`
+  (the open mode, and **Switch** on hover, whose menu offers PealStudio
+  and PealAPI);
+  `(app)/(setup)/layout.tsx` gives the setup page `SetupFrame`
+  (`components/setup/`): no sidebar and no bottom bar, the way back to
+  the workspace `/` would open when the person has one, who is signed in
+  and Sign out, and the contract functions at its foot. Someone signed
+  out or not a member gets the app's `PlainFrame`; a member who must
+  first turn on two-step verification gets it too, with the notice and
+  the account page's own controls to turn it on (`TwoStepTurnOnHere`, as
+  the staff console does), since the account page is a workspace's. Which workspace pages
   exist, their mode, their section and the permission each asks is one
   table, `#shell/navigation.ts` (`navigationOf`, tested): add a workspace
-  page there, with its name in `WorkspaceShell.pages`; the person's are in
-  `#shell/personal.ts`. The frame's panel header holds the page's one
+  page there, with its name in `WorkspaceShell.pages`. The frame's panel header holds the page's one
   `h1`, its name: a page draws no title or description of its own, puts
   its main actions in `PageActions` (small ghost buttons, icon first) and,
   where it opens one item, names it with `PageTitle`. Each page also
-  exports `generateMetadata = workspacePageTitle("<page>")` (or
-  `personalPageTitle`, `#shell/page-title.ts`), its name from the
-  sidebar's catalogue, which the layouts' templates follow with the
-  workspace's name or "Peal" for the browser's tab
+  exports `generateMetadata = workspacePageTitle("<page>")`
+  (`#shell/page-title.ts`; the setup page's is `setupPageTitle`), its
+  name from the sidebar's catalogue, which the layouts' templates follow
+  with the workspace's name or "Peal" for the browser's tab
   (`components/shell/frame-view.tsx`). A list page puts its items in
   one bordered list with a line between them, never a card each.
 - The workspace's home builds each assistant's setup (`#home/agents.ts`,
@@ -162,45 +173,42 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   slug (308, `slugAddressOf`, once `/api/me` says whose it is), as the
   server's emails and notices link by id. A slug is
   `peal-contract/workspace-slug`'s (`isWorkspaceSlug`: lower-case words,
-  never `reservedWorkspaceSlugs` nor an id's shape), set once: the server refuses another (Better Auth's hooks,
-  `INVALID_WORKSPACE_SLUG`) and any change (`WORKSPACE_SLUG_FIXED`);
-  renaming keeps it. A new workspace tries its name's words, then the
-  words and a random tail (`slugsToTry`, `#workspaces/new-workspace.ts`).
+  never `reservedWorkspaceSlugs` nor an id's shape): the server refuses
+  another (Better Auth's hooks, `INVALID_WORKSPACE_SLUG`), when a
+  workspace is made and when its slug changes. Renaming keeps it; owners
+  and admins change it on the general settings (`WorkspaceAddressForm`,
+  which then opens the page under the new address). A new workspace is
+  made with `CreateWorkspaceForm` (`components/create-workspace-form.tsx`),
+  its name and its address offered and both the person's to replace: the
+  address follows the name's words (`suggestedSlugOf`,
+  `#workspaces/new-workspace.ts`) until the person writes one, is checked
+  against `isWorkspaceSlug` then Better Auth's `/organization/check-slug`
+  once they pause (`slugAvailabilityOf`), and, while still the one
+  offered, gets a random tail when taken or reserved. Create waits for a
+  free address.
   Error reports and the measurement's patterns write the slug's segment
   `:id` (`pathOf`), as it holds the workspace's name.
-- `/` is no page: for someone signed in it redirects to the workspace Better Auth keeps
+- `/`, for someone signed in, redirects to the workspace Better Auth keeps
   active on the session (`activeWorkspaceOf`, `#auth/active-workspace.ts`,
   read only for someone with several), else the first (`homeWorkspaceOf`);
   someone signed out is sent to sign in. A workspace becomes the active one
-  when it is chosen: from the switcher, the command menu or the person's
-  sidebar, and once created (`createWorkspace`), as Better Auth's own
+  when it is chosen: from the switcher or the command menu, and once created (`createWorkspace`), as Better Auth's own
   update leaves the session's cached cookie naming the last one.
   `chooseWorkspace` (`#auth/choose-workspace.ts`) sets it through
   `workspaceClient` while the link opens, waits for nothing, and only
   reports a failure; views take it as `onChooseWorkspace`.
   Every way in lands there: sign-in's default `next`, sign-up, a confirmed
   address, an accepted invitation, the OAuth pages. Someone with none gets
-  `FirstWorkspace` (`components/first-workspace.tsx`): an invitation still
-  open opens instead (`openInvitationOf`), as on a server by invitation;
-  otherwise it creates, once, the workspace named after the first word of
-  their name in their account's language (`AppPage.defaultName`), under
-  a slug ending in their id's first characters, so two tabs make one,
-  then opens it; staff acting as someone are sent to the account page.
-  Another workspace is made at `new` (the switcher's and the
-  person's sidebar's **New workspace**), which opens it once made. The
-  server's `GET /api/me/overview` (what needs attention in each workspace)
-  has no page any more; the CLI and the API still read it. `agenda` lists the next 14 days across
-  workspaces (`AgendaScreen`, after hydration: the visitor's cookies, the
-  current time and their zone), grouped by day, a filter by workspace and
-  **Load more**: a list, never the week's grid, as nothing is moved across
-  workspaces. `report` (`ReportScreen`, in the reader's zone) is the
-  report across workspaces as a table only, never a chart, as counts of
-  different platforms are not alike, which the table's caption says; the
-  zone is `TimeZoneLine` (`of="days"`) above the table, as on Analytics: each
-  total with its change (`reportRowOf`, `#overview/report.ts`), a dash
-  where a count is not given or the range before is not all kept, the
-  range switch and **Download CSV** (`/api/me/report/export`). Strings in
-  `Overview`.
+  the setup page there, `FirstWorkspace` (`components/first-workspace.tsx`)
+  in `SetupColumn`: an invitation still open opens instead
+  (`openInvitationOf`), as on a server by invitation; otherwise it shows
+  `CreateWorkspaceForm`, the name offered after the first word of their
+  name in their account's language (`AppPage.defaultName`: "Ada’s
+  workspace", `adas-workspace`), and opens the workspace once made; staff
+  acting as someone without one are told so (`AppPage.staffNoWorkspace`),
+  as they may not create one. Another workspace is made at `create`
+  (`createWorkspacePath`, the switcher's **New workspace**), the same page
+  with the name empty, which opens it once made.
 - Usage measurement (`#measurement/*`, `components/measurement/`, the
   `Measurement` catalogue): the `(app)` layout wraps every page of the app
   in `Measurement` only where `GET /api/me` answers `browserAnalytics`
@@ -622,7 +630,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   uploads in flight.
 - A span of days is chosen with `PeriodMenu` and `usePeriod`
   (`components/lists/period-menu.tsx`), never a select of a screen's own:
-  Analytics and the report in `PageActions`, the billing usage history
+  Analytics in `PageActions`, the billing usage history
   and the partner's usage per customer in their card's header, each in
   the address as `?period=` (the default left out); the best-times card
   keeps its own under `?bestTimes=`.
@@ -783,7 +791,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   member who cannot order, who can; past what any plan holds, how to ask
   for more (`PEAL_CONTACT_URL`). No plan, period or trial is ever
   offered. `UpgradePrompts` puts it around a workspace's pages
-  (`(app)/[workspaceId]/layout.tsx`), the new workspace's page and the
+  (`(app)/[workspaceId]/layout.tsx`), the setup page at `create` and the
   connect callback. A place that sends something a plan can refuse calls
   `useOfferUpgrade()(exit)` (`useOfferAuthUpgrade` for Better Auth's
   errors), or renders `OfferUpgrade` with the failure it keeps in state,

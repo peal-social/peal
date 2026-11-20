@@ -285,11 +285,12 @@ describe("a new member's first post", { serial: true }, () => {
     screen,
   }) => {
     await app.open(`/${slug}/settings`);
-    // Webhooks are PealAPI's: the mode switch opens it at API keys.
+    // Webhooks are PealAPI's: the mode switch, at the sidebar's foot,
+    // opens it.
     await screen
-      .getByRole("navigation", "Mode")
-      .getByRole("link", "PealAPI")
+      .getByRole("button", "Switch between PealStudio and PealAPI")
       .tap();
+    await screen.getByRole("menuitem", /^PealAPI/u).tap();
     await screen
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Webhooks")
@@ -331,7 +332,7 @@ describe("a new member's first post", { serial: true }, () => {
     await expect(
       screen.getByRole("heading", "Compte", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL("/fr/account");
+    await expect(browser).toHaveURL(`/fr/${slug}/settings/account`);
 
     // The account still keeps English, which it signed up in.
     await screen.getByRole("combobox", "Langue").tap();

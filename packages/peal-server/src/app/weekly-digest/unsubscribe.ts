@@ -23,14 +23,15 @@ const kept = {
  * `List-Unsubscribe=One-Click`, turns the token holder's weekly digest off
  * (200), or answers 404 to a token that is not, or no longer, good. A GET,
  * as a link opened in a browser or fetched ahead by a mail scanner, changes
- * nothing and sends the reader to the notification preferences, where they
- * turn it off themselves.
+ * nothing and sends the reader to the web app, which opens their workspace,
+ * whose settings hold the notification preferences where they turn it off
+ * themselves: the token names no workspace.
  */
 export const DigestUnsubscribeLive = HttpRouter.use(
   Effect.fn(function* digestUnsubscribe(router) {
     const digest = yield* UnsubscribeWeeklyDigest;
     const publicUrl = yield* publicUrlConfig;
-    const preferences = new URL("/notices/preferences", publicUrl).href;
+    const app = new URL("/", publicUrl).href;
 
     yield* router.add(
       "POST",
@@ -51,7 +52,7 @@ export const DigestUnsubscribeLive = HttpRouter.use(
       digestUnsubscribePath,
       Effect.succeed(
         HttpServerResponse.empty({
-          headers: { ...kept, location: preferences },
+          headers: { ...kept, location: app },
           status: 302,
         })
       )
