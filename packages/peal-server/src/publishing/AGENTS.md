@@ -737,8 +737,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   every refusal on the span (`meta.status`, `meta.error.code`, `subcode`,
   `type`, `trace_id`, the last two only when they read as a name and an
   id) and logs each refused token with them ("Meta refused a token"),
-  never Meta's message. A permission the token lacks (code 10, 200 to
-  299) fails the post alone, `BadRequest` with Meta's code (`graph10`),
+  never Meta's message. A permission the token lacks (code 10, 200 to 299) fails the post alone, `BadRequest` with Meta's code (`graph10`),
   never `TokenRejected`: no new token of the same sign-in has it, and the
   channel works for every other post.
 - Derive whatever an adapter sends from the request's `idempotencyKey` and
