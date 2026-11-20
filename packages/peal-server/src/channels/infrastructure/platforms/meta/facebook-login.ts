@@ -58,6 +58,12 @@ const PageSchema = Schema.Struct({
   access_token: Schema.optionalKey(Schema.NonEmptyString),
   id: Schema.NonEmptyString,
   instagram_business_account: Schema.optionalKey(InstagramAccountSchema),
+  // The Instagram account the Page links, which Meta gives even when the
+  // sign-in did not share it with the app (asked on Instagram's sign-in
+  // only, to say why a Page brought no account).
+  connected_instagram_account: Schema.optionalKey(
+    Schema.Struct({ id: Schema.NonEmptyString })
+  ),
   name: Schema.NonEmptyString,
   picture: Schema.optionalKey(
     Schema.Struct({
@@ -92,6 +98,9 @@ const pageFields = [
   "picture{url}",
   "instagram_business_account{id,username,name,profile_picture_url}",
 ].join(",");
+
+// Instagram's sign-in also reads the account a Page links, shared or not.
+const instagramPageFields = `${pageFields},connected_instagram_account{id}`;
 
 // Meta lists Pages a hundred at a time; nobody manages more than this.
 const pageSize = 100;
@@ -309,7 +318,10 @@ export const facebookLogin = Effect.fn("FacebookLogin.make")(
           "/me/accounts",
           token,
           {
-            fields: pageFields,
+            fields:
+              product.platform === "instagram"
+                ? instagramPageFields
+                : pageFields,
             limit: String(pageSize),
             ...Option.match(after, {
               onNone: () => ({}),
@@ -398,6 +410,30 @@ export const facebookLogin = Effect.fn("FacebookLogin.make")(
               },
             });
           }
+        }
+
+        // A Page that links an Instagram account Facebook Login did not
+        // share brings none: Meta's dialog lists only the accounts the user
+        // holds a role on. Logged with the business ids, so a reconnect that
+        // reaches "another account" says why.
+        if (product.platform === "instagram") {
+          yield* Effect.forEach(
+            pages.filter(
+              (page) =>
+                page.instagram_business_account === undefined &&
+                page.connected_instagram_account !== undefined
+            ),
+            (page) =>
+              Effect.logWarning(
+                "A Page links an Instagram account the sign-in did not share"
+              ).pipe(
+                Effect.annotateLogs({
+                  instagramAccountId: page.connected_instagram_account?.id,
+                  pageId: page.id,
+                })
+              ),
+            { discard: true }
+          );
         }
 
         const choice: AccountChoice = {
