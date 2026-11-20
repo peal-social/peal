@@ -188,7 +188,11 @@ const terms = "https://peal.example.test/terms";
 const privacy = "https://peal.example.test/privacy";
 const dpa = "https://peal.example.test/dpa";
 
-const textOf = (html: string) => html.replaceAll(/<[^>]+>/gu, "");
+// The text a reader sees: what stands between the markup's tags, joined.
+const textOf = (html: string) =>
+  [...html.matchAll(/>(?<text>[^<]*)</gu)]
+    .map(({ groups }) => groups?.["text"] ?? "")
+    .join("");
 
 describe("the sign-up's terms line", () => {
   it.each([
