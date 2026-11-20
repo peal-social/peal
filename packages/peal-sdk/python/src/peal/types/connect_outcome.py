@@ -9,6 +9,7 @@ import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .channel import Channel
+from .channel_connection import ChannelConnection
 from .choosable_account import ChoosableAccount
 
 
@@ -33,6 +34,7 @@ class ConnectOutcome_Choose(UniversalBaseModel):
         typing.Literal["choose"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
     ] = "choose"
     accounts: typing.List[ChoosableAccount]
+    connection: typing.Optional[ChannelConnection] = None
     expires_at: typing_extensions.Annotated[str, FieldMetadata(alias="expiresAt"), pydantic.Field(alias="expiresAt")]
     selection: str
 

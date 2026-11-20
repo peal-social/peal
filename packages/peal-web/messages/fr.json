@@ -738,7 +738,7 @@
     "empty": "Aucun compte n’est encore connecté.",
     "listTitle": "Comptes connectés",
     "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} devto {DEV} hashnode {Hashnode} wordpressCom {WordPress.com} x {X} youtube {YouTube} other {{platform}}}",
-    "platformVia": "{platform, select, instagram {Instagram} linkedin {LinkedIn} other {{platform}}} ({connection, select, instagramLogin {connexion Instagram} facebookLogin {via une Page Facebook} linkedinProfile {profil} linkedinPage {page d’entreprise} other {{connection}}})",
+    "platformVia": "{platform, select, instagram {Instagram} linkedin {LinkedIn} other {{platform}}} ({connection, select, instagramLogin {connexion Instagram} facebookLogin {via une Page Facebook} unifiedLogin {via un portefeuille business} linkedinProfile {profil} linkedinPage {page d’entreprise} other {{connection}}})",
     "status": {
       "active": "Connecté",
       "refreshNeeded": "À reconnecter",
@@ -806,12 +806,12 @@
       "invalidState": "Cette connexion a expiré ou a été lancée ailleurs. Recommencez.",
       "denied": "La connexion a été annulée sur la plateforme.",
       "authorizationFailed": "La plateforme n’a pas confié le compte. Recommencez.",
-      "accountMismatch": "Vous vous êtes connecté à un autre compte que celui de ce canal. Reconnectez-vous avec le même compte.",
+      "accountMismatch": "La connexion n’a pas atteint le compte de ce canal. Un autre compte s’est peut-être connecté, ou celui-ci n’a pas été partagé ou sélectionné sur la page de la plateforme. Réessayez en le sélectionnant. Si Meta demande un portefeuille business, choisissez celui qui détient le compte.",
       "unreachable": "La plateforme n’a pas répondu. Réessayez dans un instant.",
       "forbidden": "Vous ne pouvez pas faire cela dans cet espace de travail.",
       "notFound": "Ce canal n’est plus connecté.",
       "unknown": "Une erreur est survenue. Réessayez.",
-      "noAccounts": "La connexion n’a atteint aucun compte à connecter : sur Facebook, et sur Instagram via une Page Facebook, vous ne gérez aucune Page, ou aucun compte professionnel Instagram n’est lié à vos Pages (connectez-le plutôt avec Instagram) ; sur YouTube, le compte Google choisi n’a pas de chaîne ; sur Google Business Profile, il ne gère aucun établissement validé ; sur LinkedIn, vous n’êtes administrateur ou administrateur de contenu d’aucune page.",
+      "noAccounts": "La connexion n’a atteint aucun compte à connecter : sur Facebook, et sur Instagram via une Page Facebook, vous ne gérez aucune Page, ou aucun compte professionnel Instagram n’est lié à vos Pages (connectez-le plutôt d’une autre façon) ; sur Instagram via un portefeuille business, aucun compte professionnel n’a été partagé, ou le portefeuille choisi ne détient pas le compte ; sur YouTube, le compte Google choisi n’a pas de chaîne ; sur Google Business Profile, il ne gère aucun établissement validé ; sur LinkedIn, vous n’êtes administrateur ou administrateur de contenu d’aucune page.",
       "xPaymentMethod": "Un compte X demande un moyen de paiement sur le compte de facturation, car l’API de X est facturée aux tarifs de X. Ajoutez-en un sur la page de facturation, puis connectez-le.",
       "xPaymentFailed": "Un compte X demande un compte de facturation qui peut être facturé, car l’API de X est facturée aux tarifs de X, et son dernier paiement a échoué. Mettez à jour le moyen de paiement depuis la page de facturation, puis connectez-le.",
       "xPerAccountPricing": "Un compte X demande le tarif par compte, car l’API de X est facturée aux tarifs de X, et l’abonnement de cet espace de travail lui est antérieur. Passez au tarif par compte sur la page de facturation, puis connectez-le.",
@@ -991,8 +991,8 @@
       "invalidState": "Cette connexion a expiré, ou a été lancée dans un autre navigateur. Rouvrez le lien, dans ce navigateur.",
       "denied": "La connexion a été annulée sur la plateforme.",
       "authorizationFailed": "La plateforme n’a pas confié le compte. Réessayez.",
-      "accountMismatch": "Vous vous êtes connecté à un autre compte que celui à reconnecter. Réessayez avec ce compte.",
-      "noAccounts": "La connexion n’a atteint aucun compte à connecter : sur Facebook, et sur Instagram via une Page Facebook, vous ne gérez aucune Page, ou aucun compte professionnel Instagram n’est lié à vos Pages ; sur YouTube, le compte Google choisi n’a pas de chaîne.",
+      "accountMismatch": "La connexion n’a pas atteint le compte à reconnecter. Un autre compte s’est peut-être connecté, ou celui-ci n’a pas été partagé ou sélectionné sur la page de la plateforme. Réessayez en le sélectionnant. Si Meta demande un portefeuille business, choisissez celui qui détient le compte.",
+      "noAccounts": "La connexion n’a atteint aucun compte à connecter : sur Facebook, et sur Instagram via une Page Facebook, vous ne gérez aucune Page, ou aucun compte professionnel Instagram n’est lié à vos Pages ; sur Instagram via un portefeuille business, aucun compte professionnel n’a été partagé, ou le portefeuille choisi ne détient pas le compte ; sur YouTube, le compte Google choisi n’a pas de chaîne.",
       "linkExpired": "Ce lien a expiré. Demandez-en un nouveau à la personne qui vous l’a envoyé.",
       "linkCompleted": "Ce lien a déjà servi.",
       "linkRevoked": "Ce lien ne fonctionne plus. Demandez-en un nouveau à la personne qui vous l’a envoyé.",
@@ -1018,13 +1018,13 @@
     "connectingChosen": "Connexion…",
     "connected": "{count, plural, one {# compte est connecté.} other {# comptes sont connectés.}}",
     "cancel": "Retour aux canaux",
-    "retry": "Choisissez à nouveau, ou {platform, select, facebook {reconnectez-vous avec Facebook} instagram {reconnectez-vous avec Facebook} youtube {reconnectez-vous avec Google} googleBusiness {reconnectez-vous avec Google} linkedin {reconnectez-vous avec LinkedIn} other {reconnectez-vous}} pour une nouvelle liste.",
-    "startOver": "{platform, select, facebook {Se reconnecter avec Facebook} instagram {Se reconnecter avec Facebook} youtube {Se reconnecter avec Google} googleBusiness {Se reconnecter avec Google} linkedin {Se reconnecter avec LinkedIn} other {Se reconnecter}}"
+    "retry": "Choisissez à nouveau, ou {platform, select, facebook {reconnectez-vous avec Facebook} instagram {{connection, select, unifiedLogin {reconnectez-vous} other {reconnectez-vous avec Facebook}}} youtube {reconnectez-vous avec Google} googleBusiness {reconnectez-vous avec Google} linkedin {reconnectez-vous avec LinkedIn} other {reconnectez-vous}} pour une nouvelle liste.",
+    "startOver": "{platform, select, facebook {Se reconnecter avec Facebook} instagram {{connection, select, unifiedLogin {Se reconnecter} other {Se reconnecter avec Facebook}}} youtube {Se reconnecter avec Google} googleBusiness {Se reconnecter avec Google} linkedin {Se reconnecter avec LinkedIn} other {Se reconnecter}}"
   },
   "InstagramChannels": {
     "title": "Instagram",
-    "description": "{connection, select, instagramLogin {Connectez-vous à votre compte professionnel (Entreprise ou Créateur) sur Instagram : aucune Page Facebook n’est nécessaire. Peal renouvelle son accès tous les 60 jours, sans vous.} facebookLogin {Ou, pour les comptes gérés depuis une Page Facebook : connectez-vous avec Facebook, puis choisissez les comptes liés à vos Pages.} other {Connectez-vous sur Instagram.}}",
-    "connect": "{connection, select, instagramLogin {Se connecter avec Instagram} facebookLogin {Passer par une Page Facebook} other {Connecter Instagram}}",
+    "description": "{connection, select, unifiedLogin {La connexion professionnelle de Meta vous demande de vous connecter avec Instagram ou Facebook, de choisir le portefeuille business qui détient votre compte professionnel, puis de sélectionner le compte. Aucune Page Facebook n’est nécessaire. Si vous vous connectez avec Instagram, Meta demande le mot de passe du compte.} instagramLogin {Connectez-vous à votre compte professionnel (Entreprise ou Créateur) sur Instagram : aucune Page Facebook n’est nécessaire. Peal renouvelle son accès tous les 60 jours, sans vous.} facebookLogin {Ou, pour les comptes gérés depuis une Page Facebook : connectez-vous avec Facebook, puis choisissez les comptes liés à vos Pages.} other {Connectez-vous sur Instagram.}}",
+    "connect": "{connection, select, unifiedLogin {Passer par un portefeuille business} instagramLogin {Se connecter avec Instagram} facebookLogin {Passer par une Page Facebook} other {Connecter Instagram}}",
     "connecting": "Ouverture…"
   },
   "LinkedInChannels": {
@@ -4555,7 +4555,8 @@
       "metaGrantNeeded": "Meta demande d’abord au compte d’autoriser Peal à accéder à ses messages privés.",
       "metaGrant": "Autoriser, sur {app, select, instagram {Instagram} other {Facebook}}",
       "metaReview": "Tant que Meta n’a pas examiné l’application de Peal (son App Review), seules les personnes ayant un rôle sur l’application peuvent écrire au compte par Peal.",
-      "instagramConnectedTools": "Dans Instagram, la personne propriétaire du compte active aussi Paramètres → Messages et réponses aux stories → Contrôles des messages → Outils connectés → Autoriser l’accès aux messages."
+      "instagramConnectedTools": "Dans Instagram, la personne propriétaire du compte active aussi Paramètres → Messages et réponses aux stories → Contrôles des messages → Outils connectés → Autoriser l’accès aux messages.",
+      "unsupported": "{connection, select, unifiedLogin {Peal ne lit pas les messages d’un compte connecté via un portefeuille business.} other {Peal ne lit pas les messages de ce canal.}}"
     }
   },
   "TwoStep": {

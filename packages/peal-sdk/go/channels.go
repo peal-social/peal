@@ -1799,15 +1799,22 @@ func (c *ConnectOutcome) validate() error {
 }
 
 var (
-	connectOutcomeChooseFieldAccounts  = big.NewInt(1 << 0)
-	connectOutcomeChooseFieldExpiresAt = big.NewInt(1 << 1)
-	connectOutcomeChooseFieldSelection = big.NewInt(1 << 2)
+	connectOutcomeChooseFieldAccounts   = big.NewInt(1 << 0)
+	connectOutcomeChooseFieldConnection = big.NewInt(1 << 1)
+	connectOutcomeChooseFieldExpiresAt  = big.NewInt(1 << 2)
+	connectOutcomeChooseFieldSelection  = big.NewInt(1 << 3)
 )
 
+// connectOutcomeChooseNullableFields maps the wire names of ConnectOutcomeChoose's nullable fields (required or optional) to their field bits.
+var connectOutcomeChooseNullableFields = map[string]*big.Int{
+	"connection": connectOutcomeChooseFieldConnection,
+}
+
 type ConnectOutcomeChoose struct {
-	Accounts  []*ChoosableAccount `json:"accounts" url:"accounts"`
-	ExpiresAt string              `json:"expiresAt" url:"expiresAt"`
-	Selection string              `json:"selection" url:"selection"`
+	Accounts   []*ChoosableAccount `json:"accounts" url:"accounts"`
+	Connection *ChannelConnection  `json:"connection,omitempty" url:"connection,omitempty"`
+	ExpiresAt  string              `json:"expiresAt" url:"expiresAt"`
+	Selection  string              `json:"selection" url:"selection"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1821,6 +1828,13 @@ func (c *ConnectOutcomeChoose) GetAccounts() []*ChoosableAccount {
 		return nil
 	}
 	return c.Accounts
+}
+
+func (c *ConnectOutcomeChoose) GetConnection() *ChannelConnection {
+	if c == nil {
+		return nil
+	}
+	return c.Connection
 }
 
 func (c *ConnectOutcomeChoose) GetExpiresAt() string {
@@ -1860,6 +1874,13 @@ func (c *ConnectOutcomeChoose) SetAccounts(accounts []*ChoosableAccount) {
 	c.require(connectOutcomeChooseFieldAccounts)
 }
 
+// SetConnection sets the Connection field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ConnectOutcomeChoose) SetConnection(connection *ChannelConnection) {
+	c.Connection = connection
+	c.require(connectOutcomeChooseFieldConnection)
+}
+
 // SetExpiresAt sets the ExpiresAt field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (c *ConnectOutcomeChoose) SetExpiresAt(expiresAt string) {
@@ -1886,6 +1907,13 @@ func (c *ConnectOutcomeChoose) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	c.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, connectOutcomeChooseNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		c.require(presentFields)
+	}
 	c.rawJSON = json.RawMessage(data)
 	return nil
 }

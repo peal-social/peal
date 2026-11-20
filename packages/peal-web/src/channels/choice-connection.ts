@@ -1,23 +1,13 @@
-import type { ChannelConnection, Platform } from "peal-contract";
-
-// The one way in that answers a choice of accounts, on the platforms that
-// have several: LinkedIn's company pages (a profile is one account) and
-// Instagram through Facebook Login (Instagram Login reaches one account).
-const choices: Partial<Record<Platform, ChannelConnection>> = {
-  instagram: "facebookLogin",
-  linkedin: "linkedinPage",
-};
+import type { ChannelConnection } from "peal-contract";
 
 /**
  * What signing in again for a new choice of accounts starts with: the way
- * in the choice came through, so a member choosing LinkedIn pages is not
- * sent to connect their profile, nor one choosing the Instagram accounts of
- * their Pages to Instagram Login. Nothing on a platform with one way in.
+ * in the choice came through, as the server answered it with the choice,
+ * so a member choosing LinkedIn pages is not sent to connect their
+ * profile, nor one choosing the Instagram accounts of a business portfolio
+ * to a Facebook Page's sign-in. Nothing on a platform with one way in.
  */
 export const choiceStart = (
-  platform: Platform
-): { readonly connection?: ChannelConnection } => {
-  const connection = choices[platform];
-
-  return connection === undefined ? {} : { connection };
-};
+  connection: ChannelConnection | null
+): { readonly connection?: ChannelConnection } =>
+  connection === null ? {} : { connection };

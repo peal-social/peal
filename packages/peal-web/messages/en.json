@@ -738,7 +738,7 @@
     "empty": "No account is connected yet.",
     "listTitle": "Connected accounts",
     "platform": "{platform, select, bluesky {Bluesky} facebook {Facebook} googleBusiness {Google Business Profile} discord {Discord} telegram {Telegram} slack {Slack} instagram {Instagram} linkedin {LinkedIn} mastodon {Mastodon} pinterest {Pinterest} threads {Threads} tiktok {TikTok} wordpress {WordPress} devto {DEV} hashnode {Hashnode} wordpressCom {WordPress.com} x {X} youtube {YouTube} other {{platform}}}",
-    "platformVia": "{platform, select, instagram {Instagram} linkedin {LinkedIn} other {{platform}}} ({connection, select, instagramLogin {Instagram Login} facebookLogin {through a Facebook Page} linkedinProfile {profile} linkedinPage {company page} other {{connection}}})",
+    "platformVia": "{platform, select, instagram {Instagram} linkedin {LinkedIn} other {{platform}}} ({connection, select, instagramLogin {Instagram Login} facebookLogin {through a Facebook Page} unifiedLogin {through a business portfolio} linkedinProfile {profile} linkedinPage {company page} other {{connection}}})",
     "status": {
       "active": "Connected",
       "refreshNeeded": "Reconnect needed",
@@ -806,12 +806,12 @@
       "invalidState": "This connection expired or was started elsewhere. Start again.",
       "denied": "The connection was cancelled on the platform.",
       "authorizationFailed": "The platform did not hand over the account. Start again.",
-      "accountMismatch": "You signed in to another account than this channel’s. Reconnect with the same account.",
+      "accountMismatch": "The sign-in didn’t reach this channel’s account. Another account may have signed in, or this one wasn’t shared or selected on the platform’s page. Try again and select it. If Meta asks for a business portfolio, pick the one that owns the account.",
       "unreachable": "The platform did not answer. Try again in a moment.",
       "forbidden": "You may not do this in this workspace.",
       "notFound": "This channel is no longer connected.",
       "unknown": "Something went wrong. Try again.",
-      "noAccounts": "The sign-in reached no account to connect: on Facebook, and on Instagram through a Facebook Page, you manage no Page, or no Instagram professional account is linked to your Pages (connect it with Instagram instead); on YouTube, the Google account you chose has no channel; on Google Business Profile, it manages no verified location; on LinkedIn, you are not an administrator or a content administrator of any page.",
+      "noAccounts": "The sign-in reached no account to connect: on Facebook, and on Instagram through a Facebook Page, you manage no Page, or no Instagram professional account is linked to your Pages (connect it another way instead); on Instagram through a business portfolio, no professional account was shared, or the portfolio you picked doesn’t own the account; on YouTube, the Google account you chose has no channel; on Google Business Profile, it manages no verified location; on LinkedIn, you are not an administrator or a content administrator of any page.",
       "xPaymentMethod": "An X account needs a payment method on the billing account, as X’s API is billed at X’s own rates. Add one on the billing page, then connect it.",
       "xPaymentFailed": "An X account needs a billing account that can be billed, as X’s API is billed at X’s own rates, and its last payment failed. Update the payment method from the billing page, then connect it.",
       "xPerAccountPricing": "An X account needs per-account pricing, as X’s API is billed at X’s own rates, and this workspace’s plan is one from before it. Move to per-account pricing on the billing page, then connect it.",
@@ -991,8 +991,8 @@
       "invalidState": "This sign-in expired, or was started in another browser. Open the link again, in this browser.",
       "denied": "The connection was cancelled on the platform.",
       "authorizationFailed": "The platform did not hand over the account. Try again.",
-      "accountMismatch": "You signed in to another account than the one to connect again. Try again with that account.",
-      "noAccounts": "The sign-in reached no account to connect: on Facebook, and on Instagram through a Facebook Page, you manage no Page, or no Instagram professional account is linked to your Pages; on YouTube, the Google account you chose has no channel.",
+      "accountMismatch": "The sign-in didn’t reach the account to connect again. Another account may have signed in, or this one wasn’t shared or selected on the platform’s page. Try again and select it. If Meta asks for a business portfolio, pick the one that owns the account.",
+      "noAccounts": "The sign-in reached no account to connect: on Facebook, and on Instagram through a Facebook Page, you manage no Page, or no Instagram professional account is linked to your Pages; on Instagram through a business portfolio, no professional account was shared, or the portfolio you picked doesn’t own the account; on YouTube, the Google account you chose has no channel.",
       "linkExpired": "This link has expired. Ask whoever sent it for a new one.",
       "linkCompleted": "This link was used already.",
       "linkRevoked": "This link no longer works. Ask whoever sent it for a new one.",
@@ -1018,13 +1018,13 @@
     "connectingChosen": "Connecting…",
     "connected": "{count, plural, one {# account is connected.} other {# accounts are connected.}}",
     "cancel": "Back to the channels",
-    "retry": "Choose again, or {platform, select, facebook {sign in with Facebook again} instagram {sign in with Facebook again} youtube {sign in with Google again} googleBusiness {sign in with Google again} linkedin {sign in with LinkedIn again} other {sign in again}} for a new list.",
-    "startOver": "{platform, select, facebook {Sign in with Facebook again} instagram {Sign in with Facebook again} youtube {Sign in with Google again} googleBusiness {Sign in with Google again} linkedin {Sign in with LinkedIn again} other {Sign in again}}"
+    "retry": "Choose again, or {platform, select, facebook {sign in with Facebook again} instagram {{connection, select, unifiedLogin {sign in again} other {sign in with Facebook again}}} youtube {sign in with Google again} googleBusiness {sign in with Google again} linkedin {sign in with LinkedIn again} other {sign in again}} for a new list.",
+    "startOver": "{platform, select, facebook {Sign in with Facebook again} instagram {{connection, select, unifiedLogin {Sign in again} other {Sign in with Facebook again}}} youtube {Sign in with Google again} googleBusiness {Sign in with Google again} linkedin {Sign in with LinkedIn again} other {Sign in again}}"
   },
   "InstagramChannels": {
     "title": "Instagram",
-    "description": "{connection, select, instagramLogin {Sign in to your professional account (Business or Creator) on Instagram: no Facebook Page needed. Peal renews its access every 60 days by itself.} facebookLogin {Or, for accounts run from a Facebook Page: sign in with Facebook, then choose the accounts linked to your Pages.} other {Sign in on Instagram.}}",
-    "connect": "{connection, select, instagramLogin {Connect with Instagram} facebookLogin {Connect through a Facebook Page} other {Connect Instagram}}",
+    "description": "{connection, select, unifiedLogin {Meta’s business login asks you to sign in with Instagram or Facebook, pick the business portfolio that owns your professional account, then select the account. No Facebook Page needed. If you sign in with Instagram, Meta asks for the account’s password.} instagramLogin {Sign in to your professional account (Business or Creator) on Instagram: no Facebook Page needed. Peal renews its access every 60 days by itself.} facebookLogin {Or, for accounts run from a Facebook Page: sign in with Facebook, then choose the accounts linked to your Pages.} other {Sign in on Instagram.}}",
+    "connect": "{connection, select, unifiedLogin {Connect through a business portfolio} instagramLogin {Connect with Instagram} facebookLogin {Connect through a Facebook Page} other {Connect Instagram}}",
     "connecting": "Opening…"
   },
   "LinkedInChannels": {
@@ -4555,7 +4555,8 @@
       "metaGrantNeeded": "Meta asks the account to allow Peal its direct messages first.",
       "metaGrant": "Allow, on {app, select, instagram {Instagram} other {Facebook}}",
       "metaReview": "Until Meta reviews Peal’s app (its App Review), only people with a role on the app can write to the account through Peal.",
-      "instagramConnectedTools": "In Instagram, the account’s owner also turns on Settings → Messages and story replies → Message controls → Connected tools → Allow access to messages."
+      "instagramConnectedTools": "In Instagram, the account’s owner also turns on Settings → Messages and story replies → Message controls → Connected tools → Allow access to messages.",
+      "unsupported": "{connection, select, unifiedLogin {Peal doesn’t read the messages of an account connected through a business portfolio.} other {Peal doesn’t read this channel’s messages.}}"
     }
   },
   "TwoStep": {

@@ -393,6 +393,12 @@ layer(connectTest(["instagramLogin", "facebookLogin"]))(
           )
           .pipe(Effect.flatMap(choiceOf));
 
+        // Starting over signs in through a Page again.
+        assert.deepStrictEqual(
+          offered.connection,
+          Option.some("facebookLogin")
+        );
+
         const [channel] = yield* connect.choose(
           manager(workspaceId),
           "instagram",

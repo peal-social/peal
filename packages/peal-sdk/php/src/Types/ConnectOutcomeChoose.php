@@ -15,6 +15,12 @@ class ConnectOutcomeChoose extends JsonSerializableType
     public array $accounts;
 
     /**
+     * @var ?value-of<ChannelConnection> $connection
+     */
+    #[JsonProperty('connection')]
+    public ?string $connection;
+
+    /**
      * @var string $expiresAt
      */
     #[JsonProperty('expiresAt')]
@@ -31,12 +37,14 @@ class ConnectOutcomeChoose extends JsonSerializableType
      *   accounts: array<ChoosableAccount>,
      *   expiresAt: string,
      *   selection: string,
+     *   connection?: ?value-of<ChannelConnection>,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
         $this->accounts = $values['accounts'];
+        $this->connection = $values['connection'] ?? null;
         $this->expiresAt = $values['expiresAt'];
         $this->selection = $values['selection'];
     }

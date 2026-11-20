@@ -7,6 +7,8 @@ module Peal
     class ConnectOutcomeChoose < Internal::Types::Model
       field :accounts, -> { Internal::Types::Array[Peal::Types::ChoosableAccount] }, optional: false, nullable: false
 
+      field :connection, -> { Peal::Types::ChannelConnection }, optional: false, nullable: true
+
       field :expires_at, -> { String }, optional: false, nullable: false, api_name: "expiresAt"
 
       field :selection, -> { String }, optional: false, nullable: false

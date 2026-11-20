@@ -163,6 +163,8 @@ export type ConnectOutcome =
   | {
       readonly _tag: "choose";
       readonly accounts: readonly ChoosableAccount[];
+      /** The way in the sign-in took, which starting over takes again. */
+      readonly connection: Option.Option<ChannelConnection>;
       readonly expiresAt: DateTimeType.Utc;
       readonly selection: string;
     };
@@ -710,6 +712,7 @@ export class ConnectChannel extends Context.Service<
             displayName: account.displayName,
             handle: account.handle,
           })),
+          connection: choice.connection,
           expiresAt: choice.expiresAt,
           selection,
         };

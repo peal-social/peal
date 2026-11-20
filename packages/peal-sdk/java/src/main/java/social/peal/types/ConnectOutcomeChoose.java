@@ -5,6 +5,7 @@ package social.peal.types;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,13 +17,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
+import social.peal.core.Nullable;
+import social.peal.core.NullableNonemptyFilter;
 import social.peal.core.ObjectMappers;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ConnectOutcomeChoose.Builder.class)
 public final class ConnectOutcomeChoose {
     private final List<ChoosableAccount> accounts;
+
+    private final Optional<ChannelConnection> connection;
 
     private final String expiresAt;
 
@@ -32,10 +38,12 @@ public final class ConnectOutcomeChoose {
 
     private ConnectOutcomeChoose(
             List<ChoosableAccount> accounts,
+            Optional<ChannelConnection> connection,
             String expiresAt,
             String selection,
             Map<String, Object> additionalProperties) {
         this.accounts = accounts;
+        this.connection = connection;
         this.expiresAt = expiresAt;
         this.selection = selection;
         this.additionalProperties = additionalProperties;
@@ -46,6 +54,14 @@ public final class ConnectOutcomeChoose {
         return accounts;
     }
 
+    @JsonIgnore
+    public Optional<ChannelConnection> getConnection() {
+        if (connection == null) {
+            return Optional.empty();
+        }
+        return connection;
+    }
+
     @JsonProperty("expiresAt")
     public String getExpiresAt() {
         return expiresAt;
@@ -54,6 +70,12 @@ public final class ConnectOutcomeChoose {
     @JsonProperty("selection")
     public String getSelection() {
         return selection;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("connection")
+    private Optional<ChannelConnection> _getConnection() {
+        return connection;
     }
 
     @java.lang.Override
@@ -69,13 +91,14 @@ public final class ConnectOutcomeChoose {
 
     private boolean equalTo(ConnectOutcomeChoose other) {
         return accounts.equals(other.accounts)
+                && connection.equals(other.connection)
                 && expiresAt.equals(other.expiresAt)
                 && selection.equals(other.selection);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.accounts, this.expiresAt, this.selection);
+        return Objects.hash(this.accounts, this.connection, this.expiresAt, this.selection);
     }
 
     @java.lang.Override
@@ -109,6 +132,12 @@ public final class ConnectOutcomeChoose {
         _FinalStage addAccounts(ChoosableAccount accounts);
 
         _FinalStage addAllAccounts(List<ChoosableAccount> accounts);
+
+        _FinalStage connection(Optional<ChannelConnection> connection);
+
+        _FinalStage connection(ChannelConnection connection);
+
+        _FinalStage connection(Nullable<ChannelConnection> connection);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -116,6 +145,8 @@ public final class ConnectOutcomeChoose {
         private String expiresAt;
 
         private String selection;
+
+        private Optional<ChannelConnection> connection = Optional.empty();
 
         private List<ChoosableAccount> accounts = new ArrayList<>();
 
@@ -126,6 +157,7 @@ public final class ConnectOutcomeChoose {
         @java.lang.Override
         public Builder from(ConnectOutcomeChoose other) {
             accounts(other.getAccounts());
+            connection(other.getConnection());
             expiresAt(other.getExpiresAt());
             selection(other.getSelection());
             return this;
@@ -142,6 +174,31 @@ public final class ConnectOutcomeChoose {
         @JsonSetter("selection")
         public _FinalStage selection(@NotNull String selection) {
             this.selection = Objects.requireNonNull(selection, "selection must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage connection(Nullable<ChannelConnection> connection) {
+            if (connection.isNull()) {
+                this.connection = null;
+            } else if (connection.isEmpty()) {
+                this.connection = Optional.empty();
+            } else {
+                this.connection = Optional.of(connection.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage connection(ChannelConnection connection) {
+            this.connection = Optional.ofNullable(connection);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "connection", nulls = Nulls.SKIP)
+        public _FinalStage connection(Optional<ChannelConnection> connection) {
+            this.connection = connection;
             return this;
         }
 
@@ -171,12 +228,13 @@ public final class ConnectOutcomeChoose {
 
         @java.lang.Override
         public ConnectOutcomeChoose build() {
-            return new ConnectOutcomeChoose(accounts, expiresAt, selection, additionalProperties);
+            return new ConnectOutcomeChoose(accounts, connection, expiresAt, selection, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("accounts")
+                    || key.equalsIgnoreCase("connection")
                     || key.equalsIgnoreCase("expiresAt")
                     || key.equalsIgnoreCase("selection")) {
                 return;

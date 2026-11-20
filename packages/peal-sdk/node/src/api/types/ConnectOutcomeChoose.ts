@@ -4,6 +4,7 @@ import * as Peal from "../index.js";
 
 export interface ConnectOutcomeChoose {
     accounts: Peal.ChoosableAccount[];
+    connection: Peal.ChannelConnection | null;
     expiresAt: string;
     selection: string;
 }
