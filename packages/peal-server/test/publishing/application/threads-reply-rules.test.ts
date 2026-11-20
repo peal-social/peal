@@ -48,7 +48,7 @@ const standingsOn = (grants: Layer.Layer<ChannelGrants>) =>
 
 const scheduling = (
   grants: Layer.Layer<ChannelGrants>,
-  replyControl: ThreadsOptions["replyControl"]
+  replyControl: NonNullable<ThreadsOptions["replyControl"]>
 ) =>
   AccountRules.use((rules) =>
     rules.violationsOn({
