@@ -4,13 +4,17 @@ import {
   Duration,
   Effect,
   Logger,
+  Metric,
   Option,
   References,
 } from "effect";
 import type { Schema } from "effect";
 import { Headers, HttpClientRequest, HttpClientResponse } from "effect/http";
 
-import { graphRefusalOf } from "#shared/infrastructure/platforms/graph-refusal.ts";
+import {
+  graphRefusalOf,
+  metaRefusals,
+} from "#shared/infrastructure/platforms/graph-refusal.ts";
 import { graphUsageOf } from "#shared/infrastructure/platforms/graph-usage.ts";
 import {
   metaAppConfig,
@@ -103,6 +107,12 @@ describe(graphUsageOf, () => {
     ).toStrictEqual(Option.none());
   });
 });
+
+// How often the counter counted these attributes so far.
+const refusalsCounted = (attributes: Readonly<Record<string, string>>) =>
+  Metric.value(Metric.withAttributes(metaRefusals, attributes)).pipe(
+    Effect.map(({ count }) => count)
+  );
 
 describe(graphRefusalOf, () => {
   it.effect(
@@ -201,6 +211,37 @@ describe(graphRefusalOf, () => {
             message: ["Meta refused a token"],
           },
         ].map((line) => JSON.stringify(line))
+      );
+    })
+  );
+
+  it.effect("counts each refusal by API, kind and Meta's code", () =>
+    Effect.gen(function* counts() {
+      const permission = {
+        api: "threads",
+        code: "graph10",
+        kind: "permission",
+      };
+
+      const token = { api: "facebook", code: "graph190", kind: "token" };
+
+      const before = [
+        yield* refusalsCounted(permission),
+        yield* refusalsCounted(token),
+      ];
+
+      yield* graphRefusalOf(
+        HttpClientResponse.fromWeb(
+          HttpClientRequest.post("https://graph.threads.test/v1.0/1/threads"),
+          Response.json(graphError(10), { status: 403 })
+        )
+      );
+
+      yield* refusalOf(400, graphError(190));
+
+      assert.deepStrictEqual(
+        [yield* refusalsCounted(permission), yield* refusalsCounted(token)],
+        before.map((count) => count + 1)
       );
     })
   );

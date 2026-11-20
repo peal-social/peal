@@ -66,3 +66,11 @@ You'll find them here:
 | Grafana    | The production stack's **Web app errors** dashboard, which warns when more than 20 reports arrive in 10 minutes |
 
 The alert on the server's own error logs leaves these reports out. To name the release the reports come from, set `PEAL_RELEASE` on the web app. The production stack sets it to `PEAL_VERSION`.
+
+### Meta's refusals [#meta-refusals]
+
+When Meta refuses a call to Facebook, Instagram or Threads, the server counts it in `peal.meta.refusals` (Prometheus: `peal_meta_refusals_total`). Each count says which API answered (`facebook`, `instagram`, `threads`), the kind of refusal and Meta's code, such as `graph10`. The kinds are `token`, `permission`, `rateLimited`, `unavailable`, `duplicate` and `refused`. Meta's message is never kept.
+
+The span of each refusal holds the same fields, plus `meta.error.type` and `meta.error.trace_id`, the id Meta's support asks for. A refused token is also logged as a warning, "Meta refused a token".
+
+`permission` means the app lacks a permission the call needs, or the account didn't grant it. A new token doesn't help: the post fails with Meta's code and the channel stays connected. The production stack's `peal-meta-permission-refused` alert fires on the first one. Add the permission to your Meta app's use case, or stop sending the option that needs it.
