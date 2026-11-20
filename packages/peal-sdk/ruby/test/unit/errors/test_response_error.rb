@@ -20,4 +20,29 @@ describe Peal::Errors::ResponseError do
     assert_equal body, error.body
     assert_equal "unavailable", error.message
   end
+
+  it "looks up headers regardless of capitalization" do
+    headers = { "Retry-After" => ["7"], "x-request-id" => ["hdr-req-1"], "set-cookie" => ["a=1", "b=2"] }
+    error = Peal::Errors::ResponseError.subclass_for_code(429).new("rate limited", code: 429, headers: headers)
+
+    assert_equal ["7"], error.headers["Retry-After"]
+    assert_equal ["7"], error.headers["retry-after"]
+    assert_equal ["7"], error.headers["RETRY-AFTER"]
+    assert_equal ["hdr-req-1"], error.headers["X-Request-Id"]
+    assert_equal ["hdr-req-1"], error.headers.fetch("X-Request-ID")
+    assert_equal [["7"], ["hdr-req-1"]], error.headers.values_at("Retry-After", "X-Request-Id")
+    assert error.headers.key?("Set-Cookie")
+    assert_includes error.headers, "SET-COOKIE"
+    assert_equal({ "retry-after" => ["7"], "x-request-id" => ["hdr-req-1"], "set-cookie" => ["a=1", "b=2"] }, error.headers)
+    assert_nil error.headers["X-Missing"]
+  end
+
+  it "returns the first value of a header" do
+    headers = { "retry-after" => ["7"], "set-cookie" => ["a=1", "b=2"] }
+    error = Peal::Errors::ResponseError.new("rate limited", code: 429, headers: headers)
+
+    assert_equal "7", error.header("Retry-After")
+    assert_equal "a=1", error.header("Set-Cookie")
+    assert_nil error.header("X-Missing")
+  end
 end
