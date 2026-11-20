@@ -8,8 +8,6 @@ import { disable, markRefreshNeeded } from "#channels/domain/channel.ts";
 import type { Channel } from "#channels/domain/channel.ts";
 import { DrizzleChannelOverviewReads } from "#channels/infrastructure/drizzle-channel-overview-reads.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
-import { newId } from "#shared/application/ids.ts";
-import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import {
   DatabaseTest,
@@ -19,8 +17,8 @@ import {
   syntheticCredentials,
 } from "#test/channels/support.ts";
 
-// The channels of several workspaces at once, in Postgres, for the view
-// across a person's workspaces. Each test's workspaces are its own, and
+// The channels of several workspaces at once, in Postgres, for a partner's
+// view of its customers. Each test's workspaces are its own, and
 // their channels deleted after.
 
 const OverviewTest = ChannelOverview.layer.pipe(
@@ -76,31 +74,5 @@ layer(OverviewTest)("the channels across workspaces", (it) => {
         });
         assert.isFalse(states.has(empty));
       })
-  );
-
-  it.effect("give each connected channel's platform", () =>
-    Effect.gen(function* platforms() {
-      const first = yield* freshWorkspace;
-      const second = yield* freshWorkspace;
-      const mastodon = yield* kept(yield* freshChannel(first));
-
-      const bluesky = yield* kept(
-        yield* freshChannel(second, { platform: "bluesky" })
-      );
-
-      const gone = yield* newId(ChannelIdSchema);
-
-      const found = yield* ChannelOverview.use((overview) =>
-        overview.platformsOf([mastodon.id, bluesky.id, gone])
-      ).pipe(Effect.ensuring(deleteIn([first, second])));
-
-      assert.deepStrictEqual(
-        found,
-        new Map([
-          [mastodon.id, "mastodon"],
-          [bluesky.id, "bluesky"],
-        ])
-      );
-    })
   );
 });

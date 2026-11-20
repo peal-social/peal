@@ -117,11 +117,6 @@ require_relative "peal/notices/types/list_notices_request"
 require_relative "peal/notices/types/mark_notices_read"
 require_relative "peal/notification_preferences/client"
 require_relative "peal/notification_preferences/types/notification_preferences_change"
-require_relative "peal/overview/client"
-require_relative "peal/overview/types/get_overview_request"
-require_relative "peal/overview/types/agenda_overview_request"
-require_relative "peal/overview/types/report_overview_request"
-require_relative "peal/overview/types/report_export_overview_request"
 require_relative "peal/assistant/client"
 require_relative "peal/assistant/types/status_assistant_request"
 require_relative "peal/assistant/types/suggestion_request"
@@ -494,16 +489,13 @@ module Peal
     autoload :AdsMode, ::File.join(__dir__, "peal/types/ads_mode")
     autoload :AdsStatus, ::File.join(__dir__, "peal/types/ads_status")
     autoload :AdsUnavailableEncoded, ::File.join(__dir__, "peal/types/ads_unavailable_encoded")
-    autoload :Platform, ::File.join(__dir__, "peal/types/platform")
-    autoload :PostStatus, ::File.join(__dir__, "peal/types/post_status")
-    autoload :AgendaItem, ::File.join(__dir__, "peal/types/agenda_item")
-    autoload :AgendaPage, ::File.join(__dir__, "peal/types/agenda_page")
     autoload :AlreadyMemberEncoded, ::File.join(__dir__, "peal/types/already_member_encoded")
     autoload :AltTextTooLongEncodedTag, ::File.join(__dir__, "peal/types/alt_text_too_long_encoded_tag")
     autoload :AltTextTooLongEncoded, ::File.join(__dir__, "peal/types/alt_text_too_long_encoded")
     autoload :AnalyticsDashboardPrevious, ::File.join(__dir__, "peal/types/analytics_dashboard_previous")
     autoload :DashboardTotals, ::File.join(__dir__, "peal/types/dashboard_totals")
     autoload :FollowerChange, ::File.join(__dir__, "peal/types/follower_change")
+    autoload :Platform, ::File.join(__dir__, "peal/types/platform")
     autoload :ChannelDashboard, ::File.join(__dir__, "peal/types/channel_dashboard")
     autoload :DashboardDay, ::File.join(__dir__, "peal/types/dashboard_day")
     autoload :PlatformDashboard, ::File.join(__dir__, "peal/types/platform_dashboard")
@@ -698,6 +690,7 @@ module Peal
     autoload :PostOriginVia, ::File.join(__dir__, "peal/types/post_origin_via")
     autoload :PostOrigin, ::File.join(__dir__, "peal/types/post_origin")
     autoload :PostOutcome, ::File.join(__dir__, "peal/types/post_outcome")
+    autoload :PostStatus, ::File.join(__dir__, "peal/types/post_status")
     autoload :PostTargetStatus, ::File.join(__dir__, "peal/types/post_target_status")
     autoload :TargetParts, ::File.join(__dir__, "peal/types/target_parts")
     autoload :PostTarget, ::File.join(__dir__, "peal/types/post_target")
@@ -1135,8 +1128,6 @@ module Peal
     autoload :NotificationPreferences, ::File.join(__dir__, "peal/types/notification_preferences")
     autoload :OAuthSitePlatform, ::File.join(__dir__, "peal/types/o_auth_site_platform")
     autoload :OrganicCounts, ::File.join(__dir__, "peal/types/organic_counts")
-    autoload :WorkspaceOverview, ::File.join(__dir__, "peal/types/workspace_overview")
-    autoload :Overview, ::File.join(__dir__, "peal/types/overview")
     autoload :OwnImageLimitReachedEncoded, ::File.join(__dir__, "peal/types/own_image_limit_reached_encoded")
     autoload :OwnTextLimitReachedEncoded, ::File.join(__dir__, "peal/types/own_text_limit_reached_encoded")
     autoload :Partner, ::File.join(__dir__, "peal/types/partner")
@@ -1229,10 +1220,6 @@ module Peal
     autoload :ReplyPendingEncoded, ::File.join(__dir__, "peal/types/reply_pending_encoded")
     autoload :ReplyStatusConflictEncodedTag, ::File.join(__dir__, "peal/types/reply_status_conflict_encoded_tag")
     autoload :ReplyStatusConflictEncoded, ::File.join(__dir__, "peal/types/reply_status_conflict_encoded")
-    autoload :ReportAcrossWorkspacesPrevious, ::File.join(__dir__, "peal/types/report_across_workspaces_previous")
-    autoload :WorkspaceAnalytics, ::File.join(__dir__, "peal/types/workspace_analytics")
-    autoload :WorkspaceReport, ::File.join(__dir__, "peal/types/workspace_report")
-    autoload :ReportAcrossWorkspaces, ::File.join(__dir__, "peal/types/report_across_workspaces")
     autoload :ReturnURLNotAllowedEncoded, ::File.join(__dir__, "peal/types/return_url_not_allowed_encoded")
     autoload :ReviewLinkNotFoundEncoded, ::File.join(__dir__, "peal/types/review_link_not_found_encoded")
     autoload :ReviewSettings, ::File.join(__dir__, "peal/types/review_settings")

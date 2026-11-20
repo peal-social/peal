@@ -69,8 +69,8 @@ const decodeAccountDays = Schema.decodeUnknownEffect(
 );
 
 /**
- * The report across workspaces' reads, in Postgres: the dashboard's
- * queries, with `workspace_id = ANY(…)` for one workspace's id, on the same
+ * The weekly digest's reads across workspaces, in Postgres: the
+ * dashboard's queries, with `workspace_id = ANY(…)` for one workspace's id, on the same
  * indexes (`tracked_posts_workspace_published`, `tracked_channels_workspace`
  * and the account snapshots' key).
  */

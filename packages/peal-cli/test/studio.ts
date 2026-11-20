@@ -167,7 +167,6 @@ import { makeInbox, studioInboxLive } from "./studio-inbox.ts";
 import type { InboxState } from "./studio-inbox.ts";
 import { makeMessages, studioMessagesLive } from "./studio-messages.ts";
 import type { MessagesState } from "./studio-messages.ts";
-import { overviewGroupLive } from "./studio-overview.ts";
 import { studioQueues, studioQueuesOf } from "./studio-queues.ts";
 import type { StudioQueue } from "./studio-queues.ts";
 import { studioRecyclingOf } from "./studio-recycling.ts";
@@ -3208,7 +3207,6 @@ export const studioGroupsLive = (studio: Studio) =>
     followUpsOfStudio.groupLive(studio),
     inboxRulesOfStudio.groupLive(studio),
     feedsOfStudio.groupLive(studio),
-    overviewGroupLive(studio, studioId),
     HttpApiBuilder.group(Api, "session", (handlers) =>
       handlers.handleAll({
         me: () => inPerson.pipe(Effect.as(studio.me)),

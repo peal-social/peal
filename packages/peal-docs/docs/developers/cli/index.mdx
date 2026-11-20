@@ -143,26 +143,6 @@ It never expires.
 
 When the sign-in stops working, because it was revoked or your account was banned, `peal whoami` says so and asks you to run `peal login` again. Before you've signed in at all, it tells you you're not signed in.
 
-## Across workspaces [#across-workspaces]
-
-Three commands read every workspace you belong to at once:
-
-```sh
-peal overview
-peal agenda --from 2026-11-20T00:00 --to 2026-11-27T00:00 --workspace clients
-peal report --days 90 --csv report.csv
-```
-
-| Command         | What it shows                                                                                                                                                                                                                                                                                             |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `peal overview` | What needs attention in each workspace: posts that failed or must be checked, approvals waiting, channels to reconnect or turned off, comments waiting for an answer, and a workspace over its plan. When nothing needs attention, it says so once.                                                       |
-| `peal agenda`   | What goes out across those workspaces, for the next 14 days unless `--from` and `--to` say otherwise (31 days at most). Each post shows its time in UTC, its workspace, its platforms, its status and how its text starts. Repeat `--workspace` to keep some of them, by slug or id.                      |
-| `peal report`   | Each workspace's posts, engagement, impressions and followers over the last 7, 30 or 90 days (`--days`, 30 unless given; `--time-zone`), each beside the days before, where your role reads analytics. `--csv` saves the report as a CSV file, one line per workspace, and never over a file that exists. |
-
-Each workspace shows what your role there can read. A workspace that requires two-step verification, when your account doesn't have it on, is named with no figures.
-
-All three take `--json`, `--limit` and `--cursor`. They're for a person who's signed in, because an API key belongs to one workspace ([Across your workspaces](/guides/workspace#across-workspaces)).
-
 ## Sign out [#logout]
 
 To sign out, run:

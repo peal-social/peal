@@ -172,8 +172,8 @@ const UseCasesLive = Layer.mergeAll(
 export const ChannelsLive = UseCasesLive.pipe(Layer.provideMerge(AdaptersLive));
 
 /**
- * The channels of several workspaces at once, by status, and their
- * platforms, for the view across a person's workspaces (ChannelOverview).
+ * The channels of several workspaces at once, by status, for a partner's
+ * view of its customers (ChannelOverview).
  * Needs the database (Drizzle).
  */
 export const ChannelOverviewLive = ChannelOverview.layer.pipe(

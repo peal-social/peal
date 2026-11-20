@@ -35,7 +35,6 @@ if typing.TYPE_CHECKING:
     from .members.client import AsyncMembersClient, MembersClient
     from .notices.client import AsyncNoticesClient, NoticesClient
     from .notification_preferences.client import AsyncNotificationPreferencesClient, NotificationPreferencesClient
-    from .overview.client import AsyncOverviewClient, OverviewClient
     from .partner.client import AsyncPartnerClient, PartnerClient
     from .partner_account.client import AsyncPartnerAccountClient, PartnerAccountClient
     from .partner_usage.client import AsyncPartnerUsageClient, PartnerUsageClient
@@ -150,7 +149,6 @@ class Peal:
         self._media: typing.Optional[MediaClient] = None
         self._notices: typing.Optional[NoticesClient] = None
         self._notification_preferences: typing.Optional[NotificationPreferencesClient] = None
-        self._overview: typing.Optional[OverviewClient] = None
         self._assistant: typing.Optional[AssistantClient] = None
         self._members: typing.Optional[MembersClient] = None
         self._invitations: typing.Optional[InvitationsClient] = None
@@ -261,14 +259,6 @@ class Peal:
 
             self._notification_preferences = NotificationPreferencesClient(client_wrapper=self._client_wrapper)
         return self._notification_preferences
-
-    @property
-    def overview(self):
-        if self._overview is None:
-            from .overview.client import OverviewClient  # noqa: E402
-
-            self._overview = OverviewClient(client_wrapper=self._client_wrapper)
-        return self._overview
 
     @property
     def assistant(self):
@@ -629,7 +619,6 @@ class AsyncPeal:
         self._media: typing.Optional[AsyncMediaClient] = None
         self._notices: typing.Optional[AsyncNoticesClient] = None
         self._notification_preferences: typing.Optional[AsyncNotificationPreferencesClient] = None
-        self._overview: typing.Optional[AsyncOverviewClient] = None
         self._assistant: typing.Optional[AsyncAssistantClient] = None
         self._members: typing.Optional[AsyncMembersClient] = None
         self._invitations: typing.Optional[AsyncInvitationsClient] = None
@@ -740,14 +729,6 @@ class AsyncPeal:
 
             self._notification_preferences = AsyncNotificationPreferencesClient(client_wrapper=self._client_wrapper)
         return self._notification_preferences
-
-    @property
-    def overview(self):
-        if self._overview is None:
-            from .overview.client import AsyncOverviewClient  # noqa: E402
-
-            self._overview = AsyncOverviewClient(client_wrapper=self._client_wrapper)
-        return self._overview
 
     @property
     def assistant(self):

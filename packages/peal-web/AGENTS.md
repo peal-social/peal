@@ -77,9 +77,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (their account), `…/notifications` (their notifications across
   workspaces) and `…/settings/notifications` (which reach them by email);
   the account menu opens them in the workspace open. There is no personal
-  area: no page across workspaces, no sidebar of the person's own.
-  `GET /api/me/agenda`, `/api/me/report` and `/api/me/overview` have no
-  page; the CLI and the API still read them. The staff console is
+  area: no page across workspaces, no sidebar of the person's own. Each
+  workspace stands alone, and the API has no overview, agenda or report
+  across a person's workspaces to show. The staff console is
   `admin` (the system's health), `admin/users`, `admin/users/[userId]`,
   `admin/workspaces`, `admin/workspaces/[workspaceId]` (with its API
   rate limit, `WorkspaceRequestLimit`: staff set a limit of its own, with

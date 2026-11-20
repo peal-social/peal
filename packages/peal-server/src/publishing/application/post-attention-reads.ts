@@ -1,8 +1,8 @@
 import { Context } from "effect";
-import type { DateTime, Effect, Option } from "effect";
+import type { DateTime, Effect } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
-import type { ChannelId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
+import type { PostId, WorkspaceId } from "#shared/domain/ids.ts";
 
 /**
  * A workspace's posts that need someone, counted: going out in the next 7
@@ -16,44 +16,6 @@ export interface AttentionCounts {
   readonly scheduledNext7Days: number;
   readonly unconfirmedLast7Days: number;
 }
-
-/** The statuses of the posts with a time that go out, or went out. */
-export type AgendaStatus =
-  | "awaitingApproval"
-  | "finished"
-  | "publishing"
-  | "scheduled";
-
-/** One post with a time, as an agenda across workspaces lists it. */
-export interface AgendaPost {
-  readonly channelIds: readonly ChannelId[];
-  /** The start of its text (`excerptOf`). */
-  readonly excerpt: string;
-  readonly postId: PostId;
-  readonly scheduledAt: DateTime.Utc;
-  readonly status: AgendaStatus;
-  readonly timeZone: string;
-  readonly workspaceId: WorkspaceId;
-}
-
-/** Which posts a page of an agenda across workspaces holds. */
-export interface AgendaPageRequest {
-  readonly after: Option.Option<{
-    readonly postId: PostId;
-    readonly scheduledAt: DateTime.Utc;
-  }>;
-  /** Included. */
-  readonly from: DateTime.Utc;
-  readonly limit: number;
-  /** Excluded. */
-  readonly to: DateTime.Utc;
-  readonly workspaceIds: readonly WorkspaceId[];
-}
-
-/** An agenda's post as stored, its text cut short in the query. */
-export type StoredAgendaPost = Omit<AgendaPost, "excerpt"> & {
-  readonly textStart: string;
-};
 
 /** The instants that bound what the counts read. */
 export interface AttentionWindow {
@@ -127,9 +89,6 @@ export class PostAttentionReads extends Context.Service<
       ReadonlyMap<WorkspaceId, AttentionCounts>,
       DatabaseError
     >;
-    readonly agenda: (
-      request: AgendaPageRequest
-    ) => Effect.Effect<readonly StoredAgendaPost[], DatabaseError>;
     readonly week: (
       workspaceId: WorkspaceId,
       window: WeekWindow

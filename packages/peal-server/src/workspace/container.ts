@@ -36,7 +36,6 @@ import { ImpersonationGuard } from "#workspace/application/impersonation-guard.t
 import { MeterPartnerUsage } from "#workspace/application/meter-partner-usage.ts";
 import { MoveCustomerChannel } from "#workspace/application/move-customer-channel.ts";
 import { OffboardWorkspace } from "#workspace/application/offboard-workspace.ts";
-import { Overview } from "#workspace/application/overview.ts";
 import { PartnerAccounts } from "#workspace/application/partner-accounts.ts";
 import { PartnerHealth } from "#workspace/application/partner-health.ts";
 import { PartnerKeys } from "#workspace/application/partner-keys.ts";
@@ -284,29 +283,18 @@ export const PartnerTenantsLive = PartnerTenants.layer.pipe(
 );
 
 /**
- * What a person reads across the workspaces they belong to (Overview):
- * each workspace decided through ResolveMember, as every request into it
- * is, and its figures read from the other contexts. Needs what
- * WorkspaceLive provides, publishing's PostAttention, the channels
- * context's ChannelOverview, the engagement context's InboxWaiting and
- * billing's WorkspaceStanding, which the composition root brings.
+ * What needs attention in a partner's customers' workspaces (PartnerHealth),
+ * on a page of the partner's own list, its figures read from the other
+ * contexts. Needs what WorkspaceLive provides, publishing's PostAttention,
+ * the channels context's ChannelOverview, the engagement context's
+ * InboxWaiting and billing's WorkspaceStanding, which the composition root
+ * brings.
  */
-export const OverviewLive = Layer.mergeAll(
-  Overview.layer,
-  // What needs attention in a partner's customers' workspaces, from the
-  // same sources, on a page of the partner's own list.
-  PartnerHealth.layer.pipe(
-    Layer.provide(PartnerWorkspaces.layer),
-    Layer.provide(Layer.mergeAll(PartnerStoresLive, ContextChannelCountsLive))
-  )
-).pipe(Layer.provide(ContextOverviewSourcesLive));
-
-/**
- * The endpoints across a person's workspaces, under /api/me. They need
- * OverviewLive, and the Authentication middleware WorkspaceApiLive
- * provides.
- */
-export { OverviewHandlers as OverviewApiLive } from "#workspace/api/overview.ts";
+export const PartnerHealthLive = PartnerHealth.layer.pipe(
+  Layer.provide(PartnerWorkspaces.layer),
+  Layer.provide(Layer.mergeAll(PartnerStoresLive, ContextChannelCountsLive)),
+  Layer.provide(ContextOverviewSourcesLive)
+);
 
 /**
  * Applying the erasure ledger again after a restore (ReplayErasures), over

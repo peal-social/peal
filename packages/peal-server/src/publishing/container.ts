@@ -544,9 +544,9 @@ export const MediaInPostsLive = MediaInPosts.layer.pipe(
 );
 
 /**
- * The posts of several workspaces at once, counted and by time, for the
- * view across a person's workspaces (PostAttention). Needs the database
- * (Drizzle).
+ * The posts of several workspaces at once, counted, for a partner's view
+ * of its customers, and a workspace's week, for the weekly digest
+ * (PostAttention). Needs the database (Drizzle).
  */
 export const PostAttentionLive = PostAttention.layer.pipe(
   Layer.provide(SqlPostAttentionReads)

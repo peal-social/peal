@@ -114,12 +114,12 @@ export const posts = publishing.table(
       .on(table.scheduledAt)
       .where(sql`${table.status} = 'scheduled'`),
     // The posts waiting for an approval in a workspace, whatever their
-    // time: what the view across workspaces counts.
+    // time: what a partner's view of its customers counts.
     index("posts_workspace_awaiting_approval")
       .on(table.workspaceId)
       .where(sql`${table.status} = 'awaitingApproval'`),
     // A workspace's posts that ended with a channel failed or to check, by
-    // when they ended: what the view across workspaces counts over its
+    // when they ended: what a partner's view of its customers counts over its
     // last days. Few posts end so, so the index stays small.
     index("posts_workspace_finished_attention")
       .on(table.workspaceId, table.finishedAt)

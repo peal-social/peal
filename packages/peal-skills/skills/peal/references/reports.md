@@ -25,10 +25,9 @@ another's, as platforms count differently. With `enough: false` the
 channel has too few posts and nothing is ranked: say so, rather than pick
 an hour. With `counted: false` its platform gives no counts to weigh.
 
-Across the workspaces a person belongs to, `peal overview` says what needs
-attention in each, `peal agenda` what goes out, and `peal report` how each
-did beside the days before (`--csv report.csv` saves it). They need a person
-signed in: a key belongs to one workspace.
+Each workspace stands alone: no command gives an overview, an agenda or a
+report across a person's workspaces. To answer for another workspace, run
+the same command with `--workspace` naming it.
 
 ## Usage
 

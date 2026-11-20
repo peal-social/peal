@@ -27,8 +27,8 @@ const localDateOf = (instant: DateTime.Utc) => {
 
 /**
  * What a digest is written from, through the other contexts' application
- * layers, as the overview reads them: the account and its workspaces from
- * the workspace context, each workspace decided as a request of the
+ * layers: the account and its workspaces from the workspace context,
+ * each workspace decided as a request of the
  * member's in their own session would be now (`ActorsNow`: a ban, a
  * removal, two-step verification required), its week from publishing
  * where they may read posts, and engagement from analytics where they may

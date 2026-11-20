@@ -15,8 +15,8 @@ import type {
 export type OfWorkspace<A> = A & { readonly workspaceId: WorkspaceId };
 
 /**
- * What the report across workspaces reads, every workspace's id in one
- * parameter: the same rows as a workspace's dashboard reads
+ * What the weekly digest reads across workspaces, every workspace's id
+ * in one parameter: the same rows as a workspace's dashboard reads
  * (`AnalyticsReports.counts`, `channels`, `accountDays`), for several
  * workspaces in one query each.
  */

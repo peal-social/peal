@@ -2,16 +2,12 @@ import { describe, expect, it } from "@effect/vitest";
 import { Duration } from "effect";
 import { HttpApi } from "effect/http-api";
 import {
-  agendaExcerptLength,
   Api,
   cliClientId,
   creationKeyLifetimeHours,
   defaultWorkspacePageSize,
-  maxAgendaDays,
-  maxAgendaPageSize,
   maxCreationKeyLength,
   maxExternalIdLength,
-  maxOverviewPageSize,
   maxPartnerKeyNameLength,
   maxPartnerLogoUrlLength,
   maxPartnerNameLength,
@@ -38,13 +34,7 @@ import {
   ProbeStateSchema as DomainProbeStateSchema,
   RejectionReasonSchema as DomainRejectionReasonSchema,
 } from "#media/domain/media-status.ts";
-import { excerptLength } from "#publishing/domain/post-excerpt.ts";
 import { PermissionSchema as DomainPermissionSchema } from "#shared/domain/access.ts";
-import {
-  maxAgendaPageSize as serverMaxAgendaPageSize,
-  maxAgendaRange,
-  maxOverviewPageSize as serverMaxOverviewPageSize,
-} from "#workspace/application/overview.ts";
 import {
   defaultWorkspacePageSize as serverDefaultPageSize,
   maxWorkspacePageSize as serverMaxPageSize,
@@ -142,13 +132,6 @@ describe("the contract", () => {
     expect(RejectionReasonSchema.literals).toStrictEqual(
       DomainRejectionReasonSchema.literals
     );
-  });
-
-  it("pages across workspaces and bounds the agenda as the server does", () => {
-    expect(maxOverviewPageSize).toBe(serverMaxOverviewPageSize);
-    expect(maxAgendaPageSize).toBe(serverMaxAgendaPageSize);
-    expect(Duration.days(maxAgendaDays)).toStrictEqual(maxAgendaRange);
-    expect(agendaExcerptLength).toBe(excerptLength);
   });
 
   // WorkspaceAccess reads the workspace from the path.

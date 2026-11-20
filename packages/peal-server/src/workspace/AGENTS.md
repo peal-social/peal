@@ -75,31 +75,11 @@ The staff context follows these rules too. What the law has a host keep is in
   one read of the memberships (`MemberDirectory.memberships`), each through
   `actorFor` as `resolve` decides one: anything that reads across
   workspaces uses it, never one query a membership.
-- `Overview` (`application/overview.ts`, `GET /api/me/overview` and
-  `/api/me/agenda`) reads across the workspaces a person belongs to, for
-  a user only (`overviewReader`: an OAuth token bound to one workspace is
-  `PersonRequired`, keys are refused by the handler). Each workspace is
-  decided through `ResolveMember`, never a second copy of bans, removals,
-  two-step verification or impersonation, and every case of
-  `AccessDenied` is named: a workspace that requires two-step
-  verification of a person without it is listed with `refused` and no
-  figure, one left meanwhile is left out, a ban refuses the whole read.
-  A section is read only where the actor holds the permission its page
-  checks (`sectionsFor`: `post:read`, `channel:read`, `engagement:read`,
-  `post:approve` for `mayApprove`) and is none otherwise, never zero, so
-  staff acting as a member get no inbox; the standing is every member's,
-  as `GET …/billing/standing` is. Its figures come from `OverviewSources`,
-  which `ContextOverviewSourcesLive` backs at the composition root with
-  one set-based read per context (publishing's `PostAttention`, the
-  channels' `ChannelOverview`, engagement's `InboxWaiting`, all ids in one
-  `anyUuid` parameter) and billing's `WorkspaceStanding.overPlanIn`, asked
-  once for the page (seven statements for 50 workspaces, a partner's pool
-  among them). Workspaces page by name then id (`workspacePage`), the agenda by
-  time then id, 31 days at most; cursors are opaque. `Overview.report`
-  passes analytics the actors with `analytics:read` alone
-  (`AnalyticsQueries.acrossWorkspaces`); its CSV (`/api/me/report/export`)
-  is written with the shared `csvLine` (`#shared/api/csv.ts`), the
-  analytics export's, a page of workspaces at a time.
+- Each workspace stands alone: the API has no overview, agenda or report
+  across the workspaces a person belongs to, and no page, command or
+  tool gives one. Only a partner's overview of its customers (below), the
+  person's notices and the weekly digest, which sums up each of a
+  member's workspaces in one email, read several workspaces at once.
 - `ActorsNow` (`application/actors-now.ts`) is who someone a job acts for
   is now, from the ids it kept (a member, an application's grant read with
   `ConnectedAppStore.grantIn`, a workspace's or a partner's key, expiry
@@ -574,11 +554,15 @@ The staff context follows these rules too. What the law has a host keep is in
   `forMember`, partner:read in the home workspace) answers
   `GET /api/partner/overview` and `…/partner/overview` of the home
   workspace: a page of `PartnerWorkspaces.listingOf` (its order and
-  cursor, the home workspace left out) with the overview's own sources
-  (`OverviewSources`, one read each for the page), each section only
-  where the key holds its permission (`sectionsHeld`), a member where they
-  hold it in the home workspace (`sectionsFor`, as the people's overview:
-  staff acting as one read no inbox) and never `mayApprove`, and on the
+  cursor, the home workspace left out) with its sources
+  (`OverviewSources`, which `ContextOverviewSourcesLive` backs at the
+  composition root with one set-based read per context: publishing's
+  `PostAttention`, the channels' `ChannelOverview`, engagement's
+  `InboxWaiting`, all ids in one `anyUuid` parameter, and billing's
+  `WorkspaceStanding.overPlanIn`, one read each for the page), each
+  section only where the key holds its permission (`sectionsHeld`), a
+  member where they hold it in the home workspace (`sectionsFor`: staff
+  acting as one read no inbox) and never `mayApprove`, and on the
   first page alone the account's `overPlan`, asked of one customer (they
   share the pool's plan and channels and have no member), or of the home
   workspace while there is none, none when the server does not bill

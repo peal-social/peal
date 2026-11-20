@@ -7,10 +7,10 @@ import { InboxWaitingReads } from "./inbox-waiting-reads.ts";
 
 /**
  * How many threads of each workspace have a comment waiting for an answer,
- * as the inbox's `unanswered` filter finds them, for the view across a
- * person's workspaces. A count of threads, never a comment's text or
- * author, so it checks no permission: the caller decided which workspaces
- * the person may read the inbox of.
+ * as the inbox's `unanswered` filter finds them, for a partner's view of
+ * its customers. A count of threads, never a comment's text or author, so
+ * it checks no permission: the caller decided which workspaces may have
+ * their inbox read.
  */
 export class InboxWaiting extends Context.Service<
   InboxWaiting,

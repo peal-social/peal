@@ -158,8 +158,7 @@ import {
   AuthRoutesLive,
   CredentialNamesLive,
   ErasureReplayLive,
-  OverviewApiLive,
-  OverviewLive,
+  PartnerHealthLive,
   PartnerOwnershipLive,
   WorkspaceOwnersLive,
   PartnerTenantsLive,
@@ -180,7 +179,6 @@ const WorkspaceGroupsLive = Layer.mergeAll(
   MediaApiLive,
   NoticesApiLive,
   NotificationPreferencesApiLive,
-  OverviewApiLive,
   AssistantApiLive,
   BillingApiLive,
   BillingActionsApiLive,
@@ -538,17 +536,14 @@ const BillingContextLive = BillingOverviewLive.pipe(
   )
 );
 
-// What a person reads across their workspaces: each decided as the
-// workspace context decides any request, with the posts publishing counts
-// and lists, the channels and their platforms, the inbox's waiting threads,
-// analytics' report across workspaces and each workspace's standing
-// against its plan, as billing tells it.
-const OverviewContextLive = OverviewLive.pipe(
+// What needs attention in a partner's customers' workspaces: the posts
+// publishing counts, the channels by status, the inbox's waiting threads
+// and each workspace's standing against its plan, as billing tells it.
+const PartnerHealthContextLive = PartnerHealthLive.pipe(
   Layer.provide(
     Layer.mergeAll(
       ChannelsWithNoticesLive,
       BillingContextLive,
-      AnalyticsLive,
       PostAttentionLive,
       ChannelOverviewLive,
       InboxWaitingLive
@@ -633,7 +628,7 @@ const ServicesLive = Layer.mergeAll(
   BillingAccountsDeskContextLive,
   AdsRoutesContextLive,
   ShortLinksContextLive,
-  OverviewContextLive
+  PartnerHealthContextLive
 ).pipe(
   // Product analytics, one for the routes and the contexts: off without
   // PEAL_POSTHOG_KEY.
@@ -725,7 +720,7 @@ export const ContextsLive = Layer.mergeAll(
   // On the cluster, every call to an ad account goes through its gate.
   adsContext(GatedAds),
   ShortLinksContextLive,
-  OverviewContextLive,
+  PartnerHealthContextLive,
   WeeklyDigestContextLive,
   // Billing's meters and X's pass-through, which the workers' platforms
   // and readers claim on: X's posts and, where the server bills, its reads.

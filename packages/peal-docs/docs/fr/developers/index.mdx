@@ -448,16 +448,13 @@ Les membres qui peuvent gérer les webhooks (propriétaires et administrateurs),
 
 Ce qui vous appartient, plutôt qu’à un espace de travail, se trouve sous `/api/me` :
 
-| Requête                            | Ce qu’elle contient                                                  |
-| ---------------------------------- | -------------------------------------------------------------------- |
-| `GET /api/me`                      | Qui vous êtes                                                        |
-| `/api/me/notices`                  | Vos [notifications](/guides/workspace/notifications#api)             |
-| `/api/me/notification-preferences` | Les notifications qui partent par e-mail                             |
-| `GET /api/me/overview`             | Ce qui demande votre attention dans chacun de vos espaces de travail |
-| `GET /api/me/agenda`               | Ce qui part dans l’ensemble                                          |
-| `GET /api/me/report`               | Comment cela s’est passé                                             |
+| Requête                            | Ce qu’elle contient                                      |
+| ---------------------------------- | -------------------------------------------------------- |
+| `GET /api/me`                      | Qui vous êtes                                            |
+| `/api/me/notices`                  | Vos [notifications](/guides/workspace/notifications#api) |
+| `/api/me/notification-preferences` | Les notifications qui partent par e-mail                 |
 
-Les trois dernières répondent dans la mesure où votre rôle dans chaque espace de travail permet de le lire ([Dans tous vos espaces de travail](/guides/workspace#across-workspaces)). Ces points d’accès répondent 403 aux clés d’API, qui appartiennent à un espace de travail, et aux jetons OAuth liés à un seul espace de travail, comme celui d’un client MCP.
+Ces points d’accès répondent 403 aux clés d’API, qui appartiennent à un espace de travail, et aux jetons OAuth liés à un seul espace de travail, comme celui d’un client MCP.
 
 Trois autres ne répondent qu’à votre propre session dans l’application web : une copie de vos données (`GET /api/me/export`), la suppression de votre compte (`DELETE /api/me`) et vos applications connectées (`/api/me/connected-apps`). Les clés d’API, les jetons OAuth et l’équipe qui agit à votre place reçoivent 403 ([Espaces de travail et compte](/guides/workspace#api)).
 

@@ -148,26 +148,6 @@ It never expires.
 
 Quand la connexion ne fonctionne plus, parce qu’elle a été révoquée ou que votre compte a été banni, `peal whoami` le dit et vous demande de relancer `peal login`. Avant toute connexion, il répond que vous n’êtes pas connecté.
 
-## Dans tous les espaces [#across-workspaces]
-
-Trois commandes lisent d’un coup tous les espaces de travail auxquels vous appartenez :
-
-```sh
-peal overview
-peal agenda --from 2026-11-20T00:00 --to 2026-11-27T00:00 --workspace clients
-peal report --days 90 --csv rapport.csv
-```
-
-| Commande        | Ce qu’elle montre                                                                                                                                                                                                                                                                                                                                    |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `peal overview` | Ce qui demande votre attention dans chaque espace : les publications qui ont échoué ou sont à vérifier, les approbations en attente, les canaux à reconnecter ou désactivés, les commentaires qui attendent une réponse, et un espace au-delà de son offre. Quand rien ne demande votre attention, la commande le dit une fois.                      |
-| `peal agenda`   | Ce qui part dans ces espaces, sur les 14 prochains jours sauf si `--from` et `--to` disent autre chose (31 jours au plus). Chaque publication montre son heure en UTC, son espace, ses plateformes, son état et le début de son texte. Répétez `--workspace` pour n’en garder que certains, par slug ou identifiant.                                 |
-| `peal report`   | Les publications, l’engagement, les impressions et les abonnés de chaque espace sur les 7, 30 ou 90 derniers jours (`--days`, 30 par défaut, et `--time-zone`), chacun à côté des jours d’avant, là où votre rôle lit les statistiques. `--csv` enregistre le rapport en fichier CSV, une ligne par espace, jamais par-dessus un fichier qui existe. |
-
-Chaque espace montre ce que votre rôle y permet de lire. Un espace qui exige la validation en deux étapes, quand votre compte ne l’a pas activée, est nommé sans aucun chiffre.
-
-Les trois acceptent `--json`, `--limit` et `--cursor`. Elles sont réservées à une personne connectée, car une clé d’API appartient à un seul espace ([Dans tous vos espaces de travail](/guides/workspace#across-workspaces)).
-
 ## Se déconnecter [#logout]
 
 Pour vous déconnecter, lancez :

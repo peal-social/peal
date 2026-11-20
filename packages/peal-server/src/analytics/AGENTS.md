@@ -203,8 +203,9 @@
   (`previousKept`, from `keptSince` with each platform's `retentionOf`):
   the clients show no change where it is not, never one against figures
   the retention job deleted.
-- `AnalyticsQueries.acrossWorkspaces` is the report across workspaces:
-  the dashboard's reads for several workspaces at once
+- `AnalyticsQueries.acrossWorkspaces` gives the weekly digest each of a
+  person's workspaces' figures: the dashboard's reads for several
+  workspaces at once
   (`AnalyticsAcrossReads`, ids as one parameter), each put together by
   `comparisonOf`, which runs `dashboardOf` on that workspace's rows, so a
   workspace's line never differs from its own dashboard

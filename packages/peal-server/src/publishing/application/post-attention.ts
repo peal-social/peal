@@ -6,8 +6,6 @@ import type { WorkspaceId } from "#shared/domain/ids.ts";
 
 import { PostAttentionReads } from "./post-attention-reads.ts";
 import type {
-  AgendaPageRequest,
-  AgendaPost,
   AttentionCounts,
   StoredWeekPost,
   WeekPost,
@@ -16,9 +14,6 @@ import type {
 } from "./post-attention-reads.ts";
 
 export type {
-  AgendaPageRequest,
-  AgendaPost,
-  AgendaStatus,
   AttentionCounts,
   WeekCounts,
   WeekPost,
@@ -32,11 +27,11 @@ const weekPostOf = ({ textStart, ...post }: StoredWeekPost): WeekPost => ({
 });
 
 /**
- * The posts of several workspaces at once, for the view across a person's
- * workspaces: what needs attention in each, counted, and the posts with a
- * time in a range, a page at a time by time then id. Counts and excerpts
- * only, so it checks no permission: the caller decided which workspaces
- * the person may read posts in, and names only those.
+ * The posts of several workspaces at once: what needs attention in each,
+ * counted, for a partner's view of its customers, and one workspace's week
+ * for a member's digest. Counts and excerpts only, so it checks no
+ * permission: the caller decided which workspaces may be read, and names
+ * only those.
  */
 export class PostAttention extends Context.Service<
   PostAttention,
@@ -49,10 +44,6 @@ export class PostAttention extends Context.Service<
       ReadonlyMap<WorkspaceId, AttentionCounts>,
       DatabaseError
     >;
-    /** `limit` posts at most, after `after`, by time then id. */
-    readonly agenda: (
-      request: AgendaPageRequest
-    ) => Effect.Effect<readonly AgendaPost[], DatabaseError>;
     /**
      * One workspace's week and the week after it, by the time each post
      * had: counted, and the first `listed` of each, for a digest.
@@ -69,19 +60,6 @@ export class PostAttention extends Context.Service<
       const reads = yield* PostAttentionReads;
 
       return PostAttention.of({
-        agenda: (request) =>
-          (request.workspaceIds.length === 0
-            ? Effect.succeed([])
-            : reads.agenda(request)
-          ).pipe(
-            Effect.map((stored) =>
-              stored.map(({ textStart, ...post }): AgendaPost => ({
-                ...post,
-                excerpt: excerptOf(textStart),
-              }))
-            ),
-            Effect.withSpan("PostAttention.agenda")
-          ),
         countsIn: (workspaceIds, now) =>
           (workspaceIds.length === 0
             ? Effect.succeed(new Map<WorkspaceId, AttentionCounts>())

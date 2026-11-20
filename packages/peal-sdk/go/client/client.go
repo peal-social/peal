@@ -31,7 +31,6 @@ import (
 	notices "github.com/peal-social/peal/packages/peal-sdk/go/notices"
 	notificationpreferences "github.com/peal-social/peal/packages/peal-sdk/go/notificationpreferences"
 	option "github.com/peal-social/peal/packages/peal-sdk/go/option"
-	overview "github.com/peal-social/peal/packages/peal-sdk/go/overview"
 	partner "github.com/peal-social/peal/packages/peal-sdk/go/partner"
 	partneraccount "github.com/peal-social/peal/packages/peal-sdk/go/partneraccount"
 	partnerusage "github.com/peal-social/peal/packages/peal-sdk/go/partnerusage"
@@ -60,7 +59,6 @@ type Client struct {
 	Media                   *media.Client
 	Notices                 *notices.Client
 	NotificationPreferences *notificationpreferences.Client
-	Overview                *overview.Client
 	Assistant               *assistant.Client
 	Members                 *members.Client
 	Invitations             *invitations.Client
@@ -110,7 +108,6 @@ func NewClient(opts ...option.RequestOption) *Client {
 		Media:                   media.NewClient(options),
 		Notices:                 notices.NewClient(options),
 		NotificationPreferences: notificationpreferences.NewClient(options),
-		Overview:                overview.NewClient(options),
 		Assistant:               assistant.NewClient(options),
 		Members:                 members.NewClient(options),
 		Invitations:             invitations.NewClient(options),

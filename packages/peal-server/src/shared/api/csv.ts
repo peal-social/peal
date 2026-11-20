@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 
-// CSV as every export of the API writes it: the analytics export and the
-// report across workspaces.
+// CSV as every export of the API writes it, the analytics export
+// among them.
 
 /** A cell: text, a number, or nothing where a platform gives none. */
 export type Cell = number | string | null;
