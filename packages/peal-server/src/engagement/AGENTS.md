@@ -471,7 +471,12 @@
   `instagramPageMessageScopes`, `instagramLoginMessageScope`;
   `messageAbilitiesOf` takes the channel's `connection`; Instagram through
   Unified login is `unsupported`, and so are its private replies, until
-  an adapter reads the account's own conversations: `lacksMessages`), asked only when
+  an adapter reads the account's own conversations: `lacksMessages`;
+  such a channel is never asked to follow or unfollow its events, and one
+  with a box, turned on through a Page before a sign-in moved it there,
+  answers `MessagesUngranted`, as below, while the channels context
+  stops the Page's subscription with the Page's old token at that
+  sign-in), asked only when
   a member turns a channel's messages on: `switchChannel` refuses a channel whose read is
   not `available` (`MessageAbilityUnavailable`, `reconnect`), and the web
   app reconnects it with `messages=true`, the switch off meanwhile. A

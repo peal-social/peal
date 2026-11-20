@@ -382,7 +382,16 @@
   Page, so publishing, insights and comments take the Page's code paths;
   direct messages, which Meta addresses by the account rather than a
   Page, stay off for it (`lacksMessages`, the engagement guide) and its
-  disconnection leaves Meta's subscriptions alone. What Meta's pages leave
+  disconnection leaves Meta's subscriptions alone. A sign-in that moves a
+  channel to another way in while its old scopes named messages
+  (`namesMetaMessaging`) undoes the old way in's subscription with the
+  old tokens (`ChannelDepartures`, read under the lock, called once the
+  new tokens are saved and the lock let go, best effort), so a Page's
+  subscription is never left for a system user's token that cannot see
+  it. `debug_token` must answer `is_valid` and the main app's `app_id`,
+  or the sign-in is `AuthorizationFailed`; a listed account without a
+  `username` is left out (logged by its id), and a listing whose profile
+  fields Meta refuses (code 100) is asked again for `id,username`. What Meta's pages leave
   open (the exchange's `redirect_uri`, the fields of the accounts listed,
   ids across ways in, data deletion's `user_id`) waits on the sandbox's
   checks. Instagram Login

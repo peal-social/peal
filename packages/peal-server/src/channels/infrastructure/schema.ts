@@ -33,10 +33,12 @@ const instant = (name: string) => timestamp(name, { withTimezone: true });
  * - `granted_by` is the platform user the tokens rest on, when that is not
  *   the account itself: the Facebook user who connected a Page, or the
  *   Instagram account linked to one, or, through Instagram Login, the
- *   app-scoped id of the professional account's user. Meta's data deletion
+ *   app-scoped id of the professional account's user, or, through Unified
+ *   login, the business portfolio's system user. Meta's data deletion
  *   and deauthorization requests name that user.
- * - `connection` is how an Instagram channel reaches its account
- *   (`instagramLogin` or `facebookLogin`); null on other platforms, and on
+ * - `connection` is how an Instagram channel reaches its account, one of
+ *   its three ways in (`unifiedLogin`, `instagramLogin` or
+ *   `facebookLogin`); null on other platforms, and on
  *   Instagram channels connected before Instagram Login, which came through
  *   Facebook Login. The repository reads null so.
  * - `label` is the name the workspace gave the channel, shown in Peal only;
