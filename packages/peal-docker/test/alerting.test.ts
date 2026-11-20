@@ -53,6 +53,7 @@ const watched = [
   "peal_workspace_sign_in_providers_unavailable",
   "peal_channels_release_left_subscribed_total",
   "peal_product_analytics_events_total",
+  "peal_meta_refusals_total",
 ];
 
 const RuleSchema = Schema.Struct({

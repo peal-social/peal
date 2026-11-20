@@ -181,6 +181,37 @@ groups:
                     type: gt
                     params: [0]
 
+      - uid: peal-meta-permission-refused
+        title: Meta refuses a permission the server's app lacks
+        condition: B
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: Meta refused a call for a permission the token lacks (code 10, or 200 to 299; peal.meta.refusals with kind permission). No reconnection gives it, unless the account unticked it at sign-in. The post fails with Meta's code and the channel stays connected. Read the server's "Meta refused a token" warnings for the API and code, then add the permission to the Meta app's use case, or stop sending the option that needs it.
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 3600
+              to: 0
+            model:
+              refId: A
+              instant: true
+              expr: sum(increase(peal_meta_refusals_total{kind="permission"}[1h])) or vector(0)
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0.5]
+
       - uid: peal-web-error-spike
         title: The web app reports a spike of errors
         condition: B

@@ -1,4 +1,4 @@
-import { DateTime, Duration, Effect, Option, Schema } from "effect";
+import { DateTime, Duration, Effect, Metric, Option, Schema } from "effect";
 import type { HttpClientResponse } from "effect/http";
 
 import { graphUsageOf } from "./graph-usage.ts";
@@ -163,10 +163,113 @@ const tokenRefusedLog = (described: ReturnType<typeof describedOf>) =>
     )
   );
 
+// What the refusal is, from what Meta said of it (see `graphRefusalOf`).
+const classified = Effect.fnUntraced(function* classified(
+  response: HttpClientResponse.HttpClientResponse,
+  error: GraphError,
+  described: ReturnType<typeof describedOf>
+) {
+  const { status } = response;
+  const now = yield* DateTime.now;
+
+  const retryAfter = graphUsageOf(response.headers).pipe(
+    Option.flatMap(({ regainAccessIn }) => regainAccessIn),
+    Option.orElse(() => retryAfterOf(response.headers, now)),
+    Option.filter((wait) => !Duration.isZero(wait))
+  );
+
+  const rateLimited: GraphRefusal = { _tag: "rateLimited", retryAfter };
+
+  if (Option.isSome(error.code)) {
+    const code = error.code.value;
+
+    if (isTokenCode(code)) {
+      yield* tokenRefusedLog(described);
+
+      return {
+        _tag: "token",
+        code: codeName(error, status),
+        coded: true,
+        permission: isPermissionCode(code),
+      } satisfies GraphRefusal;
+    }
+
+    if (
+      isRateLimitCode(code) ||
+      (code === publishingLimit.code &&
+        Option.contains(error.subcode, publishingLimit.subcode))
+    ) {
+      return rateLimited;
+    }
+
+    if (isServiceCode(code) || error.transient) {
+      return { _tag: "unavailable" } satisfies GraphRefusal;
+    }
+
+    if (code === 506) {
+      return { _tag: "duplicate" } satisfies GraphRefusal;
+    }
+  }
+
+  if (status === 429) {
+    return rateLimited;
+  }
+
+  if (status >= 500 || error.transient) {
+    return { _tag: "unavailable" } satisfies GraphRefusal;
+  }
+
+  if (Option.isNone(error.code) && (status === 401 || status === 403)) {
+    yield* tokenRefusedLog(described);
+
+    return {
+      _tag: "token",
+      code: codeName(error, status),
+      coded: false,
+      permission: false,
+    } satisfies GraphRefusal;
+  }
+
+  const refusal: GraphRefusal = {
+    _tag: "refused",
+    code: codeName(error, status),
+  };
+
+  return refusal;
+});
+
+/**
+ * Every call Meta refused, by API (`facebook`, `instagram`, `threads`),
+ * kind (`token`, `permission`, `rateLimited`, `unavailable`, `duplicate`,
+ * `refused`) and Meta's code (`graph10`, `http403`): Meta's codes are a
+ * short list, never an account's or a post's. `permission` is a permission
+ * the app lacks or the account did not grant, which no new token gives:
+ * `peal-meta-permission-refused` watches it.
+ */
+export const metaRefusals = Metric.counter("peal.meta.refusals", {
+  description: "Calls Meta refused, by API, kind and Meta's code",
+  incremental: true,
+});
+
+// Which of Meta's APIs answered, from its host.
+const apiOf = (response: HttpClientResponse.HttpClientResponse) => {
+  const host = new URL(response.request.url).hostname;
+
+  if (host.includes("threads")) {
+    return "threads";
+  }
+
+  return host.includes("instagram") ? "instagram" : "facebook";
+};
+
+const kindOf = (refusal: GraphRefusal) =>
+  refusal._tag === "token" && refusal.permission ? "permission" : refusal._tag;
+
 /**
  * What a Meta answer that is not a success means, from its status, its
  * error body and its usage headers. A body that cannot be read is judged by
- * the status alone.
+ * the status alone. What Meta said goes on the span, and the refusal is
+ * counted in `peal.meta.refusals`.
  */
 export const graphRefusalOf = Effect.fn("MetaGraph.refusalOf")(
   function* graphRefusalOf(response: HttpClientResponse.HttpClientResponse) {
@@ -180,9 +283,7 @@ export const graphRefusalOf = Effect.fn("MetaGraph.refusalOf")(
       Effect.orElseSucceed(() => noError)
     );
 
-    const { status } = response;
-    const now = yield* DateTime.now;
-    const described = describedOf(error, status);
+    const described = describedOf(error, response.status);
 
     yield* Effect.forEach(
       Object.entries(described),
@@ -193,68 +294,16 @@ export const graphRefusalOf = Effect.fn("MetaGraph.refusalOf")(
       { discard: true }
     );
 
-    const retryAfter = graphUsageOf(response.headers).pipe(
-      Option.flatMap(({ regainAccessIn }) => regainAccessIn),
-      Option.orElse(() => retryAfterOf(response.headers, now)),
-      Option.filter((wait) => !Duration.isZero(wait))
+    const refusal = yield* classified(response, error, described);
+
+    yield* Metric.update(
+      Metric.withAttributes(metaRefusals, {
+        api: apiOf(response),
+        code: codeName(error, response.status),
+        kind: kindOf(refusal),
+      }),
+      1
     );
-
-    const rateLimited: GraphRefusal = { _tag: "rateLimited", retryAfter };
-
-    if (Option.isSome(error.code)) {
-      const code = error.code.value;
-
-      if (isTokenCode(code)) {
-        yield* tokenRefusedLog(described);
-
-        return {
-          _tag: "token",
-          code: codeName(error, status),
-          coded: true,
-          permission: isPermissionCode(code),
-        } satisfies GraphRefusal;
-      }
-
-      if (
-        isRateLimitCode(code) ||
-        (code === publishingLimit.code &&
-          Option.contains(error.subcode, publishingLimit.subcode))
-      ) {
-        return rateLimited;
-      }
-
-      if (isServiceCode(code) || error.transient) {
-        return { _tag: "unavailable" } satisfies GraphRefusal;
-      }
-
-      if (code === 506) {
-        return { _tag: "duplicate" } satisfies GraphRefusal;
-      }
-    }
-
-    if (status === 429) {
-      return rateLimited;
-    }
-
-    if (status >= 500 || error.transient) {
-      return { _tag: "unavailable" } satisfies GraphRefusal;
-    }
-
-    if (Option.isNone(error.code) && (status === 401 || status === 403)) {
-      yield* tokenRefusedLog(described);
-
-      return {
-        _tag: "token",
-        code: codeName(error, status),
-        coded: false,
-        permission: false,
-      } satisfies GraphRefusal;
-    }
-
-    const refusal: GraphRefusal = {
-      _tag: "refused",
-      code: codeName(error, status),
-    };
 
     return refusal;
   }

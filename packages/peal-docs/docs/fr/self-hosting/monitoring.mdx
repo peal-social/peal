@@ -66,3 +66,11 @@ Vous les trouvez ici :
 | Grafana    | Le tableau de bord **Web app errors** de la pile de production, qui prévient quand plus de 20 signalements arrivent en 10 minutes |
 
 L’alerte sur les journaux d’erreurs du serveur lui-même laisse ces signalements de côté. Pour nommer la version d’où viennent les signalements, définissez `PEAL_RELEASE` sur l’application web. La pile de production y met `PEAL_VERSION`.
+
+### Refus de Meta [#meta-refusals]
+
+Quand Meta refuse un appel à Facebook, Instagram ou Threads, le serveur le compte dans `peal.meta.refusals` (Prometheus : `peal_meta_refusals_total`). Chaque compte dit quelle API a répondu (`facebook`, `instagram`, `threads`), le type de refus et le code de Meta, comme `graph10`. Les types sont `token`, `permission`, `rateLimited`, `unavailable`, `duplicate` et `refused`. Le message de Meta n’est jamais gardé.
+
+Le span de chaque refus porte les mêmes champs, avec `meta.error.type` et `meta.error.trace_id`, l’identifiant que demande le support de Meta. Un jeton refusé est aussi journalisé en avertissement, « Meta refused a token ».
+
+`permission` veut dire que l’application n’a pas une autorisation dont l’appel a besoin, ou que le compte ne l’a pas accordée. Un nouveau jeton n’y change rien : la publication échoue avec le code de Meta et le canal reste connecté. L’alerte `peal-meta-permission-refused` de la pile de production se déclenche dès le premier. Ajoutez l’autorisation au cas d’utilisation de votre application Meta, ou n’envoyez plus l’option qui en a besoin.
