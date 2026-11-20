@@ -42,6 +42,11 @@ export interface FakePage {
   };
   readonly name: string;
   readonly tasks?: readonly string[];
+  /**
+   * An Instagram account the Page links that the sign-in did not share:
+   * Meta gives it as `connected_instagram_account` alone.
+   */
+  readonly unsharedInstagram?: string;
   readonly username?: string;
 }
 
@@ -103,6 +108,12 @@ const pageOf = (page: FakePage): JsonValue => {
     ],
     ["tasks", page.tasks === undefined ? undefined : [...page.tasks]],
     ["username", page.username],
+    [
+      "connected_instagram_account",
+      linked === undefined && page.unsharedInstagram === undefined
+        ? undefined
+        : { id: linked?.id ?? page.unsharedInstagram ?? "" },
+    ],
     [
       "instagram_business_account",
       linked === undefined

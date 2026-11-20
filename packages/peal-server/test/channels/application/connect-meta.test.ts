@@ -5,9 +5,11 @@ import {
   Duration,
   Effect,
   Layer,
+  Logger,
   Option,
   Redacted,
   Ref,
+  References,
   Result,
   Schema,
 } from "effect";
@@ -424,6 +426,47 @@ layer(MetaConnectTest)("connecting Meta accounts", (it) => {
 
       assert.strictEqual(failure._tag, "NoAccountsToConnect");
     })
+  );
+
+  it.effect(
+    "logs a Page whose Instagram account the sign-in did not share",
+    () =>
+      Effect.gen(function* unshared() {
+        const meta = yield* FakeMeta;
+        const workspaceId = yield* freshWorkspace;
+        const lines: string[] = [];
+
+        meta.setPages([
+          { ...page("602"), unsharedInstagram: "17841400000000602" },
+        ]);
+
+        const failure = yield* Effect.flip(
+          signIn(workspaceId, "instagram")
+        ).pipe(
+          Effect.provide(
+            Logger.layer([
+              Logger.make(({ fiber, message }) => {
+                lines.push(
+                  JSON.stringify({
+                    ...fiber.getRef(References.CurrentLogAnnotations),
+                    message,
+                  })
+                );
+              }),
+            ])
+          )
+        );
+
+        assert.strictEqual(failure._tag, "NoAccountsToConnect");
+        assert.isTrue(
+          lines.some(
+            (line) =>
+              line.includes("did not share") &&
+              line.includes('"instagramAccountId":"17841400000000602"') &&
+              line.includes(`"pageId":"${page("602").id}"`)
+          )
+        );
+      })
   );
 
   it.effect("takes a declined permission as the member refusing", () =>
