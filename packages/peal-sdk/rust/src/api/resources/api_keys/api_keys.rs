@@ -43,6 +43,13 @@ impl ApiKeysClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<ApiKey>, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -98,6 +105,9 @@ impl ApiKeysClient {
     ) -> Result<CreatedApiKey, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -146,6 +156,13 @@ impl ApiKeysClient {
         api_key_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,

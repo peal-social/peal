@@ -53,6 +53,13 @@ impl InboxReviewsClient {
         request: &ListReviewThreadsQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxReviewThreadPage, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -103,6 +110,13 @@ impl InboxReviewsClient {
         thread_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxReviewThreadDetail, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -159,6 +173,13 @@ impl InboxReviewsClient {
         request: &NewInboxReviewReply,
         options: Option<RequestOptions>,
     ) -> Result<InboxReviewReply, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::PUT,
@@ -207,6 +228,13 @@ impl InboxReviewsClient {
         review_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxReview, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,
@@ -263,6 +291,9 @@ impl InboxReviewsClient {
     ) -> Result<InboxReview, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };

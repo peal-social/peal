@@ -46,6 +46,13 @@ impl SignaturesClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<Signature>, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -101,6 +108,9 @@ impl SignaturesClient {
     ) -> Result<Signature, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -159,6 +169,13 @@ impl SignaturesClient {
         request: &SignatureDetails,
         options: Option<RequestOptions>,
     ) -> Result<Signature, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::PUT,
@@ -207,6 +224,13 @@ impl SignaturesClient {
         signature_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,

@@ -66,6 +66,14 @@ public partial class ClientOptions
 #endif
     } = TimeSpan.FromMilliseconds(30000);
 
+    public string? PealVersion { get;
+#if NET5_0_OR_GREATER
+        init;
+#else
+        set;
+#endif
+    } = null;
+
     /// <summary>
     /// Clones this and returns a new instance
     /// </summary>
@@ -79,6 +87,7 @@ public partial class ClientOptions
             Timeout = Timeout,
             Headers = new Headers(new Dictionary<string, HeaderValue>(Headers)),
             AdditionalHeaders = AdditionalHeaders,
+            PealVersion = PealVersion,
         };
     }
 }

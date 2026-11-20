@@ -46,6 +46,13 @@ impl ShortLinksClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ShortLinkStatus, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -95,6 +102,13 @@ impl ShortLinksClient {
         request: &ShortLinkSettings,
         options: Option<RequestOptions>,
     ) -> Result<ShortLinkStatus, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::PUT,
@@ -146,6 +160,13 @@ impl ShortLinksClient {
         request: &ShortLinksListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ShortLinkPage, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -206,6 +227,13 @@ impl ShortLinksClient {
         request: &ShortLinksGetQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ShortLinkReport, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,

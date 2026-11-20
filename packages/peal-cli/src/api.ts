@@ -2,7 +2,7 @@ import { Context, Effect, Layer } from "effect";
 import type { Redacted } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 import { HttpApiClient } from "effect/http-api";
-import { Api, OAuthApi } from "peal-contract";
+import { Api, apiVersion, apiVersionHeader, OAuthApi } from "peal-contract";
 
 import { display } from "#display.ts";
 import { Refused } from "#refused.ts";
@@ -60,7 +60,13 @@ export class PealApi extends Context.Service<
     Layer.effect(
       PealApi,
       Effect.gen(function* pealApi() {
-        const httpClient = yield* HttpClient.HttpClient;
+        // Every request names the version of the API the command line was
+        // built against, as the SDKs' do.
+        const httpClient = (yield* HttpClient.HttpClient).pipe(
+          HttpClient.mapRequest(
+            HttpClientRequest.setHeader(apiVersionHeader, apiVersion)
+          )
+        );
 
         const sendingCredentials =
           options.insecureHttp === true || keepsCredentialsPrivate(baseUrl)

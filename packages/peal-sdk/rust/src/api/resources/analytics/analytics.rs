@@ -55,6 +55,13 @@ impl AnalyticsClient {
         request: &SummaryQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<AnalyticsSummary, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -114,6 +121,13 @@ impl AnalyticsClient {
         request: &DashboardQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<AnalyticsDashboard, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -176,6 +190,13 @@ impl AnalyticsClient {
         request: &ChannelQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ChannelSeries, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -240,6 +261,13 @@ impl AnalyticsClient {
         request: &ExportQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ByteStream, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_stream_request(
                 Method::GET,
@@ -300,6 +328,13 @@ impl AnalyticsClient {
         request: &BestTimesQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<BestTimes, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -349,6 +384,13 @@ impl AnalyticsClient {
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<PostAnalytics, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,

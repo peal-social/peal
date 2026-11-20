@@ -53,6 +53,13 @@ impl FeedsClient {
         request: &FeedsListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<FeedPage, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -115,6 +122,9 @@ impl FeedsClient {
     ) -> Result<CreatedFeed, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -172,6 +182,9 @@ impl FeedsClient {
     ) -> Result<FeedPreview, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -220,6 +233,13 @@ impl FeedsClient {
         feed_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Feed, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -265,6 +285,13 @@ impl FeedsClient {
         feed_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,
@@ -320,6 +347,9 @@ impl FeedsClient {
     ) -> Result<Feed, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -368,6 +398,13 @@ impl FeedsClient {
         feed_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<FeedItems, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,

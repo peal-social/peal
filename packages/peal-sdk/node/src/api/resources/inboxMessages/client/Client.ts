@@ -57,7 +57,7 @@ export class InboxMessagesClient {
             unread: unread != null ? unread : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/conversations`),
             method: "GET",
@@ -122,7 +122,7 @@ export class InboxMessagesClient {
             limit
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}`),
             method: "GET",
@@ -186,7 +186,7 @@ export class InboxMessagesClient {
     private async __sendMessage(request: Peal.NewInboxMessage, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxOutgoingMessage>> {
         const { workspaceId, conversationId, "idempotency-key": idempotencyKey, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}/messages`),
             method: "POST",
@@ -255,7 +255,7 @@ export class InboxMessagesClient {
     private async __sendPrivateReply(request: Peal.NewInboxPrivateReply, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxPrivateReply>> {
         const { workspaceId, "idempotency-key": idempotencyKey, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/private-replies`),
             method: "POST",
@@ -320,7 +320,7 @@ export class InboxMessagesClient {
     private async __getPrivateReply(request: Peal.GetPrivateReplyInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxPrivateReply>> {
         const { workspaceId, privateReplyId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/private-replies/${core.url.encodePathParam(privateReplyId, errors.PealError)}`),
             method: "GET",
@@ -381,7 +381,7 @@ export class InboxMessagesClient {
     private async __confirmPrivateReply(request: Peal.ConfirmPrivateReplyInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxPrivateReply>> {
         const { workspaceId, privateReplyId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/private-replies/${core.url.encodePathParam(privateReplyId, errors.PealError)}/confirm`),
             method: "POST",
@@ -445,7 +445,7 @@ export class InboxMessagesClient {
     private async __setConversationRead(request: Peal.SetConversationReadInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxConversation>> {
         const { workspaceId, conversationId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}/read`),
             method: "POST",
@@ -506,7 +506,7 @@ export class InboxMessagesClient {
     private async __getMessageSettings(request: Peal.GetMessageSettingsInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxMessageSettings>> {
         const { workspaceId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/settings`),
             method: "GET",
@@ -567,7 +567,7 @@ export class InboxMessagesClient {
     private async __setChannelMessages(request: Peal.SetChannelMessagesInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxMessageSettings>> {
         const { workspaceId, channelId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/channels/${core.url.encodePathParam(channelId, errors.PealError)}`),
             method: "PUT",
@@ -631,7 +631,7 @@ export class InboxMessagesClient {
     private async __setMessageApplication(request: Peal.SetMessageApplicationInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxMessageSettings>> {
         const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/applications`),
             method: "PUT",
@@ -695,7 +695,7 @@ export class InboxMessagesClient {
     private async __confirmMessage(request: Peal.ConfirmMessageInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxOutgoingMessage>> {
         const { workspaceId, messageId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/outgoing/${core.url.encodePathParam(messageId, errors.PealError)}/confirmation`),
             method: "POST",

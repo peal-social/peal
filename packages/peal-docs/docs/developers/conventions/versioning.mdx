@@ -29,6 +29,18 @@ A break happens only when it's decided on. It's then recorded with its reason an
 
 Webhook payloads follow the same rule, with a `version` of their own ([Versions](/developers/webhooks/requests#versions)).
 
+## The version header [#version-header]
+
+A version of the API is the day of a release in the [changelog](#changelog), such as `2026-11-09`. Every answer carries the version the server speaks, its latest release, in a `Peal-Version` header:
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Peal-Version: 2026-11-09
+```
+
+Send the version your client was written against in the same header. The SDKs and the command line send theirs on every request, so there's nothing to set. The server answers every client alike whatever it sends, a missing or unknown version included, and counts which versions its clients send. If a break is ever decided on, that count shows who still calls with an older version.
+
 ## Deprecations [#deprecations]
 
 A deprecated endpoint keeps answering as it always did. It says so in three places:

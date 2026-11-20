@@ -2,9 +2,14 @@ import { Effect, Layer, Option } from "effect";
 import { SecureRandom } from "effect/crypto";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 import type { HttpApi, HttpApiGroup } from "effect/http-api";
-import { Api } from "peal-contract";
+import { Api, apiVersionHeader } from "peal-contract";
 import { isRefusedPath } from "peal-contract/path-spelling";
 
+import {
+  countSentVersion,
+  countsVersion,
+  versionHeaders,
+} from "#app/api-versions.ts";
 import { deprecatedRoutes, deprecationOf } from "#app/deprecations.ts";
 import {
   enveloped,
@@ -33,6 +38,9 @@ const pathOf = (url: string) => url.split(/[?#]/u, 1)[0] ?? url;
  *   on its span, and handlers read it as `RequestId`.
  * - the headers its handler and middlewares left for it (`AnswerHeaders`):
  *   a challenge, the limits that apply.
+ * - the version of the API the server speaks, in `Peal-Version`
+ *   (`#app/api-versions.ts`). A request of the API is counted under the
+ *   version its client sent, and answered alike whatever it sent.
  * - on a deprecated endpoint of `api`, the headers that say so
  *   (`#app/deprecations.ts`).
  * - for an error of the API, the envelope (`#app/error-envelope.ts`):
@@ -73,6 +81,7 @@ export const apiAnswers = <
 
           const named = (response: HttpServerResponse.HttpServerResponse) =>
             HttpServerResponse.setHeaders(response, {
+              ...versionHeaders,
               ...deprecationOf(deprecations, request.method, path),
               ...Object.fromEntries(left),
               [requestIdHeader]: id,
@@ -84,6 +93,10 @@ export const apiAnswers = <
                 response;
 
           yield* Effect.annotateCurrentSpan(requestIdAttribute, id);
+
+          if (isEnveloped(path) && countsVersion(path)) {
+            yield* countSentVersion(request.headers[apiVersionHeader]);
+          }
 
           if (isRefusedPath(request.url)) {
             return named(

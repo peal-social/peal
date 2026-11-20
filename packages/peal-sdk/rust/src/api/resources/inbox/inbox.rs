@@ -53,6 +53,13 @@ impl InboxClient {
         request: &ListThreadsQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxThreadPage, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -104,6 +111,13 @@ impl InboxClient {
         thread_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxThreadDetail, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -152,6 +166,13 @@ impl InboxClient {
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxAbilities, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -210,6 +231,9 @@ impl InboxClient {
     ) -> Result<InboxReply, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -269,6 +293,9 @@ impl InboxClient {
     ) -> Result<InboxComment, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -330,6 +357,9 @@ impl InboxClient {
     ) -> Result<InboxComment, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -389,6 +419,9 @@ impl InboxClient {
     ) -> Result<InboxReply, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -440,6 +473,13 @@ impl InboxClient {
         reply_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxReply, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,

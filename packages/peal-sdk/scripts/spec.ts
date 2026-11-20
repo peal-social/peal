@@ -501,7 +501,26 @@ const kept: JsonObject = Object.fromEntries(
   Object.entries(document).filter(([key]) => !leftOut.has(key))
 );
 
+const apiVersion = objectAt(document, "info")["version"];
+
+if (!isString(apiVersion) || !/^\d{4}-\d{2}-\d{2}$/u.test(apiVersion)) {
+  throw new Error(
+    `The contract's document names no version of the API (info.version, a release's day): ${JSON.stringify(apiVersion)}`
+  );
+}
+
+// Each SDK sends the version of the API it was generated against on every
+// request (`Peal-Version`), a literal its users never have to set.
+const globalHeaders: Json = [
+  {
+    header: "Peal-Version",
+    name: "pealVersion",
+    type: `literal<"${apiVersion}">`,
+  },
+];
+
 const sdkDocumentContent = withEntries(kept, [
+  ["x-fern-global-headers", globalHeaders],
   [
     "components",
     {

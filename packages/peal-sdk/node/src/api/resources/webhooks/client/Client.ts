@@ -3,7 +3,7 @@
 import type { BaseClientOptions, BaseRequestOptions } from "../../../../BaseClient.js";
 import { normalizeClientOptionsWithAuth, type NormalizedClientOptionsWithAuth } from "../../../../BaseClient.js";
 import * as core from "../../../../core/index.js";
-import { mergeHeaders } from "../../../../core/headers.js";
+import { mergeHeaders, mergeOnlyDefinedHeaders } from "../../../../core/headers.js";
 import { mergeAdditionalBodyParameters } from "../../../../core/requestBody.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
@@ -50,7 +50,7 @@ export class WebhooksClient {
     private async __list(request: Peal.ListWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpoint[]>> {
         const { workspaceId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks`),
             method: "GET",
@@ -113,7 +113,7 @@ export class WebhooksClient {
     private async __create(request: Peal.NewWebhookEndpoint, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpointSecret>> {
         const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks`),
             method: "POST",
@@ -187,7 +187,7 @@ export class WebhooksClient {
             until
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/deliveries`),
             method: "GET",
@@ -249,7 +249,7 @@ export class WebhooksClient {
     private async __redeliverMany(request: Peal.RedeliverManyWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookBulkRedelivery>> {
         const { workspaceId, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/deliveries/redeliver`),
             method: "POST",
@@ -311,7 +311,7 @@ export class WebhooksClient {
     private async __get(request: Peal.GetWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpoint>> {
         const { workspaceId, endpointId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
             method: "GET",
@@ -370,7 +370,7 @@ export class WebhooksClient {
     private async __delete(request: Peal.DeleteWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<void>> {
         const { workspaceId, endpointId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
             method: "DELETE",
@@ -431,7 +431,7 @@ export class WebhooksClient {
     private async __update(request: Peal.WebhookEndpointChange, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpoint>> {
         const { workspaceId, endpointId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
             method: "PATCH",
@@ -496,7 +496,7 @@ export class WebhooksClient {
     private async __rotateSecret(request: Peal.RotateSecretWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpointSecret>> {
         const { workspaceId, endpointId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/secret`),
             method: "POST",
@@ -560,7 +560,7 @@ export class WebhooksClient {
             eventType: eventType != null ? eventType : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/test`),
             method: "POST",
@@ -627,7 +627,7 @@ export class WebhooksClient {
             status: status != null ? status : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/deliveries`),
             method: "GET",
@@ -689,7 +689,7 @@ export class WebhooksClient {
     private async __redeliver(request: Peal.RedeliverWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookDelivery>> {
         const { workspaceId, endpointId, deliveryId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/deliveries/${core.url.encodePathParam(deliveryId, errors.PealError)}/redeliver`),
             method: "POST",

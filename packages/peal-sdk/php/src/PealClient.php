@@ -265,6 +265,7 @@ class PealClient
 
     /**
      * @param ?string $token The token to use for authentication.
+     * @param ?string $pealVersion
      * @param ?array{
      *   baseUrl?: string,
      *   client?: ClientInterface,
@@ -275,9 +276,11 @@ class PealClient
      */
     public function __construct(
         ?string $token = null,
+        ?string $pealVersion = null,
         ?array $options = null,
     ) {
         $defaultHeaders = [
+            'Peal-Version' => '2026-11-09',
             'X-Fern-Language' => 'PHP',
             'X-Fern-SDK-Name' => 'Peal',
             'X-Fern-SDK-Version' => '0.3.0',
@@ -285,6 +288,9 @@ class PealClient
         ];
         if ($token != null) {
             $defaultHeaders['Authorization'] = "Bearer $token";
+        }
+        if ($pealVersion !== null) {
+            $defaultHeaders['Peal-Version'] = $pealVersion;
         }
 
         $this->options = $options ?? [];

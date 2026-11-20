@@ -3,6 +3,7 @@
 package core
 
 import (
+	fmt "fmt"
 	http "net/http"
 	url "net/url"
 )
@@ -58,6 +59,7 @@ func (r *RequestOptions) ToHeader() http.Header {
 			header.Set("Authorization", "Bearer "+token)
 		}
 	}
+	header.Set("Peal-Version", fmt.Sprintf("%v", "2026-11-09"))
 	return header
 }
 

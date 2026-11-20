@@ -3,7 +3,7 @@
 import type { BaseClientOptions, BaseRequestOptions } from "../../../../BaseClient.js";
 import { normalizeClientOptionsWithAuth, type NormalizedClientOptionsWithAuth } from "../../../../BaseClient.js";
 import * as core from "../../../../core/index.js";
-import { mergeHeaders } from "../../../../core/headers.js";
+import { mergeHeaders, mergeOnlyDefinedHeaders } from "../../../../core/headers.js";
 import { mergeAdditionalBodyParameters } from "../../../../core/requestBody.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
@@ -50,7 +50,7 @@ export class ReviewClient {
     private async __settings(request: Peal.SettingsReviewRequest, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ReviewSettings>> {
         const { workspaceId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/review/settings`),
             method: "GET",
@@ -111,7 +111,7 @@ export class ReviewClient {
     private async __updateSettings(request: Peal.UpdateSettingsReviewRequest, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ReviewSettings>> {
         const { workspaceId, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/review/settings`),
             method: "PUT",
@@ -172,7 +172,7 @@ export class ReviewClient {
     private async __pending(request: Peal.PendingReviewRequest, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ApprovalRequest[]>> {
         const { workspaceId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/approvals`),
             method: "GET",
@@ -231,7 +231,7 @@ export class ReviewClient {
     private async __thread(request: Peal.ThreadReviewRequest, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.PostReview>> {
         const { workspaceId, postId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/posts/${core.url.encodePathParam(postId, errors.PealError)}/review`),
             method: "GET",
@@ -292,7 +292,7 @@ export class ReviewClient {
     private async __comment(request: Peal.NewComment, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ReviewComment>> {
         const { workspaceId, postId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/posts/${core.url.encodePathParam(postId, errors.PealError)}/comments`),
             method: "POST",
@@ -358,7 +358,7 @@ export class ReviewClient {
     private async __resolve(request: Peal.ResolveReviewRequest, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ReviewComment>> {
         const { workspaceId, postId, commentId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/posts/${core.url.encodePathParam(postId, errors.PealError)}/comments/${core.url.encodePathParam(commentId, errors.PealError)}`),
             method: "PATCH",
@@ -425,7 +425,7 @@ export class ReviewClient {
     private async __approve(request: Peal.ApprovalDecision, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ApprovalOutcome>> {
         const { workspaceId, postId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/posts/${core.url.encodePathParam(postId, errors.PealError)}/approve`),
             method: "POST",
@@ -494,7 +494,7 @@ export class ReviewClient {
     private async __requestChanges(request: Peal.ChangesRequest, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ChangesOutcome>> {
         const { workspaceId, postId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/posts/${core.url.encodePathParam(postId, errors.PealError)}/request-changes`),
             method: "POST",
@@ -558,7 +558,7 @@ export class ReviewClient {
     private async __links(request: Peal.LinksReviewRequest, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ReviewLink[]>> {
         const { workspaceId, postId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/posts/${core.url.encodePathParam(postId, errors.PealError)}/review-links`),
             method: "GET",
@@ -619,7 +619,7 @@ export class ReviewClient {
     private async __createLink(request: Peal.NewReviewLink, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.CreatedReviewLink>> {
         const { workspaceId, postId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/posts/${core.url.encodePathParam(postId, errors.PealError)}/review-links`),
             method: "POST",
@@ -682,7 +682,7 @@ export class ReviewClient {
     private async __revokeLink(request: Peal.RevokeLinkReviewRequest, requestOptions?: ReviewClient.RequestOptions): Promise<core.WithRawResponse<Peal.ReviewLink>> {
         const { workspaceId, linkId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
         const _response = await core.fetcher({
             url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/review-links/${core.url.encodePathParam(linkId, errors.PealError)}`),
             method: "DELETE",
