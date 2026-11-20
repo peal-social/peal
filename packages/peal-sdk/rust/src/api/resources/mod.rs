@@ -12,7 +12,6 @@
 //! - **media**
 //! - **notices**
 //! - **notificationPreferences**
-//! - **overview**
 //! - **assistant**
 //! - **members**
 //! - **invitations**
@@ -71,7 +70,6 @@ pub mod media;
 pub mod members;
 pub mod notices;
 pub mod notification_preferences;
-pub mod overview;
 pub mod partner;
 pub mod partner_account;
 pub mod partner_usage;
@@ -99,7 +97,6 @@ pub struct PealClient {
     pub media: MediaClient,
     pub notices: NoticesClient,
     pub notification_preferences: NotificationPreferencesClient,
-    pub overview: OverviewClient,
     pub assistant: AssistantClient,
     pub members: MembersClient,
     pub invitations: InvitationsClient,
@@ -146,7 +143,6 @@ impl PealClient {
             media: MediaClient::new(config.clone())?,
             notices: NoticesClient::new(config.clone())?,
             notification_preferences: NotificationPreferencesClient::new(config.clone())?,
-            overview: OverviewClient::new(config.clone())?,
             assistant: AssistantClient::new(config.clone())?,
             members: MembersClient::new(config.clone())?,
             invitations: InvitationsClient::new(config.clone())?,
@@ -206,7 +202,6 @@ pub use media::MediaClient;
 pub use members::MembersClient;
 pub use notices::NoticesClient;
 pub use notification_preferences::NotificationPreferencesClient;
-pub use overview::OverviewClient;
 pub use partner::PartnerClient;
 pub use partner_account::PartnerAccountClient;
 pub use partner_usage::PartnerUsageClient;

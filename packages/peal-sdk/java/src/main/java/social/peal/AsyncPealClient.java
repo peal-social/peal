@@ -31,7 +31,6 @@ import social.peal.resources.media.AsyncMediaClient;
 import social.peal.resources.members.AsyncMembersClient;
 import social.peal.resources.notices.AsyncNoticesClient;
 import social.peal.resources.notificationpreferences.AsyncNotificationPreferencesClient;
-import social.peal.resources.overview.AsyncOverviewClient;
 import social.peal.resources.partner.AsyncPartnerClient;
 import social.peal.resources.partneraccount.AsyncPartnerAccountClient;
 import social.peal.resources.partnerusage.AsyncPartnerUsageClient;
@@ -70,8 +69,6 @@ public class AsyncPealClient implements AutoCloseable {
     protected final Supplier<AsyncNoticesClient> noticesClient;
 
     protected final Supplier<AsyncNotificationPreferencesClient> notificationPreferencesClient;
-
-    protected final Supplier<AsyncOverviewClient> overviewClient;
 
     protected final Supplier<AsyncAssistantClient> assistantClient;
 
@@ -146,7 +143,6 @@ public class AsyncPealClient implements AutoCloseable {
         this.noticesClient = Suppliers.memoize(() -> new AsyncNoticesClient(clientOptions));
         this.notificationPreferencesClient =
                 Suppliers.memoize(() -> new AsyncNotificationPreferencesClient(clientOptions));
-        this.overviewClient = Suppliers.memoize(() -> new AsyncOverviewClient(clientOptions));
         this.assistantClient = Suppliers.memoize(() -> new AsyncAssistantClient(clientOptions));
         this.membersClient = Suppliers.memoize(() -> new AsyncMembersClient(clientOptions));
         this.invitationsClient = Suppliers.memoize(() -> new AsyncInvitationsClient(clientOptions));
@@ -217,10 +213,6 @@ public class AsyncPealClient implements AutoCloseable {
 
     public AsyncNotificationPreferencesClient notificationPreferences() {
         return this.notificationPreferencesClient.get();
-    }
-
-    public AsyncOverviewClient overview() {
-        return this.overviewClient.get();
     }
 
     public AsyncAssistantClient assistant() {

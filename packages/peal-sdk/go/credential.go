@@ -1433,3 +1433,22 @@ func (c *CredentialWorkspace) String() string {
 	}
 	return fmt.Sprintf("%#v", c)
 }
+
+type OverviewRefusal string
+
+const (
+	OverviewRefusalTwoStepRequired OverviewRefusal = "twoStepRequired"
+)
+
+func NewOverviewRefusalFromString(s string) (OverviewRefusal, error) {
+	switch s {
+	case "twoStepRequired":
+		return OverviewRefusalTwoStepRequired, nil
+	}
+	var t OverviewRefusal
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (o OverviewRefusal) Ptr() *OverviewRefusal {
+	return &o
+}

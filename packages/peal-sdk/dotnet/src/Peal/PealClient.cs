@@ -43,7 +43,6 @@ public partial class PealClient : IPealClient
         Media = new MediaClient(_client);
         Notices = new NoticesClient(_client);
         NotificationPreferences = new NotificationPreferencesClient(_client);
-        Overview = new OverviewClient(_client);
         Assistant = new AssistantClient(_client);
         Members = new MembersClient(_client);
         Invitations = new InvitationsClient(_client);
@@ -95,8 +94,6 @@ public partial class PealClient : IPealClient
     public INoticesClient Notices { get; }
 
     public INotificationPreferencesClient NotificationPreferences { get; }
-
-    public IOverviewClient Overview { get; }
 
     public IAssistantClient Assistant { get; }
 

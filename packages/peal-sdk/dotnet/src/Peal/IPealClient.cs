@@ -12,7 +12,6 @@ public partial interface IPealClient
     public IMediaClient Media { get; }
     public INoticesClient Notices { get; }
     public INotificationPreferencesClient NotificationPreferences { get; }
-    public IOverviewClient Overview { get; }
     public IAssistantClient Assistant { get; }
     public IMembersClient Members { get; }
     public IInvitationsClient Invitations { get; }
