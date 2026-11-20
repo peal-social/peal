@@ -1043,24 +1043,21 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   of its own on a channel is that channel's override's `media`. The web
   app's import page (`…/posts/import`) calls `posts.import`, a dry run
   then the import; it has no bulk screen.
-- `PostAttention` counts several workspaces' posts at once for the
-  overview across workspaces (scheduled in the next 7 days, awaiting an
-  approval, finished in the last 7 days `failed` or `partiallyPublished`,
-  or `unconfirmed`, as the search's `outcome` filter names them) and lists
-  their agenda by `(scheduled_at, id)`, an excerpt of each text
-  (`excerptOf`, 140 characters as a reader counts them): ids as one
-  `anyUuid` parameter, no permission checked, as the caller decided.
+- `PostAttention` counts several workspaces' posts at once for a
+  partner's overview of its customers (scheduled in the next 7 days,
+  awaiting an approval, finished in the last 7 days `failed` or
+  `partiallyPublished`, or `unconfirmed`, as the search's `outcome` filter
+  names them): ids as one `anyUuid` parameter, no permission checked, as
+  the caller decided.
   Each count is its own read on an index that bounds it
   (`posts_workspace_scheduled_at`, `posts_workspace_awaiting_approval`,
   `posts_workspace_finished_attention`), so its cost follows what is
   counted, never the posts a workspace keeps: read such a plan on a
   database with long histories (about 20,000 posts a workspace), which
-  `seed-scale.ts`'s 90 a workspace does not show. The agenda is a keyset per
-  workspace (a lateral read on `posts_workspace_scheduled_at` from the
-  cursor, a page at most each), the text and channels read for the page's
-  rows alone.
+  `seed-scale.ts`'s 90 a workspace does not show.
   `PostAttention.week` gives one workspace's week and the week after it
-  for the weekly digest, by each post's time: three reads of
+  for the weekly digest, by each post's time, an excerpt of each text
+  (`excerptOf`, 140 characters as a reader counts them): three reads of
   `posts_workspace_scheduled_at` over the fortnight (the counts, then the
   first `listed` that went out and the first planned), whatever else the
   workspace keeps (`weekStatements`, whose plans

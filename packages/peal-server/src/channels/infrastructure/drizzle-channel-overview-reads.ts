@@ -1,10 +1,9 @@
-import { and, inArray, sql } from "drizzle-orm";
-import { Effect, Layer, Schema } from "effect";
+import { sql } from "drizzle-orm";
+import { Effect, Layer } from "effect";
 
 import { ChannelOverviewReads } from "#channels/application/channel-overview-reads.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
-import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
-import { platforms, PlatformSchema } from "#shared/domain/platform.ts";
+import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { anyUuid } from "#shared/infrastructure/any-uuid.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
@@ -15,16 +14,9 @@ const failed = (cause: unknown) => new DatabaseError({ cause });
 const counted = (condition: ReturnType<typeof sql>) =>
   sql<number>`(count(*) FILTER (WHERE ${condition}))::int`;
 
-const decodePlatforms = Schema.decodeUnknownEffect(
-  Schema.Array(
-    Schema.Struct({ channelId: ChannelIdSchema, platform: PlatformSchema })
-  )
-);
-
 /**
- * The channels' counts and platforms across workspaces, one query each,
- * every id in one parameter (`anyUuid`): on the index a workspace's
- * channels lead with, and on the channels' ids.
+ * The channels' counts across workspaces, in one query, every id in one
+ * parameter (`anyUuid`), on the index a workspace's channels lead with.
  */
 export const DrizzleChannelOverviewReads = Layer.effect(
   ChannelOverviewReads,
@@ -32,28 +24,6 @@ export const DrizzleChannelOverviewReads = Layer.effect(
     const db = yield* Drizzle;
 
     return ChannelOverviewReads.of({
-      platformsOf: (channelIds) =>
-        db
-          .select({ channelId: channels.id, platform: channels.platform })
-          .from(channels)
-          // An agenda names posts' channels, never a website's.
-          .where(
-            and(
-              anyUuid(channels.id, channelIds),
-              inArray(channels.platform, [...platforms])
-            )
-          )
-          .pipe(
-            Effect.mapError(failed),
-            Effect.flatMap((rows) => decodePlatforms(rows).pipe(Effect.orDie)),
-            Effect.map(
-              (rows) =>
-                new Map(
-                  rows.map(({ channelId, platform }) => [channelId, platform])
-                )
-            ),
-            Effect.withSpan("ChannelOverviewReads.platformsOf")
-          ),
       statesIn: (workspaceIds) =>
         db
           .select({

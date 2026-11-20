@@ -23,7 +23,7 @@ const decodeLocale = Schema.decodeUnknownOption(
   Schema.Literals(routing.locales)
 );
 
-// A path that opens in a language of its own: /fr, /fr/agenda, /fr?x.
+// A path that opens in a language of its own: /fr, /fr/posts, /fr?x.
 const localePrefix = new RegExp(
   `^/(?:${routing.locales.join("|")})(?:[/?#]|$)`,
   "u"

@@ -7,8 +7,7 @@ import {
 } from "./overview.ts";
 
 /**
- * What needs attention in one of a partner's customers' workspaces, in the
- * figures and words of the overview across a person's workspaces. A
+ * What needs attention in one of a partner's customers' workspaces. A
  * section is null where the credential may not read it (a key without
  * `channel:read`, `post:read` or `engagement:read`), which is not the
  * same as nothing to attend, which answers zeros.

@@ -2,8 +2,7 @@ import { Context } from "effect";
 import type { Effect } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
-import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
-import type { Platform } from "#shared/domain/platform.ts";
+import type { WorkspaceId } from "#shared/domain/ids.ts";
 
 /**
  * A workspace's channels by status: how many it has connected, how many
@@ -26,8 +25,5 @@ export class ChannelOverviewReads extends Context.Service<
       ReadonlyMap<WorkspaceId, ChannelStateCounts>,
       DatabaseError
     >;
-    readonly platformsOf: (
-      channelIds: readonly ChannelId[]
-    ) => Effect.Effect<ReadonlyMap<ChannelId, Platform>, DatabaseError>;
   }
 >()("peal-server/channels/application/ChannelOverviewReads") {}

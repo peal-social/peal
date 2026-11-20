@@ -1,4 +1,4 @@
-/** How many characters of a post's text a list across workspaces shows. */
+/** How many characters of a post's text a list of posts shows, as the digest does. */
 export const excerptLength = 140;
 
 const graphemes = new Intl.Segmenter("en", { granularity: "grapheme" });

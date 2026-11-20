@@ -221,8 +221,8 @@ export const EngagementWorkersLive = Layer.mergeAll(
 export { EngagementCronsLive } from "#engagement/infrastructure/crons.ts";
 
 /**
- * How many threads of several workspaces wait for an answer, for the view
- * across a person's workspaces (InboxWaiting). Needs the database
+ * How many threads of several workspaces wait for an answer, for a
+ * partner's view of its customers (InboxWaiting). Needs the database
  * (Drizzle).
  */
 export const InboxWaitingLive = InboxWaiting.layer.pipe(

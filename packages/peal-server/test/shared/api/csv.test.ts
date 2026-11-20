@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { csvLine } from "#shared/api/csv.ts";
 
-// The one CSV writer of the API's files, which another workspace's owner
-// may write a cell of (its name, in the report across workspaces).
+// The one CSV writer of the API's files, whose cells may hold text from
+// outside (a platform's permalink, in the analytics export).
 
 describe(csvLine, () => {
   it("quotes every text cell, doubles its quotes, and writes numbers and nothing as they are", () => {

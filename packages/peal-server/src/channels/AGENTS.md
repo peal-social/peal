@@ -14,9 +14,9 @@
   and decrypting with `UnknownTokenKey`. A malformed keyring stops the server
   at startup. `token_key_id` records which key encrypted a row.
 - `ChannelOverview` counts several workspaces' channels by status at once
-  (connected, `refreshNeeded` to reconnect, `disabled` off) and gives the
-  platforms of the channels an agenda names, for the overview across
-  workspaces: ids as one `anyUuid` parameter, no permission checked.
+  (connected, `refreshNeeded` to reconnect, `disabled` off), for a
+  partner's overview of its customers: ids as one `anyUuid` parameter, no
+  permission checked.
 - A channel added (`ConnectChannel.addChannel`, or a move, below) is
   counted for billing in the same `addingTo` transaction, after
   the insert: `ChannelAllowance.counted` with the pool's count, which only

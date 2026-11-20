@@ -213,12 +213,6 @@ const coverage = {
   "notices.unread": exempt(inbox),
   "notificationPreferences.get": exempt(inbox),
   "notificationPreferences.update": exempt(inbox),
-  "overview.agenda": by("agenda"),
-  "overview.get": by("overview"),
-  "overview.report": by("report"),
-  "overview.reportExport": exempt(
-    "A file the server streams: peal report --csv saves it and prints where, so there is no JSON answer to print."
-  ),
   "partner.account": exempt(partnerApi),
   "partner.createWorkspace": exempt(partnerApi),
   "partner.deleteWorkspace": exempt(partnerApi),

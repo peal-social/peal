@@ -23,8 +23,8 @@ import {
   freshWorkspace,
 } from "#test/channels/support.ts";
 
-// The report across workspaces, in Postgres, against each workspace's own
-// dashboard over the same range. The rows are workspaces of the test's
+// The weekly digest's figures across workspaces, in Postgres, against
+// each workspace's own dashboard over the same range. The rows are workspaces of the test's
 // own, in 2048, which no other suite uses, and are deleted after.
 
 const AcrossTest = Layer.mergeAll(AnalyticsLive, DrizzleTrackedPosts).pipe(
@@ -63,7 +63,7 @@ const forgetSnapshots = (channelIds: readonly ChannelId[]) =>
       sql`DELETE FROM analytics.account_snapshots WHERE channel_id IN ${sql.in(channelIds)}`
   ).pipe(Effect.orDie);
 
-layer(AcrossTest)("the report across workspaces", (it) => {
+layer(AcrossTest)("the figures across workspaces", (it) => {
   it.effect(
     "gives each workspace the totals and followers its own dashboard gives, and none to one without posts",
     () =>
