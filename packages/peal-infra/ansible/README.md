@@ -587,22 +587,16 @@ services issue reaches it in one of two ways:
   `inventory/group_vars/<environment>/vault.yml`, which Git ignores, fill it
   in, encrypt it with `uv run ansible-vault encrypt`, and add
   `--ask-vault-pass` to every run. Ansible writes the values to the server and
-  never prints them. On a Mac, keep the vault's password in a password
-  manager and a copy in the login keychain, which scripts can read, with no
-  trusted application, so macOS asks before each read (allow it once,
-  never "Always Allow"):
-
-  ```sh
-  security add-generic-password -a peal -s peal-ansible-vault-sandbox -T "" -U -w
-  ```
-
-  `security` then asks for the password, without showing it. Runs then name
-  the vault and `scripts/vault-keychain-client.py`, which Ansible calls with
-  the vault's id, instead of `--ask-vault-pass`:
+  never prints them. Keep the vault's password in Proton Pass, as the field
+  `ANSIBLE_VAULT_PASSWORD` of the item `Ansible vault · <environment>` in the
+  vault `Peal` (or the one `PEAL_PASS_VAULT` names), which `pass-cli` reads
+  once `pass-cli login` signed it in. Runs then name the vault and
+  `scripts/vault-pass-client.py`, which Ansible calls with the vault's id,
+  instead of `--ask-vault-pass`:
 
   ```sh
   uv run ansible-playbook playbooks/site.yml --limit sandbox \
-    --vault-id sandbox@scripts/vault-keychain-client.py
+    --vault-id sandbox@scripts/vault-pass-client.py
   ```
 
 - **On the server**: leave the vault out and write the same values there, as
@@ -621,7 +615,7 @@ vault. After each `pulumi up` of the environment, run
 
 ```sh
 uv run python scripts/cloudflare_from_pulumi.py \
-  --vault-id sandbox@scripts/vault-keychain-client.py      # or production@…
+  --vault-id sandbox@scripts/vault-pass-client.py      # or production@…
 ```
 
 then `site.yml`. With `--vault-id uptime@…`, it writes the uptime server's
@@ -1228,7 +1222,7 @@ resource. Then:
    from the sandbox's stack, naming what it changed, never a value:
 
    ```sh
-   uv run python scripts/cloudflare_from_pulumi.py --vault-id uptime@scripts/vault-keychain-client.py
+   uv run python scripts/cloudflare_from_pulumi.py --vault-id uptime@scripts/vault-pass-client.py
    ```
 
    Or write them all on the server, as `NAME='value'` lines, after step 3

@@ -144,7 +144,7 @@ and `…_SECRET`, from `group_vars/uptime/vault.yml` made from
 
 ```sh
 cd ../ansible
-uv run python scripts/cloudflare_from_pulumi.py --vault-id uptime@scripts/vault-keychain-client.py
+uv run python scripts/cloudflare_from_pulumi.py --vault-id uptime@scripts/vault-pass-client.py
 ```
 
 then `uptime.yml`. The token lasts a year (`duration: 8760h`, in
@@ -173,9 +173,10 @@ certificates.
 The state is in R2's EU jurisdiction, in `peal-infra-state`
 (`backend.url` in each `Pulumi.yaml`), and its secrets are encrypted with a
 passphrase. `scripts/pulumi.ts` runs the Pulumi CLI in a project with what
-it needs, unless already set in the environment, read from one item of the
-owner's login keychain, `peal-pulumi`, and handed to Pulumi in its
-environment alone, never a file:
+it needs, unless already set in the environment, read with `pass-cli` from
+the fields of the Proton Pass item `Pulumi` in the vault `Peal` (or the one
+`PEAL_PASS_VAULT` names), each named like its variable, and handed to Pulumi
+in its environment alone, never a file:
 
 | Variable                                     | What it is                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -183,14 +184,8 @@ environment alone, never a file:
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | An R2 key with Object Read & Write on `peal-infra-state` alone                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `PULUMI_CONFIG_PASSPHRASE`                   | The passphrase of the stacks' secrets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
-The password manager holds them; the keychain item is a copy for the
-scripts, which a password manager's own keychain does not let them read.
-`bun scripts/keychain.ts` writes it: copy each value from the password
-manager when it asks, and it reads the clipboard, then empties it. The
-item trusts no application, so macOS asks before each run reads it: allow
-it once, never "Always Allow", which would let any program of the session
-read it unasked. Without the passphrase, the stacks' secrets cannot be
-read: keep it in the password manager.
+Sign `pass-cli` in once with `pass-cli login`. Without the passphrase, the
+stacks' secrets cannot be read: Proton Pass is where it is kept.
 
 ```sh
 cd packages/peal-infra/pulumi

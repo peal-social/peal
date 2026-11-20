@@ -1,23 +1,23 @@
 import path from "node:path";
 
 // Runs the Pulumi CLI in one of this package's projects, with the
-// credentials it needs read from the owner's login keychain (README.md,
+// credentials it needs read from Proton Pass through `pass-cli` (README.md,
 // "State and credentials"):
 //
 //   bun scripts/pulumi.ts <account|environment> <pulumi arguments…>
 //
-// Each variable already set wins, as in CI, and the keychain is read only
-// when one is missing: macOS then asks the owner to allow it. They reach
-// Pulumi in its environment alone, never a file. Nothing here prints a
-// secret.
+// Each variable already set wins, as in CI, and Proton Pass is read only for
+// the missing ones, once `pass-cli login` signed it in. They reach Pulumi in
+// its environment alone, never a file. Nothing here prints a secret.
 import { Option } from "effect";
 
 import {
+  credentialFrom,
   credentialNames,
-  credentialsFrom,
-  keychainAccount,
-  keychainService,
+  defaultPassVault,
+  passItem,
 } from "./credentials.ts";
+import type { CredentialName } from "./credentials.ts";
 
 const [project, ...args] = process.argv.slice(2);
 
@@ -28,41 +28,47 @@ if (project !== "account" && project !== "environment") {
   process.exit(2);
 }
 
+const vault = process.env["PEAL_PASS_VAULT"] ?? defaultPassVault;
+
 const missing = credentialNames.filter(
   (name) => process.env[name] === undefined
 );
 
-const env: Record<string, string> = {};
-
-if (missing.length > 0) {
+// One field of the item, or none when `pass-cli` gives nothing usable.
+const fieldOf = (name: CredentialName): Option.Option<string> => {
   const found = Bun.spawnSync(
     [
-      "security",
-      "find-generic-password",
-      "-a",
-      keychainAccount,
-      "-s",
-      keychainService,
-      "-w",
+      "pass-cli",
+      "item",
+      "view",
+      "--vault-name",
+      vault,
+      "--item-title",
+      passItem,
+      "--field",
+      name,
     ],
     { stderr: "ignore", stdin: "ignore", stdout: "pipe" }
   );
 
-  const credentials =
-    found.exitCode === 0
-      ? credentialsFrom(found.stdout.toString().trim())
-      : Option.none();
+  return found.exitCode === 0
+    ? credentialFrom(found.stdout.toString())
+    : Option.none();
+};
 
-  if (Option.isNone(credentials)) {
+const env: Record<string, string> = {};
+
+for (const name of missing) {
+  const value = fieldOf(name);
+
+  if (Option.isNone(value)) {
     console.error(
-      `No usable keychain item "${keychainService}": run \`bun scripts/keychain.ts\` (README.md), or allow the keychain's prompt. Missing: ${missing.join(", ")}.`
+      `No field ${name} in "${passItem}" of the Proton Pass vault "${vault}", or pass-cli is not signed in (pass-cli login; README.md).`
     );
     process.exit(1);
   }
 
-  for (const name of missing) {
-    env[name] = credentials.value[name];
-  }
+  env[name] = value.value;
 }
 
 const run = Bun.spawn(["pulumi", ...args], {
