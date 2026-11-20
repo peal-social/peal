@@ -299,37 +299,15 @@ Une fois l’espace de travail supprimé, Peal envoie une confirmation à votre 
 
 ## Dans tous vos espaces de travail [#across-workspaces]
 
-À la connexion, ou quand vous allez à l’adresse de Peal, vous arrivez dans l’espace de travail que vous avez créé ou choisi en dernier, sinon dans le premier des vôtres. À l’inscription, Peal vous demande de nommer votre premier espace de travail et de choisir son adresse. Il remplit les deux pour vous (_Espace d’Ada_, à `/espace-dada`), et vous pouvez changer l’un ou l’autre, tant qu’aucun autre espace n’a cette adresse. Si une invitation vous attend, vous rejoignez cet espace à la place. Vous pourrez changer le nom et l’adresse plus tard dans les réglages généraux de l’espace.
+À la connexion, ou quand vous allez à l’adresse de Peal, vous arrivez dans l’espace de travail que vous avez créé ou choisi en dernier, sinon dans le premier des vôtres. À l’inscription, une page à part vous demande de nommer votre premier espace de travail et de choisir son adresse. Il remplit les deux pour vous (_Espace d’Ada_, à `/espace-dada`), et vous pouvez changer l’un ou l’autre, tant qu’aucun autre espace n’a cette adresse. Si une invitation vous attend, vous rejoignez cet espace à la place. Vous pourrez changer le nom et l’adresse plus tard dans les réglages généraux de l’espace.
 
-Pour créer un autre espace de travail, ouvrez le menu des espaces en haut de la barre latérale et cliquez sur **Nouvel espace de travail**. Les pages d’un espace ont une adresse tirée de son nom, comme `/acme-studio/posts`. Cette adresse ne change pas quand vous renommez l’espace, et les liens qui contiennent l’identifiant de l’espace, comme ceux des e-mails de Peal, mènent à la même page.
+Pour créer un autre espace de travail, ouvrez le menu des espaces en haut de la barre latérale et cliquez sur **Nouvel espace de travail**, qui ouvre la même page, le nom vide. **Retour**, en haut, ramène à votre espace de travail. Les pages d’un espace ont une adresse tirée de son nom, comme `/acme-studio/posts`. Cette adresse ne change pas quand vous renommez l’espace, et les liens qui contiennent l’identifiant de l’espace, comme ceux des e-mails de Peal, mènent à la même page.
 
-La barre latérale de vos propres pages liste vos espaces de travail, et deux pages qui les couvrent tous.
-
-### Agenda [#agenda]
-
-Cliquez sur **Agenda** dans la barre latérale de vos pages pour voir ce qui part ces 14 prochains jours, dans chaque espace où vous pouvez lire les publications. La liste suit les jours, dans votre fuseau horaire.
-
-Chaque ligne donne l’heure de la publication, son espace, ses plateformes et le début de son texte, avec un lien vers la publication dans son espace. Pour ne voir qu’un espace, sélectionnez-le sous **Espace**.
-
-L’agenda est une liste, pas la semaine du calendrier. Pour déplacer une publication, passez par le calendrier de son propre espace.
-
-### Rapport de tous les espaces [#report]
-
-Cliquez sur **Rapport** dans la barre latérale de vos pages pour ouvrir **Rapport de tous les espaces**. C’est un tableau de ce qui est parti dans chaque espace sur les 7, 30 ou 90 derniers jours et de ce que cela a donné, chaque chiffre à côté des jours d’avant. Il compte comme la [page des statistiques](/guides/engage/analytics#page) de chaque espace : publications parues, engagement, j’aime, partages, réponses, citations, impressions, clics, portée et enregistrements, et abonnés.
-
-Pour bien le lire :
-
-- Les jours suivent le fuseau horaire de votre navigateur, qu’une ligne au-dessus du tableau indique.
-- Un tiret marque un compte qu’aucune plateforme de l’espace ne donne.
-- Aucun changement n’est affiché par rapport à des jours d’avant que les conditions d’une plateforme ne permettent plus à Peal de garder.
-- Un espace dont votre rôle ne permet pas de lire les statistiques le dit.
-- Les plateformes ne comptent pas de la même façon : le rapport est donc un tableau, pas un graphique. Comparez un espace avec lui-même, pas avec un autre.
-
-Cliquez sur **Télécharger le CSV** pour l’enregistrer, une ligne par espace. Un texte qu’un tableur lirait comme une formule, comme un espace nommé `=SOMME(…)`, est écrit précédé d’une apostrophe, pour que le fichier n’exécute rien à l’ouverture.
+Votre compte et vos notifications sont à vous dans chaque espace de travail : ils sont sous **Paramètres** dans chacun, après les réglages de l’espace ([Compte](/guides/workspace/account), [Notifications](/guides/workspace/notifications)).
 
 ### Par l’API et la ligne de commande [#across-workspaces-api]
 
-Ces points d’accès disent ce qui demande votre attention dans chaque espace de travail (publications en échec, publications qui attendent une approbation, canaux à reconnecter, commentaires à traiter, espace au-delà de son offre), et répondent la même chose que l’agenda et le rapport :
+L’application n’a pas de page qui couvre tous les espaces, mais ces points d’accès disent ce qui demande votre attention dans chaque espace de travail (publications en échec, publications qui attendent une approbation, canaux à reconnecter, commentaires à traiter, espace au-delà de son offre), ce qui part dans l’ensemble, et ce que chacun a donné :
 
 - `GET /api/me/overview`
 - `GET /api/me/agenda`, avec `from` et `to` (à 31 jours d’écart au plus) et `workspaceIds` (séparés par des virgules)

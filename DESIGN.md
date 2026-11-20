@@ -702,14 +702,14 @@ the word in muted text and in the reader's language.
 
 ### The frame
 
-Every signed-in page has the same frame: the sidebar on the
-page's `background`, and the page in a white panel beside it. There is no
-bar across the top.
+Every signed-in page has the same frame, but the setup page (below): the
+sidebar on the page's `background`, and the page in a white panel beside
+it. There is no bar across the top.
 
 - **`sidebar`**, 240 px, on `background`, with no border:
   - Its **head** (`sidebar-head`, 48 px): the workspace switcher (the
-    workspace's tile, its name, a chevron; on the person's own pages, the
-    person), then at the end two ghost icon buttons, **Search** (the
+    workspace's tile, its name, a chevron; its menu ends with **New
+    workspace**, the setup page), then at the end two ghost icon buttons, **Search** (the
     command menu, ⌘K) and **New post** (C), each with a tooltip naming it
     and its key.
   - Under it, the **mode switch**, with the Peal mark inside it:
@@ -736,8 +736,9 @@ bar across the top.
   at its start, under the sidebar, the **account**: the
   person's round avatar alone (their picture, or their initial on the
   blue tint), a blue dot at its corner while notifications wait unread.
-  It opens their menu: Notifications (with the unread count), Agenda,
-  Report, Account (where the language is chosen), then Sign out. At the
+  It opens their menu: Notifications (with the unread count), Account
+  (where the language is chosen), both pages of the workspace's Settings,
+  then Sign out. At the
   bar's end, **Help** (Docs, Support, Keyboard shortcuts) and the
   **agent's** place: "Agent" and History as ghost buttons, shown and off
   until the agent comes, a tooltip saying so. No bell, no language
@@ -752,14 +753,21 @@ bar across the top.
   edge; forms and settings in a column 48 rem wide at most, 24 px from
   the header; full-bleed tools (the calendar, the inbox, the composer)
   fill the panel.
-- **`setup`**: the one page where someone with no workspace makes their
-  first (`/`). Its header stays empty; the content is a column 24 rem
-  wide, centred, 12 vh from the top: a title (`headline`, centred, the
-  page's `h1`) with one muted line under it, then the form: **Name**,
+- **`setup`**: the page where a workspace is made: someone with no
+  workspace makes their first at `/`, and **New workspace** opens it at
+  `/create`, the name empty. It has no frame of the app's, no sidebar and
+  no bottom bar: the window's `background` alone, as a sign-in page. A
+  bar 48 px high across its top holds, at its start, **Back** (a small
+  ghost button, an arrow first) to the person's workspace when they have
+  one, and at its end "Signed in as …" in muted text with **Sign out**
+  (a small ghost button); the contract functions close the page, in small
+  muted text. The content is a column 24 rem wide, centred, 96 px from
+  the top: a title (`headline`, centred, the page's `h1`) with one muted
+  line under it, then the form: **Name**,
   then **URL** as one field: the site's address in a segment of its own
   (peal-ui's `InputGroupAddon variant="segment"`: `{colors.surface-2}`,
   muted text, a hairline after it), then what the person types, and the
-  button the column's width. **New workspace** uses the same form. Under the URL,
+  button the column's width. Under the URL,
   only what stops the workspace being made (taken, or a word it cannot
   be), in destructive text. Only this page draws its own title.
 - The contract functions close the panel's content, in small muted text.
@@ -768,14 +776,14 @@ PealStudio holds Home, Calendar, Posts, Channels and Media, then Inbox,
 Analytics and Ads under Engage. PealAPI holds Platforms, then API keys and
 Webhooks under Build, and Partner under Partners; a page the API offers
 later (connect links, activity, usage, OAuth apps) joins it there. The
-person's own pages, outside any workspace (the overview, the agenda, the
-report, the notifications, the account), have a sidebar of their own, with
-their workspaces under it.
+person's own pages (Account, Notifications, Notification preferences) are
+in every workspace's Settings, after the workspace's own: there is no page
+across workspaces, and no sidebar of the person's.
 
 **Page names.** A page has one name, used in the sidebar, the breadcrumb,
-its title and the browser's tab ("Posts · Synthetic studio", and "Report
-· Peal" on the person's own pages): the short
-one (Posts, Notifications, Billing, Account, Report). A page
+its title and the browser's tab ("Posts · Synthetic studio", and "Create
+a workspace · Peal" on the setup page): the short
+one (Posts, Notifications, Billing, Account). A page
 that opens one item is named after the item's kind (Comment, Message,
 Review). A state of a list is a tab of its page, never a page of its own:
 drafts and the posts that need an approval are tabs of Posts. Home keeps "Write once." as a greeting under the name.
@@ -865,7 +873,7 @@ way, so a person who learns one screen knows them all.
   direction, and where a screen has them, grouping and its other views
   (list, calendar).
 - **`period-menu`** — Wherever a screen shows a span of days (Analytics,
-  Report, usage), **Period** chooses it: a small outline button (30 px)
+  usage), **Period** chooses it: a small outline button (30 px)
   with a calendar icon and the span's name ("Last 30 days"), opening a
   menu (level 3) of the spans the screen offers, the chosen one ticked. It
   sits in the page's actions, or at the end of the header of the card it
@@ -873,10 +881,10 @@ way, so a person who learns one screen knows them all.
   card with a span of its own beside the page's takes a key of its own
   (`?bestTimes=`).
 - **Time zone** — A screen that places posts at times or counts by day
-  (Calendar, Analytics, Report) says once which zone it reads them in:
+  (Calendar, Analytics) says once which zone it reads them in:
   one line in `{typography.caption}`, muted, at the end of the content's
   first row (beside the dates the calendar names, under the Period on
-  Analytics and the Report): "Times are in your time zone, Europe/Paris." The zone is
+  Analytics): "Times are in your time zone, Europe/Paris." The zone is
   the browser's, so the line appears once the page has hydrated. It is
   not a description, and never sits in the panel's header.
 - What a list shows lives in the page's **address**: a reload, the back

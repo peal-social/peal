@@ -398,9 +398,9 @@ Posts really go out, so use an account you can post test messages from.
    post appears on the **Calendar**.
 5. Keep the server running: at that time it publishes the post. The post's
    page then shows **Published** for the channel, with its attempts, and
-   **Post again** where it failed. The bell in the header counts a new
-   notification within 30 seconds, and <http://localhost:3001/app/notices>
-   lists it.
+   **Post again** where it failed. A blue dot on your avatar, at the
+   bottom left, shows a new notification within 30 seconds, and
+   **Notifications**, under the workspace's **Settings**, lists it.
 
 Emails about posts that failed, or may have gone out unconfirmed, land in
 Mailpit. A published post is not emailed until you turn it on in the
