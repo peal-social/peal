@@ -43,6 +43,7 @@ import { useTranslations } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -325,23 +326,27 @@ export const SidebarView = ({
           <DropdownMenuContent align="start" side="bottom" className="w-56">
             {others.length === 0 ? null : (
               <>
-                <DropdownMenuLabel>{t("workspaces.switch")}</DropdownMenuLabel>
-                {others.map(({ id, name, slug }) => (
-                  <DropdownMenuItem
-                    key={id}
-                    render={
-                      <LinkTo
-                        href={workspacePath(slug)}
-                        onClick={() => {
-                          onChooseWorkspace?.(id);
-                          navigated();
-                        }}
-                      >
-                        {name}
-                      </LinkTo>
-                    }
-                  />
-                ))}
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>
+                    {t("workspaces.switch")}
+                  </DropdownMenuLabel>
+                  {others.map(({ id, name, slug }) => (
+                    <DropdownMenuItem
+                      key={id}
+                      render={
+                        <LinkTo
+                          href={workspacePath(slug)}
+                          onClick={() => {
+                            onChooseWorkspace?.(id);
+                            navigated();
+                          }}
+                        >
+                          {name}
+                        </LinkTo>
+                      }
+                    />
+                  ))}
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
               </>
             )}
