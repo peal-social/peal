@@ -51,6 +51,9 @@
   --brand-text: #2f47c9;
   --lavender: #b9a6ff;
   --sun: #ffca00;
+  /* Google's blue, for Continue with Google alone (DESIGN.md, Colors). */
+  --google-blue: #1a73e8;
+  --google-blue-hover: #1765cc;
   /* Code's syntax (DESIGN.md, Code): text colours the palette already
      has, on muted, each past 4.5:1 there. The site's Shiki theme names
      these variables, never the values. */

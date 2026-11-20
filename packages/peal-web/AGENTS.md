@@ -923,8 +923,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   two-step verification and closing need it first (`needsPassword`).
 - Creating an account accepts the terms of service: the sign-up page
   says so under every way to sign up (`SignUpTerms`), linking
-  `PEAL_TERMS_URL` and, when set, `PEAL_PRIVACY_URL` (`#billing/terms.ts`,
-  read at request time). Keep that line.
+  `PEAL_TERMS_URL` and, when set, `PEAL_PRIVACY_URL` and `PEAL_DPA_URL`
+  (`#billing/terms.ts`, read at request time; `documentsOf` picks the
+  sentence). Keep that line.
 - `src/proxy.ts` rewrites `/api/*` and `/.well-known/oauth-*` to
   `PEAL_API_URL`, read per request. Keep it there, not in `next.config.ts`:
   Next resolves config rewrites at build time and writes the URL into the

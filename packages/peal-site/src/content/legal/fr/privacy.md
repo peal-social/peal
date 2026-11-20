@@ -6,7 +6,7 @@ draft: false
 
 Date d’entrée en vigueur : 13 novembre 2026
 
-Dernière mise à jour : 19 novembre 2026
+Dernière mise à jour : 20 novembre 2026
 
 ## À propos de cette politique
 
@@ -184,7 +184,7 @@ Aucune décision produisant des effets juridiques ou des effets similaires signi
 
 L’application, à l’adresse app.peal.social, n’utilise que ce qui lui est nécessaire pour fonctionner, et ne demande donc pas de consentement pour cela :
 
-- les cookies de connexion, dont le nom commence par `peal.` : votre session, pendant 30 jours et renouvelée chaque jour où vous utilisez Peal ; une copie de courte durée de celle-ci, pendant 5 minutes ; la seconde étape de connexion en cours, et le navigateur que vous avez choisi de lui faire confiance, pendant 30 jours ; et, pour l’équipe de Peal, la session dans laquelle elle agit pour un compte, pendant une heure ;
+- les cookies de connexion, dont le nom commence par `peal.` : votre session, pendant 30 jours et renouvelée chaque jour où vous utilisez Peal ; une copie de courte durée de celle-ci, pendant 5 minutes ; la seconde étape de connexion en cours, et le navigateur que vous avez choisi de lui faire confiance, pendant 30 jours ; pour l’équipe de Peal, la session dans laquelle elle agit pour un compte, pendant une heure ; et `peal.last-sign-in`, le moyen de votre dernière connexion sur ce navigateur (e-mail, Google ou le fournisseur de votre serveur, rien d’autre), pour que la page de connexion le propose en premier, pendant 30 jours ;
 - `peal_connect_link`, pendant que vous connectez un compte par un lien de connexion, pendant 30 minutes ;
 - `NEXT_LOCALE`, la langue des pages, jusqu’à la fermeture du navigateur ;
 - dans le stockage du navigateur : le format horaire que vous avez choisi (`peal.hour-format`) ; jusqu’à la fermeture de l’onglet, la connexion à une plateforme que vous avez commencée, pour que Peal puisse la terminer à votre retour ; et, un instant, `peal.measurement-news`, qui prévient vos autres onglets de Peal que vous avez changé votre choix sur la mesure d’usage ou que vous vous êtes déconnecté, et qui est supprimé dès qu’il est écrit ;
@@ -208,6 +208,7 @@ Nous prévenons par e-mail les titulaires de compte au moins 30 jours avant qu�
 
 Modifications depuis la première publication de cette politique :
 
+- 20 novembre 2026 : l’application garde le moyen de votre dernière connexion sur un navigateur dans le cookie `peal.last-sign-in` pendant 30 jours, pour que sa page de connexion le propose en premier.
 - 19 novembre 2026 : ce site, la documentation et le blog comptent les visites avec PostHog, sans rien enregistrer dans votre navigateur, à la place de Plausible ; et, seulement une fois que vous l’autorisez, suivent vos visites sous un seul cookie et les relient au compte que vous créez dans ce navigateur, ce que vous pouvez refuser ou retirer dans les Paramètres des cookies.
 - 19 novembre 2026 : chaque jour, pour une organisation qui a un compte connecté, le nombre de ses comptes connectés et de ses membres, la taille de ses médias et ses requêtes à l’assistant de rédaction rejoignent les événements de mesure d’usage du produit, sous l’identifiant de l’organisation.
 - 18 novembre 2026 : là où nous mesurons l’usage de l’application, les pages vues et les erreurs, de façon anonyme et sans rien enregistrer dans votre navigateur ; et, seulement une fois que vous l’autorisez, les mêmes sous votre compte, des enregistrements masqués de vos sessions et l’identifiant de votre session dans le stockage de votre navigateur, que vous pouvez retirer sur la page de votre compte ; PostHog reçoit les événements de l’application par l’adresse de Peal.

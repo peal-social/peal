@@ -28,6 +28,16 @@ const MethodIcon = ({ method }: { readonly method: SignInMethod }) => {
   );
 };
 
+// The first way is the page's main action, in Google's colours when it
+// is Google's (DESIGN.md, Icons); every other is an outline button.
+const variantOf = (method: SignInMethod, index: number) => {
+  if (index > 0) {
+    return "outline";
+  }
+
+  return method === "google" ? "google" : "default";
+};
+
 /**
  * The ways to sign in, as markup: one button each, the width of the
  * column, the one this browser used last first and the page's main
@@ -66,7 +76,7 @@ export const SignInChoicesView = ({
           <Button
             type="button"
             size="lg"
-            variant={index === 0 ? "default" : "outline"}
+            variant={variantOf(method, index)}
             disabled={pending && method !== "email"}
             focusableWhenDisabled
             onClick={() => {

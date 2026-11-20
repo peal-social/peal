@@ -8,6 +8,7 @@ import { lastSignInOf, methodsOf } from "#auth/last-sign-in.ts";
 import { needsPassword } from "#auth/password-state.ts";
 import { SetPasswordView } from "#components/account/set-password.tsx";
 import { SignInChoicesView } from "#components/auth/sign-in-choices.tsx";
+import { SignUpTerms } from "#components/auth/sign-up-terms.tsx";
 
 import { ignore, render } from "../two-step/render.tsx";
 
@@ -168,5 +169,55 @@ describe("Google's mark", () => {
 
   it("draws with paths alone, which every browser renders", () => {
     expect(asset().toString("utf-8")).not.toContain("foreignObject");
+  });
+});
+
+const terms = "https://peal.example.test/terms";
+const privacy = "https://peal.example.test/privacy";
+const dpa = "https://peal.example.test/dpa";
+
+const textOf = (html: string) => html.replaceAll(/<[^>]+>/gu, "");
+
+describe("the sign-up's terms line", () => {
+  it.each([
+    [null, null, "By signing up, you agree to the terms of service."],
+    [
+      privacy,
+      null,
+      "By signing up, you agree to the terms of service and the privacy policy.",
+    ],
+    [
+      null,
+      dpa,
+      "By signing up, you agree to the terms of service and the data processing agreement.",
+    ],
+    [
+      privacy,
+      dpa,
+      "By signing up, you agree to the terms of service, the privacy policy and the data processing agreement.",
+    ],
+  ])(
+    "names the documents the server links (%s, %s)",
+    async (privacyUrl, dpaUrl, sentence) => {
+      const html = await render(
+        "en",
+        <SignUpTerms termsUrl={terms} privacyUrl={privacyUrl} dpaUrl={dpaUrl} />
+      );
+
+      expect(textOf(html)).toBe(sentence);
+      expect(html).toContain(`href="${terms}"`);
+    }
+  );
+
+  it("speaks French", async () => {
+    const html = await render(
+      "fr",
+      <SignUpTerms termsUrl={null} privacyUrl={privacy} dpaUrl={dpa} />
+    );
+
+    expect(textOf(html)).toBe(
+      "En vous inscrivant, vous acceptez les conditions d’utilisation, la politique de confidentialité et l’accord de traitement des données."
+    );
+    expect(html).toContain(`href="${dpa}"`);
   });
 });

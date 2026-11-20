@@ -35,6 +35,21 @@ export const privacyUrlConfig = Config.option(
 );
 
 /**
+ * Where the operator publishes the data processing agreement (GDPR
+ * Article 28), which the sign-up page links to: PEAL_DPA_URL, read at
+ * request time; none when it is unset or empty.
+ */
+export const dpaUrlConfig = Config.option(Config.String("PEAL_DPA_URL")).pipe(
+  Config.map((url) =>
+    url.pipe(
+      Option.map((value) => value.trim()),
+      Option.filter((value) => value !== ""),
+      Option.getOrNull
+    )
+  )
+);
+
+/**
  * Where to write for more than the largest plan allows: PEAL_CONTACT_URL,
  * an address of a page or a `mailto:`, read at request time; none when it
  * is unset or empty, and the app then says to write to whoever runs the

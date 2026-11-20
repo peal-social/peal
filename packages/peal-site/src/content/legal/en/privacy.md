@@ -6,7 +6,7 @@ draft: false
 
 Effective date: 13 November 2026
 
-Last updated: 19 November 2026
+Last updated: 20 November 2026
 
 ## About this policy
 
@@ -184,7 +184,7 @@ No decision with legal or similarly significant effects on you is made solely by
 
 The app at app.peal.social uses only what it needs to work, so it asks no consent for these:
 
-- the sign-in cookies, whose names start with `peal.`: your session, for 30 days and renewed each day you use Peal; a short-lived copy of it, for 5 minutes; the second sign-in step in progress, and the browser you chose to trust for it, for 30 days; and, for Peal's staff, the session they act in for an account, for an hour;
+- the sign-in cookies, whose names start with `peal.`: your session, for 30 days and renewed each day you use Peal; a short-lived copy of it, for 5 minutes; the second sign-in step in progress, and the browser you chose to trust for it, for 30 days; for Peal's staff, the session they act in for an account, for an hour; and `peal.last-sign-in`, how you last signed in on this browser (email, Google or your server's provider, nothing else), so the sign-in page offers it first, for 30 days;
 - `peal_connect_link`, while you connect an account through a connect link, for 30 minutes;
 - `NEXT_LOCALE`, the language of the pages, until you close the browser;
 - in the browser's storage: the time format you chose (`peal.hour-format`); until the tab is closed, the sign-in to a platform you started, so that Peal can finish it when you come back; and, for an instant, `peal.measurement-news`, which tells your other tabs of Peal that you changed your choice about measurement or signed out, and is removed as soon as it is written;
@@ -208,6 +208,7 @@ We email account holders at least 30 days before a substantial change to this po
 
 Changes since this policy was first published:
 
+- 20 November 2026: the app keeps how you last signed in on a browser in the cookie `peal.last-sign-in` for 30 days, so its sign-in page offers that way first.
 - 19 November 2026: this website, the documentation and the blog count visits with PostHog, without storing anything in your browser, in place of Plausible; and, only once you allow it, follow your visits under one cookie and link them to the account you create in that browser, which you can refuse or withdraw under Cookie settings.
 - 19 November 2026: each day, for an organisation with a connected account, its counts of connected accounts, members, stored media and writing assistant requests join the product analytics events, under the organisation's identifier.
 - 18 November 2026: where we measure the app's use, anonymous page views and errors, with nothing stored in your browser; and, only once you allow it, the same under your account, masked recordings of your sessions and your session's identifier in your browser's storage, which you can withdraw on your account page; PostHog receives the app's events through Peal's own address.

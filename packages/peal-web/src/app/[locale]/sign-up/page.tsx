@@ -7,7 +7,11 @@ import { providerErrorKey } from "#auth/errors.ts";
 import { lastSignIn } from "#auth/last-sign-in-cookie.ts";
 import { cameFromProvider, signUpReturn } from "#auth/provider-return.ts";
 import { invitationOf, signUpFormShown } from "#auth/sign-up-mode.ts";
-import { privacyUrlConfig, termsUrlConfig } from "#billing/terms.ts";
+import {
+  dpaUrlConfig,
+  privacyUrlConfig,
+  termsUrlConfig,
+} from "#billing/terms.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
 import { FormError } from "#components/auth/form-error.tsx";
 import { SignInChoices } from "#components/auth/sign-in-choices.tsx";
@@ -33,11 +37,12 @@ const SignUpPage = async ({ searchParams }: PageProps<"/[locale]/sign-up">) => {
   const locale = await getLocale();
   const invitationId = invitationOf(invitation);
 
-  const [{ mode, providers, siteKey }, termsUrl, privacyUrl, last] =
+  const [{ mode, providers, siteKey }, termsUrl, privacyUrl, dpaUrl, last] =
     await Promise.all([
       signUpSettings(),
       Effect.runPromise(termsUrlConfig),
       Effect.runPromise(privacyUrlConfig),
+      Effect.runPromise(dpaUrlConfig),
       lastSignIn(),
     ]);
 
@@ -78,7 +83,11 @@ const SignUpPage = async ({ searchParams }: PageProps<"/[locale]/sign-up">) => {
               />
             </SignInChoices>
           </div>
-          <SignUpTerms termsUrl={termsUrl} privacyUrl={privacyUrl} />
+          <SignUpTerms
+            termsUrl={termsUrl}
+            privacyUrl={privacyUrl}
+            dpaUrl={dpaUrl}
+          />
         </div>
       ) : (
         <SignUpByInvitation />
