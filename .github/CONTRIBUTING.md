@@ -194,7 +194,10 @@ trail init --agents claude --team
 ```
 
 The map is built in `.trail/cache/`, ignored by Git, in each clone and
-worktree. A learning is published with the change it comes with, so review it
+worktree. The first `trail init` also reads your past Claude Code sessions
+and Claude's memory of the repo, and writes what it finds to
+`.trail/learnings/` for the team. Read each new file there before you commit,
+and delete those that hold private notes. A learning is published with the change it comes with, so review it
 like the code: no secrets, no private notes, no product names. Run
 `trail check` before you open a pull request.
 
