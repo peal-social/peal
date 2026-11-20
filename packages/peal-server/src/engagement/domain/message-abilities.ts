@@ -42,6 +42,18 @@ const isMessagePlatform = (
   InboxMessagePlatformSchema.literals.some((named) => named === platform);
 
 /**
+ * Whether a channel's way in has no messages in Peal yet: Instagram
+ * through Meta's Unified login, whose conversations are the account's own
+ * (`/{account}/conversations`), not a Page's, and wait for their own
+ * adapter.
+ */
+export const lacksMessages = (
+  platform: Platform,
+  connection: Option.Option<ChannelConnection>
+): boolean =>
+  platform === "instagram" && Option.contains(connection, "unifiedLogin");
+
+/**
  * Whether this server reads direct messages on `platform`: only where the
  * operator named it (`PEAL_INBOX_MESSAGES`).
  */
@@ -83,7 +95,8 @@ const chat =
  *   a member turns the channel's messages on, as Bluesky's are. A channel
  *   without every one of them is `reconnect`.
  *
- * Off, or on any other platform, nothing is possible. `connection` is the
+ * Off, or on any other platform, nothing is possible, nor through
+ * Instagram's Unified login (`lacksMessages`). `connection` is the
  * channel's way in, which decides Instagram's permissions: none is
  * through a Page, as a channel stored without one came.
  */
@@ -93,7 +106,10 @@ export const messageAbilitiesOf = (
   messages: InboxMessagePlatforms,
   connection: Option.Option<ChannelConnection> = Option.none()
 ): MessageAbilities => {
-  if (!readsMessagesOn(platform, messages)) {
+  if (
+    !readsMessagesOn(platform, messages) ||
+    lacksMessages(platform, connection)
+  ) {
     return none;
   }
 
@@ -134,7 +150,8 @@ export const messageAbilitiesOf = (
 
 /**
  * The permissions a Meta channel's messages take, by its way in: what its
- * sign-in asks once a member turns them on.
+ * sign-in asks once a member turns them on. Never asked of a way in that
+ * `lacksMessages`.
  */
 export const metaMessageScopesOf = (
   platform: "facebook" | "instagram",

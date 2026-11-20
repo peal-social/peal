@@ -10,6 +10,7 @@ import {
 import { facebookPages } from "#channels/infrastructure/platforms/meta/facebook-authorizer.ts";
 import { instagramAccounts } from "#channels/infrastructure/platforms/meta/instagram-authorizer.ts";
 import { instagramLoginScopes } from "#channels/infrastructure/platforms/meta/instagram-login-authorizer.ts";
+import { instagramUnifiedRequiredScopes } from "#channels/infrastructure/platforms/meta/instagram-unified-authorizer.ts";
 import { youtubeScopes } from "#channels/infrastructure/platforms/youtube/youtube-authorizer.ts";
 import {
   abilitiesOf,
@@ -17,7 +18,10 @@ import {
   engagedPlatforms,
 } from "#engagement/domain/engagement-abilities.ts";
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
-import { youtubeCommentScope } from "#shared/domain/inbox-platform.ts";
+import {
+  instagramPageCommentScope,
+  youtubeCommentScope,
+} from "#shared/domain/inbox-platform.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
 
 // What an account connected today can do about comments, from the scopes
@@ -34,6 +38,15 @@ const inbox: InboxPlatforms = new Set([
   "linkedin",
 ]);
 
+// What Unified login's configuration grants, as the docs ask an operator
+// to make it: every permission at once, messages' included.
+const unifiedLogin = [
+  ...instagramUnifiedRequiredScopes,
+  "instagram_manage_insights",
+  instagramPageCommentScope,
+  "instagram_manage_messages",
+];
+
 // Everything a Facebook Login product asks for, granted.
 const facebookLogin = (product: typeof facebookPages) => [
   ...product.scopes,
@@ -44,7 +57,11 @@ const facebookLogin = (product: typeof facebookPages) => [
 const grants = {
   bluesky: [blueskyScope.split(" ")],
   facebook: [facebookLogin(facebookPages)],
-  instagram: [facebookLogin(instagramAccounts), instagramLoginScopes(inbox)],
+  instagram: [
+    facebookLogin(instagramAccounts),
+    instagramLoginScopes(inbox),
+    unifiedLogin,
+  ],
   linkedin: [linkedinPagesScopesFor(inbox)],
   mastodon: [profileScopes.split(" "), legacyScopes.split(" ")],
   youtube: [[...youtubeScopes, youtubeCommentScope]],

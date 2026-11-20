@@ -361,8 +361,10 @@ be read, and their channels must be reconnected.
   and secrets in `META_APP_ID`, `META_APP_SECRET`, `INSTAGRAM_APP_ID`,
   `INSTAGRAM_APP_SECRET`, `THREADS_APP_ID` and `THREADS_APP_SECRET`; the
   docs' self-hosting page lists its permissions and addresses. Instagram
-  connects with Instagram Login (`INSTAGRAM_APP_*`, no Facebook Page
-  needed) and through a Facebook Page (`META_APP_*`). Facebook, and
+  connects with Meta's Unified login (`META_APP_*` and
+  `META_INSTAGRAM_CONFIG_ID`, no Facebook Page needed), with Instagram Login
+  (`INSTAGRAM_APP_*`, no Facebook Page needed) and through a Facebook Page
+  (`META_APP_*`). Facebook, and
   Instagram through a Page, come back with the accounts the sign-in
   reached, to tick. Meta fetches the media it publishes from the store, which
   it cannot reach on this machine: text posts work, media needs a public
@@ -597,6 +599,7 @@ In development, these are the ones you may want:
 | `LINKEDIN_PAGES_CLIENT_ID`    | unset: no LinkedIn company pages | A second LinkedIn app's client id, with `LINKEDIN_PAGES_CLIENT_SECRET` |
 | `X_CLIENT_ID`                 | unset: X is not offered          | The X app's OAuth 2.0 client id, with `X_CLIENT_SECRET`                |
 | `META_APP_ID`                 | unset: no Facebook nor Instagram | Meta's app, with `META_APP_SECRET`                                     |
+| `META_INSTAGRAM_CONFIG_ID`    | unset: no Unified login          | The app's Unified login configuration for Instagram                    |
 | `INSTAGRAM_APP_ID`            | unset: Instagram through a Page  | The app's Instagram id, with `INSTAGRAM_APP_SECRET`                    |
 | `THREADS_APP_ID`              | unset: no Threads                | The app's Threads id, with `THREADS_APP_SECRET`                        |
 | `TIKTOK_CLIENT_KEY`           | unset: TikTok is not offered     | The TikTok app's client key, with `TIKTOK_CLIENT_SECRET`               |

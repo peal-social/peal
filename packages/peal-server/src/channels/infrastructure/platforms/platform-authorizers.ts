@@ -31,6 +31,7 @@ import { mastodonAuthorizer } from "./mastodon/mastodon-authorizer.ts";
 import { facebookAuthorizer } from "./meta/facebook-authorizer.ts";
 import { instagramAuthorizer } from "./meta/instagram-authorizer.ts";
 import { instagramLoginAuthorizer } from "./meta/instagram-login-authorizer.ts";
+import { instagramUnifiedAuthorizer } from "./meta/instagram-unified-authorizer.ts";
 import { threadsAuthorizer } from "./meta/threads-authorizer.ts";
 import { pinterestAuthorizer } from "./pinterest/pinterest-authorizer.ts";
 import { slackAuthorizer } from "./slack/slack-authorizer.ts";
@@ -113,8 +114,10 @@ export const registryOf = (
  * Bluesky when it has a client to run, LinkedIn and X when the operator
  * registered an app there, LinkedIn pages with a second app that has the
  * Community Management API, Facebook Pages and Instagram with Meta's app,
- * Instagram through Instagram Login with the app's Instagram credentials
- * (preferred to Facebook Login when both are set), Threads with its
+ * Instagram through Meta's Unified login with the main app and its
+ * configuration (`META_INSTAGRAM_CONFIG_ID`), through Instagram Login with
+ * the app's Instagram credentials, Instagram's ways in preferred in that
+ * order, Unified login, Instagram Login, then through a Page, Threads with its
  * credentials, TikTok with its client key and secret, YouTube with a Google
  * OAuth client, Pinterest with its app's id and secret, Google Business
  * Profile with a Google OAuth client of its own, Slack with its app's id
@@ -217,7 +220,20 @@ export const PlatformAuthorizersLive = Layer.effect(
         ]
       : [];
 
-    // Instagram Login first: the way in the server prefers.
+    // Unified login first, Meta's recommended way in, then Instagram Login,
+    // then through a Page: the order the server prefers them in.
+    const instagramUnified = Option.isSome(settings.instagramUnified)
+      ? [
+          yield* instagramUnifiedAuthorizer({
+            app: settings.instagramUnified.value.app,
+            configId: settings.instagramUnified.value.configId,
+            hosts: settings.metaHosts,
+            http,
+            publicUrl: settings.publicUrl,
+          }),
+        ]
+      : [];
+
     const instagramLogin = Option.isSome(settings.instagram)
       ? [yield* instagramLoginAuthorizer(metaOptions(settings.instagram.value))]
       : [];
@@ -265,6 +281,7 @@ export const PlatformAuthorizersLive = Layer.effect(
       ...Option.toArray(linkedin),
       ...Option.toArray(linkedinPages),
       ...Option.toArray(x),
+      ...instagramUnified,
       ...instagramLogin,
       ...meta,
       ...threads,

@@ -211,9 +211,14 @@ export const metaMessageDepartures = (settings: {
       ) {
         const { platform } = channel;
 
+        // A Unified login channel's token holds the messaging permission
+        // whatever the member chose, but Peal never followed its messages
+        // (the inbox does not read them through that way in yet): there is
+        // no subscription to leave.
         if (
           (platform !== "facebook" && platform !== "instagram") ||
           !settings.messages.has(platform) ||
+          Option.contains(channel.connection, "unifiedLogin") ||
           !channel.scopes.some((scope) => messaging.has(scope))
         ) {
           return;

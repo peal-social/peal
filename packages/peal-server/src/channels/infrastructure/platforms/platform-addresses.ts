@@ -45,6 +45,7 @@ export interface PlatformRegistration {
     | "googleAds"
     | "googleBusiness"
     | "instagramLogin"
+    | "instagramUnified"
     | "linkedin"
     | "linkedinPages"
     | "mastodon"
@@ -211,6 +212,23 @@ export const platformRegistrations = (
       platforms: ["facebook", "instagram"],
       registeredBy: "operator",
       settings: ["META_APP_ID", "META_APP_SECRET"],
+    },
+    {
+      addresses: [
+        redirect(
+          "Redirect URL (API setup with Unified login)",
+          facebookLoginCallbackPath("instagram")
+        ),
+      ],
+      id: "instagramUnified",
+      name: "Meta: Unified login, for Instagram without a Page",
+      notes: [
+        "A configuration of Facebook Login for Business on the same app as Facebook Login (Instagram use case, API setup with Unified login), its id in META_INSTAGRAM_CONFIG_ID: Instagram accounts as assets, a system user token that never expires, and instagram_basic, instagram_content_publish, instagram_manage_insights and instagram_manage_comments among its permissions.",
+        "Its data deletion, deauthorize and events addresses are Facebook Login's.",
+      ],
+      platforms: ["instagram"],
+      registeredBy: "operator",
+      settings: ["META_APP_ID", "META_APP_SECRET", "META_INSTAGRAM_CONFIG_ID"],
     },
     {
       addresses: [redirect("Valid OAuth redirect URIs", metaAdsCallbackPath)],

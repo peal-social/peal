@@ -14,6 +14,8 @@ public final class ChannelConnection {
     public static final ChannelConnection INSTAGRAM_LOGIN =
             new ChannelConnection(Value.INSTAGRAM_LOGIN, "instagramLogin");
 
+    public static final ChannelConnection UNIFIED_LOGIN = new ChannelConnection(Value.UNIFIED_LOGIN, "unifiedLogin");
+
     public static final ChannelConnection LINKEDIN_PROFILE =
             new ChannelConnection(Value.LINKEDIN_PROFILE, "linkedinProfile");
 
@@ -55,6 +57,8 @@ public final class ChannelConnection {
                 return visitor.visitLinkedinPage();
             case INSTAGRAM_LOGIN:
                 return visitor.visitInstagramLogin();
+            case UNIFIED_LOGIN:
+                return visitor.visitUnifiedLogin();
             case LINKEDIN_PROFILE:
                 return visitor.visitLinkedinProfile();
             case UNKNOWN:
@@ -72,6 +76,8 @@ public final class ChannelConnection {
                 return LINKEDIN_PAGE;
             case "instagramLogin":
                 return INSTAGRAM_LOGIN;
+            case "unifiedLogin":
+                return UNIFIED_LOGIN;
             case "linkedinProfile":
                 return LINKEDIN_PROFILE;
             default:
@@ -84,6 +90,8 @@ public final class ChannelConnection {
 
         FACEBOOK_LOGIN,
 
+        UNIFIED_LOGIN,
+
         LINKEDIN_PROFILE,
 
         LINKEDIN_PAGE,
@@ -95,6 +103,8 @@ public final class ChannelConnection {
         T visitInstagramLogin();
 
         T visitFacebookLogin();
+
+        T visitUnifiedLogin();
 
         T visitLinkedinProfile();
 

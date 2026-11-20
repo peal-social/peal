@@ -5,6 +5,7 @@ import { FetchHttpClient } from "effect/http";
 
 import type { ChannelAccount } from "#channels/application/channel-access.ts";
 import { instagramEngagement } from "#engagement/infrastructure/platforms/meta/instagram-engagement.ts";
+import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
@@ -62,10 +63,24 @@ const comment = (n: number, changed: Partial<Added> = {}): Added => ({
   ...changed,
 });
 
+// The way in a test's options name.
+const connectionOf = (options: {
+  readonly instagramLogin?: boolean;
+  readonly unified?: boolean;
+}): ChannelConnection => {
+  if (options.instagramLogin === true) {
+    return "instagramLogin";
+  }
+
+  return options.unified === true ? "unifiedLogin" : "facebookLogin";
+};
+
 // The adapter on a fake Graph, as the account, through `connection`.
 const onGraph = Effect.fnUntraced(function* onGraph(
   options: FakeMetaCommentsOptions & {
     readonly scopes?: readonly string[];
+    /** Through Unified login, on Facebook's host as through a Page. */
+    readonly unified?: boolean;
   } = {}
 ) {
   const graph = yield* fakeMetaComments(["ig-token-1"], options);
@@ -75,9 +90,7 @@ const onGraph = Effect.fnUntraced(function* onGraph(
   const account: ChannelAccount = {
     accountId: instagramUserId,
     channelId,
-    connection: Option.some(
-      instagramLogin ? "instagramLogin" : "facebookLogin"
-    ),
+    connection: Option.some(connectionOf(options)),
     platform: "instagram",
     scopes:
       options.scopes ??
@@ -183,6 +196,23 @@ describe("Instagram's comments", () => {
         Option.some(true)
       );
       assert.isFalse(graph.requests()[0]?.query.has("appsecret_proof"));
+    }).pipe(Effect.scoped)
+  );
+
+  it.effect("reads through Unified login with the main app's proof", () =>
+    Effect.gen(function* unified() {
+      const { account, graph, platform } = yield* onGraph({ unified: true });
+
+      graph.add(comment(1));
+
+      const [reading] = (yield* platform.read(account, toRead)).readings;
+
+      assert.strictEqual(reading?._tag, "read");
+      assert.strictEqual(
+        graph.requests()[0]?.path,
+        `/v27.0/${mediaId}/comments`
+      );
+      assert.isTrue(graph.requests()[0]?.query.has("appsecret_proof"));
     }).pipe(Effect.scoped)
   );
 

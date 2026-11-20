@@ -131,6 +131,19 @@ describe("whether a channel can send a private reply", () => {
     }
   );
 
+  it("is never through Instagram's Unified login, whose messages Peal does not read", () => {
+    expect(
+      privateReplyStanding(
+        "instagram",
+        through("unifiedLogin"),
+        [instagramPageCommentScope, ...instagramPageMessageScopes],
+        meta,
+        metaMessages,
+        true
+      )
+    ).toBe("unsupported");
+  });
+
   it("is never on a platform without Meta's private replies", () => {
     for (const platform of [
       "mastodon",

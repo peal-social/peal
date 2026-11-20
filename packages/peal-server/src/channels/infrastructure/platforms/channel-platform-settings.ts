@@ -17,10 +17,12 @@ import {
   publicUrlConfig,
 } from "#shared/infrastructure/environment.ts";
 import { inboxMessagesConfig } from "#shared/infrastructure/inbox-messages.ts";
+import { InvalidMetaSettings } from "#shared/infrastructure/platforms/invalid-meta-settings.ts";
 import { linkedinVersionConfig } from "#shared/infrastructure/platforms/linkedin-version.ts";
 import {
   instagramAppConfig,
   metaAppConfig,
+  metaInstagramConfigIdConfig,
   threadsAppConfig,
 } from "#shared/infrastructure/platforms/meta-apps.ts";
 import type { MetaApp } from "#shared/infrastructure/platforms/meta-apps.ts";
@@ -39,6 +41,13 @@ import type { BlueskyClientMode } from "./bluesky/bluesky-client.ts";
 import { oauthClientConfig } from "./oauth-client.ts";
 import type { OAuthClient } from "./oauth-client.ts";
 
+/** Meta's Unified login for Instagram: the main app and its configuration. */
+export interface InstagramUnifiedSettings {
+  readonly app: MetaApp;
+  /** The Facebook Login for Business configuration's id (`config_id`). */
+  readonly configId: string;
+}
+
 /** How this server connects each platform. */
 export interface ChannelPlatformSettings {
   /** None when this server cannot connect Bluesky accounts. */
@@ -54,6 +63,12 @@ export interface ChannelPlatformSettings {
    * none when this server connects Instagram through Facebook Login only.
    */
   readonly instagram: Option.Option<MetaApp>;
+  /**
+   * Meta's main app and the configuration its Unified login for Instagram
+   * opens with; none when `META_INSTAGRAM_CONFIG_ID` is unset, and the
+   * server then offers that way in nowhere.
+   */
+  readonly instagramUnified: Option.Option<InstagramUnifiedSettings>;
   /** Peal's LinkedIn app, if the operator registered one. */
   readonly linkedin: Option.Option<OAuthClient>;
   /**
@@ -218,6 +233,12 @@ const blueskyModeOf = Effect.fnUntraced(function* blueskyModeOf(settings: {
  * - `INSTAGRAM_APP_ID` and `INSTAGRAM_APP_SECRET`: the same app's Instagram
  *   credentials, for Instagram professional accounts through Instagram
  *   Login, which needs no Facebook Page.
+ * - `META_INSTAGRAM_CONFIG_ID`: the configuration of Facebook Login for
+ *   Business that Meta's Unified login for Instagram opens with, on the
+ *   main app (`META_APP_ID`): Instagram professional accounts a business
+ *   portfolio shares, no Facebook Page needed. Unset, that way in is not
+ *   offered; set without the main app, or not 1 to 32 digits, it stops the
+ *   server.
  * - `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET`: the app the operator
  *   registered on TikTok for Developers, with Login Kit and the Content
  *   Posting API. Without them, TikTok is not offered; one alone stops the
@@ -264,6 +285,16 @@ export const channelPlatformsConfig = Effect.gen(function* settings() {
   const meta = yield* metaAppConfig;
   const threads = yield* threadsAppConfig;
   const instagram = yield* instagramAppConfig;
+  const configId = yield* metaInstagramConfigIdConfig;
+
+  // The configuration is the main app's: without the app, it opens nothing.
+  if (Option.isSome(configId) && Option.isNone(meta)) {
+    return yield* new InvalidMetaSettings({
+      reason: "META_INSTAGRAM_CONFIG_ID needs META_APP_ID and META_APP_SECRET",
+    });
+  }
+
+  const instagramUnified = Option.all({ app: meta, configId });
   const tiktok = yield* oauthClientConfig("tiktok", "TIKTOK", "CLIENT_KEY");
   const youtube = yield* oauthClientConfig("youtube", "YOUTUBE");
 
@@ -293,6 +324,7 @@ export const channelPlatformsConfig = Effect.gen(function* settings() {
     ),
     googleBusiness,
     instagram,
+    instagramUnified,
     linkedin,
     linkedinPages,
     linkedinVersion,

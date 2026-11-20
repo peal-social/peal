@@ -65,8 +65,8 @@ export const maxChannelQueryLength = 100;
 export const ChannelSchema = Schema.Struct({
   // The account's picture, as the platform serves it.
   avatarUrl: Schema.NullOr(Schema.String),
-  // How an Instagram channel reaches its account (through Instagram Login
-  // or through a Facebook Page), or what a LinkedIn channel posts as (a
+  // How an Instagram channel reaches its account (through Instagram Login,
+  // a Facebook Page or Meta's Unified login), or what a LinkedIn channel posts as (a
   // member's profile or a company page). Null on other platforms.
   connection: Schema.NullOr(ChannelConnectionSchema),
   // The account's name, when the platform shows one besides the handle.
@@ -150,7 +150,8 @@ export type ChannelPage = typeof ChannelPageSchema.Type;
  * Instagram may take the way in.
  */
 export const ConnectChannelSchema = Schema.Struct({
-  // Instagram: sign in with Instagram Login or with Facebook Login.
+  // Instagram: sign in with Instagram Login, Facebook Login or Meta's
+  // Unified login.
   // LinkedIn: connect the member's profile or the pages they administer.
   // Left out, the server's first way for the platform
   // (`instagramConnections`, `linkedinConnections` in the connectable
@@ -509,7 +510,7 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     }).annotateMerge(
       OpenApi.annotations({
         description:
-          "Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, `connection` picks Instagram Login (the professional account itself, no Facebook Page needed) or Facebook Login (the accounts linked to the caller's Pages); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached `xApi`, `paymentMethodRequired` without one). Needs channel:connect.",
+          "Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, `connection` picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (`unifiedLogin`: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached `xApi`, `paymentMethodRequired` without one). Needs channel:connect.",
         summary: "Start connecting an account",
       })
     ),

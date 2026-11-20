@@ -6,4 +6,5 @@ enum InstagramConnection: string
 {
     case InstagramLogin = "instagramLogin";
     case FacebookLogin = "facebookLogin";
+    case UnifiedLogin = "unifiedLogin";
 }

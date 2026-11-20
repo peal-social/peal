@@ -111,19 +111,23 @@ export const ChannelPlatformSchema = Schema.Literals([
 export type ChannelPlatform = typeof ChannelPlatformSchema.Type;
 
 /**
- * How an Instagram channel reaches its account, one of Meta's two APIs:
- * `instagramLogin` (the member signs in to the professional account on
- * Instagram; no Facebook Page needed) or `facebookLogin` (the member signs
+ * How an Instagram channel reaches its account, one of Meta's three ways
+ * in: `instagramLogin` (the member signs in to the professional account on
+ * Instagram; no Facebook Page needed), `facebookLogin` (the member signs
  * in to Facebook and picks among the professional accounts linked to the
- * Pages they manage). The server's copy
+ * Pages they manage) or `unifiedLogin` (Meta's Unified login: the member
+ * signs in with Instagram or Facebook and shares accounts of a business
+ * portfolio; no Facebook Page needed). The server's copy
  * (src/shared/domain/instagram-connection.ts) is the source; a test keeps
  * the two equal.
  */
 export const InstagramConnectionSchema = Schema.Literals([
   "instagramLogin",
   "facebookLogin",
+  "unifiedLogin",
 ]).annotate({
-  description: "How an Instagram channel reaches its account.",
+  description:
+    "How an Instagram channel reaches its account: Instagram Login, a Facebook Page, or Meta's Unified login.",
   identifier: "InstagramConnection",
 });
 

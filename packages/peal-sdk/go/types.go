@@ -6811,6 +6811,7 @@ type ChannelConnection string
 const (
 	ChannelConnectionInstagramLogin  ChannelConnection = "instagramLogin"
 	ChannelConnectionFacebookLogin   ChannelConnection = "facebookLogin"
+	ChannelConnectionUnifiedLogin    ChannelConnection = "unifiedLogin"
 	ChannelConnectionLinkedinProfile ChannelConnection = "linkedinProfile"
 	ChannelConnectionLinkedinPage    ChannelConnection = "linkedinPage"
 )
@@ -6821,6 +6822,8 @@ func NewChannelConnectionFromString(s string) (ChannelConnection, error) {
 		return ChannelConnectionInstagramLogin, nil
 	case "facebookLogin":
 		return ChannelConnectionFacebookLogin, nil
+	case "unifiedLogin":
+		return ChannelConnectionUnifiedLogin, nil
 	case "linkedinProfile":
 		return ChannelConnectionLinkedinProfile, nil
 	case "linkedinPage":

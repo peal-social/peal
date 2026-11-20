@@ -5,8 +5,9 @@
 // link that applies a request to cancel, the value of a header a webhook
 // endpoint's deliveries carry, two-step verification's key, codes and
 // recovery codes, the image provider's key, the key of a provider a
-// workspace brought (nor the prompt sent to either), or a chat's secret,
-// which its platform carries in the path of every address. The app runs here as production
+// workspace brought (nor the prompt sent to either), a chat's secret,
+// which its platform carries in the path of every address, or a Unified
+// login system user token and the Meta app's own token. The app runs here as production
 // runs it, logging each request and tracing it, and everything a log line
 // or a span would export is searched for each secret.
 import { once } from "node:events";
@@ -39,6 +40,7 @@ import { ChatVerifier } from "#channels/application/chat-verifier.ts";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
 import { ConnectAttempt } from "#channels/domain/connect-attempt.ts";
 import { chatVerifiersLive } from "#channels/infrastructure/platforms/chat-verifiers.ts";
+import { instagramUnifiedAuthorizer } from "#channels/infrastructure/platforms/meta/instagram-unified-authorizer.ts";
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { slackAuthorizer } from "#channels/infrastructure/platforms/slack/slack-authorizer.ts";
 import { wordpressComAuthorizer } from "#channels/infrastructure/platforms/wordpress-com/wordpress-com-authorizer.ts";
@@ -71,6 +73,12 @@ import {
   fakeHttpServer,
   json as jsonAnswer,
 } from "#test/channels/fakes/fake-http-server.ts";
+import {
+  fakeMeta,
+  metaApp,
+  unifiedConfigId,
+  unifiedPermissions,
+} from "#test/channels/fakes/fake-meta.ts";
 import { fakeSlack, slackClient } from "#test/channels/fakes/fake-slack.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
@@ -994,6 +1002,94 @@ layer(
         2
       );
       assert.notInclude(all, slackUploadTicket);
+    }).pipe(Effect.scoped)
+  );
+});
+
+// Unified login's sign-in sends the app's secret and the member's code,
+// and gets the business's system user token, which every read after it
+// carries in the query with its proof; `debug_token` is read with the
+// app's own token, its id and secret joined. What is written about the
+// sign-in holds none of them.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard),
+    Mac.layerWebCrypto.pipe(Layer.provideMerge(SecureRandom.layerWebCrypto))
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about Instagram's Unified login", (it) => {
+  it.effect("holds no app secret, code, system user token nor app token", () =>
+    Effect.gen(function* searched() {
+      const meta = yield* fakeMeta();
+
+      meta.setUnified({
+        accounts: [{ id: "17841400000000501", username: "shared_501" }],
+        permissions: unifiedPermissions,
+      });
+
+      const authorizer = yield* instagramUnifiedAuthorizer({
+        app: metaApp,
+        configId: unifiedConfigId,
+        hosts: meta.hosts,
+        http: yield* publicHttpClient,
+        publicUrl: "https://peal.example.com",
+      });
+
+      const { authorizationUrl } = yield* authorizer.begin({
+        handle: Option.none(),
+        instance: Option.none(),
+        reconnecting: Option.none(),
+      });
+
+      const back = meta.approve(authorizationUrl);
+      const now = DateTime.makeUnsafe("2026-11-20T09:00:00.000Z");
+
+      const authorized = yield* authorizer
+        .complete({
+          attempt: new ConnectAttempt({
+            channelId: Option.none(),
+            connection: Option.some("unifiedLogin"),
+            createdAt: now,
+            expiresAt: DateTime.addDuration(now, "15 minutes"),
+            instance: Option.none(),
+            platform: "instagram",
+            startedBy: "user:synthetic",
+            state: back.state,
+            workspaceId: WorkspaceIdSchema.make(
+              "01900000-0000-7000-8000-0000000000f4"
+            ),
+          }),
+          callback: {
+            code: Option.some(back.code),
+            error: Option.none(),
+            issuer: Option.none(),
+            state: back.state,
+          },
+          reconnecting: Option.none(),
+          secret: Redacted.make(""),
+        })
+        .pipe(Effect.withSpan("test.unified-login"));
+
+      assert("_tag" in authorized);
+
+      const [account] = authorized.accounts;
+
+      assert(account !== undefined);
+
+      const systemToken = Redacted.value(account.tokens.accessToken);
+      const appSecret = Redacted.value(metaApp.appSecret);
+      const all = written();
+
+      assert.include(all, "/v27.0/me/assigned_instagram_accounts");
+      assert.include(all, "/v27.0/debug_token");
+      assert.match(systemToken, /^synthetic-system-user-/u);
+      assert.notInclude(all, systemToken);
+      assert.notInclude(all, appSecret);
+      assert.notInclude(all, `${metaApp.appId}|${appSecret}`);
+      assert.notInclude(all, `${metaApp.appId}%7C`);
+      assert.notInclude(all, back.code);
     }).pipe(Effect.scoped)
   );
 });

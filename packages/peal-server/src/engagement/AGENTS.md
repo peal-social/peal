@@ -469,7 +469,9 @@
   `transition:generic`), and Meta's by the channel's way in
   (`metaMessageScopesOf`: `facebookMessageScopes`,
   `instagramPageMessageScopes`, `instagramLoginMessageScope`;
-  `messageAbilitiesOf` takes the channel's `connection`), asked only when
+  `messageAbilitiesOf` takes the channel's `connection`; Instagram through
+  Unified login is `unsupported`, and so are its private replies, until
+  an adapter reads the account's own conversations: `lacksMessages`), asked only when
   a member turns a channel's messages on: `switchChannel` refuses a channel whose read is
   not `available` (`MessageAbilityUnavailable`, `reconnect`), and the web
   app reconnects it with `messages=true`, the switch off meanwhile. A
