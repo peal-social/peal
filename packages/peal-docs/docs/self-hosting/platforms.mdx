@@ -280,26 +280,56 @@ TikTok fetches photos only from a URL prefix or a domain you verified for the ap
 
 One app in Meta's developer dashboard connects all three, through three use cases, each with its own credentials:
 
-| Use case                                                                                            | Connects                                     | Permissions                                                                                                                                                                                                                                                                                                                                                                                             | Settings, from                                                                                                                                          |
-| --------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Facebook Login**                                                                                  | Facebook Pages, and Instagram through a Page | `pages_show_list`, `pages_read_engagement` and `pages_manage_posts` for Facebook Pages; `instagram_basic`, `instagram_content_publish` and `instagram_manage_insights` for Instagram (insights only for analytics, and a member may decline them); `business_management` for both, which lists the Pages a business portfolio owns (a member may decline it, and then connects only Pages of their own) | `META_APP_ID` and `META_APP_SECRET`, from the app's basic settings                                                                                      |
-| **Instagram** ("Manage messaging and content on Instagram", the Instagram API with Instagram Login) | Instagram professional accounts              | `instagram_business_basic`, `instagram_business_content_publish` and `instagram_business_manage_insights`                                                                                                                                                                                                                                                                                               | `INSTAGRAM_APP_ID` and `INSTAGRAM_APP_SECRET`, from its **Business login settings**, which show an Instagram app id and secret apart from the main ones |
-| **Threads**                                                                                         | Threads accounts                             | `threads_basic` and `threads_content_publish`                                                                                                                                                                                                                                                                                                                                                           | `THREADS_APP_ID` and `THREADS_APP_SECRET`, from its Threads settings                                                                                    |
+| Use case                                                                                                         | Connects                                                    | Permissions                                                                                                                                                                                                                                                                                                                                                                                             | Settings, from                                                                                                                                          |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Facebook Login**                                                                                               | Facebook Pages, and Instagram through a Page                | `pages_show_list`, `pages_read_engagement` and `pages_manage_posts` for Facebook Pages; `instagram_basic`, `instagram_content_publish` and `instagram_manage_insights` for Instagram (insights only for analytics, and a member may decline them); `business_management` for both, which lists the Pages a business portfolio owns (a member may decline it, and then connects only Pages of their own) | `META_APP_ID` and `META_APP_SECRET`, from the app's basic settings                                                                                      |
+| **Instagram** ("Manage messaging and content on Instagram", the Instagram API with Instagram Login)              | Instagram professional accounts                             | `instagram_business_basic`, `instagram_business_content_publish` and `instagram_business_manage_insights`                                                                                                                                                                                                                                                                                               | `INSTAGRAM_APP_ID` and `INSTAGRAM_APP_SECRET`, from its **Business login settings**, which show an Instagram app id and secret apart from the main ones |
+| **Instagram**, its API setup with Unified login (a configuration of Facebook Login for Business on the main app) | Instagram professional accounts a business portfolio shares | The configuration's: `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights` and `instagram_manage_comments`, plus `instagram_manage_messages`, which Meta always adds                                                                                                                                                                                                              | `META_INSTAGRAM_CONFIG_ID`, the configuration's id, with `META_APP_ID` and `META_APP_SECRET`                                                            |
+| **Threads**                                                                                                      | Threads accounts                                            | `threads_basic` and `threads_content_publish`                                                                                                                                                                                                                                                                                                                                                           | `THREADS_APP_ID` and `THREADS_APP_SECRET`, from its Threads settings                                                                                    |
 
-A platform whose settings are missing isn't offered. Instagram is offered with either pair of its settings. With both, members connect with Instagram first, and through a Facebook Page as the other way:
+A platform whose settings are missing isn't offered. Instagram is offered with the settings of any of its three ways in. Members see the ways your server has in this order, the first one as the main button:
 
-| Way in                                        | Needs                                   | Access                                | Gives                                                                                                                                       |
-| --------------------------------------------- | --------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Instagram Login (`INSTAGRAM_APP_ID`)          | A professional account, no Page         | 60 days, renewed by Peal a week ahead | Publishing (images, reels, carousels) and insights; calls `graph.instagram.com`                                                             |
-| Facebook Login through a Page (`META_APP_ID`) | A professional account linked to a Page | The Page's, which doesn't expire      | The same, plus what only that API has (product tags, collaborators, hashtag search), which Peal doesn't use yet; calls `graph.facebook.com` |
+| Way in                                        | Needs                                                   | Access                                                                                                               | Gives                                                                                                                                                                      |
+| --------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unified login (`META_INSTAGRAM_CONFIG_ID`)    | A professional account in a business portfolio, no Page | The business portfolio's system user token, which never expires when the configuration says so; Peal never renews it | Publishing (images, reels, carousels), insights once the configuration holds `instagram_manage_insights`, and comments, but no direct messages; calls `graph.facebook.com` |
+| Instagram Login (`INSTAGRAM_APP_ID`)          | A professional account, no Page                         | 60 days, renewed by Peal a week ahead                                                                                | Publishing (images, reels, carousels) and insights; calls `graph.instagram.com`                                                                                            |
+| Facebook Login through a Page (`META_APP_ID`) | A professional account linked to a Page                 | The Page's, which doesn't expire                                                                                     | The same, plus what only that API has (product tags, collaborators, hashtag search), which Peal doesn't use yet; calls `graph.facebook.com`                                |
 
 In the dashboard, give each use case the addresses [the command](#platform-addresses) prints for it:
 
-| Use case       | Settings the addresses go in                                                                                                                  |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Facebook Login | Its valid OAuth redirect URIs, two of them, for Facebook Pages and for Instagram; its data deletion request URL; its deauthorize callback URL |
-| Instagram      | Its business login's OAuth redirect URIs; its data deletion request URL; its deauthorize callback URL                                         |
-| Threads        | Its redirect callback URL; its data deletion request URL; its deauthorize callback URL                                                        |
+| Use case       | Settings the addresses go in                                                                                                                   |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Facebook Login | Its valid OAuth redirect URIs, two of them, for Facebook Pages and for Instagram; its data deletion request URL; its deauthorize callback URL  |
+| Instagram      | Its business login's OAuth redirect URIs; its data deletion request URL; its deauthorize callback URL                                          |
+| Unified login  | The configuration's redirect URL, Facebook Login's Instagram address; its data deletion, deauthorize and events addresses are Facebook Login's |
+| Threads        | Its redirect callback URL; its data deletion request URL; its deauthorize callback URL                                                         |
+
+### Set up Unified login [#unified-login]
+
+Unified login is Meta's business sign-in for Instagram. A member signs in with Instagram or Facebook, picks a business portfolio, then its Instagram accounts, and needs no Facebook Page. It runs on the main app, so set it up once Facebook Login works.
+
+<Steps>
+<Step title="Create the configuration">
+  In the app's dashboard, go to **Use cases** > **Manage messaging & content on Instagram** > **Customize** > **API setup with Unified login**, and click **Create new configuration**.
+</Step>
+<Step title="Choose what it asks">
+  Ask for Instagram accounts, with a system user token that never expires. Keep `instagram_basic`, `instagram_content_publish` and `instagram_manage_comments`, and add `instagram_manage_insights` under **Edit permissions**, or analytics reads nothing for these channels. Peal doesn't use `ads_management` or `ads_read` through this sign-in, so leave them out if Meta's editor lets you.
+</Step>
+<Step title="Register the redirect URL">
+  Give the configuration the address [the command](#platform-addresses) prints as **Redirect URL (API setup with Unified login)**.
+</Step>
+<Step title="Set the configuration's id">
+  Copy the configuration's id into `META_INSTAGRAM_CONFIG_ID` and restart the server. It isn't a secret: it's in the sign-in's address.
+</Step>
+</Steps>
+
+Meta grants a configuration's permissions all or none. A member can't decline insights or comments, and Meta's consent page lists every permission, messages included, even when your inbox doesn't read Instagram's. Meta always adds `instagram_manage_messages`, and you can't remove it.
+
+Saving the configuration gives its permissions Standard Access, for people with a role on the app. Anyone else needs Advanced Access to each permission of the configuration, `instagram_manage_messages` included, and the app in Live mode. Until then, keep Facebook Login offered beside it.
+
+To test in development mode, invite the Instagram account as an Instagram tester under **App roles**, and accept the invitation in Instagram on the web (**Settings** > **Website permissions** > **Apps and websites** > **Tester invites**). Meta asks that the business portfolio that owns the account isn't the one that owns your app.
+
+A configuration set to give tokens for 60 days makes its channels need reconnecting when they end, because renewing them would take `business_management`, which Peal doesn't ask. Unsetting `META_INSTAGRAM_CONFIG_ID` stops new connections that way. Channels already connected through it keep publishing, but can't be reconnected until it's set again.
 
 The command also prints a **Webhooks** callback URL for Facebook Login and one for Instagram. Meta calls it to tell your server that an account's direct messages changed. The server takes those events only once `META_WEBHOOK_VERIFY_TOKEN` is set, and you give its value as the **Verify Token** next to the address.
 
@@ -307,11 +337,11 @@ The address must answer Meta with no login page in front of it, and Meta sends e
 
 Meta fetches the images and videos it publishes from links to the media store, valid for two hours. The store must answer Meta's servers on the internet, through presigned links or `PEAL_MEDIA_PUBLIC_BASE_URL`.
 
-The server signs every call through Facebook Login with the main app's secret, so you can turn on **Require App Secret** in the app's advanced settings. Calls with an Instagram Login token carry no proof.
+The server signs every call through Facebook Login and Unified login with the main app's secret, so you can turn on **Require App Secret** in the app's advanced settings. Calls with an Instagram Login token carry no proof.
 
 While the app is in development mode, only people with a role on it can connect their accounts. Add yourself, Instagram testers and Threads testers under App roles. To serve other people, each use case needs Meta's App Review of each permission, and Business Verification.
 
-Instagram accounts must be professional ones (business or creator), and, through Facebook Login, linked to a Facebook Page. Each account publishes at most 100 posts in 24 hours through Meta's API, and Peal checks that before each one.
+Instagram accounts must be professional ones (business or creator). Through Unified login they belong to a business portfolio, and through Facebook Login they're linked to a Facebook Page. Each account publishes at most 100 posts in 24 hours through Meta's API, and Peal checks that before each one.
 
 <Accordion>
 <AccordionItem title="Comments in the inbox">
@@ -319,7 +349,7 @@ Instagram accounts must be professional ones (business or creator), and, through
 To read and answer comments on Facebook Pages and Instagram in the [inbox](/guides/engage/inbox#meta), set `PEAL_INBOX_PLATFORMS` to `facebook`, `instagram` or both. Then add the comment permissions to the use cases:
 
 - `pages_read_user_content` and `pages_manage_engagement` to Facebook Login, for Pages
-- `instagram_manage_comments` to Facebook Login, for Instagram
+- `instagram_manage_comments` to Facebook Login, for Instagram (the Unified login configuration holds it already)
 - `instagram_business_manage_comments` to the Instagram use case
 
 The sign-ins then ask for them, and a member may decline them. Meta grants them at once for accounts your own app's people manage, and for anyone else's only after its App Review.
@@ -333,7 +363,7 @@ To read and answer Messenger's and Instagram's direct messages in the [inbox](/g
 - `instagram_manage_messages`, `pages_manage_metadata` and `pages_messaging` to Facebook Login, for Instagram
 - `instagram_business_manage_messages` to the Instagram use case
 
-A sign-in asks for them only when a member turns a channel's messages on.
+A sign-in asks for them only when a member turns a channel's messages on. Peal doesn't read direct messages through Unified login, so a channel connected that way has no switch in the message settings.
 
 In the Webhooks settings, give each of the two callback addresses [the command](#platform-addresses) prints the Verify Token. Subscribe to the `messages` and `message_echoes` fields for the Page object and the Instagram object of Facebook Login, and for Instagram Login. The address must answer Meta with no login page in front of it, and the app must be published (Live), because Meta sends events only from a published app.
 
@@ -360,7 +390,7 @@ Past Meta's 24 hours, a member can still answer by hand for 7 days after the per
 
 When one of its users asks Meta to delete what Peal holds about them, Meta calls the data deletion address with a request signed with that use case's secret. Peal checks the signature. In every workspace, it deletes the channels that person connected through that use case and their tokens, and the accounts their sign-in still offers a member to choose from. It answers with a confirmation code and the page that shows the request's status, `PUBLIC_URL/data-deletion/<code>`.
 
-Meta may retry the same request. It gets the same answer, and nothing more is deleted. An Instagram request names the account by its app-scoped id or by its own id, and Peal takes either.
+Meta may retry the same request. It gets the same answer, and nothing more is deleted. An Instagram request names the account by its app-scoped id or by its own id, and Peal takes either. A Unified login channel belongs to a business portfolio, and Peal keeps no id of the person who signed in: through the main app, a request reaches it when it names the business's system user or the account, never that person.
 
 </AccordionItem>
 <AccordionItem title="Deauthorize callbacks">
