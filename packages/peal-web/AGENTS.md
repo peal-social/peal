@@ -166,9 +166,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   another (Better Auth's hooks, `INVALID_WORKSPACE_SLUG`), when a
   workspace is made and when its slug changes. Renaming keeps it; owners
   and admins change it on the general settings (`WorkspaceAddressForm`,
-  which then opens the page under the new address). A new workspace tries
-  its name's words, then the words and a random tail (`slugsToTry`,
-  `#workspaces/new-workspace.ts`).
+  which then opens the page under the new address). A new workspace is
+  made with `CreateWorkspaceForm` (`components/create-workspace-form.tsx`),
+  its name and its address offered and both the person's to replace: the
+  address follows the name's words (`suggestedSlugOf`,
+  `#workspaces/new-workspace.ts`) until the person writes one, is checked
+  against `isWorkspaceSlug` then Better Auth's `/organization/check-slug`
+  once they pause (`slugAvailabilityOf`), and, while still the one
+  offered, gets a random tail when taken or reserved. Create waits for a
+  free address.
   Error reports and the measurement's patterns write the slug's segment
   `:id` (`pathOf`), as it holds the workspace's name.
 - `/` is no page: for someone signed in it redirects to the workspace Better Auth keeps
@@ -185,12 +191,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   address, an accepted invitation, the OAuth pages. Someone with none gets
   `FirstWorkspace` (`components/first-workspace.tsx`): an invitation still
   open opens instead (`openInvitationOf`), as on a server by invitation;
-  otherwise it creates, once, the workspace named after the first word of
-  their name in their account's language (`AppPage.defaultName`), under
-  a slug ending in the name part of their email address
-  (`emailSlugTailOf`: `sam-lee` for `sam.lee@…`), so two tabs
-  make one, a random tail should another workspace hold it,
-  then opens it; staff acting as someone are sent to the account page.
+  otherwise it shows `CreateWorkspaceForm`, the name offered after the
+  first word of their name in their account's language
+  (`AppPage.defaultName`: "Ada’s workspace", `adas-workspace`), and opens
+  the workspace once made; staff acting as someone are sent to the
+  account page.
   Another workspace is made at `new` (the switcher's and the
   person's sidebar's **New workspace**), which opens it once made. The
   server's `GET /api/me/overview` (what needs attention in each workspace)

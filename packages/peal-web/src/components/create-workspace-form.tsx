@@ -1,89 +1,171 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { isWorkspaceSlug } from "peal-contract/workspace-slug";
 import { Button } from "peal-ui/components/button";
-import { useState, useTransition } from "react";
-import type { SubmitEvent } from "react";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "peal-ui/components/input-group";
+import { Label } from "peal-ui/components/label";
+import { useEffect, useState, useTransition } from "react";
+import type { ChangeEvent, SubmitEvent } from "react";
 
 import { chooseWorkspace } from "#auth/choose-workspace.ts";
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";
-import type { AuthClientError, AuthErrorKey } from "#auth/errors.ts";
+import type { AuthErrorKey } from "#auth/errors.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { FormField } from "#components/auth/form-field.tsx";
 import { useOfferAuthUpgrade } from "#components/billing/use-offer-upgrade.ts";
+import { useDebounced } from "#components/media/use-debounced.ts";
 import { useRouter } from "#i18n/navigation.ts";
+import { useMounted } from "#posts/use-mounted.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
-import { slugsToTry, slugTaken } from "#workspaces/new-workspace.ts";
+import {
+  slugAvailabilityOf,
+  slugTaken,
+  suggestedSlugOf,
+} from "#workspaces/new-workspace.ts";
+import type { SlugAvailability } from "#workspaces/new-workspace.ts";
 
-/** What creating a workspace answered: its slug, or Better Auth's error. */
-export type Created =
-  | { readonly slug: string }
-  | { readonly error: AuthClientError };
+// How long the address stays the same before the server is asked whether
+// it is free.
+const checkDelayMs = 300;
 
-/**
- * Creates a workspace the user owns, named `name`, under the first of
- * its slugs the server takes (`slugsToTry`): a slug another workspace
- * holds tries the next one. The workspace made becomes the session's
- * active one.
- */
-export const createWorkspace = async (
-  name: string,
-  slugs: readonly string[]
-): Promise<Created> => {
-  const [slug, ...others] = slugs;
+// Whether `slug` is free, from Better Auth's check, asked once the person
+// pauses: `checking` until the answer for that very slug comes.
+const useSlugAvailability = (slug: string): SlugAvailability => {
+  const settled = useDebounced(slug, checkDelayMs);
 
-  if (slug === undefined) {
-    return { error: { status: 400 } };
-  }
+  const [checked, setChecked] = useState<{
+    readonly answer: SlugAvailability;
+    readonly slug: string;
+  } | null>(null);
 
-  const result = await authClient.organization.create({ name, slug });
+  useEffect(() => {
+    if (!isWorkspaceSlug(settled)) {
+      return;
+    }
 
-  if (result.error === null) {
-    // Better Auth makes it active in the database, but the session's
-    // cached cookie, which `/` reads, still names the last one for five
-    // minutes: setting it again renews the cookie.
-    chooseWorkspace(result.data.id);
+    let current = true;
 
-    return { slug: result.data.slug };
-  }
+    const check = async () => {
+      const result = await authClient.organization.checkSlug({
+        slug: settled,
+      });
 
-  return slugTaken(result.error.code) && others.length > 0
-    ? await createWorkspace(name, others)
-    : { error: result.error };
+      if (!current) {
+        return;
+      }
+
+      if (result.error === null) {
+        setChecked({ answer: "free", slug: settled });
+      } else {
+        setChecked({
+          answer: slugTaken(result.error.code) ? "taken" : "unknown",
+          slug: settled,
+        });
+      }
+    };
+
+    void check();
+
+    return () => {
+      current = false;
+    };
+  }, [settled]);
+
+  return slugAvailabilityOf(slug, checked);
 };
 
-// Creates a workspace the user owns, then opens it.
-export const CreateWorkspaceForm = () => {
+/**
+ * Creates a workspace the user owns, then opens it: its name and its
+ * address, both offered (`initialName`, the address from its words) and
+ * both the person's to replace. The address follows the name until the
+ * person writes one, and is checked as it changes: one another workspace
+ * holds, while still the one offered, gets a few random letters at its
+ * end. The workspace made becomes the session's active one.
+ */
+export const CreateWorkspaceForm = ({
+  initialName = "",
+}: {
+  readonly initialName?: string;
+}) => {
   const t = useTranslations("AppPage");
   const router = useRouter();
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initialName);
+  const [written, setWritten] = useState<string | null>(null);
+  const [tail, setTail] = useState<string | null>(null);
   const [error, setError] = useState<AuthErrorKey | null>(null);
   const [isPending, startTransition] = useTransition();
   const offerUpgrade = useOfferAuthUpgrade();
+  const slug = (written ?? suggestedSlugOf(name, tail)).trim();
+  const availability = useSlugAvailability(slug);
+  const offered = written === null;
+  const named = name.trim();
+  // The address's start, as the browser has Peal open, once hydrated.
+  const host = useMounted() ? globalThis.location.host : "";
+
+  // The address offered is taken or reserved: offer it with a tail.
+  useEffect(() => {
+    if (
+      offered &&
+      tail === null &&
+      (availability === "taken" || (availability === "invalid" && slug !== ""))
+    ) {
+      setTail(crypto.randomUUID().slice(0, 4));
+    }
+  }, [availability, offered, slug, tail]);
+
+  // A new name offers its own words again, without the tail.
+  const handleName = (typed: string) => {
+    setName(typed);
+    setTail(null);
+  };
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     startTransition(async () => {
-      const created = await createWorkspace(
-        name,
-        slugsToTry(name, crypto.randomUUID().slice(0, 8))
-      );
+      const result = await authClient.organization.create({
+        name: named,
+        slug,
+      });
 
-      if ("slug" in created) {
+      if (result.error === null) {
+        // Better Auth makes it active in the database, but the session's
+        // cached cookie, which `/` reads, still names the last one for
+        // five minutes: setting it again renews the cookie.
+        chooseWorkspace(result.data.id);
         setError(null);
-        router.push(workspacePath(created.slug));
+        router.push(workspacePath(result.data.slug));
         router.refresh();
       } else {
-        setError(authErrorKey(created.error));
-        offerUpgrade(created.error);
+        setError(authErrorKey(result.error));
+        offerUpgrade(result.error);
       }
     });
   };
 
+  const handleAddress = (event: ChangeEvent<HTMLInputElement>) => {
+    setWritten(event.target.value);
+  };
+
+  // Only what stops the workspace being made is said under the address.
+  const problem =
+    availability === "taken" || (availability === "invalid" && slug !== "")
+      ? t(`address.${availability}`, { slug })
+      : null;
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-5"
+      data-create-workspace=""
+    >
       <FormError error={error} />
       <FormField
         id="workspace-name"
@@ -91,9 +173,47 @@ export const CreateWorkspaceForm = () => {
         autoComplete="organization"
         label={t("workspaceName")}
         value={name}
-        onChange={setName}
+        onChange={handleName}
       />
-      <Button type="submit" disabled={isPending} focusableWhenDisabled>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="workspace-address">{t("address.label")}</Label>
+        <InputGroup>
+          <InputGroupAddon variant="segment">
+            <InputGroupText>{`${host}/`}</InputGroupText>
+          </InputGroupAddon>
+          <InputGroupInput
+            id="workspace-address"
+            name="workspace-address"
+            type="text"
+            autoComplete="off"
+            spellCheck={false}
+            value={slug}
+            onChange={handleAddress}
+            aria-invalid={problem === null ? undefined : true}
+            aria-describedby={
+              problem === null ? undefined : "workspace-address-problem"
+            }
+            required
+          />
+        </InputGroup>
+        {problem === null ? null : (
+          <p
+            id="workspace-address-problem"
+            className="text-destructive text-xs"
+          >
+            {problem}
+          </p>
+        )}
+      </div>
+      <Button
+        type="submit"
+        disabled={
+          isPending ||
+          named === "" ||
+          !(availability === "free" || availability === "unknown")
+        }
+        focusableWhenDisabled
+      >
         {isPending ? t("creating") : t("create")}
       </Button>
     </form>

@@ -38,6 +38,10 @@ const KnownErrorSchema = Schema.Literals([
   "TWO_STEP_REQUIRED",
   // A server where accounts are made by invitation refused the address.
   "SIGN_UP_BY_INVITATION",
+  // A new workspace's address: another workspace holds it, or the web app
+  // cannot route it.
+  "ORGANIZATION_SLUG_ALREADY_TAKEN",
+  "INVALID_WORKSPACE_SLUG",
 ]);
 
 export type AuthErrorKey =

@@ -752,6 +752,16 @@ bar across the top.
   edge; forms and settings in a column 48 rem wide at most, 24 px from
   the header; full-bleed tools (the calendar, the inbox, the composer)
   fill the panel.
+- **`setup`**: the one page where someone with no workspace makes their
+  first (`/`). Its header stays empty; the content is a column 24 rem
+  wide, centred, 12 vh from the top: a title (`headline`, centred, the
+  page's `h1`) with one muted line under it, then the form: **Name**,
+  then **URL** as one field: the site's address in a segment of its own
+  (peal-ui's `InputGroupAddon variant="segment"`: `{colors.surface-2}`,
+  muted text, a hairline after it), then what the person types, and the
+  button the column's width. **New workspace** uses the same form. Under the URL,
+  only what stops the workspace being made (taken, or a word it cannot
+  be), in destructive text. Only this page draws its own title.
 - The contract functions close the panel's content, in small muted text.
 
 PealStudio holds Home, Calendar, Posts, Channels and Media, then Inbox,

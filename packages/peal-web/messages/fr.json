@@ -637,7 +637,9 @@
       "PROVIDER_FAILED": "La connexion avec votre fournisseur a échoué. Réessayez.",
       "PROVIDER_EMAIL_NOT_AUTHORITATIVE": "Connectez-vous avec votre mot de passe : Google ne peut pas confirmer que cette adresse est toujours la vôtre.",
       "PROVIDER_EMAIL_INVALID": "Votre fournisseur a donné une adresse e-mail que Peal ne peut pas utiliser. Connectez-vous avec votre mot de passe.",
-      "AUTHORIZATION_FAILED": "La demande de connexion de l’application a été refusée. Revenez à l’application et recommencez."
+      "AUTHORIZATION_FAILED": "La demande de connexion de l’application a été refusée. Revenez à l’application et recommencez.",
+      "ORGANIZATION_SLUG_ALREADY_TAKEN": "Un autre espace a déjà cette adresse. Choisissez-en une autre.",
+      "INVALID_WORKSPACE_SLUG": "Cette adresse ne peut pas servir. Utilisez des lettres minuscules et des chiffres, des mots reliés par des tirets."
     },
     "providers": {
       "continueWith": "Continuer avec {name}",
@@ -701,12 +703,22 @@
   },
   "AppPage": {
     "createDescription": "Vous en serez propriétaire, et pourrez y inviter des personnes.",
-    "workspaceName": "Nom de l’espace de travail",
-    "create": "Créer l’espace de travail",
+    "workspaceName": "Nom",
+    "create": "Créer l’espace",
     "creating": "Création…",
     "settingUp": "Préparation de votre espace de travail…",
     "defaultName": "{elided, select, yes {Espace d’{name}} other {Espace de {name}}}",
-    "defaultNameNoOne": "Mon espace de travail"
+    "defaultNameNoOne": "Mon espace de travail",
+    "firstDescription": "Là où vivent vos comptes, vos publications et votre équipe. Vous pourrez changer son nom et son URL plus tard.",
+    "address": {
+      "label": "URL",
+      "checking": "Vérification de /{slug}…",
+      "free": "/{slug} est libre.",
+      "taken": "Un autre espace utilise déjà cette URL.",
+      "invalid": "Utilisez des lettres minuscules et des chiffres, des mots reliés par des tirets. Quelques mots sont réservés aux pages de Peal.",
+      "unknown": "Peal n’a pas pu vérifier /{slug}. Vous pouvez quand même essayer."
+    },
+    "createTitle": "Créer un espace de travail"
   },
   "InvitationPage": {
     "title": "Rejoindre un espace de travail",

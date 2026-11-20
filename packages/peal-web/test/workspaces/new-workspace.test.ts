@@ -1,7 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Option } from "effect";
 import {
-  emailSlugTailOf,
   isWorkspaceSlug,
   workspaceSlugOf,
   workspaceSlugWordsOf,
@@ -12,8 +11,9 @@ import {
   elidesBefore,
   firstNameOf,
   openInvitationOf,
-  slugsToTry,
+  slugAvailabilityOf,
   slugTaken,
+  suggestedSlugOf,
 } from "#workspaces/new-workspace.ts";
 
 describe(isWorkspaceSlug, () => {
@@ -52,34 +52,6 @@ describe(workspaceSlugOf, () => {
     expect(workspaceSlugWordsOf("  Café  Crème! ")).toBe("cafe-creme");
   });
 
-  it("ends a first workspace's slug with the name part of the email address", () => {
-    expect(emailSlugTailOf("sam.lee@example.com")).toBe("sam.lee");
-    expect(
-      workspaceSlugOf(
-        "Maxime’s workspace",
-        emailSlugTailOf("sam.lee@example.com")
-      )
-    ).toBe("maximes-workspace-sam-lee");
-    expect(
-      workspaceSlugOf("Espace d’Élise", emailSlugTailOf("Élise+Pro@example.fr"))
-    ).toBe("espace-delise-elise-pro");
-    expect(workspaceSlugOf("日本", emailSlugTailOf("@example.com"))).toBe(
-      "workspace"
-    );
-  });
-
-  it("keeps the tail within its own limit, and the slug within 48", () => {
-    const slug = workspaceSlugOf(
-      `${"long ".repeat(20)}name`,
-      emailSlugTailOf(`${"first.last.".repeat(6)}x@example.com`)
-    );
-
-    expect(slug.length).toBeLessThanOrEqual(48);
-    expect(isWorkspaceSlug(slug)).toBeTruthy();
-    expect(slug.startsWith("long-long-")).toBeTruthy();
-    expect(slug).toContain("-first-last-");
-  });
-
   it("stays within the limit, cut where a word ends", () => {
     const slug = workspaceSlugOf(`${"long ".repeat(20)}name`, "1a2b3c4d");
 
@@ -89,17 +61,44 @@ describe(workspaceSlugOf, () => {
   });
 });
 
-describe(slugsToTry, () => {
-  it("tries the words alone first, then with the tail", () => {
-    expect(slugsToTry("Maple Studio", "1a2b3c4d")).toStrictEqual([
-      "maple-studio",
-      "maple-studio-1a2b3c4d",
-    ]);
+describe(suggestedSlugOf, () => {
+  it("offers the name's words alone, then with the tail once given", () => {
+    expect(suggestedSlugOf("Maxime’s workspace", null)).toBe(
+      "maximes-workspace"
+    );
+    expect(suggestedSlugOf("Maxime’s workspace", "1a2b")).toBe(
+      "maximes-workspace-1a2b"
+    );
   });
 
-  it("goes straight to the tail for a reserved word or a name without words", () => {
-    expect(slugsToTry("Agenda", "1a2b3c4d")).toStrictEqual(["agenda-1a2b3c4d"]);
-    expect(slugsToTry("!!!", "1a2b3c4d")).toStrictEqual(["workspace-1a2b3c4d"]);
+  it("offers nothing for an empty name, and the tail for a reserved word", () => {
+    expect(suggestedSlugOf("", null)).toBe("");
+    expect(suggestedSlugOf("Agenda", null)).toBe("agenda");
+    expect(suggestedSlugOf("Agenda", "1a2b")).toBe("agenda-1a2b");
+    expect(suggestedSlugOf("!!!", "1a2b")).toBe("workspace-1a2b");
+  });
+});
+
+describe(slugAvailabilityOf, () => {
+  it("refuses before asking, and reads only the answer for that slug", () => {
+    expect(slugAvailabilityOf("agenda", null)).toBe("invalid");
+    expect(slugAvailabilityOf("Two Words", null)).toBe("invalid");
+    expect(slugAvailabilityOf("maple-studio", null)).toBe("checking");
+    expect(
+      slugAvailabilityOf("maple-studio", { answer: "free", slug: "maple" })
+    ).toBe("checking");
+    expect(
+      slugAvailabilityOf("maple-studio", {
+        answer: "taken",
+        slug: "maple-studio",
+      })
+    ).toBe("taken");
+  });
+
+  it("knows Better Auth's answers for a slug another workspace holds", () => {
+    expect(slugTaken("ORGANIZATION_ALREADY_EXISTS")).toBeTruthy();
+    expect(slugTaken("ORGANIZATION_SLUG_ALREADY_TAKEN")).toBeTruthy();
+    expect(slugTaken("FREE_WORKSPACE_LIMIT_REACHED")).toBeFalsy();
   });
 
   it("knows Better Auth's answers for a slug another workspace holds", () => {

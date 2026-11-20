@@ -3,7 +3,6 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { emailSlugTailOf, workspaceSlugOf } from "peal-contract/workspace-slug";
 
 import { activeWorkspaceOf } from "#auth/active-workspace.ts";
 import { currentUser } from "#auth/session.ts";
@@ -16,8 +15,8 @@ import { elidesBefore, firstNameOf } from "#workspaces/new-workspace.ts";
 // `/` opens the person's workspace, for someone signed in: the one
 // Better Auth keeps active on the session, else their first. Every way into
 // the app lands here (signing in or up, a confirmed address, an accepted
-// invitation, the OAuth pages). Someone with no workspace gets one made
-// for them, named after them in their account's language
+// invitation, the OAuth pages). Someone with no workspace makes their
+// first one, its name offered after them in their account's language
 // (`FirstWorkspace`), unless an invitation waits for them; staff acting
 // as them are sent to the account page instead, as they may not create
 // one. Anyone signed out is sent to sign in.
@@ -68,16 +67,7 @@ const AppPage = async ({ params }: PageProps<"/[locale]">) => {
           name: first,
         });
 
-  // Its own slug first, ending in the name part of the person's email
-  // address, the same on every try, so two tabs make one; a random one
-  // should another workspace hold it. They may change it in the
-  // workspace's settings.
-  const slugs = [
-    workspaceSlugOf(name, emailSlugTailOf(user.email)),
-    workspaceSlugOf(name, crypto.randomUUID().replaceAll("-", "").slice(0, 8)),
-  ];
-
-  return <FirstWorkspace name={name} slugs={slugs} />;
+  return <FirstWorkspace name={name} />;
 };
 
 export default AppPage;

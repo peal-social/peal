@@ -6,18 +6,41 @@ import {
 } from "peal-contract/workspace-slug";
 
 /**
- * The slugs a new workspace of this name tries, in turn: its words alone
- * (`/maple-studio`) when they make a slug the server takes, then its
- * words and `tail` (a few random letters and digits), for a name another
- * workspace holds or a reserved word. A slug never changes after.
+ * The address a new workspace of this name is offered, which the person
+ * may replace: its words alone (`maple-studio`), or, once `tail` is given
+ * (a few random letters and digits, for words another workspace holds or
+ * a reserved word), the words and the tail.
  */
-export const slugsToTry = (name: string, tail: string): readonly string[] => {
+export const suggestedSlugOf = (name: string, tail: string | null): string => {
   const words = workspaceSlugWordsOf(name);
-  const tailed = workspaceSlugOf(name, tail);
 
-  return isWorkspaceSlug(words) && words !== tailed
-    ? [words, tailed]
-    : [tailed];
+  return tail === null && (words === "" || isWorkspaceSlug(words))
+    ? words
+    : workspaceSlugOf(name, tail ?? "");
+};
+
+/** Whether a new workspace's address can be taken, as far as is known. */
+export type SlugAvailability =
+  | "checking"
+  | "free"
+  | "invalid"
+  | "taken"
+  | "unknown";
+
+/**
+ * What the form says of `slug`: `invalid` before asking, else the answer
+ * the server gave for that very slug (`checked`), `checking` while the
+ * last answer is another slug's.
+ */
+export const slugAvailabilityOf = (
+  slug: string,
+  checked: { readonly answer: SlugAvailability; readonly slug: string } | null
+): SlugAvailability => {
+  if (!isWorkspaceSlug(slug)) {
+    return "invalid";
+  }
+
+  return checked?.slug === slug ? checked.answer : "checking";
 };
 
 /** Better Auth's answer when the slug is another workspace's. */

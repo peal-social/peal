@@ -637,7 +637,9 @@
       "PROVIDER_FAILED": "The sign-in with your provider failed. Try again.",
       "PROVIDER_EMAIL_NOT_AUTHORITATIVE": "Sign in with your password: Google can't confirm this address is still yours.",
       "PROVIDER_EMAIL_INVALID": "Your provider gave an email address Peal can't use. Sign in with your password.",
-      "AUTHORIZATION_FAILED": "The application's sign-in request was refused. Go back to the application and start again."
+      "AUTHORIZATION_FAILED": "The application's sign-in request was refused. Go back to the application and start again.",
+      "ORGANIZATION_SLUG_ALREADY_TAKEN": "Another workspace already has that address. Choose another.",
+      "INVALID_WORKSPACE_SLUG": "That address can't be used. Use lower-case letters and digits, with words joined by hyphens."
     },
     "providers": {
       "continueWith": "Continue with {name}",
@@ -701,12 +703,22 @@
   },
   "AppPage": {
     "createDescription": "You will own it, and can invite people to it.",
-    "workspaceName": "Workspace name",
-    "create": "Create the workspace",
+    "workspaceName": "Name",
+    "create": "Create workspace",
     "creating": "Creating…",
     "settingUp": "Setting up your workspace…",
     "defaultName": "{elided, select, other {{name}’s workspace}}",
-    "defaultNameNoOne": "My workspace"
+    "defaultNameNoOne": "My workspace",
+    "firstDescription": "Where your channels, posts and team live. You can change its name and URL later.",
+    "address": {
+      "label": "URL",
+      "checking": "Checking whether /{slug} is free…",
+      "free": "/{slug} is free.",
+      "taken": "Another workspace already uses this URL.",
+      "invalid": "Use lower-case letters and digits, with words joined by hyphens. A few words are kept for Peal's own pages.",
+      "unknown": "Peal couldn't check /{slug}. You can still try it."
+    },
+    "createTitle": "Create a workspace"
   },
   "InvitationPage": {
     "title": "Join a workspace",
