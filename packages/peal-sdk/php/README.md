@@ -41,6 +41,7 @@ use Peal\ApiKeys\Requests\NewApiKey;
 use Peal\Types\Permission;
 
 $client = new PealClient(
+    pealVersion: '2026-11-09',
     token: '<token>',
 );
 $client->apiKeys->create(

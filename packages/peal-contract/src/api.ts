@@ -5,6 +5,7 @@ import { ActivityApi } from "./activity.ts";
 import { AdsApi } from "./ads.ts";
 import { AnalyticsApi } from "./analytics.ts";
 import { ApiKeysApi } from "./api-keys.ts";
+import { apiVersion } from "./api-version.ts";
 import { ArticlesApi } from "./articles.ts";
 import { AssistantApi } from "./assistant.ts";
 import { BillingAccountsDeskApi } from "./billing-accounts-desk.ts";
@@ -1132,6 +1133,8 @@ export {
 } from "./api-changelog.ts";
 
 export type { ApiChangelog, ApiChangelogEntry } from "./api-changelog.ts";
+
+export { apiVersion, apiVersionHeader, apiVersions } from "./api-version.ts";
 
 export { deprecated, Deprecation } from "./deprecation.ts";
 
@@ -2597,11 +2600,13 @@ export class Api extends HttpApi.make("peal")
   .add(ChannelDefaultsApi)
   .add(ShortLinksApi)
   // The contract is Apache-2.0, unlike the rest of Peal, so the clients
-  // generated from this document may be too.
+  // generated from this document may be too. Its version is the API's
+  // (`Peal-Version`): the day of its latest release.
   .annotateMerge(
     OpenApi.annotations({
       license: { identifier: "Apache-2.0", name: "Apache-2.0" },
       title: "Peal API",
+      version: apiVersion,
     })
   ) {}
 

@@ -39,6 +39,13 @@ impl SystemClient {
     /// }
     /// ```
     pub async fn health(&self, options: Option<RequestOptions>) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(Method::GET, "api/health", None, None, options)
             .await
@@ -70,6 +77,13 @@ impl SystemClient {
     /// }
     /// ```
     pub async fn ready(&self, options: Option<RequestOptions>) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(Method::GET, "api/ready", None, None, options)
             .await
@@ -104,6 +118,13 @@ impl SystemClient {
         &self,
         options: Option<RequestOptions>,
     ) -> Result<ApiChangelog, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(Method::GET, "api/changelog", None, None, options)
             .await

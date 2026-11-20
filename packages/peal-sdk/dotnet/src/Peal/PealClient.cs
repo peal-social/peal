@@ -17,6 +17,10 @@ public partial class PealClient : IPealClient
                 { "X-Fern-SDK-Version", global::Peal.Version.Current },
             }
         );
+        if (clientOptions.PealVersion != null)
+        {
+            platformHeaders["Peal-Version"] = clientOptions.PealVersion;
+        }
         foreach (var header in platformHeaders)
         {
             if (!clientOptions.Headers.ContainsKey(header.Key))
@@ -26,7 +30,11 @@ public partial class PealClient : IPealClient
         }
         var clientOptionsWithAuth = clientOptions.Clone();
         var authHeaders = new Headers(
-            new Dictionary<string, string>() { { "Authorization", $"Bearer {token}" } }
+            new Dictionary<string, string>()
+            {
+                { "Authorization", $"Bearer {token}" },
+                { "Peal-Version", "2026-11-09" },
+            }
         );
         foreach (var header in authHeaders)
         {

@@ -42,6 +42,13 @@ impl PartnerClient {
         &self,
         options: Option<RequestOptions>,
     ) -> Result<PartnerOverview, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(Method::GET, "api/partner", None, None, options)
             .await
@@ -85,6 +92,13 @@ impl PartnerClient {
         request: &PartnerOverviewQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<PartnerHealth, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -137,6 +151,13 @@ impl PartnerClient {
         request: &PartnerListWorkspacesQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<CustomerWorkspacePage, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -194,6 +215,9 @@ impl PartnerClient {
     ) -> Result<CustomerWorkspace, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -241,6 +265,13 @@ impl PartnerClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<CustomerWorkspace, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -285,6 +316,13 @@ impl PartnerClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::DELETE,
@@ -338,6 +376,9 @@ impl PartnerClient {
     ) -> Result<CustomerWorkspace, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -396,6 +437,9 @@ impl PartnerClient {
     ) -> Result<MovedChannel, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };

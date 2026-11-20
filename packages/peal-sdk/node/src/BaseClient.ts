@@ -3,6 +3,7 @@
 import { BearerAuthProvider } from "./auth/BearerAuthProvider.js";
 import * as core from "./core/index.js";
 import type { AuthProvider } from "./core/auth/index.js";
+import { mergeHeaders } from "./core/headers.js";
 import * as environments from "./environments.js";
 
 export type AuthOption =
@@ -15,6 +16,8 @@ export type BaseClientOptions = {
     environment?: core.Supplier<environments.PealEnvironment | string>;
     /** Specify a custom URL to connect the client to. */
     baseUrl?: core.Supplier<string>;
+    /** Override the Peal-Version header */
+    pealVersion?: "2026-11-09";
     /** Additional headers to include in requests. */
     headers?: Record<string, string | core.Supplier<string | null | undefined> | null | undefined>;
     /** The default maximum time to wait for a response in seconds. */
@@ -38,6 +41,8 @@ export interface BaseRequestOptions {
     maxRetries?: number;
     /** A hook to abort the request. */
     abortSignal?: AbortSignal;
+    /** Override the Peal-Version header */
+    pealVersion?: "2026-11-09";
     /** Additional query string parameters to include in the request. */
     queryParams?: Record<string, unknown>;
     /** A dictionary containing additional parameters to spread into the request's body. */
@@ -59,9 +64,16 @@ export type NormalizedClientOptionsWithAuth<T extends BaseClientOptions = BaseCl
 
 export function normalizeClientOptions<T extends BaseClientOptions = BaseClientOptions>(
     options: T
-): NormalizedClientOptions<T> {    return {
+): NormalizedClientOptions<T> {
+    const headers = mergeHeaders(
+        { "Peal-Version": options?.pealVersion ?? "2026-11-09" },
+        options?.headers
+    );
+
+    return {
         ...options,
         logging: core.logging.createLogger(options?.logging),
+        headers,
     } as NormalizedClientOptions<T>;
 }
 

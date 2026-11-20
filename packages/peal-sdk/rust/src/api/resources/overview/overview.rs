@@ -51,6 +51,13 @@ impl OverviewClient {
         request: &OverviewGetQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<Overview, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -107,6 +114,13 @@ impl OverviewClient {
         request: &AgendaQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<AgendaPage, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -165,6 +179,13 @@ impl OverviewClient {
         request: &ReportQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ReportAcrossWorkspaces, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -220,6 +241,13 @@ impl OverviewClient {
         request: &ReportExportQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ByteStream, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_stream_request(
                 Method::GET,

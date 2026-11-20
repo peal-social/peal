@@ -53,6 +53,13 @@ impl InboxMessagesClient {
         request: &ListConversationsQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxConversationPage, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -114,6 +121,13 @@ impl InboxMessagesClient {
         request: &GetConversationQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxConversationDetail, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -175,6 +189,9 @@ impl InboxMessagesClient {
     ) -> Result<InboxOutgoingMessage, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -235,6 +252,9 @@ impl InboxMessagesClient {
     ) -> Result<InboxPrivateReply, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -290,6 +310,13 @@ impl InboxMessagesClient {
         private_reply_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxPrivateReply, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -346,6 +373,9 @@ impl InboxMessagesClient {
     ) -> Result<InboxPrivateReply, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -405,6 +435,9 @@ impl InboxMessagesClient {
     ) -> Result<InboxConversation, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };
@@ -455,6 +488,13 @@ impl InboxMessagesClient {
         workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxMessageSettings, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -506,6 +546,13 @@ impl InboxMessagesClient {
         request: &SetChannelMessagesInboxMessagesRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxMessageSettings, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::PUT,
@@ -561,6 +608,13 @@ impl InboxMessagesClient {
         request: &SetMessageApplicationInboxMessagesRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxMessageSettings, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::PUT,
@@ -617,6 +671,9 @@ impl InboxMessagesClient {
     ) -> Result<InboxOutgoingMessage, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };

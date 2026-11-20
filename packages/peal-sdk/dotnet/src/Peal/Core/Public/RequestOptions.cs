@@ -83,4 +83,12 @@ public partial class RequestOptions : IRequestOptions
         set;
 #endif
     }
+
+    public string? PealVersion { get;
+#if NET5_0_OR_GREATER
+        init;
+#else
+        set;
+#endif
+    }
 }

@@ -16,7 +16,11 @@
   operation's SDK group and method come from its operationId
   (`posts.schedule`), and no POST or PATCH is retried
   (`x-fern-retries`): the first may have created what a retry would create
-  again. The contract's `webhooks` section (the events Peal sends) is left
+  again. Every SDK sends `Peal-Version`, the contract's `info.version`,
+  on every request (`x-fern-global-headers`, a literal its users may
+  override), so a release that records a changelog entry regenerates the
+  SDKs; `scripts/test.ts` fails a smoke test whose calls leave it out.
+  The contract's `webhooks` section (the events Peal sends) is left
   out (`leftOut`, tested in `scripts/spec.test.ts`, and `api-changes.ts`
   reads none of it): the open-source generators are documented to make no
   typed events of it, their signature helper being a paid feature, and the

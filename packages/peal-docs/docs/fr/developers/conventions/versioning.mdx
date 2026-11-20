@@ -32,6 +32,18 @@ Une rupture ne se fait que sur décision. Elle est alors consignée avec sa rais
 
 Les charges utiles des webhooks suivent la même règle, avec leur propre `version` ([Versions](/developers/webhooks/requests#versions)).
 
+## L’en-tête de version [#version-header]
+
+Une version de l’API est le jour d’une publication du [journal des modifications](#changelog), comme `2026-11-09`. Chaque réponse porte la version que parle le serveur, sa dernière publication, dans un en-tête `Peal-Version` :
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Peal-Version: 2026-11-09
+```
+
+Envoyez dans le même en-tête la version pour laquelle votre client a été écrit. Les SDK et la ligne de commande envoient la leur à chaque requête : vous n’avez rien à régler. Le serveur répond de la même façon à tous les clients, quelle que soit la version envoyée, y compris absente ou inconnue, et compte les versions que ses clients envoient. Si une rupture est un jour décidée, ce décompte montre qui appelle encore avec une version plus ancienne.
+
 ## Dépréciations [#deprecations]
 
 Un point d’accès déprécié continue de répondre comme il l’a toujours fait. Il le dit à trois endroits :

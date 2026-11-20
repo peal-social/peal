@@ -13,7 +13,8 @@ module Peal
         base_url: base_url || Peal::Environment::DEFAULT,
         headers: {
           "X-Fern-Language" => "Ruby",
-          Authorization: "Bearer #{token}"
+          Authorization: "Bearer #{token}",
+          "Peal-Version" => "2026-11-09"
         },
         max_retries: max_retries,
         timeout: timeout

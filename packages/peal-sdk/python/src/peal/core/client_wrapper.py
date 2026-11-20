@@ -19,6 +19,7 @@ class BaseClientWrapper:
         stream_reconnection_enabled: typing.Optional[bool] = None,
         max_stream_reconnection_attempts: typing.Optional[int] = None,
         logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
+        peal_version: typing.Optional[str] = None,
     ):
         self._token = token
         self._headers = headers
@@ -28,6 +29,7 @@ class BaseClientWrapper:
         self._stream_reconnection_enabled = stream_reconnection_enabled
         self._max_stream_reconnection_attempts = max_stream_reconnection_attempts
         self._logging = logging
+        self._peal_version = peal_version
 
     def get_headers(self, *, include_token: bool = True) -> typing.Dict[str, str]:
         import platform
@@ -45,6 +47,7 @@ class BaseClientWrapper:
             token = self._get_token()
             if token is not None:
                 headers["Authorization"] = f"Bearer {token}"
+        headers["Peal-Version"] = self._peal_version if self._peal_version is not None else "2026-11-09"
         return headers
 
     def _get_token(self) -> typing.Optional[str]:
@@ -84,6 +87,7 @@ class SyncClientWrapper(BaseClientWrapper):
         stream_reconnection_enabled: typing.Optional[bool] = None,
         max_stream_reconnection_attempts: typing.Optional[int] = None,
         logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
+        peal_version: typing.Optional[str] = None,
         httpx_client: httpx.Client,
     ):
         super().__init__(
@@ -95,6 +99,7 @@ class SyncClientWrapper(BaseClientWrapper):
             stream_reconnection_enabled=stream_reconnection_enabled,
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
+            peal_version=peal_version,
         )
         self.httpx_client = HttpClient(
             httpx_client=httpx_client,
@@ -118,6 +123,7 @@ class AsyncClientWrapper(BaseClientWrapper):
         stream_reconnection_enabled: typing.Optional[bool] = None,
         max_stream_reconnection_attempts: typing.Optional[int] = None,
         logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
+        peal_version: typing.Optional[str] = None,
         async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
         httpx_client: httpx.AsyncClient,
     ):
@@ -130,6 +136,7 @@ class AsyncClientWrapper(BaseClientWrapper):
             stream_reconnection_enabled=stream_reconnection_enabled,
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
+            peal_version=peal_version,
         )
         self._async_token = async_token
         self.httpx_client = AsyncHttpClient(

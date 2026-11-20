@@ -47,6 +47,13 @@ impl LookupsClient {
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<LookupDescription>, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
@@ -107,6 +114,9 @@ impl LookupsClient {
     ) -> Result<LookupResult, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
             o.max_retries = Some(0);
             Some(o)
         };

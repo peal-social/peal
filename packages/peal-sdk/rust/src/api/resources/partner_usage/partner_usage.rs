@@ -51,6 +51,13 @@ impl PartnerUsageClient {
         request: &PartnerUsageGetQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<PartnerUsageReport, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
         self.http_client
             .execute_request(
                 Method::GET,
