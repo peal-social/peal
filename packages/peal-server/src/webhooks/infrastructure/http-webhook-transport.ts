@@ -67,6 +67,10 @@ const answerOf = (response: HttpClientResponse.HttpClientResponse) =>
         }))
       );
 
+// A host as DNS and TLS read it: `peal.example.` names `peal.example`.
+const bareHost = (url: URL): string =>
+  `${url.hostname.replace(/\.+$/u, "")}:${url.port}`;
+
 /**
  * The transport on the public HTTP client: every request is checked by the
  * outbound guard first, no redirect is followed, the answer is cut off
@@ -86,7 +90,7 @@ export const httpWebhookTransport = (options: {
       const guard = yield* OutboundGuard;
       // Peal's own origin: a delivery there would reach the server itself,
       // where an event may make another, and nothing would come of it.
-      const own = new URL(yield* publicUrlConfig).host;
+      const own = bareHost(new URL(yield* publicUrlConfig));
       const client = yield* publicHttpClientWith(options);
 
       const exchange = ({ body, headers, url }: WebhookRequest) =>
@@ -111,7 +115,7 @@ export const httpWebhookTransport = (options: {
         check: (url) => {
           const target = new URL(url);
 
-          return target.host === own
+          return bareHost(target) === own
             ? Effect.fail(new UrlNotDeliverable({ reason: "ownServer" }))
             : guard
                 .check(target)
