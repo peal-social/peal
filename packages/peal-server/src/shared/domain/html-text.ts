@@ -3,14 +3,7 @@
 // spans), or a feed's item summary, as its site wrote it. Peal keeps plain
 // text, so what it says is shown as text and never rendered as markup.
 
-const entities = new Map([
-  ["amp", "&"],
-  ["apos", "'"],
-  ["gt", ">"],
-  ["lt", "<"],
-  ["nbsp", " "],
-  ["quot", '"'],
-]);
+import { namedCharacters } from "./html-entities.ts";
 
 const decodeEntity = (whole: string, name: string): string => {
   if (name.startsWith("#")) {
@@ -28,7 +21,14 @@ const decodeEntity = (whole: string, name: string): string => {
       : whole;
   }
 
-  return entities.get(name.toLowerCase()) ?? whole;
+  // A name is read as written: `&Eacute;` and `&eacute;` are two letters.
+  // A no-break space (`&nbsp;`, `&NonBreakingSpace;`) is a space, as it
+  // always was here.
+  const characters = namedCharacters.get(name);
+
+  return characters === undefined
+    ? whole
+    : characters.replaceAll("\u00A0", " ");
 };
 
 // Elements whose content is code, never text: dropped whole, the rest of
@@ -144,5 +144,5 @@ const withoutTags = (html: string): string => {
  */
 export const textOfHtml = (html: string): string =>
   withoutTags(withoutHidden(html))
-    .replaceAll(/&(?<name>#x[0-9a-f]+|#\d+|[a-z]+);/giu, decodeEntity)
+    .replaceAll(/&(?<name>#x[0-9a-f]+|#\d+|[a-z][a-z\d]*);/giu, decodeEntity)
     .trim();
