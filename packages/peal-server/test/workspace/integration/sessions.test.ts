@@ -2,7 +2,13 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
-import { IntegrationLive, signedUp, TestApp } from "./harness.ts";
+import {
+  IntegrationLive,
+  newEmail,
+  signedUp,
+  TestApp,
+  workspaceOf,
+} from "./harness.ts";
 
 const sessionCookie = "peal.session_token=";
 
@@ -62,6 +68,55 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
               .getSetCookie()
               .some((set) => set.startsWith(sessionCookie))
           );
+        })
+    );
+
+    // A sign-out everywhere, a password reset or a ban deletes the
+    // session; the copy cached in a cookie outlives it by minutes.
+    it.effect(
+      "no longer change a workspace on Better Auth's routes once deleted, their cached copy notwithstanding",
+      () =>
+        Effect.gen(function* revoked() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const person = yield* signedUp("revoked");
+          const workspaceId = yield* workspaceOf(person, "Revoked");
+          const headers = { cookie: person.cookies };
+
+          yield* sql`DELETE FROM auth.session WHERE user_id = ${person.id}`;
+
+          const cached = yield* app.request("/api/auth/get-session", {
+            headers,
+          });
+
+          assert.strictEqual(cached.status, 200);
+          assert.isNotNull(cached.body);
+
+          const invited = yield* app.request(
+            "/api/auth/organization/invite-member",
+            {
+              body: {
+                email: newEmail("never-invited"),
+                organizationId: workspaceId,
+                role: "editor",
+              },
+              headers,
+            }
+          );
+
+          assert.strictEqual(invited.status, 401);
+
+          const renamed = yield* app.request("/api/auth/organization/update", {
+            body: { data: { name: "Renamed" }, organizationId: workspaceId },
+            headers,
+          });
+
+          assert.strictEqual(renamed.status, 401);
+
+          const [row] =
+            yield* sql`SELECT name FROM auth.organization WHERE id = ${workspaceId}`;
+
+          assert.deepStrictEqual(row, { name: "Revoked" });
         })
     );
   }

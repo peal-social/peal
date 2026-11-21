@@ -145,6 +145,12 @@ The staff context follows these rules too. What the law has a host keep is in
   keys never act for staff. A new route that changes something under a
   cookie session needs nothing more; one outside `Authentication` and
   `/api/auth` must call the guard itself.
+- Better Auth caches a session in a cookie for five minutes, which a
+  sign-out everywhere, a password reset or a ban does not reach. Its
+  routes whose effect outlives the session (`refusedWhileImpersonating`)
+  read the session from the database first and answer 401 to one it no
+  longer holds (`refuseRevokedSessions`, first in the before hook), as
+  Peal's API reads a write's session fresh.
 - Workspaces and accounts are deleted through Peal's API only
   (`DeleteWorkspace`, `CloseAccount`): Better Auth's `/organization/delete`
   and the admin plugin's `/admin/remove-user` are disabled and its
