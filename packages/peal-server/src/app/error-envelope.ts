@@ -1,4 +1,4 @@
-import { Option, Predicate, Schema, SchemaIssue } from "effect";
+import { Option, Predicate, Schema, SchemaAST, SchemaIssue } from "effect";
 import type { Cause } from "effect";
 import { HttpServerResponse } from "effect/http";
 import { HttpApiError } from "effect/http-api";
@@ -52,6 +52,69 @@ const parts = {
   Query: "query",
 } as const;
 
+// The values a schema of literals takes, as a request would write them.
+const literalsOf = (ast: SchemaAST.AST): Option.Option<readonly string[]> => {
+  const members = SchemaAST.isUnion(ast) ? ast.types : [ast];
+
+  return members.every(SchemaAST.isLiteral)
+    ? Option.some(
+        members.map(({ literal }) =>
+          Predicate.isString(literal)
+            ? JSON.stringify(literal)
+            : String(literal)
+        )
+      )
+    : Option.none();
+};
+
+interface NamedSet {
+  // What the formatter says of it: its name alone.
+  readonly named: string;
+  readonly path: string;
+  // What the answer says instead: the values it takes.
+  readonly values: string;
+}
+
+const placeOf = (path: readonly PropertyKey[]) =>
+  JSON.stringify(path.map(String));
+
+// A set of literals the contract names says only its name when refused
+// ("Expected Platform"), and the formatter has no hook for it: each one
+// refused, by its place, so the answer gives the values it takes and a
+// caller learns them from it.
+const namedSetsOf = (
+  issue: SchemaIssue.Issue,
+  path: readonly PropertyKey[]
+): readonly NamedSet[] => {
+  if (issue._tag === "Encoding" || issue._tag === "Filter") {
+    return namedSetsOf(issue.issue, path);
+  }
+
+  if (issue._tag === "Pointer") {
+    return namedSetsOf(issue.issue, [...path, ...issue.path]);
+  }
+
+  if (issue._tag !== "Composite" && issue._tag !== "AnyOf") {
+    return [];
+  }
+
+  const identifier = SchemaAST.resolveIdentifier(issue.ast);
+
+  if (
+    issue._tag === "Composite" ||
+    issue.issues.length > 0 ||
+    identifier === undefined
+  ) {
+    return issue.issues.flatMap((inner) => namedSetsOf(inner, path));
+  }
+
+  return Option.toArray(literalsOf(issue.ast)).map((values) => ({
+    named: `Expected ${identifier}`,
+    path: placeOf(path),
+    values: `Expected ${values.join(" | ")}`,
+  }));
+};
+
 const formatIssues = SchemaIssue.makeFormatterStandardSchemaV1();
 
 const segmentOf = (
@@ -93,13 +156,25 @@ export const requestIssuesOf = <E>(
         return Option.none();
       }
 
+      const named = namedSetsOf(refused.issue, []);
+
       return Option.some(
         formatIssues(refused.issue)
           .issues.slice(0, maxRequestIssues)
-          .map((issue) => ({
-            message: oneLine(issue.message),
-            path: [parts[kind], ...(issue.path ?? []).map(segmentOf)],
-          }))
+          .map((issue) => {
+            const path = (issue.path ?? []).map(segmentOf);
+
+            const set = named.find(
+              (candidate) =>
+                candidate.path === placeOf(path) &&
+                candidate.named === issue.message
+            );
+
+            return {
+              message: oneLine(set?.values ?? issue.message),
+              path: [parts[kind], ...path],
+            };
+          })
       );
     }
   }
