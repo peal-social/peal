@@ -1,9 +1,10 @@
 import type { ClientErrorReport } from "peal-contract";
 
-// What could name someone in an error's text: an email address, an id
-// (users', workspaces' and posts' are UUIDs), an API key, a token (a JWT,
-// such as an email confirmation's), and the query or fragment of an address,
-// which can carry tokens (a password reset link's).
+// What could name someone in an error's text: an email address, an IP
+// address, an id (users', workspaces' and posts' are UUIDs), an API key
+// (Peal's, Stripe's), a token (a JWT, such as an email confirmation's, or
+// the credential of an Authorization header), and the query or fragment of
+// an address, which can carry tokens (a password reset link's).
 const emails = /[^\s@"'<>()[\]/]+@[^\s@"'<>()[\]/]+\.[a-z]{2,}/giu;
 
 // Addresses and links are looked for word by word, in the words that may
@@ -16,6 +17,27 @@ const uuids =
 const apiKeys = /\bpeal_[\w-]+/gu;
 
 const jwts = /\beyJ[\w-]*\.[\w-]+\.[\w-]*/gu;
+
+// Stripe's secret, restricted and webhook signing keys, in test or live.
+const stripeKeys = /\b(?:sk|rk)_(?:test|live)_\w+|\bwhsec_\w+/gu;
+
+// The credential after an Authorization scheme, as a header quotes it.
+const credentials = /\b(?<scheme>Bearer|Basic|Token)\s+[\w.~+/=-]+/giu;
+
+// An IPv4 address, each part at most 255, standing alone: not a version
+// that follows a product's name (`Chrome/120.0.0.0`) nor part of a longer
+// run of numbers, a sentence's full stop after it allowed.
+const ipv4s =
+  /(?<![A-Za-z]\/)(?<![\w.])(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)(?!\w|\.\w)/gu;
+
+// A word that may be an IPv6 address: hexadecimal digits and colons, at
+// least two, with a dotted IPv4 tail allowed. Whether it is one is left to
+// the URL parser, which takes only well-formed addresses, so a time
+// (`10:20:04`) or a line and column (`page.js:1:2`) stays.
+const ipv6Candidates = /[\da-f:]*:[\da-f]*:[\da-f:.]*/giu;
+
+const isIpv6 = (candidate: string): boolean =>
+  candidate.length >= 2 && URL.canParse(`http://[${candidate}]/`);
 
 // A word that is, or holds, a link: an absolute address, or a path.
 const isLink = (word: string): boolean =>
@@ -58,9 +80,20 @@ export const redactText = (text: string): string =>
         ? unlinked.replaceAll(emails, "[email]")
         : unlinked;
     })
+    .replaceAll(credentials, "$<scheme> [token]")
     .replaceAll(jwts, "[token]")
     .replaceAll(uuids, "[id]")
-    .replaceAll(apiKeys, "[key]");
+    .replaceAll(apiKeys, "[key]")
+    .replaceAll(stripeKeys, "[key]")
+    .replaceAll(ipv6Candidates, (candidate) => {
+      // A sentence's full stop after it is not part of it.
+      const address = candidate.replace(/\.+$/u, "");
+
+      return isIpv6(address)
+        ? `[ip]${candidate.slice(address.length)}`
+        : candidate;
+    })
+    .replaceAll(ipv4s, "[ip]");
 
 // A path segment that is an id: a UUID, or a long run of digits or of
 // letters and digits, such as a token in a link.

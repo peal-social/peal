@@ -288,8 +288,9 @@ and no socket, for tests.
   needs no credentials. `ClientErrorIntake` counts 30 reports a minute per
   address (`AUTH_IP_HEADERS`, else the connection's), in this process, and
   reads the body with a 16 KiB limit before it is decoded; the handler
-  replaces addresses, ids, keys, tokens and the queries of the links they
-  quote, drops control characters, logs at error level with OpenTelemetry's
+  replaces email and IP addresses, ids, keys (Peal's, Stripe's), tokens
+  (a JWT, an Authorization header's credential) and the queries of the
+  links they quote, drops control characters, logs at error level with OpenTelemetry's
   attribute names (`event.name` `peal.client_error`) and counts in
   `peal.client_errors`. Never log more of a report than its schema holds.
 - Handler tests through `HttpApiTest.groups` provide `securityTest(member)`,

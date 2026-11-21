@@ -60,6 +60,31 @@ describe("what the server keeps of an error report", () => {
     ).toBe("Invalid token [token] given");
   });
 
+  it("replaces the credentials, keys and IP addresses a text quotes", () => {
+    expect(
+      redactText(
+        "401 with Authorization: Bearer synthetic.token-value_123 and Basic c3ludGhldGljOnN5bnRoZXRpYw=="
+      )
+    ).toBe("401 with Authorization: Bearer [token] and Basic [token]");
+    expect(redactText("Stripe sk_test_synthetic_000 whsec_synthetic")).toBe(
+      "Stripe [key] [key]"
+    );
+    expect(
+      redactText(
+        "From 203.0.113.7. Then 192.0.2.9, http://198.51.100.20:8080/x, [2001:db8::7]:443, ::1 and ::ffff:192.0.2.1."
+      )
+    ).toBe(
+      "From [ip]. Then [ip], http://[ip]:8080/x, [[ip]]:443, [ip] and [ip]."
+    );
+  });
+
+  it("keeps versions, times and stack positions that look like addresses", () => {
+    const kept =
+      "Chrome/120.0.0.0 Safari/537.36 at 10:20:04, page.js:1:2, 1.2.3.4.5, 300.1.1.1, a:b";
+
+    expect(redactText(kept)).toBe(kept);
+  });
+
   it("removes control characters, so a report cannot forge log lines", () => {
     expect(
       redacted({
