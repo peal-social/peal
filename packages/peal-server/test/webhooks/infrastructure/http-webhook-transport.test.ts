@@ -215,6 +215,19 @@ describe("the webhook transport", () => {
 
       assert.strictEqual(refused.reason, "ownServer");
 
+      // The same host, however it is spelled.
+      for (const spelling of [
+        "https://peal.example./hook",
+        "https://PEAL.example../hook",
+        "https://peal.example:443/hook",
+      ]) {
+        const other = yield* WebhookTransport.use((transport) =>
+          transport.check(WebhookUrlSchema.make(spelling))
+        ).pipe(Effect.flip);
+
+        assert.strictEqual(other.reason, "ownServer");
+      }
+
       // Another host of the same domain is a receiver like any other.
       yield* WebhookTransport.use((transport) =>
         transport.check(WebhookUrlSchema.make("https://hooks.peal.example/x"))
