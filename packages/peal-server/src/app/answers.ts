@@ -50,7 +50,9 @@ const pathOf = (url: string) => url.split(/[?#]/u, 1)[0] ?? url;
  * router (`isRefusedPath`, `peal-contract/path-spelling`) is refused with
  * 400 before any route runs, Better Auth's and the MCP endpoint's included.
  *
- * A failure keeps its cause, so it is logged, counted and traced as before.
+ * A failure of the server's own keeps its cause, so it is logged, counted
+ * and traced as one; a refusal of the caller is answered as a response
+ * (`mapFailureResponse`), so it counts with the status the caller gets.
  */
 export const apiAnswers = <
   Id extends string,
