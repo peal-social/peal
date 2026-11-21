@@ -2,6 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
+import { PowerIcon, PowerOffIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Channel } from "peal-contract";
 import {
@@ -90,12 +91,14 @@ export const ChannelPower = ({ channel, workspaceId }: ChannelPowerProps) => {
   if (isOff) {
     return (
       <Button
-        size="sm"
+        variant="outline"
+        size="xs"
         disabled={isChanging}
         focusableWhenDisabled
         aria-label={isChanging ? undefined : t("power.onAccount", { handle })}
         onClick={handleTurnOn}
       >
+        <PowerIcon aria-hidden />
         {isChanging ? t("power.turningOn") : t("power.on")}
       </Button>
     );
@@ -106,8 +109,8 @@ export const ChannelPower = ({ channel, workspaceId }: ChannelPowerProps) => {
       <AlertDialogTrigger
         render={
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="xs"
             disabled={isChanging}
             focusableWhenDisabled
             aria-label={
@@ -116,6 +119,7 @@ export const ChannelPower = ({ channel, workspaceId }: ChannelPowerProps) => {
           />
         }
       >
+        <PowerOffIcon aria-hidden />
         {isChanging ? t("power.turningOff") : t("power.off")}
       </AlertDialogTrigger>
       <AlertDialogContent>

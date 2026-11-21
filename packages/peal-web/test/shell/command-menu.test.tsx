@@ -40,7 +40,7 @@ describe(pageLinksOf, () => {
       ({ page }) => page
     );
 
-    expect(pages.slice(0, 3)).toStrictEqual(["home", "calendar", "posts"]);
+    expect(pages.slice(0, 3)).toStrictEqual(["home", "channels", "calendar"]);
     expect(pages.at(-1)).toBe("partner");
     expect(new Set(pages).size).toBe(pages.length);
   });

@@ -748,10 +748,14 @@ it. There is no bar across the top.
   until the agent comes, a tooltip saying so. No bell, no language
   switcher in the frame.
 - **`panel-header`**, 48 px, a hairline under it, held at the panel's
-  top: the breadcrumb (the section in muted text, then the page's name,
-  14 px, 500, the page's `h1`) and at its end the page's actions as small
-  ghost buttons ("+ New post"). A page draws no title of its own under
-  it, and no description: what a page holds is said by its empty state.
+  top: the breadcrumb (the steps the page is nested under, in muted
+  text, each a link back to it that turns ink on hover, then the page's
+  name, 14 px, 500, the page's `h1`) and at its end the page's actions
+  as small ghost buttons ("+ New post"). A page nested under another
+  is reached back through the breadcrumb, never a "Back" link of its own
+  ("Channels › New channel › Mastodon"; "Posts › Articles › Article").
+  A page draws no title of its own under it, and no description: what a
+  page holds is said by its empty state.
 - **Content** under the header: a list's toolbar first (its views and
   tools, 8 px from the panel's edges, see Lists), then the list edge to
   edge; forms and settings in a column 48 rem wide at most, 24 px from
@@ -1065,6 +1069,21 @@ them beside the one open, so the list stays where it was.
   consent notice (see [Site](#site)).
 - **The composer** writes one text with a tab per channel, counts each
   platform's limit, and shows a preview beside it.
+- **Channels** is a list like any other: views (All, Needs reconnecting,
+  Turned off, with how many each holds), Filter by Platform, Type and
+  Feature, Display ordering by date connected (the default), name,
+  platform or status, and each row the account's avatar with its
+  platform's mark (16 px tile) at its corner. The toolbar stays over the
+  empty state, as on every list. A row wears a status badge only when
+  the channel does not post. Connecting is never on the list: **New
+  channel** in the header, and **Create a channel** as the empty state's
+  primary button (each view's own text, with **Documentation** to its
+  section of the channels guide), open a page of its own, a catalogue
+  of the platforms the server connects (types as views, a search,
+  Filter by Feature) in tiles three up, each its mark on a
+  36 px tile, its name, its type and its features as outline badges.
+  A tile opens that platform's form alone, a page nested under New
+  channel (`…/channels/new/mastodon`), which the breadcrumb names.
 - **A date in words.** Above the date and time pickers, "Type when" reads
   a date as people say it, in English or in French ("tomorrow 9am",
   "vendredi 10h30", "in 3 days", "27 nov"), on the schedule's clock. Under

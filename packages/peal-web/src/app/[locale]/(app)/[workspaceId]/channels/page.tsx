@@ -12,7 +12,7 @@ import { workspaceAt } from "#shell/workspace-path.ts";
 
 // A workspace's channels: the accounts it posts to. The list loads in the
 // browser, with the member's session; what the member may do comes from
-// GET /api/me.
+// GET /api/me. Connecting one starts at New channel (`channels/new`).
 const ChannelsPage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/channels">) => {
@@ -34,15 +34,22 @@ const ChannelsPage = async ({
     notFound();
   }
 
-  const docsUrl = await Effect.runPromise(docsUrlConfig);
   const may = new Set(workspace.permissions);
+  const docsUrl = await Effect.runPromise(docsUrlConfig);
 
   return (
     <ChannelsSettings
       workspaceId={workspace.id}
       canConnect={may.has("channel:connect")}
       canDisconnect={may.has("channel:disconnect")}
-      docsUrl={docsUrl}
+      docsHref={
+        docsUrl === null
+          ? null
+          : new URL(
+              locale === "fr" ? "fr/guides/channels" : "guides/channels",
+              docsUrl.endsWith("/") ? docsUrl : `${docsUrl}/`
+            ).href
+      }
     />
   );
 };

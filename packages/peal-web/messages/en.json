@@ -890,6 +890,34 @@
         "chatHint": "Its public name, such as @name, or its id, which starts with -100 for a channel or a supergroup.",
         "connect": "Connect Telegram"
       }
+    },
+    "list": {
+      "newChannel": "New channel",
+      "views": "Views",
+      "view": "{view, select, attention {Needs reconnecting} off {Turned off} other {All}}",
+      "platformFilter": "Platform",
+      "typeFilter": "Type",
+      "featureFilter": "Feature",
+      "category": "{category, select, social {Social network} chat {Chat} other {Website}}",
+      "feature": "{feature, select, posts {Posts} articles {Articles} analytics {Analytics} comments {Comments} reviews {Reviews} messages {Direct messages} other {Ads}}",
+      "noMatchTitle": "No matching channels",
+      "hiddenByFilters": "<strong>{count, plural, one {# channel} other {# channels}}</strong> hidden by the filters",
+      "order": "{order, select, name {Name} platform {Platform} status {Status} other {Date connected}}",
+      "viewTitle": "{view, select, attention {Needs reconnecting} off {Turned off} other {Channels}}",
+      "viewText": "{view, select, attention {A channel shows up here when its platform stops accepting Peal’s access, for example after the account’s owner removed Peal or changed their password. Nothing goes out on it until it’s reconnected, and the workspace’s owners and admins are told. Every channel works for now.} off {A channel you turn off keeps its connection, its history and its name, and nothing goes out on it until you turn it back on. It still counts in your plan. No channel is turned off.} other {A channel is an account this workspace posts to: a social network, a chat or a website. Connect one by signing in on its platform, and it shows up here, ready for your posts.}}",
+      "docs": "Documentation",
+      "createChannel": "Create a channel"
+    },
+    "catalogue": {
+      "search": "Search platforms",
+      "searchPlaceholder": "Search platforms…",
+      "types": "Types",
+      "allTypes": "All",
+      "connected": "{count, plural, one {# connected} other {# connected}}",
+      "connect": "Connect {platform}",
+      "noMatchTitle": "No matching platforms",
+      "noMatchHint": "Try another name, or clear the filters.",
+      "unknown": "This server does not connect that platform."
     }
   },
   "PlatformConnect": {
@@ -3049,7 +3077,9 @@
       "message": "Message",
       "account": "Account",
       "notifications": "Notifications",
-      "notificationSettings": "Notification preferences"
+      "notificationSettings": "Notification preferences",
+      "newChannel": "New channel",
+      "channelPlatform": "Platform"
     },
     "help": "Help",
     "shortcuts": "Keyboard shortcuts",

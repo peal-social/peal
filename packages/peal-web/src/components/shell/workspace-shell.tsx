@@ -7,11 +7,12 @@ import type { ReactNode } from "react";
 import { chooseWorkspace } from "#auth/choose-workspace.ts";
 import { CommandMenu } from "#components/shell/command-menu.tsx";
 import { CommandScopeProvider } from "#components/shell/command-scope.tsx";
-import { FrameView } from "#components/shell/frame-view.tsx";
+import { crumbLinkClass, FrameView } from "#components/shell/frame-view.tsx";
 import { ModeSwitch, SidebarView } from "#components/shell/sidebar-view.tsx";
 import type { LinkComponent } from "#components/shell/sidebar-view.tsx";
 import { Link, usePathname } from "#i18n/navigation.ts";
-import { navigationOf } from "#shell/navigation.ts";
+import { crumbHrefOf, navigationOf } from "#shell/navigation.ts";
+import type { Crumb } from "#shell/navigation.ts";
 
 export const AppLink: LinkComponent = ({ children, ...props }) => (
   <Link {...props}>{children}</Link>
@@ -57,7 +58,14 @@ export const WorkspaceShell = ({
     workspace: workspaceSlug,
   });
 
-  const { page, section } = navigation.breadcrumb;
+  const { page, trail } = navigation.breadcrumb;
+
+  // A section is named as the sidebar's foot and its back link name it;
+  // any other step by its page's name.
+  const crumbName = (crumb: Crumb) =>
+    crumb === "posts" || crumb === "settings"
+      ? t(`sections.${crumb}`)
+      : t(`pages.${crumb}`);
 
   return (
     <CommandScopeProvider>
@@ -74,7 +82,17 @@ export const WorkspaceShell = ({
         }
         breadcrumb={{
           page: page === null ? null : t(`pages.${page}`),
-          section: section === null ? null : t(`sections.${section}`),
+          trail: trail.map((crumb) => ({
+            key: crumb,
+            link: (
+              <AppLink
+                href={crumbHrefOf(workspaceSlug, crumb)}
+                className={crumbLinkClass}
+              >
+                {crumbName(crumb)}
+              </AppLink>
+            ),
+          })),
         }}
         docsUrl={docsUrl}
         footer={footer}

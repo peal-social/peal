@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type {
+  ChannelPlatform,
   ChatPlatform,
   InstagramConnection,
   LinkedInConnection,
@@ -28,10 +29,7 @@ import { useConnect } from "#channels/use-connect.ts";
 import { ConnectChat } from "#components/channels/connect-chat.tsx";
 import { ConnectInstagram } from "#components/channels/connect-instagram.tsx";
 import { ConnectLinkedIn } from "#components/channels/connect-linkedin.tsx";
-import {
-  ConnectMeta,
-  metaPlatforms,
-} from "#components/channels/connect-meta.tsx";
+import { ConnectMeta } from "#components/channels/connect-meta.tsx";
 import type { MetaPlatform } from "#components/channels/connect-meta.tsx";
 import {
   ConnectKeySite,
@@ -299,102 +297,191 @@ const noSites: readonly SitePlatform[] = [];
 // A server that names no chat.
 const noChats: readonly ChatPlatform[] = [];
 
-/**
- * Where a member starts connecting an account, for each platform this
- * server connects: a form for Mastodon and Bluesky, which ask for a server
- * or a handle, a button for X, TikTok, YouTube, Pinterest and Google
- * Business Profile, one for each of Instagram's ways in the server has,
- * one for a LinkedIn profile and one for company pages on a server that
- * connects pages, and Meta's sign-in for Threads and Facebook Pages; and
- * a WordPress site, by its address and an application password, DEV and
- * Hashnode by a key, which every server connects, and a site on
- * WordPress.com on a server with its app; and the chats the server names
- * (Discord, Telegram), each with the secret its member pastes, linking
- * the docs where the operator publishes them.
- */
-export const ConnectForms = ({
-  chats = noChats,
-  docsUrl = null,
-  instagramConnections,
-  linkedinConnections,
-  platforms,
-  sites = noSites,
-  workspaceId,
-}: {
+/** What this server connects, as `GET …/channels/platforms` answers it. */
+export interface Connectable {
   /** The chats the server connects, each with a secret. */
-  readonly chats?: readonly ChatPlatform[];
-  /** Where the operator publishes the docs; none when it does not. */
-  readonly docsUrl?: string | null;
+  readonly chats?: readonly ChatPlatform[] | undefined;
   readonly instagramConnections: readonly InstagramConnection[];
   /** What the server connects on LinkedIn: profiles, pages, or both. */
   readonly linkedinConnections: readonly LinkedInConnection[];
   readonly platforms: readonly Platform[];
   /** The websites the server connects, WordPress.com when it has its app. */
-  readonly sites?: readonly SitePlatform[];
-  readonly workspaceId: string;
-}) => {
-  const offered = new Set(platforms);
+  readonly sites?: readonly SitePlatform[] | undefined;
+}
 
-  // A server with the app for pages offers the choice; one without keeps
-  // LinkedIn's single button, for a profile.
-  const linkedinChoice = linkedinConnections.includes("linkedinPage");
+// The order the platforms are offered in.
+const offerOrder: readonly ChannelPlatform[] = [
+  "mastodon",
+  "bluesky",
+  "linkedin",
+  "x",
+  "tiktok",
+  "youtube",
+  "pinterest",
+  "googleBusiness",
+  "slack",
+  "instagram",
+  "facebook",
+  "threads",
+  "wordpress",
+  "wordpressCom",
+  "devto",
+  "hashnode",
+  "discord",
+  "telegram",
+];
 
-  return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {offered.has("mastodon") ? (
-        <ConnectMastodon workspaceId={workspaceId} />
-      ) : null}
-      {offered.has("bluesky") ? (
-        <ConnectBluesky workspaceId={workspaceId} />
-      ) : null}
-      {offered.has("linkedin") && linkedinChoice ? (
-        <ConnectWithLinkedIn
-          connections={linkedinConnections}
-          workspaceId={workspaceId}
-        />
-      ) : null}
-      {buttonPlatforms.flatMap((platform) =>
-        offered.has(platform) && !(platform === "linkedin" && linkedinChoice)
-          ? [
-              <ConnectWithButton
-                key={platform}
-                platform={platform}
-                workspaceId={workspaceId}
-              />,
-            ]
-          : []
-      )}
-      {offered.has("instagram") && instagramConnections.length > 0 ? (
-        <ConnectWithInstagram
-          connections={instagramConnections}
-          workspaceId={workspaceId}
-        />
-      ) : null}
-      {metaPlatforms.flatMap((platform) =>
-        offered.has(platform) && platform !== "instagram"
-          ? [
-              <ConnectWithMeta
-                key={platform}
-                platform={platform}
-                workspaceId={workspaceId}
-              />,
-            ]
-          : []
-      )}
-      <ConnectWebsite workspaceId={workspaceId} />
-      {sites.includes("wordpressCom") ? (
-        <ConnectWordPressCom workspaceId={workspaceId} />
-      ) : null}
-      <ConnectKeySite platform="devto" workspaceId={workspaceId} />
-      <ConnectKeySite platform="hashnode" workspaceId={workspaceId} />
-      {chats.map((chat) => (
-        <ConnectChat
-          key={chat}
-          docsUrl={docsUrl}
-          platform={chat}
-          workspaceId={workspaceId}
-        />
-      ))}
-    </div>
+/**
+ * The platforms a member may start connecting on this server, each once,
+ * in the order they are offered: those the server has settings for
+ * (Instagram only with a way in), a WordPress site of one's own, DEV and
+ * Hashnode, which every server connects, WordPress.com on a server with
+ * its app, and the chats the server names.
+ */
+export const connectablesOf = ({
+  chats = noChats,
+  instagramConnections,
+  platforms,
+  sites = noSites,
+}: Connectable): readonly ChannelPlatform[] => {
+  const offered = new Set<ChannelPlatform>([
+    ...platforms.filter(
+      (platform) => platform !== "instagram" || instagramConnections.length > 0
+    ),
+    "wordpress",
+    "devto",
+    "hashnode",
+    ...sites.filter((site) => site === "wordpressCom"),
+  ]);
+
+  // A chat is offered where the server names it, not by its settings.
+  const named = new Set<ChannelPlatform>(chats);
+
+  return offerOrder.filter((platform) =>
+    platform === "discord" || platform === "telegram"
+      ? named.has(platform)
+      : offered.has(platform)
   );
 };
+
+const isButtonPlatform = (
+  platform: ChannelPlatform
+): platform is ButtonPlatform =>
+  buttonPlatforms.some((each) => each === platform);
+
+/**
+ * Where a member starts connecting an account of one platform: a form for
+ * Mastodon and Bluesky, which ask for a server or a handle; a button for
+ * X, TikTok, YouTube, Pinterest, Google Business Profile and Slack; one
+ * for each of Instagram's ways in the server has; one for a LinkedIn
+ * profile, and one for company pages on a server that connects pages;
+ * Meta's sign-in for Threads and Facebook Pages; a WordPress site by its
+ * address and an application password, DEV and Hashnode by a key, a site
+ * on WordPress.com by signing in there; and a chat with the secret its
+ * member pastes, linking the docs where the operator publishes them.
+ */
+export const ConnectForm = ({
+  connectable,
+  docsUrl = null,
+  platform,
+  workspaceId,
+}: {
+  readonly connectable: Connectable;
+  /** Where the operator publishes the docs; none when it does not. */
+  readonly docsUrl?: string | null;
+  readonly platform: ChannelPlatform;
+  readonly workspaceId: string;
+}) => {
+  // A server with the app for pages offers the choice; one without keeps
+  // LinkedIn's single button, for a profile.
+  if (
+    platform === "linkedin" &&
+    connectable.linkedinConnections.includes("linkedinPage")
+  ) {
+    return (
+      <ConnectWithLinkedIn
+        connections={connectable.linkedinConnections}
+        workspaceId={workspaceId}
+      />
+    );
+  }
+
+  if (isButtonPlatform(platform)) {
+    return <ConnectWithButton platform={platform} workspaceId={workspaceId} />;
+  }
+
+  switch (platform) {
+    case "mastodon": {
+      return <ConnectMastodon workspaceId={workspaceId} />;
+    }
+
+    case "bluesky": {
+      return <ConnectBluesky workspaceId={workspaceId} />;
+    }
+
+    case "instagram": {
+      return (
+        <ConnectWithInstagram
+          connections={connectable.instagramConnections}
+          workspaceId={workspaceId}
+        />
+      );
+    }
+
+    case "facebook":
+    case "threads": {
+      return <ConnectWithMeta platform={platform} workspaceId={workspaceId} />;
+    }
+
+    case "wordpress": {
+      return <ConnectWebsite workspaceId={workspaceId} />;
+    }
+
+    case "wordpressCom": {
+      return <ConnectWordPressCom workspaceId={workspaceId} />;
+    }
+
+    case "devto":
+    case "hashnode": {
+      return <ConnectKeySite platform={platform} workspaceId={workspaceId} />;
+    }
+
+    case "discord":
+    case "telegram": {
+      return (
+        <ConnectChat
+          docsUrl={docsUrl}
+          platform={platform}
+          workspaceId={workspaceId}
+        />
+      );
+    }
+
+    default: {
+      return null;
+    }
+  }
+};
+
+/** Every platform's form this server offers, in a grid. */
+export const ConnectForms = ({
+  docsUrl = null,
+  workspaceId,
+  ...connectable
+}: Connectable & {
+  /** Where the operator publishes the docs; none when it does not. */
+  readonly docsUrl?: string | null;
+  readonly workspaceId: string;
+}) => (
+  <div className="grid gap-4 sm:grid-cols-2">
+    {connectablesOf(connectable).map((platform) => (
+      <ConnectForm
+        key={platform}
+        connectable={connectable}
+        docsUrl={docsUrl}
+        platform={platform}
+        workspaceId={workspaceId}
+      />
+    ))}
+  </div>
+);

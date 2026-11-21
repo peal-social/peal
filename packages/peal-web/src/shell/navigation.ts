@@ -48,7 +48,32 @@ export type Page =
   | "webhooks";
 
 /** Pages that are not in the sidebar, which the breadcrumb still names. */
-export type Detail = "article" | "newArticle" | "newPost" | "post";
+export type Detail =
+  | "article"
+  | "channelPlatform"
+  | "newArticle"
+  | "newChannel"
+  | "newPost"
+  | "post";
+
+/**
+ * A step the breadcrumb names before the page, each a link back to it:
+ * a section (its first page), Channels, or New channel.
+ */
+export type Crumb = Section | "articles" | "channels" | "newChannel";
+
+// Where each step of the breadcrumb leads, under /<workspace>.
+const crumbPaths: Readonly<Record<Crumb, string>> = {
+  articles: "/articles",
+  channels: "/channels",
+  newChannel: "/channels/new",
+  posts: "/posts",
+  settings: "/settings",
+};
+
+/** Where a step of the breadcrumb leads, for a workspace, by its slug. */
+export const crumbHrefOf = (workspace: string, crumb: Crumb): string =>
+  workspacePath(workspace, crumbPaths[crumb]);
 
 export type Group = "build" | "engage" | "partners";
 
@@ -256,7 +281,7 @@ const layout: Readonly<
     { group: "partners", pages: ["partner"] },
   ],
   studio: [
-    { group: null, pages: ["home", "calendar", "posts", "channels", "media"] },
+    { group: null, pages: ["home", "channels", "calendar", "posts", "media"] },
     { group: "engage", pages: ["inbox", "analytics", "ads"] },
   ],
 };
@@ -310,9 +335,12 @@ export interface Navigation {
   readonly settings: Link;
   /** Where each mode starts, or null for a mode the member may not use. */
   readonly modes: Readonly<Record<Mode, string | null>>;
-  /** What the panel's header names: the section, then the page. */
+  /**
+   * What the panel's header names: the steps before the page, each a way
+   * back to it, then the page.
+   */
   readonly breadcrumb: {
-    readonly section: Section | null;
+    readonly trail: readonly Crumb[];
     readonly page: Detail | Page | null;
   };
   /** Whether the page is a split view, its list beside the item open. */
@@ -345,6 +373,14 @@ const pageAt = (path: string): PageAt => {
     return { detail: "newPost", page: "posts" };
   }
 
+  if (path === "/channels/new") {
+    return { detail: "newChannel", page: "channels" };
+  }
+
+  if (path.startsWith("/channels/new/")) {
+    return { detail: "channelPlatform", page: "channels" };
+  }
+
   const exact = pageNames.find((page) => pages[page].path === path);
 
   if (exact !== undefined) {
@@ -368,6 +404,33 @@ const pageAt = (path: string): PageAt => {
   }
 
   return { detail: null, page: null };
+};
+
+// The steps the breadcrumb names before the page, outermost first: a
+// section's own first page stands alone; a page of a section comes under
+// it; an item comes under the list it opens from (an article under
+// Articles, a platform's form under New channel, under Channels).
+const trailOf = (
+  detail: Detail | null,
+  current: Page | null,
+  section: Section | null
+): readonly Crumb[] => {
+  const items: Partial<Record<Detail, readonly Crumb[]>> = {
+    article: ["posts", "articles"],
+    channelPlatform: ["channels", "newChannel"],
+    newArticle: ["posts", "articles"],
+    newChannel: ["channels"],
+  };
+
+  const under = detail === null ? undefined : items[detail];
+
+  if (under !== undefined) {
+    return under;
+  }
+
+  return section === null || (detail === null && current === "posts")
+    ? []
+    : [section];
 };
 
 /** A page the command menu opens. */
@@ -473,7 +536,7 @@ export const navigationOf = ({
   return {
     breadcrumb: {
       page: detail ?? current,
-      section: detail === null && current === "posts" ? null : section,
+      trail: trailOf(detail, current, section),
     },
     current,
     groups,
