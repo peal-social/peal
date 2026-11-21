@@ -3,5 +3,6 @@
 import typing
 
 WebhookUrlRefusal = typing.Union[
-    typing.Literal["malformed", "notHttps", "credentials", "tooLong", "notPublic", "unknownHost"], typing.Any
+    typing.Literal["malformed", "notHttps", "credentials", "tooLong", "notPublic", "unknownHost", "ownServer"],
+    typing.Any,
 ]

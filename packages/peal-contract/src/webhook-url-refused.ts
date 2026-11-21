@@ -12,6 +12,8 @@ import { errorEnvelope } from "./error-envelope.ts";
  * - `notPublic`: its host is, or resolves to, an address that is not
  *   public (loopback, private, link-local and the like).
  * - `unknownHost`: its host name does not resolve.
+ * - `ownServer`: it is this Peal server's own address (`PUBLIC_URL`):
+ *   Peal never delivers to itself, so no event makes another.
  */
 export const WebhookUrlRefusalSchema = Schema.Literals([
   "malformed",
@@ -20,6 +22,7 @@ export const WebhookUrlRefusalSchema = Schema.Literals([
   "tooLong",
   "notPublic",
   "unknownHost",
+  "ownServer",
 ]).annotate({ identifier: "WebhookUrlRefusal" });
 
 export type WebhookUrlRefusal = typeof WebhookUrlRefusalSchema.Type;

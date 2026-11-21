@@ -3370,7 +3370,7 @@
       "endpointDisabled": "The endpoint is off. Turn it on first.",
       "tooManySends": "The workspace sent as many test events and deliveries again as it may in an hour. Try again later.",
       "tooMany": "The workspace already has {allowed, number} endpoints, the most it may. Delete one first.",
-      "urlRefused": "{reason, select, malformed {This is not an address.} notHttps {The address must be HTTPS, on the default port.} credentials {The address must not carry a user name or a password.} tooLong {The address is too long.} notPublic {The address’s host is not public, so Peal does not send requests to it.} unknownHost {The address’s host does not exist.} other {Peal does not deliver to this address.}}",
+      "urlRefused": "{reason, select, malformed {This is not an address.} notHttps {The address must be HTTPS, on the default port.} credentials {The address must not carry a user name or a password.} tooLong {The address is too long.} notPublic {The address’s host is not public, so Peal does not send requests to it.} unknownHost {The address’s host does not exist.} ownServer {The address is Peal’s own, and Peal never delivers to itself.} other {Peal does not deliver to this address.}}",
       "unknown": "Something went wrong. Try again.",
       "filterRefused": "Only a partner endpoint takes a list of workspaces, and each must be an id.",
       "headerValuesRequired": "The new address is on another host: type each header’s value again, or remove the headers.",

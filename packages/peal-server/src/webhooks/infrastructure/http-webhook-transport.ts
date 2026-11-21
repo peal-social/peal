@@ -3,6 +3,7 @@ import type { Duration } from "effect";
 import { HttpClientRequest } from "effect/http";
 import type { HttpClientError, HttpClientResponse } from "effect/http";
 
+import { publicUrlConfig } from "#shared/infrastructure/environment.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
 import { publicHttpClientWith } from "#shared/infrastructure/platforms/public-http.ts";
@@ -83,6 +84,9 @@ export const httpWebhookTransport = (options: {
     WebhookTransport,
     Effect.gen(function* HttpWebhookTransport() {
       const guard = yield* OutboundGuard;
+      // Peal's own origin: a delivery there would reach the server itself,
+      // where an event may make another, and nothing would come of it.
+      const own = new URL(yield* publicUrlConfig).host;
       const client = yield* publicHttpClientWith(options);
 
       const exchange = ({ body, headers, url }: WebhookRequest) =>
@@ -104,10 +108,18 @@ export const httpWebhookTransport = (options: {
           );
 
       return WebhookTransport.of({
-        check: (url) =>
-          guard
-            .check(new URL(url))
-            .pipe(Effect.catch(undeliverable), Effect.withTracerEnabled(false)),
+        check: (url) => {
+          const target = new URL(url);
+
+          return target.host === own
+            ? Effect.fail(new UrlNotDeliverable({ reason: "ownServer" }))
+            : guard
+                .check(target)
+                .pipe(
+                  Effect.catch(undeliverable),
+                  Effect.withTracerEnabled(false)
+                );
+        },
         send: Effect.fnUntraced(function* send(request: WebhookRequest) {
           const started = yield* Clock.currentTimeMillis;
           const outcome = yield* exchange(request);

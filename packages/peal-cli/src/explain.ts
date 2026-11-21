@@ -162,6 +162,8 @@ const urlRefusals: Readonly<Record<WebhookUrlRefused["reason"], string>> = {
     "The address must be HTTPS, on the default port (443): Peal delivers nowhere else.",
   notPublic:
     "The address's host is not a public address (loopback, private or link-local): Peal delivers only to hosts anyone on the internet can reach.",
+  ownServer:
+    "The address is this Peal server's own: Peal never delivers to itself. Give your receiver's address.",
   tooLong: "The address is longer than 2048 characters.",
   unknownHost:
     "The address's host name does not resolve: check its spelling, and that its DNS record exists.",

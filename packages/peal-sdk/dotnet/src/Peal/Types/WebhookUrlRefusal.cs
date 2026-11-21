@@ -20,6 +20,8 @@ public readonly record struct WebhookUrlRefusal : IStringEnum
 
     public static readonly WebhookUrlRefusal UnknownHost = new(Values.UnknownHost);
 
+    public static readonly WebhookUrlRefusal OwnServer = new(Values.OwnServer);
+
     public WebhookUrlRefusal(string value)
     {
         Value = value;
@@ -127,5 +129,7 @@ public readonly record struct WebhookUrlRefusal : IStringEnum
         public const string NotPublic = "notPublic";
 
         public const string UnknownHost = "unknownHost";
+
+        public const string OwnServer = "ownServer";
     }
 }
