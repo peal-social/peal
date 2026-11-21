@@ -1,18 +1,22 @@
 "use client";
 
+import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { SocialChannel } from "peal-contract";
 import { Avatar, AvatarFallback, AvatarImage } from "peal-ui/components/avatar";
 import { Badge } from "peal-ui/components/badge";
-import { Button } from "peal-ui/components/button";
+import { Button, buttonVariants } from "peal-ui/components/button";
 import { Checkbox } from "peal-ui/components/checkbox";
 import { Label } from "peal-ui/components/label";
 
 import { channelInitial, channelTitle } from "#channels/channel-name.ts";
+import { Link } from "#i18n/navigation.ts";
 import { everyChannel, offersEveryChannel } from "#posts/channel-selection.ts";
 
 interface ChannelPickerProps {
   readonly channels: readonly SocialChannel[];
+  /** New channel's page, for a member who may connect one. */
+  readonly connectHref: string | null;
   readonly disabled: boolean;
   readonly onChange: (channelIds: readonly string[]) => void;
   readonly selected: readonly string[];
@@ -23,6 +27,7 @@ interface ChannelPickerProps {
 // "Select all" picks every channel that publishes, and "Clear" none.
 export const ChannelPicker = ({
   channels,
+  connectHref,
   disabled,
   onChange,
   selected,
@@ -39,9 +44,20 @@ export const ChannelPicker = ({
 
   if (channels.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        {t("Composer.channelsEmpty")}
-      </p>
+      <div className="flex flex-col items-start gap-3">
+        <p className="text-muted-foreground text-sm">
+          {t("Composer.channelsEmpty")}
+        </p>
+        {connectHref === null ? null : (
+          <Link
+            href={connectHref}
+            className={buttonVariants({ size: "sm", variant: "outline" })}
+          >
+            <PlusIcon aria-hidden />
+            {t("Composer.connectChannel")}
+          </Link>
+        )}
+      </div>
     );
   }
 

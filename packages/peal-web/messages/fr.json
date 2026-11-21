@@ -1156,6 +1156,7 @@
       "channelsLoading": "Chargement des canaux…",
       "channelsFailed": "Les canaux n’ont pas pu être chargés.",
       "channelsEmpty": "Aucun canal n’est encore connecté à cet espace de travail.",
+      "connectChannel": "Connecter un canal",
       "channelNeedsReconnect": "À reconnecter",
       "channelDisabled": "Désactivé",
       "textLegend": "Texte",
