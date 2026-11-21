@@ -9,7 +9,7 @@ import {
 import type { UserId } from "#shared/domain/ids.ts";
 
 import { CommentIdSchema } from "./comment-id.ts";
-import { PlatformCommentIdSchema } from "./comment.ts";
+import { PlatformCommentIdSchema, webAddress } from "./comment.ts";
 import type { Comment } from "./comment.ts";
 import { InvalidReplyTransition } from "./invalid-reply-transition.ts";
 import { ReplyIdSchema } from "./reply-id.ts";
@@ -225,7 +225,7 @@ export const settleReply = (
       withStatus(reply, {
         _tag: "sent",
         at: now,
-        permalink: outcome.permalink,
+        permalink: outcome.permalink.pipe(Option.flatMap(webAddress)),
         platformCommentId: Option.some(outcome.platformCommentId),
       })
     );
