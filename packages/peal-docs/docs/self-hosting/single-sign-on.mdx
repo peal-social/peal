@@ -57,7 +57,7 @@ Once joined, the provider's identifier signs in that account, even if the addres
 
 ## Making an account [#sign-up]
 
-A provider makes an account only from the sign-up page, under its terms line. On the sign-in page, an address with no account is told to sign up.
+A provider makes an account from the sign-up page, and from the sign-in page where anyone may sign up: an address with no account gets one in the same step. Both pages show the terms line under the provider's button. With `PEAL_SIGN_UP=invitation`, the sign-in page makes no account, and an address with no account is told so.
 
 With `PEAL_SIGN_UP=invitation`, a provider's sign-up needs the invitation's link too, and the address the provider confirmed must be the one the invitation went to ([Who may sign up](/self-hosting/options#sign-up)).
 

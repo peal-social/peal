@@ -38,9 +38,19 @@ describe(signInReturn, () => {
   // The authorization server sends its own refusals to the sign-in page
   // too, without the mark: the page tells them from the provider's.
   it("marks a refusal as the provider's, and keeps where to go next", () => {
-    expect(signInReturn("/device?code=ABCD", localized)).toStrictEqual({
+    expect(signInReturn("/device?code=ABCD", localized, false)).toStrictEqual({
       errorPath: "/fr/login?next=%2Fdevice%3Fcode%3DABCD&from=provider",
       next: "/device?code=ABCD",
+    });
+  });
+
+  // Where anyone may sign up, an unknown address gets its account on the
+  // sign-in page, and goes on where it was going.
+  it("makes an account where anyone may sign up", () => {
+    expect(signInReturn("/device?code=ABCD", localized, true)).toStrictEqual({
+      errorPath: "/fr/login?next=%2Fdevice%3Fcode%3DABCD&from=provider",
+      next: "/device?code=ABCD",
+      signUp: { invitationId: null, newUserPath: "/device?code=ABCD" },
     });
   });
 });

@@ -29,7 +29,7 @@ const marked = (path: string, query: Readonly<Record<string, string>>) =>
 export interface ProviderReturn {
   readonly errorPath: string;
   readonly next: string;
-  /** Only on the sign-up page, which alone makes accounts. */
+  /** Where the page makes accounts: always on the sign-up page. */
   readonly signUp?: {
     readonly invitationId: string | null;
     readonly newUserPath: string;
@@ -61,11 +61,23 @@ export const signUpReturn = (
 /**
  * The sign-in page's: on to `next` once signed in, as the password's
  * sign-in goes (the language follows), and a refusal back to the page.
+ * Where anyone may sign up, an address with no account gets one there
+ * too, and goes on to `next` as well.
  */
 export const signInReturn = (
   next: string,
-  localized: (href: string) => string
-): ProviderReturn => ({
-  errorPath: localized(marked("/login", { next })),
-  next,
-});
+  localized: (href: string) => string,
+  signUpOffered: boolean
+): ProviderReturn => {
+  const errorPath = localized(marked("/login", { next }));
+
+  if (!signUpOffered) {
+    return { errorPath, next };
+  }
+
+  return {
+    errorPath,
+    next,
+    signUp: { invitationId: null, newUserPath: next },
+  };
+};

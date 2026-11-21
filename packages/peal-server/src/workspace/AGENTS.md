@@ -416,8 +416,9 @@ The staff context follows these rules too. What the law has a host keep is in
   address's domain, as Google's ID token guide says), on every action,
   else `provider_email_not_authoritative`; a new account passes `SignUpGate` with
   the invitation the sign-up page put in the state (`additionalData`, a
-  lower-case UUID). An account is made only when the sign-up page asks
-  (`disableImplicitSignUp`, `requestSignUp`). Linking is implicit only, by
+  lower-case UUID). An account is made only when a page under the terms
+  line asks (`disableImplicitSignUp`, `requestSignUp`): the sign-up page,
+  and the sign-in page where anyone may sign up. Linking is implicit only, by
   an address both sides confirmed (`accountLinking`, no trusted provider,
   `requireLocalEmailVerified` left at its default); `/link-social`,
   `/unlink-account`, `/get-access-token`, `/refresh-token` and

@@ -667,7 +667,8 @@
     "sent": "Nous avons envoyé un lien à {email}. Ouvrez-le pour confirmer votre adresse : il vous connecte.",
     "byInvitation": "Les comptes sont créés ici sur invitation",
     "byInvitationDescription": "Ouvrez le lien de l’e-mail qui vous a invité dans un espace de travail, puis créez votre compte depuis cette page.",
-    "terms": "En vous inscrivant, vous acceptez les <terms>conditions d’utilisation</terms>{documents, select, privacyAndDpa {, la <privacy>politique de confidentialité</privacy> et l’<dpa>accord de traitement des données</dpa>} privacy { et la <privacy>politique de confidentialité</privacy>} dpa { et l’<dpa>accord de traitement des données</dpa>} other {}}."
+    "terms": "En vous inscrivant, vous acceptez les <terms>conditions d’utilisation</terms>{documents, select, privacyAndDpa {, la <privacy>politique de confidentialité</privacy> et l’<dpa>accord de traitement des données</dpa>} privacy { et la <privacy>politique de confidentialité</privacy>} dpa { et l’<dpa>accord de traitement des données</dpa>} other {}}.",
+    "providerTerms": "Continuer avec un fournisseur crée votre compte si vous n’en avez pas, et vaut acceptation des <terms>conditions d’utilisation</terms>{documents, select, privacyAndDpa {, de la <privacy>politique de confidentialité</privacy> et de l’<dpa>accord de traitement des données</dpa>} privacy { et de la <privacy>politique de confidentialité</privacy>} dpa { et de l’<dpa>accord de traitement des données</dpa>} other {}}."
   },
   "VerifyEmailPage": {
     "title": "Adresse confirmée",
