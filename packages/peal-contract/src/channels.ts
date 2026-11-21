@@ -109,9 +109,13 @@ export const ChannelUpdateSchema = Schema.Struct({
       Schema.makeFilter((label: string) => label === label.trim(), {
         expected: "a name without spaces around it",
       }),
-      Schema.makeFilter((label: string) => !/\p{Cc}/u.test(label), {
-        expected: "a name on one line, without control characters",
-      })
+      Schema.makeFilter(
+        (label: string) => !/[\p{Cc}\u202A-\u202E\u2066-\u2069]/u.test(label),
+        {
+          expected:
+            "a name on one line, without control characters or marks that override its direction",
+        }
+      )
     )
   ),
 }).annotate({ identifier: "ChannelUpdate" });

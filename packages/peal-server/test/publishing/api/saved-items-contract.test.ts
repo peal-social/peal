@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
+import { Schema } from "effect";
 import * as Contract from "peal-contract";
 
 import { slotView } from "#publishing/api/queue-view.ts";
@@ -115,5 +116,33 @@ describe("the contract's copy of queues", () => {
       time: { hour: 2, minute: 5 },
     });
     expect(slotView(slotFrom(slot))).toStrictEqual(slot);
+  });
+});
+
+// A name is shown beside other text, to other members: a mark that
+// overrides, embeds or isolates its direction could reverse or hide what
+// follows it (Unicode's "Trojan Source" marks), so the API takes none, for
+// every client and the MCP tools alike. The marks a right-to-left name may
+// need, and the joiner of an emoji, it takes. The domain does not refuse
+// them, so names saved before still read.
+describe("a name a member writes", () => {
+  const names = [
+    ["a tag", Contract.TagNameSchema],
+    ["a signature", Contract.SignatureDetailsSchema.fields.name],
+    ["a channel set", Contract.ChannelSetDetailsSchema.fields.name],
+    ["a queue", Contract.QueueDetailsSchema.fields.name],
+    ["a channel's label", Contract.ChannelUpdateSchema.fields.label],
+  ] as const;
+
+  it.each(names)("refuses a direction override in %s", (_, schema) => {
+    for (const name of ["Sale \u202Efdp.exe", "a\u2066b\u2069", "x\u202Ay"]) {
+      expect(Schema.is(schema)(name)).toBeFalsy();
+    }
+  });
+
+  it.each(names)("takes right-to-left marks and emoji in %s", (_, schema) => {
+    for (const name of ["שלום\u200F", "👨\u200D👩\u200D👧 Family"]) {
+      expect(Schema.is(schema)(name)).toBeTruthy();
+    }
   });
 });
