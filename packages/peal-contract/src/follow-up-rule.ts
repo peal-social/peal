@@ -1,6 +1,7 @@
 import { Schema } from "effect";
 
 import { PlatformSchema } from "./platform.ts";
+import { postOrChannel } from "./post-or-channel.ts";
 import { PostOriginSchema } from "./posts.ts";
 
 // The limits below are the server's (src/publishing/domain/follow-up-*.ts
@@ -253,7 +254,9 @@ export const NewFollowUpRuleSchema = Schema.Struct({
   postId: Schema.optionalKey(Schema.String),
   // Whether it reposts the post. False unless given.
   repost: Schema.optionalKey(Schema.Boolean),
-}).annotate({ identifier: "NewFollowUpRule" });
+})
+  .check(postOrChannel)
+  .annotate({ identifier: "NewFollowUpRule" });
 
 export type NewFollowUpRule = typeof NewFollowUpRuleSchema.Type;
 
