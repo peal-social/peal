@@ -890,6 +890,11 @@ export const Composer = ({
             />
             <ChannelPicker
               channels={channels}
+              connectHref={
+                permissions.includes("channel:connect")
+                  ? workspaceHref(workspaceId, "/channels/new")
+                  : null
+              }
               selected={channelIds}
               disabled={locked}
               onChange={setChannelIds}

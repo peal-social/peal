@@ -1155,6 +1155,7 @@
       "channelsLoading": "Loading the channels…",
       "channelsFailed": "The channels could not be loaded.",
       "channelsEmpty": "No channel is connected to this workspace yet.",
+      "connectChannel": "Connect a channel",
       "channelNeedsReconnect": "Reconnect needed",
       "channelDisabled": "Turned off",
       "textLegend": "Text",
