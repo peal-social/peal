@@ -173,6 +173,33 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
 
         assert.strictEqual(tooLong._tag, "InvalidDateRange");
 
+        // A filter that is not an id matches nothing, as the posts' search
+        // answers it; a cursor that is not one stays refused.
+        for (const query of [{ channelId: "nope" }, { postId: "nope" }]) {
+          const none = yield* owner.shortLinks.list({
+            params: { workspaceId },
+            query: { ...query, from: "1890-05-01", to: "1890-05-31" },
+          });
+
+          assert.deepStrictEqual(none.items, []);
+          assert.isNull(none.nextCursor);
+        }
+
+        const badCursor = yield* owner.shortLinks
+          .list({ params: { workspaceId }, query: { cursor: "nope" } })
+          .pipe(Effect.flip);
+
+        assert.strictEqual(badCursor._tag, "BadRequest");
+
+        const badRange = yield* owner.shortLinks
+          .list({
+            params: { workspaceId },
+            query: { channelId: "nope", from: "1890-01-01", to: "1890-05-31" },
+          })
+          .pipe(Effect.flip);
+
+        assert.strictEqual(badRange._tag, "InvalidDateRange");
+
         // Another workspace's link is not found.
         const other = yield* as("owner", yield* freshWorkspace);
 

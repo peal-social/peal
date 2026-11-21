@@ -16,6 +16,7 @@ import { ShortLinkReports } from "#shortlinks/application/short-link-reports.ts"
 import { ShortLinkSettings } from "#shortlinks/application/short-link-settings.ts";
 import type { InvalidClickRange } from "#shortlinks/domain/invalid-click-range.ts";
 import { ShortLinkIdSchema } from "#shortlinks/domain/short-link-id.ts";
+import type { ShortLinkId } from "#shortlinks/domain/short-link-id.ts";
 
 import { pageView, reportView, statusView } from "./short-links-view.ts";
 
@@ -36,20 +37,31 @@ const invalidRange = ({ maxDays }: InvalidClickRange) =>
     })
   );
 
-// An id given that is not one: nothing of the workspace has it.
-const asked = <A>(
-  written: string | undefined,
-  decoded: (text: string) => Option.Option<A>
-): Effect.Effect<Option.Option<A>, HttpApiError.BadRequest> => {
+// A cursor given that is not one of this list's: refused.
+const cursorAsked = (
+  written: string | undefined
+): Effect.Effect<Option.Option<ShortLinkId>, HttpApiError.BadRequest> => {
   if (written === undefined) {
     return Effect.succeedNone;
   }
 
-  const id = decoded(written);
+  const id = decodeLinkId(written);
 
   return Option.isNone(id)
     ? Effect.fail(new HttpApiError.BadRequest())
     : Effect.succeed(id);
+};
+
+// A filter's id as asked: none when not given, and `matchesNothing` when
+// given but not an id, which nothing of the workspace has, so the page is
+// empty, as the posts' search answers it.
+const filterAsked = <A>(
+  written: string | undefined,
+  decoded: (text: string) => Option.Option<A>
+) => {
+  const id = written === undefined ? Option.none<A>() : decoded(written);
+
+  return { id, matchesNothing: written !== undefined && Option.isNone(id) };
 };
 
 // A failure of the server's own (the database, a bug) is a defect: 500.
@@ -94,14 +106,16 @@ export const ShortLinksHandlers = HttpApiBuilder.group(
       .handle("list", ({ query }) =>
         Effect.gen(function* list() {
           const actor = actorOf(yield* CurrentMember);
+          const channel = filterAsked(query.channelId, decodeChannelId);
+          const post = filterAsked(query.postId, decodePostId);
 
           const report = yield* reports
             .list(actor, {
-              channelId: yield* asked(query.channelId, decodeChannelId),
-              cursor: yield* asked(query.cursor, decodeLinkId),
+              channelId: channel.id,
+              cursor: yield* cursorAsked(query.cursor),
               from: dayAsked(query.from),
               limit: Option.fromUndefinedOr(query.limit),
-              postId: yield* asked(query.postId, decodePostId),
+              postId: post.id,
               to: dayAsked(query.to),
             })
             .pipe(
@@ -112,7 +126,14 @@ export const ShortLinksHandlers = HttpApiBuilder.group(
               })
             );
 
-          return pageView(report, written);
+          // Asked for the range and the permission all the same, so a
+          // filter that matches nothing is refused as any other would be.
+          return pageView(
+            channel.matchesNothing || post.matchesNothing
+              ? { ...report, links: [], next: Option.none() }
+              : report,
+            written
+          );
         })
       )
       .handle("get", ({ params, query }) =>
