@@ -186,9 +186,12 @@ const nul = String.fromCodePoint(0);
 
 const ReplySchema = Schema.String.check(
   Schema.isMaxLength(5000),
-  Schema.makeFilter((text: string) => !text.includes(nul), {
-    expected: "text without NUL characters",
-  })
+  Schema.makeFilter(
+    (text: string) => !text.includes(nul) && text.isWellFormed(),
+    {
+      expected: "text without NUL characters or unpaired surrogates",
+    }
+  )
 );
 
 const KeywordsSchema = Schema.Array(

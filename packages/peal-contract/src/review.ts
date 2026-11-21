@@ -139,9 +139,9 @@ export type ReviewComment = typeof ReviewCommentSchema.Type;
 const nul = String.fromCodePoint(0);
 
 export const isWithoutNul = Schema.makeFilter(
-  (text: string) => !text.includes(nul),
+  (text: string) => !text.includes(nul) && text.isWellFormed(),
   {
-    expected: "text without NUL characters",
+    expected: "text without NUL characters or unpaired surrogates",
   }
 );
 

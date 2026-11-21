@@ -238,9 +238,12 @@ const nul = String.fromCodePoint(0);
 
 const CommentSchema = Schema.String.check(
   Schema.isMaxLength(maxFollowUpCommentLength),
-  Schema.makeFilter((text: string) => !text.includes(nul), {
-    expected: "text without NUL characters",
-  })
+  Schema.makeFilter(
+    (text: string) => !text.includes(nul) && text.isWellFormed(),
+    {
+      expected: "text without NUL characters or unpaired surrogates",
+    }
+  )
 );
 
 /** What starts a rule: on a post (`postId`) or a channel (`channelId`), one of them. */

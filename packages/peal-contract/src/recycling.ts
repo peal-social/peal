@@ -87,9 +87,12 @@ const nul = String.fromCodePoint(0);
 
 const VariantTextSchema = Schema.String.check(
   Schema.isMaxLength(maxPostTextLength),
-  Schema.makeFilter((text: string) => !text.includes(nul), {
-    expected: "text without NUL characters",
-  })
+  Schema.makeFilter(
+    (text: string) => !text.includes(nul) && text.isWellFormed(),
+    {
+      expected: "text without NUL characters or unpaired surrogates",
+    }
+  )
 );
 
 /**
