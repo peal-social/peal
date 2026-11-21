@@ -391,11 +391,18 @@ const WeekGrid = ({
   const timeOptions = useTimeOptions();
 
   return (
-    <div className="max-h-screen overflow-auto rounded-lg border">
-      <table className="w-full table-fixed border-collapse text-sm">
+    // Relative, so the cells' screen-reader labels (absolute) stay inside
+    // the scroll and never widen the page.
+    <div className="relative max-h-screen overflow-auto rounded-lg border">
+      {/* Seven days need room: a narrow window scrolls them sideways
+          rather than squeezing each to a sliver. */}
+      <table className="w-full min-w-[44rem] table-fixed border-collapse text-sm">
         <thead className="bg-background sticky top-0 z-10">
           <tr>
-            <th scope="col" className="w-16 border-b">
+            <th
+              scope="col"
+              className="bg-background sticky left-0 z-10 w-16 border-b"
+            >
               <span className="sr-only">{t("hour")}</span>
             </th>
             {days.map((day) => (
@@ -424,7 +431,7 @@ const WeekGrid = ({
             <tr key={hour}>
               <th
                 scope="row"
-                className="text-muted-foreground border-b p-1 text-right align-top text-xs font-normal"
+                className="text-muted-foreground bg-card sticky left-0 z-10 border-b p-1 text-right align-top text-xs font-normal"
               >
                 {format.dateTime(Date.UTC(2000, 0, 1, hour), {
                   hour: "numeric",
