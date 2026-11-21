@@ -280,10 +280,10 @@ export const instagramUnifiedAuthorizer = Effect.fn(
         SystemUserSchema
       ).pipe(Effect.mapError(signInFailure("Reading the system user")));
 
-      // Open check, for the sandbox: whether Meta takes `appsecret_proof`
-      // on a call made with the app's own token (here, the proof of
-      // `app_id|app_secret`), or refuses it; `read` sends one on every
-      // call, as through a Page.
+      // Meta takes `appsecret_proof` on a call made with the app's own
+      // token (here, the proof of `app_id|app_secret`), as the sandbox's
+      // connections through a business portfolio showed: `read` sends one
+      // on every call, as through a Page.
       const debugged = yield* read(
         "/debug_token",
         appToken,
