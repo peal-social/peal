@@ -20,6 +20,24 @@ describe(textOfHtml, () => {
     );
   });
 
+  it("decodes every name HTML gives a character, as written", () => {
+    // What sites write: typographic quotes, dashes, an ellipsis, letters
+    // with their accents, by name; a no-break space stays a space.
+    expect(
+      textOfHtml(
+        "<p>We&rsquo;ve &ldquo;moved&rdquo; &mdash; 1&ndash;2&hellip; &Eacute;t&eacute; &frac12;&nbsp;&euro; &AMP;</p>"
+      )
+    ).toBe(
+      "We\u2019ve \u201Cmoved\u201D \u2014 1\u20132\u2026 \u00C9t\u00E9 \u00BD \u20AC &"
+    );
+  });
+
+  it("keeps a name HTML does not give, or one without its semicolon", () => {
+    expect(textOfHtml("<p>&notaname; &EACUTE; &copy and &amp</p>")).toBe(
+      "&notaname; &EACUTE; &copy and &amp"
+    );
+  });
+
   it("makes no character of a reference that names none", () => {
     // Half a surrogate pair, NUL, and a number past the last code point
     // stay as they were written: text, and well formed.
