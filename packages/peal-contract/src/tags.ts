@@ -46,9 +46,13 @@ export const TagNameSchema = Schema.String.check(
   Schema.makeFilter((name: string) => name === name.trim(), {
     expected: "a name without spaces around it",
   }),
-  Schema.makeFilter((name: string) => !/\p{Cc}/u.test(name), {
-    expected: "a name on one line, without control characters",
-  })
+  Schema.makeFilter(
+    (name: string) => !/[\p{Cc}\u202A-\u202E\u2066-\u2069]/u.test(name),
+    {
+      expected:
+        "a name on one line, without control characters or marks that override its direction",
+    }
+  )
 );
 
 /** A label a workspace files its posts under. */

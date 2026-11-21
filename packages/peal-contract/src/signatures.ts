@@ -62,9 +62,13 @@ export const SignatureDetailsSchema = Schema.Struct({
   name: Schema.String.check(
     Schema.isBetweenLength(1, maxSignatureNameLength),
     isTrimmed,
-    Schema.makeFilter((name: string) => !/\p{Cc}/u.test(name), {
-      expected: "a name on one line, without control characters",
-    })
+    Schema.makeFilter(
+      (name: string) => !/[\p{Cc}\u202A-\u202E\u2066-\u2069]/u.test(name),
+      {
+        expected:
+          "a name on one line, without control characters or marks that override its direction",
+      }
+    )
   ),
   // Left out, the whole workspace.
   scope: Schema.optionalKey(SignatureScopeSchema),
