@@ -37,6 +37,7 @@ const RequestTextSchema = Schema.Trim.check(
   Schema.isMaxLength(maxContractRequestText),
   Schema.isPattern(contractRequestTextPattern, {
     description: "letters, digits, spaces and ' ’ , & ( ) -",
+    expected: "letters, digits, spaces and ' ’ , & ( ) -",
   })
 );
 
@@ -44,6 +45,7 @@ const RequestEmailSchema = Schema.Trim.check(
   Schema.isMaxLength(maxContractRequestEmail),
   Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/u, {
     description: "an email address",
+    expected: "an email address",
   })
 );
 
@@ -51,6 +53,7 @@ const RequestEmailSchema = Schema.Trim.check(
 export const ContractDaySchema = Schema.String.check(
   Schema.isPattern(/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/u, {
     description: "a day, as YYYY-MM-DD",
+    expected: "a day, as YYYY-MM-DD",
   })
 ).annotate({ identifier: "ContractDay" });
 

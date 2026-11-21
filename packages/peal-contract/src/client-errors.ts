@@ -49,6 +49,7 @@ const upTo = (length: number) =>
 const PathSchema = upTo(clientErrorLimits.path).check(
   Schema.isPattern(/^\/[^?#]*$/u, {
     description: "a path without a query or a fragment",
+    expected: "a path without a query or a fragment",
   })
 );
 

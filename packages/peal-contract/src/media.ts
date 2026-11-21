@@ -229,7 +229,7 @@ export const maxMediaQueryLength = 100;
  */
 export const MediaQuerySchema = Schema.String.check(
   Schema.isBetweenLength(1, maxMediaQueryLength),
-  Schema.isPattern(/^[^\0]*$/u)
+  Schema.isPattern(/^[^\0]*$/u, { expected: "text without a NUL character" })
 ).annotate({ identifier: "MediaQuery" });
 
 const workspace = { workspaceId: Schema.String };

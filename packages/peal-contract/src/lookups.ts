@@ -48,7 +48,11 @@ export type LookupDescription = typeof LookupDescriptionSchema.Type;
 export const LookupInputSchema = Schema.Struct({
   // The Pinterest board whose sections are listed, by its id: digits.
   // `pinterestBoardSections` needs it.
-  boardId: Schema.optionalKey(Schema.String.check(Schema.isPattern(/^\d+$/u))),
+  boardId: Schema.optionalKey(
+    Schema.String.check(
+      Schema.isPattern(/^\d+$/u, { expected: "a board id: digits" })
+    )
+  ),
   // The page to read, as the page before named it in `nextCursor`.
   cursor: Schema.optionalKey(
     Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(512))
@@ -56,7 +60,9 @@ export const LookupInputSchema = Schema.Struct({
   // The language titles come in, as a BCP 47 tag such as "fr" or "pt-BR".
   language: Schema.optionalKey(
     Schema.String.check(
-      Schema.isPattern(/^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*$/u)
+      Schema.isPattern(/^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*$/u, {
+        expected: "a language tag, such as fr or pt-BR",
+      })
     )
   ),
   // How many items a page holds: 25 when left out.
@@ -68,11 +74,19 @@ export const LookupInputSchema = Schema.Struct({
   // A country, as two capital letters (ISO 3166-1 alpha-2): "US" when
   // left out.
   regionCode: Schema.optionalKey(
-    Schema.String.check(Schema.isPattern(/^[A-Z]{2}$/u))
+    Schema.String.check(
+      Schema.isPattern(/^[A-Z]{2}$/u, {
+        expected: "a country as two capital letters, such as US",
+      })
+    )
   ),
   // The name in a LinkedIn page's address: linkedin.com/company/<name>.
   vanityName: Schema.optionalKey(
-    Schema.String.check(Schema.isPattern(/^[^\s/?#]{1,100}$/u))
+    Schema.String.check(
+      Schema.isPattern(/^[^\s/?#]{1,100}$/u, {
+        expected: "the name in a page's address, without spaces, / ? or #",
+      })
+    )
   ),
 }).annotate({ identifier: "LookupInput" });
 

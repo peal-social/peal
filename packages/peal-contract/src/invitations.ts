@@ -37,7 +37,9 @@ export type Invitation = typeof InvitationSchema.Type;
 // further, and the email it sends settles it.
 const EmailAddressSchema = Schema.String.check(
   Schema.isMaxLength(254),
-  Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/u)
+  Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/u, {
+    expected: "an email address",
+  })
 );
 
 /** Whom to invite, and the role they get on joining. */
