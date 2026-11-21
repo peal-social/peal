@@ -55,6 +55,18 @@ const SentSchema = Schema.fromJsonString(
   })
 );
 
+// An article of text alone, with no file to upload.
+const plainContent = content({
+  body: {
+    content: [
+      { content: [{ text: "Plain", type: "text" }], type: "paragraph" },
+    ],
+    type: "doc",
+  },
+  categories: [],
+  coverMediaId: Option.none(),
+});
+
 // Runs a change made in the request, moving the virtual clock a second
 // at a time meanwhile: DEV's writes wait a second apart.
 const clockMoving = <A, E, R>(change: Effect.Effect<A, E, R>) =>
@@ -197,6 +209,10 @@ describe("an article on DEV", () => {
     )
   );
 
+  // Text alone: an upload holds the turn to its start only, and DEV counts
+  // it once its body is in, so two accounts' uploads may still meet a
+  // short refusal there, which is waited out. Every other write holds the
+  // turn to its end, and is spaced whatever account it is for.
   it.effect("spaces every write to DEV, whichever account it is for", () =>
     onArticles(
       Effect.gen(function* shared() {
@@ -211,7 +227,7 @@ describe("an article on DEV", () => {
           sent.push(
             yield* articles.create(
               writer(workspaceId),
-              { channelId: channel.id, content: content({ categories: [] }) },
+              { channelId: channel.id, content: plainContent },
               Option.some({ at: Option.none(), timeZone: zone })
             )
           );
