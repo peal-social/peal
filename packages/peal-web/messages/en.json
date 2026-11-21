@@ -3112,7 +3112,7 @@
     "channels": {
       "chip": "Channels",
       "title": "Connect your channels",
-      "description": "Eleven networks, from Instagram to Mastodon. Connect each once, and every member, assistant and app of the workspace can post to it.",
+      "description": "{count} networks, from Instagram to Mastodon. Connect each once, and every member, assistant and app of the workspace can post to it.",
       "connect": "Connect a channel"
     },
     "agents": {

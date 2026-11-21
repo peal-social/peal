@@ -3112,7 +3112,7 @@
     "channels": {
       "chip": "Canaux",
       "title": "Connectez vos canaux",
-      "description": "Onze réseaux, d’Instagram à Mastodon. Connectez chacun une fois : chaque membre, assistant et application de l’espace de travail peut y publier.",
+      "description": "{count} réseaux, d’Instagram à Mastodon. Connectez chacun une fois : chaque membre, assistant et application de l’espace de travail peut y publier.",
       "connect": "Connecter un canal"
     },
     "agents": {
