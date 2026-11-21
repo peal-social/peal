@@ -31,14 +31,17 @@ export const documentsOf = (
  * What signing up accepts, under every way to sign up: the terms of
  * service at `PEAL_TERMS_URL` and, when set, the privacy policy at
  * `PEAL_PRIVACY_URL` and the data processing agreement at `PEAL_DPA_URL`
- * (`#billing/terms.ts`).
+ * (`#billing/terms.ts`). The sign-in page says it of its providers alone
+ * (`providerTerms`), which make an account there.
  */
 export const SignUpTerms = ({
   dpaUrl,
+  message = "terms",
   privacyUrl,
   termsUrl,
 }: {
   readonly dpaUrl: string | null;
+  readonly message?: "providerTerms" | "terms";
   readonly privacyUrl: string | null;
   readonly termsUrl: string | null;
 }) => {
@@ -46,7 +49,7 @@ export const SignUpTerms = ({
 
   return (
     <p className="text-muted-foreground text-center text-sm text-balance">
-      {t.rich("terms", {
+      {t.rich(message, {
         documents: documentsOf(privacyUrl, dpaUrl),
         dpa: legalLink(dpaUrl),
         privacy: legalLink(privacyUrl),

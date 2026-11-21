@@ -914,7 +914,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `lastLoginMethod` plugin, `#auth/last-sign-in-cookie.ts`); the sign-up
   page offers them only where its form shows, its providers' sign-in
   with `requestSignUp`, the page's locale and the invitation in
-  `additionalData`. Every address given is a path of this origin. The
+  `additionalData`; the sign-in page asks the same, without an
+  invitation, where anyone may sign up (`signInReturn`), so an unknown
+  address gets its account in one go, under its own terms line
+  (`SignUpTerms`, `providerTerms`). Every address given is a path of this origin. The
   provider's callback comes back with `?error=<code>` and the mark
   `?from=provider` (`signInReturn`, `signUpReturn`, `cameFromProvider`),
   which `providerErrorKey` reads into `Auth.errors`: an application's
@@ -928,7 +931,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   link to the account's address) in place of the password form, and says
   two-step verification and closing need it first (`needsPassword`).
 - Creating an account accepts the terms of service: the sign-up page
-  says so under every way to sign up (`SignUpTerms`), linking
+  says so under every way to sign up, and the sign-in page under its
+  providers where they make accounts (`SignUpTerms`), linking
   `PEAL_TERMS_URL` and, when set, `PEAL_PRIVACY_URL` and `PEAL_DPA_URL`
   (`#billing/terms.ts`, read at request time; `documentsOf` picks the
   sentence). Keep that line.

@@ -147,7 +147,8 @@ const mapProfileToUser: NonNullable<
 };
 
 // What every provider shares. A sign-in makes an account only when the page
-// asks for one (the sign-up page, where the terms are), signing out of Peal
+// asks for one (under the terms line: the sign-up page, and the sign-in
+// page where anyone may sign up), signing out of Peal
 // leaves the provider's own session alone, and the provider's profile never
 // overwrites an account's name or address.
 const common = (client: SignInProviderClient, issuer: string) =>

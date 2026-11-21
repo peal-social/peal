@@ -667,7 +667,8 @@
     "sent": "We sent a link to {email}. Open it to confirm your address: it signs you in.",
     "byInvitation": "Accounts here are made by invitation",
     "byInvitationDescription": "Open the link in the email that invited you to a workspace, then create your account from there.",
-    "terms": "By signing up, you agree to the <terms>terms of service</terms>{documents, select, privacyAndDpa {, the <privacy>privacy policy</privacy> and the <dpa>data processing agreement</dpa>} privacy { and the <privacy>privacy policy</privacy>} dpa { and the <dpa>data processing agreement</dpa>} other {}}."
+    "terms": "By signing up, you agree to the <terms>terms of service</terms>{documents, select, privacyAndDpa {, the <privacy>privacy policy</privacy> and the <dpa>data processing agreement</dpa>} privacy { and the <privacy>privacy policy</privacy>} dpa { and the <dpa>data processing agreement</dpa>} other {}}.",
+    "providerTerms": "Continuing with a provider creates your account if you have none, and agrees to the <terms>terms of service</terms>{documents, select, privacyAndDpa {, the <privacy>privacy policy</privacy> and the <dpa>data processing agreement</dpa>} privacy { and the <privacy>privacy policy</privacy>} dpa { and the <dpa>data processing agreement</dpa>} other {}}."
   },
   "VerifyEmailPage": {
     "title": "Email confirmed",
