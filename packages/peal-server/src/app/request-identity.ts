@@ -14,8 +14,16 @@ const wellFormed = /^[\w.:-]{8,128}$/u;
 
 /**
  * Answers a failure with the response it would get anyway, changed by
- * `change`, and leaves the rest of its cause as it was, so it is logged,
- * counted and traced as before.
+ * `change`. A refusal of the caller (a status under 500: a request the API
+ * could not decode, a body too large) is answered as a response, its cause
+ * left: the server answered it as it should. A failure of the server's own
+ * (5xx) or an interruption keeps the rest of its cause, so it is logged,
+ * counted and traced as a failure.
+ *
+ * Effect's handler sends a response a failure carries, then fails on with
+ * the cause less that response, so the middlewares outside it (the request
+ * counter, the access log, the request's span) would read a 500 for a
+ * refusal it answered with a 400.
  */
 export const mapFailureResponse =
   (
@@ -25,16 +33,21 @@ export const mapFailureResponse =
   ) =>
   <E>(cause: Cause.Cause<E>) =>
     HttpServerError.causeResponse(cause).pipe(
-      Effect.flatMap(([response, rest]) =>
-        Effect.failCause(
-          Cause.fromReasons([
-            ...rest.reasons.filter(
-              (reason) => !(reason._tag === "Die" && reason.defect === response)
-            ),
-            Cause.makeDieReason(change(response)),
-          ])
-        )
-      )
+      Effect.flatMap(([response, rest]) => {
+        const changed = change(response);
+
+        return changed.status < 500 && !Cause.hasInterrupts(cause)
+          ? Effect.succeed(changed)
+          : Effect.failCause(
+              Cause.fromReasons([
+                ...rest.reasons.filter(
+                  (reason) =>
+                    !(reason._tag === "Die" && reason.defect === response)
+                ),
+                Cause.makeDieReason(changed),
+              ])
+            );
+      })
     );
 
 /** The id a caller sent, when it is well formed. */

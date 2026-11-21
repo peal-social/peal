@@ -134,8 +134,13 @@ and no socket, for tests.
   events webhooks send included, both served by the discovery routes.
 - `ApiAnswersLive` (`src/app/answers.ts`), a global router middleware in
   `RoutesLive`, shapes every answer, a failure's included (it changes the
-  response a cause would get and fails with the same cause, so logging,
-  counting and tracing stay as they were: `mapFailureResponse`): the request
+  response a cause would get; a failure of the server's own (5xx) fails
+  on with the same cause, so it is logged, counted and traced as one,
+  while a refusal of the caller (a body the API cannot decode, 400, or
+  too large, 413) is answered as a response, as Effect's handler would
+  otherwise hand the middlewares outside it a cause without its
+  response, which they read as a 500: `mapFailureResponse`,
+  `test/app/refusal-statuses.test.ts`): the request
   id (`X-Request-Id`: the caller's when it is 8 to 128 of `[\w.:-]`, a UUIDv7
   otherwise; `peal.request_id` on log lines and the span; `RequestId` from
   `#shared/api/request-id.ts` for handlers), the headers handlers and
