@@ -24,6 +24,7 @@ import {
   setChannelMessages,
   setMessageApplication,
 } from "#inbox/message-atoms.ts";
+import { readsNoMessages } from "#inbox/message-channels.ts";
 
 import { useChannelName } from "./inbox-views.tsx";
 
@@ -39,14 +40,17 @@ const messagePlatforms: ReadonlySet<string> = new Set([
 const isMeta = (channel: SocialChannel) =>
   channel.platform === "facebook" || channel.platform === "instagram";
 
-// Whether the switch was refused until the account allows its messages.
-const needsGrant = <A, E extends { readonly _tag: string }>(
-  exit: Exit.Exit<A, E>
+// Whether the switch was refused for the standing given: `reconnect`
+// until the account allows its messages, `unsupported` where Peal reads
+// none of them.
+const refusedAs = <A, E extends { readonly _tag: string }>(
+  exit: Exit.Exit<A, E>,
+  standing: "reconnect" | "unsupported"
 ) =>
   inboxErrorOf(exit).pipe(
     Option.exists(
       (explained) =>
-        explained.key === "unavailable" && explained.standing === "reconnect"
+        explained.key === "unavailable" && explained.standing === standing
     )
   );
 
@@ -55,7 +59,9 @@ const needsGrant = <A, E extends { readonly _tag: string }>(
  * account that must allow its messages first (Bluesky's chat, Meta's
  * messaging permissions), starts the sign-in that asks for them. A Meta
  * channel says who may write before Meta's review, and an Instagram one
- * the setting its owner turns on in Instagram.
+ * the setting its owner turns on in Instagram. Where Peal reads none of
+ * the channel's messages (`unsupported`), it says so in place of the
+ * switch, which stays only to turn off messages read before.
  */
 export const ChannelMessagesView = ({
   channel,
@@ -63,16 +69,32 @@ export const ChannelMessagesView = ({
   on,
   onGrant,
   onSwitch,
+  unsupported = false,
 }: {
   readonly channel: SocialChannel;
   readonly disabled: boolean;
   readonly on: boolean;
   readonly onGrant?: () => void;
   readonly onSwitch: (on: boolean) => void;
+  readonly unsupported?: boolean;
 }) => {
   const t = useTranslations("InboxMessages.settings");
   const channelName = useChannelName();
   const meta = isMeta(channel);
+
+  if (unsupported && !on) {
+    return (
+      <li className="flex flex-col gap-1 px-4 py-3">
+        <span className="flex items-center gap-2">
+          <span className="font-medium">{channelName(channel)}</span>
+          <Badge variant="outline">{t("off")}</Badge>
+        </span>
+        <span className="text-muted-foreground text-sm">
+          {t("unsupported", { connection: channel.connection ?? "none" })}
+        </span>
+      </li>
+    );
+  }
 
   return (
     <li className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
@@ -220,6 +242,8 @@ export const MessageSettingsPanel = ({
   const reconnect = useAtomSet(reconnectChannel, { mode: "promiseExit" });
   // The channels whose accounts must allow their messages first.
   const [ungranted, setUngranted] = useState<ReadonlySet<string>>(new Set());
+  // The channels the server refused as reading none of their messages.
+  const [unread, setUnread] = useState<ReadonlySet<string>>(new Set());
   const [pending, start] = useTransition();
   const titleId = useId();
 
@@ -281,6 +305,7 @@ export const MessageSettingsPanel = ({
               channel={channel}
               disabled={pending}
               on={on.has(channel.id)}
+              unsupported={readsNoMessages(channel) || unread.has(channel.id)}
               {...(ungranted.has(channel.id)
                 ? {
                     onGrant: () => {
@@ -296,8 +321,14 @@ export const MessageSettingsPanel = ({
                     reactivityKeys,
                   });
 
-                  if (needsGrant(exit)) {
+                  if (refusedAs(exit, "reconnect")) {
                     setUngranted((now) => new Set([...now, channel.id]));
+
+                    return;
+                  }
+
+                  if (refusedAs(exit, "unsupported")) {
+                    setUnread((now) => new Set([...now, channel.id]));
 
                     return;
                   }

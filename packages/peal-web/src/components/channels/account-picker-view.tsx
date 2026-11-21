@@ -1,7 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { ChoosableAccount, Platform } from "peal-contract";
+import type {
+  ChannelConnection,
+  ChoosableAccount,
+  Platform,
+} from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "peal-ui/components/avatar";
 import { Badge } from "peal-ui/components/badge";
@@ -29,6 +33,8 @@ export const toggled = (
 
 interface AccountPickerViewProps {
   readonly accounts: readonly ChoosableAccount[];
+  /** The way in the choice came through, which a new sign-in takes. */
+  readonly connection?: ChannelConnection | null;
   readonly error: ChannelErrorKey | null;
   readonly isPending: boolean;
   readonly onSubmit: () => void;
@@ -59,6 +65,7 @@ export const isSpent = (error: ChannelErrorKey | null): boolean =>
 export const AccountPickerView = ({
   accounts,
   cancel,
+  connection = null,
   error,
   isPending,
   onSubmit,
@@ -85,7 +92,11 @@ export const AccountPickerView = ({
         <Alert variant="destructive">
           <AlertDescription>
             <p>{errorText(error)}</p>
-            {spent ? null : <p>{t("retry", { platform })}</p>}
+            {spent ? null : (
+              <p>
+                {t("retry", { connection: connection ?? "none", platform })}
+              </p>
+            )}
           </AlertDescription>
         </Alert>
       )}

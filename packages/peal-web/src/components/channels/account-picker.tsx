@@ -3,7 +3,11 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { useTranslations } from "next-intl";
-import type { ChoosableAccount, Platform } from "peal-contract";
+import type {
+  ChannelConnection,
+  ChoosableAccount,
+  Platform,
+} from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
@@ -26,6 +30,8 @@ import { Link, useRouter } from "#i18n/navigation.ts";
 
 interface AccountPickerProps {
   readonly accounts: readonly ChoosableAccount[];
+  /** The way in the choice came through, which starting over takes. */
+  readonly connection: ChannelConnection | null;
   readonly platform: Platform;
   readonly selection: string;
   readonly workspaceId: string;
@@ -35,6 +41,7 @@ interface AccountPickerProps {
 // failure, the member tries again, or signs in again for a new choice.
 export const AccountPicker = ({
   accounts,
+  connection,
   platform,
   selection,
   workspaceId,
@@ -76,6 +83,7 @@ export const AccountPicker = ({
   return (
     <AccountPickerView
       accounts={accounts}
+      connection={connection}
       cancel={
         <Button
           variant="outline"
@@ -97,10 +105,12 @@ export const AccountPicker = ({
           disabled={signIn.isPending}
           focusableWhenDisabled
           onClick={() => {
-            signIn.start(choiceStart(platform));
+            signIn.start(choiceStart(connection));
           }}
         >
-          {signIn.isPending ? t("connecting") : t("startOver", { platform })}
+          {signIn.isPending
+            ? t("connecting")
+            : t("startOver", { connection: connection ?? "none", platform })}
         </Button>
       }
     />

@@ -5,6 +5,7 @@ import { Option } from "effect";
 import { constVoid } from "effect/Function";
 import { useTranslations } from "next-intl";
 import type {
+  ChannelConnection,
   ChoosableAccount,
   ConnectCallback,
   Platform,
@@ -94,6 +95,7 @@ export const CompleteConnection = ({
   // The accounts the sign-in reached, when the member chooses among them.
   const [choice, setChoice] = useState<{
     readonly accounts: readonly ChoosableAccount[];
+    readonly connection: ChannelConnection | null;
     readonly selection: string;
     readonly workspaceId: string;
   } | null>(null);
@@ -133,6 +135,7 @@ export const CompleteConnection = ({
         if (outcome._tag === "choose") {
           setChoice({
             accounts: outcome.accounts,
+            connection: outcome.connection,
             selection: outcome.selection,
             workspaceId: workspace,
           });
@@ -169,6 +172,7 @@ export const CompleteConnection = ({
     return (
       <AccountPicker
         accounts={choice.accounts}
+        connection={choice.connection}
         platform={platform}
         selection={choice.selection}
         workspaceId={choice.workspaceId}

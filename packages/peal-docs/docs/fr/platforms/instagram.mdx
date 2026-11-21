@@ -5,7 +5,7 @@ sidebar:
   icon: /platform-marks/instagram.svg
 ---
 
-Peal publie sur les comptes professionnels Instagram, entreprise ou créateur. Il les atteint par Instagram lui-même ou par une Page Facebook.
+Peal publie sur les comptes professionnels Instagram, entreprise ou créateur. Il les atteint par un portefeuille business, par Instagram lui-même ou par une Page Facebook.
 
 ## En bref [#at-a-glance]
 
@@ -23,11 +23,51 @@ Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/me
 
 ## Connecter un compte [#connect]
 
-Peal atteint un compte Instagram de l’une de deux façons. Quand le serveur a les deux, **Instagram** les propose en deux boutons.
+Peal atteint un compte Instagram de l’une de trois façons. **Instagram** a un bouton pour chaque façon que votre serveur propose, le premier plein.
+
+### La connexion professionnelle de Meta [#unified-login]
+
+**Passer par un portefeuille business** vient en premier. Ce bouton ouvre la connexion professionnelle de Meta (que Meta appelle Unified login), et aucune Page Facebook n’est nécessaire. Il vous faut :
+
+- un compte professionnel Instagram qui appartient à un portefeuille business ;
+- un accès à ce portefeuille dans les paramètres business de Meta.
+
+<Steps>
+  <Step title="Connectez-vous">
+    Cliquez sur **Passer par un portefeuille business**, puis connectez-vous
+    avec Instagram ou avec Facebook. Si vous vous connectez avec Instagram, Meta
+    demande le mot de passe du compte dans le navigateur, même quand
+    l’application Instagram est connectée sur votre téléphone.
+  </Step>
+  <Step title="Choisissez le portefeuille business">
+    Choisissez le portefeuille qui détient le compte.
+  </Step>
+  <Step title="Sélectionnez les comptes">
+    Sélectionnez les comptes Instagram à partager avec Peal, puis acceptez les
+    autorisations. Meta les accorde toutes ou aucune, donc la liste en nomme
+    dont Peal ne se sert pas, comme les messages.
+  </Step>
+  <Step title="Choisissez quoi connecter">
+    Un seul compte partagé se connecte tout de suite. S’il y en a plusieurs,
+    Peal les liste, et vous sélectionnez ceux à connecter.
+  </Step>
+</Steps>
+
+Si un compte attendu n’est pas dans la liste :
+
+- C’est peut-être un compte personnel. Passez-le d’abord en compte professionnel dans l’application Instagram, car la page de Meta ne sait pas le faire pendant la connexion.
+- Il appartient peut-être à un autre portefeuille business. Connectez-vous à nouveau et choisissez ce portefeuille.
+- Vous ne l’avez peut-être pas sélectionné sur la page de Meta. Connectez-vous à nouveau et sélectionnez-le.
+
+Par cette façon :
+
+- L’accès appartient au portefeuille business. Il n’expire pas, et il continue de marcher après votre départ de l’entreprise.
+- Peal publie, lit les statistiques et lit les commentaires comme il le fait par une Page. Il ne lit pas les messages privés du compte.
+- Pour retirer l’accès de Peal, une personne qui gère le portefeuille retire Peal dans les paramètres business de Meta, sous **Business settings** > **Integrations** > **Connected apps** (les noms de Meta en anglais). Chaque canal connecté par ce portefeuille doit alors être reconnecté. C’est aussi le cas d’un compte déplacé dans un autre portefeuille.
 
 ### Connexion Instagram [#instagram-login]
 
-**Se connecter avec Instagram** est la façon par défaut. Connectez-vous au compte professionnel lui-même sur Instagram, et autorisez Peal à lire son profil, à publier et à lire ses statistiques. Par cette façon :
+Cliquez sur **Se connecter avec Instagram** et connectez-vous au compte professionnel lui-même sur Instagram, puis autorisez Peal à lire son profil, à publier et à lire ses statistiques. Par cette façon :
 
 - Le compte n’a besoin d’aucune Page Facebook.
 - Son accès dure 60 jours, et Peal le renouvelle de lui-même une semaine avant sa fin.
@@ -40,7 +80,7 @@ Cliquez sur **Passer par une Page Facebook** et connectez-vous avec Facebook, co
 - Un compte publie avec l’accès de sa Page, qui n’expire pas. Il reste donc connecté tant que vous gérez la Page.
 - Elle convient à un compte géré depuis une Page. C’est aussi la voie vers ce que seule l’API Facebook Login de Meta donne, comme l’identification de produits, les collaborateurs et la recherche de hashtags, dont Peal ne se sert pas encore.
 
-Les deux façons publient de la même manière images, reels et carrousels, et relèvent les mêmes chiffres. La liste des canaux indique par où chaque canal Instagram est passé, et le reconnecter repasse par là.
+Les trois façons publient de la même manière images, reels et carrousels, et relèvent les mêmes chiffres. La liste des canaux indique par où chaque canal Instagram est passé, et le reconnecter repasse par là.
 
 Si vous connectez avec Instagram un compte que l’espace de travail a déjà via une Page, son canal y passe, avec ses publications et sa programmation. L’espace de travail garde un canal par compte.
 
@@ -83,7 +123,7 @@ Sous **Collaborateurs**, vous pouvez nommer un à trois autres comptes comme coa
 
 Peal lit les commentaires sous vos publications en ligne sur Instagram, et vous pouvez y répondre depuis Peal. Voyez [Boîte de réception](/guides/engage/inbox#meta).
 
-Vous pouvez aussi lire les messages privés du compte et y répondre. Meta accepte une réponse dans les 24 heures qui suivent le dernier message de la personne. Là où le serveur le permet, un membre peut encore répondre à la main dans l’application web de Peal pendant 7 jours au plus. Voyez [Messenger et Instagram](/guides/engage/inbox#meta-messages).
+Vous pouvez aussi lire les messages privés du compte et y répondre, sauf s’il est connecté par un portefeuille business. Meta accepte une réponse dans les 24 heures qui suivent le dernier message de la personne. Là où le serveur le permet, un membre peut encore répondre à la main dans l’application web de Peal pendant 7 jours au plus. Voyez [Messenger et Instagram](/guides/engage/inbox#meta-messages).
 
 Une fois les messages privés du canal activés, vous pouvez aussi envoyer à l’auteur d’un commentaire une seule [réponse privée](/guides/engage/inbox#private-replies), dans les sept jours qui suivent le commentaire. Un membre l’envoie, ou une [règle de réponse](/guides/engage/inbox#comment-rule-private-replies) après sa réponse publique.
 

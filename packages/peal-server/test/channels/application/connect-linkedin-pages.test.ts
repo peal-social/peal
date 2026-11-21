@@ -492,6 +492,8 @@ layer(AdaptersTest)("connecting LinkedIn pages", (it) => {
         const outcome = yield* signIn(on, workspaceId);
 
         assert(outcome._tag === "choose");
+        // Starting over signs in for pages again, not for the profile.
+        assert.deepStrictEqual(outcome.connection, Option.some("linkedinPage"));
         assert.deepStrictEqual(
           outcome.accounts.map(({ accountId, handle }) => [accountId, handle]),
           [

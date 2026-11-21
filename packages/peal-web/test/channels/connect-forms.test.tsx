@@ -152,6 +152,34 @@ describe(ConnectForms, () => {
     );
   });
 
+  it("offers a business portfolio first, then the other ways in the server has", async () => {
+    const html = await render(
+      "en",
+      ["instagram"],
+      ["unifiedLogin", "instagramLogin", "facebookLogin"]
+    );
+
+    const buttons = [
+      ...html.matchAll(/<button[^>]*>(?<text>[^<]*)<\/button>/gu),
+    ].map((button) => button.groups?.["text"]);
+
+    expect(buttons.slice(0, 3)).toStrictEqual([
+      "Connect through a business portfolio",
+      "Connect with Instagram",
+      "Connect through a Facebook Page",
+    ]);
+    expect(html).toContain("sign in with Instagram or Facebook");
+    expect(html).toContain("Meta asks for the account’s password");
+    expect(html).not.toContain("Sign in on Instagram.");
+  });
+
+  it("says in French what Meta's business sign-in asks", async () => {
+    const html = await render("fr", ["instagram"], ["unifiedLogin"]);
+
+    expect(html).toContain(">Passer par un portefeuille business<");
+    expect(html).toContain("portefeuille business qui détient");
+  });
+
   it("offers only the way in the server has", async () => {
     const html = await render("fr", ["instagram"], ["facebookLogin"]);
 

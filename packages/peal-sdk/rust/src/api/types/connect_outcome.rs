@@ -13,6 +13,8 @@ pub enum ConnectOutcome {
     Choose {
         #[serde(default)]
         accounts: Vec<ChoosableAccount>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        connection: Option<ChannelConnection>,
         #[serde(rename = "expiresAt")]
         #[serde(default)]
         expires_at: String,
@@ -35,6 +37,21 @@ impl ConnectOutcome {
     pub fn choose(accounts: Vec<ChoosableAccount>, expires_at: String, selection: String) -> Self {
         Self::Choose {
             accounts,
+            connection: None,
+            expires_at,
+            selection,
+        }
+    }
+
+    pub fn choose_with_connection(
+        accounts: Vec<ChoosableAccount>,
+        connection: ChannelConnection,
+        expires_at: String,
+        selection: String,
+    ) -> Self {
+        Self::Choose {
+            accounts,
+            connection: Some(connection),
             expires_at,
             selection,
         }

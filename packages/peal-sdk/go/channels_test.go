@@ -3254,6 +3254,14 @@ func TestSettersConnectOutcomeChoose(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetConnection", func(t *testing.T) {
+		obj := &ConnectOutcomeChoose{}
+		var fernTestValueConnection *ChannelConnection
+		obj.SetConnection(fernTestValueConnection)
+		assert.Equal(t, fernTestValueConnection, obj.Connection)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetExpiresAt", func(t *testing.T) {
 		obj := &ConnectOutcomeChoose{}
 		var fernTestValueExpiresAt string
@@ -3304,6 +3312,39 @@ func TestGettersConnectOutcomeChoose(t *testing.T) {
 			}
 		}()
 		_ = obj.GetAccounts() // Should return zero value
+	})
+
+	t.Run("GetConnection", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ConnectOutcomeChoose{}
+		var expected *ChannelConnection
+		obj.Connection = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetConnection(), "getter should return the property value")
+	})
+
+	t.Run("GetConnection_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ConnectOutcomeChoose{}
+		obj.Connection = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetConnection(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetConnection_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ConnectOutcomeChoose
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetConnection() // Should return zero value
 	})
 
 	t.Run("GetExpiresAt", func(t *testing.T) {
@@ -3363,6 +3404,37 @@ func TestSettersMarkExplicitConnectOutcomeChoose(t *testing.T) {
 
 		// Act
 		obj.SetAccounts(fernTestValueAccounts)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetConnection_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ConnectOutcomeChoose{}
+		var fernTestValueConnection *ChannelConnection
+
+		// Act
+		obj.SetConnection(fernTestValueConnection)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -4606,6 +4678,49 @@ func TestRequiredNullableRoundTripChoosableAccount(t *testing.T) {
 	t.Run("FreshValueOmits", func(t *testing.T) {
 		t.Parallel()
 		result := marshalToMap(t, &ChoosableAccount{})
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q should be omitted from a freshly constructed value", key)
+		}
+	})
+}
+
+func TestRequiredNullableRoundTripConnectOutcomeChoose(t *testing.T) {
+	requiredNullableKeys := []string{
+		"connection",
+	}
+	marshalToMap := func(t *testing.T, obj *ConnectOutcomeChoose) map[string]json.RawMessage {
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		var result map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &result), "marshaled data should be a JSON object")
+		return result
+	}
+
+	t.Run("NullPreserved", func(t *testing.T) {
+		t.Parallel()
+		var obj ConnectOutcomeChoose
+		require.NoError(t, json.Unmarshal([]byte(`{"connection":null}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			value, ok := result[key]
+			require.True(t, ok, "required nullable field %q received as null should be present in the output", key)
+			assert.Equal(t, "null", string(value), "required nullable field %q received as null should be null in the output", key)
+		}
+	})
+
+	t.Run("AbsentStaysAbsent", func(t *testing.T) {
+		t.Parallel()
+		var obj ConnectOutcomeChoose
+		require.NoError(t, json.Unmarshal([]byte(`{}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q absent from the input should be absent from the output", key)
+		}
+	})
+
+	t.Run("FreshValueOmits", func(t *testing.T) {
+		t.Parallel()
+		result := marshalToMap(t, &ConnectOutcomeChoose{})
 		for _, key := range requiredNullableKeys {
 			assert.NotContains(t, result, key, "required nullable field %q should be omitted from a freshly constructed value", key)
 		}

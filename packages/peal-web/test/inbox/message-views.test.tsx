@@ -22,6 +22,7 @@ import {
   ReplyWindowView,
 } from "#components/inbox/message-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
+import { readsNoMessages } from "#inbox/message-channels.ts";
 
 const render = async (locale: "en" | "fr", view: ReactNode) =>
   renderToStaticMarkup(
@@ -373,5 +374,85 @@ describe("the direct messages' views", () => {
     expect(page).toContain("Allow, on Facebook");
     expect(page).toContain("App Review");
     expect(instagram).toContain("Outils connectés");
+  });
+
+  it("offer no switch where Peal reads none of the channel's messages, and say why", async () => {
+    const unified = {
+      ...channel,
+      connection: "unifiedLogin",
+      platform: "instagram",
+    } as const;
+
+    const english = await render(
+      "en",
+      <ChannelMessagesView
+        channel={unified}
+        disabled={false}
+        on={false}
+        onSwitch={constVoid}
+        unsupported
+      />
+    );
+
+    const french = await render(
+      "fr",
+      <ChannelMessagesView
+        channel={unified}
+        disabled={false}
+        on={false}
+        onSwitch={constVoid}
+        unsupported
+      />
+    );
+
+    expect(english).toContain(
+      "Peal doesn’t read the messages of an account connected through a business portfolio."
+    );
+    expect(english).not.toContain("Read its messages");
+    expect(english).not.toContain("<button");
+    expect(english).not.toContain("App Review");
+    expect(french).toContain("via un portefeuille business");
+  });
+
+  it("still lets a channel whose messages are read turn them off", async () => {
+    const html = await render(
+      "en",
+      <ChannelMessagesView
+        channel={{ ...channel, platform: "instagram" }}
+        disabled={false}
+        on
+        onSwitch={constVoid}
+        unsupported
+      />
+    );
+
+    expect(html).toContain("Stop, and delete what was kept");
+  });
+});
+
+describe(readsNoMessages, () => {
+  it("names the channels whose messages Peal cannot read", () => {
+    expect(
+      readsNoMessages({
+        ...channel,
+        connection: "unifiedLogin",
+        platform: "instagram",
+      })
+    ).toBeTruthy();
+    expect(
+      readsNoMessages({
+        ...channel,
+        connection: "facebookLogin",
+        platform: "instagram",
+      })
+    ).toBeFalsy();
+    expect(
+      readsNoMessages({
+        ...channel,
+        connection: "instagramLogin",
+        platform: "instagram",
+      })
+    ).toBeFalsy();
+    expect(readsNoMessages(channel)).toBeFalsy();
   });
 });

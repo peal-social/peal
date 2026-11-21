@@ -14,6 +14,9 @@ public record ConnectOutcomeChoose : IJsonOnDeserialized
     [JsonPropertyName("accounts")]
     public IEnumerable<ChoosableAccount> Accounts { get; set; } = new List<ChoosableAccount>();
 
+    [JsonPropertyName("connection")]
+    public ChannelConnection? Connection { get; set; }
+
     [JsonPropertyName("expiresAt")]
     public required string ExpiresAt { get; set; }
 

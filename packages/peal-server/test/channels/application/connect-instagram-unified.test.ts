@@ -337,6 +337,11 @@ layer(UnifiedConnectTest)(
             offered.accounts.map(({ accountId }) => accountId),
             ["17841400000011", "17841400000012", "17841400000013"]
           );
+          // Starting over signs in through Unified login again.
+          assert.deepStrictEqual(
+            offered.connection,
+            Option.some("unifiedLogin")
+          );
 
           const chosen = yield* connect.choose(
             manager(workspaceId),

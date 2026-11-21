@@ -716,7 +716,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   Bluesky, Facebook Page and Instagram channel's switch (a Meta one says
   who may write before Meta's App Review, an Instagram one the Connected
   tools setting; one refused `reconnect` offers the sign-in with
-  `messages=true`), and, for `organization:secure`, the applications let
+  `messages=true`; one whose messages Peal reads none of, an Instagram
+  account through a business portfolio (`readsNoMessages`,
+  `#inbox/message-channels.ts`) or one refused `unsupported`, says so in
+  place of its switch), and, for `organization:secure`, the applications let
   read the messages, by client id.
 - The inbox (`components/inbox/`) lists threads with counts and never a
   comment's text (`ThreadRowView`), and shows one whole (`ThreadScreen`):

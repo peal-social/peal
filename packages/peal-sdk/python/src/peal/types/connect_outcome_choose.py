@@ -6,11 +6,13 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .channel_connection import ChannelConnection
 from .choosable_account import ChoosableAccount
 
 
 class ConnectOutcomeChoose(UniversalBaseModel):
     accounts: typing.List[ChoosableAccount]
+    connection: typing.Optional[ChannelConnection] = None
     expires_at: typing_extensions.Annotated[str, FieldMetadata(alias="expiresAt"), pydantic.Field(alias="expiresAt")]
     selection: str
 

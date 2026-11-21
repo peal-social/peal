@@ -192,6 +192,7 @@ const outcomeView = (outcome: ConnectOutcome): ConnectOutcomeView =>
           displayName: Option.getOrNull(account.displayName),
           handle: account.handle,
         })),
+        connection: Option.getOrNull(outcome.connection),
         expiresAt: outcome.expiresAt,
         selection: outcome.selection,
       };

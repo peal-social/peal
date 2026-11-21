@@ -48,7 +48,9 @@ const render = async (
 };
 
 // An Instagram channel through the way in given, in English.
-const instagram = async (connection: "facebookLogin" | "instagramLogin") =>
+const instagram = async (
+  connection: "facebookLogin" | "instagramLogin" | "unifiedLogin"
+) =>
   await render("en", {
     channel: {
       ...channel,
@@ -188,6 +190,9 @@ describe(ChannelRow, () => {
     );
     await expect(instagram("facebookLogin")).resolves.toContain(
       "Instagram (through a Facebook Page) · @studio_example"
+    );
+    await expect(instagram("unifiedLogin")).resolves.toContain(
+      "Instagram (through a business portfolio) · @studio_example"
     );
   });
 });

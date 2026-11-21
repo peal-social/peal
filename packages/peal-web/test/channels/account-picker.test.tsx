@@ -216,15 +216,37 @@ describe(AccountPickerView, () => {
     }
   );
 
+  it("names no Facebook sign-in for a choice made through a business portfolio", async () => {
+    const english = await picker("en", {
+      connection: "unifiedLogin",
+      error: "unreachable",
+      platform: "instagram",
+    });
+
+    const french = await picker("fr", {
+      connection: "unifiedLogin",
+      error: "unreachable",
+      platform: "instagram",
+    });
+
+    expect(english).toContain("Choose again, or sign in again for a new list.");
+    expect(english).not.toContain("Facebook");
+    expect(french).toContain(
+      "Choisissez à nouveau, ou reconnectez-vous pour une nouvelle liste."
+    );
+  });
+
   it("signs in again the way the choice came through", () => {
-    expect(choiceStart("linkedin")).toStrictEqual({
+    expect(choiceStart("linkedinPage")).toStrictEqual({
       connection: "linkedinPage",
     });
-    expect(choiceStart("instagram")).toStrictEqual({
+    expect(choiceStart("unifiedLogin")).toStrictEqual({
+      connection: "unifiedLogin",
+    });
+    expect(choiceStart("facebookLogin")).toStrictEqual({
       connection: "facebookLogin",
     });
-    expect(choiceStart("facebook")).toStrictEqual({});
-    expect(choiceStart("googleBusiness")).toStrictEqual({});
+    expect(choiceStart(null)).toStrictEqual({});
   });
 
   it("names LinkedIn's pages as those the member administers", async () => {

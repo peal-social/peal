@@ -235,11 +235,14 @@ export type ChoosableAccount = typeof ChoosableAccountSchema.Type;
  * How completing a connection ended: the account became a channel
  * (`connected`), or the sign-in reached several accounts (`choose`), among
  * which the member picks before `expiresAt`, sending back `selection`.
+ * `connection` is the way in the sign-in took, on platforms that have
+ * several: a new sign-in for another list of accounts starts with it.
  */
 export const ConnectOutcomeSchema = Schema.Union([
   Schema.TaggedStruct("connected", { channel: ChannelSchema }),
   Schema.TaggedStruct("choose", {
     accounts: Schema.Array(ChoosableAccountSchema),
+    connection: Schema.NullOr(ChannelConnectionSchema),
     expiresAt: Schema.DateTimeUtc,
     selection: Schema.String,
   }),

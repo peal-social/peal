@@ -5,7 +5,7 @@ sidebar:
   icon: /platform-marks/instagram.svg
 ---
 
-Peal posts to Instagram professional accounts, business or creator. It reaches them through Instagram itself or through a Facebook Page.
+Peal posts to Instagram professional accounts, business or creator. It reaches them through a business portfolio, through Instagram itself, or through a Facebook Page.
 
 ## At a glance [#at-a-glance]
 
@@ -23,11 +23,51 @@ What each file type must be is in [Images and videos](/guides/media#platforms).
 
 ## Connect an account [#connect]
 
-Peal reaches an Instagram account in one of two ways. When the server has both, **Instagram** offers them as two buttons.
+Peal reaches an Instagram account in one of three ways. **Instagram** has a button for each way your server offers, the first one filled.
+
+### Meta's business sign-in [#unified-login]
+
+**Connect through a business portfolio** comes first. It opens Meta's business sign-in (Meta calls it Unified login), and you don't need a Facebook Page. You need:
+
+- An Instagram professional account that belongs to a business portfolio.
+- Access to that portfolio in Meta's business settings.
+
+<Steps>
+  <Step title="Sign in">
+    Click **Connect through a business portfolio**, then sign in with Instagram
+    or with Facebook. If you sign in with Instagram, Meta asks for the account's
+    password in the browser, even when the Instagram app is signed in on your
+    phone.
+  </Step>
+  <Step title="Pick the business portfolio">
+    Pick the portfolio that owns the account.
+  </Step>
+  <Step title="Select the accounts">
+    Select the Instagram accounts to share with Peal, then accept the
+    permissions. Meta grants them all or none, so the list names some that Peal
+    doesn't use, such as messages.
+  </Step>
+  <Step title="Choose what to connect">
+    One account shared connects at once. With several, Peal lists them, and you
+    select the ones to connect.
+  </Step>
+</Steps>
+
+If an account you expected isn't listed:
+
+- It may be a personal account. Switch it to a professional one in the Instagram app first, because Meta's page can't do it during the sign-in.
+- It may belong to another business portfolio. Connect again and pick that portfolio.
+- You may not have selected it on Meta's page. Connect again and select it.
+
+With this way of connecting:
+
+- The access belongs to the business portfolio. It doesn't expire, and it keeps working after you leave the business.
+- Peal publishes, reads insights and reads comments the same way it does through a Page. It doesn't read the account's direct messages.
+- To take Peal's access away, someone who manages the portfolio removes Peal in **Business settings** > **Integrations** > **Connected apps**. Each channel connected through that portfolio then needs reconnecting. So does an account moved to another portfolio.
 
 ### Instagram Login [#instagram-login]
 
-**Connect with Instagram** is the default. Sign in to the professional account itself on Instagram, and allow Peal to read its profile, publish, and read its insights. With this way of connecting:
+Click **Connect with Instagram** and sign in to the professional account itself on Instagram, then allow Peal to read its profile, publish, and read its insights. With this way of connecting:
 
 - The account needs no Facebook Page.
 - Its access lasts 60 days, and Peal renews it by itself a week before it ends.
@@ -40,7 +80,7 @@ Click **Connect through a Facebook Page** and sign in with Facebook, as for Page
 - An account posts with its Page's access, which doesn't expire, so it stays connected as long as you manage the Page.
 - It suits an account run from a Page. It's also the way to what only Meta's Facebook Login API gives, such as tagging products, collaborators and hashtag search, which Peal doesn't use yet.
 
-Both ways publish images, reels and carousels the same way, and read the same counts. The channels list says which way each Instagram channel came through, and reconnecting it signs in that way again.
+All three ways publish images, reels and carousels the same way, and read the same counts. The channels list says which way each Instagram channel came through, and reconnecting it signs in that way again.
 
 If you connect through Instagram Login an account the workspace already has through a Page, its channel moves over, with its posts and schedule. The workspace keeps one channel per account.
 
@@ -83,7 +123,7 @@ Under **Collaborators**, you can name one to three other accounts as the post's 
 
 Peal reads the comments under your published posts on Instagram, and you can answer them from Peal. See [Inbox](/guides/engage/inbox#meta).
 
-You can read and answer the account's direct messages too. Meta takes an answer within 24 hours of the person's last message. Where the server allows it, a member can still answer by hand in Peal's web app for up to 7 days. See [Messenger and Instagram](/guides/engage/inbox#meta-messages).
+You can read and answer the account's direct messages too, unless it's connected through a business portfolio. Meta takes an answer within 24 hours of the person's last message. Where the server allows it, a member can still answer by hand in Peal's web app for up to 7 days. See [Messenger and Instagram](/guides/engage/inbox#meta-messages).
 
 Once the channel's direct messages are on, you can also send the author of a comment one [private reply](/guides/engage/inbox#private-replies), within seven days of the comment. A member sends it, or a [comment rule](/guides/engage/inbox#comment-rule-private-replies) does after its public reply.
 
