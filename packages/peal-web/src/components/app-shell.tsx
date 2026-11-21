@@ -7,6 +7,7 @@ import { ContractLinks } from "#components/contract/contract-links.tsx";
 import { ImpersonationBanner } from "#components/impersonation-banner.tsx";
 import { LanguageSwitcher } from "#components/language-switcher.tsx";
 import { ShellFrame } from "#components/shell-frame.tsx";
+import { PealMark } from "#components/shell/peal-mark.tsx";
 import { Link } from "#i18n/navigation.ts";
 
 // The app's header: the product name, the language switcher and the
@@ -17,7 +18,11 @@ export const AppHeader = () => {
   return (
     <header className="border-b">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="font-semibold tracking-tight">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-semibold tracking-tight"
+        >
+          <PealMark className="size-6" />
           {t("productName")}
         </Link>
         <div className="flex items-center gap-1">
