@@ -11,6 +11,7 @@ import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
 
+import { useHydrated } from "#components/media/use-hydrated.ts";
 import {
   reviewKeys,
   reviewSettings,
@@ -113,15 +114,7 @@ const LoadedForm = ({
   );
 };
 
-/**
- * Chooses which of the workspace's posts wait for an approval, for those
- * who may change the workspace (organization:update).
- */
-export const ApprovalPolicyForm = ({
-  workspaceId,
-}: {
-  readonly workspaceId: string;
-}) => {
+const LoadedPolicy = ({ workspaceId }: { readonly workspaceId: string }) => {
   const t = useTranslations("Review.policy");
   const settings = useAtomValue(reviewSettings(workspaceId));
 
@@ -137,3 +130,14 @@ export const ApprovalPolicyForm = ({
     />
   ) : null;
 };
+
+/**
+ * Chooses which of the workspace's posts wait for an approval, for those
+ * who may change the workspace (organization:update). The policy is read
+ * with the visitor's cookies, once the page has hydrated.
+ */
+export const ApprovalPolicyForm = ({
+  workspaceId,
+}: {
+  readonly workspaceId: string;
+}) => (useHydrated() ? <LoadedPolicy workspaceId={workspaceId} /> : null);

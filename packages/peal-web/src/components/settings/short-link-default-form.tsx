@@ -9,18 +9,14 @@ import { Label } from "peal-ui/components/label";
 import { toast } from "peal-ui/components/toast";
 import { useId, useTransition } from "react";
 
+import { useHydrated } from "#components/media/use-hydrated.ts";
 import {
   setShortLinkDefault,
   shortLinkStatus,
   shortLinksChanged,
 } from "#short-links/atoms.ts";
 
-/**
- * Whether the workspace's new posts ask for short links by default, which
- * owners and admins set (`mayChange`, organization:update); on a server
- * without short links, it says so.
- */
-export const ShortLinkDefaultForm = ({
+const LoadedDefault = ({
   mayChange,
   workspaceId,
 }: {
@@ -81,3 +77,20 @@ export const ShortLinkDefaultForm = ({
     </div>
   );
 };
+
+/**
+ * Whether the workspace's new posts ask for short links by default, which
+ * owners and admins set (`mayChange`, organization:update); on a server
+ * without short links, it says so. The status is read with the visitor's
+ * cookies, once the page has hydrated.
+ */
+export const ShortLinkDefaultForm = ({
+  mayChange,
+  workspaceId,
+}: {
+  readonly mayChange: boolean;
+  readonly workspaceId: string;
+}) =>
+  useHydrated() ? (
+    <LoadedDefault mayChange={mayChange} workspaceId={workspaceId} />
+  ) : null;
