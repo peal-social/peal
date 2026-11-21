@@ -36047,6 +36047,7 @@ const (
 	WebhookURLRefusalTooLong     WebhookURLRefusal = "tooLong"
 	WebhookURLRefusalNotPublic   WebhookURLRefusal = "notPublic"
 	WebhookURLRefusalUnknownHost WebhookURLRefusal = "unknownHost"
+	WebhookURLRefusalOwnServer   WebhookURLRefusal = "ownServer"
 )
 
 func NewWebhookURLRefusalFromString(s string) (WebhookURLRefusal, error) {
@@ -36063,6 +36064,8 @@ func NewWebhookURLRefusalFromString(s string) (WebhookURLRefusal, error) {
 		return WebhookURLRefusalNotPublic, nil
 	case "unknownHost":
 		return WebhookURLRefusalUnknownHost, nil
+	case "ownServer":
+		return WebhookURLRefusalOwnServer, nil
 	}
 	var t WebhookURLRefusal
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

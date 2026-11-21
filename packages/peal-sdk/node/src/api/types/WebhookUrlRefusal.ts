@@ -6,6 +6,7 @@ export const WebhookUrlRefusal = {
         Credentials: "credentials",
         TooLong: "tooLong",
         NotPublic: "notPublic",
-        UnknownHost: "unknownHost"
+        UnknownHost: "unknownHost",
+        OwnServer: "ownServer"
     } as const;
 export type WebhookUrlRefusal = typeof WebhookUrlRefusal[keyof typeof WebhookUrlRefusal];

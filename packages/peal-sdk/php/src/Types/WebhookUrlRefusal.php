@@ -10,4 +10,5 @@ enum WebhookUrlRefusal: string
     case TooLong = "tooLong";
     case NotPublic = "notPublic";
     case UnknownHost = "unknownHost";
+    case OwnServer = "ownServer";
 }

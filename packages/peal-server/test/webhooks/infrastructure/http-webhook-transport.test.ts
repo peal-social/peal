@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Effect, Layer, Option } from "effect";
+import { ConfigProvider, Effect, Layer, Option } from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
@@ -206,5 +206,29 @@ describe("the webhook transport", () => {
       // For the moment only: each delivery checks again.
       assert.strictEqual(yield* check("lookupFailed"), "deliverable");
     })
+  );
+  it.effect("delivers nowhere on Peal's own origin, the guard not asked", () =>
+    Effect.gen(function* own() {
+      const refused = yield* WebhookTransport.use((transport) =>
+        transport.check(WebhookUrlSchema.make("https://peal.example/hook"))
+      ).pipe(Effect.flip);
+
+      assert.strictEqual(refused.reason, "ownServer");
+
+      // Another host of the same domain is a receiver like any other.
+      yield* WebhookTransport.use((transport) =>
+        transport.check(WebhookUrlSchema.make("https://hooks.peal.example/x"))
+      );
+    }).pipe(
+      Effect.provide(
+        Open.pipe(
+          Layer.provide(
+            ConfigProvider.layer(
+              ConfigProvider.fromUnknown({ PUBLIC_URL: "https://peal.example" })
+            )
+          )
+        )
+      )
+    )
   );
 });

@@ -19,6 +19,8 @@ public final class WebhookUrlRefusal {
 
     public static final WebhookUrlRefusal NOT_HTTPS = new WebhookUrlRefusal(Value.NOT_HTTPS, "notHttps");
 
+    public static final WebhookUrlRefusal OWN_SERVER = new WebhookUrlRefusal(Value.OWN_SERVER, "ownServer");
+
     private final Value value;
 
     private final String string;
@@ -63,6 +65,8 @@ public final class WebhookUrlRefusal {
                 return visitor.visitTooLong();
             case NOT_HTTPS:
                 return visitor.visitNotHttps();
+            case OWN_SERVER:
+                return visitor.visitOwnServer();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -84,6 +88,8 @@ public final class WebhookUrlRefusal {
                 return TOO_LONG;
             case "notHttps":
                 return NOT_HTTPS;
+            case "ownServer":
+                return OWN_SERVER;
             default:
                 return new WebhookUrlRefusal(Value.UNKNOWN, value);
         }
@@ -102,6 +108,8 @@ public final class WebhookUrlRefusal {
 
         UNKNOWN_HOST,
 
+        OWN_SERVER,
+
         UNKNOWN
     }
 
@@ -117,6 +125,8 @@ public final class WebhookUrlRefusal {
         T visitNotPublic();
 
         T visitUnknownHost();
+
+        T visitOwnServer();
 
         T visitUnknown(String unknownType);
     }
