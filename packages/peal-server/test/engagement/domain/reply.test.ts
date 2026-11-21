@@ -39,6 +39,13 @@ const sent: SendOutcome = {
 const settled = (outcome: SendOutcome) =>
   Result.getOrThrow(settleReply(reply, outcome, later));
 
+// The permalink a reply keeps once the platform answered it with `permalink`.
+const sentAt = (permalink: string) => {
+  const { status } = settled({ ...sent, permalink: Option.some(permalink) });
+
+  return status._tag === "sent" ? status.permalink : Option.none();
+};
+
 describe("a reply", () => {
   it("is on its way once written, under its comment and its author", () => {
     expect(reply.status).toStrictEqual({
@@ -73,6 +80,20 @@ describe("a reply", () => {
       permalink: sent.permalink,
       platformCommentId: Option.some("3001"),
     });
+  });
+
+  // The platform's answer names it, and an instance may answer anything.
+  it("keeps the address the platform gave it only when it is a web address", () => {
+    expect(sentAt(["javascript", "alert(1)"].join(":"))).toStrictEqual(
+      Option.none()
+    );
+    expect(sentAt("data:text/html,synthetic")).toStrictEqual(Option.none());
+    expect(sentAt(`https://social.example/${"x".repeat(2048)}`)).toStrictEqual(
+      Option.none()
+    );
+    expect(
+      sentAt("https://social.example/@studio/3001\u0000\uD800")
+    ).toStrictEqual(Option.some("https://social.example/@studio/3001\uFFFD"));
   });
 
   it("fails with the reason nothing went out", () => {

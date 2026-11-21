@@ -303,7 +303,9 @@
   no NUL, no lone surrogate, no control character, a bounded text, name,
   handle and id, and a permalink only when it is a web address. `reconcile`
   cleans first, as ids are matched as they are kept, and `receiveComment`
-  and `refreshComment` clean again whatever they are handed. One thread
+  and `refreshComment` clean again whatever they are handed. A sent
+  reply's permalink is kept only when it is a web address too
+  (`settleReply`). One thread
   never stops a run: `recordOrPutOff` puts off a thread the database
   refuses or a fault breaks on, counts it (`failed`,
   `peal.engagement.collection.thread_failures`, alert

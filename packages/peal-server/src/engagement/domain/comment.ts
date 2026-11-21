@@ -140,9 +140,11 @@ export const maxAuthorHandleLength = 320;
 const maxPlatformIdLength = 512;
 const maxPermalinkLength = 2048;
 
-// A comment's address, when it is one a browser opens on the web and
-// short enough to be one: anything else is no address.
-const webAddress = (address: string): Option.Option<string> => {
+/**
+ * A comment's or a reply's address, when it is one a browser opens on the
+ * web and short enough to be one: anything else is no address.
+ */
+export const webAddress = (address: string): Option.Option<string> => {
   const cleaned = storableLine(address, maxPermalinkLength + 1);
 
   return cleaned.length <= maxPermalinkLength &&
