@@ -500,8 +500,11 @@ describe("the accounts' numbers", () => {
     expect(html).toContain("Against the 2 days before");
     // 14 interactions against 10: 4 more, 40%.
     expect(html).toContain("4 more (+40%)");
-    // Unknown is written, never as zero.
+    // Unknown is written, never as zero, and said once in its card.
     expect(html).toContain("Not given by the platform");
+    expect(html).not.toMatch(
+      /<dd[^>]*>(?:(?!<\/dd>).)*Not given by the platform(?:(?!<\/dd>).)*Not given by the platform/su
+    );
     expect(html).toContain('href="/export?kind=posts"');
   });
 

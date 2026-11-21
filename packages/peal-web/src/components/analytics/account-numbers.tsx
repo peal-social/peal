@@ -214,16 +214,26 @@ export const AccountNumbers = ({
               <dt className="text-muted-foreground text-sm">
                 {t("metric", { metric })}
               </dt>
+              {/* A figure no platform gives is said once, in muted text,
+                  with no change to compare. */}
               <dd className="flex flex-col gap-1">
-                <span className="text-2xl font-semibold tabular-nums">
-                  {count(dashboard.totals[metric])}
-                </span>
-                <span className="text-muted-foreground text-sm">
-                  {trendText(
-                    dashboard.totals[metric],
-                    dashboard.previousTotals[metric]
-                  )}
-                </span>
+                {dashboard.totals[metric] === null ? (
+                  <span className="text-muted-foreground text-sm">
+                    {t("totals.notGiven")}
+                  </span>
+                ) : (
+                  <>
+                    <span className="text-2xl font-semibold tabular-nums">
+                      {count(dashboard.totals[metric])}
+                    </span>
+                    <span className="text-muted-foreground text-sm">
+                      {trendText(
+                        dashboard.totals[metric],
+                        dashboard.previousTotals[metric]
+                      )}
+                    </span>
+                  </>
+                )}
               </dd>
             </div>
           ))}
