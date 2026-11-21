@@ -229,6 +229,13 @@ const published = (postId: string): Published => ({
   platformPostId: PlatformPostIdSchema.make(postId),
 });
 
+// A reel is shown at its video's address. A story, gone in a day, has
+// none to keep.
+const reelPublished = (postId: string, videoId: string): Published => ({
+  ...published(postId),
+  permalink: `https://www.facebook.com/reel/${encodeURIComponent(videoId)}`,
+});
+
 const videoTitleOf = (post: OutgoingPost) =>
   post.options.pipe(
     Option.filter(Schema.is(FacebookOptions)),
@@ -534,7 +541,11 @@ export const facebookFormatSteps = (deps: FacebookFormatDeps) => {
               }
 
               return Option.exists(status, isPublished)
-                ? Effect.succeed(published(id))
+                ? Effect.succeed(
+                    edge === "/video_reels"
+                      ? reelPublished(id, videoId)
+                      : published(id)
+                  )
                 : Effect.fail(
                     new OutcomeUnknown({ reason: "stillProcessing" })
                   );
@@ -599,7 +610,7 @@ export const facebookFormatSteps = (deps: FacebookFormatDeps) => {
         if (!story) {
           return Effect.succeed({
             _tag: "found",
-            published: published(videoId),
+            published: reelPublished(videoId, videoId),
           });
         }
 
