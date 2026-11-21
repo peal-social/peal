@@ -1,6 +1,7 @@
 import { Schema } from "effect";
 
 import { PlatformSchema } from "./platform.ts";
+import { postOrChannel } from "./post-or-channel.ts";
 
 // The limits below are the server's (src/engagement/domain/comment-rule.ts
 // and src/engagement/domain/reply-text.ts): a test keeps them equal.
@@ -209,7 +210,9 @@ export const NewCommentRuleSchema = Schema.Struct({
   postId: Schema.optionalKey(Schema.String),
   privateReply: Schema.optionalKey(ReplySchema),
   reply: ReplySchema,
-}).annotate({ identifier: "NewCommentRule" });
+})
+  .check(postOrChannel)
+  .annotate({ identifier: "NewCommentRule" });
 
 export type NewCommentRule = typeof NewCommentRuleSchema.Type;
 
