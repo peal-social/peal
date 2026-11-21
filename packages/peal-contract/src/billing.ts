@@ -479,6 +479,7 @@ export const CancelPayloadSchema = Schema.Struct({
       Schema.String.check(
         Schema.isPattern(/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/u, {
           description: "a day, as YYYY-MM-DD",
+          expected: "a day, as YYYY-MM-DD",
         })
       )
     )

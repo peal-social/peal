@@ -196,7 +196,10 @@ export const refusedWebhookHeaderPrefixes: readonly string[] = [
 // An HTTP token (RFC 9110, section 5.1), not one Peal sets.
 const HeaderNameSchema = Schema.String.check(
   Schema.isBetweenLength(1, maxWebhookHeaderNameLength),
-  Schema.isPattern(/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/u),
+  Schema.isPattern(/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/u, {
+    expected:
+      "a header name: letters, digits and ! # $ % & ' * + - . ^ _ ` | ~",
+  }),
   Schema.makeFilter((name) => {
     const lowered = name.toLowerCase();
 
@@ -213,7 +216,10 @@ const HeaderNameSchema = Schema.String.check(
 // Visible ASCII, spaces inside it but at neither end, on one line.
 const HeaderValueSchema = Schema.String.check(
   Schema.isBetweenLength(1, maxWebhookHeaderValueLength),
-  Schema.isPattern(/^[\u0021-\u007E](?:[\u0020-\u007E]*[\u0021-\u007E])?$/u)
+  Schema.isPattern(/^[\u0021-\u007E](?:[\u0020-\u007E]*[\u0021-\u007E])?$/u, {
+    expected:
+      "a header value of visible ASCII on one line, spaces inside it but at neither end",
+  })
 );
 
 /** A header every delivery to the endpoint carries, as a gateway may ask. */

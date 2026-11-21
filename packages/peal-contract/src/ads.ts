@@ -89,7 +89,9 @@ export const dailyOverspendPercent = 75;
 export const weeklySpendLimitDays = 7;
 
 const CurrencySchema = Schema.String.check(
-  Schema.isPattern(/^[A-Z]{3}$/u)
+  Schema.isPattern(/^[A-Z]{3}$/u, {
+    expected: "a currency as three capital letters, such as EUR",
+  })
 ).annotate({
   description: "An ISO 4217 currency code, in capitals: `EUR`, `USD`.",
 });
@@ -380,7 +382,11 @@ export const BoostAudienceSchema = Schema.Struct({
     Schema.isBetween({ maximum: maxBoostAge, minimum: minBoostAge })
   ),
   countries: Schema.Array(
-    Schema.String.check(Schema.isPattern(/^[A-Z]{2}$/u))
+    Schema.String.check(
+      Schema.isPattern(/^[A-Z]{2}$/u, {
+        expected: "a country as two capital letters, such as FR",
+      })
+    )
   ).check(Schema.isBetweenLength(1, maxBoostCountries), Schema.isUnique()),
 }).annotate({
   description: `Who a boost is shown to: people in some countries (ISO 3166-1 alpha-2 codes in capitals, ${maxBoostCountries} at most), between two ages (${minBoostAge} to ${maxBoostAge}, ${maxBoostAge} meaning "${maxBoostAge} and over"). Nothing finer.`,

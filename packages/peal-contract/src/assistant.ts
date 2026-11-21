@@ -326,7 +326,9 @@ export const ImageProviderChangeSchema = Schema.Struct({
     Schema.String.check(
       Schema.isMinLength(1),
       Schema.isMaxLength(maxImageProviderKeyLength),
-      Schema.isPattern(imageProviderKeyPattern)
+      Schema.isPattern(imageProviderKeyPattern, {
+        expected: "a key of visible ASCII, without spaces",
+      })
     )
   ),
   // The API's base address, which `/images/generations` follows, such as
@@ -337,7 +339,9 @@ export const ImageProviderChangeSchema = Schema.Struct({
   model: Schema.String.check(
     Schema.isMinLength(1),
     Schema.isMaxLength(maxImageProviderModelLength),
-    Schema.isPattern(imageProviderModelPattern)
+    Schema.isPattern(imageProviderModelPattern, {
+      expected: "a model's name on one line, without control characters",
+    })
   ),
 }).annotate({ identifier: "ImageProviderChange" });
 
@@ -398,7 +402,9 @@ export const TextProviderChangeSchema = Schema.Struct({
     Schema.String.check(
       Schema.isMinLength(1),
       Schema.isMaxLength(maxImageProviderKeyLength),
-      Schema.isPattern(imageProviderKeyPattern)
+      Schema.isPattern(imageProviderKeyPattern, {
+        expected: "a key of visible ASCII, without spaces",
+      })
     )
   ),
   // The API's base address: `https://api.anthropic.com` for Anthropic,
@@ -412,7 +418,9 @@ export const TextProviderChangeSchema = Schema.Struct({
   model: Schema.String.check(
     Schema.isMinLength(1),
     Schema.isMaxLength(maxImageProviderModelLength),
-    Schema.isPattern(imageProviderModelPattern)
+    Schema.isPattern(imageProviderModelPattern, {
+      expected: "a model's name on one line, without control characters",
+    })
   ),
 }).annotate({ identifier: "TextProviderChange" });
 

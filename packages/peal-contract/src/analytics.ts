@@ -27,7 +27,9 @@ const isCalendarDay = (written: string): boolean => {
 
 /** A day on the calendar, written `YYYY-MM-DD`, in no particular zone. */
 export const CalendarDaySchema = Schema.String.check(
-  Schema.isPattern(/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/u),
+  Schema.isPattern(/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/u, {
+    expected: "a day, as YYYY-MM-DD",
+  }),
   Schema.makeFilter(isCalendarDay, { expected: "a day on the calendar" })
 ).annotate({ description: "A day, as YYYY-MM-DD.", identifier: "CalendarDay" });
 
