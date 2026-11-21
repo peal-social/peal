@@ -67,6 +67,39 @@ const literalsOf = (ast: SchemaAST.AST): Option.Option<readonly string[]> => {
     : Option.none();
 };
 
+// The tags a union of tagged structs takes, each member's `_tag` a
+// literal: a value whose `_tag` none has matches no member, and the
+// formatter says only the union's name ("Expected SignatureScope").
+const tagsOf = (ast: SchemaAST.AST): Option.Option<readonly string[]> => {
+  if (!SchemaAST.isUnion(ast)) {
+    return Option.none();
+  }
+
+  const tags = ast.types.flatMap((member) =>
+    SchemaAST.isObjects(member)
+      ? member.propertySignatures
+          .filter(({ name }) => name === "_tag")
+          .flatMap(({ type }) => Option.toArray(literalsOf(type)))
+          .flat()
+      : []
+  );
+
+  return tags.length === ast.types.length ? Option.some(tags) : Option.none();
+};
+
+// What a refused named set takes, said as a request would write it.
+const expectedOf = (ast: SchemaAST.AST): Option.Option<string> =>
+  literalsOf(ast).pipe(
+    Option.map((values) => `Expected ${values.join(" | ")}`),
+    Option.orElse(() =>
+      tagsOf(ast).pipe(
+        Option.map(
+          (tags) => `Expected an object whose _tag is ${tags.join(" | ")}`
+        )
+      )
+    )
+  );
+
 interface NamedSet {
   // What the formatter says of it: its name alone.
   readonly named: string;
@@ -108,14 +141,34 @@ const namedSetsOf = (
     return issue.issues.flatMap((inner) => namedSetsOf(inner, path));
   }
 
-  return Option.toArray(literalsOf(issue.ast)).map((values) => ({
+  return Option.toArray(expectedOf(issue.ast)).map((values) => ({
     named: `Expected ${identifier}`,
     path: placeOf(path),
-    values: `Expected ${values.join(" | ")}`,
+    values,
   }));
 };
 
 const formatIssues = SchemaIssue.makeFormatterStandardSchemaV1();
+
+// A non-empty array, or a tuple, given too few items is told of as the
+// key of the first one missing ("Missing key" at `channelIds.0`): the
+// answer says it of the array, with how many it takes at least.
+const tooShort = (
+  path: readonly (number | string)[],
+  message: string
+): {
+  readonly message: string;
+  readonly path: readonly (number | string)[];
+} => {
+  const last = path.at(-1);
+
+  return message === "Missing key" && Predicate.isNumber(last)
+    ? {
+        message: `Expected at least ${last + 1} ${last === 0 ? "item" : "items"}`,
+        path: path.slice(0, -1),
+      }
+    : { message, path };
+};
 
 const segmentOf = (
   segment: PropertyKey | { readonly key: PropertyKey }
@@ -170,9 +223,11 @@ export const requestIssuesOf = <E>(
                 candidate.named === issue.message
             );
 
+            const said = tooShort(path, set?.values ?? issue.message);
+
             return {
-              message: oneLine(set?.values ?? issue.message),
-              path: [parts[kind], ...path],
+              message: oneLine(said.message),
+              path: [parts[kind], ...said.path],
             };
           })
       );
