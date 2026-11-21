@@ -79,7 +79,11 @@ import type { TwoStepPolicy, TwoStepTeller } from "./two-step.ts";
 import { expireVisitorCookie, visitorOfSignUp } from "./visitor-cookie.ts";
 import { recordWorkspaceChange } from "./workspace-changes.ts";
 import type { WorkspaceChangeRecorder } from "./workspace-changes.ts";
-import { checkChangedSlug, checkNewSlug } from "./workspace-slugs.ts";
+import {
+  checkChangedSlug,
+  checkNewSlug,
+  refuseTakenSlugs,
+} from "./workspace-slugs.ts";
 
 /** A link Better Auth wants mailed, in the recipient's language. */
 export interface AuthLink {
@@ -489,12 +493,15 @@ export const makeAuth = ({
     appName: "Peal",
     basePath: authBasePath,
     baseURL: settings.publicUrl,
-    database: drizzleAdapter(database.db, {
-      provider: "pg",
-      schema: database.tables,
-      schemaName: "auth",
-      transaction: true,
-    }),
+    database: (options) =>
+      refuseTakenSlugs(
+        drizzleAdapter(database.db, {
+          provider: "pg",
+          schema: database.tables,
+          schemaName: "auth",
+          transaction: true,
+        })(options)
+      ),
     // API keys go through Peal's own API only (/api/workspaces/:id/api-keys):
     // their permissions are the server's to set, and staff impersonating a
     // member may not see or revoke them, which Better Auth's routes ignore.

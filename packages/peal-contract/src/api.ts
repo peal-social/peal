@@ -2582,7 +2582,16 @@ export class Api extends HttpApi.make("peal")
   // `channelId`) would otherwise answer every post as if it were applied.
   // Bodies keep Schema's default, as a client may post a platform's whole
   // callback query.
-  .annotate(HttpApi.QueryParseOptions, { onExcessProperty: "error" })
+  //
+  // Every issue is reported, not the first alone, so a client learns in
+  // one answer each field a request lacks (`issues`, at most
+  // `maxRequestIssues` of them).
+  .annotate(HttpApi.QueryParseOptions, {
+    errors: "all",
+    onExcessProperty: "error",
+  })
+  .annotate(HttpApi.ParamsParseOptions, { errors: "all" })
+  .annotate(HttpApi.PayloadParseOptions, { errors: "all" })
   // The contract is Apache-2.0, unlike the rest of Peal, so the clients
   // generated from this document may be too. Its version is the API's
   // (`Peal-Version`): the day of its latest release.

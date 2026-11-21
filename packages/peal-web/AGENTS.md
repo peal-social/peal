@@ -185,7 +185,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   against `isWorkspaceSlug` then Better Auth's `/organization/check-slug`
   once they pause (`slugAvailabilityOf`), and, while still the one
   offered, gets a random tail when taken or reserved. Create waits for a
-  free address.
+  free address. Another workspace may take it between the check and
+  Create (the server answers `ORGANIZATION_SLUG_ALREADY_TAKEN`):
+  `createRefusalOf` (tested) has the offered address tried again once
+  with the tail, and one the person wrote said taken under the field.
   Error reports and the measurement's patterns write the slug's segment
   `:id` (`pathOf`), as it holds the workspace's name.
 - `/`, for someone signed in, redirects to the workspace Better Auth keeps
