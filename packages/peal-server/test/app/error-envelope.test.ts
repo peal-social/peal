@@ -27,6 +27,9 @@ const TestApi = HttpApi.make("test").add(
       params: { thingId: Schema.String.check(Schema.isUUID()) },
       payload: Schema.Struct({
         count: Schema.Int,
+        kind: Schema.optional(
+          Schema.Literals(["bell", "gong"]).annotate({ identifier: "Kind" })
+        ),
         name: Schema.String,
         targets: Schema.Array(Schema.Struct({ channelId: Schema.String })),
       }),
@@ -185,6 +188,34 @@ describe("the error envelope", () => {
         // An answer that is not an error is left as it is.
         assert.deepStrictEqual(made.body, { made: "bell" });
       })
+  );
+
+  it.effect("names the values a named set of them takes", () =>
+    Effect.gen(function* named() {
+      const { dispose, handler } = serving();
+
+      const answer = yield* call(
+        handler,
+        thing,
+        sending({ ...valid, kind: "drum" })
+      );
+
+      yield* Effect.promise(dispose);
+
+      const [issue] = Schema.decodeUnknownSync(
+        Schema.Array(
+          Schema.Struct({
+            message: Schema.String,
+            path: Schema.Array(Schema.String),
+          })
+        )
+      )(answer.body?.["issues"]);
+
+      assert.strictEqual(answer.status, 400);
+      assert.deepStrictEqual(issue?.path, ["body", "kind"]);
+      assert.include(issue?.message, '"bell" | "gong"');
+      assert.notInclude(issue?.message, "Kind");
+    })
   );
 
   it.effect(
