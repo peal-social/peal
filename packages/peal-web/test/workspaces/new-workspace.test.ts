@@ -7,6 +7,7 @@ import {
 } from "peal-contract/workspace-slug";
 
 import {
+  createRefusalOf,
   decodeInvitations,
   elidesBefore,
   firstNameOf,
@@ -98,6 +99,79 @@ describe(slugAvailabilityOf, () => {
     expect(slugTaken("ORGANIZATION_ALREADY_EXISTS")).toBeTruthy();
     expect(slugTaken("ORGANIZATION_SLUG_ALREADY_TAKEN")).toBeTruthy();
     expect(slugTaken("FREE_WORKSPACE_LIMIT_REACHED")).toBeFalsy();
+  });
+});
+
+describe(createRefusalOf, () => {
+  const taken = "ORGANIZATION_SLUG_ALREADY_TAKEN";
+
+  it("tries the offered address again once, with the spare tail", () => {
+    expect(
+      createRefusalOf({
+        code: taken,
+        name: "Kim’s workspace",
+        spare: "1a2b",
+        tried: "kims-workspace",
+        written: false,
+      })
+    ).toStrictEqual({ kind: "retry", slug: "kims-workspace-1a2b" });
+    expect(
+      createRefusalOf({
+        code: "ORGANIZATION_ALREADY_EXISTS",
+        name: "Kim’s workspace",
+        spare: "1a2b",
+        tried: "kims-workspace",
+        written: false,
+      })
+    ).toStrictEqual({ kind: "retry", slug: "kims-workspace-1a2b" });
+  });
+
+  it("says the address is taken once the spare tail was tried", () => {
+    expect(
+      createRefusalOf({
+        code: taken,
+        name: "Kim’s workspace",
+        spare: "1a2b",
+        tried: "kims-workspace-1a2b",
+        written: false,
+      })
+    ).toStrictEqual({ kind: "taken" });
+  });
+
+  it("says an address the person wrote is taken, without trying another", () => {
+    expect(
+      createRefusalOf({
+        code: taken,
+        name: "Kim’s workspace",
+        spare: "1a2b",
+        tried: "kim",
+        written: true,
+      })
+    ).toStrictEqual({ kind: "taken" });
+  });
+
+  it("leaves any other refusal to the form", () => {
+    for (const written of [false, true]) {
+      expect(
+        createRefusalOf({
+          code: "FREE_WORKSPACE_LIMIT_REACHED",
+          name: "Kim’s workspace",
+          spare: "1a2b",
+          tried: "kims-workspace",
+          written,
+        })
+      ).toStrictEqual({ kind: "form" });
+    }
+
+    expect(
+      createRefusalOf({
+        code: undefined,
+        name: "Kim’s workspace",
+        spare: "1a2b",
+        tried: "kims-workspace",
+        written: false,
+      })
+    ).toStrictEqual({ kind: "form" });
   });
 });
 

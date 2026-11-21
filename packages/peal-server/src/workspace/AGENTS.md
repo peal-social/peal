@@ -56,6 +56,12 @@ The staff context follows these rules too. What the law has a host keep is in
   the app's pages nor an id's shape; 400 `INVALID_WORKSPACE_SLUG`); the
   update route itself refuses one another workspace holds
   (`ORGANIZATION_SLUG_ALREADY_TAKEN`) and checks organization:update.
+  Both routes check the slug, then write it, so two requests for one slug
+  at once both pass the check: the adapter (`refuseTakenSlugs`, around
+  Drizzle's in `options.ts`) answers the database's refusal of the second
+  (`organization_slug_key`) as 400 `ORGANIZATION_SLUG_ALREADY_TAKEN`,
+  never 500; the workspace's row is the create route's first write, so
+  the refused one leaves no member and no active workspace.
   Renaming keeps it. A partner's customer workspaces, made in SQL, take their id. The
   server's own links to the web app (notices, emails, upgrade paths) name
   a workspace by its id (`/<id>/…`), which the web app sends on to its slug.

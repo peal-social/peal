@@ -150,8 +150,17 @@ const linesSoFar = () =>
 // allowed, are no part of this one.
 let journeyStart = 0;
 
+// Whether an event is another person's, identified as they allowed: a
+// journey running at the same time sends them to the same log. An event
+// of this member's, identified or not, is always this journey's, so a
+// leak of their id or their workspace is still seen.
+const someoneElses = (event: Received) =>
+  event.properties["$is_identified"] === true && event.distinctId !== memberId;
+
 const ours = (): readonly Received[] =>
-  received().filter((event) => event.line >= journeyStart);
+  received().filter(
+    (event) => event.line >= journeyStart && !someoneElses(event)
+  );
 
 const StoredSchema = Schema.Array(Schema.String);
 

@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
 import { Effect, Schema } from "effect";
+import { SqlClient } from "effect/sql";
 
 import {
   bodyOf,
@@ -17,6 +18,10 @@ import {
 const RefusalSchema = Schema.Struct({ code: Schema.String });
 
 const SlugSchema = Schema.Struct({ name: Schema.String, slug: Schema.String });
+
+// How many pairs of people race for one slug: Better Auth checks the slug,
+// then inserts, so a pair sent together mostly both pass the check.
+const races = 6;
 
 layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
   "workspace slugs",
@@ -101,6 +106,55 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             (yield* bodyOf(RefusalSchema, taken)).code,
             "ORGANIZATION_SLUG_ALREADY_TAKEN"
           );
+        })
+    );
+
+    it.effect(
+      "make one workspace of two asked for at once with the same slug, and refuse the other as taken",
+      () =>
+        Effect.gen(function* raced() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+
+          const create = (cookies: string, slug: string) =>
+            app.request("/api/auth/organization/create", {
+              body: { name: "Kim's workspace", slug },
+              headers: { cookie: cookies },
+            });
+
+          for (let race = 0; race < races; race += 1) {
+            const first = yield* signedUp(`slug-race-${race}-a`);
+            const second = yield* signedUp(`slug-race-${race}-b`);
+            const slug = `kims-workspace-${randomUUID().slice(0, 8)}`;
+
+            const [one, other] = yield* Effect.all(
+              [create(first.cookies, slug), create(second.cookies, slug)],
+              { concurrency: "unbounded" }
+            );
+
+            const [made, refused, loser] =
+              one.status === 200 ? [one, other, second] : [other, one, first];
+
+            assert.strictEqual(made.status, 200, slug);
+            assert.strictEqual(refused.status, 400, slug);
+
+            // Better Auth's own check answers ALREADY_EXISTS; the database's
+            // refusal, once both passed it, SLUG_ALREADY_TAKEN.
+            assert.include(
+              [
+                "ORGANIZATION_SLUG_ALREADY_TAKEN",
+                "ORGANIZATION_ALREADY_EXISTS",
+              ],
+              (yield* bodyOf(RefusalSchema, refused)).code
+            );
+
+            // The one refused holds no workspace, so is a member of none.
+            const memberships = yield* sql<{ count: number }>`
+              SELECT count(*)::int AS count FROM auth.member
+              WHERE user_id = ${loser.id}`;
+
+            assert.strictEqual(memberships[0]?.count, 0, slug);
+          }
         })
     );
 

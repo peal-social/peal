@@ -49,6 +49,43 @@ export const slugTaken = (code: string | undefined): boolean =>
   code === "ORGANIZATION_SLUG_ALREADY_TAKEN";
 
 /**
+ * What the form does when Better Auth refuses to make the workspace:
+ * `retry` with the spare tail when the address was the one offered and
+ * another workspace took it since it was checked (two people of the same
+ * name signing up at once), once only; `taken`, said under the address,
+ * when the person wrote it or the spare tail was tried already; `form`,
+ * the form's own error, for any other refusal.
+ */
+export type CreateRefusal =
+  | { readonly kind: "form" }
+  | { readonly kind: "retry"; readonly slug: string }
+  | { readonly kind: "taken" };
+
+export const createRefusalOf = ({
+  code,
+  name,
+  spare,
+  tried,
+  written,
+}: {
+  readonly code: string | undefined;
+  readonly name: string;
+  readonly spare: string;
+  readonly tried: string;
+  readonly written: boolean;
+}): CreateRefusal => {
+  if (!slugTaken(code)) {
+    return { kind: "form" };
+  }
+
+  const spared = suggestedSlugOf(name, spare);
+
+  return written || tried === spared
+    ? { kind: "taken" }
+    : { kind: "retry", slug: spared };
+};
+
+/**
  * The first word of a person's name, for the workspace made for them
  * ("Maxime’s workspace"); none for a name without one.
  */
