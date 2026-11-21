@@ -68,10 +68,16 @@ export const signInReturn = (
   next: string,
   localized: (href: string) => string,
   signUpOffered: boolean
-): ProviderReturn => ({
-  errorPath: localized(marked("/login", { next })),
-  next,
-  ...(signUpOffered
-    ? { signUp: { invitationId: null, newUserPath: next } }
-    : {}),
-});
+): ProviderReturn => {
+  const errorPath = localized(marked("/login", { next }));
+
+  if (!signUpOffered) {
+    return { errorPath, next };
+  }
+
+  return {
+    errorPath,
+    next,
+    signUp: { invitationId: null, newUserPath: next },
+  };
+};
