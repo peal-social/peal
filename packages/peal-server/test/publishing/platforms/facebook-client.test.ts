@@ -368,6 +368,7 @@ describe("a Facebook reel", () => {
         // Stored under its video id, with no address Meta did not give.
         assert.deepStrictEqual(result, {
           _tag: "published",
+          permalink: `https://www.facebook.com/reel/${video?.id ?? ""}`,
           platformPostId: PlatformPostIdSchema.make(video?.id ?? "missing"),
         });
       }).pipe(Effect.scoped)
@@ -459,6 +460,7 @@ describe("a Facebook reel", () => {
 
         assert.deepStrictEqual(yield* client.resume(post), {
           _tag: "published",
+          permalink: `https://www.facebook.com/reel/${graph.videos()[0]?.id ?? ""}`,
           platformPostId: PlatformPostIdSchema.make(
             graph.videos()[0]?.id ?? "missing"
           ),
@@ -1096,6 +1098,7 @@ describe("a Facebook reel resumed after a restart", () => {
 
         assert.deepStrictEqual(yield* resumed.resume(post), {
           _tag: "published",
+          permalink: `https://www.facebook.com/reel/${video?.id ?? ""}`,
           platformPostId: PlatformPostIdSchema.make(video?.id ?? "missing"),
         });
         assert.lengthOf(finishes(graph, "video_reels"), 1);
@@ -1195,6 +1198,7 @@ describe("a Facebook reel resumed after a restart", () => {
         assert.lengthOf(graph.videos(), 2);
         assert.deepStrictEqual(result, {
           _tag: "published",
+          permalink: `https://www.facebook.com/reel/${second?.id ?? ""}`,
           platformPostId: PlatformPostIdSchema.make(second?.id ?? "missing"),
         });
         assert.lengthOf(finishes(graph, "video_reels"), 1);
@@ -1279,6 +1283,7 @@ describe("a Facebook reel resumed while Meta's status fails once", () => {
 
       assert.deepStrictEqual(yield* resumed.resume(post), {
         _tag: "published",
+        permalink: `https://www.facebook.com/reel/${video?.id ?? ""}`,
         platformPostId: PlatformPostIdSchema.make(video?.id ?? "missing"),
       });
       assert.lengthOf(finishes(graph, "video_reels"), 1);
