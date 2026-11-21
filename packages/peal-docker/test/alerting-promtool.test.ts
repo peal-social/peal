@@ -1,4 +1,4 @@
-// The billing and media sweep alerts as Prometheus evaluates them (promtool, in the
+// The billing, media sweep and outbound alerts as Prometheus evaluates them (promtool, in the
 // production image), on made-up series: each fires the first time, a
 // counter born at 1 or a gauge set once at the start included, and stays
 // quiet otherwise. Skipped without Docker.
@@ -86,6 +86,8 @@ interface Case {
   readonly interval: string;
   readonly series: Readonly<Record<string, string>>;
   readonly expected: readonly (readonly [string, boolean])[];
+  // The labels of the alert that fires, for a rule labelled by series.
+  readonly labels?: Readonly<Record<string, string>>;
 }
 
 const cases: readonly Case[] = [
@@ -408,12 +410,57 @@ const cases: readonly Case[] = [
     },
     uid: "peal-media-sweep-refused",
   },
+  {
+    expected: [
+      ["20m", false],
+      ["40m", true],
+    ],
+    interval: "1m",
+    labels: { service: "meta" },
+    name: "one platform rate-limits half of many requests, from the 20th minute",
+    series: {
+      'peal_outbound_responses_total{service="meta",status="2xx"}': "0+4x60",
+      'peal_outbound_responses_total{service="meta",status="429"}':
+        "0x20 0+4x40",
+      'peal_outbound_responses_total{service="tiktok",status="2xx"}': "0+4x60",
+    },
+    uid: "peal-outbound-failing",
+  },
+  {
+    expected: [["40m", false]],
+    interval: "1m",
+    name: "a platform that fails half of a few requests",
+    series: {
+      'peal_outbound_responses_total{service="devto",status="2xx"}': "0+0.5x60",
+      'peal_outbound_responses_total{service="devto",status="5xx"}': "0+0.5x60",
+    },
+    uid: "peal-outbound-failing",
+  },
+  {
+    expected: [["40m", false]],
+    interval: "1m",
+    name: "a platform that fails one request in ten",
+    series: {
+      'peal_outbound_responses_total{service="x",status="2xx"}': "0+9x60",
+      'peal_outbound_responses_total{service="x",status="5xx"}': "0+1x60",
+    },
+    uid: "peal-outbound-failing",
+  },
+  {
+    expected: [["40m", false]],
+    interval: "1m",
+    name: "hosts off the list that fail, as a member's own site does",
+    series: {
+      'peal_outbound_responses_total{service="other",status="5xx"}': "0+10x60",
+    },
+    uid: "peal-outbound-failing",
+  },
 ];
 
 const dockerRuns =
   spawnSync("docker", ["info"], { stdio: "ignore" }).status === 0;
 
-describe("the billing and media sweep alerts in Prometheus", () => {
+describe("the billing, media sweep and outbound alerts in Prometheus", () => {
   it.skipIf(!dockerRuns)(
     "fire as their tests say",
     () => {
@@ -433,19 +480,23 @@ describe("the billing and media sweep alerts in Prometheus", () => {
           stringify({
             evaluation_interval: "1m",
             rule_files: ["rules.yml"],
-            tests: cases.map(({ expected, interval, name, series, uid }) => ({
-              alert_rule_test: expected.map(([at, fires]) => ({
-                alertname: uid,
-                eval_time: at,
-                exp_alerts: fires ? [{ exp_labels: {} }] : [],
-              })),
-              input_series: Object.entries(series).map(([metric, values]) => ({
-                series: metric,
-                values,
-              })),
-              interval,
-              name,
-            })),
+            tests: cases.map(
+              ({ expected, interval, labels = {}, name, series, uid }) => ({
+                alert_rule_test: expected.map(([at, fires]) => ({
+                  alertname: uid,
+                  eval_time: at,
+                  exp_alerts: fires ? [{ exp_labels: labels }] : [],
+                })),
+                input_series: Object.entries(series).map(
+                  ([metric, values]) => ({
+                    series: metric,
+                    values,
+                  })
+                ),
+                interval,
+                name,
+              })
+            ),
           }),
           { mode: 0o644 }
         );

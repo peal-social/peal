@@ -56,6 +56,7 @@ const watched = [
   "peal_meta_refusals_total",
   "peal_channels_reconnect_required_total",
   "peal_publishing_outcomes_total",
+  "peal_outbound_responses_total",
 ];
 
 const RuleSchema = Schema.Struct({
@@ -251,6 +252,25 @@ describe("the production alert rules", () => {
     ]) {
       expect(rule?.annotations.summary).toContain(step);
     }
+  });
+
+  // One alert per platform, named by its service label: a host off the
+  // list (other) is a member's own site, which no platform answers for.
+  it("alert from peal-outbound-failing per service when 429s and 5xx pass a quarter of 50 answers or more", () => {
+    const rule = ruleOf("peal-outbound-failing");
+    const expr = rule?.data.find((step) => step.refId === "A")?.model.expr;
+
+    expect(rule).toMatchObject({
+      execErrState: "Error",
+      for: "0s",
+      labels: { severity: "warning" },
+      noDataState: "OK",
+    });
+    expect(expr).toBe(
+      '(sum by (service) (increase(peal_outbound_responses_total{service!="other",status=~"429|5xx"}[30m])) / sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m]))) and (sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m])) >= 50)'
+    );
+    expect(expr).not.toMatch(/\bmax\(|vector\(0\)/u);
+    expect(rule?.annotations.summary).toContain("peal.outbound.responses");
   });
 
   it("never tell the operator to report usage by hand", () => {
