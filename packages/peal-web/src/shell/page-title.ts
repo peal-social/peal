@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import type { Messages } from "next-intl";
 import { getTranslations } from "next-intl/server";
+import { ChannelPlatformSchema } from "peal-contract";
 
 import { routing } from "#i18n/routing.ts";
 
@@ -32,6 +33,30 @@ export const workspacePageTitle =
 
     return { title: t(page) };
   };
+
+/**
+ * A platform's form's `generateMetadata`, under New channel: the
+ * platform's name ("Mastodon · Client A"), or the page's when the address
+ * names no platform a channel connects to.
+ */
+export const platformPageTitle = async (
+  props: TitledProps & {
+    readonly params: Promise<{ readonly platform: string }>;
+  }
+): Promise<Metadata> => {
+  const { platform: word } = await props.params;
+  const locale = await localeOf(props);
+
+  const platform = ChannelPlatformSchema.literals.find((each) => each === word);
+
+  if (platform === undefined) {
+    return await workspacePageTitle("channelPlatform")(props);
+  }
+
+  const t = await getTranslations({ locale, namespace: "ChannelsPage" });
+
+  return { title: t("platform", { platform }) };
+};
 
 /** The setup page's `generateMetadata`, at `/` and `/create`: its title. */
 export const setupPageTitle = async (props: TitledProps): Promise<Metadata> => {

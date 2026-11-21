@@ -1067,3 +1067,21 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   A website connects with `WebsiteFields` (`connect-website.tsx`): the
   application password goes to the server once, and a site's channel
   reconnects through the same form, as it has no sign-in.
+- The Channels page (`ChannelsSettings`, its view `ChannelListView`) is
+  a list (DESIGN.md, "Pages"): views, the Filter's Platform, Type and
+  Feature, and Display's ordering (`orderedChannels`) in the address
+  (`#channels/channel-filter.ts`), the toolbar over the empty state too,
+  no connecting on it. **New channel** opens `…/channels/new` (`NewChannel`): the
+  catalogue (`PlatformCatalogueView`) of `connectablesOf` (what
+  `channels.platforms` answers, the websites by key and the chats it
+  names), then one platform's `ConnectForm` at `…/channels/new/<platform>`
+  (named with `PageTitle`). What Peal
+  does on a platform is `featuresOf` (`#channels/platform-features.ts`):
+  analytics from the server's capabilities (`countedOn`), comments from
+  the contract's `inboxPlatforms`, and `messagePlatforms`, which the
+  inbox's message settings read too; a feature Peal gains is added there.
+- The panel header's breadcrumb is `navigationOf`'s `breadcrumb.trail`:
+  the steps a page is nested under (`Crumb`), each a link
+  (`crumbHrefOf`) that `WorkspaceShell` renders. A page nested under
+  another gets its steps there (`trailOf`), never a "Back" link of its
+  own; one that names its item (`PageTitle`) keeps them.

@@ -2,6 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
+import { RefreshCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ChatPlatform } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
@@ -252,8 +253,8 @@ export const ReconnectChat = ({
       <DialogTrigger
         render={
           <Button
-            variant={needsReconnect ? "default" : "outline"}
-            size="sm"
+            variant={needsReconnect ? "outline" : "ghost"}
+            size="xs"
             aria-label={t("reconnectAccount", {
               handle,
               platform: t("platform", { platform }),
@@ -261,6 +262,7 @@ export const ReconnectChat = ({
           />
         }
       >
+        <RefreshCwIcon aria-hidden />
         {t("reconnect")}
       </DialogTrigger>
       <DialogContent closeLabel={t("cancel")}>

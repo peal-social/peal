@@ -283,6 +283,10 @@ const AgentButtons = () => {
   );
 };
 
+/** A step of the breadcrumb: muted, ink while hovered or focused. */
+export const crumbLinkClass =
+  "hover:text-foreground focus-visible:ring-ring/50 rounded-sm transition-colors outline-none focus-visible:ring-2";
+
 /**
  * The signed-in app's frame (DESIGN.md, "The frame"): the
  * sidebar on the page's background and the page in a white panel beside
@@ -305,8 +309,15 @@ export const FrameView = ({
 }: {
   /** The account menu, at the bottom bar's start. */
   readonly actions: ReactNode;
+  /**
+   * The steps before the page, outermost first, each a link back to it
+   * (`link`, styled by `crumbLinkClass`), then the page's name.
+   */
   readonly breadcrumb: {
-    readonly section: string | null;
+    readonly trail: readonly {
+      readonly key: string;
+      readonly link: ReactNode;
+    }[];
     readonly page: string | null;
   };
   readonly children: ReactNode;
@@ -364,15 +375,18 @@ export const FrameView = ({
           </SheetContent>
         </Sheet>
         <nav aria-label={t("breadcrumb")} className="min-w-0 flex-1">
-          <ol className="flex items-center gap-1.5 text-sm">
-            {breadcrumb.section === null ? null : (
-              <li className="text-muted-foreground flex items-center gap-1.5">
-                {breadcrumb.section}
+          <ol className="flex min-w-0 items-center gap-1.5 text-sm">
+            {breadcrumb.trail.map(({ key, link }) => (
+              <li
+                key={key}
+                className="text-muted-foreground flex shrink-0 items-center gap-1.5"
+              >
+                {link}
                 <span aria-hidden className="text-muted-foreground/60">
                   ›
                 </span>
               </li>
-            )}
+            ))}
             {shownTitle === null ? null : (
               <li aria-current="page" className="min-w-0">
                 <h1 className="truncate text-sm font-medium">{shownTitle}</h1>
@@ -386,7 +400,7 @@ export const FrameView = ({
         />
       </header>
     ),
-    [breadcrumb.section, closeMenu, label, menuOpen, shownTitle, sidebar, t]
+    [breadcrumb.trail, closeMenu, label, menuOpen, shownTitle, sidebar, t]
   );
 
   const splitParts = useMemo(

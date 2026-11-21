@@ -163,7 +163,7 @@ describe("per-account pricing", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/${slug}/channels`);
+    await app.open(`/${slug}/channels/new/mastodon`);
     await screen.getByLabel("Server").fill("social.example");
     await screen.getByRole("button", "Connect Mastodon").tap();
 
@@ -197,7 +197,7 @@ describe("per-account pricing", { serial: true }, () => {
   }) => {
     const opened = async (locale: Locale, size: Size) => {
       await browser.setViewport(size);
-      await app.open(`${words[locale].prefix}/${slug}/channels`);
+      await app.open(`${words[locale].prefix}/${slug}/channels/new/mastodon`);
       await screen.getByLabel(words[locale].server).fill("social.example");
       await screen.getByRole("button", words[locale].connect).tap();
       await fits(screen.getByRole("dialog"), locale, size);
@@ -209,7 +209,7 @@ describe("per-account pricing", { serial: true }, () => {
     await opened("fr", { height: 667, width: 375 });
     await browser.setViewport({ height: 720, width: 1280 });
     // Back to English, which the French pages' language cookie replaced.
-    await app.open(`/en/${slug}/channels`);
+    await app.open(`/en/${slug}/channels/new/mastodon`);
     await expect(screen.getByLabel("Server")).toBeVisible();
   });
 
@@ -217,7 +217,7 @@ describe("per-account pricing", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/${slug}/channels`);
+    await app.open(`/${slug}/channels/new/mastodon`);
     await screen.getByLabel("Server").fill("social.example");
     await screen.getByRole("button", "Connect Mastodon").tap();
 
@@ -258,7 +258,7 @@ describe("per-account pricing", { serial: true }, () => {
 
     // No platform is reached in a run: the connection now goes past the
     // plan and stops at the server it names, which does not exist.
-    await app.open(`/${slug}/channels`);
+    await app.open(`/${slug}/channels/new/mastodon`);
     await screen.getByLabel("Server").fill("social.example");
     await screen.getByRole("button", "Connect Mastodon").tap();
     await expect(

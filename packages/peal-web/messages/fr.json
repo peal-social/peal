@@ -890,6 +890,34 @@
         "chatHint": "Son nom public, comme @nom, ou son identifiant, qui commence par -100 pour un canal ou un supergroupe.",
         "connect": "Connecter Telegram"
       }
+    },
+    "list": {
+      "newChannel": "Nouveau canal",
+      "views": "Vues",
+      "view": "{view, select, attention {À reconnecter} off {Désactivés} other {Tous}}",
+      "platformFilter": "Plateforme",
+      "typeFilter": "Type",
+      "featureFilter": "Fonction",
+      "category": "{category, select, social {Réseau social} chat {Messagerie} other {Site web}}",
+      "feature": "{feature, select, posts {Publications} articles {Articles} analytics {Statistiques} comments {Commentaires} reviews {Avis} messages {Messages privés} other {Publicités}}",
+      "noMatchTitle": "Aucun canal ne correspond",
+      "hiddenByFilters": "<strong>{count, plural, one {# canal masqué} other {# canaux masqués}}</strong> par les filtres",
+      "order": "{order, select, name {Nom} platform {Plateforme} status {État} other {Date de connexion}}",
+      "viewTitle": "{view, select, attention {À reconnecter} off {Désactivés} other {Canaux}}",
+      "viewText": "{view, select, attention {Un canal apparaît ici quand sa plateforme n’accepte plus l’accès de Peal, par exemple après que le propriétaire du compte a retiré Peal ou changé son mot de passe. Rien n’y part tant qu’il n’est pas reconnecté, et les propriétaires et administrateurs de l’espace de travail sont prévenus. Tous les canaux fonctionnent pour l’instant.} off {Un canal désactivé garde sa connexion, son historique et son nom, et rien n’y part tant que vous ne le réactivez pas. Il compte toujours dans votre offre. Aucun canal n’est désactivé.} other {Un canal est un compte sur lequel cet espace de travail publie : un réseau social, une messagerie ou un site web. Connectez-en un en vous connectant sur sa plateforme, et il apparaît ici, prêt pour vos publications.}}",
+      "docs": "Documentation",
+      "createChannel": "Créer un canal"
+    },
+    "catalogue": {
+      "search": "Rechercher une plateforme",
+      "searchPlaceholder": "Rechercher une plateforme…",
+      "types": "Types",
+      "allTypes": "Toutes",
+      "connected": "{count, plural, one {# connecté} other {# connectés}}",
+      "connect": "Connecter {platform}",
+      "noMatchTitle": "Aucune plateforme ne correspond",
+      "noMatchHint": "Essayez un autre nom, ou effacez les filtres.",
+      "unknown": "Ce serveur ne connecte pas cette plateforme."
     }
   },
   "PlatformConnect": {
@@ -3049,7 +3077,9 @@
       "message": "Message",
       "account": "Compte",
       "notifications": "Notifications",
-      "notificationSettings": "Préférences de notification"
+      "notificationSettings": "Préférences de notification",
+      "newChannel": "Nouveau canal",
+      "channelPlatform": "Plateforme"
     },
     "help": "Aide",
     "shortcuts": "Raccourcis clavier",

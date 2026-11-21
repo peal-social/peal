@@ -2,6 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { DateTime, Option } from "effect";
+import { RefreshCwIcon, UnplugIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { isSocialChannel } from "peal-contract";
 import type { Channel, ChannelStatus } from "peal-contract";
@@ -38,13 +39,15 @@ import { rememberConnection } from "#channels/pending-connection.ts";
 import { ChannelPower } from "#components/channels/channel-power.tsx";
 import { ReconnectChat } from "#components/channels/connect-chat.tsx";
 import { ReconnectWebsite } from "#components/channels/connect-website.tsx";
+import { PlatformMark } from "#components/channels/platform-mark.tsx";
 import { RenameChannel } from "#components/channels/rename-channel.tsx";
 
+// A channel that posts says nothing of its state; one that does not says
+// why beside its name.
 const badgeVariant = {
-  active: "outline",
   disabled: "secondary",
   refreshNeeded: "destructive",
-} as const satisfies Record<ChannelStatus["_tag"], string>;
+} as const satisfies Record<Exclude<ChannelStatus["_tag"], "active">, string>;
 
 // Connecting the channel's account again: a platform's sign-in, or a
 // website's form for a new application password.
@@ -110,8 +113,8 @@ const ReconnectControl = ({
 
   return (
     <Button
-      variant={needsReconnect ? "default" : "outline"}
-      size="sm"
+      variant={needsReconnect ? "outline" : "ghost"}
+      size="xs"
       disabled={isReconnecting}
       focusableWhenDisabled
       onClick={handleReconnect}
@@ -124,6 +127,7 @@ const ReconnectControl = ({
             })
       }
     >
+      <RefreshCwIcon aria-hidden />
       {isReconnecting ? t("reconnecting") : t("reconnect")}
     </Button>
   );
@@ -189,25 +193,32 @@ export const ChannelRow = ({
   };
 
   return (
-    <li className="flex flex-wrap items-center gap-4 py-4">
-      <Avatar size="lg">
-        {channel.avatarUrl === null ? null : (
-          <AvatarImage src={channel.avatarUrl} alt="" />
-        )}
-        <AvatarFallback>{channelInitial(channel)}</AvatarFallback>
-      </Avatar>
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="truncate font-medium">{name}</span>
-          <Badge variant={badgeVariant[channel.status._tag]}>
-            {t(`status.${channel.status._tag}`)}
-          </Badge>
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
+      <span className="relative shrink-0">
+        <Avatar>
+          {channel.avatarUrl === null ? null : (
+            <AvatarImage src={channel.avatarUrl} alt="" />
+          )}
+          <AvatarFallback>{channelInitial(channel)}</AvatarFallback>
+        </Avatar>
+        <span className="absolute -end-1 -bottom-1">
+          <PlatformMark platform={channel.platform} size="badge" />
+        </span>
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-sm font-medium">{name}</span>
+          {channel.status._tag === "active" ? null : (
+            <Badge variant={badgeVariant[channel.status._tag]}>
+              {t(`status.${channel.status._tag}`)}
+            </Badge>
+          )}
         </div>
-        <span className="text-muted-foreground truncate text-sm">
+        <span className="text-muted-foreground truncate text-xs">
           {platformName} · {account}
         </span>
         {channel.status._tag === "disabled" ? (
-          <span className="text-muted-foreground text-sm">
+          <span className="text-muted-foreground text-xs">
             {t("offHint", {
               reconnect: channel.status.refreshNeeded ? "yes" : "no",
               who: canConnect ? "you" : "other",
@@ -215,19 +226,20 @@ export const ChannelRow = ({
           </span>
         ) : null}
         {channel.tokenExpiresAt === null ? null : (
-          <span className="text-muted-foreground text-sm">
+          <span className="text-muted-foreground text-xs">
             {t("expires", {
               date: DateTime.toDateUtc(channel.tokenExpiresAt),
             })}
           </span>
         )}
       </div>
-      <div className="flex flex-wrap gap-2">
-        {canConnect ? (
-          <ChannelPower channel={channel} workspaceId={workspaceId} />
-        ) : null}
+      {/* On a phone, a line of their own under the text, aligned with it. */}
+      <div className="flex w-full flex-wrap gap-1 ps-11 sm:w-auto sm:ps-0">
         {canConnect ? (
           <RenameChannel channel={channel} workspaceId={workspaceId} />
+        ) : null}
+        {canConnect ? (
+          <ChannelPower channel={channel} workspaceId={workspaceId} />
         ) : null}
         {canConnect ? (
           <ReconnectControl
@@ -243,7 +255,7 @@ export const ChannelRow = ({
               render={
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="xs"
                   disabled={isDisconnecting}
                   focusableWhenDisabled
                   aria-label={
@@ -254,6 +266,7 @@ export const ChannelRow = ({
                 />
               }
             >
+              <UnplugIcon aria-hidden />
               {isDisconnecting ? t("disconnecting") : t("disconnect")}
             </AlertDialogTrigger>
             <AlertDialogContent>

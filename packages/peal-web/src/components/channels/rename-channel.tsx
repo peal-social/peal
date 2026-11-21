@@ -2,6 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
+import { PencilIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { maxChannelLabelLength } from "peal-contract";
 import type { Channel } from "peal-contract";
@@ -139,12 +140,13 @@ export const RenameChannel = ({ channel, workspaceId }: RenameChannelProps) => {
       <DialogTrigger
         render={
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="xs"
             aria-label={t("rename.account", { handle })}
           />
         }
       >
+        <PencilIcon aria-hidden />
         {t("rename.open")}
       </DialogTrigger>
       <DialogContent closeLabel={t("rename.close")}>

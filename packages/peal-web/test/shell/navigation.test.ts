@@ -1,7 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
 import type { Permission } from "peal-contract";
 
-import { hrefOf, navigationOf, pageLinksOf } from "#shell/navigation.ts";
+import {
+  crumbHrefOf,
+  hrefOf,
+  navigationOf,
+  pageLinksOf,
+} from "#shell/navigation.ts";
 
 const workspace = "synthetic-studio";
 const base = `/${workspace}`;
@@ -33,6 +38,10 @@ const articleCrumb = (path: string) =>
     workspace,
   }).breadcrumb;
 
+// The navigation on a page of the workspace, for its owner.
+const at = (path: string) =>
+  navigationOf({ pathname: `${base}${path}`, permissions: owner, workspace });
+
 describe(navigationOf, () => {
   it("puts a PealCreative page in PealCreative, with the pages the member may open", () => {
     const navigation = navigationOf({
@@ -45,9 +54,9 @@ describe(navigationOf, () => {
     expect(navigation.current).toBe("calendar");
     expect(pagesOf(navigation)).toStrictEqual([
       "home",
+      "channels",
       "calendar",
       "posts",
-      "channels",
       "media",
       "inbox",
       "analytics",
@@ -59,7 +68,7 @@ describe(navigationOf, () => {
     ]);
     expect(navigation.breadcrumb).toStrictEqual({
       page: "calendar",
-      section: null,
+      trail: [],
     });
   });
 
@@ -72,8 +81,8 @@ describe(navigationOf, () => {
 
     expect(pagesOf(navigation)).toStrictEqual([
       "home",
-      "calendar",
       "channels",
+      "calendar",
       "media",
     ]);
     expect(navigation.modes.api).toBeNull();
@@ -116,7 +125,7 @@ describe(navigationOf, () => {
     );
     expect(imported.breadcrumb).toStrictEqual({
       page: "import",
-      section: "posts",
+      trail: ["posts"],
     });
   });
 
@@ -136,19 +145,46 @@ describe(navigationOf, () => {
     ).toStrictEqual(expect.not.arrayContaining(["drafts", "approvals"]));
   });
 
-  it("keeps an article's pages under Posts, and names them", () => {
+  it("nests New channel and a platform's form under Channels, which stays open", () => {
+    expect(at("/channels/new").breadcrumb).toStrictEqual({
+      page: "newChannel",
+      trail: ["channels"],
+    });
+    expect(at("/channels/new/mastodon").breadcrumb).toStrictEqual({
+      page: "channelPlatform",
+      trail: ["channels", "newChannel"],
+    });
+    expect(at("/channels/new/mastodon").current).toBe("channels");
+    expect(at("/channels/new").section).toBeNull();
+  });
+
+  it("leads each step of the breadcrumb back to its page", () => {
+    expect(
+      (
+        ["posts", "settings", "articles", "channels", "newChannel"] as const
+      ).map((crumb) => crumbHrefOf(workspace, crumb))
+    ).toStrictEqual([
+      `${base}/posts`,
+      `${base}/settings`,
+      `${base}/articles`,
+      `${base}/channels`,
+      `${base}/channels/new`,
+    ]);
+  });
+
+  it("keeps an article's pages under Posts, an article under Articles", () => {
     expect(articleCrumb("")).toStrictEqual({
       page: "articles",
-      section: "posts",
+      trail: ["posts"],
     });
     expect(articleCrumb("/new")).toStrictEqual({
       page: "newArticle",
-      section: "posts",
+      trail: ["posts", "articles"],
     });
     expect(articleCrumb("/00000000-0000-7000-8000-0000000000c1")).toStrictEqual(
       {
         page: "article",
-        section: "posts",
+        trail: ["posts", "articles"],
       }
     );
   });
@@ -161,14 +197,14 @@ describe(navigationOf, () => {
     });
 
     expect(post.section).toBe("posts");
-    expect(post.breadcrumb).toStrictEqual({ page: "post", section: "posts" });
+    expect(post.breadcrumb).toStrictEqual({ page: "post", trail: ["posts"] });
     expect(
       navigationOf({
         pathname: `${base}/posts/new`,
         permissions: owner,
         workspace,
       }).breadcrumb
-    ).toStrictEqual({ page: "newPost", section: "posts" });
+    ).toStrictEqual({ page: "newPost", trail: ["posts"] });
     expect(
       navigationOf({
         pathname: `${base}/posts/import`,
@@ -223,7 +259,7 @@ describe(navigationOf, () => {
 
       expect([navigation.current, navigation.breadcrumb]).toStrictEqual([
         page,
-        { page, section: "settings" },
+        { page, trail: ["settings"] },
       ]);
       expect(hrefOf(workspace, page)).toBe(`${base}${path}`);
     }
@@ -237,7 +273,7 @@ describe(navigationOf, () => {
     });
 
     expect([thread.breadcrumb, thread.split, thread.current]).toStrictEqual([
-      { page: "inbox", section: null },
+      { page: "inbox", trail: [] },
       true,
       "inbox",
     ]);
@@ -250,6 +286,6 @@ describe(navigationOf, () => {
 
     expect(elsewhere.current).toBeNull();
     expect(elsewhere.mode).toBe("studio");
-    expect(elsewhere.breadcrumb).toStrictEqual({ page: null, section: null });
+    expect(elsewhere.breadcrumb).toStrictEqual({ page: null, trail: [] });
   });
 });

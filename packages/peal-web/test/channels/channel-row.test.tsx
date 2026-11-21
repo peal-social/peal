@@ -96,7 +96,8 @@ describe(ChannelRow, () => {
       },
     });
 
-    expect(html).toContain("Connecté");
+    // A channel that posts wears no state: only one that does not says why.
+    expect(html).not.toContain("Connecté");
     expect(html).toContain("À reconnecter avant le 1 décembre 2026");
   });
 

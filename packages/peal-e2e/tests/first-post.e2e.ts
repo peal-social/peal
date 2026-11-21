@@ -94,8 +94,38 @@ describe("a new member's first post", { serial: true }, () => {
       screen.getByRole("heading", "Channels", { level: 1 })
     ).toBeVisible();
     await expect(
-      screen.getByText("No account is connected yet.")
+      screen.getByText(/^A channel is an account this workspace posts to/u)
     ).toBeVisible();
+    await expect(browser).toHaveURL(`/${slug}/channels`);
+  });
+
+  test("finds a platform among those New channel offers, and opens its form", async ({
+    browser,
+    screen,
+  }) => {
+    await screen.getByRole("main").getByRole("link", "Create a channel").tap();
+    await expect(
+      screen.getByRole("heading", "New channel", { level: 1 })
+    ).toBeVisible();
+
+    await screen.getByLabel("Search platforms").fill("masto");
+    await expect(screen.getByRole("link", /^Bluesky/u)).toBeHidden();
+    await screen.getByRole("link", /^Mastodon/u).tap();
+
+    await expect(browser).toHaveURL(`/${slug}/channels/new/mastodon`);
+    await expect(screen.getByLabel("Server")).toBeVisible();
+  });
+
+  test("goes back up the breadcrumb, a step at a time", async ({
+    browser,
+    screen,
+  }) => {
+    const trail = screen.getByRole("navigation", "Where you are");
+
+    await expect(trail.getByRole("heading", "Mastodon")).toBeVisible();
+    await trail.getByRole("link", "New channel").tap();
+    await expect(browser).toHaveURL(`/${slug}/channels/new`);
+    await trail.getByRole("link", "Channels").tap();
     await expect(browser).toHaveURL(`/${slug}/channels`);
   });
 

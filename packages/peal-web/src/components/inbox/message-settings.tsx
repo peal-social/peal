@@ -16,6 +16,7 @@ import type { SubmitEvent } from "react";
 
 import { channelsOf, reconnectChannel } from "#channels/channels-api.ts";
 import { rememberConnection } from "#channels/pending-connection.ts";
+import { messagePlatforms } from "#channels/platform-features.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { inboxErrorOf } from "#inbox/errors.ts";
 import {
@@ -27,14 +28,6 @@ import {
 import { readsNoMessages } from "#inbox/message-channels.ts";
 
 import { useChannelName } from "./inbox-views.tsx";
-
-// The platforms whose direct messages Peal may read.
-const messagePlatforms: ReadonlySet<string> = new Set([
-  "mastodon",
-  "bluesky",
-  "facebook",
-  "instagram",
-]);
 
 // Whether the channel is Meta's, whose messages its review gates.
 const isMeta = (channel: SocialChannel) =>
