@@ -30,7 +30,14 @@ const TestApi = HttpApi.make("test").add(
         kind: Schema.optional(
           Schema.Literals(["bell", "gong"]).annotate({ identifier: "Kind" })
         ),
+        bells: Schema.optional(Schema.NonEmptyArray(Schema.String)),
         name: Schema.String,
+        scope: Schema.optional(
+          Schema.Union([
+            Schema.TaggedStruct("all", {}),
+            Schema.TaggedStruct("one", { id: Schema.String }),
+          ]).annotate({ identifier: "Scope" })
+        ),
         targets: Schema.Array(Schema.Struct({ channelId: Schema.String })),
       }),
       success: Schema.Struct({ made: Schema.String }),
@@ -105,6 +112,16 @@ const sending = (body: Schema.Json) => JSON.stringify(body);
 const BodySchema = Schema.Record(Schema.String, Schema.Unknown);
 
 const decodeBody = Schema.decodeUnknownSync(Schema.fromJsonString(BodySchema));
+
+const issuesIn = (body: typeof BodySchema.Type | undefined) =>
+  Schema.decodeUnknownSync(
+    Schema.Array(
+      Schema.Struct({
+        message: Schema.String,
+        path: Schema.Array(Schema.String),
+      })
+    )
+  )(body?.["issues"]);
 
 const serving = () =>
   HttpRouter.toWebHandler(
@@ -202,19 +219,52 @@ describe("the error envelope", () => {
 
       yield* Effect.promise(dispose);
 
-      const [issue] = Schema.decodeUnknownSync(
-        Schema.Array(
-          Schema.Struct({
-            message: Schema.String,
-            path: Schema.Array(Schema.String),
-          })
-        )
-      )(answer.body?.["issues"]);
+      const [issue] = issuesIn(answer.body);
 
       assert.strictEqual(answer.status, 400);
       assert.deepStrictEqual(issue?.path, ["body", "kind"]);
       assert.include(issue?.message, '"bell" | "gong"');
       assert.notInclude(issue?.message, "Kind");
+    })
+  );
+
+  it.effect("names the tags a named union of tagged structs takes", () =>
+    Effect.gen(function* tagged() {
+      const { dispose, handler } = serving();
+
+      const answer = yield* call(
+        handler,
+        thing,
+        sending({ ...valid, scope: { kind: "all" } })
+      );
+
+      yield* Effect.promise(dispose);
+
+      const [issue] = issuesIn(answer.body);
+
+      assert.strictEqual(answer.status, 400);
+      assert.deepStrictEqual(issue?.path, ["body", "scope"]);
+      assert.include(issue?.message, '_tag is "all" | "one"');
+    })
+  );
+
+  it.effect("says an empty array takes at least one item, of the array", () =>
+    Effect.gen(function* empty() {
+      const { dispose, handler } = serving();
+
+      const answer = yield* call(
+        handler,
+        thing,
+        sending({ ...valid, bells: [] })
+      );
+
+      yield* Effect.promise(dispose);
+
+      const [issue] = issuesIn(answer.body);
+
+      assert.strictEqual(answer.status, 400);
+      assert.deepStrictEqual(issue?.path, ["body", "bells"]);
+      assert.strictEqual(issue?.message, "Expected at least 1 item");
     })
   );
 
