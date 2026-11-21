@@ -597,9 +597,10 @@ layer(TwoStepLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const sql = yield* SqlClient.SqlClient;
           const person = yield* signedUp("oauth");
-          const { key } = yield* enrolled(person);
+          const { cookies, key } = yield* enrolled(person);
 
-          yield* workspaceOf(person, "Agents");
+          // Turning two-step verification on replaced the sign-in's session.
+          yield* workspaceOf({ ...person, cookies }, "Agents");
           yield* signedOut(person);
 
           const clientId = yield* registeredClient;

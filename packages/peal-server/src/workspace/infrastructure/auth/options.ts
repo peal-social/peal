@@ -60,6 +60,7 @@ import {
 } from "./oauth.ts";
 import { providerAdmission } from "./provider-admission.ts";
 import { guardProviderSignIn } from "./provider-sign-in.ts";
+import { refuseRevokedSessions } from "./revoked-sessions.ts";
 import type { AuthConfiguration } from "./settings.ts";
 import { offersProviders } from "./sign-in-provider-settings.ts";
 import {
@@ -387,13 +388,16 @@ const oauthServer = (settings: AuthConfiguration) => {
     : oauthProvider(provider);
 };
 
-// Every route's before hook. A request staff send while acting as someone
-// is checked and recorded first, refused or not. Then what two-step
-// verification decides: a workspace's routes for a member it refuses, and
-// turning it on or off, and a sign-up the server's mode does not admit,
-// and a provider's sign-in that asks for more than Peal's pages do.
+// Every route's before hook. A session the database no longer holds is
+// refused first where its effect would outlive it. A request staff send
+// while acting as someone is checked and recorded next, refused or not.
+// Then what two-step verification decides: a workspace's routes for a
+// member it refuses, and turning it on or off, and a sign-up the server's
+// mode does not admit, and a provider's sign-in that asks for more than
+// Peal's pages do.
 const beforeEveryRoute = (hooks: AuthHooks) =>
   createAuthMiddleware(async (ctx) => {
+    await refuseRevokedSessions(ctx);
     await guardImpersonatedRequest(ctx, hooks.impersonatedRequest);
     await refuseUnadmittedSignUps(ctx, hooks.signUp);
     guardProviderSignIn(ctx);
