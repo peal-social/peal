@@ -45,8 +45,10 @@ export const LibraryEmptyView = ({
   const t = useTranslations("Media.library");
   const lists = useTranslations("Lists");
 
+  // The upload card stands above the library: the empty state takes no
+  // window's height of its own, or it falls below the fold.
   return (
-    <EmptyState>
+    <EmptyState className="min-h-0">
       <EmptyStateIcon icon={<ImageIcon />} />
       {hidden === null ? (
         <>
