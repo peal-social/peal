@@ -112,7 +112,7 @@
     "page": {
       "title": "Ads",
       "description": "The ad accounts connected to this workspace, their campaigns and what they spent. The ad network bills each ad account directly, on its own payment method: Peal never handles the money.",
-      "off": "Ads are not turned on on this server.",
+      "off": "Ads are turned off on this server.",
       "readOnlyServer": "This server reads ad accounts only: boosting posts is not turned on."
     },
     "connections": {
@@ -330,7 +330,7 @@
     "errors": {
       "unknown": "That did not work. Try again.",
       "forbidden": "Your role does not let you do this, or it must be done by you in person, signed in to Peal.",
-      "adsUnavailable": "Ads are not turned on on this server.",
+      "adsUnavailable": "Ads are turned off on this server.",
       "spendingUnavailable": "This server does not offer spending on ads.",
       "connectionNotFound": "This sign-in no longer exists, or it is someone else’s: only the person who signed in chooses ad accounts from it.",
       "accountNotFound": "This ad account is not connected to the workspace, or the sign-in no longer reaches it.",
