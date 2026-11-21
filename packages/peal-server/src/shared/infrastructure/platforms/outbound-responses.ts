@@ -29,6 +29,17 @@ const services: ReadonlyMap<string, string> = new Map([
   ["discordapp.com", "discord"],
   ["gql.hashnode.com", "hashnode"],
   ["gql-beta.hashnode.com", "hashnode"],
+  // Google's APIs, by product, so one product's outage is not averaged
+  // away by another's traffic: YouTube's Data API and uploads, Google Ads,
+  // Business Profile. Its other hosts (the token endpoint every product
+  // renews on) count as `google`.
+  ["googleads.googleapis.com", "googleAds"],
+  ["mybusiness.googleapis.com", "googleBusiness"],
+  ["mybusinessaccountmanagement.googleapis.com", "googleBusiness"],
+  ["mybusinessbusinessinformation.googleapis.com", "googleBusiness"],
+  ["www.googleapis.com", "youtube"],
+  ["youtube.googleapis.com", "youtube"],
+  ["youtubeanalytics.googleapis.com", "youtube"],
   ["linkedin.com", "linkedin"],
   ["facebook.com", "meta"],
   ["instagram.com", "meta"],
@@ -44,7 +55,7 @@ const services: ReadonlyMap<string, string> = new Map([
   ["x.com", "x"],
 ]);
 
-// Domains whose every subdomain is the service's own: Google's APIs, the
+// Domains whose every subdomain is the service's own: Google's other APIs, the
 // PDSes Bluesky hosts, and each domain of two labels above (whose API,
 // upload and sandbox hosts are its subdomains).
 const suffixed: readonly (readonly [string, string])[] = [

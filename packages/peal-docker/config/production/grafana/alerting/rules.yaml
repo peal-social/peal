@@ -282,7 +282,7 @@ groups:
         noDataState: OK
         execErrState: Error
         annotations:
-          summary: Over a quarter of the requests Peal sent to one platform in the last 30 minutes were answered 429 or 5xx, out of 50 or more (peal.outbound.responses, by service and status; the service label names the platform). A 429 is the platform's rate limit, a 5xx its own outage. Read the platform's status page, then the server's warnings for that platform; posts that fail show in peal-publishing-failing too.
+          summary: Over a quarter of the requests Peal sent to one platform in the last 30 minutes were answered 429 or 5xx, or got no answer, out of 50 or more (peal.outbound.responses, by service and status; the service label names the platform). A 429 is the platform's rate limit, a 5xx or no answer (failed, such as a timeout or a refused connection) its own outage. Read the platform's status page, then the server's warnings for that platform; posts that fail show in peal-publishing-failing too.
         labels:
           severity: warning
         data:
@@ -294,11 +294,12 @@ groups:
             model:
               refId: A
               instant: true
-              # The share of 429s and 5xx in each listed service's answers,
+              # The share of 429s, 5xx and requests without an answer
+              # (failed) in each listed service's requests,
               # where it was sent 50 requests or more; one alert per service.
               # Hosts off the list (Mastodon instances, WordPress sites,
               # webhooks) count as other, which no platform answers for.
-              expr: (sum by (service) (increase(peal_outbound_responses_total{service!="other",status=~"429|5xx"}[30m])) / sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m]))) and (sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m])) >= 50)
+              expr: (sum by (service) (increase(peal_outbound_responses_total{service!="other",status=~"429|5xx|failed"}[30m])) / sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m]))) and (sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m])) >= 50)
           - refId: B
             datasourceUid: __expr__
             model:

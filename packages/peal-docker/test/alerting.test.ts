@@ -267,7 +267,7 @@ describe("the production alert rules", () => {
       noDataState: "OK",
     });
     expect(expr).toBe(
-      '(sum by (service) (increase(peal_outbound_responses_total{service!="other",status=~"429|5xx"}[30m])) / sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m]))) and (sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m])) >= 50)'
+      '(sum by (service) (increase(peal_outbound_responses_total{service!="other",status=~"429|5xx|failed"}[30m])) / sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m]))) and (sum by (service) (increase(peal_outbound_responses_total{service!="other"}[30m])) >= 50)'
     );
     expect(expr).not.toMatch(/\bmax\(|vector\(0\)/u);
     expect(rule?.annotations.summary).toContain("peal.outbound.responses");
