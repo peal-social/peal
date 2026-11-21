@@ -71,9 +71,12 @@ export const SignatureDetailsSchema = Schema.Struct({
   text: Schema.String.check(
     Schema.isBetweenLength(1, maxSignatureLength),
     isTrimmed,
-    Schema.makeFilter((text: string) => !text.includes(nul), {
-      expected: "text without NUL characters",
-    })
+    Schema.makeFilter(
+      (text: string) => !text.includes(nul) && text.isWellFormed(),
+      {
+        expected: "text without NUL characters or unpaired surrogates",
+      }
+    )
   ),
 }).annotate({ identifier: "SignatureDetails" });
 

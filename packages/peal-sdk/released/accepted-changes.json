@@ -107,5 +107,10 @@
     "change": "Every endpoint that takes query parameters refuses one it does not take (400 InvalidRequest, field query.<name>) instead of ignoring it",
     "kind": "behaviour",
     "reason": "A misspelt filter, such as channelIds for channelId on GET …/posts/search, answered as if it applied: every post of the workspace, with a 200, which a script would then act on. The document already listed each endpoint's parameters, and the SDKs and the command line send only those. Endpoints without query parameters, the health checks among them, still take any query, and request bodies are read as before."
+  },
+  {
+    "change": "Every text field that refused a NUL character (a post's text, a channel's own text, alt text, options' text, signatures, recycling variants, follow-up and comment rules, review comments) also refuses an unpaired surrogate (400 InvalidRequest, \"Expected text without NUL characters or unpaired surrogates\")",
+    "kind": "behaviour",
+    "reason": "Postgres keeps an unpaired surrogate, half an emoji that a client cut by UTF-16 units, as U+FFFD: the API answered the text as sent and stored, and would publish, another one. A client that sends well-formed text is unchanged; one that cuts text cuts on code points."
   }
 ]

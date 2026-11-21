@@ -455,11 +455,12 @@ describe("the contract's post text rules", () => {
   });
 
   // Postgres refuses NUL in text and JSON strings: a post holding one would
-  // fail as it is saved, a server error, instead of answering 400.
+  // fail as it is saved, a server error, instead of answering 400. An
+  // unpaired surrogate is refused alike.
   it.each([
     {
       content: { media: [], overrides: [], text: "a\u0000b" },
-      label: "its text",
+      label: "a NUL character in its text",
     },
     {
       content: {
@@ -467,7 +468,7 @@ describe("the contract's post text rules", () => {
         overrides: [{ channelId, text: "\u0000" }],
         text: "Hi",
       },
-      label: "a channel's own text",
+      label: "a NUL character in a channel's own text",
     },
     {
       content: {
@@ -475,9 +476,23 @@ describe("the contract's post text rules", () => {
         overrides: [],
         text: "Hi",
       },
-      label: "alt text",
+      label: "a NUL character in alt text",
     },
-  ])("refuse a NUL character in $label, as the server does", ({ content }) => {
+    // Half an emoji, as a client that cut a text by UTF-16 units leaves
+    // it: Postgres would keep U+FFFD instead.
+    {
+      content: { media: [], overrides: [], text: "Cut \uD83D" },
+      label: "an unpaired surrogate in its text",
+    },
+    {
+      content: {
+        media: [],
+        overrides: [{ channelId, text: "\uDC4D after" }],
+        text: "Hi",
+      },
+      label: "an unpaired surrogate in a channel's own text",
+    },
+  ])("refuse $label, as the server does", ({ content }) => {
     expect(Schema.decodeUnknownExit(PostContentSchema)(content)._tag).toBe(
       "Failure"
     );
@@ -486,7 +501,7 @@ describe("the contract's post text rules", () => {
 
   it("take the same content without it", () => {
     const content = {
-      media: [{ altText: "A chart", mediaId: mediaAssetId }],
+      media: [{ altText: "A chart 👍", mediaId: mediaAssetId }],
       overrides: [{ channelId, text: "For one channel" }],
       text: "Hi",
     };

@@ -11,12 +11,13 @@ const nul = String.fromCodePoint(0);
 
 /**
  * Postgres keeps no NUL character in a text or a JSON string, and no
- * platform publishes one: text that holds one is refused as it comes in,
- * rather than failing when it is saved.
+ * platform publishes one; it keeps an unpaired surrogate (half an emoji
+ * a client cut) as U+FFFD. Text that holds either is refused as it comes
+ * in, rather than failing when it is saved or saying something else.
  */
 export const isWithoutNul = Schema.makeFilter(
-  (text: string) => !text.includes(nul),
-  { expected: "text without NUL characters" }
+  (text: string) => !text.includes(nul) && text.isWellFormed(),
+  { expected: "text without NUL characters or unpaired surrogates" }
 );
 
 /** A post's text, as the user wrote it: plain text, mentions and all. */

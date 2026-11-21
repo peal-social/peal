@@ -72,10 +72,15 @@ const uniqueBy = <A>(key: (item: A) => string, expected: string) =>
 
 const nul = String.fromCodePoint(0);
 
-// Postgres keeps no NUL character in text, and no platform publishes one.
-const isWithoutNul = Schema.makeFilter((text: string) => !text.includes(nul), {
-  expected: "text without NUL characters",
-});
+// Postgres keeps no NUL character in text, and no platform publishes one;
+// it keeps an unpaired surrogate (half an emoji a client cut) as U+FFFD,
+// so the post would say other than what was sent.
+const isWithoutNul = Schema.makeFilter(
+  (text: string) => !text.includes(nul) && text.isWellFormed(),
+  {
+    expected: "text without NUL characters or unpaired surrogates",
+  }
+);
 
 const PostTextSchema = Schema.String.check(
   Schema.isMaxLength(maxPostTextLength),
