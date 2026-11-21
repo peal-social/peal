@@ -9,6 +9,11 @@ import {
 import type { HttpClientResponse } from "effect/http";
 
 import { OutboundGuard } from "./outbound-guard.ts";
+import {
+  countOutbound,
+  countedResponses,
+  statusClassOf,
+} from "./outbound-responses.ts";
 
 // Platforms answer within seconds; a request that takes longer is treated as
 // lost, which every caller already handles.
@@ -198,12 +203,14 @@ export const publicHttpClientWith = (options: PublicHttpOptions) =>
 
     // The guard checks the request as it is sent, once every mapping is
     // done: a library that prepends its base address over this client has
-    // its address checked too.
+    // its address checked too. Counted outside the timeout, which counts
+    // as a failure.
     return client.pipe(
       HttpClient.transform((response, request) =>
         sent(guard.check(new URL(request.url)).pipe(Effect.andThen(response)))
       ),
-      HttpClient.timeout(options.timeout)
+      HttpClient.timeout(options.timeout),
+      countedResponses
     );
   });
 
@@ -237,7 +244,8 @@ export const publicLibraryHttpClientWith = (options: PublicHttpOptions) =>
           )
         )
       ),
-      HttpClient.timeout(options.timeout)
+      HttpClient.timeout(options.timeout),
+      countedResponses
     );
 
     return checked;
@@ -249,6 +257,7 @@ export const publicLibraryHttpClientWith = (options: PublicHttpOptions) =>
  * rather than followed (a redirect could lead past the guard), answers are
  * cut off past a megabyte, requests time out, and the host is not sent
  * Peal's trace context. Built on the fetch HttpClient, whose fetch it bounds.
+ * Each request counts in `peal.outbound.responses`.
  */
 export const publicHttpClient = publicHttpClientWith({
   timeout: requestTimeout,
@@ -273,7 +282,8 @@ export const untraced = <E, R>(
 /**
  * The same rules as a fetch function, for client libraries that take one: a
  * refused request rejects with a TypeError, as fetch does when it cannot
- * connect, whose cause is the OutboundRequestRefused.
+ * connect, whose cause is the OutboundRequestRefused. Each request counts in
+ * `peal.outbound.responses`, as the client's do.
  */
 export const publicFetch = Effect.gen(function* publicFetch() {
   const guard = yield* OutboundGuard;
@@ -291,14 +301,26 @@ export const publicFetch = Effect.gen(function* publicFetch() {
     );
 
     if (Result.isFailure(checked)) {
+      Effect.runSync(countOutbound(url.href, "failed"));
+
       throw new TypeError(`fetch refused for ${url.host}`, {
         cause: checked.failure,
       });
     }
 
-    return await boundedFetch(request, {
-      ...noRedirects,
-      signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
-    });
+    try {
+      const response = await boundedFetch(request, {
+        ...noRedirects,
+        signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
+      });
+
+      Effect.runSync(countOutbound(url.href, statusClassOf(response.status)));
+
+      return response;
+    } catch (error) {
+      Effect.runSync(countOutbound(url.href, "failed"));
+
+      throw error;
+    }
   });
 });

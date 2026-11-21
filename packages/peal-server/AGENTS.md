@@ -547,6 +547,13 @@ and no socket, for tests.
 - Every metric that says a job falls behind has an alert rule
   (`packages/peal-docker/test/alerting.test.ts`): add the rule with the
   metric.
+- Every request through the public HTTP client (`publicHttpClientWith`,
+  `publicLibraryHttpClientWith`, `publicFetch`) counts in
+  `peal.outbound.responses`, by service and status class
+  (`#shared/infrastructure/platforms/outbound-responses.ts`), which
+  `peal-outbound-failing` watches. A new platform's API hosts join the
+  fixed table there, with a case in its test; any other host is `other`,
+  and a label never holds a host, a path or an id.
 - Text Peal did not write is made storable before it is kept:
   `storableText` and `storableLine` (`#shared/domain/platform-text.ts`)
   make it well formed (Postgres takes no NUL, and no lone surrogate in
