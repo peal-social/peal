@@ -904,8 +904,8 @@
       "noMatchTitle": "No matching channels",
       "hiddenByFilters": "<strong>{count, plural, one {# channel} other {# channels}}</strong> hidden by the filters",
       "order": "{order, select, name {Name} platform {Platform} status {Status} other {Date connected}}",
-      "viewTitle": "{view, select, attention {Needs reconnecting} off {Turned off} other {Channels}}",
-      "viewText": "{view, select, attention {A channel shows up here when its platform stops accepting Peal’s access, for example after the account’s owner removed Peal or changed their password. Nothing goes out on it until it’s reconnected, and the workspace’s owners and admins are told. Every channel works for now.} off {A channel you turn off keeps its connection, its history and its name, and nothing goes out on it until you turn it back on. It still counts in your plan. No channel is turned off.} other {A channel is an account this workspace posts to: a social network, a chat or a website. Connect one by signing in on its platform, and it shows up here, ready for your posts.}}",
+      "viewTitle": "{view, select, attention {No channel needs reconnecting} off {No channel turned off} other {No channels yet}}",
+      "viewText": "{view, select, attention {A channel shows up here when its platform stops accepting Peal’s access, for example after the account’s owner removed Peal or changed their password. Nothing goes out on it until it’s reconnected, and the workspace’s owners and admins are told.} off {A channel you turn off keeps its connection, its history and its name, and nothing goes out on it until you turn it back on. It still counts in your plan.} other {A channel is an account this workspace posts to: a social network, a chat or a website. Connect one by signing in on its platform, and it shows up here, ready for your posts.}}",
       "docs": "Documentation",
       "createChannel": "Create a channel"
     },
