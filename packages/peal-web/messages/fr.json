@@ -903,8 +903,8 @@
       "noMatchTitle": "Aucun canal ne correspond",
       "hiddenByFilters": "<strong>{count, plural, one {# canal masqué} other {# canaux masqués}}</strong> par les filtres",
       "order": "{order, select, name {Nom} platform {Plateforme} status {État} other {Date de connexion}}",
-      "viewTitle": "{view, select, attention {À reconnecter} off {Désactivés} other {Canaux}}",
-      "viewText": "{view, select, attention {Un canal apparaît ici quand sa plateforme n’accepte plus l’accès de Peal, par exemple après que le propriétaire du compte a retiré Peal ou changé son mot de passe. Rien n’y part tant qu’il n’est pas reconnecté, et les propriétaires et administrateurs de l’espace de travail sont prévenus. Tous les canaux fonctionnent pour l’instant.} off {Un canal désactivé garde sa connexion, son historique et son nom, et rien n’y part tant que vous ne le réactivez pas. Il compte toujours dans votre offre. Aucun canal n’est désactivé.} other {Un canal est un compte sur lequel cet espace de travail publie : un réseau social, une messagerie ou un site web. Connectez-en un en vous connectant sur sa plateforme, et il apparaît ici, prêt pour vos publications.}}",
+      "viewTitle": "{view, select, attention {Aucun canal à reconnecter} off {Aucun canal désactivé} other {Aucun canal}}",
+      "viewText": "{view, select, attention {Un canal apparaît ici quand sa plateforme n’accepte plus l’accès de Peal, par exemple après que le propriétaire du compte a retiré Peal ou changé son mot de passe. Rien n’y part tant qu’il n’est pas reconnecté, et les propriétaires et administrateurs de l’espace de travail sont prévenus.} off {Un canal désactivé garde sa connexion, son historique et son nom, et rien n’y part tant que vous ne le réactivez pas. Il compte toujours dans votre offre.} other {Un canal est un compte sur lequel cet espace de travail publie : un réseau social, une messagerie ou un site web. Connectez-en un en vous connectant sur sa plateforme, et il apparaît ici, prêt pour vos publications.}}",
       "docs": "Documentation",
       "createChannel": "Créer un canal"
     },

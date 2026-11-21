@@ -79,6 +79,7 @@ describe(ChannelListView, () => {
   it("says what a channel is when there is none yet, with New channel and the docs", async () => {
     const html = await list([]);
 
+    expect(html).toContain("No channels yet");
     expect(html).toContain("A channel is an account this workspace posts to");
     expect(html).toContain("Synthetic way in");
     expect(html).toContain(`href="${docsHref}#connect"`);
@@ -90,9 +91,9 @@ describe(ChannelListView, () => {
       list([mastodon], { ...noChannelFilter, view: "off" }),
     ]);
 
-    expect(attention).toContain("Every channel works for now.");
+    expect(attention).toContain("No channel needs reconnecting");
     expect(attention).toContain(`href="${docsHref}#reconnect"`);
-    expect(off).toContain("No channel is turned off.");
+    expect(off).toContain("No channel turned off");
     expect(off).toContain(`href="${docsHref}#turn-off"`);
   });
 
