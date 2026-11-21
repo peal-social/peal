@@ -427,6 +427,18 @@ const cases: readonly Case[] = [
     uid: "peal-outbound-failing",
   },
   {
+    expected: [["40m", true]],
+    interval: "1m",
+    labels: { service: "youtube" },
+    name: "a platform that times out on a third of many requests",
+    series: {
+      'peal_outbound_responses_total{service="youtube",status="2xx"}': "0+2x60",
+      'peal_outbound_responses_total{service="youtube",status="failed"}':
+        "0+1x60",
+    },
+    uid: "peal-outbound-failing",
+  },
+  {
     expected: [["40m", false]],
     interval: "1m",
     name: "a platform that fails half of a few requests",
