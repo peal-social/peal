@@ -9,6 +9,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { PlatformSchema } from "peal-contract";
 import { Button, buttonVariants } from "peal-ui/components/button";
 import {
   Select,
@@ -103,7 +104,7 @@ const CodeBlock = ({
 
   return (
     <div className="bg-muted flex items-start gap-2 rounded-md px-3 py-2.5">
-      <pre className="flex-1 overflow-x-auto font-mono text-sm leading-relaxed break-all whitespace-pre-wrap">
+      <pre className="flex-1 overflow-x-auto font-mono text-sm leading-relaxed break-words whitespace-pre-wrap">
         {text}
       </pre>
       <Button
@@ -241,7 +242,9 @@ export const WorkspaceHome = ({
                 {t("channels.title")}
               </h2>
               <p className="text-muted-foreground">
-                {t("channels.description")}
+                {t("channels.description", {
+                  count: PlatformSchema.literals.length,
+                })}
               </p>
               <Link
                 href={channelsHref}
