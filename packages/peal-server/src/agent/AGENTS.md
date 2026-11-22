@@ -84,7 +84,12 @@
   date on the person's clock and their zone (an IANA zone, else UTC):
   never the person's message nor a tool's answer. The title's request
   sends the first message as JSON data; on any failure the chat takes the
-  first 60 characters of it.
+  first 60 characters of it, as does a chat still untitled when a run
+  from a message ends however it ends (failed, stopped), with no model
+  request (`namedAnyway`, its `title` event sent while the stream is open).
+- A chat nobody wrote in yet (made, then its first message refused) is in
+  no history (`page` lists chats with a message) and the retention
+  deletes it a day after it was made.
 - Never log or trace a message, a prompt, a tool's parameters or answer,
   an answer or a provider's error: effect/ai's spans are off around every
   round and tool call; the run's span and its one log line say the

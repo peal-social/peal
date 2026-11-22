@@ -526,6 +526,9 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
           ]
         );
 
+        // Stopped before any title: named after the first words.
+        assert.deepStrictEqual(kept.chat.title, Option.some("Think hard"));
+
         // The chat is free again.
         yield* script([says("Here.")]);
 
@@ -576,7 +579,9 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
 
         const events = yield* send(person, chat.id, "Hello");
 
-        assert.deepStrictEqual(tags(events), ["started", "failed"]);
+        // The chat still takes its name, after the person's first words.
+        assert.deepStrictEqual(tags(events), ["started", "title", "failed"]);
+        assert.deepInclude(events[1], { title: "Hello" });
         assert.deepStrictEqual(ended(events), {
           _tag: "failed",
           reason: "providerRefused",
@@ -713,12 +718,12 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
           source: null,
         });
 
-        // The chat is free: the refusal let go of it.
+        // Refused before anything was written: the chat is in no history.
         const chats = yield* AgentDesk.use((desk) =>
           desk.chats(person.actor, Option.none())
         );
 
-        assert.lengthOf(chats.chats, 1);
+        assert.lengthOf(chats.chats, 0);
       }).pipe(
         Effect.provide(
           agentTest({

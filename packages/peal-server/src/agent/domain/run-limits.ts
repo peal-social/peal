@@ -28,6 +28,9 @@ export const runLease = Duration.seconds(150);
 /** How long the title's own request waits for the provider. */
 export const titleTimeout = Duration.seconds(15);
 
+/** How long a chat nobody wrote in is kept after it was made, in hours. */
+export const emptyChatRetentionHours = 24;
+
 /** How long a chat is kept after its last message. */
 export const chatRetentionDays = 90;
 

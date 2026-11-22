@@ -2,7 +2,10 @@ import { Context, DateTime, Effect, Layer } from "effect";
 
 import { AgentChats } from "#agent/application/ports/agent-chats.ts";
 import type { ExportedChat } from "#agent/application/ports/agent-chats.ts";
-import { chatRetentionDays } from "#agent/domain/run-limits.ts";
+import {
+  chatRetentionDays,
+  emptyChatRetentionHours,
+} from "#agent/domain/run-limits.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 
@@ -54,8 +57,12 @@ export class AgentRecords extends Context.Service<
             .exportUser(userId)
             .pipe(Effect.withSpan("AgentRecords.exportUser")),
         purge: DateTime.now.pipe(
-          Effect.map(DateTime.subtract({ days: chatRetentionDays })),
-          Effect.flatMap(chats.purge),
+          Effect.flatMap((now) =>
+            chats.purge(
+              DateTime.subtract(now, { days: chatRetentionDays }),
+              DateTime.subtract(now, { hours: emptyChatRetentionHours })
+            )
+          ),
           Effect.withSpan("AgentRecords.purge")
         ),
       });

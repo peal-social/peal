@@ -1,4 +1,15 @@
-import { and, asc, desc, eq, inArray, isNull, lt, or } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  lt,
+  not,
+  or,
+  sql,
+} from "drizzle-orm";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 
 import { AgentChats } from "#agent/application/ports/agent-chats.ts";
@@ -115,6 +126,10 @@ const columnsOf = (chatId: string, message: AgentMessage) =>
       text: message.text,
     }))
   );
+
+// A chat someone wrote in: one made and never sent to is no one's
+// history.
+const hasMessages = sql`exists (select 1 from ${messages} where ${messages.chatId} = ${chats.id})`;
 
 const owned = ({ userId, workspaceId }: ChatOwner) =>
   and(eq(chats.workspaceId, workspaceId), eq(chats.userId, userId));
@@ -318,10 +333,11 @@ export const DrizzleAgentChatsLive = Layer.effect(
           .from(chats)
           .where(
             Option.match(after, {
-              onNone: () => owned(owner),
+              onNone: () => and(owned(owner), hasMessages),
               onSome: ({ id, updatedAt }) =>
                 and(
                   owned(owner),
+                  hasMessages,
                   or(
                     lt(chats.updatedAt, date(updatedAt)),
                     and(eq(chats.updatedAt, date(updatedAt)), lt(chats.id, id))
@@ -353,10 +369,15 @@ export const DrizzleAgentChatsLive = Layer.effect(
             ),
             Effect.withSpan("AgentChats.page")
           ),
-      purge: (before) =>
+      purge: (before, emptyBefore) =>
         db
           .delete(chats)
-          .where(lt(chats.updatedAt, date(before)))
+          .where(
+            or(
+              lt(chats.updatedAt, date(before)),
+              and(lt(chats.updatedAt, date(emptyBefore)), not(hasMessages))
+            )
+          )
           .returning({ id: chats.id })
           .pipe(
             Effect.mapError(failed),

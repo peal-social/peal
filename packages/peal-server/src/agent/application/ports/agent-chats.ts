@@ -52,6 +52,7 @@ export class AgentChats extends Context.Service<
   AgentChats,
   {
     readonly create: (chat: AgentChat) => Effect.Effect<void>;
+    /** The owner's chats with a message, the latest written in first. */
     readonly page: (
       owner: ChatOwner,
       after: Option.Option<ChatPosition>,
@@ -109,9 +110,13 @@ export class AgentChats extends Context.Service<
     ) => Effect.Effect<void>;
     /** Names the chat. */
     readonly name: (chatId: AgentChatId, title: string) => Effect.Effect<void>;
-    /** Deletes the chats whose last message was written before `before`; how many. */
+    /**
+     * Deletes the chats whose last message was written before `before`,
+     * and those never written in made before `emptyBefore`; how many.
+     */
     readonly purge: (
-      before: DateTime.Utc
+      before: DateTime.Utc,
+      emptyBefore: DateTime.Utc
     ) => Effect.Effect<number, DatabaseError>;
     readonly eraseWorkspace: (
       workspaceId: WorkspaceId
