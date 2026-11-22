@@ -239,6 +239,12 @@ describe("the agent's domain", () => {
     );
   });
 
+  it("has the model speak of what it can do, never of its tools", () => {
+    expect(agentInstructions(now, personTimeZone("UTC"))).toContain(
+      "Never name a tool or show its parameters"
+    );
+  });
+
   it("pages chats by a cursor it wrote, and reads no other", () => {
     const id = AgentChatIdSchema.make("0190f0e0-0000-7000-8000-000000000001");
     const cursor = cursorOf({ id, updatedAt: now });
