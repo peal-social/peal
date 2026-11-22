@@ -94,6 +94,9 @@ export type ChatAction =
 /** The id the person's message has until the server names it. */
 export const localUserMessageId = "local:user";
 
+/** The id of an answer stopped before the server named it. */
+export const localAnswerId = "local:answer";
+
 const elapsed = (from: DateTime.Utc, to: DateTime.Utc): number =>
   Math.max(0, DateTime.toEpochMillis(to) - DateTime.toEpochMillis(from));
 
@@ -357,7 +360,26 @@ export const foldChat = (state: ChatState, action: ChatAction): ChatState => {
         return state;
       }
 
-      const stopped = ended(state, state.run, action.at, "stopped", null);
+      // Stopped before the server named the answer: one is shown anyway,
+      // so the person sees where it stopped.
+      const run =
+        state.run.messageId === null
+          ? { ...state.run, messageId: localAnswerId }
+          : state.run;
+
+      const opened =
+        state.run.messageId === null
+          ? {
+              ...state,
+              messages: [
+                ...state.messages,
+                answerOf(localAnswerId, state.run.startedAt),
+              ],
+              run,
+            }
+          : state;
+
+      const stopped = ended(opened, run, action.at, "stopped", null);
 
       return action.reason === "lost"
         ? { ...stopped, problem: { _tag: "lost" } }

@@ -880,7 +880,7 @@ things there, as they would with a colleague. Chats are the person's own.
   before each step and the step's line in the past tense, behind a
   hairline at their start. An answer without steps has no fold.
 - **Result cards**: an item the agent made or changed, under its
-  answer, two up (one on a phone): white, hairline, `{rounded.lg}`,
+  answer, one a row (the panel is too narrow for two): white, hairline, `{rounded.lg}`,
   12 px inside, what happened (12 px, 500, muted: "Created post"), the
   start of the item's text (two lines at most), its channels as outline
   badges and when it goes out. The card is the link to the item; a
@@ -892,7 +892,7 @@ things there, as they would with a colleague. Chats are the person's own.
   when on the person's clock in muted text, then **Approve** (primary,
   `sm`) and **Decline** (outline, `sm`), with "Open the post" in
   blue's text at the end. Once answered, an outline badge at the
-  title's end says Approved, Declined or Expired, and the buttons go.
+  title's end says Approved, Declined or Expired (or "Approved, not done" when the change then failed), and the buttons go.
   Everything on it comes from the request, never from the agent's words.
 - **The composer**: a white field, hairline, `{rounded.lg}`, 8 px
   inside, growing with its text to 192 px, then scrolling; the focus

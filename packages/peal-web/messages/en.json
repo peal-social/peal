@@ -629,7 +629,7 @@
       "now": "As soon as you approve",
       "approve": "Approve",
       "decline": "Decline",
-      "state": "{state, select, approved {Approved} declined {Declined} expired {Expired} other {Waiting}}",
+      "state": "{state, select, approved {Approved} notDone {Approved, not done} declined {Declined} expired {Expired} other {Waiting}}",
       "openPost": "Open the post",
       "openThread": "Open the comments"
     },

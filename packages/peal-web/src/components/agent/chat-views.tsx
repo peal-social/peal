@@ -258,11 +258,14 @@ export const ApprovalCardView = ({
   busy,
   links,
   nameOf,
+  notDone = false,
   onAnswer,
 }: {
   readonly approval: AgentApproval;
   /** A run goes on in the chat: nothing can be answered until it ends. */
   readonly busy: boolean;
+  /** Approved, the change was refused or failed: it was not made. */
+  readonly notDone?: boolean;
   readonly links: ChatLinks;
   readonly nameOf: ChannelNameOf;
   readonly onAnswer: (approved: boolean) => void;
@@ -286,7 +289,12 @@ export const ApprovalCardView = ({
         </h3>
         {approval.state === "pending" ? null : (
           <Badge variant="outline">
-            {t("approval.state", { state: approval.state })}
+            {t("approval.state", {
+              state:
+                approval.state === "approved" && notDone
+                  ? "notDone"
+                  : approval.state,
+            })}
           </Badge>
         )}
       </div>
@@ -518,7 +526,8 @@ export const MessageView = ({
         text={message.text}
       />
       {message.cards.length === 0 ? null : (
-        <ul className="grid gap-2 sm:grid-cols-2">
+        // One column, as wide as the answer, in the page and the panel.
+        <ul className="grid gap-2">
           {message.cards.map((card, index) => (
             <li
               key={`${card._tag === "post" ? card.postId : card.threadId}-${String(index)}`}
@@ -532,6 +541,11 @@ export const MessageView = ({
         <ApprovalCardView
           key={approval.callId}
           approval={approval}
+          notDone={message.steps.some(
+            (step) =>
+              step.callId === approval.callId &&
+              (step.state === "refused" || step.state === "failed")
+          )}
           busy={busy}
           links={links}
           nameOf={nameOf}

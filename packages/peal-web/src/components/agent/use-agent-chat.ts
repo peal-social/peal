@@ -37,6 +37,7 @@ import type {
 import { useUpgradePrompt } from "#components/billing/upgrade-prompt.tsx";
 import { AppLink } from "#components/shell/app-link.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
+import { useMounted } from "#posts/use-mounted.ts";
 
 /** Folds actions into a chat's state, shared by every place showing it. */
 const useDispatch = (key: string) => {
@@ -141,6 +142,9 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
   const rate = useAtomSet(rateAgentAnswer, { mode: "promiseExit" });
   const update = useAtomSet(updateAgentChat, { mode: "promiseExit" });
   const remove = useAtomSet(deleteAgentChat, { mode: "promiseExit" });
+  // The server renders without the person's cookies, so it never reads
+  // the chat: only the browser says one is missing.
+  const mounted = useMounted();
 
   useOfferOnRefusal(state, workspaceId);
 
@@ -177,7 +181,10 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
     detail,
     /** The chat could not be read: deleted, expired, or the network. */
     missing:
-      AsyncResult.isFailure(detail) && !state.loaded && state.run === null,
+      mounted &&
+      AsyncResult.isFailure(detail) &&
+      !state.loaded &&
+      state.run === null,
     remove: async (): Promise<boolean> => {
       const exit = await remove({ params: { chatId, workspaceId } });
 

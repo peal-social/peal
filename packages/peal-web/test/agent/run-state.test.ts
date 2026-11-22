@@ -202,6 +202,18 @@ describe(foldChat, () => {
     });
   });
 
+  it("shows where a run stopped before the server named its answer", () => {
+    const state = fold(asked, [
+      { _tag: "interrupted", at: at(1), reason: "stopped" },
+    ]);
+
+    expect(state.run).toBeNull();
+    expect(state.messages.at(-1)).toMatchObject({
+      outcome: "stopped",
+      role: "assistant",
+    });
+  });
+
   it("says the answer was lost when the stream broke", () => {
     const state = fold(asked, [
       event(1, { _tag: "started", messageId: "m2", userMessageId: "m1" }),

@@ -179,7 +179,7 @@ export const ChatBody = ({
           chat.answer(callId, approved);
         }}
       />
-      <div className="bg-card sticky bottom-0 mt-auto flex flex-col gap-2 pt-2 pb-3">
+      <div className="bg-card sticky bottom-0 z-10 mt-auto flex flex-col gap-2 pt-2 pb-3">
         {availability.notice}
         <ComposerView
           disabled={!availability.ready}
