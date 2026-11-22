@@ -55,23 +55,35 @@ describe("the short-link domain", () => {
     });
   });
 
-  it("answers HTTPS alone, from TLS 1.2, checked to the origin", async () => {
+  it("answers HTTPS alone, from TLS 1.2, checked to the origin, with HSTS", async () => {
     await valueOf(result.zoneId);
 
     const settings = ofType("cloudflare:index/zoneSetting:ZoneSetting").map(
       (setting) => [
         input(setting, "settingId", Schema.String),
-        input(setting, "value", Schema.String),
+        input(setting, "value", Schema.Unknown),
       ]
     );
 
     expect(
       settings.toSorted(([left = ""], [right = ""]) =>
-        left.localeCompare(right)
+        String(left).localeCompare(String(right))
       )
     ).toStrictEqual([
       ["always_use_https", "on"],
       ["min_tls_version", "1.2"],
+      [
+        "security_header",
+        {
+          strict_transport_security: {
+            enabled: true,
+            include_subdomains: true,
+            max_age: 63_072_000,
+            nosniff: true,
+            preload: false,
+          },
+        },
+      ],
       ["ssl", "strict"],
     ]);
   });

@@ -137,4 +137,56 @@ describe("what the account shares", () => {
       },
     ]);
   });
+
+  it("answers the domain over HTTPS alone, from TLS 1.2, with HSTS as the app sends it", async () => {
+    await valueOf(result.ownerPolicyId);
+
+    const settings = made
+      .filter(
+        (resource) =>
+          resource.type === "cloudflare:index/zoneSetting:ZoneSetting"
+      )
+      .map((setting) => [
+        input(setting, "zoneId", Schema.String),
+        input(setting, "settingId", Schema.String),
+        input(setting, "value", Schema.Unknown),
+      ]);
+
+    expect(
+      settings.toSorted(([, left = ""], [, right = ""]) =>
+        String(left).localeCompare(String(right))
+      )
+    ).toStrictEqual([
+      ["zone-synthetic", "always_use_https", "on"],
+      ["zone-synthetic", "min_tls_version", "1.2"],
+      [
+        "zone-synthetic",
+        "security_header",
+        {
+          // packages/peal-web/next.config.ts: two years, the subdomains
+          // too, never preloaded.
+          strict_transport_security: {
+            enabled: true,
+            include_subdomains: true,
+            max_age: 63_072_000,
+            nosniff: true,
+            preload: false,
+          },
+        },
+      ],
+    ]);
+  });
+
+  it("keeps Cloudflare's normalisation of incoming URLs on the domain", async () => {
+    await valueOf(result.ownerPolicyId);
+
+    expect(
+      made.find((resource) => resource.name === "site-url-normalization")
+        ?.inputs
+    ).toStrictEqual({
+      scope: "incoming",
+      type: "cloudflare",
+      zoneId: "zone-synthetic",
+    });
+  });
 });
