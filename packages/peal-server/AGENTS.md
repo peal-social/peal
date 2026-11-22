@@ -171,8 +171,11 @@ and no socket, for tests.
   articles and the MCP endpoint, `defaultBodyLimit` (1 MiB) for the rest,
   Better Auth's and the routes without credentials included.
   `ApiAnswersLive` answers 413 to a body declared larger before any route
-  runs (Better Auth reads the web request itself, past `MaxBodySize`), and
-  provides `HttpIncomingMessage.MaxBodySize` for the bodies read, which
+  runs (Better Auth reads the web request itself, past `MaxBodySize`: a
+  body it would read in chunks, with no length, is read first under the
+  limit and handed over as a request of those same bytes, `boundedBody`
+  in `workspace/infrastructure/auth/`, so Stripe's events keep what they
+  verify), and provides `HttpIncomingMessage.MaxBodySize` for the bodies read, which
   fail their read past it (413, in the envelope; the MCP endpoint's as a
   JSON-RPC error). A route that reads less sets its own around its read
   (the error reports, Stripe's meter errors, Meta's events, the review
