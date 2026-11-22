@@ -102,10 +102,10 @@ describe(AgentMarkdown, () => {
       html.includes("<strong"),
       html.includes("&lt;b&gt;x&lt;/b&gt;"),
       html.includes('data-app-link="" href="/s/posts/p1"'),
-      html.includes(
-        'href="https://docs.example.com/" target="_blank" rel="noopener noreferrer"'
-      ),
-    ]).toStrictEqual([true, true, true, true]);
+      // An address out of Peal stays its words: no link to follow.
+      html.includes("docs.example.com"),
+      html.includes("<li>Docs</li>"),
+    ]).toStrictEqual([true, true, true, false, true]);
   });
 });
 
@@ -257,22 +257,69 @@ describe(TranscriptView, () => {
 });
 
 const approval: AgentApproval = {
+  answered: null,
   at: DateTime.makeUnsafe("2026-11-23T08:00:00Z"),
   callId: "call-2",
   channelIds: ["channel-1", "channel-gone"],
+  comment: null,
   inReplyTo: null,
+  moderation: null,
+  part: null,
+  post: {
+    followUps: [
+      {
+        delaySeconds: 120,
+        media: [],
+        overrides: [],
+        text: "Shop it: https://shop.example.com/spring",
+      },
+    ],
+    media: [{ altText: "The new bottle", mediaId: "media-1" }],
+    overrides: [
+      {
+        channelId: "channel-1",
+        media: [{ altText: "", mediaId: "media-2" }],
+        text: "Spring is here, on Instagram.",
+      },
+    ],
+    poll: {
+      choices: ["Yes", "Not yet"],
+      durationMinutes: 1440,
+      multipleChoice: true,
+    },
+    shortenLinks: true,
+    targets: [
+      {
+        channelId: "channel-1",
+        options: {
+          collaborators: ["synthetic.partner"],
+          platform: "instagram",
+          shareToFeed: true,
+        },
+      },
+      { channelId: "channel-gone", options: null },
+    ],
+    text: "Our spring sale starts Monday.",
+  },
   postId: "post-1",
+  queue: null,
   state: "pending",
-  text: "Our spring sale starts Monday.",
+  tags: [],
+  text: null,
   threadId: null,
   tool: "schedule_post",
 };
 
-const approvalCard = async (shown: AgentApproval, locale: Locale = "en") =>
+const approvalCard = async (
+  shown: AgentApproval,
+  locale: Locale = "en",
+  lapsed = false
+) =>
   await render(
     <ApprovalCardView
       approval={shown}
       busy={false}
+      lapsed={lapsed}
       links={links}
       nameOf={(id) => (id === "channel-1" ? "Client A (@client)" : null)}
       onAnswer={() => {
@@ -298,10 +345,84 @@ describe(ApprovalCardView, () => {
     ]).toStrictEqual([true, true, true, true, true, true, true, true]);
   });
 
+  it("shows all that goes out of the post: media, poll, each channel's text and settings, the parts after it", async () => {
+    const html = await approvalCard(approval);
+
+    expect([
+      html.includes("The new bottle"),
+      html.includes("No alt text"),
+      html.includes("Instead, on Client A (@client)"),
+      html.includes("Spring is here, on Instagram."),
+      html.includes("Poll, open 1 day, several answers allowed"),
+      html.includes("Not yet"),
+      html.includes("1st part after the post, 2 minutes after the one before"),
+      html.includes("https://shop.example.com/spring"),
+      html.includes("Settings on Client A (@client)"),
+      html.includes("collaborators"),
+      html.includes("synthetic.partner"),
+      html.includes("shareToFeed"),
+      html.includes("Links go out shortened."),
+    ]).toStrictEqual(Array.from({ length: 13 }, () => true));
+  });
+
+  it("names what a moderation does, the queue, a request's comment and an edit's part", async () => {
+    const moderated = await approvalCard({
+      ...approval,
+      inReplyTo: { author: "Claire Martin", text: "Buy cheap followers" },
+      moderation: "delete",
+      post: null,
+      postId: null,
+      threadId: "thread-1",
+      tool: "moderate_comment",
+    });
+
+    const queued = await approvalCard({
+      ...approval,
+      at: null,
+      queue: "Mornings",
+      tool: "queue_post",
+    });
+
+    const changes = await approvalCard({
+      ...approval,
+      comment: "Say spring, not summer.",
+      tool: "request_changes",
+    });
+
+    const edited = await approvalCard({
+      ...approval,
+      part: 1,
+      text: "Fixed: the sale starts Tuesday.",
+      tool: "edit_published_post",
+    });
+
+    expect([
+      moderated.includes("Delete this comment"),
+      queued.includes("In the next free slot of Mornings"),
+      changes.includes("Your comment"),
+      changes.includes("Say spring, not summer."),
+      edited.includes("New text of part 1"),
+      edited.includes("Fixed: the sale starts Tuesday."),
+    ]).toStrictEqual([true, true, true, true, true, true]);
+  });
+
+  it("reads a change past its lifetime, or one whose post changed since, as not to be answered", async () => {
+    const lapsed = await approvalCard(approval, "en", true);
+    const changed = await approvalCard({ ...approval, state: "changed" });
+
+    expect([
+      lapsed.includes("Expired"),
+      lapsed.includes(">Approve<"),
+      changed.includes("Changed since, not done"),
+      changed.includes(">Approve<"),
+    ]).toStrictEqual([true, false, true, false]);
+  });
+
   it("quotes the comment a reply answers, and its author", async () => {
     const html = await approvalCard({
       ...approval,
       inReplyTo: { author: "Claire Martin", text: "Is it a hybrid?" },
+      post: null,
       postId: null,
       text: "Yes, a plug-in hybrid.",
       threadId: "thread-1",

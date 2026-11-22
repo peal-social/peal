@@ -1,5 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
+import { InboxModerationActionSchema as ContractModerationSchema } from "peal-contract";
 import {
+  agentApprovalLifetimeHours,
   AgentApprovalStateSchema as ContractApprovalStateSchema,
   AgentCardActionSchema as ContractCardActionSchema,
   AgentFailureSchema as ContractFailureSchema,
@@ -28,6 +30,7 @@ import {
   AgentRatingSchema,
   AgentSourceSchema,
   AgentStepStateSchema,
+  ApprovalModerationSchema,
 } from "#agent/domain/agent-parts.ts";
 import {
   maxPickedSkills,
@@ -37,6 +40,7 @@ import {
   SkillScopeSchema,
 } from "#agent/domain/agent-skill.ts";
 import {
+  approvalLifetimeHours,
   chatPageSize,
   maxMessageLength,
   maxTitleLength,
@@ -68,12 +72,20 @@ describe("the agent's contract", () => {
     ]);
   });
 
-  it("takes messages and titles, and pages chats, by the domain's bounds", () => {
+  it("takes messages and titles, pages chats and lets changes lapse by the domain's bounds", () => {
     expect([
       maxAgentMessageLength,
       maxAgentChatTitleLength,
       agentChatPageSize,
-    ]).toStrictEqual([maxMessageLength, maxTitleLength, chatPageSize]);
+      agentApprovalLifetimeHours,
+      ContractModerationSchema.literals,
+    ]).toStrictEqual([
+      maxMessageLength,
+      maxTitleLength,
+      chatPageSize,
+      approvalLifetimeHours,
+      ApprovalModerationSchema.literals,
+    ]);
   });
 
   it("takes skills, and picks them, by the domain's bounds and scopes", () => {

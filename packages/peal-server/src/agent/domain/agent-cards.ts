@@ -109,7 +109,7 @@ export const cardOf = (
               _tag: "post",
               action: "deleted",
               channelIds: asked.channelIds,
-              excerpt: excerptOf(asked.text ?? ""),
+              excerpt: excerptOf(asked.post?.text ?? asked.text ?? ""),
               postId: asked.postId,
               scheduledAt: null,
             })

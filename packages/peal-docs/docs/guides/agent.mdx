@@ -33,7 +33,7 @@ The agent also reads a skill on its own when your request fits one you can use. 
 A skill is one of two kinds:
 
 - **Personal**: only you can use it.
-- **Workspace**: every member who may use the agent in this workspace can use it. Members who may not change it see it read-only.
+- **Workspace**: every member who may use the agent in this workspace can use it, and the agent offers it beside every message. Only owners and admins, who manage the assistant's settings, make one, share one of theirs with the workspace, or change and delete one, even one they wrote. Everyone else sees it read-only, and their own skills are personal.
 
 Make, change and delete skills in **Settings** > **Agent**, or choose **Create skill…** in the **/** menu or under **+**. A name is up to 60 characters, and no two skills you can use may share one, whatever the case. Instructions are up to 8,000 characters. You can use up to 100 skills in a workspace, yours and the workspace's together. **Use in chat**, in a skill's **…** menu, opens the agent with the skill picked. Deleting a skill can't be undone. Messages that picked it keep its name.
 
@@ -47,7 +47,11 @@ It asks you first before anything else. That covers any change other people see,
 - replying to a comment or a review, moderating a comment, or sending a message
 - approving a post, or requesting changes on it
 
-The request shows as a card in the chat. It says what will happen ("Schedule this post"), the text in full, the channels by name and when, on your clock. That comes from the request itself, not from what the agent wrote. Click **Approve** to make the change, or **Decline**, and the agent carries on. If you send another message instead, the request expires and nothing happens.
+The request shows as a card in the chat. It says what will happen ("Schedule this post", "Hide this comment"), the text it sends in full, the channels by name and when, on your clock. For a post, the card shows everything that goes out: its text, pictures and videos with their alt text, its poll, the text it has instead on a channel, the parts that follow it (a thread's replies, a first comment), each channel's settings (such as Instagram collaborators) and whether links go out shortened. All of it comes from the request and from the post as the workspace holds it, not from what the agent wrote. When Peal can't show a change in full, the agent doesn't ask, and tells you to make it in the app.
+
+Click **Approve** to make the change, or **Decline**, and the agent carries on. Peal reads the post again when you approve: if someone edited it after the card appeared, nothing happens, the card says "Changed since, not done", and the agent shows you the new version before asking again. If you send another message instead, or don't answer within a day, the request expires and nothing happens.
+
+To publish a post, the agent writes a draft first, then asks you to schedule or publish that draft. Saved channel sets, signatures and a channel's default options are already part of the draft, so the card shows them.
 
 Items the agent created or changed show as cards under its answer. Click one to open it.
 
@@ -62,7 +66,7 @@ The agent doesn't manage members, API keys, webhooks, feeds or automations, does
 
 The agent uses the workspace's own [text provider](/guides/workspace#text-provider) when it has one. Otherwise it uses the AI provider the Peal instance's administrator chose. When neither is set, the agent page says it's off, and an owner or an admin can set up a text provider in the assistant settings.
 
-Each request the agent sends the model counts as one of the [writing assistant's requests](/guides/posts/assistant#limits). One answer can take several, up to 8, when the agent looks things up before it answers. With the workspace's own provider, Peal's requests aren't spent, and the provider's own daily limit applies. On Peal Cloud, the instance's model needs a payment method on the billing account.
+Each request the agent sends the model counts as one of the [writing assistant's requests](/guides/posts/assistant#limits). One answer can take several, up to 8, when the agent looks things up before it answers. In a long chat, each request sends the model the latest messages only, about 120,000 characters, so the agent may not recall the start of it: start a new chat for a new task. With the workspace's own provider, Peal's requests aren't spent, and the provider's own daily limit applies. On Peal Cloud, the instance's model needs a payment method on the billing account.
 
 A message can be up to 8,000 characters.
 

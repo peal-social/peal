@@ -16,13 +16,16 @@
 - Skills (`agent.skills`, `agent-skill.ts`) are a name and instructions a
   person saves for a task they repeat: their own (`personal`), or the
   workspace's (`workspace`), which every member with `assistant:use`
-  there uses. A person sees their own and the workspace's, listed by name
-  whatever its case; any other (another person's own, another
-  workspace's, a deleted one) reads as none (`SkillNotFound`, 404). They
-  change or delete their own, and a workspace skill when they have
-  `assistant:configure` (`editable`); else `notEditable`. Moving one's own
-  to the workspace needs nothing more; a workspace skill goes back to
-  personal for its author only. A name another skill the person sees has,
+  there uses, and the agent is offered beside every message: what one
+  member writes there steers every other member's agent. A person sees
+  their own and the workspace's, listed by name whatever its case; any
+  other (another person's own, another workspace's, a deleted one) reads
+  as none (`SkillNotFound`, 404). They change or delete their own personal
+  ones; a workspace skill is made (`scopeAllowed`), shared from one's own
+  and changed or deleted only with `assistant:configure` (`editable`),
+  its author's included: `MissingPermission` (403) for making or sharing
+  one, `notEditable` for a change. A workspace skill goes back to
+  personal for its author only, while they manage them. A name another skill the person sees has,
   whatever its case, is `nameTaken`; past `maxSkills` (100) they see,
   `tooMany` (both checked before the write, not by the database). When
   its author leaves the workspace, is removed or closes their account, a
@@ -49,7 +52,13 @@
   messages, the answers' text and tool calls, and the tools' answers cut
   to `maxToolResultLength` with a note, `tool-result.ts`); never an
   approval's request. Messages are ordered by their ids (UUIDv7): the
-  person's is issued before its answer's.
+  person's is issued before its answer's. Each round is one metered
+  request whatever it holds, so a round sends the history within
+  `maxHistoryLength` (`withinBudget`, `run-history.ts`): the latest turns,
+  each whole from a person's message, the oldest dropped first; when the
+  last turn alone passes it, its earliest rounds go, each call with its
+  answer, never its message nor its last round, whose calls may wait for
+  the person. The chat keeps the whole history.
 - One run at a time a chat, across servers: `claim` is one conditional
   update (`run_id`, `run_until`), refused while another's claim holds
   (`ChatBusy`, 409); a server that crashed lets go after `runLease`. A
@@ -96,15 +105,40 @@
   when the tool was called), set when it starts and kept however it
   ends (`stepOf`, and `applied` in `answer-draft.ts`); steps saved
   before `at` existed read as 0.
-- Cards and approvals come from the tools' answers and the calls'
-  parameters (`agent-cards.ts`, `agent-approvals.ts`, read leniently with
-  `tool-items.ts`), and a call that names a post reads it for its
-  approval, one that names a comment or a review reads it too
+- Cards come from the tools' answers (`agent-cards.ts`, read leniently
+  with `tool-items.ts`). An approval shows all of what the call does,
+  never the model's words (`approvalOf`, `agent-approvals.ts`): every
+  parameter the tool takes (`shownParameters`, one list per tool that
+  waits, which `test/app/agent-toolbox.test.ts` keeps equal to the MCP
+  tool's: a tool missing there, a parameter not in it or one that reads
+  otherwise is never asked), and what the call names, read as the
+  person may read it when it is asked (`requested`, in the run): the post
+  whole through `get_post` (`PublishablePostSchema`: text, media, poll,
+  each channel's own text and media, the parts after it with their
+  waits, each channel's options, shortened links; a channel set's
+  channels and a signature are already the post's, a channel taken off it
+  is left out; on the call's channels only), the queue (`list_queues`)
+  and the tags (`list_tags`) by name, a moderation's action, a request's
+  comment, an edit's part and channel, and the comment or review
   (`AgentToolbox.subjectOf`, through the engagement context's
-  `EngagementInbox.comment` and `EngagementReviews.review`, as the person
-  may read it) for the approval's `threadId` and `inReplyTo` (its author's
-  shown name, else handle, and the first 500 characters): never from the
-  model's words.
+  `EngagementInbox.comment` and `EngagementReviews.review`) for its
+  `threadId` and `inReplyTo` (its author's shown name, else handle, and
+  the first 500 characters). What cannot be shown whole (a post, queue,
+  tag or channel that does not read) is not asked: the call answers the
+  model a refusal (`approvalRefusals`), a `refused` step, recorded
+  nowhere. `create_post` is no agent tool: what it makes takes channel
+  sets, signatures and default options only the server resolves, so the
+  agent drafts, and the person approves the draft as the workspace holds
+  it.
+- An approval keeps the SHA-256 of what the person is shown (`digest`,
+  of `shownOf`: the approval but its call and state; never answered).
+  Approved, the call is read again (`requested`) and runs only when it
+  shows the same: a post edited since, by a teammate or by a call of the
+  same answer, or gone, leaves it `changed`, the model told nothing was
+  done. A pending approval lapses `approvalLifetimeHours` (24) after the
+  answer that asked it was written (`lapsed`, `openOf`): it reads as
+  `expired` (`shownAt`, on reading a chat) and its answer is
+  `ApprovalNotPending`.
 - Each round's system message carries Anthropic's cache breakpoint
   (`cachedPrefix`), so the tools and the rules, the same every round,
   are read from its cache after the first; other providers ignore it.

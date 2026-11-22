@@ -11,6 +11,7 @@ import {
   editableBy,
   maxSkills,
   nameTaken,
+  scopeAllowed,
   skillInstructions,
   skillName,
 } from "#agent/domain/agent-skill.ts";
@@ -52,9 +53,10 @@ const readerOf = (actor: Actor, owner: ChatOwner): SkillReader => ({
 /**
  * The skills of the agent, for a person in their own session with
  * `assistant:use`: their own and the workspace's, which they may use;
- * another person's own reads as none. They change their own, and a
- * workspace skill when they may manage the workspace's
- * (`assistant:configure`).
+ * another person's own reads as none. They change their own personal
+ * ones; a workspace skill, which every member's agent is offered, is made,
+ * shared, changed and deleted only by those who may manage the
+ * workspace's (`assistant:configure`).
  */
 export class AgentSkillDesk extends Context.Service<
   AgentSkillDesk,
@@ -104,6 +106,12 @@ export class AgentSkillDesk extends Context.Service<
         createSkill: (actor, asked) =>
           Effect.gen(function* createSkill() {
             const owner = yield* ownerOf(actor);
+            const reader = readerOf(actor, owner);
+
+            const scope = yield* Effect.fromResult(
+              scopeAllowed(asked.scope, reader)
+            );
+
             const usable = yield* skills.usable(owner);
             const name = skillName(asked.name);
 
@@ -125,14 +133,14 @@ export class AgentSkillDesk extends Context.Service<
               ),
               instructions: skillInstructions(asked.instructions),
               name,
-              scope: asked.scope,
+              scope,
               updatedAt: now,
               workspaceId: owner.workspaceId,
             });
 
             yield* skills.create(skill);
 
-            return { editable: true, skill };
+            return { editable: editableBy(skill, reader), skill };
           }).pipe(Effect.withSpan("AgentSkillDesk.createSkill")),
         deleteSkill: (actor, skillId) =>
           Effect.gen(function* deleteSkill() {

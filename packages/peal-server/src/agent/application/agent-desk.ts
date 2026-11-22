@@ -34,7 +34,7 @@ import type {
 import { AgentSkills } from "#agent/application/ports/agent-skills.ts";
 import { AttachedFiles } from "#agent/application/ports/attached-files.ts";
 import { SkillNotFound } from "#agent/application/skill-not-found.ts";
-import { pendingOf } from "#agent/domain/agent-approvals.ts";
+import { openOf, shownAt } from "#agent/domain/agent-approvals.ts";
 import { AgentChat } from "#agent/domain/agent-chat.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
 import { personTimeZone } from "#agent/domain/agent-instructions.ts";
@@ -246,10 +246,11 @@ export class AgentDesk extends Context.Service<
 
           const release = chats.release(chat.id, runId);
 
+          // A change that waited past its lifetime is answered no more.
           const pending =
             input._tag === "answer" &&
             Option.exists(claimed.value.asking, (answer) =>
-              pendingOf(answer).some(({ callId }) => callId === input.callId)
+              openOf(answer, now).some(({ callId }) => callId === input.callId)
             );
 
           if (input._tag === "answer" && !pending) {
@@ -300,15 +301,18 @@ export class AgentDesk extends Context.Service<
             Effect.withSpan("AgentDesk.availability")
           ),
         chat: (actor, chatId) =>
-          ownerOf(actor).pipe(
-            Effect.flatMap((owner) =>
-              orNotFound(decodeChatId(chatId)).pipe(
-                Effect.flatMap((id) => chats.detail(owner, id)),
-                Effect.flatMap(orNotFound)
-              )
-            ),
-            Effect.withSpan("AgentDesk.chat")
-          ),
+          Effect.gen(function* chat() {
+            const owner = yield* ownerOf(actor);
+            const id = yield* orNotFound(decodeChatId(chatId));
+            const detail = yield* orNotFound(yield* chats.detail(owner, id));
+            const now = yield* DateTime.now;
+
+            // A change that waited past its lifetime reads as expired.
+            return {
+              ...detail,
+              messages: detail.messages.map((message) => shownAt(message, now)),
+            };
+          }).pipe(Effect.withSpan("AgentDesk.chat")),
         chats: (actor, cursor) =>
           ownerOf(actor).pipe(
             Effect.flatMap((owner) =>

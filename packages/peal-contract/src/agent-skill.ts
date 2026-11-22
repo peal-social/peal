@@ -4,7 +4,9 @@ import { Schema } from "effect";
 // next week", "answer a review in our voice"): they pick it in a message,
 // or the agent reads it when a request fits it. A personal skill is its
 // author's alone; a workspace skill is every member's who may use the
-// agent there.
+// agent there, and only those who manage the assistant's settings
+// (assistant:configure) make one, share one or change one (Forbidden
+// otherwise, AgentSkillRefused `notEditable` for a change).
 
 /** The longest name a skill takes, in UTF-16 code units. */
 export const maxAgentSkillNameLength = 60;
@@ -37,8 +39,8 @@ const instructions = Schema.String.check(
 /** A skill the person may use. */
 export const AgentSkillSchema = Schema.Struct({
   createdAt: Schema.DateTimeUtc,
-  // Whether the person may change or delete it: their own, or, for a
-  // workspace skill, one they may manage there.
+  // Whether the person may change or delete it: their own personal one,
+  // or a workspace skill when they manage the assistant's settings.
   editable: Schema.Boolean,
   id: Schema.String,
   instructions: Schema.String,

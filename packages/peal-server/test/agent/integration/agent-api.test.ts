@@ -53,15 +53,17 @@ const skillsIn = (workspaceId: string) =>
       }>`SELECT author_id, name FROM agent.skills WHERE workspace_id = ${workspaceId} ORDER BY name`
   );
 
-// Someone else, who signs up and is made a member of the workspace.
+// Someone else, who signs up and is made a member of the workspace, an
+// editor unless given a role.
 const memberOf = Effect.fn("memberOf")(function* memberOf(
   workspaceId: string,
-  label: string
+  label: string,
+  role: "admin" | "editor" = "editor"
 ) {
   const person = yield* signedUp(label);
   const sql = yield* SqlClient.SqlClient;
 
-  yield* sql`INSERT INTO auth.member (organization_id, user_id, role, created_at) VALUES (${workspaceId}, ${person.id}, 'editor', now())`;
+  yield* sql`INSERT INTO auth.member (organization_id, user_id, role, created_at) VALUES (${workspaceId}, ${person.id}, ${role}, now())`;
 
   return person;
 });
@@ -158,8 +160,14 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const workspaceId = yield* workspaceOf(owner, "Agent team");
           const app = yield* TestApp;
 
-          const leaving = yield* memberOf(workspaceId, "agent-leaver");
-          const removed = yield* memberOf(workspaceId, "agent-removed");
+          // Admins, who may make the workspace's skills.
+          const leaving = yield* memberOf(workspaceId, "agent-leaver", "admin");
+
+          const removed = yield* memberOf(
+            workspaceId,
+            "agent-removed",
+            "admin"
+          );
 
           yield* newChat(leaving, workspaceId);
           yield* newChat(removed, workspaceId);

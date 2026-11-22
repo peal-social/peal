@@ -10,6 +10,7 @@ import {
   ArrowUpIcon,
   ChevronRightIcon,
   CopyIcon,
+  ImageIcon,
   PaperclipIcon,
   SquareIcon,
   ThumbsDownIcon,
@@ -18,6 +19,9 @@ import {
 import { useFormatter, useTimeZone, useTranslations } from "next-intl";
 import type {
   AgentApproval,
+  AgentApprovalMedia,
+  AgentApprovalOverride,
+  AgentApprovalPost,
   AgentCard,
   AgentMessage,
   AgentOffReason,
@@ -34,6 +38,7 @@ import type { KeyboardEvent, ReactNode, Ref } from "react";
 
 import { segmentsOf } from "#agent/answer-segments.ts";
 import type { AnswerSegments } from "#agent/answer-segments.ts";
+import { delayOf, lapsedAt, optionLinesOf } from "#agent/approval-details.ts";
 import { relativeDayOf } from "#agent/history.ts";
 import type { RunRefusal } from "#agent/refusal.ts";
 import type { ChatState, RunProblem } from "#agent/run-state.ts";
@@ -237,30 +242,287 @@ const timeOf = (format: Format, at: DateTime.Utc): string =>
     timeStyle: "short",
   });
 
-// When an approved change happens: its time, or at once for a post
-// published now; nothing for a change that has no time.
+// When an approved change happens: its time, the next free slot of its
+// queue, or at once for a post published now; nothing for a change that
+// has no time.
 const whenOf = (
   t: Translate,
   format: Format,
   kind: ApprovalKind,
-  at: DateTime.Utc | null
+  approval: AgentApproval
 ): string | null => {
-  if (at !== null) {
-    return t("approval.at", { at: timeOf(format, at) });
+  if (approval.at !== null) {
+    return t("approval.at", { at: timeOf(format, approval.at) });
+  }
+
+  if (approval.queue !== null) {
+    return t("approval.queue", { queue: approval.queue });
   }
 
   return kind === "publish" ? t("approval.now") : null;
 };
 
+/** How the card shows a part's media: the files themselves, by default their alt text. */
+export type ApprovalMediaView = (
+  media: readonly AgentApprovalMedia[]
+) => ReactNode;
+
+/** Each file's alt text, in order: what shows when no thumbnail can. */
+const MediaNames: ApprovalMediaView = (media) => <AltTexts media={media} />;
+
+const AltTexts = ({
+  media,
+}: {
+  readonly media: readonly AgentApprovalMedia[];
+}) => {
+  const t = useTranslations("Agent");
+
+  return (
+    <ul className="flex flex-col gap-1">
+      {media.map(({ altText, mediaId }) => (
+        <li
+          key={mediaId}
+          className="text-muted-foreground flex items-center gap-1.5 text-xs"
+        >
+          <ImageIcon aria-hidden className="size-3.5 shrink-0" />
+          <span dir="auto">
+            {altText === "" ? t("approval.noAltText") : altText}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+// A text the change sends, whole, on `muted`.
+const SentText = ({ text }: { readonly text: string }) => (
+  <blockquote
+    dir="auto"
+    className="bg-muted rounded-lg p-3 text-sm whitespace-pre-wrap"
+  >
+    {text}
+  </blockquote>
+);
+
+// A part of what the change sends, under its muted label.
+const Labelled = ({
+  children,
+  label,
+}: {
+  readonly children: ReactNode;
+  readonly label: string;
+}) => (
+  <div className="flex flex-col gap-1.5">
+    <p className="text-muted-foreground text-xs font-medium">{label}</p>
+    {children}
+  </div>
+);
+
+// A part's text and media, then what it has instead on some channels.
+const PartView = ({
+  media,
+  renderMedia,
+  nameOf,
+  overrides,
+  text,
+}: {
+  readonly media: readonly AgentApprovalMedia[];
+  readonly renderMedia: ApprovalMediaView;
+  readonly nameOf: ChannelNameOf;
+  readonly overrides: readonly AgentApprovalOverride[];
+  readonly text: string;
+}) => {
+  const t = useTranslations("Agent");
+
+  return (
+    <>
+      {text === "" ? null : <SentText text={text} />}
+      {media.length === 0 ? null : renderMedia(media)}
+      {overrides.map((override) => {
+        const channel = nameOf(override.channelId);
+
+        return (
+          <Labelled
+            key={override.channelId}
+            label={
+              channel === null
+                ? t("approval.onOtherChannel")
+                : t("approval.onChannel", { channel })
+            }
+          >
+            <SentText text={override.text} />
+            {override.media === null || override.media.length === 0
+              ? null
+              : renderMedia(override.media)}
+          </Labelled>
+        );
+      })}
+    </>
+  );
+};
+
+// How long a part waits after the one before, in the reader's words.
+const delayLine = (t: Translate, format: Format, seconds: number): string => {
+  if (seconds === 0) {
+    return t("approval.rightAfter");
+  }
+
+  const { unit, value } = delayOf(seconds);
+
+  return t("approval.after", {
+    delay: format.number(value, { style: "unit", unit, unitDisplay: "long" }),
+  });
+};
+
 /**
- * A change the agent asks to make, from the tool's request, never its
- * words: what it does, the text whole, the channels by name, when, then
- * **Approve** and **Decline**; once answered, how.
+ * All that goes out of the post a change acts on, as the workspace holds
+ * it: its text and media, its poll, what it has instead on some channels,
+ * each part after it with its wait, each channel's platform settings,
+ * and whether its links go out shortened.
+ */
+const ApprovalPostView = ({
+  renderMedia,
+  nameOf,
+  post,
+}: {
+  readonly renderMedia: ApprovalMediaView;
+  readonly nameOf: ChannelNameOf;
+  readonly post: AgentApprovalPost;
+}) => {
+  const t = useTranslations("Agent");
+  const format = useFormatter();
+
+  const pollDuration =
+    post.poll === null
+      ? ""
+      : format.number(delayOf(post.poll.durationMinutes * 60).value, {
+          style: "unit",
+          unit: delayOf(post.poll.durationMinutes * 60).unit,
+          unitDisplay: "long",
+        });
+
+  return (
+    <div className="flex flex-col gap-3">
+      <PartView
+        media={post.media}
+        renderMedia={renderMedia}
+        nameOf={nameOf}
+        overrides={post.overrides}
+        text={post.text}
+      />
+      {post.poll === null ? null : (
+        <Labelled
+          label={
+            post.poll.multipleChoice
+              ? t("approval.pollSeveral", { duration: pollDuration })
+              : t("approval.poll", { duration: pollDuration })
+          }
+        >
+          <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
+            {post.poll.choices.map((choice, index) => (
+              // Choices may repeat: their place is their identity.
+              <li key={`${String(index)}-${choice}`} dir="auto">
+                {choice}
+              </li>
+            ))}
+          </ul>
+        </Labelled>
+      )}
+      {post.followUps.map((part, index) => (
+        <Labelled
+          // Parts have no id: their place in the post is it.
+          key={`part-${String(index)}`}
+          label={t("approval.followUp", {
+            delay: delayLine(t, format, part.delaySeconds),
+            index: index + 1,
+          })}
+        >
+          <PartView
+            media={part.media}
+            renderMedia={renderMedia}
+            nameOf={nameOf}
+            overrides={part.overrides}
+            text={part.text}
+          />
+        </Labelled>
+      ))}
+      {post.targets.map(({ channelId, options }) => {
+        const lines = optionLinesOf(options);
+        const channel = nameOf(channelId);
+
+        return lines.length === 0 ? null : (
+          <Labelled
+            key={channelId}
+            label={
+              channel === null
+                ? t("approval.optionsOtherChannel")
+                : t("approval.options", { channel })
+            }
+          >
+            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+              {lines.map(({ field, value }) => (
+                <Fragment key={field}>
+                  <dt className="text-muted-foreground font-mono text-xs leading-5">
+                    {field}
+                  </dt>
+                  <dd dir="auto" className="break-words">
+                    {value}
+                  </dd>
+                </Fragment>
+              ))}
+            </dl>
+          </Labelled>
+        );
+      })}
+      {post.shortenLinks ? (
+        <p className="text-muted-foreground text-sm">
+          {t("approval.shortened")}
+        </p>
+      ) : null}
+    </div>
+  );
+};
+
+// What the change itself sends or says, beside its post: a reply, a
+// published post's new text, a request's comment.
+const ChangeText = ({ approval }: { readonly approval: AgentApproval }) => {
+  const t = useTranslations("Agent");
+
+  const sent =
+    approval.text === null ? null : <SentText text={approval.text} />;
+
+  return (
+    <>
+      {sent !== null && approval.tool === "edit_published_post" ? (
+        <Labelled label={t("approval.newText", { part: approval.part ?? 0 })}>
+          {sent}
+        </Labelled>
+      ) : (
+        sent
+      )}
+      {approval.comment === null ? null : (
+        <Labelled label={t("approval.comment")}>
+          <SentText text={approval.comment} />
+        </Labelled>
+      )}
+    </>
+  );
+};
+
+/**
+ * A change the agent asks to make, from the server's request, never its
+ * words: what it does, the text it sends whole, the post it acts on whole
+ * (media, poll, each channel's own text, the parts after it, each
+ * channel's settings), the channels by name, its tags, when, then
+ * **Approve** and **Decline**; once answered, how. A change past its
+ * lifetime (`lapsed`) reads as expired.
  */
 export const ApprovalCardView = ({
   approval,
   busy,
+  lapsed = false,
   links,
+  renderMedia = MediaNames,
   nameOf,
   notDone = false,
   onAnswer,
@@ -268,9 +530,12 @@ export const ApprovalCardView = ({
   readonly approval: AgentApproval;
   /** A run goes on in the chat: nothing can be answered until it ends. */
   readonly busy: boolean;
+  /** It waited past its lifetime: it reads as expired. */
+  readonly lapsed?: boolean;
   /** Approved, the change was refused or failed: it was not made. */
   readonly notDone?: boolean;
   readonly links: ChatLinks;
+  readonly renderMedia?: ApprovalMediaView;
   readonly nameOf: ChannelNameOf;
   readonly onAnswer: (approved: boolean) => void;
 }) => {
@@ -278,9 +543,13 @@ export const ApprovalCardView = ({
   const format = useFormatter();
   const titleId = useId();
   const { link: AppLink } = links;
-  const kind = approvalKindOf(approval.tool, approval.at);
 
-  const when = whenOf(t, format, kind, approval.at);
+  const state =
+    lapsed && approval.state === "pending" ? "expired" : approval.state;
+
+  const kind = approvalKindOf(approval.tool, approval.at, approval);
+
+  const when = whenOf(t, format, kind, approval);
 
   return (
     <section
@@ -291,13 +560,10 @@ export const ApprovalCardView = ({
         <h3 id={titleId} className="text-sm font-semibold">
           {t("approval.title", { kind })}
         </h3>
-        {approval.state === "pending" ? null : (
+        {state === "pending" ? null : (
           <Badge variant="outline">
             {t("approval.state", {
-              state:
-                approval.state === "approved" && notDone
-                  ? "notDone"
-                  : approval.state,
+              state: state === "approved" && notDone ? "notDone" : state,
             })}
           </Badge>
         )}
@@ -318,20 +584,29 @@ export const ApprovalCardView = ({
           </blockquote>
         </figure>
       )}
-      {approval.text === null ? null : (
-        <blockquote
-          dir="auto"
-          className="bg-muted rounded-lg p-3 text-sm whitespace-pre-wrap"
-        >
-          {approval.text}
-        </blockquote>
+      <ChangeText approval={approval} />
+      {approval.post === null ? null : (
+        <ApprovalPostView
+          renderMedia={renderMedia}
+          nameOf={nameOf}
+          post={approval.post}
+        />
       )}
       <ChannelBadges channelIds={approval.channelIds} nameOf={nameOf} />
+      {approval.tags.length === 0 ? null : (
+        <ul className="flex flex-wrap gap-1.5" aria-label={t("approval.tags")}>
+          {approval.tags.map(({ name }) => (
+            <li key={name}>
+              <Badge variant="outline">{name}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
       {when === null ? null : (
         <p className="text-muted-foreground text-sm">{when}</p>
       )}
       <div className="flex flex-wrap items-center gap-2">
-        {approval.state === "pending" ? (
+        {state === "pending" ? (
           <>
             <Button
               size="sm"
@@ -515,9 +790,11 @@ export const MessageView = ({
   actions,
   busy,
   links,
+  renderMedia,
   message,
   nameOf,
   notDone = noCalls,
+  now = null,
   onAnswer,
   running,
   saysFailure = true,
@@ -525,7 +802,11 @@ export const MessageView = ({
   readonly actions: AnswerActions;
   readonly busy: boolean;
   readonly links: ChatLinks;
+  /** How an approval shows a post's media. */
+  readonly renderMedia?: ApprovalMediaView | undefined;
   readonly message: AgentMessage;
+  /** The current time, after hydration: changes past their lifetime lapse. */
+  readonly now?: DateTime.Utc | null;
   /**
    * The calls that were refused or failed, in any answer of the chat: an
    * approved change's step is in the answer that went on after it.
@@ -606,7 +887,9 @@ export const MessageView = ({
           approval={approval}
           notDone={notDone.has(approval.callId)}
           busy={busy}
+          lapsed={lapsedAt(message, now)}
           links={links}
+          {...(renderMedia === undefined ? {} : { renderMedia })}
           nameOf={nameOf}
           onAnswer={(approved) => {
             onAnswer(approval.callId, approved);
@@ -729,6 +1012,7 @@ export const DateLine = ({
 export const TranscriptView = ({
   actions,
   links,
+  renderMedia,
   nameOf,
   now,
   onAnswer,
@@ -736,6 +1020,8 @@ export const TranscriptView = ({
 }: {
   readonly actions: AnswerActions;
   readonly links: ChatLinks;
+  /** How an approval shows a post's media: the files themselves. */
+  readonly renderMedia?: ApprovalMediaView;
   readonly nameOf: ChannelNameOf;
   /** The current time, after hydration; null before. */
   readonly now: DateTime.Utc | null;
@@ -759,9 +1045,11 @@ export const TranscriptView = ({
           actions={actions}
           busy={state.run !== null}
           links={links}
+          renderMedia={renderMedia}
           message={message}
           nameOf={nameOf}
           notDone={notDone}
+          now={now}
           onAnswer={onAnswer}
           running={message.id === writing}
           saysFailure={state.problem === null}

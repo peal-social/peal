@@ -1,12 +1,22 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Option, Result, Schema } from "effect";
 
-import { approvalOf, quoted } from "#agent/domain/agent-approvals.ts";
+import {
+  approvalOf,
+  approvalRefusals,
+  openOf,
+  pendingOf,
+  quoted,
+  shownAt,
+  shownOf,
+} from "#agent/domain/agent-approvals.ts";
+import type { ApprovalSources } from "#agent/domain/agent-approvals.ts";
 import { cardOf } from "#agent/domain/agent-cards.ts";
 import {
   agentInstructions,
   personTimeZone,
 } from "#agent/domain/agent-instructions.ts";
+import { AgentMessage } from "#agent/domain/agent-message.ts";
 import { AgentStepSchema } from "#agent/domain/agent-parts.ts";
 import {
   AgentSkill,
@@ -14,15 +24,24 @@ import {
   editableBy,
   nameTaken,
   sameName,
+  scopeAllowed,
   usableBy,
 } from "#agent/domain/agent-skill.ts";
 import { applied, emptyAnswer } from "#agent/domain/answer-draft.ts";
 import { cursorOf, positionOf } from "#agent/domain/chat-cursor.ts";
 import { acceptedTitle, fallbackTitle } from "#agent/domain/chat-title.ts";
-import { AgentChatIdSchema, AgentSkillIdSchema } from "#agent/domain/ids.ts";
+import {
+  AgentChatIdSchema,
+  AgentMessageIdSchema,
+  AgentSkillIdSchema,
+} from "#agent/domain/ids.ts";
+import { approvalLifetimeHours } from "#agent/domain/run-limits.ts";
 import { SkillRefused } from "#agent/domain/skill-refused.ts";
+import { publishableOf } from "#agent/domain/tool-items.ts";
+import type { QueueItem } from "#agent/domain/tool-items.ts";
 import { cutNote, forModel } from "#agent/domain/tool-result.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { MissingPermission } from "#shared/domain/missing-permission.ts";
 
 const now = DateTime.makeUnsafe("2026-11-22T09:51:00.000Z");
 
@@ -35,6 +54,99 @@ const post = {
 };
 
 const decodeStep = Schema.decodeUnknownSync(AgentStepSchema);
+
+// A post as get_post answers it, all that goes out of it, on two channels.
+const publishable = Option.getOrThrow(
+  publishableOf({
+    content: {
+      followUps: [
+        {
+          delaySeconds: 60,
+          media: [],
+          overrides: [
+            { channelId: "channel-1", text: "Link below" },
+            { channelId: "channel-2", text: "Link in bio" },
+          ],
+          text: "Shop: https://shop.example.com",
+        },
+      ],
+      media: [{ altText: "The bottle", mediaId: "media-1" }],
+      overrides: [
+        {
+          channelId: "channel-1",
+          media: [{ altText: "", mediaId: "media-2" }],
+          text: "Spring, on Instagram.",
+        },
+        { channelId: "channel-2", text: "Spring, on Bluesky." },
+      ],
+      poll: { choices: ["Yes", "No"], durationMinutes: 60 },
+      text: "Our spring launch is here.",
+    },
+    id: "post-1",
+    schedule: null,
+    shortenLinks: true,
+    status: "draft",
+    targets: [
+      {
+        channelId: "channel-1",
+        id: "target-1",
+        options: {
+          collaborators: ["synthetic.partner"],
+          platform: "instagram",
+        },
+      },
+      { channelId: "channel-2", id: "target-2", options: null },
+    ],
+  })
+);
+
+const queue: QueueItem = {
+  channelIds: ["channel-1"],
+  channelSetId: null,
+  id: "queue-1",
+  isDefault: false,
+  name: "Mornings",
+};
+
+const sourcesWith = (given: Partial<ApprovalSources>): ApprovalSources => ({
+  post: Option.none(),
+  queues: Option.none(),
+  subject: Option.none(),
+  tags: Option.none(),
+  ...given,
+});
+
+// Why a call is not asked, or null when it is.
+const refusalOf = (
+  tool: string,
+  params: Schema.Json,
+  sources: Partial<ApprovalSources> = {}
+) =>
+  approvalOf({ callId: "c", params, tool }, sourcesWith(sources)).pipe(
+    Result.match({ onFailure: (why) => why, onSuccess: () => null })
+  );
+
+// The approval of a call that is asked.
+const shown = (
+  tool: string,
+  params: Schema.Json,
+  sources: Partial<ApprovalSources> = {}
+) =>
+  Result.getOrThrow(
+    approvalOf({ callId: "c", params, tool }, sourcesWith(sources))
+  );
+
+// What the person is shown of publishing the post with this text.
+const shownFor = (text: string, callId: string) =>
+  approvalOf(
+    { callId, params: { postId: "post-1" }, tool: "publish_post" },
+    sourcesWith({
+      post: Option.some({
+        ...publishable,
+        content: { ...publishable.content, text },
+      }),
+    })
+  ).pipe(Result.map(shownOf), Result.getOrThrow);
 
 describe("the agent's domain", () => {
   it("keeps a step where it was called, and reads an older one at the start", () => {
@@ -125,79 +237,255 @@ describe("the agent's domain", () => {
     ).toStrictEqual(Option.none());
   });
 
-  it("fills an approval from the call's parameters, then the post it names", () => {
+  it("fills an approval with all that goes out of the post it names, on the call's channels", () => {
     const approval = approvalOf(
       {
         callId: "call-1",
-        params: { at: "2026-12-01T08:00:00.000Z", postId: "post-1" },
+        params: {
+          at: "2026-12-01T08:00:00.000Z",
+          channelIds: ["channel-1"],
+          postId: "post-1",
+          timeZone: "Europe/Paris",
+        },
         tool: "schedule_post",
       },
-      Option.some({
-        content: { text: "Our spring launch is here." },
-        id: "post-1",
-        schedule: null,
-        status: "draft",
-        targets: [{ channelId: "channel-1" }],
-      })
+      sourcesWith({ post: Option.some(publishable) })
     );
 
-    expect(approval).toStrictEqual({
-      at: DateTime.makeUnsafe("2026-12-01T08:00:00.000Z"),
-      callId: "call-1",
-      channelIds: ["channel-1"],
-      inReplyTo: null,
-      postId: "post-1",
-      state: "pending",
-      text: "Our spring launch is here.",
-      threadId: null,
-      tool: "schedule_post",
-    });
-
-    // A post made now goes out at once: no time.
-    expect(
-      approvalOf(
-        {
-          callId: "call-2",
-          params: {
-            channelIds: ["channel-9"],
-            content: { text: "Now!" },
-            when: { _tag: "now" },
+    expect(approval).toStrictEqual(
+      Result.succeed({
+        answered: null,
+        at: DateTime.makeUnsafe("2026-12-01T08:00:00.000Z"),
+        callId: "call-1",
+        channelIds: ["channel-1"],
+        comment: null,
+        digest: "",
+        inReplyTo: null,
+        moderation: null,
+        part: null,
+        // Its own text, media and poll; the parts after it; what it has
+        // instead on its channel (another channel's is not shown); the
+        // channel's options.
+        post: {
+          followUps: [
+            {
+              delaySeconds: 60,
+              media: [],
+              overrides: [
+                { channelId: "channel-1", media: null, text: "Link below" },
+              ],
+              text: "Shop: https://shop.example.com",
+            },
+          ],
+          media: [{ altText: "The bottle", mediaId: "media-1" }],
+          overrides: [
+            {
+              channelId: "channel-1",
+              media: [{ altText: "", mediaId: "media-2" }],
+              text: "Spring, on Instagram.",
+            },
+          ],
+          poll: {
+            choices: ["Yes", "No"],
+            durationMinutes: 60,
+            multipleChoice: false,
           },
-          tool: "create_post",
+          shortenLinks: true,
+          targets: [
+            {
+              channelId: "channel-1",
+              options: {
+                collaborators: ["synthetic.partner"],
+                platform: "instagram",
+              },
+            },
+          ],
+          text: "Our spring launch is here.",
         },
-        Option.none()
-      )
-    ).toStrictEqual({
-      at: null,
-      callId: "call-2",
-      channelIds: ["channel-9"],
-      inReplyTo: null,
-      postId: null,
-      state: "pending",
-      text: "Now!",
-      threadId: null,
-      tool: "create_post",
-    });
+        postId: "post-1",
+        queue: null,
+        state: "pending",
+        tags: [],
+        text: null,
+        threadId: null,
+        tool: "schedule_post",
+      })
+    );
+  });
+
+  it("asks nothing it cannot show whole, and says why to the model", () => {
+    const withPost = { post: Option.some(publishable) };
+
+    expect([
+      // A tool the cards do not know, such as one that makes a post.
+      refusalOf("create_post", { channelIds: ["channel-1"] }),
+      // A parameter the card does not show, or one that reads otherwise.
+      refusalOf(
+        "publish_post",
+        { postId: "post-1", visibility: "all" },
+        withPost
+      ),
+      refusalOf(
+        "edit_published_post",
+        { part: "one", postId: "post-1", text: "x" },
+        withPost
+      ),
+      // A post that could not be read.
+      refusalOf("publish_post", { postId: "post-1" }),
+      // A tag, a channel or a queue's channels nobody can show.
+      refusalOf(
+        "tag_post",
+        { postId: "post-1", tagIds: ["tag-9"] },
+        {
+          ...withPost,
+          tags: Option.some([]),
+        }
+      ),
+      refusalOf(
+        "unpublish_post",
+        { postId: "post-1", targetId: "target-9" },
+        withPost
+      ),
+      refusalOf(
+        "queue_post",
+        { postId: "post-1" },
+        {
+          post: Option.some({ ...publishable, targets: [] }),
+          // Left out, the workspace's default queue.
+          queues: Option.some([
+            { ...queue, channelSetId: "set-1", isDefault: true },
+          ]),
+        }
+      ),
+    ]).toStrictEqual([
+      approvalRefusals.tool,
+      approvalRefusals.parameters,
+      approvalRefusals.parameters,
+      approvalRefusals.post,
+      approvalRefusals.tags,
+      approvalRefusals.target,
+      approvalRefusals.queueChannels,
+    ]);
+  });
+
+  it("names a queue, tags, a moderation, a comment and an edited part as the call and the workspace say", () => {
+    const withPost = { post: Option.some(publishable) };
+
+    const queued = shown(
+      "queue_post",
+      { postId: "post-1", queue: "MORNINGS" },
+      {
+        post: Option.some({ ...publishable, targets: [] }),
+        queues: Option.some([queue]),
+      }
+    );
+
+    const edited = shown(
+      "edit_published_post",
+      { postId: "post-1", targetId: "target-2", text: "Fixed typo" },
+      withPost
+    );
+
+    expect([
+      [queued.queue, queued.channelIds, queued.at],
+      shown(
+        "tag_post",
+        { postId: "post-1", tagIds: ["tag-1"] },
+        {
+          ...withPost,
+          tags: Option.some([{ colour: "green", id: "tag-1", name: "Launch" }]),
+        }
+      ).tags,
+      shown("moderate_comment", { action: "delete", commentId: "c1" })
+        .moderation,
+      shown(
+        "request_changes",
+        {
+          approvalId: "a1",
+          comment: "Say spring, not summer.",
+          postId: "post-1",
+          subjectHash: "h",
+        },
+        withPost
+      ).comment,
+      [edited.text, edited.part, edited.channelIds],
+    ]).toStrictEqual([
+      ["Mornings", ["channel-1"], null],
+      [{ colour: "green", name: "Launch" }],
+      "delete",
+      "Say spring, not summer.",
+      ["Fixed typo", 0, ["channel-2"]],
+    ]);
   });
 
   it("quotes the comment a reply answers, from the inbox, cut to 500 characters", () => {
-    const approval = approvalOf(
-      {
-        callId: "call-3",
-        params: { commentId: "comment-1", text: "Thank you!" },
-        tool: "reply_to_comment",
-      },
-      Option.none(),
-      Option.some({
-        inReplyTo: quoted("Ada", "x".repeat(600)),
-        threadId: "thread-1",
-      })
+    const approval = Result.getOrThrow(
+      approvalOf(
+        {
+          callId: "call-3",
+          params: { commentId: "comment-1", text: "Thank you!" },
+          tool: "reply_to_comment",
+        },
+        sourcesWith({
+          subject: Option.some({
+            inReplyTo: quoted("Ada", "x".repeat(600)),
+            threadId: "thread-1",
+          }),
+        })
+      )
     );
 
-    expect(approval.threadId).toBe("thread-1");
-    expect(approval.inReplyTo?.author).toBe("Ada");
-    expect(approval.inReplyTo?.text).toHaveLength(500);
-    expect(approval.text).toBe("Thank you!");
+    expect([
+      approval.threadId,
+      approval.inReplyTo?.author,
+      approval.inReplyTo?.text.length,
+      approval.text,
+    ]).toStrictEqual(["thread-1", "Ada", 500, "Thank you!"]);
+  });
+
+  it("shows the same change the same way, whatever its call and state, and any change of it otherwise", () => {
+    const first = shownFor("Our spring launch is here.", "call-1");
+
+    expect([
+      first === shownFor("Our spring launch is here.", "call-2"),
+      first === shownFor("Claim a prize: https://prize.example.com", "call-1"),
+    ]).toStrictEqual([true, false]);
+  });
+
+  it("lets an answer's changes lapse a day after it was written", () => {
+    const asking = new AgentMessage({
+      approvals: [
+        Result.getOrThrow(
+          approvalOf(
+            { callId: "c", params: { postId: "post-1" }, tool: "publish_post" },
+            sourcesWith({ post: Option.some(publishable) })
+          )
+        ),
+      ],
+      cards: [],
+      createdAt: now,
+      durationMs: Option.none(),
+      id: AgentMessageIdSchema.make("0190f0e0-0000-7000-8000-000000000003"),
+      media: [],
+      outcome: Option.some("awaitingApproval"),
+      rating: Option.none(),
+      role: "assistant",
+      skills: [],
+      steps: [],
+      text: "",
+    });
+
+    const later = DateTime.add(now, {
+      hours: approvalLifetimeHours,
+      minutes: 1,
+    });
+
+    expect([
+      openOf(asking, DateTime.add(now, { hours: 23 })).length,
+      openOf(asking, later).length,
+      shownAt(asking, later).approvals.map(({ state }) => state),
+      pendingOf(asking).length,
+    ]).toStrictEqual([1, 0, ["expired"], 1]);
   });
 
   it("names a chat in a few words on one line, else after the person's first words", () => {
@@ -297,7 +585,7 @@ describe("the agent's domain", () => {
     );
   });
 
-  it("lets a skill's author change it, and those who manage the workspace's a workspace one", () => {
+  it("lets a skill's author change a personal one, and only those who manage the workspace's a workspace one", () => {
     const author = UserIdSchema.make("6c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f");
     const other = UserIdSchema.make("7d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f6a");
 
@@ -323,6 +611,8 @@ describe("the agent's domain", () => {
     const orphaned = skillOf("workspace", Option.none());
     const manager = { configures: true, userId: other };
     const member = { configures: false, userId: other };
+    const writer = { configures: false, userId: author };
+    const managingAuthor = { configures: true, userId: author };
 
     expect([
       usableBy(skill, author),
@@ -331,10 +621,14 @@ describe("the agent's domain", () => {
     ]).toStrictEqual([true, false, true]);
     expect([
       editableBy(skill, manager),
+      editableBy(skill, writer),
       editableBy(shared, member),
+      // Its author alone no longer changes what every member's agent
+      // is offered.
+      editableBy(shared, writer),
       editableBy(shared, manager),
       editableBy(orphaned, manager),
-    ]).toStrictEqual([false, false, true, true]);
+    ]).toStrictEqual([false, true, false, false, true, true]);
 
     // Back to personal: its author's alone, never a manager's.
     expect(changed(shared, { scope: "personal" }, manager, now)).toStrictEqual(
@@ -344,13 +638,43 @@ describe("the agent's domain", () => {
     const moved = changed(
       skill,
       { name: "  Week\nahead ", scope: "workspace" },
-      { configures: false, userId: author },
+      managingAuthor,
       now
     );
 
     expect(
       moved.pipe(Result.map(({ name, scope }) => [name, scope]))
     ).toStrictEqual(Result.succeed(["Week ahead", "workspace"]));
+  });
+
+  it("gives a skill to the workspace only for one who manages the workspace's", () => {
+    const writer = {
+      configures: false,
+      userId: UserIdSchema.make("6c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"),
+    };
+
+    const skill = new AgentSkill({
+      authorId: Option.some(writer.userId),
+      createdAt: now,
+      id: AgentSkillIdSchema.make("0190f0e0-0000-7000-8000-000000000002"),
+      instructions: "Plan the week.",
+      name: "Weekly plan",
+      scope: "personal",
+      updatedAt: now,
+      workspaceId: WorkspaceIdSchema.make(
+        "8e4f5a6b-7c8d-4e9f-8a1b-2c3d4e5f6a7b"
+      ),
+    });
+
+    const refused = Result.fail(
+      new MissingPermission({ permission: "assistant:configure" })
+    );
+
+    expect([
+      changed(skill, { scope: "workspace" }, writer, now),
+      scopeAllowed("workspace", writer),
+      scopeAllowed("personal", writer),
+    ]).toStrictEqual([refused, refused, Result.succeed("personal")]);
   });
 
   it("compares and orders skills' names whatever their case", () => {
