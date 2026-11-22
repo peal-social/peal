@@ -199,24 +199,41 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), settings)(
     );
 
     it.effect(
-      "links nothing to an account that never confirmed its address",
+      "takes over an account that never confirmed its address, without its password",
       () =>
         Effect.gen(function* preRegistered() {
+          const app = yield* TestApp;
           const email = newEmail("pre-registered");
+          const theirs = "a passphrase someone else set";
 
-          yield* existingAccount(email, { confirmed: false });
+          // Someone signed up with the address, and never confirmed it.
+          const created = yield* app.request("/api/auth/sign-up/email", {
+            body: { email, locale: "en", name: "Someone", password: theirs },
+          });
+
+          assert.strictEqual(created.status, 200);
 
           const identity = verified(email);
           const finished = yield* providerSignIn(identity);
 
-          assert.strictEqual(finished.error, "account_not_linked");
-          assert.isFalse(setsSession(finished.reply));
-          assert.deepStrictEqual(yield* ownersOf(identity.sub), []);
+          // The provider vouches for the address: the account is the
+          // provider's person's now, confirmed, and its password is gone.
+          assert.isNull(finished.error);
+          assert.isTrue(setsSession(finished.reply));
 
           const account = yield* accountOf(email);
 
-          assert.isFalse(account?.email_verified);
-          assert.strictEqual(account?.sessions, 0);
+          assert.isTrue(account?.email_verified);
+          assert.deepStrictEqual(yield* ownersOf(identity.sub), [
+            (yield* sessionUser(finished.cookies)).id,
+          ]);
+          assert.strictEqual(
+            (yield* app.request("/api/auth/sign-in/email", {
+              body: { email, password: theirs },
+            })).status,
+            401
+          );
+          assert.isFalse(yield* hasPasswordOf(finished.cookies));
         })
     );
 

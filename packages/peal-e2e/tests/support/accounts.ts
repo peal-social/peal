@@ -25,9 +25,17 @@ export const confirmedAccount = async (
     throw new Error(`Signing up answered ${created.status}`);
   }
 
+  // The link keeps the password only in the browser that signed up: its
+  // cookies go with it.
+  const cookie = created.headers
+    .getSetCookie()
+    .map((header) => header.split(";")[0] ?? "")
+    .filter((pair) => !pair.endsWith("="))
+    .join("; ");
+
   const link = await emailedLink(account.email, "Confirm your email for Peal");
 
-  await fetch(link, { redirect: "manual" });
+  await fetch(link, { headers: { cookie }, redirect: "manual" });
 };
 
 /**

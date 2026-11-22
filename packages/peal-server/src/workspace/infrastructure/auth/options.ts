@@ -45,6 +45,7 @@ import {
   turnstile,
 } from "./billing.ts";
 import type { BillingHooks } from "./billing.ts";
+import { disconnectAfterPasswordReset } from "./connected-applications.ts";
 import {
   guardImpersonatedRequest,
   refuseImpersonatedChanges,
@@ -68,6 +69,11 @@ import {
   signInProviderConfigs,
   signInProviderIds,
 } from "./sign-in-providers.ts";
+import {
+  bindSignUpBrowser,
+  checkSignUpBrowser,
+  confirmSignUpBrowser,
+} from "./sign-up-browser.ts";
 import { refuseUnadmittedSignUps } from "./sign-up-gate.ts";
 import type { SignUpAdmission } from "./sign-up-gate.ts";
 import {
@@ -475,14 +481,16 @@ export const makeAuth = ({
 }: AuthDependencies) =>
   betterAuth({
     account: {
-      // A provider reaches an account only through an address both sides
-      // confirmed: the provider's `email_verified`, on each sign-in, and the
-      // account's own (Better Auth's `requireLocalEmailVerified`, on by
-      // default). No provider is trusted without it, an address never
-      // links to another, and a link copies nothing onto the account.
+      // A provider reaches an account only through an address it confirmed
+      // (`email_verified`, on each sign-in). An account that never
+      // confirmed its own is released before the link, so the provider's
+      // sign-in takes it over without its password. No provider is trusted
+      // without it, an address never links to another, and a link copies
+      // nothing onto the account.
       accountLinking: {
         allowDifferentEmails: false,
         enabled: true,
+        requireLocalEmailVerified: false,
         trustedProviders: [],
         updateUserInfoOnLink: false,
       },
@@ -621,6 +629,7 @@ export const makeAuth = ({
       }),
       enabled: true,
       minPasswordLength: 12,
+      onPasswordReset: disconnectAfterPasswordReset,
       requireEmailVerification: settings.requireEmailVerification,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: async ({ url, user }) => {
@@ -630,7 +639,9 @@ export const makeAuth = ({
       },
     },
     emailVerification: {
-      autoSignInAfterVerification: true,
+      // The link signs in only the browser that signed up (sign-up-browser.ts).
+      autoSignInAfterVerification: false,
+      beforeEmailVerification: checkSignUpBrowser,
       sendOnSignUp: true,
       sendVerificationEmail: async ({ url, user }) => {
         hooks.verifyEmail({ locale: localeOf(user), to: user.email, url });
@@ -646,6 +657,8 @@ export const makeAuth = ({
         await followOwnersAfterLeaving(ctx, hooks);
         await forgetLeavingMember(ctx, hooks);
         expireVisitorCookie(ctx, site);
+        await bindSignUpBrowser(ctx);
+        await confirmSignUpBrowser(ctx);
       }),
       before: beforeEveryRoute(hooks),
     },

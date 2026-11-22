@@ -442,7 +442,7 @@ export const french: EmailCatalog = {
   renewalDeadline: "Date limite de non-reconduction : {renewsAt}",
   resetPassword: {
     action: "Choisir un nouveau mot de passe",
-    body: "Quelqu’un a demandé à réinitialiser le mot de passe de votre compte Peal. Choisissez-en un nouveau avec le lien ci-dessous.",
+    body: "Quelqu’un a demandé à réinitialiser le mot de passe de votre compte Peal. Choisissez-en un nouveau avec le lien ci-dessous. Vos sessions seront alors fermées partout et vos applications connectées, comme la ligne de commande et les assistants IA, déconnectées : reconnectez-les ensuite.",
     ignore:
       "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail : votre mot de passe reste inchangé. Le lien expire dans une heure.",
     subject: "Réinitialisez votre mot de passe Peal",

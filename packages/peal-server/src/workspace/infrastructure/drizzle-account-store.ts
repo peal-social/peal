@@ -28,6 +28,7 @@ import {
   user,
   verification,
 } from "./auth-schema.generated.ts";
+import { bindingOf } from "./auth/sign-up-binding.ts";
 import {
   partnerKeys,
   partners,
@@ -390,6 +391,13 @@ export const DrizzleAccountStore = Layer.effect(
               )
             )
           )
+          .pipe(Effect.mapError(failed));
+
+        // The browser a sign-up of theirs may still confirm from: its row
+        // is named after the user (`bindingOf`) and holds digests only.
+        yield* db
+          .delete(verification)
+          .where(eq(verification.identifier, bindingOf(userId)))
           .pipe(Effect.mapError(failed));
 
         // The partner keys they created stay their partner's, without them.

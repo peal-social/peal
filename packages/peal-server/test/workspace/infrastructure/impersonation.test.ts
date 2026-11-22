@@ -63,10 +63,46 @@ describe(refusedWhileImpersonating, () => {
     expect(refusedWhileImpersonating(path)).toBeTruthy();
   });
 
+  // Each of the member's sessions comes with its token, which signs in as
+  // them after the impersonation ends.
+  it("refuses /list-sessions, which hands out the member's sessions", () => {
+    expect(refusedWhileImpersonating("/list-sessions")).toBeTruthy();
+  });
+
+  // The impersonation's own session is what the web app runs on, and an
+  // OAuth client's logout ends only the browser's session when the browser
+  // holds one; every other route about sessions reads or ends the member's.
+  it("refuses every session route the server serves but the impersonation's own", () => {
+    const own = new Set([
+      "/get-session",
+      "/oauth2/end-session",
+      "/oauth2/end-session/confirm",
+      "/update-session",
+    ]);
+
+    const routes = servedRoutes(authWithoutDatabase()).filter(
+      (path) => path.includes("session") && !path.startsWith("/admin/")
+    );
+
+    expect(routes).toStrictEqual(
+      expect.arrayContaining([
+        "/get-session",
+        "/list-sessions",
+        "/revoke-other-sessions",
+        "/revoke-session",
+        "/revoke-sessions",
+      ])
+    );
+    expect(
+      routes.filter(
+        (path) => !own.has(path) && !refusedWhileImpersonating(path)
+      )
+    ).toStrictEqual([]);
+  });
+
   it.each([
     "/device",
     "/get-session",
-    "/list-sessions",
     "/oauth2/public-client",
     "/organization/list-members",
     "/organization/set-active",

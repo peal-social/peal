@@ -51,6 +51,12 @@ const changesAccount: ReadonlySet<string> = new Set([
   "/update-user",
 ]);
 
+// The routes that read the member's own sessions: `/list-sessions` answers
+// each with its token, which signs in as the member outside the
+// impersonation, and with its browser and address. The impersonation's own
+// session (`/get-session`) stays readable: the web app runs on it.
+const readsSessions: ReadonlySet<string> = new Set(["/list-sessions"]);
+
 // The Stripe plugin's routes that only read, or that Stripe sends the
 // browser back to.
 const billingReads: ReadonlySet<string> = new Set([
@@ -76,15 +82,17 @@ const twoStepRoutes = "/two-factor/";
  * Whether staff impersonating a member are refused a Better Auth route: every
  * workspace route but those that only read, those that give an OAuth client
  * access, those that change the account or its two-step verification, and
- * those that subscribe, cancel or open the billing portal. Creating,
- * inviting, accepting, changing roles, removing, deleting, granting access,
- * changing the account and paying all outlive the impersonation, as what
- * `withheldWhileImpersonating` lists does, and these routes never reach
- * Peal's API, which applies that list.
+ * those that subscribe, cancel or open the billing portal, and the list of
+ * the member's sessions. Creating, inviting, accepting, changing roles,
+ * removing, deleting, granting access, changing the account and paying all
+ * outlive the impersonation, as what `withheldWhileImpersonating` lists
+ * does, and a session's token would too; these routes never reach Peal's
+ * API, which applies that list.
  */
 export const refusedWhileImpersonating = (path: string): boolean =>
   grantsAccess.has(path) ||
   changesAccount.has(path) ||
+  readsSessions.has(path) ||
   path.startsWith(twoStepRoutes) ||
   changesWorkspace(path);
 

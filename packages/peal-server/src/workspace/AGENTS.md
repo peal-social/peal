@@ -39,6 +39,39 @@ The staff context follows these rules too. What the law has a host keep is in
   person may make workspaces and invite in turn: the mode limits who signs
   up, not who invites. Everything else (signing in, resets, accepting,
   staff, partners, connect and review links) is the same in both modes.
+- A password's confirmation link signs in only the browser that signed up
+  (`auth/sign-up-browser.ts`). Every `/sign-up/email` that went through
+  sets a fresh nonce in `peal.sign_up_browser` (HttpOnly, SameSite=Lax,
+  `__Secure-` over HTTPS, 7 days), whatever the address, so the answer
+  tells nothing; where the request made the account, or the address's
+  account is unconfirmed, the account's `auth.verification` row
+  `sign-up-browser:<userId>` (`bindingOf`) keeps the nonce's SHA-256 and
+  the SHA-256 of the password hash it goes with (`bindSignUpBrowser`, the
+  after hook). A sign-up for an unconfirmed address takes the account
+  over (`takeOver`): the new signer's password, name and language, a new
+  binding, its sessions and connected applications ended, a fresh link;
+  a confirmed address changes nothing. Better Auth's
+  `autoSignInAfterVerification` is off: `beforeEmailVerification`
+  (`checkSignUpBrowser`) spends the binding and compares in constant
+  time; without the nonce, or once the password changed, it releases the
+  account before the address is confirmed (`releaseAccount`: the
+  credential account, the sessions, the connected applications go), and
+  the after hook (`confirmSignUpBrowser`) signs the matching browser in
+  or sends any other to `?password=needed`, which the web app's
+  verify-email page answers with the reset flow. The resend route sends
+  a link only to the address, and the link confirms by the same rule. A
+  re-sign-up hashes once more than a confirmed address's: its answer is
+  the same, its time is not. A provider's sign-in for an unconfirmed
+  account releases it too (`requireLocalEmailVerified: false`, then
+  `releaseUnconfirmedAccount` in `providerAdmission` before Better Auth
+  links it), so the provider's person takes it over without its password.
+  Tests confirm with the sign-up's cookies (`confirmedAccount`).
+- A password reset ends the sessions (`revokeSessionsOnPasswordReset`)
+  and disconnects every connected application (`onPasswordReset`,
+  `forgetConnectedApplications` in `auth/connected-applications.ts`: the
+  OAuth provider's stored access tokens, refresh tokens, consents, and
+  the device codes not yet exchanged); an access token already issued, a
+  JWT, lasts out its 15 minutes. The reset email says so.
 - The person's choice about the web app's measurement is two columns of
   Better Auth's user row (`browserAnalyticsConsent`,
   `browserAnalyticsConsentAt`, `input: false`, `returned: false`): only
@@ -115,8 +148,13 @@ The staff context follows these rules too. What the law has a host keep is in
   then lose the permissions `withheldWhileImpersonating` lists
   (`workspace/domain/membership.ts`), and Better Auth refuses them every route
   that changes a workspace or the account (name, language, password,
-  sessions), grants an OAuth client access or approves a device code
-  (`impersonation.ts`). They may write and edit drafts, not schedule or
+  sessions), grants an OAuth client access or approves a device code, and
+  `/list-sessions`, which answers each of the member's sessions with its
+  token (`impersonation.ts`; the web app's account page says so in place
+  of the list). `/get-session`, `/update-session` and the OAuth
+  provider's `/oauth2/end-session` act on the impersonation's own session
+  only; every other route about sessions is refused, which
+  `impersonation.test.ts` checks against the served routes. They may write and edit drafts, not schedule or
   publish them: a scheduled post goes out after the impersonation ends, to
   the member's real accounts. What they write keeps the member as its author
   (`author_id`), and the audit log keeps the staff member behind it.
@@ -425,8 +463,9 @@ The staff context follows these rules too. What the law has a host keep is in
   lower-case UUID). An account is made only when a page under the terms
   line asks (`disableImplicitSignUp`, `requestSignUp`): the sign-up page,
   and the sign-in page where anyone may sign up. Linking is implicit only, by
-  an address both sides confirmed (`accountLinking`, no trusted provider,
-  `requireLocalEmailVerified` left at its default); `/link-social`,
+  an address the provider confirmed (`accountLinking`, no trusted
+  provider, `requireLocalEmailVerified: false` as an unconfirmed account
+  is released first: see the sign-up browser above); `/link-social`,
   `/unlink-account`, `/get-access-token`, `/refresh-token` and
   `/account-info` are disabled (the list of kept account routes is in
   `auth-plugins.test.ts`). `guardProviderSignIn` refuses 400
