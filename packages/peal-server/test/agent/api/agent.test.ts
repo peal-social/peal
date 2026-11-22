@@ -202,7 +202,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
               payload: {
                 instructions: "Again.",
                 name: "WEEKLY PLAN",
-                scope: "workspace",
+                scope: "personal",
               },
             })
             .pipe(Effect.flip);
@@ -212,12 +212,27 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             reason: "nameTaken",
           });
 
-          const moved = yield* client.agent.updateSkill({
-            params: { ...params, skillId: made.id },
-            payload: { scope: "workspace" },
-          });
-
-          assert.strictEqual(moved.scope, "workspace");
+          // An editor makes no workspace skill, nor shares their own: every
+          // member's agent is offered it.
+          for (const refused of [
+            client.agent.createSkill({
+              params,
+              payload: {
+                instructions: "Follow me.",
+                name: "Team voice",
+                scope: "workspace",
+              },
+            }),
+            client.agent.updateSkill({
+              params: { ...params, skillId: made.id },
+              payload: { scope: "workspace" },
+            }),
+          ]) {
+            assert.strictEqual(
+              (yield* refused.pipe(Effect.flip))._tag,
+              "Forbidden"
+            );
+          }
 
           const listed = yield* client.agent.skills({ params });
 

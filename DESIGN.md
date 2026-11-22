@@ -937,13 +937,15 @@ things there, as they would with a colleague. Chats are the person's own.
   skill) is a form in the settings column: Name (with how many
   characters it takes), Instructions (a textarea of ten rows, counted),
   "Who can use it" as two radios, each with its line (Personal: only
-  you; Workspace: every member who may use the agent), then **Save**
+  you; Workspace: every member who may use the agent), for those who
+  manage the assistant's settings only (anyone else's skills are
+  personal, and the radios do not show), then **Save**
   (primary) and **Cancel** (outline). Its **…** in the header offers
   **Use in chat**, which opens the agent page with the skill picked,
   and **Delete**, after a dialog saying it cannot be undone. A
   workspace skill the person may not change shows its form disabled,
-  with a muted line saying another member made it, and neither Save
-  nor Delete.
+  with a muted line saying only those who manage the assistant's
+  settings change it, and neither Save nor Delete.
 - **Off**: where no model answers, the page and the panel say so in the
   empty state's title and line, with the next step as the primary
   button (the assistant settings for those who may change them, the

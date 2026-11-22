@@ -16,13 +16,16 @@
 - Skills (`agent.skills`, `agent-skill.ts`) are a name and instructions a
   person saves for a task they repeat: their own (`personal`), or the
   workspace's (`workspace`), which every member with `assistant:use`
-  there uses. A person sees their own and the workspace's, listed by name
-  whatever its case; any other (another person's own, another
-  workspace's, a deleted one) reads as none (`SkillNotFound`, 404). They
-  change or delete their own, and a workspace skill when they have
-  `assistant:configure` (`editable`); else `notEditable`. Moving one's own
-  to the workspace needs nothing more; a workspace skill goes back to
-  personal for its author only. A name another skill the person sees has,
+  there uses, and the agent is offered beside every message: what one
+  member writes there steers every other member's agent. A person sees
+  their own and the workspace's, listed by name whatever its case; any
+  other (another person's own, another workspace's, a deleted one) reads
+  as none (`SkillNotFound`, 404). They change or delete their own personal
+  ones; a workspace skill is made (`scopeAllowed`), shared from one's own
+  and changed or deleted only with `assistant:configure` (`editable`),
+  its author's included: `MissingPermission` (403) for making or sharing
+  one, `notEditable` for a change. A workspace skill goes back to
+  personal for its author only, while they manage them. A name another skill the person sees has,
   whatever its case, is `nameTaken`; past `maxSkills` (100) they see,
   `tooMany` (both checked before the write, not by the database). When
   its author leaves the workspace, is removed or closes their account, a

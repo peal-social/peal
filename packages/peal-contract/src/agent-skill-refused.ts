@@ -9,8 +9,8 @@ import { errorEnvelope } from "./error-envelope.ts";
  *   its case, so picking it by name would be ambiguous.
  * - `tooMany`: the person already sees `maxAgentSkills` skills here.
  * - `notEditable`: it is a workspace skill the person may use but not
- *   change: it is another member's, and they may not manage the
- *   workspace's.
+ *   change, as they may not manage the workspace's (whoever wrote it), or
+ *   one another member made that they may not take back to personal.
  */
 export const AgentSkillRefusalSchema = Schema.Literals([
   "nameTaken",

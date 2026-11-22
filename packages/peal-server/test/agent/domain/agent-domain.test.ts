@@ -14,6 +14,7 @@ import {
   editableBy,
   nameTaken,
   sameName,
+  scopeAllowed,
   usableBy,
 } from "#agent/domain/agent-skill.ts";
 import { applied, emptyAnswer } from "#agent/domain/answer-draft.ts";
@@ -23,6 +24,7 @@ import { AgentChatIdSchema, AgentSkillIdSchema } from "#agent/domain/ids.ts";
 import { SkillRefused } from "#agent/domain/skill-refused.ts";
 import { cutNote, forModel } from "#agent/domain/tool-result.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { MissingPermission } from "#shared/domain/missing-permission.ts";
 
 const now = DateTime.makeUnsafe("2026-11-22T09:51:00.000Z");
 
@@ -297,7 +299,7 @@ describe("the agent's domain", () => {
     );
   });
 
-  it("lets a skill's author change it, and those who manage the workspace's a workspace one", () => {
+  it("lets a skill's author change a personal one, and only those who manage the workspace's a workspace one", () => {
     const author = UserIdSchema.make("6c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f");
     const other = UserIdSchema.make("7d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f6a");
 
@@ -323,6 +325,8 @@ describe("the agent's domain", () => {
     const orphaned = skillOf("workspace", Option.none());
     const manager = { configures: true, userId: other };
     const member = { configures: false, userId: other };
+    const writer = { configures: false, userId: author };
+    const managingAuthor = { configures: true, userId: author };
 
     expect([
       usableBy(skill, author),
@@ -331,10 +335,14 @@ describe("the agent's domain", () => {
     ]).toStrictEqual([true, false, true]);
     expect([
       editableBy(skill, manager),
+      editableBy(skill, writer),
       editableBy(shared, member),
+      // Its author alone no longer changes what every member's agent
+      // is offered.
+      editableBy(shared, writer),
       editableBy(shared, manager),
       editableBy(orphaned, manager),
-    ]).toStrictEqual([false, false, true, true]);
+    ]).toStrictEqual([false, true, false, false, true, true]);
 
     // Back to personal: its author's alone, never a manager's.
     expect(changed(shared, { scope: "personal" }, manager, now)).toStrictEqual(
@@ -344,13 +352,43 @@ describe("the agent's domain", () => {
     const moved = changed(
       skill,
       { name: "  Week\nahead ", scope: "workspace" },
-      { configures: false, userId: author },
+      managingAuthor,
       now
     );
 
     expect(
       moved.pipe(Result.map(({ name, scope }) => [name, scope]))
     ).toStrictEqual(Result.succeed(["Week ahead", "workspace"]));
+  });
+
+  it("gives a skill to the workspace only for one who manages the workspace's", () => {
+    const writer = {
+      configures: false,
+      userId: UserIdSchema.make("6c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"),
+    };
+
+    const skill = new AgentSkill({
+      authorId: Option.some(writer.userId),
+      createdAt: now,
+      id: AgentSkillIdSchema.make("0190f0e0-0000-7000-8000-000000000002"),
+      instructions: "Plan the week.",
+      name: "Weekly plan",
+      scope: "personal",
+      updatedAt: now,
+      workspaceId: WorkspaceIdSchema.make(
+        "8e4f5a6b-7c8d-4e9f-8a1b-2c3d4e5f6a7b"
+      ),
+    });
+
+    const refused = Result.fail(
+      new MissingPermission({ permission: "assistant:configure" })
+    );
+
+    expect([
+      changed(skill, { scope: "workspace" }, writer, now),
+      scopeAllowed("workspace", writer),
+      scopeAllowed("personal", writer),
+    ]).toStrictEqual([refused, refused, Result.succeed("personal")]);
   });
 
   it("compares and orders skills' names whatever their case", () => {

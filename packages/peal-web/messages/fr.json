@@ -5376,7 +5376,7 @@
     "retry": "Réessayer",
     "gone": "Impossible d’ouvrir cette compétence. Elle a été supprimée, ou elle ne vous est plus partagée.",
     "backToList": "Voir vos compétences",
-    "readOnly": "Vous pouvez utiliser cette compétence de l’espace de travail. Seuls le membre qui l’a créée et les personnes qui gèrent les réglages de l’assistant peuvent la modifier.",
+    "readOnly": "Vous pouvez utiliser cette compétence de l’espace de travail. Seules les personnes qui gèrent les réglages de l’assistant peuvent la modifier.",
     "form": {
       "name": "Nom",
       "nameHint": "Ce que vous taperez après / pour la choisir. {max, number} caractères au plus.",
@@ -5410,9 +5410,9 @@
     "errors": {
       "nameTaken": "Vous pouvez déjà utiliser une compétence de ce nom. Choisissez-en un autre, pour que / trouve la bonne.",
       "tooMany": "Vous pouvez utiliser {max, number} compétences ici, le maximum. Supprimez-en une avant d’en créer une autre.",
-      "notEditable": "Vous ne pouvez pas modifier cette compétence : seuls le membre qui l’a créée et les personnes qui gèrent les réglages de l’assistant le peuvent.",
+      "notEditable": "Vous ne pouvez pas modifier cette compétence : seules les personnes qui gèrent les réglages de l’assistant le peuvent.",
       "notFound": "Cette compétence n’existe plus. Elle a été supprimée, ou elle ne vous est plus partagée.",
-      "forbidden": "Votre rôle ne vous permet pas d’utiliser l’agent, donc pas d’enregistrer de compétences.",
+      "forbidden": "Votre rôle ne vous permet pas d’enregistrer cette compétence. Partager une compétence avec l’espace de travail demande de gérer les réglages de l’assistant.",
       "unexpected": "Impossible d’enregistrer la compétence. Réessayez.",
       "deleteFailed": "Impossible de supprimer la compétence. Réessayez."
     }

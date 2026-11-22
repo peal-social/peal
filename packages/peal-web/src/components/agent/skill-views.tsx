@@ -138,15 +138,18 @@ const scopes: readonly AgentSkillScope[] = ["personal", "workspace"];
 
 /**
  * A skill's form: its name, its instructions counted against the limit,
- * and who can use it, then **Save** and **Cancel**. A skill the person
- * may not change shows read-only, with the line saying why, and no Save.
- * A field says what is wrong only once the person tried to save.
+ * and who can use it, then **Save** and **Cancel**. Who can use it shows
+ * only to those who may share a skill with the workspace
+ * (`assistant:configure`): anyone else's skills are their own. A skill the
+ * person may not change shows read-only, with the line saying why, and no
+ * Save. A field says what is wrong only once the person tried to save.
  */
 export const SkillFormView = ({
   busy,
   cancel,
   draft,
   editable,
+  mayShare,
   onChange,
   onSave,
   problem,
@@ -157,6 +160,8 @@ export const SkillFormView = ({
   readonly cancel: ReactNode;
   readonly draft: SkillDraft;
   readonly editable: boolean;
+  /** The person may make a skill the workspace's (`assistant:configure`). */
+  readonly mayShare: boolean;
   readonly onChange: (draft: SkillDraft) => void;
   readonly onSave: () => void;
   /** Why the last save was refused, if it was. */
@@ -263,43 +268,47 @@ export const SkillFormView = ({
           </p>
         </div>
       </div>
-      <fieldset className="flex flex-col gap-3" disabled={disabled}>
-        <legend className="mb-3 text-sm font-medium">{t("form.scope")}</legend>
-        {scopes.map((scope) => {
-          const optionId = `${id}-scope-${scope}`;
+      {mayShare ? (
+        <fieldset className="flex flex-col gap-3" disabled={disabled}>
+          <legend className="mb-3 text-sm font-medium">
+            {t("form.scope")}
+          </legend>
+          {scopes.map((scope) => {
+            const optionId = `${id}-scope-${scope}`;
 
-          return (
-            <div key={scope} className="flex items-start gap-2">
-              <input
-                id={optionId}
-                type="radio"
-                name={`${id}-scope`}
-                className="accent-primary mt-0.5"
-                checked={draft.scope === scope}
-                aria-describedby={`${optionId}-hint`}
-                onChange={() => {
-                  onChange({ ...draft, scope });
-                }}
-              />
-              <div className="flex flex-col gap-0.5">
-                <label htmlFor={optionId} className="text-sm">
-                  {scope === "personal"
-                    ? t("form.personal")
-                    : t("form.workspace")}
-                </label>
-                <p
-                  id={`${optionId}-hint`}
-                  className="text-muted-foreground text-xs"
-                >
-                  {scope === "personal"
-                    ? t("form.personalHint")
-                    : t("form.workspaceHint")}
-                </p>
+            return (
+              <div key={scope} className="flex items-start gap-2">
+                <input
+                  id={optionId}
+                  type="radio"
+                  name={`${id}-scope`}
+                  className="accent-primary mt-0.5"
+                  checked={draft.scope === scope}
+                  aria-describedby={`${optionId}-hint`}
+                  onChange={() => {
+                    onChange({ ...draft, scope });
+                  }}
+                />
+                <div className="flex flex-col gap-0.5">
+                  <label htmlFor={optionId} className="text-sm">
+                    {scope === "personal"
+                      ? t("form.personal")
+                      : t("form.workspace")}
+                  </label>
+                  <p
+                    id={`${optionId}-hint`}
+                    className="text-muted-foreground text-xs"
+                  >
+                    {scope === "personal"
+                      ? t("form.personalHint")
+                      : t("form.workspaceHint")}
+                  </p>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </fieldset>
+            );
+          })}
+        </fieldset>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         {editable ? (
           <Button type="submit" disabled={busy}>
