@@ -8,14 +8,14 @@ import type { ChannelConnection, Platform } from "peal-contract";
 
 import type { ChannelErrorKey } from "#channels/channels-api.ts";
 
-// A run of the home page's setup card: the platforms the member ticked,
+// A run of a new workspace's setup step: the platforms the member ticked,
 // signed in to one after the other, the tab going from each platform's
 // callback page to the next one's sign-in. The tab keeps it between those
 // pages, as it keeps the connection under way (`pending-connection.ts`);
 // the server knows nothing of it, and checks each connection on its own.
 const storageKey = "peal.channels.connect-run";
 
-// What the home page listens to, to show the run as it changes.
+// What the setup step listens to, to show the run as it changes.
 const changedEvent = "peal:connect-run";
 
 /** One platform's sign-in, with what it starts from. */
@@ -28,7 +28,7 @@ const StepSchema = Schema.Struct({
 
 export type RunStep = typeof StepSchema.Type;
 
-/** The refusals a sign-in of the run can meet, kept to be shown on Home. */
+/** The refusals a sign-in of the run can meet, kept to be shown on the setup step. */
 const RunErrorSchema = Schema.Union([
   ConnectFailureReasonSchema,
   Schema.Literals([
@@ -77,7 +77,7 @@ const storage = (): Option.Option<Storage> => {
     return Option.some(globalThis.sessionStorage);
   } catch {
     // Storage the browser refuses (some private modes) keeps no run: each
-    // platform then comes back to Home, where the member continues.
+    // platform then comes back to the setup step, where the member continues.
     return Option.none();
   }
 };

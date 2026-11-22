@@ -11,8 +11,9 @@ import { routing } from "#i18n/routing.ts";
 import { setupPageTitle } from "#shell/page-title.ts";
 
 // Another workspace, on the setup page with its name empty: the workspace
-// switcher's New workspace opens it. The person owns it, and it opens once
-// made. The upgrade dialog opens where the plan refuses one more.
+// switcher's New workspace opens it. The person owns it, and its setup
+// step (connecting its channels) opens once it is made. The upgrade
+// dialog opens where the plan refuses one more.
 const CreateWorkspacePage = async ({
   params,
 }: PageProps<"/[locale]/create">) => {

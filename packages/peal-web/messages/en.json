@@ -3386,7 +3386,7 @@
   },
   "SetupCard": {
     "title": "Set up your channels",
-    "description": "Tick the platforms you post to. Peal opens each sign-in in turn, and where you’re already signed in, it takes one click to allow.",
+    "description": "Tick the platforms you post to, and Peal opens each one’s sign-in in turn. Each platform names the account it will connect: if you’re signed in to several, check it’s the right one, or switch there.",
     "listLabel": "Platforms to connect",
     "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Facebook Pages} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} slack {Slack} other {{platform}}}",
     "linkedinProfile": "LinkedIn profile",
@@ -3402,7 +3402,7 @@
     "xClosed": "Needs a payment method on the billing page.",
     "connect": "{count, plural, =0 {Connect} one {Connect # platform} other {Connect # platforms}}",
     "leaving": "Opening…",
-    "notNow": "Not now",
+    "notNow": "Skip for now",
     "otherWays": "Websites and chats connect from <link>New channel</link>.",
     "cost": {
       "free": "Your first {free, number} accounts are free.",
@@ -3424,8 +3424,9 @@
       "title": "{connected, plural, =0 {No channel was connected} other {Your channels are set up}}",
       "summary": "{connected, plural, =0 {Each platform says below what happened. Start over to try again.} one {# account connected{failed, plural, =0 {.} one {. One platform didn’t connect: try it again from Channels.} other {. # platforms didn’t connect: try them again from Channels.}}} other {# accounts connected{failed, plural, =0 {.} one {. One platform didn’t connect: try it again from Channels.} other {. # platforms didn’t connect: try them again from Channels.}}}}",
       "writePost": "Write a post",
-      "close": "Close",
-      "startOver": "Start over"
+      "startOver": "Start over",
+      "home": "Go to Home",
+      "accounts": "Not the account you meant? Disconnect it from Channels, then connect the right one."
     }
   },
   "Webhooks": {

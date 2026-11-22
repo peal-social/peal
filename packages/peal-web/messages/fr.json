@@ -3386,7 +3386,7 @@
   },
   "SetupCard": {
     "title": "Configurez vos canaux",
-    "description": "Cochez les plateformes où vous publiez. Peal ouvre chaque connexion à tour de rôle ; si vous y êtes déjà connecté, un clic suffit pour autoriser.",
+    "description": "Cochez les plateformes où vous publiez : Peal ouvre la connexion de chacune à tour de rôle. Chaque plateforme indique le compte qu’elle va connecter : si vous êtes connecté à plusieurs comptes, vérifiez que c’est le bon, ou changez-en sur place.",
     "listLabel": "Plateformes à connecter",
     "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Pages Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} slack {Slack} other {{platform}}}",
     "linkedinProfile": "Profil LinkedIn",
@@ -3402,7 +3402,7 @@
     "xClosed": "Demande un moyen de paiement, sur la page de facturation.",
     "connect": "{count, plural, =0 {Connecter} one {Connecter # plateforme} other {Connecter # plateformes}}",
     "leaving": "Ouverture…",
-    "notNow": "Plus tard",
+    "notNow": "Passer pour l’instant",
     "otherWays": "Les sites web et les messageries se connectent depuis <link>Nouveau canal</link>.",
     "cost": {
       "free": "Vos {free, number} premiers comptes sont gratuits.",
@@ -3424,8 +3424,9 @@
       "title": "{connected, plural, =0 {Aucun canal n’a été connecté} other {Vos canaux sont prêts}}",
       "summary": "{connected, plural, =0 {Chaque plateforme dit ci-dessous ce qui s’est passé. Recommencez pour réessayer.} one {# compte connecté{failed, plural, =0 {.} one {. Une plateforme ne s’est pas connectée : réessayez depuis Canaux.} other {. # plateformes ne se sont pas connectées : réessayez depuis Canaux.}}} other {# comptes connectés{failed, plural, =0 {.} one {. Une plateforme ne s’est pas connectée : réessayez depuis Canaux.} other {. # plateformes ne se sont pas connectées : réessayez depuis Canaux.}}}}",
       "writePost": "Écrire une publication",
-      "close": "Fermer",
-      "startOver": "Recommencer"
+      "startOver": "Recommencer",
+      "home": "Aller à l’accueil",
+      "accounts": "Ce n’est pas le bon compte ? Déconnectez-le depuis Canaux, puis connectez le bon."
     }
   },
   "Webhooks": {

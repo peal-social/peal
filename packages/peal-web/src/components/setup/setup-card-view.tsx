@@ -204,7 +204,12 @@ const Choose = ({
           >
             {isPending ? t("leaving") : t("connect", { count: ticked.length })}
           </Button>
-          <Button type="button" variant="outline" onClick={onDismiss}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onDismiss}
+            data-setup-skip
+          >
             {t("notNow")}
           </Button>
           <span className="text-muted-foreground text-sm">
@@ -299,35 +304,42 @@ const RunningActions = ({
 
 const DoneActions = ({
   connected,
-  link: WritePost,
-  onClose,
+  homeHref,
+  link: Go,
+  onStartOver,
   writePostHref,
 }: {
   readonly connected: number;
+  readonly homeHref: string;
   readonly link: LinkComponent;
-  readonly onClose: () => void;
+  readonly onStartOver: () => void;
   readonly writePostHref: string;
 }) => {
   const t = useTranslations("SetupCard");
-  const handleClose = onClose;
+  const handleStartOver = onStartOver;
 
-  // Nothing to post to: the one way on is to start again.
+  // Nothing to post to: start again, or go on without channels.
   if (connected === 0) {
     return (
-      <Button type="button" onClick={handleClose}>
-        {t("done.startOver")}
-      </Button>
+      <>
+        <Button type="button" onClick={handleStartOver}>
+          {t("done.startOver")}
+        </Button>
+        <Go href={homeHref} className={buttonVariants({ variant: "outline" })}>
+          {t("done.home")}
+        </Go>
+      </>
     );
   }
 
   return (
     <>
-      <WritePost href={writePostHref} className={buttonVariants()}>
+      <Go href={writePostHref} className={buttonVariants()}>
         {t("done.writePost")}
-      </WritePost>
-      <Button type="button" variant="outline" onClick={handleClose}>
-        {t("done.close")}
-      </Button>
+      </Go>
+      <Go href={homeHref} className={buttonVariants({ variant: "outline" })}>
+        {t("done.home")}
+      </Go>
     </>
   );
 };
@@ -393,21 +405,26 @@ export type SetupCardState =
       readonly connected: number;
       readonly failed: number;
       readonly run: ConnectRun;
-      readonly onClose: () => void;
+      /** Back to choosing, when nothing was connected. */
+      readonly onStartOver: () => void;
     };
 
 /**
- * The home page's setup card (DESIGN.md, Pages, Home): the platforms to
- * tick, the run under way with each one's outcome, or how it went. Links
- * come through `link`, so tests render each state without Next.
+ * A new workspace's second setup step (DESIGN.md, the frame's `setup`):
+ * the platforms to tick, the run under way with each one's outcome, or
+ * how it went. Its title is the page's `h1`. Links come through `link`,
+ * so tests render each state without Next.
  */
 export const SetupCardView = ({
+  homeHref,
   isPending,
   link,
   newChannelHref,
   state,
   writePostHref,
 }: {
+  /** The workspace's home, where skipping or finishing leads. */
+  readonly homeHref: string;
   readonly isPending: boolean;
   readonly link: LinkComponent;
   readonly newChannelHref: string;
@@ -422,11 +439,11 @@ export const SetupCardView = ({
     <Card aria-labelledby="home-setup">
       <CardHeader>
         <CardTitle>
-          <h2 id="home-setup">
+          <h1 id="home-setup">
             {state._tag === "done"
               ? t("done.title", { connected: state.connected })
               : t("title")}
-          </h2>
+          </h1>
         </CardTitle>
         <CardDescription>
           {state._tag === "choose" ? t("description") : null}
@@ -436,6 +453,9 @@ export const SetupCardView = ({
                 connected: state.connected,
                 failed: state.failed,
               })
+            : null}
+          {state._tag === "done" && state.connected > 0
+            ? ` ${t("done.accounts")}`
             : null}
         </CardDescription>
       </CardHeader>
@@ -462,6 +482,7 @@ export const SetupCardView = ({
               ) : (
                 <DoneActions
                   {...state}
+                  homeHref={homeHref}
                   link={link}
                   writePostHref={writePostHref}
                 />

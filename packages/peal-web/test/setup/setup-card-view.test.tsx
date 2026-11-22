@@ -4,8 +4,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { recorded, runOf } from "#channels/connect-run.ts";
-import { SetupCardView } from "#components/home/setup-card-view.tsx";
-import type { SetupCardState } from "#components/home/setup-card-view.tsx";
+import { SetupCardView } from "#components/setup/setup-card-view.tsx";
+import type { SetupCardState } from "#components/setup/setup-card-view.tsx";
 import type { LinkComponent } from "#components/shell/sidebar-view.tsx";
 import { setupOptionsOf } from "#home/setup.ts";
 import { loadMessages } from "#i18n/messages.ts";
@@ -50,6 +50,7 @@ const render = async (locale: "en" | "fr", state: SetupCardState) =>
       timeZone="UTC"
     >
       <SetupCardView
+        homeHref="/studio"
         isPending={false}
         link={PlainLink}
         newChannelHref="/studio/channels/new"
@@ -76,8 +77,14 @@ describe(SetupCardView, () => {
     expect(html).toContain('href="/studio/channels/new"');
   });
 
-  it("offers Not now beside Connect", async () => {
-    await expect(render("en", choose())).resolves.toContain("Not now");
+  it("offers Skip for now beside Connect", async () => {
+    await expect(render("en", choose())).resolves.toContain("Skip for now");
+  });
+
+  it("asks to check the account each platform names", async () => {
+    await expect(render("en", choose())).resolves.toContain(
+      "check it’s the right one"
+    );
   });
 
   it("asks Mastodon's server once it is ticked", async () => {
@@ -141,13 +148,27 @@ describe(SetupCardView, () => {
       _tag: "done",
       connected: 3,
       failed: 1,
-      onClose: constVoid,
+      onStartOver: constVoid,
       run,
     });
 
     expect(html).toContain("3 accounts connected");
-    expect(html).toContain("One platform didn’t connect");
+    expect(html).toContain("Disconnect it from Channels");
     expect(html).toContain('href="/studio/posts/new"');
+    expect(html).toContain('href="/studio"');
+  });
+
+  it("offers to start over or go on when nothing connected", async () => {
+    const html = await render("en", {
+      _tag: "done",
+      connected: 0,
+      failed: 2,
+      onStartOver: constVoid,
+      run,
+    });
+
+    expect(html).toContain("Start over");
+    expect(html).not.toContain("Disconnect it from Channels");
   });
 
   it("speaks French", async () => {
@@ -155,6 +176,6 @@ describe(SetupCardView, () => {
 
     expect(html).toContain("Configurez vos canaux");
     expect(html).toContain("Votre serveur Mastodon");
-    expect(html).toContain("Plus tard");
+    expect(html).toContain("Passer pour l’instant");
   });
 });

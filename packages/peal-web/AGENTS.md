@@ -137,22 +137,28 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   with the workspace's name or "Peal" for the browser's tab
   (`components/shell/frame-view.tsx`). A list page puts its items in
   one bordered list with a line between them, never a card each.
-- A new workspace's home opens with the setup card (DESIGN.md, Pages,
-  Home; `components/home/setup-card.tsx`, its view `setup-card-view.tsx`,
-  its rules `#home/setup.ts`, tested) for members with channel:connect,
-  while the workspace has no channel and this browser did not answer
-  **Not now** (`localStorage`, per workspace). The member ticks the
-  platforms the server signs in to (`setupOptionsOf`: New channel's
-  order, LinkedIn's profile and pages apart, no website or chat, none of
-  `PEAL_SETUP_HIDDEN_PLATFORMS`, read per request), and the tab runs
-  their sign-ins one after the other: the run lives in `sessionStorage`
-  (`#channels/connect-run.ts`), `useRunStep` starts its next step, and
-  the callback page (`CompleteConnection`) and the account picker record
-  each outcome and start the next platform's sign-in, or go back to Home
-  on any refusal or at the end. Home never leaves for a platform by
-  itself, so Back never traps the member. The cost line reads `billingOf`
-  for billing:read only, and every figure from the rate card. The server
-  knows nothing of a run: each connection is checked as any other.
+- A new workspace opens on its second setup step,
+  `/create/<slug>/channels` (`(setup)/create/[workspaceId]/channels`,
+  `setupChannelsPath`, `useSetupChannelsHref`), which `CreateWorkspaceForm`
+  goes to once the workspace is made: the setup card (DESIGN.md, the
+  frame's `setup`; `components/setup/setup-card.tsx`, its view
+  `setup-card-view.tsx`, its rules `#home/setup.ts`, tested), for members
+  with channel:connect (anyone else goes to the workspace's home). The
+  member ticks the platforms the server signs in to (`setupOptionsOf`:
+  New channel's order, LinkedIn's profile and pages apart, no website or
+  chat, none of `PEAL_SETUP_HIDDEN_PLATFORMS`, read per request), and the
+  tab runs their sign-ins one after the other: the run lives in
+  `sessionStorage` (`#channels/connect-run.ts`), `useRunStep` starts its
+  next step, and the callback page (`CompleteConnection`) and the account
+  picker record each outcome and start the next platform's sign-in, or go
+  back to the step on any refusal or at the end. The step never leaves
+  for a platform by itself, so Back never traps the member; **Skip for
+  now**, **Stop** and the end lead to the workspace's home, which shows
+  no setup card. Each platform's own page names the account it connects
+  (Peal cannot see or choose it), which the card says. The cost line
+  reads `billingOf` for billing:read only, and every figure from the rate
+  card. The server knows nothing of a run: each connection is checked as
+  any other.
 - The workspace's home builds each assistant's setup (`#home/agents.ts`,
   tested) from the MCP endpoint at the address the browser has Peal open
   at, after hydration: never a key. Brand marks come from simple-icons

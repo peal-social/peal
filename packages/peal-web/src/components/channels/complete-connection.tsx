@@ -38,8 +38,11 @@ import {
 import { useRunStep } from "#channels/use-run-step.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import { AccountPicker } from "#components/channels/account-picker.tsx";
-import { useSetupName } from "#components/home/setup-card-view.tsx";
-import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
+import { useSetupName } from "#components/setup/setup-card-view.tsx";
+import {
+  useSetupChannelsHref,
+  useWorkspaceHref,
+} from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 
 // The tab's storage only changes from this page's own actions.
@@ -90,8 +93,8 @@ interface CompleteConnectionProps {
 
 // Hands what the platform sent back to the server, for the workspace this
 // tab started the connection in, then returns to its channels. In a run of
-// the home page's setup card, it keeps what came of the sign-in and goes
-// on to the next platform's, naming it, or back to Home when the run is
+// a new workspace's setup step, it keeps what came of the sign-in and goes
+// on to the next platform's, naming it, or back to the step when the run is
 // over or stopped (a refusal, here or at the next start).
 export const CompleteConnection = ({
   callback,
@@ -108,14 +111,17 @@ export const CompleteConnection = ({
   // The line shown while the tab leaves for the run's next platform.
   const [continuing, setContinuing] = useState<string | null>(null);
 
-  const toHome = useEffectEvent((workspace: string) => {
-    router.replace(workspaceHref(workspace));
+  const setupHref = useSetupChannelsHref();
+
+  // Back to the setup step the run started on.
+  const toSetup = useEffectEvent((workspace: string) => {
+    router.replace(setupHref(workspace));
   });
 
   const runStep = useRunStep({
     offerUpgrade: false,
     onRefused: (run) => {
-      router.replace(workspaceHref(run.workspaceId));
+      router.replace(setupHref(run.workspaceId));
     },
   });
 
@@ -193,7 +199,7 @@ export const CompleteConnection = ({
 
           if (next === null) {
             toast.success(t("connected", { handle: outcome.channel.handle }));
-            toHome(workspace);
+            toSetup(workspace);
 
             return;
           }
@@ -222,7 +228,7 @@ export const CompleteConnection = ({
             Option.getOrElse(failureOf(exit), () => "unknown" as const)
           ),
         });
-        toHome(workspace);
+        toSetup(workspace);
 
         return;
       }

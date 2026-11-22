@@ -6,7 +6,7 @@ import type { Billing, Platform } from "peal-contract";
 import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { billingOf } from "#billing/api.ts";
-import { channelsOf, connectablePlatformsOf } from "#channels/channels-api.ts";
+import { connectablePlatformsOf } from "#channels/channels-api.ts";
 import {
   connectedCount,
   failedCount,
@@ -32,44 +32,9 @@ import {
   stepsOf,
   xNeedsPayment,
 } from "#home/setup.ts";
+import { useRouter } from "#i18n/navigation.ts";
 
 import { SetupCardView } from "./setup-card-view.tsx";
-
-// Whether this browser answered Not now, per workspace: a convenience of
-// the browser, as the agent's examples are, which Channels never needs.
-const dismissedKey = (workspaceId: string) =>
-  `peal.home.setup-dismissed.${workspaceId}`;
-
-const dismissedChanged = "peal:home-setup";
-
-const isDismissed = (workspaceId: string): boolean => {
-  try {
-    return window.localStorage.getItem(dismissedKey(workspaceId)) === "1";
-  } catch {
-    return false;
-  }
-};
-
-const dismiss = (workspaceId: string): void => {
-  try {
-    window.localStorage.setItem(dismissedKey(workspaceId), "1");
-  } catch {
-    // Storage is closed to this page: the card comes back on the next visit.
-  }
-
-  window.dispatchEvent(new Event(dismissedChanged));
-};
-
-const subscribeDismissed = (listener: () => void) => {
-  window.addEventListener(dismissedChanged, listener);
-
-  return () => {
-    window.removeEventListener(dismissedChanged, listener);
-  };
-};
-
-// Before the page runs in the browser, the card is not shown.
-const shownNowhere = () => true;
 
 const noRun = () => null;
 
@@ -93,16 +58,14 @@ const Choose = ({
   workspaceId,
 }: ChooseProps) => {
   const workspaceHref = useWorkspaceHref();
+  const router = useRouter();
   const options = setupOptionsOf(connectable, hidden);
   const [ticked, setTicked] = useState<readonly string[]>([]);
   const [typed, setTyped] = useState<Readonly<Record<string, string>>>({});
 
-  if (options.length === 0) {
-    return null;
-  }
-
   return (
     <SetupCardView
+      homeHref={workspaceHref(workspaceId)}
       isPending={step.isPending}
       link={AppLink}
       newChannelHref={workspaceHref(workspaceId, "/channels/new")}
@@ -116,7 +79,7 @@ const Choose = ({
           step.start(run);
         },
         onDismiss: () => {
-          dismiss(workspaceId);
+          router.push(workspaceHref(workspaceId));
         },
         onToggle: (key, checked) => {
           setTicked((before) =>
@@ -162,10 +125,13 @@ const Run = ({
   readonly step: RunStepper;
 }) => {
   const workspaceHref = useWorkspaceHref();
+  const router = useRouter();
   const next = nextStep(run);
+  const home = workspaceHref(run.workspaceId);
 
   return (
     <SetupCardView
+      homeHref={home}
       isPending={step.isPending}
       link={AppLink}
       newChannelHref={workspaceHref(run.workspaceId, "/channels/new")}
@@ -175,7 +141,7 @@ const Run = ({
               _tag: "done",
               connected: connectedCount(run),
               failed: failedCount(run),
-              onClose: forgetRun,
+              onStartOver: forgetRun,
               run,
             }
           : {
@@ -187,7 +153,10 @@ const Run = ({
               onSkip: () => {
                 recordStep(run, next.platform, { _tag: "skipped" });
               },
-              onStop: forgetRun,
+              onStop: () => {
+                forgetRun();
+                router.push(home);
+              },
               run,
             }
       }
@@ -197,11 +166,10 @@ const Run = ({
 };
 
 /**
- * The setup card on a workspace's home (DESIGN.md, Pages, Home): while the
- * workspace has no channel and this browser did not answer Not now, the
- * platforms to tick; while a run this tab started goes on, where it is.
- * Everything it reads needs the visitor's cookies or the browser's
- * storage, so it shows once the page has hydrated.
+ * A new workspace's second setup step (DESIGN.md, the frame's `setup`):
+ * the platforms to tick and the run this tab started, kept in the tab's
+ * storage, so the page shows once it has hydrated. Every way off it
+ * (Skip for now, Stop, the end) leads to the workspace's home.
  */
 export const SetupCard = ({
   hidden,
@@ -217,14 +185,6 @@ export const SetupCard = ({
   const step = useRunStep();
   const snapshot = useSyncExternalStore(subscribeToRun, runSnapshot, noRun);
   const run = useMemo(() => runOfSnapshot(snapshot), [snapshot]);
-
-  const dismissed = useSyncExternalStore(
-    subscribeDismissed,
-    () => isDismissed(workspaceId),
-    shownNowhere
-  );
-
-  const channels = useAtomValue(channelsOf(workspaceId));
   const connectable = useAtomValue(connectablePlatformsOf(workspaceId));
 
   if (!hydrated) {
@@ -235,12 +195,7 @@ export const SetupCard = ({
     return <Run run={run} step={step} />;
   }
 
-  if (
-    dismissed ||
-    !AsyncResult.isSuccess(channels) ||
-    channels.value.length > 0 ||
-    !AsyncResult.isSuccess(connectable)
-  ) {
+  if (!AsyncResult.isSuccess(connectable)) {
     return null;
   }
 

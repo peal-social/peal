@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext } from "react";
 import type { ReactNode } from "react";
 
-import { workspacePath } from "#shell/workspace-path.ts";
+import { setupChannelsPath, workspacePath } from "#shell/workspace-path.ts";
 import type { WorkspaceAddress } from "#shell/workspace-path.ts";
 
 const Addresses = createContext<readonly WorkspaceAddress[]>([]);
@@ -41,6 +41,22 @@ export const useWorkspaceHref = (): ((
       workspacePath(
         workspaces.find(({ id }) => id === workspaceId)?.slug ?? workspaceId,
         rest
+      ),
+    [workspaces]
+  );
+};
+
+/**
+ * Writes the address of a workspace's setup step that connects its
+ * channels, from its id, as `useWorkspaceHref` does for its pages.
+ */
+export const useSetupChannelsHref = (): ((workspaceId: string) => string) => {
+  const workspaces = useContext(Addresses);
+
+  return useCallback(
+    (workspaceId: string) =>
+      setupChannelsPath(
+        workspaces.find(({ id }) => id === workspaceId)?.slug ?? workspaceId
       ),
     [workspaces]
   );

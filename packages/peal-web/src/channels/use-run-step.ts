@@ -19,7 +19,7 @@ import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
  * Starts a setup run's next sign-in and leaves for the platform. A refusal
  * (a Mastodon server that does not answer, no room in the plan) is kept as
  * the step's outcome and handed to `onRefused` with the run after it, so
- * the member continues from Home; `offerUpgrade` opens the plan's dialog
+ * the member continues from the setup step; `offerUpgrade` opens the plan's dialog
  * where the page has one to show it in.
  */
 export const useRunStep = ({

@@ -58,6 +58,18 @@ export const platformPageTitle = async (
   return { title: t("platform", { platform }) };
 };
 
+/** The second setup step's `generateMetadata`: connecting channels. */
+export const setupChannelsPageTitle = async (
+  props: TitledProps
+): Promise<Metadata> => {
+  const t = await getTranslations({
+    locale: await localeOf(props),
+    namespace: "SetupCard",
+  });
+
+  return { title: t("title") };
+};
+
 /** The setup page's `generateMetadata`, at `/` and `/create`: its title. */
 export const setupPageTitle = async (props: TitledProps): Promise<Metadata> => {
   const t = await getTranslations({

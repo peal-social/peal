@@ -27,8 +27,11 @@ import {
   AccountPickerView,
   toggled,
 } from "#components/channels/account-picker-view.tsx";
-import { useSetupName } from "#components/home/setup-card-view.tsx";
-import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
+import { useSetupName } from "#components/setup/setup-card-view.tsx";
+import {
+  useSetupChannelsHref,
+  useWorkspaceHref,
+} from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 
 interface AccountPickerProps {
@@ -42,8 +45,8 @@ interface AccountPickerProps {
 
 // Sends the member's choice, then returns to the channels. After a
 // failure, the member tries again, or signs in again for a new choice. In
-// a run of the home page's setup card, the choice is the step's outcome,
-// and the tab goes on to the next platform, or back to Home; leaving
+// a run of a new workspace's setup step, the choice is the step's outcome,
+// and the tab goes on to the next platform, or back to the setup step; leaving
 // without choosing skips the platform.
 export const AccountPicker = ({
   accounts,
@@ -64,11 +67,14 @@ export const AccountPicker = ({
   const nameOf = useSetupName();
   const [continuing, setContinuing] = useState<string | null>(null);
 
-  const toHome = () => {
-    router.replace(workspaceHref(workspaceId));
+  const setupHref = useSetupChannelsHref();
+
+  // Back to the setup step the run started on.
+  const toSetup = () => {
+    router.replace(setupHref(workspaceId));
   };
 
-  const runStep = useRunStep({ offerUpgrade: false, onRefused: toHome });
+  const runStep = useRunStep({ offerUpgrade: false, onRefused: toSetup });
 
   const handleToggle = (accountId: string, checked: boolean) => {
     setSelected((before) => toggled(accounts, before, accountId, checked));
@@ -101,7 +107,7 @@ export const AccountPicker = ({
 
         if (next === null) {
           toast.success(t("connected", { count: exit.value.length }));
-          toHome();
+          toSetup();
 
           return;
         }
@@ -150,7 +156,7 @@ export const AccountPicker = ({
             variant="outline"
             onClick={() => {
               recordStep(run, platform, { _tag: "skipped" });
-              toHome();
+              toSetup();
             }}
           >
             {t("skip")}

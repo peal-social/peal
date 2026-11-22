@@ -17,7 +17,8 @@ import {
  * For someone who reaches `/` with no workspace, after signing up or in:
  * an invitation still open opens, so they join that workspace; otherwise
  * they make their first one, its name (`name`, after them) and its
- * address offered and theirs to replace, which opens once made.
+ * address offered and theirs to replace; once made, its setup step
+ * opens, to connect its channels or skip them.
  */
 export const FirstWorkspace = ({ name }: { readonly name: string }) => {
   const t = useTranslations("AppPage");

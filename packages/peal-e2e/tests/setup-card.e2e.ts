@@ -4,12 +4,13 @@ import { describe, test } from "@e2e-dev/web";
 import { credentials, expect } from "e2e";
 
 import { emailedLink } from "./support/mailpit.ts";
-import { openedWorkspace } from "./support/workspaces.ts";
 
-// A new workspace's home opens with the setup card (DESIGN.md, Pages,
-// Home): nothing ticked, the free accounts said under the list, a run that
-// stops at a Mastodon server which does not exist (no platform is reached
-// in a run), Start over, and Not now kept across a reload.
+// A new workspace's second setup step (DESIGN.md, the frame's `setup`):
+// once made, the workspace opens on its channels, nothing ticked, the free
+// accounts said under the list; a run that stops at a Mastodon server
+// which does not exist (no platform is reached in a run) comes back to the
+// step with its reason; Start over, then Skip for now, which opens the
+// workspace's home, where no setup card shows.
 const run = randomUUID();
 
 const address = () =>
@@ -17,10 +18,14 @@ const address = () =>
 
 const password = () => credentials.user("member").password;
 
-let slug = "";
+const setupStep = /\/create\/[^/]+\/channels$/u;
 
-describe("the setup card", { serial: true }, () => {
-  test("signs up and opens the workspace", async ({ app, browser, screen }) => {
+describe("the setup step", { serial: true }, () => {
+  test("opens once the first workspace is made", async ({
+    app,
+    browser,
+    screen,
+  }) => {
     await app.open("/signup");
     await screen.getByLabel("Name").fill("Sam Example");
     await screen.getByLabel("Email").fill(address());
@@ -33,61 +38,55 @@ describe("the setup card", { serial: true }, () => {
     );
 
     await app.open("/");
-    ({ slug } = await openedWorkspace(browser));
-    expect(slug).not.toBe("");
+    await screen.getByRole("button", "Create workspace").tap();
+    await expect(browser).toHaveURL(setupStep, { timeout: 30_000 });
+    await expect(
+      screen.getByRole("heading", "Set up your channels")
+    ).toBeVisible();
   });
 
   test("offers the platforms, nothing ticked, and says the free accounts", async ({
     screen,
   }) => {
-    const main = screen.getByRole("main");
-    const mastodon = main.getByRole("checkbox", "Mastodon");
+    const mastodon = screen.getByRole("checkbox", "Mastodon");
 
-    await expect(
-      main.getByRole("heading", "Set up your channels")
-    ).toBeVisible();
     await expect(mastodon).not.toBeChecked();
 
     await mastodon.tap();
-    await expect(main.getByLabel("Your Mastodon server")).toBeVisible();
+    await expect(screen.getByLabel("Your Mastodon server")).toBeVisible();
     await expect(
-      main.getByText("Your first 2 accounts are free.")
+      screen.getByText("Your first 2 accounts are free.")
     ).toBeVisible();
   });
 
-  test("stops on Home at a server that does not exist, and starts over", async ({
+  test("stops at a server that does not exist, and starts over", async ({
     screen,
   }) => {
-    const main = screen.getByRole("main");
-
-    await main.getByLabel("Your Mastodon server").fill("social.example");
-    await main.getByRole("button", "Connect 1 platform").tap();
+    await screen.getByLabel("Your Mastodon server").fill("social.example");
+    await screen.getByRole("button", "Connect 1 platform").tap();
 
     await expect(
-      main.getByText(
+      screen.getByText(
         "This is not the address of a server. Check it, for example mastodon.social."
       )
     ).toBeVisible();
     await expect(
-      main.getByRole("heading", "No channel was connected")
+      screen.getByRole("heading", "No channel was connected")
     ).toBeVisible();
 
-    await main.getByRole("button", "Start over").tap();
-    await expect(main.getByRole("checkbox", "Mastodon")).not.toBeChecked();
+    await screen.getByRole("button", "Start over").tap();
+    await expect(screen.getByRole("checkbox", "Mastodon")).not.toBeChecked();
   });
 
-  test("leaves on Not now, until the browser forgets it", async ({
-    app,
+  test("Skip for now opens the workspace's home, which has no setup card", async ({
+    browser,
     screen,
   }) => {
+    await screen.getByRole("button", "Skip for now").tap();
+    await expect(browser).not.toHaveURL(setupStep);
+
     const main = screen.getByRole("main");
 
-    await main.getByRole("button", "Not now").tap();
-    await expect(
-      main.getByRole("heading", "Set up your channels")
-    ).toBeHidden();
-
-    await app.open(`/${slug}`);
     await expect(
       main.getByRole("heading", "Connect your channels")
     ).toBeVisible();

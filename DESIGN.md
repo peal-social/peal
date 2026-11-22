@@ -781,7 +781,12 @@ it. There is no bar across the top.
   muted text, a hairline after it), then what the person types, and the
   button the column's width. Under the URL,
   only what stops the workspace being made (taken, or a word it cannot
-  be), in destructive text. Only this page draws its own title.
+  be), in destructive text. Only this page draws its own title. Once
+  the workspace is made, its second step opens in the same frame, at
+  `/create/<slug>/channels`: the **setup card** (below), in a column
+  36 rem wide, centred, 96 px from the top, its title the page's `h1`.
+  Every way off it leads to the workspace's home: **Skip for now**,
+  **Stop**, and the end. Home itself holds no setup card.
 - **`sign-in`**: the pages where someone signs in, signs up or gets back
   in (a forgotten password, a new one, a confirmed address). No frame of
   the app's and no header: the window's `background` alone, a column
@@ -1252,12 +1257,11 @@ them beside the one open, so the list stays where it was.
   consent notice (see [Site](#site)).
 - **Home** holds, under the consent card, the headline (two lines, the
   second muted) and its cards: connecting channels, connecting an
-  assistant, and the quickstart. A new workspace's Home opens with the
-  **setup card** first, as consent does: a card in the content, never a
-  dialog, a bar or a step-by-step page of its own. It shows while the
-  workspace has no channel and the member may connect one, until they
-  answer **Not now** (this browser remembers it, per workspace), and
-  while a run it started is not done. It has three states:
+  assistant, and the quickstart.
+- The **setup card**, a new workspace's second setup step (the frame's
+  `setup`), is one card, never a dialog or a bar. A member who may not
+  connect channels goes to the workspace's home instead. It has three
+  states:
   - **Choose.** Its title ("Set up your channels") and one muted line,
     then one bordered list (as `list`) of the platforms the server signs
     in to, each row its mark (16 px tile), its name and a checkbox at its
@@ -1267,22 +1271,28 @@ them beside the one open, so the list stays where it was.
     the plan refuses (X without a payment method) is disabled, its
     reason in muted text. Under the list, one muted line on the cost,
     from the rate card and never a typed figure (nothing where billing
-    is off), then **Connect N platforms** (primary), **Not now**
-    (outline), and a link to New channel for websites and chats.
+    is off), then **Connect N platforms** (primary), **Skip for now**
+    (outline), and a link to New channel for websites and chats. Its
+    line under the title says each platform names the account it will
+    connect, to check when the browser is signed in to several: Peal
+    cannot see or choose it.
   - **Running.** The same rows, each with what it came to: connected
     with its handles, failed with the reason (`destructive` text, the
     row untinted), or waiting. Peal goes from one platform's sign-in to
     the next by itself, naming the next on the callback page before it
     leaves ("@peal is connected. Continuing to LinkedIn…"). Anything
     that stops it (a failure, a refusal, a cancelled choice, the Back
-    button) comes back to Home with **Continue with LinkedIn**
+    button) comes back to the step with **Continue with LinkedIn**
     (primary), **Skip LinkedIn** and **Stop** (outline): a platform
     the member is not signed in to, or signed in to as the wrong
-    account, is passed without ending the run. Home never leaves for a
-    platform by itself, and its buttons wait while a sign-in starts.
+    account, is passed without ending the run; **Stop** ends it and goes
+    to the workspace's home. The step never leaves for a platform by
+    itself, and its buttons wait while a sign-in starts.
   - **Done.** One line on how many accounts were connected and on what
-    failed, **Write a post** (primary) and **Close** (outline); when none
-    was, **Start over** (primary) alone, which brings back Choose.
+    failed, then that a wrong account is disconnected from Channels;
+    **Write a post** (primary) and **Go to Home** (outline). When none
+    was, **Start over** (primary), which brings back Choose, and **Go to
+    Home**.
 - **The composer** writes one text with a tab per channel, counts each
   platform's limit, and shows a preview beside it.
 - **Channels** is a list like any other: views (All, Needs reconnecting,
