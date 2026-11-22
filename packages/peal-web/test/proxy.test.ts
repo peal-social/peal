@@ -24,6 +24,9 @@ describe("the proxy", () => {
     "/en/admin/x%5c..",
     "/api%2F..%2Fadmin",
     "/x%2F..%2Fen%2Fadmin",
+    // cloudflared drops what follows a semicolon in a segment.
+    "/en/admin;x/users",
+    "/admin/users/x%3By",
   ])("refuses %s", async (path) => {
     const answer = await answerTo(path);
 

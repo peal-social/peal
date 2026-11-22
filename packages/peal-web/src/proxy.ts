@@ -48,7 +48,8 @@ const toSlug = async (request: NextRequest): Promise<NextResponse> => {
 // read per request. Everything else is a page: negotiate its locale, with
 // English unprefixed and French under /fr.
 //
-// A page path with an encoded slash or backslash is refused (400):
+// A page path with an encoded slash or backslash, or a semicolon (which
+// cloudflared drops with what follows it in a segment), is refused (400):
 // cloudflared decodes it and resolves its dot segments before it picks the
 // rule that says whether Access guards it, while Next keeps `%2F` inside a
 // segment, so `/en/admin/users/x%2F..%2F..%2Fy` would be `/y` to the one and
@@ -98,7 +99,7 @@ export default proxy;
 export const config = {
   // The relay, /api/*, the discovery documents, and pages: not Next's own files nor
   // anything else with a dot, such as favicon.ico, but any path with an
-  // encoded slash or backslash, which the proxy refuses.
+  // encoded slash or backslash, or a semicolon, which the proxy refuses.
   matcher: [
     "/pulse/:path*",
     "/api/:path*",
@@ -107,6 +108,6 @@ export const config = {
     "/.well-known/oauth-authorization-server/:path*",
     "/.well-known/oauth-protected-resource/:path*",
     "/((?!api|_next|.*\\..*).*)",
-    "/(.*(?:%2[fF]|%5[cC]).*)",
+    "/(.*(?:%2[fF]|%5[cC]|%3[bB]|;).*)",
   ],
 };

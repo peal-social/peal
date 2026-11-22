@@ -19,6 +19,10 @@ describe("paths written to slip past the proxy", () => {
       400
     );
     expect(await statusOf("/admin/workspaces/x%5C..%5Cy")).toBe(400);
+    // cloudflared drops what follows a semicolon in a segment: `..;` is a
+    // dot segment to it, and a page holding a dot still reaches the proxy.
+    expect(await statusOf("/en/admin/users/..;/..;/y")).toBe(400);
+    expect(await statusOf("/api/admin/users/..;/..;/api/health")).toBe(400);
 
     const api = await fetch(
       `${app.baseUrl}/api/admin/users/x%2F..%2F..%2F..%2F..%2Fapi%2Fhealth`

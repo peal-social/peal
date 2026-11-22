@@ -79,6 +79,14 @@ const refused = [
   "/api/platform-events/meta/facebook/../../../admin/users",
   "/api/platform-events/meta/facebook%2F..%2F..%2Fadmin",
   "/api/platform-events/meta/.%2E/instagram",
+  // A semicolon, raw or encoded: cloudflared drops what follows it in a
+  // segment before it matches its rules, so `..;` is a dot segment there.
+  "/api/admin/users/..;/..;/health",
+  "/api/admin/users/x;y",
+  "/api/admin;/users",
+  "/api/admin/users/x%3By",
+  "/api/admin/users/x%3b..",
+  "/api/health;x",
 ];
 
 layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
@@ -111,6 +119,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const kept = [
             ["/api/health", 204],
             ["/api/health?next=%2F..%2Fadmin&b=a%5Cb", 204],
+            ["/api/health?a=1;b=2&c=%3B", 204],
             ["/api/admin/users/x..y", 404],
             ["/api/admin/users/...", 404],
             ["/api/admin/users/x%20y", 404],
