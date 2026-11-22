@@ -694,7 +694,7 @@
       "paymentMethod": "Peal's agent needs a payment method on the billing account. A text provider of your own works without one.",
       "paymentFailed": "The billing account's last payment failed, so the agent takes nothing past what's included until it goes through. Update the payment method from the billing page.",
       "monthUsed": "Your billing account used the {allowed, number} assistant requests it may send this month. You can ask again from {resetsAt}.",
-      "failed": "{reason, select, providerRefused {Your workspace's text provider refused its settings. An owner or an admin can fix them in the assistant settings.} unreachable {The language model couldn't be reached. Try again in a moment.} timedOut {The language model took too long to answer. Try again.} unusableAnswer {The language model's answer couldn't be used. Try again.} other {Something went wrong. Try again.}}",
+      "failed": "{reason, select, providerRefused {Your workspace's text provider refused its settings. An owner or an admin can fix them in the assistant settings.} unreachable {The language model couldn't be reached. Try again in a moment.} timedOut {The language model took too long to answer. Try again.} unusableAnswer {The language model's answer couldn't be used. Try again.} allowanceReached {The workspace has used the agent's requests it has for now, so the agent stopped here. See what is left on the billing page.} other {Something went wrong. Try again.}}",
       "lost": "The answer stopped coming before it ended. Reload the page to see what Peal saved.",
       "generic": "Something went wrong. Try again."
     }
