@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Ref, Schema } from "effect";
+import { Context, Effect, Layer, Option, Ref, Schema } from "effect";
 import { Tool, Toolkit } from "effect/ai";
 import { CurrentMember } from "peal-contract";
 
@@ -133,6 +133,16 @@ export const FakeToolboxLive = Layer.effectContext(
       AgentToolbox,
       AgentToolbox.of({
         changes: (name) => name !== "list_posts" && name !== "get_post",
+        // The comment every reply answers, as the inbox holds it.
+        subjectOf: (_member, name) =>
+          Effect.succeed(
+            name === "reply_to_comment"
+              ? Option.some({
+                  inReplyTo: { author: "Ada", text: "Love the new colours!" },
+                  threadId: "thread-1",
+                })
+              : Option.none()
+          ),
         record: (call) => Ref.update(records, (kept) => [...kept, call]),
         toolkit,
       })

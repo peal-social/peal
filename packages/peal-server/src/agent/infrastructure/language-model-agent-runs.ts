@@ -96,6 +96,14 @@ const asking: ReadonlySet<string> = new Set([
   ...draftFreeTools,
 ]);
 
+// The tools and the system message are the same each round of a run:
+// Anthropic caches what comes before this breakpoint (the tools, then the
+// system message), so each later round reads them from its cache. Other
+// providers read no such option.
+const cachedPrefix = {
+  anthropic: { cacheControl: { type: "ephemeral" as const } },
+};
+
 // What a provider and a tool send is read as JSON, at once.
 const decodeJson = Schema.decodeUnknownEffect(Schema.Json);
 
@@ -599,7 +607,8 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                     if (call !== undefined) {
                       const approval = approvalOf(
                         call,
-                        yield* postNamed(member, call.params)
+                        yield* postNamed(member, call.params),
+                        yield* toolbox.subjectOf(member, call.tool, call.params)
                       );
 
                       waiting.push(approval);
@@ -611,9 +620,14 @@ export const LanguageModelAgentRunsLive = Layer.effect(
               yield* model
                 .streamText({
                   concurrency: 1,
-                  prompt: Prompt.setSystem(
-                    history,
-                    agentInstructions(now, timeZone)
+                  prompt: Prompt.concat(
+                    Prompt.fromMessages([
+                      Prompt.systemMessage({
+                        content: agentInstructions(now, timeZone),
+                        options: cachedPrefix,
+                      }),
+                    ]),
+                    history
                   ),
                   toolCallValidation: "deferred",
                   toolkit: toolbox.toolkit,

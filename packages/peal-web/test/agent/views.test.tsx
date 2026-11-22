@@ -238,6 +238,7 @@ const approval: AgentApproval = {
   at: DateTime.makeUnsafe("2026-11-23T08:00:00Z"),
   callId: "call-2",
   channelIds: ["channel-1", "channel-gone"],
+  inReplyTo: null,
   postId: "post-1",
   state: "pending",
   text: "Our spring sale starts Monday.",

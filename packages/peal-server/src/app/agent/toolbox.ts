@@ -1,7 +1,10 @@
 import { Effect, flow, Layer, Option, Schema, Stream } from "effect";
 import { LanguageModel, Tool, Toolkit } from "effect/ai";
 import { CurrentMember } from "peal-contract";
+import type { Member } from "peal-contract";
 
+import { quoted } from "#agent/domain/agent-approvals.ts";
+import type { CallSubject } from "#agent/domain/agent-approvals.ts";
 import {
   agentToolNames,
   approvedTools,
@@ -19,6 +22,11 @@ import { toolRefusedCode } from "#app/mcp/recorded-calls.ts";
 import { changingTools, contentTools } from "#app/mcp/server.ts";
 import { ToolRefused } from "#app/mcp/tool-refused.ts";
 import { PealTools } from "#app/mcp/tools.ts";
+import { EngagementInbox } from "#engagement/application/engagement-inbox.ts";
+import { EngagementReviews } from "#engagement/application/engagement-reviews.ts";
+import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
+import { ReviewIdSchema } from "#engagement/domain/review-id.ts";
+import { actorOf } from "#shared/api/actor.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { recordToolCall } from "#workspace/api/activity-recording.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
@@ -33,6 +41,23 @@ const isDraft = Schema.is(Schema.Struct({ status: Schema.Literal("draft") }));
 const decodePostNamed = Schema.decodeUnknownOption(
   Schema.Struct({ postId: Schema.String })
 );
+
+const decodeCommentNamed = Schema.decodeUnknownOption(
+  Schema.Struct({ commentId: CommentIdSchema })
+);
+
+const decodeReviewNamed = Schema.decodeUnknownOption(
+  Schema.Struct({ reviewId: ReviewIdSchema })
+);
+
+// The tools whose call names a comment, and the one that names a review.
+const commentTools: ReadonlySet<string> = new Set([
+  "mark_comment_answered",
+  "moderate_comment",
+  "reply_to_comment",
+]);
+
+const reviewTool = "reply_to_location_review";
 
 const decodeJsonObject = Schema.decodeUnknownSync(JsonObjectSchema);
 
@@ -135,6 +160,62 @@ export const AgentToolboxLive = Layer.effect(
     const activity = yield* ActivityJournal;
     const connections = yield* ConnectionJournal;
     const peal = yield* PealTools;
+    const inbox = yield* EngagementInbox;
+    const reviews = yield* EngagementReviews;
+
+    // The comment or review a call names, read as the member may read it.
+    const subjectOf = (
+      member: Member,
+      tool: string,
+      params: Schema.Json
+    ): Effect.Effect<Option.Option<CallSubject>> => {
+      const actor = actorOf(member);
+
+      const comment = commentTools.has(tool)
+        ? decodeCommentNamed(params)
+        : Option.none();
+
+      const review =
+        tool === reviewTool ? decodeReviewNamed(params) : Option.none();
+
+      if (Option.isSome(comment)) {
+        return inbox.comment(actor, comment.value.commentId).pipe(
+          Effect.map(
+            Option.map((found): CallSubject => ({
+              inReplyTo: quoted(
+                Option.match(found.author, {
+                  onNone: () => "",
+                  onSome: ({ displayName, handle }) =>
+                    Option.getOrElse(displayName, () => handle),
+                }),
+                found.text
+              ),
+              threadId: found.threadId,
+            }))
+          ),
+          Effect.withTracerEnabled(false),
+          Effect.orElseSucceed(() => Option.none())
+        );
+      }
+
+      if (Option.isSome(review)) {
+        return reviews.review(actor, review.value.reviewId).pipe(
+          Effect.map(
+            Option.map((found): CallSubject => ({
+              inReplyTo: quoted(
+                Option.getOrElse(found.reviewerName, () => ""),
+                found.text
+              ),
+              threadId: found.threadId,
+            }))
+          ),
+          Effect.withTracerEnabled(false),
+          Effect.orElseSucceed(() => Option.none())
+        );
+      }
+
+      return Effect.succeedNone;
+    };
 
     // A tool's call, answered by the MCP endpoint's handler: its answer,
     // or the refusal it answered, which the agent's tool returns to the
@@ -202,6 +283,7 @@ export const AgentToolboxLive = Layer.effect(
 
     return AgentToolbox.of({
       changes: (tool) => changingTools.has(tool),
+      subjectOf,
       record: ({ member, origin, refused, tool }) =>
         Effect.gen(function* record() {
           yield* recordToolCall(

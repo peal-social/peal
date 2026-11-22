@@ -1,9 +1,10 @@
 import { Context } from "effect";
-import type { Effect, Schema } from "effect";
+import type { Effect, Option, Schema } from "effect";
 import type { Tool, Toolkit } from "effect/ai";
 import type { CurrentMember, Member } from "peal-contract";
 
 import type { RequestOrigin } from "#agent/application/ports/agent-runs.ts";
+import type { CallSubject } from "#agent/domain/agent-approvals.ts";
 
 /** A call of a tool that ran, as the records keep it: never what it carried. */
 export interface ToolCallRecord {
@@ -51,5 +52,15 @@ export class AgentToolbox extends Context.Service<
     /** Whether a tool changes something, as the MCP endpoint annotates it. */
     readonly changes: (tool: string) => boolean;
     readonly record: (call: ToolCallRecord) => Effect.Effect<void>;
+    /**
+     * The comment or review a call names, as the member may read it, for
+     * its approval; none for a call that names none, or one they cannot
+     * read.
+     */
+    readonly subjectOf: (
+      member: Member,
+      tool: string,
+      params: Schema.Json
+    ) => Effect.Effect<Option.Option<CallSubject>>;
   }
 >()("peal-server/agent/infrastructure/AgentToolbox") {}

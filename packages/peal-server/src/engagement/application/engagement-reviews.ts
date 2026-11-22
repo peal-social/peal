@@ -131,6 +131,17 @@ export class EngagementReviews extends Context.Service<
      * With `key`, a request sent again within `replyKeyLifetime` answers
      * the reply the key made, and sends no other.
      */
+    /**
+     * One review of the workspace's, as a member reads it in its thread;
+     * none for another workspace's or one Peal never kept.
+     */
+    readonly review: (
+      actor: Actor,
+      reviewId: ReviewId
+    ) => Effect.Effect<
+      Option.Option<Review>,
+      DatabaseError | MissingPermission
+    >;
     readonly reply: (
       actor: Actor,
       reviewId: ReviewId,
@@ -264,6 +275,16 @@ export class EngagementReviews extends Context.Service<
 
         return result;
       });
+
+      const readReview = Effect.fn("EngagementReviews.readReview")(
+        function* readReview(actor: Actor, reviewId: ReviewId) {
+          yield* Effect.fromResult(authorize(actor, "engagement:read"));
+
+          return (yield* store.review(reviewId)).pipe(
+            Option.filter((found) => found.workspaceId === actor.workspaceId)
+          );
+        }
+      );
 
       const thread = Effect.fn("EngagementReviews.thread")(function* thread(
         actor: Actor,
@@ -477,6 +498,7 @@ export class EngagementReviews extends Context.Service<
 
       return EngagementReviews.of({
         reply,
+        review: readReview,
         setAnswered,
         thread,
         threads,
