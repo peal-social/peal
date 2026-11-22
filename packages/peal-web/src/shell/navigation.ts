@@ -16,6 +16,7 @@ export type Section = "posts" | "settings";
 export type Page =
   | "account"
   | "ads"
+  | "agent"
   | "home"
   | "platforms"
   | "analytics"
@@ -49,6 +50,7 @@ export type Page =
 
 /** Pages that are not in the sidebar, which the breadcrumb still names. */
 export type Detail =
+  | "agentChat"
   | "article"
   | "channelPlatform"
   | "newArticle"
@@ -58,12 +60,13 @@ export type Detail =
 
 /**
  * A step the breadcrumb names before the page, each a link back to it:
- * a section (its first page), Channels, or New channel.
+ * a section (its first page), the agent, Channels, or New channel.
  */
-export type Crumb = Section | "articles" | "channels" | "newChannel";
+export type Crumb = Section | "agent" | "articles" | "channels" | "newChannel";
 
 // Where each step of the breadcrumb leads, under /<workspace>.
 const crumbPaths: Readonly<Record<Crumb, string>> = {
+  agent: "/agent",
   articles: "/articles",
   channels: "/channels",
   newChannel: "/channels/new",
@@ -110,6 +113,7 @@ const pages: Readonly<Record<Page, PageRule>> = {
     section: "settings",
   },
   ads: { may: needs("ads:read"), mode: "studio", path: "/ads" },
+  agent: { may: needs("assistant:use"), mode: "studio", path: "/agent" },
   analytics: {
     may: needs("analytics:read"),
     mode: "studio",
@@ -281,7 +285,10 @@ const layout: Readonly<
     { group: "partners", pages: ["partner"] },
   ],
   studio: [
-    { group: null, pages: ["home", "channels", "calendar", "posts", "media"] },
+    {
+      group: null,
+      pages: ["home", "agent", "channels", "calendar", "posts", "media"],
+    },
     { group: "engage", pages: ["inbox", "analytics", "ads"] },
   ],
 };
@@ -399,6 +406,10 @@ const pageAt = (path: string): PageAt => {
     return { detail: "post", page: "posts" };
   }
 
+  if (path.startsWith("/agent/")) {
+    return { detail: "agentChat", page: "agent" };
+  }
+
   if (path.startsWith("/inbox/")) {
     return { detail: null, page: "inbox" };
   }
@@ -416,6 +427,7 @@ const trailOf = (
   section: Section | null
 ): readonly Crumb[] => {
   const items: Partial<Record<Detail, readonly Crumb[]>> = {
+    agentChat: ["agent"],
     article: ["posts", "articles"],
     channelPlatform: ["channels", "newChannel"],
     newArticle: ["posts", "articles"],

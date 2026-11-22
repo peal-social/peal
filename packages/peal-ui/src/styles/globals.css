@@ -109,6 +109,42 @@
   }
 }
 
+/* A line that waits on work under way (DESIGN.md, "The agent"): a light
+   passes along its text, from its start to its end. */
+@theme {
+  --animate-shimmer: shimmer 2s linear infinite;
+
+  @keyframes shimmer {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+}
+
+/* The text of a line that waits, with the shimmer passing along it; with
+   reduced motion, still and muted. */
+@utility text-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--muted-foreground) 35%,
+    var(--foreground) 50%,
+    var(--muted-foreground) 65%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-shimmer);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-image: none;
+    color: var(--muted-foreground);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring;

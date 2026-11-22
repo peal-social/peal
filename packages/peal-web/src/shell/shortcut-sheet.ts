@@ -1,6 +1,7 @@
 import type { PostStatus } from "peal-contract";
 
 import {
+  agentPanelKey,
   commandMenuKey,
   goKeys,
   goViewKeys,
@@ -26,6 +27,7 @@ export type ShortcutAction =
   | "growUp"
   | "newPost"
   | "open"
+  | "openAgent"
   | "openMenu"
   | "requestChanges"
   | "showShortcuts"
@@ -71,12 +73,14 @@ const viewRows: readonly ShortcutRow[] = (
  * "Keys"): from the same constants the pages bind, so the sheet cannot
  * drift from them. A member sees "Go to" lines for the pages they may open,
  * the posts list's tabs after Posts, and "New post" only when they may
- * write one.
+ * write one, "Open the agent" only when they may talk to it.
  */
 export const shortcutGroupsOf = ({
+  canAskAgent = false,
   canCreate,
   pages,
 }: {
+  readonly canAskAgent?: boolean;
   readonly canCreate: boolean;
   /** The pages the member may open, in the menu's order. */
   readonly pages: readonly Page[];
@@ -88,6 +92,9 @@ export const shortcutGroupsOf = ({
       { action: "showShortcuts", keys: [shortcutSheetKey] },
       ...(canCreate
         ? [{ action: "newPost", keys: [newPostKey] } as const]
+        : []),
+      ...(canAskAgent
+        ? [{ action: "openAgent", keys: [agentPanelKey] } as const]
         : []),
       { action: "undo", keys: [undoKey] },
     ],

@@ -47,6 +47,23 @@ const dayKey = (instant: DateTime.Utc, timeZone: string): string =>
     year: "numeric",
   }).format(DateTime.toDate(instant));
 
+/** Whether an instant is today on the reader's clock, yesterday, or before. */
+export const relativeDayOf = (
+  at: DateTime.Utc,
+  now: DateTime.Utc,
+  timeZone: string
+): "other" | "today" | "yesterday" => {
+  const key = dayKey(at, timeZone);
+
+  if (key === dayKey(now, timeZone)) {
+    return "today";
+  }
+
+  return key === dayKey(DateTime.subtract(now, { days: 1 }), timeZone)
+    ? "yesterday"
+    : "other";
+};
+
 /** A group of the history: today's chats, yesterday's, or a day's. */
 export interface DayGroup {
   /** `today`, `yesterday`, or the day's first chat's time, to name it. */

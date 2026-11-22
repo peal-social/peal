@@ -252,6 +252,18 @@ describe(foldChat, () => {
     expect(fold(asked, [{ _tag: "loaded", detail }]).messages).toHaveLength(1);
   });
 
+  it("reads a chat again once it moved on, unless a run goes on", () => {
+    const answered = fold(asked, [
+      event(1, { _tag: "started", messageId: "m2", userMessageId: "m1" }),
+      event(2, { _tag: "finished", durationMs: 1000, outcome: "answered" }),
+    ]);
+
+    expect([
+      foldChat(answered, { _tag: "stale" }).loaded,
+      foldChat(asked, { _tag: "stale" }).loaded,
+    ]).toStrictEqual([false, true]);
+  });
+
   it("ignores a run's events once it ended", () => {
     const ended = fold(asked, [
       event(1, { _tag: "started", messageId: "m2", userMessageId: "m1" }),

@@ -52,6 +52,8 @@ export const emptyChat: ChatState = {
 /** What happens to a chat: the server's answers, and the person's acts. */
 export type ChatAction =
   | { readonly _tag: "loaded"; readonly detail: AgentChatDetail }
+  // The chat moved on elsewhere: it is read again.
+  | { readonly _tag: "stale" }
   | { readonly _tag: "typed"; readonly text: string }
   | {
       readonly _tag: "sent";
@@ -288,6 +290,10 @@ export const foldChat = (state: ChatState, action: ChatAction): ChatState => {
         starred: chat.starred,
         title: chat.title,
       };
+    }
+
+    case "stale": {
+      return state.run === null ? { ...state, loaded: false } : state;
     }
 
     case "typed": {

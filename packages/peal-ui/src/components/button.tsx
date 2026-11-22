@@ -9,10 +9,17 @@ const buttonClasses = cva(
   "group/button focus-visible:border-ring focus-visible:ring-ring aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:ring-3 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:ring-3 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     defaultVariants: {
+      corners: "default",
       size: "default",
       variant: "default",
     },
     variants: {
+      // `round`: for the agent's send button and its suggestions
+      // (DESIGN.md, "The agent"), as the selection bar's buttons are.
+      corners: {
+        default: "",
+        round: "rounded-full",
+      },
       size: {
         default:
           "h-8.5 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
@@ -77,6 +84,7 @@ const Button = ({
   onClick,
   pendingAnnouncement,
   render,
+  corners = "default",
   size = "default",
   style,
   type,
@@ -85,7 +93,7 @@ const Button = ({
 }: ButtonProps) => (
   <ButtonPrimitive
     data-slot="button"
-    className={buttonVariants({ className, size, variant })}
+    className={buttonVariants({ className, corners, size, variant })}
     {...props}
     {...(disabled === undefined ? {} : { disabled })}
     {...(focusableWhenDisabled === undefined ? {} : { focusableWhenDisabled })}

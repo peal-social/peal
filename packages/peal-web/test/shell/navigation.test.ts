@@ -288,4 +288,34 @@ describe(navigationOf, () => {
     expect(elsewhere.mode).toBe("studio");
     expect(elsewhere.breadcrumb).toStrictEqual({ page: null, trail: [] });
   });
+
+  it("lists the agent after Home for those who may use the assistant, a chat under it", () => {
+    const asks: readonly Permission[] = [...owner, "assistant:use"];
+
+    const page = navigationOf({
+      pathname: `${base}/agent`,
+      permissions: asks,
+      workspace,
+    });
+
+    const chat = navigationOf({
+      pathname: `${base}/agent/c1`,
+      permissions: asks,
+      workspace,
+    });
+
+    expect([
+      pagesOf(page).slice(0, 2),
+      page.current,
+      chat.breadcrumb,
+      crumbHrefOf(workspace, "agent"),
+      pagesOf(at("/agent")).includes("agent"),
+    ]).toStrictEqual([
+      ["home", "agent"],
+      "agent",
+      { page: "agentChat", trail: ["agent"] },
+      `${base}/agent`,
+      false,
+    ]);
+  });
 });
