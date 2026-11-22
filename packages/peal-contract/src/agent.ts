@@ -280,6 +280,9 @@ export const AgentMessageRequestSchema = Schema.Struct({
     Schema.isMinLength(1),
     Schema.isMaxLength(maxAgentMessageLength)
   ),
+  // The person's IANA time zone (`Europe/Paris`), so "tomorrow at 9" is
+  // read on their clock; UTC when left out or unknown.
+  timeZone: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(64))),
 }).annotate({ identifier: "AgentMessageRequest" });
 
 export type AgentMessageRequest = typeof AgentMessageRequestSchema.Type;
@@ -287,6 +290,7 @@ export type AgentMessageRequest = typeof AgentMessageRequestSchema.Type;
 /** The person's answer to a change the agent asked to make. */
 export const AgentApprovalAnswerSchema = Schema.Struct({
   approved: Schema.Boolean,
+  timeZone: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(64))),
 }).annotate({ identifier: "AgentApprovalAnswer" });
 
 export type AgentApprovalAnswer = typeof AgentApprovalAnswerSchema.Type;
