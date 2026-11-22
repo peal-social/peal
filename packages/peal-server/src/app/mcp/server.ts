@@ -8,6 +8,11 @@ import { MediaTools } from "#app/mcp/media-tools.ts";
 import { PostTools } from "#app/mcp/posts-tools.ts";
 import { recordedCalls } from "#app/mcp/recorded-calls.ts";
 import { ReviewTools } from "#app/mcp/review-tools.ts";
+import {
+  McpSessions,
+  mcpSessionGuard,
+  SessionEndingRouter,
+} from "#app/mcp/sessions.ts";
 import { PealTools } from "#app/mcp/tools.ts";
 import { mcpAuthentication } from "#workspace/container.ts";
 
@@ -64,16 +69,17 @@ export const mcpProtocolVersions: readonly string[] = protocols.map(
  *
  * It speaks the stateless 2026-07-28 revision and, for clients that do not
  * yet, the sessionful 2025-11-25 and 2025-06-18 ones, whose sessions live in
- * this server's memory: Peal runs one server per deployment. Sessions do not
- * expire, so clients may end theirs with DELETE, as those revisions ask them
- * to, rather than leave it in memory until the server restarts; ending one
- * takes its id and a token that works, like any other request. Requests with
+ * this server's memory: Peal runs one server per deployment. Clients end
+ * theirs with DELETE, as those revisions ask them to, which takes its id and
+ * a token that works, like any other request; `mcpSessionGuard` ends those
+ * unused for an hour and those a credential opens past its limit, and keeps
+ * each session to the credential that opened it. Requests with
  * an Origin header are refused, as no browser page calls it.
  */
 export const McpLive = McpServer.layerHttp({
   allowSessionTermination: true,
   instructions:
-    "Peal schedules social media posts for teams. These tools act in one workspace: the one the user picked when they connected, or the one the connection's API key belongs to; call whoami to see which, and what this connection may do there. Posting: list_channels answers where a post can go (rename_channel gives a channel the workspace's own name, and disable_channel turns one off, which fails the posts that reach their time on it until enable_channel turns it back on: only when the user asks), list_media and import_media what it can show, create_draft saves a post for the user to review, duplicate_post makes a draft of a post the workspace has, validate_post checks one without making it, and schedule_post, publish_post, create_post and create_posts (several in one call) put posts out, at a time or now. What goes out is public on the platforms and cannot be taken back from Peal: schedule or publish only what the user asked for, on the channels they named, and prefer a draft when unsure. Those tools need the scope workspace:publish, which the user grants when they connect (an API key needs the permission post:schedule); without it, drafts and media still work. A refused post lists every violation at once. After publishing, await_post waits for each channel's result, get_post says how it went, and list_posts finds posts by status, outcome, channel, tag or time; list_tags answers the workspace's tags, which tag_post files a post under and which say nothing to the platforms; list_signatures, list_channel_sets and get_channel_defaults answer what the workspace saved to write its posts with, which a post takes with `signatureId` or `defaultSignatures` (a signature becomes text of the post, counted against the platforms' limits) and `channelSets` (a set's channels that are no longer connected are left out, and told in the answer's `warnings`: tell the user); list_queues and preview_queue answer the workspace's queues, weekly timetables of slots, and create_post with `when` `queue` or queue_post puts a post on a queue's next free slot instead of a time, which the server decides (reshuffle_queue moves a queue's waiting posts onto its slots once its timetable changed, when the user asks); ask the user before reposting, confirming or inviting.",
+    "Peal schedules social media posts for teams. These tools act in one workspace: the one the user picked when they connected, or the one the connection's API key belongs to; call whoami to see which, and what this connection may do there. Posting: list_channels answers where a post can go (rename_channel gives a channel the workspace's own name, and disable_channel turns one off, which fails the posts that reach their time on it until enable_channel turns it back on: only when the user asks), list_media and import_media what it can show, create_draft saves a post for the user to review, duplicate_post makes a draft of a post the workspace has, validate_post checks one without making it, and schedule_post, publish_post, create_post and create_posts (several in one call) put posts out, at a time or now. What goes out is public on the platforms and cannot be taken back from Peal: schedule or publish only what the user asked for, on the channels they named, and prefer a draft when unsure. Those tools need the scope workspace:publish, which the user grants when they connect (an API key needs the permission post:schedule); without it, drafts and media still work. A refused post lists every violation at once. After publishing, await_post waits for each channel's result, get_post says how it went, and list_posts finds posts by status, outcome, channel, tag or time; list_tags answers the workspace's tags, which tag_post files a post under and which say nothing to the platforms; list_signatures, list_channel_sets and get_channel_defaults answer what the workspace saved to write its posts with, which a post takes with `signatureId` or `defaultSignatures` (a signature becomes text of the post, counted against the platforms' limits) and `channelSets` (a set's channels that are no longer connected are left out, and told in the answer's `warnings`: tell the user); list_queues and preview_queue answer the workspace's queues, weekly timetables of slots, and create_post with `when` `queue` or queue_post puts a post on a queue's next free slot instead of a time, which the server decides (reshuffle_queue moves a queue's waiting posts onto its slots once its timetable changed, when the user asks); ask the user before reposting or confirming.",
   name: "Peal",
   path: mcpPath,
   protocols: [...protocols],
@@ -82,4 +88,10 @@ export const McpLive = McpServer.layerHttp({
     Layer.provide(PealToolsLive)
   ),
   version: mcpServerVersion,
-}).pipe(Layer.provide(mcpAuthentication({ contentTools })));
+}).pipe(
+  Layer.provide(
+    mcpSessionGuard.combine(mcpAuthentication({ contentTools })).layer
+  ),
+  Layer.provide(SessionEndingRouter),
+  Layer.provide(McpSessions.layer)
+);

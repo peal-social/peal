@@ -131,6 +131,21 @@
   {
     "change": "POST /api/workspaces/{workspaceId}/invitations answers 409 TooManyInvitations, its message saying so, once the member who invites, the workspace or the address invited had all the invitation emails a day (UTC) allows: 100, 100 and 3",
     "kind": "behaviour",
-    "reason": "Every invitation sends an email from Peal's own domain naming its inviter and its workspace, which made invitations a relay for unwanted mail. The code stays the one a workspace with too many pending invitations answered already; the MCP tool that invites says the same."
+    "reason": "Every invitation sends an email from Peal's own domain naming its inviter and its workspace, which made invitations a relay for unwanted mail. The code stays the one a workspace with too many pending invitations answered already."
+  },
+  {
+    "change": "POST and DELETE /api/workspaces/{workspaceId}/invitations, and GET …/invitations, refuse an OAuth client other than Peal's command line (403 Forbidden, missingPermission invitation:create or invitation:cancel), whatever its scopes; so do the other endpoints that take member:create, member:update or member:delete",
+    "kind": "behaviour",
+    "reason": "An application connected with workspace:write could invite an address it holds as an admin, or an owner, whose new member held everything the grant withheld and stayed once it was revoked. Who is in a workspace, and as what, now reaches no OAuth client but Peal's command line; members in their own session, the command line, and API keys or partner keys given the permissions keep them. The MCP endpoint no longer offers invite_member, list_invitations or revoke_invitation."
+  },
+  {
+    "change": "Every endpoint answers 413 payload_too_large to a body past 1 MiB, but those under /api/workspaces/{workspaceId}/posts and /articles, which take 8 MiB; Better Auth's routes under /api/auth answer 413 to a body declared past 1 MiB",
+    "kind": "behaviour",
+    "reason": "No endpoint but four had a limit, so any route, those without credentials included, read whatever it was sent, up to Bun's 128 MiB. Media goes to the bucket, never through the server; a bulk request of 50 posts or a CSV import of a million characters stays well under 8 MiB."
+  },
+  {
+    "change": "Every address whose path holds a semicolon, raw or encoded (%3B, any case), answers 400 bad_request before any route runs",
+    "kind": "behaviour",
+    "reason": "The proxy in front of Peal drops what follows a semicolon in a segment before it picks the rule that says whether Access guards a path, so /api/admin/users/..;/..;/api/health was an open path to it and the staff console to the router. No route takes a semicolon; a query may still hold one."
   }
 ]

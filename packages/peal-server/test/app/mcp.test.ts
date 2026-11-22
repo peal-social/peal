@@ -1,11 +1,12 @@
 import { assert, layer } from "@effect/vitest";
-import { Context, Effect, Layer, Option, Schema } from "effect";
+import { Context, Effect, Layer, Metric, Option, Schema } from "effect";
 import { McpClient, McpProtocol } from "effect/ai";
 import {
   AuthorizationServerSchema,
   ProtectedResourceSchema,
 } from "peal-contract";
 
+import { endedSessions, sessionsPerCredential } from "#app/mcp/sessions.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -13,6 +14,7 @@ import { DatabaseLive } from "#shared/infrastructure/database.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 import { freshChannel, syntheticCredentials } from "#test/channels/support.ts";
 import {
+  apiKeyOf,
   bodyOf,
   origin,
   signedUpUnconfirmed,
@@ -123,6 +125,24 @@ const callTools = Effect.gen(function* callTools() {
   };
 });
 
+// An initialize of the sessionful revision, from a client of this name.
+const initialize = (name = "peal-test"): JsonRpcRequest => ({
+  id: 1,
+  jsonrpc: "2.0",
+  method: "initialize",
+  params: {
+    capabilities: {},
+    clientInfo: { name, version: "1.0.0" },
+    protocolVersion: "2025-11-25",
+  },
+});
+
+// How many sessions the server ended past a credential's limit, so far.
+const endedAs = (outcome: "ended" | "failed") =>
+  Metric.value(
+    Metric.withAttributes(endedSessions, { outcome, reason: "pastLimit" })
+  ).pipe(Effect.map(({ count }) => count));
+
 // The HTTP status and challenge a refused connection got.
 const refusedConnection = (
   token: Option.Option<string>,
@@ -144,6 +164,43 @@ const refusedConnection = (
 layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
   "the MCP endpoint",
   (it) => {
+    it.effect(
+      "registers no client that asks to be told of sign-outs, which Peal would send past its outbound guard",
+      () =>
+        Effect.gen(function* backChannel() {
+          const app = yield* TestApp;
+
+          const registration = {
+            client_name: "Synthetic back-channel agent",
+            grant_types: ["authorization_code", "refresh_token"],
+            redirect_uris: ["http://127.0.0.1:33419/callback"],
+            response_types: ["code"],
+            token_endpoint_auth_method: "none",
+          };
+
+          for (const asked of [
+            { backchannel_logout_uri: "https://agent.example/logout" },
+            { backchannel_logout_session_required: true },
+          ]) {
+            const refused = yield* app.request("/api/auth/oauth2/register", {
+              body: { ...registration, ...asked },
+            });
+
+            assert.strictEqual(refused.status, 400);
+            assert.include(
+              JSON.stringify(refused.body),
+              "REGISTRATION_FIELD_NOT_ALLOWED"
+            );
+          }
+
+          const registered = yield* app.request("/api/auth/oauth2/register", {
+            body: registration,
+          });
+
+          assert.isBelow(registered.status, 300);
+        })
+    );
+
     it.effect(
       "leads a client without a token to the authorization server",
       () =>
@@ -299,7 +356,6 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           "get_tiktok_creator",
           "get_usage",
           "import_media",
-          "invite_member",
           "leave_out_rest",
           "list_activity",
           "list_ad_campaigns",
@@ -314,7 +370,6 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           "list_drafts",
           "list_feeds",
           "list_follow_up_rules",
-          "list_invitations",
           "list_location_reviews",
           "list_media",
           "list_members",
@@ -354,7 +409,6 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           "resume_boost",
           "resume_recycling_rule",
           "revoke_connect_link",
-          "revoke_invitation",
           "revoke_review_link",
           "run_channel_lookup",
           "schedule_post",
@@ -396,14 +450,14 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           results.channels.channels.map(({ id }) => id),
           [fixture.studioChannel]
         );
+        // The connection's workspace alone, though the user belongs to
+        // another: what they did not connect is not the client's to know.
         assert.deepStrictEqual(
-          results.workspaces.workspaces
-            .map(({ connected, id }) => ({ connected, id }))
-            .toSorted((a, b) => a.id.localeCompare(b.id)),
-          [
-            { connected: true, id: fixture.studio },
-            { connected: false, id: fixture.shop },
-          ].toSorted((a, b) => a.id.localeCompare(b.id))
+          results.workspaces.workspaces.map(({ connected, id }) => ({
+            connected,
+            id,
+          })),
+          [{ connected: true, id: fixture.studio }]
         );
         assert.deepStrictEqual(results.health, {
           database: "up",
@@ -526,6 +580,104 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         assert.strictEqual(listed.status, 404);
       })
+    );
+
+    it.effect(
+      "keeps a credential to its sessions, as many as it may, its oldest ended past them",
+      () =>
+        Effect.gen(function* sessions() {
+          const app = yield* TestApp;
+          const fixture = yield* McpFixture;
+          const workspace = yield* workspaceOf(fixture.owner, "Arcade");
+
+          const token = yield* authorize(
+            fixture.owner,
+            fixture.clientId,
+            workspace,
+            "workspace:read"
+          );
+
+          const { key } = yield* apiKeyOf(fixture.owner, workspace, [
+            "post:read",
+          ]);
+
+          const send = (
+            authorization: string,
+            headers: Readonly<Record<string, string>>,
+            body: JsonRpcRequest
+          ) =>
+            Effect.promise(
+              async () =>
+                await app.handler(
+                  new Request(mcpResource, {
+                    body: JSON.stringify(body),
+                    headers: {
+                      accept: "application/json, text/event-stream",
+                      authorization: `Bearer ${authorization}`,
+                      "content-type": "application/json",
+                      ...headers,
+                    },
+                    method: "POST",
+                  })
+                )
+            );
+
+          const listTools: JsonRpcRequest = {
+            id: 2,
+            jsonrpc: "2.0",
+            method: "tools/list",
+          };
+
+          const before = {
+            ended: yield* endedAs("ended"),
+            failed: yield* endedAs("failed"),
+          };
+
+          const opened: string[] = [];
+
+          for (let count = 0; count <= sessionsPerCredential; count += 1) {
+            const answer = yield* send(token, {}, initialize());
+
+            assert.strictEqual(answer.status, 200);
+            opened.push(answer.headers.get("mcp-session-id") ?? "");
+          }
+
+          const listedIn = (authorization: string, session: string) =>
+            send(
+              authorization,
+              {
+                "mcp-protocol-version": "2025-11-25",
+                "mcp-session-id": session,
+              },
+              listTools
+            ).pipe(Effect.map(({ status }) => status));
+
+          const [oldest = "", second = ""] = opened;
+
+          // One past the limit ended the oldest, in effect/ai's memory too
+          // (its DELETE, run in the process, answered); the others stay.
+          assert.deepStrictEqual(
+            {
+              ended: (yield* endedAs("ended")) - before.ended,
+              failed: (yield* endedAs("failed")) - before.failed,
+            },
+            { ended: 1, failed: 0 }
+          );
+          assert.strictEqual(yield* listedIn(token, oldest), 404);
+          assert.strictEqual(yield* listedIn(token, second), 200);
+          // A session is its opener's alone.
+          assert.strictEqual(yield* listedIn(key, second), 404);
+
+          // What an initialize says is kept for the whole session: a large
+          // one is refused.
+          const large = yield* send(
+            token,
+            {},
+            initialize("x".repeat(70 * 1024))
+          );
+
+          assert.strictEqual(large.status, 413);
+        })
     );
   }
 );

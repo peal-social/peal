@@ -40,12 +40,19 @@ def _go_clean(path: str) -> str:
     return "/" + "/".join(segments)
 
 
+def _without_parameters(path: str) -> str:
+    """The path with what follows a semicolon in each segment dropped, as
+    cloudflared drops it before matching: `..;` is a dot segment there."""
+    return "/".join(segment.split(";", 1)[0] for segment in path.split("/"))
+
+
 def _canonical(path: str) -> str:
     """The path cloudflared matches rules against: net/url decodes it, then,
-    when a rule requires Access, canonicalPathForMatching (ingress.go) turns
-    backslashes into slashes and resolves dot segments and repeated slashes,
-    keeping a trailing slash."""
-    decoded = unquote(path).replace("\\", "/")
+    when a rule requires Access, canonicalPathForMatching (ingress.go) drops
+    each segment's parameters after a semicolon, turns backslashes into
+    slashes and resolves dot segments and repeated slashes, keeping a
+    trailing slash."""
+    decoded = _without_parameters(unquote(path).replace("\\", "/"))
     cleaned = _go_clean(decoded)
     if decoded.endswith(("/", "/.", "/..")) and cleaned != "/":
         cleaned += "/"
@@ -97,6 +104,10 @@ def _spellings(path: str) -> list[str]:
         path.replace("admin", "ADMIN"),
         "/.well-known/oauth-authorization-server/../.." + path,
         "/api/channels/oauth/../../.." + path,
+        "/x/..;" + path,
+        "/..;" + path,
+        "/api/channels/oauth/..;/..;/..;" + path,
+        path.replace("/", ";x/").replace(";x/", "/", 1),
     ]
 
 
@@ -128,7 +139,10 @@ def test_production_admin_needs_access(rendered: Path, path: str) -> None:
 # open path while the routers behind keep %2F inside a segment. Decided: the
 # server and the web app's proxy answer any path with an encoded slash or
 # backslash, or a dot segment, 400 before routing
-# (peal-contract/path-spelling), so such a path reaches nothing.
+# (peal-contract/path-spelling), so such a path reaches nothing. The same
+# holds for a semicolon, raw or encoded: /api/admin/users/..;/..;/api/health
+# is /api/health here, and a user's page to the server, which refuses any
+# path holding one.
 
 REPOSITORY = INFRA.parent.parent.parent
 

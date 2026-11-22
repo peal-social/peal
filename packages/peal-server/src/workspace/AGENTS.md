@@ -103,7 +103,8 @@ The staff context follows these rules too. What the law has a host keep is in
   person, never an API key, and its pending invitations to those with
   invitation:create (owner invitations to owners only, as an invitation's
   id opens its link), and invite and revoke for a member in person, never
-  staff impersonating them. `WorkspacePeopleLive` writes an invitation
+  staff impersonating them, nor an OAuth client but the command line
+  (`commandLineOnlyPermissions`). `WorkspacePeopleLive` writes an invitation
   itself, under the workspace's advisory lock, following Better Auth's
   `/organization/invite-member` (one role, owners for owners, never to a
   member, replacing a pending one to the address, the pending limit and the
@@ -395,7 +396,12 @@ The staff context follows these rules too. What the law has a host keep is in
 - Better Auth is also the OAuth authorization server for the CLI (device
   grant, the `peal-cli` public client registered at startup) and MCP clients
   (authorization code with PKCE, and dynamic registration when
-  `MCP_DYNAMIC_REGISTRATION=true`). Access tokens are JWTs that last 15
+  `MCP_DYNAMIC_REGISTRATION=true`). A registration that asks for
+  back-channel logout (`backchannel_logout_uri`,
+  `backchannel_logout_session_required`) is refused 400
+  `REGISTRATION_FIELD_NOT_ALLOWED` (`guardClientRegistration`): Better
+  Auth would post to that address on sign-out with a fetch of its own,
+  past the `OutboundGuard`. Access tokens are JWTs that last 15
   minutes and are checked locally; refresh tokens rotate, and one sent again
   within 30 seconds gets the same answer, while later reuse revokes that user
   and client's refresh tokens.
@@ -411,13 +417,18 @@ The staff context follows these rules too. What the law has a host keep is in
   it existed publishes nothing, and `scopeFor` names the scope a permission
   takes. Never fold it back into `workspace:write`.
 - `commandLineOnlyPermissions` (`assistant:configure`: where the
-  workspace's prompts and drafts go, with whose key) reach no OAuth client
-  but Peal's command line (`isCommandLine`), whatever its scopes: an MCP
-  client could point them at its own server, which would keep receiving
-  them once its grant is revoked. API keys and partner keys given it keep it.
-  A refusal of it, or of a `personOnlyPermissions` one, to an OAuth client
-  says no connected application does it (`withoutPermission`), never the
-  role.
+  workspace's prompts and drafts go, with whose key; `invitation:create`,
+  `invitation:cancel`, `member:create`, `member:update`, `member:delete`:
+  who is in the workspace, and as what) reach no OAuth client but Peal's
+  command line (`isCommandLine`), whatever its scopes: an MCP client could
+  point the first at its own server, or invite an address it holds as an
+  admin or an owner, who would hold everything its grant withheld; both
+  outlive the grant. A new permission that changes who is in a workspace,
+  or their role, joins them. API keys and partner keys given them keep
+  them. A refusal of one, or of a `personOnlyPermissions` one, to an OAuth
+  client (`withheldWhateverScopes`) names no scope to ask for
+  (`missingScope`) and says no connected application does it
+  (`withoutPermission`), never the role.
 - When `PUBLIC_URL` is neither HTTPS nor a loopback host, the server runs the
   plain OAuth provider without the MCP resource: the CLI signs in, the MCP
   endpoint refuses every request, and startup logs a warning.
@@ -520,9 +531,13 @@ The staff context follows these rules too. What the law has a host keep is in
   `GET /api/me`) until it resets one, which `/reset-password` creates;
   closing it and turning two-step verification on need one. A workspace's
   two-step requirement holds for it as for any account.
-- The HTTP tracer redacts `code` and `state` in `url.full` and
+- The HTTP tracer redacts `code`, `state` and `token` in `url.full` and
   `url.query` (`RedactedQueryLive`, `src/app/untraced-paths.ts`): the
-  callback's address carries both (`test/app/secrets-in-logs.test.ts`).
+  callback's address carries the first two, an address's confirmation
+  link (`/verify-email`) the third. A password reset's link
+  (`GET /reset-password/:token`) is never traced, and the request log
+  writes it with `<redacted>` in the token's place (`SecretPathsLive`)
+  (`test/app/secrets-in-logs.test.ts`).
 - `GOOGLE_SIGN_IN_ISSUER` is a test setting, refused but as `http://` on a
   loopback host: it puts the fake behind Google's button
   (`appWithGoogle`). It is in no docs table and no compose file.

@@ -45,7 +45,7 @@ An OAuth token is limited to its scopes ([What each permission allows](/develope
 | Scope               | What it allows                                                                                                                                  |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `workspace:read`    | Reading.                                                                                                                                        |
-| `workspace:write`   | What your role allows, except what puts posts out.                                                                                              |
+| `workspace:write`   | What your role allows, except what puts posts out, and who is in the workspace, which only Peal's command line changes.                         |
 | `workspace:publish` | Scheduling and publishing. Every endpoint that needs `post:schedule` needs `workspace:publish` from an OAuth token, and answers 403 without it. |
 | `workspace:ads`     | Nothing alone. With `workspace:write` it manages ad accounts, and with `workspace:publish` it spends on [ads](/guides/engage/ads#access).       |
 

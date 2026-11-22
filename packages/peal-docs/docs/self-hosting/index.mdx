@@ -261,7 +261,7 @@ The [command line](/developers/cli) signs in with a code that people approve at 
 
 [MCP clients](/developers/mcp) sign in with OAuth, which needs `PUBLIC_URL` on HTTPS, or `localhost` for development. On a plain HTTP address elsewhere, such as `http://192.168.1.20:3001`, the server starts and logs a warning, and its MCP endpoint refuses every request.
 
-Most MCP clients register themselves before they sign in. The server allows that only with `MCP_DYNAMIC_REGISTRATION=true`, and then anyone may register a client, under any name. The consent page tells people that Peal hasn't checked the client, and where it sends them back to.
+Most MCP clients register themselves before they sign in. The server allows that only with `MCP_DYNAMIC_REGISTRATION=true`, and then anyone may register a client, under any name. The consent page tells people that Peal hasn't checked the client, and where it sends them back to. A registration that asks to be told when someone signs out (`backchannel_logout_uri`) is refused with 400, as Peal would then call an address the client chose.
 
 ## Make an account staff [#staff]
 

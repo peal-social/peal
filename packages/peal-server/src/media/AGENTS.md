@@ -58,7 +58,8 @@
 - `POST …/media/import` (`importMedia`, media:upload) fetches a file through
   `RemoteMedia` (`HttpRemoteMedia`: `publicHttpClientWith`, so the
   OutboundGuard checks the address and each of three redirects at most, no
-  credentials, never logging the address), reads its format from its first
+  credentials, never logging nor tracing the address: its requests run
+  with the tracer off, as a client span keeps `url.full`), reads its format from its first
   bytes (`sniffContentType`), never the host's content type, counts bytes as
   they arrive against the kind's limit and the plan's storage, stores them
   in parts (`MediaStorage.store`, one part in memory), records the asset

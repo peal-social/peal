@@ -272,6 +272,50 @@ describe("the assistant's providers through an OAuth client", () => {
   });
 });
 
+describe("who is in the workspace, through an OAuth client", () => {
+  const writing = ["workspace:read", "workspace:write", "workspace:publish"];
+
+  // Inviting, cancelling an invitation, adding, changing the role of and
+  // removing a member: what decides who holds the workspace's permissions.
+  const people = [
+    "invitation:create",
+    "invitation:cancel",
+    "member:create",
+    "member:update",
+    "member:delete",
+  ] as const;
+
+  it("never lets another application change who is in the workspace, or as what", () => {
+    for (const bound of [Option.none(), Option.some(studio)]) {
+      const permissions = grantedPermissions(
+        grant(writing, bound),
+        studio,
+        ownerPermissions
+      );
+
+      for (const permission of people) {
+        assert.notInclude(permissions, permission);
+      }
+    }
+  });
+
+  it("lets Peal's command line, which the user signed in at their terminal, do it", () => {
+    const permissions = grantedPermissions(
+      {
+        clientId: commandLineClientId,
+        scopes: writing,
+        workspaceId: Option.none(),
+      },
+      studio,
+      ownerPermissions
+    );
+
+    for (const permission of people) {
+      assert.include(permissions, permission);
+    }
+  });
+});
+
 // What a grant leaves an owner of the ads permissions.
 const ads = (scopes: readonly string[]) =>
   grantedPermissions(grant(scopes), studio, ownerPermissions).filter(

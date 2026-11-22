@@ -269,7 +269,7 @@ La [ligne de commande](/developers/cli) se connecte avec un code que les gens ap
 
 Les [clients MCP](/developers/mcp) se connectent avec OAuth, qui demande `PUBLIC_URL` en HTTPS, ou `localhost` pour le développement. Sur une adresse en HTTP simple ailleurs, comme `http://192.168.1.20:3001`, le serveur démarre et journalise un avertissement, et son point d’accès MCP refuse toutes les requêtes.
 
-La plupart des clients MCP s’enregistrent eux-mêmes avant de se connecter. Le serveur ne l’autorise qu’avec `MCP_DYNAMIC_REGISTRATION=true`, et n’importe qui peut alors enregistrer un client, sous n’importe quel nom. La page de consentement prévient que Peal n’a pas vérifié le client, et indique où il renvoie ensuite.
+La plupart des clients MCP s’enregistrent eux-mêmes avant de se connecter. Le serveur ne l’autorise qu’avec `MCP_DYNAMIC_REGISTRATION=true`, et n’importe qui peut alors enregistrer un client, sous n’importe quel nom. La page de consentement prévient que Peal n’a pas vérifié le client, et indique où il renvoie ensuite. Un enregistrement qui demande à être prévenu quand quelqu’un se déconnecte (`backchannel_logout_uri`) est refusé avec 400, car Peal appellerait alors une adresse choisie par le client.
 
 ## Donner le rôle d’équipe à un compte [#staff]
 

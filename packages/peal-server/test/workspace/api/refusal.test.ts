@@ -72,3 +72,51 @@ it.effect("still tells a member in their own session about their role", () =>
     assert.include(message, "Your role");
   })
 );
+
+it.effect(
+  "tells any application but the command line that no application invites, whatever its scopes",
+  () =>
+    Effect.gen(function* inviting() {
+      const reader: Member = {
+        ...ownerThrough("synthetic-mcp-client"),
+        principal: {
+          _tag: "user",
+          impersonatedBy: null,
+          oauth: {
+            clientId: "synthetic-mcp-client",
+            scopes: ["workspace:read"],
+            workspaceId,
+          },
+          userId: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        },
+      };
+
+      for (const permission of [
+        "invitation:create",
+        "invitation:cancel",
+        "member:update",
+        "member:delete",
+      ] as const) {
+        for (const member of [ownerThrough("synthetic-mcp-client"), reader]) {
+          const message = yield* refusedFor(member, permission);
+
+          assert.include(message, "No application connected over OAuth");
+          // No scope would help, so none is asked for.
+          assert.notInclude(message, "was not given the scope");
+        }
+      }
+    })
+);
+
+it.effect(
+  "tells the command line its user's role refuses what only it may do",
+  () =>
+    Effect.gen(function* commandLine() {
+      const message = yield* refusedFor(
+        { ...ownerThrough("peal-cli"), permissions: permissionsFor("editor") },
+        "invitation:create"
+      );
+
+      assert.include(message, "Your role");
+    })
+);

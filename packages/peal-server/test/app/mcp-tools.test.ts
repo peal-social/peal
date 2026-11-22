@@ -25,7 +25,6 @@ import {
   InboxReplySchema,
   InboxThreadDetailSchema,
   InboxThreadPageSchema,
-  InvitationSchema,
   MediaUsageSchema,
   PostChannelSchema,
   PostReviewSchema,
@@ -82,8 +81,6 @@ import { reading as commentRead } from "#test/engagement/support.ts";
 import {
   apiKeyOf,
   bodyOf,
-  emailTo,
-  newEmail,
   signedUpUnconfirmed,
   TestApp,
   unconfirmedEmails,
@@ -463,7 +460,6 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           get_tiktok_creator: [true, false, true, true],
           get_usage: [true, false, true, false],
           import_media: [false, false, false, true],
-          invite_member: [false, true, false, true],
           list_activity: [true, false, true, false],
           list_ad_campaigns: [true, false, true, false],
           list_approvals: [true, false, true, false],
@@ -476,7 +472,6 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           list_connect_links: [true, false, true, false],
           list_drafts: [true, false, true, false],
           list_feeds: [true, false, true, true],
-          list_invitations: [true, false, true, false],
           list_media: [true, false, true, false],
           list_members: [true, false, true, false],
           list_partner_workspaces: [true, false, true, false],
@@ -522,7 +517,6 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           resume_boost: [false, true, true, true],
           resume_recycling_rule: [false, false, true, true],
           revoke_connect_link: [false, true, true, false],
-          revoke_invitation: [false, true, true, false],
           revoke_review_link: [false, true, true, false],
           run_channel_lookup: [true, false, true, true],
           schedule_post: [false, false, false, true],
@@ -800,7 +794,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           const found = yield* writer.call("find_tools", FoundSchema, {
-            query: "Invitation REVOKE_invitation",
+            query: "Connect REVOKE_connect_link",
           });
 
           assert.deepStrictEqual(
@@ -812,8 +806,8 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             })),
             [
               {
-                area: "people",
-                name: "revoke_invitation",
+                area: "connect",
+                name: "revoke_connect_link",
                 scope: "workspace:write",
                 scopeGranted: true,
               },
@@ -2994,12 +2988,12 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
-      "list members, invite by email and revoke, for a connection that may",
+      "list members, and invite nobody, whatever the connection may",
       () =>
         Effect.gen(function* people() {
           const fixture = yield* ToolsFixture;
 
-          const writer = yield* connected(fixture.writing);
+          const publisher = yield* connected(fixture.publishing);
 
           const reader = yield* connected(fixture.reading);
 
@@ -3025,53 +3019,39 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             )
           );
 
-          const email = newEmail("assistant-guest");
+          // No tool invites, revokes or changes who is in the workspace:
+          // an application that did would let an address it holds in, with
+          // whatever its own grant was not given.
+          const offered = publisher.listed.map(({ name }) => name);
 
-          assert.include(
-            yield* reader.refused("invite_member", { email, role: "viewer" }),
-            "This connection may not invite people"
-          );
-
-          const sent = yield* writer.call(
+          for (const name of [
             "invite_member",
-            Schema.toCodecJson(InvitationSchema),
-            { email, role: "viewer" }
-          );
+            "list_invitations",
+            "revoke_invitation",
+          ]) {
+            assert.notInclude(offered, name);
+          }
 
-          assert.strictEqual(sent.role, "viewer");
-
-          yield* emailTo(sent.email, /invited you/u);
-
-          const InvitationsSchema = Schema.toCodecJson(
-            Schema.Struct({ invitations: Schema.Array(InvitationSchema) })
-          );
-
-          assert.deepStrictEqual(
-            (yield* writer.call(
-              "list_invitations",
-              InvitationsSchema
-            )).invitations.map(({ id }) => id),
-            [sent.id]
-          );
-          assert.include(
-            yield* writer.refused("revoke_invitation", {
-              invitationId: "not-an-invitation",
+          const WhoAmIPermissionsSchema = Schema.Struct({
+            workspace: Schema.Struct({
+              permissions: Schema.Array(Schema.String),
             }),
-            "The workspace has no pending invitation with this id"
-          );
-          assert.deepStrictEqual(
-            yield* writer.call(
-              "revoke_invitation",
-              Schema.Struct({ revoked: Schema.String }),
-              { invitationId: sent.id }
-            ),
-            { revoked: sent.id }
-          );
-          assert.deepStrictEqual(
-            (yield* writer.call("list_invitations", InvitationsSchema))
-              .invitations,
-            []
-          );
+          });
+
+          const { permissions } = (yield* publisher.call(
+            "whoami",
+            WhoAmIPermissionsSchema
+          )).workspace;
+
+          for (const permission of [
+            "invitation:create",
+            "invitation:cancel",
+            "member:create",
+            "member:update",
+            "member:delete",
+          ]) {
+            assert.notInclude(permissions, permission);
+          }
         })
     );
     it.effect(

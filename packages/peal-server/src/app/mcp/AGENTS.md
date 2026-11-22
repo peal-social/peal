@@ -2,7 +2,21 @@
 
 - `src/app/mcp/` serves effect/ai's `McpServer.layerHttp` at `/api/mcp`
   (Streamable HTTP; revisions 2026-07-28, 2025-11-25 and 2025-06-18, whose
-  sessions live in memory and end with `DELETE`).
+  sessions live in memory and end with `DELETE`). effect/ai never ends a
+  session itself, so `mcpSessionGuard` (`sessions.ts`, after
+  `mcpAuthentication`) keeps track of them: a session is its opener's
+  alone (404 to another credential), `sessionsPerCredential` (16) a
+  person or a key at most, the one unused longest ended past them, any
+  unused for `sessionIdleLimit` (an hour) ended by a sweep every minute,
+  and an `initialize` past `maxInitializeBytes` (64 KiB) refused, as
+  effect/ai keeps it for the session. A session is ended through the
+  endpoint's own DELETE handler, which `SessionEndingRouter` also adds to
+  a router of its own, without the middlewares, run in the process with
+  no credential: what effect/ai keeps of it goes too
+  (`peal.mcp.sessions.ended`, by `reason` and `outcome`: `failed` is a
+  session left in memory, which a test refuses). Keep the sessionful
+  revisions while clients need them; serving only the stateless one
+  would make all of this go.
 - Tools are `Tool.make` with Effect Schema inputs and outputs, declare
   `CurrentMember`, and reach contexts through their use cases.
   `mcpAuthentication` (`#workspace/api/mcp-authentication.ts`) provides
@@ -23,7 +37,8 @@
   the person chose, and a tool that read the others would hand a model
   what the person did not connect. Each workspace stands alone, and the
   API has no overview, agenda or report across a person's workspaces
-  either.
+  either. `list_workspaces` answers the connection's workspace alone,
+  never the others the person belongs to.
 - The use cases' permission checks refuse a client the user let read only.
   Tools answer with the views the API handlers answer
   (`#<context>/api/*-view.ts`). Each area has its toolkit (`posts-tools.ts`,
@@ -46,7 +61,11 @@
   `changing({ destructive, idempotent, openWorld })` from `annotations.ts`,
   and say in its description what it changes. `list_members` answers
   members' email addresses only with `includeEmails`: hand an AI model no
-  more personal data than the task needs. Refusals are `ToolRefused`,
+  more personal data than the task needs. No tool invites, lists or
+  revokes invitations, or changes or removes a member: those permissions
+  are `commandLineOnlyPermissions`, which no MCP connection holds (a
+  person's token is bound to a workspace, a key is nobody), and an
+  invitee would hold what the grant withheld, after it is revoked. Refusals are `ToolRefused`,
   with a message the user can act on (`refusals.ts`): `notAllowed` names
   the scope the client lacks and how the user grants it, or says the role
   refuses; a refused post lists every violation as JSON; a meter's

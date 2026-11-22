@@ -166,13 +166,31 @@ export const mcpAuthentication = ({
 
           const member = memberOf(resolved.success, principal);
 
-          // The body is read once and kept, so the MCP server reads it again.
-          const called =
+          // The body is read once and kept, so the MCP server reads it again,
+          // within the limit the server holds the endpoint's bodies to.
+          const body =
             request.method === "POST"
-              ? toolsCalled(
-                  yield* request.text.pipe(Effect.orElseSucceed(() => ""))
+              ? yield* request.text.pipe(
+                  Effect.map(Option.some),
+                  Effect.catchTag("HttpServerError", (error) =>
+                    Effect.succeed(
+                      error.reason._tag === "RequestParseError" &&
+                        error.reason.reason === "BodyTooLarge"
+                        ? Option.none()
+                        : Option.some("")
+                    )
+                  )
                 )
-              : [];
+              : Option.some("");
+
+          if (Option.isNone(body)) {
+            return jsonRpcError(
+              413,
+              "The request's body is larger than this endpoint takes."
+            );
+          }
+
+          const called = toolsCalled(body.value);
 
           const answered = httpEffect.pipe(
             Effect.provideService(CurrentMember, member),
@@ -217,4 +235,4 @@ export const mcpAuthentication = ({
           })
         );
     })
-  ).layer;
+  );

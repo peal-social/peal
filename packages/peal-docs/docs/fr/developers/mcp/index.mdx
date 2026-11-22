@@ -5,13 +5,13 @@ sidebar:
   icon: plug
 ---
 
-Peal sert le Model Context Protocol (MCP), si bien qu’un assistant IA, ou tout autre client MCP, peut travailler dans un espace de travail pour vous. Il peut lire les publications, les médias, les statistiques, la facturation et les membres de l’espace, et rédiger des brouillons. Il peut programmer et publier des publications quand vous l’y autorisez, assurer le suivi des publications parties, et inviter des personnes.
+Peal sert le Model Context Protocol (MCP), si bien qu’un assistant IA, ou tout autre client MCP, peut travailler dans un espace de travail pour vous. Il peut lire les publications, les médias, les statistiques, la facturation et les membres de l’espace, et rédiger des brouillons. Il peut programmer et publier des publications quand vous l’y autorisez, et assurer le suivi des publications parties.
 
 Le client se connecte en votre nom, dans un navigateur. Il agit dans le seul espace de travail que vous choisissez, et jamais au-delà de ce que votre rôle permet. Un agent qui tourne sans personne pour le connecter se sert plutôt d’une [clé d’API](#api-key). [Publier depuis un agent IA](/developers/agents) déroule une publication entière.
 
 ## Le point d’accès [#endpoint]
 
-Le point d’accès est `/api/mcp`, à l’adresse où vous ouvrez Peal, comme `https://peal.example.com/api/mcp`. Il parle Streamable HTTP, dans les révisions 2026-07-28, 2025-11-25 et 2025-06-18 du protocole.
+Le point d’accès est `/api/mcp`, à l’adresse où vous ouvrez Peal, comme `https://peal.example.com/api/mcp`. Il parle Streamable HTTP, dans les révisions 2026-07-28, 2025-11-25 et 2025-06-18 du protocole. Dans les deux plus anciennes, une session se termine après une heure inutilisée, et chaque personne ou clé en garde 16 ouvertes au plus : en ouvrir une de plus termine celle restée inutilisée le plus longtemps. Un client à qui sa session répond 404 en ouvre une nouvelle, comme ces révisions le demandent.
 
 Lancez `peal mcp`, depuis la [ligne de commande](/developers/cli#mcp), et il affiche le point d’accès et une configuration que la plupart des clients MCP acceptent :
 
@@ -115,7 +115,7 @@ Une connexion avec une clé fonctionne ainsi :
 
 - Elle agit dans l’espace de travail de la clé, avec les permissions de la clé et sans scope. Une clé sans `post:schedule` écrit tout au plus des brouillons : créez une clé qui ne porte que ce dont l’agent a besoin.
 - `whoami` répond la clé dans `apiKey`, avec son identifiant et son nom, jamais la clé elle-même. `user` et le rôle (`role`) de l’espace de travail valent `null`, car une clé n’est personne, et `permissions` liste ce que la clé peut faire.
-- Les outils réservés à une personne refusent une clé : `list_members`, `list_invitations`, `invite_member` et `revoke_invitation`.
+- L’outil réservé à une personne refuse une clé : `list_members`.
 - Ce que fait la clé figure dans le [journal d’activité](/guides/workspace#activity) de l’espace de travail, sous l’identifiant et le nom de la clé.
 - Révoquer la clé, sous **Clés d’API** dans les paramètres de l’espace de travail, arrête l’agent aussitôt.
 
@@ -151,6 +151,8 @@ Un client connecté avant que publier ait sa propre permission n’a que celle d
   réseau publicitaire, dans la limite du plafond mensuel fixé par un
   propriétaire. Aucun client ne peut activer les dépenses ni changer un plafond.
 </Callout>
+
+Aucun client n’invite personne, n’annule d’invitation, ni ne change ou ne retire un membre, quoi que vous lui permettiez : une personne qu’il inviterait aurait ce que vous ne lui avez pas permis, et resterait une fois le client déconnecté. Seule la [ligne de commande](/developers/cli/workspace#members) de Peal le fait, en plus de vous dans l’application web.
 
 Un client qui n’a aucune des trois permissions ci-dessus sur l’espace de travail ne peut rien faire. Son accès dure 15 minutes à la fois, et le client le renouvelle de lui-même. Chaque requête vérifie que vous appartenez toujours à l’espace de travail et n’êtes pas banni.
 

@@ -1035,9 +1035,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `src/proxy.ts` rewrites `/api/*` and `/.well-known/oauth-*` to
   `PEAL_API_URL`, read per request. Keep it there, not in `next.config.ts`:
   Next resolves config rewrites at build time and writes the URL into the
-  build. It answers 400 to a page path with an encoded slash or backslash
-  (`isRefusedPath`, `peal-contract/path-spelling`), and its matcher has an
-  entry for them, as the one for pages leaves out paths with a dot:
+  build. It answers 400 to a page path with an encoded slash or backslash,
+  or a semicolon (`isRefusedPath`, `peal-contract/path-spelling`), and its
+  matcher has an entry for them, as the one for pages leaves out paths with
+  a dot (cloudflared drops what follows a `;` in a segment, so `..;` is a
+  dot segment to it):
   cloudflared decodes such a path and resolves its dot segments before it
   picks the rule that says whether Access guards it, so
   `/en/admin/users/x%2F..%2Fy` was open to it and the staff console to
