@@ -19,6 +19,7 @@ import type { PlanLimit } from "#shared/domain/plan-limit.ts";
 import type { Plan } from "#shared/domain/plan.ts";
 import { missingScope } from "#workspace/api/missing-scope.ts";
 import { scopeGrants } from "#workspace/api/refusal.ts";
+import { withheldWhateverScopes } from "#workspace/domain/oauth-grant.ts";
 
 /** Fails the tool with a message the user can act on. */
 export const refuse = (message: string) =>
@@ -41,7 +42,25 @@ const whoseOf = (member: Member, doing: string, permission: Permission) => {
     return `This connection may not ${doing} in this workspace: its partner key does not have the permission ${permission}. Someone who manages the partner account creates a key that has it, in the web app's partner settings; a partner key is never given members, invitations, API keys or billing changes.`;
   }
 
-  return member.principal._tag === "apiKey"
+  const { principal } = member;
+
+  // What no connected application does, whatever its scopes and the
+  // user's role: deciding who is in the workspace, where its prompts go.
+  if (
+    principal._tag === "user" &&
+    principal.oauth !== undefined &&
+    withheldWhateverScopes(
+      {
+        clientId: principal.oauth.clientId,
+        workspaceId: Option.fromNullOr(principal.oauth.workspaceId),
+      },
+      permission
+    )
+  ) {
+    return `This connection may not ${doing} in this workspace, nor may any application connected to Peal, whatever its scopes (it takes the permission ${permission}): the user does it themselves, in the web app. Tell the user so, and stop.`;
+  }
+
+  return principal._tag === "apiKey"
     ? `This connection may not ${doing} in this workspace: its API key does not have the permission ${permission}. An owner or admin of the workspace creates a key that has it, in the web app's settings.`
     : `This connection may not ${doing} in this workspace: the user's role does not allow it (it takes the permission ${permission}). An owner or admin of the workspace can change their role, in the web app's settings.`;
 };

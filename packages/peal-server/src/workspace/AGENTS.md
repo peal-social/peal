@@ -70,7 +70,8 @@ The staff context follows these rules too. What the law has a host keep is in
   person, never an API key, and its pending invitations to those with
   invitation:create (owner invitations to owners only, as an invitation's
   id opens its link), and invite and revoke for a member in person, never
-  staff impersonating them. `WorkspacePeopleLive` writes an invitation
+  staff impersonating them, nor an OAuth client but the command line
+  (`commandLineOnlyPermissions`). `WorkspacePeopleLive` writes an invitation
   itself, under the workspace's advisory lock, following Better Auth's
   `/organization/invite-member` (one role, owners for owners, never to a
   member, replacing a pending one to the address, the pending limit and the
@@ -336,13 +337,18 @@ The staff context follows these rules too. What the law has a host keep is in
   it existed publishes nothing, and `scopeFor` names the scope a permission
   takes. Never fold it back into `workspace:write`.
 - `commandLineOnlyPermissions` (`assistant:configure`: where the
-  workspace's prompts and drafts go, with whose key) reach no OAuth client
-  but Peal's command line (`isCommandLine`), whatever its scopes: an MCP
-  client could point them at its own server, which would keep receiving
-  them once its grant is revoked. API keys and partner keys given it keep it.
-  A refusal of it, or of a `personOnlyPermissions` one, to an OAuth client
-  says no connected application does it (`withoutPermission`), never the
-  role.
+  workspace's prompts and drafts go, with whose key; `invitation:create`,
+  `invitation:cancel`, `member:create`, `member:update`, `member:delete`:
+  who is in the workspace, and as what) reach no OAuth client but Peal's
+  command line (`isCommandLine`), whatever its scopes: an MCP client could
+  point the first at its own server, or invite an address it holds as an
+  admin or an owner, who would hold everything its grant withheld; both
+  outlive the grant. A new permission that changes who is in a workspace,
+  or their role, joins them. API keys and partner keys given them keep
+  them. A refusal of one, or of a `personOnlyPermissions` one, to an OAuth
+  client (`withheldWhateverScopes`) names no scope to ask for
+  (`missingScope`) and says no connected application does it
+  (`withoutPermission`), never the role.
 - When `PUBLIC_URL` is neither HTTPS nor a loopback host, the server runs the
   plain OAuth provider without the MCP resource: the CLI signs in, the MCP
   endpoint refuses every request, and startup logs a warning.

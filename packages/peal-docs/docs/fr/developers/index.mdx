@@ -49,7 +49,7 @@ Un jeton OAuth est limité à ses scopes ([Ce que permet chaque permission](/dev
 | Scope               | Ce qu’il permet                                                                                                                                          |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `workspace:read`    | Lire.                                                                                                                                                    |
-| `workspace:write`   | Ce que votre rôle permet, sauf ce qui fait partir des publications.                                                                                      |
+| `workspace:write`   | Ce que votre rôle permet, sauf ce qui fait partir des publications, et qui est dans l’espace, que seule la ligne de commande de Peal change.             |
 | `workspace:publish` | Programmer et publier. Tout point d’accès qui demande `post:schedule` demande `workspace:publish` à un jeton OAuth, et répond 403 sans lui.              |
 | `workspace:ads`     | Rien seul : avec `workspace:write` il gère les comptes publicitaires, et avec `workspace:publish` il dépense en [publicités](/guides/engage/ads#access). |
 

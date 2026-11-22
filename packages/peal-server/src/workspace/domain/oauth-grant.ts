@@ -112,14 +112,41 @@ export const personOnlyPermissions: ReadonlySet<Permission> = new Set([
 /**
  * What an OAuth client does only when it is Peal's own command line
  * (`isCommandLine`), which the user signed in at their terminal: choosing
- * where the workspace's drafts and prompts go, and with whose key. Another
- * application holding `workspace:write`, an MCP client included, would
- * point them at a server of its own, and they would keep going there once
- * its grant is revoked. API keys and partner keys given it keep it.
+ * where the workspace's drafts and prompts go, and with whose key; and
+ * deciding who is in the workspace, and as what (inviting, cancelling an
+ * invitation, adding a member, changing a member's role, removing one).
+ * Another application holding `workspace:write`, an MCP client included,
+ * would point the first at a server of its own, and invite an address it
+ * holds as an admin, or an owner: either outlives its grant, and the
+ * invitee would hold everything the grant withheld. API keys and partner
+ * keys given them keep them.
  */
 export const commandLineOnlyPermissions: ReadonlySet<Permission> = new Set([
   "assistant:configure",
+  "invitation:create",
+  "invitation:cancel",
+  "member:create",
+  "member:update",
+  "member:delete",
 ]);
+
+/**
+ * Whether no scope gives this client the permission: what is the person's
+ * alone, and what only Peal's command line does to any other client. A
+ * refusal of it names no scope to ask for, as none would help.
+ */
+export const withheldWhateverScopes = (
+  grant: {
+    readonly clientId: string;
+    readonly workspaceId: Option.Option<string>;
+  },
+  permission: Permission
+): boolean =>
+  personOnlyPermissions.has(permission) ||
+  (commandLineOnlyPermissions.has(permission) &&
+    !(
+      grant.clientId === commandLineClientId && Option.isNone(grant.workspaceId)
+    ));
 
 /**
  * Every scope an OAuth client needs for a permission its user holds: one

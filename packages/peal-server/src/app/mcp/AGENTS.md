@@ -46,7 +46,11 @@
   `changing({ destructive, idempotent, openWorld })` from `annotations.ts`,
   and say in its description what it changes. `list_members` answers
   members' email addresses only with `includeEmails`: hand an AI model no
-  more personal data than the task needs. Refusals are `ToolRefused`,
+  more personal data than the task needs. No tool invites, lists or
+  revokes invitations, or changes or removes a member: those permissions
+  are `commandLineOnlyPermissions`, which no MCP connection holds (a
+  person's token is bound to a workspace, a key is nobody), and an
+  invitee would hold what the grant withheld, after it is revoked. Refusals are `ToolRefused`,
   with a message the user can act on (`refusals.ts`): `notAllowed` names
   the scope the client lacks and how the user grants it, or says the role
   refuses; a refused post lists every violation as JSON; a meter's

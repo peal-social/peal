@@ -5,7 +5,7 @@ sidebar:
   icon: plug
 ---
 
-Peal serves the Model Context Protocol (MCP), so an AI assistant or any other MCP client can work in a workspace for you. It can read the workspace's posts, media, analytics, billing and members, and write drafts. It can schedule and publish posts when you allow it, follow up on posts that went out, and invite people.
+Peal serves the Model Context Protocol (MCP), so an AI assistant or any other MCP client can work in a workspace for you. It can read the workspace's posts, media, analytics, billing and members, and write drafts. It can schedule and publish posts when you allow it, and follow up on posts that went out.
 
 The client signs in as you, in a browser. It acts in the one workspace you pick, and never with more than your role allows. An agent that runs with nobody there to sign in connects with an [API key](#api-key) instead. [Posting from an AI agent](/developers/agents) walks through a whole post.
 
@@ -115,7 +115,7 @@ A connection with a key works like this:
 
 - It acts in the key's workspace, with the key's permissions and no scope. A key without `post:schedule` writes drafts at most, so create a key with only what the agent needs.
 - `whoami` answers the key in `apiKey`, with its id and name, never the key itself. `user` and the workspace's `role` are `null`, since a key is nobody, and `permissions` lists what the key may do.
-- The tools that only a person uses refuse a key: `list_members`, `list_invitations`, `invite_member` and `revoke_invitation`.
+- The tool that only a person uses refuses a key: `list_members`.
 - What the key does shows in the workspace's [activity log](/guides/workspace#activity), under the key's id and name.
 - Revoking the key, under **API keys** in the workspace's settings, stops the agent at once.
 
@@ -150,6 +150,8 @@ A client connected before publishing had its own permission holds the writing on
   on an ad network, within the monthly ceiling an owner set. No client can turn
   spending on or change a ceiling.
 </Callout>
+
+No client invites people, cancels an invitation, or changes or removes a member, whatever you allow it: someone it invited would hold what you didn't allow it, and stay once you disconnect it. Only Peal's [command line](/developers/cli/workspace#members) does that, besides you in the web app.
 
 A client that has none of the three workspace permissions above can do nothing. Its access lasts 15 minutes at a time, and the client renews it on its own. Every request checks that you still belong to the workspace and aren't banned.
 
