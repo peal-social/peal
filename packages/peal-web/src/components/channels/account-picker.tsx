@@ -2,7 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type {
   ChannelConnection,
   ChoosableAccount,
@@ -32,7 +32,7 @@ import {
   useSetupChannelsHref,
   useWorkspaceHref,
 } from "#components/shell/workspace-addresses.tsx";
-import { Link, useRouter } from "#i18n/navigation.ts";
+import { getPathname, Link, useRouter } from "#i18n/navigation.ts";
 
 interface AccountPickerProps {
   readonly accounts: readonly ChoosableAccount[];
@@ -68,12 +68,11 @@ export const AccountPicker = ({
   const [continuing, setContinuing] = useState<string | null>(null);
 
   const setupHref = useSetupChannelsHref();
+  const locale = useLocale();
 
   // Back to the setup step the run started on.
   const toSetup = () => {
-    leaveSignInTab(() => {
-      router.replace(setupHref(workspaceId));
-    });
+    leaveSignInTab(getPathname({ href: setupHref(workspaceId), locale }));
   };
 
   const runStep = useRunStep({ offerUpgrade: false, onRefused: toSetup });

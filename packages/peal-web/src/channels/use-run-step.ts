@@ -43,12 +43,15 @@ export const openSignInTab = (): Window | null => {
 /**
  * Leaves the tab a run's sign-in came back to, once the run ends or stops
  * there: it closes, where the step opened it, and the step's own tab shows
- * the run; a tab the browser does not let close (the step's own, when the
- * browser refused a tab) goes to the step with `fallback`.
+ * the run. A tab the browser does not let close (the step's own, when the
+ * browser refused a tab) loads the step at `href` as a new page: a tab
+ * that refused `close()` may answer no storage until it loads one.
  */
-export const leaveSignInTab = (fallback: () => void): void => {
+export const leaveSignInTab = (href: string): void => {
   globalThis.close();
-  globalThis.setTimeout(fallback, 300);
+  globalThis.setTimeout(() => {
+    globalThis.location.replace(href);
+  }, 300);
 };
 
 /**

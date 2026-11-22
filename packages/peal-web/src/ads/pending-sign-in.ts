@@ -21,7 +21,8 @@ const decodePending = Schema.decodeUnknownOption(
 
 const storage = (): Option.Option<Storage> => {
   try {
-    return Option.some(globalThis.sessionStorage);
+    // A closing tab (one refused `close()`) may answer none.
+    return Option.fromNullOr(globalThis.sessionStorage);
   } catch {
     // Storage the browser refuses (some private modes) remembers nothing.
     return Option.none();

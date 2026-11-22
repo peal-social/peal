@@ -3,7 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { constVoid } from "effect/Function";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type {
   ChannelConnection,
   ChoosableAccount,
@@ -44,7 +44,7 @@ import {
   useSetupChannelsHref,
   useWorkspaceHref,
 } from "#components/shell/workspace-addresses.tsx";
-import { Link, useRouter } from "#i18n/navigation.ts";
+import { getPathname, Link, useRouter } from "#i18n/navigation.ts";
 
 // The tab's storage only changes from this page's own actions.
 const ignoreChanges = () => constVoid;
@@ -113,20 +113,17 @@ export const CompleteConnection = ({
   const [continuing, setContinuing] = useState<string | null>(null);
 
   const setupHref = useSetupChannelsHref();
+  const locale = useLocale();
 
   // Back to the setup step the run started on.
   const toSetup = useEffectEvent((workspace: string) => {
-    leaveSignInTab(() => {
-      router.replace(setupHref(workspace));
-    });
+    leaveSignInTab(getPathname({ href: setupHref(workspace), locale }));
   });
 
   const runStep = useRunStep({
     offerUpgrade: false,
     onRefused: (run) => {
-      leaveSignInTab(() => {
-        router.replace(setupHref(run.workspaceId));
-      });
+      leaveSignInTab(getPathname({ href: setupHref(run.workspaceId), locale }));
     },
   });
 

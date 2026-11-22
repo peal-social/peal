@@ -76,7 +76,8 @@ const decodeRun = Schema.decodeUnknownOption(Schema.fromJsonString(RunSchema));
 
 const storage = (): Option.Option<Storage> => {
   try {
-    return Option.some(globalThis.localStorage);
+    // A closing tab (one refused `close()`) may answer none.
+    return Option.fromNullOr(globalThis.localStorage);
   } catch {
     // Storage the browser refuses (some private modes) keeps no run: each
     // platform then comes back to the setup step, where the member continues.
