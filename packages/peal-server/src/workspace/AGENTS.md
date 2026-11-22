@@ -454,9 +454,13 @@ The staff context follows these rules too. What the law has a host keep is in
   `GET /api/me`) until it resets one, which `/reset-password` creates;
   closing it and turning two-step verification on need one. A workspace's
   two-step requirement holds for it as for any account.
-- The HTTP tracer redacts `code` and `state` in `url.full` and
+- The HTTP tracer redacts `code`, `state` and `token` in `url.full` and
   `url.query` (`RedactedQueryLive`, `src/app/untraced-paths.ts`): the
-  callback's address carries both (`test/app/secrets-in-logs.test.ts`).
+  callback's address carries the first two, an address's confirmation
+  link (`/verify-email`) the third. A password reset's link
+  (`GET /reset-password/:token`) is never traced, and the request log
+  writes it with `<redacted>` in the token's place (`SecretPathsLive`)
+  (`test/app/secrets-in-logs.test.ts`).
 - `GOOGLE_SIGN_IN_ISSUER` is a test setting, refused but as `http://` on a
   loopback host: it puts the fake behind Google's button
   (`appWithGoogle`). It is in no docs table and no compose file.

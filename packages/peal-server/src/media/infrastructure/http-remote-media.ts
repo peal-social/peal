@@ -73,17 +73,17 @@ export const HttpRemoteMedia = Layer.effect(
       timeout: answerTimeout,
     });
 
-    // The host's answer to one request, a redirect included.
+    // The host's answer to one request, a redirect included. Untraced: the
+    // client's span would keep the address, token and all, in `url.full`.
     const answerFrom = (url: URL) =>
-      http
-        .execute(HttpClientRequest.get(url))
-        .pipe(
-          Effect.mapError((failure): Refusal =>
-            failure._tag === "OutboundRequestRefused"
-              ? refusalOf(failure)
-              : unreachable("noAnswer")
-          )
-        );
+      http.execute(HttpClientRequest.get(url)).pipe(
+        Effect.mapError((failure): Refusal =>
+          failure._tag === "OutboundRequestRefused"
+            ? refusalOf(failure)
+            : unreachable("noAnswer")
+        ),
+        Effect.withTracerEnabled(false)
+      );
 
     // The answer the address leads to, through a few redirects at most.
     const follow = (

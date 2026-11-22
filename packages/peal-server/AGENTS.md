@@ -250,7 +250,12 @@ and no socket, for tests.
   sends again. `peal.platform_events` counts each by `app` and
   `outcome`; refusals are logged once a minute a kind at most
   (`refusalLogEvery`). `hub.verify_token` is a redacted query name
-  (`redactedQueryNames`). Never log a body or a signature
+  (`redactedQueryNames`). A path whose last segment is a token (the
+  digest's unsubscribe link, a password reset's) is never traced, and
+  the request log writes it with `<redacted>` in its place
+  (`secretPathPrefixes` and `SecretPathsLive`,
+  `src/app/untraced-paths.ts`): a new route that takes one joins them,
+  though a token belongs in a header or the body. Never log a body or a signature
   (`test/app/secrets-in-logs.test.ts`); the engagement guide says what an
   event does.
 - `GET /api/health` is liveness: keep it free of the database.
