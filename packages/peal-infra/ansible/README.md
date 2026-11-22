@@ -119,15 +119,15 @@ Run each with `--limit production` or `--limit sandbox` (`--limit uptime` for
 
 ### On the server
 
-| Path                          | What it holds                                                                                                                              |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/srv/peal/secrets.env`       | The database password, `BETTER_AUTH_SECRET`, `PEAL_TOKEN_KEYS`, Grafana's admin password and the Bluesky client keys, generated there once |
-| `/srv/peal/credentials.env`   | What outside services issued: R2 keys, the email key, the backup passphrase, Telegram's, Slack's webhook                                   |
-| `/srv/peal/host.env`          | Plain settings, written by Ansible                                                                                                         |
-| `/srv/peal/release.env`       | The image tags that run, and a hash of the files each service mounts from the release                                                      |
-| `/srv/peal/releases/<commit>` | Each release's Compose file and configuration, the last three kept                                                                         |
-| `/srv/peal/current`           | Link to the release that runs                                                                                                              |
-| `/etc/cloudflared/`           | The tunnel's routes and its token                                                                                                          |
+| Path                          | What it holds                                                                                                                                                                                                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/srv/peal/secrets.env`       | The database superuser's password, the server's database role's (`PEAL_DATABASE_PASSWORD`), `BETTER_AUTH_SECRET`, `PEAL_TOKEN_KEYS`, Grafana's admin password and the Bluesky client keys, generated there once |
+| `/srv/peal/credentials.env`   | What outside services issued: R2 keys, the email key, the backup passphrase, Telegram's, Slack's webhook                                                                                                        |
+| `/srv/peal/host.env`          | Plain settings, written by Ansible                                                                                                                                                                              |
+| `/srv/peal/release.env`       | The image tags that run, and a hash of the files each service mounts from the release                                                                                                                           |
+| `/srv/peal/releases/<commit>` | Each release's Compose file and configuration, the last three kept                                                                                                                                              |
+| `/srv/peal/current`           | Link to the release that runs                                                                                                                                                                                   |
+| `/etc/cloudflared/`           | The tunnel's routes and its token                                                                                                                                                                               |
 
 `peal-compose` runs Docker Compose on the release that runs, with those
 files. SSH is for reading:
@@ -793,8 +793,16 @@ server:
    the old server stops first, with 75 seconds to finish its calls to the
    platforms;
 3. Postgres starts, and keeps the database password in step with
-   `secrets.env`, and, where the blog runs, the blog's role and database
-   too (made the first time);
+   `secrets.env`; the server's own role, `peal_server` (`LOGIN` and no
+   other attribute), is made the first time and its password kept in step,
+   and it is given Peal's database and every schema, table, sequence,
+   view, function and type the superuser owns there, at every release (a
+   release that finds nothing to move changes nothing). The server signs
+   in as that role (`PEAL_DATABASE_USER` in `host.env`), never as the
+   superuser, which can run programs in Postgres's container, where the
+   backup bucket's key and passphrase are; the superuser stays for the
+   local socket, pgBackRest and the runbooks. Where the blog runs, its
+   role and database are kept the same way (made the first time);
 4. the new server starts and applies its migrations before it listens;
 5. the rest of the stack starts (the blog applies EmDash's migrations as it
    starts), and the release is checked on the server and, for production,
@@ -1577,7 +1585,8 @@ A second run of `site.yml` reports no change:
 
 `release.yml` changes what a release changes. Run again for the same commit,
 it builds and uploads nothing (the images are on the server), creates no
-Bluesky key (one is in `secrets.env`), leaves the database password alone
-(the server's is accepted, over the network as the server signs in), and
+Bluesky key (one is in `secrets.env`), leaves the database passwords alone
+(each is accepted, over the network as the server signs in), moves no
+object to the server's role (it owns them all already), and
 Compose recreates nothing. What it reads of the running containers is their
 image and settings' hash, never their environment, which holds secrets.

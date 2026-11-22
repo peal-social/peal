@@ -57,3 +57,22 @@ def test_each_server_names_its_token_key_apart(tmp_path: Path) -> None:
     key_ids = {_generate(server)["PEAL_TOKEN_KEYS"].split(":")[0] for server in servers}
 
     assert len(key_ids) == len(servers)
+
+
+def test_the_server_s_database_password_is_added_once(tmp_path: Path) -> None:
+    """A server set up before its database role gets the role's password,
+    URL-safe as DATABASE_URL needs it, and keeps it at the next run."""
+    _generate(tmp_path)
+    found = task("peal_runtime", "Generate the server's database password")
+    script = render(found["ansible.builtin.shell"], peal_root=str(tmp_path))
+    secrets_env = tmp_path / "secrets.env"
+
+    first = subprocess.run(["sh", "-c", script], capture_output=True, text=True, check=True)
+    added = secrets_env.read_text()
+    second = subprocess.run(["sh", "-c", script], capture_output=True, text=True, check=True)
+
+    assert (first.stdout.strip(), second.stdout.strip()) == ("added", "")
+    assert secrets_env.read_text() == added
+    assert stat.S_IMODE(secrets_env.stat().st_mode) == 0o600
+    password = dict(line.split("=", 1) for line in added.splitlines())["PEAL_DATABASE_PASSWORD"]
+    assert re.fullmatch(r"[0-9a-f]{64}", password)

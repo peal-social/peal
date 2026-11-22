@@ -14,6 +14,7 @@ peal_runtime_host_settings: >-
        'PEAL_PRIVACY_URL': 'https://' ~ peal_hostnames.site ~ '/privacy/',
        'PEAL_DOCS_URL': 'https://' ~ peal_hostnames.docs,
        'AUTH_IP_HEADERS': 'cf-connecting-ip',
+       'PEAL_DATABASE_USER': 'peal_server',
        'MAIL_FROM': peal_mail_from,
        'PEAL_LEGAL_RETENTION': peal_legal_retention,
        'PEAL_PRIVACY_DECLARATION': peal_root ~ '/privacy-declaration.json',

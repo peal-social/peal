@@ -75,6 +75,26 @@
     quiet: true
   when: peal_blog | bool
 
+# The server signs in as its own role, with the password site.yml adds to
+# secrets.env (PEAL_DATABASE_PASSWORD): without it, the server's
+# DATABASE_URL would fall back on the superuser's. Names only, read-only.
+- name: Find whether secrets.env lacks the server's database password
+  ansible.builtin.command:
+    argv: [grep, -Eqs, "^PEAL_DATABASE_PASSWORD=.+", "{{ peal_root }}/secrets.env"]
+  register: peal_release_server_secret
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Stop before the server would sign in without its role's password
+  ansible.builtin.assert:
+    that: peal_release_server_secret.rc == 0
+    fail_msg: >-
+      {{ peal_root }}/secrets.env holds no PEAL_DATABASE_PASSWORD: run
+      site.yml on {{ inventory_hostname }}, which generates it, then
+      release.yml.
+    quiet: true
+
 - name: Create the local release folder
   ansible.builtin.file:
     path: "{{ peal_release_local_dir }}"
@@ -595,6 +615,167 @@
       ALTER ROLE peal PASSWORD :'password';
   when: peal_release_password.rc != 0
   changed_when: true
+
+# The server signs in as peal_server, a role with no attribute but LOGIN
+# that owns Peal's database and everything in it, never as the cluster's
+# superuser: a superuser runs programs in Postgres's container (COPY …
+# PROGRAM), which holds the backup bucket's key and passphrase. The
+# superuser stays for the image's local socket, pgBackRest and the
+# runbooks. The check signs in as the server does, over the network; only
+# when it is refused (a server before this role, a new database, or one
+# restored from another server) does the next task create the role where
+# missing and set its password, from secrets.env through the environment
+# alone, as for the blog's, and the statement stays out of Postgres's log.
+- name: Check the server's database password
+  ansible.builtin.command:
+    argv:
+      - sh
+      - -c
+      - |
+        set -eu
+        PEAL_DATABASE_PASSWORD="$(sed -n 's/^PEAL_DATABASE_PASSWORD=//p' {{ peal_root }}/secrets.env)"
+        test -n "$PEAL_DATABASE_PASSWORD"
+        export PEAL_DATABASE_PASSWORD
+        exec docker exec --env PEAL_DATABASE_PASSWORD {{ peal_compose_project }}-postgres-1 sh -c \
+          'PGPASSWORD="$PEAL_DATABASE_PASSWORD" exec psql --host postgres --username peal_server --dbname peal --no-psqlrc --quiet --command "SELECT 1"'
+  register: peal_release_server_password
+  changed_when: false
+  failed_when: false
+
+- name: Create the server's database role
+  ansible.builtin.command:
+    argv:
+      - sh
+      - -c
+      - |
+        set -eu
+        PEAL_DATABASE_PASSWORD="$(sed -n 's/^PEAL_DATABASE_PASSWORD=//p' {{ peal_root }}/secrets.env)"
+        test -n "$PEAL_DATABASE_PASSWORD"
+        export PEAL_DATABASE_PASSWORD
+        exec docker exec --interactive --env PEAL_DATABASE_PASSWORD {{ peal_compose_project }}-postgres-1 \
+          psql --username peal --dbname peal --no-psqlrc --quiet --set ON_ERROR_STOP=1
+    stdin: |
+      \getenv password PEAL_DATABASE_PASSWORD
+      SET log_statement = 'none';
+      SELECT 'CREATE ROLE peal_server LOGIN' WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'peal_server') \gexec
+      ALTER ROLE peal_server LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD :'password';
+  when: peal_release_server_password.rc != 0
+  changed_when: true
+
+# Peal's database and what the superuser owns in it go to peal_server: the
+# database itself (so the server may create schemas, and pg_trgm, a trusted
+# extension, as its migrations do; public belongs to whoever owns the
+# database), then each schema, table, view, sequence no table owns,
+# function and type outside Postgres's own schemas and extensions. Run at
+# every release, it moves what a release or a runbook made as the
+# superuser since (a roll-back to a release before this role, say), and
+# prints how many it moved: 0, no change. One transaction: a lock it waits
+# for over 30 seconds stops it, the old server still running. The database
+# is closed to every other role, as the blog's step does too.
+- name: Give the server's role its database
+  ansible.builtin.command:
+    argv:
+      - docker
+      - exec
+      - --interactive
+      - "{{ peal_compose_project }}-postgres-1"
+      - psql
+      - --username
+      - peal
+      - --dbname
+      - peal
+      - --no-psqlrc
+      - --quiet
+      - --tuples-only
+      - --no-align
+      - --set
+      - ON_ERROR_STOP=1
+    stdin: |
+      BEGIN;
+      SET LOCAL lock_timeout = '30s';
+      REVOKE CONNECT, TEMPORARY ON DATABASE peal FROM PUBLIC;
+      DO $$
+      DECLARE
+        moved integer := 0;
+        item record;
+      BEGIN
+        IF (SELECT datdba FROM pg_database WHERE datname = 'peal') <> 'peal_server'::regrole THEN
+          ALTER DATABASE peal OWNER TO peal_server;
+          moved := moved + 1;
+        END IF;
+        FOR item IN
+          SELECT n.nspname FROM pg_namespace n
+          WHERE n.nspowner = 'peal'::regrole
+            AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+        LOOP
+          EXECUTE format('ALTER SCHEMA %I OWNER TO peal_server', item.nspname);
+          moved := moved + 1;
+        END LOOP;
+        -- Tables, with their indexes and the sequences their columns own.
+        FOR item IN
+          SELECT c.oid::regclass AS name, c.relkind FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE c.relowner = 'peal'::regrole AND c.relkind IN ('r', 'p', 'v', 'm', 'f')
+            AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+            AND NOT EXISTS (SELECT FROM pg_depend d WHERE d.classid = 'pg_class'::regclass
+                            AND d.objid = c.oid AND d.deptype = 'e')
+        LOOP
+          EXECUTE format(CASE item.relkind
+                           WHEN 'v' THEN 'ALTER VIEW %s OWNER TO peal_server'
+                           WHEN 'm' THEN 'ALTER MATERIALIZED VIEW %s OWNER TO peal_server'
+                           WHEN 'f' THEN 'ALTER FOREIGN TABLE %s OWNER TO peal_server'
+                           ELSE 'ALTER TABLE %s OWNER TO peal_server' END, item.name);
+          moved := moved + 1;
+        END LOOP;
+        FOR item IN
+          SELECT c.oid::regclass AS name FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE c.relowner = 'peal'::regrole AND c.relkind = 'S'
+            AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+            AND NOT EXISTS (SELECT FROM pg_depend d WHERE d.classid = 'pg_class'::regclass
+                            AND d.objid = c.oid AND d.deptype = 'e')
+        LOOP
+          EXECUTE format('ALTER SEQUENCE %s OWNER TO peal_server', item.name);
+          moved := moved + 1;
+        END LOOP;
+        FOR item IN
+          SELECT p.oid::regprocedure AS name, p.prokind FROM pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE p.proowner = 'peal'::regrole
+            AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+            AND NOT EXISTS (SELECT FROM pg_depend d WHERE d.classid = 'pg_proc'::regclass
+                            AND d.objid = p.oid AND d.deptype = 'e')
+        LOOP
+          EXECUTE format(CASE item.prokind
+                           WHEN 'a' THEN 'ALTER AGGREGATE %s OWNER TO peal_server'
+                           WHEN 'p' THEN 'ALTER PROCEDURE %s OWNER TO peal_server'
+                           ELSE 'ALTER FUNCTION %s OWNER TO peal_server' END, item.name);
+          moved := moved + 1;
+        END LOOP;
+        -- Enums, domains, ranges and composite types of their own: a
+        -- table's row type and an array type follow theirs.
+        FOR item IN
+          SELECT t.oid::regtype AS name, t.typtype FROM pg_type t
+          JOIN pg_namespace n ON n.oid = t.typnamespace
+          WHERE t.typowner = 'peal'::regrole
+            AND (t.typtype IN ('e', 'd', 'r')
+                 OR (t.typtype = 'c' AND (SELECT relkind FROM pg_class WHERE oid = t.typrelid) = 'c'))
+            AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+            AND NOT EXISTS (SELECT FROM pg_depend d WHERE d.classid = 'pg_type'::regclass
+                            AND d.objid = t.oid AND d.deptype = 'e')
+        LOOP
+          EXECUTE format(CASE item.typtype
+                           WHEN 'd' THEN 'ALTER DOMAIN %s OWNER TO peal_server'
+                           ELSE 'ALTER TYPE %s OWNER TO peal_server' END, item.name);
+          moved := moved + 1;
+        END LOOP;
+        PERFORM set_config('peal.moved', moved::text, true);
+      END
+      $$;
+      SELECT current_setting('peal.moved');
+      COMMIT;
+  register: peal_release_server_database
+  changed_when: peal_release_server_database.stdout | trim != '0'
 
 # The blog's role and database on the stack's Postgres, with the password
 # secrets.env holds. The check signs in as the blog does, over the network;

@@ -99,7 +99,9 @@ services:
     environment:
       POSTGRES_USER: peal
       POSTGRES_DB: peal
-      # Part of DATABASE_URL below: keep it URL-safe (openssl rand -hex 32).
+      # Part of DATABASE_URL below, unless PEAL_DATABASE_USER and
+      # PEAL_DATABASE_PASSWORD name a role of its own: keep it URL-safe
+      # (openssl rand -hex 32).
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
       PGBACKREST_STANZA: peal
       PGBACKREST_PG1_PATH: /var/lib/postgresql/18/docker
@@ -153,7 +155,11 @@ services:
       context: ../..
       dockerfile: packages/peal-docker/server.Dockerfile
     environment:
-      DATABASE_URL: postgres://peal:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/peal
+      # As PEAL_DATABASE_USER, with PEAL_DATABASE_PASSWORD, when both are
+      # set: a role that owns the database and is no superuser, as Peal's
+      # servers sign in (peal-infra's release makes it). Otherwise as the
+      # superuser POSTGRES_PASSWORD signs in. Keep both URL-safe.
+      DATABASE_URL: postgres://${PEAL_DATABASE_USER:-peal}:${PEAL_DATABASE_PASSWORD:-${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}}@postgres:5432/peal
       PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL, the address people open Peal at}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
       # cf-connecting-ip behind Cloudflare, x-forwarded-for behind Caddy.

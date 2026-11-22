@@ -317,6 +317,17 @@ describe("compose.production.yaml", () => {
     expect(server?.stop_grace_period).toBe("75s");
   });
 
+  // A superuser runs programs in Postgres's container, which holds the
+  // backup bucket's key: the server signs in as a role of its own where one
+  // is named (Peal's servers), and as the superuser only otherwise.
+  it("signs the server in as its own role when one is named", () => {
+    const server = production.find(([name]) => name === "server")?.[1];
+
+    expect(server?.environment?.["DATABASE_URL"]).toMatch(
+      /^postgres:\/\/\$\{PEAL_DATABASE_USER:-peal\}:\$\{PEAL_DATABASE_PASSWORD:-\$\{POSTGRES_PASSWORD:\?Set POSTGRES_PASSWORD\}\}@postgres:5432\/peal$/u
+    );
+  });
+
   // Cloudflare Access lets the staff alone through to Grafana, and they get
   // full access there, set again at each sign-in.
   it("signs the people Access lets through into Grafana as admins", () => {

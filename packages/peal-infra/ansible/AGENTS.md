@@ -183,6 +183,17 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   (`AUD_NAMES`): production's `admin` application covers
   `peal_access_paths`, so a path added there is added to the Pulumi
   project's `adminPaths` too.
+- The server signs in to Postgres as `peal_server`, never the superuser
+  (`PEAL_DATABASE_USER` in `host.env`, `PEAL_DATABASE_PASSWORD` in
+  `secrets.env`, which compose.production.yaml builds `DATABASE_URL`
+  from). `release.yml` makes the role, keeps its password in step and,
+  at every release, gives it Peal's database and whatever the superuser
+  owns there (`tests/test_release_server_role.py`, on a new database
+  migrated by the role and on one the superuser migrated). A migration
+  needs nothing a database owner lacks: schemas, trusted extensions such
+  as `pg_trgm`, advisory locks; one that needs a superuser (an untrusted
+  extension, `ALTER SYSTEM`) cannot run, and goes in the release as a
+  superuser step instead.
 - Peal's blog runs behind `peal_blog`, off by default (README.md, "The
   blog"): with the flag off, every rendered file stays as it was
   (`tests/test_blog.py`). On the site's host name the tunnel refuses

@@ -38,6 +38,21 @@
   args:
     creates: "{{ peal_root }}/secrets.env"
 
+# The password of the server's own database role (peal_server, which the
+# release creates and gives Peal's database), added once to a secrets.env
+# that lacks it, a server's from before the role included. Never read back
+# by Ansible. The shell module skips in check mode.
+- name: Generate the server's database password
+  ansible.builtin.shell: |
+    set -eu
+    umask 077
+    if ! grep -q '^PEAL_DATABASE_PASSWORD=' {{ peal_root }}/secrets.env; then
+      printf 'PEAL_DATABASE_PASSWORD=%s\n' "$(openssl rand -hex 32)" >> {{ peal_root }}/secrets.env
+      echo added
+    fi
+  register: peal_runtime_server_secret
+  changed_when: peal_runtime_server_secret.stdout == 'added'
+
 # The blog's, added to secrets.env once the blog is on (peal_blog), each
 # when the file lacks it, so a server that ran before the blog gets them
 # too: its database role's password, and EmDash's key for the secrets saved
