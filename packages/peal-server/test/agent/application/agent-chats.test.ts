@@ -1,7 +1,7 @@
 // A person's chats with the agent: theirs alone, kept 90 days after their
 // last message, erased with the workspace, the membership and the
-// account, and in the account's export; and nothing of what they say
-// reaches a log or a span.
+// account, and in the account's export; and nothing of what they say,
+// nor of their skills, reaches a log or a span.
 import { assert, layer } from "@effect/vitest";
 import {
   Cause,
@@ -20,6 +20,7 @@ import { CurrentMember } from "peal-contract";
 import { AgentDesk } from "#agent/application/agent-desk.ts";
 import type { RunAsked } from "#agent/application/agent-desk.ts";
 import { AgentRecords } from "#agent/application/agent-records.ts";
+import { AgentSkillDesk } from "#agent/application/agent-skill-desk.ts";
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
 import { Actor } from "#shared/domain/access.ts";
 import { UserIdSchema } from "#shared/domain/ids.ts";
@@ -48,7 +49,7 @@ const newChat = (person: Person) =>
 
 const send = (person: Person, chatId: string, text: string) =>
   desk
-    .use((agent) => agent.send(person.actor, chatId, text, [], asked))
+    .use((agent) => agent.send(person.actor, chatId, { text }, asked))
     .pipe(
       Effect.flatMap(Stream.runCollect),
       Effect.provideService(CurrentMember, person.member)
@@ -179,7 +180,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
               .pipe(Effect.flip),
             desk
               .use((agent) =>
-                agent.send(colleague.actor, chat.id, "Hello", [], asked)
+                agent.send(colleague.actor, chat.id, { text: "Hello" }, asked)
               )
               .pipe(Effect.flip),
             desk
@@ -455,18 +456,47 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             }),
           ]);
 
+          // A skill, picked and read: its name and instructions are the
+          // person's words too.
+          const inSkillName = "synthetic-skill-name-4c7e";
+          const inSkill = "synthetic-skill-instructions-9d2b";
+
+          const skill = yield* AgentSkillDesk.use((skills) =>
+            skills.createSkill(person.actor, {
+              instructions: inSkill,
+              name: inSkillName,
+              scope: "personal",
+            })
+          ).pipe(
+            Effect.withSpan("test.skill"),
+            Effect.withTracer(tracer),
+            Effect.provide(logs)
+          );
+
           yield* FakeAgentModel.use((model) =>
             model.script([
+              calls("read_skill", { skillId: skill.skill.id }),
               calls("create_draft", { content: { text: inMessage } }),
               says(inAnswer),
             ])
           );
 
-          yield* send(person, chat.id, `Write ${inMessage}`).pipe(
-            Effect.withSpan("test.run"),
-            Effect.withTracer(tracer),
-            Effect.provide(logs)
-          );
+          yield* desk
+            .use((agent) =>
+              agent.send(
+                person.actor,
+                chat.id,
+                { skillIds: [skill.skill.id], text: `Write ${inMessage}` },
+                asked
+              )
+            )
+            .pipe(
+              Effect.flatMap(Stream.runCollect),
+              Effect.provideService(CurrentMember, person.member),
+              Effect.withSpan("test.run"),
+              Effect.withTracer(tracer),
+              Effect.provide(logs)
+            );
 
           const recorded = [
             ...lines,
@@ -486,6 +516,10 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           assert.notInclude(recorded, inMessage);
           assert.notInclude(recorded, inAnswer);
           assert.notInclude(recorded, "spring launch");
+          assert.notInclude(recorded, inSkillName);
+          assert.notInclude(recorded, inSkill);
+          // The skill was read, and the run told of it by the tool's name.
+          assert.include(recorded, "read_skill");
         }).pipe(Effect.provide(agentTest()))
     );
   }

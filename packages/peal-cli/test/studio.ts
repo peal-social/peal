@@ -863,6 +863,7 @@ const exported = (exportedAt: DateTime.Utc): AccountExport => ({
   },
   activity: [],
   agentChats: [],
+  agentSkills: [],
   authoredPosts: [],
   connectedApps: [cli],
   contracts: { orders: [], requests: [], withdrawals: [] },

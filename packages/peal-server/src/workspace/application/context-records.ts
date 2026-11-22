@@ -4,6 +4,7 @@ import type { DateTime, Effect } from "effect";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type {
   AgentChatRecord,
+  AgentSkillRecord,
   ArticleRecord,
   AccountSnapshotRecord,
   AdsRecord,
@@ -104,6 +105,11 @@ export interface UserContent {
   readonly activity: readonly ActivityRecord[];
   /** Their chats with the agent, in every workspace, oldest first. */
   readonly agentChats: readonly AgentChatRecord[];
+  /**
+   * Their skills for the agent, in every workspace: their own, and the
+   * workspace's they wrote, oldest first.
+   */
+  readonly agentSkills: readonly AgentSkillRecord[];
   /** The orders and withdrawals they made. */
   readonly contracts: ContractsRecord;
   /**

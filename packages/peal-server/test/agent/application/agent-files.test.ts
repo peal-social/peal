@@ -49,7 +49,7 @@ const readyImage = (person: Person) =>
 
 const send = (person: Person, chatId: string, mediaIds: readonly string[]) =>
   AgentDesk.use((desk) =>
-    desk.send(person.actor, chatId, "Use this", mediaIds, asked)
+    desk.send(person.actor, chatId, { mediaIds, text: "Use this" }, asked)
   ).pipe(
     Effect.flatMap(Stream.runCollect),
     Effect.provideService(CurrentMember, person.member)
@@ -61,7 +61,7 @@ const refusalOf = (
   mediaIds: readonly string[]
 ) =>
   AgentDesk.use((desk) =>
-    desk.send(person.actor, chatId, "Use this", mediaIds, asked)
+    desk.send(person.actor, chatId, { mediaIds, text: "Use this" }, asked)
   ).pipe(Effect.provideService(CurrentMember, person.member), Effect.flip);
 
 // So many made-up media ids.

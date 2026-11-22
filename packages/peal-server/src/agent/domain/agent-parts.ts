@@ -107,6 +107,17 @@ export const AgentMediaSchema = Schema.Struct({
 
 export type AgentMedia = typeof AgentMediaSchema.Type;
 
+/**
+ * A skill the person picked for a message, as it was named when they sent
+ * it: it still shows once the skill is renamed or deleted.
+ */
+export const AgentMessageSkillSchema = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+});
+
+export type AgentMessageSkill = typeof AgentMessageSkillSchema.Type;
+
 /** How the person rated an answer. */
 export const AgentRatingSchema = Schema.Literals(["up", "down"]);
 

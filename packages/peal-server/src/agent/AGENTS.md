@@ -8,11 +8,42 @@
   `/api/workspaces/:workspaceId/agent`, behind the same Authentication and
   WorkspaceAccess, with its handlers in `src/app/agent/handlers.ts` (the
   composition root, as only it may import `peal-contract/agent`).
-- Every use case (`AgentDesk`) needs `assistant:use` and a person in their
-  own session (`inPerson`): an API key, an OAuth client and staff acting
-  as someone get `PersonRequired` (403 `personRequired`). Chats are their
-  author's alone: another person's id reads as none (`ChatNotFound`, 404),
-  whatever is asked of it.
+- Every use case (`AgentDesk`, `AgentSkillDesk`) needs `assistant:use`
+  and a person in their own session (`ownerOf`, `inPerson`): an API key,
+  an OAuth client and staff acting as someone get `PersonRequired` (403
+  `personRequired`). Chats are their author's alone: another person's id
+  reads as none (`ChatNotFound`, 404), whatever is asked of it.
+- Skills (`agent.skills`, `agent-skill.ts`) are a name and instructions a
+  person saves for a task they repeat: their own (`personal`), or the
+  workspace's (`workspace`), which every member with `assistant:use`
+  there uses. A person sees their own and the workspace's, listed by name
+  whatever its case; any other (another person's own, another
+  workspace's, a deleted one) reads as none (`SkillNotFound`, 404). They
+  change or delete their own, and a workspace skill when they have
+  `assistant:configure` (`editable`); else `notEditable`. Moving one's own
+  to the workspace needs nothing more; a workspace skill goes back to
+  personal for its author only. A name another skill the person sees has,
+  whatever its case, is `nameTaken`; past `maxSkills` (100) they see,
+  `tooMany` (both checked before the write, not by the database). When
+  its author leaves the workspace, is removed or closes their account, a
+  workspace skill stays with no author (`author_id` null: editable through
+  `assistant:configure` only) and their own go, through `AgentRecords`
+  on the chats' paths; the workspace's deletion takes them all. The
+  account's export holds their own and the workspace's they wrote.
+- A message picks up to 3 skills (`skillIds`): each one the person may
+  use, else `SkillNotFound` before any event, nothing kept. The person's
+  message keeps each `{id, name}` as named then (`messages.skills`, `[]`
+  on older rows). The model gets each picked skill's name and
+  instructions beside the message, as JSON (`skills`), and the ids and
+  names of the others the person may use (`otherSkills`, up to
+  `maxSkills`, only when there are any), as the attached files come
+  (`withUserMessage`): never in the system message. `read_skill`
+  (`read-skill.ts`) is the agent's own tool, merged into the run's
+  toolkit beside the toolbox's, never an MCP tool: it runs without
+  approval, answers a skill the person may use now, refuses any other to
+  the model, is a step like any call and is never recorded. The rules
+  make a skill's instructions the one answer of a tool the model follows,
+  and let it lift no other rule.
 - Chats and messages are in the `agent` schema. A chat keeps what the
   model reads of it (`history`: effect/ai's `Prompt` as JSON, the person's
   messages, the answers' text and tool calls, and the tools' answers cut
@@ -99,8 +130,8 @@
 - A chat nobody wrote in yet (made, then its first message refused) is in
   no history (`page` lists chats with a message) and the retention
   deletes it a day after it was made.
-- Never log or trace a message, a prompt, a tool's parameters or answer,
-  an answer or a provider's error: effect/ai's spans are off around every
+- Never log or trace a message, a skill's name or instructions, a
+  prompt, a tool's parameters or answer, an answer or a provider's error: effect/ai's spans are off around every
   round and tool call; the run's span and its one log line say the
   source, the rounds, the tools' names, the outcome and the kind of
   failure (`test/agent/application/agent-chats.test.ts` checks it).
@@ -109,5 +140,6 @@
   is removed from it (Better Auth's `afterRemoveMember` and
   `/organization/leave`, and `WorkspacePeople.removeMembers`), closes
   their account, or the workspace is deleted (`ContextRecords`). The
-  account's export holds the person's chats, never what the tools read.
+  account's export holds the person's chats and skills, never what the
+  tools read.
   The registry's `agent` category and the privacy policy's table say so.

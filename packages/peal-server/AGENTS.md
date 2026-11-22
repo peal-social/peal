@@ -51,7 +51,7 @@ them:
 | `review`        | approval policies, requests and decisions, review links, comments                                                                                               |
 | `ads`           | ad accounts, what they may spend, what is read of them, boosts                                                                                                  |
 | `shortlinks`    | the short addresses a post's links go out as, their daily click counts, each workspace's default                                                                |
-| `agent`         | the web app's agent: each person's chats, their runs on the assistant's model with the MCP endpoint's tools, the changes it asks the person to approve          |
+| `agent`         | the web app's agent: each person's chats and skills, runs on the assistant's model with the MCP endpoint's tools, the changes it asks the person to approve     |
 
 - `domain`: entities and rules on Effect's core (`effect`: Schema, DateTime,
   Data). No HTTP, SQL, cluster, workflow, AI, Drizzle or Better Auth.

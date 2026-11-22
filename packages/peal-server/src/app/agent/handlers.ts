@@ -15,16 +15,22 @@ import {
   AgentBusy,
   AgentChatNotFound,
   AgentMediaRejected,
+  AgentSkillNotFound,
+  AgentSkillRefused,
 } from "peal-contract/agent";
 
 import { AgentDesk } from "#agent/application/agent-desk.ts";
 import type { RunAsked } from "#agent/application/agent-desk.ts";
+import { AgentSkillDesk } from "#agent/application/agent-skill-desk.ts";
+import type { UsableSkill } from "#agent/application/agent-skill-desk.ts";
 import type { DayExhausted } from "#agent/application/day-exhausted.ts";
 import type { ExportedChat } from "#agent/application/ports/agent-chats.ts";
+import type { SkillNotFound } from "#agent/application/skill-not-found.ts";
 import type { AgentChat } from "#agent/domain/agent-chat.ts";
 import type { AgentMessage } from "#agent/domain/agent-message.ts";
 import { cursorOf } from "#agent/domain/chat-cursor.ts";
 import { maxMessageLength } from "#agent/domain/run-limits.ts";
+import type { SkillRefused } from "#agent/domain/skill-refused.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { allowanceRefusal } from "#shared/api/allowance-reached.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
@@ -51,9 +57,27 @@ export const messageView = (message: AgentMessage) => ({
   media: message.media,
   rating: Option.getOrNull(message.rating),
   role: message.role,
+  skills: message.skills,
   steps: message.steps,
   text: message.text,
 });
+
+/** A skill the person may use, as the contract answers it. */
+export const skillView = ({ editable, skill }: UsableSkill) => ({
+  createdAt: skill.createdAt,
+  editable,
+  id: skill.id,
+  instructions: skill.instructions,
+  name: skill.name,
+  scope: skill.scope,
+  updatedAt: skill.updatedAt,
+});
+
+const skillNotFound = ({ skillId }: SkillNotFound) =>
+  Effect.fail(new AgentSkillNotFound({ skillId }));
+
+const skillRefused = ({ reason }: SkillRefused) =>
+  Effect.fail(new AgentSkillRefused({ reason }));
 
 const detailView = ({ chat, messages }: ExportedChat) => ({
   chat: chatView(chat),
@@ -86,6 +110,7 @@ export const AgentHandlers = HttpApiBuilder.group(
   "agent",
   Effect.fn(function* agentHandlers(handlers) {
     const desk = yield* AgentDesk;
+    const skills = yield* AgentSkillDesk;
     const paths = yield* UpgradePaths;
     const allowanceReached = yield* allowanceRefusal;
 
@@ -224,8 +249,11 @@ export const AgentHandlers = HttpApiBuilder.group(
             .send(
               actor,
               params.chatId,
-              payload.text,
-              payload.mediaIds ?? [],
+              {
+                mediaIds: payload.mediaIds ?? [],
+                skillIds: payload.skillIds ?? [],
+                text: payload.text,
+              },
               yield* askedOf(payload.timeZone)
             )
             .pipe(
@@ -242,6 +270,7 @@ export const AgentHandlers = HttpApiBuilder.group(
                       reason: "empty",
                     })
                   ),
+                SkillNotFound: skillNotFound,
               })
             );
         })
@@ -267,9 +296,61 @@ export const AgentHandlers = HttpApiBuilder.group(
                   Effect.die("An approval's answer attaches no file"),
                 MessageRejected: () =>
                   Effect.die("An approval's answer holds no message"),
+                SkillNotFound: () =>
+                  Effect.die("An approval's answer picks no skill"),
               })
             );
         })
+      )
+      .handle("skills", () =>
+        Effect.service(CurrentMember).pipe(
+          Effect.flatMap((member) => skills.skills(actorOf(member))),
+          Effect.map((usable) => ({ skills: usable.map(skillView) })),
+          Effect.catchTags({
+            MissingPermission: forbidden,
+            PersonRequired: forbidden,
+          })
+        )
+      )
+      .handle("createSkill", ({ payload }) =>
+        Effect.service(CurrentMember).pipe(
+          Effect.flatMap((member) =>
+            skills.createSkill(actorOf(member), payload)
+          ),
+          Effect.map(skillView),
+          Effect.catchTags({
+            MissingPermission: forbidden,
+            PersonRequired: forbidden,
+            SkillRefused: skillRefused,
+          })
+        )
+      )
+      .handle("updateSkill", ({ params, payload }) =>
+        Effect.service(CurrentMember).pipe(
+          Effect.flatMap((member) =>
+            skills.updateSkill(actorOf(member), params.skillId, payload)
+          ),
+          Effect.map(skillView),
+          Effect.catchTags({
+            MissingPermission: forbidden,
+            PersonRequired: forbidden,
+            SkillNotFound: skillNotFound,
+            SkillRefused: skillRefused,
+          })
+        )
+      )
+      .handle("deleteSkill", ({ params }) =>
+        Effect.service(CurrentMember).pipe(
+          Effect.flatMap((member) =>
+            skills.deleteSkill(actorOf(member), params.skillId)
+          ),
+          Effect.catchTags({
+            MissingPermission: forbidden,
+            PersonRequired: forbidden,
+            SkillNotFound: skillNotFound,
+            SkillRefused: skillRefused,
+          })
+        )
       );
   })
 );

@@ -673,12 +673,28 @@ const ExportedAgentChatSchema = Schema.Struct({
       outcome: nullable(Schema.String),
       rating: nullable(Schema.String),
       role: Schema.String,
+      // The skills the user picked for their message, as named then.
+      skills: Schema.Array(
+        Schema.Struct({ id: Schema.String, name: Schema.String })
+      ),
       text: Schema.String,
       tools: Schema.Array(Schema.String),
     })
   ),
   starred: Schema.Boolean,
   title: nullable(Schema.String),
+  updatedAt: instant,
+  ...inWorkspace,
+});
+
+// A skill the user saved for the agent in a workspace: their own
+// (`personal`), or one of the workspace's (`workspace`) they wrote.
+const ExportedAgentSkillSchema = Schema.Struct({
+  createdAt: instant,
+  id: Schema.String,
+  instructions: Schema.String,
+  name: Schema.String,
+  scope: Schema.String,
   updatedAt: instant,
   ...inWorkspace,
 });
@@ -1047,6 +1063,9 @@ export const AccountExportSchema = Schema.Struct({
   activity: Schema.Array(ExportedActivitySchema),
   // The user's chats with the agent, in every workspace, oldest first.
   agentChats: Schema.Array(ExportedAgentChatSchema),
+  // The user's skills for the agent, in every workspace, oldest first:
+  // their own, and the workspace's they wrote.
+  agentSkills: Schema.Array(ExportedAgentSkillSchema),
   // The posts the user wrote in the workspaces they share with others.
   authoredPosts: Schema.Array(ExportedAuthoredPostSchema),
   connectedApps: Schema.Array(ConnectedAppSchema),

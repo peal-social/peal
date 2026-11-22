@@ -7,10 +7,16 @@ import {
   AgentOutcomeSchema as ContractOutcomeSchema,
   AgentRatingSchema as ContractRatingSchema,
   AgentSourceSchema as ContractSourceSchema,
+  AgentSkillRefusalSchema,
+  AgentSkillScopeSchema as ContractSkillScopeSchema,
   AgentStepStateSchema as ContractStepStateSchema,
   agentChatPageSize,
   maxAgentChatTitleLength,
   maxAgentMessageLength,
+  maxAgentMessageSkills,
+  maxAgentSkillInstructionsLength,
+  maxAgentSkillNameLength,
+  maxAgentSkills,
 } from "peal-contract/agent";
 
 import {
@@ -24,10 +30,18 @@ import {
   AgentStepStateSchema,
 } from "#agent/domain/agent-parts.ts";
 import {
+  maxPickedSkills,
+  maxSkillInstructionsLength,
+  maxSkillNameLength,
+  maxSkills,
+  SkillScopeSchema,
+} from "#agent/domain/agent-skill.ts";
+import {
   chatPageSize,
   maxMessageLength,
   maxTitleLength,
 } from "#agent/domain/run-limits.ts";
+import { SkillRefused } from "#agent/domain/skill-refused.ts";
 
 // The api layer answers the domain's values as they are: each list and
 // bound is the contract's.
@@ -60,5 +74,23 @@ describe("the agent's contract", () => {
       maxAgentChatTitleLength,
       agentChatPageSize,
     ]).toStrictEqual([maxMessageLength, maxTitleLength, chatPageSize]);
+  });
+
+  it("takes skills, and picks them, by the domain's bounds and scopes", () => {
+    expect([
+      maxAgentSkillNameLength,
+      maxAgentSkillInstructionsLength,
+      maxAgentMessageSkills,
+      maxAgentSkills,
+      ContractSkillScopeSchema.literals,
+      AgentSkillRefusalSchema.literals,
+    ]).toStrictEqual([
+      maxSkillNameLength,
+      maxSkillInstructionsLength,
+      maxPickedSkills,
+      maxSkills,
+      SkillScopeSchema.literals,
+      SkillRefused.fields.reason.literals,
+    ]);
   });
 });

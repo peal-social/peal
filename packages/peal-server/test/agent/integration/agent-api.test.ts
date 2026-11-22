@@ -1,7 +1,8 @@
 // The agent's endpoints through the whole server, without a model (the
 // test server has no PEAL_AI_PROVIDER): served beside the API, a person's
-// alone, refused to an API key, and a member's chats gone with their
-// membership, whether they leave or are removed.
+// alone, refused to an API key, and a member's chats and own skills gone
+// with their membership, whether they leave or are removed, their
+// workspace skills kept with the workspace.
 import { assert, layer } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 import { SqlClient } from "effect/sql";
@@ -35,6 +36,21 @@ const chatsIn = (workspaceId: string, userId: string) =>
       sql<{
         readonly id: string;
       }>`SELECT id FROM agent.chats WHERE workspace_id = ${workspaceId} AND user_id = ${userId}`
+  );
+
+const SkillListSchema = Schema.Struct({
+  skills: Schema.Array(
+    Schema.Struct({ editable: Schema.Boolean, name: Schema.String })
+  ),
+});
+
+const skillsIn = (workspaceId: string) =>
+  SqlClient.SqlClient.use(
+    (sql) =>
+      sql<{
+        readonly author_id: string | null;
+        readonly name: string;
+      }>`SELECT author_id, name FROM agent.skills WHERE workspace_id = ${workspaceId} ORDER BY name`
   );
 
 // Someone else, who signs up and is made a member of the workspace.
@@ -149,6 +165,29 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           yield* newChat(removed, workspaceId);
           yield* newChat(owner, workspaceId);
 
+          // Each keeps a skill of their own and one for the workspace.
+          for (const [person, label] of [
+            [leaving, "Leaver"],
+            [removed, "Removed"],
+          ] as const) {
+            for (const scope of ["personal", "workspace"]) {
+              const made = yield* app.request(
+                `${agentOf(workspaceId)}/skills`,
+                {
+                  body: {
+                    instructions: "Plan the week.",
+                    name: `${label} ${scope}`,
+                    scope,
+                  },
+                  headers: { cookie: person.cookies },
+                  method: "POST",
+                }
+              );
+
+              assert.strictEqual(made.status, 201, JSON.stringify(made.body));
+            }
+          }
+
           const left = yield* app.request("/api/auth/organization/leave", {
             body: { organizationId: workspaceId },
             headers: { cookie: leaving.cookies },
@@ -173,6 +212,39 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The owner's stay.
           assert.lengthOf(yield* chatsIn(workspaceId, owner.id), 1);
+
+          // Their own skills went with them; the workspace's stay, nobody's.
+          assert.deepStrictEqual(yield* skillsIn(workspaceId), [
+            { author_id: null, name: "Leaver workspace" },
+            { author_id: null, name: "Removed workspace" },
+          ]);
+
+          const listed = yield* app.request(`${agentOf(workspaceId)}/skills`, {
+            headers: { cookie: owner.cookies },
+          });
+
+          assert.deepStrictEqual(
+            Schema.decodeUnknownSync(SkillListSchema)(listed.body).skills.map(
+              ({ editable, name }) => [name, editable]
+            ),
+            [
+              ["Leaver workspace", true],
+              ["Removed workspace", true],
+            ]
+          );
+
+          // Each write is in the workspace's activity log.
+          const sql = yield* SqlClient.SqlClient;
+
+          const logged = yield* sql<{
+            readonly operation: string;
+            readonly status: number | null;
+          }>`SELECT operation, status FROM activity.events WHERE workspace_id = ${workspaceId} AND operation = 'agent.createSkill'`;
+
+          assert.deepStrictEqual(
+            logged.map(({ status }) => status),
+            [201, 201, 201, 201]
+          );
         })
     );
   }

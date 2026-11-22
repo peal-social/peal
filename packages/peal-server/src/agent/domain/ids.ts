@@ -13,3 +13,10 @@ export const AgentMessageIdSchema = Uuid7Schema.pipe(
 );
 
 export type AgentMessageId = typeof AgentMessageIdSchema.Type;
+
+/** A skill: its author's own, or the workspace's. */
+export const AgentSkillIdSchema = Uuid7Schema.pipe(
+  Schema.brand("AgentSkillId")
+);
+
+export type AgentSkillId = typeof AgentSkillIdSchema.Type;

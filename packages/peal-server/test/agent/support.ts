@@ -5,8 +5,10 @@ import type { Member } from "peal-contract";
 
 import { AgentDesk } from "#agent/application/agent-desk.ts";
 import { AgentRecords } from "#agent/application/agent-records.ts";
+import { AgentSkillDesk } from "#agent/application/agent-skill-desk.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
 import { DrizzleAgentChatsLive } from "#agent/infrastructure/drizzle-agent-chats.ts";
+import { DrizzleAgentSkillsLive } from "#agent/infrastructure/drizzle-agent-skills.ts";
 import { LanguageModelAgentRunsLive } from "#agent/infrastructure/language-model-agent-runs.ts";
 import { LibraryAttachedFilesLive } from "#agent/infrastructure/library-attached-files.ts";
 import { AgentModelAccess } from "#assistant/application/agent-model-access.ts";
@@ -79,12 +81,17 @@ export const agentTest = ({
     ? MediaTestLive.pipe(Layer.provide(storageSettings))
     : NoMediaLibrary;
 
-  return Layer.mergeAll(AgentDesk.layer, AgentRecords.layer).pipe(
+  return Layer.mergeAll(
+    AgentDesk.layer,
+    AgentRecords.layer,
+    AgentSkillDesk.layer
+  ).pipe(
     Layer.provide(LanguageModelAgentRunsLive),
     // The files a message attaches, read from the media library.
     Layer.provide(LibraryAttachedFilesLive),
     Layer.provideMerge(media),
     Layer.provideMerge(DrizzleAgentChatsLive),
+    Layer.provideMerge(DrizzleAgentSkillsLive),
     Layer.provide(
       AgentModelAccess.layer.pipe(
         Layer.provide(
@@ -141,6 +148,9 @@ export const freshPerson = Effect.gen(function* freshPerson() {
 
   yield* Effect.addFinalizer(() =>
     sql`DELETE FROM agent.chats WHERE workspace_id = ${workspaceId}`.pipe(
+      Effect.andThen(
+        sql`DELETE FROM agent.skills WHERE workspace_id = ${workspaceId}`
+      ),
       Effect.andThen(
         sql`DELETE FROM assistant.daily_usage WHERE workspace_id = ${workspaceId}`
       ),

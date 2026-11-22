@@ -17,6 +17,7 @@ import { ChatBusy } from "#agent/application/chat-busy.ts";
 import { ChatNotFound } from "#agent/application/chat-not-found.ts";
 import type { MediaRejected } from "#agent/application/media-rejected.ts";
 import { MessageRejected } from "#agent/application/message-rejected.ts";
+import { ownerOf } from "#agent/application/owner-of.ts";
 import { AgentChats } from "#agent/application/ports/agent-chats.ts";
 import type {
   ChatChange,
@@ -30,7 +31,9 @@ import type {
   RunInput,
   RunRefusal,
 } from "#agent/application/ports/agent-runs.ts";
+import { AgentSkills } from "#agent/application/ports/agent-skills.ts";
 import { AttachedFiles } from "#agent/application/ports/attached-files.ts";
+import { SkillNotFound } from "#agent/application/skill-not-found.ts";
 import { pendingOf } from "#agent/domain/agent-approvals.ts";
 import { AgentChat } from "#agent/domain/agent-chat.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
@@ -39,14 +42,14 @@ import type {
   AgentAvailability,
   AgentRating,
 } from "#agent/domain/agent-parts.ts";
+import { byName, maxSkills } from "#agent/domain/agent-skill.ts";
+import type { AgentSkill } from "#agent/domain/agent-skill.ts";
 import { positionOf } from "#agent/domain/chat-cursor.ts";
 import { AgentChatIdSchema, AgentMessageIdSchema } from "#agent/domain/ids.ts";
-import { inPerson } from "#agent/domain/person-required.ts";
 import type { PersonRequired } from "#agent/domain/person-required.ts";
 import { chatPageSize, runLease } from "#agent/domain/run-limits.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
 import type { Actor } from "#shared/domain/access.ts";
-import { authorize } from "#shared/domain/authorize.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 
 const decodeChatId = Schema.decodeUnknownOption(AgentChatIdSchema);
@@ -68,28 +71,28 @@ type RunFailure =
   | ChatNotFound
   | MediaRejected
   | MessageRejected
-  | RunRefusal;
+  | RunRefusal
+  | SkillNotFound;
+
+/**
+ * A person's message: its text, the files it attaches and the skills it
+ * picks, each by its id.
+ */
+export interface SentMessage {
+  readonly mediaIds?: readonly string[];
+  readonly skillIds?: readonly string[];
+  readonly text: string;
+}
 
 /** What the person sent: a message with the files it names, or an answer. */
 type Asked =
   | {
       readonly _tag: "message";
       readonly mediaIds: readonly string[];
+      readonly skillIds: readonly string[];
       readonly text: string;
     }
   | Extract<RunInput, { readonly _tag: "answer" }>;
-
-// The person in their own session, with assistant:use.
-const ownerOf = (actor: Actor) =>
-  Effect.gen(function* owner() {
-    yield* Effect.fromResult(authorize(actor, "assistant:use"));
-
-    const userId = yield* Effect.fromResult(inPerson(actor));
-
-    const owned: ChatOwner = { userId, workspaceId: actor.workspaceId };
-
-    return owned;
-  });
 
 // The chat, or the refusal that tells nobody whether it is someone else's.
 const orNotFound = <A>(
@@ -138,8 +141,7 @@ export class AgentDesk extends Context.Service<
     readonly send: (
       actor: Actor,
       chatId: string,
-      text: string,
-      mediaIds: readonly string[],
+      message: SentMessage,
       asked: RunAsked
     ) => Effect.Effect<Stream.Stream<AgentEvent>, RunFailure>;
     /** The person's answer to a change the agent asked to make. */
@@ -158,6 +160,7 @@ export class AgentDesk extends Context.Service<
       const chats = yield* AgentChats;
       const runs = yield* AgentRuns;
       const files = yield* AttachedFiles;
+      const skills = yield* AgentSkills;
       const ids = yield* Ids;
       // A run whose stream is never read (its request gone before its
       // answer started) still lets go of what it holds, after its lease.
@@ -168,6 +171,32 @@ export class AgentDesk extends Context.Service<
           Effect.flatMap((id) => chats.chat(owner, id)),
           Effect.flatMap(orNotFound)
         );
+
+      // The skills a message picks, each once, in the order given, each
+      // one the person may use; and the others they may use, by name, as
+      // many as they may see.
+      const pickedSkills = (owner: ChatOwner, skillIds: readonly string[]) =>
+        Effect.gen(function* picking() {
+          const usable = yield* skills.usable(owner);
+          const picked: AgentSkill[] = [];
+
+          for (const skillId of new Set(skillIds)) {
+            const skill = usable.find(({ id }) => id === skillId);
+
+            if (skill === undefined) {
+              return yield* new SkillNotFound({ skillId });
+            }
+
+            picked.push(skill);
+          }
+
+          const offeredSkills = usable
+            .filter((skill) => !picked.includes(skill))
+            .toSorted(byName)
+            .slice(0, maxSkills);
+
+          return { offeredSkills, skills: picked };
+        });
 
       // A run on a chat of the owner's: claimed for it alone, refused while
       // another holds it; then the run's events, which let go of the chat
@@ -187,13 +216,15 @@ export class AgentDesk extends Context.Service<
 
           const chat = yield* found(owner, chatId);
 
-          // The files a message attaches, before anything is claimed or
-          // counted: a file it cannot use refuses it whole.
+          // The files a message attaches and the skills it picks, before
+          // anything is claimed or counted: a file it cannot use, or a
+          // skill the person may not, refuses it whole.
           const input: RunInput =
             given._tag === "message"
               ? {
                   _tag: "message",
                   media: yield* files.read(actor, given.mediaIds),
+                  ...(yield* pickedSkills(owner, given.skillIds)),
                   text: given.text,
                 }
               : given;
@@ -332,10 +363,13 @@ export class AgentDesk extends Context.Service<
 
             yield* rated ? Effect.void : Effect.fail(new ChatNotFound());
           }).pipe(Effect.withSpan("AgentDesk.rate")),
-        send: (actor, chatId, text, mediaIds, asked) =>
-          run(actor, chatId, { _tag: "message", mediaIds, text }, asked).pipe(
-            Effect.withSpan("AgentDesk.send")
-          ),
+        send: (actor, chatId, { mediaIds = [], skillIds = [], text }, asked) =>
+          run(
+            actor,
+            chatId,
+            { _tag: "message", mediaIds, skillIds, text },
+            asked
+          ).pipe(Effect.withSpan("AgentDesk.send")),
         updateChat: (actor, chatId, change) =>
           Effect.gen(function* updateChat() {
             const owner = yield* ownerOf(actor);

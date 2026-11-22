@@ -477,11 +477,29 @@ export interface AgentChatRecord {
     readonly outcome: string | null;
     readonly rating: string | null;
     readonly role: string;
+    readonly skills: readonly {
+      readonly id: string;
+      readonly name: string;
+    }[];
     readonly text: string;
     readonly tools: readonly string[];
   }[];
   readonly starred: boolean;
   readonly title: string | null;
+  readonly updatedAt: DateTime.Utc;
+  readonly workspaceId: string;
+}
+
+/**
+ * A skill a person saved for the agent in a workspace: their own, or one
+ * of the workspace's they wrote.
+ */
+export interface AgentSkillRecord {
+  readonly createdAt: DateTime.Utc;
+  readonly id: string;
+  readonly instructions: string;
+  readonly name: string;
+  readonly scope: string;
   readonly updatedAt: DateTime.Utc;
   readonly workspaceId: string;
 }

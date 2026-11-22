@@ -71,8 +71,35 @@ export const messages = agentSchema.table(
     outcome: text("outcome"),
     rating: text("rating"),
     role: text("role").notNull(),
+    // The skills the person picked, by id and their name then; none on a
+    // message kept before skills.
+    skills: jsonb("skills").notNull().default([]),
     steps: jsonb("steps").notNull(),
     text: text("text").notNull(),
   },
   (table) => [index("messages_chat").on(table.chatId, table.id)]
+);
+
+/**
+ * The skills of each workspace: a person's own (`personal`, deleted with
+ * their membership or account), or the workspace's (`workspace`, whose
+ * `author_id` is cleared when its author leaves, and deleted with the
+ * workspace).
+ */
+export const skills = agentSchema.table(
+  "skills",
+  {
+    authorId: uuid("author_id"),
+    createdAt: instant("created_at").notNull(),
+    id: uuid("id").primaryKey(),
+    instructions: text("instructions").notNull(),
+    name: text("name").notNull(),
+    scope: text("scope").notNull(),
+    updatedAt: instant("updated_at").notNull(),
+    workspaceId: uuid("workspace_id").notNull(),
+  },
+  (table) => [
+    index("skills_workspace").on(table.workspaceId, table.scope),
+    index("skills_author").on(table.authorId),
+  ]
 );

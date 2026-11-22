@@ -23,6 +23,7 @@ import { OwnProviderBusy } from "#agent/application/own-provider-busy.ts";
 import { AgentChats } from "#agent/application/ports/agent-chats.ts";
 import { AgentRuns } from "#agent/application/ports/agent-runs.ts";
 import type { RunRequest } from "#agent/application/ports/agent-runs.ts";
+import { AgentSkills } from "#agent/application/ports/agent-skills.ts";
 import {
   answered,
   approvalOf,
@@ -51,6 +52,7 @@ import {
   titleInstructions,
 } from "#agent/domain/chat-title.ts";
 import { AgentMessageIdSchema } from "#agent/domain/ids.ts";
+import { inPerson } from "#agent/domain/person-required.ts";
 import {
   maxAnswerLength,
   maxRounds,
@@ -62,6 +64,10 @@ import { postOf } from "#agent/domain/tool-items.ts";
 import { AgentLanguageModels } from "#agent/infrastructure/agent-language-models.ts";
 import { AgentToolbox } from "#agent/infrastructure/agent-toolbox.ts";
 import type { AgentTool } from "#agent/infrastructure/agent-toolbox.ts";
+import {
+  readSkillName,
+  withReadSkill,
+} from "#agent/infrastructure/read-skill.ts";
 import { RunEnded } from "#agent/infrastructure/run-ended.ts";
 import {
   historyOf,
@@ -226,6 +232,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
     const models = yield* AgentLanguageModels;
     const toolbox = yield* AgentToolbox;
     const chats = yield* AgentChats;
+    const skills = yield* AgentSkills;
     const ids = yield* Ids;
 
     const availability = (actor: RunRequest["actor"]) =>
@@ -299,6 +306,13 @@ export const LanguageModelAgentRunsLive = Layer.effect(
           })
         )
       );
+
+      // The run's tools: the toolbox's, and the agent's own that reads the
+      // person's skills.
+      const toolkit = yield* withReadSkill(toolbox.toolkit, skills, {
+        userId: yield* Effect.fromResult(inPerson(actor)),
+        workspaceId: actor.workspaceId,
+      });
 
       const lease = yield* access.open(actor).pipe(
         Effect.map(Option.some),
@@ -460,6 +474,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 outcome: Option.some(outcome),
                 rating: Option.none(),
                 role: "assistant",
+                skills: [],
                 steps: written.steps,
                 text: storableText(written.text, maxAnswerLength),
               });
@@ -528,7 +543,11 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 }
               }
 
-              if (toolbox.changes(result.tool)) {
+              // Reading a skill changes nothing, and is no MCP tool.
+              if (
+                result.tool !== readSkillName &&
+                toolbox.changes(result.tool)
+              ) {
                 yield* toolbox.record({
                   member,
                   origin,
@@ -612,7 +631,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                     history
                   ),
                   toolCallValidation: "deferred",
-                  toolkit: toolbox.toolkit,
+                  toolkit,
                 })
                 .pipe(
                   Stream.runForEach(onPart),
@@ -765,6 +784,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                   outcome: before.outcome,
                   rating: before.rating,
                   role: before.role,
+                  skills: before.skills,
                   steps: before.steps,
                   text: before.text,
                 }),
@@ -777,11 +797,12 @@ export const LanguageModelAgentRunsLive = Layer.effect(
           // made (the model reads so, the person sees them expire), and
           // the message is kept.
           const messageTaken = (
-            text: string,
-            media: AgentMessage["media"],
+            message: Extract<RunRequest["input"], { readonly _tag: "message" }>,
             userId: AgentMessage["id"]
           ) =>
             Effect.gen(function* taken() {
+              const { media, text } = message;
+
               const expired = Option.match(asking, {
                 onNone: () => [],
                 onSome: pendingOf,
@@ -816,7 +837,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 yield* keptWith(before, approvals);
               }
 
-              history = withUserMessage(history, text, media);
+              history = withUserMessage(history, text, message);
 
               yield* chats.save(
                 chat.chat.id,
@@ -830,6 +851,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                   outcome: Option.none(),
                   rating: Option.none(),
                   role: "user",
+                  skills: message.skills.map(({ id, name }) => ({ id, name })),
                   steps: [],
                   text: storableText(text, maxAnswerLength),
                 }),
@@ -907,7 +929,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
             });
 
             if (input._tag === "message" && Option.isSome(userMessageId)) {
-              yield* messageTaken(input.text, input.media, userMessageId.value);
+              yield* messageTaken(input, userMessageId.value);
             }
 
             if (input._tag === "answer") {

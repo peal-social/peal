@@ -521,6 +521,7 @@ const AgentRecordsTest = Layer.succeed(
     eraseMember: () => Effect.void,
     eraseUser: () => Effect.void,
     eraseWorkspace: () => Effect.void,
+    exportSkills: () => Effect.succeed([]),
     exportUser: () => Effect.succeed([]),
     purge: Effect.succeed(0),
   })

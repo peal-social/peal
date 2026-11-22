@@ -45,6 +45,7 @@ const agentChatRecordOf = ({ chat, messages }: ExportedChat) => ({
     outcome: Option.getOrNull(message.outcome),
     rating: Option.getOrNull(message.rating),
     role: message.role,
+    skills: message.skills.map(({ id, name }) => ({ id, name })),
     text: message.text,
     tools: message.steps.map(({ tool }) => tool),
   })),
@@ -166,6 +167,7 @@ export const ContextRecordsLive = Layer.effect(
           agentChats: agentChats
             .exportUser(userId)
             .pipe(Effect.map((chats) => chats.map(agentChatRecordOf))),
+          agentSkills: agentChats.exportSkills(userId),
           contracts: billing.exportUser(userId),
           legalHold: legal.exportUser(userId),
           messages: engagement.exportUserMessages(userId),
@@ -180,6 +182,7 @@ export const ContextRecordsLive = Layer.effect(
             ...exported.user,
             activity: exported.activity,
             agentChats: exported.agentChats,
+            agentSkills: exported.agentSkills,
             contracts: exported.contracts,
             legalHold: exported.legalHold,
             messages: exported.messages,

@@ -141,6 +141,28 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           reason: "empty",
         });
 
+        // A skill the person may not use: 404, before anything streams.
+        const unknownSkill = yield* client.agent
+          .send({
+            params: { ...params, chatId: chat.id },
+            payload: {
+              skillIds: ["0190f0e0-0000-7000-8000-00000000eeee"],
+              text: "Plan it",
+            },
+          })
+          .pipe(Effect.flip);
+
+        assert.deepInclude(unknownSkill, {
+          _tag: "AgentSkillNotFound",
+          skillId: "0190f0e0-0000-7000-8000-00000000eeee",
+        });
+
+        const kept = yield* client.agent.chat({
+          params: { ...params, chatId: chat.id },
+        });
+
+        assert.lengthOf(kept.messages, 0);
+
         const status = yield* client.agent.status({ params });
 
         assert.deepStrictEqual(status, {
@@ -149,6 +171,102 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           source: "server",
         });
       }).pipe(Effect.provide(agentTest()))
+    );
+
+    it.effect(
+      "makes, lists, changes and deletes skills, with the contract's refusals, and keeps a picked one on the message",
+      () =>
+        Effect.gen(function* skills() {
+          const person = yield* freshPerson;
+          const client = yield* clientAs(person);
+          const params = { workspaceId: person.workspaceId };
+
+          const made = yield* client.agent.createSkill({
+            params,
+            payload: {
+              instructions: "List next week's drafts by day.",
+              name: "Weekly plan",
+              scope: "personal",
+            },
+          });
+
+          assert.deepInclude(made, {
+            editable: true,
+            name: "Weekly plan",
+            scope: "personal",
+          });
+
+          const taken = yield* client.agent
+            .createSkill({
+              params,
+              payload: {
+                instructions: "Again.",
+                name: "WEEKLY PLAN",
+                scope: "workspace",
+              },
+            })
+            .pipe(Effect.flip);
+
+          assert.deepInclude(taken, {
+            _tag: "AgentSkillRefused",
+            reason: "nameTaken",
+          });
+
+          const moved = yield* client.agent.updateSkill({
+            params: { ...params, skillId: made.id },
+            payload: { scope: "workspace" },
+          });
+
+          assert.strictEqual(moved.scope, "workspace");
+
+          const listed = yield* client.agent.skills({ params });
+
+          assert.deepStrictEqual(
+            listed.skills.map(({ id, name }) => [id, name]),
+            [[made.id, "Weekly plan"]]
+          );
+
+          const chat = yield* client.agent.createChat({ params });
+
+          yield* FakeAgentModel.use((model) =>
+            model.script([says("Planned.")])
+          );
+          yield* client.agent
+            .send({
+              params: { ...params, chatId: chat.id },
+              payload: { skillIds: [made.id], text: "Plan it" },
+            })
+            .pipe(Effect.flatMap(Stream.runCollect));
+
+          yield* client.agent.deleteSkill({
+            params: { ...params, skillId: made.id },
+          });
+
+          const gone = yield* client.agent
+            .updateSkill({
+              params: { ...params, skillId: made.id },
+              payload: { name: "Week ahead" },
+            })
+            .pipe(Effect.flip);
+
+          assert.deepInclude(gone, {
+            _tag: "AgentSkillNotFound",
+            skillId: made.id,
+          });
+
+          // The message still names the skill it picked.
+          const detail = yield* client.agent.chat({
+            params: { ...params, chatId: chat.id },
+          });
+
+          assert.deepStrictEqual(
+            detail.messages.map(({ role, skills: picked }) => [role, picked]),
+            [
+              ["user", [{ id: made.id, name: "Weekly plan" }]],
+              ["assistant", []],
+            ]
+          );
+        }).pipe(Effect.provide(agentTest()))
     );
   }
 );

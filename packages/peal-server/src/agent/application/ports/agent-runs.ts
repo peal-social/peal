@@ -10,6 +10,7 @@ import type {
   AgentAvailability,
   AgentMedia,
 } from "#agent/domain/agent-parts.ts";
+import type { AgentSkill } from "#agent/domain/agent-skill.ts";
 import type { PersonRequired } from "#agent/domain/person-required.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import type { AllowanceReached } from "#shared/domain/allowance-reached.ts";
@@ -28,6 +29,10 @@ export type RunInput =
       readonly _tag: "message";
       /** The files it attaches, as the person may read them. */
       readonly media: readonly AgentMedia[];
+      /** The other skills the person may use, by name, which the agent may read. */
+      readonly offeredSkills: readonly AgentSkill[];
+      /** The skills it picks, which the agent follows for it. */
+      readonly skills: readonly AgentSkill[];
       readonly text: string;
     }
   | {

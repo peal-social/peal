@@ -4,6 +4,7 @@ import {
   AgentApprovalSchema,
   AgentCardSchema,
   AgentMediaSchema,
+  AgentMessageSkillSchema,
   AgentOutcomeSchema,
   AgentRatingSchema,
   AgentStepSchema,
@@ -29,6 +30,8 @@ export class AgentMessage extends Schema.Class<AgentMessage>(
   outcome: Schema.Option(AgentOutcomeSchema),
   rating: Schema.Option(AgentRatingSchema),
   role: Schema.Literals(["user", "assistant"]),
+  // The skills the person picked; none on the agent's answers.
+  skills: Schema.Array(AgentMessageSkillSchema),
   steps: Schema.Array(AgentStepSchema),
   text: Schema.String,
 }) {}

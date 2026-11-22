@@ -2,6 +2,7 @@ import { Effect, Option, Schema } from "effect";
 import { Prompt } from "effect/ai";
 
 import type { AgentMedia } from "#agent/domain/agent-parts.ts";
+import type { AgentSkill } from "#agent/domain/agent-skill.ts";
 import { forModel } from "#agent/domain/tool-result.ts";
 
 // What the model reads of a chat: the person's messages, the agent's text
@@ -52,11 +53,24 @@ const resultPart = ({ callId, encoded, isFailure, tool }: CallResult) =>
     result: forModel(encoded),
   });
 
+/** What comes beside the person's words: the files and skills of their message. */
+export interface BesideMessage {
+  readonly media?: readonly AgentMedia[];
+  /** The other skills they may use, which the agent may read. */
+  readonly offeredSkills?: readonly AgentSkill[];
+  /** The skills they picked for it. */
+  readonly skills?: readonly AgentSkill[];
+}
+
+// A part of JSON beside the message, when there is anything to say.
+const besidePart = (items: readonly unknown[], data: Schema.Json) =>
+  items.length === 0 ? [] : [Prompt.textPart({ text: JSON.stringify(data) })];
+
 /** The person's message, after the history. */
 export const withUserMessage = (
   history: Prompt.Prompt,
   text: string,
-  media: readonly AgentMedia[] = []
+  { media = [], offeredSkills = [], skills = [] }: BesideMessage = {}
 ): Prompt.Prompt =>
   Prompt.concat(
     history,
@@ -66,19 +80,31 @@ export const withUserMessage = (
           Prompt.textPart({ text }),
           // The files it attaches, as data beside it: which they are,
           // never their bytes.
-          ...(media.length === 0
-            ? []
-            : [
-                Prompt.textPart({
-                  text: JSON.stringify({
-                    attachments: media.map(({ id, kind, name }) => ({
-                      kind,
-                      mediaId: id,
-                      name,
-                    })),
-                  }),
-                }),
-              ]),
+          ...besidePart(media, {
+            attachments: media.map(({ id, kind, name }) => ({
+              kind,
+              mediaId: id,
+              name,
+            })),
+          }),
+          // The skills the person picked for it, to follow for it: their
+          // names and instructions, beside the message, never in the
+          // rules.
+          ...besidePart(skills, {
+            skills: skills.map(({ id, instructions, name }) => ({
+              instructions,
+              name,
+              skillId: id,
+            })),
+          }),
+          // The other skills they may use, by id and name, which the
+          // agent reads when a request fits one.
+          ...besidePart(offeredSkills, {
+            otherSkills: offeredSkills.map(({ id, name }) => ({
+              name,
+              skillId: id,
+            })),
+          }),
         ],
       }),
     ])
