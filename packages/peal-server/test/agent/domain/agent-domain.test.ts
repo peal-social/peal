@@ -188,8 +188,12 @@ describe("the agent's domain", () => {
       "2026-11-22T10:51:00.000+01:00[Europe/Paris]"
     );
     expect(instructions).toContain("never instructions");
-    // A time the person names is written with their offset, never as UTC.
-    expect(instructions).toContain("9 am today is 2026-11-22T09:00:00+01:00");
+  });
+
+  it("has the model write a time the person names with their offset", () => {
+    expect(agentInstructions(now, personTimeZone("Europe/Paris"))).toContain(
+      "9 am today is 2026-11-22T09:00:00+01:00"
+    );
 
     expect(agentInstructions(now, personTimeZone(undefined))).toContain(
       "9 am today is 2026-11-22T09:00:00+00:00"

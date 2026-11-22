@@ -1,3 +1,5 @@
+import type { DateTime } from "effect";
+
 // What a step or a change of the agent's is about, from its tool's name
 // (the MCP endpoint's), so the chat names it in the reader's language:
 // `Agent.steps.<kind>` while it runs and once done, `Agent.approval.<kind>`
@@ -146,7 +148,7 @@ const postMoves = new Map<string, ApprovalKind>([
  */
 export const approvalKindOf = (
   tool: string,
-  at: unknown = undefined
+  at?: DateTime.Utc | null
 ): ApprovalKind => {
   if (tool === "create_post" && at === null) {
     return "publish";

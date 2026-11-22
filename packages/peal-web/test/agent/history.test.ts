@@ -151,7 +151,9 @@ describe(approvalKindOf, () => {
         "edit_published_post",
         "create_tag",
         "discard_draft",
-      ].map((tool) => approvalKindOf(tool, "2026-11-23T07:00:00Z"))
+      ].map((tool) =>
+        approvalKindOf(tool, DateTime.makeUnsafe("2026-11-23T07:00:00Z"))
+      )
     ).toStrictEqual([
       "schedule",
       "move",
@@ -187,6 +189,6 @@ describe(changedKeysOf, () => {
         excerpt: "Thanks",
         threadId: "t1",
       }).some((key) => key.includes("t1"))
-    ).toBe(true);
+    ).toBeTruthy();
   });
 });
