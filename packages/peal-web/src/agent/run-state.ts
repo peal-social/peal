@@ -4,6 +4,7 @@ import type {
   AgentChatDetail,
   AgentEvent,
   AgentFailure,
+  AgentMedia,
   AgentMessage,
   AgentRating,
   AgentStep,
@@ -58,6 +59,8 @@ export type ChatAction =
   | {
       readonly _tag: "sent";
       readonly at: DateTime.Utc;
+      /** The files the message attaches, shown with it at once. */
+      readonly media: readonly AgentMedia[];
       readonly text: string;
     }
   | {
@@ -159,6 +162,7 @@ const settleSteps = (message: AgentMessage): AgentMessage => ({
 
 const answerOf = (id: string, at: DateTime.Utc): AgentMessage => ({
   approvals: [],
+  media: [],
   cards: [],
   createdAt: at,
   durationMs: null,
@@ -318,6 +322,7 @@ export const foldChat = (state: ChatState, action: ChatAction): ChatState => {
       const mine: AgentMessage = {
         ...answerOf(localUserMessageId, action.at),
         role: "user",
+        media: action.media,
         text: action.text,
       };
 

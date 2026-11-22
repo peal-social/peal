@@ -42,7 +42,7 @@ const approval: AgentApproval = {
 };
 
 const asked = fold({ ...emptyChat, draft: "Find my drafts", loaded: true }, [
-  { _tag: "sent", at: at(0), text: "Find my drafts" },
+  { _tag: "sent", at: at(0), media: [], text: "Find my drafts" },
 ]);
 
 describe(foldChat, () => {
@@ -195,7 +195,7 @@ describe(foldChat, () => {
         durationMs: 2000,
         outcome: "awaitingApproval",
       }),
-      { _tag: "sent", at: at(20), text: "Never mind" },
+      { _tag: "sent", at: at(20), media: [], text: "Never mind" },
     ]);
 
     expect(state.messages[1]?.approvals[0]?.state).toBe("expired");

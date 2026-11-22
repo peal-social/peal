@@ -1,6 +1,6 @@
 import { DateTime, Effect, Exit, Stream } from "effect";
 import { Atom, Reactivity } from "effect/reactivity";
-import type { AgentEvent } from "peal-contract/agent";
+import type { AgentEvent, AgentMedia } from "peal-contract/agent";
 
 import { changedKeysOf } from "#agent/changed-keys.ts";
 import { PealAgentApi } from "#agent/client.ts";
@@ -59,7 +59,7 @@ export interface RunRequest {
   readonly ask:
     | {
         readonly _tag: "send";
-        readonly mediaIds: readonly string[];
+        readonly media: readonly AgentMedia[];
         readonly text: string;
       }
     | {
@@ -100,7 +100,12 @@ export const agentRun = Atom.family((chatId: string) =>
         const params = { chatId, workspaceId };
 
         if (ask._tag === "send") {
-          dispatch({ _tag: "sent", at: now(), text: ask.text });
+          dispatch({
+            _tag: "sent",
+            at: now(),
+            media: ask.media,
+            text: ask.text,
+          });
         } else {
           dispatch({
             _tag: "answered",
@@ -119,7 +124,7 @@ export const agentRun = Atom.family((chatId: string) =>
               client.agent.send({
                 params,
                 payload: {
-                  mediaIds: ask.mediaIds,
+                  mediaIds: ask.media.map(({ id }) => id),
                   text: ask.text,
                   ...timeZoneOf(),
                 },

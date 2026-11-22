@@ -50,6 +50,7 @@ const answer = (fields: Partial<AgentMessage>): AgentMessage => ({
   createdAt: at,
   durationMs: null,
   id: "m2",
+  media: [],
   outcome: null,
   rating: null,
   role: "assistant",
@@ -120,6 +121,26 @@ describe(TranscriptView, () => {
       html.includes("Find my drafts"),
       html.includes("Thinking…"),
     ]).toStrictEqual([true, true, true]);
+  });
+
+  it("names the files the person's message attaches, by name or kind", async () => {
+    const html = await transcript({
+      ...emptyChat,
+      messages: [
+        {
+          ...asked,
+          media: [
+            { id: "f1", kind: "image", name: "launch.png" },
+            { id: "f2", kind: "video", name: null },
+          ],
+        },
+      ],
+    });
+
+    expect([
+      html.includes("launch.png"),
+      html.includes(">Video<"),
+    ]).toStrictEqual([true, true]);
   });
 
   it("shows a running step as a live line", async () => {

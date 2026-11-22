@@ -622,7 +622,8 @@
       "remove": "Retirer {name}",
       "uploading": "Ajout de {name} à la médiathèque…",
       "failed": "{name} n’a pas pu être ajouté à la médiathèque.",
-      "waiting": "Attendez que les fichiers soient dans la médiathèque."
+      "waiting": "Attendez que les fichiers soient dans la médiathèque.",
+      "kind": "{kind, select, image {Image} video {Vidéo} other {Document}}"
     },
     "skills": {
       "planWeek": {

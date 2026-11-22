@@ -9,7 +9,7 @@ import {
 import { Exit, Option } from "effect";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import type { AgentRating } from "peal-contract/agent";
+import type { AgentMedia, AgentRating } from "peal-contract/agent";
 import { toast } from "peal-ui/components/toast";
 import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
 
@@ -248,9 +248,9 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
 
       return Exit.isSuccess(exit);
     },
-    send: (text: string, mediaIds: readonly string[] = []) => {
+    send: (text: string, media: readonly AgentMedia[] = []) => {
       registry.set(run, {
-        ask: { _tag: "send", mediaIds, text },
+        ask: { _tag: "send", media, text },
         chatId,
         workspaceId,
       });
@@ -298,7 +298,7 @@ export const useNewAgentChat = (
   useOfferOnRefusal(state, workspaceId);
 
   return {
-    send: async (text: string, mediaIds: readonly string[] = []) => {
+    send: async (text: string, media: readonly AgentMedia[] = []) => {
       dispatch({ _tag: "typed", text: "" });
 
       const exit = await create({ params: { workspaceId } });
@@ -318,7 +318,7 @@ export const useNewAgentChat = (
         title: chat.title,
       });
       registry.set(agentRun(chat.id), {
-        ask: { _tag: "send", mediaIds, text },
+        ask: { _tag: "send", media, text },
         chatId: chat.id,
         workspaceId,
       });

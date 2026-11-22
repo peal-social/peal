@@ -3,6 +3,7 @@
 import { PanelBottomOpenIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Permission } from "peal-contract";
+import type { AgentMedia } from "peal-contract/agent";
 import { Button } from "peal-ui/components/button";
 import { useRef, useSyncExternalStore } from "react";
 
@@ -102,8 +103,8 @@ export const AgentHomeScreen = ({
     router.push(workspaceHref(workspaceId, `/agent/${chatId}`));
   });
 
-  const send = (text: string, mediaIds: readonly string[] = []) => {
-    void chat.send(text, mediaIds);
+  const send = (text: string, media: readonly AgentMedia[] = []) => {
+    void chat.send(text, media);
   };
 
   return (

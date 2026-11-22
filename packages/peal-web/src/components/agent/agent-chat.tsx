@@ -214,8 +214,8 @@ export const ChatBody = ({
             chat.type(text);
           }}
           onEscape={onEscape}
-          onSend={(text, mediaIds) => {
-            chat.send(text, mediaIds);
+          onSend={(text, media) => {
+            chat.send(text, media);
           }}
           onStop={() => {
             chat.stop();

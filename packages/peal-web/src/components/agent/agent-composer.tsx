@@ -7,6 +7,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { AgentMedia } from "peal-contract/agent";
 import { Button } from "peal-ui/components/button";
 import { cn } from "peal-ui/lib/utils";
 import type { ComponentProps, RefObject } from "react";
@@ -92,8 +93,8 @@ export const AttachmentsView = ({
 
 /**
  * The agent's composer with its **+**: files attached to the message, and
- * skills put in the text. `onSend` gets the text and the library's ids of
- * the files attached, then the list empties.
+ * skills put in the text. `onSend` gets the text and the files attached,
+ * as the library names them, then the list empties.
  */
 export const AgentComposer = ({
   inputRef,
@@ -108,7 +109,7 @@ export const AgentComposer = ({
   readonly inputRef?: RefObject<HTMLTextAreaElement | null> | undefined;
   /** Where ⌘⇧U acts: this chat's page or the panel. */
   readonly keys?: "page" | "panel" | undefined;
-  readonly onSend: (text: string, mediaIds: readonly string[]) => void;
+  readonly onSend: (text: string, media: readonly AgentMedia[]) => void;
   readonly workspaceId: string;
 }) => {
   const attachments = useAttachments(workspaceId);
@@ -134,7 +135,7 @@ export const AgentComposer = ({
         />
       }
       onSend={() => {
-        onSend(composer.value.trim(), attachments.mediaIds);
+        onSend(composer.value.trim(), attachments.media);
         attachments.clear();
       }}
     />

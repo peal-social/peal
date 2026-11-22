@@ -2,6 +2,7 @@
 
 import { RegistryContext } from "@effect/atom-react";
 import { AsyncResult } from "effect/reactivity";
+import type { AgentMedia } from "peal-contract/agent";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 import { upload } from "#media/atoms.ts";
@@ -10,11 +11,21 @@ import { upload } from "#media/atoms.ts";
 export interface Attachment {
   /** The upload's own key, the file's until the library names it. */
   readonly key: string;
+  readonly kind: AgentMedia["kind"];
   /** The library's id, once the file is in it. */
   readonly mediaId: string | null;
   readonly name: string;
   readonly state: "uploading" | "ready" | "failed";
 }
+
+// What the library makes of a file, from its type.
+const kindOf = (file: File): AgentMedia["kind"] => {
+  if (file.type.startsWith("image/")) {
+    return "image";
+  }
+
+  return file.type.startsWith("video/") ? "video" : "document";
+};
 
 /** At most this many files a message, as the server takes. */
 export const maxAttachments = 10;
@@ -47,7 +58,13 @@ export const useAttachments = (workspaceId: string) => {
 
       setItems((current) => [
         ...current,
-        { key, mediaId: null, name: file.name, state: "uploading" },
+        {
+          key,
+          kind: kindOf(file),
+          mediaId: null,
+          name: file.name,
+          state: "uploading",
+        },
       ]);
 
       const stop = registry.subscribe(atom, (result) => {
@@ -93,9 +110,9 @@ export const useAttachments = (workspaceId: string) => {
       setItems([]);
     },
     items,
-    /** The library's ids of the files ready to send. */
-    mediaIds: items.flatMap(({ mediaId, state }) =>
-      state === "ready" && mediaId !== null ? [mediaId] : []
+    /** The files ready to send, as the message will name them. */
+    media: items.flatMap(({ kind, mediaId, name, state }): AgentMedia[] =>
+      state === "ready" && mediaId !== null ? [{ id: mediaId, kind, name }] : []
     ),
     remove,
   };

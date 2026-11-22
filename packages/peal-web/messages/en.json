@@ -622,7 +622,8 @@
       "remove": "Remove {name}",
       "uploading": "Adding {name} to the library…",
       "failed": "{name} couldn't be added to the library.",
-      "waiting": "Wait until the files are in the library."
+      "waiting": "Wait until the files are in the library.",
+      "kind": "{kind, select, image {Image} video {Video} other {Document}}"
     },
     "skills": {
       "planWeek": {

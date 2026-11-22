@@ -10,6 +10,7 @@ import {
   ArrowUpIcon,
   ChevronRightIcon,
   CopyIcon,
+  PaperclipIcon,
   SquareIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
@@ -542,13 +543,31 @@ export const MessageView = ({
 
   if (message.role === "user") {
     return (
-      <div className="flex justify-end">
+      <div className="flex flex-col items-end gap-1.5">
         <p
           dir="auto"
           className="bg-muted max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap"
         >
           {message.text}
         </p>
+        {message.media.length === 0 ? null : (
+          <ul
+            aria-label={t("add.attachments")}
+            className="flex max-w-[85%] flex-wrap justify-end gap-1.5"
+          >
+            {message.media.map((file) => (
+              <li
+                key={file.id}
+                className="text-muted-foreground flex h-7 max-w-56 items-center gap-1.5 rounded-md border px-2 text-xs"
+              >
+                <PaperclipIcon aria-hidden className="size-3.5 shrink-0" />
+                <span className="truncate">
+                  {file.name ?? t("add.kind", { kind: file.kind })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     );
   }
