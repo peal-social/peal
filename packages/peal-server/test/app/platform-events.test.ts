@@ -310,15 +310,22 @@ layer(TestApp.layerWith(configured))("Meta's events", (it) => {
       const body = pageEvent("synthetic-page");
       const signature = yield* signatureOf(mainSecret, body);
 
-      for (const app of ["facebook;x", "facebook/", "%66acebook", "Facebook"]) {
+      // A semicolon is refused before any route runs
+      // (`peal-contract/path-spelling`), the others by no route.
+      for (const [app, status] of [
+        ["facebook;x", 400],
+        ["facebook/", 404],
+        ["%66acebook", 404],
+        ["Facebook", 404],
+      ] as const) {
         assert.strictEqual(
           (yield* post(app, body, signature)).status,
-          404,
+          status,
           app
         );
         assert.strictEqual(
           (yield* handshake(app, subscribe())).status,
-          404,
+          status,
           app
         );
       }
