@@ -15,12 +15,14 @@ describe("next.config.ts", () => {
     expect(everywhere?.source).toBe("/:path*");
   });
 
-  it("keeps a connect link's page, whose address holds its token, out of referers, caches and search engines", async () => {
+  it("keeps a connect link's page and the confirmation page, whose addresses hold a token, out of referers, caches and search engines", async () => {
     const [, ...hosted] = await rules();
 
     expect(hosted.map((rule) => rule.source)).toStrictEqual([
       "/connect/link",
       "/:locale/connect/link",
+      "/verify-email",
+      "/:locale/verify-email",
     ]);
 
     for (const rule of hosted) {

@@ -106,14 +106,16 @@ export const SecretPathsLive = HttpRouter.middleware(
  * `/api/auth/callback/:id` with its authorization code and the sign-in's
  * state in the address, an OAuth client's authorization carries its own
  * state, Meta's events' handshake the operator's verify token
- * (`/api/platform-events/meta/:app`), and an address's confirmation link
- * its token (`/api/auth/verify-email`).
+ * (`/api/platform-events/meta/:app`), a token in any address, and the
+ * code the person types to approve the command line's device sign-in
+ * (`/api/auth/device?user_code=`).
  */
 export const redactedQueryNames: readonly string[] = [
   "code",
   "state",
   "hub.verify_token",
   "token",
+  "user_code",
 ];
 
 /** Those names, beside Effect's, for the routes' layer. */

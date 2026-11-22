@@ -997,6 +997,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   hides its link to sign up (`offersSignUp`). The server answers `open`
   while it has no account, so the first one can be made. The server decides: its
   `SIGN_UP_BY_INVITATION` reads from `Auth.errors`.
+- The confirmation email's link opens `verify-email?token=`, which
+  confirms nothing by itself: `ConfirmEmail`
+  (`components/auth/confirm-email.tsx`) takes the token out of the
+  address bar, posts it once to `/api/auth/confirm-email` (a button
+  stays for a browser that did not), and says what the server answered
+  (`confirmationResultOf`, `#auth/email-confirmation.ts`, tested):
+  signed in; confirmed from another browser, so choose a password (the
+  forgot-password page); already confirmed, so sign in or choose a new
+  password; closed because someone else used the account first, so sign
+  up again; in use and not closable, so ask the operator; a link that no
+  longer works, with the resend form. The page sends no Referer and is
+  never cached nor indexed (`next.config.ts`, `metadata.referrer`), and
+  loads no measurement nor support chat (both live under `(app)`).
 - The sign-in pages (sign-in, sign-up, forgot and reset password,
   verify email) have a frame of their own (`frameOf` answers `signIn`:
   no header, the contract functions alone at the foot, no language

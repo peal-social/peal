@@ -28,7 +28,7 @@ import {
   user,
   verification,
 } from "./auth-schema.generated.ts";
-import { bindingOf } from "./auth/sign-up-binding.ts";
+import { bindingOf, tokensNotBeforeOf } from "./auth/sign-up-binding.ts";
 import {
   partnerKeys,
   partners,
@@ -393,11 +393,17 @@ export const DrizzleAccountStore = Layer.effect(
           )
           .pipe(Effect.mapError(failed));
 
-        // The browser a sign-up of theirs may still confirm from: its row
-        // is named after the user (`bindingOf`) and holds digests only.
+        // The browser a sign-up of theirs may still confirm from, and the
+        // instant before which their bearer tokens stop working: rows named
+        // after the user, holding digests and a time only.
         yield* db
           .delete(verification)
-          .where(eq(verification.identifier, bindingOf(userId)))
+          .where(
+            inArray(verification.identifier, [
+              bindingOf(userId),
+              tokensNotBeforeOf(userId),
+            ])
+          )
           .pipe(Effect.mapError(failed));
 
         // The partner keys they created stay their partner's, without them.

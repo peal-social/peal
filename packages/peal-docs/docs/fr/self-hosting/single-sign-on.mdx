@@ -51,7 +51,9 @@ Peal lit trois informations dans le jeton d’identité :
 
 La connexion par un fournisseur n’atteint un compte que par une adresse que le fournisseur dit avoir confirmée.
 
-Un compte dont l’adresse n’a jamais été confirmée est relié au fournisseur lui aussi, et perd d’abord son mot de passe, ses sessions et ses applications connectées : la personne qui l’a créé avec cette adresse n’en est peut-être pas titulaire, et le fournisseur dit que celle qui se connecte l’est.
+Un compte dont l’adresse n’a jamais été confirmée est relié au fournisseur lui aussi, et perd d’abord son mot de passe, ses sessions, ses applications connectées ainsi que le nom et la langue choisis à sa création : la personne qui l’a créé avec cette adresse n’en est peut-être pas titulaire, et le fournisseur dit que celle qui se connecte l’est.
+
+Avec `AUTH_REQUIRE_EMAIL_VERIFICATION=false`, un tel compte a pu être utilisé, et il n’est jamais transmis. S’il appartient à un espace de travail, il est fermé avec ce qu’il a créé, et la personne est invitée à se reconnecter, ce qui crée son propre compte. S’il ne peut pas être fermé (d’autres utilisent un espace de travail dont il est le seul propriétaire), la connexion est refusée et la personne est invitée à s’adresser à vous.
 
 Une fois relié, l’identifiant du fournisseur connecte ce compte, même si l’adresse change chez le fournisseur. Rien d’autre ne relie un compte à un fournisseur, et la page du compte n’a ni lien ni déliaison.
 

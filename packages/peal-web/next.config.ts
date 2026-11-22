@@ -39,7 +39,8 @@ const securityHeaders = [
 ];
 
 // A connect link's page holds the link's token in its address, the only
-// credential its visitor has: the address goes into no Referer, the page
+// credential its visitor has, and the confirmation page the token an
+// address's confirmation posts: the address goes into no Referer, the page
 // into no cache and no search engine. English has no prefix, any other
 // language its own.
 const hostedLinkHeaders = [
@@ -48,7 +49,12 @@ const hostedLinkHeaders = [
   { key: "X-Robots-Tag", value: "noindex, nofollow" },
 ];
 
-const hostedLinkSources = ["/connect/link", "/:locale/connect/link"];
+const hostedLinkSources = [
+  "/connect/link",
+  "/:locale/connect/link",
+  "/verify-email",
+  "/:locale/verify-email",
+];
 
 const config: NextConfig = {
   // In development, Next's badge sits at the bottom right: the bottom left

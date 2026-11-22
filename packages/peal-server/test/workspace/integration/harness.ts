@@ -318,6 +318,23 @@ export interface Person {
   readonly id: string;
 }
 
+/**
+ * Confirms an address as the web app's page does: the emailed link opens
+ * the page with the token, which posts it, from the browser holding these
+ * cookies ("" for none).
+ */
+export const confirmFrom = Effect.fn("confirmFrom")(function* confirmFrom(
+  link: URL,
+  cookies: string
+) {
+  const app = yield* TestApp;
+
+  return yield* app.request("/api/auth/confirm-email", {
+    body: { token: link.searchParams.get("token") ?? "" },
+    headers: cookies === "" ? {} : { cookie: cookies },
+  });
+});
+
 /** Signs in with the test password, and answers with the session cookies. */
 export const signIn = Effect.fn("signIn")(function* signIn(email: string) {
   const app = yield* TestApp;
@@ -354,11 +371,7 @@ export const confirmedAccount = Effect.fn("confirmedAccount")(
       locale === "fr" ? /^Confirmez/u : /^Confirm your email/u
     );
 
-    const link = linkIn(confirmation);
-
-    yield* app.request(`${link.pathname}${link.search}`, {
-      headers: { cookie: cookiesOf(created) },
-    });
+    yield* confirmFrom(linkIn(confirmation), cookiesOf(created));
 
     return { email, id: user.id };
   }

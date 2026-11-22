@@ -82,7 +82,9 @@ export const authErrorKey = (error: AuthClientError): AuthErrorKey =>
 const providerErrorKeys = {
   access_denied: "PROVIDER_ACCESS_DENIED",
   account_banned: "PROVIDER_FAILED",
+  account_in_use: "PROVIDER_ACCOUNT_IN_USE",
   account_not_linked: "PROVIDER_ACCOUNT_NOT_LINKED",
+  account_replaced: "PROVIDER_ACCOUNT_REPLACED",
   email_not_found: "PROVIDER_EMAIL_NOT_FOUND",
   provider_email_invalid: "PROVIDER_EMAIL_INVALID",
   provider_email_not_authoritative: "PROVIDER_EMAIL_NOT_AUTHORITATIVE",
@@ -95,7 +97,9 @@ const providerErrorKeys = {
 const ProviderCodeSchema = Schema.Literals([
   "access_denied",
   "account_banned",
+  "account_in_use",
   "account_not_linked",
+  "account_replaced",
   "email_not_found",
   "provider_email_invalid",
   "provider_email_not_authoritative",

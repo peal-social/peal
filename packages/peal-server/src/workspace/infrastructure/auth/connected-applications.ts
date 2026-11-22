@@ -1,8 +1,5 @@
-import {
-  getCurrentAdapter,
-  getCurrentAuthEndpointContext,
-} from "@better-auth/core/context";
-import type { GenericEndpointContext, User } from "better-auth";
+import { getCurrentAdapter } from "@better-auth/core/context";
+import type { GenericEndpointContext } from "better-auth";
 
 /**
  * Disconnects every application the user connected (the command line, MCP
@@ -26,18 +23,4 @@ export const forgetConnectedApplications = async (
   await adapter.deleteMany({ model: "oauthRefreshToken", where: theirs });
   await adapter.deleteMany({ model: "oauthConsent", where: theirs });
   await adapter.deleteMany({ model: "deviceCode", where: theirs });
-};
-
-/**
- * Better Auth's `emailAndPassword.onPasswordReset`: a new password, chosen
- * from the emailed link, ends what the old one let in. Better Auth ends the
- * sessions (`revokeSessionsOnPasswordReset`); the applications go here, as a
- * stolen password could have connected one.
- */
-export const disconnectAfterPasswordReset = async ({
-  user,
-}: {
-  readonly user: User;
-}): Promise<void> => {
-  await forgetConnectedApplications(getCurrentAuthEndpointContext(), user.id);
 };

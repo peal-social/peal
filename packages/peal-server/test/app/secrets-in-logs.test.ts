@@ -375,19 +375,29 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           yield* app.request(
             `/api/auth/reset-password/${reset}?callbackURL=${encodeURIComponent(`${origin}/reset-password`)}`
           );
-          yield* app.request(`/api/auth/verify-email?token=${confirmation}`);
+          // The confirmation page posts its token; the device page names
+          // the code the person typed in its address.
+          yield* app.request("/api/auth/confirm-email", {
+            body: { token: confirmation },
+          });
+
+          const userCode = "SYNTHUSERCODE";
+
+          yield* app.request(`/api/auth/device?user_code=${userCode}`);
 
           const all = written();
 
           // The requests were written about, their tokens left out.
           assert.include(all, "/api/notifications/weekly-digest/unsubscribe/");
           assert.include(all, "/api/auth/reset-password/");
-          assert.include(all, "/api/auth/verify-email");
+          assert.include(all, "/api/auth/confirm-email");
+          assert.include(all, "/api/auth/device");
 
           for (const [name, secret] of [
             ["the digest's unsubscribe token", unsubscribe],
             ["a password reset's token", reset],
             ["an address's confirmation token", confirmation],
+            ["a device sign-in's code", userCode],
           ] as const) {
             assert.notInclude(all, secret, name);
           }
