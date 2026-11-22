@@ -241,6 +241,7 @@ export const authWithoutDatabase = (
         await Promise.resolve({ _tag: "start", trialDays: null } as const),
       impersonatedRequest: async () => await Promise.resolve(true),
       invitation: ignore,
+      invitationEmail: async () => await Promise.resolve(true),
       log: ignore,
       memberAllowance: async () => await Promise.resolve(Option.none()),
       memberLeft: async () => {

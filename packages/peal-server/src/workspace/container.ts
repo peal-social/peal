@@ -78,6 +78,7 @@ import { DrizzleConnectedAppStore } from "#workspace/infrastructure/drizzle-conn
 import { DrizzleCredentialNames } from "#workspace/infrastructure/drizzle-credential-names.ts";
 import { DrizzleCustomerWorkspaces } from "#workspace/infrastructure/drizzle-customer-workspaces.ts";
 import { DrizzleImpersonationSessions } from "#workspace/infrastructure/drizzle-impersonation-sessions.ts";
+import { DrizzleInvitationEmailsLive } from "#workspace/infrastructure/drizzle-invitation-emails.ts";
 import { MemberDirectoryLive } from "#workspace/infrastructure/drizzle-member-directory.ts";
 import { DrizzlePartnerStore } from "#workspace/infrastructure/drizzle-partner-store.ts";
 import { SecurityPoliciesLive } from "#workspace/infrastructure/drizzle-security-policies.ts";
@@ -212,6 +213,11 @@ export const WorkspaceLive = Layer.mergeAll(
   Layer.provideMerge(PartnerOwnershipLive),
   Layer.provideMerge(StaffToolsLive),
   Layer.provideMerge(BetterAuthLive),
+  // The day's invitation emails, which Peal's API and Better Auth's route
+  // count alike, under keyed pseudonyms.
+  Layer.provideMerge(
+    DrizzleInvitationEmailsLive.pipe(Layer.provide(KeyedPseudonymsLive))
+  ),
   // The directory other contexts name members with (the review context),
   // and Better Auth's hooks check a membership with.
   Layer.provideMerge(MemberDirectoryLive),

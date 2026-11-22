@@ -67,6 +67,10 @@ Les invitations en attente sont listées avec leur date d’expiration. Pour cha
 
 Seule la personne invitée peut l’accepter, connectée avec l’adresse invitée une fois celle-ci vérifiée, et seulement jusqu’à l’expiration de l’invitation.
 
+Chaque invitation, envoyée ou renvoyée, est un e-mail. Une journée (UTC) en permet 100 pour chaque membre qui invite, 100 pour chaque espace de travail, et 3 pour chaque adresse invitée. Au-delà, inviter est refusé jusqu’au lendemain (`too_many_invitations`, 409, par l’API).
+
+L’e-mail montre votre nom et celui de l’espace de travail. Un nom tient sur une ligne, de 100 caractères au plus pour une personne et 120 pour un espace de travail, et ne peut pas contenir d’adresse web : un nom avec `://`, `www.` ou un domaine comme `example.com` est refusé.
+
 ### Exiger la validation en deux étapes [#require-two-step]
 
 Sous **Sécurité**, un propriétaire peut exiger la [validation en deux étapes](/guides/workspace/account#two-step) de tous les membres. Il faut un propriétaire connecté lui-même. Un administrateur ne le peut pas, ni une clé d’API, une application ou l’équipe agissant à la place d’un propriétaire. Vous devez aussi l’avoir activée pour votre propre compte, pour ne pas vous enfermer dehors.
@@ -271,6 +275,8 @@ Dans **Général**, les propriétaires cliquent sur **Supprimer cet espace de tr
   aussitôt de fonctionner. Plus rien n’en est publié. Stripe garde les factures
   qu’il a émises.
 </Callout>
+
+Ses canaux partent comme quand vous les déconnectez à la main : les plateformes qui le permettent sont priées d’oublier Peal, sauf si un autre espace de travail connecte encore le même compte.
 
 Si l’une de ses publications est en cours d’envoi, la suppression attend. Réessayez quelques minutes plus tard.
 

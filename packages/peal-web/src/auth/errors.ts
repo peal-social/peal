@@ -42,6 +42,10 @@ const KnownErrorSchema = Schema.Literals([
   // cannot route it.
   "ORGANIZATION_SLUG_ALREADY_TAKEN",
   "INVALID_WORKSPACE_SLUG",
+  // A person's name, or a new workspace's, is one line, bounded, and
+  // never reads as a link.
+  "INVALID_NAME",
+  "INVALID_WORKSPACE_NAME",
 ]);
 
 export type AuthErrorKey =

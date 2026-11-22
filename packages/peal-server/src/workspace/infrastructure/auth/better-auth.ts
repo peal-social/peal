@@ -1,5 +1,6 @@
 import {
   Context,
+  DateTime,
   Deferred,
   Duration,
   Effect,
@@ -27,6 +28,7 @@ import { AccountMail } from "#workspace/application/account-mail.ts";
 import type { TwoStepChange } from "#workspace/application/account-mail.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
 import { ImpersonationGuard } from "#workspace/application/impersonation-guard.ts";
+import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
 import { SecurityPolicies } from "#workspace/application/security-policies.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
@@ -300,6 +302,7 @@ export const BetterAuthLive = Layer.effect(
     const analytics = yield* ProductAnalytics;
     const { settings: site } = yield* SiteMeasurement;
     const agentRecords = yield* AgentRecords;
+    const invitationEmails = yield* InvitationEmails;
 
     // The instance, once made: the email of a recovery code used says how
     // many are left, which only the instance reads.
@@ -350,6 +353,20 @@ export const BetterAuthLive = Layer.effect(
       invitation: (link) => {
         run(emails.send({ _tag: "Invitation", ...link }));
       },
+      // Awaited before an invitation's email: one of the day's for the
+      // inviter, the workspace and the address. A database failure refuses
+      // the request.
+      invitationEmail: async ({ email, inviterId, workspaceId }) =>
+        await runPromise(
+          Effect.gen(function* invitationEmail() {
+            return yield* invitationEmails.claim({
+              at: yield* DateTime.now,
+              email,
+              inviterId: yield* decodeUserId(inviterId),
+              workspaceId: yield* decodeWorkspaceIdEffect(workspaceId),
+            });
+          }).pipe(Effect.withSpan("BetterAuth.invitationEmail"))
+        ),
       log: (level, message) => {
         run(
           Effect.logWithLevel(severities[level])(message).pipe(

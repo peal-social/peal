@@ -47,10 +47,20 @@ import {
 import type { BillingHooks } from "./billing.ts";
 import { disconnectAfterPasswordReset } from "./connected-applications.ts";
 import {
+  refuseUnfitSignUpNames,
+  userWithFitName,
+  workspaceWithFitName,
+} from "./display-names.ts";
+import {
   guardImpersonatedRequest,
   refuseImpersonatedChanges,
 } from "./impersonation.ts";
 import type { ImpersonationCheck } from "./impersonation.ts";
+import {
+  claimInvitationEmail,
+  claimResentInvitationEmail,
+} from "./invitation-emails.ts";
+import type { InvitationEmailAllowance } from "./invitation-emails.ts";
 import {
   apiResourceOf,
   cliClientId,
@@ -135,6 +145,8 @@ export interface AuthHooks extends BillingHooks {
    */
   readonly impersonatedRequest: ImpersonationCheck;
   readonly invitation: (link: InvitationLink) => void;
+  /** Awaited before an invitation's email: whether the day has one left. */
+  readonly invitationEmail: InvitationEmailAllowance;
   readonly log: (level: AuthLogLevel, message: string) => void;
   /**
    * Awaited once someone is no longer a member of a workspace (they left
@@ -414,6 +426,7 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
     await refuseRevokedSessions(ctx);
     await guardImpersonatedRequest(ctx, hooks.impersonatedRequest);
     await refuseUnadmittedSignUps(ctx, hooks.signUp);
+    refuseUnfitSignUpNames(ctx);
     guardProviderSignIn(ctx);
     await refuseImpersonatedChanges(ctx);
     refusePersonalSubscriptions(ctx);
@@ -421,6 +434,7 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
     await refuseLockedOutMembers(ctx, hooks.twoStep);
     await guardTwoStepChanges(ctx, hooks.twoStep);
     await noteTwoStepSender(ctx);
+    await claimResentInvitationEmail(ctx, hooks.invitationEmail);
   });
 
 // The columns of `auth.account` that hold what a provider issued. Peal needs
@@ -608,7 +622,19 @@ export const makeAuth = ({
               visitorId: visitorOfSignUp(context, site),
             });
           },
-          before: localeOfProviderSignUp,
+          // The name is one line, bounded, never a link (display-names.ts).
+          before: async (user, context) => {
+            const { data } = await localeOfProviderSignUp(user);
+
+            return { data: userWithFitName(data, context) };
+          },
+        },
+        update: {
+          before: async (user, context) => {
+            await Promise.resolve();
+
+            return { data: userWithFitName(user, context) };
+          },
         },
       },
     },
@@ -714,11 +740,16 @@ export const makeAuth = ({
           },
           // A workspace's slug names its pages in the web app's addresses:
           // one the app can route, when it is made and when it changes.
+          // Its name, as a person's, is one line, never a link.
           beforeCreateOrganization: async ({ organization: workspace }) => {
             await checkNewSlug(workspace.slug);
+
+            return { data: { name: workspaceWithFitName(workspace).name } };
           },
           beforeUpdateOrganization: async ({ organization: workspace }) => {
             await checkChangedSlug(workspace);
+
+            return { data: workspaceWithFitName(workspace) };
           },
           beforeCreateInvitation: async ({ invitation }) => {
             await oneRole(invitation.role);
@@ -727,6 +758,12 @@ export const makeAuth = ({
               invitation.organizationId,
               Option.some(invitation.email)
             );
+            // One of the day's invitation emails (invitation-emails.ts).
+            await claimInvitationEmail(hooks.invitationEmail, {
+              email: invitation.email,
+              inviterId: invitation.inviterId,
+              workspaceId: invitation.organizationId,
+            });
           },
           // A workspace's API keys go with it: they refer to it by id alone,
           // with no foreign key, and would otherwise outlive it. They go

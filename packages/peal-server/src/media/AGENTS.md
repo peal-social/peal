@@ -8,7 +8,14 @@
   size and type, then probes the file at once: sharp for images (real format
   checked against the declared one), ffprobe for videos. `ready` means probed;
   an `uploaded` asset carries its probe state (`pending`, `unavailable`, or why
-  the probe failed).
+  the probe failed). Calling it again probes again, unless the reason came
+  from the file's bytes (`isFinalProbe`: `tooLarge`, `tooManyPages`,
+  `unreadable`; a stored file never changes): the asset is answered as it
+  stands. Probes run two at once per workspace and eight per process
+  (`ProbeSlots`, `probesAtOnce`); past it `finishUpload` answers
+  `MediaImportBusy` (429) once the upload is completed, the asset left
+  uploaded for the next call. The files that arrive (imports, the
+  assistant's images) probe within their own slots (`finishArrived`).
 - Accepted media: JPEG, PNG, GIF and WebP images up to 16 MiB; MP4 and
   QuickTime videos up to 1 GiB; PDF documents up to 100 MiB and 300 pages
   (`media/domain/media-format.ts`). Publishing
@@ -20,10 +27,14 @@
   the last one written, in the clear or in an inflated object stream,
   never a count of page objects, which strings, comments and earlier
   revisions repeat); pages that cannot be told are none, not a refusal.
-  The file is read once, in slices that yield (`sliceBytes`), with bounds
-  on object streams and on what they inflate to: keep every reader of
-  uploaded bytes linear and interruptible, as a synchronous loop holds the
-  whole server and no timeout fires in it. Never render or open a
+  The file is read once, forward, as its bytes arrive from the store
+  (`readPdfArriving`), in slices that yield (`sliceBytes`), holding a few
+  mebibytes around where it reads and the one object stream it inflates
+  (`maxObjectStreamBytes` compressed at most, or the count is none), never
+  the whole file, with bounds on object streams and on what they inflate
+  to, and stops taking bytes once it knows: keep every reader of uploaded
+  bytes linear, interruptible and bounded in memory, as a synchronous loop
+  holds the whole server and no timeout fires in it. Never render or open a
   document: store it, hand it over.
 - On a server that bills, `createUpload` checks the declared size against
   the plan's media storage (`StorageAllowance`) before the store opens an

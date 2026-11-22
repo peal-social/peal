@@ -29,6 +29,8 @@ A PDF is a document, which only LinkedIn shows, page by page. Peal stores it and
 
 An image whose content isn't of the type it was uploaded as is refused, and deleted.
 
+A file Peal couldn't read stays uploaded, with the reason. Completing the upload again (`POST …/media/{mediaId}/complete`) reads it again, unless the reason comes from the file itself: too large, more than 300 pages, or damaged. Then upload the file again instead. A workspace has two files read at once, and a server eight. One more is refused (`MediaImportBusy`, 429), its upload completed, so complete it again a moment later.
+
 ### Storage on an instance that bills [#storage]
 
 On an instance that bills, each billing account holds a number of bytes of media across its workspaces ([A payment method](/guides/workspace/billing#payment-method)), uploads in progress included. When the workspace has no room for an upload, Peal refuses it before anything is sent. Deleting media makes room.

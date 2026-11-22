@@ -17,6 +17,7 @@ import { forbidden } from "#shared/api/forbidden.ts";
 import { limitRefusal } from "#shared/api/limit-reached.ts";
 import { WorkspaceMembers } from "#workspace/application/workspace-members.ts";
 import type { ListedMember } from "#workspace/application/workspace-members.ts";
+import { invitationEmailsRefused } from "#workspace/domain/invitation-emails.ts";
 import type { Invitation } from "#workspace/domain/invitation.ts";
 
 /** What clients see of a member. */
@@ -89,7 +90,14 @@ export const InvitationsHandlers = HttpApiBuilder.group(
               NotAMember: forbidden,
               PlanLimitReached: limitReached,
               RoleNotInvitable: forbidden,
-              TooManyInvitations: () => Effect.fail(new TooManyInvitations()),
+              TooManyInvitations: ({ reason }) =>
+                Effect.fail(
+                  reason === "emailsToday"
+                    ? new TooManyInvitations({
+                        message: invitationEmailsRefused,
+                      })
+                    : new TooManyInvitations()
+                ),
               UserRequired: forbidden,
             })
           );

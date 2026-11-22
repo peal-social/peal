@@ -208,10 +208,17 @@
   mobile apps only): the state, bound to member and workspace, guards the
   callback, and a token answer naming an `error` is a refusal whatever its
   status. A `PlatformAuthorizer` may have `revoke` (TikTok's guidelines ask
-  for it; Google takes it), which `DisconnectChannel` calls once the
-  channel is deleted and no other channel, in any workspace, connects the
-  same account (`ChannelRepository.accountInUse`), waiting 10 seconds at
-  most and logging any failure.
+  for it; Google takes it), which `revokeUnsharedGrant`
+  (`application/grant-revocation.ts`) calls once no other channel, in any
+  workspace, connects the same account (`ChannelRepository.accountInUse`,
+  the channels going with it left out), waiting `revokeTimeout` (10
+  seconds) at most and logging any failure, never failing: `DisconnectChannel`
+  once the channel is deleted, and `ChannelRecords.releaseWorkspaces` for
+  every channel of the workspaces an erasure deletes (a deleted workspace,
+  a closed account's), beside its departure and under the release's
+  bounds, with the tokens it read. An erasure that then fails leaves those
+  channels with tokens the platform revoked, as it leaves their departures:
+  they ask to be reconnected.
 - Pinterest's OAuth names no PKCE either, takes the app's id and secret as
   Basic credentials, and separates scopes with commas. Its errors are
   `{ code, message }`, never RFC 6749's: a 401 from the token endpoint

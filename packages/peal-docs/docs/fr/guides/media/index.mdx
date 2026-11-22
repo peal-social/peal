@@ -29,6 +29,8 @@ Un PDF est un document, que seul LinkedIn affiche, page par page. Peal le stocke
 
 Une image dont le contenu n’est pas du type sous lequel elle a été envoyée est refusée, et supprimée.
 
+Un fichier que Peal n’a pas pu lire reste envoyé, avec la raison. Terminer à nouveau l’envoi (`POST …/media/{mediaId}/complete`) le relit, sauf si la raison vient du fichier lui-même : trop lourd, plus de 300 pages, ou endommagé. Envoyez alors le fichier à nouveau. Un espace de travail fait lire deux fichiers à la fois, et un serveur huit. Un de plus est refusé (`MediaImportBusy`, 429), son envoi terminé : terminez-le à nouveau un instant plus tard.
+
 ### Le stockage sur une instance qui facture [#storage]
 
 Sur une instance qui facture, chaque compte de facturation contient un nombre d’octets de médias pour tous ses espaces de travail ([Un moyen de paiement](/guides/workspace/billing#payment-method)), envois en cours compris. Quand l’espace de travail n’a pas la place pour un envoi, Peal le refuse avant que rien ne parte. Supprimer des médias libère de la place.

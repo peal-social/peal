@@ -117,5 +117,20 @@
     "change": "The names a member writes (a tag, a signature, a channel set, a queue, a channel's label) refuse a mark that overrides, embeds or isolates their direction (U+202A to U+202E, U+2066 to U+2069): 400 InvalidRequest, \"Expected a name on one line, without control characters or marks that override its direction\"",
     "kind": "behaviour",
     "reason": "A name is shown beside other text, to every member: such a mark reverses or hides what follows it (the \"Trojan Source\" marks of Unicode's security guidance). Left-to-right and right-to-left marks, which a right-to-left name may need, and the zero-width joiner of an emoji stay taken; names saved before keep what they hold."
+  },
+  {
+    "change": "POST /api/workspaces/{workspaceId}/media/{mediaId}/complete answers 429 MediaImportBusy while the workspace has two uploaded files probed at once, or the server eight: the upload is completed and the media left uploaded, for the next call to probe",
+    "kind": "behaviour",
+    "reason": "Each call probed the file again, reading it whole or running ffprobe for up to a minute, with nothing bounding how many ran at once: a member calling it in a loop could exhaust the server's memory. Probes now take slots, as imports do; a client asks again in a moment."
+  },
+  {
+    "change": "POST /api/workspaces/{workspaceId}/media/{mediaId}/complete no longer probes again media whose probe refused it as tooLarge, tooManyPages or unreadable: it answers the media as it stands",
+    "kind": "behaviour",
+    "reason": "Those refusals come from the file's bytes, which never change once stored, so probing again only repeated them, at the cost of reading the file each time. A client uploads the file again instead."
+  },
+  {
+    "change": "POST /api/workspaces/{workspaceId}/invitations answers 409 TooManyInvitations, its message saying so, once the member who invites, the workspace or the address invited had all the invitation emails a day (UTC) allows: 100, 100 and 3",
+    "kind": "behaviour",
+    "reason": "Every invitation sends an email from Peal's own domain naming its inviter and its workspace, which made invitations a relay for unwanted mail. The code stays the one a workspace with too many pending invitations answered already; the MCP tool that invites says the same."
   }
 ]

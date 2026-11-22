@@ -67,6 +67,10 @@ Pending invitations are listed with their expiry date. For each one, you can:
 
 Only the person invited can accept it, signed in with the invited address once it's verified, and only until the invitation expires.
 
+Each invitation, sent or sent again, is an email. A day (UTC) allows 100 of them for each member who invites, 100 for each workspace, and 3 for each address invited. Past that, inviting is refused until the next day (`too_many_invitations`, 409, through the API).
+
+The email shows your name and the workspace's. A name is one line, up to 100 characters for a person and 120 for a workspace, and can't hold a web address: a name with `://`, `www.` or a domain such as `example.com` is refused.
+
 ### Require two-step verification [#require-two-step]
 
 Under **Security**, an owner can require [two-step verification](/guides/workspace/account#two-step) of every member. It takes an owner signed in themselves. An admin can't do it, and nor can an API key, an application or staff acting as an owner. You also need it on for your own account first, so that you can't lock yourself out.
@@ -263,6 +267,8 @@ On **General**, owners click **Delete this workspace…**, then type the workspa
   API keys, which stop working at once. Nothing more is posted from it. Stripe
   keeps the invoices it issued.
 </Callout>
+
+Its channels go as when you disconnect them by hand: the platforms that allow it are asked to forget Peal, unless another workspace still connects the same account.
 
 If one of the workspace's posts is going out, deleting waits. Try again a few minutes later.
 

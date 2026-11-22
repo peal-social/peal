@@ -16,6 +16,8 @@ describe(settingsErrorKey, () => {
     ["YOU_ARE_NOT_ALLOWED_TO_INVITE_USER_WITH_THIS_ROLE", "forbidden"],
     ["IMPERSONATION_READ_ONLY", "impersonating"],
     ["INVALID_PASSWORD", "incorrectPassword"],
+    ["INVALID_NAME", "nameInvalid"],
+    ["INVALID_WORKSPACE_NAME", "workspaceNameInvalid"],
     ["SOMETHING_ELSE", "unknown"],
   ])("explains %s as %s", (code, key) => {
     expect(settingsErrorKey({ code, status: 400 })).toBe(key);
@@ -29,6 +31,12 @@ describe(settingsErrorKey, () => {
 
   it("asks to wait when Better Auth limits the rate", () => {
     expect(settingsErrorKey({ status: 429 })).toBe("tooManyRequests");
+  });
+
+  it("tells the day's invitation emails from rate limiting", () => {
+    expect(
+      settingsErrorKey({ code: "DAILY_INVITATION_LIMIT_REACHED", status: 429 })
+    ).toBe("invitationsToday");
   });
 });
 

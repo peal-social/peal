@@ -65,6 +65,7 @@ export const MediaHandlers = HttpApiBuilder.group(
             Effect.catchTags({
               InvalidMediaTransition: Effect.die,
               MediaAssetNotFound: notFound,
+              MediaImportBusy: () => Effect.fail(new MediaImportBusy()),
               MediaStorageFailed: storeUnavailable,
               MissingPermission: forbidden,
               PlanLimitReached: limitReached,

@@ -483,6 +483,7 @@ export const PlainPseudonymsTest = Layer.succeed(
   Pseudonyms,
   Pseudonyms.of({
     ofEmail: (email) => Effect.succeed(`pseudonym:${email.toLowerCase()}`),
+    ofCounted: (kind, id) => Effect.succeed(`pseudonym:${kind}:${id}`),
     ofPlatformMember: (platform, memberId) =>
       Effect.succeed(`pseudonym:${platform}:${memberId}`),
   })

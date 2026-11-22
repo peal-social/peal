@@ -64,6 +64,22 @@ export const ProbeStateSchema = Schema.Literals([
 export type ProbeState = typeof ProbeStateSchema.Type;
 
 /**
+ * The probe's refusals that probing again would only repeat: the stored
+ * file never changes (its key is written once), and these come from its
+ * bytes alone, never from the store, the time it took or the program that
+ * read it.
+ */
+export const finalProbeFailures: ReadonlySet<ProbeState> = new Set<ProbeState>([
+  "tooLarge",
+  "tooManyPages",
+  "unreadable",
+]);
+
+/** Whether probing a file again could find otherwise than `probe` says. */
+export const isFinalProbe = (probe: ProbeState): boolean =>
+  finalProbeFailures.has(probe);
+
+/**
  * Where a file is in its life:
  *
  * | From     | To                                   |

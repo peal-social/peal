@@ -520,6 +520,8 @@ const kept = {
     "where each sweep of the store stopped listing it: one storage key, which holds ids only",
   "notifications.sent_notices":
     "the keys of events already told, ids and instants only",
+  "workspace.invitation_emails":
+    "how many invitation emails a day sent, by a keyed digest (HMAC under the server's secret) of the member who invited, the workspace or the address invited, never one of them, so a row names nobody without that secret; kept two days",
   "publishing.quota_usage":
     "the units of a platform's daily quota the server spent, by day, a week: a bucket by LinkedIn member is a keyed digest of the member (HMAC under the server's secret), never their identifier, so a row names nobody without that secret",
 } satisfies Readonly<Record<string, string>>;

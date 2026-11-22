@@ -109,9 +109,12 @@ const DeparturesLive = ChannelDeparturesLive.pipe(
 // channel, but a malformed keyring stops the server there, as do malformed
 // Bluesky client keys or Meta app settings.
 const AdaptersLive = Layer.mergeAll(
-  // An erasure lets go first what the channels set up on their platforms.
+  // An erasure lets go first what the channels set up on their platforms,
+  // and the grants they held.
   DrizzleChannelRecords.pipe(
-    Layer.provide(Layer.merge(DrizzleChannelRepository, DeparturesLive))
+    Layer.provide(
+      Layer.mergeAll(DrizzleChannelRepository, DeparturesLive, PlatformsLive)
+    )
   ),
   DrizzleChannelRepository,
   DrizzleChannelDirectory,
