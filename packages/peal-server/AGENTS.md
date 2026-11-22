@@ -166,6 +166,19 @@ and no socket, for tests.
   (`packages/peal-infra/ansible/tests/test_cloudflared.py` models it). Never give a path parameter a
   value that needs one of them: send it in the query or the body
   (`test/app/path-spellings.test.ts`).
+- Every request's body is held to its route's limit (`bodyLimitFor`,
+  `src/app/body-limits.ts`): `contentBodyLimit` (8 MiB) for posts,
+  articles and the MCP endpoint, `defaultBodyLimit` (1 MiB) for the rest,
+  Better Auth's and the routes without credentials included.
+  `ApiAnswersLive` answers 413 to a body declared larger before any route
+  runs (Better Auth reads the web request itself, past `MaxBodySize`), and
+  provides `HttpIncomingMessage.MaxBodySize` for the bodies read, which
+  fail their read past it (413, in the envelope; the MCP endpoint's as a
+  JSON-RPC error). A route that reads less sets its own around its read
+  (the error reports, Stripe's meter errors, Meta's events, the review
+  page); one that needs more gets a named limit there, never a larger
+  default. Bun stops reading past `largestBodyLimit`
+  (`maxRequestBodySize`). Media never comes through the server.
 - Every error of the API is one envelope: its own fields, then `code`,
   `message` and `requestId` (`errorEnvelope`, which every contract error
   spreads first; `enveloped` in `src/app/error-envelope.ts` fills them). A

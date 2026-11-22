@@ -1,5 +1,5 @@
 import { BunDns, BunHttpServer } from "@effect/platform-bun";
-import { Config, Effect, Layer } from "effect";
+import { ByteSize, Config, Effect, Layer } from "effect";
 import { MessageStorage, ShardingConfig } from "effect/cluster";
 import { HttpRouter } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
@@ -27,6 +27,7 @@ import {
 } from "#analytics/container.ts";
 import { AgentApiLive } from "#app/agent/live.ts";
 import { ApiAnswersLive } from "#app/answers.ts";
+import { largestBodyLimit } from "#app/body-limits.ts";
 import { ClientErrorsLive } from "#app/client-errors/live.ts";
 import { ClusterLive } from "#app/cluster.ts";
 import { HostedConnectLive } from "#app/connect-links/live.ts";
@@ -676,6 +677,9 @@ const HttpServerLive = Layer.unwrap(
 
     return BunHttpServer.layer({
       gracefulShutdownTimeout: httpShutdownTimeout,
+      // Past the largest body any route takes, Bun stops reading the
+      // socket and answers 413 itself; each route holds its own below it.
+      maxRequestBodySize: ByteSize.toNumberUnsafe(largestBodyLimit),
       port,
     });
   })

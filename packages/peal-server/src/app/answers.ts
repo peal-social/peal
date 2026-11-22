@@ -1,6 +1,11 @@
 import { Effect, Layer, Option } from "effect";
 import { SecureRandom } from "effect/crypto";
-import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
+import {
+  HttpIncomingMessage,
+  HttpRouter,
+  HttpServerRequest,
+  HttpServerResponse,
+} from "effect/http";
 import type { HttpApi, HttpApiGroup } from "effect/http-api";
 import { Api, apiVersionHeader } from "peal-contract";
 import { isRefusedPath } from "peal-contract/path-spelling";
@@ -10,6 +15,7 @@ import {
   countsVersion,
   versionHeaders,
 } from "#app/api-versions.ts";
+import { bodyLimitFor, declaredPastLimit } from "#app/body-limits.ts";
 import { deprecatedRoutes, deprecationOf } from "#app/deprecations.ts";
 import {
   enveloped,
@@ -49,6 +55,10 @@ const pathOf = (url: string) => url.split(/[?#]/u, 1)[0] ?? url;
  * A path written to read differently to the proxy in front and to the
  * router (`isRefusedPath`, `peal-contract/path-spelling`) is refused with
  * 400 before any route runs, Better Auth's and the MCP endpoint's included.
+ *
+ * Every body is held to its route's limit (`bodyLimitFor`): one declared
+ * larger is refused with 413 before any route runs, and one read past it
+ * fails its read (`MaxBodySize`), which answers 413 too.
  *
  * A failure of the server's own keeps its cause, so it is logged, counted
  * and traced as one; a refusal of the caller is answered as a response
@@ -111,7 +121,22 @@ export const apiAnswers = <
             );
           }
 
+          const bodyLimit = bodyLimitFor(request.url);
+
+          // Better Auth reads the web request itself, past MaxBodySize: a
+          // body declared too large is refused here, for every route.
+          if (declaredPastLimit(request.headers["content-length"], bodyLimit)) {
+            return named(
+              toldAs(
+                id,
+                Option.none()
+              )(HttpServerResponse.empty({ status: 413 }))
+            );
+          }
+
           return yield* httpEffect.pipe(
+            // The routes that read less set their own, which comes first.
+            Effect.provideService(HttpIncomingMessage.MaxBodySize, bodyLimit),
             Effect.provideService(RequestId, id),
             Effect.provideService(
               AnswerHeaders,
