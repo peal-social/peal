@@ -38,6 +38,10 @@ peal_settings:
   # The platforms' sandbox apps: their ids here, their secrets in the vault.
   YOUTUBE_CLIENT_ID: 342335857798-t4h1dootm1813qo0pe8be46ahidqmo2g.apps.googleusercontent.com
   X_CLIENT_ID: aG1fSFFkWUF1OGJYM2ZZQktRbEk6MTpjaQ
+  # LinkedIn members' profiles: the app "Peal" on Peal's LinkedIn page
+  # serves both environments, with both redirect URLs. Company pages take
+  # a second app, for the Community Management API, not made yet.
+  LINKEDIN_CLIENT_ID: 77p5yfnzeheaa2
   # One WordPress.com app serves both environments, with both callbacks.
   WORDPRESS_COM_CLIENT_ID: "153160"
   # Google Ads, read only, once its own OAuth client, "Peal: Google Ads",
