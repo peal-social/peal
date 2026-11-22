@@ -12,10 +12,10 @@ import type { ReactNode, RefObject } from "react";
 
 import { agentChats, agentStatus } from "#agent/atoms.ts";
 import { transcriptOf } from "#agent/history.ts";
+import { AgentComposer } from "#components/agent/agent-composer.tsx";
 import { chatTitle } from "#components/agent/agent-views.tsx";
 import {
   AgentOffView,
-  ComposerView,
   TranscriptView,
   problemMessage,
 } from "#components/agent/chat-views.tsx";
@@ -138,6 +138,7 @@ export const ChatBody = ({
   availability,
   chat,
   inputRef,
+  keys,
   onEscape,
   placeholder,
   workspaceId,
@@ -145,11 +146,14 @@ export const ChatBody = ({
   readonly availability: Availability;
   readonly chat: ReturnType<typeof useAgentChat>;
   readonly inputRef?: RefObject<HTMLTextAreaElement | null>;
+  /** Where the composer's keys act: the chat's page or the panel. */
+  readonly keys?: "page" | "panel" | undefined;
   readonly onEscape?: () => void;
   readonly placeholder: string;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("Agent");
+  const ownInput = useRef<HTMLTextAreaElement>(null);
   const links = useChatLinks(workspaceId);
   const nameOf = useChannelNames(workspaceId);
   const copy = useCopy();
@@ -197,19 +201,21 @@ export const ChatBody = ({
       />
       <div className="bg-card sticky bottom-0 z-10 mt-auto flex flex-col gap-2 pt-2 pb-3">
         {availability.notice}
-        <ComposerView
+        <AgentComposer
           disabled={!availability.ready}
-          inputRef={inputRef}
+          inputRef={inputRef ?? ownInput}
+          keys={keys}
           label={t("composerLabel")}
           placeholder={placeholder}
           running={state.run !== null}
           value={state.draft}
+          workspaceId={workspaceId}
           onChange={(text) => {
             chat.type(text);
           }}
           onEscape={onEscape}
-          onSend={() => {
-            chat.send(state.draft.trim());
+          onSend={(text, mediaIds) => {
+            chat.send(text, mediaIds);
           }}
           onStop={() => {
             chat.stop();

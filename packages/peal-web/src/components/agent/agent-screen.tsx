@@ -4,7 +4,7 @@ import { PanelBottomOpenIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Permission } from "peal-contract";
 import { Button } from "peal-ui/components/button";
-import { useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 
 import { openChat } from "#agent/panel-state.ts";
 import {
@@ -15,6 +15,7 @@ import {
   useProblemText,
   useRecentChats,
 } from "#components/agent/agent-chat.tsx";
+import { AgentComposer } from "#components/agent/agent-composer.tsx";
 import { useAgentPanel } from "#components/agent/agent-panel-context.tsx";
 import {
   AgentHomeView,
@@ -27,7 +28,6 @@ import {
   ChatSwitcher,
   StarButton,
 } from "#components/agent/chat-menus.tsx";
-import { ComposerView } from "#components/agent/chat-views.tsx";
 import {
   useAgentChat,
   useNewAgentChat,
@@ -96,29 +96,32 @@ export const AgentHomeScreen = ({
     () => true
   );
 
+  const input = useRef<HTMLTextAreaElement>(null);
+
   const chat = useNewAgentChat(workspaceId, (chatId) => {
     router.push(workspaceHref(workspaceId, `/agent/${chatId}`));
   });
 
-  const send = (text: string) => {
-    void chat.send(text);
+  const send = (text: string, mediaIds: readonly string[] = []) => {
+    void chat.send(text, mediaIds);
   };
 
   return (
     <AgentHomeView
       composer={
-        <ComposerView
+        <AgentComposer
           disabled={!availability.ready}
+          inputRef={input}
+          keys="page"
           label={t("composerLabel")}
           placeholder={t("placeholder")}
           running={false}
           value={chat.state.draft}
+          workspaceId={workspaceId}
           onChange={(text) => {
             chat.type(text);
           }}
-          onSend={() => {
-            send(chat.state.draft.trim());
-          }}
+          onSend={send}
           onStop={() => {
             // A new chat has no run to stop.
           }}
@@ -209,7 +212,7 @@ export const AgentChatScreen = ({
           }}
         />
         <ChatMoreMenu
-          keys
+          keys="page"
           title={title}
           onCopy={copyTranscript}
           onDelete={() => {
@@ -245,6 +248,7 @@ export const AgentChatScreen = ({
         <ChatBody
           availability={availability}
           chat={chat}
+          keys="page"
           placeholder={t("placeholder")}
           workspaceId={workspaceId}
         />

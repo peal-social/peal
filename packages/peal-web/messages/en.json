@@ -614,6 +614,42 @@
         "prompt": "Which comments are still waiting for an answer?"
       }
     },
+    "add": {
+      "label": "Add files and more",
+      "file": "File",
+      "skill": "Skill",
+      "attachments": "Attached files",
+      "remove": "Remove {name}",
+      "uploading": "Adding {name} to the library…",
+      "failed": "{name} couldn't be added to the library.",
+      "waiting": "Wait until the files are in the library."
+    },
+    "skills": {
+      "planWeek": {
+        "title": "Plan next week",
+        "prompt": "Plan next week's posts: look at what's already scheduled, find the empty days, and write a draft for each of them."
+      },
+      "draft": {
+        "title": "Write a draft",
+        "prompt": "Write a draft for our channels about "
+      },
+      "replies": {
+        "title": "Answer comments",
+        "prompt": "Go through the comments waiting for an answer and suggest a reply to each."
+      },
+      "report": {
+        "title": "Report on the month",
+        "prompt": "How did our posts do over the last 30 days? Give me the numbers channel by channel and what stands out."
+      },
+      "adapt": {
+        "title": "Adapt a post",
+        "prompt": "Take our latest post and adapt it for each of our channels, as drafts."
+      },
+      "bestTimes": {
+        "title": "Find the best times",
+        "prompt": "When should we post on each of our channels? Look at the best times."
+      }
+    },
     "groups": {
       "today": "Today",
       "yesterday": "Yesterday"

@@ -44,9 +44,9 @@ import {
 } from "peal-ui/components/dropdown-menu";
 import { Input } from "peal-ui/components/input";
 import { Label } from "peal-ui/components/label";
-import { useKeyMap } from "peal-ui/hooks/use-key-map";
 import { useId, useState } from "react";
 
+import { panelWasLast } from "#agent/agent-surface.ts";
 import { dayGroupsOf } from "#agent/history.ts";
 import { AgeText, chatTitle } from "#components/agent/agent-views.tsx";
 import { agentChatKeys } from "#shell/keys.ts";
@@ -254,13 +254,17 @@ const typing = (): boolean =>
  * asks first. `keys` binds the shortcuts, on the chat's own page only.
  */
 export const ChatMoreMenu = ({
-  keys = false,
+  keys,
   onCopy,
   onDelete,
   onRename,
   title,
 }: {
-  readonly keys?: boolean;
+  /**
+   * Where the menu's keys act: the chat's page or the panel, whichever
+   * the person last used when both show a chat; none without it.
+   */
+  readonly keys?: "page" | "panel" | undefined;
   readonly onCopy: () => void;
   readonly onDelete: () => void;
   readonly onRename: (title: string) => Promise<boolean>;
@@ -272,18 +276,16 @@ export const ChatMoreMenu = ({
   const renameHint = useShortcutHint(agentChatKeys.rename);
   const deleteHint = useShortcutHint(agentChatKeys.delete);
 
-  useKeyMap(
-    keys
-      ? [
-          {
-            description: t("menu.rename"),
-            keys: [agentChatKeys.rename],
-            run: () => {
-              setRenaming(true);
-            },
-          },
-        ]
-      : []
+  // Never while typing: ⇧R writes an R there, ⌘⌫ deletes a word.
+  const active = () =>
+    keys !== undefined && !typing() && (keys === "panel") === panelWasLast();
+
+  useShortcut(
+    agentChatKeys.rename,
+    () => {
+      setRenaming(true);
+    },
+    { description: t("menu.rename"), when: active }
   );
 
   useShortcut(
@@ -291,7 +293,7 @@ export const ChatMoreMenu = ({
     () => {
       setDeleting(true);
     },
-    { description: t("menu.delete"), when: () => keys && !typing() }
+    { description: t("menu.delete"), when: active }
   );
 
   return (

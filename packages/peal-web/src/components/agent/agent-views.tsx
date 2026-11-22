@@ -253,11 +253,15 @@ export const PanelView = ({
   return (
     <section
       aria-label={t("panel.label")}
+      data-agent-panel=""
       className="bg-card fixed inset-x-2 top-2 bottom-13 z-40 flex flex-col overflow-hidden rounded-xl border shadow-lg md:top-auto md:left-auto md:h-150 md:max-h-[calc(100svh-4.25rem)] md:w-100"
     >
       <header className="flex h-12 shrink-0 items-center gap-1 border-b px-3">
-        <h2 className="min-w-0 flex-1 truncate text-sm font-medium">{title}</h2>
+        {/* The title as wide as it needs, **…** right after it; a long
+            title ends in an ellipsis, **…** then beside the buttons. */}
+        <h2 className="min-w-0 truncate text-sm font-medium">{title}</h2>
         {menu}
+        <span className="flex-1" />
         <Button
           variant="ghost"
           size="icon-sm"

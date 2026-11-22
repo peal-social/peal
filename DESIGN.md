@@ -899,7 +899,14 @@ things there, as they would with a colleague. Chats are the person's own.
   ring on the whole field. At its end the send button, primary, round
   (`icon-sm`, `{rounded.pill}`), an arrow up; while a run goes, the same
   button is Stop, a filled square. Enter sends, Shift+Enter breaks the
-  line, Escape leaves the panel's composer.
+  line, Escape leaves the composer (the chat's keys then act). Before the
+  send button, **+** (a ghost round `icon-sm`) opens a menu above it:
+  **File** (⌘⇧U), files from the computer added to the media library
+  and attached to the message, each a chip above the text (its name, a
+  spinner on its way, × to take it off; sending waits for them), and
+  **Skill**, a submenu of ready-made requests (plan next week, write a
+  draft, answer comments, report on the month, adapt a post, find the
+  best times), each put in the text to send as it is or finish.
 - **Off**: where no model answers, the page and the panel say so in the
   empty state's title and line, with the next step as the primary
   button (the assistant settings for those who may change them, the
@@ -909,8 +916,10 @@ things there, as they would with a colleague. Chats are the person's own.
   the large shadow, 400 × 600 px at the window's bottom right, 8 px
   from its right edge and 8 px above the bottom bar, over the page (a
   phone: the window less 8 px a side, above the bottom bar). Its header,
-  48 px with a hairline, names the chat (14 px, 500), then **…**,
-  minimize, open as a page and close, as ghost icon buttons. Empty, it
+  48 px with a hairline, names the chat (14 px, 500) with **…** right
+  after the title, then at the end minimize, open as a page and close,
+  all ghost icon buttons of one size on one line; a long title ends in
+  an ellipsis, bringing **…** beside the others. Empty, it
   shows the Peal mark (40 px), "Welcome to Peal" (the empty state's
   title), one muted line and the examples as round outline `xs`
   buttons; the composer is at its foot ("Ask about your posts, channels

@@ -614,6 +614,42 @@
         "prompt": "Quels commentaires attendent encore une réponse ?"
       }
     },
+    "add": {
+      "label": "Ajouter des fichiers et plus",
+      "file": "Fichier",
+      "skill": "Compétence",
+      "attachments": "Fichiers joints",
+      "remove": "Retirer {name}",
+      "uploading": "Ajout de {name} à la médiathèque…",
+      "failed": "{name} n’a pas pu être ajouté à la médiathèque.",
+      "waiting": "Attendez que les fichiers soient dans la médiathèque."
+    },
+    "skills": {
+      "planWeek": {
+        "title": "Préparer la semaine prochaine",
+        "prompt": "Prépare les publications de la semaine prochaine : regarde ce qui est déjà programmé, trouve les jours vides et rédige un brouillon pour chacun."
+      },
+      "draft": {
+        "title": "Rédiger un brouillon",
+        "prompt": "Rédige un brouillon pour nos canaux sur "
+      },
+      "replies": {
+        "title": "Répondre aux commentaires",
+        "prompt": "Parcours les commentaires qui attendent une réponse et propose une réponse à chacun."
+      },
+      "report": {
+        "title": "Bilan du mois",
+        "prompt": "Comment se sont passées nos publications sur les 30 derniers jours ? Donne-moi les chiffres canal par canal et ce qui ressort."
+      },
+      "adapt": {
+        "title": "Adapter une publication",
+        "prompt": "Prends notre dernière publication et adapte-la pour chacun de nos canaux, en brouillons."
+      },
+      "bestTimes": {
+        "title": "Trouver les meilleurs moments",
+        "prompt": "Quand publier sur chacun de nos canaux ? Regarde les meilleurs moments."
+      }
+    },
     "groups": {
       "today": "Aujourd’hui",
       "yesterday": "Hier"

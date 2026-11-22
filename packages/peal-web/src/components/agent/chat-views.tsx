@@ -755,6 +755,9 @@ export const TranscriptView = ({
  * button sends, or stops the run under way.
  */
 export const ComposerView = ({
+  addMenu = null,
+  attachments = null,
+  blocked = false,
   disabled,
   inputRef,
   label,
@@ -766,6 +769,12 @@ export const ComposerView = ({
   running,
   value,
 }: {
+  /** The **+** menu, before the send button. */
+  readonly addMenu?: ReactNode;
+  /** The files attached to the message, above the text. */
+  readonly attachments?: ReactNode;
+  /** Something attached is not ready: sending waits. */
+  readonly blocked?: boolean;
   readonly disabled: boolean;
   readonly inputRef?: RefObject<HTMLTextAreaElement | null> | undefined;
   readonly label: string;
@@ -782,9 +791,15 @@ export const ComposerView = ({
   const tooLong = value.length > maxAgentMessageLength;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Escape" && onEscape !== undefined) {
+    if (event.key === "Escape") {
       event.preventDefault();
-      onEscape();
+
+      // Leaving the field lets the chat's keys (⇧R, ⌘⌫) act.
+      if (onEscape === undefined) {
+        event.currentTarget.blur();
+      } else {
+        onEscape();
+      }
     } else if (
       event.key === "Enter" &&
       !event.shiftKey &&
@@ -792,7 +807,7 @@ export const ComposerView = ({
     ) {
       event.preventDefault();
 
-      if (!running && !empty && !tooLong && !disabled) {
+      if (!running && !empty && !tooLong && !blocked && !disabled) {
         onSend();
       }
     }
@@ -800,6 +815,7 @@ export const ComposerView = ({
 
   return (
     <div className="bg-card focus-within:border-ring focus-within:ring-ring/50 flex flex-col gap-2 rounded-xl border p-2 shadow-xs transition-colors focus-within:ring-3">
+      {attachments}
       <textarea
         ref={inputRef}
         aria-label={label}
@@ -815,6 +831,7 @@ export const ComposerView = ({
         onKeyDown={handleKeyDown}
       />
       <div className="flex items-center justify-end gap-2">
+        {addMenu}
         {/* Near the limit, how much is left; past it, sending waits. */}
         {value.length > maxAgentMessageLength * 0.9 ? (
           <span
@@ -844,7 +861,7 @@ export const ComposerView = ({
             size="icon-sm"
             corners="round"
             aria-label={t("send")}
-            disabled={disabled || empty || tooLong}
+            disabled={disabled || empty || tooLong || blocked}
             onClick={onSend}
           >
             <ArrowUpIcon aria-hidden />
