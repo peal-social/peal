@@ -339,6 +339,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
             },
             postId,
             queue: null,
+            queueAt: null,
             state: "pending",
             tags: [],
             text: null,
@@ -695,6 +696,66 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
         assert.include(
           JSON.stringify(last?.content),
           "changed after the person"
+        );
+      }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect(
+    "names the queue a post goes to, and its next free slot as an indication",
+    () =>
+      Effect.gen(function* queues() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+
+        yield* script([calls("queue_post", { postId }, "call-queue")]);
+
+        const events = yield* send(person, chat.id, "Queue it");
+        const card = events.find((event) => event._tag === "approval");
+
+        assert.deepInclude(card?._tag === "approval" ? card.approval : {}, {
+          channelIds: [channelId],
+          queue: "Mornings",
+          queueAt: DateTime.makeUnsafe("2026-12-02T08:00:00.000Z"),
+          tool: "queue_post",
+        });
+
+        // Approved, it runs: the slot is no part of what was approved.
+        yield* script([says("Queued.")]);
+        yield* answer(person, chat.id, "call-queue", true);
+
+        assert.include(
+          yield* FakeTools.use((tools) => tools.ran),
+          "queue_post"
+        );
+      }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect(
+    "holds the post from its reading to the approved change: an edit then lands after it",
+    () =>
+      Effect.gen(function* holds() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+
+        yield* script([calls("publish_post", { postId }, "call-held")]);
+        yield* send(person, chat.id, "Publish it");
+
+        // A teammate saves an edit right as the approval reads the post.
+        yield* FakeTools.use((tools) =>
+          tools.editWhenRead("Claim your prize at https://prize.example.com")
+        );
+        yield* script([says("Published.")]);
+
+        const after = yield* answer(person, chat.id, "call-held", true);
+
+        // What went out is what the person was shown; the edit waited.
+        assert.deepStrictEqual(
+          yield* FakeTools.use((tools) => tools.published),
+          [postText]
+        );
+        assert.isTrue(
+          after[1]?._tag === "approval" &&
+            after[1].approval.state === "approved"
         );
       }).pipe(Effect.provide(agentTest()))
   );

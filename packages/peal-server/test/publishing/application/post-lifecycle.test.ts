@@ -1,5 +1,14 @@
 import { assert, describe, it } from "@effect/vitest";
-import { DateTime, Duration, Effect, Option, Result } from "effect";
+import {
+  DateTime,
+  Deferred,
+  Duration,
+  Effect,
+  Fiber,
+  Option,
+  Result,
+} from "effect";
+import { TestClock } from "effect/testing";
 
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
 import { PostFollowUp } from "#publishing/application/post-follow-up.ts";
@@ -93,6 +102,90 @@ const targetOn = (postId: PostId, channelId: ChannelId) =>
       )
     )
   );
+
+describe("PostScheduling.holding", () => {
+  it.effect(
+    "holds the post while its effect runs: a change of it waits, and one through it joins",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* holds() {
+          const workspaceId = yield* freshWorkspace;
+          const actor = actorAs(yield* freshUser, workspaceId);
+          const channelId = yield* connect(workspaceId, "mastodon");
+          const draft = yield* draftOf(workspaceId, actor, [channelId]);
+          const held = yield* Deferred.make<boolean>();
+          const release = yield* Deferred.make<boolean>();
+
+          const holding = yield* PostScheduling.use((scheduling) =>
+            scheduling.holding(
+              actor,
+              draft.id
+            )(
+              Deferred.succeed(held, true).pipe(
+                Effect.andThen(Deferred.await(release)),
+                // A change through the use cases, in the held transaction,
+                // takes the lock it holds already.
+                Effect.andThen(
+                  PostScheduling.use((inner) =>
+                    inner.reschedule(
+                      actor,
+                      draft.id,
+                      scheduleIn("2026-06-16T08:00:00Z")
+                    )
+                  )
+                )
+              )
+            )
+          ).pipe(Effect.forkChild);
+
+          yield* Deferred.await(held);
+
+          const editing = yield* PostDrafts.use((drafts) =>
+            drafts.update(actor, draft.id, {
+              channelIds: [],
+              content: contentOf("Edited meanwhile."),
+            })
+          ).pipe(Effect.forkChild);
+
+          // The edit waits on the post's lock while it is held.
+          yield* TestClock.withLive(Effect.sleep("300 millis"));
+          assert.isUndefined(editing.pollUnsafe());
+
+          yield* Deferred.succeed(release, true);
+
+          const scheduled = yield* Fiber.join(holding);
+
+          // The edit waited for the change made under the hold: a draft
+          // no more, it is refused.
+          const edited = yield* Fiber.join(editing).pipe(Effect.flip);
+
+          assert.strictEqual(scheduled.post.status._tag, "scheduled");
+          assert.strictEqual(edited._tag, "InvalidPostTransition");
+
+          // Another workspace's post, or none, is not found; a member who
+          // may not read posts holds none.
+          const stranger = actorAs(yield* freshUser, yield* freshWorkspace);
+          const unread = actorAs(yield* freshUser, workspaceId, []);
+
+          const refusedFor = (who: typeof actor) =>
+            PostScheduling.use((scheduling) =>
+              scheduling.holding(who, draft.id)(Effect.void)
+            ).pipe(Effect.flip);
+
+          assert.strictEqual(
+            (yield* refusedFor(stranger))._tag,
+            "PostNotFound"
+          );
+          assert.deepStrictEqual(
+            yield* refusedFor(unread),
+            new MissingPermission({ permission: "post:read" })
+          );
+        })
+      ),
+    timeout
+  );
+});
 
 describe("PostQueries.listDrafts", () => {
   it.effect(

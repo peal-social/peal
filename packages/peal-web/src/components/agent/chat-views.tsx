@@ -256,7 +256,14 @@ const whenOf = (
   }
 
   if (approval.queue !== null) {
-    return t("approval.queue", { queue: approval.queue });
+    // Where the queue would put it when asked: the slot is taken when it
+    // runs, and may have moved by then.
+    return approval.queueAt === null
+      ? t("approval.queue", { queue: approval.queue })
+      : t("approval.queueAt", {
+          at: timeOf(format, approval.queueAt),
+          queue: approval.queue,
+        });
   }
 
   return kind === "publish" ? t("approval.now") : null;
@@ -318,6 +325,28 @@ const Labelled = ({
   </div>
 );
 
+// The media a channel shows instead of the part's: its own files, none
+// at all (said so), or the part's (null: nothing more to show).
+const OverrideMedia = ({
+  media,
+  renderMedia,
+}: {
+  readonly media: readonly AgentApprovalMedia[] | null;
+  readonly renderMedia: ApprovalMediaView;
+}) => {
+  const t = useTranslations("Agent");
+
+  if (media === null) {
+    return null;
+  }
+
+  return media.length === 0 ? (
+    <p className="text-muted-foreground text-xs">{t("approval.noMediaHere")}</p>
+  ) : (
+    <>{renderMedia(media)}</>
+  );
+};
+
 // A part's text and media, then what it has instead on some channels.
 const PartView = ({
   media,
@@ -351,9 +380,7 @@ const PartView = ({
             }
           >
             <SentText text={override.text} />
-            {override.media === null || override.media.length === 0
-              ? null
-              : renderMedia(override.media)}
+            <OverrideMedia media={override.media} renderMedia={renderMedia} />
           </Labelled>
         );
       })}
@@ -460,13 +487,16 @@ const ApprovalPostView = ({
             }
           >
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-              {lines.map(({ field, value }) => (
+              {lines.map(({ field, mediaId, value }) => (
                 <Fragment key={field}>
                   <dt className="text-muted-foreground font-mono text-xs leading-5">
                     {field}
                   </dt>
                   <dd dir="auto" className="break-words">
-                    {value}
+                    {/* A file the option names shows as the file. */}
+                    {mediaId === null
+                      ? value
+                      : renderMedia([{ altText: "", mediaId }])}
                   </dd>
                 </Fragment>
               ))}

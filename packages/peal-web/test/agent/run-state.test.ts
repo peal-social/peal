@@ -49,6 +49,7 @@ const approval: AgentApproval = {
   },
   postId: "post-1",
   queue: null,
+  queueAt: null,
   state: "pending",
   tags: [],
   text: null,

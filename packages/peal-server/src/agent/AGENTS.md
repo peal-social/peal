@@ -135,7 +135,15 @@
   Approved, the call is read again (`requested`) and runs only when it
   shows the same: a post edited since, by a teammate or by a call of the
   same answer, or gone, leaves it `changed`, the model told nothing was
-  done. A pending approval lapses `approvalLifetimeHours` (24) after the
+  done. The reading and the run share one transaction that locks the
+  post first (`AgentToolbox.holdingPost`, publishing's
+  `PostScheduling.holding`, which the post's use cases join, locking it
+  again): no edit lands between them. `queue_post` shows the channels the
+  scheduling uses (a post not a draft moves on all its own, whatever the
+  call names) and is not asked for a draft with none, which would take
+  the queue's channels and their default options; its card says the
+  queue's next free slot (`queueAt`, from `preview_queue`) as an
+  indication, kept out of the digest. A pending approval lapses `approvalLifetimeHours` (24) after the
   answer that asked it was written (`lapsed`, `openOf`): it reads as
   `expired` (`shownAt`, on reading a chat) and its answer is
   `ApprovalNotPending`.

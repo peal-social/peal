@@ -646,6 +646,8 @@
       "at": "Le {at}",
       "now": "Dès votre approbation",
       "queue": "Au prochain créneau libre de {queue}",
+      "queueAt": "Au prochain créneau libre de {queue} : {at} pour l’instant, car le créneau est pris quand vous approuvez",
+      "noMediaHere": "Aucun média sur ce canal",
       "newText": "{part, select, 0 {Nouveau texte} other {Nouveau texte de la partie {part}}}",
       "comment": "Votre commentaire",
       "media": "Médias",

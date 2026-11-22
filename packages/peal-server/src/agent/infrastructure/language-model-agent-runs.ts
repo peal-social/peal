@@ -30,6 +30,7 @@ import {
   answered,
   approvalOf,
   pendingOf,
+  queueAsked,
   shownOf,
   sourcesNeeded,
 } from "#agent/domain/agent-approvals.ts";
@@ -66,7 +67,12 @@ import {
   runTimeout,
   titleTimeout,
 } from "#agent/domain/run-limits.ts";
-import { publishableOf, queuesOf, tagsOf } from "#agent/domain/tool-items.ts";
+import {
+  nextFreeOf,
+  publishableOf,
+  queuesOf,
+  tagsOf,
+} from "#agent/domain/tool-items.ts";
 import { AgentLanguageModels } from "#agent/infrastructure/agent-language-models.ts";
 import { AgentToolbox } from "#agent/infrastructure/agent-toolbox.ts";
 import type { AgentTool } from "#agent/infrastructure/agent-toolbox.ts";
@@ -358,7 +364,26 @@ export const LanguageModelAgentRunsLive = Layer.effect(
 
         const digest = yield* hashOf(shownOf(built.success));
 
-        return Result.succeed<AgentApproval>({ ...built.success, digest });
+        // Where a queue would put the post now, as preview_queue says:
+        // an indication only, kept out of the digest.
+        const queueAt = yield* Option.match(
+          queues.pipe(Option.flatMap((known) => queueAsked(call, known))),
+          {
+            onNone: () => Effect.succeed(null),
+            onSome: ({ id }) =>
+              readOf(member, "preview_queue", { count: 1, queueId: id }).pipe(
+                Effect.map((answer) =>
+                  Option.getOrNull(answer.pipe(Option.flatMap(nextFreeOf)))
+                )
+              ),
+          }
+        );
+
+        return Result.succeed<AgentApproval>({
+          ...built.success,
+          digest,
+          queueAt,
+        });
       });
 
     const start = Effect.fn("AgentRuns.start")(function* start(
@@ -975,29 +1000,53 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 (made) => made.callId === callId
               );
 
-              // Read again now: a post edited since the card was shown, by
-              // a teammate or by a call of the same answer, is not what
-              // the person approved.
-              const holds =
+              // Read again, then run, with the post it names held between:
+              // a post edited since the card was shown, by a teammate or by
+              // a call of the same answer, is not what the person
+              // approved, and no edit lands between the reading and the
+              // change.
+              const ran =
                 approved && call !== undefined && Option.isSome(asked)
-                  ? yield* requested(member, call).pipe(
-                      Effect.map(
-                        (fresh) =>
-                          Result.isSuccess(fresh) &&
-                          fresh.success.digest === asked.value.digest
-                      )
-                    )
-                  : false;
+                  ? yield* toolbox.holdingPost(
+                      member,
+                      sourcesNeeded(call).postId
+                    )(
+                      Effect.gen(function* held() {
+                        const fresh = yield* requested(member, call);
 
-              const state = approvalState(approved, holds);
+                        if (
+                          Result.isFailure(fresh) ||
+                          fresh.success.digest !== asked.value.digest
+                        ) {
+                          return Option.none<CallResult>();
+                        }
+
+                        yield* Queue.offer(queue, {
+                          _tag: "approval",
+                          approval: { ...asked.value, state: "approved" },
+                        });
+                        yield* emit({
+                          _tag: "step",
+                          step: yield* stepOf(callId, "running", call.tool),
+                        });
+
+                        return Option.some(yield* runApproved(member, call));
+                      })
+                    )
+                  : Option.none<CallResult>();
+
+              const state = approvalState(approved, Option.isSome(ran));
 
               // The answered change, on the answer that asked it: sent
-              // first, under its call, and kept there.
+              // first, under its call (an approved one before it ran), and
+              // kept there.
               if (Option.isSome(asked) && Option.isSome(asking)) {
-                yield* Queue.offer(queue, {
-                  _tag: "approval",
-                  approval: { ...asked.value, state },
-                });
+                if (state !== "approved") {
+                  yield* Queue.offer(queue, {
+                    _tag: "approval",
+                    approval: { ...asked.value, state },
+                  });
+                }
 
                 yield* keptWith(
                   asking.value,
@@ -1005,17 +1054,10 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 );
               }
 
-              if (call !== undefined && state === "approved") {
-                yield* emit({
-                  _tag: "step",
-                  step: yield* stepOf(callId, "running", call.tool),
-                });
-
-                const result = yield* runApproved(member, call);
-
-                history = withResults(history, [result]);
+              if (Option.isSome(ran)) {
+                history = withResults(history, [ran.value]);
                 yield* ranCall(
-                  result,
+                  ran.value,
                   asked.pipe(Option.map((approval) => ({ ...approval, state })))
                 );
               }
