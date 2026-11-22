@@ -42,7 +42,7 @@ const approval: AgentApproval = {
 };
 
 const asked = fold({ ...emptyChat, draft: "Find my drafts", loaded: true }, [
-  { _tag: "sent", at: at(0), media: [], text: "Find my drafts" },
+  { _tag: "sent", at: at(0), media: [], skills: [], text: "Find my drafts" },
 ]);
 
 describe(foldChat, () => {
@@ -195,7 +195,7 @@ describe(foldChat, () => {
         durationMs: 2000,
         outcome: "awaitingApproval",
       }),
-      { _tag: "sent", at: at(20), media: [], text: "Never mind" },
+      { _tag: "sent", at: at(20), media: [], skills: [], text: "Never mind" },
     ]);
 
     expect(state.messages[1]?.approvals[0]?.state).toBe("expired");
@@ -268,6 +268,7 @@ describe(foldChat, () => {
       {
         _tag: "refused",
         refusal: { _tag: "Unexpected" },
+        skills: [],
         text: "Find my drafts",
       },
     ]);
@@ -279,6 +280,43 @@ describe(foldChat, () => {
       _tag: "refused",
       refusal: { _tag: "Unexpected" },
     });
+  });
+
+  it("keeps the skills picked, sends them with the message and empties the chips", () => {
+    const skills = [{ id: "skill-1", name: "Plan next week" }];
+
+    const picked = foldChat(
+      { ...emptyChat, draft: "Plan it", loaded: true },
+      { _tag: "picked", skills }
+    );
+
+    expect(picked.skills).toStrictEqual(skills);
+
+    const sent = foldChat(picked, {
+      _tag: "sent",
+      at: at(0),
+      media: [],
+      skills,
+      text: "Plan it",
+    });
+
+    expect(sent.skills).toStrictEqual([]);
+    expect(sent.messages[0]).toMatchObject({ role: "user", skills });
+  });
+
+  it("puts a refused message's skills back on the composer", () => {
+    const skills = [{ id: "skill-1", name: "Plan next week" }];
+
+    const state = fold(asked, [
+      {
+        _tag: "refused",
+        refusal: { _tag: "Unexpected" },
+        skills,
+        text: "Find my drafts",
+      },
+    ]);
+
+    expect(state.skills).toStrictEqual(skills);
   });
 
   it("reads the server's chat in, but never over a run under way", () => {

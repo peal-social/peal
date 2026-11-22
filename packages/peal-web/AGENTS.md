@@ -73,7 +73,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   a draft or a scheduled post in the composer, and shows a post that went
   out in `PostDetail` (each channel's status, attempts and reasons, with
   repost and confirm, and its analytics), `…/settings` (with `members`, `invitations`, `tags`, `signatures`,
-  `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys` and `webhooks`) and `…/billing`. The person's own
+  `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys`, `webhooks` and `agent`, the agent's skills, for assistant:use, with `agent/skills/new` and `agent/skills/[skillId]`) and `…/billing`. The person's own
   pages are every workspace's too, in its Settings: `…/settings/account`
   (their account), `…/notifications` (their notifications across
   workspaces) and `…/settings/notifications` (which reach them by email);
@@ -772,6 +772,24 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`refusalMessage`), never the server's English, and a plan's opens
   the upgrade dialog, which `UpgradePrompts` therefore puts around the
   whole frame.
+- Skills (`#agent/skills.ts` atoms through `PealAgentApi`, the
+  `agent-skills:<workspace>` reactivity key; `AgentSkills` catalogue) are
+  the person's and the workspace's instructions a message picks
+  (`skillIds`, three at most). The composer picks them under **+** >
+  **Skill** and with "/", ui-sdk's `TriggerMenu` on the field
+  (`textFieldAdapter`), whose list and closing are
+  `slashSkillsOf` (`#agent/skill-picker.ts`, tested): `ComposerView`
+  sends nothing on a key the open menu took (`defaultPrevented`,
+  `isMenuOpen`), and Escape is the menu's own. The menu's state lives
+  in `SlashSkillMenu` alone: a state change of the component that draws
+  the field, set from ui-sdk's input listener, renders before React
+  reads the field and puts the text back without the "/". Picked skills are the chat's (`ChatState.skills`, back on
+  a refusal), shown as chips; a message of skills alone sends their
+  names as its text (`sentTextOf`). The settings page
+  (`components/agent/skills-settings.tsx`, views in `skill-views.tsx`)
+  explains refusals through `skillProblemOf` (`#agent/skill-refusal.ts`),
+  never the server's English; **Use in chat** opens `…/agent?skill=<id>`,
+  which the agent page picks once and drops from the address.
 - `AssistantMenu` sits in the composer's text section and works on the text
   for all channels. Render it only for members with `assistant:use`, and
   only while `GET …/assistant` answers `available`; refresh that status after

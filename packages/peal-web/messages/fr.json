@@ -623,41 +623,21 @@
       "uploading": "Ajout de {name} à la médiathèque…",
       "failed": "{name} n’a pas pu être ajouté à la médiathèque.",
       "waiting": "Attendez que les fichiers soient dans la médiathèque.",
-      "kind": "{kind, select, image {Image} video {Vidéo} other {Document}}"
-    },
-    "skills": {
-      "planWeek": {
-        "title": "Préparer la semaine prochaine",
-        "prompt": "Prépare les publications de la semaine prochaine : regarde ce qui est déjà programmé, trouve les jours vides et rédige un brouillon pour chacun."
-      },
-      "draft": {
-        "title": "Rédiger un brouillon",
-        "prompt": "Rédige un brouillon pour nos canaux sur "
-      },
-      "replies": {
-        "title": "Répondre aux commentaires",
-        "prompt": "Parcours les commentaires qui attendent une réponse et propose une réponse à chacun."
-      },
-      "report": {
-        "title": "Bilan du mois",
-        "prompt": "Comment se sont passées nos publications sur les 30 derniers jours ? Donne-moi les chiffres canal par canal et ce qui ressort."
-      },
-      "adapt": {
-        "title": "Adapter une publication",
-        "prompt": "Prends notre dernière publication et adapte-la pour chacun de nos canaux, en brouillons."
-      },
-      "bestTimes": {
-        "title": "Trouver les meilleurs moments",
-        "prompt": "Quand publier sur chacun de nos canaux ? Regarde les meilleurs moments."
-      }
+      "kind": "{kind, select, image {Image} video {Vidéo} other {Document}}",
+      "createSkill": "Créer une compétence…",
+      "skills": "Compétences choisies",
+      "removeSkill": "Retirer la compétence {name}",
+      "workspaceSkill": "Espace de travail",
+      "slashMenu": "Compétences",
+      "slashStatus": "{count, plural, =0 {Aucune compétence ne correspond. Appuyez sur Entrée pour en créer une.} one {# compétence correspond. Appuyez sur Entrée pour la choisir.} other {# compétences correspondent. Utilisez les flèches, puis Entrée pour en choisir une.}}"
     },
     "groups": {
       "today": "Aujourd’hui",
       "yesterday": "Hier"
     },
     "steps": {
-      "running": "{kind, select, analytics {Lecture des statistiques…} approvals {Lecture des approbations…} channels {Lecture des canaux…} comments {Lecture des commentaires…} deleting {Suppression…} drafting {Rédaction du brouillon…} editing {Modification de la publication en ligne…} tagCreating {Création de l’étiquette…} inbox {Lecture de la boîte de réception…} media {Lecture de la médiathèque…} messages {Lecture des messages…} messaging {Envoi du message…} moderating {Modération du commentaire…} posts {Lecture des publications…} publishing {Publication…} queues {Lecture des files…} replying {Réponse…} reviewing {Examen de la publication…} reviews {Lecture des avis…} saved {Lecture des signatures et des groupes de canaux…} scheduling {Programmation…} tagging {Ajout des étiquettes…} tags {Lecture des étiquettes…} unpublishing {Dépublication…} workspace {Lecture de l’espace de travail…} other {Travail en cours…}}",
-      "done": "{kind, select, analytics {Statistiques lues} approvals {Approbations lues} channels {Canaux lus} comments {Commentaires lus} deleting {Supprimé} drafting {Brouillon rédigé} editing {Publication en ligne modifiée} tagCreating {Étiquette créée} inbox {Boîte de réception lue} media {Médiathèque lue} messages {Messages lus} messaging {Message envoyé} moderating {Commentaire modéré} posts {Publications lues} publishing {Publié} queues {Files lues} replying {Réponse envoyée} reviewing {Publication examinée} reviews {Avis lus} saved {Signatures et groupes de canaux lus} scheduling {Programmé} tagging {Étiquettes ajoutées} tags {Étiquettes lues} unpublishing {Dépublié} workspace {Espace de travail lu} other {Outil utilisé}}",
+      "running": "{kind, select, analytics {Lecture des statistiques…} approvals {Lecture des approbations…} channels {Lecture des canaux…} comments {Lecture des commentaires…} deleting {Suppression…} drafting {Rédaction du brouillon…} editing {Modification de la publication en ligne…} tagCreating {Création de l’étiquette…} inbox {Lecture de la boîte de réception…} media {Lecture de la médiathèque…} messages {Lecture des messages…} messaging {Envoi du message…} moderating {Modération du commentaire…} posts {Lecture des publications…} publishing {Publication…} queues {Lecture des files…} replying {Réponse…} reviewing {Examen de la publication…} reviews {Lecture des avis…} saved {Lecture des signatures et des groupes de canaux…} scheduling {Programmation…} tagging {Ajout des étiquettes…} tags {Lecture des étiquettes…} unpublishing {Dépublication…} workspace {Lecture de l’espace de travail…} skill {Lecture d’une compétence…} other {Travail en cours…}}",
+      "done": "{kind, select, analytics {Statistiques lues} approvals {Approbations lues} channels {Canaux lus} comments {Commentaires lus} deleting {Supprimé} drafting {Brouillon rédigé} editing {Publication en ligne modifiée} tagCreating {Étiquette créée} inbox {Boîte de réception lue} media {Médiathèque lue} messages {Messages lus} messaging {Message envoyé} moderating {Commentaire modéré} posts {Publications lues} publishing {Publié} queues {Files lues} replying {Réponse envoyée} reviewing {Publication examinée} reviews {Avis lus} saved {Signatures et groupes de canaux lus} scheduling {Programmé} tagging {Étiquettes ajoutées} tags {Étiquettes lues} unpublishing {Dépublié} workspace {Espace de travail lu} skill {Compétence lue} other {Outil utilisé}}",
       "refused": "{step} (non autorisé)",
       "failed": "{step} (inachevé)"
     },
@@ -739,7 +719,8 @@
       "monthUsed": "Votre compte de facturation a utilisé les {allowed, number} demandes à l’assistant permises ce mois-ci. Vous pourrez redemander à partir du {resetsAt}.",
       "failed": "{reason, select, providerRefused {Le fournisseur de texte de votre espace de travail a refusé ses réglages. Un propriétaire ou un administrateur peut les corriger dans les réglages de l’assistant.} unreachable {Le modèle de langage est injoignable. Réessayez dans un instant.} timedOut {Le modèle de langage a mis trop de temps à répondre. Réessayez.} unusableAnswer {La réponse du modèle de langage est inutilisable. Réessayez.} allowanceReached {L’espace de travail a utilisé les requêtes de l’agent dont il dispose pour l’instant : l’agent s’est arrêté ici. Voyez ce qui reste sur la page de facturation.} other {Une erreur s’est produite. Réessayez.}}",
       "lost": "La réponse s’est interrompue avant la fin. Rechargez la page pour voir ce que Peal a enregistré.",
-      "generic": "Une erreur s’est produite. Réessayez."
+      "generic": "Une erreur s’est produite. Réessayez.",
+      "skillNotFound": "Une compétence que vous avez choisie a été supprimée ou ne vous est plus partagée. Retirez-la, puis renvoyez votre message."
     }
   },
   "AppShell": {
@@ -3258,7 +3239,10 @@
       "notifications": "Notifications",
       "notificationSettings": "Préférences de notification",
       "newChannel": "Nouveau canal",
-      "channelPlatform": "Plateforme"
+      "channelPlatform": "Plateforme",
+      "agentSettings": "Agent",
+      "newSkill": "Nouvelle compétence",
+      "skill": "Compétence"
     },
     "help": "Aide",
     "shortcuts": "Raccourcis clavier"
@@ -5332,5 +5316,56 @@
     "showMore": "Afficher plus",
     "nothingOpen": "Rien d’ouvert",
     "nothingOpenHint": "Choisissez un commentaire, un avis ou une conversation dans la liste."
+  },
+  "AgentSkills": {
+    "new": "Nouvelle compétence",
+    "emptyTitle": "Aucune compétence pour l’instant",
+    "empty": "Une compétence, ce sont des consignes que vous enregistrez pour une tâche que vous refaites. Choisissez-la dans un message en tapant / dans la zone de saisie de l’agent, et Peal la suit.",
+    "scope": "{scope, select, workspace {Espace de travail} other {Personnelle}}",
+    "updated": "Modifiée le {at}",
+    "loadFailed": "Impossible de lire vos compétences.",
+    "retry": "Réessayer",
+    "gone": "Impossible d’ouvrir cette compétence. Elle a été supprimée, ou elle ne vous est plus partagée.",
+    "backToList": "Voir vos compétences",
+    "readOnly": "Vous pouvez utiliser cette compétence de l’espace de travail, mais pas la modifier : un autre membre l’a créée.",
+    "form": {
+      "name": "Nom",
+      "nameHint": "Ce que vous taperez après / pour la choisir. {max, number} caractères au plus.",
+      "instructions": "Consignes",
+      "instructionsHint": "Ce que Peal doit faire, et comment, quand la compétence est choisie.",
+      "instructionsCount": "{count, number} / {max, number} caractères",
+      "scope": "Qui peut l’utiliser",
+      "personal": "Personnelle",
+      "personalHint": "Vous seul pouvez l’utiliser.",
+      "workspace": "Espace de travail",
+      "workspaceHint": "Tous les membres qui peuvent utiliser l’agent dans cet espace de travail peuvent l’utiliser.",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "nameEmpty": "Donnez un nom à la compétence.",
+      "nameTooLong": "Le nom dépasse {max, number} caractères.",
+      "instructionsEmpty": "Écrivez ce que Peal doit faire.",
+      "instructionsTooLong": "Les consignes dépassent {max, number} caractères."
+    },
+    "menu": {
+      "label": "Options de la compétence",
+      "useInChat": "Utiliser dans une conversation",
+      "delete": "Supprimer",
+      "deleteTitle": "Supprimer cette compétence ?",
+      "deleteLine": "{name} est supprimée pour tous ceux qui peuvent l’utiliser. C’est définitif. Les messages qui l’ont choisie gardent son nom.",
+      "deleteConfirm": "Supprimer",
+      "cancel": "Annuler"
+    },
+    "saved": "Compétence enregistrée",
+    "created": "Compétence créée",
+    "deleted": "Compétence supprimée",
+    "errors": {
+      "nameTaken": "Vous pouvez déjà utiliser une compétence de ce nom. Choisissez-en un autre, pour que / trouve la bonne.",
+      "tooMany": "Vous pouvez utiliser {max, number} compétences ici, le maximum. Supprimez-en une avant d’en créer une autre.",
+      "notEditable": "Vous ne pouvez pas modifier cette compétence : c’est une compétence de l’espace de travail qu’un autre membre a créée.",
+      "notFound": "Cette compétence n’existe plus. Elle a été supprimée, ou elle ne vous est plus partagée.",
+      "forbidden": "Votre rôle ne vous permet pas d’utiliser l’agent, donc pas d’enregistrer de compétences.",
+      "unexpected": "Impossible d’enregistrer la compétence. Réessayez.",
+      "deleteFailed": "Impossible de supprimer la compétence. Réessayez."
+    }
   }
 }

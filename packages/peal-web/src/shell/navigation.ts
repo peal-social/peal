@@ -17,6 +17,7 @@ export type Page =
   | "account"
   | "ads"
   | "agent"
+  | "agentSettings"
   | "home"
   | "platforms"
   | "analytics"
@@ -56,17 +57,27 @@ export type Detail =
   | "newArticle"
   | "newChannel"
   | "newPost"
-  | "post";
+  | "newSkill"
+  | "post"
+  | "skill";
 
 /**
  * A step the breadcrumb names before the page, each a link back to it:
- * a section (its first page), the agent, Channels, or New channel.
+ * a section (its first page), the agent, the agent's settings, Channels,
+ * or New channel.
  */
-export type Crumb = Section | "agent" | "articles" | "channels" | "newChannel";
+export type Crumb =
+  | Section
+  | "agent"
+  | "agentSettings"
+  | "articles"
+  | "channels"
+  | "newChannel";
 
 // Where each step of the breadcrumb leads, under /<workspace>.
 const crumbPaths: Readonly<Record<Crumb, string>> = {
   agent: "/agent",
+  agentSettings: "/settings/agent",
   articles: "/articles",
   channels: "/channels",
   newChannel: "/channels/new",
@@ -114,6 +125,13 @@ const pages: Readonly<Record<Page, PageRule>> = {
   },
   ads: { may: needs("ads:read"), mode: "studio", path: "/ads" },
   agent: { may: needs("assistant:use"), mode: "studio", path: "/agent" },
+  // The person's skills, and the workspace's they may use.
+  agentSettings: {
+    may: needs("assistant:use"),
+    mode: "studio",
+    path: "/settings/agent",
+    section: "settings",
+  },
   analytics: {
     may: needs("analytics:read"),
     mode: "studio",
@@ -311,6 +329,7 @@ const sectionPages: Readonly<Record<Section, readonly Page[]>> = {
     "messages",
     "feeds",
     "assistant",
+    "agentSettings",
     "account",
     "notifications",
     "notificationSettings",
@@ -388,6 +407,14 @@ const pageAt = (path: string): PageAt => {
     return { detail: "channelPlatform", page: "channels" };
   }
 
+  if (path === "/settings/agent/skills/new") {
+    return { detail: "newSkill", page: "agentSettings" };
+  }
+
+  if (path.startsWith("/settings/agent/skills/")) {
+    return { detail: "skill", page: "agentSettings" };
+  }
+
   const exact = pageNames.find((page) => pages[page].path === path);
 
   if (exact !== undefined) {
@@ -432,6 +459,8 @@ const trailOf = (
     channelPlatform: ["channels", "newChannel"],
     newArticle: ["posts", "articles"],
     newChannel: ["channels"],
+    newSkill: ["settings", "agentSettings"],
+    skill: ["settings", "agentSettings"],
   };
 
   const under = detail === null ? undefined : items[detail];

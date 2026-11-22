@@ -904,9 +904,41 @@ things there, as they would with a colleague. Chats are the person's own.
   **File** (⌘⇧U), files from the computer added to the media library
   and attached to the message, each a chip above the text (its name, a
   spinner on its way, × to take it off; sending waits for them), and
-  **Skill**, a submenu of ready-made requests (plan next week, write a
-  draft, answer comments, report on the month, adapt a post, find the
-  best times), each put in the text to send as it is or finish.
+  **Skill**, a submenu of the person's skills (lucide's `Box`, the name,
+  "Workspace" in muted 12 px at the row's end for a shared one), then a
+  separator and **Create skill…**, which opens the new skill's page;
+  with no skill, Create skill… alone.
+- **Skills in a message**: typing "/" at the start of the text or of a
+  word opens the "/" menu above the text at the "/" (a `menu`, 256 px
+  wide): the skills whose name holds what follows the slash, whatever
+  its case, then a separator and **Create skill…** last. The arrows move
+  the highlight while the caret stays in the field, Enter or Tab picks,
+  Escape closes it, and Enter never sends while it is open; a query
+  with a space that no name holds closes it, so a sentence can start
+  with "/". Picking takes the "/" and the query out of the text. A
+  picked skill is a chip beside the files' (`muted`, lucide's `Box`,
+  the name, × to take it off), three at most: a fourth is not offered,
+  nor one picked already. A message with skills and no text of its own
+  sends their names as its text. The person's sent message shows its
+  skills as outline chips, as its files', under the bubble.
+- **The agent's settings** (`…/settings/agent`, Agent in Settings, for
+  those who may use the agent): the skills the person may use in one
+  bordered `list`, each row the name (500), an outline badge
+  "Personal" or "Workspace" and, at its end, "Updated Nov 22, 2026"
+  (12 px muted); **New skill** in the header's actions; with none, the
+  empty state saying what a skill is, New skill its primary button. A
+  skill's page (`…/settings/agent/skills/<id>`, named by the skill,
+  under Settings › Agent in the breadcrumb; `…/skills/new` is New
+  skill) is a form in the settings column: Name (with how many
+  characters it takes), Instructions (a textarea of ten rows, counted),
+  "Who can use it" as two radios, each with its line (Personal: only
+  you; Workspace: every member who may use the agent), then **Save**
+  (primary) and **Cancel** (outline). Its **…** in the header offers
+  **Use in chat**, which opens the agent page with the skill picked,
+  and **Delete**, after a dialog saying it cannot be undone. A
+  workspace skill the person may not change shows its form disabled,
+  with a muted line saying another member made it, and neither Save
+  nor Delete.
 - **Off**: where no model answers, the page and the panel say so in the
   empty state's title and line, with the next step as the primary
   button (the assistant settings for those who may change them, the

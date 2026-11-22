@@ -208,14 +208,18 @@ export const ChatBody = ({
           label={t("composerLabel")}
           placeholder={placeholder}
           running={state.run !== null}
+          skills={state.skills}
           value={state.draft}
           workspaceId={workspaceId}
+          onSkills={(skills) => {
+            chat.pick(skills);
+          }}
           onChange={(text) => {
             chat.type(text);
           }}
           onEscape={onEscape}
-          onSend={(text, media) => {
-            chat.send(text, media);
+          onSend={(text, media, skills) => {
+            chat.send(text, media, skills);
           }}
           onStop={() => {
             chat.stop();

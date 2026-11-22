@@ -5,7 +5,7 @@ import { useShortcut, useShortcutHint } from "@ui-sdk/react/shortcuts";
 import { BotIcon, HistoryIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Permission } from "peal-contract";
-import type { AgentMedia } from "peal-contract/agent";
+import type { AgentMedia, AgentMessageSkill } from "peal-contract/agent";
 import { Button } from "peal-ui/components/button";
 import {
   Popover,
@@ -97,8 +97,12 @@ const NewChatPanel = ({
     panel.update((state) => adoptChat(state, chatId));
   });
 
-  const send = (text: string, media: readonly AgentMedia[] = []) => {
-    void chat.send(text, media);
+  const send = (
+    text: string,
+    media: readonly AgentMedia[] = [],
+    skills: readonly AgentMessageSkill[] = []
+  ) => {
+    void chat.send(text, media, skills);
   };
 
   return (
@@ -126,8 +130,12 @@ const NewChatPanel = ({
           label={t("composerLabel")}
           placeholder={t("panelPlaceholder")}
           running={false}
+          skills={chat.state.skills}
           value={chat.state.draft}
           workspaceId={workspaceId}
+          onSkills={(skills) => {
+            chat.pick(skills);
+          }}
           onChange={(text) => {
             chat.type(text);
           }}

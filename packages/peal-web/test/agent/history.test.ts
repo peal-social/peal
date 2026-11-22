@@ -95,6 +95,7 @@ describe(stepKindOf, () => {
         "create_draft",
         "list_comment_threads",
         "whoami",
+        "read_skill",
         "something_new",
       ].map((tool) => stepKindOf(tool))
     ).toStrictEqual([
@@ -107,6 +108,7 @@ describe(stepKindOf, () => {
       "drafting",
       "comments",
       "workspace",
+      "skill",
       "other",
     ]);
   });

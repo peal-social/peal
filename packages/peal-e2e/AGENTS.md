@@ -107,6 +107,12 @@
   open list follows its field off the screen ("element is outside of the
   viewport"): wait for that part (the post's review shows "Your comment")
   before opening a list beneath it.
+- `tests/agent-skills.e2e.ts` turns the agent's composer on with a text
+  provider of the workspace's own (a synthetic key; nothing is sent, so
+  no model is asked), sees "/" offer **Create skill…** and Escape close
+  it, saves a skill on `…/settings/agent`, then picks it under "/" with
+  Enter, which sends nothing. ui-sdk's trigger menu reads the field's
+  keys in the capture phase: type with `browser.keyboard`, not `fill`.
 - `tests/tags.e2e.ts` signs up a member of its own, adds a tag in the
   settings, schedules a tagged post and another, filters the calendar by
   the tag (the Filter menu's Tag, its chip, `?tag=` in the address) and
