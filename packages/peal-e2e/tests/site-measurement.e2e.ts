@@ -1113,7 +1113,7 @@ describe("the site's scripts", () => {
     expect(entry).not.toBe("");
     expect(sizes.upFront).toBeLessThanOrEqual(budgets.upFront);
     expect(sizes.notice).toBeLessThanOrEqual(budgets.notice);
-    expect(launcher).not.toStrictEqual([]);
+    expect(launcher.length).toBeGreaterThan(0);
     expect(sizes.support).toBeLessThanOrEqual(budgets.support);
     expect(sizes.measurement).toBeLessThanOrEqual(budgets.measurement);
   });
