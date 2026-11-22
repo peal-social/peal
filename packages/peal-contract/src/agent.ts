@@ -102,6 +102,11 @@ export type AgentStepState = typeof AgentStepStateSchema.Type;
  * know.
  */
 export const AgentStepSchema = Schema.Struct({
+  // Where the step falls in the answer: the length of the answer's text
+  // when the agent called the tool, in UTF-16 code units. Clients show the
+  // text before each step with it, and the text after the last step as the
+  // answer itself.
+  at: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
   callId: Schema.String,
   state: AgentStepStateSchema,
   tool: Schema.String,
