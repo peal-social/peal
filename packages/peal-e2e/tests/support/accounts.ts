@@ -33,9 +33,21 @@ export const confirmedAccount = async (
     .filter((pair) => !pair.endsWith("="))
     .join("; ");
 
-  const link = await emailedLink(account.email, "Confirm your email for Peal");
+  // The link opens the confirmation page, which posts its token: opening
+  // it alone confirms nothing.
+  const link = new URL(
+    await emailedLink(account.email, "Confirm your email for Peal")
+  );
 
-  await fetch(link, { headers: { cookie }, redirect: "manual" });
+  const confirmed = await fetch(`${baseUrl}/api/auth/confirm-email`, {
+    body: JSON.stringify({ token: link.searchParams.get("token") ?? "" }),
+    headers: { "content-type": "application/json", cookie, origin: baseUrl },
+    method: "POST",
+  });
+
+  if (!confirmed.ok) {
+    throw new Error(`Confirming answered ${confirmed.status}`);
+  }
 };
 
 /**

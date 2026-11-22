@@ -51,7 +51,9 @@ Peal reads three claims from the ID token:
 
 A provider's sign-in reaches an account only through an address the provider says it confirmed.
 
-An account whose address was never confirmed is joined to the provider too, and loses its password, its sessions and its connected applications first: whoever made it with that address may not own it, and the provider says the person signing in does.
+An account whose address was never confirmed is joined to the provider too, and loses its password, its sessions, its connected applications and the name and language it was made with first: whoever made it with that address may not own it, and the provider says the person signing in does.
+
+With `AUTH_REQUIRE_EMAIL_VERIFICATION=false`, such an account may have been used, and it is never handed over. If it belongs to a workspace, it is closed with what it made, and the person is told to sign in again, which makes their own account. When it can't be closed (others use a workspace it alone owns), the sign-in is refused and the person is told to ask you.
 
 Once joined, the provider's identifier signs in that account, even if the address at the provider changes. Nothing else links an account to a provider, and the account page has no link or unlink.
 
