@@ -92,6 +92,25 @@ layer(GuardTest)("the outbound guard", (it) => {
   );
 });
 
+// A resolver that answers a name with no address at all, which no address
+// being private does not make public.
+const EmptyAnswerTest = OutboundGuard.layer.pipe(
+  Layer.provide(
+    Layer.succeed(Dns.Dns)(Dns.Dns.of({ lookup: () => Effect.succeed([]) }))
+  )
+);
+
+layer(EmptyAnswerTest)("the outbound guard, given no address", (it) => {
+  it.effect("refuses the name", () =>
+    Effect.gen(function* noAddress() {
+      assert.strictEqual(
+        yield* refusalOf("https://empty.example/"),
+        "unknownHost"
+      );
+    })
+  );
+});
+
 // The client the guard protects, against a server on loopback: the guard
 // refuses before anything is sent.
 const ClientTest = Layer.mergeAll(GuardTest, FetchHttpClient.layer);

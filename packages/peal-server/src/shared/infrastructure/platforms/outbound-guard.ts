@@ -174,13 +174,19 @@ export class OutboundGuard extends Context.Service<
           })
         );
 
+      // A name that resolves to no address at all leads nowhere Peal can
+      // check: every address of none being public would let it through.
       const publicOnly = (url: URL) =>
         addressesOf(url.hostname).pipe(
-          Effect.flatMap((addresses) =>
-            addresses.every(isPublicAddress)
+          Effect.flatMap((addresses) => {
+            if (addresses.length === 0) {
+              return Effect.fail(refused(url.host, "unknownHost"));
+            }
+
+            return addresses.every(isPublicAddress)
               ? Effect.void
-              : Effect.fail(refused(url.host, "notPublic"))
-          )
+              : Effect.fail(refused(url.host, "notPublic"));
+          })
         );
 
       const check = (url: URL) => {
